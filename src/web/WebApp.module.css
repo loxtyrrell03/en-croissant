@@ -497,6 +497,33 @@
   background: rgba(34, 139, 230, 0.05);
 }
 
+.coachBookLine {
+  margin-top: 0.7rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(32, 201, 151, 0.18);
+}
+
+.coachDiagram {
+  width: min(100%, 20rem);
+  margin: 0.75rem auto 0;
+  padding: 0.55rem;
+  border: 1px solid rgba(116, 192, 252, 0.22);
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.17);
+}
+
+.coachDiagramBoard {
+  border-radius: 7px;
+  box-shadow: 0 7px 20px rgba(0, 0, 0, 0.24);
+  touch-action: pan-y;
+}
+
+.coachDiagramMove {
+  min-width: 0;
+  flex: 1;
+  color: var(--mantine-color-gray-2);
+}
+
 .coachProgressSteps {
   color: var(--mantine-color-dimmed);
 }

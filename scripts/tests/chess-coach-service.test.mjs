@@ -17,6 +17,7 @@ import {
   codexExitIndicatesSignedOut,
   codexUsageLimitFromOutput,
   collectPcCoachPositionEvaluations,
+  findExactOpeningBookMatches,
   getChessBookLibraryInventory,
   normalizeCloudCoachEvaluation,
   normalizeChessCoachRequestPayload,
@@ -569,6 +570,15 @@ test("AI planner is restricted to real accessible chapters and retrieval stays i
       pdf_page_start INTEGER, pdf_page_end INTEGER, printed_page_start INTEGER,
       printed_page_end INTEGER, sequence_in_page INTEGER, citation TEXT, text TEXT
     );
+    CREATE TABLE opening_lines (
+      line_id TEXT PRIMARY KEY, book_id TEXT, chapter_id TEXT, line_kind TEXT, pgn TEXT,
+      confidence REAL, complete_game INTEGER, source_chunk_id TEXT, move_count INTEGER
+    );
+    CREATE TABLE opening_line_moves (
+      line_id TEXT, move_index INTEGER, ply INTEGER, san TEXT, uci TEXT, fen_before TEXT,
+      fen_before_key TEXT, fen_after TEXT, fen_after_key TEXT, source_pdf_page INTEGER,
+      source_printed_page INTEGER, source_chunk_id TEXT, confidence REAL
+    );
     INSERT INTO books VALUES
       ('opening-book', 'Plans in the Dutch', 'GM Author', 'Openings', 'C:/books/dutch.pdf'),
       ('endgame-book', 'Rook Endgames', 'GM Endgamer', 'Endgames', 'C:/books/rook.pdf');
@@ -583,6 +593,22 @@ test("AI planner is restricted to real accessible chapters and retrieval stays i
        'Plans in the Dutch - PDF p. 20', 'An unrelated chapter that the planner did not select.'),
       ('rook-a', 'endgame-book', 'rook-active', 'Active rook defence', 12, 12, 40, 40, 0,
        'Rook Endgames - PDF p. 12', 'Keep the rook active behind the passed pawn.');
+    INSERT INTO opening_lines VALUES
+      ('dutch-line', 'opening-book', 'dutch-structure', 'variation', '1. e4 e6',
+       0.98, 0, 'dutch-a', 2);
+    INSERT INTO opening_line_moves VALUES
+      ('dutch-line', 0, 1, 'e4', 'e2e4',
+       'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+       'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -',
+       'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1',
+       'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq -',
+       8, 20, 'dutch-a', 0.98),
+      ('dutch-line', 1, 2, 'e6', 'e7e6',
+       'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1',
+       'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq -',
+       'rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2',
+       'rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -',
+       8, 20, 'dutch-a', 0.98);
   `);
   const inventory = getChessBookLibraryInventory(database);
   assert.deepEqual(
@@ -610,13 +636,29 @@ test("AI planner is restricted to real accessible chapters and retrieval stays i
   assert.deepEqual(plan.categories[0].chapterIds, ["dutch-structure"]);
   assert.deepEqual(plan.categories[0].bookIds, ["opening-book"]);
   assert.deepEqual(plan.categories[0].keyPlies, [7]);
-  const retrieval = retrievePlannedBookPassages(database, plan);
+  const exactOpeningMatches = findExactOpeningBookMatches(database, [
+    {
+      ply: 1,
+      san: "e4",
+      uci: "e2e4",
+      fenBefore: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    },
+  ]);
+  assert.equal(exactOpeningMatches.length, 1);
+  assert.equal(exactOpeningMatches[0].playedMoveMatched, true);
+  assert.equal(exactOpeningMatches[0].title, "Plans in the Dutch");
+  assert.deepEqual(
+    exactOpeningMatches[0].moves.map((move) => move.uci),
+    ["e2e4", "e7e6"],
+  );
+  const retrieval = retrievePlannedBookPassages(database, plan, { exactOpeningMatches });
   assert.deepEqual(retrieval.categoryPassageIds[plan.categories[0].id], ["dutch-a"]);
   assert.deepEqual(
     retrieval.passages.map((passage) => passage.chunkId),
     ["dutch-a"],
   );
   assert.equal(retrieval.passages[0].title, "Plans in the Dutch");
+  assert.equal(retrieval.passages[0].openingLines[0].lineId, "dutch-line");
   database.close();
 });
 

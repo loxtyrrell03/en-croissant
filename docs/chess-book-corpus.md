@@ -17,10 +17,14 @@ line for corpus QA and retrieval experiments.
 - 1,561 indexed PDF pages
 - 22 pages recovered with local OCR from the image-only *Modernized Sicilian
   Kan* excerpt
-- 3,322 chapter records: 387 matched to pages available in the excerpts and
-  2,935 retained as unavailable contents entries
-- 1,609 page-bounded chunks with 1,609 exact PDF citations
-- 1,609 local 384-dimensional `BAAI/bge-small-en-v1.5` embeddings
+- 3,541 chapter records: 358 matched to pages available in the excerpts and
+  3,183 retained as unavailable contents entries
+- 1,605 page-bounded chunks with 1,605 exact PDF citations
+- 1,605 local 384-dimensional `BAAI/bge-small-en-v1.5` embeddings
+- 3,399 legality-checked opening variations and illustrative game lines,
+  materialized as 67,054 source-linked line plies across 8,000 exact positions
+- per-ply SAN, UCI, before/after FEN, source page, source chunk, and extraction
+  confidence in SQLite plus portable JSONL and PGN
 - SQLite FTS5 keyword search plus semantic search, combined with
   reciprocal-rank fusion
 - zero extraction errors, OCR failures, orphan chunks, citation failures, or
@@ -72,14 +76,17 @@ from one title. Each result includes:
 
 ## App integration
 
-The desktop coach reads the FTS5 corpus directly from Rust. Each question is
-expanded into a compact concept query, results are diversified to at most two
-passages per book, and up to six page-bounded passages are included in the
-existing model/Stockfish prompt. The response carries the exact source
-objects separately from the generated prose, so the UI can always show the
-excerpt, title, author, chapter, citation, and local PDF independently of what
-the model says. Stockfish remains authoritative for concrete move verdicts;
-books support the human lesson and are cited as `[Book N]`.
+The desktop coach reads the corpus directly from Rust. Before the AI selects
+categories and chapters, the coach compares every supplied game position with
+the exact opening-line index. A match identifies the real book, accessible
+chapter, cited page/chunk, exact book PGN, matched game ply, and whether the
+played move followed or diverged from the book continuation. Those matches
+receive priority inside the AI-selected retrieval scope. The response carries
+the exact source objects separately from generated prose, so the UI can always
+show the excerpt, full title, author, chapter, citation, local PDF, and
+interactive cited-line board independently of what the model says. Stockfish
+remains authoritative for concrete move verdicts; books support the human
+lesson and use exact `[Source chunk_id]` citations.
 
 The phone uses the same retrieval contract through the private home server:
 
@@ -87,14 +94,15 @@ The phone uses the same retrieval contract through the private home server:
 - `GET /api/chess-books/search?q=...` returns citation-safe passages.
 - `GET /api/chess-books/pdf?bookId=...` streams an authorized local PDF with
   byte-range support; the UI opens it at the cited PDF page.
-- `POST /api/chess-coach` retrieves passages, scans PC-stored evaluations for
-  the user's moves, ranks cache-backed critical moments, and asks the pinned
-  coach model to synthesize the review.
+- `POST /api/chess-coach` completes a cache-first PC evaluation sweep, finds
+  exact book-line positions, asks AI to choose the relevant categories and
+  chapters, retrieves within that scope, and asks the pinned coach model to
+  synthesize the review.
 
-The phone scan is deliberately cache-first. It does not start a live
-Stockfish search for every move and therefore cannot clog the shared engine
-queue. If stored whole-game evidence is incomplete, the prompt must disclose
-that limitation and restrict concrete claims to evidence it actually has.
+The phone scan is deliberately cache-first: stored PC evaluations are used
+when available, and only misses are sent sequentially to live PC Stockfish.
+The review does not begin until every requested unique position has either
+been analyzed or reported as a failure.
 The private server invokes an ephemeral, read-only `codex exec` run with the
 explicit `gpt-5.6-sol` model at medium reasoning. The model receives only the
 prepared Stockfish and book evidence and is instructed not to use tools. No
@@ -135,6 +143,18 @@ python scripts/render-chess-book-page.py thinking-ramesh 29
 The resulting PNG can be inspected by a person or sent to a vision-capable
 model. The pipeline does not claim to reconstruct FEN from PDF glyphs.
 
+Textual opening notation is handled separately. Publisher figurines are
+normalized to SAN, nested sidelines branch from their real pre-move node, and
+every accepted move must replay legally from a rooted position. Explicit move
+numbers may re-anchor only to a unique legal prior position. Unrooted,
+ambiguous, and illegal fragments are counted in `opening-line-report.json`
+rather than guessed into the exact-position index.
+
+Coach diagrams are rendered from the stored FEN chain, not from the PDF's
+diagram font. Every key game position and exact cited opening line includes a
+read-only board, the relevant PGN/move label, a next-move arrow, and backward
+and forward controls.
+
 ## Generated files
 
 - `chess-books.sqlite3`: normalized books, pages, chapters, chunks, FTS5, and
@@ -143,6 +163,9 @@ model. The pipeline does not claim to reconstruct FEN from PDF glyphs.
 - `pages.jsonl`: cleaned page text and page-level extraction metadata
 - `chapters.jsonl`: available and contents-only chapter map
 - `chunks.jsonl`: portable citation-safe retrieval units
+- `opening-lines.jsonl`: exact opening line/game records with every mapped ply
+- `opening-lines.pgn`: portable PGN export of every recoverable rooted line
+- `opening-line-report.json`: per-book accepted and unresolved notation audit
 - `chapter-review.json`: automatic chapter-mapping caveats
 - `ingestion-report.json`: extraction, OCR, embedding, and readiness audit
 - `retrieval-tests.json`: database and concept-retrieval test results
@@ -157,10 +180,12 @@ python scripts/test-chess-book-corpus.py
 ```
 
 The test checks SQLite integrity, record counts, embedding/chunk parity,
-citations, foreign-key ownership, and hybrid concept retrieval for calculation,
-exchange decisions, defence, rook endings, and computer chess. The current
-corpus passes every case, with an expected specialist source ranked first in
-each category.
+citations, foreign-key ownership, line/move cardinality, exact FEN-chain
+continuity, initial-position lookup, and hybrid concept retrieval for
+calculation, exchange decisions, defence, rook endings, and computer chess.
+Parser unit tests separately cover figurine notation, nested sidelines, and
+the refusal to guess unrooted prose fragments. The current corpus passes every
+case, with an expected specialist source ranked first in each category.
 
 ## Jellyfin cover artwork
 

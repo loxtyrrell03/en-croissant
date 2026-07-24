@@ -83,13 +83,60 @@ def main() -> int:
         integrity = connection.execute("PRAGMA integrity_check").fetchone()[0]
         counts = {
             table: connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
-            for table in ("books", "pages", "chapters", "chunks", "embeddings")
+            for table in (
+                "books",
+                "pages",
+                "chapters",
+                "chunks",
+                "opening_lines",
+                "opening_line_moves",
+                "embeddings",
+            )
         }
         citation_failures = connection.execute(
             "SELECT COUNT(*) FROM chunks WHERE citation='' OR pdf_page_start IS NULL"
         ).fetchone()[0]
         orphan_chunks = connection.execute(
             "SELECT COUNT(*) FROM chunks c LEFT JOIN books b ON b.book_id=c.book_id WHERE b.book_id IS NULL"
+        ).fetchone()[0]
+        foreign_key_failures = len(connection.execute("PRAGMA foreign_key_check").fetchall())
+        malformed_opening_lines = connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM opening_lines line
+            LEFT JOIN (
+                SELECT line_id, COUNT(*) AS actual_moves
+                FROM opening_line_moves
+                GROUP BY line_id
+            ) moves ON moves.line_id=line.line_id
+            WHERE line.move_count != COALESCE(moves.actual_moves, 0)
+            """
+        ).fetchone()[0]
+        broken_opening_chains = connection.execute(
+            """
+            WITH ordered AS (
+                SELECT
+                    line_id,
+                    move_index,
+                    fen_before_key,
+                    LAG(fen_after_key) OVER (
+                        PARTITION BY line_id ORDER BY move_index
+                    ) AS previous_after
+                FROM opening_line_moves
+            )
+            SELECT COUNT(*)
+            FROM ordered
+            WHERE move_index > 0 AND fen_before_key != previous_after
+            """
+        ).fetchone()[0]
+        initial_position_matches = connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM opening_line_moves
+            WHERE fen_before_key=?
+              AND uci IN ('e2e4', 'd2d4', 'c2c4', 'g1f3')
+            """,
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -",),
         ).fetchone()[0]
     finally:
         connection.close()
@@ -117,14 +164,24 @@ def main() -> int:
         "counts": counts,
         "citation_failures": citation_failures,
         "orphan_chunks": orphan_chunks,
+        "foreign_key_failures": foreign_key_failures,
+        "malformed_opening_lines": malformed_opening_lines,
+        "broken_opening_chains": broken_opening_chains,
+        "initial_position_matches": initial_position_matches,
         "retrieval_cases": case_results,
         "passed": (
             integrity == "ok"
             and counts["books"] >= 100
             and counts["chunks"] > 500
+            and counts["opening_lines"] > 0
+            and counts["opening_line_moves"] > counts["opening_lines"]
             and counts["embeddings"] == counts["chunks"]
             and citation_failures == 0
             and orphan_chunks == 0
+            and foreign_key_failures == 0
+            and malformed_opening_lines == 0
+            and broken_opening_chains == 0
+            and initial_position_matches > 0
             and all(case["passed"] for case in case_results)
         ),
     }

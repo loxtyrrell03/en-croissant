@@ -7,7 +7,7 @@ use std::{
 };
 
 use log::{info, warn};
-use rusqlite::{Connection, OpenFlags};
+use rusqlite::{params_from_iter, Connection, OpenFlags};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use shakmaty::{
@@ -319,6 +319,41 @@ pub struct CoachBookPassage {
     pub printed_page_end: Option<u32>,
     pub excerpt: String,
     pub local_path: String,
+    #[serde(default)]
+    pub opening_lines: Vec<CoachBookLine>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct CoachBookLineMove {
+    pub move_index: u32,
+    pub ply: u32,
+    pub san: String,
+    pub uci: String,
+    pub fen_before: String,
+    pub fen_after: String,
+    pub source_pdf_page: u32,
+    pub source_printed_page: Option<u32>,
+    pub source_chunk_id: Option<String>,
+    pub confidence: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct CoachBookLine {
+    pub line_id: String,
+    pub line_kind: String,
+    pub pgn: String,
+    pub citation: String,
+    pub matched_game_ply: u32,
+    pub matched_book_move_index: u32,
+    pub matched_book_ply: u32,
+    pub played_san: String,
+    pub played_uci: String,
+    pub book_move_san: String,
+    pub book_move_uci: String,
+    pub played_move_matched: bool,
+    pub moves: Vec<CoachBookLineMove>,
 }
 
 #[derive(Debug, Deserialize, Type)]
@@ -1243,12 +1278,289 @@ fn load_chess_book_inventory() -> Result<Option<CoachLibraryInventory>, String> 
     Ok(Some(CoachLibraryInventory { books, chapters }))
 }
 
+#[derive(Debug, Clone)]
+struct CoachExactOpeningMatch {
+    book_id: String,
+    title: String,
+    author: String,
+    chapter_id: Option<String>,
+    chapter_title: String,
+    source_chunk_id: Option<String>,
+    line: CoachBookLine,
+}
+
+fn coach_fen_key(fen: &str) -> String {
+    fen.split_whitespace().take(4).collect::<Vec<_>>().join(" ")
+}
+
+fn exact_opening_book_matches(
+    request: &AiCoachRequest,
+) -> Result<Vec<CoachExactOpeningMatch>, String> {
+    let Some(corpus_path) = chess_book_corpus_path() else {
+        return Ok(Vec::new());
+    };
+    let game_points = request
+        .game_analysis
+        .iter()
+        .filter_map(|point| {
+            let before_fen = point.before_fen.as_deref()?;
+            let fen_key = coach_fen_key(before_fen);
+            (!fen_key.is_empty()).then_some((fen_key, point))
+        })
+        .collect::<Vec<_>>();
+    if game_points.is_empty() {
+        return Ok(Vec::new());
+    }
+    let connection = Connection::open_with_flags(corpus_path, OpenFlags::SQLITE_OPEN_READ_ONLY)
+        .map_err(|error| error.to_string())?;
+    let has_line_index = connection
+        .query_row(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='opening_line_moves'",
+            [],
+            |row| row.get::<_, i64>(0),
+        )
+        .map_err(|error| error.to_string())?
+        > 0;
+    if !has_line_index {
+        return Ok(Vec::new());
+    }
+
+    let mut game_by_position: HashMap<String, Vec<&CoachGameAnalysisPoint>> = HashMap::new();
+    for (fen_key, point) in &game_points {
+        game_by_position
+            .entry(fen_key.clone())
+            .or_default()
+            .push(*point);
+    }
+    let position_keys = game_by_position.keys().cloned().collect::<Vec<_>>();
+    let placeholders = std::iter::repeat_n("?", position_keys.len())
+        .collect::<Vec<_>>()
+        .join(", ");
+    let sql = format!(
+        r#"
+        SELECT move.line_id, move.move_index, move.ply, move.san, move.uci,
+               move.fen_before_key, move.source_chunk_id, move.source_pdf_page,
+               line.book_id, line.chapter_id, line.line_kind, line.pgn,
+               line.confidence, line.source_chunk_id, line.move_count,
+               book.title, book.author, COALESCE(chapter.title, ''),
+               COALESCE(chunk.citation, '')
+        FROM opening_line_moves AS move
+        JOIN opening_lines AS line ON line.line_id=move.line_id
+        JOIN books AS book ON book.book_id=line.book_id
+        LEFT JOIN chapters AS chapter ON chapter.chapter_id=line.chapter_id
+        LEFT JOIN chunks AS chunk
+          ON chunk.chunk_id=COALESCE(move.source_chunk_id, line.source_chunk_id)
+        WHERE move.fen_before_key IN ({placeholders})
+        "#
+    );
+    let mut statement = connection
+        .prepare(&sql)
+        .map_err(|error| error.to_string())?;
+    let candidate_rows = statement
+        .query_map(params_from_iter(position_keys.iter()), |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, u32>(1)?,
+                row.get::<_, u32>(2)?,
+                row.get::<_, String>(3)?,
+                row.get::<_, String>(4)?,
+                row.get::<_, String>(5)?,
+                row.get::<_, Option<String>>(6)?,
+                row.get::<_, u32>(7)?,
+                row.get::<_, String>(8)?,
+                row.get::<_, Option<String>>(9)?,
+                row.get::<_, String>(10)?,
+                row.get::<_, String>(11)?,
+                row.get::<_, f64>(12)?,
+                row.get::<_, Option<String>>(13)?,
+                row.get::<_, u32>(14)?,
+                row.get::<_, String>(15)?,
+                row.get::<_, String>(16)?,
+                row.get::<_, String>(17)?,
+                row.get::<_, String>(18)?,
+            ))
+        })
+        .map_err(|error| error.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|error| error.to_string())?;
+    drop(statement);
+
+    let mut best_by_line: HashMap<String, (i64, CoachExactOpeningMatch)> = HashMap::new();
+    for (
+        line_id,
+        move_index,
+        book_ply,
+        book_san,
+        book_uci,
+        fen_before_key,
+        move_chunk_id,
+        source_pdf_page,
+        book_id,
+        chapter_id,
+        line_kind,
+        pgn,
+        _confidence,
+        line_chunk_id,
+        line_move_count,
+        title,
+        author,
+        chapter_title,
+        citation,
+    ) in candidate_rows
+    {
+        let Some(points) = game_by_position.get(&fen_before_key) else {
+            continue;
+        };
+        for point in points {
+            let played_uci = point
+                .played_uci
+                .as_deref()
+                .unwrap_or_default()
+                .to_ascii_lowercase();
+            let played_move_matched =
+                !played_uci.is_empty() && played_uci == book_uci.to_ascii_lowercase();
+            let score = i64::from(played_move_matched) * 1_000_000
+                + i64::from(point.ply) * 1_000
+                + i64::from(book_ply)
+                + i64::from(line_move_count.min(40));
+            if best_by_line
+                .get(&line_id)
+                .is_some_and(|(known_score, _)| *known_score >= score)
+            {
+                continue;
+            }
+            best_by_line.insert(
+                line_id.clone(),
+                (
+                    score,
+                    CoachExactOpeningMatch {
+                        book_id: book_id.clone(),
+                        title: title.clone(),
+                        author: author.clone(),
+                        chapter_id: chapter_id.clone(),
+                        chapter_title: chapter_title.clone(),
+                        source_chunk_id: move_chunk_id.clone().or_else(|| line_chunk_id.clone()),
+                        line: CoachBookLine {
+                            line_id: line_id.clone(),
+                            line_kind: line_kind.clone(),
+                            pgn: pgn.clone(),
+                            citation: if citation.is_empty() {
+                                format!("PDF page {source_pdf_page}")
+                            } else {
+                                citation.clone()
+                            },
+                            matched_game_ply: point.ply,
+                            matched_book_move_index: move_index,
+                            matched_book_ply: book_ply,
+                            played_san: point.mv.clone(),
+                            played_uci: played_uci.clone(),
+                            book_move_san: book_san.clone(),
+                            book_move_uci: book_uci.clone(),
+                            played_move_matched,
+                            moves: Vec::new(),
+                        },
+                    },
+                ),
+            );
+        }
+    }
+
+    let mut matches = best_by_line.into_values().collect::<Vec<_>>();
+    matches.sort_by(|(left, _), (right, _)| right.cmp(left));
+    let mut seen_teaching_points = HashSet::new();
+    let mut per_book: HashMap<String, usize> = HashMap::new();
+    let mut diverse_matches = Vec::new();
+    for candidate in matches {
+        let exact_match = &candidate.1;
+        let signature = format!(
+            "{}|{}|{}|{}",
+            exact_match.book_id,
+            exact_match.chapter_id.as_deref().unwrap_or_default(),
+            exact_match.line.matched_game_ply,
+            exact_match.line.book_move_uci,
+        );
+        let book_count = per_book.entry(exact_match.book_id.clone()).or_default();
+        if !seen_teaching_points.insert(signature) || *book_count >= 3 {
+            continue;
+        }
+        *book_count += 1;
+        diverse_matches.push(candidate);
+        if diverse_matches.len() >= 18 {
+            break;
+        }
+    }
+    let mut move_statement = connection
+        .prepare(
+            r#"
+            SELECT move_index, ply, san, uci, fen_before, fen_after,
+                   source_pdf_page, source_printed_page, source_chunk_id, confidence
+            FROM opening_line_moves
+            WHERE line_id=?
+            ORDER BY move_index
+            "#,
+        )
+        .map_err(|error| error.to_string())?;
+    let mut result = Vec::new();
+    for (_, mut exact_match) in diverse_matches {
+        exact_match.line.moves = move_statement
+            .query_map([&exact_match.line.line_id], |row| {
+                Ok(CoachBookLineMove {
+                    move_index: row.get(0)?,
+                    ply: row.get(1)?,
+                    san: row.get(2)?,
+                    uci: row.get(3)?,
+                    fen_before: row.get(4)?,
+                    fen_after: row.get(5)?,
+                    source_pdf_page: row.get(6)?,
+                    source_printed_page: row.get(7)?,
+                    source_chunk_id: row.get(8)?,
+                    confidence: row.get(9)?,
+                })
+            })
+            .map_err(|error| error.to_string())?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|error| error.to_string())?;
+        if !exact_match.line.moves.is_empty() {
+            result.push(exact_match);
+        }
+    }
+    Ok(result)
+}
+
+fn format_exact_opening_matches(matches: &[CoachExactOpeningMatch]) -> String {
+    if matches.is_empty() {
+        return "No exact indexed book-line position matched this game.".to_string();
+    }
+    matches
+        .iter()
+        .map(|exact_match| {
+            format!(
+                "EXACT_LINE|book={book_id}|chapter={chapter_id}|game_ply={game_ply}|book_ply={book_ply}|played={played}|book_move={book_move}|same_move={same_move}|{title}|{author}|{chapter}|{citation}|PGN={pgn}",
+                book_id = exact_match.book_id,
+                chapter_id = exact_match.chapter_id.as_deref().unwrap_or_default(),
+                game_ply = exact_match.line.matched_game_ply,
+                book_ply = exact_match.line.matched_book_ply,
+                played = exact_match.line.played_san,
+                book_move = exact_match.line.book_move_san,
+                same_move = if exact_match.line.played_move_matched { "yes" } else { "no" },
+                title = exact_match.title,
+                author = exact_match.author,
+                chapter = exact_match.chapter_title,
+                citation = exact_match.line.citation,
+                pgn = truncate_plan_coach_text(&exact_match.line.pgn, 1_200),
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 fn build_library_planner_prompt(
     request: &AiCoachRequest,
     stockfish_lines: &[CoachEngineLine],
     targeted_results: &[CoachTargetedResult],
     inventory: &CoachLibraryInventory,
     pc_game_analysis: Option<&CoachPcGameAnalysis>,
+    exact_opening_matches: &[CoachExactOpeningMatch],
 ) -> Result<String, CoachError> {
     let inventory_json = serde_json::to_string(inventory)?;
     let pgn = request
@@ -1268,6 +1580,7 @@ fn build_library_planner_prompt(
     };
     let game_analysis = format_game_analysis_for_request(request);
     let pc_game_analysis = format_pc_game_analysis(pc_game_analysis);
+    let exact_opening_matches = format_exact_opening_matches(exact_opening_matches);
 
     Ok(format!(
         r#"Role: You are the librarian and curriculum designer for a private AI chess coach.
@@ -1277,6 +1590,7 @@ Choose the few game-specific coaching categories and exact library chapters that
 Rules:
 - Choose 1-{MAX_COACH_CATEGORIES} categories, ordered by importance to this exact question/game. Category labels are free-form and specific (for example Opening plans, Calculation at move 24, Rook endgame technique, Dark-square strategy); do not mechanically include every phase.
 - Base category relevance on the PGN and supplied PC/Stockfish evidence. Never invent an evaluation or game event.
+- EXACT_LINE records are legality-checked, position-indexed lines recovered from installed book pages. When one is materially relevant, select that exact book/chapter and distinguish whether the game followed the cited move or diverged.
 - For an opening category, inspect the exact move order and early positions. Select chapters that can teach the resulting opening ideas, pawn structures, typical piece placement, thematic breaks, plans, and transition—not merely a generic book whose title contains "opening".
 - The catalogue includes every one of the 103 owned/catalogued books. `hasExcerpt=false` means no passage can currently be retrieved from that title. Only chapter IDs in the `chapters` array are accessible and chunk-backed.
 - Prefer exact accessible chapters. A book ID may supplement them when its available excerpt is relevant. Never invent or alter an ID.
@@ -1300,6 +1614,9 @@ Current-position engine lines:
 
 Targeted Stockfish evidence:
 {targeted}
+
+Exact position matches in indexed opening-book lines:
+{exact_opening_matches}
 
 Library catalogue JSON (book IDs plus only accessible, chunk-backed chapters):
 {inventory_json}
@@ -1439,6 +1756,7 @@ fn library_candidate_is_in_category(
 
 fn search_chess_book_passages(
     plan: &CoachLibraryPlan,
+    exact_opening_matches: &[CoachExactOpeningMatch],
 ) -> Result<(bool, CoachBookRetrieval), String> {
     let Some(corpus_path) = chess_book_corpus_path() else {
         return Ok((false, CoachBookRetrieval::default()));
@@ -1500,6 +1818,7 @@ fn search_chess_book_passages(
                         MAX_BOOK_EXCERPT_CHARS,
                     ),
                     local_path: row.get(13)?,
+                    opening_lines: Vec::new(),
                 },
             })
         })
@@ -1550,6 +1869,19 @@ fn search_chess_book_passages(
                         score += 40;
                     }
                 }
+                for exact_match in exact_opening_matches {
+                    if exact_match.source_chunk_id.as_deref()
+                        == Some(candidate.passage.chunk_id.as_str())
+                    {
+                        score += 500_000;
+                    } else if exact_match.book_id == candidate.passage.book_id
+                        && exact_match.chapter_id.as_deref() == candidate.chapter_id.as_deref()
+                    {
+                        score += 200_000;
+                    } else if exact_match.book_id == candidate.passage.book_id {
+                        score += 40_000;
+                    }
+                }
                 Some((score, candidate))
             })
             .collect::<Vec<_>>();
@@ -1566,7 +1898,20 @@ fn search_chess_book_passages(
         for (_, candidate) in ranked {
             selected_chunks.push(candidate.passage.chunk_id.clone());
             if seen_chunks.insert(candidate.passage.chunk_id.clone()) {
-                passages.push(candidate.passage.clone());
+                let mut passage = candidate.passage.clone();
+                passage.opening_lines = exact_opening_matches
+                    .iter()
+                    .filter(|exact_match| {
+                        exact_match.source_chunk_id.as_deref() == Some(passage.chunk_id.as_str())
+                            || (exact_match.book_id == passage.book_id
+                                && (exact_match.chapter_id.is_none()
+                                    || exact_match.chapter_id.as_deref()
+                                        == candidate.chapter_id.as_deref()))
+                    })
+                    .take(3)
+                    .map(|exact_match| exact_match.line.clone())
+                    .collect();
+                passages.push(passage);
             }
             category_count += 1;
             if category_count >= MAX_BOOK_PASSAGES_PER_CATEGORY
@@ -1596,6 +1941,27 @@ fn format_book_passages(passages: &[CoachBookPassage]) -> String {
     passages
         .iter()
         .map(|passage| {
+            let exact_lines = if passage.opening_lines.is_empty() {
+                String::new()
+            } else {
+                format!(
+                    "\nExact indexed book lines:\n{}",
+                    passage
+                        .opening_lines
+                        .iter()
+                        .map(|line| format!(
+                            "- game ply {game_ply}, book ply {book_ply}: played {played}; book move {book_move}; same move: {same_move}; PGN: {pgn}",
+                            game_ply = line.matched_game_ply,
+                            book_ply = line.matched_book_ply,
+                            played = line.played_san,
+                            book_move = line.book_move_san,
+                            same_move = if line.played_move_matched { "yes" } else { "no" },
+                            pgn = line.pgn,
+                        ))
+                        .collect::<Vec<_>>()
+                        .join("\n")
+                )
+            };
             format!(
                 "[Source {chunk_id}] {title} — {author}\nChapter: {chapter}\nCitation: {citation}\nPassage: {excerpt}",
                 chunk_id = passage.chunk_id,
@@ -1607,7 +1973,7 @@ fn format_book_passages(passages: &[CoachBookPassage]) -> String {
                     &passage.chapter_title
                 },
                 citation = passage.citation,
-                excerpt = passage.excerpt,
+                excerpt = format!("{}{}", passage.excerpt, exact_lines),
             )
         })
         .collect::<Vec<_>>()
@@ -2428,12 +2794,15 @@ async fn ask_ai_coach_inner(
             )
         })?;
     let book_corpus_available = true;
+    let exact_opening_matches =
+        exact_opening_book_matches(&request).map_err(CoachError::GeminiLibraryPlannerMalformed)?;
     let librarian_prompt = build_library_planner_prompt(
         &request,
         &stockfish_lines,
         &targeted_results,
         &inventory,
         pc_game_analysis.as_ref(),
+        &exact_opening_matches,
     )?;
     let library_schema = library_plan_output_schema();
     let library_output = run_gemini_cli_with_schema(
@@ -2460,7 +2829,7 @@ async fn ask_ai_coach_inner(
                 .to_string(),
         ));
     }
-    let (_, book_retrieval) = search_chess_book_passages(&library_plan)
+    let (_, book_retrieval) = search_chess_book_passages(&library_plan, &exact_opening_matches)
         .map_err(CoachError::GeminiLibraryPlannerMalformed)?;
     if library_plan.categories.iter().any(|category| {
         book_retrieval
@@ -3049,6 +3418,7 @@ Core rules:
 - Retrieved chess-book passages are the source of truth for attributed teaching principles. Use them to explain the human lesson, while Stockfish remains the source of truth for this position's concrete verdict and variations.
 - When a retrieved passage materially supports a lesson, name the actual book and chapter in the prose and cite its exact opaque source identifier such as [Source e406ce4596c7eca833b0342e]. Never use an ordinal placeholder such as [Book 3], and never invent a title, quotation, page, author, chapter, or source identifier.
 - For opening lessons, connect the named book/chapter to an exact move or position in this game and explain the relevant setup, pawn structure, thematic breaks, and plans. Do not merely say that an opening book is relevant.
+- An "Exact indexed book line" is a legality-checked PGN recovered from that cited source page. Use its game-ply match for concrete comparison, state whether the played move follows or diverges from the book move, and never replace it with an uncited database line.
 - Paraphrase book passages in your own words. Do not reproduce long excerpts. Do not imply that a passage analysed this exact game unless it actually contains the supplied game position.
 - If none of the retrieved passages is relevant, do not force a book citation. Give the engine-grounded answer and say no close library passage was used.
 - Explain like a strong GM/coach: use proper chess terminology such as isolated queen's pawn, minority attack, deflection, trapped piece, blockade, weak square, exchange sacrifice, or domination when it genuinely fits.
@@ -3205,6 +3575,7 @@ Non-negotiable grounding rules:
 - Every category must include at least one book reference. A reference is allowed only when its exact `chunkId` is listed for that category in `allowedCategorySources` and appears as `[Source <chunkId>]` below. Never output an ordinal label such as `[Book 3]`.
 - In the category explanation, name the actual book title and relevant chapter whenever a retrieved passage supports the lesson. Explain how that chapter connects to this game's exact move/position; do not merely list sources.
 - If opening play is materially relevant, make its category concrete: identify the exact early move/position, resulting pawn structure or piece setup, thematic breaks, plans for both sides, and why the selected named chapter applies. Do not substitute generic opening advice.
+- When a source includes an "Exact indexed book line", use its matched game ply and cited PGN to say whether the game followed or diverged from that concrete book continuation.
 - Keep Stockfish verdicts and book principles distinct: Stockfish proves what happened here; the named book/chapter supplies the transferable lesson.
 - `summary` is one short tab-preview sentence. `explanation` is the complete useful lesson for that tab. `engineEvidence` and `betterPlan` may be empty when the validated answer does not support them.
 - Do not mention prompts, planners, private facts, JSON, schemas, or evidence machinery.
@@ -8404,6 +8775,7 @@ mod tests {
             printed_page_end: Some(20),
             excerpt: "Generate candidate moves before calculating.".to_string(),
             local_path: "C:/books/calculation.pdf".to_string(),
+            opening_lines: Vec::new(),
         };
         let prompt = build_coach_prompt_with_facts(
             &request,
@@ -8461,6 +8833,7 @@ mod tests {
             printed_page_end: None,
             excerpt: "Prepare the central break.".to_string(),
             local_path: "C:/books/opening.pdf".to_string(),
+            opening_lines: Vec::new(),
         };
         let position = |ply| CoachCategoryPosition {
             ply,

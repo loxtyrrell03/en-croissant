@@ -678,6 +678,152 @@ export function formatChessBookLibraryInventory(inventory) {
   return [...books, ...chapters].join("\n");
 }
 
+function openingLineMoves(database, lineId) {
+  return database
+    .prepare(
+      `
+      SELECT move_index, ply, san, uci, fen_before, fen_after,
+             source_pdf_page, source_printed_page, source_chunk_id, confidence
+      FROM opening_line_moves
+      WHERE line_id=?
+      ORDER BY move_index
+      `,
+    )
+    .all(lineId)
+    .map((move) => ({
+      moveIndex: Number(move.move_index),
+      ply: Number(move.ply),
+      san: String(move.san),
+      uci: String(move.uci),
+      fenBefore: String(move.fen_before),
+      fenAfter: String(move.fen_after),
+      sourcePdfPage: Number(move.source_pdf_page),
+      sourcePrintedPage:
+        move.source_printed_page === null ? null : Number(move.source_printed_page),
+      sourceChunkId: move.source_chunk_id ? String(move.source_chunk_id) : null,
+      confidence: Number(move.confidence),
+    }));
+}
+
+export function findExactOpeningBookMatches(database, moves, { limit = 18 } = {}) {
+  const gameMoves = (Array.isArray(moves) ? moves : [])
+    .map((move) => ({
+      ply: Number(move?.ply),
+      beforeKey: normalizeFen(move?.fenBefore),
+      playedUci: String(move?.uci || "").toLowerCase(),
+      san: String(move?.san || ""),
+    }))
+    .filter(
+      (move) =>
+        Number.isInteger(move.ply) && move.ply > 0 && move.beforeKey.split(/\s+/).length === 4,
+    );
+  if (gameMoves.length === 0) return [];
+  const positionKeys = [...new Set(gameMoves.map((move) => move.beforeKey))];
+  const gameMoveByPosition = new Map(gameMoves.map((move) => [move.beforeKey, move]));
+  try {
+    const rows = database
+      .prepare(
+        `
+        SELECT
+          move.line_id, move.move_index, move.ply AS book_ply, move.san AS book_san,
+          move.uci AS book_uci, move.fen_before_key, move.source_chunk_id AS match_chunk_id,
+          move.source_pdf_page, move.source_printed_page, move.confidence AS move_confidence,
+          line.book_id, line.chapter_id, line.line_kind, line.pgn, line.confidence,
+          line.complete_game, line.source_chunk_id, line.move_count,
+          book.title, book.author, COALESCE(book.shelf, '') AS shelf,
+          COALESCE(chapter.title, '') AS chapter_title,
+          COALESCE(chunk.citation, '') AS citation
+        FROM opening_line_moves AS move
+        JOIN opening_lines AS line ON line.line_id=move.line_id
+        JOIN books AS book ON book.book_id=line.book_id
+        LEFT JOIN chapters AS chapter ON chapter.chapter_id=line.chapter_id
+        LEFT JOIN chunks AS chunk ON chunk.chunk_id=COALESCE(move.source_chunk_id, line.source_chunk_id)
+        WHERE move.fen_before_key IN (${positionKeys.map(() => "?").join(", ")})
+        `,
+      )
+      .all(...positionKeys);
+    const bestByLine = new Map();
+    for (const row of rows) {
+      const gameMove = gameMoveByPosition.get(String(row.fen_before_key));
+      if (!gameMove) continue;
+      const playedMoveMatched =
+        Boolean(gameMove.playedUci) &&
+        gameMove.playedUci === String(row.book_uci || "").toLowerCase();
+      const score =
+        (playedMoveMatched ? 1000 : 0) +
+        gameMove.ply * 8 +
+        Number(row.book_ply || 0) +
+        Math.min(40, Number(row.move_count || 0)) +
+        Number(row.move_confidence || 0) * 10;
+      const current = bestByLine.get(String(row.line_id));
+      if (current && current.score >= score) continue;
+      bestByLine.set(String(row.line_id), { row, gameMove, playedMoveMatched, score });
+    }
+    const diverse = [];
+    const seenTeachingPoints = new Set();
+    const perBook = new Map();
+    for (const candidate of [...bestByLine.values()].sort(
+      (left, right) => right.score - left.score,
+    )) {
+      const signature = [
+        candidate.row.book_id,
+        candidate.row.chapter_id || "",
+        candidate.gameMove.ply,
+        candidate.row.book_uci,
+      ].join("|");
+      const bookCount = perBook.get(String(candidate.row.book_id)) || 0;
+      if (seenTeachingPoints.has(signature) || bookCount >= 3) continue;
+      seenTeachingPoints.add(signature);
+      perBook.set(String(candidate.row.book_id), bookCount + 1);
+      diverse.push(candidate);
+      if (diverse.length >= limit) break;
+    }
+    return diverse.map(({ row, gameMove, playedMoveMatched }) => ({
+      lineId: String(row.line_id),
+      bookId: String(row.book_id),
+      title: String(row.title),
+      author: String(row.author),
+      shelf: String(row.shelf),
+      chapterId: row.chapter_id ? String(row.chapter_id) : null,
+      chapterTitle: String(row.chapter_title),
+      citation: String(row.citation) || `PDF page ${Number(row.source_pdf_page) || "unknown"}`,
+      sourceChunkId: row.match_chunk_id
+        ? String(row.match_chunk_id)
+        : row.source_chunk_id
+          ? String(row.source_chunk_id)
+          : null,
+      lineKind: String(row.line_kind),
+      pgn: String(row.pgn),
+      confidence: Number(row.confidence),
+      completeGame: Boolean(row.complete_game),
+      matchedGamePly: gameMove.ply,
+      matchedBookMoveIndex: Number(row.move_index),
+      matchedBookPly: Number(row.book_ply),
+      playedSan: gameMove.san,
+      playedUci: gameMove.playedUci,
+      bookMoveSan: String(row.book_san),
+      bookMoveUci: String(row.book_uci),
+      playedMoveMatched,
+      moves: openingLineMoves(database, String(row.line_id)),
+    }));
+  } catch (error) {
+    if (/no such table: opening_(?:lines|line_moves)/i.test(String(error?.message || error))) {
+      return [];
+    }
+    throw error;
+  }
+}
+
+function formatExactOpeningMatches(matches) {
+  if (!matches?.length) return "No exact indexed book-line position matched this game.";
+  return matches
+    .map(
+      (match) =>
+        `EXACT_LINE|book=${oneLine(match.bookId, 100)}|chapter=${oneLine(match.chapterId || "", 100)}|game_ply=${match.matchedGamePly}|book_ply=${match.matchedBookPly}|played=${oneLine(match.playedSan || match.playedUci, 30)}|book_move=${oneLine(match.bookMoveSan, 30)}|same_move=${match.playedMoveMatched ? "yes" : "no"}|${oneLine(match.title)}|${oneLine(match.chapterTitle)}|${oneLine(match.citation, 180)}|PGN=${oneLine(match.pgn, 1200)}`,
+    )
+    .join("\n");
+}
+
 export function buildLibraryPlannerPrompt({
   question,
   pgn,
@@ -686,6 +832,7 @@ export function buildLibraryPlannerPrompt({
   currentFen,
   moveAnalysis,
   inventory,
+  exactOpeningMatches = [],
 }) {
   return `Role: You are the chess-library editor and syllabus planner for a rigorous private coach.
 
@@ -697,6 +844,7 @@ Evidence rules:
 - Use the PGN and FENs to recognize the exact opening position, pawn structure, piece placement, transition, and practical plans.
 - Select only IDs printed in the library inventory. A CHAPTER entry means its text is actually accessible in the lawful local corpus. Never invent an ID or select a table-of-contents-only chapter.
 - Prefer exact chapter IDs over broad book IDs. Every category should have focused search queries that would find the most relevant page-bounded lesson inside the selected material.
+- EXACT_LINE records are legality-checked, position-indexed lines recovered from the installed book pages. Treat a matching game ply as concrete evidence that the book and chapter are relevant. Select that exact book/chapter when the line teaches something material; distinguish whether the game followed the book move or chose a different move.
 - Give opening coverage materially more attention when the opening produced an instructive inaccuracy, unfamiliar structure, misplaced piece, missed break, or plan error. Tie it to exact move numbers and positions, not generic opening advice.
 - Categories may be specific, for example “Dutch opening structure”, “Calculation at move 31”, “Rook endgame technique”, or “Defensive decision-making”. Choose the clearest short tab label.
 
@@ -710,6 +858,9 @@ ${completeCoachPgn(pgn)}
 
 Complete PC analysis trace (one record per played move):
 ${JSON.stringify(moveAnalysis || [], null, 2)}
+
+Exact position matches in indexed opening-book lines:
+${formatExactOpeningMatches(exactOpeningMatches)}
 
 Available library inventory (${inventory?.books?.length || 0} books; ${inventory?.chapters?.length || 0} accessible chapters):
 ${formatChessBookLibraryInventory(inventory)}
@@ -840,6 +991,7 @@ function passageFromRow(row) {
     printedPageEnd: row.printed_page_end === null ? null : Number(row.printed_page_end),
     excerpt: String(row.text).replace(/\s+/g, " ").trim().slice(0, MAX_EXCERPT_CHARACTERS),
     localPath: String(row.local_path),
+    openingLines: [],
   };
 }
 
@@ -871,7 +1023,7 @@ function getScopedPassageCandidates(database, category) {
     .all(...parameters);
 }
 
-function passageRelevanceScore(row, category) {
+function passageRelevanceScore(row, category, exactOpeningMatches = []) {
   const haystack =
     `${row.book_title} ${row.author} ${row.shelf} ${row.chapter_title} ${row.text}`.toLowerCase();
   const terms = [];
@@ -884,19 +1036,34 @@ function passageRelevanceScore(row, category) {
     if (haystack.includes(term)) score += term.length >= 7 ? 3 : 1;
   }
   if (String(row.chapter_title || "").trim()) score += 1;
+  for (const match of exactOpeningMatches) {
+    if (match.sourceChunkId && match.sourceChunkId === String(row.chunk_id)) score += 500;
+    else if (
+      match.chapterId &&
+      match.chapterId === String(row.chapter_id) &&
+      match.bookId === String(row.book_id)
+    ) {
+      score += 200;
+    } else if (match.bookId === String(row.book_id)) {
+      score += 40;
+    }
+  }
   return score;
 }
 
 export function retrievePlannedBookPassages(
   database,
   plan,
-  { perCategory = 3, totalLimit = 18 } = {},
+  { perCategory = 3, totalLimit = 18, exactOpeningMatches = [] } = {},
 ) {
   const passageById = new Map();
   const categoryPassageIds = {};
   for (const category of plan.categories) {
     const candidates = getScopedPassageCandidates(database, category)
-      .map((row) => ({ row, score: passageRelevanceScore(row, category) }))
+      .map((row) => ({
+        row,
+        score: passageRelevanceScore(row, category, exactOpeningMatches),
+      }))
       .sort(
         (left, right) =>
           right.score - left.score ||
@@ -923,6 +1090,14 @@ export function retrievePlannedBookPassages(
     categoryPassageIds[category.id] = [];
     for (const row of selected) {
       const passage = passageFromRow(row);
+      passage.openingLines = exactOpeningMatches
+        .filter(
+          (match) =>
+            match.sourceChunkId === passage.chunkId ||
+            (match.bookId === passage.bookId &&
+              (!match.chapterId || match.chapterId === String(row.chapter_id || ""))),
+        )
+        .slice(0, 3);
       categoryPassageIds[category.id].push(passage.chunkId);
       if (!passageById.has(passage.chunkId) && passageById.size < totalLimit) {
         passageById.set(passage.chunkId, passage);
@@ -956,6 +1131,17 @@ export function buildStructuredPhoneCoachPrompt({
     chapterTitle: passage.chapterTitle,
     citation: passage.citation,
     excerpt: passage.excerpt,
+    exactOpeningLines: (passage.openingLines || []).map((line) => ({
+      lineId: line.lineId,
+      lineKind: line.lineKind,
+      pgn: line.pgn,
+      matchedGamePly: line.matchedGamePly,
+      matchedBookPly: line.matchedBookPly,
+      playedSan: line.playedSan,
+      bookMoveSan: line.bookMoveSan,
+      playedMoveMatched: line.playedMoveMatched,
+      citation: line.citation,
+    })),
   }));
   const plannedCategories = libraryPlan.categories.map((category) => ({
     ...category,
@@ -970,6 +1156,7 @@ Grounding rules:
 - The supplied page-bounded book excerpts are authoritative for attributed lessons. Refer to books by their complete real title and chapter title in prose, never by a number such as “Book 3”.
 - Every bookReferences.chunkId must exactly match a supplied chunkId available to that planned category. Never invent a title, author, chapter, page, quotation, chunk ID, evaluation, or line.
 - Paraphrase source lessons. Do not reproduce long excerpts and do not claim an author analyzed this exact game.
+- exactOpeningLines are legality-checked move trees recovered from the cited book pages. Use them for concrete comparison at matchedGamePly, including whether the player followed the cited continuation or diverged. Do not substitute an uncited database line.
 - Keep the AI-selected category IDs, labels, and order. Do not add a fixed generic section.
 - Each category explanation should connect concrete positions to the human decision, the engine evidence, the better plan, and the cited teaching lesson.
 - A position ply identifies the move just played: ply 1 is White's first move. Use only plies in the supplied trace.

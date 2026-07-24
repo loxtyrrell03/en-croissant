@@ -194,6 +194,42 @@ describe("AI Coach review persistence", () => {
         ).toBeNull();
     });
 
+    test("upgrades saved pre-diagram book passages without losing the review", () => {
+        const review = createPersistedAiCoachReview({
+            question: "Review",
+            playerColor: "white",
+            response: response("whole_game"),
+            context: context(),
+            baseHalfMoves: 0,
+            baseSanMoves: [],
+        });
+        const legacy = JSON.parse(JSON.stringify(review)) as {
+            response: { bookPassages: Array<Record<string, unknown>> };
+        };
+        legacy.response.bookPassages = [
+            {
+                chunkId: "legacy-source",
+                bookId: "legacy-book",
+                title: "Opening Plans",
+                author: "GM Author",
+                shelf: "Openings",
+                chapterTitle: "Development",
+                citation: "PDF p. 10",
+                pdfPageStart: 10,
+                pdfPageEnd: 10,
+                printedPageStart: null,
+                printedPageEnd: null,
+                excerpt: "Develop before attacking.",
+                localPath: "C:\\Books\\opening.pdf",
+            },
+        ];
+        const parsed = parseAiCoachSidecar(
+            JSON.stringify({ version: 1, records: { "pgn:0": legacy } }),
+        );
+
+        expect(parsed?.records["pgn:0"].response.bookPassages[0].openingLines).toEqual([]);
+    });
+
     test("fails closed when the backend returns an unsupported scope", () => {
         expect(() =>
             createPersistedAiCoachReview({

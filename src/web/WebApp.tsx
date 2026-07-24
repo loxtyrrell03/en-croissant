@@ -2353,6 +2353,8 @@ function CoachUnderBoardPanel({
                   <CoachCategoryPanel
                     category={category}
                     bookPassages={visibleResponse.bookPassages}
+                    gameMoves={coachMoves}
+                    orientation={playerColor}
                     onSelectPly={(ply) => {
                       if (
                         responseContextKey !== coachContextKey ||
@@ -2387,10 +2389,14 @@ function CoachUnderBoardPanel({
 function CoachCategoryPanel({
   category,
   bookPassages,
+  gameMoves,
+  orientation,
   onSelectPly,
 }: {
   category: WebCoachCategory;
   bookPassages: WebCoachBookPassage[];
+  gameMoves: ReturnType<typeof getWebCoachMoves>;
+  orientation: WebColor;
   onSelectPly: (ply: number) => void;
 }) {
   const passageById = new Map(bookPassages.map((passage) => [passage.chunkId, passage]));
@@ -2450,6 +2456,12 @@ function CoachCategoryPanel({
                   <strong>Better plan:</strong> {position.betterPlan}
                 </Text>
               ) : null}
+              <CoachLineDiagram
+                moves={gameMoves}
+                initialCursor={Math.min(position.ply, gameMoves.length)}
+                orientation={orientation}
+                label={`Game position after ${formatCoachPlyLabel(position.ply, position.san)}`}
+              />
             </Box>
           ))}
         </Stack>
@@ -2466,6 +2478,7 @@ function CoachCategoryPanel({
               passage={passage}
               whyItMatters={reference.whyItMatters}
               positionPly={reference.positionPly}
+              orientation={orientation}
               onSelectPly={onSelectPly}
             />
           ))}
@@ -2479,11 +2492,13 @@ function CoachBookSourceCard({
   passage,
   whyItMatters,
   positionPly,
+  orientation = "white",
   onSelectPly,
 }: {
   passage: WebCoachBookPassage;
   whyItMatters?: string;
   positionPly?: number | null;
+  orientation?: WebColor;
   onSelectPly?: (ply: number) => void;
 }) {
   return (
@@ -2521,6 +2536,27 @@ function CoachBookSourceCard({
           {passage.excerpt}
         </Text>
       ) : null}
+      {passage.openingLines.map((line) => (
+        <Box key={line.lineId} className={classes.coachBookLine}>
+          <Text size="xs" fw={650}>
+            Exact book line ·{" "}
+            {line.playedMoveMatched
+              ? `your ${line.playedSan || line.playedUci} follows the cited line`
+              : `the book gives ${line.bookMoveSan} where you played ${
+                  line.playedSan || line.playedUci
+                }`}
+          </Text>
+          <Text size="xs" c="dimmed" mt={3}>
+            {line.pgn}
+          </Text>
+          <CoachLineDiagram
+            moves={line.moves}
+            initialCursor={Math.min(line.matchedBookMoveIndex + 1, line.moves.length)}
+            orientation={orientation}
+            label={`${passage.title} · ${line.citation || passage.citation}`}
+          />
+        </Box>
+      ))}
       <Group gap="xs" mt={4} justify="space-between" align="center">
         <Text size="xs" c="dimmed">
           {passage.citation}
@@ -2533,6 +2569,124 @@ function CoachBookSourceCard({
       </Group>
     </Box>
   );
+}
+
+type CoachDiagramMove = {
+  san: string;
+  uci?: string | null;
+  fenBefore: string;
+  fenAfter: string;
+};
+
+function CoachLineDiagram({
+  moves,
+  initialCursor,
+  orientation,
+  label,
+}: {
+  moves: CoachDiagramMove[];
+  initialCursor: number;
+  orientation: WebColor;
+  label: string;
+}) {
+  const [cursor, setCursor] = useState(() => Math.max(0, Math.min(initialCursor, moves.length)));
+  const boardRef = useRef<HTMLDivElement | null>(null);
+  const apiRef = useRef<Api | null>(null);
+  const boundedCursor = Math.max(0, Math.min(cursor, moves.length));
+  const fen =
+    boundedCursor === 0
+      ? moves[0]?.fenBefore || INITIAL_FEN
+      : moves[boundedCursor - 1]?.fenAfter || INITIAL_FEN;
+  const lastMoveUci = boundedCursor > 0 ? moves[boundedCursor - 1]?.uci || null : null;
+  const nextMoveUci = boundedCursor < moves.length ? moves[boundedCursor]?.uci || null : null;
+  const config = useMemo(
+    () => ({
+      fen,
+      orientation,
+      coordinates: true,
+      lastMove: getLastMove(lastMoveUci),
+      movable: {
+        free: false,
+        color: undefined,
+        showDests: false,
+      },
+      draggable: { enabled: false },
+      selectable: { enabled: false },
+      drawable: {
+        enabled: false,
+        visible: true,
+        autoShapes: getCoachDiagramArrow(nextMoveUci),
+      },
+      animation: { enabled: true },
+    }),
+    [fen, lastMoveUci, nextMoveUci, orientation],
+  );
+  const initialConfigRef = useRef(config);
+
+  useEffect(() => {
+    setCursor(Math.max(0, Math.min(initialCursor, moves.length)));
+  }, [initialCursor, moves]);
+
+  useEffect(() => {
+    const element = boardRef.current;
+    if (!element || apiRef.current) return;
+    const api = Chessground(element, initialConfigRef.current);
+    apiRef.current = api;
+    return () => {
+      api.destroy();
+      if (apiRef.current === api) apiRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    apiRef.current?.set(config);
+  }, [config]);
+
+  if (moves.length === 0) return null;
+  const currentMove = boundedCursor > 0 ? moves[boundedCursor - 1] : null;
+  const nextMove = boundedCursor < moves.length ? moves[boundedCursor] : null;
+
+  return (
+    <Box className={classes.coachDiagram}>
+      <Text size="xs" c="dimmed" mb={5} lineClamp={2}>
+        {label}
+      </Text>
+      <Box ref={boardRef} className={`${classes.boardMount} ${classes.coachDiagramBoard}`} />
+      <Group justify="center" gap="xs" mt={7} wrap="nowrap">
+        <ActionIcon
+          variant="light"
+          aria-label="Previous diagram move"
+          disabled={boundedCursor === 0}
+          onClick={() => setCursor((value) => Math.max(0, value - 1))}
+        >
+          <IconChevronLeft size={17} />
+        </ActionIcon>
+        <Text size="xs" ta="center" className={classes.coachDiagramMove}>
+          {currentMove ? `${boundedCursor}. ${currentMove.san}` : "Starting position"}
+          {nextMove ? ` · next ${nextMove.san}` : " · end of line"}
+        </Text>
+        <ActionIcon
+          variant="light"
+          aria-label="Next diagram move"
+          disabled={boundedCursor >= moves.length}
+          onClick={() => setCursor((value) => Math.min(moves.length, value + 1))}
+        >
+          <IconChevronRight size={17} />
+        </ActionIcon>
+      </Group>
+    </Box>
+  );
+}
+
+function getCoachDiagramArrow(uci: string | null): DrawShape[] {
+  if (!uci || !/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(uci)) return [];
+  return [
+    {
+      orig: uci.slice(0, 2) as Key,
+      dest: uci.slice(2, 4) as Key,
+      brush: "blue",
+    },
+  ];
 }
 
 function formatCoachPlyLabel(ply: number, san: string) {

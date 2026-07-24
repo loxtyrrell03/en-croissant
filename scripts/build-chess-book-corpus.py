@@ -33,9 +33,15 @@ from typing import Iterable, Iterator, Sequence
 import numpy as np
 from pypdf import PdfReader
 
+from chess_book_lines import (
+    OpeningLineRecord,
+    extract_opening_book_lines,
+    opening_line_to_dict,
+    opening_lines_to_pgn,
+)
 
-SCHEMA_VERSION = 1
-BUILDER_VERSION = "1.0.0"
+SCHEMA_VERSION = 2
+BUILDER_VERSION = "1.1.0"
 DEFAULT_LIBRARY_ROOT = Path.home() / "Documents" / "EnCroissant" / "AI Chess Coach Library"
 DEFAULT_EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
 TARGET_CHUNK_CHARACTERS = 2_400
@@ -903,6 +909,7 @@ def create_database(
     pages: Sequence[PageRecord],
     chapters: Sequence[ChapterRecord],
     chunks: Sequence[ChunkRecord],
+    opening_lines: Sequence[OpeningLineRecord],
     embedding_info: dict | None,
     run_info: dict,
 ) -> None:
@@ -989,6 +996,37 @@ def create_database(
                 text_sha256 TEXT NOT NULL,
                 text TEXT NOT NULL
             );
+            CREATE TABLE opening_lines (
+                line_id TEXT PRIMARY KEY,
+                book_id TEXT NOT NULL REFERENCES books(book_id),
+                chapter_id TEXT REFERENCES chapters(chapter_id),
+                line_kind TEXT NOT NULL,
+                pgn TEXT NOT NULL,
+                san_line TEXT NOT NULL,
+                uci_line TEXT NOT NULL,
+                move_count INTEGER NOT NULL,
+                first_pdf_page INTEGER NOT NULL,
+                last_pdf_page INTEGER NOT NULL,
+                source_chunk_id TEXT REFERENCES chunks(chunk_id),
+                confidence REAL NOT NULL,
+                complete_game INTEGER NOT NULL
+            );
+            CREATE TABLE opening_line_moves (
+                line_id TEXT NOT NULL REFERENCES opening_lines(line_id) ON DELETE CASCADE,
+                move_index INTEGER NOT NULL,
+                ply INTEGER NOT NULL,
+                san TEXT NOT NULL,
+                uci TEXT NOT NULL,
+                fen_before TEXT NOT NULL,
+                fen_before_key TEXT NOT NULL,
+                fen_after TEXT NOT NULL,
+                fen_after_key TEXT NOT NULL,
+                source_pdf_page INTEGER NOT NULL,
+                source_printed_page INTEGER,
+                source_chunk_id TEXT REFERENCES chunks(chunk_id),
+                confidence REAL NOT NULL,
+                PRIMARY KEY(line_id, move_index)
+            );
             CREATE TABLE embeddings (
                 chunk_id TEXT PRIMARY KEY REFERENCES chunks(chunk_id),
                 model TEXT NOT NULL,
@@ -1009,6 +1047,10 @@ def create_database(
             CREATE INDEX chapters_book_order ON chapters(book_id, order_index);
             CREATE INDEX chunks_book_page ON chunks(book_id, pdf_page_start);
             CREATE INDEX chunks_chapter ON chunks(chapter_id);
+            CREATE INDEX opening_lines_book_chapter ON opening_lines(book_id, chapter_id);
+            CREATE INDEX opening_line_moves_before ON opening_line_moves(fen_before_key, uci);
+            CREATE INDEX opening_line_moves_after ON opening_line_moves(fen_after_key);
+            CREATE INDEX opening_line_moves_source ON opening_line_moves(source_chunk_id);
             """
         )
         metadata = {
@@ -1018,6 +1060,8 @@ def create_database(
             "rights_note": run_info["rights_note"],
             "embedding_model": embedding_info["model"] if embedding_info else "none",
             "embedding_dimension": embedding_info["dimension"] if embedding_info else 0,
+            "opening_line_count": len(opening_lines),
+            "opening_line_move_count": sum(len(line.moves) for line in opening_lines),
         }
         connection.executemany(
             "INSERT INTO metadata(key, value) VALUES (?, ?)",
@@ -1091,6 +1135,49 @@ def create_database(
                 for chunk in chunks
             ],
         )
+        connection.executemany(
+            """INSERT INTO opening_lines VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            [
+                (
+                    line.line_id,
+                    line.book_id,
+                    line.chapter_id,
+                    line.line_kind,
+                    line.pgn,
+                    line.san_line,
+                    line.uci_line,
+                    line.move_count,
+                    line.first_pdf_page,
+                    line.last_pdf_page,
+                    line.source_chunk_id,
+                    line.confidence,
+                    int(line.complete_game),
+                )
+                for line in opening_lines
+            ],
+        )
+        connection.executemany(
+            """INSERT INTO opening_line_moves VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            [
+                (
+                    line.line_id,
+                    move.move_index,
+                    move.ply,
+                    move.san,
+                    move.uci,
+                    move.fen_before,
+                    move.fen_before_key,
+                    move.fen_after,
+                    move.fen_after_key,
+                    move.source_pdf_page,
+                    move.source_printed_page,
+                    move.source_chunk_id,
+                    move.confidence,
+                )
+                for line in opening_lines
+                for move in line.moves
+            ],
+        )
         if embedding_info:
             connection.executemany(
                 "INSERT INTO embeddings VALUES (?,?,?,?)",
@@ -1128,6 +1215,9 @@ This directory is the machine-readable ingestion layer for the lawful chess-book
 - `pages.jsonl` - cleaned page text with PDF/printed page, chapter, OCR, and diagram metadata
 - `chapters.jsonl` - contents-derived chapter map, including entries not present in a publisher excerpt
 - `chunks.jsonl` - portable page-bounded chunks with complete citations
+- `opening-lines.jsonl` - legality-checked opening variations and illustrative games with exact FEN/UCI per ply
+- `opening-lines.pgn` - the same recoverable book lines in portable PGN form
+- `opening-line-report.json` - per-book acceptance and unresolved-notation audit
 - `chapter-review.json` - automated chapter-map caveats for future manual review
 - `ingestion-report.json` - extraction, OCR, embedding, and integrity results
 - `page-renders/` - retained page images required for OCR or multimodal fallback
@@ -1153,6 +1243,10 @@ The search tool uses reciprocal-rank fusion across SQLite FTS5 and the local `{r
 ## Important fidelity rule
 
 Chunks never cross PDF-page boundaries. A model may combine adjacent results, but it must preserve each source citation. Pages marked `diagram_candidate=true` should be rendered and sent to a vision-capable model before making claims about the board position; extracted font glyphs are not a trustworthy FEN representation.
+
+Opening moves are stored only when every ply can be replayed legally from a rooted
+position. Ambiguous fragments stay in `opening-line-report.json`; they are never
+guessed into the exact-position index.
 """
     temp = output_root / "README.md.tmp"
     temp.write_text(text, encoding="utf-8")
@@ -1198,6 +1292,8 @@ def main() -> int:
     all_pages: list[PageRecord] = []
     all_chapters: list[ChapterRecord] = []
     all_chunks: list[ChunkRecord] = []
+    all_opening_lines: list[OpeningLineRecord] = []
+    opening_line_reports: list[dict] = []
     book_audits: list[dict] = []
     chapter_review: list[dict] = []
     pdf_hashes: dict[str, str] = {}
@@ -1214,6 +1310,21 @@ def main() -> int:
         )
         chapters, review = build_chapters(book, pages)
         chunks = build_chunks(book, pages)
+        opening_lines: list[OpeningLineRecord] = []
+        line_report: dict = {
+            "book_id": book["id"],
+            "move_tokens": 0,
+            "accepted_tokens": 0,
+            "unrooted_tokens": 0,
+            "ambiguous_tokens": 0,
+            "illegal_tokens": 0,
+            "opening_lines": 0,
+            "mapped_moves": 0,
+            "unique_positions": 0,
+            "acceptance_rate": 0,
+        }
+        if book.get("collection_segment") == "Opening Books":
+            opening_lines, line_report = extract_opening_book_lines(book, pages, chunks)
         audit.update(
             {
                 "toc_pages": sum(page.is_toc for page in pages),
@@ -1222,12 +1333,17 @@ def main() -> int:
                 "chunks": len(chunks),
                 "diagram_candidate_pages": sum(page.diagram_candidate for page in pages),
                 "clean_text_characters": sum(len(page.clean_text) for page in pages),
+                "opening_lines": len(opening_lines),
+                "opening_line_moves": sum(len(line.moves) for line in opening_lines),
+                "opening_notation_acceptance_rate": line_report["acceptance_rate"],
             }
         )
         pdf_hashes[book["id"]] = audit["pdf_sha256"]
         all_pages.extend(pages)
         all_chapters.extend(chapters)
         all_chunks.extend(chunks)
+        all_opening_lines.extend(opening_lines)
+        opening_line_reports.append(line_report)
         book_audits.append(audit)
         chapter_review.extend(review)
 
@@ -1249,6 +1365,46 @@ def main() -> int:
     write_jsonl_atomic(output_root / "pages.jsonl", (page_to_dict(page) for page in all_pages))
     write_jsonl_atomic(output_root / "chapters.jsonl", (chapter_to_dict(chapter) for chapter in all_chapters))
     write_jsonl_atomic(output_root / "chunks.jsonl", (chunk_to_dict(chunk) for chunk in all_chunks))
+    write_jsonl_atomic(
+        output_root / "opening-lines.jsonl",
+        (opening_line_to_dict(line) for line in all_opening_lines),
+    )
+    opening_pgn_temp = output_root / "opening-lines.pgn.tmp"
+    opening_pgn_temp.write_text(
+        opening_lines_to_pgn(all_opening_lines, books_by_id),
+        encoding="utf-8",
+    )
+    os.replace(opening_pgn_temp, output_root / "opening-lines.pgn")
+    opening_line_payload = {
+        "schema_version": SCHEMA_VERSION,
+        "created_at": created_at,
+        "method": (
+            "Legality-checked SAN/figurine parsing rooted at the initial position. "
+            "Nested sidelines branch from their exact pre-move position; ambiguous "
+            "or unrooted fragments remain unresolved rather than being guessed."
+        ),
+        "counts": {
+            "opening_lines": len(all_opening_lines),
+            "opening_line_moves": sum(len(line.moves) for line in all_opening_lines),
+            "unique_positions": len(
+                {move.fen_before_key for line in all_opening_lines for move in line.moves}
+                | {move.fen_after_key for line in all_opening_lines for move in line.moves}
+            ),
+            "move_tokens": sum(item["move_tokens"] for item in opening_line_reports),
+            "accepted_tokens": sum(item["accepted_tokens"] for item in opening_line_reports),
+            "unresolved_tokens": sum(
+                item["unrooted_tokens"] + item["ambiguous_tokens"] + item["illegal_tokens"]
+                for item in opening_line_reports
+            ),
+        },
+        "books": opening_line_reports,
+    }
+    opening_line_report_temp = output_root / "opening-line-report.json.tmp"
+    opening_line_report_temp.write_text(
+        json.dumps(opening_line_payload, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    os.replace(opening_line_report_temp, output_root / "opening-line-report.json")
 
     review_payload = {
         "schema_version": SCHEMA_VERSION,
@@ -1267,6 +1423,7 @@ def main() -> int:
         all_pages,
         all_chapters,
         all_chunks,
+        all_opening_lines,
         embedding_info,
         run_info,
     )
@@ -1294,6 +1451,10 @@ def main() -> int:
             "accessible_chapters": sum(chapter.accessible_in_excerpt for chapter in all_chapters),
             "toc_only_chapters": sum(not chapter.accessible_in_excerpt for chapter in all_chapters),
             "chunks": len(all_chunks),
+            "opening_lines": len(all_opening_lines),
+            "opening_line_moves": sum(len(line.moves) for line in all_opening_lines),
+            "opening_line_positions": opening_line_payload["counts"]["unique_positions"],
+            "unresolved_opening_move_tokens": opening_line_payload["counts"]["unresolved_tokens"],
             "diagram_candidate_pages": sum(page.diagram_candidate for page in all_pages),
             "chunks_with_printed_page": sum(chunk.printed_page_start is not None for chunk in all_chunks),
             "chunks_with_pdf_citation": sum(bool(chunk.citation) for chunk in all_chunks),
@@ -1315,6 +1476,7 @@ def main() -> int:
             "chapter_metadata_available": bool(all_chapters),
             "ocr_completed_for_image_only_excerpt": any(audit["ocr_pages"] for audit in book_audits),
             "semantic_index_available": bool(embedding_info),
+            "exact_opening_line_index_available": bool(all_opening_lines),
             "full_book_coverage": False,
             "remaining_boundary": "The current library contains publisher excerpts. Full-book analysis requires lawfully acquired full editions.",
         },

@@ -124,6 +124,54 @@ describe("phone chess coach context", () => {
         expect(response?.analysisCoverage.cloudHits).toBe(35);
     });
 
+    it("keeps legality-checked opening line frames for interactive diagrams", () => {
+        const passage = {
+            ...bookPassage("line-source", "Grandmaster Opening Preparation", "The French"),
+            openingLines: [
+                {
+                    lineId: "line-1",
+                    lineKind: "variation",
+                    pgn: "1. e4 e6",
+                    citation: "PDF p. 18",
+                    matchedGamePly: 1,
+                    matchedBookMoveIndex: 0,
+                    matchedBookPly: 1,
+                    playedSan: "e4",
+                    playedUci: "e2e4",
+                    bookMoveSan: "e4",
+                    bookMoveUci: "e2e4",
+                    playedMoveMatched: true,
+                    moves: [
+                        {
+                            moveIndex: 0,
+                            ply: 1,
+                            san: "e4",
+                            uci: "e2e4",
+                            fenBefore: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                            fenAfter: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+                            sourcePdfPage: 18,
+                            sourcePrintedPage: 30,
+                            sourceChunkId: "line-source",
+                            confidence: 0.98,
+                        },
+                    ],
+                },
+            ],
+        };
+        const response = normalizeWebChessCoachResponse({
+            overview: "The opening line matched.",
+            bookPassages: [passage],
+            categories: [],
+        });
+
+        expect(response?.bookPassages[0].openingLines[0]).toMatchObject({
+            lineId: "line-1",
+            playedMoveMatched: true,
+            matchedBookMoveIndex: 0,
+        });
+        expect(response?.bookPassages[0].openingLines[0].moves[0].uci).toBe("e2e4");
+    });
+
     it("falls back cleanly to a legacy answer", () => {
         const response = normalizeWebChessCoachResponse({
             answer: "Legacy review text",
@@ -474,5 +522,6 @@ function bookPassage(chunkId: string, title: string, chapterTitle: string): WebC
         printedPageEnd: null,
         excerpt: "A short lawful excerpt.",
         sourceUrl: `/api/chess-books/pdf?bookId=book-${chunkId}`,
+        openingLines: [],
     };
 }

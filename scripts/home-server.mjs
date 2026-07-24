@@ -34,6 +34,7 @@ import {
   collectPcCoachPositionEvaluations,
   COACH_LIBRARY_PLAN_SCHEMA,
   COACH_REVIEW_SCHEMA,
+  findExactOpeningBookMatches,
   getChessBookLibraryInventory,
   normalizeCloudCoachEvaluation,
   normalizeLibraryPlan,
@@ -1523,6 +1524,7 @@ async function runPhoneCoachReview(payload, signal) {
   const database = getChessBookDatabase();
   const pcAnalysis = await runPcCoachGameAnalysis(payload, signal);
   const { moveAnalysis, criticalMoments, analysisCoverage } = pcAnalysis;
+  const exactOpeningMatches = findExactOpeningBookMatches(database, payload.moves);
 
   const inventory = getChessBookLibraryInventory(database);
   updatePhoneCoachProgress(
@@ -1533,7 +1535,12 @@ async function runPhoneCoachReview(payload, signal) {
     0,
   );
   const rawPlan = await runPhoneCoachModel(
-    buildLibraryPlannerPrompt({ ...payload, moveAnalysis, inventory }),
+    buildLibraryPlannerPrompt({
+      ...payload,
+      moveAnalysis,
+      inventory,
+      exactOpeningMatches,
+    }),
     {
       outputSchemaPath: coachLibraryPlanSchemaPath,
       signal,
@@ -1552,6 +1559,7 @@ async function runPhoneCoachReview(payload, signal) {
   const { passages: bookPassages, categoryPassageIds } = retrievePlannedBookPassages(
     database,
     libraryPlan,
+    { exactOpeningMatches },
   );
   if (bookPassages.length === 0) {
     throw new Error("The AI-selected chapters did not contain any accessible source passages.");

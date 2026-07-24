@@ -10,6 +10,35 @@ import type {
 import { getFenColor } from "./pgn";
 import { getWebServerUrl } from "./serverUrl";
 
+export type WebCoachOpeningLineMove = {
+    moveIndex: number;
+    ply: number;
+    san: string;
+    uci: string;
+    fenBefore: string;
+    fenAfter: string;
+    sourcePdfPage: number;
+    sourcePrintedPage: number | null;
+    sourceChunkId: string | null;
+    confidence: number;
+};
+
+export type WebCoachOpeningLine = {
+    lineId: string;
+    lineKind: string;
+    pgn: string;
+    citation: string;
+    matchedGamePly: number;
+    matchedBookMoveIndex: number;
+    matchedBookPly: number;
+    playedSan: string;
+    playedUci: string;
+    bookMoveSan: string;
+    bookMoveUci: string;
+    playedMoveMatched: boolean;
+    moves: WebCoachOpeningLineMove[];
+};
+
 export type WebCoachBookPassage = {
     chunkId: string;
     bookId: string;
@@ -24,6 +53,7 @@ export type WebCoachBookPassage = {
     printedPageEnd: number | null;
     excerpt: string;
     sourceUrl: string;
+    openingLines: WebCoachOpeningLine[];
 };
 
 export type WebCoachCriticalMoment = {
@@ -674,6 +704,63 @@ function normalizeBookPassages(value: unknown) {
                 printedPageEnd: positiveIntegerOrNull(passage.printedPageEnd),
                 excerpt: cleanString(passage.excerpt),
                 sourceUrl: cleanString(passage.sourceUrl),
+                openingLines: normalizeOpeningLines(passage.openingLines),
+            },
+        ];
+    });
+}
+
+function normalizeOpeningLines(value: unknown): WebCoachOpeningLine[] {
+    if (!Array.isArray(value)) return [];
+    const seen = new Set<string>();
+    return value.slice(0, 3).flatMap((item): WebCoachOpeningLine[] => {
+        const line = asRecord(item);
+        if (!line) return [];
+        const lineId = cleanString(line.lineId);
+        if (!lineId || seen.has(lineId)) return [];
+        const moves = Array.isArray(line.moves)
+            ? line.moves.slice(0, 160).flatMap((item): WebCoachOpeningLineMove[] => {
+                  const move = asRecord(item);
+                  if (!move) return [];
+                  const uci = cleanString(move.uci).toLowerCase();
+                  const fenBefore = cleanString(move.fenBefore);
+                  const fenAfter = cleanString(move.fenAfter);
+                  if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(uci) || !fenBefore || !fenAfter) {
+                      return [];
+                  }
+                  return [
+                      {
+                          moveIndex: nonNegativeInteger(move.moveIndex),
+                          ply: nonNegativeInteger(move.ply),
+                          san: cleanString(move.san),
+                          uci,
+                          fenBefore,
+                          fenAfter,
+                          sourcePdfPage: positiveIntegerOrNull(move.sourcePdfPage) ?? 1,
+                          sourcePrintedPage: positiveIntegerOrNull(move.sourcePrintedPage),
+                          sourceChunkId: cleanString(move.sourceChunkId) || null,
+                          confidence: finiteNumber(move.confidence),
+                      },
+                  ];
+              })
+            : [];
+        if (moves.length === 0) return [];
+        seen.add(lineId);
+        return [
+            {
+                lineId,
+                lineKind: cleanString(line.lineKind),
+                pgn: cleanString(line.pgn),
+                citation: cleanString(line.citation),
+                matchedGamePly: nonNegativeInteger(line.matchedGamePly),
+                matchedBookMoveIndex: nonNegativeInteger(line.matchedBookMoveIndex),
+                matchedBookPly: nonNegativeInteger(line.matchedBookPly),
+                playedSan: cleanString(line.playedSan),
+                playedUci: cleanString(line.playedUci),
+                bookMoveSan: cleanString(line.bookMoveSan),
+                bookMoveUci: cleanString(line.bookMoveUci),
+                playedMoveMatched: line.playedMoveMatched === true,
+                moves,
             },
         ];
     });

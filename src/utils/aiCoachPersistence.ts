@@ -37,6 +37,33 @@ const coachTargetedResultSchema = z.object({
     label: z.string(),
     lines: z.array(coachEngineLineSchema),
 });
+const coachBookLineMoveSchema = z.object({
+    moveIndex: z.number().int().nonnegative(),
+    ply: z.number().int().nonnegative(),
+    san: z.string(),
+    uci: z.string(),
+    fenBefore: z.string(),
+    fenAfter: z.string(),
+    sourcePdfPage: z.number().int().positive(),
+    sourcePrintedPage: z.number().int().positive().nullable(),
+    sourceChunkId: z.string().nullable(),
+    confidence: z.number(),
+});
+const coachBookLineSchema = z.object({
+    lineId: z.string(),
+    lineKind: z.string(),
+    pgn: z.string(),
+    citation: z.string(),
+    matchedGamePly: z.number().int().nonnegative(),
+    matchedBookMoveIndex: z.number().int().nonnegative(),
+    matchedBookPly: z.number().int().nonnegative(),
+    playedSan: z.string(),
+    playedUci: z.string(),
+    bookMoveSan: z.string(),
+    bookMoveUci: z.string(),
+    playedMoveMatched: z.boolean(),
+    moves: z.array(coachBookLineMoveSchema),
+});
 const coachBookPassageSchema = z.object({
     chunkId: z.string(),
     bookId: z.string(),
@@ -51,6 +78,7 @@ const coachBookPassageSchema = z.object({
     printedPageEnd: z.number().nullable(),
     excerpt: z.string(),
     localPath: z.string(),
+    openingLines: z.array(coachBookLineSchema),
 });
 const coachCategoryPositionSchema = z.object({
     ply: z.number().int().nonnegative(),
@@ -187,7 +215,18 @@ export function getAiCoachPersistenceTarget(tab?: Tab | null): AiCoachPersistenc
 
 export function parseAiCoachSidecar(raw: string): AiCoachSidecar | null {
     try {
-        return sidecarSchema.parse(JSON.parse(raw));
+        const candidate = JSON.parse(raw) as {
+            records?: Record<
+                string,
+                { response?: { bookPassages?: Array<{ openingLines?: unknown }> } }
+            >;
+        };
+        for (const record of Object.values(candidate.records ?? {})) {
+            for (const passage of record.response?.bookPassages ?? []) {
+                if (!Array.isArray(passage.openingLines)) passage.openingLines = [];
+            }
+        }
+        return sidecarSchema.parse(candidate);
     } catch {
         return null;
     }

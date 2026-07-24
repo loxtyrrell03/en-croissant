@@ -1,4 +1,5 @@
 import {
+  ActionIcon,
   Alert,
   Badge,
   Box,
@@ -14,7 +15,16 @@ import {
   Text,
   Textarea,
 } from "@mantine/core";
-import { IconAlertTriangle, IconBook, IconExternalLink, IconSparkles } from "@tabler/icons-react";
+import {
+  IconAlertTriangle,
+  IconBook,
+  IconChevronLeft,
+  IconChevronRight,
+  IconExternalLink,
+  IconSparkles,
+} from "@tabler/icons-react";
+import type { DrawShape } from "@lichess-org/chessground/draw";
+import type { Key } from "@lichess-org/chessground/types";
 import { listen } from "@tauri-apps/api/event";
 import { openPath } from "@tauri-apps/plugin-opener";
 import { exit } from "@tauri-apps/plugin-process";
@@ -43,6 +53,7 @@ import type {
   CoachTargetedResult,
 } from "@/bindings";
 import { commands } from "@/bindings";
+import { Chessground } from "@/chessground/Chessground";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import {
   AI_COACH_GEMINI_MODEL,
@@ -129,6 +140,9 @@ type CoachMessageSegment = { type: "text"; text: string } | { type: "line"; text
 
 type MainlineMove = {
   san: string;
+  uci: string | null;
+  fenBefore: string;
+  fenAfter: string;
   path: number[];
   halfMoves: number;
 };
@@ -587,14 +601,20 @@ function getMainlineMoves(root: TreeNode): MainlineMove[] {
   let node: TreeNode | undefined = root;
   const path: number[] = [];
 
-  while (node?.children[0]) {
-    node = node.children[0];
+  while (node && node.children.length > 0) {
+    const parent: TreeNode = node;
+    const child: TreeNode = parent.children[0];
+    node = child;
     path.push(0);
-    if (node.san) {
+    if (child.san) {
+      const [beforePosition] = positionFromFen(parent.fen);
       moves.push({
-        san: node.san,
+        san: child.san,
+        uci: beforePosition && child.move ? uciNormalize(beforePosition, child.move) : null,
+        fenBefore: parent.fen,
+        fenAfter: child.fen,
         path: [...path],
-        halfMoves: node.halfMoves,
+        halfMoves: child.halfMoves,
       });
     }
   }
@@ -1814,6 +1834,7 @@ export default function AiCoachPanel() {
                     overview={message.overview}
                     categories={message.categories ?? []}
                     analysisCoverage={message.analysisCoverage}
+                    playerColor={playerColor}
                     onPlayMoves={playCoachMoves}
                   />
                 </Stack>
@@ -1950,6 +1971,7 @@ function CoachMessageContent({
   overview,
   categories,
   analysisCoverage,
+  playerColor,
   onPlayMoves,
 }: {
   content: string;
@@ -1965,6 +1987,7 @@ function CoachMessageContent({
   overview?: string;
   categories: CoachUiCategory[];
   analysisCoverage?: CoachAnalysisCoverage;
+  playerColor: AiCoachPlayerColor;
   onPlayMoves: (moves: string[], basePath?: number[]) => void;
 }) {
   const lineAnchors = useMemo(
@@ -2052,6 +2075,7 @@ function CoachMessageContent({
           mainlineMoves={mainlineMoves}
           bookPassages={bookPassages}
           inlineContext={inlineContext}
+          orientation={playerColor}
           onPlayMoves={onPlayMoves}
         />
       </Stack>
@@ -2207,6 +2231,7 @@ function CoachCategoryTabs({
   mainlineMoves,
   bookPassages,
   inlineContext,
+  orientation,
   onPlayMoves,
 }: {
   categories: CoachUiCategory[];
@@ -2216,6 +2241,7 @@ function CoachCategoryTabs({
   mainlineMoves: MainlineMove[];
   bookPassages: CoachBookPassage[];
   inlineContext: InlineMoveRenderContext;
+  orientation: AiCoachPlayerColor;
   onPlayMoves: (moves: string[], basePath?: number[]) => void;
 }) {
   return (
@@ -2259,6 +2285,7 @@ function CoachCategoryTabs({
                 mainlineMoves={mainlineMoves}
                 bookPassages={bookPassages}
                 inlineContext={inlineContext}
+                orientation={orientation}
                 onPlayMoves={onPlayMoves}
               />
             ) : null}
@@ -2268,6 +2295,7 @@ function CoachCategoryTabs({
                 references={category.bookReferences}
                 mainlineMoves={mainlineMoves}
                 inlineContext={inlineContext}
+                orientation={orientation}
                 onPlayMoves={onPlayMoves}
               />
             ) : null}
@@ -2286,6 +2314,7 @@ function CoachCategoryPositions({
   mainlineMoves,
   bookPassages,
   inlineContext,
+  orientation,
   onPlayMoves,
 }: {
   positions: CoachUiCategoryPosition[];
@@ -2295,6 +2324,7 @@ function CoachCategoryPositions({
   mainlineMoves: MainlineMove[];
   bookPassages: CoachBookPassage[];
   inlineContext: InlineMoveRenderContext;
+  orientation: AiCoachPlayerColor;
   onPlayMoves: (moves: string[], basePath?: number[]) => void;
 }) {
   return (
@@ -2374,6 +2404,15 @@ function CoachCategoryPositions({
                   />
                 </Box>
               ) : null}
+              <CoachLineDiagram
+                moves={mainlineMoves}
+                initialCursor={Math.max(
+                  0,
+                  mainlineMoves.findIndex((move) => move.halfMoves === position.ply) + 1,
+                )}
+                orientation={orientation}
+                label={`Game position after ${moveLabel}`}
+              />
             </Stack>
           </Paper>
         );
@@ -2382,17 +2421,101 @@ function CoachCategoryPositions({
   );
 }
 
+type CoachDiagramMove = {
+  san: string;
+  uci: string | null;
+  fenBefore: string;
+  fenAfter: string;
+};
+
+function CoachLineDiagram({
+  moves,
+  initialCursor,
+  orientation,
+  label,
+}: {
+  moves: CoachDiagramMove[];
+  initialCursor: number;
+  orientation: AiCoachPlayerColor;
+  label: string;
+}) {
+  const [cursor, setCursor] = useState(() => Math.max(0, Math.min(initialCursor, moves.length)));
+  useEffect(() => {
+    setCursor(Math.max(0, Math.min(initialCursor, moves.length)));
+  }, [initialCursor, moves]);
+
+  if (moves.length === 0) return null;
+  const boundedCursor = Math.max(0, Math.min(cursor, moves.length));
+  const fen = boundedCursor === 0 ? moves[0].fenBefore : moves[boundedCursor - 1].fenAfter;
+  const currentMove = boundedCursor > 0 ? moves[boundedCursor - 1] : null;
+  const nextMove = boundedCursor < moves.length ? moves[boundedCursor] : null;
+  const lastMove = coachDiagramSquares(currentMove?.uci ?? null);
+  const nextArrow = coachDiagramArrow(nextMove?.uci ?? null);
+
+  return (
+    <Paper withBorder p="xs" mt={6} mx="auto" w="min(100%, 19rem)" bg="var(--mantine-color-dark-7)">
+      <Text size="xs" c="dimmed" mb={5} lineClamp={2}>
+        {label}
+      </Text>
+      <Box style={{ overflow: "hidden", borderRadius: 6 }}>
+        <Chessground
+          coordinates
+          viewOnly
+          fen={fen}
+          orientation={orientation}
+          lastMove={lastMove}
+          drawable={{ enabled: false, visible: true, autoShapes: nextArrow }}
+        />
+      </Box>
+      <Group justify="center" gap="xs" mt={7} wrap="nowrap">
+        <ActionIcon
+          variant="light"
+          aria-label="Previous diagram move"
+          disabled={boundedCursor === 0}
+          onClick={() => setCursor((value) => Math.max(0, value - 1))}
+        >
+          <IconChevronLeft size={17} />
+        </ActionIcon>
+        <Text size="xs" ta="center" style={{ minWidth: 0, flex: 1 }}>
+          {currentMove ? `${boundedCursor}. ${currentMove.san}` : "Starting position"}
+          {nextMove ? ` · next ${nextMove.san}` : " · end of line"}
+        </Text>
+        <ActionIcon
+          variant="light"
+          aria-label="Next diagram move"
+          disabled={boundedCursor >= moves.length}
+          onClick={() => setCursor((value) => Math.min(moves.length, value + 1))}
+        >
+          <IconChevronRight size={17} />
+        </ActionIcon>
+      </Group>
+    </Paper>
+  );
+}
+
+function coachDiagramSquares(uci: string | null): Key[] | undefined {
+  if (!uci || !/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(uci)) return undefined;
+  return [uci.slice(0, 2) as Key, uci.slice(2, 4) as Key];
+}
+
+function coachDiagramArrow(uci: string | null): DrawShape[] {
+  const squares = coachDiagramSquares(uci);
+  return squares ? [{ orig: squares[0], dest: squares[1], brush: "blue" }] : [];
+}
+
 function CoachBookSources({
   passages,
   references = [],
   mainlineMoves = [],
   inlineContext,
+  orientation = "white",
   onPlayMoves,
 }: {
   passages: CoachBookPassage[];
   references?: CoachUiCategoryBookReference[];
   mainlineMoves?: MainlineMove[];
   inlineContext?: InlineMoveRenderContext;
+  orientation?: AiCoachPlayerColor;
   onPlayMoves?: (moves: string[], basePath?: number[]) => void;
 }) {
   const passageByChunkId = new Map(passages.map((passage) => [passage.chunkId, passage]));
@@ -2474,6 +2597,32 @@ function CoachBookSources({
                 <Text size="xs" c="dimmed">
                   {passage.citation}
                 </Text>
+                {passage.openingLines.map((line) => (
+                  <Box
+                    key={line.lineId}
+                    mt={6}
+                    pt={6}
+                    style={{ borderTop: "1px solid var(--mantine-color-default-border)" }}
+                  >
+                    <Text size="xs" fw={650}>
+                      Exact book line ·{" "}
+                      {line.playedMoveMatched
+                        ? `your ${line.playedSan || line.playedUci} follows the cited line`
+                        : `the book gives ${line.bookMoveSan} where you played ${
+                            line.playedSan || line.playedUci
+                          }`}
+                    </Text>
+                    <Text size="xs" c="dimmed" mt={3}>
+                      {line.pgn}
+                    </Text>
+                    <CoachLineDiagram
+                      moves={line.moves}
+                      initialCursor={Math.min(line.matchedBookMoveIndex + 1, line.moves.length)}
+                      orientation={orientation}
+                      label={`${passage.title} · ${line.citation || passage.citation}`}
+                    />
+                  </Box>
+                ))}
               </Stack>
             </Paper>
           );

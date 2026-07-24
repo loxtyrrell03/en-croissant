@@ -1,5 +1,25 @@
 # AGENTS.md
 
+- On 2026-07-24, the lawful opening-book corpus gained a schema-v2 concrete
+  line index. Figurine/SAN notation and nested variations are replayed from
+  rooted positions; every accepted ply stores SAN, UCI, before/after FEN,
+  source page/chunk, and confidence, while unrooted, ambiguous, or illegal
+  fragments remain explicitly unresolved instead of being guessed. The
+  installed excerpts currently yield 3,399 variations/illustrative games,
+  67,054 source-linked materialized line plies, and 8,000 exact positions with
+  zero broken chains or foreign-key failures. Both native and PC-hosted phone
+  coaches compare the user's game positions with this index before GPT-5.6 Sol
+  chooses categories/books/chapters, prioritize diversified exact matches, and
+  tell the model whether the game followed or diverged from the cited book
+  move. Source cards carry the full real title/chapter/citation and exact book
+  PGN. Both coach UIs render saved key-game and cited-book positions as
+  read-only boards with next-move arrows and backward/forward controls; old
+  saved answers migrate with empty line arrays. Preserve legality-checked
+  provenance, AI chapter selection, source/engine separation, lawful-content
+  boundaries, diagram navigation, and persistence compatibility. User-owned
+  full editions must enter through the same pipeline rather than fabricated or
+  unlicensed text.
+
 - On 2026-07-21, AI Coach reviews became background-safe across both shipped
   surfaces. Phone review jobs are owned by the gaming-PC home server, are no
   longer aborted when the browser request disconnects, and atomically save the
