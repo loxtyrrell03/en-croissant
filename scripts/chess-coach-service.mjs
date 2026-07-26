@@ -10,6 +10,7 @@ const MAX_BOOK_PASSAGES = 6;
 const MAX_EXCERPT_CHARACTERS = 1100;
 export const MAX_COACH_MOVES = 4096;
 export const MAX_COACH_PGN_CHARACTERS = 300_000;
+export const MAX_STATS_AGGREGATE_BYTES = 200 * 1024;
 
 const NUMBERED_BOOK_PLACEHOLDER = /\bbook\s*(?:(?:no\.?|number)\s*|#\s*)?\d+\b/i;
 
@@ -136,6 +137,64 @@ export const COACH_REVIEW_SCHEMA = {
     priorities: {
       type: "array",
       maxItems: 6,
+      items: { type: "string" },
+    },
+  },
+};
+
+export const STATS_REPORT_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["overview", "strengths", "weaknesses", "focusAreas", "themes"],
+  properties: {
+    overview: { type: "string" },
+    strengths: {
+      type: "array",
+      minItems: 2,
+      maxItems: 4,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["title", "detail"],
+        properties: {
+          title: { type: "string" },
+          detail: { type: "string" },
+        },
+      },
+    },
+    weaknesses: {
+      type: "array",
+      minItems: 2,
+      maxItems: 4,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["title", "detail"],
+        properties: {
+          title: { type: "string" },
+          detail: { type: "string" },
+        },
+      },
+    },
+    focusAreas: {
+      type: "array",
+      minItems: 2,
+      maxItems: 3,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["title", "detail", "drill"],
+        properties: {
+          title: { type: "string" },
+          detail: { type: "string" },
+          drill: { type: "string" },
+        },
+      },
+    },
+    themes: {
+      type: "array",
+      minItems: 2,
+      maxItems: 5,
       items: { type: "string" },
     },
   },
@@ -688,6 +747,296 @@ export function normalizeChessCoachRequestPayload(payload, { createRequestId } =
     currentLines,
     persistence,
   };
+}
+
+const STATS_TIME_CLASSES = new Set(["bullet", "blitz", "rapid", "classical", "daily"]);
+
+export function normalizeStatsReportRequestPayload(payload, { createRequestId } = {}) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error("Invalid stats-report request.");
+  }
+  const username = String(payload.username || "")
+    .trim()
+    .slice(0, 80);
+  if (!username) throw new Error("A player username is required.");
+  const timeClass = String(payload.timeClass || "")
+    .trim()
+    .toLowerCase();
+  if (!STATS_TIME_CLASSES.has(timeClass)) {
+    throw new Error("A valid time class is required.");
+  }
+  const aggregate = payload.aggregate;
+  if (!aggregate || typeof aggregate !== "object" || Array.isArray(aggregate)) {
+    throw new Error("A stats aggregate object is required.");
+  }
+  const aggregateBytes = Buffer.byteLength(JSON.stringify(aggregate), "utf8");
+  if (aggregateBytes > MAX_STATS_AGGREGATE_BYTES) {
+    throw new Error(
+      `The stats aggregate is too large (${aggregateBytes} bytes; maximum ${MAX_STATS_AGGREGATE_BYTES}).`,
+    );
+  }
+  const fallbackRequestId =
+    typeof createRequestId === "function"
+      ? createRequestId()
+      : `stats-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  return {
+    requestId: /^[a-z0-9_-]{8,100}$/i.test(String(payload.requestId || ""))
+      ? String(payload.requestId)
+      : fallbackRequestId,
+    periodLabel: oneLine(payload.periodLabel, 80) || "Recent games",
+    source: payload.source === "lichess" ? "lichess" : "chesscom",
+    username,
+    timeClass,
+    question: String(payload.question || "")
+      .trim()
+      .slice(0, 2000),
+    aggregate,
+  };
+}
+
+function statsFigure(value, digits = 0) {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return null;
+  const rounded = parsed.toFixed(digits);
+  return digits > 0 ? rounded.replace(/\.?0+$/, "") : rounded;
+}
+
+function statsSigned(value, digits = 0) {
+  const figure = statsFigure(value, digits);
+  if (figure === null) return null;
+  return Number(value) >= 0 ? `+${figure}` : figure;
+}
+
+function statsPercent(value, digits = 0) {
+  const figure = statsFigure(value, digits);
+  return figure === null ? null : `${figure}%`;
+}
+
+function statsField(label, value) {
+  return value === null || value === undefined || value === "" ? null : `${label}=${value}`;
+}
+
+function formatStatsStreak(streak) {
+  const length = statsFigure(streak?.len);
+  const type = oneLine(streak?.type, 8);
+  if (length === null || !type) return null;
+  const noun = Number(streak.len) === 1 ? type : type === "loss" ? "losses" : `${type}s`;
+  return `${length} ${noun}`;
+}
+
+function statsLine(tag, fields) {
+  const rendered = fields.filter((field) => field !== null);
+  return rendered.length ? `${tag}|${rendered.join("|")}` : null;
+}
+
+function statsOpeningLines(tag, openings) {
+  return (Array.isArray(openings) ? openings : [])
+    .slice(0, 8)
+    .map((opening) =>
+      statsLine(tag, [
+        oneLine(opening?.name, 80) || "Unknown opening",
+        statsField("eco", oneLine(opening?.eco, 8)),
+        statsField("games", statsFigure(opening?.games)),
+        statsField(
+          "record",
+          Number.isFinite(Number(opening?.wins))
+            ? `${statsFigure(opening?.wins)}W/${statsFigure(opening?.draws)}D/${statsFigure(opening?.losses)}L`
+            : null,
+        ),
+        statsField("score", statsPercent(opening?.scorePct)),
+      ]),
+    );
+}
+
+export function formatStatsAggregateDigest(aggregate) {
+  const record = aggregate?.record;
+  const perf = aggregate?.perf;
+  const rating = aggregate?.rating;
+  const form = aggregate?.form;
+  const time = aggregate?.time;
+  const openings = aggregate?.openings;
+  const mistakes = aggregate?.mistakes;
+  const highlights = aggregate?.highlights;
+  const lines = [
+    statsLine("RECORD", [
+      statsField("games", statsFigure(record?.games)),
+      statsField("wins", statsFigure(record?.wins)),
+      statsField("draws", statsFigure(record?.draws)),
+      statsField("losses", statsFigure(record?.losses)),
+      statsField("score", statsPercent(record?.scorePct)),
+    ]),
+    statsLine("PERFORMANCE", [
+      statsField("perf", statsFigure(perf?.perf)),
+      statsField("sd", statsFigure(perf?.sd)),
+      Array.isArray(perf?.ci68)
+        ? statsField("likely_range_68", `${statsFigure(perf.ci68[0])}-${statsFigure(perf.ci68[1])}`)
+        : null,
+      Array.isArray(perf?.ci95)
+        ? statsField("range_95", `${statsFigure(perf.ci95[0])}-${statsFigure(perf.ci95[1])}`)
+        : null,
+      statsField("rated_opponents", statsFigure(perf?.gamesWithOpp)),
+      statsField(
+        "prob_above_current_rating",
+        statsPercent(perf?.probAboveCurrent === null ? null : Number(perf?.probAboveCurrent) * 100),
+      ),
+    ]),
+    statsLine("RATING", [
+      statsField("start", statsFigure(rating?.start)),
+      statsField("end", statsFigure(rating?.end)),
+      statsField("delta", statsSigned(rating?.delta)),
+    ]),
+    statsLine("FORM", [
+      statsField("trend_per_week", statsSigned(form?.slopePerWeek, 1)),
+      form?.streak ? statsField("current_streak", formatStatsStreak(form.streak)) : null,
+      statsField("sessions", statsFigure(form?.sessions)),
+      statsField("net_rating_last_10_games", statsSigned(form?.net10)),
+      form ? statsField("tilt_risk", form.tilt ? "YES" : "no") : null,
+      statsField("latest_session_net", statsSigned(form?.latestSessionNet)),
+      statsField("latest_session_games", statsFigure(form?.latestSessionGames)),
+    ]),
+    time
+      ? statsLine("TIME", [
+          statsField("avg_move_seconds", statsFigure(time.avgMoveSeconds, 1)),
+          statsField("median_move_seconds", statsFigure(time.medianMoveSeconds, 1)),
+          statsField("fast_moves", statsPercent(time.fastMovePct, 1)),
+          statsField("scramble_moves_under_12pct_clock", statsPercent(time.scramblePct, 1)),
+          statsField("timeout_losses", statsFigure(time.timeoutLosses)),
+          statsField("timeout_share_of_losses", statsPercent(time.timeoutLossPct)),
+          statsField("avg_clock_left_at_game_end", statsPercent(time.avgRemainingPctAtEnd)),
+          statsField("avg_opening_move_seconds", statsFigure(time.byPhaseSeconds?.opening, 1)),
+          statsField(
+            "avg_middlegame_move_seconds",
+            statsFigure(time.byPhaseSeconds?.middlegame, 1),
+          ),
+          statsField("avg_endgame_move_seconds", statsFigure(time.byPhaseSeconds?.endgame, 1)),
+          statsField("games_with_clocks", statsFigure(time.gamesWithClocks)),
+        ])
+      : "TIME|no clock data in these games",
+    ...statsOpeningLines("OPENING_WHITE", openings?.white),
+    ...statsOpeningLines("OPENING_BLACK", openings?.black),
+    ...(openings?.best ? statsOpeningLines("OPENING_BEST", [openings.best]) : []),
+    ...(openings?.worst ? statsOpeningLines("OPENING_WORST", [openings.worst]) : []),
+    mistakes
+      ? statsLine("MISTAKES", [
+          statsField("analyzed_games", statsFigure(mistakes.analyzedGames)),
+          statsField("avg_accuracy", statsPercent(mistakes.avgAccuracy, 1)),
+          statsField("avg_acpl", statsFigure(mistakes.avgAcpl, 1)),
+          statsField("blunders_per_game", statsFigure(mistakes.blundersPerGame, 2)),
+          statsField("mistakes_per_game", statsFigure(mistakes.mistakesPerGame, 2)),
+          statsField("inaccuracies_per_game", statsFigure(mistakes.inaccuraciesPerGame, 2)),
+        ])
+      : "MISTAKES|no analyzed games in this period",
+    mistakes
+      ? statsLine("MISTAKES_BY_PHASE", [
+          ...["opening", "middlegame", "endgame"].map((phase) => {
+            const bucket = mistakes.byPhase?.[phase];
+            if (!bucket) return null;
+            const share = statsPercent(bucket.share === null ? null : Number(bucket.share) * 100);
+            return statsField(
+              phase,
+              `${statsFigure(bucket.blunders)} blunders${share ? ` (${share})` : ""}`,
+            );
+          }),
+        ])
+      : null,
+    ...(Array.isArray(mistakes?.worstGames) ? mistakes.worstGames : [])
+      .slice(0, 3)
+      .map((worst) =>
+        statsLine("WORST_ANALYZED_GAME", [
+          statsField("opening", oneLine(worst?.entry?.openingName, 80)),
+          statsField("accuracy", statsPercent(worst?.entry?.stats?.accuracy, 1)),
+          statsField("blunders", statsFigure(worst?.entry?.counts?.blunder)),
+          statsField("result", oneLine(worst?.entry?.result, 8)),
+        ]),
+      ),
+    ...(Array.isArray(aggregate?.weekly) ? aggregate.weekly : [])
+      .slice(0, 26)
+      .map((week) =>
+        statsLine("WEEK", [
+          oneLine(week?.label, 40) || "Week",
+          statsField("games", statsFigure(week?.games)),
+          statsField("score", statsPercent(week?.scorePct)),
+          statsField("perf", statsFigure(week?.perf)),
+          statsField("rating_end", statsFigure(week?.ratingEnd)),
+        ]),
+      ),
+    statsLine("HIGHLIGHTS", [
+      highlights?.bestWin
+        ? statsField(
+            "best_win",
+            `beat ${oneLine(highlights.bestWin.oppName, 40) || "unknown"}${
+              statsFigure(highlights.bestWin.opp) ? ` (${statsFigure(highlights.bestWin.opp)})` : ""
+            }`,
+          )
+        : null,
+      statsField("longest_win_streak", statsFigure(highlights?.longestWinStreak)),
+      highlights?.mostPlayedOpponent
+        ? statsField(
+            "most_played_opponent",
+            `${oneLine(highlights.mostPlayedOpponent.name, 40)} - ${statsFigure(highlights.mostPlayedOpponent.games)} games - ${statsPercent(highlights.mostPlayedOpponent.scorePct)} score`,
+          )
+        : null,
+    ]),
+  ];
+  return lines.filter(Boolean).join("\n");
+}
+
+export function buildStatsReportPrompt({
+  periodLabel,
+  source,
+  username,
+  timeClass,
+  question,
+  aggregate,
+}) {
+  const sourceLabel = source === "lichess" ? "Lichess" : "Chess.com";
+  return `Role: You are a personal chess coach writing a periodic performance report for ${oneLine(username, 80)}, who plays ${oneLine(timeClass, 20)} on ${sourceLabel}. The report covers the period ${oneLine(periodLabel, 80)}.
+
+The digest below is the complete and authoritative set of facts about this player's period. Write a personalized coaching report grounded ONLY in these numbers.
+
+Rules:
+- Every claim must be grounded in the digest. Never invent a game, opening, number, or trend that is not listed there.
+- Name the actual openings and cite the actual figures (records, percentages, rating points, seconds) from the digest.
+- No generic chess advice. Delete any sentence that could appear unchanged in another player's report; each observation must reference the specific number or opening that motivated it.
+- overview: 150-300 words of Markdown addressed directly to the player, summarizing how the period went, the headline numbers, and the single most important thing to fix.
+- strengths and weaknesses: 2-4 each. The title is a short concrete claim; the detail cites the digest figures that prove it.
+- focusAreas: 2-3, ordered by priority with the most important first. Each detail explains why this area costs the most points right now, and each drill is one concrete practice exercise the player can do this week, tied to that exact weakness (for example a specific opening to review, a time-management rule for the next 10 games, or an endgame drill).
+- themes: 2-5 short strings naming recurring patterns across the period (for example "losses cluster in time scrambles" or "strong with White in the Italian").
+- A line such as "TIME|no clock data" or "MISTAKES|no analyzed games" means that evidence is missing: say nothing about that area rather than speculating.
+- Digest legend: scores/percentages are from the player's perspective; PERFORMANCE is an opponent-rating-based performance estimate with its likely range; FORM trend is rating points per week; MISTAKES_BY_PHASE shares are the distribution of blunders across game phases; WEEK rows run oldest to newest.
+
+Player's focus question: ${question ? oneLine(question, 2000) : "None. Cover whatever the numbers say matters most."}
+
+Stats digest for ${oneLine(periodLabel, 80)}:
+${formatStatsAggregateDigest(aggregate)}
+`;
+}
+
+export function normalizeStatsReport(value) {
+  const parsed = parseStructuredObject(value);
+  const overview = cleanText(parsed.overview, 4000);
+  if (!overview) throw new Error("The stats coach returned an empty overview.");
+  const readSections = (rawSections, limit, withDrill) => {
+    const sections = [];
+    for (const raw of Array.isArray(rawSections) ? rawSections : []) {
+      if (!raw || typeof raw !== "object" || sections.length >= limit) continue;
+      const title = cleanText(raw.title, 160);
+      const detail = cleanText(raw.detail, 1200);
+      if (!title || !detail) continue;
+      const drill = withDrill ? cleanText(raw.drill, 600) : "";
+      sections.push(drill ? { title, detail, drill } : { title, detail });
+    }
+    return sections;
+  };
+  const strengths = readSections(parsed.strengths, 4, false);
+  const weaknesses = readSections(parsed.weaknesses, 4, false);
+  const focusAreas = readSections(parsed.focusAreas, 3, true);
+  const themes = uniqueStrings(parsed.themes, null, 5).map((theme) => cleanText(theme, 160));
+  if (strengths.length === 0 || weaknesses.length === 0 || focusAreas.length === 0) {
+    throw new Error("The stats coach returned an incomplete report.");
+  }
+  return { overview, strengths, weaknesses, focusAreas, themes };
 }
 
 export function formatChessBookLibraryInventory(inventory) {

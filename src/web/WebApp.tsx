@@ -274,10 +274,11 @@ import {
 } from "./boardTitle";
 import { formatWebEngineScore } from "./engineScore";
 import OnlineGameAnalysisPanel from "./OnlineGameAnalysisPanel";
+import StatsWorkspace from "./StatsWorkspace";
 import { getWebOnlineAnalysisTitle, getWebOnlinePlayerColor } from "./onlineAnalysis";
 import { analyzeWithWebStockfish18, stopWebStockfish18Search } from "./stockfishEngine";
 
-type ViewMode = "board" | "files";
+type ViewMode = "board" | "stats" | "files";
 type BoardPanelMode = "moves" | "online" | "database" | "prep" | "engine" | "coach";
 type WebHostedPgnImportHandler = (entry: WebHostedFileEntry) => Promise<WebImportResult | null>;
 type WebHostedFolderImportHandler = (
@@ -1023,11 +1024,17 @@ export default function WebApp() {
                 className={classes.headerNav}
                 size="xs"
                 value={
-                  view === "files" ? "files" : boardPanelMode === "online" ? "online" : "board"
+                  view === "files"
+                    ? "files"
+                    : view === "stats"
+                      ? "stats"
+                      : boardPanelMode === "online"
+                        ? "online"
+                        : "board"
                 }
                 onChange={(value) => {
-                  if (value === "files") {
-                    setView("files");
+                  if (value === "files" || value === "stats") {
+                    setView(value);
                     return;
                   }
 
@@ -1036,6 +1043,7 @@ export default function WebApp() {
                 }}
                 data={[
                   { value: "board", label: "Board" },
+                  { value: "stats", label: "Stats" },
                   { value: "files", label: "Files" },
                   { value: "online", label: "Online" },
                 ]}
@@ -1091,6 +1099,8 @@ export default function WebApp() {
               panelMode={boardPanelMode}
               setPanelMode={setBoardPanelMode}
             />
+          ) : view === "stats" ? (
+            <StatsWorkspace />
           ) : (
             <FilesWorkspace
               importHostedPgn={importHostedPgn}

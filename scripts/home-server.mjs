@@ -29,6 +29,7 @@ import {
   buildCoachPositionRecords,
   buildLibraryPlannerPrompt,
   buildPcCoachAnalysisResult,
+  buildStatsReportPrompt,
   buildStructuredPhoneCoachPrompt,
   codexExitIndicatesSignedOut,
   codexUsageLimitFromOutput,
@@ -41,6 +42,8 @@ import {
   normalizeLibraryPlan,
   normalizeChessCoachRequestPayload,
   normalizeSavedWebCoachReview,
+  normalizeStatsReport,
+  normalizeStatsReportRequestPayload,
   normalizeStructuredCoachReview,
   normalizeWebCoachReviewStore,
   parseStockfishCoachInfo,
@@ -49,6 +52,7 @@ import {
   publicChessCoachFailure,
   retrievePlannedBookPassages,
   searchChessBookCorpus,
+  STATS_REPORT_SCHEMA,
   structuredCoachReviewToMarkdown,
   writeProcessStdinSafely,
 } from "./chess-coach-service.mjs";
@@ -110,6 +114,7 @@ const coachReasoningEffort = "medium";
 const coachWorkRoot = join(serverRoot, "coach-work");
 const coachLibraryPlanSchemaPath = join(coachWorkRoot, "library-plan.schema.json");
 const coachReviewSchemaPath = join(coachWorkRoot, "coach-review.schema.json");
+const statsReportSchemaPath = join(coachWorkRoot, "stats-report.schema.json");
 const coachSweepDepth = positiveInteger(process.env.EN_CROISSANT_COACH_SWEEP_DEPTH, 18);
 const coachProcessEnv = {
   ...process.env,
@@ -174,6 +179,7 @@ await mkdir(coachWorkRoot, { recursive: true });
 await Promise.all([
   writeFile(coachLibraryPlanSchemaPath, JSON.stringify(COACH_LIBRARY_PLAN_SCHEMA, null, 2)),
   writeFile(coachReviewSchemaPath, JSON.stringify(COACH_REVIEW_SCHEMA, null, 2)),
+  writeFile(statsReportSchemaPath, JSON.stringify(STATS_REPORT_SCHEMA, null, 2)),
 ]);
 sharedLichessCredential = normalizeLichessCredential(await readJsonFile(lichessCredentialPath));
 
@@ -282,6 +288,11 @@ async function handleRequest(request, response) {
   if (pathname === "/api/chess-coach/analyze-game") {
     if (method !== "POST") return writeJson(response, 405, { error: "Method not allowed." });
     return writeChessCoachAnalysisResponse(request, response);
+  }
+
+  if (pathname === "/api/chess-coach/stats-report") {
+    if (method !== "POST") return writeJson(response, 405, { error: "Method not allowed." });
+    return writeStatsAiReportResponse(request, response);
   }
 
   if (pathname === "/api/chess-coach") {
@@ -1460,6 +1471,70 @@ async function writeChessCoachAnalysisResponse(request, response) {
   } finally {
     request.off("aborted", abortAnalysis);
   }
+}
+
+async function writeStatsAiReportResponse(request, response) {
+  let payload;
+  try {
+    payload = normalizeStatsReportRequestPayload(await readJsonBody(request, maxCoachRequestBytes));
+  } catch (error) {
+    const message = error?.message || "Invalid stats-report request.";
+    const status = /too large/i.test(message) ? 413 : 400;
+    return writeJson(response, status, { code: "INVALID_STATS_REPORT_REQUEST", error: message });
+  }
+  const controller = new AbortController();
+  const abortReport = () => controller.abort();
+  request.once("aborted", abortReport);
+  response.once("close", () => {
+    if (!response.writableEnded) abortReport();
+  });
+  updatePhoneCoachProgress(payload.requestId, "queued", "Waiting for the PC coach", 0, 0);
+  try {
+    const queued = phoneCoachQueue
+      .catch(() => {})
+      .then(() => runStatsAiReport(payload, controller.signal));
+    phoneCoachQueue = queued.catch(() => {});
+    const report = await queued;
+    updatePhoneCoachProgress(payload.requestId, "complete", "Stats report ready", 1, 1);
+    if (controller.signal.aborted) return;
+    return writeJson(response, 200, {
+      requestId: payload.requestId,
+      model: coachModel,
+      report,
+      generatedAt: Date.now(),
+    });
+  } catch (error) {
+    if (controller.signal.aborted) {
+      updatePhoneCoachProgress(payload.requestId, "cancelled", "Stats report cancelled", 0, 0);
+      return;
+    }
+    updatePhoneCoachProgress(payload.requestId, "error", "Stats report failed", 0, 0);
+    await appendLog(`stats report failed: ${error?.stack || error}`);
+    const publicFailure = publicChessCoachFailure(error);
+    return writeJson(response, publicFailure.status, {
+      code: publicFailure.code,
+      error: publicFailure.error,
+    });
+  } finally {
+    request.off("aborted", abortReport);
+  }
+}
+
+async function runStatsAiReport(payload, signal) {
+  throwIfAborted(signal);
+  updatePhoneCoachProgress(
+    payload.requestId,
+    "answer-writing",
+    "Writing the stats coaching report",
+    0,
+    0,
+  );
+  const raw = await runPhoneCoachModel(buildStatsReportPrompt(payload), {
+    outputSchemaPath: statsReportSchemaPath,
+    signal,
+    timeoutMs: 240000,
+  });
+  return normalizeStatsReport(raw);
 }
 
 async function runPcCoachGameAnalysis(payload, signal) {

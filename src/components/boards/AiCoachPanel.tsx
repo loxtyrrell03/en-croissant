@@ -2597,7 +2597,7 @@ function CoachBookSources({
                 <Text size="xs" c="dimmed">
                   {passage.citation}
                 </Text>
-                {passage.openingLines.map((line) => (
+                {(passage.openingLines ?? []).map((line) => (
                   <Box
                     key={line.lineId}
                     mt={6}
