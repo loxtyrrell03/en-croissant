@@ -89,6 +89,7 @@ import {
 } from "react";
 import { positionFromFen } from "@/utils/chessops";
 import { formatMoveThinkTime } from "@/utils/clock";
+import { getDefaultAiCoachQuestion } from "@/utils/aiCoachParity";
 import { getWinChance, normalizeScore } from "@/utils/score";
 import {
   loadSharedLichessCredential,
@@ -2951,9 +2952,7 @@ function formatCoachPlyLabel(ply: number, san: string) {
 }
 
 function getDefaultWebCoachQuestion(sourceGame: WebGame | null, line: WebPrepLineMove[]) {
-  return sourceGame || line.length > 4
-    ? "Review this game for me. What went wrong, what should I learn, and which book lessons matter most?"
-    : "Explain this position, the best plan, and the most relevant lesson from my chess library.";
+  return getDefaultAiCoachQuestion(getDefaultWebCoachScope(sourceGame, line));
 }
 
 function formatWebCoachSavedTime(savedAt: number) {

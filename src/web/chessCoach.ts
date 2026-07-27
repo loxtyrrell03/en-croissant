@@ -9,6 +9,7 @@ import type {
 } from "./model";
 import { getFenColor } from "./pgn";
 import { getWebServerUrl } from "./serverUrl";
+import { getDefaultAiCoachScope } from "@/utils/aiCoachParity";
 
 export type WebCoachOpeningLineMove = {
     moveIndex: number;
@@ -523,7 +524,7 @@ export function getDefaultWebCoachScope(
     sourceGame: Pick<WebGame, "id"> | null,
     line: WebPrepLineMove[],
 ): "position" | "whole-game" {
-    return sourceGame || line.length > 4 ? "whole-game" : "position";
+    return getDefaultAiCoachScope(Boolean(sourceGame), line.length);
 }
 
 export function webCoachLineMatchesSourceGame(

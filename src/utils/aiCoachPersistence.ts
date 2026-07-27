@@ -296,9 +296,11 @@ export function persistedAiCoachReviewMatches(
     review: PersistedAiCoachReview,
     context: AiCoachPersistenceContext,
     playerColor?: AiCoachPlayerColor,
+    scope?: AiCoachReviewScope,
 ): boolean {
     if (review.gameFingerprint !== context.gameFingerprint) return false;
     if (playerColor && review.playerColor !== playerColor) return false;
+    if (scope && review.scope !== scope) return false;
     if (review.scope === "whole_game") return true;
     return (
         review.base.fen === context.currentFen &&

@@ -121,6 +121,8 @@ pub struct AiCoachRequest {
     pub request_id: String,
     pub fen: String,
     pub side_to_move: String,
+    #[serde(default)]
+    pub player_color: String,
     pub move_history: Vec<String>,
     pub pgn: Option<String>,
     #[serde(default)]
@@ -632,7 +634,7 @@ struct CoachPcGameAnalysis {
     player_color: String,
     scope: String,
     #[serde(default)]
-    move_analysis: Vec<CoachPcMoveAnalysis>,
+    move_analysis: Vec<CoachPcAnalysisRow>,
     analysis_coverage: CoachAnalysisCoverage,
     #[serde(default)]
     stored_evaluations_used: u32,
@@ -642,6 +644,30 @@ struct CoachPcGameAnalysis {
     // home servers keep working.
     #[serde(default)]
     derived: Option<CoachPcDerivedEvidence>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+enum CoachPcAnalysisRow {
+    Move(CoachPcMoveAnalysis),
+    CurrentPosition(CoachPcCurrentPositionAnalysis),
+}
+
+impl CoachPcAnalysisRow {
+    fn as_move(&self) -> Option<&CoachPcMoveAnalysis> {
+        match self {
+            Self::Move(row) => Some(row),
+            Self::CurrentPosition(_) => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CoachPcCurrentPositionAnalysis {
+    kind: String,
+    fen: String,
+    evaluation: Option<CoachPcEvaluation>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -919,7 +945,9 @@ fn deterministic_planner_fallback_scope(
     phase_review: bool,
     conversational_followup: bool,
 ) -> CoachPgnScope {
-    if phase_review || question_explicitly_requests_whole_game(&request.question) {
+    if let Some(explicit_scope) = parse_coach_pgn_scope(&request.pgn_scope) {
+        explicit_scope
+    } else if phase_review || question_explicitly_requests_whole_game(&request.question) {
         CoachPgnScope::WholeGame
     } else if conversational_followup {
         CoachPgnScope::CurrentLine
@@ -1020,11 +1048,26 @@ fn question_requires_full_pc_game_analysis(request: &AiCoachRequest) -> bool {
         .any(|needle| question.contains(needle))
 }
 
+fn requested_pc_analysis_scope(request: &AiCoachRequest) -> CoachPgnScope {
+    parse_coach_pgn_scope(&request.pgn_scope).unwrap_or_else(|| {
+        if question_requires_full_pc_game_analysis(request) {
+            CoachPgnScope::WholeGame
+        } else {
+            CoachPgnScope::CurrentLine
+        }
+    })
+}
+
 fn should_run_pc_game_analysis(request: &AiCoachRequest) -> bool {
-    !request.game_analysis.is_empty()
+    !request.fen.trim().is_empty()
 }
 
 fn infer_coach_player_color(request: &AiCoachRequest) -> &'static str {
+    match request.player_color.trim().to_ascii_lowercase().as_str() {
+        "black" => return "black",
+        "white" => return "white",
+        _ => {}
+    }
     let question = request.question.to_ascii_lowercase();
     let explicitly_black = [
         "i'm black",
@@ -1078,6 +1121,7 @@ fn pc_analysis_origins() -> Vec<String> {
 fn build_pc_game_analysis_payload(
     request: &AiCoachRequest,
 ) -> Result<serde_json::Value, CoachError> {
+    let scope = requested_pc_analysis_scope(request);
     let moves = request
         .game_analysis
         .iter()
@@ -1115,9 +1159,12 @@ fn build_pc_game_analysis_payload(
     Ok(json!({
         "question": request.question,
         "requestId": request.request_id,
-        "pgn": request.whole_game_pgn.as_deref().or(request.pgn.as_deref()).unwrap_or("*"),
+        "pgn": match scope {
+            CoachPgnScope::CurrentLine => request.current_line_pgn.as_deref(),
+            CoachPgnScope::WholeGame => request.whole_game_pgn.as_deref(),
+        }.or(request.pgn.as_deref()).unwrap_or("*"),
         "playerColor": infer_coach_player_color(request),
-        "scope": "whole-game",
+        "scope": if scope == CoachPgnScope::WholeGame { "whole-game" } else { "position" },
         "currentFen": request.fen,
         "moves": moves,
         "currentLines": current_lines,
@@ -1129,65 +1176,90 @@ fn validate_pc_game_analysis(
     mut analysis: CoachPcGameAnalysis,
 ) -> Result<CoachPcGameAnalysis, CoachError> {
     let coverage = &analysis.analysis_coverage;
-    let expected_total = request.game_analysis.len().saturating_add(1) as u32;
-    if analysis.scope != "whole-game"
-        || coverage.failed != 0
-        || coverage.total_positions != expected_total
-        || coverage.unique_positions == 0
-        || coverage.unique_positions > coverage.total_positions
-        || coverage.cloud_hits.saturating_add(coverage.live_analyses) != coverage.unique_positions
-        || analysis.move_analysis.len() != request.game_analysis.len()
-    {
+    let scope = requested_pc_analysis_scope(request);
+    let expected_total = if scope == CoachPgnScope::WholeGame {
+        request.game_analysis.len().saturating_add(1) as u32
+    } else {
+        1
+    };
+    let coverage_valid = coverage.failed == 0
+        && coverage.total_positions == expected_total
+        && coverage.unique_positions > 0
+        && coverage.unique_positions <= coverage.total_positions
+        && coverage.cloud_hits.saturating_add(coverage.live_analyses) == coverage.unique_positions;
+    let rows_valid = match scope {
+        CoachPgnScope::WholeGame => {
+            analysis.scope == "whole-game"
+                && analysis.move_analysis.len() == request.game_analysis.len()
+                && request
+                    .game_analysis
+                    .iter()
+                    .zip(&analysis.move_analysis)
+                    .all(|(point, analysis_row)| {
+                        let Some(row) = analysis_row.as_move() else {
+                            return false;
+                        };
+                        let expected_before_fen = point.before_fen.as_deref().unwrap_or_default();
+                        let expected_side = point
+                            .played_side
+                            .as_deref()
+                            .unwrap_or(if point.ply % 2 == 0 { "black" } else { "white" });
+                        row.ply == point.ply
+                            && row.fen_before == expected_before_fen
+                            && row.fen_after == point.fen
+                            && row.san == point.mv
+                            && row.color.eq_ignore_ascii_case(expected_side)
+                            && point
+                                .played_uci
+                                .as_deref()
+                                .filter(|uci| !uci.trim().is_empty())
+                                .is_none_or(|uci| row.uci == uci)
+                            && [row.before.as_ref(), row.after.as_ref()]
+                                .into_iter()
+                                .all(pc_evaluation_is_verified)
+                    })
+        }
+        CoachPgnScope::CurrentLine => {
+            analysis.scope == "position"
+                && analysis.move_analysis.len() == 1
+                && matches!(
+                    analysis.move_analysis.first(),
+                    Some(CoachPcAnalysisRow::CurrentPosition(row))
+                        if row.kind == "current-position"
+                            && row.fen == request.fen
+                            && pc_evaluation_is_verified(row.evaluation.as_ref())
+                )
+        }
+    };
+    if !coverage_valid || !rows_valid {
         return Err(CoachError::PcAnalysisIncomplete(format!(
-            "coverage total={} unique={} cloud={} live={} failed={}, moves={}/{}",
+            "scope={}, coverage total={} unique={} cloud={} live={} failed={}, rows={}/{}",
+            analysis.scope,
             coverage.total_positions,
             coverage.unique_positions,
             coverage.cloud_hits,
             coverage.live_analyses,
             coverage.failed,
             analysis.move_analysis.len(),
-            request.game_analysis.len(),
+            if scope == CoachPgnScope::WholeGame {
+                request.game_analysis.len()
+            } else {
+                1
+            },
         )));
     }
 
-    let mut seen_plies = HashSet::new();
-    for (point, row) in request.game_analysis.iter().zip(&analysis.move_analysis) {
-        let expected_before_fen = point.before_fen.as_deref().unwrap_or_default();
-        let expected_side = point
-            .played_side
-            .as_deref()
-            .unwrap_or(if point.ply % 2 == 0 { "black" } else { "white" });
-        let identity_matches = seen_plies.insert(row.ply)
-            && row.ply == point.ply
-            && row.fen_before == expected_before_fen
-            && row.fen_after == point.fen
-            && row.san == point.mv
-            && row.color.eq_ignore_ascii_case(expected_side)
-            && point
-                .played_uci
-                .as_deref()
-                .filter(|uci| !uci.trim().is_empty())
-                .is_none_or(|uci| row.uci == uci);
-        let evaluations_complete =
-            [row.before.as_ref(), row.after.as_ref()]
-                .into_iter()
-                .all(|evaluation| {
-                    evaluation.is_some_and(|evaluation| {
-                        matches!(evaluation.source.as_str(), "pc-cloud" | "pc-live")
-                            && (evaluation.white_cp.is_some()
-                                || evaluation.white_mate.is_some()
-                                || evaluation.terminal)
-                    })
-                });
-        if !identity_matches || !evaluations_complete {
-            return Err(CoachError::PcAnalysisIncomplete(format!(
-                "ply {} does not exactly match the supplied game or is missing a verified PC cloud/live before-or-after evaluation",
-                row.ply
-            )));
-        }
-    }
     analysis.analysis_coverage.complete = true;
     Ok(analysis)
+}
+
+fn pc_evaluation_is_verified(evaluation: Option<&CoachPcEvaluation>) -> bool {
+    evaluation.is_some_and(|evaluation| {
+        matches!(evaluation.source.as_str(), "pc-cloud" | "pc-live")
+            && (evaluation.white_cp.is_some()
+                || evaluation.white_mate.is_some()
+                || evaluation.terminal)
+    })
 }
 
 async fn run_pc_game_analysis(request: &AiCoachRequest) -> Result<CoachPcGameAnalysis, CoachError> {
@@ -1246,6 +1318,7 @@ fn apply_pc_game_analysis_to_request(request: &mut AiCoachRequest, analysis: &Co
     let rows = analysis
         .move_analysis
         .iter()
+        .filter_map(CoachPcAnalysisRow::as_move)
         .map(|row| (row.ply, row))
         .collect::<HashMap<_, _>>();
     for point in &mut request.game_analysis {
@@ -1576,6 +1649,23 @@ fn format_pc_game_analysis(analysis: Option<&CoachPcGameAnalysis>) -> String {
         analysis.analysis_coverage.live_analyses,
         analysis.analysis_coverage.failed,
     )];
+    if let Some(CoachPcAnalysisRow::CurrentPosition(row)) = analysis.move_analysis.first() {
+        sections.push(format!(
+            "Current position: {} | evaluation {} | source {} d{}.",
+            row.fen,
+            pc_evaluation_text(row.evaluation.as_ref()),
+            row.evaluation
+                .as_ref()
+                .map(|evaluation| evaluation.source.as_str())
+                .unwrap_or("n/a"),
+            row.evaluation
+                .as_ref()
+                .and_then(|evaluation| evaluation.depth)
+                .map(|depth| depth.to_string())
+                .unwrap_or_else(|| "?".to_string()),
+        ));
+        return sections.join("\n\n");
+    }
     if let Some(derived) = analysis.derived.as_ref() {
         sections.push(format!(
             "Key moments with derived tactical/positional evidence (SAN lines here are the quotable engine lines):\n{}",
@@ -1586,7 +1676,11 @@ fn format_pc_game_analysis(analysis: Option<&CoachPcGameAnalysis>) -> String {
         "Move-by-move trace. Columns: move | played by | eval before -> after (White-relative) | centipawn loss for the mover | mover win-probability before -> after | severity | engine's best move before the move | engine's reply after the move | evaluation source/depth."
             .to_string(),
     ];
-    for row in &analysis.move_analysis {
+    for row in analysis
+        .move_analysis
+        .iter()
+        .filter_map(CoachPcAnalysisRow::as_move)
+    {
         let derived_entry = derived_moves.get(&row.ply);
         let (win_before, win_after, win_loss) = match derived_entry {
             Some(entry) => (
@@ -2360,6 +2454,40 @@ fn library_candidate_is_in_category(
     category.book_ids.iter().any(|selected| selected == book_id)
 }
 
+fn select_diversified_book_candidates<'a>(
+    ranked: &[(i32, &'a CoachBookCandidate)],
+    planned_chapter_count: usize,
+) -> Vec<&'a CoachBookCandidate> {
+    let mut selected = Vec::new();
+    let mut selected_chunks = HashSet::new();
+    let mut selected_chapters = HashSet::new();
+    let distinct_chapter_target = MAX_BOOK_PASSAGES_PER_CATEGORY.min(planned_chapter_count);
+
+    for (_, candidate) in ranked {
+        let Some(chapter_id) = candidate.chapter_id.as_deref() else {
+            continue;
+        };
+        if selected_chapters.insert(chapter_id)
+            && selected_chunks.insert(candidate.passage.chunk_id.as_str())
+        {
+            selected.push(*candidate);
+        }
+        if selected.len() >= distinct_chapter_target {
+            break;
+        }
+    }
+
+    for (_, candidate) in ranked {
+        if selected.len() >= MAX_BOOK_PASSAGES_PER_CATEGORY {
+            break;
+        }
+        if selected_chunks.insert(candidate.passage.chunk_id.as_str()) {
+            selected.push(*candidate);
+        }
+    }
+    selected
+}
+
 fn search_chess_book_passages(
     plan: &CoachLibraryPlan,
     exact_opening_matches: &[CoachExactOpeningMatch],
@@ -2504,9 +2632,8 @@ fn search_chess_book_passages(
             })
         });
 
-        let mut category_count = 0;
         let mut selected_chunks = Vec::new();
-        for (_, candidate) in ranked {
+        for candidate in select_diversified_book_candidates(&ranked, category.chapter_ids.len()) {
             selected_chunks.push(candidate.passage.chunk_id.clone());
             if seen_chunks.insert(candidate.passage.chunk_id.clone()) {
                 let mut passage = candidate.passage.clone();
@@ -2524,10 +2651,7 @@ fn search_chess_book_passages(
                     .collect();
                 passages.push(passage);
             }
-            category_count += 1;
-            if category_count >= MAX_BOOK_PASSAGES_PER_CATEGORY
-                || passages.len() >= MAX_BOOK_PASSAGES
-            {
+            if passages.len() >= MAX_BOOK_PASSAGES {
                 break;
             }
         }
@@ -2757,7 +2881,9 @@ async fn ask_ai_coach_inner(
 
     let focus_phase = question_focus_phase(&request.question);
     let phase_review = focus_phase.is_some();
+    let explicitly_requested_scope = parse_coach_pgn_scope(&request.pgn_scope);
     let whole_game_review_requested = question_requires_full_pc_game_analysis(&request);
+    let pc_analysis_scope = requested_pc_analysis_scope(&request);
     let full_pc_game_required = should_run_pc_game_analysis(&request);
     let pc_game_analysis = if full_pc_game_required {
         emit_coach_progress(
@@ -2765,8 +2891,16 @@ async fn ask_ai_coach_inner(
             request_id,
             started,
             "pc_game_analysis",
-            "Analyzing every game position on the PC",
-            "Checking the PC cloud store first for every unique position, then running live PC Stockfish only for cache misses.",
+            if pc_analysis_scope == CoachPgnScope::WholeGame {
+                "Analyzing every game position on the PC"
+            } else {
+                "Analyzing the current position on the PC"
+            },
+            if pc_analysis_scope == CoachPgnScope::WholeGame {
+                "Checking the PC cloud store first for every unique game position, then running live PC Stockfish only for cache misses."
+            } else {
+                "Checking the PC cloud store first for this position, then running live PC Stockfish only on a cache miss."
+            },
             8.0,
             false,
         );
@@ -2777,7 +2911,11 @@ async fn ask_ai_coach_inner(
             request_id,
             started,
             "pc_game_analysis_done",
-            "Complete PC game trace ready",
+            if pc_analysis_scope == CoachPgnScope::WholeGame {
+                "Complete PC game trace ready"
+            } else {
+                "PC position evaluation ready"
+            },
             format!(
                 "{} position(s), {} unique: {} PC cloud, {} PC live, {} failed.",
                 analysis.analysis_coverage.total_positions,
@@ -2881,7 +3019,9 @@ async fn ask_ai_coach_inner(
     };
     let (mut planned_requests, rejected_planner_requests) = match planner_result {
         Ok((planner_response, mut planner_scope)) => {
-            if phase_review || whole_game_review_requested {
+            if let Some(explicit_scope) = explicitly_requested_scope {
+                planner_scope = explicit_scope;
+            } else if phase_review || whole_game_review_requested {
                 planner_scope = CoachPgnScope::WholeGame;
             } else if conversational_followup
                 && !question_explicitly_requests_whole_game(&request.question)
@@ -4032,6 +4172,7 @@ Core rules:
 - Retrieved chess-book passages are the source of truth for attributed teaching principles. Use them to explain the human lesson, while Stockfish remains the source of truth for this position's concrete verdict and variations.
 - When a retrieved passage materially supports a lesson, name the actual book and chapter in the prose and cite its exact opaque source identifier such as [Source e406ce4596c7eca833b0342e]. Never use an ordinal placeholder such as [Book 3], and never invent a title, quotation, page, author, chapter, or source identifier.
 - For opening lessons, connect the named book/chapter to an exact move or position in this game and explain the relevant setup, pawn structure, thematic breaks, and plans. Do not merely say that an opening book is relevant.
+- Make every important lesson personal and memorable: anchor it to this game's exact move number, squares, and pieces, then give one short transferable takeaway and one concrete practice habit. Delete advice that could appear unchanged in a different player's review.
 - An "Exact indexed book line" is a legality-checked PGN recovered from that cited source page. Use its game-ply match for concrete comparison, state whether the played move follows or diverges from the book move, and never replace it with an uncited database line.
 - The exact-position opening-family anchor controls the family actually reached; the AI library plan's `openingClassification` may refine it to a compatible sub-variation. Do not rename a transposed d4/c4 position after an earlier 1.Nf3 repertoire, and do not portray departure from an arbitrary repertoire as an error.
 - Derived key moments in the PC trace carry an evidence-based nature assessment and concrete facts. Check the label against the supplied SAN lines: explain a tactical mistake tactically — quote the punishing line, name what it wins, and name the motif — and explain a positional mistake positionally — name the structural or planning cost the eval drop reflects. Never explain a forced material loss in vague positional language. For mixed or low-confidence cases, explain both layers or resolve the uncertainty from the supplied engine lines; concrete engine facts always outrank the heuristic label.
@@ -4201,6 +4342,7 @@ Non-negotiable grounding rules:
 - When a source includes an "Exact indexed book line", use its matched game ply and cited PGN to say whether the game followed or diverged from that concrete book continuation.
 - The exact-position opening-family anchor below controls the family reached; keep every opening reference compatible with it.
 - Preserve the tactical-vs-positional character supported by the validated answer, the SAN lines, and the derived nature assessments. Do not soften a forced material loss into positional language, do not invent a tactic for a quiet positional error, and let concrete engine facts outrank a heuristic label if they conflict.
+- Preserve personal lessons tied to this game's exact move numbers, squares, pieces, plans, and practice habits. Reject generic advice that could be pasted into another game.
 - Keep Stockfish verdicts and book principles distinct: Stockfish proves what happened here; the named book/chapter supplies the transferable lesson.
 - `summary` is one short tab-preview sentence. `explanation` is the complete useful lesson for that tab. `engineEvidence` and `betterPlan` may be empty when the validated answer does not support them.
 - Do not mention prompts, planners, private facts, JSON, schemas, or evidence machinery.
@@ -9277,6 +9419,7 @@ mod tests {
             request_id: "test-coach-request".to_string(),
             fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".to_string(),
             side_to_move: "white".to_string(),
+            player_color: "white".to_string(),
             move_history: Vec::new(),
             pgn: Some("[Event \"?\"]\n\n*".to_string()),
             pgn_scope: "current_line".to_string(),
@@ -9621,6 +9764,50 @@ mod tests {
     }
 
     #[test]
+    fn coach_book_retrieval_diversifies_ai_selected_chapters_like_phone() {
+        let candidate = |chunk_id: &str, chapter_id: &str| CoachBookCandidate {
+            passage: CoachBookPassage {
+                chunk_id: chunk_id.to_string(),
+                book_id: "book".to_string(),
+                title: "Book".to_string(),
+                author: "Author".to_string(),
+                shelf: "Shelf".to_string(),
+                chapter_title: chapter_id.to_string(),
+                citation: "PDF p. 1".to_string(),
+                pdf_page_start: 1,
+                pdf_page_end: 1,
+                printed_page_start: None,
+                printed_page_end: None,
+                excerpt: "Excerpt".to_string(),
+                local_path: "C:/book.pdf".to_string(),
+                opening_lines: Vec::new(),
+            },
+            chapter_id: Some(chapter_id.to_string()),
+            search_text: chapter_id.to_string(),
+        };
+        let chapter_a_best = candidate("a-best", "chapter-a");
+        let chapter_a_second = candidate("a-second", "chapter-a");
+        let chapter_b = candidate("b", "chapter-b");
+        let chapter_c = candidate("c", "chapter-c");
+        let ranked = vec![
+            (100, &chapter_a_best),
+            (90, &chapter_a_second),
+            (80, &chapter_b),
+            (70, &chapter_c),
+        ];
+
+        let selected = select_diversified_book_candidates(&ranked, 3);
+
+        assert_eq!(
+            selected
+                .iter()
+                .map(|candidate| candidate.passage.chunk_id.as_str())
+                .collect::<Vec<_>>(),
+            vec!["a-best", "b", "c"]
+        );
+    }
+
+    #[test]
     fn coach_architecture_ordinal_book_placeholders_are_rejected() {
         assert!(contains_ordinal_book_reference("Use [Book 3] here."));
         assert!(contains_ordinal_book_reference("Book #12 explains it."));
@@ -9630,8 +9817,9 @@ mod tests {
     }
 
     #[test]
-    fn coach_architecture_every_game_triggers_pc_preflight_with_every_ply() {
+    fn coach_architecture_whole_game_preflight_sends_every_ply() {
         let mut request = sample_request();
+        request.pgn_scope = "whole_game".to_string();
         request.question = "What is the plan here?".to_string();
         request.game_analysis.push(CoachGameAnalysisPoint {
             ply: 1,
@@ -9648,6 +9836,7 @@ mod tests {
         assert!(should_run_pc_game_analysis(&request));
         let payload = build_pc_game_analysis_payload(&request).unwrap();
         assert_eq!(payload["scope"], "whole-game");
+        assert_eq!(payload["playerColor"], "white");
         assert_eq!(payload["moves"].as_array().unwrap().len(), 1);
         assert_eq!(payload["moves"][0]["ply"], 1);
         assert_eq!(payload["moves"][0]["fenBefore"], request.fen);
@@ -9655,8 +9844,21 @@ mod tests {
     }
 
     #[test]
+    fn coach_architecture_position_preflight_matches_phone_scope() {
+        let request = sample_request();
+
+        assert!(should_run_pc_game_analysis(&request));
+        let payload = build_pc_game_analysis_payload(&request).unwrap();
+
+        assert_eq!(payload["scope"], "position");
+        assert_eq!(payload["pgn"], "[Event \"?\"]\n\n*");
+        assert_eq!(payload["currentFen"], request.fen);
+    }
+
+    #[test]
     fn coach_architecture_pc_completion_requires_all_positions_and_sources() {
         let mut request = sample_request();
+        request.pgn_scope = "whole_game".to_string();
         request.game_analysis.push(CoachGameAnalysisPoint {
             ply: 1,
             mv: "e4".to_string(),
@@ -9681,7 +9883,7 @@ mod tests {
             request_id: request.request_id.clone(),
             player_color: "white".to_string(),
             scope: "whole-game".to_string(),
-            move_analysis: vec![CoachPcMoveAnalysis {
+            move_analysis: vec![CoachPcAnalysisRow::Move(CoachPcMoveAnalysis {
                 ply: 1,
                 move_number: 1,
                 color: "white".to_string(),
@@ -9694,7 +9896,7 @@ mod tests {
                 mover_loss_cp: Some(0),
                 player_loss_cp: Some(0),
                 annotations: Vec::new(),
-            }],
+            })],
             analysis_coverage: CoachAnalysisCoverage {
                 total_positions: 2,
                 unique_positions: 2,
@@ -9711,7 +9913,9 @@ mod tests {
         let validated = validate_pc_game_analysis(&request, analysis.clone()).unwrap();
         assert!(validated.analysis_coverage.complete);
         let mut mismatched = analysis.clone();
-        mismatched.move_analysis[0].fen_after = request.fen.clone();
+        if let CoachPcAnalysisRow::Move(row) = &mut mismatched.move_analysis[0] {
+            row.fen_after = request.fen.clone();
+        }
         assert!(matches!(
             validate_pc_game_analysis(&request, mismatched),
             Err(CoachError::PcAnalysisIncomplete(_))
@@ -9722,6 +9926,47 @@ mod tests {
             validate_pc_game_analysis(&request, incomplete),
             Err(CoachError::PcAnalysisIncomplete(_))
         ));
+    }
+
+    #[test]
+    fn coach_architecture_accepts_verified_phone_position_analysis() {
+        let request = sample_request();
+        let analysis = CoachPcGameAnalysis {
+            request_id: request.request_id.clone(),
+            player_color: "white".to_string(),
+            scope: "position".to_string(),
+            move_analysis: vec![CoachPcAnalysisRow::CurrentPosition(
+                CoachPcCurrentPositionAnalysis {
+                    kind: "current-position".to_string(),
+                    fen: request.fen.clone(),
+                    evaluation: Some(CoachPcEvaluation {
+                        white_cp: Some(18),
+                        white_mate: None,
+                        depth: Some(24),
+                        source: "pc-cloud".to_string(),
+                        nodes: Some(250_000),
+                        pv_uci: vec!["e2e4".to_string()],
+                        terminal: false,
+                    }),
+                },
+            )],
+            analysis_coverage: CoachAnalysisCoverage {
+                total_positions: 1,
+                unique_positions: 1,
+                cloud_hits: 1,
+                live_analyses: 0,
+                failed: 0,
+                live_depth: 18,
+                complete: false,
+            },
+            stored_evaluations_used: 1,
+            derived: None,
+        };
+
+        let validated = validate_pc_game_analysis(&request, analysis).unwrap();
+
+        assert!(validated.analysis_coverage.complete);
+        assert!(format_pc_game_analysis(Some(&validated)).contains("Current position:"));
     }
 
     #[test]
@@ -9739,7 +9984,7 @@ mod tests {
             request_id: "req".to_string(),
             player_color: "white".to_string(),
             scope: "whole-game".to_string(),
-            move_analysis: vec![CoachPcMoveAnalysis {
+            move_analysis: vec![CoachPcAnalysisRow::Move(CoachPcMoveAnalysis {
                 ply: 5,
                 move_number: 3,
                 color: "white".to_string(),
@@ -9752,7 +9997,7 @@ mod tests {
                 mover_loss_cp: Some(290),
                 player_loss_cp: Some(290),
                 annotations: Vec::new(),
-            }],
+            })],
             analysis_coverage: CoachAnalysisCoverage {
                 total_positions: 2,
                 unique_positions: 2,
@@ -10429,14 +10674,34 @@ mod tests {
     }
 
     #[test]
-    fn deterministic_planner_fallback_uses_whole_game_for_game_review() {
+    fn deterministic_planner_fallback_infers_whole_game_when_scope_is_auto() {
+        let mut request = sample_request();
+        request.pgn_scope = "auto".to_string();
+        request.question = "analyse this whole game".to_string();
+
+        let scope = deterministic_planner_fallback_scope(&request, false, false);
+
+        assert_eq!(scope, CoachPgnScope::WholeGame);
+    }
+
+    #[test]
+    fn explicit_position_scope_is_not_overridden_by_question_wording() {
         let mut request = sample_request();
         request.pgn_scope = "current_line".to_string();
         request.question = "analyse this whole game".to_string();
 
         let scope = deterministic_planner_fallback_scope(&request, false, false);
 
-        assert_eq!(scope, CoachPgnScope::WholeGame);
+        assert_eq!(scope, CoachPgnScope::CurrentLine);
+    }
+
+    #[test]
+    fn explicit_player_color_outranks_question_inference() {
+        let mut request = sample_request();
+        request.player_color = "black".to_string();
+        request.question = "What should White do here?".to_string();
+
+        assert_eq!(infer_coach_player_color(&request), "black");
     }
 
     #[test]

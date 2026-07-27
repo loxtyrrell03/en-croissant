@@ -123,6 +123,8 @@ describe("AI Coach review persistence", () => {
         });
 
         expect(persistedAiCoachReviewMatches(review, original, "white")).toBe(true);
+        expect(persistedAiCoachReviewMatches(review, original, "white", "current_line")).toBe(true);
+        expect(persistedAiCoachReviewMatches(review, original, "white", "whole_game")).toBe(false);
         expect(persistedAiCoachReviewMatches(review, original, "black")).toBe(false);
         expect(persistedAiCoachReviewMatches(review, context("fen-b"), "white")).toBe(false);
         expect(persistedAiCoachReviewMatches(review, context("fen-a", [0, 1]), "white")).toBe(
@@ -163,6 +165,10 @@ describe("AI Coach review persistence", () => {
         });
 
         expect(persistedAiCoachReviewMatches(review, elsewhere, "black")).toBe(true);
+        expect(persistedAiCoachReviewMatches(review, elsewhere, "black", "whole_game")).toBe(true);
+        expect(persistedAiCoachReviewMatches(review, elsewhere, "black", "current_line")).toBe(
+            false,
+        );
         expect(persistedAiCoachReviewMatches(review, elsewhere, "white")).toBe(false);
         expect(persistedAiCoachReviewMatches(review, otherGame, "black")).toBe(false);
     });

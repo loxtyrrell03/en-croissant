@@ -72,6 +72,13 @@ import {
 } from "@/state/atoms";
 import { getPGN, getVariationLine, uciNormalize } from "@/utils/chess";
 import {
+  fromNativeAiCoachScope,
+  getDefaultAiCoachQuestion,
+  getDefaultAiCoachScope,
+  toNativeAiCoachScope,
+  type AiCoachSurfaceScope,
+} from "@/utils/aiCoachParity";
+import {
   createAiCoachPersistenceContext,
   createPersistedAiCoachReview,
   getAiCoachPersistenceTarget,
@@ -1123,8 +1130,16 @@ export default function AiCoachPanel() {
         .map(toCoachLine),
     [engineMoves, movesKey, multipv, rootFen],
   );
+  const gameAnalysis = useMemo(() => buildGameAnalysisContext(root), [root]);
+  const mainlineMoves = useMemo(() => getMainlineMoves(root), [root]);
+  const persistenceTarget = useMemo(() => getAiCoachPersistenceTarget(currentTab), [currentTab]);
+  const defaultReviewScope = getDefaultAiCoachScope(
+    Boolean(persistenceTarget),
+    gameAnalysis.length,
+  );
 
-  const [question, setQuestion] = useState("");
+  const [reviewScope, setReviewScope] = useState<AiCoachSurfaceScope>(defaultReviewScope);
+  const [question, setQuestion] = useState(() => getDefaultAiCoachQuestion(defaultReviewScope));
   const [playerColor, setPlayerColor] = useState<AiCoachPlayerColor>("white");
   const [messages, setMessages] = useState<CoachUiMessage[]>([]);
   const [answer, setAnswer] = useState("");
@@ -1193,7 +1208,6 @@ export default function AiCoachPanel() {
       }),
     );
   }, [root]);
-  const persistenceTarget = useMemo(() => getAiCoachPersistenceTarget(currentTab), [currentTab]);
   const persistenceContext = useMemo(
     () =>
       createAiCoachPersistenceContext({
@@ -1215,11 +1229,10 @@ export default function AiCoachPanel() {
     persistenceContext.currentPath,
     persistenceContext.currentLineFingerprint,
     playerColor,
+    reviewScope,
   ]);
   persistenceContextRef.current = persistenceContext;
   activeContextKeyRef.current = activeContextKey;
-  const gameAnalysis = useMemo(() => buildGameAnalysisContext(root), [root]);
-  const mainlineMoves = useMemo(() => getMainlineMoves(root), [root]);
   const canSubmit = Boolean(enabled && coachEngine && question.trim().length > 0 && !loading);
   const activeProgressStep = requestProgress ?? {
     requestId: activeRequestIdRef.current,
@@ -1288,6 +1301,7 @@ export default function AiCoachPanel() {
       },
     ]);
     setQuestion("");
+    setReviewScope(fromNativeAiCoachScope(review.scope));
     setAnswer(response.answer);
     setError("");
     setLoading(false);
@@ -1314,6 +1328,8 @@ export default function AiCoachPanel() {
     setLoading(false);
     setRequestStartedAt(null);
     setPersistenceNotice("");
+    setReviewScope(defaultReviewScope);
+    setQuestion(getDefaultAiCoachQuestion(defaultReviewScope));
 
     if (!persistenceTarget) return;
     const target: AiCoachPersistenceTarget = persistenceTarget;
@@ -1324,7 +1340,7 @@ export default function AiCoachPanel() {
         if (!currentContext || review.gameFingerprint !== currentContext.gameFingerprint) return;
         savedReviewRef.current = review;
         setPlayerColor(review.playerColor);
-        if (persistedAiCoachReviewMatches(review, currentContext)) {
+        if (persistedAiCoachReviewMatches(review, currentContext, undefined, review.scope)) {
           applyPersistedReview(review);
         }
       })
@@ -1339,23 +1355,34 @@ export default function AiCoachPanel() {
   }, [
     applyPersistedReview,
     persistenceContext.gameFingerprint,
+    defaultReviewScope,
+    persistenceTarget,
     persistenceTargetIdentity,
     resetCoachDisplay,
   ]);
 
   useEffect(() => {
     const displayed = displayedReviewRef.current;
-    if (displayed && !persistedAiCoachReviewMatches(displayed, persistenceContext, playerColor)) {
+    const nativeReviewScope = toNativeAiCoachScope(reviewScope);
+    if (
+      displayed &&
+      !persistedAiCoachReviewMatches(displayed, persistenceContext, playerColor, nativeReviewScope)
+    ) {
       resetCoachDisplay();
     }
     if (
       !displayedReviewRef.current &&
       savedReviewRef.current &&
-      persistedAiCoachReviewMatches(savedReviewRef.current, persistenceContext, playerColor)
+      persistedAiCoachReviewMatches(
+        savedReviewRef.current,
+        persistenceContext,
+        playerColor,
+        nativeReviewScope,
+      )
     ) {
       applyPersistedReview(savedReviewRef.current);
     }
-  }, [applyPersistedReview, persistenceContext, playerColor, resetCoachDisplay]);
+  }, [applyPersistedReview, persistenceContext, playerColor, resetCoachDisplay, reviewScope]);
 
   useEffect(() => {
     let disposed = false;
@@ -1397,6 +1424,7 @@ export default function AiCoachPanel() {
     const trimmedQuestion = question.trim();
     if (!trimmedQuestion) return;
     const requestPlayerColor = playerColor;
+    const requestReviewScope = reviewScope;
     const groundedQuestion = `I am ${requestPlayerColor === "black" ? "Black" : "White"} in this game or position. ${trimmedQuestion}`;
     const requestPath = [...currentPath];
     const requestBaseSanMoves = getSanVariationLine(root, requestPath);
@@ -1569,9 +1597,10 @@ export default function AiCoachPanel() {
           requestId,
           fen: currentNode.fen,
           sideToMove,
+          playerColor: requestPlayerColor,
           moveHistory: moves,
-          pgn: currentLinePgn,
-          pgnScope: "auto",
+          pgn: requestReviewScope === "whole-game" ? wholeGamePgn : currentLinePgn,
+          pgnScope: toNativeAiCoachScope(requestReviewScope),
           currentLinePgn,
           wholeGamePgn,
           gameAnalysis,
@@ -1906,10 +1935,7 @@ export default function AiCoachPanel() {
       )}
 
       <Box>
-        <Group justify="space-between" align="center" gap="xs" mb="xs" wrap="wrap">
-          <Text size="xs" c="dimmed" fw={600}>
-            Coach my side
-          </Text>
+        <Group grow gap="xs" mb="xs">
           <SegmentedControl
             size="xs"
             value={playerColor}
@@ -1920,14 +1946,35 @@ export default function AiCoachPanel() {
               { value: "black", label: "I'm Black" },
             ]}
           />
+          <SegmentedControl
+            size="xs"
+            value={reviewScope}
+            disabled={loading}
+            onChange={(value) => {
+              const nextScope: AiCoachSurfaceScope =
+                value === "position" ? "position" : "whole-game";
+              const currentIsDefault =
+                question.trim().length === 0 ||
+                question === getDefaultAiCoachQuestion("whole-game") ||
+                question === getDefaultAiCoachQuestion("position");
+              setReviewScope(nextScope);
+              if (currentIsDefault) {
+                setQuestion(getDefaultAiCoachQuestion(nextScope));
+              }
+            }}
+            data={[
+              { value: "whole-game", label: "Review game" },
+              { value: "position", label: "Position" },
+            ]}
+          />
         </Group>
         <Group align="flex-end" gap="xs" wrap="nowrap">
           <Textarea
             flex={1}
             autosize
-            minRows={2}
-            maxRows={5}
-            placeholder="Ask a follow-up about this position..."
+            minRows={3}
+            maxRows={7}
+            placeholder="Ask what went wrong, what to play, or which lesson to study..."
             value={question}
             spellCheck
             disabled={loading}
@@ -1945,7 +1992,7 @@ export default function AiCoachPanel() {
             disabled={!canSubmit}
             onClick={() => void askCoach()}
           >
-            Ask
+            {reviewScope === "whole-game" ? "Review with books" : "Ask Coach"}
           </Button>
         </Group>
         <Text size="xs" c="dimmed" mt={4}>
