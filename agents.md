@@ -1,5 +1,14 @@
 # AGENTS.md
 
+- On 2026-07-25, Outpost's desktop PGN parser stopped overwriting adjacent
+  comment blocks at the same position. Chessable exports often put a full
+  lesson annotation beside an exporter-only `{-KEY-}` marker, so the old
+  last-comment-wins behavior hid prose, dropped parts of multi-block move
+  annotations, and made prose-only lessons appear blank. The parser now
+  preserves every substantive block in order, omits the marker-only metadata,
+  and has TypeScript and native lexer regressions covering normal moves and
+  move-free course introductions.
+
 - On 2026-07-24, both AI Coach surfaces gained a pre-model chess-evidence
   layer. `scripts/chess-coach-derived.mjs` uses chessops to convert verified PC
   Stockfish PVs to legal SAN; calculate win-probability severity, decisive

@@ -1,6 +1,5 @@
 import {
   Alert,
-  Badge,
   Box,
   Button,
   Card,
@@ -16,12 +15,7 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import {
-  IconArrowRight,
-  IconCloudDownload,
-  IconDatabase,
-  IconShieldCheck,
-} from "@tabler/icons-react";
+import { IconCloudDownload, IconDatabase, IconShieldCheck } from "@tabler/icons-react";
 import { resolve } from "@tauri-apps/api/path";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useMemo, useState } from "react";
@@ -193,54 +187,23 @@ export default function HomeGameDatabaseImport() {
 
   return (
     <>
-      <Card withBorder radius="lg" p={0} className={classes.importCard}>
-        <Box className={classes.cardGlow} />
-        <Group
-          justify="space-between"
-          align="center"
-          wrap="wrap"
-          gap="lg"
-          px={{ base: "md", sm: "xl" }}
-          py={{ base: "md", sm: "lg" }}
-          className={classes.cardContent}
-        >
-          <Group gap="md" wrap="nowrap" className={classes.cardLead}>
-            <ThemeIcon size={48} radius="md" variant="light" className={classes.databaseIcon}>
-              <IconDatabase size="1.55rem" stroke={1.7} />
+      <Card withBorder radius="md" p="md">
+        <Group justify="space-between" align="center" wrap="wrap" gap="md">
+          <Group gap="sm" wrap="nowrap" className={classes.cardLead}>
+            <ThemeIcon size={40} radius="md" variant="light" className={classes.databaseIcon}>
+              <IconDatabase size="1.3rem" stroke={1.7} />
             </ThemeIcon>
             <Box>
-              <Group gap="xs" mb={3}>
-                <Text fw={700} size="lg">
-                  Import player games
-                </Text>
-                <Badge variant="light" size="sm" color="blue">
-                  NEW
-                </Badge>
-              </Group>
-              <Text size="sm" c="dimmed" maw={560}>
-                Turn a player’s Chess.com, Lichess, or public over-the-board games into one
-                searchable database.
+              <Text fw={700}>Import player games</Text>
+              <Text size="sm" c="dimmed">
+                Collect a player’s Chess.com, Lichess, or over-the-board games into one searchable
+                database.
               </Text>
             </Box>
           </Group>
-
-          <Group gap="md" wrap="wrap" className={classes.cardActions}>
-            <Group gap={6} wrap="nowrap" aria-label="Available game sources">
-              {HOME_GAME_DATABASE_IMPORT_SOURCES.map((option) => (
-                <Box key={option.value} className={classes.sourceMark} title={option.label}>
-                  {option.shortLabel}
-                </Box>
-              ))}
-            </Group>
-            <Button
-              radius="md"
-              rightSection={<IconArrowRight size="1rem" />}
-              onClick={() => setOpened(true)}
-              className={classes.openButton}
-            >
-              Import games
-            </Button>
-          </Group>
+          <Button radius="md" onClick={() => setOpened(true)} className={classes.openButton}>
+            Import games
+          </Button>
         </Group>
       </Card>
 
@@ -253,14 +216,9 @@ export default function HomeGameDatabaseImport() {
         size="lg"
         radius="lg"
         title={
-          <Box>
-            <Text size="xs" fw={700} c="blue" tt="uppercase" lts="0.08em">
-              Game database
-            </Text>
-            <Text fw={700} size="lg">
-              Import a player’s games
-            </Text>
-          </Box>
+          <Text fw={700} size="lg">
+            Import a player’s games
+          </Text>
         }
       >
         <Stack gap="md">
