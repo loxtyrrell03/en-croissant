@@ -62,6 +62,19 @@ function parsePgnTimestampSeconds(comment: string): number | undefined {
     return value > 10_000_000_000 ? value / 1000 : value;
 }
 
+const HIDDEN_PGN_COMMENT_MARKERS = new Set(["-KEY-"]);
+
+export function mergePgnCommentText(existing: string, incoming: string): string {
+    const normalized = incoming.trim();
+    if (!normalized || HIDDEN_PGN_COMMENT_MARKERS.has(normalized.toUpperCase())) {
+        return existing;
+    }
+    if (!existing) {
+        return normalized;
+    }
+    return `${existing}\n\n${normalized}`;
+}
+
 export function getMoveText(
     tree: TreeNode,
     opt: {
@@ -438,10 +451,16 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
                 root.timestamp = timestamp;
             }
 
-            // Strip [%timestamp N] annotations (chess.com export format) from comment text
-            root.comment = comment.text
+            // PGN permits adjacent comment blocks at the same position.
+            // Chessable course exports use them heavily and also place a
+            // marker-only {-KEY-} block before the key move. Replacing the
+            // current comment here used to leave prose-only lessons showing
+            // only the marker and discarded all but the last annotation on
+            // normal move positions.
+            const commentText = comment.text
                 .replace(/\s?\[%timestamp\s+\d+(?:\.\d+)?\]\s?/gi, " ")
                 .trim();
+            root.comment = mergePgnCommentText(root.comment, commentText);
         } else if (token.type === "ParenOpen") {
             const variation = [];
             let subvariations = 0;
@@ -497,9 +516,7 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
     return tree;
 }
 
-export async function parsePGN(pgn: string, initialFen?: string): Promise<TreeState> {
-    const tokens = unwrap(await commands.lexPgn(pgn));
-
+export function parsePgnTokens(tokens: Token[], initialFen?: string): TreeState {
     const headers = getPgnHeaders(tokens);
     const fen = initialFen?.trim() || headers.fen.trim();
 
@@ -513,6 +530,11 @@ export async function parsePGN(pgn: string, initialFen?: string): Promise<TreeSt
     tree.headers = headers;
     tree.position = headers.start ?? [];
     return tree;
+}
+
+export async function parsePGN(pgn: string, initialFen?: string): Promise<TreeState> {
+    const tokens = unwrap(await commands.lexPgn(pgn));
+    return parsePgnTokens(tokens, initialFen);
 }
 
 function getPgnHeaders(tokens: Token[]): GameHeaders {

@@ -1,83 +1,10 @@
-.importCard {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  background: light-dark(
-    color-mix(in srgb, var(--mantine-color-white) 96%, var(--mantine-color-blue-0)),
-    color-mix(in srgb, var(--mantine-color-dark-7) 93%, var(--mantine-color-blue-9))
-  );
-  transition:
-    transform 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.importCard:hover {
-  transform: translateY(-1px);
-  border-color: light-dark(var(--mantine-color-blue-2), var(--mantine-color-blue-8));
-  box-shadow: var(--mantine-shadow-sm);
-}
-
-.cardGlow {
-  position: absolute;
-  z-index: -1;
-  top: -72px;
-  right: 9%;
-  width: 240px;
-  height: 160px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--mantine-color-blue-5) 12%, transparent);
-  filter: blur(36px);
-  pointer-events: none;
-}
-
-.cardContent {
-  position: relative;
-}
-
 .cardLead {
-  min-width: min(100%, 380px);
+  flex: 1 1 380px;
+  min-width: 0;
 }
 
 .databaseIcon {
   flex: 0 0 auto;
-  color: var(--mantine-color-blue-6);
-  border: 1px solid light-dark(var(--mantine-color-blue-1), var(--mantine-color-blue-9));
-}
-
-.cardActions {
-  margin-left: auto;
-}
-
-.sourceMark,
-.sourceChoiceMark {
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  font-weight: 750;
-  letter-spacing: -0.02em;
-  color: light-dark(var(--mantine-color-dark-6), var(--mantine-color-gray-2));
-  border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-  background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
-}
-
-.sourceMark {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  font-size: 0.66rem;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--mantine-color-dark-9) 8%, transparent);
-}
-
-.openButton {
-  transition:
-    transform 150ms ease,
-    box-shadow 150ms ease;
-}
-
-.openButton:hover {
-  transform: translateX(1px);
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--mantine-color-blue-7) 16%, transparent);
 }
 
 .sourceChoice {
@@ -88,27 +15,32 @@
   border-radius: var(--mantine-radius-md);
   background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
   transition:
-    transform 140ms ease,
     border-color 140ms ease,
     background-color 140ms ease;
 }
 
 .sourceChoice:hover:not(:disabled) {
-  transform: translateY(-1px);
-  border-color: light-dark(var(--mantine-color-blue-3), var(--mantine-color-blue-7));
+  border-color: light-dark(var(--mantine-primary-color-3), var(--mantine-primary-color-7));
 }
 
 .sourceChoice[data-selected] {
-  border-color: var(--mantine-color-blue-5);
-  background: light-dark(var(--mantine-color-blue-0), rgba(34, 139, 230, 0.1));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mantine-color-blue-5) 22%, transparent);
+  border-color: var(--mantine-primary-color-5);
+  background: var(--mantine-primary-color-light);
 }
 
 .sourceChoiceMark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
   width: 34px;
   height: 34px;
   border-radius: 10px;
   font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: light-dark(var(--mantine-color-dark-6), var(--mantine-color-gray-2));
+  border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
   transition:
     color 140ms ease,
     background-color 140ms ease,
@@ -116,30 +48,20 @@
 }
 
 .sourceChoice[data-selected] .sourceChoiceMark {
-  color: var(--mantine-color-blue-7);
-  border-color: var(--mantine-color-blue-3);
-  background: light-dark(var(--mantine-color-white), var(--mantine-color-blue-9));
+  color: var(--mantine-primary-color-light-color);
+  border-color: var(--mantine-primary-color-3);
+  background: light-dark(var(--mantine-color-white), var(--mantine-primary-color-9));
 }
 
 @media (max-width: 48em) {
-  .cardActions {
+  .openButton {
     width: 100%;
-    justify-content: space-between;
-    margin-left: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .importCard,
-  .openButton,
   .sourceChoice,
   .sourceChoiceMark {
     transition: none;
-  }
-
-  .importCard:hover,
-  .openButton:hover,
-  .sourceChoice:hover:not(:disabled) {
-    transform: none;
   }
 }

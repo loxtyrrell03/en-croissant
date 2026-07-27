@@ -66,6 +66,10 @@ impl Visitor for Lexer {
 #[tauri::command]
 #[specta::specta]
 pub async fn lex_pgn(pgn: String) -> Result<Vec<Token>, Error> {
+    Ok(lex_pgn_tokens(&pgn)?)
+}
+
+fn lex_pgn_tokens(pgn: &str) -> Result<Vec<Token>, Error> {
     let mut reader = BufferedReader::new(pgn.as_bytes());
 
     let mut lexer = Lexer { tokens: Vec::new() };
@@ -73,4 +77,34 @@ pub async fn lex_pgn(pgn: String) -> Result<Vec<Token>, Error> {
     reader.read_game(&mut lexer)?;
 
     Ok(lexer.tokens)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn chessable_prose_and_key_marker_are_both_lexed() {
+        let pgn = r#"[Event "Course introduction"]
+[Result "*"]
+
+{ Full prose annotation. } 1. { -KEY- } *
+"#;
+
+        let tokens = lex_pgn_tokens(pgn).unwrap();
+        let comments = tokens
+            .iter()
+            .filter_map(|token| match token {
+                Token::Comment(comment) => Some(comment.trim()),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        let sans = tokens
+            .iter()
+            .filter(|token| matches!(token, Token::San(_)))
+            .count();
+
+        assert_eq!(comments, vec!["Full prose annotation.", "-KEY-"]);
+        assert_eq!(sans, 0);
+    }
 }
