@@ -36,7 +36,7 @@ import {
 } from "./statsAiReport";
 import {
   computeFormSummary,
-  computePerformance,
+  computePeriodPerformance,
   computePerformanceSeries,
   fetchCurrentRating,
   fetchStatsGames,
@@ -606,8 +606,14 @@ function StatsOverviewSection({
   windowStart: number;
 }) {
   const performance = useMemo(
-    () => computePerformance(games, { currentRating, nowSec }),
-    [currentRating, games, nowSec],
+    () =>
+      computePeriodPerformance(games, {
+        currentRating,
+        nowSec,
+        windowStart,
+        windowEnd: nowSec,
+      }),
+    [currentRating, games, nowSec, windowStart],
   );
   const form = useMemo(
     () => computeFormSummary(games, { currentRating, nowSec }),

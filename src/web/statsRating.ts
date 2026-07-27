@@ -240,6 +240,33 @@ export function computePerformance(
     };
 }
 
+// Headline/report performance for an explicitly selected time period. Keep this
+// separate from computePerformanceSeries: the latter is a rolling chart and its
+// final point covers only the latest rolling window, not the full selected period.
+export function computePeriodPerformance(
+    games: StatsRatingGame[],
+    opts: {
+        currentRating?: number | null;
+        nowSec: number;
+        windowStart: number;
+        windowEnd: number;
+    },
+): StatsPerformance | null {
+    const periodGames = games
+        .filter(
+            (game) =>
+                Number.isFinite(game.end) &&
+                game.end >= opts.windowStart &&
+                game.end <= opts.windowEnd,
+        )
+        .sort((a, b) => a.end - b.end);
+
+    return computePerformance(periodGames, {
+        currentRating: opts.currentRating,
+        nowSec: Math.min(opts.nowSec, opts.windowEnd),
+    });
+}
+
 // Rolling SWB-TPR series for the stats chart. For each game index i, the window is the
 // up-to-windowSize games ending at i, with per-window nowSec = games[i].end (recency
 // relative to the window's end) and R0 = window's first game rating. A point is emitted

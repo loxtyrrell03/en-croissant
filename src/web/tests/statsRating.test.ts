@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
     computeFormSummary,
+    computePeriodPerformance,
     computePerformance,
     computePerformanceSeries,
     fetchCurrentRating,
@@ -427,6 +428,32 @@ describe("computePerformanceSeries golden fidelity vs original smart-bracket.js"
             expect(series[i].perf).toBe(SCENARIO_E_SERIES_WINDOW_5[i].perf);
             expect(series[i].sd).toBeCloseTo(SCENARIO_E_SERIES_WINDOW_5[i].sd, 9);
         }
+    });
+});
+
+describe("computePeriodPerformance", () => {
+    it("uses every game in the selected period instead of the latest rolling chart point", () => {
+        const games = Array.from({ length: 30 }, (_, index) => ({
+            end: NOW - (29 - index) * 12 * 3600,
+            start: null,
+            rated: true,
+            rating: 1500,
+            opp: index < 15 ? 1900 : 1100,
+            result: (index < 15 ? "win" : "loss") as StatsGameResult,
+        }));
+
+        const performance = computePeriodPerformance(games, {
+            currentRating: 1500,
+            nowSec: NOW,
+            windowStart: games[0].end,
+            windowEnd: NOW,
+        });
+        const latestRollingPoint = computePerformanceSeries(games, { windowSize: 20 }).at(-1);
+
+        expect(performance?.gamesWithOpp).toBe(30);
+        expect(performance?.perf).toBe(1342);
+        expect(latestRollingPoint?.perf).toBe(1048);
+        expect(performance?.perf).not.toBe(latestRollingPoint?.perf);
     });
 });
 

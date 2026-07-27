@@ -1,6 +1,6 @@
 import { extractPgnMoves, gameAnalysisKey } from "./statsAnalysis";
 import type { StatsFormSummary, StatsGame, StatsPerformance } from "./statsRating";
-import { computeFormSummary, computePerformance } from "./statsRating";
+import { computeFormSummary, computePeriodPerformance } from "./statsRating";
 import type { AnalyzedGameEntry, StrengthPhase } from "./statsStrength";
 import { clockFeaturesForSide } from "./statsStrength";
 
@@ -106,7 +106,12 @@ export function computePeriodReport(input: {
     return {
         window: { start: windowStart, end: windowEnd, label },
         record: computeRecord(games),
-        perf: computePerformance(games, { currentRating, nowSec }),
+        perf: computePeriodPerformance(games, {
+            currentRating,
+            nowSec,
+            windowStart,
+            windowEnd,
+        }),
         rating: computeRatingSpan(games),
         form: games.length > 0 ? computeFormSummary(games, { currentRating, nowSec }) : null,
         time: computeTimeStats(games),
@@ -454,9 +459,11 @@ function computeWeekly(
         const end = addDaysSec(start, 7) - 1;
         const weekGames = games.filter((game) => game.end >= start && game.end <= end);
         const record = computeRecord(weekGames);
-        const performance = computePerformance(weekGames, {
+        const performance = computePeriodPerformance(weekGames, {
             currentRating: opts.currentRating,
             nowSec: Math.min(end, opts.nowSec),
+            windowStart: start,
+            windowEnd: end,
         });
         const rated = weekGames.filter((game) => game.rated && Number.isFinite(game.rating));
         weeks.push({
