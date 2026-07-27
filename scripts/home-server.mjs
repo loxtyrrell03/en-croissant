@@ -137,11 +137,25 @@ const lichessPlayerExplorerFreshMs = 5 * 60 * 1000;
 const lichessMastersExplorerFreshMs = 24 * 60 * 60 * 1000;
 const lichessExplorerStaleMs = 14 * 24 * 60 * 60 * 1000;
 const maxExplorerMemoryEntries = 1024;
+const configuredPrivateCredentialOrigins = String(process.env.EN_CROISSANT_PRIVATE_ORIGINS || "")
+  .split(/[,\r\n;]/)
+  .map((origin) => origin.trim().replace(/\/$/, ""))
+  .filter((origin) => {
+    try {
+      const parsed = new URL(origin);
+      return (
+        (parsed.protocol === "https:" || parsed.protocol === "http:") && parsed.origin === origin
+      );
+    } catch {
+      return false;
+    }
+  });
 const privateCredentialOrigins = new Set([
   "https://gaming-pc.tail89d19b.ts.net",
   "http://localhost:1420",
   "http://tauri.localhost",
   "https://tauri.localhost",
+  ...configuredPrivateCredentialOrigins,
 ]);
 
 let outpostCatalog = null;

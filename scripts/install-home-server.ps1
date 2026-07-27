@@ -19,6 +19,24 @@ $npm = (Get-Command npm.cmd -ErrorAction Stop).Source
 $tailscale = (Get-Command tailscale.exe -ErrorAction Stop).Source
 $startScript = Join-Path $PSScriptRoot 'start-home-server.ps1'
 $taskName = 'EnCroissantHomeServer'
+$dnsName = (& $tailscale status --json | ConvertFrom-Json).Self.DNSName.TrimEnd('.')
+if (-not $dnsName) {
+  throw 'This machine does not have an active Tailscale DNS name.'
+}
+$privateOrigin = "https://$dnsName"
+$configuredPrivateOrigins = @(
+  ([Environment]::GetEnvironmentVariable('EN_CROISSANT_PRIVATE_ORIGINS', 'User') -split '[,;\r\n]') |
+    ForEach-Object { $_.Trim().TrimEnd('/') } |
+    Where-Object { $_ }
+  $privateOrigin
+) | Select-Object -Unique
+$privateOriginsValue = $configuredPrivateOrigins -join ','
+[Environment]::SetEnvironmentVariable(
+  'EN_CROISSANT_PRIVATE_ORIGINS',
+  $privateOriginsValue,
+  'User'
+)
+$env:EN_CROISSANT_PRIVATE_ORIGINS = $privateOriginsValue
 
 New-Item -ItemType Directory -Path $serverRoot -Force | Out-Null
 
@@ -137,7 +155,6 @@ if ($LASTEXITCODE -ne 0) {
 & powercfg.exe /change hibernate-timeout-ac 0 | Out-Null
 
 $status = & $tailscale serve status --json | ConvertFrom-Json
-$dnsName = (& $tailscale status --json | ConvertFrom-Json).Self.DNSName.TrimEnd('.')
 [pscustomobject]@{
   Installed = $true
   Url = "https://$dnsName/"

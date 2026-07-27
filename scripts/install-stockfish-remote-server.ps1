@@ -32,6 +32,11 @@ $tailscaleIp = @(& $tailscale ip -4 | Where-Object { $_ -match '^\d+\.\d+\.\d+\.
 if (-not $tailscaleIp) {
   throw "This PC does not have an active Tailscale IPv4 address."
 }
+$tailscaleDnsName = (& $tailscale status --json | ConvertFrom-Json).Self.DNSName.TrimEnd(".")
+if (-not $tailscaleDnsName) {
+  throw "This PC does not have an active Tailscale DNS name."
+}
+$privateOrigin = "https://$tailscaleDnsName"
 
 New-Item -ItemType Directory -Force -Path $serverRoot | Out-Null
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\stockfish-remote-server.mjs") -Destination $serverScript -Force
@@ -50,10 +55,11 @@ $config = [ordered]@{
   localEvalPath = (Join-Path $env:APPDATA "org.encroissant.app\lichess-cloud-evals")
   allowedOrigins = @(
     "https://gaming-pc.tail89d19b.ts.net",
+    $privateOrigin,
     "http://localhost:1420",
     "http://tauri.localhost",
     "https://tauri.localhost"
-  )
+  ) | Select-Object -Unique
 }
 $config | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $configPath -Encoding utf8
 
@@ -96,7 +102,7 @@ if (-not $health) {
   Threads = $health.threads
   HashMB = $health.hashMb
   LocalHealth = "http://127.0.0.1:$HttpPort/v1/health"
-  TailnetUci = "gaming-pc.tail89d19b.ts.net:$UciPort"
-  TailnetHttps = "https://gaming-pc.tail89d19b.ts.net:$HttpsPort"
+  TailnetUci = "$($tailscaleDnsName):$UciPort"
+  TailnetHttps = "https://$($tailscaleDnsName):$HttpsPort"
   ScheduledTask = "$taskPath$taskName"
 } | Format-List
