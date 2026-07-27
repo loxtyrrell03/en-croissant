@@ -223,7 +223,9 @@ async function handleRequest(request, response) {
   const sensitiveApi =
     pathname === "/api/lichess-credential" ||
     pathname.startsWith("/api/chess-coach") ||
-    pathname.startsWith("/api/chess-books");
+    pathname.startsWith("/api/chess-books") ||
+    pathname === "/v1" ||
+    pathname.startsWith("/v1/");
   setCorsHeaders(request, response, sensitiveApi);
   if (method === "OPTIONS") {
     response.writeHead(204);
