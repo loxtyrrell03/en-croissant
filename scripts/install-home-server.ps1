@@ -56,15 +56,31 @@ if (Test-Path -LiteralPath $pidPath) {
 Push-Location $repoRoot
 try {
   $queryHelperSource = Join-Path $repoRoot 'src-tauri\src\bin\query_db_position.rs'
-  $queryHelper = Join-Path $repoRoot 'src-tauri\target\debug\query_db_position.exe'
+  $cargoTargetRoot = if ($env:CARGO_TARGET_DIR) {
+    if ([IO.Path]::IsPathRooted($env:CARGO_TARGET_DIR)) {
+      [IO.Path]::GetFullPath($env:CARGO_TARGET_DIR)
+    } else {
+      [IO.Path]::GetFullPath((Join-Path $repoRoot $env:CARGO_TARGET_DIR))
+    }
+  } else {
+    Join-Path $repoRoot 'src-tauri\target'
+  }
+  $queryHelper = Join-Path $cargoTargetRoot 'debug\query_db_position.exe'
   if (
     -not (Test-Path -LiteralPath $queryHelper) -or
     (Get-Item -LiteralPath $queryHelperSource).LastWriteTimeUtc -gt
       (Get-Item -LiteralPath $queryHelper).LastWriteTimeUtc
   ) {
-    & (Get-Command cargo.exe -ErrorAction Stop).Source build `
-      --manifest-path (Join-Path $repoRoot 'src-tauri\Cargo.toml') `
-      --bin query_db_position
+    $rustup = Get-Command rustup.exe -ErrorAction SilentlyContinue
+    if ($rustup) {
+      & $rustup.Source run stable cargo build `
+        --manifest-path (Join-Path $repoRoot 'src-tauri\Cargo.toml') `
+        --bin query_db_position
+    } else {
+      & (Get-Command cargo.exe -ErrorAction Stop).Source build `
+        --manifest-path (Join-Path $repoRoot 'src-tauri\Cargo.toml') `
+        --bin query_db_position
+    }
     if ($LASTEXITCODE -ne 0) {
       throw "Database query helper build failed with exit code $LASTEXITCODE."
     }
