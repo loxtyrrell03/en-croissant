@@ -1,7 +1,10 @@
 import { describe, expect, test } from "vitest";
 import {
+    applyOtbImportLaneProgress,
     createOtbImportRequest,
     getOtbImportDescription,
+    getOtbImportLaneLabel,
+    getOtbImportLaneSummary,
     getOtbImportProgressPercent,
     normalizeOtbFideId,
     validateOtbImportRequest,
@@ -70,6 +73,7 @@ describe("OTB game import", () => {
             playerName: "Lapidus, Alexey M.",
             fideId: "24276111",
             outputPath: "lapidus.pgn",
+            cancelled: true,
             gamesFound: 138,
             duplicatesRemoved: 65,
             suspectedOnlineGamesExcluded: 38,
@@ -87,8 +91,35 @@ describe("OTB game import", () => {
             ],
         });
         expect(description).toContain("OTB-only");
+        expect(description).toContain("retained from a search stopped early");
         expect(description).toContain("38 suspected online games excluded");
         expect(description).toContain("Lichess broadcast database: 73 unique");
+    });
+
+    test("tracks parallel source lanes without run-level events", () => {
+        const event = (source: string, phase: string, current = 0, total = 0) => ({
+            jobId: "x",
+            source,
+            phase,
+            current,
+            total,
+            gamesFound: 0,
+            message: "",
+        });
+
+        let lanes = applyOtbImportLaneProgress({}, event("The Week in Chess", "downloading", 3, 12));
+        lanes = applyOtbImportLaneProgress(lanes, event("All sources", "starting", 0, 9));
+        lanes = applyOtbImportLaneProgress(lanes, event("Complete", "complete", 1, 1));
+        lanes = applyOtbImportLaneProgress(lanes, event("BritBase public OTB archive", "done", 1, 1));
+
+        const summary = getOtbImportLaneSummary(lanes, 9);
+        expect(Object.keys(lanes)).toEqual(["The Week in Chess", "BritBase public OTB archive"]);
+        expect(summary.done).toBe(1);
+        expect(summary.total).toBe(9);
+        expect(summary.entries.map((lane) => getOtbImportLaneLabel(lane.source))).toEqual([
+            "BritBase",
+            "TWIC",
+        ]);
     });
 
     test("clamps per-source progress", () => {

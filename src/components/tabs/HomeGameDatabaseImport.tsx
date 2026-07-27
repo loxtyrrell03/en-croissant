@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Checkbox,
-  Divider,
   Group,
   Modal,
   SimpleGrid,
@@ -15,7 +14,12 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconCloudDownload, IconDatabase, IconShieldCheck } from "@tabler/icons-react";
+import {
+  IconChessFilled,
+  IconChessKnightFilled,
+  IconDatabase,
+  IconTrophy,
+} from "@tabler/icons-react";
 import { resolve } from "@tauri-apps/api/path";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useMemo, useState } from "react";
@@ -221,7 +225,7 @@ export default function HomeGameDatabaseImport() {
           </Text>
         }
       >
-        <Stack gap="md">
+        <Stack gap="lg">
           <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="xs">
             {HOME_GAME_DATABASE_IMPORT_SOURCES.map((option) => {
               const selected = option.value === source;
@@ -234,23 +238,24 @@ export default function HomeGameDatabaseImport() {
                   disabled={busy}
                   onClick={() => chooseSource(option.value)}
                 >
-                  <Group gap="sm" wrap="nowrap">
-                    <Box className={classes.sourceChoiceMark}>{option.shortLabel}</Box>
-                    <Box>
-                      <Text size="sm" fw={650}>
-                        {option.label}
-                      </Text>
-                      <Text size="xs" c="dimmed">
-                        {option.detail}
-                      </Text>
+                  <Group gap="xs" wrap="nowrap" justify="center">
+                    <Box className={classes.sourceChoiceMark}>
+                      {option.value === "chesscom" ? (
+                        <IconChessFilled size="1rem" />
+                      ) : option.value === "lichess" ? (
+                        <IconChessKnightFilled size="1rem" />
+                      ) : (
+                        <IconTrophy size="1rem" stroke={1.9} />
+                      )}
                     </Box>
+                    <Text size="sm" fw={650}>
+                      {option.label}
+                    </Text>
                   </Group>
                 </UnstyledButton>
               );
             })}
           </SimpleGrid>
-
-          <Divider />
 
           {databasesLoading ? (
             <Alert color="blue" variant="light" icon={<IconDatabase size="1rem" />}>
@@ -264,6 +269,8 @@ export default function HomeGameDatabaseImport() {
               controlSize="sm"
               dense={false}
               forceSaveDatabase
+              variant="dialog"
+              submitLabel="Create database"
               onImported={async () => {
                 await refreshDatabaseLists();
                 setOpened(false);
@@ -276,11 +283,7 @@ export default function HomeGameDatabaseImport() {
                 void importOnlineDatabase();
               }}
             >
-              <Stack gap="sm">
-                <Alert color="blue" variant="light" icon={<IconCloudDownload size="1rem" />}>
-                  Import the account’s public standard games into one local database. Linked Lichess
-                  accounts automatically use their access token.
-                </Alert>
+              <Stack gap="md">
                 <TextInput
                   label={`${source === "lichess" ? "Lichess" : "Chess.com"} username`}
                   placeholder={source === "lichess" ? "DrNykterstein" : "HikaruNakamura"}
@@ -291,12 +294,10 @@ export default function HomeGameDatabaseImport() {
                     setUsername(event.currentTarget.value);
                     setError(null);
                   }}
-                  withAsterisk
                   data-autofocus
                 />
                 <TextInput
                   label="Database name"
-                  description="Leave blank to use the account and source name."
                   placeholder={suggestedTitle || "Account games"}
                   value={requestedTitle}
                   disabled={busy}
@@ -310,16 +311,9 @@ export default function HomeGameDatabaseImport() {
                   checked={autoUpdate}
                   disabled={busy}
                   label="Keep this database updated"
-                  description="Check for newly published account games during automatic database updates."
                   onChange={(event) => setAutoUpdate(event.currentTarget.checked)}
                 />
-                <Group justify="space-between" gap="sm" mt="xs">
-                  <Group gap={6} wrap="nowrap">
-                    <IconShieldCheck size="1rem" color="var(--mantine-color-teal-6)" />
-                    <Text size="xs" c="dimmed">
-                      Standard games only · duplicates removed
-                    </Text>
-                  </Group>
+                <Group justify="flex-end" mt="xs">
                   <Button
                     type="submit"
                     loading={importing}

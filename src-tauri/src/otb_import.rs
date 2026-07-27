@@ -3,15 +3,22 @@ use std::{
     fs::{create_dir_all, File},
     io::{BufRead, BufReader, Cursor, Read, Write},
     path::{Path, PathBuf},
-    time::Duration,
+    sync::{
+        atomic::{AtomicBool, AtomicUsize, Ordering},
+        Arc, Mutex, OnceLock,
+    },
+    time::{Duration, Instant},
 };
 
 use chrono::{Datelike, Utc};
+use futures_util::future::{self, BoxFuture, Either};
+use futures_util::stream::FuturesUnordered;
 use futures_util::{stream, StreamExt};
 use pgn_reader::{BufferedReader as PgnReader, SanPlus, Skip, Visitor};
 use reqwest::header::{COOKIE, SET_COOKIE};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use specta::Type;
 use tauri_specta::Event;
 
@@ -20,12 +27,39 @@ const TWIC_ARCHIVE: &str = "https://theweekinchess.com/twic";
 const CHESSBASE_SEARCH: &str = "https://en.chessbase.com/search";
 const CHESSBASE_ORIGIN: &str = "https://en.chessbase.com";
 const CHESS_RESULTS_PLAYER_SEARCH: &str = "https://s1.chess-results.com/partiesuche.aspx?lan=1";
+/// The Chess-Results row-limit dropdown posts option INDEXES, not row counts:
+/// "1"=250, "2"=500, "3"=1000, "5"=2000. Anything else — including a literal
+/// row count — makes the server answer 500. "5" selects the 2000-row maximum.
+const CHESS_RESULTS_MAX_ROWS: &str = "5";
+/// How far back the community-broadcast listing walk may go. Roughly 24 tours
+/// per page, so this covers several years of community events.
+const LICHESS_COMMUNITY_MAX_PAGES: u32 = 150;
+/// A finished tour's PGN can still gain a few late corrections, so only tours
+/// that ended comfortably in the past are cached as immutable.
+const LICHESS_COMMUNITY_CACHE_SETTLE: Duration = Duration::from_secs(14 * 24 * 60 * 60);
 const FOUR_NCL_PGN_INDEX: &str = "https://www.4ncl.co.uk/pgn-replay.htm";
 const FOUR_NCL_ORIGIN: &str = "https://www.4ncl.co.uk";
 const CHESSCOPE_ORIGIN: &str = "https://chesscope.com";
 const BRITBASE_ORIGINS: &[&str] = &["https://www.saund.org.uk", "https://www.saund.co.uk"];
 const PGN_MENTOR_INDEX: &str = "https://www.pgnmentor.com/files.html?outpost=1";
-const USER_AGENT: &str = "Outpost OTB importer/0.2";
+const USER_AGENT: &str = "En Croissant OTB importer/0.3";
+
+/// Bounded fan-out for general archive hosts. Downloads dominate the wall clock,
+/// so archives are fetched concurrently and merged in their sorted order.
+const ARCHIVE_CONCURRENCY: usize = 8;
+/// Lichess endpoints get a lower limit so the collector stays a polite client.
+const LICHESS_CONCURRENCY: usize = 4;
+/// Minimum spacing between lichess requests across every concurrent task, so the
+/// lane stays around eight requests a second instead of bursting.
+const LICHESS_MIN_REQUEST_SPACING: Duration = Duration::from_millis(120);
+/// Upper bound on an honoured `Retry-After`, so one header cannot stall a run.
+const MAX_RETRY_AFTER_SECONDS: u64 = 120;
+/// Discovery pages (search results, archive indexes) move slowly but are not
+/// immutable, so a cached copy is only reused while it is fresh.
+const PAGE_CACHE_MAX_AGE: Duration = Duration::from_secs(60 * 60);
+/// Season aggregates such as the 4NCL "all games" PGNs keep growing, so their
+/// cached copies expire rather than pinning a half-finished season.
+const GROWING_ARCHIVE_CACHE_MAX_AGE: Duration = Duration::from_secs(6 * 60 * 60);
 
 const BRITBASE_INDEXES: &[(&str, u16)] = &[
     ("/britbase/brit2020.htm", 2020),
@@ -100,6 +134,7 @@ pub struct OtbImportReport {
     pub player_name: String,
     pub fide_id: Option<String>,
     pub output_path: String,
+    pub cancelled: bool,
     pub games_found: u32,
     pub duplicates_removed: u32,
     pub suspected_online_games_excluded: u32,
@@ -118,6 +153,75 @@ pub struct OtbImportProgress {
     pub total: u32,
     pub games_found: u32,
     pub message: String,
+}
+
+static OTB_IMPORT_CANCELLATIONS: OnceLock<Mutex<HashMap<String, Arc<AtomicBool>>>> =
+    OnceLock::new();
+
+fn cancellation_registry() -> &'static Mutex<HashMap<String, Arc<AtomicBool>>> {
+    OTB_IMPORT_CANCELLATIONS.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn lock_cancellations() -> std::sync::MutexGuard<'static, HashMap<String, Arc<AtomicBool>>> {
+    cancellation_registry()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
+struct CancellationRegistration {
+    job_id: String,
+    signal: Arc<AtomicBool>,
+}
+
+impl CancellationRegistration {
+    fn new(job_id: &str) -> Result<Self, String> {
+        let job_id = job_id.trim();
+        if job_id.is_empty() {
+            return Err("The OTB search job ID is missing.".to_string());
+        }
+        let mut registry = lock_cancellations();
+        if registry.contains_key(job_id) {
+            return Err("An OTB search with this job ID is already running.".to_string());
+        }
+        let signal = Arc::new(AtomicBool::new(false));
+        registry.insert(job_id.to_string(), signal.clone());
+        Ok(Self {
+            job_id: job_id.to_string(),
+            signal,
+        })
+    }
+}
+
+impl Drop for CancellationRegistration {
+    fn drop(&mut self) {
+        let mut registry = lock_cancellations();
+        if registry
+            .get(&self.job_id)
+            .is_some_and(|signal| Arc::ptr_eq(signal, &self.signal))
+        {
+            registry.remove(&self.job_id);
+        }
+    }
+}
+
+async fn wait_for_cancellation(signal: Arc<AtomicBool>) {
+    while !signal.load(Ordering::Acquire) {
+        tokio::time::sleep(Duration::from_millis(50)).await;
+    }
+}
+
+/// Stops outstanding source requests while allowing the collector to finalize
+/// and return every deduplicated game already merged into the partial PGN.
+#[tauri::command]
+#[specta::specta]
+pub fn cancel_otb_games(job_id: String) -> bool {
+    let signal = lock_cancellations().get(job_id.trim()).cloned();
+    if let Some(signal) = signal {
+        signal.store(true, Ordering::Release);
+        true
+    } else {
+        false
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -141,12 +245,98 @@ struct Collection {
     identity_mismatches_excluded: u32,
 }
 
+impl Collection {
+    /// Folds one archive's scan into the shared collection and reports
+    /// `(matched, unique_added)`. Archives download concurrently but are merged
+    /// in their sorted order, so deduplication stays deterministic.
+    fn merge(&mut self, outcome: ScanOutcome, source: &str) -> (u32, u32) {
+        self.suspected_online_games_excluded = self
+            .suspected_online_games_excluded
+            .saturating_add(outcome.suspected_online_games_excluded);
+        self.identity_mismatches_excluded = self
+            .identity_mismatches_excluded
+            .saturating_add(outcome.identity_mismatches_excluded);
+        let before = self.games.len();
+        for game in outcome.games {
+            add_game(self, game.pgn, source, game.side);
+        }
+        let added = self
+            .games
+            .len()
+            .saturating_sub(before)
+            .min(u32::MAX as usize) as u32;
+        (outcome.matched, added)
+    }
+}
+
+/// Sources scan concurrently, so the shared collection lives behind a lock;
+/// merges are short CPU bursts and the guard is never held across an await.
+fn lock_collection(collection: &Mutex<Collection>) -> std::sync::MutexGuard<'_, Collection> {
+    collection
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
+fn games_len(collection: &Mutex<Collection>) -> usize {
+    lock_collection(collection).games.len()
+}
+
+fn merge_into(collection: &Mutex<Collection>, outcome: ScanOutcome, source: &str) -> (u32, u32) {
+    lock_collection(collection).merge(outcome, source)
+}
+
+/// One archive's scan result, kept detached from [`Collection`] so the CPU-heavy
+/// decompress-and-parse step can run on the blocking pool without shared state.
+/// A failure part-way through an archive is carried in `error`, never by
+/// discarding the games that were already parsed.
+#[derive(Default)]
+struct ScanOutcome {
+    matched: u32,
+    suspected_online_games_excluded: u32,
+    identity_mismatches_excluded: u32,
+    games: Vec<PendingGame>,
+    error: Option<String>,
+}
+
+impl ScanOutcome {
+    /// An archive that could not be opened at all: no games, just the error.
+    fn failed(error: String) -> Self {
+        Self {
+            error: Some(error),
+            ..Self::default()
+        }
+    }
+
+    fn absorb(&mut self, other: ScanOutcome) {
+        self.matched = self.matched.saturating_add(other.matched);
+        self.suspected_online_games_excluded = self
+            .suspected_online_games_excluded
+            .saturating_add(other.suspected_online_games_excluded);
+        self.identity_mismatches_excluded = self
+            .identity_mismatches_excluded
+            .saturating_add(other.identity_mismatches_excluded);
+        self.games.extend(other.games);
+        if self.error.is_none() {
+            self.error = other.error;
+        }
+    }
+}
+
+struct PendingGame {
+    pgn: String,
+    side: &'static str,
+}
+
 #[derive(Clone, Debug)]
 struct PlayerIdentity {
     canonical_name: String,
     fide_id: Option<String>,
-    core_name_tokens: HashSet<String>,
-    all_name_tokens: HashSet<String>,
+    /// Surname anchor tokens: the comma-form surname when one was given,
+    /// otherwise the outer tokens of the typed name (either end could be the
+    /// surname in "Given Surname" or "Surname Given" order).
+    surname_tokens: Vec<String>,
+    /// Every normalized name token in order, single-letter initials included.
+    name_tokens: Vec<String>,
 }
 
 impl PlayerIdentity {
@@ -164,28 +354,131 @@ impl PlayerIdentity {
                     .collect::<String>()
             })
             .filter(|value| !value.is_empty());
-        let core_name_tokens = core_name_tokens(&canonical_name);
-        let all_name_tokens = all_name_tokens(&canonical_name);
-        if all_name_tokens.len() < 2 || core_name_tokens.is_empty() {
+        let name_tokens = player_name_tokens(&canonical_name);
+        let full_token_count = name_tokens.iter().filter(|token| token.len() > 1).count();
+        if name_tokens.len() < 2 || full_token_count == 0 {
             return Err("Enter at least a first name and surname.".to_string());
+        }
+        let mut surname_tokens = canonical_name
+            .split_once(',')
+            .map(|(surname, _)| player_name_tokens(surname))
+            .unwrap_or_default();
+        if surname_tokens.is_empty() {
+            surname_tokens = [name_tokens.first(), name_tokens.last()]
+                .into_iter()
+                .flatten()
+                .cloned()
+                .collect();
+            surname_tokens.dedup();
         }
 
         Ok(Self {
             canonical_name,
             fide_id,
-            core_name_tokens,
-            all_name_tokens,
+            surname_tokens,
+            name_tokens,
         })
     }
 
+    /// Whether `candidate` plausibly names this player. Public archives
+    /// disagree about how much of a name they print — "Tyrrell, Lachlan Baly
+    /// Hughes" appears elsewhere as "Tyrrell, Lachlan", "Lachlan Tyrrell", or
+    /// "Tyrrell, L.B.H." — so the shorter form only has to be contained in the
+    /// longer one (with initials standing in for the names they abbreviate),
+    /// anchored on the surname so shared given names alone never match.
     fn name_matches(&self, candidate: &str) -> bool {
-        let candidate_tokens = core_name_tokens(candidate);
-        if self.core_name_tokens.len() >= 2 {
-            candidate_tokens.len() >= 2 && candidate_tokens == self.core_name_tokens
-        } else {
-            let candidate_tokens = all_name_tokens(candidate);
-            candidate_tokens.len() >= 2 && candidate_tokens == self.all_name_tokens
+        let candidate_tokens = player_name_tokens(candidate);
+        if candidate_tokens.len() < 2 {
+            return false;
         }
+        // Arbiters mistype surnames ("Tyrell" for "Tyrrell"), so one edit is
+        // tolerated — but only when a FIDE ID pins exactly who is meant, so a
+        // name-only search can never drift onto a similarly-named stranger.
+        // A game whose same-side FIDE ID conflicts is rejected regardless.
+        let allow_fuzzy = self.fide_id.is_some();
+        if !self.surname_tokens.iter().any(|anchor| {
+            candidate_tokens
+                .iter()
+                .any(|token| token == anchor || (allow_fuzzy && fuzzy_token_eq(anchor, token)))
+        }) {
+            return false;
+        }
+        if candidate_tokens.len() <= self.name_tokens.len() {
+            tokens_subsume(&candidate_tokens, &self.name_tokens, allow_fuzzy)
+        } else {
+            tokens_subsume(&self.name_tokens, &candidate_tokens, allow_fuzzy)
+        }
+    }
+}
+
+/// True when every token of `smaller` claims a distinct token of `larger`,
+/// either verbatim or as an initial of it (in either direction) — plus, when
+/// `allow_fuzzy` is set, with one typo of tolerance. Verbatim pairs are
+/// claimed first so an initial can never steal the token a full name needs.
+fn tokens_subsume(smaller: &[String], larger: &[String], allow_fuzzy: bool) -> bool {
+    let mut used = vec![false; larger.len()];
+    let mut relaxed_pending = Vec::new();
+    for token in smaller {
+        let exact = larger
+            .iter()
+            .enumerate()
+            .find(|(index, candidate)| !used[*index] && *candidate == token);
+        match exact {
+            Some((index, _)) => used[index] = true,
+            None => relaxed_pending.push(token),
+        }
+    }
+    for token in relaxed_pending {
+        let by_relaxed = larger.iter().enumerate().find(|(index, candidate)| {
+            !used[*index]
+                && (initial_matches(token, candidate)
+                    || (allow_fuzzy && fuzzy_token_eq(token, candidate)))
+        });
+        match by_relaxed {
+            Some((index, _)) => used[index] = true,
+            None => return false,
+        }
+    }
+    true
+}
+
+fn initial_matches(left: &str, right: &str) -> bool {
+    (left.chars().count() == 1 && right.starts_with(left))
+        || (right.chars().count() == 1 && left.starts_with(right))
+}
+
+/// One typo of tolerance for long-enough tokens: a single substituted,
+/// inserted, or dropped letter. Short tokens stay exact — one edit on a short
+/// name changes who it is.
+fn fuzzy_token_eq(left: &str, right: &str) -> bool {
+    let left_chars: Vec<char> = left.chars().collect();
+    let right_chars: Vec<char> = right.chars().collect();
+    if left_chars.len().min(right_chars.len()) < 5 {
+        return false;
+    }
+    match left_chars.len().abs_diff(right_chars.len()) {
+        0 => {
+            left_chars
+                .iter()
+                .zip(&right_chars)
+                .filter(|(a, b)| a != b)
+                .count()
+                == 1
+        }
+        1 => {
+            let (short, long) = if left_chars.len() < right_chars.len() {
+                (&left_chars, &right_chars)
+            } else {
+                (&right_chars, &left_chars)
+            };
+            let split = short
+                .iter()
+                .zip(long.iter())
+                .take_while(|(a, b)| a == b)
+                .count();
+            short[split..] == long[split + 1..]
+        }
+        _ => false,
     }
 }
 
@@ -239,62 +532,175 @@ pub async fn collect_otb_games_with_runtime<R: tauri::Runtime>(
         return Err("Select at least one OTB game source.".to_string());
     }
 
-    let identity = PlayerIdentity::new(&request.player_name, request.fide_id.as_deref())?;
+    let identity = Arc::new(PlayerIdentity::new(
+        &request.player_name,
+        request.fide_id.as_deref(),
+    )?);
+    let cancellation = CancellationRegistration::new(&request.job_id)?;
     create_dir_all(&request.cache_dir).map_err(|error| error.to_string())?;
     if let Some(parent) = request.output_path.parent() {
         create_dir_all(parent).map_err(|error| error.to_string())?;
     }
 
+    // No total request timeout: monthly broadcast dumps and TWIC zips can be
+    // large on slow links. The read timeout only fires when a transfer stalls.
     let client = Client::builder()
         .user_agent(USER_AGENT)
         .connect_timeout(Duration::from_secs(15))
-        .timeout(Duration::from_secs(60))
+        .read_timeout(Duration::from_secs(60))
         .build()
         .map_err(|error| error.to_string())?;
-    let mut collection = Collection::default();
+    let collection = Mutex::new(Collection::default());
     let mut reports = Vec::new();
+    let mut cancelled = false;
 
-    if !request.local_pgn_paths.is_empty() {
-        let report = scan_local_pgn_sources(&request, &identity, &mut collection, &app);
-        reports.push(report);
+    // Every source lane runs concurrently: the wall clock follows the slowest
+    // single lane instead of the sum of all of them. Each lane merges into the
+    // shared collection as its archives finish, so cross-source deduplication
+    // still happens on the fly, and the shared lichess pacing lane keeps the
+    // combined request rate polite. Reports keep a fixed order via the index.
+    {
+        let client = &client;
+        let request = &request;
+        let identity = &identity;
+        let collection = &collection;
+        let app = &app;
+        let mut lanes: FuturesUnordered<BoxFuture<'_, (usize, OtbImportSourceReport)>> =
+            FuturesUnordered::new();
+
+        if !request.local_pgn_paths.is_empty() {
+            let index = lanes.len();
+            lanes.push(Box::pin(finish_lane(
+                index,
+                scan_local_pgn_sources(request, identity, collection, app),
+                app,
+                request,
+                collection,
+            )));
+        }
+        if request.include_chess_results {
+            let index = lanes.len();
+            lanes.push(Box::pin(finish_lane(
+                index,
+                scan_chess_results(client, request, identity, collection, app),
+                app,
+                request,
+                collection,
+            )));
+        }
+        if request.include_lichess_broadcasts {
+            let index = lanes.len();
+            lanes.push(Box::pin(finish_lane(
+                index,
+                scan_lichess_fide_broadcasts(client, request, identity, collection, app),
+                app,
+                request,
+                collection,
+            )));
+            let index = lanes.len();
+            lanes.push(Box::pin(finish_lane(
+                index,
+                scan_chessscope_broadcasts(client, request, identity, collection, app),
+                app,
+                request,
+                collection,
+            )));
+            let index = lanes.len();
+            lanes.push(Box::pin(finish_lane(
+                index,
+                scan_lichess_broadcasts(client, request, identity, collection, app),
+                app,
+                request,
+                collection,
+            )));
+            let index = lanes.len();
+            lanes.push(Box::pin(finish_lane(
+                index,
+                scan_lichess_community_broadcasts(client, request, identity, collection, app),
+                app,
+                request,
+                collection,
+            )));
+        }
+        if request.include_chessbase_news {
+            let index = lanes.len();
+            lanes.push(Box::pin(finish_lane(
+                index,
+                scan_chessbase_news(client, request, identity, collection, app),
+                app,
+                request,
+                collection,
+            )));
+        }
+        if request.include_official_pgn_indexes {
+            let index = lanes.len();
+            lanes.push(Box::pin(finish_lane(
+                index,
+                scan_4ncl_otb_archive(client, request, identity, collection, app),
+                app,
+                request,
+                collection,
+            )));
+            let index = lanes.len();
+            lanes.push(Box::pin(finish_lane(
+                index,
+                scan_britbase(client, request, identity, collection, app),
+                app,
+                request,
+                collection,
+            )));
+            let index = lanes.len();
+            lanes.push(Box::pin(finish_lane(
+                index,
+                scan_pgn_mentor(client, request, identity, collection, app),
+                app,
+                request,
+                collection,
+            )));
+        }
+        if request.include_twic {
+            let index = lanes.len();
+            lanes.push(Box::pin(finish_lane(
+                index,
+                scan_twic(client, request, identity, collection, app),
+                app,
+                request,
+                collection,
+            )));
+        }
+
+        emit_progress(
+            app,
+            request,
+            "All sources",
+            "starting",
+            0,
+            lanes.len(),
+            0,
+            format!("Searching {} public source lanes in parallel", lanes.len()),
+        );
+        let mut finished = Vec::new();
+        while !lanes.is_empty() {
+            let next_lane = Box::pin(lanes.next());
+            let stop_requested = Box::pin(wait_for_cancellation(cancellation.signal.clone()));
+            match future::select(next_lane, stop_requested).await {
+                Either::Left((Some(result), _)) => finished.push(result),
+                Either::Left((None, _)) => break,
+                Either::Right(((), pending_lane)) => {
+                    drop(pending_lane);
+                    cancelled = true;
+                    break;
+                }
+            }
+        }
+        drop(lanes);
+        finished.sort_by_key(|(index, _)| *index);
+        reports.extend(finished.into_iter().map(|(_, report)| report));
     }
 
-    if request.include_chess_results {
-        let report = scan_chess_results(&client, &request, &identity, &mut collection, &app).await;
-        reports.push(report);
-    }
-
-    if request.include_lichess_broadcasts {
-        let live_report =
-            scan_lichess_fide_broadcasts(&client, &request, &identity, &mut collection, &app).await;
-        reports.push(live_report);
-        let discovery_report =
-            scan_chessscope_broadcasts(&client, &request, &identity, &mut collection, &app).await;
-        reports.push(discovery_report);
-        let report =
-            scan_lichess_broadcasts(&client, &request, &identity, &mut collection, &app).await;
-        reports.push(report);
-    }
-
-    if request.include_chessbase_news {
-        let report = scan_chessbase_news(&client, &request, &identity, &mut collection, &app).await;
-        reports.push(report);
-    }
-
-    if request.include_official_pgn_indexes {
-        let report =
-            scan_4ncl_otb_archive(&client, &request, &identity, &mut collection, &app).await;
-        reports.push(report);
-        let report = scan_britbase(&client, &request, &identity, &mut collection, &app).await;
-        reports.push(report);
-        let report = scan_pgn_mentor(&client, &request, &identity, &mut collection, &app).await;
-        reports.push(report);
-    }
-
-    if request.include_twic {
-        let report = scan_twic(&client, &request, &identity, &mut collection, &app).await;
-        reports.push(report);
-    }
+    let mut collection = collection
+        .into_inner()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
 
     collection.games.sort_by(|left, right| {
         left.date
@@ -323,17 +729,25 @@ pub async fn collect_otb_games_with_runtime<R: tauri::Runtime>(
         &app,
         &request,
         "Complete",
-        "complete",
+        if cancelled { "cancelled" } else { "complete" },
         1,
         1,
         collection.games.len(),
-        format!("Found {} unique OTB games", collection.games.len()),
+        if cancelled {
+            format!(
+                "Search stopped — keeping {} unique OTB games found so far",
+                collection.games.len()
+            )
+        } else {
+            format!("Found {} unique OTB games", collection.games.len())
+        },
     );
 
     Ok(OtbImportReport {
-        player_name: identity.canonical_name,
-        fide_id: identity.fide_id,
+        player_name: identity.canonical_name.clone(),
+        fide_id: identity.fide_id.clone(),
         output_path: request.output_path.to_string_lossy().into_owned(),
+        cancelled,
         games_found: collection.games.len().min(u32::MAX as usize) as u32,
         duplicates_removed: collection.duplicates_removed,
         suspected_online_games_excluded: collection.suspected_online_games_excluded,
@@ -343,13 +757,45 @@ pub async fn collect_otb_games_with_runtime<R: tauri::Runtime>(
     })
 }
 
-fn scan_local_pgn_sources<R: tauri::Runtime>(
+/// Awaits one source lane, then announces its completion so the UI can mark
+/// the lane done the moment it finishes rather than when the whole run ends.
+async fn finish_lane<R: tauri::Runtime, F>(
+    index: usize,
+    scan: F,
+    app: &tauri::AppHandle<R>,
     request: &OtbImportRequest,
-    identity: &PlayerIdentity,
-    collection: &mut Collection,
+    collection: &Mutex<Collection>,
+) -> (usize, OtbImportSourceReport)
+where
+    F: std::future::Future<Output = OtbImportSourceReport>,
+{
+    let report = scan.await;
+    emit_progress(
+        app,
+        request,
+        &report.source,
+        "done",
+        1,
+        1,
+        games_len(collection),
+        format!(
+            "{} finished — {} unique game{} added",
+            report.source,
+            report.unique_games_added,
+            if report.unique_games_added == 1 { "" } else { "s" }
+        ),
+    );
+    (index, report)
+}
+
+async fn scan_local_pgn_sources<R: tauri::Runtime>(
+    request: &OtbImportRequest,
+    identity: &Arc<PlayerIdentity>,
+    collection: &Mutex<Collection>,
     app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
-    let mut report = OtbImportSourceReport::new("Local PGN / ChessBase export");
+    const SOURCE: &str = "Local PGN / ChessBase export";
+    let mut report = OtbImportSourceReport::new(SOURCE);
     let total = request.local_pgn_paths.len();
 
     for (index, path) in request.local_pgn_paths.iter().enumerate() {
@@ -362,23 +808,35 @@ fn scan_local_pgn_sources<R: tauri::Runtime>(
         emit_progress(
             app,
             request,
-            "Local PGN / ChessBase export",
+            SOURCE,
             "scanning",
             index,
             total,
-            collection.games.len(),
+            games_len(collection),
             format!("Scanning {label}"),
         );
 
-        let before = collection.games.len();
-        match scan_local_path(path, identity, collection, &label, request.from_year) {
-            Ok(matched) => {
-                report.matched_games += matched;
-                report.unique_games_added += collection
-                    .games
-                    .len()
-                    .saturating_sub(before)
-                    .min(u32::MAX as usize) as u32;
+        // Reading and parsing a local archive is blocking, CPU-heavy work; it
+        // runs on the blocking pool so the async runtime stays responsive.
+        let path = path.clone();
+        let identity = Arc::clone(identity);
+        let from_year = request.from_year;
+        let scan_label = label.clone();
+        let result = tokio::task::spawn_blocking(move || {
+            scan_local_path(&path, &identity, &scan_label, from_year)
+        })
+        .await
+        .map_err(|error| error.to_string())
+        .and_then(|result| result);
+
+        match result {
+            Ok(mut outcome) => {
+                if let Some(error) = outcome.error.take() {
+                    report.errors.push(format!("{label}: {error}"));
+                }
+                let (matched, added) = merge_into(collection, outcome, SOURCE);
+                report.matched_games = report.matched_games.saturating_add(matched);
+                report.unique_games_added = report.unique_games_added.saturating_add(added);
             }
             Err(error) => report.errors.push(format!("{label}: {error}")),
         }
@@ -390,11 +848,12 @@ fn scan_local_pgn_sources<R: tauri::Runtime>(
 async fn scan_lichess_fide_broadcasts<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
-    identity: &PlayerIdentity,
-    collection: &mut Collection,
+    identity: &Arc<PlayerIdentity>,
+    collection: &Mutex<Collection>,
     app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
-    let mut report = OtbImportSourceReport::new("Lichess live FIDE broadcasts");
+    const SOURCE: &str = "Lichess live FIDE broadcasts";
+    let mut report = OtbImportSourceReport::new(SOURCE);
     let Some(fide_id) = identity.fide_id.as_deref() else {
         report
             .errors
@@ -407,11 +866,11 @@ async fn scan_lichess_fide_broadcasts<R: tauri::Runtime>(
         emit_progress(
             app,
             request,
-            "Lichess live broadcasts",
+            SOURCE,
             "discovering",
             page.saturating_sub(1) as usize,
             20,
-            collection.games.len(),
+            games_len(collection),
             format!("Checking Lichess FIDE tournament page {page}"),
         );
         let page_url = format!("https://lichess.org/fide/{fide_id}/player?page={page}");
@@ -448,16 +907,24 @@ async fn scan_lichess_fide_broadcasts<R: tauri::Runtime>(
     let mut round_paths = round_paths.into_iter().collect::<Vec<_>>();
     round_paths.sort();
     let mut tours = HashMap::<String, String>::new();
-    for round_path in round_paths {
+    let mut round_lookups = stream::iter(round_paths.into_iter().map(|round_path| {
+        let client = client.clone();
         let api_url = format!("https://lichess.org/api{round_path}");
-        let response = match get_lichess_with_backoff(client, &api_url).await {
-            Ok(response) => response,
-            Err(error) => {
-                report.errors.push(format!("{api_url}: {error}"));
-                continue;
+        async move {
+            let value = async {
+                get_lichess_with_backoff(&client, &api_url)
+                    .await?
+                    .json::<serde_json::Value>()
+                    .await
+                    .map_err(|error| error.to_string())
             }
-        };
-        let value = match response.json::<serde_json::Value>().await {
+            .await;
+            (api_url, value)
+        }
+    }))
+    .buffered(LICHESS_CONCURRENCY);
+    while let Some((api_url, result)) = round_lookups.next().await {
+        let value = match result {
             Ok(value) => value,
             Err(error) => {
                 report.errors.push(format!("{api_url}: {error}"));
@@ -491,48 +958,57 @@ async fn scan_lichess_fide_broadcasts<R: tauri::Runtime>(
 
     let mut tours = tours.into_iter().collect::<Vec<_>>();
     tours.sort_by(|left, right| left.1.cmp(&right.1));
-    for (index, (tour_id, tour_name)) in tours.iter().enumerate() {
-        emit_progress(
-            app,
-            request,
-            "Lichess live broadcasts",
-            "downloading",
-            index,
-            tours.len(),
-            collection.games.len(),
-            format!("Scanning {tour_name}"),
-        );
-        report.archives_checked = report.archives_checked.saturating_add(1);
+    let total = tours.len();
+    let started = AtomicUsize::new(0);
+    let games_found = AtomicUsize::new(games_len(collection));
+    // Live broadcast PGNs are never cached: an in-progress tournament keeps
+    // growing, so a cached copy would freeze the newest games out of the import.
+    let mut downloads = stream::iter(tours.into_iter().map(|(tour_id, tour_name)| {
+        let client = client.clone();
+        let identity = Arc::clone(identity);
         let pgn_url = format!("https://lichess.org/api/broadcast/{tour_id}.pgn");
-        let bytes = match get_lichess_with_backoff(client, &pgn_url).await {
-            Ok(response) => match response.bytes().await {
-                Ok(bytes) => bytes,
-                Err(error) => {
-                    report.errors.push(format!("{pgn_url}: {error}"));
-                    continue;
-                }
-            },
-            Err(error) => {
-                report.errors.push(format!("{pgn_url}: {error}"));
-                continue;
+        let from_year = request.from_year;
+        let started = &started;
+        let games_found = &games_found;
+        async move {
+            emit_progress(
+                app,
+                request,
+                SOURCE,
+                "downloading",
+                started.fetch_add(1, Ordering::Relaxed),
+                total,
+                games_found.load(Ordering::Relaxed),
+                format!("Scanning {tour_name}"),
+            );
+            let outcome = async {
+                let bytes = get_lichess_with_backoff(&client, &pgn_url)
+                    .await?
+                    .bytes()
+                    .await
+                    .map_err(|error| error.to_string())?
+                    .to_vec();
+                Ok::<_, String>(
+                    scan_pgn_bytes(bytes, identity, SOURCE, pgn_url.clone(), from_year).await,
+                )
             }
-        };
-        let before = collection.games.len();
-        match scan_pgn_reader(
-            BufReader::new(Cursor::new(bytes)),
-            identity,
-            collection,
-            "Lichess live FIDE broadcasts",
-            &pgn_url,
-            request.from_year,
-        ) {
-            Ok(matched) => {
+            .await;
+            (pgn_url, outcome)
+        }
+    }))
+    .buffered(LICHESS_CONCURRENCY);
+
+    while let Some((pgn_url, result)) = downloads.next().await {
+        report.archives_checked = report.archives_checked.saturating_add(1);
+        match result {
+            Ok(mut outcome) => {
+                if let Some(error) = outcome.error.take() {
+                    report.errors.push(format!("{pgn_url}: {error}"));
+                }
+                let (matched, added) = merge_into(collection, outcome, SOURCE);
                 report.matched_games = report.matched_games.saturating_add(matched);
-                report.unique_games_added += collection
-                    .games
-                    .len()
-                    .saturating_sub(before)
-                    .min(u32::MAX as usize) as u32;
+                report.unique_games_added = report.unique_games_added.saturating_add(added);
+                games_found.store(games_len(collection), Ordering::Relaxed);
             }
             Err(error) => report.errors.push(format!("{pgn_url}: {error}")),
         }
@@ -541,22 +1017,105 @@ async fn scan_lichess_fide_broadcasts<R: tauri::Runtime>(
     report
 }
 
+/// Parses a downloaded PGN payload on the blocking pool. A parse failure comes
+/// back inside the outcome — the archive still counts as downloaded and every
+/// game read before the failure is kept.
+async fn scan_pgn_bytes(
+    bytes: Vec<u8>,
+    identity: Arc<PlayerIdentity>,
+    source: &'static str,
+    source_url: String,
+    from_year: u16,
+) -> ScanOutcome {
+    tokio::task::spawn_blocking(move || {
+        scan_pgn_reader(
+            BufReader::new(Cursor::new(bytes)),
+            &identity,
+            source,
+            &source_url,
+            from_year,
+        )
+    })
+    .await
+    .unwrap_or_else(|error| ScanOutcome::failed(error.to_string()))
+}
+
+/// Decompresses and parses a zstd-compressed PGN archive on the blocking pool.
+async fn scan_zst_bytes(
+    bytes: Vec<u8>,
+    identity: Arc<PlayerIdentity>,
+    source: &'static str,
+    source_url: String,
+    from_year: u16,
+) -> ScanOutcome {
+    tokio::task::spawn_blocking(move || {
+        match zstd::stream::read::Decoder::new(Cursor::new(bytes)) {
+            Ok(decoder) => scan_pgn_reader(
+                BufReader::new(decoder),
+                &identity,
+                source,
+                &source_url,
+                from_year,
+            ),
+            Err(error) => ScanOutcome::failed(error.to_string()),
+        }
+    })
+    .await
+    .unwrap_or_else(|error| ScanOutcome::failed(error.to_string()))
+}
+
+/// Unpacks and parses a zip of PGNs on the blocking pool.
+async fn scan_zip_bytes(
+    bytes: Vec<u8>,
+    identity: Arc<PlayerIdentity>,
+    source: &'static str,
+    source_url: String,
+    from_year: u16,
+) -> ScanOutcome {
+    tokio::task::spawn_blocking(move || {
+        scan_zip_pgns(bytes, &identity, source, &source_url, from_year)
+            .unwrap_or_else(ScanOutcome::failed)
+    })
+    .await
+    .unwrap_or_else(|error| ScanOutcome::failed(error.to_string()))
+}
+
+/// Picks the zip or plain-PGN reader from the archive URL, off the async runtime.
+async fn scan_archive_bytes(
+    bytes: Vec<u8>,
+    identity: Arc<PlayerIdentity>,
+    source: &'static str,
+    source_url: String,
+    from_year: u16,
+) -> ScanOutcome {
+    let is_zip = source_url
+        .split('?')
+        .next()
+        .is_some_and(|url| url.to_ascii_lowercase().ends_with(".zip"));
+    if is_zip {
+        scan_zip_bytes(bytes, identity, source, source_url, from_year).await
+    } else {
+        scan_pgn_bytes(bytes, identity, source, source_url, from_year).await
+    }
+}
+
 async fn scan_chessscope_broadcasts<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
-    identity: &PlayerIdentity,
-    collection: &mut Collection,
+    identity: &Arc<PlayerIdentity>,
+    collection: &Mutex<Collection>,
     app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
-    let mut report = OtbImportSourceReport::new("Chessscope broadcast discovery");
+    const SOURCE: &str = "Chessscope broadcast discovery";
+    let mut report = OtbImportSourceReport::new(SOURCE);
     emit_progress(
         app,
         request,
-        "Chessscope",
+        SOURCE,
         "discovering",
         0,
         1,
-        collection.games.len(),
+        games_len(collection),
         "Resolving the player on Chessscope".to_string(),
     );
 
@@ -598,40 +1157,44 @@ async fn scan_chessscope_broadcasts<R: tauri::Runtime>(
     let mut player_urls = player_urls.into_iter().collect::<Vec<_>>();
     player_urls.sort();
     player_urls.truncate(20);
+    let total_candidates = player_urls.len();
+    let started = AtomicUsize::new(0);
+    let games_so_far = games_len(collection);
+    // The player page is the only place a game played an hour ago first appears,
+    // so it is always fetched live; the per-game pages it points at are stable
+    // artifacts and stay cached.
+    let mut candidates = stream::iter(player_urls.into_iter().map(|player_url| {
+        let client = client.clone();
+        let started = &started;
+        async move {
+            let position = started.fetch_add(1, Ordering::Relaxed);
+            emit_progress(
+                app,
+                request,
+                SOURCE,
+                "discovering",
+                position,
+                total_candidates,
+                games_so_far,
+                format!("Checking Chessscope player candidate {}", position + 1),
+            );
+            let html = fetch_page_live(&client, &player_url).await;
+            (player_url, html)
+        }
+    }))
+    .buffered(ARCHIVE_CONCURRENCY);
+
     let mut game_urls = HashSet::new();
-    for (index, player_url) in player_urls.iter().enumerate() {
-        emit_progress(
-            app,
-            request,
-            "Chessscope",
-            "discovering",
-            index,
-            player_urls.len(),
-            collection.games.len(),
-            format!("Checking Chessscope player candidate {}", index + 1),
-        );
-        let response = match client.get(player_url).send().await {
-            Ok(response) if response.status() == reqwest::StatusCode::NOT_FOUND => continue,
-            Ok(response) => match response.error_for_status() {
-                Ok(response) => response,
-                Err(error) => {
-                    report.errors.push(format!("{player_url}: {error}"));
-                    continue;
-                }
-            },
+    while let Some((player_url, result)) = candidates.next().await {
+        let html = match result {
+            Ok(Some(html)) => html,
+            Ok(None) => continue,
             Err(error) => {
                 report.errors.push(format!("{player_url}: {error}"));
                 continue;
             }
         };
         report.archives_checked = report.archives_checked.saturating_add(1);
-        let html = match response.text().await {
-            Ok(html) => html,
-            Err(error) => {
-                report.errors.push(format!("{player_url}: {error}"));
-                continue;
-            }
-        };
         if !chessscope_page_matches_identity(&html, identity) {
             continue;
         }
@@ -647,95 +1210,97 @@ async fn scan_chessscope_broadcasts<R: tauri::Runtime>(
     let total_game_pages = game_urls.len();
     let mut game_pages = stream::iter(game_urls.into_iter().map(|game_url| {
         let client = client.clone();
+        let cache_dir = request.cache_dir.clone();
         async move {
-            let response = client
-                .get(&game_url)
-                .send()
-                .await
-                .map_err(|error| error.to_string())?
-                .error_for_status()
-                .map_err(|error| error.to_string())?;
-            let html = response.text().await.map_err(|error| error.to_string())?;
-            Ok::<_, String>((game_url, html))
+            let html = fetch_page_cached(&client, &game_url, &cache_dir, "chessscope").await;
+            (game_url, html)
         }
     }))
-    .buffer_unordered(8);
+    .buffered(ARCHIVE_CONCURRENCY);
     let mut rounds = HashSet::new();
     let mut checked_game_pages = 0usize;
-    while let Some(result) = game_pages.next().await {
+    while let Some((game_url, result)) = game_pages.next().await {
         checked_game_pages += 1;
         emit_progress(
             app,
             request,
-            "Chessscope",
+            SOURCE,
             "discovering",
             checked_game_pages,
             total_game_pages,
-            collection.games.len(),
+            games_len(collection),
             format!(
                 "Resolving Chessscope broadcast game {} of {}",
                 checked_game_pages, total_game_pages
             ),
         );
         match result {
-            Ok((_game_url, html)) => {
+            Ok(Some(html)) => {
                 report.archives_checked = report.archives_checked.saturating_add(1);
                 rounds.extend(extract_chessscope_round_ids(&html));
             }
-            Err(error) => report.errors.push(error),
+            Ok(None) => {}
+            Err(error) => report.errors.push(format!("{game_url}: {error}")),
         }
     }
 
     let mut rounds = rounds.into_iter().collect::<Vec<_>>();
     rounds.sort();
-    for (index, round_id) in rounds.iter().enumerate() {
-        emit_progress(
-            app,
-            request,
-            "Chessscope",
-            "downloading",
-            index,
-            rounds.len(),
-            collection.games.len(),
-            format!(
-                "Scanning Chessscope broadcast round {} of {}",
-                index + 1,
-                rounds.len()
-            ),
-        );
+    let total_rounds = rounds.len();
+    let started = AtomicUsize::new(0);
+    let games_found = AtomicUsize::new(games_len(collection));
+    // Broadcast round PGNs stay uncached: rounds are still being relayed.
+    let mut downloads = stream::iter(rounds.into_iter().map(|round_id| {
+        let client = client.clone();
+        let identity = Arc::clone(identity);
         let pgn_url = format!("https://lichess.org/api/broadcast/round/{round_id}.pgn");
-        let bytes = match get_lichess_with_backoff(client, &pgn_url).await {
-            Ok(response) => match response.bytes().await {
-                Ok(bytes) => bytes,
-                Err(error) => {
-                    report.errors.push(format!("{pgn_url}: {error}"));
-                    continue;
-                }
-            },
-            Err(error) => {
-                report.errors.push(format!("{pgn_url}: {error}"));
-                continue;
+        let from_year = request.from_year;
+        let started = &started;
+        let games_found = &games_found;
+        async move {
+            let position = started.fetch_add(1, Ordering::Relaxed);
+            emit_progress(
+                app,
+                request,
+                SOURCE,
+                "downloading",
+                position,
+                total_rounds,
+                games_found.load(Ordering::Relaxed),
+                format!(
+                    "Scanning Chessscope broadcast round {} of {}",
+                    position + 1,
+                    total_rounds
+                ),
+            );
+            let outcome = async {
+                let bytes = get_lichess_with_backoff(&client, &pgn_url)
+                    .await?
+                    .bytes()
+                    .await
+                    .map_err(|error| error.to_string())?
+                    .to_vec();
+                Ok::<_, String>(
+                    scan_pgn_bytes(bytes, identity, SOURCE, pgn_url.clone(), from_year).await,
+                )
             }
-        };
+            .await;
+            (pgn_url, outcome)
+        }
+    }))
+    .buffered(LICHESS_CONCURRENCY);
+
+    while let Some((pgn_url, result)) = downloads.next().await {
         report.archives_checked = report.archives_checked.saturating_add(1);
-        let before = collection.games.len();
-        match scan_pgn_reader(
-            BufReader::new(Cursor::new(bytes)),
-            identity,
-            collection,
-            "Chessscope broadcast discovery",
-            &pgn_url,
-            request.from_year,
-        ) {
-            Ok(matched) => {
+        match result {
+            Ok(mut outcome) => {
+                if let Some(error) = outcome.error.take() {
+                    report.errors.push(format!("{pgn_url}: {error}"));
+                }
+                let (matched, added) = merge_into(collection, outcome, SOURCE);
                 report.matched_games = report.matched_games.saturating_add(matched);
-                report.unique_games_added = report.unique_games_added.saturating_add(
-                    collection
-                        .games
-                        .len()
-                        .saturating_sub(before)
-                        .min(u32::MAX as usize) as u32,
-                );
+                report.unique_games_added = report.unique_games_added.saturating_add(added);
+                games_found.store(games_len(collection), Ordering::Relaxed);
             }
             Err(error) => report.errors.push(format!("{pgn_url}: {error}")),
         }
@@ -747,27 +1312,29 @@ async fn scan_chessscope_broadcasts<R: tauri::Runtime>(
 async fn scan_lichess_broadcasts<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
-    identity: &PlayerIdentity,
-    collection: &mut Collection,
+    identity: &Arc<PlayerIdentity>,
+    collection: &Mutex<Collection>,
     app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
-    let mut report = OtbImportSourceReport::new("Lichess broadcast database");
-    let list = match client.get(LICHESS_BROADCAST_LIST).send().await {
-        Ok(response) => match response.error_for_status() {
-            Ok(response) => match response.text().await {
-                Ok(text) => text,
-                Err(error) => {
-                    report.errors.push(error.to_string());
-                    return report;
-                }
-            },
-            Err(error) => {
-                report.errors.push(error.to_string());
-                return report;
-            }
-        },
+    const SOURCE: &str = "Lichess broadcast database";
+    let mut report = OtbImportSourceReport::new(SOURCE);
+    let list = match fetch_page_cached(
+        client,
+        LICHESS_BROADCAST_LIST,
+        &request.cache_dir,
+        "lichess-index",
+    )
+    .await
+    {
+        Ok(Some(text)) => text,
+        Ok(None) => {
+            report
+                .errors
+                .push(format!("{LICHESS_BROADCAST_LIST}: not found"));
+            return report;
+        }
         Err(error) => {
-            report.errors.push(error.to_string());
+            report.errors.push(error);
             return report;
         }
     };
@@ -781,52 +1348,54 @@ async fn scan_lichess_broadcasts<R: tauri::Runtime>(
         .collect::<Vec<_>>();
     urls.sort();
 
-    for (index, url) in urls.iter().enumerate() {
-        let label = file_name_from_url(url);
-        emit_progress(
-            app,
-            request,
-            "Lichess broadcasts",
-            "downloading",
-            index,
-            urls.len(),
-            collection.games.len(),
-            format!("Checking {label}"),
-        );
-        report.archives_checked += 1;
+    let total = urls.len();
+    let started = AtomicUsize::new(0);
+    let games_found = AtomicUsize::new(games_len(collection));
+    let mut archives = stream::iter(urls.into_iter().map(|url| {
+        let client = client.clone();
+        let identity = Arc::clone(identity);
+        let label = file_name_from_url(&url);
         let cache_path = request.cache_dir.join(&label);
-        let (bytes, cached) = match fetch_cached(client, url, &cache_path).await {
-            Ok(result) => result,
-            Err(error) => {
-                report.errors.push(format!("{label}: {error}"));
-                continue;
+        let from_year = request.from_year;
+        let started = &started;
+        let games_found = &games_found;
+        async move {
+            emit_progress(
+                app,
+                request,
+                SOURCE,
+                "downloading",
+                started.fetch_add(1, Ordering::Relaxed),
+                total,
+                games_found.load(Ordering::Relaxed),
+                format!("Checking {label}"),
+            );
+            let outcome = async {
+                let (bytes, cached) = fetch_cached(&client, &url, &cache_path).await?;
+                let outcome = scan_zst_bytes(bytes, identity, SOURCE, url, from_year).await;
+                Ok::<_, String>((cached, outcome))
             }
-        };
-        if cached {
-            report.cached_archives += 1;
+            .await;
+            (label, outcome)
         }
+    }))
+    .buffered(LICHESS_CONCURRENCY);
 
-        let before = collection.games.len();
-        match zstd::stream::read::Decoder::new(Cursor::new(bytes)) {
-            Ok(decoder) => match scan_pgn_reader(
-                BufReader::new(decoder),
-                identity,
-                collection,
-                "Lichess broadcast database",
-                url,
-                request.from_year,
-            ) {
-                Ok(matched) => {
-                    report.matched_games += matched;
-                    report.unique_games_added += collection
-                        .games
-                        .len()
-                        .saturating_sub(before)
-                        .min(u32::MAX as usize)
-                        as u32;
+    while let Some((label, result)) = archives.next().await {
+        report.archives_checked += 1;
+        match result {
+            Ok((cached, mut outcome)) => {
+                if cached {
+                    report.cached_archives += 1;
                 }
-                Err(error) => report.errors.push(format!("{label}: {error}")),
-            },
+                if let Some(error) = outcome.error.take() {
+                    report.errors.push(format!("{label}: {error}"));
+                }
+                let (matched, added) = merge_into(collection, outcome, SOURCE);
+                report.matched_games = report.matched_games.saturating_add(matched);
+                report.unique_games_added = report.unique_games_added.saturating_add(added);
+                games_found.store(games_len(collection), Ordering::Relaxed);
+            }
             Err(error) => report.errors.push(format!("{label}: {error}")),
         }
     }
@@ -834,85 +1403,369 @@ async fn scan_lichess_broadcasts<R: tauri::Runtime>(
     report
 }
 
+/// Community broadcasts never appear in the monthly dumps, and the player's
+/// FIDE page only links a broadcast when its organizer tagged FIDE IDs — a
+/// university or league event relayed on a DGT board is invisible to both.
+/// This lane walks the public past-broadcast listing instead and scans every
+/// tour that overlaps the requested years.
+async fn scan_lichess_community_broadcasts<R: tauri::Runtime>(
+    client: &Client,
+    request: &OtbImportRequest,
+    identity: &Arc<PlayerIdentity>,
+    collection: &Mutex<Collection>,
+    app: &tauri::AppHandle<R>,
+) -> OtbImportSourceReport {
+    const SOURCE: &str = "Lichess community broadcasts";
+    let mut report = OtbImportSourceReport::new(SOURCE);
+    let from_millis = year_start_millis(request.from_year);
+
+    let mut tours: Vec<(String, String, Option<i64>)> = Vec::new();
+    let mut seen = HashSet::new();
+    let mut pages_all_before_range = 0u32;
+    for page in 1..=LICHESS_COMMUNITY_MAX_PAGES {
+        emit_progress(
+            app,
+            request,
+            SOURCE,
+            "discovering",
+            page.saturating_sub(1) as usize,
+            0,
+            games_len(collection),
+            format!("Checking past community broadcasts, page {page}"),
+        );
+        let url = format!("https://lichess.org/api/broadcast/top?page={page}");
+        let value = match get_lichess_with_backoff(client, &url).await {
+            Ok(response) => match response.json::<serde_json::Value>().await {
+                Ok(value) => value,
+                Err(error) => {
+                    report.errors.push(format!("{url}: {error}"));
+                    break;
+                }
+            },
+            Err(error) => {
+                report.errors.push(error);
+                break;
+            }
+        };
+        let (page_tours, all_before_range, has_next) =
+            extract_community_tour_page(&value, from_millis);
+        for tour in page_tours {
+            if seen.insert(tour.0.clone()) {
+                tours.push(tour);
+            }
+        }
+        if all_before_range {
+            pages_all_before_range += 1;
+        } else {
+            pages_all_before_range = 0;
+        }
+        // The listing is only loosely date-ordered, so one all-old page can
+        // still be followed by newer tours; two in a row means we are done.
+        if pages_all_before_range >= 2 || !has_next {
+            break;
+        }
+        if page == LICHESS_COMMUNITY_MAX_PAGES {
+            report.errors.push(format!(
+                "The community broadcast listing was capped at {LICHESS_COMMUNITY_MAX_PAGES} pages before reaching {}.",
+                request.from_year
+            ));
+        }
+    }
+
+    tours.sort_by(|left, right| left.0.cmp(&right.0));
+    let total = tours.len();
+    let started = AtomicUsize::new(0);
+    let now_millis = Utc::now().timestamp_millis();
+    let mut downloads = stream::iter(tours.into_iter().map(|(tour_id, tour_name, ends_at)| {
+        let client = client.clone();
+        let identity = Arc::clone(identity);
+        let pgn_url = format!("https://lichess.org/api/broadcast/{tour_id}.pgn");
+        let settled = ends_at.is_some_and(|ends| {
+            now_millis.saturating_sub(ends) > LICHESS_COMMUNITY_CACHE_SETTLE.as_millis() as i64
+        });
+        let cache_path = settled
+            .then(|| request.cache_dir.join(cache_file_name("lichess-community", &pgn_url)));
+        let from_year = request.from_year;
+        let started = &started;
+        async move {
+            emit_progress(
+                app,
+                request,
+                SOURCE,
+                "downloading",
+                started.fetch_add(1, Ordering::Relaxed),
+                total,
+                games_len(collection),
+                format!("Scanning {tour_name}"),
+            );
+            let outcome = async {
+                let (bytes, cached) =
+                    fetch_lichess_maybe_cached(&client, &pgn_url, cache_path.as_deref()).await?;
+                Ok::<_, String>((
+                    cached,
+                    scan_pgn_bytes(bytes, identity, SOURCE, pgn_url.clone(), from_year).await,
+                ))
+            }
+            .await;
+            (pgn_url, outcome)
+        }
+    }))
+    .buffered(LICHESS_CONCURRENCY);
+
+    while let Some((pgn_url, result)) = downloads.next().await {
+        report.archives_checked = report.archives_checked.saturating_add(1);
+        match result {
+            Ok((cached, mut outcome)) => {
+                if cached {
+                    report.cached_archives = report.cached_archives.saturating_add(1);
+                }
+                if let Some(error) = outcome.error.take() {
+                    report.errors.push(format!("{pgn_url}: {error}"));
+                }
+                let (matched, added) = merge_into(collection, outcome, SOURCE);
+                report.matched_games = report.matched_games.saturating_add(matched);
+                report.unique_games_added = report.unique_games_added.saturating_add(added);
+            }
+            Err(error) => report.errors.push(format!("{pgn_url}: {error}")),
+        }
+    }
+
+    report
+}
+
+fn year_start_millis(year: u16) -> i64 {
+    chrono::NaiveDate::from_ymd_opt(year as i32, 1, 1)
+        .and_then(|date| date.and_hms_opt(0, 0, 0))
+        .map(|datetime| datetime.and_utc().timestamp_millis())
+        .unwrap_or(0)
+}
+
+/// Pulls the past-broadcast entries out of one `/api/broadcast/top` page.
+/// Returns the tours overlapping the requested range, whether every dated
+/// tour on the page ended before the range, and whether another page exists.
+fn extract_community_tour_page(
+    value: &serde_json::Value,
+    from_millis: i64,
+) -> (Vec<(String, String, Option<i64>)>, bool, bool) {
+    let past = value.get("past");
+    let results = past
+        .and_then(|past| past.get("currentPageResults"))
+        .and_then(serde_json::Value::as_array);
+    let mut tours = Vec::new();
+    let mut dated = 0usize;
+    let mut before_range = 0usize;
+    if let Some(results) = results {
+        for entry in results {
+            let Some(tour) = entry.get("tour") else {
+                continue;
+            };
+            let Some(id) = tour.get("id").and_then(serde_json::Value::as_str) else {
+                continue;
+            };
+            let name = tour
+                .get("name")
+                .and_then(serde_json::Value::as_str)
+                .unwrap_or("Lichess broadcast");
+            let dates = tour.get("dates").and_then(serde_json::Value::as_array);
+            let starts = dates
+                .and_then(|dates| dates.first())
+                .and_then(serde_json::Value::as_i64);
+            let ends = dates
+                .and_then(|dates| dates.get(1))
+                .and_then(serde_json::Value::as_i64)
+                .or(starts);
+            if let Some(ends_at) = ends {
+                dated += 1;
+                if ends_at < from_millis {
+                    before_range += 1;
+                    continue;
+                }
+            }
+            tours.push((id.to_string(), name.to_string(), ends));
+        }
+    }
+    let has_next = past
+        .and_then(|past| past.get("nextPage"))
+        .and_then(serde_json::Value::as_u64)
+        .is_some();
+    (tours, dated > 0 && before_range == dated, has_next)
+}
+
+/// Downloads a lichess PGN through the paced lane, optionally backed by an
+/// immutable cache entry for tours that finished long ago.
+async fn fetch_lichess_maybe_cached(
+    client: &Client,
+    url: &str,
+    cache_path: Option<&Path>,
+) -> Result<(Vec<u8>, bool), String> {
+    if let Some(path) = cache_path {
+        if let Some(bytes) = read_cache_entry(path, None).await {
+            return Ok((bytes, true));
+        }
+    }
+    let bytes = get_lichess_with_backoff(client, url)
+        .await?
+        .bytes()
+        .await
+        .map_err(|error| error.to_string())?
+        .to_vec();
+    if let Some(path) = cache_path {
+        write_cache_entry(path, &bytes).await;
+    }
+    Ok((bytes, false))
+}
+
 async fn scan_chess_results<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
-    identity: &PlayerIdentity,
-    collection: &mut Collection,
+    identity: &Arc<PlayerIdentity>,
+    collection: &Mutex<Collection>,
     app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
-    let mut report = OtbImportSourceReport::new("Chess-Results FIDE player search");
-    let Some(fide_id) = identity.fide_id.as_deref() else {
+    // Chess-Results is a stateful ASP.NET form flow (cookie plus __VIEWSTATE
+    // round-trip), so nothing here can be served from the disk cache.
+    const SOURCE: &str = "Chess-Results player search";
+    let mut report = OtbImportSourceReport::new(SOURCE);
+
+    // Two passes: the FIDE-ID search finds correctly-tagged uploads, and the
+    // name search recovers events whose organizers uploaded player records
+    // without FIDE IDs (university and league PGNs especially). The identity
+    // filter prunes same-surname strangers from the name pass afterwards.
+    let mut passes: Vec<(String, Vec<(&'static str, String)>)> = Vec::new();
+    if let Some(fide_id) = identity.fide_id.as_deref() {
+        passes.push((
+            format!("FIDE {fide_id}"),
+            vec![("ctl00$P1$Txt_FideID", fide_id.to_string())],
+        ));
+    }
+    if let Some(fields) = chess_results_name_fields(identity) {
+        passes.push(("name".to_string(), fields));
+    }
+    if passes.is_empty() {
         report
             .errors
-            .push("Chess-Results requires a FIDE ID.".to_string());
+            .push("Chess-Results needs a player name or FIDE ID.".to_string());
         return report;
-    };
-    report.archives_checked = 1;
-    emit_progress(
-        app,
-        request,
-        "Chess-Results",
-        "searching",
-        0,
-        1,
-        collection.games.len(),
-        format!("Searching Chess-Results for FIDE {fide_id}"),
-    );
+    }
 
-    let initial_response = match client.get(CHESS_RESULTS_PLAYER_SEARCH).send().await {
-        Ok(response) => match response.error_for_status() {
-            Ok(response) => response,
-            Err(error) => {
-                report.errors.push(error.to_string());
-                return report;
+    let total = passes.len();
+    for (index, (label, fields)) in passes.into_iter().enumerate() {
+        report.archives_checked = report.archives_checked.saturating_add(1);
+        emit_progress(
+            app,
+            request,
+            SOURCE,
+            "searching",
+            index,
+            total,
+            games_len(collection),
+            format!("Searching Chess-Results by {label}"),
+        );
+        match chess_results_download(client, &fields).await {
+            Ok(bytes) => {
+                let mut outcome = scan_pgn_bytes(
+                    bytes,
+                    Arc::clone(identity),
+                    SOURCE,
+                    CHESS_RESULTS_PLAYER_SEARCH.to_string(),
+                    request.from_year,
+                )
+                .await;
+                if let Some(error) = outcome.error.take() {
+                    report.errors.push(format!("{label}: {error}"));
+                }
+                let (matched, added) = merge_into(collection, outcome, SOURCE);
+                report.matched_games = report.matched_games.saturating_add(matched);
+                report.unique_games_added = report.unique_games_added.saturating_add(added);
             }
-        },
-        Err(error) => {
-            report.errors.push(error.to_string());
-            return report;
+            Err(error) => report.errors.push(format!("{label}: {error}")),
+        }
+    }
+    report
+}
+
+/// Surname plus the first full given name, matching how organizers key player
+/// records: "Tyrrell" + "Lachlan" finds both "Tyrrell, Lachlan" and
+/// "Tyrrell, Lachlan Baly Hughes". Initials are never sent — the search treats
+/// them literally and would miss everything.
+fn chess_results_name_fields(identity: &PlayerIdentity) -> Option<Vec<(&'static str, String)>> {
+    let (surname, given_names) = match identity.canonical_name.split_once(',') {
+        Some((surname, given_names)) => {
+            (surname.trim().to_string(), given_names.trim().to_string())
+        }
+        None => {
+            let mut tokens = identity.canonical_name.split_whitespace();
+            let first = tokens.next()?.to_string();
+            let last = tokens.last()?.to_string();
+            (last, first)
         }
     };
+    if surname.chars().count() < 2 {
+        return None;
+    }
+    let mut fields = vec![("ctl00$P1$txt_nachname", surname)];
+    let forename = given_names
+        .split_whitespace()
+        .find(|token| token.chars().count() > 1 && !token.contains('.'));
+    if let Some(forename) = forename {
+        fields.push(("ctl00$P1$txt_vorname", forename.to_string()));
+    }
+    Some(fields)
+}
+
+/// One full Chess-Results round-trip: fresh session and view state, the search
+/// POST, then the PGN download POST against the refreshed state.
+async fn chess_results_download(
+    client: &Client,
+    fields: &[(&'static str, String)],
+) -> Result<Vec<u8>, String> {
+    let initial_response = client
+        .get(CHESS_RESULTS_PLAYER_SEARCH)
+        .send()
+        .await
+        .map_err(|error| error.to_string())?
+        .error_for_status()
+        .map_err(|error| error.to_string())?;
     let cookie = collect_response_cookies(&initial_response);
-    let initial_html = match initial_response.text().await {
-        Ok(html) => html,
-        Err(error) => {
-            report.errors.push(error.to_string());
-            return report;
-        }
-    };
+    let initial_html = initial_response
+        .text()
+        .await
+        .map_err(|error| error.to_string())?;
+
     let mut search_form = extract_hidden_form_fields(&initial_html);
-    set_form_field(&mut search_form, "ctl00$P1$Txt_FideID", fide_id);
-    set_form_field(&mut search_form, "ctl00$P1$combo_anzahl_zeilen", "5");
+    for (name, value) in fields {
+        set_form_field(&mut search_form, name, value);
+    }
+    set_form_field(
+        &mut search_form,
+        "ctl00$P1$combo_anzahl_zeilen",
+        CHESS_RESULTS_MAX_ROWS,
+    );
     set_form_field(&mut search_form, "ctl00$P1$cb_SuchenPartie", "Search");
 
     let mut search_request = client.post(CHESS_RESULTS_PLAYER_SEARCH).form(&search_form);
     if !cookie.is_empty() {
         search_request = search_request.header(COOKIE, &cookie);
     }
-    let search_response = match search_request.send().await {
-        Ok(response) => match response.error_for_status() {
-            Ok(response) => response,
-            Err(error) => {
-                report.errors.push(error.to_string());
-                return report;
-            }
-        },
-        Err(error) => {
-            report.errors.push(error.to_string());
-            return report;
-        }
-    };
-    let search_html = match search_response.text().await {
-        Ok(html) => html,
-        Err(error) => {
-            report.errors.push(error.to_string());
-            return report;
-        }
-    };
+    let search_html = search_request
+        .send()
+        .await
+        .map_err(|error| error.to_string())?
+        .error_for_status()
+        .map_err(|error| error.to_string())?
+        .text()
+        .await
+        .map_err(|error| error.to_string())?;
+
     let mut download_form = extract_hidden_form_fields(&search_html);
-    set_form_field(&mut download_form, "ctl00$P1$Txt_FideID", fide_id);
-    set_form_field(&mut download_form, "ctl00$P1$combo_anzahl_zeilen", "5");
+    for (name, value) in fields {
+        set_form_field(&mut download_form, name, value);
+    }
+    set_form_field(
+        &mut download_form,
+        "ctl00$P1$combo_anzahl_zeilen",
+        CHESS_RESULTS_MAX_ROWS,
+    );
     set_form_field(
         &mut download_form,
         "ctl00$P1$cb_DownLoadPGN",
@@ -925,78 +1778,54 @@ async fn scan_chess_results<R: tauri::Runtime>(
     if !cookie.is_empty() {
         download_request = download_request.header(COOKIE, &cookie);
     }
-    let bytes = match download_request.send().await {
-        Ok(response) => match response.error_for_status() {
-            Ok(response) => match response.bytes().await {
-                Ok(bytes) => bytes,
-                Err(error) => {
-                    report.errors.push(error.to_string());
-                    return report;
-                }
-            },
-            Err(error) => {
-                report.errors.push(error.to_string());
-                return report;
-            }
-        },
-        Err(error) => {
-            report.errors.push(error.to_string());
-            return report;
-        }
-    };
-
-    let before = collection.games.len();
-    match scan_pgn_reader(
-        BufReader::new(Cursor::new(bytes)),
-        identity,
-        collection,
-        "Chess-Results FIDE player search",
-        CHESS_RESULTS_PLAYER_SEARCH,
-        request.from_year,
-    ) {
-        Ok(matched) => {
-            report.matched_games = matched;
-            report.unique_games_added = collection
-                .games
-                .len()
-                .saturating_sub(before)
-                .min(u32::MAX as usize) as u32;
-        }
-        Err(error) => report.errors.push(error),
-    }
-    report
+    let bytes = download_request
+        .send()
+        .await
+        .map_err(|error| error.to_string())?
+        .error_for_status()
+        .map_err(|error| error.to_string())?
+        .bytes()
+        .await
+        .map_err(|error| error.to_string())?;
+    Ok(bytes.to_vec())
 }
 
 async fn scan_chessbase_news<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
-    identity: &PlayerIdentity,
-    collection: &mut Collection,
+    identity: &Arc<PlayerIdentity>,
+    collection: &Mutex<Collection>,
     app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
-    let mut report = OtbImportSourceReport::new("ChessBase public news PGNs");
+    const SOURCE: &str = "ChessBase public news PGNs";
+    let mut report = OtbImportSourceReport::new(SOURCE);
     let mut article_urls = HashSet::new();
 
-    for query in chessbase_search_queries(identity) {
-        let response = match client
-            .get(CHESSBASE_SEARCH)
-            .query(&[("pattern", query.as_str())])
-            .send()
-            .await
-        {
-            Ok(response) => match response.error_for_status() {
-                Ok(response) => response,
-                Err(error) => {
-                    report.errors.push(format!("Search for {query}: {error}"));
-                    continue;
-                }
-            },
-            Err(error) => {
-                report.errors.push(format!("Search for {query}: {error}"));
-                continue;
+    // The search itself stays live so freshly published articles are never
+    // missed; everything it fans out to is cached.
+    let mut searches = stream::iter(chessbase_search_queries(identity).into_iter().map(|query| {
+        let client = client.clone();
+        async move {
+            let html = async {
+                client
+                    .get(CHESSBASE_SEARCH)
+                    .query(&[("pattern", query.as_str())])
+                    .send()
+                    .await
+                    .map_err(|error| error.to_string())?
+                    .error_for_status()
+                    .map_err(|error| error.to_string())?
+                    .text()
+                    .await
+                    .map_err(|error| error.to_string())
             }
-        };
-        match response.text().await {
+            .await;
+            (query, html)
+        }
+    }))
+    .buffered(ARCHIVE_CONCURRENCY);
+    while let Some((query, result)) = searches.next().await {
+        match result {
             Ok(html) => {
                 for href in extract_quoted_values(&html, "href=") {
                     let clean = decode_basic_html_entities(&href);
@@ -1011,38 +1840,40 @@ async fn scan_chessbase_news<R: tauri::Runtime>(
 
     let mut article_urls = article_urls.into_iter().collect::<Vec<_>>();
     article_urls.sort();
+    let total_articles = article_urls.len();
+    let started = AtomicUsize::new(0);
+    let games_so_far = games_len(collection);
+    let mut articles = stream::iter(article_urls.into_iter().map(|article_url| {
+        let client = client.clone();
+        let cache_dir = request.cache_dir.clone();
+        let started = &started;
+        async move {
+            let position = started.fetch_add(1, Ordering::Relaxed);
+            emit_progress(
+                app,
+                request,
+                SOURCE,
+                "discovering",
+                position,
+                total_articles,
+                games_so_far,
+                format!(
+                    "Checking ChessBase article {} of {}",
+                    position + 1,
+                    total_articles
+                ),
+            );
+            let html = fetch_page_cached(&client, &article_url, &cache_dir, "chessbase").await;
+            (article_url, html)
+        }
+    }))
+    .buffered(ARCHIVE_CONCURRENCY);
+
     let mut pgn_urls = HashSet::new();
-    for (index, article_url) in article_urls.iter().enumerate() {
-        emit_progress(
-            app,
-            request,
-            "ChessBase",
-            "discovering",
-            index,
-            article_urls.len(),
-            collection.games.len(),
-            format!(
-                "Checking ChessBase article {} of {}",
-                index + 1,
-                article_urls.len()
-            ),
-        );
+    while let Some((article_url, result)) = articles.next().await {
         report.archives_checked = report.archives_checked.saturating_add(1);
-        let response = match client.get(article_url).send().await {
-            Ok(response) => match response.error_for_status() {
-                Ok(response) => response,
-                Err(error) => {
-                    report.errors.push(format!("{article_url}: {error}"));
-                    continue;
-                }
-            },
-            Err(error) => {
-                report.errors.push(format!("{article_url}: {error}"));
-                continue;
-            }
-        };
-        match response.text().await {
-            Ok(html) => {
+        match result {
+            Ok(Some(html)) => {
                 for marker in ["data-url=", "href="] {
                     for value in extract_quoted_values(&html, marker) {
                         let value = decode_basic_html_entities(&value);
@@ -1053,59 +1884,64 @@ async fn scan_chessbase_news<R: tauri::Runtime>(
                     }
                 }
             }
+            Ok(None) => {}
             Err(error) => report.errors.push(format!("{article_url}: {error}")),
         }
     }
 
     let mut pgn_urls = pgn_urls.into_iter().collect::<Vec<_>>();
     pgn_urls.sort();
-    for (index, pgn_url) in pgn_urls.iter().enumerate() {
-        emit_progress(
-            app,
-            request,
-            "ChessBase",
-            "downloading",
-            index,
-            pgn_urls.len(),
-            collection.games.len(),
-            format!("Scanning ChessBase PGN {} of {}", index + 1, pgn_urls.len()),
-        );
-        let response = match client.get(pgn_url).send().await {
-            Ok(response) => match response.error_for_status() {
-                Ok(response) => response,
-                Err(error) => {
-                    report.errors.push(format!("{pgn_url}: {error}"));
-                    continue;
+    let total_pgns = pgn_urls.len();
+    let started = AtomicUsize::new(0);
+    let games_found = AtomicUsize::new(games_len(collection));
+    // An article covering a running event appends rounds to the same PGN URL, so
+    // these cache entries expire like the other growing archives.
+    let mut downloads = stream::iter(pgn_urls.into_iter().map(|pgn_url| {
+        let client = client.clone();
+        let identity = Arc::clone(identity);
+        let cache_path = request
+            .cache_dir
+            .join(cache_file_name("chessbase", &pgn_url));
+        let from_year = request.from_year;
+        let started = &started;
+        let games_found = &games_found;
+        async move {
+            let position = started.fetch_add(1, Ordering::Relaxed);
+            emit_progress(
+                app,
+                request,
+                SOURCE,
+                "downloading",
+                position,
+                total_pgns,
+                games_found.load(Ordering::Relaxed),
+                format!("Scanning ChessBase PGN {} of {}", position + 1, total_pgns),
+            );
+            let outcome = async {
+                let (bytes, cached) = fetch_cached_growing(&client, &pgn_url, &cache_path).await?;
+                let outcome =
+                    scan_archive_bytes(bytes, identity, SOURCE, pgn_url.clone(), from_year).await;
+                Ok::<_, String>((cached, outcome))
+            }
+            .await;
+            (pgn_url, outcome)
+        }
+    }))
+    .buffered(ARCHIVE_CONCURRENCY);
+
+    while let Some((pgn_url, result)) = downloads.next().await {
+        match result {
+            Ok((cached, mut outcome)) => {
+                if cached {
+                    report.cached_archives = report.cached_archives.saturating_add(1);
                 }
-            },
-            Err(error) => {
-                report.errors.push(format!("{pgn_url}: {error}"));
-                continue;
-            }
-        };
-        let bytes = match response.bytes().await {
-            Ok(bytes) => bytes,
-            Err(error) => {
-                report.errors.push(format!("{pgn_url}: {error}"));
-                continue;
-            }
-        };
-        let before = collection.games.len();
-        match scan_pgn_reader(
-            BufReader::new(Cursor::new(bytes)),
-            identity,
-            collection,
-            "ChessBase public news PGNs",
-            pgn_url,
-            request.from_year,
-        ) {
-            Ok(matched) => {
+                if let Some(error) = outcome.error.take() {
+                    report.errors.push(format!("{pgn_url}: {error}"));
+                }
+                let (matched, added) = merge_into(collection, outcome, SOURCE);
                 report.matched_games = report.matched_games.saturating_add(matched);
-                report.unique_games_added += collection
-                    .games
-                    .len()
-                    .saturating_sub(before)
-                    .min(u32::MAX as usize) as u32;
+                report.unique_games_added = report.unique_games_added.saturating_add(added);
+                games_found.store(games_len(collection), Ordering::Relaxed);
             }
             Err(error) => report.errors.push(format!("{pgn_url}: {error}")),
         }
@@ -1117,30 +1953,27 @@ async fn scan_chessbase_news<R: tauri::Runtime>(
 async fn scan_4ncl_otb_archive<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
-    identity: &PlayerIdentity,
-    collection: &mut Collection,
+    identity: &Arc<PlayerIdentity>,
+    collection: &Mutex<Collection>,
     app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
-    let mut report = OtbImportSourceReport::new("Official tournament PGN indexes (4NCL)");
-    let index_html = match client.get(FOUR_NCL_PGN_INDEX).send().await {
-        Ok(response) => match response.error_for_status() {
-            Ok(response) => match response.text().await {
-                Ok(text) => text,
-                Err(error) => {
-                    report.errors.push(error.to_string());
-                    return report;
-                }
-            },
-            Err(error) => {
-                report.errors.push(error.to_string());
+    const SOURCE: &str = "Official tournament PGN indexes (4NCL)";
+    let mut report = OtbImportSourceReport::new(SOURCE);
+    let index_html =
+        match fetch_page_cached(client, FOUR_NCL_PGN_INDEX, &request.cache_dir, "4ncl-index").await
+        {
+            Ok(Some(text)) => text,
+            Ok(None) => {
+                report
+                    .errors
+                    .push(format!("{FOUR_NCL_PGN_INDEX}: not found"));
                 return report;
             }
-        },
-        Err(error) => {
-            report.errors.push(error.to_string());
-            return report;
-        }
-    };
+            Err(error) => {
+                report.errors.push(error);
+                return report;
+            }
+        };
 
     let mut pgn_urls = extract_quoted_values(&index_html, "href=")
         .into_iter()
@@ -1167,66 +2000,70 @@ async fn scan_4ncl_otb_archive<R: tauri::Runtime>(
 
     let mut pgn_urls = pgn_urls.into_iter().collect::<Vec<_>>();
     pgn_urls.sort();
-    for (index, pgn_url) in pgn_urls.iter().enumerate() {
-        emit_progress(
-            app,
-            request,
-            "Official tournament sites",
-            "downloading",
-            index,
-            pgn_urls.len(),
-            collection.games.len(),
-            format!(
-                "Scanning official 4NCL PGN {} of {}",
-                index + 1,
-                pgn_urls.len()
-            ),
-        );
-        let response = match client.get(pgn_url).send().await {
-            Ok(response) if response.status() == reqwest::StatusCode::NOT_FOUND => {
-                if !optional_current_urls.contains(pgn_url) {
+    let total = pgn_urls.len();
+    let started = AtomicUsize::new(0);
+    let games_found = AtomicUsize::new(games_len(collection));
+    // Season aggregates keep growing while the season runs, so their cache
+    // entries expire instead of pinning a half-played season.
+    let mut downloads = stream::iter(pgn_urls.into_iter().map(|pgn_url| {
+        let client = client.clone();
+        let identity = Arc::clone(identity);
+        let cache_path = request.cache_dir.join(cache_file_name("4ncl", &pgn_url));
+        let from_year = request.from_year;
+        let started = &started;
+        let games_found = &games_found;
+        async move {
+            let position = started.fetch_add(1, Ordering::Relaxed);
+            emit_progress(
+                app,
+                request,
+                SOURCE,
+                "downloading",
+                position,
+                total,
+                games_found.load(Ordering::Relaxed),
+                format!("Scanning official 4NCL PGN {} of {}", position + 1, total),
+            );
+            let outcome = async {
+                let Some((bytes, cached)) = fetch_cached_within(
+                    &client,
+                    &pgn_url,
+                    &cache_path,
+                    Some(GROWING_ARCHIVE_CACHE_MAX_AGE),
+                )
+                .await?
+                else {
+                    return Ok::<_, String>(None);
+                };
+                let outcome =
+                    scan_archive_bytes(bytes, identity, SOURCE, pgn_url.clone(), from_year).await;
+                Ok(Some((cached, outcome)))
+            }
+            .await;
+            (pgn_url, outcome)
+        }
+    }))
+    .buffered(ARCHIVE_CONCURRENCY);
+
+    while let Some((pgn_url, result)) = downloads.next().await {
+        match result {
+            Ok(Some((cached, mut outcome))) => {
+                report.archives_checked = report.archives_checked.saturating_add(1);
+                if cached {
+                    report.cached_archives = report.cached_archives.saturating_add(1);
+                }
+                if let Some(error) = outcome.error.take() {
+                    report.errors.push(format!("{pgn_url}: {error}"));
+                }
+                let (matched, added) = merge_into(collection, outcome, SOURCE);
+                report.matched_games = report.matched_games.saturating_add(matched);
+                report.unique_games_added = report.unique_games_added.saturating_add(added);
+                games_found.store(games_len(collection), Ordering::Relaxed);
+            }
+            Ok(None) => {
+                if !optional_current_urls.contains(&pgn_url) {
                     report.errors.push(format!("{pgn_url}: not found"));
                 }
-                continue;
-            }
-            Ok(response) => match response.error_for_status() {
-                Ok(response) => response,
-                Err(error) => {
-                    report.errors.push(format!("{pgn_url}: {error}"));
-                    continue;
-                }
-            },
-            Err(error) => {
-                report.errors.push(format!("{pgn_url}: {error}"));
-                continue;
-            }
-        };
-        report.archives_checked = report.archives_checked.saturating_add(1);
-        let bytes = match response.bytes().await {
-            Ok(bytes) => bytes,
-            Err(error) => {
-                report.errors.push(format!("{pgn_url}: {error}"));
-                continue;
-            }
-        };
-        let before = collection.games.len();
-        match scan_pgn_reader(
-            BufReader::new(Cursor::new(bytes)),
-            identity,
-            collection,
-            "Official tournament PGN indexes (4NCL)",
-            pgn_url,
-            request.from_year,
-        ) {
-            Ok(matched) => {
-                report.matched_games = report.matched_games.saturating_add(matched);
-                report.unique_games_added = report.unique_games_added.saturating_add(
-                    collection
-                        .games
-                        .len()
-                        .saturating_sub(before)
-                        .min(u32::MAX as usize) as u32,
-                );
             }
             Err(error) => report.errors.push(format!("{pgn_url}: {error}")),
         }
@@ -1270,132 +2107,129 @@ fn is_4ncl_otb_archive_url(url: &str) -> bool {
 async fn scan_britbase<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
-    identity: &PlayerIdentity,
-    collection: &mut Collection,
+    identity: &Arc<PlayerIdentity>,
+    collection: &Mutex<Collection>,
     app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
-    let mut report = OtbImportSourceReport::new("BritBase public OTB archive");
+    const SOURCE: &str = "BritBase public OTB archive";
+    let mut report = OtbImportSourceReport::new(SOURCE);
     let relevant_indexes = BRITBASE_INDEXES
         .iter()
         .filter(|(_, start_year)| {
             (*start_year == 0 && request.from_year < 1920)
                 || (*start_year > 0 && start_year.saturating_add(9) >= request.from_year)
         })
+        .map(|(path, _)| (*path).to_string())
         .collect::<Vec<_>>();
-    let mut archive_urls = HashSet::new();
 
-    for (index, (path, _)) in relevant_indexes.iter().enumerate() {
-        emit_progress(
-            app,
-            request,
-            "BritBase",
-            "discovering",
-            index,
-            relevant_indexes.len(),
-            collection.games.len(),
-            format!("Checking BritBase archive index {}", index + 1),
-        );
-        let mut loaded = false;
-        for origin in BRITBASE_ORIGINS {
-            let index_url = format!("{origin}{path}");
-            let response = match client.get(&index_url).send().await {
-                Ok(response) => match response.error_for_status() {
-                    Ok(response) => response,
-                    Err(error) => {
-                        report.errors.push(format!("{index_url}: {error}"));
-                        continue;
+    let total_indexes = relevant_indexes.len();
+    let started = AtomicUsize::new(0);
+    let games_so_far = games_len(collection);
+    let mut indexes = stream::iter(relevant_indexes.into_iter().map(|path| {
+        let client = client.clone();
+        let cache_dir = request.cache_dir.clone();
+        let from_year = request.from_year;
+        let started = &started;
+        async move {
+            let position = started.fetch_add(1, Ordering::Relaxed);
+            emit_progress(
+                app,
+                request,
+                SOURCE,
+                "discovering",
+                position,
+                total_indexes,
+                games_so_far,
+                format!("Checking BritBase archive index {}", position + 1),
+            );
+            // Each index is mirrored on two hosts; the fallback stays sequential
+            // so a healthy primary is never double-fetched.
+            let mut errors = Vec::new();
+            let mut checked = 0u32;
+            let mut urls = Vec::new();
+            let mut loaded = false;
+            for origin in BRITBASE_ORIGINS {
+                let index_url = format!("{origin}{path}");
+                match fetch_page_cached(&client, &index_url, &cache_dir, "britbase-index").await {
+                    Ok(Some(html)) => {
+                        checked += 1;
+                        urls = extract_britbase_archive_urls(&html, from_year, origin);
+                        loaded = true;
+                        break;
                     }
-                },
-                Err(error) => {
-                    report.errors.push(format!("{index_url}: {error}"));
-                    continue;
+                    Ok(None) => errors.push(format!("{index_url}: not found")),
+                    Err(error) => errors.push(format!("{index_url}: {error}")),
                 }
-            };
-            report.archives_checked = report.archives_checked.saturating_add(1);
-            match response.text().await {
-                Ok(html) => {
-                    archive_urls.extend(extract_britbase_archive_urls(
-                        &html,
-                        request.from_year,
-                        origin,
-                    ));
-                    loaded = true;
-                    break;
-                }
-                Err(error) => report.errors.push(format!("{index_url}: {error}")),
             }
+            if !loaded {
+                errors.push(format!(
+                    "BritBase index {path} was unavailable from both public hosts"
+                ));
+            }
+            (checked, errors, urls)
         }
-        if !loaded {
-            report.errors.push(format!(
-                "BritBase index {path} was unavailable from both public hosts"
-            ));
-        }
+    }))
+    .buffered(ARCHIVE_CONCURRENCY);
+
+    let mut archive_urls = HashSet::new();
+    while let Some((checked, errors, urls)) = indexes.next().await {
+        report.archives_checked = report.archives_checked.saturating_add(checked);
+        report.errors.extend(errors);
+        archive_urls.extend(urls);
     }
 
     let mut archive_urls = archive_urls.into_iter().collect::<Vec<_>>();
     archive_urls.sort();
-    for (index, archive_url) in archive_urls.iter().enumerate() {
-        let filename = file_name_from_url(archive_url);
-        emit_progress(
-            app,
-            request,
-            "BritBase",
-            "downloading",
-            index,
-            archive_urls.len(),
-            collection.games.len(),
-            format!(
-                "Scanning BritBase file {} of {}",
-                index + 1,
-                archive_urls.len()
-            ),
-        );
+    let total = archive_urls.len();
+    let started = AtomicUsize::new(0);
+    let games_found = AtomicUsize::new(games_len(collection));
+    let mut downloads = stream::iter(archive_urls.into_iter().map(|archive_url| {
+        let client = client.clone();
+        let identity = Arc::clone(identity);
+        let filename = file_name_from_url(&archive_url);
         let cache_path = request.cache_dir.join(format!("britbase-{filename}"));
-        let (bytes, cached) = match fetch_cached(client, archive_url, &cache_path).await {
-            Ok(result) => result,
-            Err(error) => {
-                report.errors.push(format!("{archive_url}: {error}"));
-                continue;
+        let from_year = request.from_year;
+        let started = &started;
+        let games_found = &games_found;
+        async move {
+            let position = started.fetch_add(1, Ordering::Relaxed);
+            emit_progress(
+                app,
+                request,
+                SOURCE,
+                "downloading",
+                position,
+                total,
+                games_found.load(Ordering::Relaxed),
+                format!("Scanning BritBase file {} of {}", position + 1, total),
+            );
+            let outcome = async {
+                let (bytes, cached) = fetch_cached(&client, &archive_url, &cache_path).await?;
+                let outcome =
+                    scan_archive_bytes(bytes, identity, SOURCE, archive_url.clone(), from_year)
+                        .await;
+                Ok::<_, String>((cached, outcome))
             }
-        };
-        report.archives_checked = report.archives_checked.saturating_add(1);
-        if cached {
-            report.cached_archives = report.cached_archives.saturating_add(1);
+            .await;
+            (archive_url, outcome)
         }
-        let before = collection.games.len();
-        let result = if archive_url
-            .split('?')
-            .next()
-            .is_some_and(|url| url.to_ascii_lowercase().ends_with(".zip"))
-        {
-            scan_zip_pgns(
-                bytes,
-                identity,
-                collection,
-                "BritBase public OTB archive",
-                archive_url,
-                request.from_year,
-            )
-        } else {
-            scan_pgn_reader(
-                BufReader::new(Cursor::new(bytes)),
-                identity,
-                collection,
-                "BritBase public OTB archive",
-                archive_url,
-                request.from_year,
-            )
-        };
+    }))
+    .buffered(ARCHIVE_CONCURRENCY);
+
+    while let Some((archive_url, result)) = downloads.next().await {
         match result {
-            Ok(matched) => {
+            Ok((cached, mut outcome)) => {
+                report.archives_checked = report.archives_checked.saturating_add(1);
+                if cached {
+                    report.cached_archives = report.cached_archives.saturating_add(1);
+                }
+                if let Some(error) = outcome.error.take() {
+                    report.errors.push(format!("{archive_url}: {error}"));
+                }
+                let (matched, added) = merge_into(collection, outcome, SOURCE);
                 report.matched_games = report.matched_games.saturating_add(matched);
-                report.unique_games_added = report.unique_games_added.saturating_add(
-                    collection
-                        .games
-                        .len()
-                        .saturating_sub(before)
-                        .min(u32::MAX as usize) as u32,
-                );
+                report.unique_games_added = report.unique_games_added.saturating_add(added);
+                games_found.store(games_len(collection), Ordering::Relaxed);
             }
             Err(error) => report.errors.push(format!("{archive_url}: {error}")),
         }
@@ -1407,108 +2241,95 @@ async fn scan_britbase<R: tauri::Runtime>(
 async fn scan_pgn_mentor<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
-    identity: &PlayerIdentity,
-    collection: &mut Collection,
+    identity: &Arc<PlayerIdentity>,
+    collection: &Mutex<Collection>,
     app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
-    let mut report = OtbImportSourceReport::new("PGN Mentor public collections");
+    const SOURCE: &str = "PGN Mentor public collections";
+    let mut report = OtbImportSourceReport::new(SOURCE);
     emit_progress(
         app,
         request,
-        "PGN Mentor",
+        SOURCE,
         "discovering",
         0,
         1,
-        collection.games.len(),
+        games_len(collection),
         "Checking PGN Mentor public collections".to_string(),
     );
-    let response = match client.get(PGN_MENTOR_INDEX).send().await {
-        Ok(response) => match response.error_for_status() {
-            Ok(response) => response,
-            Err(error) => {
-                report.errors.push(error.to_string());
-                return report;
-            }
-        },
+    let html = match fetch_page_cached(
+        client,
+        PGN_MENTOR_INDEX,
+        &request.cache_dir,
+        "pgnmentor-index",
+    )
+    .await
+    {
+        Ok(Some(html)) => html,
+        Ok(None) => {
+            report.errors.push(format!("{PGN_MENTOR_INDEX}: not found"));
+            return report;
+        }
         Err(error) => {
-            report.errors.push(error.to_string());
+            report.errors.push(error);
             return report;
         }
     };
     report.archives_checked = 1;
-    let html = match response.text().await {
-        Ok(html) => html,
-        Err(error) => {
-            report.errors.push(error.to_string());
-            return report;
-        }
-    };
     let mut archive_urls = extract_pgn_mentor_archive_urls(&html, identity, request.from_year);
     archive_urls.sort();
     archive_urls.dedup();
 
-    for (index, archive_url) in archive_urls.iter().enumerate() {
-        let filename = file_name_from_url(archive_url);
-        emit_progress(
-            app,
-            request,
-            "PGN Mentor",
-            "downloading",
-            index,
-            archive_urls.len(),
-            collection.games.len(),
-            format!(
-                "Scanning PGN Mentor file {} of {}",
-                index + 1,
-                archive_urls.len()
-            ),
-        );
+    let total = archive_urls.len();
+    let started = AtomicUsize::new(0);
+    let games_found = AtomicUsize::new(games_len(collection));
+    let mut downloads = stream::iter(archive_urls.into_iter().map(|archive_url| {
+        let client = client.clone();
+        let identity = Arc::clone(identity);
+        let filename = file_name_from_url(&archive_url);
         let cache_path = request.cache_dir.join(format!("pgnmentor-{filename}"));
-        let (bytes, cached) = match fetch_cached(client, archive_url, &cache_path).await {
-            Ok(result) => result,
-            Err(error) => {
-                report.errors.push(format!("{archive_url}: {error}"));
-                continue;
+        let from_year = request.from_year;
+        let started = &started;
+        let games_found = &games_found;
+        async move {
+            let position = started.fetch_add(1, Ordering::Relaxed);
+            emit_progress(
+                app,
+                request,
+                SOURCE,
+                "downloading",
+                position,
+                total,
+                games_found.load(Ordering::Relaxed),
+                format!("Scanning PGN Mentor file {} of {}", position + 1, total),
+            );
+            let outcome = async {
+                let (bytes, cached) = fetch_cached(&client, &archive_url, &cache_path).await?;
+                let outcome =
+                    scan_archive_bytes(bytes, identity, SOURCE, archive_url.clone(), from_year)
+                        .await;
+                Ok::<_, String>((cached, outcome))
             }
-        };
-        report.archives_checked = report.archives_checked.saturating_add(1);
-        if cached {
-            report.cached_archives = report.cached_archives.saturating_add(1);
+            .await;
+            (archive_url, outcome)
         }
-        let before = collection.games.len();
-        let result = if archive_url
-            .split('?')
-            .next()
-            .is_some_and(|url| url.to_ascii_lowercase().ends_with(".zip"))
-        {
-            scan_zip_pgns(
-                bytes,
-                identity,
-                collection,
-                "PGN Mentor public collections",
-                archive_url,
-                request.from_year,
-            )
-        } else {
-            scan_pgn_reader(
-                BufReader::new(Cursor::new(bytes)),
-                identity,
-                collection,
-                "PGN Mentor public collections",
-                archive_url,
-                request.from_year,
-            )
-        };
+    }))
+    .buffered(ARCHIVE_CONCURRENCY);
+
+    while let Some((archive_url, result)) = downloads.next().await {
         match result {
-            Ok(matched) => {
+            Ok((cached, mut outcome)) => {
+                report.archives_checked = report.archives_checked.saturating_add(1);
+                if cached {
+                    report.cached_archives = report.cached_archives.saturating_add(1);
+                }
+                if let Some(error) = outcome.error.take() {
+                    report.errors.push(format!("{archive_url}: {error}"));
+                }
+                let (matched, added) = merge_into(collection, outcome, SOURCE);
                 report.matched_games = report.matched_games.saturating_add(matched);
-                report.unique_games_added = report.unique_games_added.saturating_add(
-                    collection
-                        .games
-                        .len()
-                        .saturating_sub(before)
-                        .min(u32::MAX as usize) as u32,
-                );
+                report.unique_games_added = report.unique_games_added.saturating_add(added);
+                games_found.store(games_len(collection), Ordering::Relaxed);
             }
             Err(error) => report.errors.push(format!("{archive_url}: {error}")),
         }
@@ -1520,27 +2341,21 @@ async fn scan_pgn_mentor<R: tauri::Runtime>(
 async fn scan_twic<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
-    identity: &PlayerIdentity,
-    collection: &mut Collection,
+    identity: &Arc<PlayerIdentity>,
+    collection: &Mutex<Collection>,
     app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
-    let mut report = OtbImportSourceReport::new("The Week in Chess");
-    let page = match client.get(TWIC_ARCHIVE).send().await {
-        Ok(response) => match response.error_for_status() {
-            Ok(response) => match response.text().await {
-                Ok(text) => text,
-                Err(error) => {
-                    report.errors.push(error.to_string());
-                    return report;
-                }
-            },
-            Err(error) => {
-                report.errors.push(error.to_string());
-                return report;
-            }
-        },
+    const SOURCE: &str = "The Week in Chess";
+    let mut report = OtbImportSourceReport::new(SOURCE);
+    let page = match fetch_page_cached(client, TWIC_ARCHIVE, &request.cache_dir, "twic-index").await
+    {
+        Ok(Some(text)) => text,
+        Ok(None) => {
+            report.errors.push(format!("{TWIC_ARCHIVE}: not found"));
+            return report;
+        }
         Err(error) => {
-            report.errors.push(error.to_string());
+            report.errors.push(error);
             return report;
         }
     };
@@ -1556,47 +2371,54 @@ async fn scan_twic<R: tauri::Runtime>(
         .collect::<Vec<_>>();
     archives.sort_by(|left, right| left.date.cmp(&right.date));
 
-    for (index, archive) in archives.iter().enumerate() {
-        let label = file_name_from_url(&archive.url);
-        emit_progress(
-            app,
-            request,
-            "The Week in Chess",
-            "downloading",
-            index,
-            archives.len(),
-            collection.games.len(),
-            format!("Checking {label}"),
-        );
-        report.archives_checked += 1;
+    let total = archives.len();
+    let started = AtomicUsize::new(0);
+    let games_found = AtomicUsize::new(games_len(collection));
+    let mut downloads = stream::iter(archives.into_iter().map(|archive| {
+        let client = client.clone();
+        let identity = Arc::clone(identity);
+        let url = archive.url;
+        let label = file_name_from_url(&url);
         let cache_path = request.cache_dir.join(&label);
-        let (bytes, cached) = match fetch_cached(client, &archive.url, &cache_path).await {
-            Ok(result) => result,
-            Err(error) => {
-                report.errors.push(format!("{label}: {error}"));
-                continue;
+        let from_year = request.from_year;
+        let started = &started;
+        let games_found = &games_found;
+        async move {
+            emit_progress(
+                app,
+                request,
+                SOURCE,
+                "downloading",
+                started.fetch_add(1, Ordering::Relaxed),
+                total,
+                games_found.load(Ordering::Relaxed),
+                format!("Checking {label}"),
+            );
+            let outcome = async {
+                let (bytes, cached) = fetch_cached(&client, &url, &cache_path).await?;
+                let outcome = scan_zip_bytes(bytes, identity, SOURCE, url, from_year).await;
+                Ok::<_, String>((cached, outcome))
             }
-        };
-        if cached {
-            report.cached_archives += 1;
+            .await;
+            (label, outcome)
         }
+    }))
+    .buffered(ARCHIVE_CONCURRENCY);
 
-        let before = collection.games.len();
-        match scan_zip_pgns(
-            bytes,
-            identity,
-            collection,
-            "The Week in Chess",
-            &archive.url,
-            request.from_year,
-        ) {
-            Ok(matched) => {
-                report.matched_games += matched;
-                report.unique_games_added += collection
-                    .games
-                    .len()
-                    .saturating_sub(before)
-                    .min(u32::MAX as usize) as u32;
+    while let Some((label, result)) = downloads.next().await {
+        report.archives_checked += 1;
+        match result {
+            Ok((cached, mut outcome)) => {
+                if cached {
+                    report.cached_archives += 1;
+                }
+                if let Some(error) = outcome.error.take() {
+                    report.errors.push(format!("{label}: {error}"));
+                }
+                let (matched, added) = merge_into(collection, outcome, SOURCE);
+                report.matched_games = report.matched_games.saturating_add(matched);
+                report.unique_games_added = report.unique_games_added.saturating_add(added);
+                games_found.store(games_len(collection), Ordering::Relaxed);
             }
             Err(error) => report.errors.push(format!("{label}: {error}")),
         }
@@ -1605,52 +2427,205 @@ async fn scan_twic<R: tauri::Runtime>(
     report
 }
 
+/// Downloads an artifact that never changes once published, reusing the cached
+/// copy whenever one exists.
 async fn fetch_cached(
     client: &Client,
     url: &str,
     cache_path: &Path,
 ) -> Result<(Vec<u8>, bool), String> {
-    if cache_path.is_file() {
-        let bytes = std::fs::read(cache_path).map_err(|error| error.to_string())?;
-        if !bytes.is_empty() {
-            return Ok((bytes, true));
-        }
+    fetch_cached_within(client, url, cache_path, None)
+        .await?
+        .ok_or_else(|| "not found".to_string())
+}
+
+/// Downloads an artifact that can still grow — an event's PGN gains rounds while
+/// the event runs — so its cache entry expires instead of freezing the event.
+async fn fetch_cached_growing(
+    client: &Client,
+    url: &str,
+    cache_path: &Path,
+) -> Result<(Vec<u8>, bool), String> {
+    fetch_cached_within(client, url, cache_path, Some(GROWING_ARCHIVE_CACHE_MAX_AGE))
+        .await?
+        .ok_or_else(|| "not found".to_string())
+}
+
+/// Downloads `url` unless a usable cache entry exists. `max_age` bounds how long
+/// a cached copy stays usable for artifacts that can still grow; `None` treats
+/// the artifact as immutable. `Ok(None)` means the host answered 404, so probes
+/// for optional files can stay quiet.
+async fn fetch_cached_within(
+    client: &Client,
+    url: &str,
+    cache_path: &Path,
+    max_age: Option<Duration>,
+) -> Result<Option<(Vec<u8>, bool)>, String> {
+    if let Some(bytes) = read_cache_entry(cache_path, max_age).await {
+        return Ok(Some((bytes, true)));
     }
 
     let response = client
         .get(url)
         .send()
         .await
-        .map_err(|error| error.to_string())?
-        .error_for_status()
         .map_err(|error| error.to_string())?;
+    if response.status() == reqwest::StatusCode::NOT_FOUND {
+        return Ok(None);
+    }
     let bytes = response
+        .error_for_status()
+        .map_err(|error| error.to_string())?
         .bytes()
         .await
         .map_err(|error| error.to_string())?
         .to_vec();
-    if let Some(parent) = cache_path.parent() {
-        create_dir_all(parent).map_err(|error| error.to_string())?;
-    }
-    std::fs::write(cache_path, &bytes).map_err(|error| error.to_string())?;
-    Ok((bytes, false))
+    write_cache_entry(cache_path, &bytes).await;
+    Ok(Some((bytes, false)))
 }
+
+/// Fetches a page without touching the cache, for listings that are the only
+/// place a newly played game can show up. `Ok(None)` means the host answered 404.
+async fn fetch_page_live(client: &Client, url: &str) -> Result<Option<String>, String> {
+    let response = client
+        .get(url)
+        .send()
+        .await
+        .map_err(|error| error.to_string())?;
+    if response.status() == reqwest::StatusCode::NOT_FOUND {
+        return Ok(None);
+    }
+    let html = response
+        .error_for_status()
+        .map_err(|error| error.to_string())?
+        .text()
+        .await
+        .map_err(|error| error.to_string())?;
+    Ok(Some(html))
+}
+
+/// Fetches a discovery page (search results, archive index) through the
+/// short-lived page cache. `Ok(None)` means the host answered 404.
+async fn fetch_page_cached(
+    client: &Client,
+    url: &str,
+    cache_dir: &Path,
+    prefix: &str,
+) -> Result<Option<String>, String> {
+    let cache_path = cache_dir.join(cache_file_name(prefix, url));
+    let Some((bytes, _cached)) =
+        fetch_cached_within(client, url, &cache_path, Some(PAGE_CACHE_MAX_AGE)).await?
+    else {
+        return Ok(None);
+    };
+    Ok(Some(String::from_utf8_lossy(&bytes).into_owned()))
+}
+
+/// Deterministic cache file name: the URL digest keeps distinct sources apart
+/// while the sanitised tail keeps the cache directory readable.
+fn cache_file_name(prefix: &str, url: &str) -> String {
+    let digest = hex::encode(Sha256::digest(url.as_bytes()));
+    let tail = file_name_from_url(url)
+        .split('?')
+        .next()
+        .unwrap_or_default()
+        .chars()
+        .take(60)
+        .map(|char| {
+            if char.is_ascii_alphanumeric() || char == '.' || char == '-' || char == '_' {
+                char
+            } else {
+                '_'
+            }
+        })
+        .collect::<String>();
+    let tail = if tail.is_empty() {
+        "page"
+    } else {
+        tail.as_str()
+    };
+    format!("{prefix}-{}-{tail}", &digest[..16])
+}
+
+async fn read_cache_entry(cache_path: &Path, max_age: Option<Duration>) -> Option<Vec<u8>> {
+    let cache_path = cache_path.to_path_buf();
+    tokio::task::spawn_blocking(move || {
+        let metadata = std::fs::metadata(&cache_path).ok()?;
+        if !metadata.is_file() || metadata.len() == 0 {
+            return None;
+        }
+        if let Some(max_age) = max_age {
+            if metadata.modified().ok()?.elapsed().ok()? > max_age {
+                return None;
+            }
+        }
+        let bytes = std::fs::read(&cache_path).ok()?;
+        (!bytes.is_empty()).then_some(bytes)
+    })
+    .await
+    .ok()
+    .flatten()
+}
+
+/// Writes a cache entry atomically: concurrent downloads of the same artifact
+/// each stage their own temporary file and then rename it into place, so no
+/// reader can ever observe a torn file. Caching is best effort — a failed write
+/// must not fail the archive that was downloaded successfully.
+async fn write_cache_entry(cache_path: &Path, bytes: &[u8]) {
+    let cache_path = cache_path.to_path_buf();
+    let bytes = bytes.to_vec();
+    let _ = tokio::task::spawn_blocking(move || {
+        if let Some(parent) = cache_path.parent() {
+            if create_dir_all(parent).is_err() {
+                return;
+            }
+        }
+        let ticket = CACHE_WRITE_TICKET.fetch_add(1, Ordering::Relaxed);
+        let file_name = cache_path
+            .file_name()
+            .and_then(|value| value.to_str())
+            .unwrap_or("otb-cache")
+            .to_string();
+        let temp_path =
+            cache_path.with_file_name(format!("{file_name}.{}.{ticket}.tmp", std::process::id()));
+        if std::fs::write(&temp_path, &bytes).is_err() {
+            let _ = std::fs::remove_file(&temp_path);
+            return;
+        }
+        if std::fs::rename(&temp_path, &cache_path).is_err() {
+            let _ = std::fs::remove_file(&temp_path);
+        }
+    })
+    .await;
+}
+
+static CACHE_WRITE_TICKET: AtomicUsize = AtomicUsize::new(0);
 
 async fn get_lichess_with_backoff(client: &Client, url: &str) -> Result<reqwest::Response, String> {
     let mut last_error = None;
+    let mut retry_delay = None;
     for attempt in 0_u32..3 {
-        tokio::time::sleep(Duration::from_millis(300 * u64::from(attempt + 1))).await;
+        // Only a genuine retry waits; the first attempt starts immediately.
+        if let Some(delay) = retry_delay.take() {
+            tokio::time::sleep(delay).await;
+        }
+        take_lichess_slot().await;
         match client.get(url).send().await {
             Ok(response) if response.status() == reqwest::StatusCode::TOO_MANY_REQUESTS => {
-                let retry_seconds = response
-                    .headers()
-                    .get("retry-after")
-                    .and_then(|value| value.to_str().ok())
-                    .and_then(|value| value.parse::<u64>().ok())
-                    .unwrap_or(60)
-                    .max(1);
+                let retry_seconds = retry_after_seconds(&response).unwrap_or(60);
                 last_error = Some(format!("Lichess rate-limited {url}"));
-                tokio::time::sleep(Duration::from_secs(retry_seconds)).await;
+                // Rate limiting is a property of the host, not of this request:
+                // hold the whole lane so the concurrent siblings back off too.
+                hold_lichess_lane(Duration::from_secs(retry_seconds));
+                retry_delay = None;
+            }
+            Ok(response) if response.status().is_server_error() => {
+                let status = response.status();
+                let retry_seconds =
+                    retry_after_seconds(&response).unwrap_or_else(|| 2_u64.pow(attempt));
+                last_error = Some(format!("Lichess returned {status} for {url}"));
+                hold_lichess_lane(Duration::from_secs(retry_seconds.max(1)));
+                retry_delay = None;
             }
             Ok(response) => {
                 return response
@@ -1659,20 +2634,76 @@ async fn get_lichess_with_backoff(client: &Client, url: &str) -> Result<reqwest:
             }
             Err(error) => {
                 last_error = Some(error.to_string());
-                tokio::time::sleep(Duration::from_secs(2_u64.pow(attempt))).await;
+                retry_delay = Some(Duration::from_secs(2_u64.pow(attempt)));
             }
         }
     }
     Err(last_error.unwrap_or_else(|| format!("Could not download {url}")))
 }
 
+fn retry_after_seconds(response: &reqwest::Response) -> Option<u64> {
+    response
+        .headers()
+        .get("retry-after")
+        .and_then(|value| value.to_str().ok())
+        .and_then(parse_retry_after)
+}
+
+/// Parses a `Retry-After` delay, clamped so a hostile or mistaken header cannot
+/// park the import for hours.
+fn parse_retry_after(value: &str) -> Option<u64> {
+    value
+        .trim()
+        .parse::<u64>()
+        .ok()
+        .map(|seconds| seconds.clamp(1, MAX_RETRY_AFTER_SECONDS))
+}
+
+/// Waits for the shared lichess lane and reserves the next slot in it. The lane
+/// paces every lichess request (whatever source issued it) and a rate-limit hold
+/// applies to all of them, not only the task that was refused.
+async fn take_lichess_slot() {
+    loop {
+        let now = Instant::now();
+        let wait = {
+            let mut gate = LICHESS_LANE_GATE
+                .lock()
+                .unwrap_or_else(|error| error.into_inner());
+            match gate.filter(|open_at| *open_at > now) {
+                Some(open_at) => Some(open_at.saturating_duration_since(now)),
+                None => {
+                    *gate = Some(now + LICHESS_MIN_REQUEST_SPACING);
+                    None
+                }
+            }
+        };
+        match wait {
+            Some(delay) => tokio::time::sleep(delay).await,
+            None => return,
+        }
+    }
+}
+
+/// Closes the shared lichess lane for `delay`, never shortening an existing hold.
+fn hold_lichess_lane(delay: Duration) {
+    let open_at = Instant::now() + delay;
+    let mut gate = LICHESS_LANE_GATE
+        .lock()
+        .unwrap_or_else(|error| error.into_inner());
+    if gate.is_none_or(|existing| existing < open_at) {
+        *gate = Some(open_at);
+    }
+}
+
+static LICHESS_LANE_GATE: Mutex<Option<Instant>> = Mutex::new(None);
+
 fn scan_local_path(
     path: &Path,
     identity: &PlayerIdentity,
-    collection: &mut Collection,
     label: &str,
     from_year: u16,
-) -> Result<u32, String> {
+) -> Result<ScanOutcome, String> {
+    const SOURCE: &str = "Local PGN / ChessBase export";
     let extension = path
         .extension()
         .and_then(|value| value.to_str())
@@ -1681,38 +2712,29 @@ fn scan_local_path(
     match extension.as_str() {
         "zip" => {
             let bytes = std::fs::read(path).map_err(|error| error.to_string())?;
-            scan_zip_pgns(
-                bytes,
-                identity,
-                collection,
-                "Local PGN / ChessBase export",
-                label,
-                from_year,
-            )
+            scan_zip_pgns(bytes, identity, SOURCE, label, from_year)
         }
         "zst" => {
             let file = File::open(path).map_err(|error| error.to_string())?;
             let decoder =
                 zstd::stream::read::Decoder::new(file).map_err(|error| error.to_string())?;
-            scan_pgn_reader(
+            Ok(scan_pgn_reader(
                 BufReader::new(decoder),
                 identity,
-                collection,
-                "Local PGN / ChessBase export",
+                SOURCE,
                 label,
                 from_year,
-            )
+            ))
         }
         _ => {
             let file = File::open(path).map_err(|error| error.to_string())?;
-            scan_pgn_reader(
+            Ok(scan_pgn_reader(
                 BufReader::new(file),
                 identity,
-                collection,
-                "Local PGN / ChessBase export",
+                SOURCE,
                 label,
                 from_year,
-            )
+            ))
         }
     }
 }
@@ -1720,65 +2742,80 @@ fn scan_local_path(
 fn scan_zip_pgns(
     bytes: Vec<u8>,
     identity: &PlayerIdentity,
-    collection: &mut Collection,
     source: &str,
     source_url: &str,
     from_year: u16,
-) -> Result<u32, String> {
+) -> Result<ScanOutcome, String> {
     let mut archive =
         zip::ZipArchive::new(Cursor::new(bytes)).map_err(|error| error.to_string())?;
-    let mut matched = 0u32;
+    let mut outcome = ScanOutcome::default();
     for index in 0..archive.len() {
-        let mut file = archive.by_index(index).map_err(|error| error.to_string())?;
+        // A damaged entry stops the archive but keeps every game read so far.
+        let mut file = match archive.by_index(index) {
+            Ok(file) => file,
+            Err(error) => {
+                outcome.error = Some(error.to_string());
+                break;
+            }
+        };
         if !file.name().to_ascii_lowercase().ends_with(".pgn") {
             continue;
         }
         let mut bytes = Vec::new();
-        file.read_to_end(&mut bytes)
-            .map_err(|error| error.to_string())?;
-        let text = String::from_utf8_lossy(&bytes);
-        matched = matched.saturating_add(scan_pgn_reader(
-            BufReader::new(Cursor::new(text.as_bytes())),
+        if let Err(error) = file.read_to_end(&mut bytes) {
+            outcome.error = Some(error.to_string());
+            break;
+        }
+        outcome.absorb(scan_pgn_reader(
+            BufReader::new(Cursor::new(bytes)),
             identity,
-            collection,
             source,
             source_url,
             from_year,
-        )?);
+        ));
+        if outcome.error.is_some() {
+            break;
+        }
     }
-    Ok(matched)
+    Ok(outcome)
 }
 
 fn scan_pgn_reader<R: BufRead>(
     mut reader: R,
     identity: &PlayerIdentity,
-    collection: &mut Collection,
     source: &str,
     source_url: &str,
     from_year: u16,
-) -> Result<u32, String> {
+) -> ScanOutcome {
     let mut state = PgnStreamState::new();
-    let mut matched = 0u32;
+    let mut outcome = ScanOutcome::default();
     loop {
-        let Some(game) =
-            read_next_game(&mut reader, &mut state).map_err(|error| error.to_string())?
-        else {
+        // A read failure part-way through a stream ends the scan but keeps the
+        // games already parsed; the caller still reports the error.
+        let next_game = match read_next_game(&mut reader, &mut state) {
+            Ok(game) => game,
+            Err(error) => {
+                outcome.error = Some(error.to_string());
+                break;
+            }
+        };
+        let Some(game) = next_game else {
             break;
         };
         let headers = parse_headers(&game);
         let match_side = match_player_side(&headers, identity);
         let Some(side) = match_side else {
             if name_matches_without_identity(&headers, identity) {
-                collection.identity_mismatches_excluded =
-                    collection.identity_mismatches_excluded.saturating_add(1);
+                outcome.identity_mismatches_excluded =
+                    outcome.identity_mismatches_excluded.saturating_add(1);
             }
             continue;
         };
-        matched = matched.saturating_add(1);
+        outcome.matched = outcome.matched.saturating_add(1);
 
         if is_suspected_online_game(&headers) {
-            collection.suspected_online_games_excluded =
-                collection.suspected_online_games_excluded.saturating_add(1);
+            outcome.suspected_online_games_excluded =
+                outcome.suspected_online_games_excluded.saturating_add(1);
             continue;
         }
         if header(&headers, "Date").is_some_and(|date| date_before_year(date, from_year)) {
@@ -1787,9 +2824,12 @@ fn scan_pgn_reader<R: BufRead>(
 
         let canonical_pgn = canonicalize_target_name(&game, side, &identity.canonical_name);
         let canonical_pgn = add_provenance_headers(&canonical_pgn, source, source_url);
-        add_game(collection, canonical_pgn, source, side);
+        outcome.games.push(PendingGame {
+            pgn: canonical_pgn,
+            side,
+        });
     }
-    Ok(matched)
+    outcome
 }
 
 fn add_game(collection: &mut Collection, pgn: String, source: &str, target_side: &str) {
@@ -1900,6 +2940,7 @@ fn read_next_game<R: BufRead>(
 ) -> std::io::Result<Option<String>> {
     let mut game = String::new();
     let mut line = String::new();
+    let mut raw_line = Vec::new();
     let mut in_comment = false;
     let mut saw_movetext = false;
 
@@ -1907,8 +2948,15 @@ fn read_next_game<R: BufRead>(
         line.clear();
         if let Some(pending) = state.pending_line.take() {
             line.push_str(&pending);
-        } else if reader.read_line(&mut line)? == 0 {
-            break;
+        } else {
+            // Public archives are not always UTF-8 — Latin-1/CP1252 is the
+            // ChessBase export default — so bytes are decoded lossily instead of
+            // failing the whole stream on the first accented name.
+            raw_line.clear();
+            if reader.read_until(b'\n', &mut raw_line)? == 0 {
+                break;
+            }
+            line.push_str(&String::from_utf8_lossy(&raw_line));
         }
 
         if state.first_line {
@@ -2140,16 +3188,7 @@ fn normalized_movetext(game: &str) -> String {
     output.trim().to_string()
 }
 
-fn core_name_tokens(name: &str) -> HashSet<String> {
-    const TITLES: &[&str] = &["gm", "im", "fm", "cm", "wgm", "wim", "wfm", "wcm", "nm"];
-    normalized_name(name)
-        .split_whitespace()
-        .filter(|token| token.len() > 1 && !TITLES.contains(token))
-        .map(str::to_string)
-        .collect()
-}
-
-fn all_name_tokens(name: &str) -> HashSet<String> {
+fn player_name_tokens(name: &str) -> Vec<String> {
     const TITLES: &[&str] = &["gm", "im", "fm", "cm", "wgm", "wim", "wfm", "wcm", "nm"];
     normalized_name(name)
         .split_whitespace()
@@ -2328,7 +3367,7 @@ fn pgn_mentor_player_file_matches(url: &str, identity: &PlayerIdentity) -> bool 
         .filter(|surname| surname.len() >= 3)
         .or_else(|| {
             identity
-                .core_name_tokens
+                .name_tokens
                 .iter()
                 .filter(|token| token.len() >= 3)
                 .max_by_key(|token| token.len())
@@ -2612,6 +3651,100 @@ mod tests {
         assert!(!identity.name_matches("Sooraj Kumar"));
     }
 
+    /// Archives shorten long names unpredictably: the full FIDE form must
+    /// match the "Surname, Firstname" and initials forms that league and
+    /// university PGNs actually print, and the short typed form must still
+    /// find the full archive spelling.
+    #[test]
+    fn matches_partial_and_initial_name_forms() {
+        let full = PlayerIdentity::new("Tyrrell, Lachlan Baly Hughes", Some("6003788")).unwrap();
+        assert!(full.name_matches("Tyrrell, Lachlan"));
+        assert!(full.name_matches("Lachlan Tyrrell"));
+        assert!(full.name_matches("Tyrrell, L.B.H."));
+        assert!(full.name_matches("Tyrrell, Lachlan Baly Hughes"));
+        assert!(!full.name_matches("Tyrrell"));
+        assert!(!full.name_matches("Tyrrell, James"));
+        assert!(!full.name_matches("Hughes, Baly"));
+
+        let short = PlayerIdentity::new("Tyrrell, Lachlan", None).unwrap();
+        assert!(short.name_matches("Tyrrell, Lachlan Baly Hughes"));
+        assert!(!short.name_matches("Tyrrell, Angus Baly Hughes"));
+    }
+
+    /// A real broadcast listed "Tyrrell, Lachlan Baly Hughes" as
+    /// "Lachlan Tyrell" — forename first with a one-letter surname typo. One
+    /// edit is tolerated on long tokens, never on short ones, and only when a
+    /// FIDE ID pins the identity: a name-only search stays strict.
+    #[test]
+    fn matches_misspelled_surnames_only_with_a_pinned_fide_id() {
+        let full = PlayerIdentity::new("Tyrrell, Lachlan Baly Hughes", Some("6003788")).unwrap();
+        assert!(full.name_matches("Lachlan Tyrell"));
+        assert!(full.name_matches("Tyrell, Lachlan"));
+        assert!(!full.name_matches("Lachlan Tyre"));
+        let unpinned = PlayerIdentity::new("Tyrrell, Lachlan Baly Hughes", None).unwrap();
+        assert!(!unpinned.name_matches("Lachlan Tyrell"));
+        assert!(unpinned.name_matches("Tyrrell, Lachlan"));
+        assert!(fuzzy_token_eq("tyrrell", "tyrell"));
+        assert!(fuzzy_token_eq("tyrrell", "tyrrel"));
+        assert!(!fuzzy_token_eq("tyrrell", "terrll"));
+        assert!(!fuzzy_token_eq("lee", "leo"));
+    }
+
+    #[test]
+    fn extracts_community_tours_within_range() {
+        let value = serde_json::json!({
+            "past": {
+                "currentPageResults": [
+                    { "tour": { "id": "AtOSTGx3", "name": "BUCA Championships", "dates": [1771678800000i64, 1771767900000i64] } },
+                    { "tour": { "id": "OldTour1", "name": "Old event", "dates": [1600000000000i64, 1600086400000i64] } },
+                    { "tour": { "id": "NoDates1", "name": "Undated event" } }
+                ],
+                "nextPage": 2
+            }
+        });
+        // 2026-01-01 as the range start keeps BUCA and drops the 2020 event.
+        let from_millis = year_start_millis(2026);
+        let (tours, all_before, has_next) = extract_community_tour_page(&value, from_millis);
+        assert_eq!(
+            tours.iter().map(|tour| tour.0.as_str()).collect::<Vec<_>>(),
+            vec!["AtOSTGx3", "NoDates1"]
+        );
+        assert!(!all_before);
+        assert!(has_next);
+
+        let (tours, all_before, has_next) =
+            extract_community_tour_page(&value, year_start_millis(2030));
+        assert_eq!(tours.len(), 1, "only the undated tour survives");
+        assert!(all_before);
+        assert!(has_next);
+    }
+
+    #[test]
+    fn builds_chess_results_name_fields_from_canonical_forms() {
+        let comma = PlayerIdentity::new("Tyrrell, Lachlan Baly Hughes", None).unwrap();
+        assert_eq!(
+            chess_results_name_fields(&comma),
+            Some(vec![
+                ("ctl00$P1$txt_nachname", "Tyrrell".to_string()),
+                ("ctl00$P1$txt_vorname", "Lachlan".to_string()),
+            ])
+        );
+        // Initials are skipped, never sent as a literal forename.
+        let initials = PlayerIdentity::new("Lapidus, A. M.", None).unwrap();
+        assert_eq!(
+            chess_results_name_fields(&initials),
+            Some(vec![("ctl00$P1$txt_nachname", "Lapidus".to_string())])
+        );
+        let plain = PlayerIdentity::new("Lachlan Tyrrell", None).unwrap();
+        assert_eq!(
+            chess_results_name_fields(&plain),
+            Some(vec![
+                ("ctl00$P1$txt_nachname", "Tyrrell".to_string()),
+                ("ctl00$P1$txt_vorname", "Lachlan".to_string()),
+            ])
+        );
+    }
+
     #[test]
     fn fide_id_overrides_same_name_mismatch() {
         let pgn = r#"[White "Lapidus, Alexey M."]
@@ -2765,6 +3898,58 @@ mod tests {
     }
 
     #[test]
+    fn merging_scanned_archives_keeps_counters_and_dedupe() {
+        let pgn = r#"[Event "British Championship"]
+[Date "2026.05.10"]
+[White "Lapidus, Alexey M."]
+[Black "Opponent, One"]
+[Result "1-0"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 1-0
+
+[Event "Online Chess Championship"]
+[Site "https://chess.com"]
+[Date "2026.05.11"]
+[White "Opponent, Two"]
+[Black "Lapidus, Alexey M."]
+[Result "0-1"]
+
+1. d4 d5 0-1
+
+[Event "Old Open"]
+[Date "2019.01.01"]
+[White "Lapidus, Alexey M."]
+[Black "Opponent, Three"]
+[Result "1/2-1/2"]
+
+1. c4 c5 1/2-1/2
+"#;
+        let scan = || {
+            scan_pgn_reader(
+                BufReader::new(Cursor::new(pgn.as_bytes())),
+                &identity(),
+                "Test archive",
+                "test://archive",
+                2020,
+            )
+        };
+
+        let outcome = scan();
+        assert_eq!(outcome.matched, 3);
+        assert_eq!(outcome.suspected_online_games_excluded, 1);
+        assert_eq!(outcome.games.len(), 1);
+
+        let mut collection = Collection::default();
+        assert_eq!(collection.merge(outcome, "Test archive"), (3, 1));
+        // Re-merging the same archive must add nothing, whatever order archives
+        // are downloaded in.
+        assert_eq!(collection.merge(scan(), "Test archive"), (3, 0));
+        assert_eq!(collection.games.len(), 1);
+        assert_eq!(collection.duplicates_removed, 1);
+        assert_eq!(collection.suspected_online_games_excluded, 2);
+    }
+
+    #[test]
     fn limits_pgn_mentor_to_recent_events_and_matching_player_files() {
         let html = r#"<a href="events/London2025.pgn">Event</a>
 <a href="events/London2023.pgn">Old</a>
@@ -2784,5 +3969,17 @@ mod tests {
             "https://www.pgnmentor.com/players/Tom.zip",
             &identity
         ));
+    }
+
+    #[test]
+    fn cancellation_targets_only_the_registered_search() {
+        let registration =
+            CancellationRegistration::new("otb-cancellation-test").expect("register search");
+        assert!(!registration.signal.load(Ordering::Acquire));
+        assert!(cancel_otb_games("otb-cancellation-test".to_string()));
+        assert!(registration.signal.load(Ordering::Acquire));
+        assert!(!cancel_otb_games("another-search".to_string()));
+        drop(registration);
+        assert!(!cancel_otb_games("otb-cancellation-test".to_string()));
     }
 }

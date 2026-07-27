@@ -416,6 +416,13 @@ async collectOtbGames(request: OtbImportRequest) : Promise<Result<OtbImportRepor
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Stops outstanding source requests while allowing the collector to finalize
+ * and return every deduplicated game already merged into the partial PGN.
+ */
+async cancelOtbGames(jobId: string) : Promise<boolean> {
+    return await TAURI_INVOKE("cancel_otb_games", { jobId });
+},
 async countPgnGames(file: string) : Promise<Result<number, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("count_pgn_games", { file }) };
@@ -872,7 +879,7 @@ export type OpeningHealthPlayerPositionsReport = { playerGames: number; candidat
 export type OpeningHealthPlayerPositionsRequest = { playerDb: string; playerId: number | null; color: string; maxPlies: number; startDate: string | null; endDate: string | null; requestId: string }
 export type OtbImportNewestGame = { date: string; event: string; white: string; black: string; result: string; source: string }
 export type OtbImportProgress = { jobId: string; source: string; phase: string; current: number; total: number; gamesFound: number; message: string }
-export type OtbImportReport = { playerName: string; fideId: string | null; outputPath: string; gamesFound: number; duplicatesRemoved: number; suspectedOnlineGamesExcluded: number; identityMismatchesExcluded: number; newestGame: OtbImportNewestGame | null; sources: OtbImportSourceReport[] }
+export type OtbImportReport = { playerName: string; fideId: string | null; outputPath: string; cancelled: boolean; gamesFound: number; duplicatesRemoved: number; suspectedOnlineGamesExcluded: number; identityMismatchesExcluded: number; newestGame: OtbImportNewestGame | null; sources: OtbImportSourceReport[] }
 export type OtbImportRequest = { jobId: string; playerName: string; fideId: string | null; fromYear: number; includeLichessBroadcasts: boolean; includeChessResults: boolean; includeChessbaseNews: boolean; includeOfficialPgnIndexes: boolean; includeTwic: boolean; localPgnPaths: string[]; cacheDir: string; outputPath: string }
 export type OtbImportSourceReport = { source: string; archivesChecked: number; cachedArchives: number; matchedGames: number; uniqueGamesAdded: number; errors: string[] }
 export type OutOpening = { name: string; fen: string }

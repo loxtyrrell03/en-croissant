@@ -3,24 +3,9 @@ import { getDefaultOnlineGameDatabaseTitle } from "@/utils/onlineGameImport";
 export type HomeGameDatabaseImportSource = "chesscom" | "lichess" | "otb";
 
 export const HOME_GAME_DATABASE_IMPORT_SOURCES = [
-    {
-        value: "chesscom" as const,
-        shortLabel: "C",
-        label: "Chess.com",
-        detail: "Public account archive",
-    },
-    {
-        value: "lichess" as const,
-        shortLabel: "L",
-        label: "Lichess",
-        detail: "Public account games",
-    },
-    {
-        value: "otb" as const,
-        shortLabel: "OTB",
-        label: "Over the board",
-        detail: "Broadcast and event PGNs",
-    },
+    { value: "chesscom" as const, label: "Chess.com" },
+    { value: "lichess" as const, label: "Lichess" },
+    { value: "otb" as const, label: "Over the board" },
 ];
 
 export function getHomeGameDatabaseImportTitle(

@@ -20,12 +20,12 @@ export const OTB_IMPORT_SOURCE_DETAILS = [
     {
         key: "lichessBroadcasts" as const,
         label: "Broadcast archives",
-        detail: "Lichess monthly and live broadcasts, plus Chessscope player discovery",
+        detail: "Lichess official, live, and community broadcasts, plus Chessscope discovery",
     },
     {
         key: "chessResults" as const,
         label: "Chess-Results",
-        detail: "Direct FIDE-ID player PGN search",
+        detail: "FIDE-ID and player-name PGN search",
     },
     {
         key: "chessbaseNews" as const,
@@ -116,6 +116,46 @@ export function getOtbImportProgressPercent(progress: OtbImportProgress | null) 
     return Math.max(0, Math.min(100, (progress.current / progress.total) * 100));
 }
 
+export type OtbImportLaneMap = Record<string, OtbImportProgress>;
+
+/** Compact lane names for the parallel-search progress list; reports keep the
+ *  full source titles. */
+const OTB_IMPORT_LANE_LABELS: Record<string, string> = {
+    "Chess-Results player search": "Chess-Results",
+    "Lichess live FIDE broadcasts": "Lichess FIDE events",
+    "Chessscope broadcast discovery": "Chessscope discovery",
+    "Lichess broadcast database": "Lichess broadcasts",
+    "Lichess community broadcasts": "Community broadcasts",
+    "ChessBase public news PGNs": "ChessBase news",
+    "Official tournament PGN indexes (4NCL)": "4NCL archives",
+    "BritBase public OTB archive": "BritBase",
+    "PGN Mentor public collections": "PGN Mentor",
+    "The Week in Chess": "TWIC",
+    "Local PGN / ChessBase export": "Local PGN files",
+};
+
+export function getOtbImportLaneLabel(source: string) {
+    return OTB_IMPORT_LANE_LABELS[source] ?? source;
+}
+
+/** Folds one progress event into the per-lane map. The kickoff ("All sources")
+ *  and final ("Complete") events describe the whole run, not a single lane. */
+export function applyOtbImportLaneProgress(
+    lanes: OtbImportLaneMap,
+    progress: OtbImportProgress,
+): OtbImportLaneMap {
+    if (progress.source === "All sources" || progress.source === "Complete") return lanes;
+    return { ...lanes, [progress.source]: progress };
+}
+
+export function getOtbImportLaneSummary(lanes: OtbImportLaneMap, laneTotal: number) {
+    const entries = Object.values(lanes).sort((left, right) =>
+        getOtbImportLaneLabel(left.source).localeCompare(getOtbImportLaneLabel(right.source)),
+    );
+    const done = entries.filter((lane) => lane.phase === "done").length;
+    return { entries, done, total: Math.max(laneTotal, entries.length) };
+}
+
 export function getOtbImportDescription(report: OtbImportReport) {
     const sourceSummary = report.sources
         .filter((source) => source.archivesChecked > 0 || source.matchedGames > 0)
@@ -123,7 +163,7 @@ export function getOtbImportDescription(report: OtbImportReport) {
         .join("; ");
     return [
         `OTB-only opponent import for ${report.playerName}${report.fideId ? ` (FIDE ${report.fideId})` : ""}.`,
-        `${report.gamesFound} unique games; ${report.duplicatesRemoved} duplicates removed; ${report.suspectedOnlineGamesExcluded} suspected online games excluded.`,
+        `${report.gamesFound} unique games${report.cancelled ? " retained from a search stopped early" : ""}; ${report.duplicatesRemoved} duplicates removed; ${report.suspectedOnlineGamesExcluded} suspected online games excluded.`,
         sourceSummary,
     ]
         .filter(Boolean)

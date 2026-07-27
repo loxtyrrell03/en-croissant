@@ -26,13 +26,16 @@ import { getDatabasesDir } from "@/utils/directories";
 import {
   DEFAULT_OTB_IMPORT_SOURCES,
   OTB_IMPORT_SOURCE_DETAILS,
+  applyOtbImportLaneProgress,
   createOtbImportRequest,
   getOtbImportDescription,
-  getOtbImportProgressPercent,
+  getOtbImportLaneLabel,
+  getOtbImportLaneSummary,
   getOtbImportTitle,
   getOtbImportWarningCount,
   sanitizeOtbImportFilename,
   validateOtbImportRequest,
+  type OtbImportLaneMap,
   type OtbImportSourceSelection,
 } from "@/utils/otbGameImport";
 import { resetDatabaseConversionState } from "@/utils/onlineGameImport";
@@ -53,6 +56,8 @@ export default function OtbGameImportPanel({
   controlSize,
   dense,
   forceSaveDatabase = false,
+  variant = "inline",
+  submitLabel = "Find OTB games + use",
   onImported,
 }: {
   initialPlayerName: string;
@@ -61,8 +66,13 @@ export default function OtbGameImportPanel({
   controlSize: MantineSize;
   dense: boolean;
   forceSaveDatabase?: boolean;
+  /** "dialog" drops the explanatory alert and fills the dialog width; the
+   *  surrounding modal already sets the context the alert would repeat. */
+  variant?: "inline" | "dialog";
+  submitLabel?: string;
   onImported: (result: OtbImportComplete) => void | Promise<void>;
 }) {
+  const asDialog = variant === "dialog";
   const currentYear = new Date().getFullYear();
   const [playerName, setPlayerName] = useState(initialPlayerName);
   const [fideId, setFideId] = useState("");
@@ -71,7 +81,10 @@ export default function OtbGameImportPanel({
   const [localPgnPaths, setLocalPgnPaths] = useState<string[]>([]);
   const [saveDatabase, setSaveDatabase] = useState(true);
   const [running, setRunning] = useState(false);
+  const [stopping, setStopping] = useState(false);
   const [progress, setProgress] = useState<OtbImportProgress | null>(null);
+  const [lanes, setLanes] = useState<OtbImportLaneMap>({});
+  const [laneTotal, setLaneTotal] = useState(0);
   const [report, setReport] = useState<OtbImportReport | null>(null);
   const [importedGameCount, setImportedGameCount] = useState<number | null>(null);
   const shouldSaveDatabase = forceSaveDatabase || saveDatabase;
@@ -88,14 +101,18 @@ export default function OtbGameImportPanel({
 
   useEffect(() => {
     const unlisten = events.otbImportProgress.listen(({ payload }) => {
-      if (payload.jobId === activeJobIdRef.current) setProgress(payload);
+      if (payload.jobId !== activeJobIdRef.current) return;
+      setProgress(payload);
+      // Sources search in parallel; each event narrates one lane.
+      if (payload.source === "All sources") setLaneTotal(payload.total);
+      else setLanes((current) => applyOtbImportLaneProgress(current, payload));
     });
     return () => {
       void unlisten.then((stop) => stop());
     };
   }, []);
 
-  const progressPercent = getOtbImportProgressPercent(progress);
+  const laneSummary = getOtbImportLaneSummary(lanes, laneTotal);
   const sourceWarnings = report ? getOtbImportWarningCount(report) : 0;
   const localPgnLabels = useMemo(
     () => localPgnPaths.map((path) => path.split(/[\\/]/).at(-1) ?? path),
@@ -160,8 +177,11 @@ export default function OtbGameImportPanel({
     activeJobIdRef.current = jobId;
     setRunning(true);
     setProgress(null);
+    setLanes({});
+    setLaneTotal(0);
     setReport(null);
     setImportedGameCount(null);
+    setStopping(false);
     const startedAt = Date.now();
     setConversionState((current) => ({
       ...current,
@@ -185,7 +205,11 @@ export default function OtbGameImportPanel({
       setReport(result);
       if (result.gamesFound === 0) {
         const sourceError = result.sources.flatMap((source) => source.errors).at(0);
-        throw new Error(sourceError || "No verified public OTB PGNs were found for this player.");
+        throw new Error(
+          result.cancelled
+            ? "The search was stopped before any games were found."
+            : sourceError || "No verified public OTB PGNs were found for this player.",
+        );
       }
 
       setConversionState((current) => ({
@@ -224,10 +248,10 @@ export default function OtbGameImportPanel({
         report: result,
       });
       notifications.show({
-        title: "OTB prep database ready",
+        title: result.cancelled ? "Partial OTB database ready" : "OTB prep database ready",
         message:
           convertedGameCount === result.gamesFound
-            ? `${convertedGameCount} OTB game${convertedGameCount === 1 ? "" : "s"} imported; ${result.duplicatesRemoved} duplicate${result.duplicatesRemoved === 1 ? "" : "s"} removed.`
+            ? `${convertedGameCount} OTB game${convertedGameCount === 1 ? "" : "s"} imported${result.cancelled ? " from the stopped search" : ""}; ${result.duplicatesRemoved} duplicate${result.duplicatesRemoved === 1 ? "" : "s"} removed.`
             : `${convertedGameCount} usable OTB game${convertedGameCount === 1 ? "" : "s"} imported from ${result.gamesFound} unique source records; ${result.gamesFound - convertedGameCount} malformed or empty record${result.gamesFound - convertedGameCount === 1 ? "" : "s"} skipped.`,
         color: "green",
       });
@@ -239,29 +263,49 @@ export default function OtbGameImportPanel({
       });
     } finally {
       activeJobIdRef.current = null;
+      setStopping(false);
       resetDatabaseConversionState(setConversionState);
       setRunning(false);
     }
   };
 
+  const stopAndCreateDatabase = async () => {
+    const jobId = activeJobIdRef.current;
+    if (!jobId || stopping) return;
+    setStopping(true);
+    try {
+      const accepted = await commands.cancelOtbGames(jobId);
+      if (!accepted) setStopping(false);
+    } catch (error) {
+      setStopping(false);
+      notifications.show({
+        title: "Could not stop the OTB search",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    }
+  };
+
   return (
-    <Stack gap={dense ? 4 : "xs"}>
-      <Alert color="blue" variant="light" p={dense ? 6 : "xs"}>
-        <Text size="xs">
-          OTB only. Personal Chess.com and Lichess account games are never included. FIDE ID is
-          strongly recommended to avoid same-name players. Coverage is exhaustive across the
-          selected public PGN sources, but events that publish results without moves cannot be
-          imported.
-        </Text>
-      </Alert>
-      <Group gap={dense ? 4 : "xs"} wrap="wrap" align="flex-end">
+    <Stack gap={dense ? 4 : "md"}>
+      {asDialog ? null : (
+        <Alert color="blue" variant="light" p={dense ? 6 : "xs"}>
+          <Text size="xs">
+            OTB only. Personal Chess.com and Lichess account games are never included. FIDE ID is
+            strongly recommended to avoid same-name players. Coverage is exhaustive across the
+            selected public PGN sources, but events that publish results without moves cannot be
+            imported.
+          </Text>
+        </Alert>
+      )}
+      <Group gap={dense ? 4 : "sm"} wrap="wrap" align="flex-end">
         <TextInput
-          label="Opponent"
+          label={asDialog ? "Player" : "Opponent"}
           placeholder="Surname, Firstname"
           value={playerName}
           onChange={(event) => setPlayerName(event.currentTarget.value)}
           size={controlSize}
-          w={dense ? 180 : 230}
+          {...(asDialog ? { flex: 1, miw: 220 } : { w: dense ? 180 : 230 })}
         />
         <TextInput
           label="FIDE ID"
@@ -290,7 +334,7 @@ export default function OtbGameImportPanel({
           />
         ) : null}
       </Group>
-      <Group gap={dense ? 6 : "sm"} wrap="wrap">
+      <Group gap={dense ? 6 : "md"} wrap="wrap">
         {OTB_IMPORT_SOURCE_DETAILS.map((source) => (
           <Tooltip key={source.key} label={source.detail}>
             <Checkbox
@@ -307,7 +351,7 @@ export default function OtbGameImportPanel({
           </Tooltip>
         ))}
       </Group>
-      <Group gap={dense ? 4 : "xs"} wrap="wrap" align="center">
+      <Group gap={dense ? 4 : "sm"} wrap="wrap" align="center">
         <Tooltip label="Add public PGN, ZIP, or Zstandard files exported from ChessBase or another source">
           <Button
             variant="default"
@@ -339,30 +383,60 @@ export default function OtbGameImportPanel({
         ))}
         <Button
           size={controlSize}
-          leftSection={<IconCloudSearch size="0.95rem" />}
-          loading={running}
-          onClick={() => void runImport()}
+          ml={asDialog ? "auto" : undefined}
+          color={running ? "orange" : undefined}
+          variant={running ? "light" : "filled"}
+          leftSection={
+            running ? <IconX size="0.95rem" /> : <IconCloudSearch size="0.95rem" />
+          }
+          loading={stopping}
+          onClick={() => void (running ? stopAndCreateDatabase() : runImport())}
         >
-          Find OTB games + use
+          {running ? "Stop and create database" : submitLabel}
         </Button>
       </Group>
       {running && progress ? (
-        <Stack gap={3}>
+        <Stack gap={4}>
           <Group justify="space-between" gap="xs" wrap="nowrap">
             <Text size="xs" c="dimmed" truncate>
-              {progress.message}
+              {laneSummary.total > 0
+                ? `Searching ${laneSummary.total} source lanes in parallel · ${laneSummary.done} finished`
+                : progress.message}
             </Text>
             <Badge variant="light" size="sm">
               {progress.gamesFound} found
             </Badge>
           </Group>
-          <Progress value={progressPercent ?? 100} animated={progressPercent === null} size="xs" />
+          <Progress
+            value={laneSummary.total > 0 ? (laneSummary.done / laneSummary.total) * 100 : 100}
+            animated={laneSummary.total === 0}
+            size="xs"
+          />
+          {laneSummary.entries.length > 0 ? (
+            <Stack gap={2}>
+              {laneSummary.entries.map((lane) => (
+                <Group key={lane.source} justify="space-between" gap="xs" wrap="nowrap">
+                  <Text size="xs" c="dimmed" truncate>
+                    {getOtbImportLaneLabel(lane.source)}
+                  </Text>
+                  <Text size="xs" c="dimmed" style={{ fontVariantNumeric: "tabular-nums" }}>
+                    {lane.phase === "done"
+                      ? "done"
+                      : lane.total > 0
+                        ? `${lane.current}/${lane.total}`
+                        : "…"}
+                  </Text>
+                </Group>
+              ))}
+            </Stack>
+          ) : null}
         </Stack>
       ) : null}
       {report ? (
         <Alert color={sourceWarnings > 0 ? "yellow" : "green"} variant="light" p={dense ? 6 : "xs"}>
           <Stack gap={3}>
             <Text size="xs" fw={600}>
+              {report.cancelled ? "Stopped early · " : ""}
               {report.gamesFound} unique source games · {report.duplicatesRemoved} duplicates
               removed · {report.suspectedOnlineGamesExcluded} online records excluded
             </Text>
