@@ -481,7 +481,6 @@ export default function WebApp() {
   const [selectedDatabaseId, setSelectedDatabaseId] = useState<string | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const [lichessToken, setLichessToken] = usePersistentString(WEB_LICHESS_TOKEN_STORAGE_KEY, "");
-  const [lichessAuthReady, setLichessAuthReady] = useState(false);
   const lichessTokenAtStartup = useRef(lichessToken);
   const saveReady = useRef(false);
   const coachMigrationStarted = useRef(false);
@@ -594,9 +593,7 @@ export default function WebApp() {
         const existingToken = lichessTokenAtStartup.current.trim();
         if (existingToken) await saveSharedLichessCredential(existingToken);
       } catch (error) {
-        console.error(error);
-      } finally {
-        if (active) setLichessAuthReady(true);
+        console.warn("Shared Lichess sign-in is temporarily unavailable.", error);
       }
     })();
 
@@ -1077,7 +1074,7 @@ export default function WebApp() {
         </Box>
 
         <main className={classes.main}>
-          {!loaded || !lichessAuthReady ? (
+          {!loaded ? (
             <Center h="60svh">
               <Stack align="center" gap="xs">
                 <Loader />

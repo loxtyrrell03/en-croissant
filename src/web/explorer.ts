@@ -66,7 +66,7 @@ const EXPLORER_PC_TIMEOUT_MS = 8_000;
 const EXPLORER_PREFETCH_MOVES = 3;
 const PC_STRENGTH_GRACE_MS = 75;
 const configuredPrivateServerUrl = String(
-  import.meta.env.VITE_EN_CROISSANT_SERVER_URL ?? "https://gaming-pc.tail89d19b.ts.net",
+  import.meta.env.VITE_EN_CROISSANT_SERVER_URL ?? "https://lox.tail89d19b.ts.net",
 ).trim();
 const PRIVATE_SERVER_URL = configuredPrivateServerUrl.replace(/\/+$/, "");
 const explorerRequests = new Map<string, Promise<ExplorerResponse>>();
