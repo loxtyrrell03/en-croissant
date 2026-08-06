@@ -604,6 +604,7 @@ function buildChessComArchive(nowSec: number) {
                 rated: true,
                 white: { username: "StatsGuy", rating: 1512, result: "win" },
                 black: { username: "Rival1", rating: 1498, result: "resigned" },
+                accuracies: { white: 87.3, black: 81.2 },
             },
             {
                 url: "https://www.chess.com/game/live/2",
@@ -715,6 +716,15 @@ describe("fetchStatsGames chess.com normalization", () => {
         expect(win.eco).toBe("B01");
         expect(win.openingName).toBe("Scandinavian Defense Mieses Kotroc Variation");
         expect(win.pgn).toBe(CHESSCOM_PGN);
+        expect(win.providerQuality).toEqual({
+            provider: "chesscom",
+            accuracy: 87.3,
+            acpl: null,
+            inaccuracies: null,
+            mistakes: null,
+            blunders: null,
+        });
+        expect(win.opponentProviderQuality?.accuracy).toBe(81.2);
 
         const timeoutLoss = games[2];
         expect(timeoutLoss.color).toBe("b");
@@ -805,12 +815,35 @@ function buildLichessNdjson(nowMs: number) {
             status: "mate",
             winner: "white",
             players: {
-                white: { user: { name: "LichUser" }, rating: 1500, ratingDiff: 8 },
-                black: { user: { name: "Nemesis" }, rating: 1520, ratingDiff: -7 },
+                white: {
+                    user: { name: "LichUser" },
+                    rating: 1500,
+                    ratingDiff: 8,
+                    analysis: {
+                        inaccuracy: 2,
+                        mistake: 1,
+                        blunder: 0,
+                        acpl: 34,
+                        accuracy: 88.4,
+                    },
+                },
+                black: {
+                    user: { name: "Nemesis" },
+                    rating: 1520,
+                    ratingDiff: -7,
+                    analysis: {
+                        inaccuracy: 3,
+                        mistake: 0,
+                        blunder: 1,
+                        acpl: 49,
+                        accuracy: 82.1,
+                    },
+                },
             },
             opening: { eco: "B90", name: "Sicilian Defense: Najdorf Variation" },
             clock: { initial: 180, increment: 2 },
             pgn: '[Event "Rated blitz game"]\n\n1. e4 { [%eval 0.2] [%clk 0:03:00] } c5 1-0',
+            division: { middle: 18, end: 42 },
         },
         {
             id: "bbbb2222",
@@ -923,6 +956,8 @@ describe("fetchStatsGames lichess normalization", () => {
         expect(requestUrl).toContain("pgnInJson=true");
         expect(requestUrl).toContain("clocks=true");
         expect(requestUrl).toContain("evals=true");
+        expect(requestUrl).toContain("accuracy=true");
+        expect(requestUrl).toContain("division=true");
         expect(requestUrl).toContain("opening=true");
         expect(requestUrl).not.toContain("rated=true");
         expect(getRequestHeaders(requests[0].init).Accept).toBe("application/x-ndjson");
@@ -958,6 +993,16 @@ describe("fetchStatsGames lichess normalization", () => {
         expect(win.eco).toBe("B90");
         expect(win.openingName).toBe("Sicilian Defense: Najdorf Variation");
         expect(win.pgn).toContain("[%eval 0.2]");
+        expect(win.providerQuality).toEqual({
+            provider: "lichess",
+            accuracy: 88.4,
+            acpl: 34,
+            inaccuracies: 2,
+            mistakes: 1,
+            blunders: 0,
+        });
+        expect(win.opponentProviderQuality?.accuracy).toBe(82.1);
+        expect(win.division).toEqual({ middlegamePly: 18, endgamePly: 42 });
 
         // Casual game without ratingDiff keeps its listed rating.
         expect(games[1].rating).toBe(1495);

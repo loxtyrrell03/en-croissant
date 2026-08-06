@@ -18,6 +18,7 @@ import {
   codexUsageLimitFromOutput,
   collectPcCoachPositionEvaluations,
   findExactOpeningBookMatches,
+  formatStatsAggregateDigest,
   getChessBookLibraryInventory,
   normalizeCloudCoachEvaluation,
   normalizeChessCoachRequestPayload,
@@ -33,6 +34,115 @@ import {
   searchChessBookCorpus,
   writeProcessStdinSafely,
 } from "../chess-coach-service.mjs";
+
+test("stats digest includes opponent bands, transparent quality comparisons, and position outcomes", () => {
+  const digest = formatStatsAggregateDigest({
+    record: { games: 4, wins: 2, draws: 1, losses: 1, scorePct: 62.5 },
+    opponents: {
+      gamesWithOpponentRating: 4,
+      opponentRatingCoveragePct: 100,
+      avgOpponentRating: 1544,
+      medianOpponentRating: 1538,
+      minOpponentRating: 1460,
+      maxOpponentRating: 1630,
+      avgRatingGap: 44,
+      scorePct: 62.5,
+      expectedScorePct: 43.2,
+      scoreDeltaPct: 19.3,
+      bands: [
+        {
+          label: "1400-1599",
+          containsCurrentRating: true,
+          games: 3,
+          avgOpponentRating: 1515,
+          scorePct: 66.7,
+          expectedScorePct: 48,
+          scoreDeltaPct: 18.7,
+          analysisCoveragePct: 66.7,
+          mistakesPerAnalyzedGame: 1.2,
+          opponentMistakesPerAnalyzedGame: 1.6,
+          blundersPerAnalyzedGame: 0.5,
+          opponentBlundersPerAnalyzedGame: 0.8,
+        },
+      ],
+    },
+    mistakes: {
+      analyzedGames: 3,
+      pairedGames: 2,
+      analysisCoveragePct: 75,
+      avgAccuracy: 84,
+      avgAcpl: 43,
+      blundersPerGame: 0.5,
+      mistakesPerGame: 1.2,
+      inaccuraciesPerGame: 2,
+      player: {
+        games: 3,
+        avgAccuracy: 84,
+        avgAcpl: 43,
+        inaccuraciesPerGame: 2,
+        mistakesPerGame: 1.2,
+        blundersPerGame: 0.5,
+        errorsPer100Moves: 4.4,
+        cleanGamePct: 33.3,
+      },
+      pairedPlayer: {
+        games: 2,
+        avgAccuracy: 91,
+        avgAcpl: 22,
+        inaccuraciesPerGame: 1,
+        mistakesPerGame: 0.5,
+        blundersPerGame: 0,
+        errorsPer100Moves: 1.5,
+        cleanGamePct: 50,
+      },
+      opponents: {
+        games: 2,
+        avgAccuracy: 81,
+        avgAcpl: 51,
+        inaccuraciesPerGame: 2.4,
+        mistakesPerGame: 1.6,
+        blundersPerGame: 0.8,
+        errorsPer100Moves: 6.1,
+        cleanGamePct: 0,
+      },
+      peerBenchmark: {
+        ratingBandLabel: "1400-1599",
+        samples: 2,
+        expectedAccuracy: 80,
+        expectedAcpl: 56,
+        accuracyDelta: 4,
+        acplDelta: -13,
+      },
+      situations: {
+        games: 3,
+        winningChances: 2,
+        convertedWinningChances: 1,
+        conversionPct: 50,
+        losingChances: 1,
+        savedLosingChances: 1,
+        savePct: 100,
+        avgMove15EvalCp: 42,
+        avgOpeningExitWinPct: 55,
+        critical: { moves: 8, errors: 2, accuracy: 74, errorPct: 25 },
+        endgames: { better: { games: 1, scorePct: 100 } },
+      },
+    },
+  });
+
+  assert.match(digest, /OPPONENTS\|.*average_rating=1544.*score_minus_expected_pp=\+19\.3/);
+  assert.match(digest, /OPPONENT_BAND\|1400-1599\|contains_player_rating=true/);
+  assert.match(digest, /MOVE_QUALITY_PLAYER\|games=2\|sample=paired\|accuracy=91%/);
+  assert.match(digest, /MOVE_QUALITY_OPPONENTS_IN_THESE_GAMES\|/);
+  assert.match(
+    digest,
+    /ESTIMATED_RATING_BAND_MODEL\|1400-1599\|.*model_baseline_not_live_population=true/,
+  );
+  assert.match(digest, /POSITION_OUTCOMES\|.*conversion=50%.*save_rate=100%/);
+  assert.match(
+    digest,
+    /DECISION_CONTEXT\|critical\|moves=8\|accuracy=74%\|errors=2\|error_rate=25%/,
+  );
+});
 
 test("saved phone coach reviews are validated against their exact game key", () => {
   const review = {

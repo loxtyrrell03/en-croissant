@@ -1098,7 +1098,7 @@ export default function WebApp() {
               setPanelMode={setBoardPanelMode}
             />
           ) : view === "stats" ? (
-            <StatsWorkspace />
+            <StatsWorkspace lichessToken={lichessToken} />
           ) : (
             <FilesWorkspace
               importHostedPgn={importHostedPgn}

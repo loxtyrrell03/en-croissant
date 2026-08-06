@@ -137,8 +137,19 @@ export async function analyzeStatsGame(
         timeControl: game.timeControl,
         clocks,
         analysisDepth,
+        result: game.result,
     });
     if (!quality) return null;
+    const opponentQuality = await buildGameQualityStats({
+        sans,
+        evals,
+        bestMoves,
+        color: game.color === "w" ? "b" : "w",
+        timeControl: game.timeControl,
+        clocks,
+        analysisDepth,
+        result: game.result === "win" ? "loss" : game.result === "loss" ? "win" : "draw",
+    });
 
     return {
         v: 2,
@@ -159,6 +170,18 @@ export async function analyzeStatsGame(
         phases: quality.phases,
         counts: quality.counts,
         phaseBlunders: quality.phaseBlunders,
+        advanced: quality.advanced,
+        ...(opponentQuality
+            ? {
+                  opponentQuality: {
+                      stats: opponentQuality.stats,
+                      phases: opponentQuality.phases,
+                      counts: opponentQuality.counts,
+                      phaseBlunders: opponentQuality.phaseBlunders,
+                      advanced: opponentQuality.advanced,
+                  },
+              }
+            : {}),
     };
 }
 
@@ -198,7 +221,7 @@ export async function runStatsBatchAnalysis(
 
         const key = gameAnalysisKey(game);
         const existing = byKey.get(key);
-        if (existing) {
+        if (existing?.advanced && existing.opponentQuality?.advanced) {
             results.push(existing);
             gamesDone += 1;
             opts.onProgress?.({
@@ -400,7 +423,9 @@ function isAnalyzedGameEntry(value: unknown): value is AnalyzedGameEntry {
         isGameQualityStats(entry.stats) &&
         isPhaseStatsRecord(entry.phases) &&
         isMoveLabelCounts(entry.counts) &&
-        isPhaseBlunders(entry.phaseBlunders)
+        isPhaseBlunders(entry.phaseBlunders) &&
+        (!("advanced" in entry) || isAdvancedGameQualityStats(entry.advanced)) &&
+        (!("opponentQuality" in entry) || isAnalyzedSideQuality(entry.opponentQuality))
     );
 }
 
@@ -452,6 +477,50 @@ function isPhaseBlunders(value: unknown): boolean {
         isFiniteNumber(record.opening) &&
         isFiniteNumber(record.middlegame) &&
         isFiniteNumber(record.endgame)
+    );
+}
+
+function isAdvancedGameQualityStats(value: unknown): boolean {
+    if (typeof value !== "object" || value === null) return false;
+    const record = value as Record<string, unknown>;
+    return (
+        isDecisionBucketStats(record.advantage) &&
+        isDecisionBucketStats(record.defence) &&
+        isDecisionBucketStats(record.balanced) &&
+        isDecisionBucketStats(record.critical) &&
+        isDecisionBucketStats(record.fast) &&
+        isDecisionBucketStats(record.longThink) &&
+        isDecisionBucketStats(record.timeTrouble) &&
+        typeof record.hadWinningPosition === "boolean" &&
+        (record.convertedWinningPosition === null ||
+            typeof record.convertedWinningPosition === "boolean") &&
+        typeof record.hadLosingPosition === "boolean" &&
+        (record.savedLosingPosition === null || typeof record.savedLosingPosition === "boolean") &&
+        isFiniteNumberOrNull(record.openingExitWinPct) &&
+        isFiniteNumberOrNull(record.move15EvalCp) &&
+        isFiniteNumberOrNull(record.endgameEntryEvalCp)
+    );
+}
+
+function isAnalyzedSideQuality(value: unknown): boolean {
+    if (typeof value !== "object" || value === null) return false;
+    const record = value as Record<string, unknown>;
+    return (
+        isGameQualityStats(record.stats) &&
+        isPhaseStatsRecord(record.phases) &&
+        isMoveLabelCounts(record.counts) &&
+        isPhaseBlunders(record.phaseBlunders) &&
+        isAdvancedGameQualityStats(record.advanced)
+    );
+}
+
+function isDecisionBucketStats(value: unknown): boolean {
+    if (typeof value !== "object" || value === null) return false;
+    const bucket = value as Record<string, unknown>;
+    return (
+        isFiniteNumber(bucket.moves) &&
+        isFiniteNumber(bucket.errors) &&
+        isFiniteNumberOrNull(bucket.accuracy)
     );
 }
 
