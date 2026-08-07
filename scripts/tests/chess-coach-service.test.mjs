@@ -686,6 +686,66 @@ test("PC sweep checks every cloud position first and live-analyzes only misses s
   assert.deepEqual(progress.at(-1), { phase: "live", completed: 2, total: 2 });
 });
 
+test("Coach opening sweep stops at the first cache gap and analyzes only that boundary", async () => {
+  const positions = [
+    { key: "start", fen: "start w - - 0 1", ply: 0 },
+    { key: "one", fen: "one b - - 0 1", ply: 1 },
+    { key: "two", fen: "two w - - 0 2", ply: 2 },
+    { key: "three", fen: "three b - - 0 2", ply: 3 },
+  ];
+  const calls = [];
+  const result = await collectPcCoachPositionEvaluations({
+    positions,
+    stopAfterFirstCloudMiss: true,
+    liveAttempts: 1,
+    queryCloud: async (fen) => {
+      const key = fen.split(" ")[0];
+      calls.push(`cloud:${key}`);
+      return key === "start" || key === "one"
+        ? { source: "pc-cloud", whiteCp: key === "start" ? 20 : 12 }
+        : null;
+    },
+    queryLive: async (fen) => {
+      const key = fen.split(" ")[0];
+      calls.push(`live:${key}`);
+      return { source: "pc-live", depth: 16, whiteCp: 8 };
+    },
+  });
+
+  assert.deepEqual(calls, ["cloud:start", "cloud:one", "cloud:two", "live:two"]);
+  assert.equal(result.cloudHits, 2);
+  assert.equal(result.liveAnalyses, 1);
+  assert.equal(result.evaluations.size, 3);
+  assert.equal(result.checkedPositions.length, 3);
+  assert.equal(result.skippedPositions, 1);
+  assert.equal(result.stoppedAtCloudBoundary, true);
+  assert.equal(result.boundaryPly, 2);
+});
+
+test("Coach opening sweep can keep useful cached evidence if its one live boundary check fails", async () => {
+  const result = await collectPcCoachPositionEvaluations({
+    positions: [
+      { key: "start", fen: "start w - - 0 1", ply: 0 },
+      { key: "one", fen: "one b - - 0 1", ply: 1 },
+      { key: "two", fen: "two w - - 0 2", ply: 2 },
+    ],
+    stopAfterFirstCloudMiss: true,
+    allowLiveFailure: true,
+    liveAttempts: 1,
+    queryCloud: async (fen) =>
+      fen.startsWith("start") ? { source: "pc-cloud", whiteCp: 20 } : null,
+    queryLive: async () => {
+      throw new Error("boundary timeout");
+    },
+  });
+
+  assert.equal(result.cloudHits, 1);
+  assert.equal(result.liveAnalyses, 0);
+  assert.equal(result.liveFailures, 1);
+  assert.equal(result.evaluatedPositions.length, 1);
+  assert.equal(result.skippedPositions, 2);
+});
+
 test("PC sweep aborts before a cache miss can start live Stockfish", async () => {
   const controller = new AbortController();
   let liveCalls = 0;
@@ -1363,9 +1423,82 @@ test("PC analysis-only result reports complete coverage and a full per-move trac
     liveAnalyses: 1,
     failed: 0,
     liveDepth: 18,
+    skippedPositions: 0,
+    stoppedAtCloudBoundary: false,
+    boundaryPly: null,
+    complete: true,
   });
   assert.equal(result.moveAnalysis[0].before.source, "pc-cloud");
   assert.equal(result.moveAnalysis[0].after.source, "pc-live");
   assert.equal(result.moveAnalysis[0].moverLossCp, 50);
   assert.equal(result.criticalMoments[0].ply, 1);
+});
+
+test("PC analysis result exposes only the fully verified opening prefix and reports the skipped tail", () => {
+  const moves = [
+    {
+      ply: 1,
+      color: "white",
+      san: "e4",
+      uci: "e2e4",
+      fenBefore: "start w - - 0 1",
+      fenAfter: "after-one b - - 0 1",
+      annotations: [],
+    },
+    {
+      ply: 2,
+      color: "black",
+      san: "e5",
+      uci: "e7e5",
+      fenBefore: "after-one b - - 0 1",
+      fenAfter: "after-two w - - 0 2",
+      annotations: [],
+    },
+    {
+      ply: 3,
+      color: "white",
+      san: "Nf3",
+      uci: "g1f3",
+      fenBefore: "after-two w - - 0 2",
+      fenAfter: "after-three b - - 1 2",
+      annotations: [],
+    },
+  ];
+  const positions = buildCoachPositionRecords({ moves, scope: "whole-game" }).slice(0, 3);
+  const evaluations = new Map([
+    ["start w - -", { source: "pc-cloud", depth: 28, whiteCp: 20, pvUci: [] }],
+    ["after-one b - -", { source: "pc-cloud", depth: 27, whiteCp: 12, pvUci: [] }],
+    ["after-two w - -", { source: "pc-live", depth: 16, whiteCp: 8, pvUci: [] }],
+  ]);
+  const result = buildPcCoachAnalysisResult({
+    scope: "whole-game",
+    moves,
+    positions,
+    evaluations,
+    playerColor: "white",
+    cloudHits: 2,
+    liveAnalyses: 1,
+    liveDepth: 16,
+    totalPositions: 4,
+    skippedPositions: 1,
+    stoppedAtCloudBoundary: true,
+    boundaryPly: 2,
+  });
+
+  assert.deepEqual(
+    result.moveAnalysis.map((move) => move.san),
+    ["e4", "e5"],
+  );
+  assert.deepEqual(result.analysisCoverage, {
+    totalPositions: 4,
+    uniquePositions: 3,
+    cloudHits: 2,
+    liveAnalyses: 1,
+    failed: 0,
+    liveDepth: 16,
+    skippedPositions: 1,
+    stoppedAtCloudBoundary: true,
+    boundaryPly: 2,
+    complete: false,
+  });
 });

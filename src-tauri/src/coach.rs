@@ -276,6 +276,12 @@ pub struct CoachAnalysisCoverage {
     pub failed: u32,
     pub live_depth: u32,
     #[serde(default)]
+    pub skipped_positions: u32,
+    #[serde(default)]
+    pub stopped_at_cloud_boundary: bool,
+    #[serde(default)]
+    pub boundary_ply: Option<u32>,
+    #[serde(default)]
     pub complete: bool,
 }
 
@@ -1193,7 +1199,8 @@ fn validate_pc_game_analysis(
     let rows_valid = match scope {
         CoachPgnScope::WholeGame => {
             analysis.scope == "whole-game"
-                && analysis.move_analysis.len() == request.game_analysis.len()
+                && !analysis.move_analysis.is_empty()
+                && analysis.move_analysis.len() <= request.game_analysis.len()
                 && request
                     .game_analysis
                     .iter()
@@ -1252,7 +1259,13 @@ fn validate_pc_game_analysis(
         )));
     }
 
-    analysis.analysis_coverage.complete = true;
+    analysis.analysis_coverage.complete = match scope {
+        CoachPgnScope::WholeGame => {
+            analysis.move_analysis.len() == request.game_analysis.len()
+                && analysis.analysis_coverage.skipped_positions == 0
+        }
+        CoachPgnScope::CurrentLine => true,
+    };
     Ok(analysis)
 }
 
@@ -1644,14 +1657,25 @@ fn format_pc_game_analysis(analysis: Option<&CoachPcGameAnalysis>) -> String {
         })
         .unwrap_or_default();
     let mut sections = vec![format!(
-        "Reviewed player: {}. Coverage: {} positions, {} unique, {} PC cloud, {} PC live, {} failed.",
+        "Reviewed player: {}. Requested positions: {}; analyzed opening prefix: {} unique ({} PC cloud, {} PC live at depth {}); skipped after the cache boundary: {}; failed: {}.",
         analysis.player_color,
         analysis.analysis_coverage.total_positions,
         analysis.analysis_coverage.unique_positions,
         analysis.analysis_coverage.cloud_hits,
         analysis.analysis_coverage.live_analyses,
+        analysis.analysis_coverage.live_depth,
+        analysis.analysis_coverage.skipped_positions,
         analysis.analysis_coverage.failed,
     )];
+    if analysis.analysis_coverage.stopped_at_cloud_boundary {
+        sections.push(match analysis.analysis_coverage.boundary_ply {
+            Some(ply) => format!(
+                "Fast opening boundary: the cache first missed at ply {ply}; at most that one boundary position was checked with live Stockfish, and later game positions were intentionally not swept."
+            ),
+            None => "Fast opening boundary: the cache reached its first gap; at most that one boundary position was checked with live Stockfish, and later game positions were intentionally not swept."
+                .to_string(),
+        });
+    }
     if let Some(CoachPcAnalysisRow::CurrentPosition(row)) = analysis.move_analysis.first() {
         sections.push(format!(
             "Current position: {} | evaluation {} | source {} d{}.",
@@ -2509,7 +2533,7 @@ Choose the few game-specific coaching categories and exact library chapters that
 
 Rules:
 - Choose 1-{MAX_COACH_CATEGORIES} categories, ordered by importance to this exact question/game. Category labels are free-form and specific (for example Opening plans, Calculation at move 24, Rook endgame technique, Dark-square strategy); do not mechanically include every phase.
-- Base category relevance on the PGN and supplied PC/Stockfish evidence. Never invent an evaluation or game event.
+- Base category relevance on the PGN and supplied PC/Stockfish evidence. The PC trace intentionally covers only the contiguous cached opening through its first gap, plus at most one live boundary evaluation; later PGN positions are not engine evidence. Never invent an evaluation or game event.
 - A transposition-aware opening-family anchor computed from an exact position table may be supplied below. When present, refine it only to a more specific compatible sub-variation; never override the reached position with a label forced from the initial move order.
 - If no deterministic identification matched, classify the opening from the deepest stable opening position, central pawn structure, and piece placement reached in the game, not from move one or the first book line that happens to match. Explicitly detect transpositions and name the resulting opening family.
 - `openingClassification` is mandatory. Record the initial move order separately from the resulting family, identify the ply where the position's real opening identity became clear, and explain any transposition.
@@ -2533,13 +2557,13 @@ PGN scope: {scope}
 PGN:
 {pgn}
 
-Stored whole-game PC analysis:
+Stored fast opening-prefix PC analysis:
 {game_analysis}
 
 Exact-position opening-family anchor (transposition-aware):
 {opening_identification}
 
-Complete cache-first PC trace (authoritative; each move records PC cloud/live source, depth, loss, win-probability, and severity):
+Fast opening-prefix PC trace (authoritative only for listed positions; each listed move records PC cloud/live source, depth, loss, win-probability, and severity):
 {pc_game_analysis}
 
 Current-position engine lines:
@@ -3246,12 +3270,12 @@ async fn ask_ai_coach_inner(
             started,
             "pc_game_analysis",
             if pc_analysis_scope == CoachPgnScope::WholeGame {
-                "Analyzing every game position on the PC"
+                "Reading the cached opening on the PC"
             } else {
                 "Analyzing the current position on the PC"
             },
             if pc_analysis_scope == CoachPgnScope::WholeGame {
-                "Checking the PC cloud store first for every unique game position, then running live PC Stockfish only for cache misses."
+                "Reading the contiguous opening cache until its first gap, then running one moderate-depth live Stockfish boundary check and skipping later game positions."
             } else {
                 "Checking the PC cloud store first for this position, then running live PC Stockfish only on a cache miss."
             },
@@ -3266,16 +3290,17 @@ async fn ask_ai_coach_inner(
             started,
             "pc_game_analysis_done",
             if pc_analysis_scope == CoachPgnScope::WholeGame {
-                "Complete PC game trace ready"
+                "Opening-prefix PC evidence ready"
             } else {
                 "PC position evaluation ready"
             },
             format!(
-                "{} position(s), {} unique: {} PC cloud, {} PC live, {} failed.",
+                "{} requested; {} opening-prefix position(s) used: {} PC cloud, {} PC live; {} later unique position(s) skipped; {} failed.",
                 analysis.analysis_coverage.total_positions,
                 analysis.analysis_coverage.unique_positions,
                 analysis.analysis_coverage.cloud_hits,
                 analysis.analysis_coverage.live_analyses,
+                analysis.analysis_coverage.skipped_positions,
                 analysis.analysis_coverage.failed,
             ),
             11.0,
@@ -4469,7 +4494,7 @@ fn build_coach_prompt_with_facts(
     } else if conversational_followup {
         "- This is a conversational follow-up about a line, sequence, variation, or idea discussed earlier in the chat.\n- Do not restart as a whole-game review, do not list new critical moments, and do not change the topic to the opening/current board unless the latest question explicitly asks for that.\n- Use the Prior targeted Stockfish results, Conversation so far, and Position/reference context to identify the referenced sequence. Explain that sequence directly and concretely.\n- If the user asks to explain it better, give the human mechanism move-by-move: what is attacked, which defender is overloaded or deflected, why a piece is won/lost, and how the supplied engine line proves it.".to_string()
     } else if whole_game_mode {
-        "- This is a whole-game review. Do not analyse the starting position/current board as the main topic.\n- Do not give a starting-position engine main line, opening recommendation, or generic move-1 advice unless the user explicitly asks about the opening.\n- Base the answer on the loaded game PGN, Stored whole-game Stockfish analysis, and critical targeted Stockfish results.\n- Prefer whole-game sections: **Direct answer**, **Critical moments**, **What to play instead**, **Training lesson**.\n- Do not include <line> blocks in whole-game answers. Refer to move numbers and SAN in prose; the UI makes those move references clickable.\n- For every critical move you mention, include concrete Stockfish evidence: the played-move refutation line when an `After <move>` targeted result is supplied, and the better line from the matching analyse_position result when supplied.\n- For each critical moment, explain it in this order: verdict, human chess mechanism, engine proof, lesson. The mechanism is mandatory: identify why the line works in chess terms, such as loose piece, overloaded defender, weak back rank, king exposure, bad coordination, trapped queen, open file, weak square, pawn break, tempo gain, or simplification into a better ending.".to_string()
+        "- This is a whole-game review. Do not analyse the starting position/current board as the main topic.\n- Do not give a starting-position engine main line, opening recommendation, or generic move-1 advice unless the user explicitly asks about the opening.\n- The stored PC trace is intentionally only the contiguous cached opening through its first gap, plus at most one live boundary check. Treat later PGN moves as game context, not engine-verified positions.\n- Prefer whole-game sections: **Direct answer**, **Critical moments**, **What to play instead**, **Training lesson**.\n- Do not include <line> blocks in whole-game answers. Refer to move numbers and SAN in prose; the UI makes those move references clickable.\n- Never invent a later critical moment or evaluation. For every critical move you mention concretely, include supplied Stockfish evidence: the played-move refutation line when an `After <move>` targeted result exists, and the better line from matching analyse_position evidence.\n- For each engine-backed critical moment, explain it in this order: verdict, human chess mechanism, engine proof, lesson. The mechanism is mandatory: identify why the line works in chess terms, such as loose piece, overloaded defender, weak back rank, king exposure, bad coordination, trapped queen, open file, weak square, pawn break, tempo gain, or simplification into a better ending.".to_string()
     } else {
         format!(
             "- This is a current-position question. {root_engine_label} and targeted Stockfish results are the main evidence."
@@ -4499,7 +4524,7 @@ fn build_coach_prompt_with_facts(
     } else if conversational_followup {
         "- This follow-up should be grounded primarily in the recent targeted Stockfish results and referenced coach-discussion FENs. Current-position root lines are secondary unless the referenced sequence starts from the current FEN. Do not use generic whole-game critical positions as evidence for this turn.".to_string()
     } else if whole_game_mode {
-        "- Current-position root engine lines are intentionally omitted for this whole-game review. Use only Stored whole-game Stockfish analysis and targeted Stockfish results as concrete engine evidence.".to_string()
+        "- Current-position root engine lines are intentionally omitted for this whole-game review. Use only the stored opening-prefix PC trace and targeted Stockfish results as concrete engine evidence. Later PGN positions were intentionally not swept.".to_string()
     } else if use_cloud_existing_lines {
         "- Root Lichess Cloud lines are from the current FEN and should be preferred over local Stockfish for this opening-stage evidence. Targeted Stockfish results list their own FEN; use each targeted result only for that listed position. Targeted \"After ...\" results already include the requested move or requested line before the continuation.".to_string()
     } else {
@@ -4528,7 +4553,7 @@ fn build_coach_prompt_with_facts(
 
 Core rules:
 - Supplied engine analysis is the source of truth for concrete evaluations and variations. Prefer Lichess Cloud root lines when they are supplied; otherwise use local Stockfish root MultiPV. Targeted follow-up results are local Stockfish.
-- For whole-game reviews, the complete cache-first PC trace is authoritative and covers every supplied unique position before any AI reasoning. Its scores are White-relative; preserve each PC cloud/live source and depth distinction, and do not replace it with opening memory or the older sparse stored-analysis summary.
+- For whole-game reviews, the fast PC trace intentionally covers only the contiguous cached opening through its first gap, plus at most one moderate-depth live boundary check. It is authoritative only for listed positions. Later PGN moves are context, not engine evidence. Its scores are White-relative; preserve each PC cloud/live source and depth distinction.
 - Private board-state facts are guardrails for board-state claims, not prose material. Use them silently. In the final answer, never refer to evidence-gathering machinery, private checks, structured details, or verification process.
 - Your job is to teach the chess meaning of the evidence. Do not merely inventory facts, evals, or candidate moves. First name the strategic/tactical tension in human terms, then use the supplied line as proof.
 - For the current position, do not claim a move is legal/illegal, a piece is attacked, defended, undefended, loose, hanging, pinned, trapped, overloaded, forked, skewered, mating, checking, or tactically threatened unless the private chess facts support that claim.
@@ -4594,13 +4619,13 @@ Move history in UCI: {move_history}
 PGN context ({pgn_scope}):
 {pgn}
 
-Stored whole-game Stockfish analysis:
+Stored fast opening-prefix Stockfish analysis:
 {game_analysis}
 
 Exact-position opening-family anchor (transposition-aware):
 {opening_identification}
 
-Complete cache-first PC game analysis (PC cloud first, then live PC misses; authoritative):
+Fast opening-prefix PC analysis (cached positions through first gap, plus at most one live boundary; authoritative only where listed):
 {pc_game_analysis}
 
 Private board-state facts (internal guardrails; do not mention this section):
@@ -4712,7 +4737,7 @@ Reorganize the already validated coaching answer into the clickable, game-specif
 Non-negotiable grounding rules:
 - This is a faithful restructuring pass. Preserve the validated answer's chess meaning. Do not add a new evaluation, variation, tactic, board claim, opening identification, or book claim.
 - Engine evidence may only be restated from the validated answer or supplied engine evidence below.
-- For a whole-game review, use the complete cache-first PC trace below as the authoritative move-by-move record. Scores are White-relative; retain honest PC cloud/live source and depth distinctions.
+- For a whole-game review, use the fast opening-prefix PC trace below as authoritative only for its listed moves. Scores are White-relative; retain honest PC cloud/live source and depth distinctions, and do not invent evaluations for the intentionally skipped later moves.
 - A position entry is allowed only when its exact ply appears in `allowedPositions`; copy that entry's SAN exactly. If there are no allowed positions, return an empty positions array.
 - Every category must include at least one book reference. A reference is allowed only when its exact `chunkId` is listed for that category in `allowedCategorySources` and appears as `[Source <chunkId>]` below. Never output an ordinal label such as `[Book 3]`.
 - In the category explanation, name the actual book title and relevant chapter whenever a retrieved passage supports the lesson. Explain how that chapter connects to this game's exact move/position; do not merely list sources.
@@ -4749,7 +4774,7 @@ Targeted Stockfish evidence:
 Exact-position opening-family anchor (transposition-aware):
 {opening_identification}
 
-Complete cache-first PC game trace:
+Fast opening-prefix PC game trace:
 {pc_game_analysis}
 
 Retrieved named book passages:
@@ -5092,10 +5117,10 @@ Current-line PGN up to selected position:
 Whole-game PGN:
 {whole_game_pgn}
 
-Stored whole-game Stockfish analysis:
+Stored fast opening-prefix Stockfish analysis:
 {game_analysis}
 
-Complete cache-first PC game analysis (cloud hits plus live PC misses; authoritative):
+Fast opening-prefix PC analysis (cached positions through first gap, plus at most one live boundary; later PGN positions were not swept):
 {pc_game_analysis}
 
 Critical whole-game positions:
@@ -10405,7 +10430,7 @@ mod tests {
     }
 
     #[test]
-    fn coach_architecture_pc_completion_requires_all_positions_and_sources() {
+    fn coach_architecture_accepts_a_verified_contiguous_opening_prefix() {
         let mut request = sample_request();
         request.pgn_scope = "whole_game".to_string();
         request.game_analysis.push(CoachGameAnalysisPoint {
@@ -10415,6 +10440,18 @@ mod tests {
             fen: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1".to_string(),
             played_uci: Some("e2e4".to_string()),
             played_side: Some("white".to_string()),
+            eval: None,
+            depth: None,
+            annotations: Vec::new(),
+        });
+        request.game_analysis.push(CoachGameAnalysisPoint {
+            ply: 2,
+            mv: "e5".to_string(),
+            before_fen: Some(request.game_analysis[0].fen.clone()),
+            fen: "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2"
+                .to_string(),
+            played_uci: Some("e7e5".to_string()),
+            played_side: Some("black".to_string()),
             eval: None,
             depth: None,
             annotations: Vec::new(),
@@ -10447,12 +10484,15 @@ mod tests {
                 annotations: Vec::new(),
             })],
             analysis_coverage: CoachAnalysisCoverage {
-                total_positions: 2,
+                total_positions: 3,
                 unique_positions: 2,
                 cloud_hits: 2,
                 live_analyses: 0,
                 failed: 0,
-                live_depth: 18,
+                live_depth: 16,
+                skipped_positions: 1,
+                stopped_at_cloud_boundary: true,
+                boundary_ply: Some(2),
                 complete: false,
             },
             stored_evaluations_used: 2,
@@ -10460,7 +10500,8 @@ mod tests {
         };
 
         let validated = validate_pc_game_analysis(&request, analysis.clone()).unwrap();
-        assert!(validated.analysis_coverage.complete);
+        assert!(!validated.analysis_coverage.complete);
+        assert_eq!(validated.move_analysis.len(), 1);
         let mut mismatched = analysis.clone();
         if let CoachPcAnalysisRow::Move(row) = &mut mismatched.move_analysis[0] {
             row.fen_after = request.fen.clone();
@@ -10506,6 +10547,9 @@ mod tests {
                 live_analyses: 0,
                 failed: 0,
                 live_depth: 18,
+                skipped_positions: 0,
+                stopped_at_cloud_boundary: false,
+                boundary_ply: None,
                 complete: false,
             },
             stored_evaluations_used: 1,
@@ -10554,6 +10598,9 @@ mod tests {
                 live_analyses: 0,
                 failed: 0,
                 live_depth: 18,
+                skipped_positions: 0,
+                stopped_at_cloud_boundary: false,
+                boundary_ply: None,
                 complete: true,
             },
             stored_evaluations_used: 2,

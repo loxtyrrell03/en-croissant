@@ -1,5 +1,18 @@
 # AGENTS.md
 
+- On 2026-08-07, Coach pre-review engine evidence became opening-bounded for
+  speed. Whole-game requests now read the chronological PC cloud/cache prefix
+  only until its first miss, run at most one live Stockfish 18 check on that
+  boundary at default depth 16 with an eight-second guard, and deliberately do
+  not query or analyze later game positions. A failed optional boundary check
+  falls back to the useful cached prefix; current-position questions still
+  require one verified cache or live result. Coverage and prompts explicitly
+  report the skipped tail, and native validation accepts only a contiguous,
+  fully verified move prefix. Preserve exact FEN/source/depth evidence and
+  never describe the skipped PGN tail as engine-analyzed. This owner request
+  supersedes the 2026-07-24/2026-07-20 rules requiring every whole-game
+  position to be checked and every cache miss to receive live Stockfish.
+
 - On 2026-08-07, both AI Coach chat surfaces gained a persistent model and
   reasoning selector. The allowlist contains GPT-5.6 Sol, Terra, and Luna via
   the authenticated Codex CLI, plus Gemini 3.1 Pro, Gemini 3.5 Flash, and the

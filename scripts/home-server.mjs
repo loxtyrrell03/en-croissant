@@ -125,7 +125,11 @@ const coachWorkRoot = join(serverRoot, "coach-work");
 const coachLibraryPlanSchemaPath = join(coachWorkRoot, "library-plan.schema.json");
 const coachReviewSchemaPath = join(coachWorkRoot, "coach-review.schema.json");
 const statsReportSchemaPath = join(coachWorkRoot, "stats-report.schema.json");
-const coachSweepDepth = positiveInteger(process.env.EN_CROISSANT_COACH_SWEEP_DEPTH, 18);
+const coachSweepDepth = positiveInteger(process.env.EN_CROISSANT_COACH_SWEEP_DEPTH, 16);
+const coachBoundaryTimeoutMs = positiveInteger(
+  process.env.EN_CROISSANT_COACH_BOUNDARY_TIMEOUT_MS,
+  8000,
+);
 const coachProcessEnv = {
   ...process.env,
   CODEX_HOME: process.env.CODEX_HOME || join(userProfile, ".codex"),
@@ -1614,8 +1618,8 @@ async function runStatsAiReport(payload, signal) {
 
 async function runPcCoachGameAnalysis(payload, signal) {
   throwIfAborted(signal);
-  const positions = buildCoachPositionRecords(payload);
-  if (positions.length === 0) {
+  const requestedPositions = buildCoachPositionRecords(payload);
+  if (requestedPositions.length === 0) {
     const error = new Error("No valid chess positions were supplied for PC analysis.");
     error.code = "PC_ANALYSIS_FAILED";
     throw error;
@@ -1624,25 +1628,32 @@ async function runPcCoachGameAnalysis(payload, signal) {
   updatePhoneCoachProgress(
     payload.requestId,
     "cloud-evaluations",
-    `Checking PC cloud evaluations (0/${positions.length})`,
+    payload.scope === "whole-game"
+      ? "Checking the opening cache until its first gap"
+      : "Checking the current position cache",
     0,
-    positions.length,
+    requestedPositions.length,
   );
   let sweep;
   try {
     sweep = await collectPcCoachPositionEvaluations({
-      positions,
+      positions: requestedPositions,
       queryCloud: queryStoredCoachEvaluation,
       queryLive: queryLiveCoachEvaluation,
       signal,
+      liveAttempts: 1,
+      stopAfterFirstCloudMiss: payload.scope === "whole-game",
+      allowLiveFailure: payload.scope === "whole-game",
       onProgress: ({ phase, completed, total }) => {
         const live = phase === "live";
         updatePhoneCoachProgress(
           payload.requestId,
           live ? "live-evaluations" : "cloud-evaluations",
           live
-            ? `Analyzing cache misses on the PC (${completed}/${total})`
-            : `Checking PC cloud evaluations (${completed}/${total})`,
+            ? `Analyzing the opening boundary on the PC (${completed}/${total})`
+            : payload.scope === "whole-game"
+              ? `Checking the opening cache (${completed} position${completed === 1 ? "" : "s"})`
+              : `Checking the current position cache (${completed}/${total})`,
           completed,
           total,
         );
@@ -1652,19 +1663,49 @@ async function runPcCoachGameAnalysis(payload, signal) {
     if (!signal.aborted) error.code = "PC_ANALYSIS_FAILED";
     throw error;
   }
-  const { evaluations, cloudHits, liveAnalyses } = sweep;
+  const {
+    evaluations,
+    evaluatedPositions,
+    cloudHits,
+    liveAnalyses,
+    liveFailures,
+    skippedPositions,
+    stoppedAtCloudBoundary,
+    boundaryPly,
+  } = sweep;
+  if (evaluations.size === 0) {
+    const error = new Error("The PC could not produce a usable opening-boundary evaluation.");
+    error.code = "PC_ANALYSIS_FAILED";
+    throw error;
+  }
+  if (liveFailures > 0) {
+    await appendLog(
+      `coach opening-boundary live evaluation was skipped after at most ${coachBoundaryTimeoutMs} ms; continuing with ${cloudHits} cached position(s)`,
+    );
+  }
   const result = buildPcCoachAnalysisResult({
     ...payload,
-    positions,
+    positions: evaluatedPositions,
     evaluations,
     cloudHits,
     liveAnalyses,
     liveDepth: coachSweepDepth,
+    totalPositions: payload.scope === "position" ? 1 : Math.max(1, payload.moves.length + 1),
+    skippedPositions,
+    stoppedAtCloudBoundary,
+    boundaryPly,
     openingBook: getOpeningIdentificationBook(join(repoRoot, "src-tauri", "data")),
   });
   if (result.analysisCoverage.failed > 0) {
     const error = new Error(
       `PC analysis was incomplete (${result.analysisCoverage.failed} unique position(s) missing).`,
+    );
+    error.code = "PC_ANALYSIS_FAILED";
+    throw error;
+  }
+  if (payload.scope === "whole-game" && result.moveAnalysis.length === 0) {
+    const error = new Error(
+      "The cached opening prefix did not contain one fully verified move, and its boundary evaluation was unavailable.",
     );
     error.code = "PC_ANALYSIS_FAILED";
     throw error;
@@ -1788,7 +1829,7 @@ function createLinkedAbortController(signal, timeoutMs) {
 }
 
 async function queryStoredCoachEvaluation(fen, signal) {
-  const linked = createLinkedAbortController(signal, 5000);
+  const linked = createLinkedAbortController(signal, 2000);
   const url = new URL("/v1/cloud-eval", stockfishBackendUrl);
   url.searchParams.set("fen", fen);
   url.searchParams.set("multipv", "1");
@@ -1808,7 +1849,7 @@ async function queryStoredCoachEvaluation(fen, signal) {
 }
 
 async function queryLiveCoachEvaluation(fen, signal) {
-  const linked = createLinkedAbortController(signal, 185000);
+  const linked = createLinkedAbortController(signal, coachBoundaryTimeoutMs);
   try {
     const url = new URL("/v1/analyze", stockfishBackendUrl);
     const response = await fetch(url, {

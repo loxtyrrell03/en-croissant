@@ -435,7 +435,7 @@ export function publicChessCoachFailure(error, { analysisOnly = false } = {}) {
     return {
       status: 502,
       code: "PC_ANALYSIS_FAILED",
-      error: "The gaming PC could not complete every requested position. Please try again.",
+      error: "The gaming PC could not produce usable opening-boundary evidence. Please try again.",
     };
   }
   return {
@@ -1764,7 +1764,10 @@ export function findExactOpeningBookMatches(database, moves, { limit = 18 } = {}
 }
 
 export function pawnStructureKey(fen) {
-  const boardField = String(fen || "").trim().split(/\s+/)[0] || "";
+  const boardField =
+    String(fen || "")
+      .trim()
+      .split(/\s+/)[0] || "";
   const ranks = boardField.split("/");
   if (ranks.length !== 8) return "";
   let key = "";
@@ -1799,7 +1802,9 @@ export function findPawnStructureBookMatches(
       positions.push({ fen: String(fen), pawnKey, positionPly });
     }
   }
-  const currentFields = String(currentFen || "").trim().split(/\s+/);
+  const currentFields = String(currentFen || "")
+    .trim()
+    .split(/\s+/);
   const fullmove = Number(currentFields[5]);
   const currentPositionPly =
     Number.isInteger(fullmove) && fullmove > 0
@@ -1938,7 +1943,7 @@ export function buildLibraryPlannerPrompt({
 You must decide which coaching categories are genuinely relevant to this specific game or position, then select the exact books and accessible chapters that the final coach should consult. The category names and their order are your decision; do not use a fixed checklist. Choose between one and six categories and omit aspects that have no useful lesson.
 
 Evidence rules:
-- The complete PC Stockfish trace below is authoritative for concrete chess verdicts.
+- The PC Stockfish trace below intentionally covers only the contiguous cached opening through its first gap, plus at most one live boundary evaluation. It is authoritative only for positions actually present in that trace. Later moves in the PGN were deliberately not swept and are not engine evidence.
 - Scores are White-relative. Each position records whether it came from the PC cloud store or a live PC search and its depth; treat small differences across unlike depths cautiously.
 - A transposition-aware opening-family anchor computed from an exact position table may be supplied below. When present, refine it only to a more specific compatible sub-variation; never override the reached position with a label forced from the initial move order.
 - If no deterministic identification matched, classify the opening from the deepest stable opening position, central pawn structure, and piece placement reached in the game—not from move one or the first book line that happens to match. Explicitly detect transpositions and name the resulting opening family.
@@ -1973,7 +1978,7 @@ ${formatDerivedSummaryForPrompt(derivedEvidence) || "No derived summary was comp
 Key moments with derived tactical/positional evidence:
 ${formatKeyMomentsForPrompt(derivedEvidence)}
 
-Complete PC analysis trace (one line per played move):
+Fast opening-prefix PC analysis trace:
 ${formatCoachTraceForPrompt(moveAnalysis, derivedEvidence)}
 
 Exact position matches in indexed opening-book lines:
@@ -2169,12 +2174,7 @@ function getScopedPassageCandidates(database, category) {
     .all(...parameters);
 }
 
-function passageRelevanceScore(
-  row,
-  category,
-  exactOpeningMatches = [],
-  structureMatches = [],
-) {
+function passageRelevanceScore(row, category, exactOpeningMatches = [], structureMatches = []) {
   const haystack =
     `${row.book_title} ${row.author} ${row.shelf} ${row.chapter_title} ${row.text}`.toLowerCase();
   const terms = [];
@@ -2318,10 +2318,11 @@ export function buildStructuredPhoneCoachPrompt({
   }));
   return `Role: You are a rigorous, practical chess coach writing a structured review for ${playerColor}.
 
-The PC has already analyzed every requested unique position. The AI library editor has already chosen the relevant categories, books, and accessible chapters. Your job is to synthesize those evidence classes into clear, category-tab content that feels written for this exact game.
+The PC has already read the contiguous cached opening through its first gap and checked at most that one boundary with live Stockfish. Later game positions were intentionally skipped for speed. The AI library editor has already chosen the relevant categories, books, and accessible chapters. Your job is to synthesize those evidence classes into clear, category-tab content that feels written for this exact game.
 
 Grounding rules:
 - PC Stockfish is authoritative for evaluations, tactical claims, and better moves. Scores are White-relative. State the source/depth when it matters and avoid treating small cross-depth changes as exact.
+- Treat only positions present in the opening-prefix trace as engine-verified. The rest of the PGN is game context, not a hidden full-game engine scan; never invent later evaluations, critical moments, or refutations.
 - The supplied page-bounded book excerpts are authoritative for attributed lessons. Refer to books by their complete real title and chapter title in prose, never by a number such as “Book 3”.
 - Every bookReferences.chunkId must exactly match a supplied chunkId available to that planned category. Never invent a title, author, chapter, page, quotation, chunk ID, evaluation, or line.
 - Paraphrase source lessons. Do not reproduce long excerpts and do not claim an author analyzed this exact game.
@@ -2359,7 +2360,7 @@ ${formatDerivedSummaryForPrompt(derivedEvidence) || "No derived summary was comp
 Key moments with derived tactical/positional evidence (SAN lines here are the quotable engine lines):
 ${formatKeyMomentsForPrompt(derivedEvidence)}
 
-Complete move-by-move PC trace:
+Fast opening-prefix PC trace:
 ${formatCoachTraceForPrompt(moveAnalysis, derivedEvidence)}
 
 Exact position matches in indexed opening-book lines:
@@ -2551,24 +2552,36 @@ export async function collectPcCoachPositionEvaluations({
   signal,
   liveAttempts = 4,
   liveRetryDelayMs = 400,
+  stopAfterFirstCloudMiss = false,
+  allowLiveFailure = false,
   onProgress = () => {},
 }) {
   const evaluations = new Map();
   const livePositions = [];
+  const checkedPositions = [];
   let cloudHits = 0;
+  let stoppedAtCloudBoundary = false;
+  let boundaryPly = null;
   for (const [index, position] of positions.entries()) {
     if (signal?.aborted) throw abortError();
     const evaluation = await queryCloud(position.fen, signal);
+    checkedPositions.push(position);
     if (evaluation) {
       evaluations.set(position.key, evaluation);
       cloudHits += 1;
     } else {
       livePositions.push(position);
+      if (stopAfterFirstCloudMiss) {
+        stoppedAtCloudBoundary = true;
+        boundaryPly = Number.isFinite(Number(position.ply)) ? Number(position.ply) : null;
+      }
     }
     onProgress({ phase: "cloud", completed: index + 1, total: positions.length });
+    if (stoppedAtCloudBoundary) break;
   }
 
   let liveAnalyses = 0;
+  let liveFailures = 0;
   if (livePositions.length > 0) {
     onProgress({ phase: "live", completed: 0, total: livePositions.length });
   }
@@ -2589,6 +2602,11 @@ export async function collectPcCoachPositionEvaluations({
       }
     }
     if (!evaluation) {
+      liveFailures += 1;
+      if (allowLiveFailure) {
+        onProgress({ phase: "live", completed: index + 1, total: livePositions.length });
+        continue;
+      }
       const error = new Error(
         `PC Stockfish could not analyze cache miss ${index + 1} of ${livePositions.length}: ${lastError?.message || "no evaluation was returned"}`,
       );
@@ -2599,7 +2617,19 @@ export async function collectPcCoachPositionEvaluations({
     liveAnalyses += 1;
     onProgress({ phase: "live", completed: index + 1, total: livePositions.length });
   }
-  return { evaluations, livePositions, cloudHits, liveAnalyses };
+  const evaluatedPositions = checkedPositions.filter((position) => evaluations.has(position.key));
+  return {
+    evaluations,
+    evaluatedPositions,
+    checkedPositions,
+    livePositions,
+    cloudHits,
+    liveAnalyses,
+    liveFailures,
+    stoppedAtCloudBoundary,
+    boundaryPly,
+    skippedPositions: Math.max(0, positions.length - evaluatedPositions.length),
+  };
 }
 
 export function normalizeSavedWebCoachReview(value, expectedLineContextKey = "") {
@@ -2762,9 +2792,16 @@ export function buildPcCoachAnalysisResult({
   cloudHits = 0,
   liveAnalyses = 0,
   liveDepth = 18,
+  totalPositions = null,
+  skippedPositions = 0,
+  stoppedAtCloudBoundary = false,
+  boundaryPly = null,
   openingBook = null,
 }) {
-  const wholeGameMoveAnalysis = buildCoachMoveAnalysis(moves, evaluations, playerColor);
+  const allMoveAnalysis = buildCoachMoveAnalysis(moves, evaluations, playerColor);
+  const firstUnverifiedMove = allMoveAnalysis.findIndex((move) => !move.before || !move.after);
+  const wholeGameMoveAnalysis =
+    firstUnverifiedMove < 0 ? allMoveAnalysis : allMoveAnalysis.slice(0, firstUnverifiedMove);
   const moveAnalysis =
     scope === "position"
       ? [
@@ -2780,12 +2817,24 @@ export function buildPcCoachAnalysisResult({
     0,
   );
   const analysisCoverage = {
-    totalPositions: scope === "position" ? 1 : Math.max(1, moves.length + 1),
+    totalPositions:
+      Number.isFinite(Number(totalPositions)) && Number(totalPositions) > 0
+        ? Number(totalPositions)
+        : scope === "position"
+          ? 1
+          : Math.max(1, moves.length + 1),
     uniquePositions: positions.length,
     cloudHits: Number(cloudHits) || 0,
     liveAnalyses: Number(liveAnalyses) || 0,
     failed,
     liveDepth: Number(liveDepth) || 18,
+    skippedPositions: Math.max(0, Number(skippedPositions) || 0),
+    stoppedAtCloudBoundary: Boolean(stoppedAtCloudBoundary),
+    boundaryPly:
+      boundaryPly !== null && boundaryPly !== undefined && Number.isFinite(Number(boundaryPly))
+        ? Number(boundaryPly)
+        : null,
+    complete: failed === 0 && Math.max(0, Number(skippedPositions) || 0) === 0,
   };
   const selectedColor = playerColor === "black" ? "black" : "white";
   const derived = deriveCoachReviewEvidence({
@@ -2900,7 +2949,7 @@ export function buildPhoneCoachPrompt({
     : "None retrieved. Do not invent a book citation.";
   const moments = criticalMoments.length
     ? JSON.stringify(criticalMoments, null, 2)
-    : "No cache-backed whole-game critical moments were available.";
+    : "No cache-backed opening-prefix critical moments were available.";
   const rootLines =
     Array.isArray(currentLines) && currentLines.length
       ? JSON.stringify(currentLines.slice(0, 5), null, 2)
@@ -2915,14 +2964,14 @@ Grounding order:
 
 Rules:
 - Answer the user's actual question directly in the first paragraph, from ${playerColor}'s perspective.
-- For a whole-game review, prioritize the supplied critical moments. Explain the human mechanism, the engine proof, what to play instead, and one training lesson.
+- For a whole-game review, prioritize any supplied opening-prefix critical moments. Explain the human mechanism, the engine proof, what to play instead, and one training lesson. Do not pretend later moves were engine-checked.
 - A positive White-relative centipawn score favours White; a negative score favours Black. lossCp is already measured as damage to ${playerColor}.
 - UCI engine lines are evidence. Do not silently convert them to SAN unless certain; it is acceptable to show short UCI evidence as supplied.
 - Never invent an evaluation, move line, title, author, page, quotation, or citation.
 - Use a retrieved principle only when relevant. Name the complete real book title and chapter immediately; never display a numbered placeholder such as “Book 3”. Paraphrase; do not reproduce long passages.
 - Do not claim a book analysed this exact game unless the passage actually does.
 - For an opening explanation, lead with the reached structure's plans for both sides, piece placement, thematic breaks, exchanges, and counterplay. Tie each plan to the exact pieces and squares in this position, and use concrete variations only as short proof or illustration.
-- If the cache did not supply whole-game moments, say that limitation and restrict concrete engine claims to the current position.
+- If the opening cache did not supply a relevant moment, say that limitation and restrict concrete engine claims to supplied positions.
 - Keep the answer compact but instructive. Prefer **Direct answer**, **Critical moments**, **What to play instead**, and **Training lesson** when they help.
 
 User question:

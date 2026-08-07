@@ -109,6 +109,9 @@ const coachAnalysisCoverageSchema = z.object({
     liveAnalyses: z.number().int().nonnegative(),
     failed: z.number().int().nonnegative(),
     liveDepth: z.number().int().nonnegative(),
+    skippedPositions: z.number().int().nonnegative().optional(),
+    stoppedAtCloudBoundary: z.boolean().optional(),
+    boundaryPly: z.number().int().nonnegative().nullable().optional(),
     complete: z.boolean().optional(),
 });
 const coachResponseSchema: z.ZodType<AiCoachResponse> = z.object({

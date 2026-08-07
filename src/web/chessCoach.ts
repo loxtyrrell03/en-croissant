@@ -106,6 +106,11 @@ export type WebCoachAnalysisCoverage = {
     cloudHits: number;
     liveAnalyses: number;
     failed: number;
+    liveDepth?: number;
+    skippedPositions?: number;
+    stoppedAtCloudBoundary?: boolean;
+    boundaryPly?: number | null;
+    complete?: boolean;
 };
 
 export type WebChessCoachHealth = {
@@ -826,6 +831,11 @@ function normalizeAnalysisCoverage(value: unknown): WebCoachAnalysisCoverage {
         cloudHits: nonNegativeInteger(coverage?.cloudHits),
         liveAnalyses: nonNegativeInteger(coverage?.liveAnalyses),
         failed: nonNegativeInteger(coverage?.failed),
+        liveDepth: nonNegativeInteger(coverage?.liveDepth),
+        skippedPositions: nonNegativeInteger(coverage?.skippedPositions),
+        stoppedAtCloudBoundary: coverage?.stoppedAtCloudBoundary === true,
+        boundaryPly: positiveIntegerOrNull(coverage?.boundaryPly),
+        complete: coverage?.complete === true,
     };
 }
 

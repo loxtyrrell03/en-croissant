@@ -1849,8 +1849,9 @@ export default function AiCoachPanel() {
               <Paper withBorder p="sm">
                 <Text size="sm" c="dimmed">
                   Ask about the current position or request a whole-game review. For a loaded game,
-                  the PC checks every unique position—cloud store first, then live PC Stockfish for
-                  misses—before AI chooses exact chapters and writes the cited coaching tabs.
+                  the PC reads the cached opening until its first gap and checks only that boundary
+                  with live Stockfish before AI chooses exact chapters and writes the cited coaching
+                  tabs.
                 </Text>
               </Paper>
             )}
@@ -2118,18 +2119,28 @@ function CoachMessageContent({
                 <Badge
                   size="sm"
                   color={
-                    analysisCoverage.complete && analysisCoverage.failed === 0 ? "teal" : "red"
+                    analysisCoverage.failed > 0
+                      ? "red"
+                      : analysisCoverage.stoppedAtCloudBoundary
+                        ? "blue"
+                        : analysisCoverage.complete
+                          ? "teal"
+                          : "yellow"
                   }
                   variant="light"
                 >
-                  {analysisCoverage.complete && analysisCoverage.failed === 0
-                    ? "Complete"
-                    : "Incomplete"}
+                  {analysisCoverage.failed > 0
+                    ? "Incomplete"
+                    : analysisCoverage.stoppedAtCloudBoundary
+                      ? "Opening prefix"
+                      : analysisCoverage.complete
+                        ? "Complete"
+                        : "Partial"}
                 </Badge>
               </Group>
               <Group gap={6} wrap="wrap">
-                <Badge variant="outline">{analysisCoverage.totalPositions} positions</Badge>
-                <Badge variant="outline">{analysisCoverage.uniquePositions} unique</Badge>
+                <Badge variant="outline">{analysisCoverage.totalPositions} requested</Badge>
+                <Badge variant="outline">{analysisCoverage.uniquePositions} analyzed</Badge>
                 <Badge variant="outline" color="cyan">
                   {analysisCoverage.cloudHits} PC cloud
                 </Badge>
@@ -2139,6 +2150,11 @@ function CoachMessageContent({
                 <Badge variant="outline" color={analysisCoverage.failed === 0 ? "gray" : "red"}>
                   {analysisCoverage.failed} failed
                 </Badge>
+                {analysisCoverage.skippedPositions ? (
+                  <Badge variant="outline" color="gray">
+                    {analysisCoverage.skippedPositions} later skipped
+                  </Badge>
+                ) : null}
               </Group>
             </Stack>
           </Paper>

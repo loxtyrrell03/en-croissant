@@ -2600,7 +2600,9 @@ function CoachUnderBoardPanel({
             </Text>
           ) : null}
           <Stack gap={3} mt="xs" className={classes.coachProgressSteps}>
-            <Text size="xs">1. PC checks every position, using cloud evals first.</Text>
+            <Text size="xs">
+              1. PC reads the cached opening until its first gap, then checks only that boundary.
+            </Text>
             <Text size="xs">2. {coachModel.label} chooses the relevant books and chapters.</Text>
             <Text size="xs">3. Coach writes the most useful topic tabs.</Text>
             <Text size="xs">You can close the app; the PC will finish and save this review.</Text>
@@ -2639,7 +2641,7 @@ function CoachUnderBoardPanel({
             ) : null}
             {visibleResponse.analysisCoverage.totalPositions > 0 ? (
               <Badge variant="outline">
-                {visibleResponse.analysisCoverage.totalPositions} positions checked
+                {visibleResponse.analysisCoverage.uniquePositions} opening positions checked
               </Badge>
             ) : visibleResponse.criticalMoments.length > 0 ? (
               <Badge variant="outline">
@@ -2654,6 +2656,11 @@ function CoachUnderBoardPanel({
             {visibleResponse.analysisCoverage.liveAnalyses > 0 ? (
               <Badge color="cyan" variant="outline">
                 {visibleResponse.analysisCoverage.liveAnalyses} fresh PC evals
+              </Badge>
+            ) : null}
+            {visibleResponse.analysisCoverage.skippedPositions ? (
+              <Badge color="gray" variant="outline">
+                {visibleResponse.analysisCoverage.skippedPositions} later positions skipped
               </Badge>
             ) : null}
             <Badge color="teal" variant="outline">
