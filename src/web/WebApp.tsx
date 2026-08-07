@@ -90,6 +90,18 @@ import {
 import { positionFromFen } from "@/utils/chessops";
 import { formatMoveThinkTime } from "@/utils/clock";
 import { getDefaultAiCoachQuestion } from "@/utils/aiCoachParity";
+import {
+  COACH_MODEL_SELECT_DATA,
+  COACH_MODEL_STORAGE_KEY,
+  COACH_REASONING_STORAGE_KEY,
+  formatCoachModelSelection,
+  getCoachModelDefinition,
+  getCoachReasoningSelectData,
+  normalizeCoachModelId,
+  normalizeCoachReasoningEffort,
+  type CoachModelId,
+  type CoachReasoningEffort,
+} from "@/utils/coachModels";
 import { getWinChance, normalizeScore } from "@/utils/score";
 import {
   loadSharedLichessCredential,
@@ -2076,6 +2088,31 @@ function CoachUnderBoardPanel({
   );
   const [health, setHealth] = useState<WebChessCoachHealth | null>(null);
   const [healthError, setHealthError] = useState("");
+  const [storedCoachModel, setStoredCoachModel] = useState<CoachModelId>(() => {
+    try {
+      return normalizeCoachModelId(window.localStorage.getItem(COACH_MODEL_STORAGE_KEY));
+    } catch {
+      return normalizeCoachModelId(null);
+    }
+  });
+  const coachModel = getCoachModelDefinition(storedCoachModel);
+  const [storedReasoningEffort, setStoredReasoningEffort] = useState<CoachReasoningEffort>(() => {
+    try {
+      return normalizeCoachReasoningEffort(
+        coachModel,
+        window.localStorage.getItem(COACH_REASONING_STORAGE_KEY),
+      );
+    } catch {
+      return coachModel.defaultReasoningEffort;
+    }
+  });
+  const reasoningEffort = normalizeCoachReasoningEffort(coachModel, storedReasoningEffort);
+  const selectedProviderHealth = health?.providers?.[coachModel.provider];
+  const selectedModelAvailable = selectedProviderHealth
+    ? selectedProviderHealth.available
+    : coachModel.provider === "openai"
+      ? Boolean(health?.modelAvailable)
+      : false;
   const [playerColor, setPlayerColor] = useState<WebColor>(
     restoredReview?.playerColor ?? defaultPlayerColor,
   );
@@ -2187,10 +2224,19 @@ function CoachUnderBoardPanel({
   }, [loadHealth, onReviewRunningChange]);
 
   useEffect(() => {
-    if (health?.ok) return;
+    try {
+      window.localStorage.setItem(COACH_MODEL_STORAGE_KEY, coachModel.id);
+      window.localStorage.setItem(COACH_REASONING_STORAGE_KEY, reasoningEffort);
+    } catch {
+      // Private browsing can deny storage; the in-memory selection still works.
+    }
+  }, [coachModel.id, reasoningEffort]);
+
+  useEffect(() => {
+    if (health?.corpusAvailable && selectedModelAvailable) return;
     const retryId = window.setInterval(loadHealth, 5000);
     return () => window.clearInterval(retryId);
-  }, [health?.ok, loadHealth]);
+  }, [health?.corpusAvailable, loadHealth, selectedModelAvailable]);
 
   useEffect(() => {
     savedReviewRef.current = restoredReview;
@@ -2278,7 +2324,7 @@ function CoachUnderBoardPanel({
   const canAsk = Boolean(
     question.trim() &&
     health?.corpusAvailable &&
-    health.modelAvailable &&
+    selectedModelAvailable &&
     !loading &&
     !backgroundReviewRunning,
   );
@@ -2294,6 +2340,8 @@ function CoachUnderBoardPanel({
     const submittedQuestion = question.trim();
     const submittedScope = scope;
     const submittedPlayerColor = playerColor;
+    const submittedModel = coachModel.id;
+    const submittedReasoningEffort = reasoningEffort;
     coachRequestRef.current = controller;
     onReviewRunningChange(true);
     stopWebStockfish18Search();
@@ -2338,6 +2386,8 @@ function CoachUnderBoardPanel({
         currentFen,
         moves: coachMoves,
         currentLines,
+        model: submittedModel,
+        reasoningEffort: submittedReasoningEffort,
         persistence: {
           storageKey: coachStorageKey,
           contextKey: submittedContextKey,
@@ -2422,19 +2472,22 @@ function CoachUnderBoardPanel({
         <Box className={classes.coachNotice} data-tone="error">
           <Text size="sm">{healthError}</Text>
         </Box>
-      ) : health && (!health.corpusAvailable || !health.modelAvailable) ? (
+      ) : health && (!health.corpusAvailable || !selectedModelAvailable) ? (
         <Box className={classes.coachNotice} data-tone="warning">
           <Text size="sm" fw={600}>
             {!health.corpusAvailable
               ? "The PC book corpus is unavailable."
-              : health.modelInstalled
-                ? health.modelAvailability === "usage-limited"
-                  ? health.modelMessage ||
-                    "OpenAI Codex has reached its usage limit. Add credits or try again later."
-                  : health.modelStatus === "unavailable"
-                    ? "The PC could not verify the Codex sign-in. It will retry automatically."
-                    : "OpenAI Codex needs its one-time ChatGPT sign-in."
-                : "The PC needs the OpenAI Codex app or CLI installed."}
+              : selectedProviderHealth?.message ||
+                (coachModel.provider === "gemini"
+                  ? selectedProviderHealth?.installed
+                    ? "Antigravity needs its one-time Google sign-in."
+                    : "The PC needs the Antigravity CLI installed for Gemini models."
+                  : (selectedProviderHealth?.installed ?? health.modelInstalled)
+                    ? health.modelAvailability === "usage-limited"
+                      ? health.modelMessage ||
+                        "OpenAI Codex has reached its usage limit. Add credits or try again later."
+                      : "OpenAI Codex needs its one-time ChatGPT sign-in."
+                    : "The PC needs the OpenAI Codex app or CLI installed.")}
           </Text>
           <Text size="xs" c="dimmed">
             Stockfish remains available; Coach enables automatically when the PC dependency is
@@ -2459,6 +2512,35 @@ function CoachUnderBoardPanel({
           </Text>
         </Box>
       ) : null}
+
+      <Group grow gap="xs" align="flex-end">
+        <Select
+          size="xs"
+          label="Model"
+          value={coachModel.id}
+          data={COACH_MODEL_SELECT_DATA}
+          allowDeselect={false}
+          searchable
+          disabled={loading || backgroundReviewRunning}
+          onChange={(value) => {
+            const nextModelId = normalizeCoachModelId(value);
+            const nextModel = getCoachModelDefinition(nextModelId);
+            setStoredCoachModel(nextModelId);
+            setStoredReasoningEffort(normalizeCoachReasoningEffort(nextModel, reasoningEffort));
+          }}
+        />
+        <Select
+          size="xs"
+          label="Reasoning"
+          value={reasoningEffort}
+          data={getCoachReasoningSelectData(coachModel)}
+          allowDeselect={false}
+          disabled={loading || backgroundReviewRunning}
+          onChange={(value) =>
+            setStoredReasoningEffort(normalizeCoachReasoningEffort(coachModel, value))
+          }
+        />
+      </Group>
 
       <Group grow gap="xs">
         <SegmentedControl
@@ -2519,7 +2601,7 @@ function CoachUnderBoardPanel({
           ) : null}
           <Stack gap={3} mt="xs" className={classes.coachProgressSteps}>
             <Text size="xs">1. PC checks every position, using cloud evals first.</Text>
-            <Text size="xs">2. GPT chooses the relevant books and exact chapters.</Text>
+            <Text size="xs">2. {coachModel.label} chooses the relevant books and chapters.</Text>
             <Text size="xs">3. Coach writes the most useful topic tabs.</Text>
             <Text size="xs">You can close the app; the PC will finish and save this review.</Text>
           </Stack>
@@ -2542,7 +2624,9 @@ function CoachUnderBoardPanel({
             </Box>
           </Box>
           <Group gap="xs">
-            <Badge variant="light">{visibleResponse.model}</Badge>
+            <Badge variant="light">
+              {formatCoachModelSelection(visibleResponse.model, visibleResponse.reasoningEffort)}
+            </Badge>
             {savedReviewAt ? (
               <Badge
                 color="green"

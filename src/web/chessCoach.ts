@@ -10,6 +10,12 @@ import type {
 import { getFenColor } from "./pgn";
 import { getWebServerUrl } from "./serverUrl";
 import { getDefaultAiCoachScope } from "@/utils/aiCoachParity";
+import {
+    getCoachModelDefinition,
+    type CoachModelId,
+    type CoachProvider,
+    type CoachReasoningEffort,
+} from "@/utils/coachModels";
 
 export type WebCoachOpeningLineMove = {
     moveIndex: number;
@@ -113,6 +119,15 @@ export type WebChessCoachHealth = {
     model: string;
     bookCount: number;
     chunkCount: number;
+    providers?: Partial<Record<CoachProvider, WebCoachProviderHealth>>;
+};
+
+export type WebCoachProviderHealth = {
+    installed: boolean;
+    available: boolean;
+    status: "authenticated" | "signed-out" | "unavailable" | "unknown";
+    availability: "available" | "unavailable" | "usage-limited";
+    message?: string;
 };
 
 export type WebChessCoachProgress = {
@@ -136,6 +151,7 @@ export type WebChessCoachResponse = {
     overview: string;
     categories: WebCoachCategory[];
     model: string;
+    reasoningEffort: string;
     playerColor: WebColor;
     criticalMoments: WebCoachCriticalMoment[];
     bookPassages: WebCoachBookPassage[];
@@ -246,6 +262,8 @@ export async function askWebChessCoach({
     currentFen,
     moves,
     currentLines,
+    model,
+    reasoningEffort,
     requestId,
     persistence,
     signal,
@@ -257,6 +275,8 @@ export async function askWebChessCoach({
     currentFen: string;
     moves: ReturnType<typeof getWebCoachMoves>;
     currentLines: WebEngineLine[];
+    model: CoachModelId;
+    reasoningEffort: CoachReasoningEffort;
     requestId: string;
     persistence: {
         storageKey: string;
@@ -276,6 +296,8 @@ export async function askWebChessCoach({
             scope,
             currentFen,
             moves,
+            model,
+            reasoningEffort,
             persistence,
             currentLines: currentLines.map((line) => ({
                 depth: line.depth,
@@ -575,12 +597,16 @@ export function normalizeWebChessCoachResponse(payload: unknown): WebChessCoachR
     const knownChunkIds = new Set(bookPassages.map((passage) => passage.chunkId));
     const categories = normalizeCategories(record.categories, knownChunkIds);
     if (!overview && categories.length === 0) return null;
+    const model = cleanString(record.model) || "gpt-5.6-sol";
+    const modelDefinition = getCoachModelDefinition(model);
 
     return {
         ...(answer ? { answer } : {}),
         overview,
         categories,
-        model: cleanString(record.model) || "gpt-5.6-sol",
+        model,
+        reasoningEffort:
+            cleanString(record.reasoningEffort) || modelDefinition.defaultReasoningEffort,
         playerColor: record.playerColor === "black" ? "black" : "white",
         criticalMoments: normalizeCriticalMoments(record.criticalMoments),
         bookPassages,

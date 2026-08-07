@@ -10,6 +10,7 @@ import {
   Progress,
   ScrollArea,
   SegmentedControl,
+  Select,
   Stack,
   Tabs,
   Text,
@@ -29,7 +30,7 @@ import { listen } from "@tauri-apps/api/event";
 import { openPath } from "@tauri-apps/plugin-opener";
 import { exit } from "@tauri-apps/plugin-process";
 import { parseSan } from "chessops/san";
-import { useAtomValue } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import {
   type ReactNode,
   useCallback,
@@ -56,12 +57,11 @@ import { commands } from "@/bindings";
 import { Chessground } from "@/chessground/Chessground";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import {
-  AI_COACH_GEMINI_MODEL,
   activeTabAtom,
   aiCoachEnabledAtom,
-  aiCoachGeminiCommandAtom,
+  aiCoachModelAtom,
   aiCoachMultipvAtom,
-  aiCoachPlannerModelAtom,
+  aiCoachReasoningEffortAtom,
   aiCoachTimeoutSecsAtom,
   currentTabAtom,
   engineMovesFamily,
@@ -94,6 +94,16 @@ import {
 import { buildAiCoachOpeningContext } from "@/utils/aiCoachOpeningContext";
 import { beginAiCoachBackgroundJob, finishAiCoachBackgroundJob } from "@/utils/aiCoachBackground";
 import { positionFromFen } from "@/utils/chessops";
+import {
+  COACH_MODEL_SELECT_DATA,
+  formatCoachModelSelection,
+  getCoachModelDefinition,
+  getCoachReasoningSelectData,
+  normalizeCoachModelId,
+  normalizeCoachReasoningEffort,
+  type CoachModelId,
+  type CoachReasoningEffort,
+} from "@/utils/coachModels";
 import type { Engine, LocalEngine } from "@/utils/engines";
 import { getBestMoves as getLichessCloudBestMoves } from "@/utils/lichess/api";
 import { formatScore } from "@/utils/score";
@@ -1102,9 +1112,13 @@ export default function AiCoachPanel() {
   const rootFen = root.fen;
 
   const enabled = useAtomValue(aiCoachEnabledAtom);
-  const geminiCommand = useAtomValue(aiCoachGeminiCommandAtom);
-  const geminiModel = AI_COACH_GEMINI_MODEL;
-  const plannerModel = useAtomValue(aiCoachPlannerModelAtom);
+  const [storedCoachModel, setStoredCoachModel] = useAtom(aiCoachModelAtom);
+  const [storedReasoningEffort, setStoredReasoningEffort] = useAtom(aiCoachReasoningEffortAtom);
+  const coachModel = getCoachModelDefinition(storedCoachModel);
+  const geminiModel = coachModel.id;
+  const geminiCommand = coachModel.command;
+  const reasoningEffort = normalizeCoachReasoningEffort(coachModel, storedReasoningEffort);
+  const plannerModel = geminiModel;
   const multipv = useAtomValue(aiCoachMultipvAtom);
   const timeoutSecs = useAtomValue(aiCoachTimeoutSecsAtom);
   const effectiveTimeoutSecs = Math.max(150, Math.min(240, timeoutSecs));
@@ -1312,7 +1326,7 @@ export default function AiCoachPanel() {
     setTargetedMemory(response.targetedResults.slice(-24));
     setOpeningContextStatus("idle");
     setOpeningMoveCount(0);
-    setModelUsed(response.model);
+    setModelUsed(formatCoachModelSelection(response.model, response.reasoningEffort));
     setRequestStartedAt(null);
     setRequestProgress(null);
     setProgressLog([]);
@@ -1619,6 +1633,7 @@ export default function AiCoachPanel() {
             geminiCommand,
             geminiModel,
             plannerModel,
+            reasoningEffort,
             multipv,
             timeoutSecs: effectiveTimeoutSecs,
           },
@@ -1667,7 +1682,7 @@ export default function AiCoachPanel() {
             })
             .slice(-24);
         });
-        setModelUsed(response.model);
+        setModelUsed(formatCoachModelSelection(response.model, response.reasoningEffort));
         setPersistenceCue(null);
       }
 
@@ -1774,8 +1789,9 @@ export default function AiCoachPanel() {
         <Group gap="xs" wrap="wrap">
           <Text fw={700}>AI Coach</Text>
           <Badge variant="light">{coachEngine?.name ?? "No Stockfish"}</Badge>
-          <Badge variant="light">{plannerModel || "GPT-5.6 Sol planner"}</Badge>
-          <Badge variant="light">{modelUsed || geminiModel || "GPT-5.6 Sol"}</Badge>
+          <Badge variant="light">
+            {modelUsed || formatCoachModelSelection(geminiModel, reasoningEffort)}
+          </Badge>
           {existingLines.length > 0 && <Badge variant="outline">cached lines</Badge>}
           {targetedCount > 0 && <Badge variant="outline">targeted Stockfish</Badge>}
           {bookPassageCount > 0 && (
@@ -1935,6 +1951,38 @@ export default function AiCoachPanel() {
       )}
 
       <Box>
+        <Group grow gap="xs" mb="xs" align="flex-end">
+          <Select
+            size="xs"
+            label="Model"
+            value={geminiModel}
+            data={COACH_MODEL_SELECT_DATA}
+            allowDeselect={false}
+            searchable
+            disabled={loading}
+            onChange={(value) => {
+              const nextModelId = normalizeCoachModelId(value);
+              const nextModel = getCoachModelDefinition(nextModelId);
+              setStoredCoachModel(nextModelId as CoachModelId);
+              setStoredReasoningEffort(
+                normalizeCoachReasoningEffort(nextModel, reasoningEffort) as CoachReasoningEffort,
+              );
+            }}
+          />
+          <Select
+            size="xs"
+            label="Reasoning"
+            value={reasoningEffort}
+            data={getCoachReasoningSelectData(coachModel)}
+            allowDeselect={false}
+            disabled={loading}
+            onChange={(value) =>
+              setStoredReasoningEffort(
+                normalizeCoachReasoningEffort(coachModel, value) as CoachReasoningEffort,
+              )
+            }
+          />
+        </Group>
         <Group grow gap="xs" mb="xs">
           <SegmentedControl
             size="xs"
@@ -1996,8 +2044,8 @@ export default function AiCoachPanel() {
           </Button>
         </Group>
         <Text size="xs" c="dimmed" mt={4}>
-          GPT-5.6 Sol explains; Stockfish supplies the chess truth. Enter sends; Shift+Enter adds a
-          line.
+          {coachModel.label} explains; Stockfish supplies the chess truth. Enter sends; Shift+Enter
+          adds a line.
         </Text>
       </Box>
     </Stack>

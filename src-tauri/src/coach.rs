@@ -37,8 +37,9 @@ use crate::{
 };
 
 const DEFAULT_STOCKFISH_DEPTH: u32 = 17;
-// Owner directive 2026-07-20: all active desktop coach stages use the
-// authenticated local Codex CLI with GPT-5.6 Sol.
+// GPT-5.6 Sol remains the migration-safe default. The active Coach chat model
+// is selected from a strict local allowlist and routed through Codex or
+// Antigravity without accepting arbitrary commands from IPC.
 const DEFAULT_COACH_MODEL: &str = "gpt-5.6-sol";
 const DEFAULT_PLANNER_MODEL: &str = DEFAULT_COACH_MODEL;
 const DEFAULT_PLAN_COACH_MODEL: &str = DEFAULT_PLANNER_MODEL;
@@ -155,14 +156,15 @@ pub struct AiCoachRequest {
 pub struct AiCoachSettings {
     pub enabled: bool,
     // Retained in the IPC contract so saved clients remain compatible. The
-    // provider and models are owner-pinned by the native backend.
+    // backend derives the real executable from the allowlisted model.
     #[allow(dead_code)]
     pub gemini_command: String,
-    #[allow(dead_code)]
     pub gemini_model: String,
     #[serde(default)]
     #[allow(dead_code)]
     pub planner_model: String,
+    #[serde(default = "default_coach_reasoning_effort")]
+    pub reasoning_effort: String,
     pub multipv: u8,
     pub timeout_secs: u32,
 }
@@ -256,6 +258,7 @@ pub struct AiCoachResponse {
     pub analysis_coverage: Option<CoachAnalysisCoverage>,
     pub pgn_scope: String,
     pub model: String,
+    pub reasoning_effort: String,
     pub used_existing_analysis: bool,
     pub stockfish_lines: Vec<CoachEngineLine>,
     pub targeted_results: Vec<CoachTargetedResult>,
@@ -807,7 +810,7 @@ pub enum CoachError {
     #[error("AI CLI command not found: {0}")]
     GeminiMissing(String),
 
-    #[error("OpenAI Codex appears unauthenticated. Run `codex login`, then try again.")]
+    #[error("The selected AI CLI appears unauthenticated. Sign in to Codex or Antigravity, then try again.")]
     GeminiUnauthenticated,
 
     #[error("{0}")]
@@ -3044,13 +3047,90 @@ pub async fn ask_plan_coach(request: PlanCoachRequest) -> Result<PlanCoachRespon
     let model = normalize_plan_coach_model(&request.settings.gemini_model);
     let timeout_secs = u64::from(request.settings.timeout_secs.max(30));
     let prompt = build_plan_coach_prompt(&request)?;
-    let answer = run_gemini_cli(DEFAULT_COACH_COMMAND, &model, &prompt, timeout_secs).await?;
+    let answer = run_gemini_cli(
+        DEFAULT_COACH_COMMAND,
+        &model,
+        DEFAULT_CODEX_REASONING_EFFORT,
+        &prompt,
+        timeout_secs,
+    )
+    .await?;
 
     Ok(PlanCoachResponse { answer, model })
 }
 
 fn normalize_plan_coach_model(_model: &str) -> String {
     DEFAULT_PLAN_COACH_MODEL.to_string()
+}
+
+fn default_coach_reasoning_effort() -> String {
+    DEFAULT_CODEX_REASONING_EFFORT.to_string()
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct CoachModelSelection {
+    command: &'static str,
+    model: String,
+    reasoning_effort: String,
+}
+
+fn normalize_ai_coach_model_selection(model: &str, reasoning_effort: &str) -> CoachModelSelection {
+    let requested_model = model.trim();
+    let (command, normalized_model, supported_efforts, default_effort): (
+        &'static str,
+        &'static str,
+        &'static [&'static str],
+        &'static str,
+    ) = match requested_model {
+        "gpt-5.6-sol" => (
+            "codex",
+            "gpt-5.6-sol",
+            &["low", "medium", "high", "xhigh", "max"],
+            "medium",
+        ),
+        "gpt-5.6-terra" => (
+            "codex",
+            "gpt-5.6-terra",
+            &["low", "medium", "high", "xhigh", "max"],
+            "medium",
+        ),
+        "gpt-5.6-luna" => (
+            "codex",
+            "gpt-5.6-luna",
+            &["low", "medium", "high", "xhigh", "max"],
+            "medium",
+        ),
+        "gemini-3.1-pro" => ("agy", "gemini-3.1-pro", &["low", "high"], "high"),
+        "gemini-3.5-flash" => (
+            "agy",
+            "gemini-3.5-flash",
+            &["low", "medium", "high"],
+            "medium",
+        ),
+        "gemini-3.6-flash" => (
+            "agy",
+            "gemini-3.6-flash",
+            &["low", "medium", "high"],
+            "medium",
+        ),
+        _ => (
+            DEFAULT_COACH_COMMAND,
+            DEFAULT_COACH_MODEL,
+            &["low", "medium", "high", "xhigh", "max"],
+            DEFAULT_CODEX_REASONING_EFFORT,
+        ),
+    };
+    let requested_effort = reasoning_effort.trim();
+    let normalized_effort = if supported_efforts.contains(&requested_effort) {
+        requested_effort
+    } else {
+        default_effort
+    };
+    CoachModelSelection {
+        command,
+        model: normalized_model.to_string(),
+        reasoning_effort: normalized_effort.to_string(),
+    }
 }
 
 fn build_plan_coach_prompt(request: &PlanCoachRequest) -> Result<String, CoachError> {
@@ -3132,8 +3212,14 @@ async fn ask_ai_coach_inner(
 
     let multipv = request.settings.multipv.clamp(3, 8);
     let timeout_secs = request.settings.timeout_secs.clamp(120, 240);
-    let model = DEFAULT_COACH_MODEL.to_string();
-    let planner_model = DEFAULT_PLANNER_MODEL.to_string();
+    let model_selection = normalize_ai_coach_model_selection(
+        &request.settings.gemini_model,
+        &request.settings.reasoning_effort,
+    );
+    let coach_command = model_selection.command;
+    let model = model_selection.model;
+    let reasoning_effort = model_selection.reasoning_effort;
+    let planner_model = model.clone();
     emit_coach_progress(
         app,
         request_id,
@@ -3141,7 +3227,7 @@ async fn ask_ai_coach_inner(
         "settings",
         "Settings ready",
         format!(
-            "Planner {planner_model}; coach {model}; MultiPV {multipv}; AI timeout {timeout_secs}s."
+            "Planner and coach {model} ({reasoning_effort}); MultiPV {multipv}; AI timeout {timeout_secs}s."
         ),
         6.0,
         false,
@@ -3267,8 +3353,9 @@ async fn ask_ai_coach_inner(
         pc_game_analysis.as_ref(),
     );
     let planner_result = match run_gemini_cli(
-        DEFAULT_COACH_COMMAND,
+        coach_command,
         &planner_model,
+        &reasoning_effort,
         &planner_prompt,
         PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
     )
@@ -3692,8 +3779,9 @@ async fn ask_ai_coach_inner(
             &legal_moves,
         );
         match run_gemini_cli(
-            DEFAULT_COACH_COMMAND,
+            coach_command,
             &planner_model,
+            &reasoning_effort,
             &chess_fact_prompt,
             PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
         )
@@ -3802,7 +3890,7 @@ async fn ask_ai_coach_inner(
         started,
         "book_retrieval",
         "Asking AI to choose library chapters",
-        "Giving GPT-5.6 Sol the complete book catalogue and only accessible, chunk-backed chapters.",
+        format!("Giving {planner_model} the complete book catalogue and only accessible, chunk-backed chapters."),
         73.0,
         false,
     );
@@ -3829,8 +3917,9 @@ async fn ask_ai_coach_inner(
     )?;
     let library_schema = library_plan_output_schema();
     let library_output = run_gemini_cli_with_schema(
-        DEFAULT_COACH_COMMAND,
+        coach_command,
         &planner_model,
+        &reasoning_effort,
         &librarian_prompt,
         LIBRARY_PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
         Some(&library_schema),
@@ -3932,20 +4021,31 @@ async fn ask_ai_coach_inner(
         "gemini_first",
         format!("Asking {model}"),
         format!(
-            "Sending {} characters to the local OpenAI Codex CLI.",
-            prompt.len()
+            "Sending {} characters to the local {} CLI.",
+            prompt.len(),
+            if coach_command == "agy" {
+                "Antigravity"
+            } else {
+                "OpenAI Codex"
+            }
         ),
         80.0,
         false,
     );
-    let mut final_answer =
-        run_gemini_cli(DEFAULT_COACH_COMMAND, &model, &prompt, timeout_secs.into()).await?;
+    let mut final_answer = run_gemini_cli(
+        coach_command,
+        &model,
+        &reasoning_effort,
+        &prompt,
+        timeout_secs.into(),
+    )
+    .await?;
     emit_coach_progress(
         app,
         request_id,
         started,
         "gemini_first_done",
-        "GPT-5.6 Sol replied",
+        format!("{model} replied"),
         format!("First response was {} characters.", final_answer.len()),
         90.0,
         false,
@@ -4019,8 +4119,9 @@ async fn ask_ai_coach_inner(
                 false,
             );
             final_answer = run_gemini_cli(
-                DEFAULT_COACH_COMMAND,
+                coach_command,
                 &model,
+                &reasoning_effort,
                 &repair_prompt,
                 timeout_secs.into(),
             )
@@ -4074,8 +4175,9 @@ async fn ask_ai_coach_inner(
                         &repair_error.to_string(),
                     );
                     final_answer = run_gemini_cli(
-                        DEFAULT_COACH_COMMAND,
+                        coach_command,
                         &planner_model,
+                        &reasoning_effort,
                         &audit_prompt,
                         PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
                     )
@@ -4103,8 +4205,9 @@ async fn ask_ai_coach_inner(
             &final_answer,
         );
         match run_gemini_cli(
-            DEFAULT_COACH_COMMAND,
+            coach_command,
             &planner_model,
+            &reasoning_effort,
             &fact_audit_prompt,
             PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
         )
@@ -4154,7 +4257,7 @@ async fn ask_ai_coach_inner(
         started,
         "category_synthesis",
         "Organising the answer into game-specific tabs",
-        "GPT-5.6 Sol is choosing the most relevant coaching categories and mapping exact book sources.",
+        format!("{model} is choosing the most relevant coaching categories and mapping exact book sources."),
         99.0,
         false,
     );
@@ -4170,8 +4273,9 @@ async fn ask_ai_coach_inner(
     )?;
     let category_schema = category_output_schema();
     let category_output = run_gemini_cli_with_schema(
-        DEFAULT_COACH_COMMAND,
+        coach_command,
         &model,
+        &reasoning_effort,
         &category_prompt,
         u64::from(timeout_secs),
         Some(&category_schema),
@@ -4208,8 +4312,9 @@ async fn ask_ai_coach_inner(
                 "{category_prompt}\n\nCorrection required: {error}. Return every exact planned category once, preserve its ID/label/order, cite at least one allowed source chunk in each category, and remove every ordinal `Book N` reference."
             );
             let repaired_output = run_gemini_cli_with_schema(
-                DEFAULT_COACH_COMMAND,
+                coach_command,
                 &model,
+                &reasoning_effort,
                 &repair_prompt,
                 u64::from(timeout_secs),
                 Some(&category_schema),
@@ -4237,6 +4342,7 @@ async fn ask_ai_coach_inner(
             .map(|analysis| analysis.analysis_coverage.clone()),
         pgn_scope: request.pgn_scope.clone(),
         model,
+        reasoning_effort,
         used_existing_analysis,
         stockfish_lines,
         targeted_results,
@@ -9210,15 +9316,17 @@ fn format_score(score: &Score) -> String {
 async fn run_gemini_cli(
     command: &str,
     model: &str,
+    reasoning_effort: &str,
     prompt: &str,
     timeout_secs: u64,
 ) -> Result<String, CoachError> {
-    run_gemini_cli_with_schema(command, model, prompt, timeout_secs, None).await
+    run_gemini_cli_with_schema(command, model, reasoning_effort, prompt, timeout_secs, None).await
 }
 
 async fn run_gemini_cli_with_schema(
     command: &str,
     model: &str,
+    reasoning_effort: &str,
     prompt: &str,
     timeout_secs: u64,
     output_schema: Option<&serde_json::Value>,
@@ -9232,35 +9340,42 @@ async fn run_gemini_cli_with_schema(
     }
 
     let resolved_command = resolve_cli_command(command);
+    let is_codex = is_codex_command(command, &resolved_command);
+    let is_agy = is_agy_command(command, &resolved_command);
 
     let temp_dir = tempdir()?;
     let agy_log_path = temp_dir.path().join("agy.log");
-    let output_schema_path = if let Some(schema) = output_schema {
+    let (schema_to_write, unwrap_agy_answer) = if is_agy {
+        let (schema, unwrap_answer) = build_agy_prompt_schema(prompt, output_schema);
+        (Some(schema), unwrap_answer)
+    } else {
+        (output_schema.cloned(), false)
+    };
+    let output_schema_path = if let Some(schema) = schema_to_write.as_ref() {
         let path = temp_dir.path().join("output-schema.json");
         tokio::fs::write(&path, serde_json::to_vec_pretty(schema)?).await?;
         Some(path)
     } else {
         None
     };
-    let is_codex = is_codex_command(command, &resolved_command);
-    let is_agy = is_agy_command(command, &resolved_command);
     let mut command_builder = Command::new(&resolved_command);
     command_builder.current_dir(temp_dir.path());
     if is_codex {
         command_builder.args(codex_cli_args_with_output_schema(
             model,
+            reasoning_effort,
             output_schema_path.as_deref(),
         ));
     } else if is_agy {
-        command_builder
-            .arg("--log-file")
-            .arg(&agy_log_path)
-            .arg("--model")
-            .arg(model)
-            .arg("--print-timeout")
-            .arg(format!("{timeout_secs}s"))
-            .arg("--print")
-            .arg("-");
+        command_builder.args(agy_cli_args(
+            model,
+            reasoning_effort,
+            output_schema_path
+                .as_deref()
+                .expect("Antigravity always receives a prompt-bearing schema"),
+            &agy_log_path,
+            timeout_secs,
+        ));
     } else {
         command_builder
             .arg("--skip-trust")
@@ -9275,7 +9390,11 @@ async fn run_gemini_cli_with_schema(
     }
 
     let mut child = command_builder
-        .stdin(Stdio::piped())
+        .stdin(if is_agy {
+            Stdio::null()
+        } else {
+            Stdio::piped()
+        })
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
@@ -9291,22 +9410,24 @@ async fn run_gemini_cli_with_schema(
             }
         })?;
 
-    if let Some(mut stdin) = child.stdin.take() {
-        let input = if is_codex {
-            let response_instruction = if output_schema.is_some() {
-                "Return only one JSON object matching the supplied output schema."
-            } else {
-                "Return only the requested coaching or planner response."
-            };
-            format!(
+    if !is_agy {
+        if let Some(mut stdin) = child.stdin.take() {
+            let input = if is_codex {
+                let response_instruction = if output_schema.is_some() {
+                    "Return only one JSON object matching the supplied output schema."
+                } else {
+                    "Return only the requested coaching or planner response."
+                };
+                format!(
                 "You are the response-generation layer inside a private chess coaching app.\n\
                  Do not call tools, inspect files, browse, or modify anything. Use only the evidence in this prompt.\n\
                  {response_instruction}\n\n{prompt}"
             )
-        } else {
-            prompt.to_string()
-        };
-        stdin.write_all(input.as_bytes()).await?;
+            } else {
+                prompt.to_string()
+            };
+            stdin.write_all(input.as_bytes()).await?;
+        }
     }
 
     let mut stdout = child.stdout.take().ok_or(Error::NoStdout)?;
@@ -9352,8 +9473,10 @@ async fn run_gemini_cli_with_schema(
     if looks_unauthenticated(&combined) && !looks_authenticated(&combined) {
         return Err(CoachError::GeminiUnauthenticated);
     }
-    if let Some(message) = codex_usage_limit_message(&combined) {
-        return Err(CoachError::CodexUsageLimit(message));
+    if is_codex {
+        if let Some(message) = codex_usage_limit_message(&combined) {
+            return Err(CoachError::CodexUsageLimit(message));
+        }
     }
     if !status.success() {
         return Err(CoachError::GeminiFailed {
@@ -9362,12 +9485,11 @@ async fn run_gemini_cli_with_schema(
         });
     }
 
-    let mut cleaned = clean_gemini_output(&stdout);
-    if cleaned.trim().is_empty() && is_agy {
-        if let Some(transcript_output) = read_agy_transcript_response(&aux_log).await {
-            cleaned = transcript_output;
-        }
-    }
+    let cleaned = if is_agy {
+        parse_agy_headless_output(&stdout, unwrap_agy_answer)?
+    } else {
+        clean_gemini_output(&stdout)
+    };
     if cleaned.trim().is_empty() {
         let diagnostic = trim_error_text(&combined);
         if !diagnostic.trim().is_empty() {
@@ -9381,30 +9503,121 @@ async fn run_gemini_cli_with_schema(
     Ok(cleaned)
 }
 
-async fn read_agy_transcript_response(log: &str) -> Option<String> {
-    let conversation_id = agy_conversation_id_from_log(log)?;
-    let app_data_dir = agy_app_data_dir_from_log(log).or_else(default_agy_app_data_dir)?;
-    let transcript_dir = app_data_dir
-        .join("brain")
-        .join(conversation_id)
-        .join(".system_generated")
-        .join("logs");
-    let candidates = [
-        transcript_dir.join("transcript_full.jsonl"),
-        transcript_dir.join("transcript.jsonl"),
-    ];
-
-    for candidate in candidates {
-        let Ok(content) = tokio::fs::read_to_string(candidate).await else {
-            continue;
-        };
-        if let Some(output) = last_agy_model_content(&content) {
-            return Some(output);
-        }
+fn build_agy_prompt_schema(
+    prompt: &str,
+    output_schema: Option<&serde_json::Value>,
+) -> (serde_json::Value, bool) {
+    let unwrap_answer = output_schema.is_none();
+    let mut schema = output_schema.cloned().unwrap_or_else(|| {
+        json!({
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "answer": {
+                    "type": "string",
+                    "description": "The requested final coaching or planner response."
+                }
+            },
+            "required": ["answer"]
+        })
+    });
+    let existing_description = schema
+        .get("description")
+        .and_then(|value| value.as_str())
+        .unwrap_or_default()
+        .trim();
+    let description = [
+        existing_description,
+        "Complete chess-coaching instructions and evidence follow. Treat them as the user request. Do not call tools, inspect files, browse, or modify anything.",
+        prompt,
+    ]
+    .into_iter()
+    .filter(|part| !part.is_empty())
+    .collect::<Vec<_>>()
+    .join("\n\n");
+    if let Some(object) = schema.as_object_mut() {
+        object.insert(
+            "description".to_string(),
+            serde_json::Value::String(description),
+        );
     }
-    None
+    (schema, unwrap_answer)
 }
 
+fn agy_cli_args(
+    model: &str,
+    reasoning_effort: &str,
+    output_schema: &Path,
+    log_path: &Path,
+    timeout_secs: u64,
+) -> Vec<String> {
+    vec![
+        "--log-file".to_string(),
+        log_path.to_string_lossy().into_owned(),
+        "--model".to_string(),
+        model.to_string(),
+        "--effort".to_string(),
+        reasoning_effort.to_string(),
+        "--sandbox".to_string(),
+        "--disable-slash-commands".to_string(),
+        "--print-timeout".to_string(),
+        format!("{timeout_secs}s"),
+        "--output-format".to_string(),
+        "json".to_string(),
+        "--json-schema".to_string(),
+        output_schema.to_string_lossy().into_owned(),
+        "--print".to_string(),
+        "Follow the complete chess-coaching request embedded in the supplied output schema description. Use only that evidence, do not call tools, and return the schema-conforming answer."
+            .to_string(),
+    ]
+}
+
+fn parse_agy_headless_output(stdout: &str, unwrap_answer: bool) -> Result<String, CoachError> {
+    let payload = serde_json::from_str::<serde_json::Value>(stdout.trim()).map_err(|error| {
+        CoachError::GeminiFailed {
+            status: "invalid Antigravity JSON".to_string(),
+            message: trim_error_text(&error.to_string()),
+        }
+    })?;
+    if payload.get("status").and_then(|value| value.as_str()) != Some("SUCCESS") {
+        return Err(CoachError::GeminiFailed {
+            status: "Antigravity request failed".to_string(),
+            message: trim_error_text(
+                payload
+                    .get("error")
+                    .and_then(|value| value.as_str())
+                    .unwrap_or("Antigravity did not complete the Coach request."),
+            ),
+        });
+    }
+    let structured = payload.get("structured_output").cloned().or_else(|| {
+        payload
+            .get("response")
+            .and_then(|value| value.as_str())
+            .and_then(|response| serde_json::from_str::<serde_json::Value>(response).ok())
+    });
+    if unwrap_answer {
+        return structured
+            .as_ref()
+            .and_then(|value| value.get("answer"))
+            .and_then(|value| value.as_str())
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(ToString::to_string)
+            .ok_or(CoachError::GeminiEmpty);
+    }
+    if let Some(structured) = structured {
+        return serde_json::to_string(&structured).map_err(CoachError::from);
+    }
+    payload
+        .get("response")
+        .and_then(|value| value.as_str())
+        .map(clean_gemini_output)
+        .filter(|value| !value.trim().is_empty())
+        .ok_or(CoachError::GeminiEmpty)
+}
+
+#[cfg(test)]
 fn agy_conversation_id_from_log(log: &str) -> Option<String> {
     for line in log.lines().rev() {
         if let Some(rest) = line.split("conversation=").nth(1) {
@@ -9427,6 +9640,7 @@ fn agy_conversation_id_from_log(log: &str) -> Option<String> {
     None
 }
 
+#[cfg(test)]
 fn agy_app_data_dir_from_log(log: &str) -> Option<PathBuf> {
     for line in log.lines().rev() {
         if let Some(rest) = line.split("CLI app data directory: ").nth(1) {
@@ -9439,14 +9653,7 @@ fn agy_app_data_dir_from_log(log: &str) -> Option<PathBuf> {
     None
 }
 
-fn default_agy_app_data_dir() -> Option<PathBuf> {
-    env::var_os("USERPROFILE").map(|profile| {
-        PathBuf::from(profile)
-            .join(".gemini")
-            .join("antigravity-cli")
-    })
-}
-
+#[cfg(test)]
 fn last_agy_model_content(transcript_jsonl: &str) -> Option<String> {
     transcript_jsonl
         .lines()
@@ -9491,11 +9698,11 @@ fn resolve_cli_command(command: &str) -> PathBuf {
     command_path
 }
 
-fn codex_cli_args(model: &str) -> Vec<String> {
-    codex_cli_args_with_output_schema(model, None)
-}
-
-fn codex_cli_args_with_output_schema(model: &str, output_schema: Option<&Path>) -> Vec<String> {
+fn codex_cli_args_with_output_schema(
+    model: &str,
+    reasoning_effort: &str,
+    output_schema: Option<&Path>,
+) -> Vec<String> {
     let mut args = vec![
         "exec".to_string(),
         "--ephemeral".to_string(),
@@ -9507,10 +9714,7 @@ fn codex_cli_args_with_output_schema(model: &str, output_schema: Option<&Path>) 
         "--model".to_string(),
         model.to_string(),
         "-c".to_string(),
-        format!(
-            "model_reasoning_effort=\"{}\"",
-            DEFAULT_CODEX_REASONING_EFFORT
-        ),
+        format!("model_reasoning_effort=\"{reasoning_effort}\""),
     ];
     if let Some(output_schema) = output_schema {
         args.push("--output-schema".to_string());
@@ -9713,6 +9917,7 @@ mod tests {
                 gemini_command: "codex".to_string(),
                 gemini_model: "legacy-model-ignored".to_string(),
                 planner_model: "legacy-planner-model-ignored".to_string(),
+                reasoning_effort: "medium".to_string(),
                 multipv: 3,
                 timeout_secs: 60,
             },
@@ -9720,15 +9925,35 @@ mod tests {
     }
 
     #[test]
-    fn desktop_coach_models_are_owner_pinned_to_sol() {
+    fn desktop_coach_model_selection_is_allowlisted_and_model_specific() {
         assert_eq!(DEFAULT_COACH_MODEL, "gpt-5.6-sol");
         assert_eq!(DEFAULT_PLANNER_MODEL, "gpt-5.6-sol");
         assert_eq!(normalize_plan_coach_model("legacy-model"), "gpt-5.6-sol");
+        assert_eq!(
+            normalize_ai_coach_model_selection("gpt-5.6-terra", "xhigh"),
+            CoachModelSelection {
+                command: "codex",
+                model: "gpt-5.6-terra".to_string(),
+                reasoning_effort: "xhigh".to_string(),
+            }
+        );
+        assert_eq!(
+            normalize_ai_coach_model_selection("gemini-3.1-pro", "medium"),
+            CoachModelSelection {
+                command: "agy",
+                model: "gemini-3.1-pro".to_string(),
+                reasoning_effort: "high".to_string(),
+            }
+        );
+        assert_eq!(
+            normalize_ai_coach_model_selection("arbitrary-command", "max").model,
+            "gpt-5.6-sol"
+        );
     }
 
     #[test]
-    fn codex_runner_is_ephemeral_read_only_and_medium_reasoning() {
-        let args = codex_cli_args("gpt-5.6-sol");
+    fn codex_runner_is_ephemeral_read_only_and_uses_selected_reasoning() {
+        let args = codex_cli_args_with_output_schema("gpt-5.6-sol", "high", None);
         assert_eq!(args.first().map(String::as_str), Some("exec"));
         assert!(args.iter().any(|arg| arg == "--ephemeral"));
         assert!(args.iter().any(|arg| arg == "--ignore-user-config"));
@@ -9741,12 +9966,47 @@ mod tests {
             .any(|args| args == ["--model", "gpt-5.6-sol"]));
         assert!(args
             .iter()
-            .any(|arg| arg == "model_reasoning_effort=\"medium\""));
+            .any(|arg| arg == "model_reasoning_effort=\"high\""));
         assert_eq!(args.last().map(String::as_str), Some("-"));
         assert!(is_codex_command(
             "codex",
             Path::new("C:\\Program Files\\OpenAI\\Codex\\codex.exe")
         ));
+    }
+
+    #[test]
+    fn antigravity_runner_embeds_prompt_in_schema_without_tool_permissions() {
+        let (schema, unwrap_answer) = build_agy_prompt_schema("PRIVATE COACH EVIDENCE", None);
+        assert!(unwrap_answer);
+        assert!(schema["description"]
+            .as_str()
+            .is_some_and(|description| description.contains("PRIVATE COACH EVIDENCE")));
+        let args = agy_cli_args(
+            "gemini-3.5-flash",
+            "medium",
+            Path::new("C:/Temp/agy-schema.json"),
+            Path::new("C:/Temp/agy.log"),
+            180,
+        );
+        assert!(args
+            .windows(2)
+            .any(|args| args == ["--model", "gemini-3.5-flash"]));
+        assert!(args.windows(2).any(|args| args == ["--effort", "medium"]));
+        assert!(args.iter().any(|arg| arg == "--sandbox"));
+        assert!(args.iter().any(|arg| arg == "--disable-slash-commands"));
+        assert!(args
+            .windows(2)
+            .any(|args| args == ["--json-schema", "C:/Temp/agy-schema.json"]));
+        assert!(!args
+            .iter()
+            .any(|arg| arg == "--dangerously-skip-permissions"));
+
+        let parsed = parse_agy_headless_output(
+            r#"{"status":"SUCCESS","structured_output":{"answer":"Plan first."}}"#,
+            true,
+        )
+        .expect("structured Antigravity answer");
+        assert_eq!(parsed, "Plan first.");
     }
 
     #[test]
@@ -9899,7 +10159,7 @@ mod tests {
     #[test]
     fn coach_architecture_codex_runner_passes_output_schema() {
         let schema_path = Path::new("C:/Temp/coach-schema.json");
-        let args = codex_cli_args_with_output_schema("gpt-5.6-sol", Some(schema_path));
+        let args = codex_cli_args_with_output_schema("gpt-5.6-sol", "medium", Some(schema_path));
         assert!(args
             .windows(2)
             .any(|args| args == ["--output-schema", "C:/Temp/coach-schema.json"]));

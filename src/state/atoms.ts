@@ -48,6 +48,14 @@ import {
     masterOptionsSchema,
 } from "@/utils/lichess/explorer";
 import { getWinChance, normalizeScore } from "@/utils/score";
+import {
+    COACH_MODEL_STORAGE_KEY,
+    COACH_REASONING_STORAGE_KEY,
+    DEFAULT_COACH_MODEL,
+    DEFAULT_COACH_REASONING_EFFORT,
+    type CoachModelId,
+    type CoachReasoningEffort,
+} from "@/utils/coachModels";
 import { getTabGameNumber, getTabPracticeKey, type Tab, tabSchema } from "@/utils/tabs";
 import { getEnginesDir } from "../utils/directories";
 import type { Session } from "../utils/session";
@@ -255,8 +263,16 @@ export const showEngineDockAtom = atomWithStorage<boolean>("show-engine-dock", t
 export const engineHotkeysEnabledAtom = atomWithStorage<boolean>("engine-hotkeys-enabled", true);
 export const aiCoachEnabledAtom = atomWithStorage<boolean>("ai-coach-enabled", true);
 export const aiCoachGeminiCommandAtom = atomWithStorage<string>("ai-coach-command-v3", "codex");
-// Owner directive 2026-07-20: every active desktop coach stage uses Sol.
-export const AI_COACH_GEMINI_MODEL = "gpt-5.6-sol" as const;
+// Compatibility alias for older call sites and saved settings.
+export const AI_COACH_GEMINI_MODEL = DEFAULT_COACH_MODEL;
+export const aiCoachModelAtom = atomWithStorage<CoachModelId>(
+    COACH_MODEL_STORAGE_KEY,
+    DEFAULT_COACH_MODEL,
+);
+export const aiCoachReasoningEffortAtom = atomWithStorage<CoachReasoningEffort>(
+    COACH_REASONING_STORAGE_KEY,
+    DEFAULT_COACH_REASONING_EFFORT,
+);
 export const aiCoachPlannerModelAtom = atomWithStorage<string>(
     "ai-coach-planner-model-v5",
     "gpt-5.6-sol",

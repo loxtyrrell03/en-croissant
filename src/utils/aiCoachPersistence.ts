@@ -118,6 +118,7 @@ const coachResponseSchema: z.ZodType<AiCoachResponse> = z.object({
     analysisCoverage: coachAnalysisCoverageSchema.nullable(),
     pgnScope: z.string(),
     model: z.string(),
+    reasoningEffort: z.string().default("medium"),
     usedExistingAnalysis: z.boolean(),
     stockfishLines: z.array(coachEngineLineSchema),
     targetedResults: z.array(coachTargetedResultSchema),

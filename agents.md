@@ -1,5 +1,22 @@
 # AGENTS.md
 
+- On 2026-08-07, both AI Coach chat surfaces gained a persistent model and
+  reasoning selector. The allowlist contains GPT-5.6 Sol, Terra, and Luna via
+  the authenticated Codex CLI, plus Gemini 3.1 Pro, Gemini 3.5 Flash, and the
+  current general Flash option Gemini 3.6 Flash via the authenticated
+  Antigravity `agy` CLI. OpenAI supports low/medium/high/xhigh/max; Antigravity
+  exposes low/high for 3.1 Pro and low/medium/high for both Flash models. There
+  is no fabricated Gemini 3.1 Flash slug. One normalized selection owns every
+  model stage in a review, saved answers record the model and effort, phone
+  health reports the two providers separately, and arbitrary commands/models
+  are rejected. Antigravity print mode does not consume a large prompt from
+  stdin, so the full tool-free chess request is embedded in the enforced JSON
+  schema description and the CLI receives only a short fixed instruction;
+  retain `--sandbox`, request-review permissions, schema validation, and never
+  add `--dangerously-skip-permissions`. This owner request supersedes the
+  2026-07-20 rule pinning every shipped Coach stage to GPT-5.6 Sol, while Sol
+  medium remains the migration-safe default.
+
 - On 2026-08-07, opening explanations in both AI Coach surfaces became
   plan-first instead of book-line-first. Corpus schema v3 adds deterministic
   full-pawn-placement `structure_anchors`; the phone Node service and native

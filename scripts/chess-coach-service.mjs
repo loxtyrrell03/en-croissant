@@ -12,6 +12,93 @@ export const MAX_COACH_MOVES = 4096;
 export const MAX_COACH_PGN_CHARACTERS = 300_000;
 export const MAX_STATS_AGGREGATE_BYTES = 200 * 1024;
 
+export const DEFAULT_COACH_MODEL_SELECTION = Object.freeze({
+  provider: "openai",
+  model: "gpt-5.6-sol",
+  reasoningEffort: "medium",
+});
+
+export const COACH_MODEL_OPTIONS = Object.freeze(
+  [
+    {
+      provider: "openai",
+      model: "gpt-5.6-sol",
+      label: "GPT-5.6 Sol",
+      command: "codex",
+      reasoningEfforts: ["low", "medium", "high", "xhigh", "max"],
+      defaultReasoningEffort: "medium",
+    },
+    {
+      provider: "openai",
+      model: "gpt-5.6-terra",
+      label: "GPT-5.6 Terra",
+      command: "codex",
+      reasoningEfforts: ["low", "medium", "high", "xhigh", "max"],
+      defaultReasoningEffort: "medium",
+    },
+    {
+      provider: "openai",
+      model: "gpt-5.6-luna",
+      label: "GPT-5.6 Luna",
+      command: "codex",
+      reasoningEfforts: ["low", "medium", "high", "xhigh", "max"],
+      defaultReasoningEffort: "medium",
+    },
+    {
+      provider: "gemini",
+      model: "gemini-3.1-pro",
+      label: "Gemini 3.1 Pro",
+      command: "agy",
+      reasoningEfforts: ["low", "high"],
+      defaultReasoningEffort: "high",
+    },
+    {
+      provider: "gemini",
+      model: "gemini-3.5-flash",
+      label: "Gemini 3.5 Flash",
+      command: "agy",
+      reasoningEfforts: ["low", "medium", "high"],
+      defaultReasoningEffort: "medium",
+    },
+    {
+      provider: "gemini",
+      model: "gemini-3.6-flash",
+      label: "Gemini 3.6 Flash",
+      command: "agy",
+      reasoningEfforts: ["low", "medium", "high"],
+      defaultReasoningEffort: "medium",
+    },
+  ].map((option) => Object.freeze(option)),
+);
+
+export function normalizeCoachModelSelection(model, reasoningEffort, { strict = true } = {}) {
+  const requestedModel = String(model || DEFAULT_COACH_MODEL_SELECTION.model).trim();
+  const option = COACH_MODEL_OPTIONS.find((candidate) => candidate.model === requestedModel);
+  if (!option) {
+    if (!strict) return { ...DEFAULT_COACH_MODEL_SELECTION };
+    throw new Error(`Unsupported Coach model: ${requestedModel || "(empty)"}.`);
+  }
+  const requestedReasoning = String(reasoningEffort || option.defaultReasoningEffort).trim();
+  if (!option.reasoningEfforts.includes(requestedReasoning)) {
+    if (!strict) {
+      return {
+        provider: option.provider,
+        model: option.model,
+        reasoningEffort: option.defaultReasoningEffort,
+      };
+    }
+    throw new Error(
+      `${option.label} does not support ${requestedReasoning || "that"} reasoning. ` +
+        `Choose ${option.reasoningEfforts.join(", ")}.`,
+    );
+  }
+  return {
+    provider: option.provider,
+    model: option.model,
+    reasoningEffort: requestedReasoning,
+  };
+}
+
 const NUMBERED_BOOK_PLACEHOLDER = /\bbook\s*(?:(?:no\.?|number)\s*|#\s*)?\d+\b/i;
 
 export const COACH_LIBRARY_PLAN_SCHEMA = {
@@ -232,6 +319,28 @@ export function preserveConfirmedCodexAuthentication(previous, next) {
   return next;
 }
 
+export function classifyAgyAuthentication(exitCode, output = "") {
+  const text = String(output || "").trim();
+  if (exitCode === 0) {
+    try {
+      const payload = JSON.parse(text);
+      if (payload?.status === "SUCCESS") {
+        return { status: "authenticated", detail: "Antigravity usage status succeeded." };
+      }
+    } catch {
+      // Fall through to the conservative output classifier.
+    }
+  }
+  const detail = text.replace(/\s+/g, " ").slice(0, 1000);
+  if (/not logged|not signed|authenticate|authentication|oauth/i.test(detail)) {
+    return { status: "signed-out", detail: detail || "Antigravity reported a signed-out session." };
+  }
+  return {
+    status: "unavailable",
+    detail: detail || `Antigravity usage status exited with code ${String(exitCode)}.`,
+  };
+}
+
 export function codexExitIndicatesSignedOut(exitCode, stderr) {
   return (
     exitCode !== 0 &&
@@ -281,6 +390,27 @@ export function publicChessCoachFailure(error, { analysisOnly = false } = {}) {
     };
   }
   if (code === "MODEL_UNAVAILABLE") {
+    if (error?.provider === "gemini") {
+      if (/not signed|not logged|authenticate|oauth/i.test(message)) {
+        return {
+          status: 503,
+          code,
+          error: "Antigravity is installed but not signed in. Open Antigravity once and sign in.",
+        };
+      }
+      if (/installed|command.*not found/i.test(message)) {
+        return {
+          status: 503,
+          code,
+          error: "The PC coach needs the Antigravity CLI installed for Gemini models.",
+        };
+      }
+      return {
+        status: 503,
+        code,
+        error: "The PC could not verify the Antigravity sign-in. Please try Check PC again.",
+      };
+    }
     if (/not signed|not logged|codex login|unauthenticated/i.test(message)) {
       return {
         status: 503,
@@ -369,6 +499,54 @@ export function probeCodexAuthentication({
   });
 }
 
+export function probeAgyAuthentication({ spawnProcess, commandPath, cwd, env, timeoutMs = 25000 }) {
+  return new Promise((resolvePromise) => {
+    let child;
+    try {
+      child = spawnProcess(commandPath, ["--print", "/usage", "--output-format", "json"], {
+        cwd,
+        env,
+        windowsHide: true,
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+    } catch (error) {
+      return resolvePromise({
+        status: "unavailable",
+        detail: `Antigravity usage status could not start: ${error?.message || error}`,
+      });
+    }
+
+    let output = "";
+    let timeoutId;
+    let settled = false;
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
+      resolvePromise(result);
+    };
+    const appendOutput = (chunk) => {
+      if (output.length < 64 * 1024) output += String(chunk);
+    };
+    child.stdout?.on("data", appendOutput);
+    child.stderr?.on("data", appendOutput);
+    child.once("error", (error) =>
+      finish({
+        status: "unavailable",
+        detail: `Antigravity usage status failed to start: ${error?.message || error}`,
+      }),
+    );
+    child.once("exit", (code) => finish(classifyAgyAuthentication(code, output)));
+    timeoutId = setTimeout(() => {
+      child.kill();
+      finish({
+        status: "unavailable",
+        detail: `Antigravity usage status timed out after ${timeoutMs} ms.`,
+      });
+    }, timeoutMs);
+  });
+}
+
 export function buildCodexCoachInvocation(
   prompt,
   { model = "gpt-5.6-sol", reasoningEffort = "medium", outputSchemaPath = "" } = {},
@@ -402,6 +580,96 @@ export function buildCodexCoachInvocation(
       String(prompt || ""),
     ].join("\n"),
   };
+}
+
+export function buildAgyPromptSchema(prompt, outputSchema = null) {
+  const instructions = String(prompt || "");
+  if (outputSchema && typeof outputSchema === "object" && !Array.isArray(outputSchema)) {
+    const schema = JSON.parse(JSON.stringify(outputSchema));
+    schema.description = [
+      String(schema.description || "").trim(),
+      "Complete chess-coaching instructions and evidence follow. Treat them as the user request. Do not call tools, inspect files, browse, or modify anything.",
+      instructions,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+    return { schema, unwrapAnswer: false };
+  }
+  return {
+    schema: {
+      type: "object",
+      additionalProperties: false,
+      description: [
+        "Return the final answer to the complete chess-coaching request below. Do not call tools, inspect files, browse, or modify anything.",
+        instructions,
+      ].join("\n\n"),
+      properties: {
+        answer: {
+          type: "string",
+          description: "The requested final coaching or planner response.",
+        },
+      },
+      required: ["answer"],
+    },
+    unwrapAnswer: true,
+  };
+}
+
+export function buildAgyCoachInvocation({
+  model,
+  reasoningEffort,
+  outputSchemaPath,
+  timeoutMs = 190000,
+}) {
+  if (!outputSchemaPath) throw new Error("Antigravity Coach requires a prompt-bearing schema.");
+  return {
+    args: [
+      "--model",
+      model,
+      "--effort",
+      reasoningEffort,
+      "--sandbox",
+      "--disable-slash-commands",
+      "--print-timeout",
+      `${Math.max(30, Math.ceil(timeoutMs / 1000))}s`,
+      "--output-format",
+      "json",
+      "--json-schema",
+      String(outputSchemaPath),
+      "--print",
+      "Follow the complete chess-coaching request embedded in the supplied output schema description. Use only that evidence, do not call tools, and return the schema-conforming answer.",
+    ],
+    stdin: "",
+  };
+}
+
+export function parseAgyCoachOutput(stdout, { unwrapAnswer = false } = {}) {
+  let payload;
+  try {
+    payload = JSON.parse(String(stdout || "").trim());
+  } catch (error) {
+    throw new Error(`Antigravity returned invalid JSON: ${error?.message || error}`);
+  }
+  if (payload?.status !== "SUCCESS") {
+    throw new Error(String(payload?.error || "Antigravity did not complete the Coach request."));
+  }
+  let structured = payload?.structured_output;
+  if (structured === undefined && typeof payload?.response === "string") {
+    try {
+      structured = JSON.parse(payload.response);
+    } catch {
+      structured = undefined;
+    }
+  }
+  if (unwrapAnswer) {
+    const answer = typeof structured?.answer === "string" ? structured.answer.trim() : "";
+    if (!answer) throw new Error("Antigravity returned an empty Coach answer.");
+    return answer;
+  }
+  if (structured !== undefined) return JSON.stringify(structured);
+  const response = String(payload?.response || "").trim();
+  if (!response) throw new Error("Antigravity returned an empty Coach answer.");
+  return response;
 }
 
 export function writeProcessStdinSafely(stdin, input, onError = () => {}) {
@@ -663,6 +931,7 @@ export function normalizeChessCoachRequestPayload(payload, { createRequestId } =
   const pgn = completeCoachPgn(payload.pgn);
   if (!question) throw new Error("A coach question is required.");
   if (!currentFen) throw new Error("The current FEN is required.");
+  const modelSelection = normalizeCoachModelSelection(payload.model, payload.reasoningEffort);
 
   const rawMoves = Array.isArray(payload.moves) ? payload.moves : [];
   if (rawMoves.length > MAX_COACH_MOVES) {
@@ -745,6 +1014,7 @@ export function normalizeChessCoachRequestPayload(payload, { createRequestId } =
     scope: payload.scope === "position" ? "position" : "whole-game",
     moves,
     currentLines,
+    ...modelSelection,
     persistence,
   };
 }

@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { createReadStream } from "node:fs";
 import {
   copyFile,
@@ -26,6 +26,8 @@ import {
 import { getOpeningIdentificationBook, publicDerivedEvidence } from "./chess-coach-derived.mjs";
 import {
   buildCodexCoachInvocation,
+  buildAgyCoachInvocation,
+  buildAgyPromptSchema,
   buildCoachPositionRecords,
   buildLibraryPlannerPrompt,
   buildPcCoachAnalysisResult,
@@ -35,7 +37,9 @@ import {
   codexUsageLimitFromOutput,
   collectPcCoachPositionEvaluations,
   COACH_LIBRARY_PLAN_SCHEMA,
+  COACH_MODEL_OPTIONS,
   COACH_REVIEW_SCHEMA,
+  DEFAULT_COACH_MODEL_SELECTION,
   findExactOpeningBookMatches,
   findPawnStructureBookMatches,
   getChessBookLibraryInventory,
@@ -48,8 +52,10 @@ import {
   normalizeStructuredCoachReview,
   normalizeWebCoachReviewStore,
   parseStockfishCoachInfo,
+  parseAgyCoachOutput,
   preserveConfirmedCodexAuthentication,
   probeCodexAuthentication,
+  probeAgyAuthentication,
   publicChessCoachFailure,
   retrievePlannedBookPassages,
   searchChessBookCorpus,
@@ -110,8 +116,11 @@ const coachCommandPath = resolve(
       process.platform === "win32" ? "codex.exe" : "codex",
     ),
 );
-const coachModel = "gpt-5.6-sol";
-const coachReasoningEffort = "medium";
+const coachModel = DEFAULT_COACH_MODEL_SELECTION.model;
+const agyCommandPath = resolve(
+  process.env.EN_CROISSANT_AGY_COMMAND ||
+    join(localAppData, "agy", "bin", process.platform === "win32" ? "agy.exe" : "agy"),
+);
 const coachWorkRoot = join(serverRoot, "coach-work");
 const coachLibraryPlanSchemaPath = join(coachWorkRoot, "library-plan.schema.json");
 const coachReviewSchemaPath = join(coachWorkRoot, "coach-review.schema.json");
@@ -185,8 +194,10 @@ const phoneCoachProgressExpiry = new Map();
 const phoneCoachJobs = new Map();
 const phoneCoachJobsByReviewKey = new Map();
 let coachAuthenticationCache = { checkedAt: 0, status: "unknown" };
+let agyAuthenticationCache = { checkedAt: 0, status: "unknown" };
 let coachUsageLimitCache = null;
 let coachAuthenticationProbe = null;
+let agyAuthenticationProbe = null;
 
 await mkdir(serverRoot, { recursive: true });
 await mkdir(dirname(statePath), { recursive: true });
@@ -272,6 +283,7 @@ async function handleRequest(request, response) {
       chessBookCorpusAvailable: Boolean(await stat(chessBookCorpusPath).catch(() => null)),
       coachModel,
       coachCommandAvailable: Boolean(await stat(coachCommandPath).catch(() => null)),
+      agyCommandAvailable: Boolean(await stat(agyCommandPath).catch(() => null)),
     });
   }
 
@@ -1220,15 +1232,26 @@ function getChessBookDatabase() {
 
 async function writeChessCoachHealth(response) {
   const corpusStat = await stat(chessBookCorpusPath).catch(() => null);
-  const commandStat = await stat(coachCommandPath).catch(() => null);
-  const modelInstalled = Boolean(commandStat?.isFile());
-  const authentication = modelInstalled
-    ? await getCoachModelAuthentication()
-    : { status: "unavailable" };
+  const [commandStat, agyCommandStat] = await Promise.all([
+    stat(coachCommandPath).catch(() => null),
+    stat(agyCommandPath).catch(() => null),
+  ]);
+  const openaiInstalled = Boolean(commandStat?.isFile());
+  const geminiInstalled = Boolean(agyCommandStat?.isFile());
+  const [authentication, agyAuthentication] = await Promise.all([
+    openaiInstalled ? getCoachModelAuthentication() : { status: "unavailable" },
+    geminiInstalled ? getAgyModelAuthentication() : { status: "unavailable" },
+  ]);
   const usageLimit = getActiveCoachUsageLimit();
-  const modelAvailable = modelInstalled && authentication.status === "authenticated" && !usageLimit;
+  const openaiAvailable =
+    openaiInstalled && authentication.status === "authenticated" && !usageLimit;
+  const geminiAvailable = geminiInstalled && agyAuthentication.status === "authenticated";
+  const modelInstalled = openaiInstalled || geminiInstalled;
+  const modelAvailable = openaiAvailable || geminiAvailable;
   const modelAvailability = usageLimit
-    ? "usage-limited"
+    ? openaiAvailable || geminiAvailable
+      ? "available"
+      : "usage-limited"
     : modelAvailable
       ? "available"
       : "unavailable";
@@ -1238,6 +1261,37 @@ async function writeChessCoachHealth(response) {
         retryLabel: usageLimit.retryLabel,
       }).error
     : undefined;
+  const providers = {
+    openai: {
+      installed: openaiInstalled,
+      available: openaiAvailable,
+      status: authentication.status,
+      availability: usageLimit ? "usage-limited" : openaiAvailable ? "available" : "unavailable",
+      ...(modelMessage ? { message: modelMessage } : {}),
+    },
+    gemini: {
+      installed: geminiInstalled,
+      available: geminiAvailable,
+      status: agyAuthentication.status,
+      availability: geminiAvailable ? "available" : "unavailable",
+      ...(!geminiInstalled
+        ? { message: "The PC needs the Antigravity CLI installed for Gemini models." }
+        : agyAuthentication.status === "signed-out"
+          ? { message: "Antigravity needs its one-time Google sign-in." }
+          : agyAuthentication.status === "unavailable"
+            ? { message: "The PC could not verify the Antigravity sign-in." }
+            : {}),
+    },
+  };
+  const modelOptions = COACH_MODEL_OPTIONS.map(
+    ({ provider, model, label, reasoningEfforts, defaultReasoningEffort }) => ({
+      provider,
+      model,
+      label,
+      reasoningEfforts,
+      defaultReasoningEffort,
+    }),
+  );
   let bookCount = 0;
   let chunkCount = 0;
   if (corpusStat?.isFile()) {
@@ -1257,6 +1311,8 @@ async function writeChessCoachHealth(response) {
         modelAvailability,
         ...(modelMessage ? { modelMessage } : {}),
         model: coachModel,
+        providers,
+        modelOptions,
         error: "The chess-book corpus could not be opened.",
       });
     }
@@ -1270,6 +1326,8 @@ async function writeChessCoachHealth(response) {
     modelAvailability,
     ...(modelMessage ? { modelMessage } : {}),
     model: coachModel,
+    providers,
+    modelOptions,
     bookCount,
     chunkCount,
   });
@@ -1643,6 +1701,7 @@ async function runPhoneCoachReview(payload, signal) {
     }),
     {
       outputSchemaPath: coachLibraryPlanSchemaPath,
+      modelSelection: payload,
       signal,
       timeoutMs: 190000,
     },
@@ -1680,6 +1739,7 @@ async function runPhoneCoachReview(payload, signal) {
     }),
     {
       outputSchemaPath: coachReviewSchemaPath,
+      modelSelection: payload,
       signal,
       timeoutMs: 240000,
     },
@@ -1695,7 +1755,8 @@ async function runPhoneCoachReview(payload, signal) {
     overview: review.overview,
     categories: review.categories,
     priorities: review.priorities,
-    model: coachModel,
+    model: payload.model,
+    reasoningEffort: payload.reasoningEffort,
     playerColor: payload.playerColor,
     criticalMoments,
     bookPassages: publicBookPassages(bookPassages),
@@ -1817,143 +1878,216 @@ async function queryLiveCoachEvaluation(fen, signal) {
 
 async function runPhoneCoachModel(
   prompt,
-  { outputSchemaPath = "", signal = null, timeoutMs = 190000 } = {},
+  {
+    outputSchemaPath = "",
+    modelSelection = DEFAULT_COACH_MODEL_SELECTION,
+    signal = null,
+    timeoutMs = 190000,
+  } = {},
 ) {
   throwIfAborted(signal);
-  const commandStat = await stat(coachCommandPath).catch(() => null);
+  const selection = {
+    provider: modelSelection.provider || DEFAULT_COACH_MODEL_SELECTION.provider,
+    model: modelSelection.model || DEFAULT_COACH_MODEL_SELECTION.model,
+    reasoningEffort:
+      modelSelection.reasoningEffort || DEFAULT_COACH_MODEL_SELECTION.reasoningEffort,
+  };
+  const isGemini = selection.provider === "gemini";
+  const commandPath = isGemini ? agyCommandPath : coachCommandPath;
+  const providerLabel = isGemini ? "Antigravity" : "OpenAI Codex";
+  const commandStat = await stat(commandPath).catch(() => null);
   if (!commandStat?.isFile()) {
-    const error = new Error("The PC coach needs the OpenAI Codex app or CLI installed.");
-    error.code = "MODEL_UNAVAILABLE";
-    throw error;
-  }
-  const authentication = await getCoachModelAuthentication();
-  if (authentication.status === "signed-out") {
     const error = new Error(
-      "OpenAI Codex is installed but not signed in. Run `codex login` on the gaming PC.",
+      isGemini
+        ? "The PC coach needs the Antigravity CLI installed for Gemini models."
+        : "The PC coach needs the OpenAI Codex app or CLI installed.",
     );
     error.code = "MODEL_UNAVAILABLE";
+    error.provider = selection.provider;
+    throw error;
+  }
+  const authentication = isGemini
+    ? await getAgyModelAuthentication()
+    : await getCoachModelAuthentication();
+  if (authentication.status === "signed-out") {
+    const error = new Error(
+      isGemini
+        ? "Antigravity is installed but not signed in. Open Antigravity once and sign in."
+        : "OpenAI Codex is installed but not signed in. Run `codex login` on the PC.",
+    );
+    error.code = "MODEL_UNAVAILABLE";
+    error.provider = selection.provider;
     throw error;
   }
   if (authentication.status !== "authenticated") {
     const error = new Error(
-      "The PC could not verify the OpenAI Codex sign-in. Please try Check PC again.",
+      `The PC could not verify the ${providerLabel} sign-in. Please try Check PC again.`,
     );
     error.code = "MODEL_UNAVAILABLE";
+    error.provider = selection.provider;
     throw error;
   }
-  const activeUsageLimit = getActiveCoachUsageLimit();
-  if (activeUsageLimit) throw makeCoachUsageLimitError(activeUsageLimit);
+  if (!isGemini) {
+    const activeUsageLimit = getActiveCoachUsageLimit();
+    if (activeUsageLimit) throw makeCoachUsageLimitError(activeUsageLimit);
+  }
   throwIfAborted(signal);
 
-  return await new Promise((resolvePromise, rejectPromise) => {
-    const invocation = buildCodexCoachInvocation(prompt, {
-      model: coachModel,
-      reasoningEffort: coachReasoningEffort,
+  let agySchemaPath = "";
+  let unwrapAgyAnswer = false;
+  let invocation;
+  if (isGemini) {
+    const baseSchema = outputSchemaPath
+      ? JSON.parse(await readFile(outputSchemaPath, "utf8"))
+      : null;
+    const promptSchema = buildAgyPromptSchema(prompt, baseSchema);
+    unwrapAgyAnswer = promptSchema.unwrapAnswer;
+    agySchemaPath = join(coachWorkRoot, `agy-coach-${randomUUID()}.schema.json`);
+    await writeFile(agySchemaPath, JSON.stringify(promptSchema.schema));
+    invocation = buildAgyCoachInvocation({
+      model: selection.model,
+      reasoningEffort: selection.reasoningEffort,
+      outputSchemaPath: agySchemaPath,
+      timeoutMs,
+    });
+  } else {
+    invocation = buildCodexCoachInvocation(prompt, {
+      model: selection.model,
+      reasoningEffort: selection.reasoningEffort,
       outputSchemaPath,
     });
-    const child = spawn(coachCommandPath, invocation.args, {
-      cwd: coachWorkRoot,
-      env: coachProcessEnv,
-      windowsHide: true,
-      stdio: ["pipe", "pipe", "pipe"],
-    });
-    let stdout = "";
-    let stderr = "";
-    let settled = false;
-    let stdinFailure = null;
-    let closeModelInput = () => {};
-    const finish = (callback, value) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timeoutId);
-      signal?.removeEventListener("abort", abortModel);
-      callback(value);
-    };
-    const abortModel = () => {
-      closeModelInput();
-      child.kill();
-      const error = new Error("The coach review was cancelled.");
-      error.name = "AbortError";
-      finish(rejectPromise, error);
-    };
-    const timeoutId = setTimeout(() => {
-      closeModelInput();
-      child.kill();
-      finish(
-        rejectPromise,
-        new Error(`The PC coach model timed out after ${Math.round(timeoutMs / 1000)} seconds.`),
-      );
-    }, timeoutMs);
-    child.stdout.on("data", (chunk) => {
-      stdout += chunk;
-      if (stdout.length > 4 * 1024 * 1024) child.kill();
-    });
-    child.stderr.on("data", (chunk) => {
-      stderr += chunk;
-      if (stderr.length > 1024 * 1024) child.kill();
-    });
-    child.once("error", (error) => {
-      closeModelInput();
-      finish(rejectPromise, error);
-    });
-    child.once("exit", (code) => {
-      if (codexExitIndicatesSignedOut(code, stderr)) {
-        coachAuthenticationCache = {
-          checkedAt: Date.now(),
-          status: "signed-out",
-          detail: stderr.replace(/\s+/g, " ").trim().slice(0, 1000),
-        };
-        const error = new Error(
-          "OpenAI Codex is installed but not signed in. Run `codex login` on the gaming PC.",
-        );
-        error.code = "MODEL_UNAVAILABLE";
-        return finish(rejectPromise, error);
-      }
-      const usageLimit = code === 0 ? null : codexUsageLimitFromOutput(`${stdout}\n${stderr}`);
-      if (usageLimit) {
-        coachUsageLimitCache = {
-          detectedAt: Date.now(),
-          expiresAt: Date.now() + 5 * 60_000,
-          retryLabel: usageLimit.retryLabel,
-        };
-        return finish(rejectPromise, makeCoachUsageLimitError(coachUsageLimitCache));
-      }
-      if (code !== 0) {
-        return finish(
+  }
+
+  try {
+    return await new Promise((resolvePromise, rejectPromise) => {
+      const child = spawn(commandPath, invocation.args, {
+        cwd: coachWorkRoot,
+        env: coachProcessEnv,
+        windowsHide: true,
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+      let stdout = "";
+      let stderr = "";
+      let settled = false;
+      let stdinFailure = null;
+      let closeModelInput = () => {};
+      const finish = (callback, value) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeoutId);
+        signal?.removeEventListener("abort", abortModel);
+        callback(value);
+      };
+      const abortModel = () => {
+        closeModelInput();
+        child.kill();
+        const error = new Error("The coach review was cancelled.");
+        error.name = "AbortError";
+        finish(rejectPromise, error);
+      };
+      const timeoutId = setTimeout(() => {
+        closeModelInput();
+        child.kill();
+        finish(
           rejectPromise,
-          new Error(
-            `The PC coach model exited with code ${code}: ${stderr.slice(-1200)}${stdinFailure ? ` (stdin: ${stdinFailure.message})` : ""}`,
-          ),
+          new Error(`The PC coach model timed out after ${Math.round(timeoutMs / 1000)} seconds.`),
+        );
+      }, timeoutMs);
+      child.stdout.on("data", (chunk) => {
+        stdout += chunk;
+        if (stdout.length > 4 * 1024 * 1024) child.kill();
+      });
+      child.stderr.on("data", (chunk) => {
+        stderr += chunk;
+        if (stderr.length > 1024 * 1024) child.kill();
+      });
+      child.once("error", (error) => {
+        closeModelInput();
+        finish(rejectPromise, error);
+      });
+      child.once("exit", (code) => {
+        const combinedOutput = `${stdout}\n${stderr}`;
+        const signedOut = isGemini
+          ? code !== 0 &&
+            /not logged|not signed|authenticate|authentication|oauth/i.test(combinedOutput)
+          : codexExitIndicatesSignedOut(code, stderr);
+        if (signedOut) {
+          const nextAuthentication = {
+            checkedAt: Date.now(),
+            status: "signed-out",
+            detail: stderr.replace(/\s+/g, " ").trim().slice(0, 1000),
+          };
+          if (isGemini) agyAuthenticationCache = nextAuthentication;
+          else coachAuthenticationCache = nextAuthentication;
+          const error = new Error(
+            isGemini
+              ? "Antigravity is installed but not signed in. Open Antigravity once and sign in."
+              : "OpenAI Codex is installed but not signed in. Run `codex login` on the PC.",
+          );
+          error.code = "MODEL_UNAVAILABLE";
+          error.provider = selection.provider;
+          return finish(rejectPromise, error);
+        }
+        const usageLimit =
+          isGemini || code === 0 ? null : codexUsageLimitFromOutput(combinedOutput);
+        if (usageLimit) {
+          coachUsageLimitCache = {
+            detectedAt: Date.now(),
+            expiresAt: Date.now() + 5 * 60_000,
+            retryLabel: usageLimit.retryLabel,
+          };
+          return finish(rejectPromise, makeCoachUsageLimitError(coachUsageLimitCache));
+        }
+        if (code !== 0) {
+          return finish(
+            rejectPromise,
+            new Error(
+              `The PC coach model exited with code ${code}: ${stderr.slice(-1200)}${stdinFailure ? ` (stdin: ${stdinFailure.message})` : ""}`,
+            ),
+          );
+        }
+        let answer;
+        try {
+          answer = isGemini
+            ? parseAgyCoachOutput(stdout, { unwrapAnswer: unwrapAgyAnswer })
+            : stdout
+                .split(/\r?\n/)
+                .filter((line) => !line.trim().startsWith("Warning: 256-color support"))
+                .join("\n")
+                .trim();
+        } catch (error) {
+          return finish(rejectPromise, error);
+        }
+        if (!answer)
+          return finish(rejectPromise, new Error("The PC coach returned an empty answer."));
+        if (!isGemini) coachUsageLimitCache = null;
+        finish(resolvePromise, answer);
+      });
+      const handleStdinFailure = (error) => {
+        stdinFailure = error;
+        if (settled || /^(?:EPIPE|EOF|ERR_STREAM_DESTROYED)$/i.test(String(error?.code || ""))) {
+          return;
+        }
+        child.kill();
+        finish(
+          rejectPromise,
+          new Error(`The PC coach model could not receive its prompt: ${error?.message || error}`),
+        );
+      };
+      signal?.addEventListener("abort", abortModel, { once: true });
+      if (signal?.aborted) {
+        abortModel();
+      } else {
+        closeModelInput = writeProcessStdinSafely(
+          child.stdin,
+          invocation.stdin,
+          handleStdinFailure,
         );
       }
-      const answer = stdout
-        .split(/\r?\n/)
-        .filter((line) => !line.trim().startsWith("Warning: 256-color support"))
-        .join("\n")
-        .trim();
-      if (!answer)
-        return finish(rejectPromise, new Error("The PC coach returned an empty answer."));
-      coachUsageLimitCache = null;
-      finish(resolvePromise, answer);
     });
-    const handleStdinFailure = (error) => {
-      stdinFailure = error;
-      if (settled || /^(?:EPIPE|EOF|ERR_STREAM_DESTROYED)$/i.test(String(error?.code || ""))) {
-        return;
-      }
-      child.kill();
-      finish(
-        rejectPromise,
-        new Error(`The PC coach model could not receive its prompt: ${error?.message || error}`),
-      );
-    };
-    signal?.addEventListener("abort", abortModel, { once: true });
-    if (signal?.aborted) {
-      abortModel();
-    } else {
-      closeModelInput = writeProcessStdinSafely(child.stdin, invocation.stdin, handleStdinFailure);
-    }
-  });
+  } finally {
+    if (agySchemaPath) await rm(agySchemaPath, { force: true }).catch(() => {});
+  }
 }
 
 function getActiveCoachUsageLimit() {
@@ -2000,6 +2134,36 @@ async function getCoachModelAuthentication() {
       coachAuthenticationProbe = null;
     });
   return coachAuthenticationProbe;
+}
+
+async function getAgyModelAuthentication() {
+  const now = Date.now();
+  const cacheLifetime = agyAuthenticationCache.status === "unavailable" ? 5000 : 30000;
+  if (now - agyAuthenticationCache.checkedAt < cacheLifetime) {
+    return agyAuthenticationCache;
+  }
+  if (agyAuthenticationProbe) return agyAuthenticationProbe;
+
+  const previous = agyAuthenticationCache;
+  agyAuthenticationProbe = probeAgyAuthentication({
+    spawnProcess: spawn,
+    commandPath: agyCommandPath,
+    cwd: coachWorkRoot,
+    env: coachProcessEnv,
+    timeoutMs: 25000,
+  })
+    .then(async (result) => {
+      const authentication = preserveConfirmedCodexAuthentication(previous, result);
+      agyAuthenticationCache = { ...authentication, checkedAt: Date.now() };
+      if (result.status === "unavailable") {
+        await appendLog(`Antigravity authentication probe was inconclusive: ${result.detail}`);
+      }
+      return agyAuthenticationCache;
+    })
+    .finally(() => {
+      agyAuthenticationProbe = null;
+    });
+  return agyAuthenticationProbe;
 }
 
 function publicBookPassages(passages) {

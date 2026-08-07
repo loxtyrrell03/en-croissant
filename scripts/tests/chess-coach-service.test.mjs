@@ -7,6 +7,8 @@ import {
   assertNoNumberedBookPlaceholders,
   buildCoachMoveAnalysis,
   buildCoachPositionRecords,
+  buildAgyCoachInvocation,
+  buildAgyPromptSchema,
   buildCodexCoachInvocation,
   buildChessBookSearchTerms,
   buildCriticalMoments,
@@ -23,11 +25,13 @@ import {
   getChessBookLibraryInventory,
   normalizeCloudCoachEvaluation,
   normalizeChessCoachRequestPayload,
+  normalizeCoachModelSelection,
   normalizeLibraryPlan,
   normalizeSavedWebCoachReview,
   normalizeStructuredCoachReview,
   normalizeWebCoachReviewStore,
   parseStockfishCoachInfo,
+  parseAgyCoachOutput,
   pawnStructureKey,
   preserveConfirmedCodexAuthentication,
   probeCodexAuthentication,
@@ -300,6 +304,65 @@ test("Codex coach invocation is GPT-5.6 Sol, ephemeral, read-only, and tool-free
   assert.match(invocation.stdin, /Evidence payload/);
 });
 
+test("Antigravity coach invocation uses allowlisted model effort and a prompt-bearing schema", () => {
+  const promptSchema = buildAgyPromptSchema("PRIVATE CHESS EVIDENCE", {
+    type: "object",
+    properties: { plan: { type: "string" } },
+    required: ["plan"],
+  });
+  assert.equal(promptSchema.unwrapAnswer, false);
+  assert.match(promptSchema.schema.description, /PRIVATE CHESS EVIDENCE/);
+  const invocation = buildAgyCoachInvocation({
+    model: "gemini-3.5-flash",
+    reasoningEffort: "high",
+    outputSchemaPath: "C:/schemas/agy-coach.json",
+    timeoutMs: 180000,
+  });
+  assert.deepEqual(
+    invocation.args.slice(
+      invocation.args.indexOf("--model"),
+      invocation.args.indexOf("--model") + 2,
+    ),
+    ["--model", "gemini-3.5-flash"],
+  );
+  assert.ok(invocation.args.includes("--sandbox"));
+  assert.ok(invocation.args.includes("--disable-slash-commands"));
+  assert.ok(!invocation.args.includes("--dangerously-skip-permissions"));
+  assert.deepEqual(
+    invocation.args.slice(
+      invocation.args.indexOf("--json-schema"),
+      invocation.args.indexOf("--json-schema") + 2,
+    ),
+    ["--json-schema", "C:/schemas/agy-coach.json"],
+  );
+  assert.equal(
+    parseAgyCoachOutput(
+      JSON.stringify({ status: "SUCCESS", structured_output: { plan: "Play d5." } }),
+    ),
+    JSON.stringify({ plan: "Play d5." }),
+  );
+  assert.equal(
+    parseAgyCoachOutput(
+      JSON.stringify({ status: "SUCCESS", structured_output: { answer: "Plan first." } }),
+      { unwrapAnswer: true },
+    ),
+    "Plan first.",
+  );
+});
+
+test("Coach model selection rejects arbitrary models and enforces provider-specific effort", () => {
+  assert.deepEqual(normalizeCoachModelSelection("gemini-3.1-pro", "high"), {
+    provider: "gemini",
+    model: "gemini-3.1-pro",
+    reasoningEffort: "high",
+  });
+  assert.throws(
+    () => normalizeCoachModelSelection("gemini-3.1-pro", "medium"),
+    /does not support medium reasoning/,
+  );
+  assert.throws(() => normalizeCoachModelSelection("agy --dangerous", "high"), /Unsupported/);
+});
+
 test("large model stdin handles a late Windows EOF without an uncaught stream error", async () => {
   const stdin = new EventEmitter();
   stdin.destroyed = false;
@@ -480,6 +543,8 @@ test("coach request normalization never silently truncates the PGN or a long pra
     { createRequestId: () => "unused-request-id" },
   );
   assert.equal(normalized.moves.length, 300);
+  assert.equal(normalized.model, "gpt-5.6-sol");
+  assert.equal(normalized.reasoningEffort, "medium");
   assert.equal(normalized.pgn, pgn);
   assert.match(normalized.pgn, /END-OF-PGN$/);
 
@@ -513,6 +578,18 @@ test("coach request normalization carries validated PC persistence metadata", ()
     contextKey: "game-context-key",
     lineContextKey: "line-context-key",
   });
+  const gemini = normalizeChessCoachRequestPayload({
+    requestId: "coach-gemini-model",
+    question: "Review the game",
+    currentFen: "current w - - 0 1",
+    pgn: "1. e4",
+    moves: [],
+    model: "gemini-3.5-flash",
+    reasoningEffort: "low",
+  });
+  assert.equal(gemini.provider, "gemini");
+  assert.equal(gemini.model, "gemini-3.5-flash");
+  assert.equal(gemini.reasoningEffort, "low");
   assert.throws(
     () =>
       normalizeChessCoachRequestPayload({
