@@ -24,7 +24,7 @@ line for corpus QA and retrieval experiments.
   citations
 - 2,946 local 384-dimensional `BAAI/bge-small-en-v1.5` embeddings
 - 8,306 legality-checked opening variations and illustrative game lines,
-  materialized as 237,201 source-linked line plies across 35,868 exact
+  materialized as 237,201 source-linked line plies across 35,941 exact
   positions
 - 75 exact full-pawn-placement anchors into the private *Chess Structures*
   plan chapters
