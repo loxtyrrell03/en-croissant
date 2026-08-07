@@ -21,13 +21,15 @@ self.addEventListener("activate", (event) => {
       )
       .then(() => self.clients.claim())
       .then(() => self.clients.matchAll({ type: "window", includeUncontrolled: true }))
-      .then((clients) =>
-        Promise.all(
-          clients.map((client) =>
-            client.navigate(client.url).catch(() => null),
-          ),
-        ),
-      ),
+      .then((clients) => {
+        // Start each refresh after claim(), but never make activation wait for
+        // the navigation it triggered. A controlled navigation may itself wait
+        // for activation to finish, so awaiting it here deadlocks the app on
+        // first install and after every published update.
+        for (const client of clients) {
+          void client.navigate(client.url).catch(() => null);
+        }
+      }),
   );
 });
 

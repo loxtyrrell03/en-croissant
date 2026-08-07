@@ -95,6 +95,21 @@ const CLOCKED_PGN_B = `
 1. d4 {[%clk 0:02:56]} d5 {[%clk 0:02:57]} 2. c4 {[%clk 0:02:52]} e6 {[%clk 0:02:53]} 1-0
 `;
 
+const LONG_CLOCK_PGN = `[Event "Clock comparison"]
+[Result "1-0"]
+[TimeControl "180"]
+
+${Array.from({ length: 20 }, (_, index) => {
+    const move = index + 1;
+    const whiteSan = move % 2 === 1 ? "Nf3" : "Ng1";
+    const blackSan = move % 2 === 1 ? "Nf6" : "Ng8";
+    const whiteClock = 180 - move * 3;
+    const blackClock = 180 - move * 5;
+    const clock = (seconds: number) =>
+        `0:${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+    return `${move}. ${whiteSan} {[%clk ${clock(whiteClock)}]} ${blackSan} {[%clk ${clock(blackClock)}]}`;
+}).join(" ")} 1-0`;
+
 function buildFixtureGames(): StatsGame[] {
     const najdorf = "Sicilian Defense: Najdorf Variation";
     const dragon = "Sicilian Defense: Dragon Variation";
@@ -406,6 +421,81 @@ const DECOY_ENTRY: AnalyzedGameEntry = {
     counts: { inaccuracy: 9, mistake: 9, blunder: 9 },
 };
 
+function makeAnalyzedEntry(
+    game: StatsGame,
+    overrides?: {
+        accuracy?: number | null;
+        acpl?: number | null;
+        counts?: AnalyzedGameEntry["counts"];
+    },
+): AnalyzedGameEntry {
+    return {
+        ...ANALYZED_ENTRY,
+        key: gameAnalysisKey(game),
+        end: game.end,
+        source: game.source,
+        url: game.url,
+        timeControl: game.timeControl,
+        color: game.color,
+        opponent: game.oppName,
+        opp: game.opp,
+        result: game.result,
+        eco: game.eco,
+        openingName: game.openingName,
+        stats: {
+            ...ANALYZED_ENTRY.stats,
+            accuracy:
+                overrides?.accuracy === undefined
+                    ? ANALYZED_ENTRY.stats.accuracy
+                    : overrides.accuracy,
+            acpl: overrides?.acpl === undefined ? ANALYZED_ENTRY.stats.acpl : overrides.acpl,
+        },
+        counts: overrides?.counts ?? ANALYZED_ENTRY.counts,
+    };
+}
+
+function withOpponentQuality(
+    entry: AnalyzedGameEntry,
+    overrides?: {
+        accuracy?: number | null;
+        acpl?: number | null;
+        counts?: AnalyzedGameEntry["counts"];
+    },
+): AnalyzedGameEntry {
+    const counts = overrides?.counts ?? entry.counts;
+    const emptyDecision = { moves: 0, errors: 0, accuracy: null };
+    return {
+        ...entry,
+        opponentQuality: {
+            stats: {
+                ...entry.stats,
+                accuracy:
+                    overrides?.accuracy === undefined ? entry.stats.accuracy : overrides.accuracy,
+                acpl: overrides?.acpl === undefined ? entry.stats.acpl : overrides.acpl,
+            },
+            phases: entry.phases,
+            counts,
+            phaseBlunders: entry.phaseBlunders,
+            advanced: {
+                advantage: emptyDecision,
+                defence: emptyDecision,
+                balanced: emptyDecision,
+                critical: emptyDecision,
+                fast: emptyDecision,
+                longThink: emptyDecision,
+                timeTrouble: emptyDecision,
+                hadWinningPosition: false,
+                convertedWinningPosition: null,
+                hadLosingPosition: false,
+                savedLosingPosition: null,
+                openingExitWinPct: null,
+                move15EvalCp: null,
+                endgameEntryEvalCp: null,
+            },
+        },
+    };
+}
+
 function buildThreeWeekReport() {
     return computePeriodReport({
         games: FIXTURE_GAMES,
@@ -441,6 +531,334 @@ describe("computePeriodReport", () => {
 
         expect(report.form).not.toBeNull();
         expect(report.form?.streak).toEqual({ type: "win", len: 2 });
+    });
+
+    test("summarizes opponent-rating coverage and computes Elo expectation per selected game", () => {
+        const winBelow = makeGame({
+            end: sec(7, 25, 10),
+            rating: 1000,
+            opp: 900,
+            result: "win",
+        });
+        const lossAbove = makeGame({
+            end: sec(7, 25, 11),
+            rating: 1000,
+            opp: 1100,
+            result: "loss",
+        });
+        const equalDraw = makeGame({
+            end: sec(7, 25, 12),
+            rating: 1100,
+            opp: 1100,
+            result: "draw",
+        });
+        const missingOpponent = makeGame({
+            end: sec(7, 25, 13),
+            rating: 1100,
+            opp: null,
+        });
+        const invalidPlayerRating = makeGame({
+            end: sec(7, 25, 14),
+            rating: Number.NaN,
+            opp: 1200,
+        });
+        const casual = makeGame({
+            end: sec(7, 25, 15),
+            rating: 1100,
+            opp: 1300,
+            rated: false,
+            result: "win",
+        });
+
+        const report = computePeriodReport({
+            games: [casual, missingOpponent, equalDraw, lossAbove, invalidPlayerRating, winBelow],
+            analyzed: [],
+            windowStart: sec(7, 25),
+            windowEnd: sec(7, 26) - 1,
+            label: "One day",
+            nowSec: sec(7, 25, 16),
+            currentRating: 1100,
+        });
+
+        const expectedBelow = 1 / (1 + 10 ** ((900 - 1000) / 400));
+        const expectedAbove = 1 / (1 + 10 ** ((1100 - 1000) / 400));
+        const expectedCasual = 1 / (1 + 10 ** ((1300 - 1100) / 400));
+        const expectedPct = ((expectedBelow + expectedAbove + 0.5 + expectedCasual) / 4) * 100;
+
+        expect(report.opponents).toMatchObject({
+            totalGames: 6,
+            ratedGames: 5,
+            gamesWithOpponentRating: 4,
+            minOpponentRating: 900,
+            maxOpponentRating: 1300,
+        });
+        expect(report.opponents.opponentRatingCoveragePct).toBeCloseTo(200 / 3, 9);
+        expect(report.opponents.avgOpponentRating).toBeCloseTo(1100, 9);
+        expect(report.opponents.medianOpponentRating).toBe(1100);
+        // Positive means the opposition was stronger; the casual game counts too.
+        expect(report.opponents.avgRatingGap).toBeCloseTo(50, 9);
+        expect(report.opponents.scorePct).toBeCloseTo(62.5, 9);
+        expect(report.opponents.expectedScorePct).toBeCloseTo(expectedPct, 9);
+        expect(report.opponents.scoreDeltaPct).toBeCloseTo(62.5 - expectedPct, 9);
+    });
+
+    test("uses fixed ascending 200-point bands with explicit analysis samples", () => {
+        const below = makeGame({
+            end: sec(7, 25, 10),
+            rating: 999,
+            opp: 999,
+            result: "win",
+        });
+        const bandStart = makeGame({
+            end: sec(7, 25, 11),
+            rating: 1000,
+            opp: 1000,
+            result: "loss",
+        });
+        const bandEnd = makeGame({
+            end: sec(7, 25, 12),
+            rating: 1199,
+            opp: 1199,
+            result: "draw",
+        });
+        const above = makeGame({
+            end: sec(7, 25, 13),
+            rating: 1200,
+            opp: 1200,
+            result: "win",
+        });
+        const analyzedBelow = withOpponentQuality(
+            makeAnalyzedEntry(below, {
+                accuracy: 90,
+                acpl: 10,
+                counts: { inaccuracy: 1, mistake: 0, blunder: 0 },
+            }),
+        );
+        const analyzedStart = withOpponentQuality(
+            makeAnalyzedEntry(bandStart, {
+                accuracy: 70,
+                acpl: 90,
+                counts: { inaccuracy: 3, mistake: 2, blunder: 1 },
+            }),
+        );
+        const analyzedEnd = withOpponentQuality(
+            makeAnalyzedEntry(bandEnd, {
+                accuracy: null,
+                acpl: null,
+                counts: { inaccuracy: 1, mistake: 1, blunder: 1 },
+            }),
+        );
+
+        const report = computePeriodReport({
+            games: [above, bandEnd, below, bandStart],
+            analyzed: [analyzedEnd, analyzedBelow, analyzedStart, DECOY_ENTRY],
+            windowStart: sec(7, 25),
+            windowEnd: sec(7, 26) - 1,
+            label: "One day",
+            nowSec: sec(7, 25, 16),
+            currentRating: 1000,
+        });
+
+        expect(report.opponents.bands.map((band) => band.label)).toEqual([
+            "800-999",
+            "1000-1199",
+            "1200-1399",
+        ]);
+        expect(report.opponents.bands.map((band) => band.containsCurrentRating)).toEqual([
+            false,
+            true,
+            false,
+        ]);
+
+        expect(report.opponents.bands[0]).toMatchObject({
+            min: 800,
+            max: 999,
+            games: 1,
+            wins: 1,
+            draws: 0,
+            losses: 0,
+            scorePct: 100,
+            expectedScorePct: 50,
+            scoreDeltaPct: 50,
+            avgOpponentRating: 999,
+            analyzedGames: 1,
+            analysisCoveragePct: 100,
+            accuracySamples: 1,
+            acplSamples: 1,
+            avgAccuracy: 90,
+            avgAcpl: 10,
+            inaccuraciesPerAnalyzedGame: 1,
+            mistakesPerAnalyzedGame: 0,
+            blundersPerAnalyzedGame: 0,
+        });
+
+        expect(report.opponents.bands[1]).toMatchObject({
+            games: 2,
+            wins: 0,
+            draws: 1,
+            losses: 1,
+            scorePct: 25,
+            expectedScorePct: 50,
+            scoreDeltaPct: -25,
+            avgOpponentRating: 1099.5,
+            analyzedGames: 2,
+            analysisCoveragePct: 100,
+            accuracySamples: 1,
+            acplSamples: 1,
+            avgAccuracy: 70,
+            avgAcpl: 90,
+            inaccuraciesPerAnalyzedGame: 2,
+            mistakesPerAnalyzedGame: 1.5,
+            blundersPerAnalyzedGame: 1,
+        });
+
+        expect(report.opponents.bands[2]).toMatchObject({
+            games: 1,
+            analyzedGames: 0,
+            analysisCoveragePct: 0,
+            accuracySamples: 0,
+            acplSamples: 0,
+            avgAccuracy: null,
+            avgAcpl: null,
+            inaccuraciesPerAnalyzedGame: null,
+            mistakesPerAnalyzedGame: null,
+            blundersPerAnalyzedGame: null,
+        });
+    });
+
+    test("keeps empty opponent samples explicit instead of fabricating ratings or bands", () => {
+        const unrated = makeGame({
+            end: sec(7, 25, 10),
+            rated: false,
+            opp: null,
+        });
+        const missing = makeGame({
+            end: sec(7, 25, 11),
+            rated: true,
+            opp: null,
+        });
+        const report = computePeriodReport({
+            games: [unrated, missing],
+            analyzed: [makeAnalyzedEntry(unrated)],
+            windowStart: sec(7, 25),
+            windowEnd: sec(7, 26) - 1,
+            label: "One day",
+            nowSec: sec(7, 25, 16),
+            currentRating: 1500,
+        });
+
+        expect(report.opponents).toEqual({
+            totalGames: 2,
+            ratedGames: 1,
+            gamesWithOpponentRating: 0,
+            opponentRatingCoveragePct: 0,
+            avgOpponentRating: null,
+            medianOpponentRating: null,
+            minOpponentRating: null,
+            maxOpponentRating: null,
+            avgRatingGap: null,
+            scorePct: null,
+            expectedScorePct: null,
+            scoreDeltaPct: null,
+            bands: [],
+        });
+    });
+
+    test("keeps player and opponent engine comparisons on the same paired games", () => {
+        const legacyGame = makeGame({
+            id: "legacy-quality",
+            end: sec(7, 25, 10),
+            rating: 1500,
+            opp: 1450,
+        });
+        const pairedGame = makeGame({
+            id: "paired-quality",
+            end: sec(7, 25, 11),
+            rating: 1500,
+            opp: 1475,
+        });
+        const legacy = makeAnalyzedEntry(legacyGame, {
+            accuracy: 40,
+            acpl: 120,
+            counts: { inaccuracy: 2, mistake: 4, blunder: 5 },
+        });
+        const paired = withOpponentQuality(
+            makeAnalyzedEntry(pairedGame, {
+                accuracy: 90,
+                acpl: 20,
+                counts: { inaccuracy: 1, mistake: 1, blunder: 0 },
+            }),
+            {
+                accuracy: 80,
+                acpl: 45,
+                counts: { inaccuracy: 2, mistake: 2, blunder: 1 },
+            },
+        );
+
+        const report = computePeriodReport({
+            games: [legacyGame, pairedGame],
+            analyzed: [legacy, paired],
+            windowStart: sec(7, 25),
+            windowEnd: sec(7, 26) - 1,
+            label: "One day",
+            nowSec: sec(7, 25, 16),
+            currentRating: 1500,
+        });
+
+        expect(report.mistakes?.analyzedGames).toBe(2);
+        expect(report.mistakes?.player.avgAccuracy).toBe(65);
+        expect(report.mistakes?.pairedGames).toBe(1);
+        expect(report.mistakes?.pairedPlayer?.avgAccuracy).toBe(90);
+        expect(report.mistakes?.pairedPlayer?.mistakesPerGame).toBe(1);
+        expect(report.mistakes?.opponents?.avgAccuracy).toBe(80);
+        expect(report.mistakes?.opponents?.mistakesPerGame).toBe(2);
+        expect(report.mistakes?.peerBenchmark?.samples).toBe(1);
+        expect(report.mistakes?.peerBenchmark?.accuracyDelta).toBeCloseTo(
+            90 - (report.mistakes?.peerBenchmark?.expectedAccuracy ?? 0),
+            9,
+        );
+        expect(report.opponents.bands[0]).toMatchObject({
+            analyzedGames: 1,
+            avgAccuracy: 90,
+            mistakesPerAnalyzedGame: 1,
+            opponentAnalyzedGames: 1,
+            opponentAvgAccuracy: 80,
+            opponentMistakesPerAnalyzedGame: 2,
+        });
+    });
+
+    test("does not use one-sided provider counts as a rating-band comparison", () => {
+        const game = makeGame({
+            source: "lichess",
+            end: sec(7, 25, 12),
+            rating: 1500,
+            opp: 1550,
+            providerQuality: {
+                provider: "lichess",
+                accuracy: 88,
+                acpl: 30,
+                inaccuracies: 1,
+                mistakes: 1,
+                blunders: 0,
+            },
+        });
+        const report = computePeriodReport({
+            games: [game],
+            analyzed: [],
+            windowStart: sec(7, 25),
+            windowEnd: sec(7, 26) - 1,
+            label: "One day",
+            nowSec: sec(7, 25, 16),
+            currentRating: 1500,
+        });
+
+        expect(report.opponents.bands[0]).toMatchObject({
+            providerQualityMethod: null,
+            providerAnalyzedGames: 0,
+            opponentProviderAnalyzedGames: 0,
+            providerMistakesPerGame: null,
+            opponentProviderMistakesPerGame: null,
+        });
     });
 
     test("buckets games into Monday-based local weeks", () => {
@@ -537,6 +955,33 @@ describe("computePeriodReport", () => {
         expect(report.time?.timeoutLossPct).toBeCloseTo(100 / 3, 9);
     });
 
+    test("compares move-20 clock balance and builds a remaining-time curve", () => {
+        const game = makeGame({
+            end: sec(7, 25, 18),
+            result: "win",
+            color: "w",
+            timeControl: { base: 180, inc: 0 },
+            pgn: LONG_CLOCK_PGN,
+        });
+        const report = computePeriodReport({
+            games: [game],
+            analyzed: [],
+            windowStart: sec(7, 25),
+            windowEnd: sec(7, 26) - 1,
+            label: "One day",
+            nowSec: sec(7, 25, 20),
+            currentRating: 1500,
+        });
+
+        expect(report.time?.clockBalanceAtMove20.ahead).toEqual({ games: 1, scorePct: 100 });
+        expect(report.time?.clockBalanceAtMove20.even).toEqual({ games: 0, scorePct: null });
+        expect(report.time?.clockBalanceAtMove20.behind).toEqual({ games: 0, scorePct: null });
+        expect(report.time?.clockCurve.map((checkpoint) => checkpoint.move)).toEqual([10, 20]);
+        expect(report.time?.clockCurve[0]).toMatchObject({ games: 1 });
+        expect(report.time?.clockCurve[0].playerRemainingPct).toBeCloseTo((150 / 180) * 100, 9);
+        expect(report.time?.clockCurve[0].opponentRemainingPct).toBeCloseTo((130 / 180) * 100, 9);
+    });
+
     test("aggregates mistakes from analyzed entries matched by analysis key", () => {
         const report = buildThreeWeekReport();
 
@@ -553,6 +998,134 @@ describe("computePeriodReport", () => {
         expect(report.mistakes?.worstGames).toHaveLength(1);
         expect(report.mistakes?.worstGames[0]?.entry.key).toBe(gameAnalysisKey(BEST_WIN_GAME));
         expect(report.mistakes?.worstGames[0]?.game?.id).toBe("best-win");
+    });
+
+    test("combines player/opponent quality, rating baseline, provider accuracy, and position outcomes", () => {
+        const game = makeGame({
+            source: "lichess",
+            end: sec(7, 25, 18),
+            rating: 1500,
+            opp: 1575,
+            result: "win",
+            color: "w",
+            providerQuality: {
+                provider: "lichess",
+                accuracy: 87,
+                acpl: 35,
+                inaccuracies: 2,
+                mistakes: 1,
+                blunders: 0,
+            },
+            opponentProviderQuality: {
+                provider: "lichess",
+                accuracy: 81,
+                acpl: 55,
+                inaccuracies: 3,
+                mistakes: 2,
+                blunders: 1,
+            },
+        });
+        const emptyDecision = { moves: 0, errors: 0, accuracy: null };
+        const advanced = {
+            advantage: { moves: 8, errors: 1, accuracy: 84 },
+            defence: { moves: 2, errors: 0, accuracy: 92 },
+            balanced: { moves: 14, errors: 1, accuracy: 82 },
+            critical: { moves: 5, errors: 1, accuracy: 76 },
+            fast: { moves: 6, errors: 1, accuracy: 78 },
+            longThink: { moves: 4, errors: 0, accuracy: 94 },
+            timeTrouble: emptyDecision,
+            hadWinningPosition: true,
+            convertedWinningPosition: true,
+            hadLosingPosition: false,
+            savedLosingPosition: null,
+            openingExitWinPct: 58,
+            move15EvalCp: 45,
+            endgameEntryEvalCp: 130,
+        };
+        const entry: AnalyzedGameEntry = {
+            ...makeAnalyzedEntry(game, {
+                accuracy: 86,
+                acpl: 38,
+                counts: { inaccuracy: 1, mistake: 1, blunder: 1 },
+            }),
+            advanced,
+            opponentQuality: {
+                stats: {
+                    ...ANALYZED_ENTRY.stats,
+                    accuracy: 79,
+                    acpl: 62,
+                    scoredCount: 25,
+                },
+                phases: {
+                    middlegame: {
+                        accuracy: 77,
+                        acpl: 70,
+                        scoredCount: 15,
+                        complexity: 5,
+                    },
+                },
+                counts: { inaccuracy: 3, mistake: 2, blunder: 2 },
+                phaseBlunders: { opening: 0, middlegame: 2, endgame: 0 },
+                advanced: {
+                    ...advanced,
+                    hadWinningPosition: false,
+                    convertedWinningPosition: null,
+                },
+            },
+        };
+
+        const report = computePeriodReport({
+            games: [game],
+            analyzed: [entry],
+            windowStart: sec(7, 25),
+            windowEnd: sec(7, 26) - 1,
+            label: "One day",
+            nowSec: sec(7, 25, 20),
+            currentRating: 1500,
+        });
+
+        expect(report.mistakes?.analysisCoveragePct).toBe(100);
+        expect(report.mistakes?.player.errorsPer100Moves).toBeCloseTo((2 / 24) * 100, 9);
+        expect(report.mistakes?.opponents?.mistakesPerGame).toBe(2);
+        expect(report.mistakes?.opponents?.blundersPerGame).toBe(2);
+        expect(report.mistakes?.peerBenchmark?.ratingBandLabel).toBe("1400-1599");
+        expect(report.mistakes?.peerBenchmark?.samples).toBe(1);
+        expect(report.mistakes?.situations?.conversionPct).toBe(100);
+        expect(report.mistakes?.situations?.critical.errorPct).toBe(20);
+        expect(report.mistakes?.situations?.endgames.better).toEqual({
+            games: 1,
+            scorePct: 100,
+        });
+        expect(report.providerQuality).toMatchObject({
+            provider: "lichess",
+            playerSamples: 1,
+            opponentSamples: 1,
+            pairedSamples: 1,
+            avgPlayerAccuracy: 87,
+            avgOpponentAccuracy: 81,
+            accuracyDelta: 6,
+            avgPlayerAcpl: 35,
+            avgOpponentAcpl: 55,
+            playerErrorSamples: 1,
+            playerMistakesPerGame: 1,
+            playerBlundersPerGame: 0,
+            opponentErrorSamples: 1,
+            opponentMistakesPerGame: 2,
+            opponentBlundersPerGame: 1,
+        });
+        expect(report.opponents.bands[0]).toMatchObject({
+            opponentAnalyzedGames: 1,
+            opponentMistakesPerAnalyzedGame: 2,
+            opponentBlundersPerAnalyzedGame: 2,
+            providerQualityMethod: "lichess",
+            providerAnalyzedGames: 1,
+            providerMistakesPerGame: 1,
+            providerBlundersPerGame: 0,
+            opponentProviderAnalyzedGames: 1,
+            opponentProviderMistakesPerGame: 2,
+            opponentProviderBlundersPerGame: 1,
+        });
+        expect(report.patterns.byColor[0]).toMatchObject({ label: "White", scorePct: 100 });
     });
 
     test("collects highlights: best win, longest win streak, most played opponent", () => {

@@ -29,9 +29,12 @@ describe("shared Lichess authentication", () => {
       updatedAt: 123,
     });
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
-      "https://gaming-pc.tail89d19b.ts.net/api/lichess-credential",
+      "https://lox.tail89d19b.ts.net/api/lichess-credential",
     );
-    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ cache: "no-store" });
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
+      cache: "no-store",
+      signal: expect.any(AbortSignal),
+    });
   });
 
   it("treats a missing shared credential as the one-time setup state", async () => {
@@ -57,6 +60,21 @@ describe("shared Lichess authentication", () => {
     expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
       method: "PUT",
       body: JSON.stringify({ token: "new-persistent-private-token" }),
+    });
+  });
+
+  it("stops waiting when the private host does not answer", async () => {
+    const fetchMock = vi.fn((_url: string, init?: RequestInit) =>
+      new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () => {
+          reject(new DOMException("The operation was aborted.", "AbortError"));
+        });
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(loadSharedLichessCredential({ timeoutMs: 1 })).rejects.toMatchObject({
+      name: "AbortError",
     });
   });
 });

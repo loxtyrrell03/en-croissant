@@ -23,6 +23,16 @@
   `scripts/build-chess-book-corpus.py`; regressions cover tolerant PGN parsing,
   structure-key parity, plan-led retrieval, and both coach prompts.
 
+- On 2026-08-04, the gaming PC was returned and `Lox` became the authoritative
+  private phone-app host until a replacement machine is available. The live
+  origin is `https://lox.tail89d19b.ts.net`; phone UI, home-server, shared
+  Lichess, explorer/database, coach, and Stockfish defaults must use that
+  origin. Publish completed phone changes locally with
+  `npm run web:publish-home` and verify the `Lox` origin. This supersedes older
+  instructions that name `gaming-pc` as the current host, deployment target,
+  or default service origin. The retired machine is unavailable and must not
+  be treated as a blocker or deployment target.
+
 - On 2026-07-25, Outpost's desktop PGN parser stopped overwriting adjacent
   comment blocks at the same position. Chessable exports often put a full
   lesson annotation beside an exporter-only `{-KEY-}` marker, so the old

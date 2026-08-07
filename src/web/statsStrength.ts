@@ -34,6 +34,39 @@ export type GameQualityStats = {
 };
 export type MoveLabelCounts = { inaccuracy: number; mistake: number; blunder: number };
 
+export type DecisionBucketStats = {
+    moves: number;
+    errors: number;
+    accuracy: number | null;
+};
+
+// Contextual, Aimchess-style facts retained alongside the calibrated strength
+// inputs. These values are descriptive: they never feed the EloGuard model.
+export type AdvancedGameQualityStats = {
+    advantage: DecisionBucketStats;
+    defence: DecisionBucketStats;
+    balanced: DecisionBucketStats;
+    critical: DecisionBucketStats;
+    fast: DecisionBucketStats;
+    longThink: DecisionBucketStats;
+    timeTrouble: DecisionBucketStats;
+    hadWinningPosition: boolean;
+    convertedWinningPosition: boolean | null;
+    hadLosingPosition: boolean;
+    savedLosingPosition: boolean | null;
+    openingExitWinPct: number | null;
+    move15EvalCp: number | null;
+    endgameEntryEvalCp: number | null;
+};
+
+export type AnalyzedSideQuality = {
+    stats: GameQualityStats;
+    phases: Partial<Record<StrengthPhase, GamePhaseStats>>;
+    counts: MoveLabelCounts;
+    phaseBlunders: Record<StrengthPhase, number>;
+    advanced: AdvancedGameQualityStats;
+};
+
 export type AnalyzedGameEntry = {
     v: 2;
     ts: number;
@@ -53,6 +86,8 @@ export type AnalyzedGameEntry = {
     phases: Partial<Record<StrengthPhase, GamePhaseStats>>;
     counts: MoveLabelCounts;
     phaseBlunders: Record<StrengthPhase, number>;
+    advanced?: AdvancedGameQualityStats;
+    opponentQuality?: AnalyzedSideQuality;
 };
 
 export type StrengthEstimate = { rating: number; uncertainty: number; pool: StrengthPool };
@@ -328,6 +363,51 @@ function chessComToLichess(pool: StrengthPool, chessComRating: number): number {
     }
     const t = (chessComRating - lo[1]) / (hi[1] - lo[1]);
     return lo[0] + t * (hi[0] - lo[0]);
+}
+
+export type QualityBenchmark = {
+    accuracy: number;
+    acpl: number;
+    calibrationRating: number;
+    pool: StrengthPool;
+};
+
+// Expected raw move quality for a player at this rating and time control. The
+// anchors come from the same 30,506-side Lichess calibration used by EloGuard;
+// chess.com ratings are mapped onto that scale with the model's pool-specific
+// conversion before interpolation. This is a documented model baseline, not a
+// live Aimchess population percentile.
+export function qualityBenchmarkForRating(input: {
+    rating: number;
+    source: "chesscom" | "lichess";
+    timeControl: StatsTimeControl;
+}): QualityBenchmark | null {
+    if (!Number.isFinite(input.rating)) return null;
+    const pool = timeClassOf(input.timeControl);
+    const calibrationRating =
+        input.source === "chesscom" ? chessComToLichess(pool, input.rating) : input.rating;
+    const baseAccuracy = interpolateRatingAnchor(ACC_ANCHORS, calibrationRating);
+    const baseAcpl = interpolateRatingAnchor(ACPL_ANCHORS, calibrationRating);
+    const timeAdjust = timeSkillAdjust(input.timeControl);
+    return {
+        accuracy: Math.max(0, Math.min(100, baseAccuracy - timeAdjust.accOffset)),
+        acpl: Math.max(1, baseAcpl / timeAdjust.acplMult),
+        calibrationRating,
+        pool,
+    };
+}
+
+function interpolateRatingAnchor(points: [number, number][], rating: number): number {
+    if (rating <= points[0][0]) return points[0][1];
+    if (rating >= points[points.length - 1][0]) return points[points.length - 1][1];
+    for (let index = 1; index < points.length; index += 1) {
+        const high = points[index];
+        if (rating > high[0]) continue;
+        const low = points[index - 1];
+        const t = (rating - low[0]) / (high[0] - low[0]);
+        return low[1] + t * (high[1] - low[1]);
+    }
+    return points[points.length - 1][1];
 }
 
 // ---- eval helpers ----------------------------------------------------------
@@ -986,8 +1066,32 @@ type PhaseBucket = {
     complexitySum: number;
 };
 
+type DecisionBucket = {
+    moves: number;
+    errors: number;
+    accuracySum: number;
+};
+
 function newBucket(): PhaseBucket {
     return { accs: [], accWeights: [], losses: [], complexitySum: 0 };
+}
+
+function newDecisionBucket(): DecisionBucket {
+    return { moves: 0, errors: 0, accuracySum: 0 };
+}
+
+function addDecision(bucket: DecisionBucket, accuracy: number, isError: boolean) {
+    bucket.moves += 1;
+    bucket.accuracySum += accuracy;
+    if (isError) bucket.errors += 1;
+}
+
+function decisionBucketStats(bucket: DecisionBucket): DecisionBucketStats {
+    return {
+        moves: bucket.moves,
+        errors: bucket.errors,
+        accuracy: bucket.moves > 0 ? bucket.accuracySum / bucket.moves : null,
+    };
 }
 
 function bucketStats(bucket: PhaseBucket): GamePhaseStats {
@@ -1011,14 +1115,16 @@ export async function buildGameQualityStats(input: {
     timeControl: { base: number; inc: number } | null;
     clocks: (number | null)[]; // per-ply remaining clock seconds, aligned with sans
     analysisDepth: number | null;
+    result?: "win" | "draw" | "loss";
 }): Promise<{
     stats: GameQualityStats;
     phases: Partial<Record<StrengthPhase, GamePhaseStats>>;
     counts: MoveLabelCounts;
     phaseBlunders: Record<StrengthPhase, number>;
+    advanced: AdvancedGameQualityStats;
     plies: number;
 } | null> {
-    const { sans, evals, bestMoves, color, timeControl, clocks, analysisDepth } = input;
+    const { sans, evals, bestMoves, color, timeControl, clocks, analysisDepth, result } = input;
     if (!sans.length) return null;
     const replay = replayGame(sans);
     if (!replay) return null;
@@ -1067,8 +1173,19 @@ export async function buildGameQualityStats(input: {
     };
     const counts: MoveLabelCounts = { inaccuracy: 0, mistake: 0, blunder: 0 };
     const phaseBlunders: Record<StrengthPhase, number> = { opening: 0, middlegame: 0, endgame: 0 };
+    const decisionBuckets = {
+        advantage: newDecisionBucket(),
+        defence: newDecisionBucket(),
+        balanced: newDecisionBucket(),
+        critical: newDecisionBucket(),
+        fast: newDecisionBucket(),
+        longThink: newDecisionBucket(),
+        timeTrouble: newDecisionBucket(),
+    };
     let bookCount = 0;
     let blunders = 0;
+    let hadWinningPosition = false;
+    let hadLosingPosition = false;
 
     for (let i = 0; i < n; i++) {
         const moverColor: "w" | "b" = i % 2 === 0 ? "w" : "b";
@@ -1081,6 +1198,11 @@ export async function buildGameQualityStats(input: {
             // unevaluated plies are skipped entirely (buildReview parity).
             if (isBook && moverColor === color) bookCount += 1;
             continue;
+        }
+        if (moverColor === color) {
+            const evalBeforeCp = moverColor === "w" ? scoreToCp(posBefore) : -scoreToCp(posBefore);
+            if (evalBeforeCp >= 300) hadWinningPosition = true;
+            if (evalBeforeCp <= -300) hadLosingPosition = true;
         }
         if (isBook || isForced) {
             if (isBook && moverColor === color) bookCount += 1;
@@ -1100,6 +1222,7 @@ export async function buildGameQualityStats(input: {
         const drop = playedIsBest ? 0 : rawDrop;
 
         const acc = moveAccuracy(drop);
+        const isError = drop > 10;
         const cpBefore = moverColor === "w" ? scoreToCp(posBefore) : -scoreToCp(posBefore);
         const cpAfter = moverColor === "w" ? scoreToCp(posAfter) : -scoreToCp(posAfter);
         const cpLoss = playedIsBest ? 0 : Math.max(0, Math.min(CP_CEIL, cpBefore - cpAfter));
@@ -1113,6 +1236,36 @@ export async function buildGameQualityStats(input: {
             counts.mistake += 1;
         } else if (drop > 5) {
             counts.inaccuracy += 1;
+        }
+
+        if (cpBefore >= 150) addDecision(decisionBuckets.advantage, acc, isError);
+        else if (cpBefore <= -150) addDecision(decisionBuckets.defence, acc, isError);
+        else addDecision(decisionBuckets.balanced, acc, isError);
+
+        // The volatility weight is the recent standard deviation in win chance.
+        // A value of three or more marks a position whose evaluation has been
+        // moving enough that the next decision deserves separate treatment.
+        if ((weights[i] || 1) >= 3) {
+            addDecision(decisionBuckets.critical, acc, isError);
+        }
+
+        if (timeControl) {
+            const previousClock = i >= 2 ? clocks[i - 2] : timeControl.base;
+            const currentClock = clocks[i];
+            if (previousClock != null && currentClock != null) {
+                const thinkSeconds = Math.max(0, previousClock + timeControl.inc - currentClock);
+                const fastThreshold = Math.max(0.8, timeControl.base * 0.015);
+                const longThinkThreshold = Math.max(8, timeControl.base * 0.08);
+                if (thinkSeconds <= fastThreshold) {
+                    addDecision(decisionBuckets.fast, acc, isError);
+                }
+                if (thinkSeconds >= longThinkThreshold) {
+                    addDecision(decisionBuckets.longThink, acc, isError);
+                }
+                if (previousClock <= timeControl.base * 0.12) {
+                    addDecision(decisionBuckets.timeTrouble, acc, isError);
+                }
+            }
         }
 
         side.accs.push(acc);
@@ -1152,5 +1305,42 @@ export async function buildGameQualityStats(input: {
         endgame: bucketStats(phaseBuckets.endgame),
     };
 
-    return { stats, phases, counts, phaseBlunders, plies: n };
+    let openingExitWinPct: number | null = null;
+    for (let index = movePhases.length - 1; index >= 0; index -= 1) {
+        if (movePhases[index] !== "opening") continue;
+        openingExitWinPct = winPctFor(fallbackScoreNear(index + 1), color);
+        break;
+    }
+    const move15Score = n >= 30 ? fallbackScoreNear(30) : null;
+    const move15EvalCp = move15Score
+        ? color === "w"
+            ? scoreToCp(move15Score)
+            : -scoreToCp(move15Score)
+        : null;
+    const endgameEntryIndex = movePhases.findIndex((phase) => phase === "endgame");
+    const endgameEntryScore = endgameEntryIndex >= 0 ? fallbackScoreNear(endgameEntryIndex) : null;
+    const endgameEntryEvalCp = endgameEntryScore
+        ? color === "w"
+            ? scoreToCp(endgameEntryScore)
+            : -scoreToCp(endgameEntryScore)
+        : null;
+
+    const advanced: AdvancedGameQualityStats = {
+        advantage: decisionBucketStats(decisionBuckets.advantage),
+        defence: decisionBucketStats(decisionBuckets.defence),
+        balanced: decisionBucketStats(decisionBuckets.balanced),
+        critical: decisionBucketStats(decisionBuckets.critical),
+        fast: decisionBucketStats(decisionBuckets.fast),
+        longThink: decisionBucketStats(decisionBuckets.longThink),
+        timeTrouble: decisionBucketStats(decisionBuckets.timeTrouble),
+        hadWinningPosition,
+        convertedWinningPosition: hadWinningPosition && result ? result === "win" : null,
+        hadLosingPosition,
+        savedLosingPosition: hadLosingPosition && result ? result !== "loss" : null,
+        openingExitWinPct,
+        move15EvalCp,
+        endgameEntryEvalCp,
+    };
+
+    return { stats, phases, counts, phaseBlunders, advanced, plies: n };
 }

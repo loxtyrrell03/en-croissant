@@ -857,7 +857,12 @@ export function formatStatsAggregateDigest(aggregate) {
   const time = aggregate?.time;
   const openings = aggregate?.openings;
   const mistakes = aggregate?.mistakes;
+  const opponents = aggregate?.opponents;
+  const providerQuality = aggregate?.providerQuality;
   const highlights = aggregate?.highlights;
+  const patterns = aggregate?.patterns;
+  const situations = mistakes?.situations;
+  const comparisonPlayer = mistakes?.pairedPlayer || mistakes?.player;
   const lines = [
     statsLine("RECORD", [
       statsField("games", statsFigure(record?.games)),
@@ -886,6 +891,66 @@ export function formatStatsAggregateDigest(aggregate) {
       statsField("end", statsFigure(rating?.end)),
       statsField("delta", statsSigned(rating?.delta)),
     ]),
+    statsLine("OPPONENTS", [
+      statsField("games_with_ratings", statsFigure(opponents?.gamesWithOpponentRating)),
+      statsField("coverage", statsPercent(opponents?.opponentRatingCoveragePct)),
+      statsField("average_rating", statsFigure(opponents?.avgOpponentRating)),
+      statsField("median_rating", statsFigure(opponents?.medianOpponentRating)),
+      statsField(
+        "rating_range",
+        opponents?.minOpponentRating != null && opponents?.maxOpponentRating != null
+          ? `${statsFigure(opponents.minOpponentRating)}-${statsFigure(opponents.maxOpponentRating)}`
+          : null,
+      ),
+      statsField("average_rating_gap", statsSigned(opponents?.avgRatingGap)),
+      statsField("actual_score", statsPercent(opponents?.scorePct)),
+      statsField("elo_expected_score", statsPercent(opponents?.expectedScorePct)),
+      statsField("score_minus_expected_pp", statsSigned(opponents?.scoreDeltaPct, 1)),
+    ]),
+    ...(Array.isArray(opponents?.bands) ? opponents.bands : [])
+      .slice(0, 16)
+      .map((band) =>
+        statsLine("OPPONENT_BAND", [
+          oneLine(band?.label, 24),
+          band?.containsCurrentRating ? "contains_player_rating=true" : null,
+          statsField("games", statsFigure(band?.games)),
+          statsField("avg_opponent", statsFigure(band?.avgOpponentRating)),
+          statsField("score", statsPercent(band?.scorePct)),
+          statsField("expected", statsPercent(band?.expectedScorePct)),
+          statsField("delta_pp", statsSigned(band?.scoreDeltaPct, 1)),
+          statsField("analysis_coverage", statsPercent(band?.analysisCoveragePct)),
+          statsField("your_mistakes_per_game", statsFigure(band?.mistakesPerAnalyzedGame, 2)),
+          statsField(
+            "opponent_mistakes_per_game",
+            statsFigure(band?.opponentMistakesPerAnalyzedGame, 2),
+          ),
+          statsField("your_blunders_per_game", statsFigure(band?.blundersPerAnalyzedGame, 2)),
+          statsField(
+            "opponent_blunders_per_game",
+            statsFigure(band?.opponentBlundersPerAnalyzedGame, 2),
+          ),
+          band?.providerQualityMethod
+            ? statsField("provider_quality_source", oneLine(band.providerQualityMethod, 20))
+            : null,
+          statsField("provider_quality_games", statsFigure(band?.providerAnalyzedGames)),
+          statsField(
+            "provider_your_mistakes_per_game",
+            statsFigure(band?.providerMistakesPerGame, 2),
+          ),
+          statsField(
+            "provider_opponent_mistakes_per_game",
+            statsFigure(band?.opponentProviderMistakesPerGame, 2),
+          ),
+          statsField(
+            "provider_your_blunders_per_game",
+            statsFigure(band?.providerBlundersPerGame, 2),
+          ),
+          statsField(
+            "provider_opponent_blunders_per_game",
+            statsFigure(band?.opponentProviderBlundersPerGame, 2),
+          ),
+        ]),
+      ),
     statsLine("FORM", [
       statsField("trend_per_week", statsSigned(form?.slopePerWeek, 1)),
       form?.streak ? statsField("current_streak", formatStatsStreak(form.streak)) : null,
@@ -913,6 +978,24 @@ export function formatStatsAggregateDigest(aggregate) {
           statsField("games_with_clocks", statsFigure(time.gamesWithClocks)),
         ])
       : "TIME|no clock data in these games",
+    ...["ahead", "even", "behind"].map((state) => {
+      const bucket = time?.clockBalanceAtMove20?.[state];
+      return bucket && Number(bucket.games) > 0
+        ? statsLine("CLOCK_BALANCE_MOVE_20", [
+            state,
+            statsField("games", statsFigure(bucket.games)),
+            statsField("score", statsPercent(bucket.scorePct, 1)),
+          ])
+        : null;
+    }),
+    ...(Array.isArray(time?.clockCurve) ? time.clockCurve : []).map((checkpoint) =>
+      statsLine("CLOCK_REMAINING", [
+        statsField("move", statsFigure(checkpoint?.move)),
+        statsField("games", statsFigure(checkpoint?.games)),
+        statsField("player", statsPercent(checkpoint?.playerRemainingPct, 1)),
+        statsField("opponent", statsPercent(checkpoint?.opponentRemainingPct, 1)),
+      ]),
+    ),
     ...statsOpeningLines("OPENING_WHITE", openings?.white),
     ...statsOpeningLines("OPENING_BLACK", openings?.black),
     ...(openings?.best ? statsOpeningLines("OPENING_BEST", [openings.best]) : []),
@@ -920,6 +1003,8 @@ export function formatStatsAggregateDigest(aggregate) {
     mistakes
       ? statsLine("MISTAKES", [
           statsField("analyzed_games", statsFigure(mistakes.analyzedGames)),
+          statsField("paired_games", statsFigure(mistakes.pairedGames)),
+          statsField("analysis_coverage", statsPercent(mistakes.analysisCoveragePct)),
           statsField("avg_accuracy", statsPercent(mistakes.avgAccuracy, 1)),
           statsField("avg_acpl", statsFigure(mistakes.avgAcpl, 1)),
           statsField("blunders_per_game", statsFigure(mistakes.blundersPerGame, 2)),
@@ -927,6 +1012,78 @@ export function formatStatsAggregateDigest(aggregate) {
           statsField("inaccuracies_per_game", statsFigure(mistakes.inaccuraciesPerGame, 2)),
         ])
       : "MISTAKES|no analyzed games in this period",
+    comparisonPlayer
+      ? statsLine("MOVE_QUALITY_PLAYER", [
+          statsField("games", statsFigure(comparisonPlayer.games)),
+          statsField("sample", mistakes?.pairedPlayer ? "paired" : "player_only"),
+          statsField("accuracy", statsPercent(comparisonPlayer.avgAccuracy, 1)),
+          statsField("acpl", statsFigure(comparisonPlayer.avgAcpl, 1)),
+          statsField("inaccuracies_per_game", statsFigure(comparisonPlayer.inaccuraciesPerGame, 2)),
+          statsField("mistakes_per_game", statsFigure(comparisonPlayer.mistakesPerGame, 2)),
+          statsField("blunders_per_game", statsFigure(comparisonPlayer.blundersPerGame, 2)),
+          statsField("errors_per_100_moves", statsFigure(comparisonPlayer.errorsPer100Moves, 2)),
+          statsField("clean_games", statsPercent(comparisonPlayer.cleanGamePct, 1)),
+        ])
+      : null,
+    mistakes?.opponents
+      ? statsLine("MOVE_QUALITY_OPPONENTS_IN_THESE_GAMES", [
+          statsField("games", statsFigure(mistakes.opponents.games)),
+          statsField("accuracy", statsPercent(mistakes.opponents.avgAccuracy, 1)),
+          statsField("acpl", statsFigure(mistakes.opponents.avgAcpl, 1)),
+          statsField(
+            "inaccuracies_per_game",
+            statsFigure(mistakes.opponents.inaccuraciesPerGame, 2),
+          ),
+          statsField("mistakes_per_game", statsFigure(mistakes.opponents.mistakesPerGame, 2)),
+          statsField("blunders_per_game", statsFigure(mistakes.opponents.blundersPerGame, 2)),
+          statsField("errors_per_100_moves", statsFigure(mistakes.opponents.errorsPer100Moves, 2)),
+          statsField("clean_games", statsPercent(mistakes.opponents.cleanGamePct, 1)),
+        ])
+      : null,
+    mistakes?.peerBenchmark
+      ? statsLine("ESTIMATED_RATING_BAND_MODEL", [
+          oneLine(mistakes.peerBenchmark.ratingBandLabel, 24),
+          statsField("matched_games", statsFigure(mistakes.peerBenchmark.samples)),
+          statsField("expected_accuracy", statsPercent(mistakes.peerBenchmark.expectedAccuracy, 1)),
+          statsField("expected_acpl", statsFigure(mistakes.peerBenchmark.expectedAcpl, 1)),
+          statsField(
+            "player_accuracy_delta_pp",
+            statsSigned(mistakes.peerBenchmark.accuracyDelta, 1),
+          ),
+          statsField("player_acpl_delta", statsSigned(mistakes.peerBenchmark.acplDelta, 1)),
+          "model_baseline_not_live_population=true",
+        ])
+      : null,
+    providerQuality
+      ? statsLine("PROVIDER_ACCURACY", [
+          statsField("provider", oneLine(providerQuality.provider, 20)),
+          statsField("player_samples", statsFigure(providerQuality.playerSamples)),
+          statsField("opponent_samples", statsFigure(providerQuality.opponentSamples)),
+          statsField("player_accuracy", statsPercent(providerQuality.avgPlayerAccuracy, 1)),
+          statsField("opponent_accuracy", statsPercent(providerQuality.avgOpponentAccuracy, 1)),
+          statsField("paired_delta_pp", statsSigned(providerQuality.accuracyDelta, 1)),
+          statsField("player_acpl", statsFigure(providerQuality.avgPlayerAcpl, 1)),
+          statsField("opponent_acpl", statsFigure(providerQuality.avgOpponentAcpl, 1)),
+          statsField("player_error_samples", statsFigure(providerQuality.playerErrorSamples)),
+          statsField(
+            "player_mistakes_per_game",
+            statsFigure(providerQuality.playerMistakesPerGame, 2),
+          ),
+          statsField(
+            "player_blunders_per_game",
+            statsFigure(providerQuality.playerBlundersPerGame, 2),
+          ),
+          statsField(
+            "opponent_mistakes_per_game",
+            statsFigure(providerQuality.opponentMistakesPerGame, 2),
+          ),
+          statsField(
+            "opponent_blunders_per_game",
+            statsFigure(providerQuality.opponentBlundersPerGame, 2),
+          ),
+          "separate_from_engine_accuracy=true",
+        ])
+      : null,
     mistakes
       ? statsLine("MISTAKES_BY_PHASE", [
           ...["opening", "middlegame", "endgame"].map((phase) => {
@@ -940,6 +1097,59 @@ export function formatStatsAggregateDigest(aggregate) {
           }),
         ])
       : null,
+    ...["opening", "middlegame", "endgame"].map((phase) => {
+      const quality = mistakes?.phaseQuality?.[phase];
+      return quality
+        ? statsLine("PHASE_QUALITY", [
+            phase,
+            statsField("moves", statsFigure(quality.moves)),
+            statsField("accuracy", statsPercent(quality.avgAccuracy, 1)),
+            statsField("acpl", statsFigure(quality.avgAcpl, 1)),
+          ])
+        : null;
+    }),
+    situations
+      ? statsLine("POSITION_OUTCOMES", [
+          statsField("analyzed_games", statsFigure(situations.games)),
+          statsField("winning_positions_plus_3", statsFigure(situations.winningChances)),
+          statsField("converted", statsFigure(situations.convertedWinningChances)),
+          statsField("conversion", statsPercent(situations.conversionPct, 1)),
+          statsField("losing_positions_minus_3", statsFigure(situations.losingChances)),
+          statsField("saved", statsFigure(situations.savedLosingChances)),
+          statsField("save_rate", statsPercent(situations.savePct, 1)),
+          statsField(
+            "average_eval_after_move_15",
+            situations.avgMove15EvalCp == null
+              ? null
+              : statsSigned(Number(situations.avgMove15EvalCp) / 100, 2),
+          ),
+          statsField("opening_exit_win_chance", statsPercent(situations.avgOpeningExitWinPct, 1)),
+        ])
+      : null,
+    ...["advantage", "defence", "balanced", "critical", "fast", "longThink", "timeTrouble"].map(
+      (key) => {
+        const bucket = situations?.[key];
+        return bucket && Number(bucket.moves) > 0
+          ? statsLine("DECISION_CONTEXT", [
+              key,
+              statsField("moves", statsFigure(bucket.moves)),
+              statsField("accuracy", statsPercent(bucket.accuracy, 1)),
+              statsField("errors", statsFigure(bucket.errors)),
+              statsField("error_rate", statsPercent(bucket.errorPct, 1)),
+            ])
+          : null;
+      },
+    ),
+    ...["better", "equal", "worse"].map((key) => {
+      const bucket = situations?.endgames?.[key];
+      return bucket && Number(bucket.games) > 0
+        ? statsLine("ENDGAME_ENTRY", [
+            key,
+            statsField("games", statsFigure(bucket.games)),
+            statsField("score", statsPercent(bucket.scorePct, 1)),
+          ])
+        : null;
+    }),
     ...(Array.isArray(mistakes?.worstGames) ? mistakes.worstGames : [])
       .slice(0, 3)
       .map((worst) =>
@@ -977,7 +1187,43 @@ export function formatStatsAggregateDigest(aggregate) {
             `${oneLine(highlights.mostPlayedOpponent.name, 40)} - ${statsFigure(highlights.mostPlayedOpponent.games)} games - ${statsPercent(highlights.mostPlayedOpponent.scorePct)} score`,
           )
         : null,
+      highlights?.worstLoss
+        ? statsField(
+            "lowest_rated_loss",
+            `lost to ${oneLine(highlights.worstLoss.oppName, 40) || "unknown"}${
+              statsFigure(highlights.worstLoss.opp)
+                ? ` (${statsFigure(highlights.worstLoss.opp)})`
+                : ""
+            }`,
+          )
+        : null,
+      statsField("upset_wins", statsFigure(highlights?.upsetWins)),
+      statsField("upset_opportunities", statsFigure(highlights?.upsetOpportunities)),
+      statsField("upset_win_rate", statsPercent(highlights?.upsetRatePct, 1)),
+      statsField("post_loss_score", statsPercent(highlights?.postLossScorePct, 1)),
     ]),
+    ...(Array.isArray(patterns?.byColor) ? patterns.byColor : []).map((pattern) =>
+      statsLine("COLOR_PATTERN", [
+        oneLine(pattern?.label, 20),
+        statsField("games", statsFigure(pattern?.games)),
+        statsField(
+          "record",
+          `${statsFigure(pattern?.wins)}W/${statsFigure(pattern?.draws)}D/${statsFigure(pattern?.losses)}L`,
+        ),
+        statsField("score", statsPercent(pattern?.scorePct, 1)),
+      ]),
+    ),
+    ...(Array.isArray(patterns?.byWeekday) ? patterns.byWeekday : []).map((pattern) =>
+      statsLine("WEEKDAY_PATTERN", [
+        oneLine(pattern?.label, 20),
+        statsField("games", statsFigure(pattern?.games)),
+        statsField(
+          "record",
+          `${statsFigure(pattern?.wins)}W/${statsFigure(pattern?.draws)}D/${statsFigure(pattern?.losses)}L`,
+        ),
+        statsField("score", statsPercent(pattern?.scorePct, 1)),
+      ]),
+    ),
   ];
   return lines.filter(Boolean).join("\n");
 }
@@ -1004,7 +1250,8 @@ Rules:
 - focusAreas: 2-3, ordered by priority with the most important first. Each detail explains why this area costs the most points right now, and each drill is one concrete practice exercise the player can do this week, tied to that exact weakness (for example a specific opening to review, a time-management rule for the next 10 games, or an endgame drill).
 - themes: 2-5 short strings naming recurring patterns across the period (for example "losses cluster in time scrambles" or "strong with White in the Italian").
 - A line such as "TIME|no clock data" or "MISTAKES|no analyzed games" means that evidence is missing: say nothing about that area rather than speculating.
-- Digest legend: scores/percentages are from the player's perspective; PERFORMANCE is an opponent-rating-based performance estimate with its likely range; FORM trend is rating points per week; MISTAKES_BY_PHASE shares are the distribution of blunders across game phases; WEEK rows run oldest to newest.
+- Treat ESTIMATED_RATING_BAND_MODEL as a calibrated model baseline, never as a measured live peer percentile. When MOVE_QUALITY_PLAYER says sample=paired, it uses the exact same games as MOVE_QUALITY_OPPONENTS_IN_THESE_GAMES; sample=player_only means no direct opponent comparison is available. Provider accuracy uses a different formula and must not be blended with engine accuracy.
+- Digest legend: scores/percentages are from the player's perspective; PERFORMANCE is an opponent-rating-based performance estimate with its likely range; OPPONENT_BAND delta is actual score minus Elo expectation in percentage points; FORM trend is rating points per week; errors are mistakes plus blunders; MISTAKES_BY_PHASE shares are the distribution of blunders across game phases; WEEK rows run oldest to newest.
 
 Player's focus question: ${question ? oneLine(question, 2000) : "None. Cover whatever the numbers say matters most."}
 

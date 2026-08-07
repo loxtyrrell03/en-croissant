@@ -28,6 +28,18 @@ export type StatsGame = {
     eco: string | null;
     openingName: string | null;
     pgn: string | null;
+    providerQuality?: StatsProviderQuality;
+    opponentProviderQuality?: StatsProviderQuality;
+    division?: { middlegamePly: number | null; endgamePly: number | null };
+};
+
+export type StatsProviderQuality = {
+    provider: "chesscom" | "lichess";
+    accuracy: number | null;
+    acpl: number | null;
+    inaccuracies: number | null;
+    mistakes: number | null;
+    blunders: number | null;
 };
 
 export type StatsPerformance = {
@@ -482,6 +494,7 @@ type ChessComArchiveGame = {
     rated?: boolean;
     white?: ChessComArchivePlayer;
     black?: ChessComArchivePlayer;
+    accuracies?: { white?: number; black?: number };
 };
 
 // Mirrors fetchRecentGames (smart-bracket.js:101-144): walk the monthly archives
@@ -573,6 +586,9 @@ function normalizeChessComArchiveGames(
         const pgn = typeof game.pgn === "string" ? game.pgn : null;
         const url = typeof game.url === "string" && game.url ? game.url : null;
 
+        const color = mine === game.white ? "w" : "b";
+        const myAccuracy = color === "w" ? game.accuracies?.white : game.accuracies?.black;
+        const opponentAccuracy = color === "w" ? game.accuracies?.black : game.accuracies?.white;
         normalized.push({
             source: "chesscom",
             id: url ?? `chesscom-${game.end_time}-${wantedUser}`,
@@ -585,12 +601,36 @@ function normalizeChessComArchiveGames(
             opp: oppRating,
             oppName: opponent && typeof opponent.username === "string" ? opponent.username : null,
             rated: isRated,
-            color: mine === game.white ? "w" : "b",
+            color,
             timeClass: game.time_class as StatsTimeClass,
             timeControl: parseChessComTimeControl(game.time_control),
             eco: getPgnHeader(pgn, "ECO"),
             openingName: getChessComOpeningName(pgn),
             pgn,
+            ...(typeof myAccuracy === "number" && Number.isFinite(myAccuracy)
+                ? {
+                      providerQuality: {
+                          provider: "chesscom" as const,
+                          accuracy: myAccuracy,
+                          acpl: null,
+                          inaccuracies: null,
+                          mistakes: null,
+                          blunders: null,
+                      },
+                  }
+                : {}),
+            ...(typeof opponentAccuracy === "number" && Number.isFinite(opponentAccuracy)
+                ? {
+                      opponentProviderQuality: {
+                          provider: "chesscom" as const,
+                          accuracy: opponentAccuracy,
+                          acpl: null,
+                          inaccuracies: null,
+                          mistakes: null,
+                          blunders: null,
+                      },
+                  }
+                : {}),
         });
     }
 
@@ -683,6 +723,13 @@ type LichessGamePlayer = {
     user?: { name?: string };
     rating?: number;
     ratingDiff?: number;
+    analysis?: {
+        inaccuracy?: number;
+        mistake?: number;
+        blunder?: number;
+        acpl?: number;
+        accuracy?: number;
+    };
 };
 type LichessNdjsonGame = {
     id?: string;
@@ -697,6 +744,7 @@ type LichessNdjsonGame = {
     opening?: { eco?: string; name?: string };
     clock?: { initial?: number; increment?: number };
     pgn?: string;
+    division?: { middle?: number; end?: number };
 };
 
 async function fetchLichessStatsGames(opts: {
@@ -722,6 +770,8 @@ async function fetchLichessStatsGames(opts: {
     url.searchParams.set("pgnInJson", "true");
     url.searchParams.set("clocks", "true");
     url.searchParams.set("evals", "true");
+    url.searchParams.set("accuracy", "true");
+    url.searchParams.set("division", "true");
     url.searchParams.set("opening", "true");
     if (opts.ratedFilter === "rated") url.searchParams.set("rated", "true");
 
@@ -788,6 +838,8 @@ function normalizeLichessGame(
               ? "win"
               : "loss";
 
+    const providerQuality = normalizeLichessProviderQuality(mine.analysis);
+    const opponentProviderQuality = normalizeLichessProviderQuality(opponent?.analysis);
     return {
         source: "lichess",
         id: game.id,
@@ -812,7 +864,49 @@ function normalizeLichessGame(
         eco: typeof game.opening?.eco === "string" ? game.opening.eco : null,
         openingName: typeof game.opening?.name === "string" ? game.opening.name : null,
         pgn: typeof game.pgn === "string" ? game.pgn : null,
+        ...(providerQuality ? { providerQuality } : {}),
+        ...(opponentProviderQuality ? { opponentProviderQuality } : {}),
+        ...(game.division
+            ? {
+                  division: {
+                      middlegamePly: finiteOptionalNumber(game.division.middle),
+                      endgamePly: finiteOptionalNumber(game.division.end),
+                  },
+              }
+            : {}),
     };
+}
+
+function normalizeLichessProviderQuality(
+    value: LichessGamePlayer["analysis"] | undefined,
+): StatsProviderQuality | null {
+    if (!value) return null;
+    const accuracy = finiteOptionalNumber(value.accuracy);
+    const acpl = finiteOptionalNumber(value.acpl);
+    const inaccuracies = finiteOptionalNumber(value.inaccuracy);
+    const mistakes = finiteOptionalNumber(value.mistake);
+    const blunders = finiteOptionalNumber(value.blunder);
+    if (
+        accuracy === null &&
+        acpl === null &&
+        inaccuracies === null &&
+        mistakes === null &&
+        blunders === null
+    ) {
+        return null;
+    }
+    return {
+        provider: "lichess",
+        accuracy,
+        acpl,
+        inaccuracies,
+        mistakes,
+        blunders,
+    };
+}
+
+function finiteOptionalNumber(value: unknown): number | null {
+    return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
 function getLichessTermination(status: string | undefined): StatsTermination {

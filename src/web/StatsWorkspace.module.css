@@ -38,6 +38,10 @@
   padding: 0.6rem;
 }
 
+.syncLine {
+  padding-inline: 0.1rem;
+}
+
 .controlsRow {
   min-width: 0;
 }
@@ -79,12 +83,25 @@
   grid-column: 1 / -1;
 }
 
+.cardGrid > :nth-child(2) {
+  animation-delay: 25ms;
+}
+
+.cardGrid > :nth-child(3) {
+  animation-delay: 50ms;
+}
+
+.cardGrid > :nth-child(n + 4) {
+  animation-delay: 75ms;
+}
+
 .card {
   min-width: 0;
   padding: 0.7rem 0.8rem 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.035);
+  animation: statsReveal 180ms ease-out both;
 }
 
 .cardLabel {
@@ -566,6 +583,378 @@
   font-variant-numeric: tabular-nums;
 }
 
+.sectionHead {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.sectionHead > div {
+  min-width: 0;
+}
+
+.sectionHead :global(.mantine-Badge-root) {
+  flex: 0 0 auto;
+}
+
+.insightStrip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 0.65rem;
+  overflow: hidden;
+  border: 1px solid rgba(86, 156, 225, 0.16);
+  border-radius: 8px;
+  background: linear-gradient(115deg, rgba(39, 112, 185, 0.12), rgba(255, 255, 255, 0.025));
+}
+
+.insightStrip > div {
+  display: grid;
+  gap: 0.15rem;
+  align-content: center;
+  min-height: 4.05rem;
+  padding: 0.55rem 0.65rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.insightStrip > div:first-child {
+  border-left: 0;
+}
+
+.insightStrip strong {
+  font-size: 1.12rem;
+  line-height: 1;
+}
+
+.insightStrip strong[data-dir="up"],
+.bandStack small[data-dir="up"],
+.benchmarkNote strong[data-dir="up"] {
+  color: #a3d160;
+}
+
+.insightStrip strong[data-dir="down"],
+.bandStack small[data-dir="down"],
+.benchmarkNote strong[data-dir="down"] {
+  color: #e5766e;
+}
+
+.insightStrip span {
+  color: var(--mantine-color-gray-5);
+  font-size: 0.65rem;
+  line-height: 1.2;
+}
+
+.bandTable,
+.compareTable,
+.phaseQualityTable,
+.decisionTable {
+  margin-top: 0.65rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 8px;
+}
+
+.bandHead,
+.bandRow {
+  display: grid;
+  grid-template-columns: minmax(7.3rem, 1.65fr) 1.7rem repeat(3, minmax(2.65rem, 0.55fr));
+  gap: 0.45rem;
+  align-items: center;
+  min-height: 2.8rem;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.bandHead {
+  min-height: 1.8rem;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--mantine-color-gray-5);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.bandRow {
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.bandHead > span:not(:first-child),
+.bandRow > :not(:first-child) {
+  text-align: right;
+}
+
+.bandIdentity,
+.bandStack {
+  display: grid;
+  min-width: 0;
+}
+
+.bandIdentity > span {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  min-width: 0;
+  font-weight: 700;
+}
+
+.bandIdentity em {
+  padding: 0.08rem 0.3rem;
+  border-radius: 999px;
+  background: rgba(75, 149, 222, 0.18);
+  color: #8dc4f8;
+  font-size: 0.53rem;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.bandIdentity small,
+.bandStack small {
+  color: var(--mantine-color-gray-5);
+  font-size: 0.57rem;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.tableNote {
+  display: block;
+  padding: 0.5rem 0.55rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+  line-height: 1.35;
+}
+
+.compareRow {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1.5fr) repeat(3, minmax(3.6rem, 0.55fr));
+  gap: 0.4rem;
+  align-items: center;
+  min-height: 2.25rem;
+  padding: 0.25rem 0.55rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.compareRow > :not(:first-child) {
+  text-align: right;
+}
+
+.compareHead {
+  min-height: 1.8rem;
+  border-top: 0;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--mantine-color-gray-5);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.compareLabel {
+  display: grid;
+  min-width: 0;
+}
+
+.compareLabel small {
+  color: var(--mantine-color-gray-5);
+  font-size: 0.57rem;
+  line-height: 1.15;
+}
+
+.benchmarkNote {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.15rem 0.6rem;
+  align-items: baseline;
+  margin-top: 0.55rem;
+  padding: 0.55rem 0.65rem;
+  border-left: 2px solid rgba(75, 149, 222, 0.7);
+  border-radius: 0 7px 7px 0;
+  background: rgba(39, 112, 185, 0.09);
+  font-size: 0.72rem;
+}
+
+.benchmarkNote strong {
+  text-align: right;
+}
+
+.benchmarkNote small {
+  grid-column: 1 / -1;
+  color: var(--mantine-color-gray-5);
+  line-height: 1.3;
+}
+
+.providerLine {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.15rem 0.55rem;
+  align-items: baseline;
+  margin-top: 0.55rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.035);
+  font-size: 0.72rem;
+}
+
+.providerLine small {
+  grid-column: 1 / -1;
+  color: var(--mantine-color-gray-5);
+}
+
+.phaseQualityHead,
+.phaseQualityRow {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 1fr) repeat(4, minmax(3.1rem, 0.55fr));
+  gap: 0.4rem;
+  align-items: center;
+  min-height: 2.15rem;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.phaseQualityHead {
+  min-height: 1.8rem;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--mantine-color-gray-5);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.phaseQualityRow {
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.phaseQualityHead > span:not(:first-child),
+.phaseQualityRow > span {
+  text-align: right;
+}
+
+.outcomeGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+}
+
+.outcomeGrid > div,
+.endgameGrid > div {
+  display: grid;
+  gap: 0.15rem;
+  align-content: start;
+  padding: 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.outcomeGrid span,
+.endgameGrid span {
+  color: var(--mantine-color-gray-4);
+  font-size: 0.66rem;
+  line-height: 1.2;
+}
+
+.outcomeGrid strong,
+.endgameGrid strong {
+  font-size: 1.1rem;
+  line-height: 1.1;
+}
+
+.outcomeGrid small,
+.endgameGrid small {
+  color: var(--mantine-color-gray-5);
+  font-size: 0.58rem;
+  line-height: 1.25;
+}
+
+.decisionHead,
+.decisionRow {
+  display: grid;
+  grid-template-columns: minmax(7rem, 1.35fr) repeat(3, minmax(3.5rem, 0.55fr));
+  gap: 0.45rem;
+  align-items: center;
+  min-height: 2.25rem;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.decisionHead {
+  min-height: 1.8rem;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--mantine-color-gray-5);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.decisionRow {
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.decisionHead > span:not(:first-child),
+.decisionRow > span {
+  text-align: right;
+}
+
+.decisionRow > div {
+  display: grid;
+}
+
+.decisionRow small {
+  color: var(--mantine-color-gray-5);
+  font-size: 0.57rem;
+}
+
+.endgameGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+
+.patternRows {
+  margin-top: 0.45rem;
+}
+
+.patternRow {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 1fr) 4.3rem 2rem 2.7rem;
+  gap: 0.45rem;
+  align-items: center;
+  min-height: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.patternRow:first-child {
+  border-top: 0;
+}
+
+.patternRow[data-group-start="true"] {
+  margin-top: 0.35rem;
+  border-top-color: rgba(75, 149, 222, 0.25);
+}
+
+.patternRow small,
+.patternRow strong {
+  text-align: right;
+}
+
+.patternRow small {
+  color: var(--mantine-color-gray-5);
+}
+
 .miniBars {
   display: grid;
   gap: 0.3rem;
@@ -596,12 +985,63 @@
 .miniBarFill {
   height: 100%;
   border-radius: 999px;
+  transition: width 260ms ease-out;
 }
 
 .miniBarValue {
   font-size: 0.72rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+.clockBalanceTable,
+.clockCurve {
+  margin-top: 0.6rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 7px;
+}
+
+.clockBalanceHead,
+.clockBalanceRow,
+.clockCurveHead,
+.clockCurveRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3.2rem 3.2rem;
+  gap: 0.45rem;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.clockBalanceHead,
+.clockCurveHead {
+  min-height: 1.65rem;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--mantine-color-gray-5);
+  font-size: 0.57rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.clockBalanceRow,
+.clockCurveRow {
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.clockBalanceHead > :not(:first-child),
+.clockBalanceRow > :not(:first-child),
+.clockCurveHead > :not(:first-child),
+.clockCurveRow > :not(:first-child) {
+  text-align: right;
+}
+
+.clockCurveRow small {
+  color: var(--mantine-color-gray-5);
+  font-size: 0.57rem;
 }
 
 .openingRows {
@@ -709,6 +1149,18 @@
   background: rgba(39, 112, 185, 0.1);
 }
 
+@keyframes statsReveal {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 860px) {
   .cardGrid {
     grid-template-columns: minmax(0, 1fr);
@@ -753,5 +1205,65 @@
   .weekRow {
     grid-template-columns: minmax(0, 1.6fr) repeat(4, minmax(0, 0.7fr));
     font-size: 0.72rem;
+  }
+
+  .insightStrip,
+  .outcomeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .insightStrip > div:nth-child(3) {
+    border-left: 0;
+  }
+
+  .insightStrip > div:nth-child(n + 3) {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .bandHead,
+  .bandRow {
+    grid-template-columns: minmax(6.9rem, 1.55fr) 1.35rem repeat(3, minmax(2.45rem, 0.55fr));
+    gap: 0.25rem;
+    padding-inline: 0.4rem;
+  }
+
+  .compareRow {
+    grid-template-columns: minmax(6.8rem, 1.4fr) repeat(3, minmax(2.95rem, 0.55fr));
+    gap: 0.25rem;
+    padding-inline: 0.4rem;
+    font-size: 0.68rem;
+  }
+
+  .phaseQualityHead,
+  .phaseQualityRow {
+    grid-template-columns: minmax(4.9rem, 1fr) repeat(4, minmax(2.75rem, 0.55fr));
+    gap: 0.2rem;
+    padding-inline: 0.4rem;
+    font-size: 0.66rem;
+  }
+
+  .decisionHead,
+  .decisionRow {
+    grid-template-columns: minmax(6.2rem, 1.25fr) repeat(3, minmax(3.1rem, 0.55fr));
+    gap: 0.25rem;
+    padding-inline: 0.4rem;
+  }
+
+  .providerLine {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .providerLine > span:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: none;
+  }
+
+  .miniBarFill {
+    transition: none;
   }
 }

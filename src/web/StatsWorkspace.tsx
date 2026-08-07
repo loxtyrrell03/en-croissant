@@ -47,7 +47,15 @@ import {
   type StatsSource,
   type StatsTimeClass,
 } from "./statsRating";
-import { computePeriodReport, getWeekWindow, type PeriodReport } from "./statsReport";
+import { computePeriodReport, type PeriodReport } from "./statsReport";
+import {
+  getStatsPeriodDays,
+  getStatsWindow,
+  isStatsPeriodKey,
+  STATS_PERIOD_OPTIONS,
+  type StatsPeriodKey,
+  type StatsWindow,
+} from "./statsPeriods";
 import {
   aggregateProfile,
   anchoredStrength,
@@ -61,12 +69,12 @@ import {
 
 const STATS_SETTINGS_STORAGE_KEY = "en-croissant-web-stats-settings";
 const STATS_MAX_GAMES = 5000;
-const STATS_BASE_HISTORY_DAYS = 90;
+const STATS_BASE_HISTORY_DAYS = 1;
+const STATS_RECENT_REFRESH_SECONDS = 60;
 
 // EloGuard data-semantics colors (hero/deltas/records keep the extension's
 // green/red meaning while everything else stays Mantine dark + blue).
 const STATS_GREEN = "#a3d160";
-const STATS_RED = "#e5766e";
 const STATS_POOL_ACCENTS: Record<StrengthPool, string> = {
   bullet: "#e58f2a",
   blitz: "#f0c15c",
@@ -96,8 +104,6 @@ const STATS_MONTH_LABELS = [
 ];
 
 type StatsTab = "overview" | "strength" | "report";
-type StatsPeriodKey = "week" | "last-week" | "7" | "14" | "30" | "90" | "180" | "365";
-
 type StatsSettings = {
   source: StatsSource;
   chesscomUsername: string;
@@ -115,20 +121,8 @@ type StatsCacheEntry = {
   historyDays: number;
 };
 
-type StatsWindow = { start: number; end: number; label: string };
 type StatsPoolRatings = Partial<Record<StrengthPool, number | null>>;
 type StatsChartPoint = { t: number; v: number };
-
-const STATS_PERIOD_OPTIONS: { value: StatsPeriodKey; label: string; days: number }[] = [
-  { value: "week", label: "This week", days: 7 },
-  { value: "last-week", label: "Last week", days: 14 },
-  { value: "7", label: "7 days", days: 7 },
-  { value: "14", label: "14 days", days: 14 },
-  { value: "30", label: "30 days", days: 30 },
-  { value: "90", label: "3 months", days: 90 },
-  { value: "180", label: "6 months", days: 180 },
-  { value: "365", label: "1 year", days: 365 },
-];
 
 const STATS_TIME_CLASSES: StatsTimeClass[] = ["bullet", "blitz", "rapid", "classical", "daily"];
 
@@ -163,26 +157,8 @@ function normalizeStatsSettings(
     lichessUsername,
     timeClass,
     rated: value?.rated === "rated" || value?.rated === "casual" ? value.rated : "both",
-    period: STATS_PERIOD_OPTIONS.some((option) => option.value === value?.period)
-      ? (value?.period as StatsPeriodKey)
-      : "30",
+    period: isStatsPeriodKey(value?.period) ? value.period : "30",
     tab: value?.tab === "strength" || value?.tab === "report" ? value.tab : "overview",
-  };
-}
-
-function getStatsPeriodDays(period: StatsPeriodKey) {
-  return STATS_PERIOD_OPTIONS.find((option) => option.value === period)?.days ?? 30;
-}
-
-function getStatsWindow(period: StatsPeriodKey, nowSec: number): StatsWindow {
-  if (period === "week") return getWeekWindow(0, nowSec);
-  if (period === "last-week") return getWeekWindow(-1, nowSec);
-  const option = STATS_PERIOD_OPTIONS.find((entry) => entry.value === period);
-  const days = option?.days ?? 30;
-  return {
-    start: nowSec - days * 86400,
-    end: nowSec,
-    label: `Last ${option?.label ?? `${days} days`}`,
   };
 }
 
@@ -212,6 +188,23 @@ function formatStatsSeconds(value: number | null) {
 function formatStatsPercent(value: number | null) {
   if (value == null || !Number.isFinite(value)) return "-";
   return `${Math.round(value)}%`;
+}
+
+function formatStatsDecimal(value: number | null, digits = 1) {
+  if (value == null || !Number.isFinite(value)) return "-";
+  return value.toFixed(digits);
+}
+
+function formatSignedDecimal(value: number | null, suffix = "", digits = 1) {
+  if (value == null || !Number.isFinite(value)) return "-";
+  const rounded = value.toFixed(digits);
+  return `${value > 0 ? "+" : ""}${rounded}${suffix}`;
+}
+
+function formatEvalCp(value: number | null) {
+  if (value == null || !Number.isFinite(value)) return "-";
+  const pawns = value / 100;
+  return `${pawns > 0 ? "+" : ""}${pawns.toFixed(2)}`;
 }
 
 function formatStatsAccuracy(value: number | null) {
@@ -1185,6 +1178,542 @@ function StatsMetricRow({ label, value, hint }: { label: string; value: string; 
   );
 }
 
+function StatsComparisonRow({
+  label,
+  hint,
+  player,
+  opponent,
+  baseline,
+}: {
+  label: string;
+  hint?: string;
+  player: string;
+  opponent: string;
+  baseline: string;
+}) {
+  return (
+    <div className={styles.compareRow}>
+      <div className={styles.compareLabel}>
+        <span>{label}</span>
+        {hint ? <small>{hint}</small> : null}
+      </div>
+      <strong>{player}</strong>
+      <span>{opponent}</span>
+      <span>{baseline}</span>
+    </div>
+  );
+}
+
+function StatsOpponentsCard({ report }: { report: PeriodReport }) {
+  const opponents = report.opponents;
+  return (
+    <Box className={`${styles.card} ${styles.cardWide}`}>
+      <div className={styles.sectionHead}>
+        <div>
+          <span className={styles.cardLabel}>Opponent strength</span>
+          <Text size="xs" c="dimmed">
+            Results versus the rating you actually faced
+          </Text>
+        </div>
+        <Badge variant="light" color="gray" size="sm">
+          {opponents.gamesWithOpponentRating} with ratings
+        </Badge>
+      </div>
+
+      <div className={styles.insightStrip}>
+        <div>
+          <strong>
+            {opponents.avgOpponentRating != null ? Math.round(opponents.avgOpponentRating) : "-"}
+          </strong>
+          <span>Average opponent</span>
+        </div>
+        <div>
+          <strong>
+            {opponents.medianOpponentRating != null
+              ? Math.round(opponents.medianOpponentRating)
+              : "-"}
+          </strong>
+          <span>Median opponent</span>
+        </div>
+        <div>
+          <strong>
+            {opponents.avgRatingGap != null ? formatSignedStats(opponents.avgRatingGap) : "-"}
+          </strong>
+          <span>Average rating gap</span>
+        </div>
+        <div>
+          <strong
+            data-dir={
+              opponents.scoreDeltaPct != null ? deltaDir(opponents.scoreDeltaPct) : undefined
+            }
+          >
+            {formatSignedDecimal(opponents.scoreDeltaPct, "pp")}
+          </strong>
+          <span>Score vs expected</span>
+        </div>
+      </div>
+
+      {opponents.bands.length > 0 ? (
+        <div className={styles.bandTable}>
+          <div className={styles.bandHead}>
+            <span>Opponent band</span>
+            <span>G</span>
+            <span>Score</span>
+            <span>M/G</span>
+            <span>B/G</span>
+          </div>
+          {opponents.bands.map((band) => {
+            const useEnginePair =
+              band.analyzedGames > 0 && band.opponentAnalyzedGames === band.analyzedGames;
+            const useProviderPair = !useEnginePair && band.providerQualityMethod === "lichess";
+            const playerMistakes = useEnginePair
+              ? band.mistakesPerAnalyzedGame
+              : useProviderPair
+                ? band.providerMistakesPerGame
+                : null;
+            const opponentMistakes = useEnginePair
+              ? band.opponentMistakesPerAnalyzedGame
+              : useProviderPair
+                ? band.opponentProviderMistakesPerGame
+                : null;
+            const playerBlunders = useEnginePair
+              ? band.blundersPerAnalyzedGame
+              : useProviderPair
+                ? band.providerBlundersPerGame
+                : null;
+            const opponentBlunders = useEnginePair
+              ? band.opponentBlundersPerAnalyzedGame
+              : useProviderPair
+                ? band.opponentProviderBlundersPerGame
+                : null;
+            const qualityCoverage = useEnginePair
+              ? band.analysisCoveragePct
+              : useProviderPair
+                ? (band.providerAnalyzedGames / band.games) * 100
+                : null;
+            return (
+              <div className={styles.bandRow} key={band.label}>
+                <div className={styles.bandIdentity}>
+                  <span>
+                    {band.label}
+                    {band.containsCurrentRating ? <em>Your band</em> : null}
+                  </span>
+                  <small>
+                    Avg {Math.round(band.avgOpponentRating)} ·{" "}
+                    {qualityCoverage != null
+                      ? `${Math.round(qualityCoverage)}% ${useEnginePair ? "engine" : "Lichess"}`
+                      : "not paired"}
+                  </small>
+                </div>
+                <strong>{band.games}</strong>
+                <div className={styles.bandStack}>
+                  <strong>{Math.round(band.scorePct)}%</strong>
+                  <small data-dir={deltaDir(band.scoreDeltaPct)}>
+                    {formatSignedDecimal(band.scoreDeltaPct, "pp")}
+                  </small>
+                </div>
+                <div className={styles.bandStack}>
+                  <strong>{formatStatsDecimal(playerMistakes)}</strong>
+                  <small>opp {formatStatsDecimal(opponentMistakes)}</small>
+                </div>
+                <div className={styles.bandStack}>
+                  <strong>{formatStatsDecimal(playerBlunders)}</strong>
+                  <small>opp {formatStatsDecimal(opponentBlunders)}</small>
+                </div>
+              </div>
+            );
+          })}
+          <Text size="xs" c="dimmed" className={styles.tableNote}>
+            Score subline is the difference from Elo expectation. Error sublines compare you with
+            the opponents in these same games. Standardized engine analysis is preferred; Lichess
+            server counts are used only when it is unavailable.
+          </Text>
+        </div>
+      ) : (
+        <Text className={styles.emptyLine}>No opponent ratings in this period.</Text>
+      )}
+    </Box>
+  );
+}
+
+function StatsQualityCard({ report }: { report: PeriodReport }) {
+  const mistakes = report.mistakes;
+  if (!mistakes || mistakes.analyzedGames === 0) {
+    const provider = report.providerQuality;
+    if (provider) {
+      const providerName = provider.provider === "chesscom" ? "Chess.com" : "Lichess";
+      const providerRows = [
+        {
+          label: "Accuracy",
+          player: formatStatsAccuracy(provider.avgPlayerAccuracy),
+          opponent: formatStatsAccuracy(provider.avgOpponentAccuracy),
+        },
+        {
+          label: "ACPL",
+          hint: "lower is better",
+          player: formatStatsDecimal(provider.avgPlayerAcpl),
+          opponent: formatStatsDecimal(provider.avgOpponentAcpl),
+        },
+        {
+          label: "Inaccuracies / game",
+          player: formatStatsDecimal(provider.playerInaccuraciesPerGame),
+          opponent: formatStatsDecimal(provider.opponentInaccuraciesPerGame),
+        },
+        {
+          label: "Mistakes / game",
+          player: formatStatsDecimal(provider.playerMistakesPerGame),
+          opponent: formatStatsDecimal(provider.opponentMistakesPerGame),
+        },
+        {
+          label: "Blunders / game",
+          player: formatStatsDecimal(provider.playerBlundersPerGame),
+          opponent: formatStatsDecimal(provider.opponentBlundersPerGame),
+        },
+      ];
+      return (
+        <Box className={`${styles.card} ${styles.cardWide}`}>
+          <div className={styles.sectionHead}>
+            <div>
+              <span className={styles.cardLabel}>Move quality</span>
+              <Text size="xs" c="dimmed">
+                Existing {providerName} analysis, available without a new engine run
+              </Text>
+            </div>
+            <Badge variant="light" color="gray" size="sm">
+              {Math.max(provider.playerSamples, provider.playerErrorSamples)} games
+            </Badge>
+          </div>
+          <div className={styles.compareTable}>
+            <div className={`${styles.compareRow} ${styles.compareHead}`}>
+              <span>Metric</span>
+              <span>You</span>
+              <span>Opp</span>
+              <span>Source</span>
+            </div>
+            {providerRows.map((row) => (
+              <StatsComparisonRow key={row.label} {...row} baseline={providerName} />
+            ))}
+          </div>
+          <Text size="xs" c="dimmed" className={styles.tableNote}>
+            Provider formulas stay separate from En Croissant engine accuracy. Analyze games in
+            Strength to add standardized phase, clock, conversion, and rating-model comparisons.
+          </Text>
+        </Box>
+      );
+    }
+    return (
+      <Box className={`${styles.card} ${styles.cardWide}`}>
+        <span className={styles.cardLabel}>Move quality</span>
+        <Text className={styles.emptyLine}>
+          Analyze games in the Strength tab to unlock decision quality, opponent comparisons, and
+          position insights. Analysis only runs when you ask for it.
+        </Text>
+      </Box>
+    );
+  }
+
+  const player = mistakes.player;
+  const comparisonPlayer = mistakes.pairedPlayer ?? player;
+  const opponent = mistakes.opponents;
+  const benchmark = mistakes.peerBenchmark;
+  const comparisonRows = [
+    {
+      label: "Accuracy",
+      player: formatStatsAccuracy(comparisonPlayer.avgAccuracy),
+      opponent: formatStatsAccuracy(opponent?.avgAccuracy ?? null),
+      baseline: benchmark ? formatStatsAccuracy(benchmark.expectedAccuracy) : "-",
+    },
+    {
+      label: "ACPL",
+      hint: "lower is better",
+      player: formatStatsDecimal(comparisonPlayer.avgAcpl),
+      opponent: formatStatsDecimal(opponent?.avgAcpl ?? null),
+      baseline: benchmark ? formatStatsDecimal(benchmark.expectedAcpl) : "-",
+    },
+    {
+      label: "Inaccuracies / game",
+      player: formatStatsDecimal(comparisonPlayer.inaccuraciesPerGame),
+      opponent: formatStatsDecimal(opponent?.inaccuraciesPerGame ?? null),
+      baseline: "-",
+    },
+    {
+      label: "Mistakes / game",
+      player: formatStatsDecimal(comparisonPlayer.mistakesPerGame),
+      opponent: formatStatsDecimal(opponent?.mistakesPerGame ?? null),
+      baseline: "-",
+    },
+    {
+      label: "Blunders / game",
+      player: formatStatsDecimal(comparisonPlayer.blundersPerGame),
+      opponent: formatStatsDecimal(opponent?.blundersPerGame ?? null),
+      baseline: "-",
+    },
+    {
+      label: "Errors / 100 moves",
+      hint: "mistakes + blunders",
+      player: formatStatsDecimal(comparisonPlayer.errorsPer100Moves),
+      opponent: formatStatsDecimal(opponent?.errorsPer100Moves ?? null),
+      baseline: "-",
+    },
+    {
+      label: "Clean games",
+      hint: "no mistake or blunder",
+      player: formatStatsPercent(comparisonPlayer.cleanGamePct),
+      opponent: formatStatsPercent(opponent?.cleanGamePct ?? null),
+      baseline: "-",
+    },
+  ];
+
+  return (
+    <Box className={`${styles.card} ${styles.cardWide}`}>
+      <div className={styles.sectionHead}>
+        <div>
+          <span className={styles.cardLabel}>Move quality</span>
+          <Text size="xs" c="dimmed">
+            {mistakes.pairedGames > 0
+              ? `Standardized engine analysis · ${mistakes.pairedGames} paired games`
+              : "Standardized engine analysis for your moves"}
+          </Text>
+        </div>
+        <Badge variant="light" color="blue" size="sm">
+          {mistakes.analyzedGames}/{report.record.games} games ·{" "}
+          {Math.round(mistakes.analysisCoveragePct)}%
+        </Badge>
+      </div>
+
+      <div className={styles.compareTable}>
+        <div className={`${styles.compareRow} ${styles.compareHead}`}>
+          <span>Metric</span>
+          <span>You</span>
+          <span>Opp</span>
+          <span>Band model</span>
+        </div>
+        {comparisonRows.map((row) => (
+          <StatsComparisonRow key={row.label} {...row} />
+        ))}
+      </div>
+
+      {mistakes.pairedGames > 0 && mistakes.pairedGames < mistakes.analyzedGames ? (
+        <Text size="xs" c="dimmed" className={styles.tableNote}>
+          You/Opp and band-model columns use the same {mistakes.pairedGames} paired games. Phase
+          rows retain all {mistakes.analyzedGames} player analyses; reanalyzing legacy games adds
+          their opponent side.
+        </Text>
+      ) : mistakes.pairedGames === 0 ? (
+        <Text size="xs" c="dimmed" className={styles.tableNote}>
+          These legacy results cover your moves only. Reanalyze them in Strength to add a paired
+          opponent comparison; no provider or engine formulas are mixed.
+        </Text>
+      ) : null}
+
+      {benchmark ? (
+        <div className={styles.benchmarkNote}>
+          <span>
+            Estimated {benchmark.ratingBandLabel} baseline · {benchmark.samples} matched games
+          </span>
+          <strong
+            data-dir={
+              benchmark.accuracyDelta != null ? deltaDir(benchmark.accuracyDelta) : undefined
+            }
+          >
+            {formatSignedDecimal(benchmark.accuracyDelta, "pp")} accuracy
+          </strong>
+          <small>
+            Calibrated EloGuard model, not a live population percentile. Opp is the empirical
+            comparison from your games.
+          </small>
+        </div>
+      ) : null}
+
+      {report.providerQuality ? (
+        <div className={styles.providerLine}>
+          <span>
+            {report.providerQuality.provider === "chesscom" ? "Chess.com" : "Lichess"} provider
+            accuracy
+          </span>
+          <strong>{formatStatsAccuracy(report.providerQuality.avgPlayerAccuracy)}</strong>
+          <span>vs {formatStatsAccuracy(report.providerQuality.avgOpponentAccuracy)} opp</span>
+          <small>
+            {report.providerQuality.playerSamples} games · kept separate from engine accuracy
+          </small>
+        </div>
+      ) : null}
+
+      <div className={styles.phaseQualityTable}>
+        <div className={styles.phaseQualityHead}>
+          <span>Phase</span>
+          <span>Moves</span>
+          <span>Accuracy</span>
+          <span>ACPL</span>
+          <span>Blunders</span>
+        </div>
+        {STATS_PHASE_ORDER.map((phase) => {
+          const quality = mistakes.phaseQuality[phase];
+          return (
+            <div className={styles.phaseQualityRow} key={phase}>
+              <strong>{STATS_PHASE_LABELS[phase]}</strong>
+              <span>{quality.moves}</span>
+              <span>{formatStatsAccuracy(quality.avgAccuracy)}</span>
+              <span>{formatStatsDecimal(quality.avgAcpl)}</span>
+              <span>{mistakes.byPhase[phase].blunders}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {mistakes.worstGames.length > 0 ? (
+        <div className={styles.worstList}>
+          {mistakes.worstGames.map(({ entry, game }) => (
+            <div className={styles.worstRow} key={entry.key}>
+              <span className={styles.recentDate}>{formatStatsDate(entry.end)}</span>
+              <Text size="xs" className={styles.openingName} truncate>
+                {entry.openingName ?? game?.openingName ?? entry.eco ?? "Unknown opening"}
+              </Text>
+              <span className={styles.recentAcc}>{formatStatsAccuracy(entry.stats.accuracy)}</span>
+              <span className={styles.worstBlunders}>
+                {pluralStats(entry.counts.blunder, "blunder")}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      <Text size="xs" c="dimmed" className={styles.tableNote}>
+        Inaccuracy: &gt;5 percentage-point win-chance loss; mistake: &gt;10; blunder: ≥20. Forced
+        and book moves are excluded.
+      </Text>
+    </Box>
+  );
+}
+
+function StatsSituationsCard({ report }: { report: PeriodReport }) {
+  const situations = report.mistakes?.situations;
+  if (!situations) return null;
+  const decisionRows = [
+    { label: "Advantage", hint: "started ≥ +1.5", value: situations.advantage },
+    { label: "Defence", hint: "started ≤ -1.5", value: situations.defence },
+    { label: "Balanced", hint: "between -1.5 and +1.5", value: situations.balanced },
+    { label: "Critical", hint: "volatile positions", value: situations.critical },
+    { label: "Fast", hint: "snap decisions", value: situations.fast },
+    { label: "Long think", hint: "≥8s or 8% base", value: situations.longThink },
+    { label: "Low clock", hint: "≤12% base", value: situations.timeTrouble },
+  ].filter((row) => row.value.moves > 0);
+
+  return (
+    <Box className={`${styles.card} ${styles.cardWide}`}>
+      <div className={styles.sectionHead}>
+        <div>
+          <span className={styles.cardLabel}>Position outcomes</span>
+          <Text size="xs" c="dimmed">
+            What happens after the evaluation or clock changes the task
+          </Text>
+        </div>
+        <Badge variant="light" color="gray" size="sm">
+          {situations.games} analyzed
+        </Badge>
+      </div>
+
+      <div className={styles.outcomeGrid}>
+        <div>
+          <span>Advantage conversion</span>
+          <strong>{formatStatsPercent(situations.conversionPct)}</strong>
+          <small>
+            {situations.convertedWinningChances}/{situations.winningChances} wins after reaching +3
+          </small>
+        </div>
+        <div>
+          <span>Resourcefulness</span>
+          <strong>{formatStatsPercent(situations.savePct)}</strong>
+          <small>
+            {situations.savedLosingChances}/{situations.losingChances} saved after falling to -3
+          </small>
+        </div>
+        <div>
+          <span>Evaluation after move 15</span>
+          <strong>{formatEvalCp(situations.avgMove15EvalCp)}</strong>
+          <small>Average, from your perspective</small>
+        </div>
+        <div>
+          <span>Opening exit chance</span>
+          <strong>{formatStatsPercent(situations.avgOpeningExitWinPct)}</strong>
+          <small>Average win probability</small>
+        </div>
+      </div>
+
+      {decisionRows.length > 0 ? (
+        <div className={styles.decisionTable}>
+          <div className={styles.decisionHead}>
+            <span>Decision context</span>
+            <span>Moves</span>
+            <span>Accuracy</span>
+            <span>Error rate</span>
+          </div>
+          {decisionRows.map((row) => (
+            <div className={styles.decisionRow} key={row.label}>
+              <div>
+                <strong>{row.label}</strong>
+                <small>{row.hint}</small>
+              </div>
+              <span>{row.value.moves}</span>
+              <span>{formatStatsAccuracy(row.value.accuracy)}</span>
+              <span>{formatStatsPercent(row.value.errorPct)}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {situations.endgames.games > 0 ? (
+        <div className={styles.endgameGrid}>
+          {(["better", "equal", "worse"] as const).map((key) => {
+            const bucket = situations.endgames[key];
+            return (
+              <div key={key}>
+                <span>Entered {key}</span>
+                <strong>{formatStatsPercent(bucket.scorePct)}</strong>
+                <small>{pluralStats(bucket.games, "game")}</small>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+    </Box>
+  );
+}
+
+function StatsPatternsCard({ report }: { report: PeriodReport }) {
+  const rows = [...report.patterns.byColor, ...report.patterns.byWeekday];
+  if (rows.length === 0) return null;
+  return (
+    <Box className={styles.card}>
+      <span className={styles.cardLabel}>Performance patterns</span>
+      <div className={styles.patternRows}>
+        {rows.map((row, index) => (
+          <div
+            className={styles.patternRow}
+            data-group-start={index === report.patterns.byColor.length ? "true" : undefined}
+            key={`${row.key}-${row.label}`}
+          >
+            <span>{row.label}</span>
+            <div className={styles.wdlBar}>
+              {row.wins > 0 ? (
+                <span className={styles.wdlWin} style={{ flexGrow: row.wins }} />
+              ) : null}
+              {row.draws > 0 ? (
+                <span className={styles.wdlDraw} style={{ flexGrow: row.draws }} />
+              ) : null}
+              {row.losses > 0 ? (
+                <span className={styles.wdlLoss} style={{ flexGrow: row.losses }} />
+              ) : null}
+            </div>
+            <small>{row.games}g</small>
+            <strong>{Math.round(row.scorePct)}%</strong>
+          </div>
+        ))}
+      </div>
+    </Box>
+  );
+}
+
 function StatsAiSectionGroup({
   title,
   items,
@@ -1440,6 +1969,8 @@ function StatsReportSection({
   source,
   username,
   timeClass,
+  ratedFilter,
+  periodKey,
 }: {
   games: StatsGame[];
   analyzed: AnalyzedGameEntry[];
@@ -1449,6 +1980,8 @@ function StatsReportSection({
   source: StatsSource;
   username: string;
   timeClass: StatsTimeClass;
+  ratedFilter: StatsRatedFilter;
+  periodKey: StatsPeriodKey;
 }) {
   const [openingColor, setOpeningColor] = useState<"w" | "b">("w");
   const report = useMemo(
@@ -1482,20 +2015,26 @@ function StatsReportSection({
     : [];
   const maxPhaseSeconds = phaseSeconds.reduce((max, row) => Math.max(max, row.seconds), 0);
 
-  const mistakes = report.mistakes;
-  const blunderRows = mistakes
-    ? STATS_PHASE_ORDER.map((phase) => ({
-        phase,
-        blunders: mistakes.byPhase[phase]?.blunders ?? 0,
-      }))
-    : [];
-  const totalBlunders = blunderRows.reduce((sum, row) => sum + row.blunders, 0);
-
   const openingRows = (openingColor === "w" ? report.openings.white : report.openings.black).slice(
     0,
     5,
   );
-  const cacheKey = `${source}|${username.toLowerCase()}|${timeClass}|${periodWindow.start}`;
+  const selectedGames = games.filter(
+    (game) => game.end >= periodWindow.start && game.end <= periodWindow.end,
+  );
+  const analyzedStamp = analyzed.reduce((latest, entry) => Math.max(latest, entry.ts), 0);
+  const cacheKey = [
+    "stats-v2",
+    source,
+    username.toLowerCase(),
+    timeClass,
+    ratedFilter,
+    periodKey,
+    selectedGames.length,
+    selectedGames[0]?.end ?? 0,
+    selectedGames.at(-1)?.end ?? 0,
+    analyzedStamp,
+  ].join("|");
 
   return (
     <Box className={styles.cardGrid}>
@@ -1531,6 +2070,8 @@ function StatsReportSection({
           </div>
         </div>
       </Box>
+
+      <StatsOpponentsCard report={report} />
 
       {report.weekly.length > 0 ? (
         <Box className={`${styles.card} ${styles.cardWide}`}>
@@ -1580,6 +2121,11 @@ function StatsReportSection({
               hint="moves under 12% clock"
             />
             <StatsMetricRow
+              label="Clock left at finish"
+              value={formatStatsPercent(time.avgRemainingPctAtEnd)}
+              hint={`average across ${time.gamesWithClocks} clocked games`}
+            />
+            <StatsMetricRow
               label="Timeout losses"
               value={`${time.timeoutLosses}${
                 time.timeoutLossPct != null
@@ -1607,6 +2153,49 @@ function StatsReportSection({
                     />
                   </div>
                   <span className={styles.miniBarValue}>{formatStatsSeconds(row.seconds)}</span>
+                </div>
+              ))}
+            </div>
+          ) : null}
+          {Object.values(time.clockBalanceAtMove20).some((bucket) => bucket.games > 0) ? (
+            <div className={styles.clockBalanceTable}>
+              <div className={styles.clockBalanceHead}>
+                <span>Clock at move 20</span>
+                <span>Games</span>
+                <span>Score</span>
+              </div>
+              {(["ahead", "even", "behind"] as const).map((state) => {
+                const bucket = time.clockBalanceAtMove20[state];
+                return (
+                  <div className={styles.clockBalanceRow} key={state}>
+                    <span>
+                      {state === "ahead"
+                        ? "20%+ more time"
+                        : state === "behind"
+                          ? "20%+ less time"
+                          : "Within 20%"}
+                    </span>
+                    <strong>{bucket.games}</strong>
+                    <strong>{formatStatsPercent(bucket.scorePct)}</strong>
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
+          {time.clockCurve.length > 0 ? (
+            <div className={styles.clockCurve}>
+              <div className={styles.clockCurveHead}>
+                <span>Clock remaining</span>
+                <span>You</span>
+                <span>Opp</span>
+              </div>
+              {time.clockCurve.map((checkpoint) => (
+                <div className={styles.clockCurveRow} key={checkpoint.move}>
+                  <span>
+                    Move {checkpoint.move} <small>({checkpoint.games}g)</small>
+                  </span>
+                  <strong>{formatStatsPercent(checkpoint.playerRemainingPct)}</strong>
+                  <span>{formatStatsPercent(checkpoint.opponentRemainingPct)}</span>
                 </div>
               ))}
             </div>
@@ -1683,84 +2272,12 @@ function StatsReportSection({
         ) : null}
       </Box>
 
-      {mistakes && mistakes.analyzedGames > 0 ? (
-        <Box className={styles.card}>
-          <span className={styles.cardLabel}>Mistakes</span>
-          <div className={styles.tileGrid}>
-            <div className={styles.tile}>
-              <span className={styles.tileValue}>{formatStatsAccuracy(mistakes.avgAccuracy)}</span>
-              <span className={styles.tileLabel}>Avg accuracy</span>
-            </div>
-            <div className={styles.tile}>
-              <span className={styles.tileValue}>
-                {mistakes.avgAcpl != null ? Math.round(mistakes.avgAcpl) : "-"}
-              </span>
-              <span className={styles.tileLabel}>ACPL</span>
-            </div>
-            <div className={styles.tile}>
-              <span className={styles.tileValue}>
-                {mistakes.blundersPerGame != null ? mistakes.blundersPerGame.toFixed(1) : "-"}
-              </span>
-              <span className={styles.tileLabel}>Blunders / game</span>
-            </div>
-            <div className={styles.tile}>
-              <span className={styles.tileValue}>
-                {mistakes.mistakesPerGame != null ? mistakes.mistakesPerGame.toFixed(1) : "-"}
-              </span>
-              <span className={styles.tileLabel}>Mistakes / game</span>
-            </div>
-          </div>
-          {totalBlunders > 0 ? (
-            <div className={styles.miniBars}>
-              {blunderRows.map((row) => (
-                <div className={styles.miniBarRow} key={row.phase}>
-                  <span className={styles.miniBarLabel}>{STATS_PHASE_LABELS[row.phase]}</span>
-                  <div className={styles.miniBarTrack}>
-                    <div
-                      className={styles.miniBarFill}
-                      style={{
-                        width: `${Math.max(
-                          row.blunders > 0 ? 3 : 0,
-                          (row.blunders / totalBlunders) * 100,
-                        )}%`,
-                        background: STATS_RED,
-                      }}
-                    />
-                  </div>
-                  <span className={styles.miniBarValue}>{row.blunders}</span>
-                </div>
-              ))}
-            </div>
-          ) : null}
-          {mistakes.worstGames.length > 0 ? (
-            <div className={styles.worstList}>
-              {mistakes.worstGames.map(({ entry, game }) => (
-                <div className={styles.worstRow} key={entry.key}>
-                  <span className={styles.recentDate}>{formatStatsDate(entry.end)}</span>
-                  <Text size="xs" className={styles.openingName} truncate>
-                    {entry.openingName ?? game?.openingName ?? entry.eco ?? "Unknown opening"}
-                  </Text>
-                  <span className={styles.recentAcc}>
-                    {formatStatsAccuracy(entry.stats.accuracy)}
-                  </span>
-                  <span className={styles.worstBlunders}>
-                    {pluralStats(entry.counts.blunder, "blunder")}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </Box>
-      ) : (
-        <Box className={styles.card}>
-          <span className={styles.cardLabel}>Mistakes</span>
-          <Text className={styles.emptyLine}>
-            Analyze games in the Strength tab to unlock mistake insights.
-          </Text>
-        </Box>
-      )}
+      <StatsQualityCard report={report} />
+      <StatsSituationsCard report={report} />
 
-      <Box className={`${styles.card} ${styles.cardWide}`}>
+      <StatsPatternsCard report={report} />
+
+      <Box className={styles.card}>
         <span className={styles.cardLabel}>Highlights</span>
         <div className={styles.metricRows}>
           <StatsMetricRow
@@ -1774,6 +2291,34 @@ function StatsReportSection({
                   } · ${formatStatsDate(report.highlights.bestWin.end)}`
                 : "-"
             }
+          />
+          <StatsMetricRow
+            label="Lowest-rated loss"
+            value={
+              report.highlights.worstLoss
+                ? `Lost to ${report.highlights.worstLoss.oppName ?? "opponent"}${
+                    report.highlights.worstLoss.opp != null
+                      ? ` (${report.highlights.worstLoss.opp})`
+                      : ""
+                  }`
+                : "-"
+            }
+          />
+          <StatsMetricRow
+            label="Upset wins"
+            hint="opponent rated 100+ higher"
+            value={
+              report.highlights.upsetOpportunities > 0
+                ? `${report.highlights.upsetWins}/${report.highlights.upsetOpportunities} · ${formatStatsPercent(
+                    report.highlights.upsetRatePct,
+                  )}`
+                : "-"
+            }
+          />
+          <StatsMetricRow
+            label="After a loss"
+            hint="score in the next game"
+            value={formatStatsPercent(report.highlights.postLossScorePct)}
           />
           <StatsMetricRow
             label="Longest win streak"
@@ -1813,7 +2358,7 @@ function StatsReportSection({
 // StatsWorkspace: full-page Stats view (header, controls, sub-nav, tabs).
 // ---------------------------------------------------------------------------
 
-export default function StatsWorkspace() {
+export default function StatsWorkspace({ lichessToken = "" }: { lichessToken?: string }) {
   const [settings, setSettings] = usePersistentJson<StatsSettings>(
     STATS_SETTINGS_STORAGE_KEY,
     normalizeStatsSettings(null),
@@ -1842,7 +2387,12 @@ export default function StatsWorkspace() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [analyzedEntries, setAnalyzedEntries] = useState<AnalyzedGameEntry[]>([]);
   const cacheRef = useRef(new Map<string, StatsCacheEntry>());
-  const mountNowRef = useRef(Math.floor(Date.now() / 1000));
+  const [clockNowSec, setClockNowSec] = useState(() => Math.floor(Date.now() / 1000));
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setClockNowSec(Math.floor(Date.now() / 1000)), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     setAnalyzedEntries(loadAnalyzedEntries());
@@ -1853,6 +2403,10 @@ export default function StatsWorkspace() {
 
   const requestedDays = Math.max(STATS_BASE_HISTORY_DAYS, getStatsPeriodDays(settings.period));
   const cacheKey = `${settings.source}|${trimmedUsername.toLowerCase()}|${settings.timeClass}|${settings.rated}`;
+  const recentPeriod = ["1h", "6h", "24h", "today"].includes(settings.period);
+  const recentRefreshTick = recentPeriod
+    ? Math.floor(clockNowSec / STATS_RECENT_REFRESH_SECONDS)
+    : 0;
 
   // Game + rolling-series fetch. Period switches inside the cached coverage
   // only re-filter; only a larger period (or manual refresh) refetches.
@@ -1864,7 +2418,10 @@ export default function StatsWorkspace() {
       return;
     }
     const cached = cacheRef.current.get(cacheKey);
-    if (cached && cached.historyDays >= requestedDays) {
+    const recentCacheIsFresh =
+      !recentPeriod ||
+      (cached !== undefined && clockNowSec - cached.nowSec < STATS_RECENT_REFRESH_SECONDS);
+    if (cached && cached.historyDays >= requestedDays && recentCacheIsFresh) {
       setData(cached);
       setError(null);
       setLoading(false);
@@ -1882,6 +2439,7 @@ export default function StatsWorkspace() {
       maxGames: STATS_MAX_GAMES,
       maxDays: requestedDays,
       monthsCap: Math.ceil(requestedDays / 28) + 1,
+      lichessToken: settings.source === "lichess" ? lichessToken.trim() || null : null,
       signal: controller.signal,
     })
       .then((games) => {
@@ -1909,8 +2467,12 @@ export default function StatsWorkspace() {
     };
   }, [
     cacheKey,
+    clockNowSec,
+    recentPeriod,
+    recentRefreshTick,
     refreshKey,
     requestedDays,
+    lichessToken,
     settings.rated,
     settings.source,
     settings.timeClass,
@@ -1986,9 +2548,9 @@ export default function StatsWorkspace() {
     };
   }, [refreshKey, settings.source, trimmedUsername]);
 
-  // nowSec comes from fetch time so the period boundary is stable across
-  // renders; the effective now is clamped for the Last week window.
-  const nowSec = data?.nowSec ?? mountNowRef.current;
+  // Recent rolling windows advance while the page stays open. Calendar windows
+  // still clamp their effective "now" at the end of the selected week.
+  const nowSec = clockNowSec;
   const periodWindow = useMemo(
     () => getStatsWindow(settings.period, nowSec),
     [nowSec, settings.period],
@@ -2139,6 +2701,16 @@ export default function StatsWorkspace() {
             aria-label="Stats period"
           />
         </div>
+        {data ? (
+          <Text size="xs" c="dimmed" className={styles.syncLine}>
+            Synced{" "}
+            {new Date(data.nowSec * 1000).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+            {recentPeriod ? " · refreshes each minute" : ""} · ranges use local time
+          </Text>
+        ) : null}
       </Box>
 
       <SegmentedControl
@@ -2204,11 +2776,13 @@ export default function StatsWorkspace() {
             games={data.games}
             analyzed={analyzedEntries}
             periodWindow={periodWindow}
-            nowSec={data.nowSec}
+            nowSec={effectiveNowSec}
             currentRating={currentRating}
             source={settings.source}
             username={trimmedUsername}
             timeClass={settings.timeClass}
+            ratedFilter={settings.rated}
+            periodKey={settings.period}
           />
         )
       ) : null}

@@ -19,7 +19,7 @@ const STORED_CLOUD_CACHE_LIMIT = 160;
 const STORED_CLOUD_PREFETCH_LIMIT = 3;
 const STOCKFISH_MAX_DEPTH = 70;
 const configuredRemoteStockfishUrl = String(
-    import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ?? "https://gaming-pc.tail89d19b.ts.net:8443",
+    import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ?? "https://lox.tail89d19b.ts.net:8443",
 ).trim();
 const REMOTE_STOCKFISH_URL = configuredRemoteStockfishUrl.replace(/\/+$/, "");
 

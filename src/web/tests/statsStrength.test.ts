@@ -8,6 +8,7 @@ import {
     clockFeaturesForSide,
     estimateRating,
     gamePerformance,
+    qualityBenchmarkForRating,
     replayGamePositions,
     timeClassOf,
     type AnalyzedGameEntry,
@@ -78,6 +79,42 @@ describe("timeClassOf", () => {
         expect(timeClassOf(null)).toBe("rapid");
         expect(timeClassOf("bullet")).toBe("bullet");
         expect(timeClassOf("classical")).toBe("classical");
+    });
+});
+
+describe("qualityBenchmarkForRating", () => {
+    test("uses the calibrated Lichess anchors and adjusts for playing speed", () => {
+        const rapid = qualityBenchmarkForRating({
+            rating: 1550,
+            source: "lichess",
+            timeControl: { base: 600, inc: 0 },
+        });
+        expect(rapid).toMatchObject({
+            accuracy: 80.4,
+            acpl: 55.9,
+            calibrationRating: 1550,
+            pool: "rapid",
+        });
+
+        const blitz = qualityBenchmarkForRating({
+            rating: 1550,
+            source: "lichess",
+            timeControl: { base: 180, inc: 0 },
+        });
+        expect(blitz?.accuracy).toBeLessThan(rapid?.accuracy ?? 0);
+        expect(blitz?.acpl).toBeGreaterThan(rapid?.acpl ?? Number.POSITIVE_INFINITY);
+        expect(blitz?.pool).toBe("blitz");
+    });
+
+    test("maps chess.com ratings onto the model calibration scale", () => {
+        const benchmark = qualityBenchmarkForRating({
+            rating: 1500,
+            source: "chesscom",
+            timeControl: { base: 600, inc: 0 },
+        });
+        expect(benchmark?.calibrationRating).toBe(1930);
+        expect(benchmark?.accuracy).toBeCloseTo(83, 9);
+        expect(benchmark?.acpl).toBeCloseTo(48.76, 9);
     });
 });
 
@@ -1231,6 +1268,7 @@ describe("buildGameQualityStats", () => {
             timeControl: game1Tc,
             clocks: game1Clocks,
             analysisDepth: 12,
+            result: "win",
         });
         expect(result).not.toBeNull();
         expect(result?.plies).toBe(16);
@@ -1263,6 +1301,19 @@ describe("buildGameQualityStats", () => {
         });
         expect(result?.counts).toEqual({ inaccuracy: 1, mistake: 1, blunder: 0 });
         expect(result?.phaseBlunders).toEqual({ opening: 0, middlegame: 0, endgame: 0 });
+        expect(
+            (result?.advanced.advantage.moves ?? 0) +
+                (result?.advanced.defence.moves ?? 0) +
+                (result?.advanced.balanced.moves ?? 0),
+        ).toBe(result?.stats.scoredCount);
+        expect(
+            (result?.advanced.advantage.errors ?? 0) +
+                (result?.advanced.defence.errors ?? 0) +
+                (result?.advanced.balanced.errors ?? 0),
+        ).toBe((result?.counts.mistake ?? 0) + (result?.counts.blunder ?? 0));
+        expect(result?.advanced.hadWinningPosition).toBe(true);
+        expect(result?.advanced.convertedWinningPosition).toBe(true);
+        expect(result?.advanced.openingExitWinPct).not.toBeNull();
         // End-to-end: the review-core estimate over these stats (with phases).
         expect(
             estimateRating(

@@ -1,9 +1,10 @@
 const configuredPrivateServerUrl = String(import.meta.env.VITE_EN_CROISSANT_SERVER_URL ?? "").trim();
 const privateServerUrl = (
-  configuredPrivateServerUrl || "https://gaming-pc.tail89d19b.ts.net"
+  configuredPrivateServerUrl || "https://lox.tail89d19b.ts.net"
 ).replace(/\/+$/, "");
 
 const sharedCredentialUrl = `${privateServerUrl}/api/lichess-credential`;
+const SHARED_CREDENTIAL_TIMEOUT_MS = 5_000;
 
 export type SharedLichessCredential = {
   connected: true;
@@ -12,16 +13,28 @@ export type SharedLichessCredential = {
   updatedAt: number;
 };
 
-export async function loadSharedLichessCredential(): Promise<SharedLichessCredential | null> {
-  const response = await fetch(sharedCredentialUrl, {
-    headers: { accept: "application/json" },
-    cache: "no-store",
-  });
-  if (response.status === 404) return null;
-  if (!response.ok) {
-    throw new Error(`Shared Lichess sign-in returned HTTP ${response.status}.`);
+export async function loadSharedLichessCredential(
+  options: { timeoutMs?: number } = {},
+): Promise<SharedLichessCredential | null> {
+  const controller = new AbortController();
+  const timeout = globalThis.setTimeout(
+    () => controller.abort(),
+    options.timeoutMs ?? SHARED_CREDENTIAL_TIMEOUT_MS,
+  );
+  try {
+    const response = await fetch(sharedCredentialUrl, {
+      headers: { accept: "application/json" },
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    if (response.status === 404) return null;
+    if (!response.ok) {
+      throw new Error(`Shared Lichess sign-in returned HTTP ${response.status}.`);
+    }
+    return normalizeSharedLichessCredential(await response.json());
+  } finally {
+    globalThis.clearTimeout(timeout);
   }
-  return normalizeSharedLichessCredential(await response.json());
 }
 
 export async function saveSharedLichessCredential(
