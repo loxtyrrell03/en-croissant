@@ -2743,6 +2743,7 @@ function normalizedReferencedSan(value) {
 
 export function assertNumberedGameMovesAreExact(value, moves = []) {
   const moveByPly = new Map((moves || []).map((move) => [Number(move.ply), move]));
+  const errors = [];
   const visit = (candidate) => {
     if (typeof candidate === "string") {
       NUMBERED_SAN_REFERENCE.lastIndex = 0;
@@ -2754,7 +2755,7 @@ export function assertNumberedGameMovesAreExact(value, moves = []) {
         const expected = moveByPly.get(ply);
         const referencedSan = normalizedReferencedSan(match[4]);
         if (!expected || normalizedReferencedSan(expected.san) !== referencedSan) {
-          throw new Error(
+          errors.push(
             expected
               ? "The coach referenced " +
                   moveNumber +
@@ -2780,6 +2781,9 @@ export function assertNumberedGameMovesAreExact(value, moves = []) {
     }
   };
   visit(value);
+  if (errors.length > 0) {
+    throw new Error([...new Set(errors)].slice(0, 16).join(" "));
+  }
   return value;
 }
 

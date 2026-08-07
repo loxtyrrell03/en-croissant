@@ -14,8 +14,10 @@
   piece homes and routes, prepared pawn breaks, useful exchanges, opponent
   counterplay, and an if-then checklist. Every proposed continuation is emitted
   as a structured SAN line, replayed deterministically from its exact game FEN
-  with chessops, and repaired once by Gemini 3.6 Flash if validation rejects the
-  answer. The phone UI renders exact numbered played moves as links that open an
+  with chessops, and repaired up to twice by Gemini 3.6 Flash if validation
+  rejects the answer. The verifier reports all bad numbered references together
+  and supplies the rejected response to the repair pass. The phone UI renders
+  exact numbered played moves as links that open an
   inline board, and renders every verified suggested move as a button on a
   navigable board with the next-move arrow. Preserve PGN-only isolation for the
   first pass, category/source boundaries, final-model choice, deterministic

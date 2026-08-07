@@ -1913,42 +1913,49 @@ async function runPhoneCoachReview(payload, signal) {
     timeoutMs: 240000,
   });
   let review;
-  try {
-    review = normalizeStructuredCoachReview(rawReview, {
-      libraryPlan,
-      bookPassages,
-      moves: payload.moves,
-      currentFen: payload.currentFen,
-      categoryPassageIds,
-    });
-  } catch (validationError) {
-    updatePhoneCoachProgress(
-      payload.requestId,
-      "move-verification",
-      "Gemini 3.6 Flash repairing board links rejected by the legal-move check",
-      0,
-      0,
-    );
-    rawReview = await runPhoneCoachModel(
-      `${finalPrompt}
+  for (let repairAttempt = 0; repairAttempt <= 2; repairAttempt += 1) {
+    try {
+      review = normalizeStructuredCoachReview(rawReview, {
+        libraryPlan,
+        bookPassages,
+        moves: payload.moves,
+        currentFen: payload.currentFen,
+        categoryPassageIds,
+      });
+      break;
+    } catch (validationError) {
+      if (repairAttempt >= 2) throw validationError;
+      const rejectedResponse =
+        typeof rawReview === "string" ? rawReview : JSON.stringify(rawReview, null, 2);
+      updatePhoneCoachProgress(
+        payload.requestId,
+        "move-verification",
+        `Gemini 3.6 Flash repairing board links (${repairAttempt + 1}/2)`,
+        repairAttempt,
+        2,
+      );
+      rawReview = await runPhoneCoachModel(
+        `${finalPrompt}
 
 MOVE-VERIFICATION REPAIR:
-The previous structured response was rejected: ${validationError?.message || validationError}
-Return the complete corrected response. Preserve sound prose and citations, but repair every numbered game reference and verifiedLines entry. A verifiedLines sequence must be legal when replayed from the exact position after startPly.`,
-      {
-        outputSchemaPath: coachReviewSchemaPath,
-        modelSelection: categorySpecialistSelection,
-        signal,
-        timeoutMs: 190000,
-      },
-    );
-    review = normalizeStructuredCoachReview(rawReview, {
-      libraryPlan,
-      bookPassages,
-      moves: payload.moves,
-      currentFen: payload.currentFen,
-      categoryPassageIds,
-    });
+The previous structured response was rejected for every reason listed here:
+${validationError?.message || validationError}
+
+Previous rejected structured response:
+${rejectedResponse}
+
+Return the complete corrected response. Preserve its sound prose and citations, but repair every listed numbered game reference and verifiedLines entry. Do not mention a numbered move outside Allowed game moves. A verifiedLines sequence must be legal when replayed from the exact position after startPly.`,
+        {
+          outputSchemaPath: coachReviewSchemaPath,
+          modelSelection: categorySpecialistSelection,
+          signal,
+          timeoutMs: 190000,
+        },
+      );
+    }
+  }
+  if (!review) {
+    throw new Error("The move-verification pass did not return a usable coach review.");
   }
   return {
     answer: structuredCoachReviewToMarkdown(review, bookPassages),

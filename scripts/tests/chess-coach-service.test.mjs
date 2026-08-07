@@ -1264,6 +1264,16 @@ test("numbered prose moves and proposed board lines are checked against the real
     () => assertNumberedGameMovesAreExact("After 1.d4, White develops.", moves),
     /exact game move is e4/,
   );
+  assert.throws(
+    () =>
+      assertNumberedGameMovesAreExact(
+        "After 1.d4, White develops; 4.Bc4 was supposedly played later.",
+        moves,
+      ),
+    (error) =>
+      /exact game move is e4/.test(error.message) &&
+      /outside the supplied game at move 4/.test(error.message),
+  );
 });
 
 test("structured review keeps AI categories but rejects invented source and position ids", () => {
