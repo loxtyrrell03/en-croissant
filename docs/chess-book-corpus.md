@@ -11,18 +11,23 @@ line for corpus QA and retrieval experiments.
 
 ## Current corpus
 
-- 103 catalogued books
+- 106 source records: 103 catalogued books plus 3 supplemental plan sources
 - 95 installed official publisher-excerpt PDFs
 - 8 metadata-only acquisition entries
-- 1,561 indexed PDF pages
+- 2,590 indexed pages: 1,561 PDF pages plus 1,029 private/open-source
+  lesson pages
 - 22 pages recovered with local OCR from the image-only *Modernized Sicilian
   Kan* excerpt
-- 3,541 chapter records: 358 matched to pages available in the excerpts and
-  3,183 retained as unavailable contents entries
-- 1,605 page-bounded chunks with 1,605 exact PDF citations
-- 1,605 local 384-dimensional `BAAI/bge-small-en-v1.5` embeddings
-- 3,399 legality-checked opening variations and illustrative game lines,
-  materialized as 67,054 source-linked line plies across 8,000 exact positions
+- 3,528 chapter records: 593 linked to accessible source material and 2,935
+  retained as unavailable contents entries
+- 2,946 page-bounded chunks with 2,946 exact PDF, PGN-lesson, or permanent-web
+  citations
+- 2,946 local 384-dimensional `BAAI/bge-small-en-v1.5` embeddings
+- 8,306 legality-checked opening variations and illustrative game lines,
+  materialized as 237,201 source-linked line plies across 35,868 exact
+  positions
+- 75 exact full-pawn-placement anchors into the private *Chess Structures*
+  plan chapters
 - per-ply SAN, UCI, before/after FEN, source page, source chunk, and extraction
   confidence in SQLite plus portable JSONL and PGN
 - SQLite FTS5 keyword search plus semantic search, combined with
@@ -30,9 +35,9 @@ line for corpus QA and retrieval experiments.
 - zero extraction errors, OCR failures, orphan chunks, citation failures, or
   control/private-use glyphs in the searchable text
 
-The corpus is approximately 33 MB, including retained OCR and on-demand page
-renders. The source PDFs remain in their subject shelves and are not copied
-into the corpus.
+The active generated corpus is approximately 298 MiB before optional page
+renders and retained database backups. The source PDFs and private PGNs remain
+in their subject shelves and are not copied into the corpus.
 
 ## Build
 
@@ -45,8 +50,15 @@ python -m pip install -r scripts/chess-book-corpus-requirements.txt
 Build or rebuild the complete corpus:
 
 ```powershell
+python scripts/sync-open-chess-sources.py
 python scripts/build-chess-book-corpus.py
 ```
+
+The sync records the private user-owned Chessable course path without copying
+or publishing it, snapshots broad Wikibooks opening-family pages with revision
+IDs and permanent-link attribution, and downloads the public-domain Project
+Gutenberg text of Capablanca's *Chess Fundamentals*. Use `--skip-download` to
+rewrite the manifest from already-synced local snapshots without network work.
 
 Useful development options include `--limit`, `--no-ocr`, `--no-embeddings`,
 `--library-root`, and `--output`. Output files are written through temporary
@@ -68,8 +80,8 @@ from one title. Each result includes:
 
 - book ID, title, author, shelf, and coverage
 - chapter label when an available page can be matched safely
-- exact PDF page and supported printed-page number
-- local PDF path
+- exact PDF/page locator or revision-pinned web citation
+- local PDF path when the source is a local PDF
 - access scope and source rights class
 - chess-notation and diagram-candidate flags
 - a ready-to-display citation
@@ -78,7 +90,10 @@ from one title. Each result includes:
 
 The desktop coach reads the corpus directly from Rust. Before the AI selects
 categories and chapters, the coach compares every supplied game position with
-the exact opening-line index. A match identifies the real book, accessible
+the exact opening-line index and the schema-v3 pawn-structure plan index. A
+structure match requires the complete White-and-Black pawn placement to agree;
+it identifies the private course chapter and plan passage independently of move
+order. A line match identifies the real book, accessible
 chapter, cited page/chunk, exact book PGN, matched game ply, and whether the
 played move followed or diverged from the book continuation. Those matches
 receive priority inside the AI-selected retrieval scope. The response carries
@@ -87,6 +102,13 @@ show the excerpt, full title, author, chapter, citation, local PDF, and
 interactive cited-line board independently of what the model says. Stockfish
 remains authoritative for concrete move verdicts; books support the human
 lesson and use exact `[Source chunk_id]` citations.
+
+For opening material, both coach prompts require a plan-first answer: name the
+reached structure; explain plans and counterplay for both sides, ideal and
+misplaced pieces, thematic breaks, exchanges, and manoeuvres; then use only the
+smallest concrete variation needed as proof. A structure match is a strategic
+default map, not a verdict. The coach must test it against the exact pieces,
+squares, tempi, side to move, and Stockfish evidence in the played position.
 
 The phone uses the same retrieval contract through the private home server:
 
@@ -150,6 +172,13 @@ numbers may re-anchor only to a unique legal prior position. Unrooted,
 ambiguous, and illegal fragments are counted in `opening-line-report.json`
 rather than guessed into the exact-position index.
 
+Private Chessable PGNs use a tolerant comment-preserving parser because some
+lessons contain intentionally non-game analogy sidelines that standard PGN
+readers reject. Legal rooted lines still enter the exact-line index; illegal
+teaching tokens are counted but cannot erase the surrounding plan prose. Rooted
+course diagrams with plan language create `structure_anchors` from their exact
+pawn placement.
+
 Coach diagrams are rendered from the stored FEN chain, not from the PDF's
 diagram font. Every key game position and exact cited opening line includes a
 read-only board, the relevant PGN/move label, a next-move arrow, and backward
@@ -166,6 +195,7 @@ and forward controls.
 - `opening-lines.jsonl`: exact opening line/game records with every mapped ply
 - `opening-lines.pgn`: portable PGN export of every recoverable rooted line
 - `opening-line-report.json`: per-book accepted and unresolved notation audit
+- `structure-anchors.jsonl`: exact pawn placements linked to plan-led chapters
 - `chapter-review.json`: automatic chapter-mapping caveats
 - `ingestion-report.json`: extraction, OCR, embedding, and readiness audit
 - `retrieval-tests.json`: database and concept-retrieval test results
@@ -183,9 +213,10 @@ The test checks SQLite integrity, record counts, embedding/chunk parity,
 citations, foreign-key ownership, line/move cardinality, exact FEN-chain
 continuity, initial-position lookup, and hybrid concept retrieval for
 calculation, exchange decisions, defence, rook endings, and computer chess.
-Parser unit tests separately cover figurine notation, nested sidelines, and
-the refusal to guess unrooted prose fragments. The current corpus passes every
-case, with an expected specialist source ranked first in each category.
+It also verifies all three supplemental sources, structure-anchor ownership,
+and Carlsbad plan retrieval. Parser unit tests separately cover figurine
+notation, nested sidelines, the refusal to guess unrooted prose fragments,
+tolerant private-course comments, revision attribution, and pawn-key parity.
 
 ## Jellyfin cover artwork
 
@@ -214,12 +245,14 @@ Cover images are for this private personal library and must not be redistributed
 
 ## Rights boundary
 
-The current searchable content consists of official publisher excerpts. It is
-local-only and must not be redistributed. Catalogue-only books have
-`access_scope=metadata_only`; installed samples use
-`access_scope=publisher_excerpt`. Lawfully acquired complete editions should
-be imported as `access_scope=user_owned_full` in the future.
+The searchable content combines official publisher excerpts, the owner's
+private full Chessable course, CC BY-SA 4.0 Wikibooks pages, and public-domain
+Capablanca text. Catalogue-only books use `access_scope=metadata_only`;
+installed samples use `publisher_excerpt`; the Chessable course uses
+`user_owned_full`; and open sources retain their license/access scopes and
+source attribution. Private and publisher content is local-only and must not be
+redistributed.
 
 The corpus is technically and product-integrated for AI retrieval, but it does
-not provide full-book coverage. Future full-edition imports and mini-PDF
-assembly must preserve source, edition, page, access scope, and attribution.
+not provide full editions of the remaining publisher books. Future user-owned
+imports must preserve source, edition, page, access scope, and attribution.

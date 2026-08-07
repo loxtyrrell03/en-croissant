@@ -7,7 +7,7 @@ import {
 } from "./chess-coach-derived.mjs";
 
 const MAX_BOOK_PASSAGES = 6;
-const MAX_EXCERPT_CHARACTERS = 1100;
+const MAX_EXCERPT_CHARACTERS = 2400;
 export const MAX_COACH_MOVES = 4096;
 export const MAX_COACH_PGN_CHARACTERS = 300_000;
 export const MAX_STATS_AGGREGATE_BYTES = 200 * 1024;
@@ -1246,6 +1246,147 @@ export function findExactOpeningBookMatches(database, moves, { limit = 18 } = {}
   }
 }
 
+export function pawnStructureKey(fen) {
+  const boardField = String(fen || "").trim().split(/\s+/)[0] || "";
+  const ranks = boardField.split("/");
+  if (ranks.length !== 8) return "";
+  let key = "";
+  for (const rank of ranks) {
+    let expanded = "";
+    for (const character of rank) {
+      if (/^[1-8]$/.test(character)) expanded += ".".repeat(Number(character));
+      else expanded += character === "P" || character === "p" ? character : ".";
+    }
+    if (expanded.length !== 8) return "";
+    key += expanded;
+  }
+  return key.length === 64 ? key : "";
+}
+
+export function findPawnStructureBookMatches(
+  database,
+  moves,
+  { limit = 12, currentFen = "" } = {},
+) {
+  const positions = [];
+  for (const move of Array.isArray(moves) ? moves : []) {
+    const ply = Number(move?.ply);
+    if (!Number.isInteger(ply) || ply < 1) continue;
+    for (const [fen, positionPly] of [
+      [move?.fenBefore, ply - 1],
+      [move?.fenAfter, ply],
+    ]) {
+      const pawnKey = pawnStructureKey(fen);
+      const pawnCount = (pawnKey.match(/[Pp]/g) || []).length;
+      if (!pawnKey || pawnCount < 4 || positionPly < 2 || positionPly > 40) continue;
+      positions.push({ fen: String(fen), pawnKey, positionPly });
+    }
+  }
+  const currentFields = String(currentFen || "").trim().split(/\s+/);
+  const fullmove = Number(currentFields[5]);
+  const currentPositionPly =
+    Number.isInteger(fullmove) && fullmove > 0
+      ? (fullmove - 1) * 2 + (currentFields[1] === "b" ? 1 : 0)
+      : 0;
+  const currentPawnKey = pawnStructureKey(currentFen);
+  const currentPawnCount = (currentPawnKey.match(/[Pp]/g) || []).length;
+  if (
+    currentPawnKey &&
+    currentPawnCount >= 4 &&
+    currentPositionPly >= 2 &&
+    currentPositionPly <= 40
+  ) {
+    positions.push({
+      fen: String(currentFen),
+      pawnKey: currentPawnKey,
+      positionPly: currentPositionPly,
+    });
+  }
+  const deepestByKey = new Map();
+  for (const position of positions) {
+    const existing = deepestByKey.get(position.pawnKey);
+    if (!existing || existing.positionPly < position.positionPly) {
+      deepestByKey.set(position.pawnKey, position);
+    }
+  }
+  if (deepestByKey.size === 0) return [];
+  try {
+    const keys = [...deepestByKey.keys()];
+    const rows = database
+      .prepare(
+        `
+        SELECT anchor.anchor_id, anchor.book_id, anchor.chapter_id,
+               anchor.source_chunk_id, anchor.label, anchor.fen, anchor.pawn_key,
+               anchor.source_order, anchor.confidence, book.title, book.author,
+               COALESCE(book.shelf, '') AS shelf,
+               COALESCE(chapter.title, anchor.label, '') AS chapter_title,
+               COALESCE(chunk.citation, '') AS citation,
+               COALESCE(chunk.text, '') AS excerpt
+        FROM structure_anchors AS anchor
+        JOIN books AS book ON book.book_id=anchor.book_id
+        LEFT JOIN chapters AS chapter ON chapter.chapter_id=anchor.chapter_id
+        LEFT JOIN chunks AS chunk ON chunk.chunk_id=anchor.source_chunk_id
+        WHERE anchor.pawn_key IN (${keys.map(() => "?").join(", ")})
+        `,
+      )
+      .all(...keys);
+    const candidates = rows
+      .map((row) => {
+        const position = deepestByKey.get(String(row.pawn_key));
+        return position
+          ? {
+              anchorId: String(row.anchor_id),
+              bookId: String(row.book_id),
+              title: String(row.title),
+              author: String(row.author),
+              shelf: String(row.shelf),
+              chapterId: row.chapter_id ? String(row.chapter_id) : null,
+              chapterTitle: String(row.chapter_title),
+              sourceChunkId: row.source_chunk_id ? String(row.source_chunk_id) : null,
+              citation: String(row.citation),
+              label: String(row.label),
+              matchedGamePly: position.positionPly,
+              gameFen: position.fen,
+              anchorFen: String(row.fen),
+              pawnKey: String(row.pawn_key),
+              confidence: Number(row.confidence),
+              excerpt: String(row.excerpt).replace(/\s+/g, " ").trim().slice(0, 2400),
+              score: position.positionPly * 100 + Number(row.confidence) * 20,
+            }
+          : null;
+      })
+      .filter(Boolean)
+      .sort((left, right) => right.score - left.score || left.label.localeCompare(right.label));
+    const selected = [];
+    const seen = new Set();
+    const perBook = new Map();
+    for (const candidate of candidates) {
+      const signature = `${candidate.bookId}|${candidate.chapterId || candidate.label}|${candidate.pawnKey}`;
+      const bookCount = perBook.get(candidate.bookId) || 0;
+      if (seen.has(signature) || bookCount >= 3) continue;
+      seen.add(signature);
+      perBook.set(candidate.bookId, bookCount + 1);
+      const { score: _score, ...match } = candidate;
+      selected.push(match);
+      if (selected.length >= limit) break;
+    }
+    return selected;
+  } catch (error) {
+    if (/no such table: structure_anchors/i.test(String(error?.message || error))) return [];
+    throw error;
+  }
+}
+
+function formatPawnStructureMatches(matches) {
+  if (!matches?.length) return "No exact pawn-structure plan chapter matched this game.";
+  return matches
+    .map(
+      (match) =>
+        `STRUCTURE_PLAN|book=${oneLine(match.bookId, 100)}|chapter=${oneLine(match.chapterId || "", 100)}|game_position_after_ply=${match.matchedGamePly}|label=${oneLine(match.label, 140)}|${oneLine(match.title)}|${oneLine(match.chapterTitle)}|${oneLine(match.citation, 180)}|PLAN_NOTE=${oneLine(match.excerpt, 2400)}`,
+    )
+    .join("\n");
+}
+
 function formatExactOpeningMatches(matches) {
   if (!matches?.length) return "No exact indexed book-line position matched this game.";
   return matches
@@ -1272,6 +1413,7 @@ export function buildLibraryPlannerPrompt({
   moveAnalysis,
   inventory,
   exactOpeningMatches = [],
+  structureMatches = [],
   derivedEvidence = null,
 }) {
   return `Role: You are the chess-library editor and syllabus planner for a rigorous private coach.
@@ -1290,8 +1432,10 @@ Evidence rules:
 - Select only IDs printed in the library inventory. A CHAPTER entry means its text is actually accessible in the lawful local corpus. Never invent an ID or select a table-of-contents-only chapter.
 - Prefer exact chapter IDs over broad book IDs. Every category should have focused search queries that would find the most relevant page-bounded lesson inside the selected material.
 - EXACT_LINE records are legality-checked, position-indexed lines recovered from installed book pages, but they are evidence for their listed position—not automatic labels for the whole opening. A shallow_move_order_divergence may describe only how the game left that repertoire and must not outrank a later transposed structure. A transposed_position is an exact position match reached by a different move order.
+- STRUCTURE_PLAN records are deterministic matches on the complete White-and-Black pawn placement. Prefer their named plan chapter when the current pieces and move timing make its lesson applicable. They establish a strategic map, not a tactical verdict: validate every standard plan against the exact piece placement, whose move it is, and Stockfish evidence.
 - Never call leaving an arbitrary repertoire a mistake, or imply that the player intended that repertoire. Only criticize a move when the PC evidence or a genuinely applicable resulting-position lesson supports the criticism.
-- For an opening category, select books and chapters for resultingFamily. Use an initial move-order book only when its lesson remains relevant after the transposition. Prefer chapters that teach the reached structure's plans for both sides, typical piece placement, thematic pawn breaks, typical exchanges, and move-order ideas.
+- For an opening category, select books and chapters for resultingFamily. Use an initial move-order book only when its lesson remains relevant after the transposition. Prefer STRUCTURE_PLAN chapters and other material that teaches the reached structure's plans for both sides, ideal and misplaced pieces, thematic pawn breaks, useful and harmful exchanges, manoeuvres, and counterplay.
+- Plan opening coverage before choosing variations. The final lesson should lead with the position's strategic map; use the shortest concrete line needed to prove or illustrate a plan, not as the outline of the explanation.
 - Give opening coverage materially more attention when the opening produced an instructive inaccuracy, unfamiliar structure, misplaced piece, missed break, or plan error. Tie it to exact move numbers and positions, not generic opening advice.
 - Categories may be specific, for example “Dutch opening structure”, “Calculation at move 31”, “Rook endgame technique”, or “Defensive decision-making”. Choose the clearest short tab label.
 
@@ -1317,6 +1461,9 @@ ${formatCoachTraceForPrompt(moveAnalysis, derivedEvidence)}
 
 Exact position matches in indexed opening-book lines:
 ${formatExactOpeningMatches(exactOpeningMatches)}
+
+Exact pawn-structure matches in plan-led course chapters:
+${formatPawnStructureMatches(structureMatches)}
 
 Available library inventory (${inventory?.books?.length || 0} books; ${inventory?.chapters?.length || 0} accessible chapters):
 ${formatChessBookLibraryInventory(inventory)}
@@ -1452,6 +1599,8 @@ export function normalizeLibraryPlan(value, inventory, moves = []) {
 }
 
 function passageFromRow(row) {
+  const rawText = String(row.text);
+  const sourcePage = rawText.match(/^Source page:\s*(https:\/\/\S+)\s*/i);
   return {
     chunkId: String(row.chunk_id),
     bookId: String(row.book_id),
@@ -1464,8 +1613,13 @@ function passageFromRow(row) {
     pdfPageEnd: Number(row.pdf_page_end),
     printedPageStart: row.printed_page_start === null ? null : Number(row.printed_page_start),
     printedPageEnd: row.printed_page_end === null ? null : Number(row.printed_page_end),
-    excerpt: String(row.text).replace(/\s+/g, " ").trim().slice(0, MAX_EXCERPT_CHARACTERS),
+    excerpt: rawText
+      .replace(/^Source page:\s*https:\/\/\S+\s*/i, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, MAX_EXCERPT_CHARACTERS),
     localPath: String(row.local_path),
+    sourceUrl: sourcePage ? sourcePage[1] : "",
     openingLines: [],
   };
 }
@@ -1498,7 +1652,12 @@ function getScopedPassageCandidates(database, category) {
     .all(...parameters);
 }
 
-function passageRelevanceScore(row, category, exactOpeningMatches = []) {
+function passageRelevanceScore(
+  row,
+  category,
+  exactOpeningMatches = [],
+  structureMatches = [],
+) {
   const haystack =
     `${row.book_title} ${row.author} ${row.shelf} ${row.chapter_title} ${row.text}`.toLowerCase();
   const terms = [];
@@ -1525,13 +1684,25 @@ function passageRelevanceScore(row, category, exactOpeningMatches = []) {
       score += 40;
     }
   }
+  for (const match of structureMatches) {
+    if (match.sourceChunkId && match.sourceChunkId === String(row.chunk_id)) score += 700;
+    else if (
+      match.chapterId &&
+      match.chapterId === String(row.chapter_id) &&
+      match.bookId === String(row.book_id)
+    ) {
+      score += 300;
+    } else if (match.bookId === String(row.book_id)) {
+      score += 60;
+    }
+  }
   return score;
 }
 
 export function retrievePlannedBookPassages(
   database,
   plan,
-  { perCategory = 3, totalLimit = 18, exactOpeningMatches = [] } = {},
+  { perCategory = 3, totalLimit = 18, exactOpeningMatches = [], structureMatches = [] } = {},
 ) {
   const passageById = new Map();
   const categoryPassageIds = {};
@@ -1539,7 +1710,7 @@ export function retrievePlannedBookPassages(
     const candidates = getScopedPassageCandidates(database, category)
       .map((row) => ({
         row,
-        score: passageRelevanceScore(row, category, exactOpeningMatches),
+        score: passageRelevanceScore(row, category, exactOpeningMatches, structureMatches),
       }))
       .sort(
         (left, right) =>
@@ -1600,6 +1771,7 @@ export function buildStructuredPhoneCoachPrompt({
   categoryPassageIds,
   derivedEvidence = null,
   exactOpeningMatches = [],
+  structureMatches = [],
 }) {
   const sources = bookPassages.map((passage) => ({
     chunkId: passage.chunkId,
@@ -1637,6 +1809,7 @@ Grounding rules:
 - Every bookReferences.chunkId must exactly match a supplied chunkId available to that planned category. Never invent a title, author, chapter, page, quotation, chunk ID, evaluation, or line.
 - Paraphrase source lessons. Do not reproduce long excerpts and do not claim an author analyzed this exact game.
 - exactOpeningLines are legality-checked move trees recovered from the cited book pages. Use them for concrete comparison at matchedGamePly, including whether the player followed the cited continuation or diverged. Do not substitute an uncited database line.
+- STRUCTURE_PLAN records are exact pawn-placement matches to plan-led course chapters. Treat them as the strategic default map, then test that map against this game's exact piece placement, tempi, move order, and engine evidence. State why a standard plan works now, needs preparation, or is wrong here.
 - The exact-position opening-family anchor below controls the family actually reached; the plan's openingClassification may refine it to a compatible sub-variation. Do not rename a transposed d4/c4 position after an earlier 1.Nf3 repertoire, and do not portray departure from an arbitrary repertoire as an error.
 - Every derived key moment carries an evidence-based nature assessment and concrete facts. Check the label against the supplied SAN lines: explain a tactical mistake tactically — quote the punishing line, name what it wins, and name the motif (loose piece, fork, pin, overloaded defender, back rank, mate net). Explain a positional mistake positionally — name the structural or planning cost (weak square, bad piece, lost tempo, wrong pawn break, king safety, worse endgame). Never explain a forced material loss in vague positional language. For mixed or low-confidence cases, explain both layers or resolve the uncertainty from the supplied engine lines; concrete engine facts always outrank the heuristic label.
 - Quote engine variations using the SAN continuations supplied in the key moments verbatim. Do not re-derive, extend, or translate UCI yourself, and do not quote a line that is not supplied.
@@ -1644,7 +1817,8 @@ Grounding rules:
 - Keep the AI-selected category IDs, labels, and order. Do not add a fixed generic section.
 - Each category explanation should connect concrete positions to the human decision, the engine evidence, the better plan, and the cited teaching lesson.
 - A position ply identifies the move just played: ply 1 is White's first move. Use only plies in the supplied trace.
-- When an opening category was selected, be unusually specific: identify the exact relevant move/position, the pawn structure and piece placement, thematic plans and breaks for both sides, typical exchanges and manoeuvres, move-order ideas, what the played move misunderstood, and how the selected opening chapter applies. Compare the game against the exact book lines: name the ply where it followed and the ply where it diverged. Do not settle for generic development principles.
+- When an opening category was selected, lead with a plan-first strategic map before any variation: name the structure; give both sides' plans and counterplay; identify ideal and misplaced pieces; explain thematic breaks, exchanges, and manoeuvres; then show the smallest concrete line needed as proof or illustration. Do not narrate a book line move by move as the explanation.
+- Make that strategic map specific to the played position: identify the exact move/ply and current squares that make each standard plan viable, premature, or unavailable; say what the played move misunderstood and how the selected chapter applies. Compare against exact book lines only after the plan explanation, naming relevant follow/diverge plies without implying that repertoire departure is itself an error.
 - Be personal and memorable, never generic: anchor every lesson to this game's exact squares, pieces, and move numbers, and give each key moment one short transferable takeaway phrased from this game (for example “the knight on d5 had no retreat once ...c6 came — check retreat squares before advancing”). Delete any sentence that could appear unchanged in a review of a different game.
 - Use Markdown inside explanation fields sparingly. Do not put category headings inside them because the UI provides tabs.
 - Answer the user's question directly in overview and finish with a short ordered priorities list. Each priority must name the habit to train, tie it to a move from this game, and give one concrete practice method.
@@ -1673,6 +1847,9 @@ ${formatCoachTraceForPrompt(moveAnalysis, derivedEvidence)}
 
 Exact position matches in indexed opening-book lines:
 ${formatExactOpeningMatches(exactOpeningMatches)}
+
+Exact pawn-structure matches in plan-led course chapters:
+${formatPawnStructureMatches(structureMatches)}
 
 AI-selected library plan:
 ${JSON.stringify(
@@ -2227,6 +2404,7 @@ Rules:
 - Never invent an evaluation, move line, title, author, page, quotation, or citation.
 - Use a retrieved principle only when relevant. Name the complete real book title and chapter immediately; never display a numbered placeholder such as “Book 3”. Paraphrase; do not reproduce long passages.
 - Do not claim a book analysed this exact game unless the passage actually does.
+- For an opening explanation, lead with the reached structure's plans for both sides, piece placement, thematic breaks, exchanges, and counterplay. Tie each plan to the exact pieces and squares in this position, and use concrete variations only as short proof or illustration.
 - If the cache did not supply whole-game moments, say that limitation and restrict concrete engine claims to the current position.
 - Keep the answer compact but instructive. Prefer **Direct answer**, **Critical moments**, **What to play instead**, and **Training lesson** when they help.
 

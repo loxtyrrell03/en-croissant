@@ -1,5 +1,28 @@
 # AGENTS.md
 
+- On 2026-08-07, opening explanations in both AI Coach surfaces became
+  plan-first instead of book-line-first. Corpus schema v3 adds deterministic
+  full-pawn-placement `structure_anchors`; the phone Node service and native
+  Rust coach match played positions against those anchors before library
+  planning, prioritize the matching plan chapter during retrieval, and tell
+  the model to lead with the structure, plans/counterplay for both sides,
+  ideal and misplaced pieces, thematic breaks, exchanges, and manoeuvres.
+  Every standard plan must still be filtered through the exact pieces, squares,
+  tempi, move order, and Stockfish evidence in the played position. Concrete
+  variations are proof or illustration, not the outline of the explanation.
+  The private user-owned *Chess Structures: A Grandmaster Guide* Chessable
+  export (30 chapter PGNs, 853 annotated variations) is ingested locally with
+  tolerant legality checking and 75 structure anchors; its text must never be
+  redistributed. The lawful supplemental shelf also includes a revision-pinned
+  151-page CC BY-SA 4.0 snapshot of broad Wikibooks *Chess Opening Theory*
+  family pages with permanent-link attribution and public-domain Capablanca
+  *Chess Fundamentals*. Preserve source/access scopes, attribution, older-corpus
+  fallback when `structure_anchors` is absent, exact-position opening identity,
+  and engine-over-book authority. Rebuild with
+  `scripts/sync-open-chess-sources.py` then
+  `scripts/build-chess-book-corpus.py`; regressions cover tolerant PGN parsing,
+  structure-key parity, plan-led retrieval, and both coach prompts.
+
 - On 2026-07-25, Outpost's desktop PGN parser stopped overwriting adjacent
   comment blocks at the same position. Chessable exports often put a full
   lesson annotation beside an exporter-only `{-KEY-}` marker, so the old

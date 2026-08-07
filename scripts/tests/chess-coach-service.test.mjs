@@ -18,6 +18,7 @@ import {
   codexUsageLimitFromOutput,
   collectPcCoachPositionEvaluations,
   findExactOpeningBookMatches,
+  findPawnStructureBookMatches,
   getChessBookLibraryInventory,
   normalizeCloudCoachEvaluation,
   normalizeChessCoachRequestPayload,
@@ -26,6 +27,7 @@ import {
   normalizeStructuredCoachReview,
   normalizeWebCoachReviewStore,
   parseStockfishCoachInfo,
+  pawnStructureKey,
   preserveConfirmedCodexAuthentication,
   probeCodexAuthentication,
   publicChessCoachFailure,
@@ -804,6 +806,115 @@ test("AI planner is restricted to real accessible chapters and retrieval stays i
   database.close();
 });
 
+test("pawn-structure matches prioritize plan-led chapters and plan-first prompts", () => {
+  const database = new DatabaseSync(":memory:");
+  database.exec(`
+    CREATE TABLE books (
+      book_id TEXT PRIMARY KEY, title TEXT, author TEXT, shelf TEXT, local_path TEXT
+    );
+    CREATE TABLE chapters (
+      chapter_id TEXT PRIMARY KEY, book_id TEXT, title TEXT
+    );
+    CREATE TABLE chunks (
+      chunk_id TEXT PRIMARY KEY, book_id TEXT, chapter_id TEXT, chapter_title TEXT,
+      pdf_page_start INTEGER, pdf_page_end INTEGER, printed_page_start INTEGER,
+      printed_page_end INTEGER, sequence_in_page INTEGER, citation TEXT, text TEXT
+    );
+    CREATE TABLE structure_anchors (
+      anchor_id TEXT PRIMARY KEY, book_id TEXT, chapter_id TEXT, source_chunk_id TEXT,
+      label TEXT, fen TEXT, pawn_key TEXT, source_order INTEGER, confidence REAL
+    );
+    INSERT INTO books VALUES
+      ('structures-course', 'Chess Structures: A Grandmaster Guide', 'Mauricio Flores Rios',
+       'Pawn Structures', '');
+    INSERT INTO chapters VALUES
+      ('carlsbad', 'structures-course', 'The Carlsbad Formation');
+    INSERT INTO chunks VALUES
+      ('generic', 'structures-course', 'carlsbad', 'The Carlsbad Formation',
+       1, 1, NULL, NULL, 0, 'Private course variation 1',
+       'A generic model game note.'),
+      ('carlsbad-plans', 'structures-course', 'carlsbad', 'The Carlsbad Formation',
+       2, 2, NULL, NULL, 0, 'Private course variation 2',
+       'White can use the minority attack or prepare e4; Black seeks ...Ne4 and ...c5 counterplay.');
+  `);
+  database
+    .prepare("UPDATE chunks SET text=? WHERE chunk_id='carlsbad-plans'")
+    .run(
+      `White's plans: prepare the minority attack or e4. ${"Position-specific context. ".repeat(55)} Black's plans: seek ...Ne4 and ...c5 counterplay.`,
+    );
+  const fen = "4k3/ppp2ppp/8/3p4/3P4/4P3/PP3PPP/4K3 w - - 0 1";
+  const key = pawnStructureKey(fen);
+  assert.equal(key.length, 64);
+  database
+    .prepare("INSERT INTO structure_anchors VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+    .run(
+      "carlsbad-anchor",
+      "structures-course",
+      "carlsbad",
+      "carlsbad-plans",
+      "The Carlsbad Formation",
+      fen,
+      key,
+      2,
+      1,
+    );
+  const structureMatches = findPawnStructureBookMatches(database, [
+    { ply: 12, fenBefore: fen, fenAfter: fen },
+  ]);
+  assert.equal(structureMatches.length, 1);
+  assert.equal(structureMatches[0].chapterTitle, "The Carlsbad Formation");
+  assert.equal(structureMatches[0].matchedGamePly, 12);
+  assert.match(structureMatches[0].excerpt, /Black's plans/);
+  assert.deepEqual(
+    findPawnStructureBookMatches(database, [{ ply: 80, fenBefore: fen, fenAfter: fen }]),
+    [],
+  );
+  assert.equal(
+    findPawnStructureBookMatches(database, [], {
+      currentFen: fen.replace("0 1", "0 8"),
+    })[0].chapterTitle,
+    "The Carlsbad Formation",
+  );
+
+  const libraryPlan = {
+    overview: "The structure determines the plan.",
+    openingClassification: {
+      relevant: true,
+      initialMoveOrder: "Queen's Gambit",
+      resultingFamily: "Carlsbad structure",
+      classificationPly: 12,
+      transposition: false,
+      explanation: "The pawn placement is decisive.",
+    },
+    categories: [
+      {
+        id: "opening-plans",
+        label: "Carlsbad plans",
+        reason: "The player needed a plan.",
+        keyPlies: [12],
+        bookIds: ["structures-course"],
+        chapterIds: ["carlsbad"],
+        searchQueries: ["minority attack e4 counterplay"],
+      },
+    ],
+  };
+  const retrieval = retrievePlannedBookPassages(database, libraryPlan, { structureMatches });
+  assert.equal(retrieval.passages[0].chunkId, "carlsbad-plans");
+  const prompt = buildLibraryPlannerPrompt({
+    question: "Explain my opening",
+    pgn: "1. d4 d5",
+    playerColor: "white",
+    scope: "whole-game",
+    currentFen: fen,
+    moveAnalysis: [{ ply: 12 }],
+    inventory: { books: [], chapters: [] },
+    structureMatches,
+  });
+  assert.match(prompt, /STRUCTURE_PLAN/);
+  assert.match(prompt, /strategic map/);
+  database.close();
+});
+
 test("structured review keeps AI categories but rejects invented source and position ids", () => {
   const libraryPlan = {
     overview: "Plan overview",
@@ -895,7 +1006,9 @@ test("structured review keeps AI categories but rejects invented source and posi
     categoryPassageIds: { opening: ["real-source"] },
   });
   assert.match(prompt, /complete real title/);
-  assert.match(prompt, /exact relevant move\/position/);
+  assert.match(prompt, /exact move\/ply and current squares/);
+  assert.match(prompt, /plan-first strategic map/);
+  assert.match(prompt, /Do not narrate a book line move by move/);
   assert.doesNotMatch(prompt, /\[Book \d+\]/);
 });
 

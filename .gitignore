@@ -10,6 +10,8 @@ lerna-debug.log*
 node_modules
 coverage
 tmp/
+__pycache__/
+*.py[cod]
 dist
 dist-ssr
 public/web-library/

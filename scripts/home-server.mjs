@@ -37,6 +37,7 @@ import {
   COACH_LIBRARY_PLAN_SCHEMA,
   COACH_REVIEW_SCHEMA,
   findExactOpeningBookMatches,
+  findPawnStructureBookMatches,
   getChessBookLibraryInventory,
   normalizeCloudCoachEvaluation,
   normalizeLibraryPlan,
@@ -1619,6 +1620,9 @@ async function runPhoneCoachReview(payload, signal) {
   const pcAnalysis = await runPcCoachGameAnalysis(payload, signal);
   const { moveAnalysis, criticalMoments, analysisCoverage } = pcAnalysis;
   const exactOpeningMatches = findExactOpeningBookMatches(database, payload.moves);
+  const structureMatches = findPawnStructureBookMatches(database, payload.moves, {
+    currentFen: payload.currentFen,
+  });
 
   const inventory = getChessBookLibraryInventory(database);
   updatePhoneCoachProgress(
@@ -1634,6 +1638,7 @@ async function runPhoneCoachReview(payload, signal) {
       moveAnalysis,
       inventory,
       exactOpeningMatches,
+      structureMatches,
       derivedEvidence: pcAnalysis.derived,
     }),
     {
@@ -1654,7 +1659,7 @@ async function runPhoneCoachReview(payload, signal) {
   const { passages: bookPassages, categoryPassageIds } = retrievePlannedBookPassages(
     database,
     libraryPlan,
-    { exactOpeningMatches },
+    { exactOpeningMatches, structureMatches },
   );
   if (bookPassages.length === 0) {
     throw new Error("The AI-selected chapters did not contain any accessible source passages.");
@@ -1671,6 +1676,7 @@ async function runPhoneCoachReview(payload, signal) {
       categoryPassageIds,
       derivedEvidence: pcAnalysis.derived,
       exactOpeningMatches,
+      structureMatches,
     }),
     {
       outputSchemaPath: coachReviewSchemaPath,
@@ -1999,7 +2005,9 @@ async function getCoachModelAuthentication() {
 function publicBookPassages(passages) {
   return passages.map(({ localPath: _localPath, ...passage }) => ({
     ...passage,
-    sourceUrl: `/api/chess-books/pdf?bookId=${encodeURIComponent(passage.bookId)}`,
+    sourceUrl:
+      passage.sourceUrl ||
+      (_localPath ? `/api/chess-books/pdf?bookId=${encodeURIComponent(passage.bookId)}` : ""),
   }));
 }
 

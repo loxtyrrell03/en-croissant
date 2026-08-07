@@ -57,7 +57,7 @@ const MAX_PLAN_COACH_SUMMARY_CHARS: usize = 1_600;
 const MAX_GEMINI_ERROR_CHARS: usize = 1_200;
 const MAX_BOOK_PASSAGES: usize = 18;
 const MAX_BOOK_PASSAGES_PER_CATEGORY: usize = 3;
-const MAX_BOOK_EXCERPT_CHARS: usize = 1_100;
+const MAX_BOOK_EXCERPT_CHARS: usize = 2_400;
 const MAX_COACH_CATEGORIES: usize = 6;
 const MAX_LIBRARY_BOOKS_PER_CATEGORY: usize = 8;
 const MAX_LIBRARY_CHAPTERS_PER_CATEGORY: usize = 12;
@@ -1882,8 +1882,47 @@ struct CoachExactOpeningMatch {
     line: CoachBookLine,
 }
 
+#[derive(Debug, Clone)]
+struct CoachPawnStructureMatch {
+    book_id: String,
+    title: String,
+    author: String,
+    chapter_id: Option<String>,
+    chapter_title: String,
+    source_chunk_id: Option<String>,
+    citation: String,
+    label: String,
+    matched_game_ply: u32,
+    confidence: f64,
+    excerpt: String,
+}
+
 fn coach_fen_key(fen: &str) -> String {
     fen.split_whitespace().take(4).collect::<Vec<_>>().join(" ")
+}
+
+fn coach_pawn_structure_key(fen: &str) -> Option<String> {
+    let board = fen.split_whitespace().next()?;
+    let ranks = board.split('/').collect::<Vec<_>>();
+    if ranks.len() != 8 {
+        return None;
+    }
+    let mut key = String::with_capacity(64);
+    for rank in ranks {
+        let before = key.len();
+        for character in rank.chars() {
+            match character {
+                '1'..='8' => key.extend(std::iter::repeat_n('.', character.to_digit(10)? as usize)),
+                'P' | 'p' => key.push(character),
+                _ if character.is_ascii_alphabetic() => key.push('.'),
+                _ => return None,
+            }
+        }
+        if key.len() - before != 8 {
+            return None;
+        }
+    }
+    (key.len() == 64).then_some(key)
 }
 
 fn exact_opening_book_matches(
@@ -2177,6 +2216,214 @@ fn exact_opening_book_matches(
     Ok(result)
 }
 
+fn pawn_structure_book_matches(
+    request: &AiCoachRequest,
+) -> Result<Vec<CoachPawnStructureMatch>, String> {
+    let Some(corpus_path) = chess_book_corpus_path() else {
+        return Ok(Vec::new());
+    };
+    let mut deepest_by_key: HashMap<String, (u32, String)> = HashMap::new();
+    for point in &request.game_analysis {
+        let positions = [
+            (point.ply.saturating_sub(1), point.before_fen.as_deref()),
+            (point.ply, Some(point.fen.as_str())),
+        ];
+        for (position_ply, fen) in positions {
+            if !(2..=40).contains(&position_ply) {
+                continue;
+            }
+            let Some(fen) = fen else { continue };
+            let Some(pawn_key) = coach_pawn_structure_key(fen) else {
+                continue;
+            };
+            if pawn_key
+                .chars()
+                .filter(|piece| matches!(piece, 'P' | 'p'))
+                .count()
+                < 4
+            {
+                continue;
+            }
+            if deepest_by_key
+                .get(&pawn_key)
+                .is_none_or(|(known_ply, _)| *known_ply < position_ply)
+            {
+                deepest_by_key.insert(pawn_key, (position_ply, fen.to_string()));
+            }
+        }
+    }
+    let current_fields = request.fen.split_whitespace().collect::<Vec<_>>();
+    let current_position_ply = current_fields
+        .get(5)
+        .and_then(|fullmove| fullmove.parse::<u32>().ok())
+        .filter(|fullmove| *fullmove > 0)
+        .map(|fullmove| {
+            (fullmove - 1) * 2
+                + u32::from(current_fields.get(1).is_some_and(|side| *side == "b"))
+        })
+        .unwrap_or(0);
+    if (2..=40).contains(&current_position_ply) {
+        if let Some(pawn_key) = coach_pawn_structure_key(&request.fen) {
+            if pawn_key
+                .chars()
+                .filter(|piece| matches!(piece, 'P' | 'p'))
+                .count()
+                >= 4
+                && deepest_by_key
+                    .get(&pawn_key)
+                    .is_none_or(|(known_ply, _)| *known_ply < current_position_ply)
+            {
+                deepest_by_key.insert(
+                    pawn_key,
+                    (current_position_ply, request.fen.clone()),
+                );
+            }
+        }
+    }
+    if deepest_by_key.is_empty() {
+        return Ok(Vec::new());
+    }
+    let connection = Connection::open_with_flags(corpus_path, OpenFlags::SQLITE_OPEN_READ_ONLY)
+        .map_err(|error| error.to_string())?;
+    let has_index = connection
+        .query_row(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='structure_anchors'",
+            [],
+            |row| row.get::<_, i64>(0),
+        )
+        .map_err(|error| error.to_string())?
+        > 0;
+    if !has_index {
+        return Ok(Vec::new());
+    }
+    let keys = deepest_by_key.keys().cloned().collect::<Vec<_>>();
+    let placeholders = std::iter::repeat_n("?", keys.len())
+        .collect::<Vec<_>>()
+        .join(", ");
+    let sql = format!(
+        r#"
+        SELECT anchor.anchor_id, anchor.book_id, book.title, book.author,
+               anchor.chapter_id, COALESCE(chapter.title, anchor.label, ''),
+               anchor.source_chunk_id, COALESCE(chunk.citation, ''), anchor.label,
+               anchor.pawn_key, anchor.confidence, COALESCE(chunk.text, '')
+        FROM structure_anchors AS anchor
+        JOIN books AS book ON book.book_id=anchor.book_id
+        LEFT JOIN chapters AS chapter ON chapter.chapter_id=anchor.chapter_id
+        LEFT JOIN chunks AS chunk ON chunk.chunk_id=anchor.source_chunk_id
+        WHERE anchor.pawn_key IN ({placeholders})
+        "#
+    );
+    let mut statement = connection
+        .prepare(&sql)
+        .map_err(|error| error.to_string())?;
+    let rows = statement
+        .query_map(params_from_iter(keys.iter()), |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, String>(3)?,
+                row.get::<_, Option<String>>(4)?,
+                row.get::<_, String>(5)?,
+                row.get::<_, Option<String>>(6)?,
+                row.get::<_, String>(7)?,
+                row.get::<_, String>(8)?,
+                row.get::<_, String>(9)?,
+                row.get::<_, f64>(10)?,
+                row.get::<_, String>(11)?,
+            ))
+        })
+        .map_err(|error| error.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|error| error.to_string())?;
+    let mut candidates = rows
+        .into_iter()
+        .filter_map(
+            |(
+                anchor_id,
+                book_id,
+                title,
+                author,
+                chapter_id,
+                chapter_title,
+                source_chunk_id,
+                citation,
+                label,
+                pawn_key,
+                confidence,
+                excerpt,
+            )| {
+                let (matched_game_ply, _) = deepest_by_key.get(&pawn_key)?;
+                Some((
+                    anchor_id,
+                    CoachPawnStructureMatch {
+                        book_id,
+                        title,
+                        author,
+                        chapter_id,
+                        chapter_title,
+                        source_chunk_id,
+                        citation,
+                        label,
+                        matched_game_ply: *matched_game_ply,
+                        confidence,
+                        excerpt: truncate_plan_coach_text(
+                            &excerpt.split_whitespace().collect::<Vec<_>>().join(" "),
+                            2_400,
+                        ),
+                    },
+                ))
+            },
+        )
+        .collect::<Vec<_>>();
+    candidates.sort_by(|(_, left), (_, right)| {
+        right
+            .matched_game_ply
+            .cmp(&left.matched_game_ply)
+            .then_with(|| right.confidence.total_cmp(&left.confidence))
+            .then_with(|| left.label.cmp(&right.label))
+    });
+    let mut seen_anchors = HashSet::new();
+    let mut per_book: HashMap<String, usize> = HashMap::new();
+    let mut result = Vec::new();
+    for (anchor_id, candidate) in candidates {
+        let count = per_book.entry(candidate.book_id.clone()).or_default();
+        if !seen_anchors.insert(anchor_id) || *count >= 3 {
+            continue;
+        }
+        *count += 1;
+        result.push(candidate);
+        if result.len() >= 12 {
+            break;
+        }
+    }
+    Ok(result)
+}
+
+fn format_pawn_structure_matches(matches: &[CoachPawnStructureMatch]) -> String {
+    if matches.is_empty() {
+        return "No exact pawn-structure plan chapter matched this game.".to_string();
+    }
+    matches
+        .iter()
+        .map(|structure_match| {
+            format!(
+                "STRUCTURE_PLAN|book={book_id}|chapter={chapter_id}|game_position_after_ply={game_ply}|label={label}|{title}|{author}|{chapter}|{citation}|PLAN_NOTE={excerpt}",
+                book_id = structure_match.book_id,
+                chapter_id = structure_match.chapter_id.as_deref().unwrap_or_default(),
+                game_ply = structure_match.matched_game_ply,
+                label = structure_match.label,
+                title = structure_match.title,
+                author = structure_match.author,
+                chapter = structure_match.chapter_title,
+                citation = structure_match.citation,
+                excerpt = structure_match.excerpt,
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 fn format_exact_opening_matches(matches: &[CoachExactOpeningMatch]) -> String {
     if matches.is_empty() {
         return "No exact indexed book-line position matched this game.".to_string();
@@ -2227,6 +2474,7 @@ fn build_library_planner_prompt(
     inventory: &CoachLibraryInventory,
     pc_game_analysis: Option<&CoachPcGameAnalysis>,
     exact_opening_matches: &[CoachExactOpeningMatch],
+    structure_matches: &[CoachPawnStructureMatch],
 ) -> Result<String, CoachError> {
     let inventory_json = serde_json::to_string(inventory)?;
     let pgn = request
@@ -2249,6 +2497,7 @@ fn build_library_planner_prompt(
         format_deterministic_opening_identification(request, pc_game_analysis);
     let pc_game_analysis = format_pc_game_analysis(pc_game_analysis);
     let exact_opening_matches = format_exact_opening_matches(exact_opening_matches);
+    let structure_matches = format_pawn_structure_matches(structure_matches);
 
     Ok(format!(
         r#"Role: You are the librarian and curriculum designer for a private AI chess coach.
@@ -2265,10 +2514,12 @@ Rules:
 - Derived key moments in the PC trace carry an evidence-based tactical/positional/mixed assessment plus concrete SAN, mate, forcing-move, and material signals. Validate the label against those supplied facts and engine lines. Forced material loss or mate needs calculation/tactics material; a quiet concession with no tactical signal needs positional/strategic material. If the evidence is uncertain, select material that can teach both layers instead of forcing a false explanation.
 - Judge which lessons matter by teaching value, not raw eval loss: a decisive swing in a holdable position outranks further losses in an already-lost position, and a motif repeated across moves deserves one category with several keyPlies.
 - EXACT_LINE records are evidence for their listed position, not automatic labels for the whole opening. A `shallow_move_order_divergence` may describe only how the game left that repertoire and must not outrank a later transposed structure. A `transposed_position` is an exact position match reached by a different move order.
+- STRUCTURE_PLAN records are deterministic matches on the complete White-and-Black pawn placement. Prefer their named plan chapter when this game's pieces and move timing make its lesson applicable. They establish a strategic map, not a tactical verdict: validate every standard plan against the exact piece placement, whose move it is, and Stockfish evidence.
 - Never call leaving an arbitrary repertoire a mistake or imply that the player intended that repertoire. Only criticize a move when the PC evidence or a genuinely applicable resulting-position lesson supports the criticism.
 - EXACT_LINE records are legality-checked, position-indexed lines recovered from installed book pages. When one is materially relevant, select that exact book/chapter and distinguish whether the game followed the cited move or diverged.
-- For an opening category, inspect the exact move order and early positions. Select chapters that can teach the resulting opening ideas, pawn structures, typical piece placement, thematic breaks, plans, and transition—not merely a generic book whose title contains "opening".
-- The catalogue includes every one of the 103 owned/catalogued books. `hasExcerpt=false` means no passage can currently be retrieved from that title. Only chapter IDs in the `chapters` array are accessible and chunk-backed.
+- For an opening category, inspect the exact move order and early positions. Prefer STRUCTURE_PLAN chapters and other material that teaches plans for both sides, ideal and misplaced pieces, thematic breaks, useful and harmful exchanges, manoeuvres, counterplay, and transition—not merely a generic book whose title contains "opening".
+- Plan opening coverage before choosing variations. The final lesson should lead with the position's strategic map; use the shortest concrete line needed to prove or illustrate a plan, not as the outline of the explanation.
+- The catalogue includes every owned, catalogued, and supplemental source in the inventory below. `hasExcerpt=false` means no passage can currently be retrieved from that title. Only chapter IDs in the `chapters` array are accessible and chunk-backed.
 - Prefer exact accessible chapters. A book ID may supplement them when its available excerpt is relevant. Never invent or alter an ID.
 - `keyPlies` must refer to supplied game-analysis plies. `searchQueries` should be short chess concepts or exact opening/structure terms that help locate the best passage inside your selected chapters/books.
 - This is selection only. Do not write the coaching answer and do not quote book text.
@@ -2296,6 +2547,9 @@ Targeted Stockfish evidence:
 
 Exact position matches in indexed opening-book lines:
 {exact_opening_matches}
+
+Exact pawn-structure matches in plan-led course chapters:
+{structure_matches}
 
 Library catalogue JSON (book IDs plus only accessible, chunk-backed chapters):
 {inventory_json}
@@ -2491,6 +2745,7 @@ fn select_diversified_book_candidates<'a>(
 fn search_chess_book_passages(
     plan: &CoachLibraryPlan,
     exact_opening_matches: &[CoachExactOpeningMatch],
+    structure_matches: &[CoachPawnStructureMatch],
 ) -> Result<(bool, CoachBookRetrieval), String> {
     let Some(corpus_path) = chess_book_corpus_path() else {
         return Ok((false, CoachBookRetrieval::default()));
@@ -2619,6 +2874,19 @@ fn search_chess_book_passages(
                         score += 200_000;
                     } else if exact_match.book_id == candidate.passage.book_id {
                         score += 40_000;
+                    }
+                }
+                for structure_match in structure_matches {
+                    if structure_match.source_chunk_id.as_deref()
+                        == Some(candidate.passage.chunk_id.as_str())
+                    {
+                        score += 700_000;
+                    } else if structure_match.book_id == candidate.passage.book_id
+                        && structure_match.chapter_id.as_deref() == candidate.chapter_id.as_deref()
+                    {
+                        score += 300_000;
+                    } else if structure_match.book_id == candidate.passage.book_id {
+                        score += 60_000;
                     }
                 }
                 Some((score, candidate))
@@ -3548,6 +3816,8 @@ async fn ask_ai_coach_inner(
     let book_corpus_available = true;
     let exact_opening_matches =
         exact_opening_book_matches(&request).map_err(CoachError::GeminiLibraryPlannerMalformed)?;
+    let structure_matches =
+        pawn_structure_book_matches(&request).map_err(CoachError::GeminiLibraryPlannerMalformed)?;
     let librarian_prompt = build_library_planner_prompt(
         &request,
         &stockfish_lines,
@@ -3555,6 +3825,7 @@ async fn ask_ai_coach_inner(
         &inventory,
         pc_game_analysis.as_ref(),
         &exact_opening_matches,
+        &structure_matches,
     )?;
     let library_schema = library_plan_output_schema();
     let library_output = run_gemini_cli_with_schema(
@@ -3581,8 +3852,9 @@ async fn ask_ai_coach_inner(
                 .to_string(),
         ));
     }
-    let (_, book_retrieval) = search_chess_book_passages(&library_plan, &exact_opening_matches)
-        .map_err(CoachError::GeminiLibraryPlannerMalformed)?;
+    let (_, book_retrieval) =
+        search_chess_book_passages(&library_plan, &exact_opening_matches, &structure_matches)
+            .map_err(CoachError::GeminiLibraryPlannerMalformed)?;
     if library_plan.categories.iter().any(|category| {
         book_retrieval
             .category_chunks
@@ -4081,7 +4353,7 @@ fn build_coach_prompt_with_facts(
         "local Stockfish root MultiPV"
     };
     let scope_rules = if opening_phase {
-        "- This is an opening-phase review of the loaded game. Focus on the opening and early transition only, roughly moves 1-15 / plies 1-30.\n- Do not answer a previous chat topic, current endgame position, or later middlegame tactic unless the user explicitly asks to connect it to the opening.\n- Use the whole-game PGN to identify the exact opening move order, the first position where the setup or structure changed, and the phase boundary. Use opening-phase stored analysis and targeted opening Stockfish results as concrete evidence.\n- Explain the actual pawn structure, intended piece placement, thematic breaks, plans for both sides, and how the game position differs from the relevant named book chapter. Generic development advice is not enough.\n- Do not include a Critical moments section about later blunders such as move 19 unless the latest question explicitly asks for later critical moments.".to_string()
+        "- This is an opening-phase review of the loaded game. Focus on the opening and early transition only, roughly moves 1-15 / plies 1-30.\n- Do not answer a previous chat topic, current endgame position, or later middlegame tactic unless the user explicitly asks to connect it to the opening.\n- Use the whole-game PGN to identify the exact opening move order, the first position where the setup or structure changed, and the phase boundary. Use opening-phase stored analysis and targeted opening Stockfish results as concrete evidence.\n- Lead with a plan-first strategic map: name the actual pawn structure; give both sides' plans and counterplay; identify ideal and misplaced pieces; explain thematic breaks, useful and harmful exchanges, and manoeuvres. Then use the shortest concrete line needed as proof or illustration, not as the outline of the explanation.\n- Tie every standard plan to the exact move, squares, pieces, and tempi in the played position; say why it works now, needs preparation, or is unavailable here, and how the position differs from the relevant named book chapter. Generic development advice is not enough.\n- Do not include a Critical moments section about later blunders such as move 19 unless the latest question explicitly asks for later critical moments.".to_string()
     } else if middlegame_phase {
         "- This is a middlegame-phase review of the loaded game. Focus on the middlegame decisions, pawn breaks, piece coordination, king safety, and transition into the later phase.\n- Do not drift into opening move-order advice or endgame conversion technique except for one short sentence of causal context if needed.\n- Use the whole-game PGN only to identify the middlegame phase and what actually happened. Use middlegame stored analysis and targeted middlegame Stockfish results as concrete evidence.\n- Do not include generic Critical moments from unrelated phases unless the latest question explicitly asks for the whole game.".to_string()
     } else if conversion_phase {
@@ -4171,7 +4443,7 @@ Core rules:
 - You may use general chess and opening knowledge for concepts, structures, plans, and naming, but only as explanation layered on top of engine-backed lines.
 - Retrieved chess-book passages are the source of truth for attributed teaching principles. Use them to explain the human lesson, while Stockfish remains the source of truth for this position's concrete verdict and variations.
 - When a retrieved passage materially supports a lesson, name the actual book and chapter in the prose and cite its exact opaque source identifier such as [Source e406ce4596c7eca833b0342e]. Never use an ordinal placeholder such as [Book 3], and never invent a title, quotation, page, author, chapter, or source identifier.
-- For opening lessons, connect the named book/chapter to an exact move or position in this game and explain the relevant setup, pawn structure, thematic breaks, and plans. Do not merely say that an opening book is relevant.
+- For opening lessons, lead with the strategic map from the named book/chapter: plans and counterplay for both sides, ideal and misplaced pieces, thematic breaks, exchanges, and manoeuvres. Connect each idea to an exact move or position in this game and explain why the exact placement makes it viable, premature, or wrong. Use book variations only as short proof or illustration, never as the explanation's structure.
 - Make every important lesson personal and memorable: anchor it to this game's exact move number, squares, and pieces, then give one short transferable takeaway and one concrete practice habit. Delete advice that could appear unchanged in a different player's review.
 - An "Exact indexed book line" is a legality-checked PGN recovered from that cited source page. Use its game-ply match for concrete comparison, state whether the played move follows or diverges from the book move, and never replace it with an uncited database line.
 - The exact-position opening-family anchor controls the family actually reached; the AI library plan's `openingClassification` may refine it to a compatible sub-variation. Do not rename a transposed d4/c4 position after an earlier 1.Nf3 repertoire, and do not portray departure from an arbitrary repertoire as an error.
@@ -4338,7 +4610,7 @@ Non-negotiable grounding rules:
 - A position entry is allowed only when its exact ply appears in `allowedPositions`; copy that entry's SAN exactly. If there are no allowed positions, return an empty positions array.
 - Every category must include at least one book reference. A reference is allowed only when its exact `chunkId` is listed for that category in `allowedCategorySources` and appears as `[Source <chunkId>]` below. Never output an ordinal label such as `[Book 3]`.
 - In the category explanation, name the actual book title and relevant chapter whenever a retrieved passage supports the lesson. Explain how that chapter connects to this game's exact move/position; do not merely list sources.
-- If opening play is materially relevant, make its category concrete: identify the exact early move/position, resulting pawn structure or piece setup, thematic breaks, plans for both sides, and why the selected named chapter applies. Do not substitute generic opening advice.
+- If opening play is materially relevant, make its category plan-first and concrete: identify the exact early move/position and structure; explain both sides' plans and counterplay, ideal and misplaced pieces, thematic breaks, exchanges, and manoeuvres; then use only a short line as proof. State why the exact squares and tempi make each standard plan applicable or inapplicable and why the selected named chapter fits. Do not substitute generic opening advice or narrate a book variation as the explanation.
 - When a source includes an "Exact indexed book line", use its matched game ply and cited PGN to say whether the game followed or diverged from that concrete book continuation.
 - The exact-position opening-family anchor below controls the family reached; keep every opening reference compatible with it.
 - Preserve the tactical-vs-positional character supported by the validated answer, the SAN lines, and the derived nature assessments. Do not soften a forced material loss into positional language, do not invent a tactic for a quiet positional error, and let concrete engine facts outrank a heuristic label if they conflict.
@@ -9569,6 +9841,21 @@ mod tests {
     }
 
     #[test]
+    fn coach_pawn_structure_key_matches_fen_rank_order() {
+        let fen = "4k3/ppp2ppp/8/3p4/3P4/4P3/PP3PPP/4K3 w - - 0 1";
+        let key = coach_pawn_structure_key(fen).expect("valid FEN board");
+        assert_eq!(key.len(), 64);
+        assert_eq!(&key[..8], "........");
+        assert_eq!(&key[8..16], "ppp..ppp");
+        assert_eq!(
+            key.chars()
+                .filter(|piece| matches!(piece, 'P' | 'p'))
+                .count(),
+            14
+        );
+    }
+
+    #[test]
     fn coach_prompt_labels_retrieved_books_as_principle_evidence() {
         let request = sample_request();
         let passage = CoachBookPassage {
@@ -9605,6 +9892,8 @@ mod tests {
         assert!(prompt.contains("never invent a title"));
         assert!(prompt.contains("openingClassification"));
         assert!(prompt.contains("Do not rename a transposed d4/c4 position"));
+        assert!(prompt.contains("lead with the strategic map"));
+        assert!(prompt.contains("Use book variations only as short proof or illustration"));
     }
 
     #[test]

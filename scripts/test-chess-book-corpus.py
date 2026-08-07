@@ -48,6 +48,11 @@ CASES = [
         "expected_books": {"practical-game-changer", "practical-silicon-road", "practical-reengineering"},
         "label": "computer chess",
     },
+    {
+        "query": "Carlsbad minority attack e4 break knight e4 c5 counterplay",
+        "expected_books": {"strategy-structures-private-course"},
+        "label": "pawn-structure plans",
+    },
 ]
 
 
@@ -90,6 +95,7 @@ def main() -> int:
                 "chunks",
                 "opening_lines",
                 "opening_line_moves",
+                "structure_anchors",
                 "embeddings",
             )
         }
@@ -138,6 +144,32 @@ def main() -> int:
             """,
             ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -",),
         ).fetchone()[0]
+        supplemental_chunk_counts = dict(
+            connection.execute(
+                """
+                SELECT book_id, COUNT(*)
+                FROM chunks
+                WHERE book_id IN (
+                    'strategy-structures-private-course',
+                    'open-wikibooks-opening-theory',
+                    'open-capablanca-chess-fundamentals'
+                )
+                GROUP BY book_id
+                """
+            ).fetchall()
+        )
+        orphan_structure_anchors = connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM structure_anchors AS anchor
+            LEFT JOIN books AS book ON book.book_id=anchor.book_id
+            LEFT JOIN chunks AS chunk ON chunk.chunk_id=anchor.source_chunk_id
+            WHERE book.book_id IS NULL OR chunk.chunk_id IS NULL
+            """
+        ).fetchone()[0]
+        carlsbad_structure_anchors = connection.execute(
+            "SELECT COUNT(*) FROM structure_anchors WHERE label LIKE '%Carlsbad%'"
+        ).fetchone()[0]
     finally:
         connection.close()
 
@@ -168,6 +200,9 @@ def main() -> int:
         "malformed_opening_lines": malformed_opening_lines,
         "broken_opening_chains": broken_opening_chains,
         "initial_position_matches": initial_position_matches,
+        "supplemental_chunk_counts": supplemental_chunk_counts,
+        "orphan_structure_anchors": orphan_structure_anchors,
+        "carlsbad_structure_anchors": carlsbad_structure_anchors,
         "retrieval_cases": case_results,
         "passed": (
             integrity == "ok"
@@ -175,6 +210,7 @@ def main() -> int:
             and counts["chunks"] > 500
             and counts["opening_lines"] > 0
             and counts["opening_line_moves"] > counts["opening_lines"]
+            and counts["structure_anchors"] > 0
             and counts["embeddings"] == counts["chunks"]
             and citation_failures == 0
             and orphan_chunks == 0
@@ -182,6 +218,16 @@ def main() -> int:
             and malformed_opening_lines == 0
             and broken_opening_chains == 0
             and initial_position_matches > 0
+            and all(
+                supplemental_chunk_counts.get(book_id, 0) > 0
+                for book_id in (
+                    "strategy-structures-private-course",
+                    "open-wikibooks-opening-theory",
+                    "open-capablanca-chess-fundamentals",
+                )
+            )
+            and orphan_structure_anchors == 0
+            and carlsbad_structure_anchors > 0
             and all(case["passed"] for case in case_results)
         ),
     }

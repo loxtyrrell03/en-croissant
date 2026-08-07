@@ -39,9 +39,14 @@ from chess_book_lines import (
     opening_line_to_dict,
     opening_lines_to_pgn,
 )
+from chess_book_supplements import (
+    StructureAnchor,
+    ingest_supplemental_source,
+    load_supplemental_manifest,
+)
 
-SCHEMA_VERSION = 2
-BUILDER_VERSION = "1.1.0"
+SCHEMA_VERSION = 3
+BUILDER_VERSION = "1.2.0"
 DEFAULT_LIBRARY_ROOT = Path.home() / "Documents" / "EnCroissant" / "AI Chess Coach Library"
 DEFAULT_EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
 TARGET_CHUNK_CHARACTERS = 2_400
@@ -421,12 +426,22 @@ def render_pdf_page(
 
 class OcrEngine:
     def __init__(self) -> None:
-        from rapidocr_onnxruntime import RapidOCR
+        try:
+            from rapidocr import RapidOCR
+        except ImportError:  # Compatibility with older corpus environments.
+            from rapidocr_onnxruntime import RapidOCR
 
         self.engine = RapidOCR()
 
     def recognize(self, image_path: Path) -> tuple[str, float]:
-        result, _elapsed = self.engine(str(image_path))
+        output = self.engine(str(image_path))
+        if hasattr(output, "txts"):
+            boxes = output.boxes if output.boxes is not None else []
+            texts = output.txts if output.txts is not None else []
+            scores = output.scores if output.scores is not None else []
+            result = list(zip(boxes, texts, scores))
+        else:
+            result, _elapsed = output
         if not result:
             return "", 0.0
         lines: list[tuple[float, float, str, float]] = []
@@ -760,7 +775,9 @@ def make_citation(book: dict, page: PageRecord) -> str:
 
 def build_chunks(book: dict, pages: Sequence[PageRecord]) -> list[ChunkRecord]:
     chunks: list[ChunkRecord] = []
-    access_scope = "publisher_excerpt" if book.get("installed_sample") else "metadata_only"
+    access_scope = book.get("access_scope") or (
+        "publisher_excerpt" if book.get("installed_sample") else "metadata_only"
+    )
     for page in pages:
         if page.is_toc or len(page.clean_text) < 80:
             continue
@@ -829,8 +846,12 @@ def embed_chunks(chunks: list[ChunkRecord], books_by_id: dict[str, dict], model_
 
 def json_safe_book(book: dict, pdf_sha256: str | None) -> dict:
     item = dict(book)
-    item["access_scope"] = "publisher_excerpt" if book.get("installed_sample") else "metadata_only"
-    item["content_scope"] = "official_publisher_excerpt" if book.get("installed_sample") else "catalogue_entry_only"
+    item["access_scope"] = book.get("access_scope") or (
+        "publisher_excerpt" if book.get("installed_sample") else "metadata_only"
+    )
+    item["content_scope"] = book.get("content_scope") or (
+        "official_publisher_excerpt" if book.get("installed_sample") else "catalogue_entry_only"
+    )
     item["pdf_sha256"] = pdf_sha256
     return item
 
@@ -910,6 +931,7 @@ def create_database(
     chapters: Sequence[ChapterRecord],
     chunks: Sequence[ChunkRecord],
     opening_lines: Sequence[OpeningLineRecord],
+    structure_anchors: Sequence[StructureAnchor],
     embedding_info: dict | None,
     run_info: dict,
 ) -> None:
@@ -1027,6 +1049,17 @@ def create_database(
                 confidence REAL NOT NULL,
                 PRIMARY KEY(line_id, move_index)
             );
+            CREATE TABLE structure_anchors (
+                anchor_id TEXT PRIMARY KEY,
+                book_id TEXT NOT NULL REFERENCES books(book_id),
+                chapter_id TEXT REFERENCES chapters(chapter_id),
+                source_chunk_id TEXT REFERENCES chunks(chunk_id),
+                label TEXT NOT NULL,
+                fen TEXT NOT NULL,
+                pawn_key TEXT NOT NULL,
+                source_order INTEGER NOT NULL,
+                confidence REAL NOT NULL
+            );
             CREATE TABLE embeddings (
                 chunk_id TEXT PRIMARY KEY REFERENCES chunks(chunk_id),
                 model TEXT NOT NULL,
@@ -1051,6 +1084,8 @@ def create_database(
             CREATE INDEX opening_line_moves_before ON opening_line_moves(fen_before_key, uci);
             CREATE INDEX opening_line_moves_after ON opening_line_moves(fen_after_key);
             CREATE INDEX opening_line_moves_source ON opening_line_moves(source_chunk_id);
+            CREATE INDEX structure_anchors_pawn_key ON structure_anchors(pawn_key);
+            CREATE INDEX structure_anchors_chapter ON structure_anchors(chapter_id);
             """
         )
         metadata = {
@@ -1062,6 +1097,7 @@ def create_database(
             "embedding_dimension": embedding_info["dimension"] if embedding_info else 0,
             "opening_line_count": len(opening_lines),
             "opening_line_move_count": sum(len(line.moves) for line in opening_lines),
+            "structure_anchor_count": len(structure_anchors),
         }
         connection.executemany(
             "INSERT INTO metadata(key, value) VALUES (?, ?)",
@@ -1178,6 +1214,23 @@ def create_database(
                 for move in line.moves
             ],
         )
+        connection.executemany(
+            """INSERT INTO structure_anchors VALUES (?,?,?,?,?,?,?,?,?)""",
+            [
+                (
+                    anchor.anchor_id,
+                    anchor.book_id,
+                    anchor.chapter_id,
+                    anchor.source_chunk_id,
+                    anchor.label,
+                    anchor.fen,
+                    anchor.pawn_key,
+                    anchor.source_order,
+                    anchor.confidence,
+                )
+                for anchor in structure_anchors
+            ],
+        )
         if embedding_info:
             connection.executemany(
                 "INSERT INTO embeddings VALUES (?,?,?,?)",
@@ -1217,6 +1270,7 @@ This directory is the machine-readable ingestion layer for the lawful chess-book
 - `chunks.jsonl` - portable page-bounded chunks with complete citations
 - `opening-lines.jsonl` - legality-checked opening variations and illustrative games with exact FEN/UCI per ply
 - `opening-lines.pgn` - the same recoverable book lines in portable PGN form
+- `structure-anchors.jsonl` - exact pawn-structure anchors tying played positions to plan-led course chapters
 - `opening-line-report.json` - per-book acceptance and unresolved-notation audit
 - `chapter-review.json` - automated chapter-map caveats for future manual review
 - `ingestion-report.json` - extraction, OCR, embedding, and integrity results
@@ -1226,7 +1280,10 @@ This directory is the machine-readable ingestion layer for the lawful chess-book
 
 {report['rights_note']}
 
-The current content scope is publisher excerpts, not complete books. Catalogue-only books have `access_scope=metadata_only` and no chunks. Installed samples have `access_scope=publisher_excerpt`. Future user-owned full books should use `access_scope=user_owned_full`.
+The content scope combines publisher excerpts, private user-owned course PGNs,
+open-licensed web material, and public-domain books. Catalogue-only books have
+`access_scope=metadata_only`; private full courses use `user_owned_full` and are
+never redistributed.
 
 ## Search
 
@@ -1258,6 +1315,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--library-root", type=Path, default=DEFAULT_LIBRARY_ROOT)
     parser.add_argument("--output", type=Path, default=None, help="Defaults to <library>/00 AI Corpus")
     parser.add_argument("--catalogue", type=Path, default=None, help="Defaults to the master catalogue JSON")
+    parser.add_argument(
+        "--supplemental-manifest",
+        type=Path,
+        default=None,
+        help="Defaults to the private/open supplemental-source manifest beside the master catalogue",
+    )
     parser.add_argument("--embedding-model", default=DEFAULT_EMBEDDING_MODEL)
     parser.add_argument("--embedding-batch-size", type=int, default=64)
     parser.add_argument("--no-embeddings", action="store_true")
@@ -1281,18 +1344,37 @@ def main() -> int:
     pdftoppm = find_pdftoppm(args.pdftoppm)
     catalogue = json.loads(catalogue_path.read_text(encoding="utf-8"))
     source_books: list[dict] = list(catalogue["books"])
+    supplemental_manifest_path = (
+        args.supplemental_manifest
+        or library_root
+        / "00 Master Library Guide"
+        / "AI Chess Coach supplemental sources.json"
+    ).resolve()
+    supplemental_sources = load_supplemental_manifest(supplemental_manifest_path)
+    known_book_ids = {book["id"] for book in source_books}
+    for source in supplemental_sources:
+        book = dict(source["book"])
+        if book["id"] in known_book_ids:
+            raise ValueError(f"Duplicate supplemental book id: {book['id']}")
+        known_book_ids.add(book["id"])
+        source_books.append(book)
     installed = [book for book in source_books if book.get("installed_sample") and book.get("local_path")]
     if args.limit:
         selected_ids = {book["id"] for book in installed[: args.limit]}
         installed = [book for book in installed if book["id"] in selected_ids]
         source_books = [book for book in source_books if book["id"] in selected_ids or not book.get("installed_sample")]
 
-    print(f"Building corpus from {len(installed)} installed PDFs and {len(source_books)} catalogue records", flush=True)
+    print(
+        f"Building corpus from {len(installed)} installed PDFs, "
+        f"{len(supplemental_sources)} supplemental sources, and {len(source_books)} catalogue records",
+        flush=True,
+    )
     started = time.monotonic()
     all_pages: list[PageRecord] = []
     all_chapters: list[ChapterRecord] = []
     all_chunks: list[ChunkRecord] = []
     all_opening_lines: list[OpeningLineRecord] = []
+    all_structure_anchors: list[StructureAnchor] = []
     opening_line_reports: list[dict] = []
     book_audits: list[dict] = []
     chapter_review: list[dict] = []
@@ -1347,6 +1429,41 @@ def main() -> int:
         book_audits.append(audit)
         chapter_review.extend(review)
 
+    for index, source in enumerate(supplemental_sources, start=1):
+        book = source["book"]
+        print(
+            f"[supplement {index:02d}/{len(supplemental_sources):02d}] {book['title']}",
+            flush=True,
+        )
+        supplemental = ingest_supplemental_source(source)
+        all_pages.extend(supplemental.pages)
+        all_chapters.extend(supplemental.chapters)
+        all_chunks.extend(supplemental.chunks)
+        all_opening_lines.extend(supplemental.opening_lines)
+        all_structure_anchors.extend(supplemental.structure_anchors)
+        book_audits.append(supplemental.audit)
+        move_count = sum(len(line.moves) for line in supplemental.opening_lines)
+        opening_line_reports.append(
+            {
+                "book_id": book["id"],
+                "move_tokens": move_count,
+                "accepted_tokens": move_count,
+                "unrooted_tokens": 0,
+                "ambiguous_tokens": 0,
+                "illegal_tokens": supplemental.audit.get("illegal_tokens", 0),
+                "opening_lines": len(supplemental.opening_lines),
+                "mapped_moves": move_count,
+                "unique_positions": len(
+                    {
+                        move.fen_before_key
+                        for line in supplemental.opening_lines
+                        for move in line.moves
+                    }
+                ),
+                "acceptance_rate": 1.0 if move_count else 0.0,
+            }
+        )
+
     normalized_books = [json_safe_book(book, pdf_hashes.get(book["id"])) for book in source_books]
     books_by_id = {book["id"]: book for book in normalized_books}
     embedding_info = None
@@ -1355,10 +1472,16 @@ def main() -> int:
         embedding_info = embed_chunks(all_chunks, books_by_id, args.embedding_model, args.embedding_batch_size)
 
     created_at = utc_now()
-    rights_note = catalogue.get(
+    rights_notes = [catalogue.get(
         "rights_note",
         "Only lawfully acquired content may be indexed. Do not redistribute publisher excerpts.",
-    )
+    )]
+    if supplemental_manifest_path.exists():
+        supplemental_manifest = json.loads(supplemental_manifest_path.read_text(encoding="utf-8"))
+        supplemental_rights = supplemental_manifest.get("rights_note")
+        if supplemental_rights:
+            rights_notes.append(str(supplemental_rights))
+    rights_note = " ".join(rights_notes)
     run_info = {"created_at": created_at, "rights_note": rights_note}
 
     write_jsonl_atomic(output_root / "books.jsonl", normalized_books)
@@ -1368,6 +1491,23 @@ def main() -> int:
     write_jsonl_atomic(
         output_root / "opening-lines.jsonl",
         (opening_line_to_dict(line) for line in all_opening_lines),
+    )
+    write_jsonl_atomic(
+        output_root / "structure-anchors.jsonl",
+        (
+            {
+                "anchor_id": anchor.anchor_id,
+                "book_id": anchor.book_id,
+                "chapter_id": anchor.chapter_id,
+                "source_chunk_id": anchor.source_chunk_id,
+                "label": anchor.label,
+                "fen": anchor.fen,
+                "pawn_key": anchor.pawn_key,
+                "source_order": anchor.source_order,
+                "confidence": anchor.confidence,
+            }
+            for anchor in all_structure_anchors
+        ),
     )
     opening_pgn_temp = output_root / "opening-lines.pgn.tmp"
     opening_pgn_temp.write_text(
@@ -1424,6 +1564,7 @@ def main() -> int:
         all_chapters,
         all_chunks,
         all_opening_lines,
+        all_structure_anchors,
         embedding_info,
         run_info,
     )
@@ -1437,10 +1578,14 @@ def main() -> int:
         "catalogue_path": str(catalogue_path),
         "output_root": str(output_root),
         "rights_note": rights_note,
-        "content_scope": "official publisher excerpts plus catalogue-only acquisition records",
+        "content_scope": (
+            "official publisher excerpts, private user-owned course PGNs, open-licensed web books, "
+            "public-domain books, and catalogue-only acquisition records"
+        ),
         "counts": {
             "catalogued_books": len(normalized_books),
             "installed_book_pdfs": len(installed),
+            "supplemental_sources": len(supplemental_sources),
             "metadata_only_books": sum(book["access_scope"] == "metadata_only" for book in normalized_books),
             "pages": len(all_pages),
             "pdf_text_pages": sum(page.extraction_method == "pdf-text" for page in all_pages),
@@ -1454,6 +1599,7 @@ def main() -> int:
             "opening_lines": len(all_opening_lines),
             "opening_line_moves": sum(len(line.moves) for line in all_opening_lines),
             "opening_line_positions": opening_line_payload["counts"]["unique_positions"],
+            "structure_anchors": len(all_structure_anchors),
             "unresolved_opening_move_tokens": opening_line_payload["counts"]["unresolved_tokens"],
             "diagram_candidate_pages": sum(page.diagram_candidate for page in all_pages),
             "chunks_with_printed_page": sum(chunk.printed_page_start is not None for chunk in all_chunks),
@@ -1477,8 +1623,13 @@ def main() -> int:
             "ocr_completed_for_image_only_excerpt": any(audit["ocr_pages"] for audit in book_audits),
             "semantic_index_available": bool(embedding_info),
             "exact_opening_line_index_available": bool(all_opening_lines),
+            "pawn_structure_plan_index_available": bool(all_structure_anchors),
             "full_book_coverage": False,
-            "remaining_boundary": "The current library contains publisher excerpts. Full-book analysis requires lawfully acquired full editions.",
+            "remaining_boundary": (
+                "Publisher titles remain excerpt-only unless separately supplied by the owner. "
+                "The private Chessable course is full, local-only user-owned material; open-licensed "
+                "and public-domain sources retain their attribution and rights metadata."
+            ),
         },
     }
     report_temp = output_root / "ingestion-report.json.tmp"
