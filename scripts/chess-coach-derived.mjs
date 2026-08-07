@@ -281,6 +281,29 @@ export function replayUciLine(fen, uciMoves, maxPlies = PV_REPLAY_MAX_PLIES) {
   };
 }
 
+export function materializeCoachSanLine(fen, sanMoves, maxPlies = 12) {
+  const pos = positionFromFen(fen);
+  if (!pos) return null;
+  const moves = [];
+  for (const rawSan of (Array.isArray(sanMoves) ? sanMoves : []).slice(0, maxPlies)) {
+    const requestedSan = String(rawSan || "").trim();
+    if (!requestedSan) break;
+    const move = parseSan(pos, requestedSan);
+    if (!move || !pos.isLegal(move)) return null;
+    const fenBefore = makeFen(pos.toSetup());
+    const uci = makeUci(move);
+    const san = makeSanAndPlay(pos, move);
+    moves.push({
+      san,
+      uci,
+      fenBefore,
+      fenAfter: makeFen(pos.toSetup()),
+    });
+  }
+  if (moves.length === 0) return null;
+  return { startFen: String(fen), moves };
+}
+
 function materialBalance(pos) {
   let balance = 0;
   for (const [role, value] of Object.entries(PIECE_VALUES)) {

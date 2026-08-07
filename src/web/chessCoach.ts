@@ -85,6 +85,60 @@ export type WebCoachPosition = {
     betterPlan?: string;
 };
 
+export type WebCoachVerifiedLineMove = {
+    san: string;
+    uci: string;
+    fenBefore: string;
+    fenAfter: string;
+};
+
+export type WebCoachVerifiedLine = {
+    startPly: number;
+    title: string;
+    purpose: string;
+    startFen: string;
+    moves: WebCoachVerifiedLineMove[];
+};
+
+const COACH_NUMBERED_MOVE_REFERENCE =
+    /(^|[\s([{"'\u201c])(\d{1,3})(\.(?:\.\.)?|\u2026)\s*((?:O-O-O|O-O|0-0-0|0-0|[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?[+#]?)[!?]{0,2})/g;
+
+function normalizeCoachReferencedSan(value: string) {
+    return value
+        .replace(/[!?]+$/g, "")
+        .replaceAll("0-0-0", "O-O-O")
+        .replaceAll("0-0", "O-O");
+}
+
+export function linkWebCoachGameMoves(
+    content: string,
+    gameMoves: Array<{ ply: number; san: string }>,
+) {
+    const moveByPly = new Map(gameMoves.map((move) => [Number(move.ply), move]));
+    const numbered = content.replace(
+        COACH_NUMBERED_MOVE_REFERENCE,
+        (full, prefix: string, rawMoveNumber: string, punctuation: string, rawSan: string) => {
+            const moveNumber = Number(rawMoveNumber);
+            const blackMove = punctuation === "..." || punctuation === "\u2026";
+            const ply = (moveNumber - 1) * 2 + (blackMove ? 2 : 1);
+            const expected = moveByPly.get(ply);
+            if (
+                !expected ||
+                normalizeCoachReferencedSan(String(expected.san || "")) !==
+                    normalizeCoachReferencedSan(rawSan)
+            ) {
+                return full;
+            }
+            const label = full.slice(prefix.length);
+            return prefix + "[" + label + "](#coach-ply-" + ply + ")";
+        },
+    );
+    return numbered.replace(/\bply\s+(\d+)\b/gi, (label, rawPly: string) => {
+        const ply = Number(rawPly);
+        return moveByPly.has(ply) ? "[" + label + "](#coach-ply-" + ply + ")" : label;
+    });
+}
+
 export type WebCoachBookReference = {
     chunkId: string;
     whyItMatters: string;
@@ -97,7 +151,17 @@ export type WebCoachCategory = {
     summary: string;
     explanation: string;
     positions: WebCoachPosition[];
+    verifiedLines: WebCoachVerifiedLine[];
     bookReferences: WebCoachBookReference[];
+};
+
+export type WebCoachTeam = {
+    qualitativeModel: string | null;
+    specialistModel: string | null;
+    specialistCount: number;
+    specialistFailures: number;
+    finalModel: string;
+    moveVerification: string;
 };
 
 export type WebCoachAnalysisCoverage = {
@@ -139,11 +203,14 @@ export type WebChessCoachProgress = {
     requestId: string;
     phase:
         | "queued"
+        | "qualitative-pass"
         | "cloud-evaluations"
         | "live-evaluations"
         | "library-planning"
         | "passage-retrieval"
+        | "specialist-writing"
         | "answer-writing"
+        | "move-verification"
         | "complete"
         | "error";
     label: string;
@@ -162,6 +229,7 @@ export type WebChessCoachResponse = {
     bookPassages: WebCoachBookPassage[];
     storedEvaluationsUsed: number;
     analysisCoverage: WebCoachAnalysisCoverage;
+    coachTeam?: WebCoachTeam;
 };
 
 export type RestoredWebCoachReview = Omit<WebCoachReviewRecord, "response"> & {
@@ -617,6 +685,7 @@ export function normalizeWebChessCoachResponse(payload: unknown): WebChessCoachR
         bookPassages,
         storedEvaluationsUsed: nonNegativeInteger(record.storedEvaluationsUsed),
         analysisCoverage: normalizeAnalysisCoverage(record.analysisCoverage),
+        coachTeam: normalizeCoachTeam(record.coachTeam),
     };
 }
 
@@ -627,11 +696,14 @@ function normalizeWebChessCoachProgress(payload: unknown): WebChessCoachProgress
     const phase = cleanString(progress.phase);
     const validPhases: WebChessCoachProgress["phase"][] = [
         "queued",
+        "qualitative-pass",
         "cloud-evaluations",
         "live-evaluations",
         "library-planning",
         "passage-retrieval",
+        "specialist-writing",
         "answer-writing",
+        "move-verification",
         "complete",
         "error",
     ];
@@ -699,6 +771,43 @@ function normalizeCategories(value: unknown, knownChunkIds: Set<string>) {
               })
             : [];
 
+        const verifiedLines = Array.isArray(category.verifiedLines)
+            ? category.verifiedLines.slice(0, 3).flatMap((item): WebCoachVerifiedLine[] => {
+                  const line = asRecord(item);
+                  if (!line) return [];
+                  const startFen = cleanString(line.startFen);
+                  const lineMoves = Array.isArray(line.moves)
+                      ? line.moves.slice(0, 12).flatMap((item): WebCoachVerifiedLineMove[] => {
+                            const move = asRecord(item);
+                            if (!move) return [];
+                            const uci = cleanString(move.uci).toLowerCase();
+                            const fenBefore = cleanString(move.fenBefore);
+                            const fenAfter = cleanString(move.fenAfter);
+                            const san = cleanString(move.san);
+                            if (
+                                !san ||
+                                !/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(uci) ||
+                                !fenBefore ||
+                                !fenAfter
+                            ) {
+                                return [];
+                            }
+                            return [{ san, uci, fenBefore, fenAfter }];
+                        })
+                      : [];
+                  if (!startFen || lineMoves.length === 0) return [];
+                  return [
+                      {
+                          startPly: nonNegativeInteger(line.startPly),
+                          title: cleanString(line.title) || "Plan on the board",
+                          purpose: cleanString(line.purpose),
+                          startFen,
+                          moves: lineMoves,
+                      },
+                  ];
+              })
+            : [];
+
         return [
             {
                 id,
@@ -706,10 +815,24 @@ function normalizeCategories(value: unknown, knownChunkIds: Set<string>) {
                 summary,
                 explanation,
                 positions,
+                verifiedLines,
                 bookReferences,
             },
         ];
     });
+}
+
+function normalizeCoachTeam(value: unknown): WebCoachTeam | undefined {
+    const team = asRecord(value);
+    if (!team) return undefined;
+    return {
+        qualitativeModel: cleanString(team.qualitativeModel) || null,
+        specialistModel: cleanString(team.specialistModel) || null,
+        specialistCount: nonNegativeInteger(team.specialistCount),
+        specialistFailures: nonNegativeInteger(team.specialistFailures),
+        finalModel: cleanString(team.finalModel),
+        moveVerification: cleanString(team.moveVerification),
+    };
 }
 
 function normalizeBookPassages(value: unknown) {

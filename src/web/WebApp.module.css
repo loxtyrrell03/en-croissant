@@ -539,6 +539,47 @@
   min-width: 0;
 }
 
+.coachTeamStrip {
+  padding: 0.1rem 0 0.1rem 0.65rem;
+  border-left: 2px solid rgba(116, 192, 252, 0.6);
+}
+
+.coachSummary {
+  color: var(--mantine-color-gray-1);
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 650;
+  line-height: 1.48;
+}
+
+.coachSummary p,
+.coachPositionText p {
+  margin-block: 0.28rem;
+}
+
+.coachMoveLink,
+.coachVariationMove {
+  appearance: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.coachMoveLink {
+  display: inline;
+  padding: 0 0.14rem;
+  border-radius: 4px;
+  background: rgba(34, 139, 230, 0.14);
+  color: var(--mantine-color-blue-3);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: rgba(116, 192, 252, 0.45);
+  text-underline-offset: 2px;
+}
+
+.coachMoveLink:active {
+  background: rgba(34, 139, 230, 0.28);
+}
+
 .coachNotice {
   padding: 0.65rem;
 }
@@ -584,6 +625,37 @@
   padding: 0.65rem;
   border-color: rgba(34, 139, 230, 0.25);
   background: rgba(34, 139, 230, 0.05);
+}
+
+.coachVerifiedLine {
+  padding: 0.65rem 0;
+  border-top: 1px solid rgba(116, 192, 252, 0.18);
+}
+
+.coachVerifiedLine:first-of-type {
+  border-top: 0;
+}
+
+.coachVariationMove {
+  padding: 0.28rem 0.48rem;
+  border: 1px solid rgba(116, 192, 252, 0.3);
+  border-radius: 6px;
+  background: rgba(34, 139, 230, 0.08);
+  color: var(--mantine-color-blue-2);
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 700;
+}
+
+.coachVariationMove[data-active] {
+  border-color: var(--mantine-color-blue-5);
+  background: rgba(34, 139, 230, 0.26);
+  color: white;
+}
+
+.coachPositionText {
+  color: var(--mantine-color-gray-2);
+  font-size: var(--mantine-font-size-xs);
+  line-height: 1.48;
 }
 
 .coachBookLine {

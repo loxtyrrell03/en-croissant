@@ -1,5 +1,27 @@
 # AGENTS.md
 
+- On 2026-08-07, whole-game AI Coach reviews became human-first multi-agent
+  reviews on both shipped surfaces. Before any Stockfish, cloud, database, or
+  book evidence is introduced, a forced Gemini 3.1 Pro/high Antigravity pass
+  reads only the PGN and supplies the game story, strategic questions, and
+  future-facing opening plan. That pass is the editorial spine for source
+  selection and final synthesis; later engine evidence remains the accuracy
+  guardrail rather than the narrative outline. The PC-hosted phone Coach then
+  runs one Gemini 3.6 Flash/high specialist per AI-selected category in
+  parallel, scoped to that category's permitted passages and verified evidence,
+  before the user's selected model performs the final edit. Opening categories
+  must devote most of their explanation to future plans in the exact structure:
+  piece homes and routes, prepared pawn breaks, useful exchanges, opponent
+  counterplay, and an if-then checklist. Every proposed continuation is emitted
+  as a structured SAN line, replayed deterministically from its exact game FEN
+  with chessops, and repaired once by Gemini 3.6 Flash if validation rejects the
+  answer. The phone UI renders exact numbered played moves as links that open an
+  inline board, and renders every verified suggested move as a button on a
+  navigable board with the next-move arrow. Preserve PGN-only isolation for the
+  first pass, category/source boundaries, final-model choice, deterministic
+  move legality, old-review compatibility, and the PC-owned background job
+  lifecycle.
+
 - On 2026-08-07, Coach pre-review engine evidence became opening-bounded for
   speed. Whole-game requests now read the chronological PC cloud/cache prefix
   only until its first miss, run at most one live Stockfish 18 check on that

@@ -2494,6 +2494,36 @@ fn format_exact_opening_matches(matches: &[CoachExactOpeningMatch]) -> String {
         .join("\n")
 }
 
+fn build_qualitative_game_pass_prompt(request: &AiCoachRequest) -> String {
+    let pgn = request
+        .whole_game_pgn
+        .as_deref()
+        .or(request.pgn.as_deref())
+        .map(trim_prompt_text)
+        .unwrap_or_else(|| "Unavailable".to_string());
+    format!(
+        r#"Role: You are the first human-style chess coach in a multi-pass review.
+
+Read only the PGN below. Produce the human narrative spine that later evidence, library, and specialist passes should follow.
+
+Strict isolation:
+- You have no Stockfish, cloud evaluations, opening database, book passages, current-board facts, or tool access.
+- Do not give numeric evaluations, claim forced wins, or imitate an engine report. Mark uncertain tactics as questions for later verification.
+- Explain the flow of the game, changes in plans, piece coordination, and the few decisions that matter most to a human player.
+- Make the opening lesson future-facing: what to do in this type of position next time, where the player's pieces belong and how they get there, which pawn breaks to prepare, which exchanges help, and what counterplay the opponent wants.
+- Use this game as the worked example, not the entire subject. Prefer a practical strategic map over retelling every move.
+
+Player side: {player_color}
+User question: {question}
+
+PGN only:
+{pgn}
+"#,
+        player_color = request.player_color,
+        question = request.question,
+    )
+}
+
 fn build_library_planner_prompt(
     request: &AiCoachRequest,
     stockfish_lines: &[CoachEngineLine],
@@ -2502,6 +2532,7 @@ fn build_library_planner_prompt(
     pc_game_analysis: Option<&CoachPcGameAnalysis>,
     exact_opening_matches: &[CoachExactOpeningMatch],
     structure_matches: &[CoachPawnStructureMatch],
+    qualitative_pass: Option<&str>,
 ) -> Result<String, CoachError> {
     let inventory_json = serde_json::to_string(inventory)?;
     let pgn = request
@@ -2525,6 +2556,7 @@ fn build_library_planner_prompt(
     let pc_game_analysis = format_pc_game_analysis(pc_game_analysis);
     let exact_opening_matches = format_exact_opening_matches(exact_opening_matches);
     let structure_matches = format_pawn_structure_matches(structure_matches);
+    let qualitative_pass = qualitative_pass.unwrap_or("Not available for this scope.");
 
     Ok(format!(
         r#"Role: You are the librarian and curriculum designer for a private AI chess coach.
@@ -2532,6 +2564,7 @@ fn build_library_planner_prompt(
 Choose the few game-specific coaching categories and exact library chapters that deserve retrieval before the final coach writes. You—not a keyword heuristic—must decide which chess domains matter.
 
 Rules:
+- Gemini 3.1 Pro's PGN-only pass below is the editorial spine. Use its human story, opening-plan questions, and teaching priorities to choose what the library should support. It contains no engine or book evidence, so concrete claims still require supplied evidence.
 - Choose 1-{MAX_COACH_CATEGORIES} categories, ordered by importance to this exact question/game. Category labels are free-form and specific (for example Opening plans, Calculation at move 24, Rook endgame technique, Dark-square strategy); do not mechanically include every phase.
 - Base category relevance on the PGN and supplied PC/Stockfish evidence. The PC trace intentionally covers only the contiguous cached opening through its first gap, plus at most one live boundary evaluation; later PGN positions are not engine evidence. Never invent an evaluation or game event.
 - A transposition-aware opening-family anchor computed from an exact position table may be supplied below. When present, refine it only to a more specific compatible sub-variation; never override the reached position with a label forced from the initial move order.
@@ -2546,6 +2579,7 @@ Rules:
 - EXACT_LINE records are legality-checked, position-indexed lines recovered from installed book pages. When one is materially relevant, select that exact book/chapter and distinguish whether the game followed the cited move or diverged.
 - For an opening category, inspect the exact move order and early positions. Prefer STRUCTURE_PLAN chapters and other material that teaches plans for both sides, ideal and misplaced pieces, thematic breaks, useful and harmful exchanges, manoeuvres, counterplay, and transition—not merely a generic book whose title contains "opening".
 - Plan opening coverage before choosing variations. The final lesson should lead with the position's strategic map; use the shortest concrete line needed to prove or illustrate a plan, not as the outline of the explanation.
+- For a whole-game review, include a plan-led opening category unless the PGN has no discernible opening position or the user explicitly excludes it. That category should mainly teach what the player should do next time, not recap what happened this time.
 - The catalogue includes every owned, catalogued, and supplemental source in the inventory below. `hasExcerpt=false` means no passage can currently be retrieved from that title. Only chapter IDs in the `chapters` array are accessible and chunk-backed.
 - Prefer exact accessible chapters. A book ID may supplement them when its available excerpt is relevant. Never invent or alter an ID.
 - `keyPlies` must refer to supplied game-analysis plies. `searchQueries` should be short chess concepts or exact opening/structure terms that help locate the best passage inside your selected chapters/books.
@@ -2556,6 +2590,9 @@ FEN: {fen}
 PGN scope: {scope}
 PGN:
 {pgn}
+
+Gemini 3.1 Pro PGN-only coaching pass:
+{qualitative_pass}
 
 Stored fast opening-prefix PC analysis:
 {game_analysis}
@@ -2584,6 +2621,7 @@ Library catalogue JSON (book IDs plus only accessible, chunk-backed chapters):
         question = request.question,
         fen = request.fen,
         scope = request.pgn_scope,
+        qualitative_pass = qualitative_pass,
     ))
 }
 
@@ -3263,6 +3301,30 @@ async fn ask_ai_coach_inner(
     let whole_game_review_requested = question_requires_full_pc_game_analysis(&request);
     let pc_analysis_scope = requested_pc_analysis_scope(&request);
     let full_pc_game_required = should_run_pc_game_analysis(&request);
+    let qualitative_pass = if whole_game_review_requested {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "qualitative_pass",
+            "Gemini 3.1 Pro reading the PGN without an engine",
+            "Building the human game story and future opening plan before Stockfish or book evidence is introduced.",
+            7.0,
+            false,
+        );
+        Some(
+            run_gemini_cli(
+                "agy",
+                "gemini-3.1-pro",
+                "high",
+                &build_qualitative_game_pass_prompt(&request),
+                u64::from(timeout_secs),
+            )
+            .await?,
+        )
+    } else {
+        None
+    };
     let pc_game_analysis = if full_pc_game_required {
         emit_coach_progress(
             app,
@@ -3939,6 +4001,7 @@ async fn ask_ai_coach_inner(
         pc_game_analysis.as_ref(),
         &exact_opening_matches,
         &structure_matches,
+        qualitative_pass.as_deref(),
     )?;
     let library_schema = library_plan_output_schema();
     let library_output = run_gemini_cli_with_schema(
@@ -4038,6 +4101,7 @@ async fn ask_ai_coach_inner(
         &book_passages,
         Some(&library_plan),
         pc_game_analysis.as_ref(),
+        qualitative_pass.as_deref(),
     );
     emit_coach_progress(
         app,
@@ -4129,6 +4193,7 @@ async fn ask_ai_coach_inner(
                 &book_passages,
                 Some(&library_plan),
                 pc_game_analysis.as_ref(),
+                qualitative_pass.as_deref(),
             );
             emit_coach_progress(
                 app,
@@ -4393,6 +4458,7 @@ fn build_coach_prompt(
         &[],
         None,
         None,
+        None,
     )
 }
 
@@ -4406,6 +4472,7 @@ fn build_coach_prompt_with_facts(
     book_passages: &[CoachBookPassage],
     library_plan: Option<&CoachLibraryPlan>,
     pc_game_analysis: Option<&CoachPcGameAnalysis>,
+    qualitative_pass: Option<&str>,
 ) -> String {
     let pgn = request
         .pgn
@@ -4416,6 +4483,7 @@ fn build_coach_prompt_with_facts(
         "whole_game" => "whole game PGN selected by the Flash planner",
         _ => "current line PGN selected by the Flash planner",
     };
+    let qualitative_pass = qualitative_pass.unwrap_or("Not available for this scope.");
     let selected_move = request
         .selected_move
         .as_deref()
@@ -4552,6 +4620,7 @@ fn build_coach_prompt_with_facts(
 {style_guide}
 
 Core rules:
+- For whole-game reviews, Gemini 3.1 Pro's PGN-only coaching pass is the editorial spine. Preserve its human story, strategic questions, and practical priorities wherever concrete evidence does not contradict it. Stockfish is an accuracy guardrail, not the narrative outline.
 - Supplied engine analysis is the source of truth for concrete evaluations and variations. Prefer Lichess Cloud root lines when they are supplied; otherwise use local Stockfish root MultiPV. Targeted follow-up results are local Stockfish.
 - For whole-game reviews, the fast PC trace intentionally covers only the contiguous cached opening through its first gap, plus at most one moderate-depth live boundary check. It is authoritative only for listed positions. Later PGN moves are context, not engine evidence. Its scores are White-relative; preserve each PC cloud/live source and depth distinction.
 - Private board-state facts are guardrails for board-state claims, not prose material. Use them silently. In the final answer, never refer to evidence-gathering machinery, private checks, structured details, or verification process.
@@ -4575,6 +4644,7 @@ Core rules:
 - Retrieved chess-book passages are the source of truth for attributed teaching principles. Use them to explain the human lesson, while Stockfish remains the source of truth for this position's concrete verdict and variations.
 - When a retrieved passage materially supports a lesson, name the actual book and chapter in the prose and cite its exact opaque source identifier such as [Source e406ce4596c7eca833b0342e]. Never use an ordinal placeholder such as [Book 3], and never invent a title, quotation, page, author, chapter, or source identifier.
 - For opening lessons, lead with the strategic map from the named book/chapter: plans and counterplay for both sides, ideal and misplaced pieces, thematic breaks, exchanges, and manoeuvres. Connect each idea to an exact move or position in this game and explain why the exact placement makes it viable, premature, or wrong. Use book variations only as short proof or illustration, never as the explanation's structure.
+- In opening lessons, devote most of the answer to what the player should do in future positions of this type: exact piece homes and routes, pawn-break preparation, desirable exchanges, opponent counterplay, and an if-then checklist. The played game is the worked example, not a move-by-move recap.
 - Make every important lesson personal and memorable: anchor it to this game's exact move number, squares, and pieces, then give one short transferable takeaway and one concrete practice habit. Delete advice that could appear unchanged in a different player's review.
 - An "Exact indexed book line" is a legality-checked PGN recovered from that cited source page. Use its game-ply match for concrete comparison, state whether the played move follows or diverges from the book move, and never replace it with an uncited database line.
 - The exact-position opening-family anchor controls the family actually reached; the AI library plan's `openingClassification` may refine it to a compatible sub-variation. Do not rename a transposed d4/c4 position after an earlier 1.Nf3 repertoire, and do not portray departure from an arbitrary repertoire as an error.
@@ -4618,6 +4688,9 @@ Move history in UCI: {move_history}
 
 PGN context ({pgn_scope}):
 {pgn}
+
+Gemini 3.1 Pro PGN-only coaching pass (editorial spine, not concrete evidence):
+{qualitative_pass}
 
 Stored fast opening-prefix Stockfish analysis:
 {game_analysis}
@@ -4667,6 +4740,7 @@ User question:
         move_history = move_history,
         pgn_scope = pgn_scope,
         pgn = pgn,
+        qualitative_pass = qualitative_pass,
         game_analysis = game_analysis,
         pc_game_analysis = pc_game_analysis,
         chess_facts = chess_facts,
@@ -10169,6 +10243,7 @@ mod tests {
             std::slice::from_ref(&passage),
             None,
             None,
+            None,
         );
         assert!(prompt.contains("[Source chunk-1] Calculation Manual"));
         assert!(prompt.contains("actual book and chapter"));
@@ -10179,6 +10254,46 @@ mod tests {
         assert!(prompt.contains("Do not rename a transposed d4/c4 position"));
         assert!(prompt.contains("lead with the strategic map"));
         assert!(prompt.contains("Use book variations only as short proof or illustration"));
+    }
+
+    #[test]
+    fn qualitative_game_pass_is_pgn_only_and_future_plan_led() {
+        let mut request = sample_request();
+        request.whole_game_pgn = Some(
+            "[White \"Player\"]\n[Black \"Opponent\"]\n\n1. d4 Nf6 2. c4 e6 3. Nc3 Bb4".to_string(),
+        );
+        let prompt = build_qualitative_game_pass_prompt(&request);
+
+        assert!(prompt.contains("Read only the PGN"));
+        assert!(prompt.contains("no Stockfish, cloud evaluations"));
+        assert!(prompt.contains("where the player's pieces belong"));
+        assert!(prompt.contains("which pawn breaks to prepare"));
+        assert!(prompt.contains("1. d4 Nf6 2. c4 e6 3. Nc3 Bb4"));
+        assert!(!prompt.contains("Current FEN:"));
+    }
+
+    #[test]
+    fn final_coach_prompt_uses_qualitative_pass_as_editorial_spine() {
+        let request = sample_request();
+        let qualitative =
+            "The game turned on a clash between queenside expansion and central play.";
+        let prompt = build_coach_prompt_with_facts(
+            &request,
+            &[],
+            &[],
+            &[],
+            &[],
+            &[],
+            &[],
+            None,
+            None,
+            Some(qualitative),
+        );
+
+        assert!(prompt.contains("editorial spine"));
+        assert!(prompt.contains("Stockfish is an accuracy guardrail"));
+        assert!(prompt.contains(qualitative));
+        assert!(prompt.contains("devote most of the answer to what the player should do"));
     }
 
     #[test]
@@ -10790,6 +10905,7 @@ mod tests {
             &[],
             std::slice::from_ref(&fact),
             &[],
+            None,
             None,
             None,
         );

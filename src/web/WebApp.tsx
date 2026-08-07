@@ -127,6 +127,7 @@ import {
   getWebCoachMoves,
   getWebCoachStorageKey,
   getSavedWebCoachReviewStatus,
+  linkWebCoachGameMoves,
   makeWebCoachMovetext,
   persistWebCoachReviewInState,
   rebaseWebCoachReviewLineContext,
@@ -2601,10 +2602,14 @@ function CoachUnderBoardPanel({
           ) : null}
           <Stack gap={3} mt="xs" className={classes.coachProgressSteps}>
             <Text size="xs">
-              1. PC reads the cached opening until its first gap, then checks only that boundary.
+              1. Gemini 3.1 Pro reads the PGN without Stockfish or book evidence.
             </Text>
-            <Text size="xs">2. {coachModel.label} chooses the relevant books and chapters.</Text>
-            <Text size="xs">3. Coach writes the most useful topic tabs.</Text>
+            <Text size="xs">
+              2. PC verifies the cached opening through its first gap and checks one boundary.
+            </Text>
+            <Text size="xs">3. {coachModel.label} chooses the relevant books and chapters.</Text>
+            <Text size="xs">4. Gemini 3.6 Flash specialists draft the topic tabs.</Text>
+            <Text size="xs">5. Chessops verifies every board line before the final edit.</Text>
             <Text size="xs">You can close the app; the PC will finish and save this review.</Text>
           </Stack>
         </Box>
@@ -2622,9 +2627,27 @@ function CoachUnderBoardPanel({
               Game overview
             </Text>
             <Box className={classes.coachAnswer}>
-              <ReactMarkdown>{visibleResponse.overview}</ReactMarkdown>
+              <CoachInteractiveMarkdown
+                content={visibleResponse.overview}
+                gameMoves={coachMoves}
+                orientation={playerColor}
+                onSelectPly={onSelectPly}
+              />
             </Box>
           </Box>
+          {visibleResponse.coachTeam?.qualitativeModel ? (
+            <Box className={classes.coachTeamStrip}>
+              <Text size="xs" fw={650}>
+                Human pass: Gemini 3.1 Pro
+              </Text>
+              <Text size="xs" c="dimmed">
+                {visibleResponse.coachTeam.specialistCount} Gemini 3.6 Flash specialists · final
+                edit by{" "}
+                {formatCoachModelSelection(visibleResponse.model, visibleResponse.reasoningEffort)}{" "}
+                · legal moves verified
+              </Text>
+            </Box>
+          ) : null}
           <Group gap="xs">
             <Badge variant="light">
               {formatCoachModelSelection(visibleResponse.model, visibleResponse.reasoningEffort)}
@@ -2730,6 +2753,70 @@ function CoachUnderBoardPanel({
   );
 }
 
+function CoachInteractiveMarkdown({
+  content,
+  gameMoves,
+  orientation,
+  onSelectPly,
+}: {
+  content: string;
+  gameMoves: ReturnType<typeof getWebCoachMoves>;
+  orientation: WebColor;
+  onSelectPly: (ply: number) => void;
+}) {
+  const [selectedPly, setSelectedPly] = useState<number | null>(null);
+  const linkedContent = useMemo(
+    () => linkWebCoachGameMoves(content, gameMoves),
+    [content, gameMoves],
+  );
+
+  useEffect(() => {
+    setSelectedPly(null);
+  }, [content, gameMoves]);
+
+  return (
+    <>
+      <ReactMarkdown
+        components={{
+          a: ({ href, children }) => {
+            const match = href?.match(/^#coach-ply-(\d+)$/);
+            if (!match) return <a href={href}>{children}</a>;
+            const ply = Number(match[1]);
+            return (
+              <button
+                type="button"
+                className={classes.coachMoveLink}
+                onClick={() => {
+                  setSelectedPly(ply);
+                  onSelectPly(ply);
+                }}
+              >
+                {children}
+              </button>
+            );
+          },
+        }}
+      >
+        {linkedContent}
+      </ReactMarkdown>
+      {selectedPly !== null ? (
+        <CoachLineDiagram
+          moves={gameMoves}
+          initialCursor={Math.min(selectedPly, gameMoves.length)}
+          orientation={orientation}
+          label={
+            "Position after " +
+            formatCoachPlyLabel(
+              selectedPly,
+              gameMoves.find((move) => Number(move.ply) === selectedPly)?.san || "",
+            )
+          }
+        />
+      ) : null}
+    </>
+  );
+}
+
 function CoachCategoryPanel({
   category,
   bookPassages,
@@ -2752,14 +2839,39 @@ function CoachCategoryPanel({
   return (
     <Stack gap="sm">
       {category.summary ? (
-        <Text size="sm" fw={650}>
-          {category.summary}
-        </Text>
+        <Box className={classes.coachSummary}>
+          <CoachInteractiveMarkdown
+            content={category.summary}
+            gameMoves={gameMoves}
+            orientation={orientation}
+            onSelectPly={onSelectPly}
+          />
+        </Box>
       ) : null}
       {category.explanation ? (
         <Box className={classes.coachAnswer}>
-          <ReactMarkdown>{category.explanation}</ReactMarkdown>
+          <CoachInteractiveMarkdown
+            content={category.explanation}
+            gameMoves={gameMoves}
+            orientation={orientation}
+            onSelectPly={onSelectPly}
+          />
         </Box>
+      ) : null}
+
+      {category.verifiedLines.length > 0 ? (
+        <Stack gap="xs">
+          <Text size="sm" fw={700}>
+            Plans on the board
+          </Text>
+          {category.verifiedLines.map((line, index) => (
+            <CoachVerifiedLineCard
+              key={`${line.startPly}-${line.title}-${index}`}
+              line={line}
+              orientation={orientation}
+            />
+          ))}
+        </Stack>
       ) : null}
 
       {category.positions.length > 0 ? (
@@ -2787,18 +2899,39 @@ function CoachCategoryPanel({
                   Show
                 </Button>
               </Group>
-              <Text size="xs" mt={6}>
-                {position.explanation}
-              </Text>
+              <Box mt={6} className={classes.coachPositionText}>
+                <CoachInteractiveMarkdown
+                  content={position.explanation}
+                  gameMoves={gameMoves}
+                  orientation={orientation}
+                  onSelectPly={onSelectPly}
+                />
+              </Box>
               {position.engineEvidence ? (
-                <Text size="xs" c="blue.2" mt={5}>
-                  Engine: {position.engineEvidence}
-                </Text>
+                <Box className={classes.coachPositionText} mt={5}>
+                  <Text size="xs" c="blue.2" fw={650}>
+                    Accuracy check
+                  </Text>
+                  <CoachInteractiveMarkdown
+                    content={position.engineEvidence}
+                    gameMoves={gameMoves}
+                    orientation={orientation}
+                    onSelectPly={onSelectPly}
+                  />
+                </Box>
               ) : null}
               {position.betterPlan ? (
-                <Text size="xs" mt={5}>
-                  <strong>Better plan:</strong> {position.betterPlan}
-                </Text>
+                <Box className={classes.coachPositionText} mt={5}>
+                  <Text size="xs" fw={650}>
+                    Better plan
+                  </Text>
+                  <CoachInteractiveMarkdown
+                    content={position.betterPlan}
+                    gameMoves={gameMoves}
+                    orientation={orientation}
+                    onSelectPly={onSelectPly}
+                  />
+                </Box>
               ) : null}
               <CoachLineDiagram
                 moves={gameMoves}
@@ -2916,6 +3049,56 @@ function CoachBookSourceCard({
   );
 }
 
+function CoachVerifiedLineCard({
+  line,
+  orientation,
+}: {
+  line: WebCoachCategory["verifiedLines"][number];
+  orientation: WebColor;
+}) {
+  const [cursor, setCursor] = useState(0);
+
+  useEffect(() => {
+    setCursor(0);
+  }, [line]);
+
+  return (
+    <Box className={classes.coachVerifiedLine}>
+      <Text size="sm" fw={650}>
+        {line.title}
+      </Text>
+      {line.purpose ? (
+        <Text size="xs" c="dimmed" mt={2}>
+          {line.purpose}
+        </Text>
+      ) : null}
+      <Group gap={5} mt="xs" wrap="wrap">
+        {line.moves.map((move, index) => {
+          const ply = line.startPly + index + 1;
+          return (
+            <button
+              type="button"
+              key={line.startPly + "-" + index + "-" + move.uci}
+              className={classes.coachVariationMove}
+              data-active={cursor === index + 1 || undefined}
+              onClick={() => setCursor(index + 1)}
+            >
+              {formatCoachPlyLabel(ply, move.san)}
+            </button>
+          );
+        })}
+      </Group>
+      <CoachLineDiagram
+        moves={line.moves}
+        initialCursor={cursor}
+        orientation={orientation}
+        label={line.title}
+        startPly={line.startPly}
+      />
+    </Box>
+  );
+}
+
 type CoachDiagramMove = {
   san: string;
   uci?: string | null;
@@ -2928,11 +3111,13 @@ function CoachLineDiagram({
   initialCursor,
   orientation,
   label,
+  startPly = 0,
 }: {
   moves: CoachDiagramMove[];
   initialCursor: number;
   orientation: WebColor;
   label: string;
+  startPly?: number;
 }) {
   const [cursor, setCursor] = useState(() => Math.max(0, Math.min(initialCursor, moves.length)));
   const boardRef = useRef<HTMLDivElement | null>(null);
@@ -3007,8 +3192,14 @@ function CoachLineDiagram({
           <IconChevronLeft size={17} />
         </ActionIcon>
         <Text size="xs" ta="center" className={classes.coachDiagramMove}>
-          {currentMove ? `${boundedCursor}. ${currentMove.san}` : "Starting position"}
-          {nextMove ? ` · next ${nextMove.san}` : " · end of line"}
+          {currentMove
+            ? formatCoachPlyLabel(startPly + boundedCursor, currentMove.san)
+            : startPly > 0
+              ? "After ply " + startPly
+              : "Starting position"}
+          {nextMove
+            ? " · next " + formatCoachPlyLabel(startPly + boundedCursor + 1, nextMove.san)
+            : " · end of line"}
         </Text>
         <ActionIcon
           variant="light"

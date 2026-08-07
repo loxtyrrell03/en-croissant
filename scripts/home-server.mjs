@@ -28,7 +28,9 @@ import {
   buildCodexCoachInvocation,
   buildAgyCoachInvocation,
   buildAgyPromptSchema,
+  buildCategorySpecialistPrompt,
   buildCoachPositionRecords,
+  buildGeminiQualitativePassPrompt,
   buildLibraryPlannerPrompt,
   buildPcCoachAnalysisResult,
   buildStatsReportPrompt,
@@ -36,14 +38,18 @@ import {
   codexExitIndicatesSignedOut,
   codexUsageLimitFromOutput,
   collectPcCoachPositionEvaluations,
+  COACH_CATEGORY_DRAFT_SCHEMA,
   COACH_LIBRARY_PLAN_SCHEMA,
   COACH_MODEL_OPTIONS,
   COACH_REVIEW_SCHEMA,
+  COACH_QUALITATIVE_PASS_SCHEMA,
   DEFAULT_COACH_MODEL_SELECTION,
   findExactOpeningBookMatches,
   findPawnStructureBookMatches,
   getChessBookLibraryInventory,
   normalizeCloudCoachEvaluation,
+  normalizeCategorySpecialistDraft,
+  normalizeGeminiQualitativePass,
   normalizeLibraryPlan,
   normalizeChessCoachRequestPayload,
   normalizeSavedWebCoachReview,
@@ -124,6 +130,8 @@ const agyCommandPath = resolve(
 const coachWorkRoot = join(serverRoot, "coach-work");
 const coachLibraryPlanSchemaPath = join(coachWorkRoot, "library-plan.schema.json");
 const coachReviewSchemaPath = join(coachWorkRoot, "coach-review.schema.json");
+const coachQualitativePassSchemaPath = join(coachWorkRoot, "qualitative-pass.schema.json");
+const coachCategoryDraftSchemaPath = join(coachWorkRoot, "category-draft.schema.json");
 const statsReportSchemaPath = join(coachWorkRoot, "stats-report.schema.json");
 const coachSweepDepth = positiveInteger(process.env.EN_CROISSANT_COACH_SWEEP_DEPTH, 16);
 const coachBoundaryTimeoutMs = positiveInteger(
@@ -209,6 +217,8 @@ await mkdir(coachWorkRoot, { recursive: true });
 await Promise.all([
   writeFile(coachLibraryPlanSchemaPath, JSON.stringify(COACH_LIBRARY_PLAN_SCHEMA, null, 2)),
   writeFile(coachReviewSchemaPath, JSON.stringify(COACH_REVIEW_SCHEMA, null, 2)),
+  writeFile(coachQualitativePassSchemaPath, JSON.stringify(COACH_QUALITATIVE_PASS_SCHEMA, null, 2)),
+  writeFile(coachCategoryDraftSchemaPath, JSON.stringify(COACH_CATEGORY_DRAFT_SCHEMA, null, 2)),
   writeFile(statsReportSchemaPath, JSON.stringify(STATS_REPORT_SCHEMA, null, 2)),
 ]);
 sharedLichessCredential = normalizeLichessCredential(await readJsonFile(lichessCredentialPath));
@@ -1713,9 +1723,111 @@ async function runPcCoachGameAnalysis(payload, signal) {
   return result;
 }
 
+const qualitativeCoachSelection = Object.freeze({
+  provider: "gemini",
+  model: "gemini-3.1-pro",
+  reasoningEffort: "high",
+});
+const categorySpecialistSelection = Object.freeze({
+  provider: "gemini",
+  model: "gemini-3.6-flash",
+  reasoningEffort: "high",
+});
+
+async function runPhoneCoachCategorySpecialists({
+  payload,
+  libraryPlan,
+  qualitativePass,
+  bookPassages,
+  categoryPassageIds,
+  moveAnalysis,
+  derivedEvidence,
+  signal,
+}) {
+  const passageById = new Map(bookPassages.map((passage) => [passage.chunkId, passage]));
+  let completed = 0;
+  updatePhoneCoachProgress(
+    payload.requestId,
+    "specialist-writing",
+    `Gemini 3.6 Flash specialists drafting 0/${libraryPlan.categories.length} sections`,
+    0,
+    libraryPlan.categories.length,
+  );
+  const settled = await Promise.allSettled(
+    libraryPlan.categories.map(async (category) => {
+      const permittedChunkIds = categoryPassageIds[category.id] || [];
+      const passages = permittedChunkIds.flatMap((chunkId) => {
+        const passage = passageById.get(chunkId);
+        return passage ? [passage] : [];
+      });
+      try {
+        const rawDraft = await runPhoneCoachModel(
+          buildCategorySpecialistPrompt({
+            ...payload,
+            category,
+            qualitativePass,
+            passages,
+            moveAnalysis,
+            derivedEvidence,
+          }),
+          {
+            outputSchemaPath: coachCategoryDraftSchemaPath,
+            modelSelection: categorySpecialistSelection,
+            signal,
+            timeoutMs: 190000,
+          },
+        );
+        return normalizeCategorySpecialistDraft(rawDraft, {
+          category,
+          permittedChunkIds,
+          moves: payload.moves,
+        });
+      } finally {
+        completed += 1;
+        updatePhoneCoachProgress(
+          payload.requestId,
+          "specialist-writing",
+          `Gemini 3.6 Flash specialists drafting ${completed}/${libraryPlan.categories.length} sections`,
+          completed,
+          libraryPlan.categories.length,
+        );
+      }
+    }),
+  );
+  const drafts = settled.flatMap((result) => (result.status === "fulfilled" ? [result.value] : []));
+  const failures = settled.filter((result) => result.status === "rejected");
+  for (const failure of failures) {
+    await appendLog(`coach category specialist failed: ${failure.reason?.stack || failure.reason}`);
+  }
+  if (drafts.length === 0) {
+    const error = new Error("The Gemini category specialists could not produce a usable draft.");
+    error.code = "MODEL_UNAVAILABLE";
+    error.provider = "gemini";
+    throw error;
+  }
+  return { drafts, failureCount: failures.length };
+}
+
 async function runPhoneCoachReview(payload, signal) {
   throwIfAborted(signal);
   const database = getChessBookDatabase();
+  let qualitativePass = null;
+  if (payload.scope === "whole-game") {
+    updatePhoneCoachProgress(
+      payload.requestId,
+      "qualitative-pass",
+      "Gemini 3.1 Pro reading the PGN without an engine",
+      0,
+      0,
+    );
+    const rawQualitativePass = await runPhoneCoachModel(buildGeminiQualitativePassPrompt(payload), {
+      outputSchemaPath: coachQualitativePassSchemaPath,
+      modelSelection: qualitativeCoachSelection,
+      signal,
+      timeoutMs: 240000,
+    });
+    qualitativePass = normalizeGeminiQualitativePass(rawQualitativePass, payload.moves);
+  }
   const pcAnalysis = await runPcCoachGameAnalysis(payload, signal);
   const { moveAnalysis, criticalMoments, analysisCoverage } = pcAnalysis;
   const exactOpeningMatches = findExactOpeningBookMatches(database, payload.moves);
@@ -1739,6 +1851,7 @@ async function runPhoneCoachReview(payload, signal) {
       exactOpeningMatches,
       structureMatches,
       derivedEvidence: pcAnalysis.derived,
+      qualitativePass,
     }),
     {
       outputSchemaPath: coachLibraryPlanSchemaPath,
@@ -1765,32 +1878,78 @@ async function runPhoneCoachReview(payload, signal) {
     throw new Error("The AI-selected chapters did not contain any accessible source passages.");
   }
 
+  const specialistResult =
+    payload.scope === "whole-game"
+      ? await runPhoneCoachCategorySpecialists({
+          payload,
+          libraryPlan,
+          qualitativePass,
+          bookPassages,
+          categoryPassageIds,
+          moveAnalysis,
+          derivedEvidence: pcAnalysis.derived,
+          signal,
+        })
+      : { drafts: [], failureCount: 0 };
+
   updatePhoneCoachProgress(payload.requestId, "answer-writing", "Building the coaching tabs", 0, 0);
-  const rawReview = await runPhoneCoachModel(
-    buildStructuredPhoneCoachPrompt({
-      ...payload,
-      moveAnalysis,
-      analysisCoverage,
-      libraryPlan,
-      bookPassages,
-      categoryPassageIds,
-      derivedEvidence: pcAnalysis.derived,
-      exactOpeningMatches,
-      structureMatches,
-    }),
-    {
-      outputSchemaPath: coachReviewSchemaPath,
-      modelSelection: payload,
-      signal,
-      timeoutMs: 240000,
-    },
-  );
-  const review = normalizeStructuredCoachReview(rawReview, {
+  const finalPrompt = buildStructuredPhoneCoachPrompt({
+    ...payload,
+    moveAnalysis,
+    analysisCoverage,
     libraryPlan,
     bookPassages,
-    moves: payload.moves,
     categoryPassageIds,
+    derivedEvidence: pcAnalysis.derived,
+    exactOpeningMatches,
+    structureMatches,
+    qualitativePass,
+    specialistDrafts: specialistResult.drafts,
   });
+  let rawReview = await runPhoneCoachModel(finalPrompt, {
+    outputSchemaPath: coachReviewSchemaPath,
+    modelSelection: payload,
+    signal,
+    timeoutMs: 240000,
+  });
+  let review;
+  try {
+    review = normalizeStructuredCoachReview(rawReview, {
+      libraryPlan,
+      bookPassages,
+      moves: payload.moves,
+      currentFen: payload.currentFen,
+      categoryPassageIds,
+    });
+  } catch (validationError) {
+    updatePhoneCoachProgress(
+      payload.requestId,
+      "move-verification",
+      "Gemini 3.6 Flash repairing board links rejected by the legal-move check",
+      0,
+      0,
+    );
+    rawReview = await runPhoneCoachModel(
+      `${finalPrompt}
+
+MOVE-VERIFICATION REPAIR:
+The previous structured response was rejected: ${validationError?.message || validationError}
+Return the complete corrected response. Preserve sound prose and citations, but repair every numbered game reference and verifiedLines entry. A verifiedLines sequence must be legal when replayed from the exact position after startPly.`,
+      {
+        outputSchemaPath: coachReviewSchemaPath,
+        modelSelection: categorySpecialistSelection,
+        signal,
+        timeoutMs: 190000,
+      },
+    );
+    review = normalizeStructuredCoachReview(rawReview, {
+      libraryPlan,
+      bookPassages,
+      moves: payload.moves,
+      currentFen: payload.currentFen,
+      categoryPassageIds,
+    });
+  }
   return {
     answer: structuredCoachReviewToMarkdown(review, bookPassages),
     overview: review.overview,
@@ -1803,6 +1962,15 @@ async function runPhoneCoachReview(payload, signal) {
     bookPassages: publicBookPassages(bookPassages),
     storedEvaluationsUsed: analysisCoverage.cloudHits,
     analysisCoverage,
+    coachTeam: {
+      qualitativeModel: qualitativePass ? qualitativeCoachSelection.model : null,
+      specialistModel:
+        specialistResult.drafts.length > 0 ? categorySpecialistSelection.model : null,
+      specialistCount: specialistResult.drafts.length,
+      specialistFailures: specialistResult.failureCount,
+      finalModel: payload.model,
+      moveVerification: "chessops",
+    },
   };
 }
 

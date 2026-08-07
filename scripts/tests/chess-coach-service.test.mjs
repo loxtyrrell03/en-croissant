@@ -3,8 +3,14 @@ import { EventEmitter } from "node:events";
 import { PassThrough } from "node:stream";
 import test from "node:test";
 import { DatabaseSync } from "node:sqlite";
+import { Chess } from "chessops/chess";
+import { makeFen } from "chessops/fen";
+import { parseSan } from "chessops/san";
+import { makeUci } from "chessops/util";
 import {
+  assertNumberedGameMovesAreExact,
   assertNoNumberedBookPlaceholders,
+  buildCategorySpecialistPrompt,
   buildCoachMoveAnalysis,
   buildCoachPositionRecords,
   buildAgyCoachInvocation,
@@ -12,6 +18,7 @@ import {
   buildCodexCoachInvocation,
   buildChessBookSearchTerms,
   buildCriticalMoments,
+  buildGeminiQualitativePassPrompt,
   buildLibraryPlannerPrompt,
   buildPcCoachAnalysisResult,
   buildPhoneCoachPrompt,
@@ -24,6 +31,7 @@ import {
   formatStatsAggregateDigest,
   getChessBookLibraryInventory,
   normalizeCloudCoachEvaluation,
+  normalizeGeminiQualitativePass,
   normalizeChessCoachRequestPayload,
   normalizeCoachModelSelection,
   normalizeLibraryPlan,
@@ -40,6 +48,26 @@ import {
   searchChessBookCorpus,
   writeProcessStdinSafely,
 } from "../chess-coach-service.mjs";
+
+function playGame(sans) {
+  const position = Chess.default();
+  return sans.map((san, index) => {
+    const fenBefore = makeFen(position.toSetup());
+    const move = parseSan(position, san);
+    if (!move) throw new Error(`Illegal test move: ${san}`);
+    const uci = makeUci(move);
+    position.play(move);
+    return {
+      ply: index + 1,
+      color: index % 2 === 0 ? "white" : "black",
+      san,
+      uci,
+      fenBefore,
+      fenAfter: makeFen(position.toSetup()),
+      annotations: [],
+    };
+  });
+}
 
 test("stats digest includes opponent bands, transparent quality comparisons, and position outcomes", () => {
   const digest = formatStatsAggregateDigest({
@@ -1162,7 +1190,84 @@ test("pawn-structure matches prioritize plan-led chapters and plan-first prompts
   database.close();
 });
 
+test("Gemini 3.1 Pro receives a PGN-only human-coach pass with future opening plans", () => {
+  const moves = playGame(["e4", "e5", "Nf3"]);
+  const prompt = buildGeminiQualitativePassPrompt({
+    question: "Review my game",
+    pgn: "1. e4 e5 2. Nf3",
+    playerColor: "white",
+    scope: "whole-game",
+  });
+  assert.match(prompt, /PGN only:/);
+  assert.match(prompt, /where should my pieces go/);
+  assert.match(prompt, /no engine output, no Stockfish/);
+  assert.doesNotMatch(prompt, /PC analysis coverage|Permitted source passages|cloudHits/);
+
+  const normalized = normalizeGeminiQualitativePass(
+    {
+      overview: "White developed naturally but needs a clearer central plan.",
+      gameStory: "The opening created a stable centre before the game changed character.",
+      openingPlan: {
+        positionIdentity: "Open-game centre",
+        strategicStory: "Develop before forcing matters.",
+        plansForPlayer: ["Castle and prepare d4"],
+        plansForOpponent: ["Challenge e4"],
+        piecePlacement: ["Knight: f3, then consider g3 or e5"],
+        pawnBreaks: ["Prepare d4"],
+        exchanges: ["Keep active pieces"],
+        futureChecklist: ["Finish development first"],
+      },
+      phaseCommentary: [
+        { phase: "Opening", summary: "Natural play", keyPlies: [1, 99], themes: ["Development"] },
+      ],
+      teachingPriorities: ["Make a piece-placement map"],
+    },
+    moves,
+  );
+  assert.deepEqual(normalized.phaseCommentary[0].keyPlies, [1]);
+  assert.equal(normalized.openingPlan.plansForPlayer[0], "Castle and prepare d4");
+});
+
+test("Gemini 3.6 Flash category specialists are plan-led and source-scoped", () => {
+  const prompt = buildCategorySpecialistPrompt({
+    question: "What should I do next time?",
+    pgn: "1. e4 e5 2. Nf3",
+    playerColor: "white",
+    category: { id: "opening-plan", label: "Opening plans", reason: "Learn the structure" },
+    qualitativePass: { overview: "Develop with a purpose" },
+    passages: [
+      {
+        chunkId: "real-source",
+        title: "Strategic Opening Repertoire",
+        author: "GM Author",
+        chapterTitle: "Open-game plans",
+        citation: "PDF p. 10",
+        excerpt: "Prepare the central break after development.",
+        openingLines: [],
+      },
+    ],
+    moveAnalysis: [],
+    moves: playGame(["e4", "e5", "Nf3"]),
+  });
+  assert.match(prompt, /one Gemini 3\.6 Flash specialist/);
+  assert.match(prompt, /At least 60%/);
+  assert.match(prompt, /verifiedLines/);
+  assert.match(prompt, /real-source/);
+});
+
+test("numbered prose moves and proposed board lines are checked against the real game", () => {
+  const moves = playGame(["e4", "e5", "Nf3"]);
+  assert.doesNotThrow(() =>
+    assertNumberedGameMovesAreExact("After 1.e4 and 1...e5, 2.Nf3 develops naturally.", moves),
+  );
+  assert.throws(
+    () => assertNumberedGameMovesAreExact("After 1.d4, White develops.", moves),
+    /exact game move is e4/,
+  );
+});
+
 test("structured review keeps AI categories but rejects invented source and position ids", () => {
+  const moves = playGame(["e4", "e5", "Nf3"]);
   const libraryPlan = {
     overview: "Plan overview",
     categories: [
@@ -1206,6 +1311,14 @@ test("structured review keeps AI categories but rejects invented source and posi
               betterPlan: "",
             },
           ],
+          verifiedLines: [
+            {
+              startPly: 2,
+              title: "Develop with purpose",
+              purpose: "Put the king knight on its natural square.",
+              moves: ["Nf3"],
+            },
+          ],
           bookReferences: [
             { chunkId: "real-source", whyItMatters: "It explains the break.", positionPly: 3 },
             { chunkId: "fake-source", whyItMatters: "Invented.", positionPly: null },
@@ -1216,7 +1329,7 @@ test("structured review keeps AI categories but rejects invented source and posi
     {
       libraryPlan,
       bookPassages,
-      moves: [{ ply: 3, san: "Bf4" }],
+      moves,
       categoryPassageIds: { opening: ["real-source"] },
     },
   );
@@ -1225,7 +1338,8 @@ test("structured review keeps AI categories but rejects invented source and posi
     review.categories[0].positions.map((position) => position.ply),
     [3],
   );
-  assert.equal(review.categories[0].positions[0].san, "Bf4");
+  assert.equal(review.categories[0].positions[0].san, "Nf3");
+  assert.equal(review.categories[0].verifiedLines[0].moves[0].uci, "g1f3");
   assert.deepEqual(
     review.categories[0].bookReferences.map((source) => source.chunkId),
     ["real-source"],
@@ -1251,15 +1365,22 @@ test("structured review keeps AI categories but rejects invented source and posi
       },
     ],
     categoryPassageIds: { opening: ["real-source"] },
+    moves,
+    qualitativePass: { overview: "A human-first story" },
+    specialistDrafts: [{ id: "opening", explanation: "Future plan" }],
   });
   assert.match(prompt, /complete real title/);
   assert.match(prompt, /exact move\/ply and current squares/);
   assert.match(prompt, /plan-first strategic map/);
   assert.match(prompt, /Do not narrate a book line move by move/);
+  assert.match(prompt, /editorial spine/);
+  assert.match(prompt, /at least 60%/);
+  assert.match(prompt, /verifiedLines/);
   assert.doesNotMatch(prompt, /\[Book \d+\]/);
 });
 
 test("structured coach output rejects numbered book placeholders in user-visible text", () => {
+  const moves = playGame(["e4"]);
   assert.throws(
     () =>
       assertNoNumberedBookPlaceholders({
@@ -1293,6 +1414,14 @@ test("structured coach output rejects numbered book placeholders in user-visible
               summary: "Opening lesson",
               explanation: "Use the thematic break.",
               positions: [],
+              verifiedLines: [
+                {
+                  startPly: 0,
+                  title: "First move",
+                  purpose: "Show the central occupation.",
+                  moves: ["e4"],
+                },
+              ],
               bookReferences: [
                 { chunkId: "real-source", whyItMatters: "Named source lesson", positionPly: null },
               ],
@@ -1312,7 +1441,7 @@ test("structured coach output rejects numbered book placeholders in user-visible
             ],
           },
           bookPassages: [{ chunkId: "real-source" }],
-          moves: [],
+          moves,
           categoryPassageIds: { opening: ["real-source"] },
         },
       ),
@@ -1321,6 +1450,7 @@ test("structured coach output rejects numbered book placeholders in user-visible
 });
 
 test("structured coach output must include every AI-planned category", () => {
+  const moves = playGame(["e4"]);
   assert.throws(
     () =>
       normalizeStructuredCoachReview(
@@ -1333,6 +1463,14 @@ test("structured coach output must include every AI-planned category", () => {
               summary: "Opening summary",
               explanation: "Opening explanation",
               positions: [],
+              verifiedLines: [
+                {
+                  startPly: 0,
+                  title: "First move",
+                  purpose: "Show the opening idea.",
+                  moves: ["e4"],
+                },
+              ],
               bookReferences: [],
             },
           ],
@@ -1346,7 +1484,7 @@ test("structured coach output must include every AI-planned category", () => {
             ],
           },
           bookPassages: [],
-          moves: [],
+          moves,
           categoryPassageIds: { opening: [], endgame: [] },
         },
       ),

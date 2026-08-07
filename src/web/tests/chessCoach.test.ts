@@ -8,6 +8,7 @@ import {
     getWebCoachLineContextKey,
     getWebCoachMoves,
     getWebCoachStorageKey,
+    linkWebCoachGameMoves,
     makeWebCoachMovetext,
     normalizeWebChessCoachResponse,
     persistWebCoachReviewInState,
@@ -21,6 +22,23 @@ import type { WebGame, WebPrepLineMove } from "../model";
 import { createEmptyWebState } from "../storage";
 
 describe("phone chess coach context", () => {
+    it("turns only exact played move references into board links", () => {
+        const linked = linkWebCoachGameMoves(
+            "After 1.e4 and 1...e5, ply 3 is 2.Nf3; 2.Bc4 was not played.",
+            [
+                { ply: 1, san: "e4" },
+                { ply: 2, san: "e5" },
+                { ply: 3, san: "Nf3" },
+            ],
+        );
+
+        expect(linked).toContain("[1.e4](#coach-ply-1)");
+        expect(linked).toContain("[1...e5](#coach-ply-2)");
+        expect(linked).toContain("[ply 3](#coach-ply-3)");
+        expect(linked).toContain("[2.Nf3](#coach-ply-3)");
+        expect(linked).toContain("2.Bc4 was not played");
+    });
+
     it("builds colour-aware move evidence from an analysis line", () => {
         const moves = getWebCoachMoves(null, [
             {
@@ -79,6 +97,22 @@ describe("phone chess coach context", () => {
                             betterPlan: "Castle and contest the centre.",
                         },
                     ],
+                    verifiedLines: [
+                        {
+                            startPly: 8,
+                            title: "Complete development",
+                            purpose: "Visualize the knight route.",
+                            startFen: "position-before-nf3 w - - 0 1",
+                            moves: [
+                                {
+                                    san: "Nf3",
+                                    uci: "g1f3",
+                                    fenBefore: "position-before-nf3 w - - 0 1",
+                                    fenAfter: "position-after-nf3 b - - 1 1",
+                                },
+                            ],
+                        },
+                    ],
                     bookReferences: [
                         {
                             chunkId: "chunk-opening",
@@ -105,6 +139,14 @@ describe("phone chess coach context", () => {
                 liveAnalyses: 7,
                 failed: 0,
             },
+            coachTeam: {
+                qualitativeModel: "gemini-3.1-pro",
+                specialistModel: "gemini-3.6-flash",
+                specialistCount: 3,
+                specialistFailures: 0,
+                finalModel: "gpt-5.6-sol",
+                moveVerification: "chessops",
+            },
         });
 
         expect(response?.categories.map((category) => category.id)).toEqual([
@@ -121,6 +163,8 @@ describe("phone chess coach context", () => {
         expect(response?.categories[0].positions[0].betterPlan).toBe(
             "Castle and contest the centre.",
         );
+        expect(response?.categories[0].verifiedLines[0].moves[0].uci).toBe("g1f3");
+        expect(response?.coachTeam?.specialistCount).toBe(3);
         expect(response?.analysisCoverage.cloudHits).toBe(35);
     });
 

@@ -4,6 +4,7 @@ import {
   formatDerivedSummaryForPrompt,
   formatKeyMomentsForPrompt,
   formatOpeningIdentificationForPrompt,
+  materializeCoachSanLine,
 } from "./chess-coach-derived.mjs";
 
 const MAX_BOOK_PASSAGES = 6;
@@ -181,7 +182,15 @@ export const COACH_REVIEW_SCHEMA = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["id", "label", "summary", "explanation", "positions", "bookReferences"],
+        required: [
+          "id",
+          "label",
+          "summary",
+          "explanation",
+          "positions",
+          "verifiedLines",
+          "bookReferences",
+        ],
         properties: {
           id: { type: "string" },
           label: { type: "string" },
@@ -201,6 +210,27 @@ export const COACH_REVIEW_SCHEMA = {
                 explanation: { type: "string" },
                 engineEvidence: { type: "string" },
                 betterPlan: { type: "string" },
+              },
+            },
+          },
+          verifiedLines: {
+            type: "array",
+            minItems: 1,
+            maxItems: 3,
+            items: {
+              type: "object",
+              additionalProperties: false,
+              required: ["startPly", "title", "purpose", "moves"],
+              properties: {
+                startPly: { type: "integer", minimum: 0 },
+                title: { type: "string" },
+                purpose: { type: "string" },
+                moves: {
+                  type: "array",
+                  minItems: 1,
+                  maxItems: 12,
+                  items: { type: "string" },
+                },
               },
             },
           },
@@ -226,6 +256,70 @@ export const COACH_REVIEW_SCHEMA = {
       maxItems: 6,
       items: { type: "string" },
     },
+  },
+};
+
+export const COACH_QUALITATIVE_PASS_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["overview", "gameStory", "openingPlan", "phaseCommentary", "teachingPriorities"],
+  properties: {
+    overview: { type: "string" },
+    gameStory: { type: "string" },
+    openingPlan: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "positionIdentity",
+        "strategicStory",
+        "plansForPlayer",
+        "plansForOpponent",
+        "piecePlacement",
+        "pawnBreaks",
+        "exchanges",
+        "futureChecklist",
+      ],
+      properties: {
+        positionIdentity: { type: "string" },
+        strategicStory: { type: "string" },
+        plansForPlayer: { type: "array", maxItems: 8, items: { type: "string" } },
+        plansForOpponent: { type: "array", maxItems: 8, items: { type: "string" } },
+        piecePlacement: { type: "array", maxItems: 10, items: { type: "string" } },
+        pawnBreaks: { type: "array", maxItems: 8, items: { type: "string" } },
+        exchanges: { type: "array", maxItems: 8, items: { type: "string" } },
+        futureChecklist: { type: "array", maxItems: 8, items: { type: "string" } },
+      },
+    },
+    phaseCommentary: {
+      type: "array",
+      maxItems: 5,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["phase", "summary", "keyPlies", "themes"],
+        properties: {
+          phase: { type: "string" },
+          summary: { type: "string" },
+          keyPlies: { type: "array", maxItems: 8, items: { type: "integer", minimum: 1 } },
+          themes: { type: "array", maxItems: 8, items: { type: "string" } },
+        },
+      },
+    },
+    teachingPriorities: { type: "array", maxItems: 8, items: { type: "string" } },
+  },
+};
+
+export const COACH_CATEGORY_DRAFT_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["id", "summary", "explanation", "positions", "verifiedLines", "bookReferences"],
+  properties: {
+    id: { type: "string" },
+    summary: { type: "string" },
+    explanation: { type: "string" },
+    positions: COACH_REVIEW_SCHEMA.properties.categories.items.properties.positions,
+    verifiedLines: COACH_REVIEW_SCHEMA.properties.categories.items.properties.verifiedLines,
+    bookReferences: COACH_REVIEW_SCHEMA.properties.categories.items.properties.bookReferences,
   },
 };
 
@@ -1926,6 +2020,193 @@ function formatExactOpeningMatches(matches) {
     .join("\n");
 }
 
+export function buildGeminiQualitativePassPrompt({ question, pgn, playerColor, scope }) {
+  return `Role: You are the first human-style chess coach in a multi-pass review.
+
+Read the PGN as a strong coach would when first sitting down with the player. Produce the narrative spine, strategic interpretation, and practical teaching priorities that later specialist agents should follow.
+
+Strict isolation rules:
+- Your only chess evidence is the PGN printed below and the player's side. You have no engine output, no Stockfish, no cloud evaluations, no opening database, and no book excerpts.
+- Do not guess numeric evaluations, engine best moves, forced wins, or tactical certainty. Phrase uncertain tactical observations as questions for a later evidence pass to verify.
+- Do not write a move-by-move engine report. Explain the flow of the game, changes in plans, piece coordination, recurring decisions, and what a human player should learn.
+- The openingPlan is future-facing. Its main question is not "what happened?" but "when I reach this kind of position again, where should my pieces go, which pawn breaks should I prepare, which exchanges help me, what is the opponent trying to do, and what should I check before choosing a move?"
+- Be specific to the position reached in this PGN. If the opening name is uncertain or the game transposes, describe the pawn structure and piece placement instead of forcing a label.
+- Use exact numbered game moves only when they are present in the PGN. Keep hypothetical continuations out of prose; later agents will build and legality-check board lines.
+
+User question: ${oneLine(question, 2000)}
+Player: ${playerColor}
+Scope: ${scope}
+
+PGN only:
+${completeCoachPgn(pgn)}
+`;
+}
+
+export function normalizeGeminiQualitativePass(value, moves = []) {
+  const parsed = parseStructuredObject(value);
+  const validPlies = new Set(
+    (moves || []).map((move) => Number(move.ply)).filter(Number.isInteger),
+  );
+  const opening =
+    parsed.openingPlan && typeof parsed.openingPlan === "object" ? parsed.openingPlan : {};
+  const phaseCommentary = (Array.isArray(parsed.phaseCommentary) ? parsed.phaseCommentary : [])
+    .slice(0, 5)
+    .flatMap((phase) => {
+      if (!phase || typeof phase !== "object") return [];
+      const summary = cleanText(phase.summary, 2400);
+      if (!summary) return [];
+      return [
+        {
+          phase: oneLine(phase.phase, 80) || "Game phase",
+          summary,
+          keyPlies: [
+            ...new Set(
+              (Array.isArray(phase.keyPlies) ? phase.keyPlies : [])
+                .map(Number)
+                .filter((ply) => Number.isInteger(ply) && validPlies.has(ply)),
+            ),
+          ].slice(0, 8),
+          themes: uniqueStrings(phase.themes, null, 8).map((theme) => oneLine(theme, 300)),
+        },
+      ];
+    });
+  const list = (candidate, limit = 8) =>
+    uniqueStrings(candidate, null, limit).map((item) => cleanText(item, 600));
+  const result = {
+    overview: cleanText(parsed.overview, 3000),
+    gameStory: cleanText(parsed.gameStory, 5000),
+    openingPlan: {
+      positionIdentity: cleanText(opening.positionIdentity, 1000),
+      strategicStory: cleanText(opening.strategicStory, 2400),
+      plansForPlayer: list(opening.plansForPlayer),
+      plansForOpponent: list(opening.plansForOpponent),
+      piecePlacement: list(opening.piecePlacement, 10),
+      pawnBreaks: list(opening.pawnBreaks),
+      exchanges: list(opening.exchanges),
+      futureChecklist: list(opening.futureChecklist),
+    },
+    phaseCommentary,
+    teachingPriorities: list(parsed.teachingPriorities),
+  };
+  if (!result.overview || !result.gameStory) {
+    throw new Error("Gemini 3.1 Pro did not return a usable PGN-only coaching pass.");
+  }
+  return result;
+}
+
+export function buildCategorySpecialistPrompt({
+  question,
+  pgn,
+  playerColor,
+  category,
+  qualitativePass,
+  passages,
+  moveAnalysis,
+  derivedEvidence = null,
+  moves = [],
+}) {
+  const isOpening = /opening|pawn structure|structure plan|repertoire|development/i.test(
+    `${category.label} ${category.reason}`,
+  );
+  return `Role: You are one Gemini 3.6 Flash specialist in a multi-agent chess coaching team.
+
+Draft only the category assigned to you. Gemini 3.1 Pro's PGN-only pass is the editorial spine: preserve its human explanation and priorities, then sharpen them with the scoped book passages and verified evidence below. Stockfish is a fact checker for concrete tactical/evaluation claims, not the organizing voice.
+
+Category: ${category.label}
+Category ID (copy exactly): ${category.id}
+Why it was selected: ${category.reason}
+Opening/structure specialist: ${isOpening ? "yes" : "no"}
+
+Rules:
+- Cite only supplied chunkIds and name the real book and chapter in prose.
+- Use only exact numbered game moves from Allowed game moves. Do not invent a numbered move.
+- Put every hypothetical continuation in verifiedLines, never loose in prose. Each line starts from the position after startPly (0 means the initial position) and contains SAN moves for deterministic legality checking.
+- Return 1-3 short, useful verifiedLines. Prefer lines that visualize a plan, piece route, pawn break, or critical mechanism; avoid long engine dumps.
+- positions may refer only to exact game plies and should explain why that position teaches this category.
+- If concrete engine evidence conflicts with the qualitative pass, correct the concrete claim while keeping the useful human framing.
+${
+  isOpening
+    ? "- At least 60% of this category must teach what to do in future positions of this type: the player's plan, opponent counterplay, ideal piece squares and routes, thematic breaks and their preparation, desirable exchanges, and an if-then checklist. Use this game only as the worked example; do not make retelling it the focus."
+    : "- Teach a transferable decision process, using this game's positions as worked examples rather than merely recounting the moves."
+}
+
+User question: ${oneLine(question, 2000)}
+Player: ${playerColor}
+PGN:
+${completeCoachPgn(pgn)}
+
+Gemini 3.1 Pro PGN-only coaching pass:
+${JSON.stringify(qualitativePass, null, 2)}
+
+Allowed game moves:
+${JSON.stringify(
+  moves.map((move) => ({ ply: Number(move.ply), san: String(move.san || "") })),
+  null,
+  2,
+)}
+
+Verified opening-prefix engine trace (fact checking only):
+${formatCoachTraceForPrompt(moveAnalysis, derivedEvidence)}
+
+Derived key-moment facts:
+${formatKeyMomentsForPrompt(derivedEvidence)}
+
+Scoped book passages:
+${JSON.stringify(
+  passages.map((passage) => ({
+    chunkId: passage.chunkId,
+    title: passage.title,
+    author: passage.author,
+    chapterTitle: passage.chapterTitle,
+    citation: passage.citation,
+    excerpt: passage.excerpt,
+    exactOpeningLines: (passage.openingLines || []).map((line) => ({
+      pgn: line.pgn,
+      matchedGamePly: line.matchedGamePly,
+      playedSan: line.playedSan,
+      bookMoveSan: line.bookMoveSan,
+      playedMoveMatched: line.playedMoveMatched,
+    })),
+  })),
+  null,
+  2,
+)}
+`;
+}
+
+export function normalizeCategorySpecialistDraft(
+  value,
+  { category, permittedChunkIds = [], moves = [] },
+) {
+  const parsed = parseStructuredObject(value);
+  const permitted = new Set(permittedChunkIds);
+  const validPlies = new Set((moves || []).map((move) => Number(move.ply)));
+  return {
+    id: category.id,
+    label: category.label,
+    summary: cleanText(parsed.summary, 800),
+    explanation: cleanText(parsed.explanation, 9000),
+    positions: (Array.isArray(parsed.positions) ? parsed.positions : [])
+      .filter((position) => validPlies.has(Number(position?.ply)))
+      .slice(0, 8),
+    verifiedLines: (Array.isArray(parsed.verifiedLines) ? parsed.verifiedLines : [])
+      .filter((line) => line && typeof line === "object")
+      .slice(0, 3)
+      .map((line) => ({
+        startPly: Number(line.startPly),
+        title: cleanText(line.title, 180),
+        purpose: cleanText(line.purpose, 1200),
+        moves: (Array.isArray(line.moves) ? line.moves : [])
+          .slice(0, 12)
+          .map((move) => cleanText(move, 40))
+          .filter(Boolean),
+      })),
+    bookReferences: (Array.isArray(parsed.bookReferences) ? parsed.bookReferences : [])
+      .filter((reference) => permitted.has(String(reference?.chunkId || "")))
+      .slice(0, 8),
+  };
+}
+
 export function buildLibraryPlannerPrompt({
   question,
   pgn,
@@ -1937,12 +2218,14 @@ export function buildLibraryPlannerPrompt({
   exactOpeningMatches = [],
   structureMatches = [],
   derivedEvidence = null,
+  qualitativePass = null,
 }) {
   return `Role: You are the chess-library editor and syllabus planner for a rigorous private coach.
 
 You must decide which coaching categories are genuinely relevant to this specific game or position, then select the exact books and accessible chapters that the final coach should consult. The category names and their order are your decision; do not use a fixed checklist. Choose between one and six categories and omit aspects that have no useful lesson.
 
 Evidence rules:
+- Gemini 3.1 Pro's PGN-only coaching pass below is the editorial spine. Use its human story, opening-plan questions, and teaching priorities to decide what the library should support. It contains no engine or book evidence, so concrete claims still require the verified trace or retrieved sources.
 - The PC Stockfish trace below intentionally covers only the contiguous cached opening through its first gap, plus at most one live boundary evaluation. It is authoritative only for positions actually present in that trace. Later moves in the PGN were deliberately not swept and are not engine evidence.
 - Scores are White-relative. Each position records whether it came from the PC cloud store or a live PC search and its depth; treat small differences across unlike depths cautiously.
 - A transposition-aware opening-family anchor computed from an exact position table may be supplied below. When present, refine it only to a more specific compatible sub-variation; never override the reached position with a label forced from the initial move order.
@@ -1958,6 +2241,7 @@ Evidence rules:
 - Never call leaving an arbitrary repertoire a mistake, or imply that the player intended that repertoire. Only criticize a move when the PC evidence or a genuinely applicable resulting-position lesson supports the criticism.
 - For an opening category, select books and chapters for resultingFamily. Use an initial move-order book only when its lesson remains relevant after the transposition. Prefer STRUCTURE_PLAN chapters and other material that teaches the reached structure's plans for both sides, ideal and misplaced pieces, thematic pawn breaks, useful and harmful exchanges, manoeuvres, and counterplay.
 - Plan opening coverage before choosing variations. The final lesson should lead with the position's strategic map; use the shortest concrete line needed to prove or illustrate a plan, not as the outline of the explanation.
+- For a whole-game review, include a plan-led opening category unless the PGN contains no discernible opening position or the user explicitly excludes the opening. The category must primarily answer what the player should do next time, not recap what they did this time.
 - Give opening coverage materially more attention when the opening produced an instructive inaccuracy, unfamiliar structure, misplaced piece, missed break, or plan error. Tie it to exact move numbers and positions, not generic opening advice.
 - Categories may be specific, for example “Dutch opening structure”, “Calculation at move 31”, “Rook endgame technique”, or “Defensive decision-making”. Choose the clearest short tab label.
 
@@ -1968,6 +2252,9 @@ Current FEN: ${oneLine(currentFen, 180)}
 
 PGN:
 ${completeCoachPgn(pgn)}
+
+Gemini 3.1 Pro PGN-only coaching pass:
+${qualitativePass ? JSON.stringify(qualitativePass, null, 2) : "Not available for this scope."}
 
 Exact-position opening-family anchor (transposition-aware):
 ${formatOpeningIdentificationForPrompt(derivedEvidence?.openingIdentification)}
@@ -2289,6 +2576,9 @@ export function buildStructuredPhoneCoachPrompt({
   derivedEvidence = null,
   exactOpeningMatches = [],
   structureMatches = [],
+  qualitativePass = null,
+  specialistDrafts = [],
+  moves = [],
 }) {
   const sources = bookPassages.map((passage) => ({
     chunkId: passage.chunkId,
@@ -2316,12 +2606,18 @@ export function buildStructuredPhoneCoachPrompt({
     ...category,
     availableChunkIds: categoryPassageIds[category.id] || [],
   }));
+  const teamBrief = qualitativePass
+    ? "Gemini 3.1 Pro has already produced a PGN-only human coaching pass without seeing Stockfish, cloud evaluations, databases, or books. Treat that pass as the editorial spine: its game story, strategic questions, and practical priorities should shape the review. Gemini 3.6 Flash specialists have independently drafted the selected categories. Your job is to edit their work into one coherent answer, not restart from an engine line."
+    : "This is a targeted current-position review, so no whole-game qualitative or category-specialist pass was run. Build the answer directly from the supplied position, books, and verified evidence.";
   return `Role: You are a rigorous, practical chess coach writing a structured review for ${playerColor}.
 
-The PC has already read the contiguous cached opening through its first gap and checked at most that one boundary with live Stockfish. Later game positions were intentionally skipped for speed. The AI library editor has already chosen the relevant categories, books, and accessible chapters. Your job is to synthesize those evidence classes into clear, category-tab content that feels written for this exact game.
+${teamBrief}
+
+The PC has read the contiguous cached opening through its first gap and checked at most that one boundary with live Stockfish. Later game positions were intentionally skipped for speed. Use this evidence as a concrete accuracy guardrail, not as the narrative outline.
 
 Grounding rules:
 - PC Stockfish is authoritative for evaluations, tactical claims, and better moves. Scores are White-relative. State the source/depth when it matters and avoid treating small cross-depth changes as exact.
+- Preserve the Gemini 3.1 Pro pass's human explanation wherever evidence does not contradict it. If a concrete claim conflicts with verified evidence, correct that claim quietly while retaining the useful strategic framing.
 - Treat only positions present in the opening-prefix trace as engine-verified. The rest of the PGN is game context, not a hidden full-game engine scan; never invent later evaluations, critical moments, or refutations.
 - The supplied page-bounded book excerpts are authoritative for attributed lessons. Refer to books by their complete real title and chapter title in prose, never by a number such as “Book 3”.
 - Every bookReferences.chunkId must exactly match a supplied chunkId available to that planned category. Never invent a title, author, chapter, page, quotation, chunk ID, evaluation, or line.
@@ -2334,11 +2630,15 @@ Grounding rules:
 - Weigh lessons by the derived context flags: a decisiveSwing moment in a holdable position is the headline; alreadyLosing moments matter less; a missed-punishment motif means the player let the opponent's error go unpunished — say so plainly.
 - Keep the AI-selected category IDs, labels, and order. Do not add a fixed generic section.
 - Each category explanation should connect concrete positions to the human decision, the engine evidence, the better plan, and the cited teaching lesson.
+- Use the matching Gemini 3.6 Flash specialist draft as the starting point for each category. Merge, shorten, and correct; do not flatten all specialists into the same engine-report voice.
 - A position ply identifies the move just played: ply 1 is White's first move. Use only plies in the supplied trace.
 - When an opening category was selected, lead with a plan-first strategic map before any variation: name the structure; give both sides' plans and counterplay; identify ideal and misplaced pieces; explain thematic breaks, exchanges, and manoeuvres; then show the smallest concrete line needed as proof or illustration. Do not narrate a book line move by move as the explanation.
+- In an opening category, devote at least 60% of the explanation to future positions of this type: where the player's pieces belong and how they get there, which breaks to prepare and when, which exchanges help, what the opponent is trying to achieve, and a compact if-then checklist. This game is the worked example, not the subject of a move-by-move recap.
 - Make that strategic map specific to the played position: identify the exact move/ply and current squares that make each standard plan viable, premature, or unavailable; say what the played move misunderstood and how the selected chapter applies. Compare against exact book lines only after the plan explanation, naming relevant follow/diverge plies without implying that repertoire departure is itself an error.
 - Be personal and memorable, never generic: anchor every lesson to this game's exact squares, pieces, and move numbers, and give each key moment one short transferable takeaway phrased from this game (for example “the knight on d5 had no retreat once ...c6 came — check retreat squares before advancing”). Delete any sentence that could appear unchanged in a review of a different game.
 - Use Markdown inside explanation fields sparingly. Do not put category headings inside them because the UI provides tabs.
+- Keep overview to two or three short paragraphs: the human story and the main lesson, not an evaluation ledger.
+- Every numbered move in prose must exactly match Allowed game moves. Put every hypothetical continuation in verifiedLines, never as loose SAN inside a paragraph. Each category needs 1-3 concise verifiedLines so every proposed move can be legality-checked and shown on a board.
 - Answer the user's question directly in overview and finish with a short ordered priorities list. Each priority must name the habit to train, tie it to a move from this game, and give one concrete practice method.
 
 User question: ${oneLine(question, 2000)}
@@ -2347,6 +2647,16 @@ Current FEN: ${oneLine(currentFen, 180)}
 
 PGN:
 ${completeCoachPgn(pgn)}
+
+Gemini 3.1 Pro PGN-only coaching pass (editorial spine, not concrete evidence):
+${qualitativePass ? JSON.stringify(qualitativePass, null, 2) : "Not available for this scope."}
+
+Allowed game moves:
+${JSON.stringify(
+  moves.map((move) => ({ ply: Number(move.ply), san: String(move.san || "") })),
+  null,
+  2,
+)}
 
 PC analysis coverage:
 ${JSON.stringify(analysisCoverage, null, 2)}
@@ -2379,6 +2689,9 @@ ${JSON.stringify(
   null,
   2,
 )}
+
+Gemini 3.6 Flash category specialist drafts:
+${specialistDrafts.length ? JSON.stringify(specialistDrafts, null, 2) : "No specialist draft was available; write from the other supplied evidence."}
 
 Permitted source passages:
 ${JSON.stringify(sources, null, 2)}
@@ -2418,9 +2731,98 @@ export function assertNoNumberedBookPlaceholders(value) {
   return value;
 }
 
+const NUMBERED_SAN_REFERENCE =
+  /(^|[\s([{"'“])(\d{1,3})(\.(?:\.\.)?|…)\s*((?:O-O-O|O-O|0-0-0|0-0|[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?[+#]?)[!?]{0,2})/g;
+
+function normalizedReferencedSan(value) {
+  return String(value || "")
+    .replace(/[!?]+$/g, "")
+    .replaceAll("0-0-0", "O-O-O")
+    .replaceAll("0-0", "O-O");
+}
+
+export function assertNumberedGameMovesAreExact(value, moves = []) {
+  const moveByPly = new Map((moves || []).map((move) => [Number(move.ply), move]));
+  const visit = (candidate) => {
+    if (typeof candidate === "string") {
+      NUMBERED_SAN_REFERENCE.lastIndex = 0;
+      let match;
+      while ((match = NUMBERED_SAN_REFERENCE.exec(candidate))) {
+        const moveNumber = Number(match[2]);
+        const blackMove = match[3] === "..." || match[3] === "…";
+        const ply = (moveNumber - 1) * 2 + (blackMove ? 2 : 1);
+        const expected = moveByPly.get(ply);
+        const referencedSan = normalizedReferencedSan(match[4]);
+        if (!expected || normalizedReferencedSan(expected.san) !== referencedSan) {
+          throw new Error(
+            expected
+              ? "The coach referenced " +
+                  moveNumber +
+                  (blackMove ? "..." : ".") +
+                  referencedSan +
+                  ", but the exact game move is " +
+                  expected.san +
+                  "."
+              : "The coach referenced a move outside the supplied game at move " + moveNumber + ".",
+          );
+        }
+      }
+      return;
+    }
+    if (Array.isArray(candidate)) {
+      for (const item of candidate) visit(item);
+      return;
+    }
+    if (candidate && typeof candidate === "object") {
+      for (const [key, item] of Object.entries(candidate)) {
+        if (key !== "verifiedLines" && key !== "moves") visit(item);
+      }
+    }
+  };
+  visit(value);
+  return value;
+}
+
+function normalizeVerifiedCoachLines(rawLines, moves, currentFen, categoryLabel) {
+  const moveByPly = new Map((moves || []).map((move) => [Number(move.ply), move]));
+  const rootFen = String(moves?.[0]?.fenBefore || currentFen || "").trim();
+  const lines = [];
+  let invalid = 0;
+  for (const raw of Array.isArray(rawLines) ? rawLines : []) {
+    if (!raw || typeof raw !== "object" || lines.length >= 3) continue;
+    const startPly = Number(raw.startPly);
+    if (!Number.isInteger(startPly) || startPly < 0) {
+      invalid += 1;
+      continue;
+    }
+    const startFen =
+      startPly === 0 ? rootFen : String(moveByPly.get(startPly)?.fenAfter || "").trim();
+    const materialized = materializeCoachSanLine(startFen, raw.moves, 12);
+    if (!startFen || !materialized) {
+      invalid += 1;
+      continue;
+    }
+    lines.push({
+      startPly,
+      title: cleanText(raw.title, 180) || "Plan on the board",
+      purpose: cleanText(raw.purpose, 1200),
+      startFen,
+      moves: materialized.moves,
+    });
+  }
+  if (lines.length === 0) {
+    throw new Error(
+      invalid > 0
+        ? "The move-verification pass rejected every proposed line for " + categoryLabel + "."
+        : "The coach omitted a board-ready line for " + categoryLabel + ".",
+    );
+  }
+  return lines;
+}
+
 export function normalizeStructuredCoachReview(
   value,
-  { libraryPlan, bookPassages, moves = [], categoryPassageIds = {} },
+  { libraryPlan, bookPassages, moves = [], currentFen = "", categoryPassageIds = {} },
 ) {
   const parsed = parseStructuredObject(value);
   const passageIds = new Set(bookPassages.map((passage) => passage.chunkId));
@@ -2476,12 +2878,19 @@ export function normalizeStructuredCoachReview(
     if (permittedForCategory.size > 0 && bookReferences.length === 0) {
       throw new Error(`The coach omitted the required named book reference for ${planned.label}.`);
     }
+    const verifiedLines = normalizeVerifiedCoachLines(
+      raw.verifiedLines,
+      moves,
+      currentFen,
+      planned.label,
+    );
     categories.push({
       id: planned.id,
       label: planned.label,
       summary: cleanText(raw.summary, 500) || planned.reason,
       explanation: cleanText(raw.explanation, 8000),
       positions,
+      verifiedLines,
       bookReferences,
     });
   }
@@ -2495,7 +2904,8 @@ export function normalizeStructuredCoachReview(
       cleanText(priority, 500),
     ),
   };
-  return assertNoNumberedBookPlaceholders(review);
+  assertNoNumberedBookPlaceholders(review);
+  return assertNumberedGameMovesAreExact(review, moves);
 }
 
 export function structuredCoachReviewToMarkdown(review, bookPassages) {
