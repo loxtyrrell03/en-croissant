@@ -1422,6 +1422,7 @@ async fn scan_lichess_community_broadcasts<R: tauri::Runtime>(
     let mut tours: Vec<(String, String, Option<i64>)> = Vec::new();
     let mut seen = HashSet::new();
     let mut pages_all_before_range = 0u32;
+    let mut oldest_dated: Option<i64> = None;
     for page in 1..=LICHESS_COMMUNITY_MAX_PAGES {
         emit_progress(
             app,
@@ -1447,8 +1448,11 @@ async fn scan_lichess_community_broadcasts<R: tauri::Runtime>(
                 break;
             }
         };
-        let (page_tours, all_before_range, has_next) =
+        let (page_tours, all_before_range, has_next, page_oldest) =
             extract_community_tour_page(&value, from_millis);
+        if let Some(page_oldest) = page_oldest {
+            oldest_dated = Some(oldest_dated.map_or(page_oldest, |value| value.min(page_oldest)));
+        }
         for tour in page_tours {
             if seen.insert(tour.0.clone()) {
                 tours.push(tour);
@@ -1470,6 +1474,18 @@ async fn scan_lichess_community_broadcasts<R: tauri::Runtime>(
                 request.from_year
             ));
         }
+    }
+
+    // Lichess only exposes a rolling window of past broadcasts (about twenty
+    // listing pages). Say so instead of silently missing older events.
+    if oldest_dated.is_some_and(|oldest| oldest > from_millis) {
+        let reach = oldest_dated
+            .and_then(chrono::DateTime::<Utc>::from_timestamp_millis)
+            .map(|date| date.format("%Y-%m-%d").to_string())
+            .unwrap_or_else(|| "recent months".to_string());
+        report.errors.push(format!(
+            "The public broadcast listing only reaches back to {reach}; community events before then cannot be discovered automatically — add their PGN files as local sources instead.",
+        ));
     }
 
     tours.sort_by(|left, right| left.0.cmp(&right.0));
@@ -1542,11 +1558,12 @@ fn year_start_millis(year: u16) -> i64 {
 
 /// Pulls the past-broadcast entries out of one `/api/broadcast/top` page.
 /// Returns the tours overlapping the requested range, whether every dated
-/// tour on the page ended before the range, and whether another page exists.
+/// tour on the page ended before the range, whether another page exists, and
+/// the oldest dated tour end seen on the page.
 fn extract_community_tour_page(
     value: &serde_json::Value,
     from_millis: i64,
-) -> (Vec<(String, String, Option<i64>)>, bool, bool) {
+) -> (Vec<(String, String, Option<i64>)>, bool, bool, Option<i64>) {
     let past = value.get("past");
     let results = past
         .and_then(|past| past.get("currentPageResults"))
@@ -1554,6 +1571,7 @@ fn extract_community_tour_page(
     let mut tours = Vec::new();
     let mut dated = 0usize;
     let mut before_range = 0usize;
+    let mut oldest_dated: Option<i64> = None;
     if let Some(results) = results {
         for entry in results {
             let Some(tour) = entry.get("tour") else {
@@ -1576,6 +1594,7 @@ fn extract_community_tour_page(
                 .or(starts);
             if let Some(ends_at) = ends {
                 dated += 1;
+                oldest_dated = Some(oldest_dated.map_or(ends_at, |value| value.min(ends_at)));
                 if ends_at < from_millis {
                     before_range += 1;
                     continue;
@@ -1588,7 +1607,12 @@ fn extract_community_tour_page(
         .and_then(|past| past.get("nextPage"))
         .and_then(serde_json::Value::as_u64)
         .is_some();
-    (tours, dated > 0 && before_range == dated, has_next)
+    (
+        tours,
+        dated > 0 && before_range == dated,
+        has_next,
+        oldest_dated,
+    )
 }
 
 /// Downloads a lichess PGN through the paced lane, optionally backed by an
@@ -3704,15 +3728,17 @@ mod tests {
         });
         // 2026-01-01 as the range start keeps BUCA and drops the 2020 event.
         let from_millis = year_start_millis(2026);
-        let (tours, all_before, has_next) = extract_community_tour_page(&value, from_millis);
+        let (tours, all_before, has_next, oldest) =
+            extract_community_tour_page(&value, from_millis);
         assert_eq!(
             tours.iter().map(|tour| tour.0.as_str()).collect::<Vec<_>>(),
             vec!["AtOSTGx3", "NoDates1"]
         );
         assert!(!all_before);
         assert!(has_next);
+        assert_eq!(oldest, Some(1600086400000));
 
-        let (tours, all_before, has_next) =
+        let (tours, all_before, has_next, _) =
             extract_community_tour_page(&value, year_start_millis(2030));
         assert_eq!(tours.len(), 1, "only the undated tour survives");
         assert!(all_before);

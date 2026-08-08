@@ -20,9 +20,11 @@ import { useAtom } from "jotai";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { mutate } from "swr";
 import { commands, events, type OtbImportProgress, type OtbImportReport } from "@/bindings";
+import FidePlayerPicker from "@/components/panels/prep/FidePlayerPicker";
 import { databaseConversionStateAtom } from "@/state/atoms";
 import { getDatabases, type SuccessDatabaseInfo } from "@/utils/db";
 import { getDatabasesDir } from "@/utils/directories";
+import { lookupFidePlayer, type FidePlayer } from "@/utils/fideApi";
 import {
   DEFAULT_OTB_IMPORT_SOURCES,
   OTB_IMPORT_SOURCE_DETAILS,
@@ -76,6 +78,8 @@ export default function OtbGameImportPanel({
   const currentYear = new Date().getFullYear();
   const [playerName, setPlayerName] = useState(initialPlayerName);
   const [fideId, setFideId] = useState("");
+  const [selectedPlayer, setSelectedPlayer] = useState<FidePlayer | null>(null);
+  const [fideIdAuto, setFideIdAuto] = useState(false);
   const [fromYear, setFromYear] = useState(Math.max(2020, currentYear - 2));
   const [sources, setSources] = useState<OtbImportSourceSelection>(DEFAULT_OTB_IMPORT_SOURCES);
   const [localPgnPaths, setLocalPgnPaths] = useState<string[]>([]);
@@ -119,6 +123,24 @@ export default function OtbGameImportPanel({
     [localPgnPaths],
   );
 
+  /** Picking a player pins the canonical FIDE spelling and fills the ID the
+   *  targeted sources need. */
+  const selectPlayer = (player: FidePlayer) => {
+    setSelectedPlayer(player);
+    setPlayerName(player.name);
+    setFideId(String(player.id));
+    setFideIdAuto(true);
+  };
+
+  const clearSelectedPlayer = () => {
+    setSelectedPlayer(null);
+    // Only drop an ID we filled ourselves — never a value the user typed.
+    if (fideIdAuto) {
+      setFideId("");
+      setFideIdAuto(false);
+    }
+  };
+
   const addLocalPgnSources = async () => {
     const selected = await open({
       multiple: true,
@@ -136,8 +158,23 @@ export default function OtbGameImportPanel({
 
   const runImport = async () => {
     if (running) return;
+    // A bare FIDE ID is enough on its own: resolve it to the canonical name
+    // so nobody has to type both.
+    let effectivePlayerName = playerName.trim();
+    let effectiveFideId = fideId.trim();
+    if (!selectedPlayer && /^\d+$/.test(effectivePlayerName)) {
+      const resolved = await lookupFidePlayer(effectivePlayerName);
+      if (resolved) {
+        effectivePlayerName = resolved.name;
+        if (!effectiveFideId) effectiveFideId = String(resolved.id);
+        setSelectedPlayer(resolved);
+        setPlayerName(resolved.name);
+        setFideId(effectiveFideId);
+        setFideIdAuto(true);
+      }
+    }
     const jobId = `otb-import-${Date.now()}`;
-    const baseTitle = getOtbImportTitle(playerName, fromYear);
+    const baseTitle = getOtbImportTitle(effectivePlayerName, fromYear);
     const title = shouldSaveDatabase
       ? getUniqueOtbDatabaseTitle(baseTitle, localDatabases)
       : baseTitle;
@@ -156,8 +193,8 @@ export default function OtbGameImportPanel({
     const cacheDir = await resolve(await appCacheDir(), "otb-game-import");
     const request = createOtbImportRequest({
       jobId,
-      playerName,
-      fideId,
+      playerName: effectivePlayerName,
+      fideId: effectiveFideId,
       fromYear,
       sources,
       localPgnPaths,
@@ -298,20 +335,28 @@ export default function OtbGameImportPanel({
           </Text>
         </Alert>
       )}
-      <Group gap={dense ? 4 : "sm"} wrap="wrap" align="flex-end">
-        <TextInput
+      <Group gap={dense ? 4 : "sm"} wrap="wrap" align="flex-start">
+        <FidePlayerPicker
           label={asDialog ? "Player" : "Opponent"}
-          placeholder="Surname, Firstname"
-          value={playerName}
-          onChange={(event) => setPlayerName(event.currentTarget.value)}
+          query={playerName}
+          onQueryChange={setPlayerName}
+          selected={selectedPlayer}
+          onSelect={selectPlayer}
+          onClearSelection={clearSelectedPlayer}
+          disabled={running}
           size={controlSize}
-          {...(asDialog ? { flex: 1, miw: 220 } : { w: dense ? 180 : 230 })}
+          onSubmit={() => void runImport()}
+          {...(asDialog ? { flex: 1, miw: 220 } : { w: dense ? 200 : 250 })}
         />
         <TextInput
           label="FIDE ID"
           placeholder="Recommended"
+          description={fideIdAuto ? "From the selected player" : undefined}
           value={fideId}
-          onChange={(event) => setFideId(event.currentTarget.value)}
+          onChange={(event) => {
+            setFideId(event.currentTarget.value);
+            setFideIdAuto(false);
+          }}
           size={controlSize}
           w={dense ? 112 : 132}
         />
