@@ -168,7 +168,10 @@ async function handleHttpRequest(request, response) {
 
     const status = localEvalStore.status;
     if (!status.available) {
-      return writeJson(response, status.error ? 503 : 404, {
+      // An unbuilt or broken store is a service problem, not a missing position: 404 is
+      // reserved for positions the store really does not contain so clients can tell a
+      // genuine miss from a machine that cannot answer at all.
+      return writeJson(response, 503, {
         error: status.error || "The stored Lichess cloud-eval database is unavailable.",
       });
     }

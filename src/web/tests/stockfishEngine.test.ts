@@ -26,21 +26,55 @@ function makeLine(multipv: number, depth: number, rootMove: string): WebEngineLi
     };
 }
 
-describe("Stockfish phone line updates", () => {
-    it("uses a stored evaluation without starting PC analysis", async () => {
-        const fetchMock = vi.fn().mockResolvedValue({
-            ok: true,
-            status: 200,
-            json: async () => ({
-                fen: INITIAL_FEN,
-                depth: 65,
-                knodes: 593_446_314,
-                pvs: [
-                    { moves: "c2c4 e7e5", cp: 19 },
-                    { moves: "e2e4 e7e5", cp: 17 },
-                    { moves: "g1f3 e7e6", cp: 14 },
-                ],
+// The stored-eval lookup only trusts a JSON reply, so mocks answer like the PC does.
+function jsonResponse(status: number, body?: unknown) {
+    return {
+        ok: status >= 200 && status < 300,
+        status,
+        headers: new Headers({ "content-type": "application/json; charset=utf-8" }),
+        json: async () => body,
+    };
+}
+
+function streamingAnalyzeResponse(...messages: unknown[]) {
+    const encoder = new TextEncoder();
+    const chunk = encoder.encode(`${messages.map((message) => JSON.stringify(message)).join("\n")}\n`);
+    return {
+        ok: true,
+        status: 200,
+        body: {
+            getReader: () => ({
+                read: vi
+                    .fn()
+                    .mockResolvedValueOnce({ value: chunk, done: false })
+                    .mockResolvedValueOnce({ value: undefined, done: true }),
             }),
+        },
+    };
+}
+
+describe("Stockfish phone line updates", () => {
+    it("shows the stored evaluation first and lets PC analysis supersede it", async () => {
+        const storedEvaluation = {
+            fen: INITIAL_FEN,
+            depth: 65,
+            knodes: 593_446_314,
+            pvs: [
+                { moves: "c2c4 e7e5", cp: 19 },
+                { moves: "e2e4 e7e5", cp: 17 },
+                { moves: "g1f3 e7e6", cp: 14 },
+            ],
+        };
+        const fetchMock = vi.fn(async (input: URL | RequestInfo) => {
+            if (String(input).includes("/v1/cloud-eval")) return jsonResponse(200, storedEvaluation);
+            await new Promise((resolve) => setTimeout(resolve, 10));
+            return streamingAnalyzeResponse(
+                {
+                    type: "uci",
+                    line: "info depth 30 multipv 1 score cp 21 nodes 900000 nps 4000000 pv e2e4 e7e5",
+                },
+                { type: "done", bestmove: "e2e4" },
+            );
         });
         vi.stubGlobal("fetch", fetchMock);
         const updates: WebEngineLine[][] = [];
@@ -52,40 +86,90 @@ describe("Stockfish phone line updates", () => {
             onUpdate: (nextLines) => updates.push(nextLines),
         });
 
-        expect(fetchMock).toHaveBeenCalledTimes(1);
         expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/cloud-eval?");
+        expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/v1/analyze");
+        // The saved evaluation renders immediately, then the live search takes over.
         expect(
-            lines.map((line) => [line.source, line.depth, line.uciMoves[0]]),
+            updates[0]?.map((line) => [line.source, line.depth, line.uciMoves[0]]),
         ).toEqual([
             ["lichess-cloud", 65, "c2c4"],
             ["lichess-cloud", 65, "e2e4"],
             ["lichess-cloud", 65, "g1f3"],
         ]);
+        expect(lines.map((line) => [line.source, line.depth, line.uciMoves[0]])).toEqual([
+            ["stockfish", 30, "e2e4"],
+        ]);
+        expect(updates.at(-1)).toEqual(lines);
+    });
+
+    it("returns a stored evaluation without PC analysis for a batch sweep", async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            jsonResponse(200, {
+                fen: INITIAL_FEN,
+                depth: 65,
+                knodes: 593_446_314,
+                pvs: [{ moves: "c2c4 e7e5", cp: 19 }],
+            }),
+        );
+        vi.stubGlobal("fetch", fetchMock);
+        const updates: WebEngineLine[][] = [];
+
+        const lines = await analyzeWithWebStockfish18({
+            fen: INITIAL_FEN,
+            multipv: 1,
+            depth: 70,
+            preferStoredEvaluation: true,
+            onUpdate: (nextLines) => updates.push(nextLines),
+        });
+
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/cloud-eval?");
+        expect(lines.map((line) => [line.source, line.depth, line.uciMoves[0]])).toEqual([
+            ["lichess-cloud", 65, "c2c4"],
+        ]);
         expect(updates).toEqual([lines]);
     });
 
-    it("starts PC analysis only after confirming the stored evaluation is missing", async () => {
-        const encoder = new TextEncoder();
-        const remoteChunk = encoder.encode(
-            `${JSON.stringify({
-                type: "uci",
-                line: "info depth 14 seldepth 18 multipv 1 score cp 23 nodes 120000 nps 4000000 pv e2e4 e7e5",
-            })}\n${JSON.stringify({ type: "done", bestmove: "e2e4" })}\n`,
-        );
-        const reader = {
-            read: vi
-                .fn()
-                .mockResolvedValueOnce({ value: remoteChunk, done: false })
-                .mockResolvedValueOnce({ value: undefined, done: true }),
-        };
+    it("keeps the stored evaluation when PC Stockfish is unavailable", async () => {
+        const fetchMock = vi.fn(async (input: URL | RequestInfo) => {
+            if (String(input).includes("/v1/cloud-eval")) {
+                return jsonResponse(200, {
+                    fen: PC_ONLY_FEN,
+                    depth: 55,
+                    pvs: [{ moves: "e7e5", cp: -12 }],
+                });
+            }
+            throw new TypeError("PC stream failed");
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const lines = await analyzeWithWebStockfish18({
+            fen: PC_ONLY_FEN,
+            multipv: 1,
+            depth: 70,
+        });
+
+        expect(lines.map((line) => [line.source, line.depth, line.uciMoves[0]])).toEqual([
+            ["lichess-cloud", 55, "e7e5"],
+        ]);
+        expect(
+            fetchMock.mock.calls.filter(([input]) => String(input).includes("/v1/analyze")),
+        ).toHaveLength(2);
+    });
+
+    it("runs PC analysis alone when the stored evaluation is missing", async () => {
         const fetchMock = vi
             .fn()
-            .mockResolvedValueOnce({ ok: false, status: 404 })
-            .mockResolvedValueOnce({
-                ok: true,
-                status: 200,
-                body: { getReader: () => reader },
-            });
+            .mockResolvedValueOnce(jsonResponse(404, { error: "No stored cloud evaluation." }))
+            .mockResolvedValueOnce(
+                streamingAnalyzeResponse(
+                    {
+                        type: "uci",
+                        line: "info depth 14 seldepth 18 multipv 1 score cp 23 nodes 120000 nps 4000000 pv e2e4 e7e5",
+                    },
+                    { type: "done", bestmove: "e2e4" },
+                ),
+            );
         vi.stubGlobal("fetch", fetchMock);
         const liveUpdates: WebEngineLine[][] = [];
 
@@ -116,29 +200,16 @@ describe("Stockfish phone line updates", () => {
     });
 
     it("retries a broken PC stream on the PC without starting the phone engine", async () => {
-        const encoder = new TextEncoder();
-        const remoteChunk = encoder.encode(
-            `${JSON.stringify({
-                type: "uci",
-                line: "info depth 12 multipv 1 score cp 18 nodes 80000 nps 5000000 pv g1f3 d7d5",
-            })}\n`,
-        );
         const fetchMock = vi
             .fn()
-            .mockResolvedValueOnce({ ok: false, status: 404 })
+            .mockResolvedValueOnce(jsonResponse(404, { error: "No stored cloud evaluation." }))
             .mockRejectedValueOnce(new TypeError("socket closed"))
-            .mockResolvedValueOnce({
-                ok: true,
-                status: 200,
-                body: {
-                    getReader: () => ({
-                        read: vi
-                            .fn()
-                            .mockResolvedValueOnce({ value: remoteChunk, done: false })
-                            .mockResolvedValueOnce({ value: undefined, done: true }),
-                    }),
-                },
-            });
+            .mockResolvedValueOnce(
+                streamingAnalyzeResponse({
+                    type: "uci",
+                    line: "info depth 12 multipv 1 score cp 18 nodes 80000 nps 5000000 pv g1f3 d7d5",
+                }),
+            );
         const workerConstructor = vi.fn();
         vi.stubGlobal("fetch", fetchMock);
         vi.stubGlobal("Worker", workerConstructor);
@@ -159,7 +230,7 @@ describe("Stockfish phone line updates", () => {
     it("reports a PC failure instead of ever falling back to phone analysis", async () => {
         const fetchMock = vi
             .fn()
-            .mockResolvedValueOnce({ ok: false, status: 404 })
+            .mockResolvedValueOnce(jsonResponse(404, { error: "No stored cloud evaluation." }))
             .mockRejectedValueOnce(new TypeError("first PC stream failed"))
             .mockRejectedValueOnce(new TypeError("second PC stream failed"));
         const workerConstructor = vi.fn();
@@ -197,6 +268,7 @@ describe("Stockfish phone line updates", () => {
             multipv: 1,
             depth: 70,
             prefetchFens: [PREFETCH_NEXT_FEN],
+            preferStoredEvaluation: true,
         });
         await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
         expect(
@@ -207,34 +279,41 @@ describe("Stockfish phone line updates", () => {
             fen: PREFETCH_NEXT_FEN,
             multipv: 1,
             depth: 70,
+            preferStoredEvaluation: true,
         });
         expect(fetchMock).toHaveBeenCalledTimes(2);
         expect(nextLines[0]?.uciMoves[0]).toBe("g1f3");
     });
 
-    it("does not start PC analysis when a move change cancels the cache lookup", async () => {
-        let resolveFetch!: (response: unknown) => void;
-        const fetchMock = vi.fn().mockReturnValue(
-            new Promise((resolve) => {
-                resolveFetch = resolve;
-            }),
+    it("publishes nothing when a move change cancels a pending lookup and search", async () => {
+        const fetchMock = vi.fn(
+            (_input: URL | RequestInfo, init?: RequestInit) =>
+                new Promise((_resolve, reject) => {
+                    init?.signal?.addEventListener(
+                        "abort",
+                        () => reject(new DOMException("Aborted", "AbortError")),
+                        { once: true },
+                    );
+                }),
         );
         vi.stubGlobal("fetch", fetchMock);
         const controller = new AbortController();
+        const updates: WebEngineLine[][] = [];
 
         const analysis = analyzeWithWebStockfish18({
             fen: ABORT_FEN,
             multipv: 3,
             depth: 70,
             signal: controller.signal,
+            onUpdate: (nextLines) => updates.push(nextLines),
         });
-        await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+        await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
         controller.abort();
 
         await expect(analysis).rejects.toMatchObject({ name: "AbortError" });
         expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/cloud-eval?");
-        resolveFetch({ ok: false, status: 404 });
-        await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+        expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/v1/analyze");
+        expect(updates).toEqual([]);
     });
 
     it("removes a stale duplicate root move while MultiPV ranks advance depth", () => {

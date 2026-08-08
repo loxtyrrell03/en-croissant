@@ -304,6 +304,9 @@ async function evaluatePositionsWithEngine(
                 depth,
                 signal: opts?.signal,
                 prefetchFens: fens.slice(index + 1, index + 1 + ENGINE_PREFETCH_COUNT),
+                // A whole-game sweep only needs one score per position, so a saved
+                // evaluation settles the position without queueing a PC search.
+                preferStoredEvaluation: true,
             });
         } catch (error) {
             if (isAbortError(error)) throw error;

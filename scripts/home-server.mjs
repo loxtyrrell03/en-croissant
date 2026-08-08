@@ -56,6 +56,7 @@ import {
   structuredCoachReviewToMarkdown,
   writeProcessStdinSafely,
 } from "./chess-coach-service.mjs";
+import { createLocalLichessEvalStore } from "./lichess-local-eval-reader.mjs";
 
 const repoRoot = resolve(
   process.env.EN_CROISSANT_REPO_ROOT || resolve(dirname(fileURLToPath(import.meta.url)), ".."),
@@ -82,6 +83,11 @@ const host = "127.0.0.1";
 const stockfishBackendUrl = new URL(
   process.env.EN_CROISSANT_STOCKFISH_BACKEND_URL || "http://127.0.0.1:38419",
 );
+const localEvalPath = resolve(
+  process.env.EN_CROISSANT_LOCAL_EVAL_PATH ||
+    join(roamingAppData, "org.encroissant.app", "lichess-cloud-evals"),
+);
+const localEvalStore = openLocalEvalStore(localEvalPath);
 const documentsRoot = resolve(
   process.env.EN_CROISSANT_HOME_FILES_DIR || join(userProfile, "Documents", "EnCroissant"),
 );
@@ -186,6 +192,7 @@ const phoneCoachJobsByReviewKey = new Map();
 let coachAuthenticationCache = { checkedAt: 0, status: "unknown" };
 let coachUsageLimitCache = null;
 let coachAuthenticationProbe = null;
+let localEvalStoreIssueLogged = false;
 
 await mkdir(serverRoot, { recursive: true });
 await mkdir(dirname(statePath), { recursive: true });
@@ -233,6 +240,13 @@ async function handleRequest(request, response) {
   }
 
   if (pathname === "/v1" || pathname.startsWith("/v1/")) {
+    // Saved Lichess evaluations live next to this server, so answer them here even
+    // when the Stockfish backend is busy or down. Anything it cannot answer keeps
+    // falling through to the backend exactly as before.
+    if (method === "GET" && pathname === "/v1/cloud-eval") {
+      const served = await writeLocalCloudEvaluation(requestUrl, response);
+      if (served) return;
+    }
     return proxyStockfishRequest(request, response, requestUrl);
   }
 
@@ -353,6 +367,47 @@ async function handleRequest(request, response) {
   const staticRoot =
     pathname === "/web-library" || pathname.startsWith("/web-library/") ? siteRoot : activeApp.root;
   return serveStatic(pathname, request, response, method === "HEAD", staticRoot);
+}
+
+function openLocalEvalStore(storeDir) {
+  try {
+    return createLocalLichessEvalStore(storeDir);
+  } catch {
+    return null;
+  }
+}
+
+async function writeLocalCloudEvaluation(requestUrl, response) {
+  const fen = normalizeFen(requestUrl.searchParams.get("fen"));
+  if (!fen || fen.split(" ").length < 4) return false;
+
+  const multipv = Math.min(positiveInteger(requestUrl.searchParams.get("multipv"), 3), 5);
+  let evaluation = null;
+  try {
+    if (!localEvalStore) return false;
+    const status = localEvalStore.status;
+    if (!status.available) {
+      noteLocalEvalStoreIssue(status.error || `no built store at ${localEvalPath}`);
+      return false;
+    }
+    evaluation = await localEvalStore.lookup(fen, multipv);
+  } catch (error) {
+    noteLocalEvalStoreIssue(error?.message || String(error));
+    return false;
+  }
+
+  if (!evaluation) return false;
+  writeJson(response, 200, evaluation);
+  return true;
+}
+
+function noteLocalEvalStoreIssue(detail) {
+  if (localEvalStoreIssueLogged) return;
+  localEvalStoreIssueLogged = true;
+  void appendLog(
+    `saved cloud evaluations are unavailable here (${detail}); ` +
+      "forwarding /v1/cloud-eval to the Stockfish backend",
+  ).catch(() => {});
 }
 
 function proxyStockfishRequest(request, response, requestUrl) {

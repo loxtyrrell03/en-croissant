@@ -7,6 +7,7 @@ import { positionFromFen } from "@/utils/chessops";
 import type { WebEngineLine, WebEngineScore } from "./model";
 import { normalizeWebEngineScoreForWhite } from "./engineScore";
 import { type WebLichessCloudData, webLichessCloudDataToLines } from "./lichessCloud";
+import { WEB_SERVER_BASE_URL } from "./serverUrl";
 
 const STOCKFISH_READY_TIMEOUT_MS = 20_000;
 const STOCKFISH_SEARCH_TIMEOUT_MS = 90_000;
@@ -29,6 +30,7 @@ let worker: Worker | null = null;
 let readyPromise: Promise<void> | null = null;
 let activeSearchId = 0;
 let activeRemoteController: AbortController | null = null;
+let storedCloudOrigin: string | null = null;
 const listeners = new Set<StockfishLineListener>();
 const storedCloudLineCache = new Map<string, WebEngineLine[]>();
 const storedCloudLineRequests = new Map<string, Promise<WebEngineLine[]>>();
@@ -40,6 +42,11 @@ export type WebStockfishAnalyzeRequest = {
     infinite?: boolean;
     signal?: AbortSignal;
     prefetchFens?: string[];
+    /**
+     * Batch callers (game sweeps) want the saved evaluation and nothing else, so a
+     * stored hit returns immediately instead of also running a live PC search.
+     */
+    preferStoredEvaluation?: boolean;
     onUpdate?: (lines: WebEngineLine[]) => void;
 };
 
@@ -50,9 +57,21 @@ export async function analyzeWithWebStockfish18({
     infinite = false,
     signal,
     prefetchFens = [],
+    preferStoredEvaluation = false,
     onUpdate,
 }: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
-    if (REMOTE_STOCKFISH_URL) {
+    if (!REMOTE_STOCKFISH_URL) {
+        return await analyzeWithLocalStockfish18({
+            fen,
+            multipv,
+            depth,
+            infinite,
+            signal,
+            onUpdate,
+        });
+    }
+
+    if (preferStoredEvaluation) {
         try {
             const storedLines = await queryRemoteStoredCloudLines({ fen, multipv, signal });
             throwIfAborted(signal);
@@ -76,14 +95,56 @@ export async function analyzeWithWebStockfish18({
         });
     }
 
-    return await analyzeWithLocalStockfish18({
-        fen,
-        multipv,
-        depth,
-        infinite,
-        signal,
-        onUpdate,
-    });
+    // Interactive analysis shows the saved evaluation the moment it lands, then lets
+    // the live PC search supersede and deepen it. The lookup runs alongside the search
+    // so a slow or unreachable store never delays live analysis.
+    let publishedLines = false;
+    let deepestLiveDepth = 0;
+    const storedLookup = queryRemoteStoredCloudLines({ fen, multipv, signal })
+        .then((storedLines) => {
+            if (storedLines.length === 0) return storedLines;
+            void prefetchRemoteStoredCloudLines(prefetchFens, multipv);
+            // Live lines always win once they exist, so a late stored answer can never
+            // replace the deeper running search.
+            if (!publishedLines && !signal?.aborted) {
+                publishedLines = true;
+                onUpdate?.(storedLines);
+            }
+            return storedLines;
+        })
+        .catch((error) => {
+            if (!isAbortError(error)) {
+                console.warn("Stored cloud eval lookup failed; using Gaming PC Stockfish.", error);
+            }
+            return [] as WebEngineLine[];
+        });
+
+    try {
+        return await analyzeWithRemoteStockfish18WithRetry({
+            fen,
+            multipv,
+            depth,
+            infinite,
+            signal,
+            onUpdate: (lines) => {
+                publishedLines = true;
+                deepestLiveDepth = Math.max(deepestLiveDepth, maxLineDepth(lines));
+                onUpdate?.(lines);
+            },
+        });
+    } catch (error) {
+        if (isAbortError(error) || signal?.aborted) throw error;
+
+        // The PC engine is busy or unreachable: keep the position answered with the
+        // saved evaluation instead of failing, unless the dead search already got deeper.
+        const storedLines = await storedLookup;
+        if (storedLines.length === 0 || maxLineDepth(storedLines) < deepestLiveDepth) throw error;
+        return storedLines;
+    }
+}
+
+function maxLineDepth(lines: WebEngineLine[]) {
+    return lines.reduce((deepest, line) => Math.max(deepest, line.depth), 0);
 }
 
 async function analyzeWithRemoteStockfish18WithRetry(
@@ -152,6 +213,33 @@ function getRemoteStoredCloudLineRequest(fen: string, multipv: number) {
 }
 
 async function fetchRemoteStoredCloudLines(fen: string, multipv: number) {
+    let lastError: unknown = null;
+
+    // The saved evals can be served either by the home server that delivered this app
+    // or by the configured Stockfish origin, so try the same-origin server first and
+    // remember whichever machine actually answers.
+    for (const origin of storedCloudOriginCandidates()) {
+        try {
+            const lines = await fetchStoredCloudLinesFromOrigin(origin, fen, multipv);
+            if (lines) {
+                storedCloudOrigin = origin;
+                return lines;
+            }
+        } catch (error) {
+            lastError = error;
+            if (storedCloudOrigin === origin) storedCloudOrigin = null;
+        }
+    }
+
+    if (lastError) throw lastError;
+    return [];
+}
+
+/**
+ * Returns the stored lines when this origin answered (an empty array for a known
+ * miss) and null when it is not serving the stored evals at all.
+ */
+async function fetchStoredCloudLinesFromOrigin(origin: string, fen: string, multipv: number) {
     const controller = new AbortController();
     let timedOut = false;
     const timeoutId = window.setTimeout(() => {
@@ -159,7 +247,7 @@ async function fetchRemoteStoredCloudLines(fen: string, multipv: number) {
         controller.abort();
     }, REMOTE_CLOUD_TIMEOUT_MS);
 
-    const url = new URL(`${REMOTE_STOCKFISH_URL}/v1/cloud-eval`);
+    const url = new URL(`${origin}/v1/cloud-eval`);
     url.searchParams.set("fen", fen);
     url.searchParams.set("multipv", String(Math.max(1, Math.min(8, Math.round(multipv)))));
 
@@ -169,7 +257,11 @@ async function fetchRemoteStoredCloudLines(fen: string, multipv: number) {
             cache: "no-store",
             signal: controller.signal,
         });
-        if (response.status === 404) return [];
+        if (response.status === 404) {
+            // A static host answers unknown routes with 404 too, so only a JSON body
+            // proves this origin serves the store and the position is really missing.
+            return servesJson(response) ? [] : null;
+        }
         if (!response.ok) {
             throw new Error(`Stored cloud eval lookup returned HTTP ${response.status}.`);
         }
@@ -181,6 +273,39 @@ async function fetchRemoteStoredCloudLines(fen: string, multipv: number) {
     } finally {
         window.clearTimeout(timeoutId);
     }
+}
+
+function storedCloudOriginCandidates() {
+    // The machine that served this app is always reachable and its home server answers
+    // stored evaluations even when the Stockfish backend is busy, so it goes first; the
+    // configured origins cover builds served straight from Vite.
+    const origins: string[] = [];
+    for (const candidate of [
+        storedCloudOrigin,
+        pageOrigin(),
+        homeServerOrigin(),
+        REMOTE_STOCKFISH_URL,
+    ]) {
+        const origin = String(candidate ?? "").replace(/\/+$/, "");
+        if (origin && !origins.includes(origin)) origins.push(origin);
+    }
+    return origins;
+}
+
+function pageOrigin() {
+    return typeof window === "undefined" ? "" : window.location.origin;
+}
+
+function homeServerOrigin() {
+    try {
+        return new URL(WEB_SERVER_BASE_URL, window.location.href).origin;
+    } catch {
+        return "";
+    }
+}
+
+function servesJson(response: Response) {
+    return String(response.headers?.get?.("content-type") ?? "").includes("json");
 }
 
 async function prefetchRemoteStoredCloudLines(fens: string[], multipv: number) {
