@@ -2207,7 +2207,7 @@ try {
 	const skippedKeys = new Set(skipped.map(({ game }) => gameKey(game)));
 	const eligibleGames = games.filter((game) => !skippedKeys.has(gameKey(game)));
 	const skippedReasons = Object.fromEntries(Array.from(new Set(skipped.map(({ reason }) => reason))).map((reason) => [reason, skipped.filter((item) => item.reason === reason).length]));
-	const candidates = eligibleGames.filter((game) => !hasCompletedBatch(entriesByKey.get(gameKey(game)))).sort((a, b) => b.end - a.end);
+	const candidates = eligibleGames.filter((game) => !hasCompletedBatch(entriesByKey.get(gameKey(game)), game)).sort((a, b) => b.end - a.end);
 	let completed = 0;
 	let failed = 0;
 	for (const game of candidates) {
@@ -2251,7 +2251,7 @@ try {
 		completed += 1;
 	}
 	await saveEntries();
-	const eligibleAnalyzedGames = eligibleGames.filter((game) => hasCompletedBatch(entriesByKey.get(gameKey(game)))).length;
+	const eligibleAnalyzedGames = eligibleGames.filter((game) => hasCompletedBatch(entriesByKey.get(gameKey(game)), game)).length;
 	await writeStatus({
 		state: "idle",
 		finishedAt: Date.now(),
@@ -2276,8 +2276,11 @@ try {
 	});
 	throw error;
 }
-function hasCompletedBatch(entry) {
-	return Boolean(entry?.advanced && entry.opponentQuality?.advanced && (entry.batchAnalysis?.targetDepth || 0) >= config.depth && (entry.batchAnalysis?.nodeLimit === null || (entry.batchAnalysis?.nodeLimit || 0) >= config.nodesPerPosition) && entry.batchAnalysis?.policy === "lichess-local-until-first-miss-then-pc");
+function hasCompletedBatch(entry, game) {
+	const usesHistoricalProfile = config.deepAnalysisSince > 0 && game.end < config.deepAnalysisSince;
+	const requiredDepth = usesHistoricalProfile ? Math.min(config.depth, 25) : config.depth;
+	const requiredNodes = usesHistoricalProfile ? Math.min(config.nodesPerPosition, 1e6) : config.nodesPerPosition;
+	return Boolean(entry?.advanced && entry.opponentQuality?.advanced && (entry.batchAnalysis?.targetDepth || 0) >= requiredDepth && (entry.batchAnalysis?.nodeLimit === null || (entry.batchAnalysis?.nodeLimit || 0) >= requiredNodes) && entry.batchAnalysis?.policy === "lichess-local-until-first-miss-then-pc");
 }
 function statsAnalysisSkipReason(game) {
 	if (!game.pgn?.trim()) return "missing-pgn";
@@ -2589,7 +2592,8 @@ function normalizeConfig(value) {
 		},
 		historyDays: Math.max(1, Math.min(3650, Math.round(value?.historyDays || 365))),
 		depth: Math.max(8, Math.min(30, Math.round(value?.depth || 16))),
-		nodesPerPosition: Math.max(0, Math.min(2e9, Math.round(value?.nodesPerPosition ?? 1e6)))
+		nodesPerPosition: Math.max(0, Math.min(2e9, Math.round(value?.nodesPerPosition ?? 1e6))),
+		deepAnalysisSince: Math.max(0, Math.round(value?.deepAnalysisSince || 0))
 	};
 }
 function gameKey(game) {

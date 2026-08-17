@@ -17,6 +17,7 @@ type WorkerConfig = {
   historyDays?: number;
   depth?: number;
   nodesPerPosition?: number;
+  deepAnalysisSince?: number;
 };
 
 type StoredGames = { v: 1; updatedAt: number; games: StatsGame[] };
@@ -72,7 +73,7 @@ try {
     ]),
   );
   const candidates = eligibleGames
-    .filter((game) => !hasCompletedBatch(entriesByKey.get(gameKey(game))))
+    .filter((game) => !hasCompletedBatch(entriesByKey.get(gameKey(game)), game))
     .sort((a, b) => b.end - a.end);
 
   let completed = 0;
@@ -119,7 +120,7 @@ try {
 
   await saveEntries();
   const eligibleAnalyzedGames = eligibleGames.filter((game) =>
-    hasCompletedBatch(entriesByKey.get(gameKey(game))),
+    hasCompletedBatch(entriesByKey.get(gameKey(game)), game),
   ).length;
   await writeStatus({
     state: "idle",
@@ -142,13 +143,19 @@ try {
   throw error;
 }
 
-function hasCompletedBatch(entry: BatchAnalyzedGameEntry | undefined) {
+function hasCompletedBatch(entry: BatchAnalyzedGameEntry | undefined, game: StatsGame) {
+  const usesHistoricalProfile =
+    config.deepAnalysisSince > 0 && game.end < config.deepAnalysisSince;
+  const requiredDepth = usesHistoricalProfile ? Math.min(config.depth, 25) : config.depth;
+  const requiredNodes = usesHistoricalProfile
+    ? Math.min(config.nodesPerPosition, 1_000_000)
+    : config.nodesPerPosition;
   return Boolean(
     entry?.advanced &&
     entry.opponentQuality?.advanced &&
-    (entry.batchAnalysis?.targetDepth || 0) >= config.depth &&
+    (entry.batchAnalysis?.targetDepth || 0) >= requiredDepth &&
     (entry.batchAnalysis?.nodeLimit === null ||
-      (entry.batchAnalysis?.nodeLimit || 0) >= config.nodesPerPosition) &&
+      (entry.batchAnalysis?.nodeLimit || 0) >= requiredNodes) &&
     entry.batchAnalysis?.policy === "lichess-local-until-first-miss-then-pc",
   );
 }
@@ -486,6 +493,7 @@ function normalizeConfig(value: WorkerConfig | null): Required<WorkerConfig> {
       0,
       Math.min(2_000_000_000, Math.round(value?.nodesPerPosition ?? 1_000_000)),
     ),
+    deepAnalysisSince: Math.max(0, Math.round(value?.deepAnalysisSince || 0)),
   };
 }
 

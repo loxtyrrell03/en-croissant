@@ -650,6 +650,7 @@ async function getStatsSyncSummary() {
     historyDays: normalized.historyDays,
     depth: normalized.depth,
     nodesPerPosition: normalized.nodesPerPosition,
+    deepAnalysisSince: normalized.deepAnalysisSince,
     games: Array.isArray(games?.games) ? games.games.length : 0,
     analyzedGames: Array.isArray(entries?.entries) ? entries.entries.length : 0,
     gamesUpdatedAt: Math.max(0, Number(games?.updatedAt) || 0),
@@ -784,6 +785,7 @@ function normalizeStatsSyncConfig(value) {
       0,
       Math.min(2_000_000_000, Math.round(Number(value?.nodesPerPosition ?? 1_000_000) || 0)),
     ),
+    deepAnalysisSince: Math.max(0, Math.round(Number(value?.deepAnalysisSince) || 0)),
   };
 }
 
