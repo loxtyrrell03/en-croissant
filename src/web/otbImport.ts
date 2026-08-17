@@ -1,4 +1,5 @@
 import { getWebServerUrl } from "./serverUrl";
+import { parseFidePlayers, type FidePlayer } from "@/utils/fidePlayer";
 
 export type WebOtbImportSources = {
     lichessBroadcasts: boolean;
@@ -77,6 +78,28 @@ export async function startWebOtbImport(request: {
 
 export async function loadWebOtbImportJob(jobId: string, signal?: AbortSignal) {
     return requestWebOtbJob(`api/otb-import/jobs/${encodeURIComponent(jobId)}`, { signal });
+}
+
+export async function searchWebFidePlayers(
+    query: string,
+    signal?: AbortSignal,
+): Promise<FidePlayer[]> {
+    const response = await fetch(
+        getWebServerUrl(`api/otb-import/players?q=${encodeURIComponent(query.trim())}`),
+        {
+            headers: { accept: "application/json" },
+            cache: "no-store",
+            signal,
+        },
+    );
+    const body = (await response.json().catch(() => null)) as {
+        players?: unknown;
+        error?: string;
+    } | null;
+    if (!response.ok) {
+        throw new Error(body?.error || "The PC FIDE player search did not respond.");
+    }
+    return parseFidePlayers(body?.players);
 }
 
 export function getWebOtbImportedGames(job: WebOtbImportJob): WebOtbImportedGame[] {

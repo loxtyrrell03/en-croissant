@@ -1,6 +1,7 @@
 import {
   Alert,
   Badge,
+  Box,
   Button,
   Checkbox,
   Group,
@@ -20,9 +21,12 @@ import { useAtom } from "jotai";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { mutate } from "swr";
 import { commands, events, type OtbImportProgress, type OtbImportReport } from "@/bindings";
+import { FidePlayerSearchInput } from "@/components/common/FidePlayerSearchInput";
 import { databaseConversionStateAtom } from "@/state/atoms";
 import { getDatabases, type SuccessDatabaseInfo } from "@/utils/db";
 import { getDatabasesDir } from "@/utils/directories";
+import type { FidePlayer } from "@/utils/fidePlayer";
+import { searchFidePlayers } from "@/utils/lichess/api";
 import {
   DEFAULT_OTB_IMPORT_SOURCES,
   OTB_IMPORT_SOURCE_DETAILS,
@@ -79,11 +83,14 @@ export default function OtbGameImportPanel({
   const currentYear = new Date().getFullYear();
   const [playerName, setPlayerName] = useState(initialPlayerName);
   const [fideId, setFideId] = useState("");
+  const [selectedPlayer, setSelectedPlayer] = useState<FidePlayer | null>(null);
+  const [fideIdAuto, setFideIdAuto] = useState(false);
   const [fromYear, setFromYear] = useState(Math.max(2020, currentYear - 2));
   const [sources, setSources] = useState<OtbImportSourceSelection>(DEFAULT_OTB_IMPORT_SOURCES);
   const [localPgnPaths, setLocalPgnPaths] = useState<string[]>([]);
   const [saveDatabase, setSaveDatabase] = useState(true);
   const [running, setRunning] = useState(false);
+  const [resolvingIdentity, setResolvingIdentity] = useState(false);
   const [stopping, setStopping] = useState(false);
   const [progress, setProgress] = useState<OtbImportProgress | null>(null);
   const [lanes, setLanes] = useState<OtbImportLaneMap>({});
@@ -153,10 +160,64 @@ export default function OtbGameImportPanel({
     setLocalPgnPaths((current) => Array.from(new Set([...current, ...paths])));
   };
 
+  const selectFidePlayer = (player: FidePlayer) => {
+    setSelectedPlayer(player);
+    setPlayerName(player.name);
+    setFideId(String(player.id));
+    setFideIdAuto(true);
+  };
+
+  const clearSelectedPlayer = () => {
+    setSelectedPlayer(null);
+    if (fideIdAuto) {
+      setFideId("");
+      setFideIdAuto(false);
+    }
+  };
+
+  const changePlayerName = (value: string) => {
+    setPlayerName(value);
+    if (selectedPlayer && value.trim() !== selectedPlayer.name) clearSelectedPlayer();
+  };
+
+  const changeFideId = (value: string) => {
+    const clean = value.replace(/\D/g, "");
+    setFideId(clean);
+    setFideIdAuto(false);
+    if (selectedPlayer && clean !== String(selectedPlayer.id)) setSelectedPlayer(null);
+  };
+
+  const autofillFromFideId = async () => {
+    const id = fideId.trim();
+    if (!/^\d{4,}$/.test(id) || id === String(selectedPlayer?.id ?? "")) return;
+    const player = (await searchFidePlayers(id)).find((candidate) => String(candidate.id) === id);
+    if (player) selectFidePlayer(player);
+  };
+
+  const resolveImportIdentity = async () => {
+    let name = playerName.trim();
+    let id = fideId.trim();
+    const lookup = /^\d+$/.test(name) ? name : /^\d{4,}$/.test(id) ? id : "";
+    if (!selectedPlayer && lookup) {
+      const player = (await searchFidePlayers(lookup)).find(
+        (candidate) => String(candidate.id) === lookup,
+      );
+      if (player) {
+        selectFidePlayer(player);
+        name = player.name;
+        id = String(player.id);
+      }
+    }
+    return { name, id };
+  };
+
   const runImport = async () => {
-    if (running) return;
+    if (running || resolvingIdentity) return;
+    setResolvingIdentity(true);
+    const identity = await resolveImportIdentity();
+    setResolvingIdentity(false);
     const jobId = `otb-import-${Date.now()}`;
-    const baseTitle = getOtbImportTitle(playerName, fromYear);
+    const baseTitle = getOtbImportTitle(identity.name, fromYear);
     const title = shouldSaveDatabase
       ? getUniqueOtbDatabaseTitle(baseTitle, localDatabases)
       : baseTitle;
@@ -175,8 +236,8 @@ export default function OtbGameImportPanel({
     const cacheDir = await resolve(await appCacheDir(), "otb-game-import");
     const request = createOtbImportRequest({
       jobId,
-      playerName,
-      fideId,
+      playerName: identity.name,
+      fideId: identity.id,
       fromYear,
       sources,
       localPgnPaths,
@@ -312,27 +373,31 @@ export default function OtbGameImportPanel({
       {asDialog ? null : (
         <Alert color="blue" variant="light" p={dense ? 6 : "xs"}>
           <Text size="xs">
-            OTB only. Personal Chess.com and Lichess account games are never included. FIDE ID is
-            strongly recommended to avoid same-name players. Coverage is exhaustive across the
-            selected public PGN sources, but events that publish results without moves cannot be
-            imported.
+            OTB only. Search and select a FIDE player to autofill the canonical name and ID. A
+            selected ID also safely enables initials, alternate name order, and one-letter typo
+            matching in public PGNs. Personal Chess.com and Lichess games are never included.
           </Text>
         </Alert>
       )}
       <Group gap={dense ? 4 : "sm"} wrap="wrap" align="flex-end">
-        <TextInput
-          label={asDialog ? "Player" : "Opponent"}
-          placeholder="Surname, Firstname"
-          value={playerName}
-          onChange={(event) => setPlayerName(event.currentTarget.value)}
-          size={controlSize}
-          {...(asDialog ? { flex: 1, miw: 220 } : { w: dense ? 180 : 230 })}
-        />
+        <Box style={asDialog ? { flex: 1, minWidth: 220 } : { width: dense ? 210 : 260 }}>
+          <FidePlayerSearchInput
+            disabled={running || resolvingIdentity}
+            label={asDialog ? "Player" : "Opponent"}
+            onChange={changePlayerName}
+            onSelect={selectFidePlayer}
+            searchPlayers={searchFidePlayers}
+            selected={selectedPlayer}
+            size={controlSize}
+            value={playerName}
+          />
+        </Box>
         <TextInput
           label="FIDE ID"
-          placeholder="Recommended"
+          placeholder="Autofilled"
           value={fideId}
-          onChange={(event) => setFideId(event.currentTarget.value)}
+          onBlur={() => void autofillFromFideId()}
+          onChange={(event) => changeFideId(event.currentTarget.value)}
           size={controlSize}
           w={dense ? 112 : 132}
         />
@@ -413,7 +478,7 @@ export default function OtbGameImportPanel({
           color={running ? "orange" : undefined}
           variant={running ? "light" : "filled"}
           leftSection={running ? <IconX size="0.95rem" /> : <IconCloudSearch size="0.95rem" />}
-          loading={stopping}
+          loading={stopping || resolvingIdentity}
           onClick={() => void (running ? stopAndCreateDatabase() : runImport())}
         >
           {running ? "Stop and create database" : submitLabel}

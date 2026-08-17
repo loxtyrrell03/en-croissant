@@ -36,6 +36,7 @@ $sourceLibraryIndex = Join-Path $PSScriptRoot 'home-library-index.mjs'
 $sourceChessCoachService = Join-Path $PSScriptRoot 'chess-coach-service.mjs'
 $sourceChessCoachDerived = Join-Path $PSScriptRoot 'chess-coach-derived.mjs'
 $sourceOtbImportService = Join-Path $PSScriptRoot 'otb-import-service.mjs'
+$sourceFidePlayerSearch = Join-Path $PSScriptRoot 'fide-player-search.mjs'
 $sourceStatsWorkerRoot = Join-Path $PSScriptRoot 'generated'
 $node = Join-Path $runtimeRoot 'node.exe'
 if (-not (Test-Path -LiteralPath $node)) {
@@ -57,6 +58,7 @@ foreach ($runtimeFile in @(
   @{ Source = $sourceChessCoachService; Destination = (Join-Path $runtimeRoot 'chess-coach-service.mjs') },
   @{ Source = $sourceChessCoachDerived; Destination = (Join-Path $runtimeRoot 'chess-coach-derived.mjs') }
   @{ Source = $sourceOtbImportService; Destination = (Join-Path $runtimeRoot 'otb-import-service.mjs') }
+  @{ Source = $sourceFidePlayerSearch; Destination = (Join-Path $runtimeRoot 'fide-player-search.mjs') }
 )) {
   $temporaryRuntimeFile = "$($runtimeFile.Destination).next-$PID"
   Copy-Item -LiteralPath $runtimeFile.Source -Destination $temporaryRuntimeFile -Force

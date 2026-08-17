@@ -11,7 +11,13 @@
   speed and coverage work: targeted broadcasts by default, opt-in exhaustive
   Lichess archives/community events, serialized Lichess downloads, roster and
   filtered-archive caches, monotonic result counts, ETA support, and public
-  broadcast-history warnings. Keep importer computation off the phone, keep
+  broadcast-history warnings. Both desktop and phone OTB forms use the public
+  FIDE player mirror for ranked name/ID suggestions and canonical name/ID
+  autofill; the phone delegates that lookup, typo-aware ranking, caching, and
+  request deduplication to the PC home server. A selected FIDE ID pins the
+  collector identity so initials, reversed name order, partial given names,
+  and a one-letter surname typo remain safe while name-only searches stay
+  strict. Keep importer computation off the phone, keep
   the exhaustive lanes opt-in, and deploy the matching headless collector with
   the home-server runtime whenever these request types change.
 

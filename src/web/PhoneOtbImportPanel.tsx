@@ -15,10 +15,13 @@ import {
 } from "@mantine/core";
 import { IconChevronDown, IconDeviceDesktop, IconSearch } from "@tabler/icons-react";
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { FidePlayerSearchInput } from "@/components/common/FidePlayerSearchInput";
+import type { FidePlayer } from "@/utils/fidePlayer";
 import {
   DEFAULT_WEB_OTB_IMPORT_SOURCES,
   getWebOtbImportedGames,
   loadWebOtbImportJob,
+  searchWebFidePlayers,
   startWebOtbImport,
   type WebOtbImportedGame,
   type WebOtbImportJob,
@@ -37,6 +40,8 @@ export default function PhoneOtbImportPanel({
   const currentYear = new Date().getFullYear();
   const [playerName, setPlayerName] = useStoredString(WEB_OTB_PLAYER_KEY);
   const [fideId, setFideId] = useState("");
+  const [selectedPlayer, setSelectedPlayer] = useState<FidePlayer | null>(null);
+  const [fideIdAuto, setFideIdAuto] = useState(false);
   const [fromYear, setFromYear] = useState(Math.max(2020, currentYear - 2));
   const [sources, setSources] = useState<WebOtbImportSources>(DEFAULT_WEB_OTB_IMPORT_SOURCES);
   const [advancedOpen, setAdvancedOpen] = useState(false);
@@ -87,12 +92,72 @@ export default function PhoneOtbImportPanel({
     };
   }, [job?.id, running]);
 
+  function selectFidePlayer(player: FidePlayer) {
+    setSelectedPlayer(player);
+    setPlayerName(player.name);
+    setFideId(String(player.id));
+    setFideIdAuto(true);
+    setError(null);
+  }
+
+  function clearSelectedPlayer() {
+    setSelectedPlayer(null);
+    if (fideIdAuto) {
+      setFideId("");
+      setFideIdAuto(false);
+    }
+  }
+
+  function changePlayerName(value: string) {
+    setPlayerName(value);
+    if (selectedPlayer && value.trim() !== selectedPlayer.name) clearSelectedPlayer();
+  }
+
+  function changeFideId(value: string) {
+    const clean = value.replace(/\D/g, "");
+    setFideId(clean);
+    setFideIdAuto(false);
+    if (selectedPlayer && clean !== String(selectedPlayer.id)) setSelectedPlayer(null);
+  }
+
+  async function autofillFromFideId() {
+    const id = fideId.trim();
+    if (!/^\d{4,}$/.test(id) || id === String(selectedPlayer?.id ?? "")) return;
+    const player = (await searchWebFidePlayers(id)).find(
+      (candidate) => String(candidate.id) === id,
+    );
+    if (player) selectFidePlayer(player);
+  }
+
+  async function resolveIdentity() {
+    let name = playerName.trim();
+    let id = fideId.trim();
+    const lookup = /^\d+$/.test(name) ? name : /^\d{4,}$/.test(id) ? id : "";
+    if (!selectedPlayer && lookup) {
+      const player = (await searchWebFidePlayers(lookup)).find(
+        (candidate) => String(candidate.id) === lookup,
+      );
+      if (player) {
+        selectFidePlayer(player);
+        name = player.name;
+        id = String(player.id);
+      }
+    }
+    return { name, id };
+  }
+
   async function startSearch() {
     if (starting || running) return;
     setStarting(true);
     setError(null);
     try {
-      const next = await startWebOtbImport({ playerName, fideId, fromYear, sources });
+      const identity = await resolveIdentity();
+      const next = await startWebOtbImport({
+        playerName: identity.name,
+        fideId: identity.id,
+        fromYear,
+        sources,
+      });
       setJob(next);
       window.localStorage.setItem(WEB_OTB_JOB_KEY, next.id);
     } catch (startError) {
@@ -130,24 +195,26 @@ export default function PhoneOtbImportPanel({
     <Stack gap="sm">
       <Alert color="blue" icon={<IconDeviceDesktop size={17} />} variant="light">
         The phone only controls this search. Your PC downloads, filters, validates, deduplicates,
-        and stores every OTB result.
+        stores every OTB result, and resolves FIDE player suggestions.
       </Alert>
-      <TextInput
-        autoCapitalize="words"
+      <FidePlayerSearchInput
         disabled={running}
         label="Player full name"
-        placeholder="Surname, Firstname"
+        onChange={changePlayerName}
+        onSelect={selectFidePlayer}
+        searchPlayers={searchWebFidePlayers}
+        selected={selectedPlayer}
         value={playerName}
-        onChange={(event) => setPlayerName(event.currentTarget.value)}
       />
       <Group align="flex-end" grow wrap="nowrap">
         <TextInput
           autoCapitalize="none"
           disabled={running}
           label="FIDE ID"
-          placeholder="Recommended"
+          placeholder="Autofilled"
           value={fideId}
-          onChange={(event) => setFideId(event.currentTarget.value.replace(/\D/g, ""))}
+          onBlur={() => void autofillFromFideId()}
+          onChange={(event) => changeFideId(event.currentTarget.value)}
         />
         <NumberInput
           disabled={running}

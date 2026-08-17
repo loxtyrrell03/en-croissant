@@ -26,6 +26,12 @@ import {
 } from "@/utils/lichess/explorer";
 import { countMainPly } from "@/utils/treeReducer";
 import { unwrap } from "@/utils/unwrap";
+import {
+  MAX_FIDE_SEARCH_RESULTS,
+  parseFidePlayers,
+  rankFidePlayers,
+  type FidePlayer,
+} from "@/utils/fidePlayer";
 import { BoundedMap, BoundedSet } from "../boundedCache";
 import { getDatabasesDir } from "../directories";
 
@@ -815,26 +821,48 @@ export async function getTablebaseInfo(fen: string): Promise<TablebaseData> {
   return res.json();
 }
 
-export async function getFidePlayer(query: string) {
-  if (!Number.isNaN(Number(query))) {
-    const res = await fetch(`${baseURL}/fide/player/${query}`, {
-      headers: apiHeaders({
-        Accept: "application/json",
-      }),
-    });
-    if (res.ok) {
-      return await res.json();
+const fideSearchCache = new Map<string, FidePlayer[]>();
+const fideSearchInFlight = new Map<string, Promise<FidePlayer[]>>();
+
+export async function searchFidePlayers(query: string): Promise<FidePlayer[]> {
+  const trimmed = query.trim();
+  const key = trimmed.toLocaleLowerCase();
+  if (!key) return [];
+  const cached = fideSearchCache.get(key);
+  if (cached) return cached;
+  const pending = fideSearchInFlight.get(key);
+  if (pending) return pending;
+
+  const request = (async () => {
+    try {
+      const isId = /^\d+$/.test(trimmed);
+      const url = isId
+        ? `${baseURL}/fide/player/${trimmed}`
+        : `${baseURL}/fide/player?q=${encodeURIComponent(trimmed)}`;
+      const response = await fetch(url, {
+        headers: apiHeaders({ Accept: "application/json" }),
+      });
+      if (!response.ok) {
+        fideSearchCache.set(key, []);
+        return [];
+      }
+      const parsed = parseFidePlayers(await response.json());
+      const ranked = isId ? parsed : rankFidePlayers(trimmed, parsed);
+      const players = ranked.slice(0, MAX_FIDE_SEARCH_RESULTS);
+      fideSearchCache.set(key, players);
+      return players;
+    } catch {
+      return [];
+    } finally {
+      fideSearchInFlight.delete(key);
     }
-  } else {
-    const res = await fetch(`${baseURL}/fide/player?q=${query}`, {
-      headers: apiHeaders({
-        Accept: "application/json",
-      }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      return data[0];
-    }
-  }
-  throw new Error("Player not found");
+  })();
+  fideSearchInFlight.set(key, request);
+  return request;
+}
+
+export async function getFidePlayer(query: string): Promise<FidePlayer> {
+  const player = (await searchFidePlayers(query))[0];
+  if (!player) throw new Error("Player not found");
+  return player;
 }

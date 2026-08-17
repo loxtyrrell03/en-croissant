@@ -12,7 +12,7 @@ const homeServerScript = join(repoRoot, "scripts", "home-server.mjs");
 const allowedOrigin = "https://lox-pc.tail89d19b.ts.net";
 const rejectedOrigin = "https://evil.example";
 
-test("Stockfish proxy restricts actual and preflight CORS to private origins", async () => {
+test("private Stockfish and OTB APIs restrict CORS to private origins", async () => {
   const temporaryRoot = await mkdtemp(join(tmpdir(), "en-croissant-home-cors-"));
   const serverRoot = join(temporaryRoot, "server");
   const siteRoot = join(serverRoot, "site");
@@ -91,6 +91,18 @@ test("Stockfish proxy restricts actual and preflight CORS to private origins", a
     });
     assert.equal(rejectedPreflight.status, 204);
     assert.equal(rejectedPreflight.headers.get("access-control-allow-origin"), null);
+
+    const allowedFideLookup = await fetch(`${baseUrl}/api/otb-import/players?q=ab`, {
+      headers: { Origin: allowedOrigin },
+    });
+    assert.equal(allowedFideLookup.status, 400);
+    assert.equal(allowedFideLookup.headers.get("access-control-allow-origin"), allowedOrigin);
+
+    const rejectedFideLookup = await fetch(`${baseUrl}/api/otb-import/players?q=ab`, {
+      headers: { Origin: rejectedOrigin },
+    });
+    assert.equal(rejectedFideLookup.status, 400);
+    assert.equal(rejectedFideLookup.headers.get("access-control-allow-origin"), null);
 
     assert.equal(upstreamOrigins.length, 3);
     assert.ok(upstreamOrigins.every((origin) => origin === null));

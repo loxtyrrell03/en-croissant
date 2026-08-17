@@ -24,6 +24,7 @@ import {
   listHostedLibraryDirectory,
 } from "./home-library-index.mjs";
 import { OtbImportService } from "./otb-import-service.mjs";
+import { FidePlayerSearchService } from "./fide-player-search.mjs";
 import { getOpeningIdentificationBook, publicDerivedEvidence } from "./chess-coach-derived.mjs";
 import {
   buildCodexCoachInvocation,
@@ -238,6 +239,7 @@ const otbImportService = new OtbImportService({
   binaryPath: otbImportBinaryPath,
   onLog: (message) => void appendLog(message),
 });
+const fidePlayerSearch = new FidePlayerSearchService();
 
 await mkdir(serverRoot, { recursive: true });
 await mkdir(dirname(statePath), { recursive: true });
@@ -349,6 +351,27 @@ async function handleRequest(request, response) {
       const message = error instanceof Error ? error.message : String(error);
       const status = /not installed/i.test(message) ? 503 : 400;
       return writeJson(response, status, { error: message }, { "cache-control": "no-store" });
+    }
+  }
+
+  if (pathname === "/api/otb-import/players") {
+    if (method !== "GET") return writeJson(response, 405, { error: "Method not allowed." });
+    const query = String(requestUrl.searchParams.get("q") || "").trim();
+    const minimum = /^\d+$/.test(query) ? 4 : 3;
+    if (query.length < minimum) {
+      return writeJson(response, 400, { error: "Enter more of the player name or FIDE ID." });
+    }
+    try {
+      return writeJson(
+        response,
+        200,
+        { players: await fidePlayerSearch.search(query) },
+        { "cache-control": "private, max-age=300" },
+      );
+    } catch (error) {
+      return writeJson(response, 502, {
+        error: error instanceof Error ? error.message : "FIDE player search failed.",
+      });
     }
   }
 
