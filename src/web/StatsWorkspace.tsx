@@ -1053,7 +1053,7 @@ function StatsStrengthSection({
           ? "No games are available in this period."
           : missingAnalysisCount === 0
             ? `All ${cachedAnalysisCount} selected games use the saved PC analysis; Stockfish will not run again.`
-            : `${cachedAnalysisCount}/${selectedAnalysisGames.length} selected games are already cached. Refresh starts the PC's depth-25, 1M-node worker only for genuinely missing games.`}
+            : `${cachedAnalysisCount}/${selectedAnalysisGames.length} selected games are already cached. Refresh starts the PC's configured deep-analysis worker only for genuinely missing games.`}
       </Text>
     </>
   );
