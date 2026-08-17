@@ -239,6 +239,8 @@ struct CollectedGame {
     black: String,
     result: String,
     source: String,
+    target_side: String,
+    mainline_moves: String,
 }
 
 #[derive(Default)]
@@ -3101,6 +3103,55 @@ fn add_game(collection: &mut Collection, pgn: String, source: &str, target_side:
     }
     let mainline_moves = mainline_move_fingerprint(&pgn).unwrap_or_else(|| moves.clone());
     let move_fingerprint = format!("{target_side}|{mainline_moves}");
+
+    if let Some(index) = collection.games.iter().position(|existing| {
+        existing.target_side == target_side
+            && normalized_name(&existing.white) == normalized_name(&white)
+            && normalized_name(&existing.black) == normalized_name(&black)
+            && existing.result == result
+            && (existing.date == date || existing.date.contains('?') || date.contains('?'))
+            && move_lines_are_prefixes(&existing.mainline_moves, &mainline_moves)
+    }) {
+        let existing = &collection.games[index];
+        let incoming_is_better = mainline_moves.split_whitespace().count()
+            > existing.mainline_moves.split_whitespace().count()
+            || (mainline_moves.split_whitespace().count()
+                == existing.mainline_moves.split_whitespace().count()
+                && pgn.len() > existing.pgn.len());
+        collection.duplicates_removed = collection.duplicates_removed.saturating_add(1);
+        if incoming_is_better {
+            let broad_fingerprint = format!(
+                "{}|{}|{}|{}",
+                normalized_name(&white),
+                normalized_name(&black),
+                result,
+                moves
+            );
+            collection
+                .broad_fingerprints
+                .entry(broad_fingerprint)
+                .or_default()
+                .push(index);
+            collection
+                .move_fingerprints
+                .entry(move_fingerprint)
+                .or_default()
+                .push(index);
+            collection.games[index] = CollectedGame {
+                pgn,
+                date,
+                event,
+                white,
+                black,
+                result,
+                source: source.to_string(),
+                target_side: target_side.to_string(),
+                mainline_moves,
+            };
+        }
+        return;
+    }
+
     if let Some(indices) = collection.move_fingerprints.get(&move_fingerprint) {
         let duplicate = indices.iter().any(|index| {
             let existing = &collection.games[*index];
@@ -3149,7 +3200,16 @@ fn add_game(collection: &mut Collection, pgn: String, source: &str, target_side:
         black,
         result,
         source: source.to_string(),
+        target_side: target_side.to_string(),
+        mainline_moves,
     });
+}
+
+fn move_lines_are_prefixes(left: &str, right: &str) -> bool {
+    let left = left.split_whitespace().collect::<Vec<_>>();
+    let right = right.split_whitespace().collect::<Vec<_>>();
+    let shared = left.len().min(right.len());
+    shared >= 12 && left[..shared] == right[..shared]
 }
 
 #[derive(Default)]
@@ -4270,6 +4330,33 @@ mod tests {
         assert_eq!(collection.games.len(), 1);
         assert_eq!(collection.duplicates_removed, 1);
         assert_eq!(collection.suspected_online_games_excluded, 2);
+    }
+
+    #[test]
+    fn dedupes_truncated_game_against_full_copy_and_keeps_fuller_pgn() {
+        let truncated = r#"[Event "Welsh Open"]
+[Date "2026.04.06"]
+[White "Thomas, Mark"]
+[Black "Tyrrell, Lachlan Baly Hughes"]
+[Result "0-1"]
+
+1. e4 g6 2. d4 Bg7 3. Nc3 d6 4. Be2 a6 5. Be3 Nd7 6. Nf3 b5 7. a3 Bb7 8. O-O Ngf6 9. e5 Nd5 10. e6 fxe6 11. Ng5 Nf8 12. Bg4 Nxc3 13. bxc3 Bd5 14. Re1 h6 15. Nh3 e5 0-1
+"#;
+        let full = truncated.replace("15. Nh3 e5 0-1", "15. Nh3 e5 16. f4 exd4 17. cxd4 0-1");
+        let mut collection = Collection::default();
+
+        add_game(
+            &mut collection,
+            truncated.to_string(),
+            "Chess-Results",
+            "Black",
+        );
+        add_game(&mut collection, full.clone(), "Lichess broadcast", "Black");
+
+        assert_eq!(collection.games.len(), 1);
+        assert_eq!(collection.duplicates_removed, 1);
+        assert_eq!(collection.games[0].pgn, full);
+        assert_eq!(collection.games[0].source, "Lichess broadcast");
     }
 
     #[test]

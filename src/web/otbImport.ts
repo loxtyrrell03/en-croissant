@@ -114,6 +114,13 @@ export async function searchWebFidePlayers(
     return parseFidePlayers(body?.players);
 }
 
+export function findExactWebFidePlayer(players: FidePlayer[], playerName: string) {
+    const target = normalizeWebFidePlayerName(playerName);
+    if (!target) return null;
+    const matches = players.filter((player) => normalizeWebFidePlayerName(player.name) === target);
+    return matches.length === 1 ? matches[0] : null;
+}
+
 export function getWebOtbImportedGames(job: WebOtbImportJob): WebOtbImportedGame[] {
     return job.games.map((game) => ({
         ...game,
@@ -124,6 +131,13 @@ export function getWebOtbImportedGames(job: WebOtbImportJob): WebOtbImportedGame
 
 export function getWebOtbJobPlayerName(job: WebOtbImportJob) {
     return job.report?.playerName?.trim() || job.request.playerName.trim();
+}
+
+function normalizeWebFidePlayerName(value: string) {
+    return value
+        .toLocaleLowerCase()
+        .replace(/[^\p{L}\p{N}]+/gu, " ")
+        .trim();
 }
 
 async function requestWebOtbJob(path: string, init?: RequestInit): Promise<WebOtbImportJob> {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getGamesForWebPrepSource } from "../prepIndex";
+import { getDatabasePlayerColorCounts, getGamesForWebPrepSource } from "../prepIndex";
 import {
     applyWebOtbPrepCompletion,
     shouldOpenWebOtbPrep,
@@ -90,6 +90,9 @@ describe("OTB completion Prep handoff", () => {
         expect(
             getGamesForWebPrepSource({ gamesByDatabase: next.gamesByDatabase, prep }),
         ).toHaveLength(2);
+        expect(
+            getDatabasePlayerColorCounts(next.gamesByDatabase[database.id], prep.opponent),
+        ).toEqual({ white: 1, black: 1, total: 2 });
     });
 
     it("is idempotent when the same completion is delivered again", () => {

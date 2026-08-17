@@ -19,6 +19,7 @@ import { FidePlayerSearchInput } from "@/components/common/FidePlayerSearchInput
 import type { FidePlayer } from "@/utils/fidePlayer";
 import {
   DEFAULT_WEB_OTB_IMPORT_SOURCES,
+  findExactWebFidePlayer,
   getWebOtbImportedGames,
   loadWebOtbImportJob,
   searchWebFidePlayers,
@@ -131,6 +132,14 @@ export default function PhoneOtbImportPanel({
       const player = (await searchWebFidePlayers(lookup)).find(
         (candidate) => String(candidate.id) === lookup,
       );
+      if (player) {
+        selectFidePlayer(player);
+        name = player.name;
+        id = String(player.id);
+      }
+    }
+    if (!selectedPlayer && !lookup && name) {
+      const player = findExactWebFidePlayer(await searchWebFidePlayers(name).catch(() => []), name);
       if (player) {
         selectFidePlayer(player);
         name = player.name;

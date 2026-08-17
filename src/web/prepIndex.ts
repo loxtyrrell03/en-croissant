@@ -766,6 +766,19 @@ export function getDatabasePlayerCounts(games: WebGame[]) {
     );
 }
 
+export function getDatabasePlayerColorCounts(games: WebGame[], playerName: string) {
+    const counts = { white: 0, black: 0, total: 0 };
+    if (!normalizedPlayerName(playerName)) return counts;
+    for (const game of games) {
+        const asWhite = gameMatchesPlayerColor(game, playerName, "white");
+        const asBlack = gameMatchesPlayerColor(game, playerName, "black");
+        if (asWhite) counts.white += 1;
+        if (asBlack) counts.black += 1;
+        if (asWhite || asBlack) counts.total += 1;
+    }
+    return counts;
+}
+
 export function getWebDatabaseTitlePlayerName(
     databaseLabel: string | null | undefined,
     playerName: string,

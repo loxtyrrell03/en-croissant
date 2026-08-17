@@ -235,6 +235,7 @@ import {
   getWebDatabaseMoveStats,
   getWebHostedPositionMoveStats,
   getGamesForWebPrepSource,
+  getDatabasePlayerColorCounts,
   getDatabasePlayerCounts,
   filterWebGamesByLocalFilters,
   getWebDatabaseTitlePlayerName,
@@ -5156,6 +5157,10 @@ function PrepUnderBoardPanel({
   const selectedPlayerColor = oppositeWebColor(activePrep?.userColor ?? userColor);
   const selectedOpponentName = activePrep?.opponent ?? opponent;
   const trimmedSelectedOpponentName = selectedOpponentName.trim();
+  const selectedOpponentColorCounts = useMemo(
+    () => getDatabasePlayerColorCounts(selectedPrepFilteredSourceGames, selectedOpponentName),
+    [selectedOpponentName, selectedPrepFilteredSourceGames],
+  );
   const sourceReady =
     selectedPrepSource === "local"
       ? Boolean(activePrepSourceId)
@@ -6681,6 +6686,31 @@ function PrepUnderBoardPanel({
 
       {showTrainingStage && activePrep ? (
         <Stack gap="xs">
+          {selectedPrepMode === "player" &&
+          (selectedPrepSource === "local" || selectedPrepSource === "temporary") &&
+          trimmedSelectedOpponentName ? (
+            <Group gap={6} justify="space-between" wrap="nowrap">
+              <Text c="dimmed" size="xs" truncate>
+                {selectedOpponentColorCounts.total} imported · Prep shows one player color at a time
+              </Text>
+              <SegmentedControl
+                aria-label="Opponent game color"
+                data={[
+                  {
+                    value: "white",
+                    label: `White (${selectedOpponentColorCounts.white})`,
+                  },
+                  {
+                    value: "black",
+                    label: `Black (${selectedOpponentColorCounts.black})`,
+                  },
+                ]}
+                onChange={(value) => updatePrepUserColor(oppositeWebColor(value as WebColor))}
+                size="xs"
+                value={selectedPlayerColor}
+              />
+            </Group>
+          ) : null}
           {onlinePrepLoading && isOnlinePrepSource(selectedPrepSource) ? (
             <Group gap="xs">
               <Loader size="xs" />
