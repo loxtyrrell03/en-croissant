@@ -17,6 +17,7 @@ export class OtbImportService {
     this.spawnProcess = spawnProcess;
     this.jobs = new Map();
     this.processes = new Map();
+    this.persistQueues = new Map();
     this.cacheRoot = join(root, "cache");
     this.outputRoot = join(root, "output");
     this.jobRoot = join(root, "jobs");
@@ -92,7 +93,7 @@ export class OtbImportService {
     this.processes.set(job.id, child);
     job.status = "running";
     job.updatedAt = new Date().toISOString();
-    void this.persist(job);
+    this.persistInBackground(job);
 
     try {
       if (child.pid) {
@@ -111,7 +112,7 @@ export class OtbImportService {
       if (event.type === "progress") {
         job.progress = mergeOtbProgress(job.progress, event.value);
         job.updatedAt = new Date().toISOString();
-        void this.persist(job);
+        this.persistInBackground(job);
       } else {
         report = event.value;
       }
@@ -120,7 +121,7 @@ export class OtbImportService {
     child.stderr.on("data", (chunk) => {
       stderr = `${stderr}${chunk}`.slice(-MAX_ERROR_LENGTH);
     });
-    child.on("error", (error) => void this.finishFailed(job, error.message));
+    child.on("error", (error) => this.finishFailedInBackground(job, error.message));
     child.on("exit", (code, signal) => {
       void (async () => {
         this.processes.delete(job.id);
@@ -145,7 +146,7 @@ export class OtbImportService {
         job.completedAt = job.updatedAt;
         await this.persist(job);
         this.onLog(`OTB import ${job.id} completed with ${job.games.length} games`);
-      })().catch((error) => void this.finishFailed(job, error?.stack || String(error)));
+      })().catch((error) => this.finishFailedInBackground(job, error?.stack || String(error)));
     });
   }
 
@@ -162,9 +163,33 @@ export class OtbImportService {
 
   async persist(job) {
     const destination = join(this.jobRoot, `${job.id}.json`);
-    const temporary = `${destination}.${process.pid}.tmp`;
-    await writeFile(temporary, JSON.stringify(job));
-    await rename(temporary, destination);
+    const snapshot = JSON.stringify(job);
+    const previous = this.persistQueues.get(job.id) ?? Promise.resolve();
+    const pending = previous
+      .catch(() => undefined)
+      .then(async () => {
+        const temporary = `${destination}.${process.pid}.${randomUUID()}.tmp`;
+        await writeFile(temporary, snapshot);
+        await rename(temporary, destination);
+      });
+    this.persistQueues.set(job.id, pending);
+    try {
+      await pending;
+    } finally {
+      if (this.persistQueues.get(job.id) === pending) this.persistQueues.delete(job.id);
+    }
+  }
+
+  persistInBackground(job) {
+    void this.persist(job).catch((error) => {
+      this.onLog(`Could not save OTB import ${job.id}: ${error?.stack || String(error)}`);
+    });
+  }
+
+  finishFailedInBackground(job, message) {
+    void this.finishFailed(job, message).catch((error) => {
+      this.onLog(`Could not finish OTB import ${job.id}: ${error?.stack || String(error)}`);
+    });
   }
 }
 

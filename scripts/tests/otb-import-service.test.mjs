@@ -1,12 +1,36 @@
 import assert from "node:assert/strict";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import {
+  OtbImportService,
   buildOtbImporterArgs,
   mergeOtbProgress,
   normalizeOtbImportPayload,
   parseOtbCollectorLine,
   parseOtbPgnGames,
 } from "../otb-import-service.mjs";
+
+test("serializes overlapping job saves and preserves the newest snapshot", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-croissant-otb-persist-"));
+  try {
+    const service = new OtbImportService({ root, binaryPath: join(root, "unused") });
+    await service.initialize();
+    const job = { id: "otb-concurrent", status: "running", progress: { current: 0 } };
+    const saves = [];
+    for (let current = 0; current < 25; current += 1) {
+      job.progress = { current };
+      saves.push(service.persist(job));
+    }
+
+    await Promise.all(saves);
+    const saved = JSON.parse(await readFile(join(root, "jobs", "otb-concurrent.json"), "utf8"));
+    assert.equal(saved.progress.current, 24);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
 
 test("normalizes a phone request with fast PC defaults", () => {
   const request = normalizeOtbImportPayload({
