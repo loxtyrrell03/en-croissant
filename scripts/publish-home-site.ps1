@@ -35,9 +35,25 @@ try {
       $env:VITE_EN_CROISSANT_HOME_BUILD = "1"
       $env:VITE_EN_CROISSANT_SERVER_URL = $SiteUrl.TrimEnd("/")
       $env:VITE_EN_CROISSANT_STOCKFISH_URL = $SiteUrl.TrimEnd("/")
-      & (Get-Command npm.cmd -ErrorAction Stop).Source run build-vite
-      if ($LASTEXITCODE -ne 0) {
-        throw "Phone app build failed with exit code $LASTEXITCODE."
+      $npmCommand = Get-Command npm.cmd -ErrorAction SilentlyContinue
+      if ($npmCommand) {
+        & $npmCommand.Source run build-vite
+        if ($LASTEXITCODE -ne 0) {
+          throw "Phone app build failed with exit code $LASTEXITCODE."
+        }
+      } else {
+        $bundledNode = 'C:\Users\Lox\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+        if (-not (Test-Path -LiteralPath $bundledNode)) {
+          throw "Phone app build needs Node.js, but neither npm.cmd nor the bundled Codex runtime is available."
+        }
+        & $bundledNode (Join-Path $repoRoot 'node_modules\@typescript\native-preview\bin\tsgo.js') --noEmit
+        if ($LASTEXITCODE -ne 0) {
+          throw "Phone app typecheck failed with exit code $LASTEXITCODE."
+        }
+        & $bundledNode (Join-Path $repoRoot 'node_modules\vite\bin\vite.js') build
+        if ($LASTEXITCODE -ne 0) {
+          throw "Phone app build failed with exit code $LASTEXITCODE."
+        }
       }
       Copy-EnCroissantPhonePublicShell `
         -PublicRoot (Join-Path $repoRoot "public") `
