@@ -618,7 +618,153 @@ describe("mistake review helpers", () => {
         expect(tactical.confidence).toBe("high");
         expect(tactical.reason).toContain("Nxe5+");
         expect(positional.nature).toBe("positional");
-        expect(positional.confidence).toBe("high");
+        expect(positional.confidence).toBe("medium");
+    });
+
+    test("recognizes quiet moves that are tactically motivated", () => {
+        const quietFork = classifyMistakeReviewNature({
+            fen: "k7/3q1r2/8/8/8/5N2/8/K7 w - - 0 1",
+            bestMoveSan: "Ne5",
+            bestMoveUci: "f3e5",
+            playedMoveSan: "Ka2",
+            pvSan: ["Ne5", "Qe6", "Nxf7"],
+            pvUci: ["f3e5", "d7e6", "e5f7"],
+            cpLoss: 140,
+            winProbabilityDrop: 8,
+        });
+
+        expect(quietFork.nature).toBe("tactical");
+        expect(quietFork.confidence).toBe("high");
+        expect(quietFork.reason).toContain("tactically motivated");
+        expect(quietFork.reason).toContain("forking");
+    });
+
+    test("recognizes quiet tactical ideas whose payoff is later in the line", () => {
+        const quietMateThreat = classifyMistakeReviewNature({
+            bestMoveSan: "Qh5",
+            playedMoveSan: "a3",
+            pvSan: ["Qh5", "h6", "Qg6", "Kf8", "Qf7#"],
+            cpLoss: 150,
+            winProbabilityDrop: 8,
+        });
+
+        expect(quietMateThreat.nature).toBe("tactical");
+        expect(quietMateThreat.confidence).toBe("high");
+        expect(quietMateThreat.reason).toContain("tactically motivated");
+        expect(quietMateThreat.reason).toContain("mate");
+    });
+
+    test("recognizes a quiet move that creates an immediate mate threat on the board", () => {
+        const quietMateThreat = classifyMistakeReviewNature({
+            fen: "5bkb/5ppp/8/8/8/8/2B5/3Q2K1 w - - 0 1",
+            bestMoveSan: "Qh5",
+            bestMoveUci: "d1h5",
+            playedMoveSan: "Kh2",
+            pvSan: ["Qh5"],
+            pvUci: ["d1h5"],
+            cpLoss: 150,
+            winProbabilityDrop: 8,
+        });
+
+        expect(quietMateThreat.nature).toBe("tactical");
+        expect(quietMateThreat.confidence).toBe("high");
+        expect(quietMateThreat.reason).toContain("tactically motivated");
+        expect(quietMateThreat.reason).toContain("immediate mate threat");
+    });
+
+    test("does not treat a routine exchange sequence as tactical by notation alone", () => {
+        const routineExchange = classifyMistakeReviewNature({
+            bestMoveSan: "cxd5",
+            playedMoveSan: "h3",
+            pvSan: ["cxd5", "exd5", "Nf3", "Nf6"],
+            cpLoss: 95,
+            winProbabilityDrop: 5,
+        });
+
+        expect(routineExchange.nature).toBe("positional");
+        expect(routineExchange.confidence).toBe("medium");
+        expect(routineExchange.reason).toContain("no verified material or mating outcome");
+    });
+
+    test("does not treat an isolated check as proof of a tactic", () => {
+        const incidentalCheck = classifyMistakeReviewNature({
+            bestMoveSan: "Qa5+",
+            playedMoveSan: "h3",
+            pvSan: ["Qa5+", "Nc6", "Nf3", "Nf6"],
+            cpLoss: 80,
+            winProbabilityDrop: 4,
+        });
+
+        expect(incidentalCheck.nature).toBe("positional");
+        expect(incidentalCheck.confidence).toBe("low");
+        expect(incidentalCheck.reason).toContain("positional label is provisional");
+        expect(incidentalCheck.tacticalSignals).toEqual([
+            expect.stringContaining("does not verify a concrete follow-up"),
+        ]);
+    });
+
+    test("does not infer tactics from the size of a quiet evaluation loss", () => {
+        const severePositionalError = classifyMistakeReviewNature({
+            bestMoveSan: "Re1",
+            playedMoveSan: "a3",
+            pvSan: ["Re1", "Qc7", "Bb3", "Rad8", "h3", "Rfe8"],
+            cpLoss: 240,
+            winProbabilityDrop: 16,
+        });
+
+        expect(severePositionalError.nature).toBe("positional");
+        expect(severePositionalError.confidence).toBe("low");
+        expect(severePositionalError.reason).toContain("positional label is provisional");
+    });
+
+    test("assigns strong positional confidence only to verified quiet lines", () => {
+        const verifiedPositional = classifyMistakeReviewNature({
+            fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            bestMoveSan: "Nf3",
+            bestMoveUci: "g1f3",
+            playedMoveSan: "h3",
+            playedMoveUci: "h2h3",
+            pvSan: ["Nf3", "Nf6", "g3", "g6"],
+            pvUci: ["g1f3", "g8f6", "g2g3", "g7g6"],
+            refutationSan: ["Nf6", "Nf3", "g6", "g3"],
+            refutationUci: ["g8f6", "g1f3", "g7g6", "g2g3"],
+            cpLoss: 60,
+            winProbabilityDrop: 4,
+            reachedDepth: 18,
+        });
+
+        expect(verifiedPositional.nature).toBe("positional");
+        expect(verifiedPositional.confidence).toBe("high");
+        expect(verifiedPositional.reason).toContain("verified tactical window");
+    });
+
+    test("does not award high positional confidence when a supplied UCI line breaks", () => {
+        const incompleteVerification = classifyMistakeReviewNature({
+            fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            bestMoveSan: "Nf3",
+            bestMoveUci: "g1f3",
+            playedMoveSan: "h3",
+            playedMoveUci: "h2h3",
+            pvSan: ["Nf3", "Nf6", "g3", "g6", "Ra8"],
+            pvUci: ["g1f3", "g8f6", "g2g3", "g7g6", "a1a8"],
+            refutationSan: ["Nf6", "Nf3", "g6", "g3", "Ra1"],
+            refutationUci: ["g8f6", "g1f3", "g7g6", "g2g3", "a8a1"],
+            cpLoss: 60,
+            winProbabilityDrop: 4,
+            reachedDepth: 18,
+        });
+
+        expect(incompleteVerification.nature).toBe("positional");
+        expect(incompleteVerification.confidence).toBe("medium");
+        expect(incompleteVerification.reason).toContain("supplied engine line");
+    });
+
+    test("keeps incomplete evidence provisional instead of claiming positional certainty", () => {
+        const incomplete = classifyMistakeReviewNature({});
+
+        expect(incomplete.nature).toBe("positional");
+        expect(incomplete.confidence).toBe("low");
+        expect(incomplete.reason).toContain("Insufficient engine-line evidence");
     });
 
     test("classifies immediate material hangs as tactical even with quiet engine text", () => {
@@ -688,6 +834,7 @@ describe("mistake review helpers", () => {
         expect(allowed.aspect).toBe("allowed");
         expect(allowed.allowedNature).toBe("tactical");
         expect(allowed.missedNature).toBe("positional");
+        expect(allowed.reason).toContain("tactically motivated");
         expect(missed.nature).toBe("tactical");
         expect(missed.aspect).toBe("missed");
         expect(missed.missedNature).toBe("tactical");
