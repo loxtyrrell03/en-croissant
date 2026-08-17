@@ -6689,9 +6689,10 @@ function PrepUnderBoardPanel({
           {selectedPrepMode === "player" &&
           (selectedPrepSource === "local" || selectedPrepSource === "temporary") &&
           trimmedSelectedOpponentName ? (
-            <Group gap={6} justify="space-between" wrap="nowrap">
-              <Text c="dimmed" size="xs" truncate>
-                {selectedOpponentColorCounts.total} imported · Prep shows one player color at a time
+            <Stack gap={4}>
+              <Text c="dimmed" size="xs">
+                Showing {selectedOpponentColorCounts[selectedPlayerColor]} of{" "}
+                {selectedOpponentColorCounts.total} imported games · choose player color
               </Text>
               <SegmentedControl
                 aria-label="Opponent game color"
@@ -6705,11 +6706,12 @@ function PrepUnderBoardPanel({
                     label: `Black (${selectedOpponentColorCounts.black})`,
                   },
                 ]}
+                fullWidth
                 onChange={(value) => updatePrepUserColor(oppositeWebColor(value as WebColor))}
                 size="xs"
                 value={selectedPlayerColor}
               />
-            </Group>
+            </Stack>
           ) : null}
           {onlinePrepLoading && isOnlinePrepSource(selectedPrepSource) ? (
             <Group gap="xs">
