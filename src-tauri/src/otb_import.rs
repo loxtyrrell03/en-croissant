@@ -219,6 +219,7 @@ async fn wait_for_cancellation(signal: Arc<AtomicBool>) {
 /// Stops outstanding source requests. The collector still sorts and writes
 /// the games already merged into its shared collection before returning.
 #[tauri::command]
+#[specta::specta]
 pub fn cancel_otb_games(job_id: String) -> bool {
     let signal = lock_cancellations().get(job_id.trim()).cloned();
     if let Some(signal) = signal {
