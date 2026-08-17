@@ -45,19 +45,22 @@ if (-not (Test-Path -LiteralPath $tailscale)) {
 }
 $startScript = Join-Path $PSScriptRoot 'start-home-server.ps1'
 $taskName = 'EnCroissantHomeServer'
+$tailscaleStatus = & $tailscale status --json | ConvertFrom-Json
 $dnsName = $DnsName.Trim().TrimEnd('.')
 if (-not $dnsName) {
-  $dnsName = (& $tailscale status --json | ConvertFrom-Json).Self.DNSName.TrimEnd('.')
+  $dnsName = $tailscaleStatus.Self.DNSName.TrimEnd('.')
 }
 if (-not $dnsName) {
   throw 'This machine does not have an active Tailscale DNS name.'
 }
 $privateOrigin = "https://$dnsName"
+$tailscaleIpv4 = @($tailscaleStatus.Self.TailscaleIPs | Where-Object { $_ -match '^\d+\.\d+\.\d+\.\d+$' })[0]
 $configuredPrivateOrigins = @(
   ([Environment]::GetEnvironmentVariable('EN_CROISSANT_PRIVATE_ORIGINS', 'User') -split '[,;\r\n]') |
     ForEach-Object { $_.Trim().TrimEnd('/') } |
     Where-Object { $_ }
   $privateOrigin
+  if ($tailscaleIpv4) { "http://$tailscaleIpv4" }
 ) | Select-Object -Unique
 $privateOriginsValue = $configuredPrivateOrigins -join ','
 [Environment]::SetEnvironmentVariable(
