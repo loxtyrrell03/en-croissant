@@ -133,20 +133,22 @@ export const MISTAKE_REVIEW_NATURES: readonly {
     {
         id: "tactical",
         label: "Tactical",
-        description: "Forcing corrections with checks, captures, promotions, or sharp PVs.",
+        description:
+            "Immediate, evaluation-relevant resources such as mate, material, promotion, or forcing threats, including quiet tactically motivated moves.",
     },
     {
         id: "positional",
         label: "Positional",
-        description: "Quiet corrections where the engine line is not immediately forcing.",
+        description:
+            "Tactically viable choices whose difference is driven mainly by non-immediate factors such as structure, activity, king safety, space, exchanges, or plans.",
     },
 ] as const;
 
 const MISTAKE_REVIEW_OPENING_MAX_FULLMOVE = 10;
 const MISTAKE_REVIEW_ENDGAME_MIN_FULLMOVE = 31;
 const MISTAKE_REVIEW_ENDGAME_NON_PAWN_MAX = 6;
-const MISTAKE_REVIEW_NATURE_PV_PLIES = 4;
-const MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION = 2;
+const MISTAKE_REVIEW_NATURE_PV_PLIES = 8;
+const MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION = 3;
 const MISTAKE_REVIEW_NATURE_CACHE_LIMIT = 5000;
 const MISTAKE_REVIEW_NATURE_COUNT_CLASSIFY_LIMIT = 1000;
 const mistakeReviewNatureClassificationCache = new Map<string, MistakeReviewNatureClassification>();
@@ -1449,101 +1451,20 @@ function classifyMistakeReviewNatureFromText(
     position: Position,
 ): MistakeReviewNatureClassification {
     const metadata = position.mistakeReview;
-    const bestMoveSan = metadata?.bestMoveSan ?? position.answer ?? "";
-    const playedMoveSan = metadata?.playedMoveSan ?? "";
-    const pvSan = normalizeMistakeReviewMoveList(metadata?.pvSan);
-    const refutationSan = normalizeMistakeReviewMoveList(metadata?.refutationSan);
-    const cpLoss = metadata?.cpLoss ?? position.engine?.lossCp;
-    const winProbabilityDrop = metadata?.winProbabilityDrop;
-    const firstPvSan = pvSan[0] ?? "";
-    const correctionSan = bestMoveSan || firstPvSan;
-    const bestIsForcing = isMistakeReviewForcingSan(correctionSan);
-    const firstPvIsForcing = isMistakeReviewForcingSan(firstPvSan);
-    const playedIsForcing = isMistakeReviewForcingSan(playedMoveSan);
-    const forcingPvMoves = pvSan
-        .slice(0, MISTAKE_REVIEW_NATURE_PV_PLIES)
-        .filter(isMistakeReviewForcingSan);
-    const forcingRefutationMoves = refutationSan
-        .slice(0, MISTAKE_REVIEW_NATURE_PV_PLIES)
-        .filter(isMistakeReviewForcingSan);
-    const hasMateSignal = [
-        correctionSan,
-        playedMoveSan,
-        ...pvSan.slice(0, MISTAKE_REVIEW_NATURE_PV_PLIES),
-        ...refutationSan.slice(0, MISTAKE_REVIEW_NATURE_PV_PLIES),
-    ].some((move) => /#/.test(move));
-    const largeLoss = typeof cpLoss === "number" && cpLoss >= 180;
-    const sharpWinDrop = typeof winProbabilityDrop === "number" && winProbabilityDrop >= 12;
-    const missedScore =
-        (bestIsForcing ? 3 : 0) +
-        (!bestIsForcing && firstPvIsForcing ? 2 : 0) +
-        (forcingPvMoves.length >= 2 ? 2 : 0) +
-        (hasMateSignal && pvSan.some((move) => /#/.test(move)) ? 3 : 0) +
-        ((largeLoss || sharpWinDrop) && forcingPvMoves.length > 0 ? 1 : 0) +
-        (playedIsForcing && bestIsForcing ? 1 : 0);
-    const allowedScore =
-        (forcingRefutationMoves.length >= 1 && (largeLoss || sharpWinDrop) ? 2 : 0) +
-        (forcingRefutationMoves.length >= 2 ? 2 : 0) +
-        (hasMateSignal && refutationSan.some((move) => /#/.test(move)) ? 3 : 0);
-    const missedTactical = missedScore >= 4 || (missedScore >= 3 && (largeLoss || sharpWinDrop));
-    const allowedTactical = allowedScore >= 4 || (allowedScore >= 3 && (largeLoss || sharpWinDrop));
-    const allowedReason = forcingRefutationMoves.length
-        ? `opponent refutation has ${forcingRefutationMoves.length} forcing move${
-              forcingRefutationMoves.length === 1 ? "" : "s"
-          } early`
-        : "opponent refutation is not immediately forcing";
-    const missedReason =
-        bestIsForcing && correctionSan
-            ? `best move ${correctionSan} is forcing`
-            : forcingPvMoves.length
-              ? `best line has ${forcingPvMoves.length} forcing move${
-                    forcingPvMoves.length === 1 ? "" : "s"
-                } early`
-              : `${correctionSan ? `best move ${correctionSan}` : "best line"} is quiet`;
-
-    if (allowedTactical || missedTactical) {
-        const aspect =
-            allowedTactical && missedTactical ? "both" : allowedTactical ? "allowed" : "missed";
-        return {
-            nature: "tactical",
-            confidence: Math.max(allowedScore, missedScore) >= 5 ? "high" : "medium",
-            reason:
-                aspect === "allowed"
-                    ? `Allowed tactical resource: ${allowedReason}`
-                    : aspect === "missed"
-                      ? `Missed tactical resource: ${missedReason}`
-                      : `Allowed and missed tactical resources: ${allowedReason}`,
-            tacticalSignals: [
-                ...(allowedTactical ? [`Allowed: ${allowedReason}`] : []),
-                ...(missedTactical ? [`Missed: ${missedReason}`] : []),
-            ],
-            aspect,
-            allowedNature: allowedTactical ? "tactical" : "positional",
-            allowedReason,
-            missedNature: missedTactical ? "tactical" : "positional",
-            missedReason,
-        };
-    }
-
-    const quietCorrectionText = correctionSan
-        ? `best move ${correctionSan} is quiet`
-        : "engine correction is quiet";
-    return {
-        nature: "positional",
-        confidence: forcingPvMoves.length === 0 && !largeLoss && !sharpWinDrop ? "high" : "medium",
-        reason:
-            forcingPvMoves.length === 0
-                ? `${quietCorrectionText}; early PV has no checks, captures, or promotions.`
-                : `${quietCorrectionText}; only ${forcingPvMoves.length} forcing move${
-                      forcingPvMoves.length === 1 ? "" : "s"
-                  } appears early in the PV.`,
-        tacticalSignals: [],
-        aspect: refutationSan.length ? "both" : "missed",
-        allowedNature: "positional",
-        allowedReason,
-        missedNature: "positional",
-        missedReason,
-    };
+    return classifyMistakeReviewNature({
+        fen: position.fen,
+        bestMoveSan: metadata?.bestMoveSan ?? position.answer,
+        bestMoveUci: metadata?.bestMoveUci ?? position.answerUci,
+        playedMoveSan: metadata?.playedMoveSan,
+        playedMoveUci: metadata?.playedMoveUci,
+        pvSan: normalizeMistakeReviewMoveList(metadata?.pvSan),
+        pvUci: normalizeMistakeReviewMoveList(metadata?.pvUci),
+        refutationSan: normalizeMistakeReviewMoveList(metadata?.refutationSan),
+        refutationUci: normalizeMistakeReviewMoveList(metadata?.refutationUci),
+        cpLoss: metadata?.cpLoss ?? position.engine?.lossCp,
+        winProbabilityDrop: metadata?.winProbabilityDrop,
+        reachedDepth: metadata?.reachedDepth,
+    });
 }
 
 function inferMistakeReviewNatureAspect(
@@ -1656,6 +1577,7 @@ export function classifyMistakeReviewNature(
               refutationUci?: string[] | null;
               cpLoss?: number | null;
               winProbabilityDrop?: number | null;
+              reachedDepth?: number | null;
           },
 ): MistakeReviewNatureClassification {
     const cacheKey = getMistakeReviewNatureClassificationCacheKey(input);
@@ -1687,6 +1609,7 @@ function computeMistakeReviewNature(
               refutationUci?: string[] | null;
               cpLoss?: number | null;
               winProbabilityDrop?: number | null;
+              reachedDepth?: number | null;
           },
 ): MistakeReviewNatureClassification {
     const metadata = "mistakeReview" in input ? input.mistakeReview : undefined;
@@ -1730,26 +1653,15 @@ function computeMistakeReviewNature(
         ("winProbabilityDrop" in input ? input.winProbabilityDrop : undefined) ??
         metadata?.winProbabilityDrop ??
         undefined;
+    const reachedDepth =
+        ("reachedDepth" in input ? input.reachedDepth : undefined) ??
+        metadata?.reachedDepth ??
+        undefined;
     const firstPvSan = pvSan[0] ?? "";
     const correctionSan = bestMoveSan || firstPvSan;
-    const bestIsForcing = isMistakeReviewForcingSan(correctionSan);
-    const firstPvIsForcing = isMistakeReviewForcingSan(firstPvSan);
-    const playedIsForcing = isMistakeReviewForcingSan(playedMoveSan);
-    const forcingPvMoves = pvSan
-        .slice(0, MISTAKE_REVIEW_NATURE_PV_PLIES)
-        .filter(isMistakeReviewForcingSan);
-    const forcingRefutationMoves = refutationSan
-        .slice(0, MISTAKE_REVIEW_NATURE_PV_PLIES)
-        .filter(isMistakeReviewForcingSan);
-    const hasMateSignal = [
-        correctionSan,
-        playedMoveSan,
-        ...pvSan.slice(0, MISTAKE_REVIEW_NATURE_PV_PLIES),
-        ...refutationSan.slice(0, MISTAKE_REVIEW_NATURE_PV_PLIES),
-    ].some((move) => /#/.test(move));
     const largeLoss = typeof cpLoss === "number" && cpLoss >= 180;
     const sharpWinDrop = typeof winProbabilityDrop === "number" && winProbabilityDrop >= 12;
-    const tacticalSignals: string[] = [];
+    const sharpEvaluationSwing = largeLoss || sharpWinDrop;
     const allowedSignals = getMistakeReviewRefutationTacticalSignals(
         fen,
         playedMoveUci,
@@ -1761,82 +1673,47 @@ function computeMistakeReviewNature(
         ? allowedSignals
         : getMistakeReviewBoardTacticalSignals(fen, playedMoveUci, playedMoveSan);
     const missedSignals = getMistakeReviewMissedTacticalSignals(fen, bestMoveUci, pvUci, pvSan);
-
-    for (const signal of allowedBoardSignals) {
-        tacticalSignals.push(`Allowed: ${signal.reason}`);
-    }
-    for (const signal of missedSignals) {
-        tacticalSignals.push(`Missed: ${signal.reason}`);
-    }
-    if (bestIsForcing && correctionSan) {
-        tacticalSignals.push(`best move ${correctionSan} is forcing`);
-    }
-    if (!bestIsForcing && firstPvIsForcing && firstPvSan) {
-        tacticalSignals.push(`PV starts with forcing move ${firstPvSan}`);
-    }
-    if (forcingPvMoves.length >= 2) {
-        tacticalSignals.push(
-            `${forcingPvMoves.length} forcing moves in the first ${MISTAKE_REVIEW_NATURE_PV_PLIES} PV plies`,
-        );
-    }
-    if (forcingRefutationMoves.length > 0) {
-        tacticalSignals.push(
-            `opponent refutation starts with ${forcingRefutationMoves.length} forcing move${
-                forcingRefutationMoves.length === 1 ? "" : "s"
-            }`,
-        );
-    }
-    if (hasMateSignal) {
-        tacticalSignals.push("mate threat appears in the engine line");
-    }
-    if ((largeLoss || sharpWinDrop) && forcingPvMoves.length > 0) {
-        tacticalSignals.push("large evaluation swing with an immediate forcing line");
-    }
-    if (playedIsForcing && bestIsForcing && playedMoveSan) {
-        tacticalSignals.push(`game move ${playedMoveSan} was also forcing`);
-    }
-
-    const allowedScore =
-        allowedBoardSignals.reduce((score, signal) => score + signal.score, 0) +
-        (forcingRefutationMoves.length >= 1 && (largeLoss || sharpWinDrop) ? 2 : 0) +
-        (forcingRefutationMoves.length >= 2 ? 2 : 0) +
-        (hasMateSignal && refutationSan.some((move) => /#/.test(move)) ? 3 : 0);
-    const missedScore =
-        missedSignals.reduce((score, signal) => score + signal.score, 0) +
-        (bestIsForcing ? 3 : 0) +
-        (!bestIsForcing && firstPvIsForcing ? 2 : 0) +
-        (forcingPvMoves.length >= 2 ? 2 : 0) +
-        (forcingPvMoves.length >= 3 ? 1 : 0) +
-        (hasMateSignal && pvSan.some((move) => /#/.test(move)) ? 3 : 0) +
-        ((largeLoss || sharpWinDrop) && forcingPvMoves.length > 0 ? 1 : 0) +
-        (playedIsForcing && bestIsForcing ? 1 : 0);
-
-    const tacticalScore = allowedScore + missedScore;
-    const allowedTactical = allowedScore >= 4 || (allowedScore >= 3 && (largeLoss || sharpWinDrop));
-    const missedTactical = missedScore >= 4 || (missedScore >= 3 && (largeLoss || sharpWinDrop));
+    const allowedSanSignal = getMistakeReviewSanLineTacticalSignal(
+        refutationSan,
+        "opponent refutation",
+    );
+    const missedSanSignal = getMistakeReviewSanLineTacticalSignal(pvSan, "best line");
+    const allAllowedSignals = dedupeMistakeReviewTacticalSignals([
+        ...allowedBoardSignals,
+        ...(allowedSanSignal ? [allowedSanSignal] : []),
+    ]);
+    const allMissedSignals = dedupeMistakeReviewTacticalSignals([
+        ...missedSignals,
+        ...(missedSanSignal ? [missedSanSignal] : []),
+    ]);
+    const strongestAllowedSignal = getStrongestMistakeReviewTacticalSignal(allAllowedSignals);
+    const strongestMissedSignal = getStrongestMistakeReviewTacticalSignal(allMissedSignals);
+    const allowedScore = strongestAllowedSignal?.score ?? 0;
+    const missedScore = strongestMissedSignal?.score ?? 0;
+    const allowedTactical = allowedScore >= 4 || (allowedScore >= 3 && sharpEvaluationSwing);
+    const missedTactical = missedScore >= 4 || (missedScore >= 3 && sharpEvaluationSwing);
     const allowedReason =
-        allowedBoardSignals[0]?.reason ??
-        (forcingRefutationMoves.length
-            ? `opponent refutation has ${forcingRefutationMoves.length} forcing move${
-                  forcingRefutationMoves.length === 1 ? "" : "s"
-              } early`
-            : "opponent refutation is not immediately forcing");
+        strongestAllowedSignal?.reason ??
+        "opponent refutation has no verified immediate material, mating, promotion, or forcing-threat outcome";
     const missedReason =
-        missedSignals[0]?.reason ??
-        (bestIsForcing && correctionSan
-            ? `best move ${correctionSan} is forcing`
-            : forcingPvMoves.length
-              ? `best line has ${forcingPvMoves.length} forcing move${
-                    forcingPvMoves.length === 1 ? "" : "s"
-                } early`
-              : `${correctionSan ? `best move ${correctionSan}` : "best line"} is quiet`);
+        strongestMissedSignal?.reason ??
+        `${correctionSan ? `best move ${correctionSan}` : "best line"} has no verified immediate material, mating, promotion, or forcing-threat outcome`;
+    const tacticalSignals = [
+        ...allAllowedSignals.map((signal) => `Allowed: ${signal.reason}`),
+        ...allMissedSignals.map((signal) => `Missed: ${signal.reason}`),
+    ];
 
     if (allowedTactical || missedTactical) {
-        const strongestSignal = [...allowedBoardSignals, ...missedSignals].sort(
-            (a, b) => b.score - a.score,
-        )[0];
+        const strongestSignal = getStrongestMistakeReviewTacticalSignal([
+            ...allAllowedSignals,
+            ...allMissedSignals,
+        ]);
         const aspect =
             allowedTactical && missedTactical ? "both" : allowedTactical ? "allowed" : "missed";
+        const quietDefensiveCorrection =
+            aspect === "allowed" && correctionSan && !isMistakeReviewForcingSan(correctionSan)
+                ? ` Quiet best move ${correctionSan} is tactically motivated because it prevents that concrete outcome.`
+                : "";
         return {
             nature: "tactical",
             confidence:
@@ -1844,10 +1721,10 @@ function computeMistakeReviewNature(
                 (Math.max(allowedScore, missedScore) >= 6 ? "high" : "medium"),
             reason:
                 aspect === "allowed"
-                    ? `Allowed tactical resource: ${allowedReason}`
+                    ? `Allowed tactical resource: ${allowedReason}.${quietDefensiveCorrection}`
                     : aspect === "missed"
                       ? `Missed tactical resource: ${missedReason}`
-                      : `Allowed and missed tactical resources: ${allowedReason}`,
+                      : `Allowed tactical resource: ${allowedReason}. Missed tactical resource: ${missedReason}`,
             tacticalSignals,
             aspect,
             allowedNature: allowedTactical ? "tactical" : "positional",
@@ -1857,43 +1734,23 @@ function computeMistakeReviewNature(
         };
     }
 
-    if (tacticalScore >= 3 && (largeLoss || sharpWinDrop)) {
-        const aspect = allowedScore > missedScore ? "allowed" : "missed";
-        return {
-            nature: "tactical",
-            confidence: "medium",
-            reason:
-                aspect === "allowed"
-                    ? `Allowed tactical resource: ${allowedReason}`
-                    : `Missed tactical resource: ${missedReason}`,
-            tacticalSignals,
-            aspect,
-            allowedNature: allowedScore >= 3 ? "tactical" : "positional",
-            allowedReason,
-            missedNature: missedScore >= 3 ? "tactical" : "positional",
-            missedReason,
-        };
-    }
-
-    const quietCorrectionText = correctionSan
-        ? `best move ${correctionSan} is quiet`
-        : "engine correction is quiet";
-    const reason =
-        forcingPvMoves.length === 0
-            ? `${quietCorrectionText}; early PV has no checks, captures, or promotions.`
-            : `${quietCorrectionText}; only ${forcingPvMoves.length} forcing move${
-                  forcingPvMoves.length === 1 ? "" : "s"
-              } appears early in the PV.`;
+    const positionalAssessment = getMistakeReviewPositionalAssessment({
+        fen,
+        playedMoveUci,
+        correctionSan,
+        pvSan,
+        pvUci,
+        refutationSan,
+        refutationUci,
+        reachedDepth,
+        strongestTacticalScore: Math.max(allowedScore, missedScore),
+        sharpEvaluationSwing,
+    });
 
     return {
         nature: "positional",
-        confidence:
-            forcingPvMoves.length === 0 && !largeLoss && !sharpWinDrop
-                ? "high"
-                : forcingPvMoves.length <= 1
-                  ? "medium"
-                  : "low",
-        reason,
+        confidence: positionalAssessment.confidence,
+        reason: positionalAssessment.reason,
         tacticalSignals,
         aspect: refutationSan.length || refutationUci.length ? "both" : "missed",
         allowedNature: "positional",
@@ -1919,6 +1776,7 @@ function getMistakeReviewNatureClassificationCacheKey(
               refutationUci?: string[] | null;
               cpLoss?: number | null;
               winProbabilityDrop?: number | null;
+              reachedDepth?: number | null;
           },
 ) {
     const metadata = "mistakeReview" in input ? input.mistakeReview : undefined;
@@ -1938,6 +1796,7 @@ function getMistakeReviewNatureClassificationCacheKey(
         list(field("refutationUci") ?? metadata?.refutationUci),
         field("cpLoss") ?? metadata?.cpLoss ?? "",
         field("winProbabilityDrop") ?? metadata?.winProbabilityDrop ?? "",
+        field("reachedDepth") ?? metadata?.reachedDepth ?? "",
     ]);
 }
 
@@ -2207,6 +2066,165 @@ type MistakeReviewBoardTacticalSignal = {
     confidence: MistakeReviewNatureConfidence;
 };
 
+function getMistakeReviewSanLineTacticalSignal(
+    moves: string[],
+    lineLabel: string,
+): MistakeReviewBoardTacticalSignal | null {
+    const line = moves.slice(0, MISTAKE_REVIEW_NATURE_PV_PLIES).map((move) => move.trim());
+    const firstMove = line[0];
+    if (!firstMove) return null;
+
+    const firstMoveIsQuiet = !isMistakeReviewForcingSan(firstMove);
+    const actorMoves = line.filter((_, index) => index % 2 === 0);
+    const actorMateIndex = line.findIndex((move, index) => index % 2 === 0 && /#/.test(move));
+    if (actorMateIndex >= 0) {
+        return {
+            reason: firstMoveIsQuiet
+                ? `${lineLabel} begins with quiet ${firstMove}, which is tactically motivated because the continuation reaches mate within ${actorMateIndex + 1} plies`
+                : `${lineLabel} beginning ${firstMove} reaches mate within ${actorMateIndex + 1} plies`,
+            score: 8,
+            confidence: "high",
+        };
+    }
+
+    const actorPromotionIndex = line.findIndex((move, index) => index % 2 === 0 && /=/.test(move));
+    if (actorPromotionIndex >= 0) {
+        return {
+            reason: firstMoveIsQuiet
+                ? `${lineLabel} begins with quiet ${firstMove}, which is tactically motivated because it prepares promotion within ${actorPromotionIndex + 1} plies`
+                : `${lineLabel} beginning ${firstMove} reaches promotion within ${actorPromotionIndex + 1} plies`,
+            score: 6,
+            confidence: "high",
+        };
+    }
+
+    const forcingMoves = line.filter(isMistakeReviewForcingSan);
+    if (/[+#]/.test(firstMove)) {
+        return {
+            reason:
+                forcingMoves.length >= 2
+                    ? `${lineLabel} begins with immediate check ${firstMove} and contains ${forcingMoves.length} forcing moves within ${line.length} plies`
+                    : `${lineLabel} begins with immediate check ${firstMove}, but the supplied line does not verify a concrete follow-up`,
+            score: forcingMoves.length >= 2 ? 5 : 3,
+            confidence: forcingMoves.length >= 2 ? "high" : "medium",
+        };
+    }
+
+    const laterActorCheck = actorMoves.slice(1).find((move) => /[+#]/.test(move));
+    if (firstMoveIsQuiet && laterActorCheck && forcingMoves.length >= 2) {
+        return {
+            reason: `${lineLabel} begins with quiet ${firstMove}, which is tactically motivated because it prepares the concrete continuation ${laterActorCheck}`,
+            score: forcingMoves.length >= 3 ? 4 : 3,
+            confidence: "medium",
+        };
+    }
+
+    if (
+        /x/.test(firstMove) &&
+        forcingMoves.length >= 3 &&
+        line.some((move) => /[+#=]/.test(move))
+    ) {
+        return {
+            reason: `${lineLabel} beginning ${firstMove} forms a concrete sequence with ${forcingMoves.length} forcing moves`,
+            score: 4,
+            confidence: "medium",
+        };
+    }
+
+    return null;
+}
+
+function dedupeMistakeReviewTacticalSignals(signals: MistakeReviewBoardTacticalSignal[]) {
+    const byReason = new Map<string, MistakeReviewBoardTacticalSignal>();
+    for (const signal of signals) {
+        const previous = byReason.get(signal.reason);
+        if (!previous || signal.score > previous.score) byReason.set(signal.reason, signal);
+    }
+    return Array.from(byReason.values()).sort((a, b) => b.score - a.score);
+}
+
+function getStrongestMistakeReviewTacticalSignal(signals: MistakeReviewBoardTacticalSignal[]) {
+    return signals.reduce<MistakeReviewBoardTacticalSignal | undefined>(
+        (strongest, signal) => (!strongest || signal.score > strongest.score ? signal : strongest),
+        undefined,
+    );
+}
+
+function getMistakeReviewPositionalAssessment(input: {
+    fen: string;
+    playedMoveUci: string;
+    correctionSan: string;
+    pvSan: string[];
+    pvUci: string[];
+    refutationSan: string[];
+    refutationUci: string[];
+    reachedDepth?: number;
+    strongestTacticalScore: number;
+    sharpEvaluationSwing: boolean;
+}): { confidence: MistakeReviewNatureConfidence; reason: string } {
+    const [position] = positionFromFen(input.fen);
+    const bestLegalPlies = position ? getMistakeReviewLegalLinePlies(position, input.pvUci) : 0;
+    const playedContext = getMistakeReviewPlayedMoveContext(input.fen, input.playedMoveUci);
+    const refutationLegalPlies = playedContext
+        ? getMistakeReviewLegalLinePlies(playedContext.after, input.refutationUci)
+        : 0;
+    const hasTextLine = input.pvSan.length >= 4 || input.refutationSan.length >= 4;
+    const hasVerifiedLine = bestLegalPlies >= 2 || refutationLegalPlies >= 2;
+    const bestExpectedPlies = Math.min(input.pvUci.length, MISTAKE_REVIEW_NATURE_PV_PLIES);
+    const refutationExpectedPlies = Math.min(
+        input.refutationUci.length,
+        MISTAKE_REVIEW_NATURE_PV_PLIES,
+    );
+    const hasCompleteVerifiedLines =
+        bestExpectedPlies >= 4 &&
+        refutationExpectedPlies >= 4 &&
+        bestLegalPlies === bestExpectedPlies &&
+        refutationLegalPlies === refutationExpectedPlies;
+    const depthIsReliable = typeof input.reachedDepth === "number" && input.reachedDepth >= 14;
+    const hasEnoughEvidence = Boolean(input.correctionSan) && (hasTextLine || hasVerifiedLine);
+
+    if (!hasEnoughEvidence) {
+        return {
+            confidence: "low",
+            reason: "Insufficient engine-line evidence to verify an immediate tactic; provisionally classified as positional with low confidence.",
+        };
+    }
+
+    const mixedEvidence = input.strongestTacticalScore > 0 || input.sharpEvaluationSwing;
+    const confidence: MistakeReviewNatureConfidence =
+        hasCompleteVerifiedLines && depthIsReliable && !mixedEvidence
+            ? "high"
+            : mixedEvidence
+              ? "low"
+              : "medium";
+    const correctionText = input.correctionSan
+        ? `Best move ${input.correctionSan}`
+        : "The best line";
+    const evidenceText = hasCompleteVerifiedLines
+        ? "Across the verified tactical window"
+        : "In the supplied engine line";
+    const mixedText = mixedEvidence
+        ? " Concrete activity or a sharp evaluation swing remains, so the positional label is provisional rather than proof that no deeper tactic exists."
+        : "";
+
+    return {
+        confidence,
+        reason: `${correctionText} has no verified material or mating outcome and no immediate evaluation-relevant forcing threat. ${evidenceText}, positional considerations such as structure, activity, king safety, space, exchanges, or plans therefore determine the remaining decision.${mixedText}`,
+    };
+}
+
+function getMistakeReviewLegalLinePlies(position: Chess, lineUci: string[]) {
+    const replay = position.clone();
+    let plies = 0;
+    for (const moveText of lineUci.slice(0, MISTAKE_REVIEW_NATURE_PV_PLIES)) {
+        const move = parseUci(moveText);
+        if (!move || !isNormal(move) || !replay.isLegal(move)) break;
+        replay.play(move);
+        plies += 1;
+    }
+    return plies;
+}
+
 type MistakeReviewPlayedMoveContext = {
     after: Chess;
     playerColor: Color;
@@ -2224,6 +2242,7 @@ function getMistakeReviewBoardTacticalSignals(
     if (!context) return [];
 
     const signals = [
+        getMistakeReviewImmediateMateSignal(context),
         getMistakeReviewImmediateMaterialSignal(context),
         getMistakeReviewForkSignal(context),
     ].filter((signal): signal is MistakeReviewBoardTacticalSignal => Boolean(signal));
@@ -2281,6 +2300,14 @@ function getMistakeReviewLineTacticalSignals(
 ): MistakeReviewBoardTacticalSignal[] {
     const signals: MistakeReviewBoardTacticalSignal[] = [];
     let position = context.after.clone();
+    const startingActorMaterial = getMistakeReviewMaterialAdvantage(
+        position,
+        context.opponentColor,
+    );
+    let replayedPlies = 0;
+    let actorMoveCount = 0;
+    let firstActorMoveText = "";
+    let firstActorMoveWasQuiet = false;
 
     for (let ply = 0; ply < Math.min(lineUci.length, MISTAKE_REVIEW_NATURE_PV_PLIES); ply += 1) {
         const move = parseUci(lineUci[ply]);
@@ -2295,9 +2322,15 @@ function getMistakeReviewLineTacticalSignals(
         after.play(move);
 
         if (movedPiece.color === context.opponentColor) {
+            actorMoveCount += 1;
             const moveText =
                 lineSan[ply]?.trim() ||
                 formatMistakeReviewMoveSquares(move.from, move.to, Boolean(capturedPiece));
+            const moveWasQuiet = !isMistakeReviewForcingSan(moveText);
+            if (actorMoveCount === 1) {
+                firstActorMoveText = moveText;
+                firstActorMoveWasQuiet = moveWasQuiet;
+            }
             const materialSignal = getMistakeReviewMaterialCaptureSignalForMove(
                 context,
                 after,
@@ -2325,15 +2358,65 @@ function getMistakeReviewLineTacticalSignals(
                 moveText,
                 reasonPrefix,
             );
-            if (materialSignal) signals.push(materialSignal);
-            if (forkSignal) signals.push(forkSignal);
-            if (threatSignal) signals.push(threatSignal);
+            const mateThreatSignal =
+                actorMoveCount === 1 && moveWasQuiet
+                    ? getMistakeReviewMateThreatSignalForMove(
+                          after,
+                          movedPiece.color,
+                          moveText,
+                          reasonPrefix,
+                      )
+                    : null;
+            for (const signal of [materialSignal, forkSignal, threatSignal, mateThreatSignal]) {
+                if (!signal) continue;
+                signals.push(
+                    actorMoveCount === 1 && moveWasQuiet && signal !== mateThreatSignal
+                        ? {
+                              ...signal,
+                              reason: `quiet ${moveText} is tactically motivated: ${signal.reason}`,
+                          }
+                        : signal,
+                );
+            }
         }
 
         position = after;
+        replayedPlies += 1;
     }
 
-    return signals.sort((a, b) => b.score - a.score);
+    if (replayedPlies > 0) {
+        const actorMaterialGain =
+            getMistakeReviewMaterialAdvantage(position, context.opponentColor) -
+            startingActorMaterial;
+        const quietMotivation = firstActorMoveWasQuiet && firstActorMoveText;
+        if (position.isCheckmate() && position.turn === context.playerColor) {
+            signals.push({
+                reason: quietMotivation
+                    ? `${reasonPrefix} begins with quiet ${firstActorMoveText}, which is tactically motivated because the verified line ends in mate within ${replayedPlies} plies`
+                    : `${reasonPrefix} ends in mate within ${replayedPlies} plies`,
+                score: 9,
+                confidence: "high",
+            });
+        } else if (actorMaterialGain >= 2) {
+            signals.push({
+                reason: quietMotivation
+                    ? `${reasonPrefix} begins with quiet ${firstActorMoveText}, which is tactically motivated because the verified line wins about ${formatMistakeReviewMaterialPoints(actorMaterialGain)} of material within ${replayedPlies} plies`
+                    : `${reasonPrefix} wins about ${formatMistakeReviewMaterialPoints(actorMaterialGain)} of material within ${replayedPlies} plies`,
+                score: 5 + Math.min(actorMaterialGain, 4),
+                confidence: "high",
+            });
+        } else if (actorMaterialGain >= 1) {
+            signals.push({
+                reason: quietMotivation
+                    ? `${reasonPrefix} begins with quiet ${firstActorMoveText}, which may be tactically motivated because the verified line wins a pawn within ${replayedPlies} plies`
+                    : `${reasonPrefix} wins a pawn within ${replayedPlies} plies`,
+                score: 3,
+                confidence: "medium",
+            });
+        }
+    }
+
+    return dedupeMistakeReviewTacticalSignals(signals);
 }
 
 function getMistakeReviewPlayedMoveContext(
@@ -2360,6 +2443,71 @@ function getMistakeReviewPlayedMoveContext(
         movedTo: move.to,
         playedMoveText: playedMoveSan?.trim() || `${makeSquare(move.from)}-${makeSquare(move.to)}`,
     };
+}
+
+function getMistakeReviewImmediateMateSignal(
+    context: MistakeReviewPlayedMoveContext,
+): MistakeReviewBoardTacticalSignal | null {
+    for (const [from, dests] of context.after.allDests()) {
+        const attacker = context.after.board.get(from);
+        if (!attacker || attacker.color !== context.opponentColor) continue;
+
+        for (const to of dests) {
+            const response = makeMistakeReviewNormalMove(attacker, from, to);
+            const after = context.after.clone();
+            after.play(response);
+            if (!after.isCheckmate()) continue;
+
+            const responseText = formatMistakeReviewMoveSquares(
+                from,
+                to,
+                Boolean(context.after.board.get(to)),
+            );
+            return {
+                reason: `played ${context.playedMoveText} allows immediate mate by ${responseText}`,
+                score: 9,
+                confidence: "high",
+            };
+        }
+    }
+
+    return null;
+}
+
+function getMistakeReviewMateThreatSignalForMove(
+    after: Chess,
+    attackerColor: Color,
+    moveText: string,
+    reasonPrefix: string,
+): MistakeReviewBoardTacticalSignal | null {
+    const threatPosition = after.clone();
+    threatPosition.turn = attackerColor;
+    threatPosition.epSquare = undefined;
+
+    for (const [from, dests] of threatPosition.allDests()) {
+        const attacker = threatPosition.board.get(from);
+        if (!attacker || attacker.color !== attackerColor) continue;
+
+        for (const to of dests) {
+            const threatMove = makeMistakeReviewNormalMove(attacker, from, to);
+            const threatAfter = threatPosition.clone();
+            threatAfter.play(threatMove);
+            if (!threatAfter.isCheckmate()) continue;
+
+            const threatText = formatMistakeReviewMoveSquares(
+                from,
+                to,
+                Boolean(threatPosition.board.get(to)),
+            );
+            return {
+                reason: `${reasonPrefix} quiet ${moveText} is tactically motivated because it creates the immediate mate threat ${threatText}`,
+                score: 7,
+                confidence: "high",
+            };
+        }
+    }
+
+    return null;
 }
 
 function getMistakeReviewImmediateMaterialSignal(
@@ -2698,6 +2846,21 @@ function getMistakeReviewPseudoAttackers(position: Chess, targetSquare: Square, 
     }
 
     return attackers;
+}
+
+function getMistakeReviewMaterialAdvantage(position: Chess, color: Color) {
+    let balance = 0;
+    for (const [, piece] of position.board) {
+        if (piece.role === "king") continue;
+        const value = mistakeReviewPieceValue(piece.role);
+        balance += piece.color === color ? value : -value;
+    }
+    return balance;
+}
+
+function formatMistakeReviewMaterialPoints(points: number) {
+    const rounded = Math.round(points * 10) / 10;
+    return `${rounded} ${rounded === 1 ? "point" : "points"}`;
 }
 
 function mistakeReviewPieceValue(role: Role) {
