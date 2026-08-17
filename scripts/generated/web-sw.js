@@ -1,4 +1,4 @@
-const BUILD_ID = "2026-08-16-pc-stats-sync";
+const BUILD_ID = "__EN_CROISSANT_BUILD_ID__";
 const CACHE_NAME = `en-croissant-web-${BUILD_ID}`;
 const APP_BASE = new URL(self.registration.scope).pathname;
 const APP_SHELL = [APP_BASE, `${APP_BASE}manifest.webmanifest`, `${APP_BASE}logo.png`];
