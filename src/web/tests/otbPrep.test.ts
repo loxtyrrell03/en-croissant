@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { getGamesForWebPrepSource } from "../prepIndex";
-import { applyWebOtbPrepCompletion, shouldOpenWebOtbPrep } from "../otbPrep";
+import {
+    applyWebOtbPrepCompletion,
+    shouldOpenWebOtbPrep,
+    shouldSelectWebPrepPanel,
+} from "../otbPrep";
 import { parsePgnDatabase } from "../pgn";
 import { createEmptyWebState } from "../storage";
 import type { WebOtbImportJob } from "../otbImport";
@@ -120,5 +124,12 @@ describe("OTB completion Prep handoff", () => {
         expect(shouldOpenWebOtbPrep(job, null, job.id)).toBe(false);
         expect(shouldOpenWebOtbPrep(job, job.id, null)).toBe(false);
         expect(shouldOpenWebOtbPrep({ ...job, status: "running" }, null, null)).toBe(false);
+    });
+
+    it("selects the Prep panel when an active workspace is restored or changes", () => {
+        expect(shouldSelectWebPrepPanel(null, "prep-otb-complete")).toBe(true);
+        expect(shouldSelectWebPrepPanel("prep-old", "prep-otb-complete")).toBe(true);
+        expect(shouldSelectWebPrepPanel("prep-otb-complete", "prep-otb-complete")).toBe(false);
+        expect(shouldSelectWebPrepPanel("prep-otb-complete", null)).toBe(false);
     });
 });

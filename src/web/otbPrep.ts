@@ -26,6 +26,13 @@ export function shouldOpenWebOtbPrep(
     );
 }
 
+export function shouldSelectWebPrepPanel(
+    previousActivePrepId: string | null,
+    activePrepId: string | null,
+) {
+    return Boolean(activePrepId && activePrepId !== previousActivePrepId);
+}
+
 export function applyWebOtbPrepCompletion(
     state: WebCompanionState,
     job: WebOtbImportJob,

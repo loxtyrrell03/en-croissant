@@ -299,7 +299,11 @@ import {
   type WebOtbImportedGame,
   type WebOtbImportJob,
 } from "./otbImport";
-import { applyWebOtbPrepCompletion, shouldOpenWebOtbPrep } from "./otbPrep";
+import {
+  applyWebOtbPrepCompletion,
+  shouldOpenWebOtbPrep,
+  shouldSelectWebPrepPanel,
+} from "./otbPrep";
 
 type ViewMode = "board" | "stats" | "files";
 type BoardPanelMode = "moves" | "online" | "database" | "prep" | "engine" | "coach";
@@ -629,6 +633,15 @@ export default function WebApp() {
     () => state.prepWorkspaces.find((prep) => prep.id === state.activePrepId) ?? null,
     [state.activePrepId, state.prepWorkspaces],
   );
+  const activePrepId = activePrep?.id ?? null;
+  const previousActivePrepId = useRef<string | null>(null);
+  useEffect(() => {
+    if (shouldSelectWebPrepPanel(previousActivePrepId.current, activePrepId)) {
+      setBoardPanelMode("prep");
+    }
+    previousActivePrepId.current = activePrepId;
+  }, [activePrepId]);
+
   const loadGameOnBoard = useCallback(
     (game: WebGame, options: { cursor?: number; orientation?: WebColor } = {}) => {
       setState((current) => ({
