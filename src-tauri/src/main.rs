@@ -1,0 +1,392 @@
+#![cfg_attr(
+    all(not(debug_assertions), target_os = "windows"),
+    windows_subsystem = "windows"
+)]
+
+mod chess;
+mod coach;
+mod coach_persistence;
+mod db;
+mod engine;
+mod error;
+mod game;
+
+mod fs;
+mod lexer;
+mod oauth;
+mod opening;
+mod otb_import;
+mod pgn;
+mod progress;
+mod puzzle;
+mod sound;
+
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+
+use chess::{BestMovesPayload, EngineProcess};
+use dashmap::DashMap;
+use db::{DatabaseProgress, GameQuery, NormalizedGame, PlanExplorerData, PositionStats};
+use derivative::Derivative;
+use game::GameManager;
+use progress::{clear_progress, get_progress, ProgressEvent, ProgressStore};
+
+use log::LevelFilter;
+#[cfg(debug_assertions)]
+use specta_typescript::{BigIntExportBehavior, Typescript};
+use sysinfo::SystemExt;
+use tauri::{AppHandle, Manager, Runtime, WebviewWindow, Window};
+use tauri_plugin_log::{Target, TargetKind};
+
+use crate::chess::{
+    analyze_game, cancel_analysis, get_engine_config, get_engine_logs,
+    get_mistake_review_clock_timings, get_mistake_review_sample_line, kill_engine, kill_engines,
+    scan_mistake_review, score_mistake_review_move, set_mistake_review_scan_paused, stop_engine,
+    stop_interactive_engines, stop_matching_engine, MistakeReviewScanProgress,
+};
+use crate::coach::{ask_ai_coach, ask_plan_coach};
+use crate::coach_persistence::{
+    read_ai_coach_sidecar, remove_ai_coach_sidecar_record, upsert_ai_coach_sidecar_record,
+};
+use crate::db::{
+    cancel_database_search, clear_games, convert_pgn, create_indexes, delete_database,
+    delete_db_game, delete_empty_games, delete_indexes, export_to_pgn, find_repertoire_gaps,
+    get_database_clock_coverage, get_mistake_review_game_metadata, get_most_common_player,
+    get_opening_health_player_positions, get_plan_explorer, get_player, get_players_game_info,
+    get_tournaments, move_database, preload_reference_db, replace_database_from_pgn,
+    search_position, set_database_search_paused, MmapSearchIndex,
+};
+use crate::game::{
+    abort_game, get_game_engine_logs, get_game_state, make_game_move, resign_game, start_game,
+    take_back_game_move, ClockUpdateEvent, GameMoveEvent, GameOverEvent,
+};
+
+use crate::fs::set_file_as_executable;
+use crate::lexer::lex_pgn;
+use crate::oauth::authenticate;
+use crate::otb_import::{cancel_otb_games, collect_otb_games, OtbImportProgress};
+use crate::pgn::{count_pgn_games, delete_game, read_games, split_pgn_to_files, write_game};
+use crate::puzzle::{
+    delete_puzzle_database, export_blindfold_puzzle_progress, export_puzzle_progress,
+    get_blindfold_puzzle_dashboard, get_blindfold_puzzle_progress, get_blindfold_training_puzzle,
+    get_puzzle, get_puzzle_dashboard, get_puzzle_db_info, get_puzzle_progress, get_puzzle_themes,
+    get_themes_for_puzzle, get_training_puzzle, record_blindfold_puzzle_attempt,
+    record_puzzle_attempt, reset_blindfold_puzzle_progress, reset_puzzle_progress,
+};
+use crate::sound::get_sound_server_port;
+use crate::{
+    chess::get_best_moves,
+    db::{
+        delete_duplicated_games, edit_db_info, get_db_info, get_games, get_players, merge_players,
+        write_db_game,
+    },
+    fs::{download_file, file_exists, get_file_metadata},
+    opening::{
+        get_opening_from_fen, get_opening_from_fens, get_opening_from_name, search_opening_name,
+    },
+};
+use en_croissant_fork::local_eval::{
+    self, LocalEvalBuildProgress, LocalEvalBuildReport, LocalEvalBuildRequest, LocalEvalDbStatus,
+    LocalLichessCloudEval,
+};
+use std::sync::atomic::AtomicBool;
+use tokio::sync::Semaphore;
+
+#[derive(Derivative)]
+#[derivative(Default)]
+pub struct AppState {
+    connection_pool: DashMap<
+        String,
+        diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::SqliteConnection>>,
+    >,
+    line_cache: DashMap<(GameQuery, PathBuf), (Vec<PositionStats>, Vec<NormalizedGame>)>,
+    plan_explorer_cache: DashMap<(GameQuery, PathBuf, i32), PlanExplorerData>,
+    db_cache: Mutex<Vec<(PathBuf, MmapSearchIndex)>>,
+    #[derivative(Default(value = "Arc::new(Semaphore::new(2))"))]
+    new_request: Arc<Semaphore>,
+    #[derivative(Default(value = "DashMap::new()"))]
+    search_collisions: DashMap<(GameQuery, PathBuf), Arc<tokio::sync::Mutex<()>>>,
+    db_cancel_flags: DashMap<String, Arc<AtomicBool>>,
+    db_pause_flags: DashMap<String, Arc<AtomicBool>>,
+    pgn_offsets: DashMap<String, Vec<u64>>,
+    // Databases with a PGN conversion currently writing to them; guards
+    // against concurrent journal-less imports into the same file.
+    active_conversions: DashMap<String, ()>,
+
+    engine_processes: DashMap<(String, String), Arc<tokio::sync::Mutex<EngineProcess>>>,
+    analysis_cancel_flags: DashMap<String, Arc<AtomicBool>>,
+    analysis_pause_flags: DashMap<String, Arc<AtomicBool>>,
+    ui_engine_cancel_flags: DashMap<String, Arc<AtomicBool>>,
+    game_manager: GameManager,
+    progress_state: ProgressStore,
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn close_splashscreen(window: Window) -> Result<(), String> {
+    let main_window = window
+        .get_webview_window("main")
+        .ok_or_else(|| "no window labeled 'main' found".to_string())?;
+    reveal_window(&main_window);
+    Ok(())
+}
+
+fn reveal_main_window<R: Runtime>(app: &AppHandle<R>) {
+    let Some(window) = app.get_webview_window("main") else {
+        log::warn!("Could not reveal main window because it was not found");
+        return;
+    };
+
+    reveal_window(&window);
+}
+
+fn reveal_window<R: Runtime>(window: &WebviewWindow<R>) {
+    if let Err(error) = window.show() {
+        log::warn!("Could not show main window: {error}");
+    }
+
+    if let Err(error) = window.unminimize() {
+        log::warn!("Could not unminimize main window: {error}");
+    }
+
+    if let Err(error) = window.set_focus() {
+        log::warn!("Could not focus main window: {error}");
+    }
+}
+
+fn main() {
+    let specta_builder = tauri_specta::Builder::new()
+        .commands(tauri_specta::collect_commands!(
+            close_splashscreen,
+            get_best_moves,
+            lookup_local_lichess_cloud_eval,
+            get_local_lichess_eval_db_status,
+            build_local_lichess_eval_db,
+            analyze_game,
+            scan_mistake_review,
+            get_mistake_review_game_metadata,
+            get_mistake_review_clock_timings,
+            score_mistake_review_move,
+            get_mistake_review_sample_line,
+            set_mistake_review_scan_paused,
+            cancel_analysis,
+            stop_interactive_engines,
+            stop_engine,
+            stop_matching_engine,
+            kill_engine,
+            kill_engines,
+            get_engine_logs,
+            ask_ai_coach,
+            ask_plan_coach,
+            read_ai_coach_sidecar,
+            upsert_ai_coach_sidecar_record,
+            remove_ai_coach_sidecar_record,
+            memory_size,
+            get_puzzle,
+            get_puzzle_progress,
+            get_blindfold_puzzle_progress,
+            get_training_puzzle,
+            get_blindfold_training_puzzle,
+            record_puzzle_attempt,
+            record_blindfold_puzzle_attempt,
+            get_puzzle_dashboard,
+            get_blindfold_puzzle_dashboard,
+            reset_puzzle_progress,
+            reset_blindfold_puzzle_progress,
+            export_puzzle_progress,
+            export_blindfold_puzzle_progress,
+            search_opening_name,
+            get_opening_from_fen,
+            get_opening_from_fens,
+            get_opening_from_name,
+            get_players_game_info,
+            get_engine_config,
+            file_exists,
+            get_file_metadata,
+            merge_players,
+            convert_pgn,
+            replace_database_from_pgn,
+            get_player,
+            get_most_common_player,
+            collect_otb_games,
+            cancel_otb_games,
+            count_pgn_games,
+            read_games,
+            split_pgn_to_files,
+            lex_pgn,
+            is_bmi2_compatible,
+            delete_game,
+            delete_duplicated_games,
+            get_database_clock_coverage,
+            delete_empty_games,
+            clear_games,
+            set_file_as_executable,
+            delete_indexes,
+            create_indexes,
+            edit_db_info,
+            delete_db_game,
+            write_db_game,
+            delete_database,
+            move_database,
+            export_to_pgn,
+            authenticate,
+            write_game,
+            download_file,
+            get_tournaments,
+            get_db_info,
+            get_games,
+            find_repertoire_gaps,
+            get_opening_health_player_positions,
+            cancel_database_search,
+            set_database_search_paused,
+            get_plan_explorer,
+            search_position,
+            get_players,
+            get_puzzle_db_info,
+            get_puzzle_themes,
+            get_themes_for_puzzle,
+            delete_puzzle_database,
+            start_game,
+            get_game_state,
+            make_game_move,
+            take_back_game_move,
+            resign_game,
+            abort_game,
+            get_game_engine_logs,
+            preload_reference_db,
+            get_progress,
+            clear_progress,
+            get_sound_server_port
+        ))
+        .events(tauri_specta::collect_events!(
+            BestMovesPayload,
+            DatabaseProgress,
+            MistakeReviewScanProgress,
+            ProgressEvent,
+            LocalEvalBuildProgress,
+            OtbImportProgress,
+            GameMoveEvent,
+            ClockUpdateEvent,
+            GameOverEvent
+        ));
+
+    #[cfg(debug_assertions)]
+    specta_builder
+        .export(
+            Typescript::default().bigint(BigIntExportBehavior::BigInt),
+            "../src/bindings/generated.ts",
+        )
+        .expect("Failed to export types");
+
+    #[cfg(debug_assertions)]
+    let log_targets = [TargetKind::Stdout, TargetKind::Webview];
+
+    #[cfg(not(debug_assertions))]
+    let log_targets = [
+        TargetKind::Stdout,
+        TargetKind::LogDir {
+            file_name: Some(String::from("en-croissant.log")),
+        },
+    ];
+
+    tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            reveal_main_window(app);
+        }))
+        .plugin(tauri_plugin_window_state::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
+        .plugin(
+            tauri_plugin_log::Builder::default()
+                .targets(log_targets.map(Target::new))
+                .level(LevelFilter::Info)
+                .build(),
+        )
+        .invoke_handler(specta_builder.invoke_handler())
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_os::init())
+        .setup(move |app| {
+            log::info!("Setting up application");
+
+            // #[cfg(any(windows, target_os = "macos"))]
+            // set_shadow(&app.get_webview_window("main").unwrap(), true).unwrap();
+
+            specta_builder.mount_events(app);
+
+            #[cfg(target_os = "linux")]
+            {
+                let sound_dir = app
+                    .path()
+                    .resolve("sound", tauri::path::BaseDirectory::Resource)
+                    .expect("failed to resolve sound resource directory");
+                let port = sound::start_sound_server(sound_dir);
+                app.manage(sound::SoundServerPort(port));
+            }
+            #[cfg(not(target_os = "linux"))]
+            app.manage(sound::SoundServerPort(0));
+
+            #[cfg(desktop)]
+            app.handle().plugin(tauri_plugin_cli::init())?;
+
+            log::info!("Finished rust initialization");
+
+            Ok(())
+        })
+        .manage(AppState::default())
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app, event| {
+            if let tauri::RunEvent::ExitRequested { .. } = event {
+                let state = app.state::<AppState>();
+                for entry in state.engine_processes.iter() {
+                    if let Ok(mut process) = entry.value().try_lock() {
+                        process.kill_sync();
+                    }
+                }
+            }
+        });
+}
+
+#[tauri::command]
+#[specta::specta]
+fn is_bmi2_compatible() -> bool {
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    if is_x86_feature_detected!("bmi2") {
+        return true;
+    }
+    false
+}
+
+#[tauri::command]
+#[specta::specta]
+fn memory_size() -> u32 {
+    let total_bytes = sysinfo::System::new_all().total_memory();
+    (total_bytes / 1024 / 1024) as u32
+}
+
+#[tauri::command]
+#[specta::specta]
+fn lookup_local_lichess_cloud_eval(
+    fen: String,
+    multipv: Option<u8>,
+    app: tauri::AppHandle,
+) -> Result<Option<LocalLichessCloudEval>, String> {
+    local_eval::lookup_local_lichess_cloud_eval(fen, multipv, app)
+}
+
+#[tauri::command]
+#[specta::specta]
+fn get_local_lichess_eval_db_status(app: tauri::AppHandle) -> Result<LocalEvalDbStatus, String> {
+    local_eval::get_local_lichess_eval_db_status(app)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn build_local_lichess_eval_db(
+    request: LocalEvalBuildRequest,
+    app: tauri::AppHandle,
+) -> Result<LocalEvalBuildReport, String> {
+    local_eval::build_local_lichess_eval_db(request, app).await
+}

@@ -1,0 +1,67 @@
+.cardLead {
+  flex: 1 1 380px;
+  min-width: 0;
+}
+
+.databaseIcon {
+  flex: 0 0 auto;
+}
+
+.sourceChoice {
+  position: relative;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  border-radius: var(--mantine-radius-md);
+  background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease;
+}
+
+.sourceChoice:hover:not(:disabled) {
+  border-color: light-dark(var(--mantine-primary-color-3), var(--mantine-primary-color-7));
+}
+
+.sourceChoice[data-selected] {
+  border-color: var(--mantine-primary-color-5);
+  background: var(--mantine-primary-color-light);
+}
+
+.sourceChoiceMark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: light-dark(var(--mantine-color-dark-6), var(--mantine-color-gray-2));
+  border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
+  transition:
+    color 140ms ease,
+    background-color 140ms ease,
+    border-color 140ms ease;
+}
+
+.sourceChoice[data-selected] .sourceChoiceMark {
+  color: var(--mantine-primary-color-light-color);
+  border-color: var(--mantine-primary-color-3);
+  background: light-dark(var(--mantine-color-white), var(--mantine-primary-color-9));
+}
+
+@media (max-width: 48em) {
+  .openButton {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sourceChoice,
+  .sourceChoiceMark {
+    transition: none;
+  }
+}

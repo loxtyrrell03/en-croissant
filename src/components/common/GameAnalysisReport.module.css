@@ -1,0 +1,196 @@
+.report {
+  height: 100%;
+  min-height: 0;
+  padding: 5px 6px;
+}
+
+.reportGrid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) minmax(164px, 0.7fr);
+  gap: 8px;
+  align-items: stretch;
+  min-height: 0;
+}
+
+.chartFrame {
+  position: relative;
+  min-height: 136px;
+  height: 100%;
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  background: linear-gradient(
+    to bottom,
+    var(--mantine-color-body) 0%,
+    var(--mantine-color-body) 50%,
+    light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-6)) 50%,
+    light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-6)) 100%
+  );
+  box-shadow: var(--mantine-shadow-xs);
+}
+
+.chartSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.zeroLine,
+.phaseLine,
+.activeLine {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.zeroLine {
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px solid light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-2));
+}
+
+.phaseLine {
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-2));
+}
+
+.activeLine {
+  top: 0;
+  bottom: 0;
+  border-left: 2px solid var(--mantine-primary-color-filled);
+  opacity: 0.9;
+}
+
+.phaseLabel {
+  position: absolute;
+  top: 3px;
+  z-index: 2;
+  color: var(--mantine-color-dimmed);
+  font-size: 0.68rem;
+  font-weight: 600;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  pointer-events: none;
+}
+
+.emptyReport {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  text-align: center;
+}
+
+.statsPanel {
+  min-width: 0;
+  justify-content: center;
+  padding: 0 2px;
+  overflow: hidden;
+}
+
+.playerStats {
+  min-width: 0;
+  gap: 6px;
+}
+
+.whiteDisc,
+.blackDisc {
+  width: 14px;
+  height: 14px;
+  margin-top: 3px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.whiteDisc {
+  border: 2px solid var(--mantine-color-gray-6);
+  background: var(--mantine-color-body);
+}
+
+.blackDisc {
+  background: var(--mantine-color-gray-7);
+}
+
+.playerValues {
+  min-width: 0;
+}
+
+.playerName {
+  max-width: 100%;
+  overflow: hidden;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statRow {
+  min-height: 15px;
+  line-height: 1.05;
+}
+
+.statValue {
+  min-width: 28px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inaccuracy {
+  color: var(--mantine-color-blue-7);
+}
+
+.mistake {
+  color: var(--mantine-color-yellow-7);
+}
+
+.blunder {
+  color: var(--mantine-color-red-7);
+}
+
+.infoIcon {
+  color: var(--mantine-color-blue-6);
+  flex: 0 0 auto;
+  width: 13px;
+  height: 13px;
+}
+
+.inaccuracyDot {
+  fill: var(--mantine-color-blue-7);
+  stroke: var(--mantine-color-body);
+  stroke-width: 0.5;
+}
+
+.mistakeDot {
+  fill: var(--mantine-color-yellow-7);
+  stroke: var(--mantine-color-body);
+  stroke-width: 0.5;
+}
+
+.blunderDot {
+  fill: var(--mantine-color-red-7);
+  stroke: var(--mantine-color-body);
+  stroke-width: 0.5;
+}
+
+@media (max-width: 560px) {
+  .reportGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .chartFrame {
+    min-height: 126px;
+  }
+}

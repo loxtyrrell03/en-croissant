@@ -1,0 +1,452 @@
+import { notifications } from "@mantine/notifications";
+import { IconX } from "@tabler/icons-react";
+import { resolve } from "@tauri-apps/api/path";
+import { writeTextFile } from "@tauri-apps/plugin-fs";
+import { fetch } from "@tauri-apps/plugin-http";
+import { error, info } from "@tauri-apps/plugin-log";
+import { Chess } from "chessops";
+import { ChildNode, defaultGame, makePgn, type PgnNodeData } from "chessops/pgn";
+import { makeSan } from "chessops/san";
+import { z } from "zod";
+import { events } from "@/bindings";
+import { apiHeaders } from "@/utils/http";
+import { getDatabasesDir } from "../directories";
+import { makeChessComClockComment, parseChessComMoveClocks } from "./clocks";
+import { parseChessComGameUrl } from "./links";
+import { decodeTCN } from "./tcn";
+
+const baseURL = "https://api.chess.com";
+
+const ChessComPerf = z.object({
+  last: z.object({
+    rating: z.number(),
+    date: z.number(),
+    rd: z.number(),
+  }),
+  record: z.object({
+    win: z.number(),
+    loss: z.number(),
+    draw: z.number(),
+  }),
+});
+
+const ChessComStatsSchema = z.object({
+  chess_daily: ChessComPerf.optional(),
+  chess_rapid: ChessComPerf.optional(),
+  chess_blitz: ChessComPerf.optional(),
+  chess_bullet: ChessComPerf.optional(),
+});
+export type ChessComStats = z.infer<typeof ChessComStatsSchema>;
+
+type Archive = {
+  archives: string[];
+};
+
+const ChessComPlayer = z.object({
+  rating: z.number(),
+  result: z.string(),
+  username: z.string(),
+});
+
+const ChessComGames = z.object({
+  games: z.array(
+    z.object({
+      url: z.string(),
+      pgn: z.string().nullish(),
+      time_control: z.string(),
+      end_time: z.number(),
+      rated: z.boolean(),
+      initial_setup: z.string(),
+      fen: z.string(),
+      rules: z.string(),
+      white: ChessComPlayer,
+      black: ChessComPlayer,
+    }),
+  ),
+});
+type ChessComGame = z.infer<typeof ChessComGames>["games"][number];
+
+export type ChessComLatestGame = {
+  source: "chesscom";
+  username: string;
+  pgn: string;
+  playedAt: number;
+  url: string;
+};
+
+function hasPgn(game: ChessComGame): game is ChessComGame & { pgn: string } {
+  return typeof game.pgn === "string" && game.pgn.trim().length > 0;
+}
+
+export async function getChessComAccount(player: string): Promise<ChessComStats | null> {
+  return getChessComAccountWithOptions(player);
+}
+
+export async function getChessComAccountWithOptions(
+  player: string,
+  { silent = false }: { silent?: boolean } = {},
+): Promise<ChessComStats | null> {
+  const url = `${baseURL}/pub/player/${player.toLowerCase()}/stats`;
+  const response = await fetch(url, { headers: apiHeaders(), method: "GET" });
+  if (!response.ok) {
+    error(`Failed to fetch Chess.com account: ${response.status} ${response.url}`);
+    if (!silent) {
+      notifications.show({
+        title: "Failed to fetch Chess.com account",
+        message: `Could not find account "${player}" on chess.com`,
+        color: "red",
+        icon: <IconX />,
+      });
+    }
+    return null;
+  }
+  const data = await response.json();
+  const stats = ChessComStatsSchema.safeParse(data);
+  if (!stats.success) {
+    error(
+      `Invalid response for Chess.com account: ${response.status} ${response.url}\n${stats.error}`,
+    );
+    if (!silent) {
+      notifications.show({
+        title: "Failed to fetch Chess.com account",
+        message: `Invalid response for "${player}" on chess.com`,
+        color: "red",
+        icon: <IconX />,
+      });
+    }
+    return null;
+  }
+  return stats.data;
+}
+
+export function getChessComGameCount(stats: ChessComStats) {
+  let totalGames = 0;
+  for (const stat of Object.values(stats)) {
+    if (stat.record) {
+      totalGames += stat.record.win + stat.record.loss + stat.record.draw;
+    }
+  }
+  return totalGames;
+}
+
+async function getGameArchives(player: string) {
+  const url = `${baseURL}/pub/player/${player}/games/archives`;
+  const response = await fetch(url, { headers: apiHeaders(), method: "GET" });
+  return (await response.json()) as Archive;
+}
+
+export async function getChessComLatestGameTimestamp(player: string) {
+  const archives = await getGameArchives(player);
+  const latestArchive = archives.archives.at(-1);
+  if (!latestArchive) {
+    return null;
+  }
+
+  const response = await fetch(latestArchive, {
+    headers: apiHeaders(),
+    method: "GET",
+  });
+  if (!response.ok) {
+    error(`Failed to fetch latest Chess.com games: ${response.status} ${response.url}`);
+    return null;
+  }
+
+  const games = ChessComGames.safeParse(await response.json());
+  if (!games.success) {
+    error(`Invalid response for latest Chess.com games: ${response.status} ${response.url}`);
+    return null;
+  }
+
+  const latestTimestamp = Math.max(...games.data.games.map((game) => game.end_time));
+  return Number.isFinite(latestTimestamp) ? latestTimestamp * 1000 : null;
+}
+
+export async function getLatestChessComGame(player: string): Promise<ChessComLatestGame | null> {
+  return (await getRecentChessComGames(player, 1))[0] ?? null;
+}
+
+export async function getRecentChessComGames(
+  player: string,
+  limit = 10,
+  before?: number | null,
+): Promise<ChessComLatestGame[]> {
+  const archives = await getGameArchives(player);
+  const recentGames: ChessComLatestGame[] = [];
+  const boundedLimit = Math.min(30, Math.max(1, Math.round(limit)));
+  const beforeTimestamp =
+    typeof before === "number" && Number.isFinite(before) ? Math.floor(before) : null;
+
+  for (const archive of archives.archives.slice().reverse()) {
+    const response = await fetch(archive, {
+      headers: apiHeaders(),
+      method: "GET",
+    });
+    if (!response.ok) {
+      error(`Failed to fetch latest Chess.com games: ${response.status} ${response.url}`);
+      continue;
+    }
+
+    const games = ChessComGames.safeParse(await response.json());
+    if (!games.success) {
+      error(`Invalid response for latest Chess.com games: ${response.status} ${response.url}`);
+      continue;
+    }
+
+    recentGames.push(
+      ...games.data.games
+        .filter(hasPgn)
+        .sort((a, b) => b.end_time - a.end_time)
+        .map((game) => ({
+          source: "chesscom" as const,
+          username: player,
+          pgn: game.pgn,
+          playedAt: game.end_time * 1000,
+          url: game.url,
+        }))
+        .filter((game) => beforeTimestamp === null || game.playedAt < beforeTimestamp),
+    );
+
+    if (recentGames.length >= boundedLimit) {
+      break;
+    }
+  }
+
+  return recentGames
+    .sort((a, b) => b.playedAt - a.playedAt)
+    .slice(0, boundedLimit)
+    .map((game) => ({
+      source: "chesscom",
+      username: player,
+      pgn: game.pgn,
+      playedAt: game.playedAt,
+      url: game.url,
+    }));
+}
+
+export async function downloadChessCom(
+  player: string,
+  timestamp: number | null,
+  options: { ratedOnly?: boolean; standardOnly?: boolean } = {},
+) {
+  const timestampDate = new Date(timestamp ?? 0);
+  const approximateDate = new Date(timestampDate.getFullYear(), timestampDate.getMonth(), 1);
+  // Per-game filters only exist on the JSON endpoint; the bulk /pgn endpoint
+  // returns every game in the archive (variants and unrated included).
+  const filterGames = Boolean(options.ratedOnly || options.standardOnly);
+  const matchesFilters = (game: ChessComGame) =>
+    (!options.standardOnly || game.rules === "chess") && (!options.ratedOnly || game.rated);
+  const archives = await getGameArchives(player);
+  const file = await resolve(await getDatabasesDir(), `${player}_chesscom.pgn`);
+  info(`Found ${archives.archives.length} archives for ${player}`);
+  await writeTextFile(file, "", {
+    append: false,
+  });
+  const filteredArchives = archives.archives.filter((archive) => {
+    const [year, month] = archive.split("/").slice(-2);
+    const archiveDate = new Date(Number.parseInt(year), Number.parseInt(month) - 1);
+    return archiveDate >= approximateDate;
+  });
+
+  for (const [index, archive] of filteredArchives.entries()) {
+    info(`Fetching games for ${player} from ${archive}`);
+    if (!filterGames) {
+      const pgnResponse = await fetch(`${archive}/pgn`, {
+        headers: apiHeaders(),
+        method: "GET",
+      });
+      if (pgnResponse.ok) {
+        const pgnChunk = await pgnResponse.text();
+        await writeTextFile(file, pgnChunk.trim() ? `${pgnChunk.trim()}\n\n` : "", {
+          append: true,
+        });
+        events.progressEvent.emit({
+          finished: false,
+          id: `chesscom_${player}`,
+          progress: ((index + 1) / filteredArchives.length) * 100,
+        });
+        continue;
+      }
+    }
+
+    const response = await fetch(archive, {
+      headers: apiHeaders(),
+      method: "GET",
+    });
+    const games = ChessComGames.safeParse(await response.json());
+
+    if (!games.success) {
+      error(`Failed to fetch Chess.com games: ${response.status} ${response.url}`);
+      notifications.show({
+        title: "Failed to fetch Chess.com games",
+        message: `Could not find games for "${player}" on chess.com for ${archive}`,
+        color: "red",
+        icon: <IconX />,
+      });
+      return;
+    }
+
+    const pgnChunk = games.data.games
+      .filter(hasPgn)
+      .filter(matchesFilters)
+      .map((g) => g.pgn.trim())
+      .join("\n\n");
+    await writeTextFile(file, pgnChunk ? `${pgnChunk}\n\n` : "", {
+      append: true,
+    });
+    events.progressEvent.emit({
+      finished: false,
+      id: `chesscom_${player}`,
+      progress: ((index + 1) / filteredArchives.length) * 100,
+    });
+  }
+  events.progressEvent.emit({
+    finished: false,
+    id: `chesscom_${player}`,
+    progress: 100,
+  });
+}
+
+const chessComGameSchema = z.object({
+  game: z.object({
+    moveList: z.string(),
+    moveTimestamps: z.string().nullish(),
+    pgnHeaders: z.record(z.string(), z.union([z.string(), z.number()])),
+  }),
+});
+
+export async function getChesscomGame(
+  gameURL: string,
+  { silent = false }: { silent?: boolean } = {},
+) {
+  const parsedUrl = parseChessComGameUrl(gameURL);
+
+  if (!parsedUrl) {
+    const eventRegex = /chess.com\/events/;
+    if (gameURL.match(eventRegex)) {
+      error(`Event URLs are not supported: ${gameURL}`);
+      if (!silent) {
+        notifications.show({
+          title: "Event URLs not supported",
+          message: "Event URLs cannot be imported directly. Please import the PGN instead.",
+          color: "red",
+          icon: <IconX />,
+        });
+      }
+      return null;
+    }
+    error(`Unsupported Chess.com URL format: ${gameURL}`);
+    if (!silent) {
+      notifications.show({
+        title: "Unsupported URL format",
+        message:
+          "The URL format is not recognized. Please use a direct game link like https://www.chess.com/game/12345",
+        color: "red",
+        icon: <IconX />,
+      });
+    }
+    return null;
+  }
+
+  let response: Awaited<ReturnType<typeof fetch>> | null = null;
+  for (const gameType of parsedUrl.gameTypes) {
+    const candidate = await fetch(
+      `https://www.chess.com/callback/${gameType}/game/${parsedUrl.gameId}`,
+      {
+        headers: apiHeaders(),
+        method: "GET",
+      },
+    );
+    if (candidate.ok) {
+      response = candidate;
+      break;
+    }
+    response = candidate;
+  }
+
+  if (!response?.ok) {
+    error(`Failed to fetch Chess.com game: ${response?.status ?? "unknown"} ${response?.url}`);
+    if (!silent) {
+      notifications.show({
+        title: "Failed to fetch Chess.com game",
+        message: `Could not find game "${gameURL}" on chess.com`,
+        color: "red",
+        icon: <IconX />,
+      });
+    }
+    return null;
+  }
+
+  const apiData = await response.json();
+  const gameData = chessComGameSchema.safeParse(apiData);
+  if (!gameData.success) {
+    error(
+      `Invalid response for Chess.com game: ${response.status} ${response.url}\n${gameData.error}`,
+    );
+    if (!silent) {
+      notifications.show({
+        title: "Failed to fetch Chess.com game",
+        message: `Invalid response for "${gameURL}" on chess.com`,
+        color: "red",
+        icon: <IconX />,
+      });
+    }
+    return null;
+  }
+
+  const moveList = gameData.data.game.moveList;
+  const moveClocks = parseChessComMoveClocks(gameData.data.game.moveTimestamps);
+  const pgnHeaders = gameData.data.game.pgnHeaders;
+  const moves = moveList.match(/.{1,2}/g);
+  if (!moves) {
+    return "";
+  }
+  const game = defaultGame<PgnNodeData>(
+    () => new Map(Object.entries(pgnHeaders).map(([k, v]) => [k, v.toString()])),
+  );
+  const chess = Chess.default();
+
+  let lastNode = game.moves;
+  for (const [index, move] of moves.entries()) {
+    const m = decodeTCN(move);
+    const clockComment = makeChessComClockComment(moveClocks[index]);
+    lastNode.children.push(
+      new ChildNode({
+        san: makeSan(chess, m),
+        comments: clockComment ? [clockComment] : undefined,
+      }),
+    );
+    chess.play(m);
+    lastNode = lastNode.children[0];
+  }
+
+  return makePgn(game);
+}
+
+export function getStats(stats: ChessComStats) {
+  const statsArray = [];
+  if (stats.chess_bullet) {
+    statsArray.push({
+      value: stats.chess_bullet.last.rating,
+      label: "Bullet",
+    });
+  }
+  if (stats.chess_blitz) {
+    statsArray.push({
+      value: stats.chess_blitz.last.rating,
+      label: "Blitz",
+    });
+  }
+  if (stats.chess_rapid) {
+    statsArray.push({
+      value: stats.chess_rapid.last.rating,
+      label: "Rapid",
+    });
+  }
+  if (stats.chess_daily) {
+    statsArray.push({
+      value: stats.chess_daily.last.rating,
+      label: "Daily",
+    });
+  }
+  return statsArray;
+}

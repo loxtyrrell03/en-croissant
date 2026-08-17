@@ -1,0 +1,80 @@
+.chessboard {
+  position: relative;
+  flex: 1;
+  z-index: 1;
+  display: flex;
+  aspect-ratio: 1;
+}
+
+.chessboard > :global(.cg-wrap) :global(piece) {
+  will-change: transform;
+}
+
+[data-mantine-color-scheme="dark"]
+  .chessboard
+  > :global(.cg-wrap)
+  > :global(cg-container)
+  > :global(cg-board)
+  > :global(square.last-move) {
+  background-color: color-mix(
+    in srgb,
+    var(--light-color, var(--mantine-primary-color-5)) 40%,
+    transparent
+  );
+}
+
+[data-mantine-color-scheme="light"]
+  .chessboard
+  > :global(.cg-wrap)
+  > :global(cg-container)
+  > :global(cg-board)
+  > :global(square.last-move) {
+  background-color: color-mix(
+    in srgb,
+    var(--dark-color, var(--mantine-primary-color-3)) 40%,
+    transparent
+  );
+}
+
+.chessboard
+  > :global(.cg-wrap)
+  > :global(cg-container)
+  > :global(cg-board)
+  > :global(square.current-premove) {
+  background-color: rgba(20, 30, 85, 0.5) !important;
+}
+
+.boardSettingsButton {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(28, 31, 28, 0.62);
+  color: white;
+  opacity: 0.86;
+  backdrop-filter: blur(8px);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease,
+    background 120ms ease;
+}
+
+.boardSettingsRail {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 0;
+  padding-top: 0.1rem;
+  pointer-events: none;
+}
+
+.boardSettingsRail .boardSettingsButton {
+  pointer-events: auto;
+}
+
+.boardSettingsButton[data-active="true"],
+.boardSettingsButton:focus-visible {
+  opacity: 1;
+}
+
+.boardSettingsButton:hover {
+  transform: translateY(-1px);
+  background: rgba(28, 31, 28, 0.8);
+}

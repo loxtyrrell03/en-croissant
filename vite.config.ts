@@ -1,0 +1,65 @@
+/// <reference types="vitest/config" />
+import * as os from "node:os";
+import { resolve } from "node:path";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import { defineConfig } from "vite";
+import { configDefaults } from "vitest/config";
+
+const isDebug = !!process.env.TAURI_ENV_DEBUG;
+const host = process.env.TAURI_DEV_HOST;
+const usesHomePhoneServer = process.env.VITE_EN_CROISSANT_HOME_BUILD === "1";
+
+// https://vitejs.dev/config/
+export default defineConfig({
+    publicDir: usesHomePhoneServer ? false : "public",
+    plugins: [
+        tanstackRouter({
+            target: "react",
+        }),
+        react(),
+        babel({
+            presets: [reactCompilerPreset()],
+        }),
+    ],
+    server: {
+        port: 1420,
+        strictPort: true,
+        host: host || false,
+        hmr: host
+            ? {
+                  protocol: "ws",
+                  host,
+                  port: 1421,
+              }
+            : undefined,
+        watch: {
+            ignored: ["**/src-tauri/**"],
+        },
+    },
+    build: {
+        minify: isDebug ? false : "esbuild",
+        sourcemap: isDebug ? "inline" : false,
+        target: process.env.TAURI_ENV_PLATFORM == "windows" ? "chrome105" : "safari13",
+    },
+    resolve: {
+        alias: [{ find: "@", replacement: resolve(__dirname, "./src") }],
+    },
+    test: {
+        environment: "jsdom",
+        exclude: [
+            ...configDefaults.exclude,
+            // These suites use Node's built-in runner and are run separately
+            // with `node --test scripts/tests/<file>.test.mjs`.
+            "scripts/tests/**",
+            // Local snapshots and incomplete dependency archives are not
+            // production source trees and must not be collected as tests.
+            "approved-owner-delta/**",
+            "node_modules.incomplete-from-laptop-archive/**",
+        ],
+    },
+    define: {
+        "import.meta.env.VITE_PLATFORM": JSON.stringify(os.platform()),
+    },
+});
