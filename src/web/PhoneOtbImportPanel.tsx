@@ -73,13 +73,11 @@ export default function PhoneOtbImportPanel({
         .then((next) => {
           if (!active) return;
           setJob(next);
-          if (next.status === "failed") setError(next.error || "The PC OTB import failed.");
+          setError(next.status === "failed" ? next.error || "The PC OTB import failed." : null);
         })
         .catch((loadError) => {
           if (active && !(loadError instanceof DOMException && loadError.name === "AbortError")) {
-            setError(
-              loadError instanceof Error ? loadError.message : "PC progress could not be loaded.",
-            );
+            setError("The PC connection dropped. Reconnecting automatically…");
           }
         });
     };
