@@ -33,6 +33,7 @@ import {
 import classes from "./OnlineGameAnalysisPanel.module.css";
 
 const WEB_OTB_PLAYER_KEY = "encroissant-web-otb-player";
+const FULL_CAREER_FROM_YEAR = 1900;
 
 export default function PhoneOtbImportPanel({
   onAnalyzeGame,
@@ -44,7 +45,7 @@ export default function PhoneOtbImportPanel({
   const [fideId, setFideId] = useState("");
   const [selectedPlayer, setSelectedPlayer] = useState<FidePlayer | null>(null);
   const [fideIdAuto, setFideIdAuto] = useState(false);
-  const [fromYear, setFromYear] = useState(Math.max(2020, currentYear - 2));
+  const [fromYear, setFromYear] = useState(FULL_CAREER_FROM_YEAR);
   const [sources, setSources] = useState<WebOtbImportSources>(DEFAULT_WEB_OTB_IMPORT_SOURCES);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [job, setJob] = useState<WebOtbImportJob | null>(null);
@@ -222,13 +223,16 @@ export default function PhoneOtbImportPanel({
         />
         <NumberInput
           disabled={running}
-          label="Since"
+          label="Games since"
           max={currentYear}
-          min={1900}
+          min={FULL_CAREER_FROM_YEAR}
           value={fromYear}
-          onChange={(value) => setFromYear(Number(value) || currentYear - 2)}
+          onChange={(value) => setFromYear(Number(value) || FULL_CAREER_FROM_YEAR)}
         />
       </Group>
+      <Text c="dimmed" size="xs">
+        Defaults to 1900 for a full-career search. Enter a later year only to narrow the import.
+      </Text>
 
       <Button
         justify="space-between"
@@ -315,7 +319,7 @@ export default function PhoneOtbImportPanel({
       {job?.status === "completed" ? (
         <Alert color={games.length > 0 ? "green" : "yellow"} variant="light">
           {games.length > 0
-            ? `${games.length} verified OTB game${games.length === 1 ? "" : "s"} ready from the PC. ${openedInPrep ? "Loaded in Prep." : "Opening Prep…"}`
+            ? `${games.length} verified OTB game${games.length === 1 ? "" : "s"} ready from ${job.request.fromYear <= FULL_CAREER_FROM_YEAR ? "the full career" : `since ${job.request.fromYear}`}. ${openedInPrep ? "Loaded in Prep." : "Opening Prep…"}`
             : "The PC search completed without any usable OTB games."}
         </Alert>
       ) : null}
