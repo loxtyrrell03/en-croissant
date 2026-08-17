@@ -1,5 +1,9 @@
 import { getWebServerUrl } from "./serverUrl";
 import { parseFidePlayers, type FidePlayer } from "@/utils/fidePlayer";
+import type { WebImportResult } from "./model";
+
+export const WEB_OTB_JOB_STORAGE_KEY = "encroissant-web-otb-job";
+export const WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY = "encroissant-web-otb-prep-handled-job";
 
 export type WebOtbImportSources = {
     lichessBroadcasts: boolean;
@@ -46,7 +50,15 @@ export type WebOtbImportJob = {
         sources: WebOtbImportSources;
     };
     progress: WebOtbImportProgress | null;
+    report: {
+        playerName: string;
+        fideId: string | null;
+        cancelled: boolean;
+        gamesFound: number;
+        duplicatesRemoved: number;
+    } | null;
     games: Omit<WebOtbImportedGame, "source" | "playerName">[];
+    prepDatabase: WebImportResult | null;
     createdAt: string;
     updatedAt: string;
     completedAt: string | null;
@@ -106,8 +118,12 @@ export function getWebOtbImportedGames(job: WebOtbImportJob): WebOtbImportedGame
     return job.games.map((game) => ({
         ...game,
         source: "otb",
-        playerName: job.request.playerName,
+        playerName: getWebOtbJobPlayerName(job),
     }));
+}
+
+export function getWebOtbJobPlayerName(job: WebOtbImportJob) {
+    return job.report?.playerName?.trim() || job.request.playerName.trim();
 }
 
 async function requestWebOtbJob(path: string, init?: RequestInit): Promise<WebOtbImportJob> {

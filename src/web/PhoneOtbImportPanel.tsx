@@ -23,13 +23,14 @@ import {
   loadWebOtbImportJob,
   searchWebFidePlayers,
   startWebOtbImport,
+  WEB_OTB_JOB_STORAGE_KEY,
+  WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY,
   type WebOtbImportedGame,
   type WebOtbImportJob,
   type WebOtbImportSources,
 } from "./otbImport";
 import classes from "./OnlineGameAnalysisPanel.module.css";
 
-const WEB_OTB_JOB_KEY = "encroissant-web-otb-job";
 const WEB_OTB_PLAYER_KEY = "encroissant-web-otb-player";
 
 export default function PhoneOtbImportPanel({
@@ -46,30 +47,25 @@ export default function PhoneOtbImportPanel({
   const [sources, setSources] = useState<WebOtbImportSources>(DEFAULT_WEB_OTB_IMPORT_SOURCES);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [job, setJob] = useState<WebOtbImportJob | null>(null);
+  const [jobId, setJobId] = useState(() => window.localStorage.getItem(WEB_OTB_JOB_STORAGE_KEY));
   const [starting, setStarting] = useState(false);
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const games = useMemo(() => (job ? getWebOtbImportedGames(job) : []), [job]);
   const running = job?.status === "queued" || job?.status === "running";
+  const shouldPoll = Boolean(jobId && (!job || running));
+  const openedInPrep = Boolean(
+    job?.id && window.localStorage.getItem(WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY) === job.id,
+  );
 
   useEffect(() => {
-    const jobId = window.localStorage.getItem(WEB_OTB_JOB_KEY);
-    if (!jobId) return;
-    const controller = new AbortController();
-    void loadWebOtbImportJob(jobId, controller.signal)
-      .then(setJob)
-      .catch(() => window.localStorage.removeItem(WEB_OTB_JOB_KEY));
-    return () => controller.abort();
-  }, []);
-
-  useEffect(() => {
-    if (!job?.id || !running) return;
+    if (!jobId || !shouldPoll) return;
     let active = true;
     let controller: AbortController | null = null;
     const refresh = () => {
       controller?.abort();
       controller = new AbortController();
-      void loadWebOtbImportJob(job.id, controller.signal)
+      void loadWebOtbImportJob(jobId, controller.signal)
         .then((next) => {
           if (!active) return;
           setJob(next);
@@ -88,7 +84,7 @@ export default function PhoneOtbImportPanel({
       controller?.abort();
       window.clearInterval(timer);
     };
-  }, [job?.id, running]);
+  }, [jobId, shouldPoll]);
 
   function selectFidePlayer(player: FidePlayer) {
     setSelectedPlayer(player);
@@ -157,7 +153,8 @@ export default function PhoneOtbImportPanel({
         sources,
       });
       setJob(next);
-      window.localStorage.setItem(WEB_OTB_JOB_KEY, next.id);
+      setJobId(next.id);
+      window.localStorage.setItem(WEB_OTB_JOB_STORAGE_KEY, next.id);
     } catch (startError) {
       setError(
         startError instanceof Error ? startError.message : "The PC OTB search could not start.",
@@ -307,8 +304,10 @@ export default function PhoneOtbImportPanel({
         </Stack>
       ) : null}
       {job?.status === "completed" ? (
-        <Alert color="green" variant="light">
-          {games.length} verified OTB game{games.length === 1 ? "" : "s"} ready from the PC.
+        <Alert color={games.length > 0 ? "green" : "yellow"} variant="light">
+          {games.length > 0
+            ? `${games.length} verified OTB game${games.length === 1 ? "" : "s"} ready from the PC. ${openedInPrep ? "Loaded in Prep." : "Opening Prep…"}`
+            : "The PC search completed without any usable OTB games."}
         </Alert>
       ) : null}
       {error ? (

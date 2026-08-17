@@ -6,6 +6,7 @@ import test from "node:test";
 import {
   OtbImportService,
   buildOtbImporterArgs,
+  getOtbPrepDatabaseName,
   mergeOtbProgress,
   normalizeOtbImportPayload,
   parseOtbCollectorLine,
@@ -95,4 +96,32 @@ test("splits and summarizes verified PGNs on the PC", () => {
       { id: "job:2", event: "Open", white: "B", black: "C", result: "1/2-1/2" },
     ],
   );
+});
+
+test("builds a phone-ready prep database on the PC", () => {
+  const pgn = `[Event "Congress"]\n[Date "2026.08.01"]\n[White "Target, Player"]\n[Black "Opponent"]\n[Result "1-0"]\n\n1. e4 e5 2. Nf3 Nc6 1-0`;
+  const service = new OtbImportService({ root: "C:/unused", binaryPath: "C:/unused.exe" });
+  const job = {
+    id: "otb-prep",
+    status: "completed",
+    request: { playerName: "Target, Player", fromYear: 2024 },
+    report: { playerName: "Player, Target Canonical" },
+    games: parseOtbPgnGames(pgn, "otb-prep"),
+    createdAt: "2026-08-17T12:00:00.000Z",
+    completedAt: "2026-08-17T12:05:00.000Z",
+    prepDatabase: null,
+  };
+
+  assert.equal(service.ensurePrepDatabase(job), true);
+  assert.equal(
+    job.prepDatabase.database.name,
+    getOtbPrepDatabaseName({ ...job.request, playerName: job.report.playerName }),
+  );
+  assert.equal(job.prepDatabase.database.sourceKind, "source");
+  assert.equal(job.prepDatabase.games.length, 1);
+  assert.deepEqual(
+    job.prepDatabase.games[0].moves.map((move) => move.san),
+    ["e4", "e5", "Nf3", "Nc6"],
+  );
+  assert.equal(service.ensurePrepDatabase(job), false);
 });

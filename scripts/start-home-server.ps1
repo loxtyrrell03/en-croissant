@@ -68,11 +68,18 @@ foreach ($runtimeFile in @(
 }
 
 if (Test-Path -LiteralPath $sourceStatsWorkerRoot) {
+  $runtimeGeneratedRoot = Join-Path $runtimeRoot 'generated'
+  New-Item -ItemType Directory -Path $runtimeGeneratedRoot -Force | Out-Null
   Get-ChildItem -LiteralPath $sourceStatsWorkerRoot -File | ForEach-Object {
     $destination = Join-Path $runtimeRoot $_.Name
     $temporaryRuntimeFile = "$destination.next-$PID"
     Copy-Item -LiteralPath $_.FullName -Destination $temporaryRuntimeFile -Force
     Move-Item -LiteralPath $temporaryRuntimeFile -Destination $destination -Force
+
+    $generatedDestination = Join-Path $runtimeGeneratedRoot $_.Name
+    $temporaryGeneratedFile = "$generatedDestination.next-$PID"
+    Copy-Item -LiteralPath $_.FullName -Destination $temporaryGeneratedFile -Force
+    Move-Item -LiteralPath $temporaryGeneratedFile -Destination $generatedDestination -Force
   }
 }
 

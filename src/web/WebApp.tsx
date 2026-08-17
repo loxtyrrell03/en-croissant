@@ -291,7 +291,15 @@ import OnlineGameAnalysisPanel from "./OnlineGameAnalysisPanel";
 import StatsWorkspace from "./StatsWorkspace";
 import { getWebOnlineAnalysisTitle, getWebOnlinePlayerColor } from "./onlineAnalysis";
 import { analyzeWithWebStockfish18, stopWebStockfish18Search } from "./stockfishEngine";
-import type { WebOtbImportedGame } from "./otbImport";
+import {
+  getWebOtbJobPlayerName,
+  loadWebOtbImportJob,
+  WEB_OTB_JOB_STORAGE_KEY,
+  WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY,
+  type WebOtbImportedGame,
+  type WebOtbImportJob,
+} from "./otbImport";
+import { applyWebOtbPrepCompletion, shouldOpenWebOtbPrep } from "./otbPrep";
 
 type ViewMode = "board" | "stats" | "files";
 type BoardPanelMode = "moves" | "online" | "database" | "prep" | "engine" | "coach";
@@ -753,6 +761,98 @@ export default function WebApp() {
     },
     [importPgnText, loadGameOnBoard],
   );
+
+  const openCompletedOtbImportForPrep = useCallback(
+    (job: WebOtbImportJob) => {
+      const imported = job.prepDatabase;
+      if (job.status !== "completed" || !imported || imported.games.length === 0) {
+        throw new Error("The PC did not return a usable OTB prep database.");
+      }
+
+      const userColor = activePrep?.userColor ?? readStoredWebPrepUserColor();
+      setState((current) => applyWebOtbPrepCompletion(current, job, userColor)?.state ?? current);
+      setSelectedDatabaseId(imported.database.id);
+      setSelectedGameId(null);
+      setView("board");
+      setBoardPanelMode("prep");
+      notifications.show({
+        title: "OTB prep ready",
+        message: `${pluralWeb(imported.games.length, "game")} loaded for ${getWebOtbJobPlayerName(job)}.`,
+        color: "green",
+      });
+    },
+    [activePrep?.userColor],
+  );
+
+  useEffect(() => {
+    if (!loaded) return;
+    let active = true;
+    let monitoredJobId: string | null = null;
+    let terminal = false;
+    let inFlight = false;
+
+    const refresh = async () => {
+      const jobId = window.localStorage.getItem(WEB_OTB_JOB_STORAGE_KEY);
+      if (jobId !== monitoredJobId) {
+        monitoredJobId = jobId;
+        terminal = false;
+      }
+      if (!jobId || terminal || inFlight) return;
+
+      const handledJobId = window.localStorage.getItem(WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY);
+      const completionExists = state.prepWorkspaces.some((prep) => prep.id === `prep-${jobId}`);
+      if (handledJobId === jobId && completionExists) {
+        terminal = true;
+        return;
+      }
+
+      try {
+        const job = await loadWebOtbImportJob(jobId);
+        if (!active) return;
+        if (
+          job.status === "failed" ||
+          (job.status === "completed" && !job.prepDatabase?.games.length)
+        ) {
+          terminal = true;
+          return;
+        }
+        if (
+          !shouldOpenWebOtbPrep(
+            job,
+            completionExists ? handledJobId : null,
+            inFlight ? jobId : null,
+          )
+        )
+          return;
+
+        inFlight = true;
+        await Promise.resolve(openCompletedOtbImportForPrep(job));
+        window.localStorage.setItem(WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY, job.id);
+        terminal = true;
+      } catch (error) {
+        if (active && inFlight) {
+          terminal = true;
+          notifications.show({
+            title: "Could not open OTB Prep",
+            message:
+              error instanceof Error
+                ? error.message
+                : "The imported OTB database could not be opened in Prep.",
+            color: "red",
+          });
+        }
+      } finally {
+        inFlight = false;
+      }
+    };
+
+    void refresh();
+    const timer = window.setInterval(() => void refresh(), 1_500);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, [loaded, openCompletedOtbImportForPrep, state.prepWorkspaces]);
 
   const importFiles = useCallback(
     async (files: FileList | null) => {
@@ -9487,6 +9587,19 @@ function normalizeWebPlayerName(value: string) {
     .split(" ")
     .sort()
     .join(" ");
+}
+
+function readStoredWebPrepUserColor(): WebColor {
+  try {
+    const stored = JSON.parse(
+      window.localStorage.getItem(WEB_PREP_SETUP_STORAGE_KEY) || "null",
+    ) as {
+      userColor?: unknown;
+    } | null;
+    return stored?.userColor === "black" ? "black" : "white";
+  } catch {
+    return "white";
+  }
 }
 
 function clampWholeNumber(value: unknown, min: number, max: number, fallback: number) {

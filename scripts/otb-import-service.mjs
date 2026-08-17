@@ -4,6 +4,7 @@ import { mkdir, readFile, readdir, rename, stat, writeFile } from "node:fs/promi
 import { createInterface } from "node:readline";
 import { constants as priorityConstants, setPriority } from "node:os";
 import { join } from "node:path";
+import { buildWebOtbPrepDatabase } from "./generated/otb-prep-database.js";
 
 const CURRENT_YEAR = new Date().getFullYear();
 const MAX_PLAYER_NAME_LENGTH = 120;
@@ -56,7 +57,9 @@ export class OtbImportService {
   }
 
   getJob(id) {
-    return this.jobs.get(id) ?? null;
+    const job = this.jobs.get(id) ?? null;
+    if (job && this.ensurePrepDatabase(job)) this.persistInBackground(job);
+    return job;
   }
 
   async createJob(input) {
@@ -72,6 +75,7 @@ export class OtbImportService {
       progress: null,
       report: null,
       games: [],
+      prepDatabase: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       completedAt: null,
@@ -132,7 +136,6 @@ export class OtbImportService {
         const pgn = await readFile(outputPath, "utf8");
         job.games = parseOtbPgnGames(pgn, job.id);
         job.report = report;
-        job.status = "completed";
         job.progress = mergeOtbProgress(job.progress, {
           jobId: job.id,
           source: "Complete",
@@ -144,6 +147,8 @@ export class OtbImportService {
         });
         job.updatedAt = new Date().toISOString();
         job.completedAt = job.updatedAt;
+        this.ensurePrepDatabase(job);
+        job.status = "completed";
         await this.persist(job);
         this.onLog(`OTB import ${job.id} completed with ${job.games.length} games`);
       })().catch((error) => this.finishFailedInBackground(job, error?.stack || String(error)));
@@ -190,6 +195,32 @@ export class OtbImportService {
     void this.finishFailed(job, message).catch((error) => {
       this.onLog(`Could not finish OTB import ${job.id}: ${error?.stack || String(error)}`);
     });
+  }
+
+  ensurePrepDatabase(job) {
+    if (
+      job.prepDatabase ||
+      (job.status !== "completed" && !job.completedAt) ||
+      !Array.isArray(job.games)
+    )
+      return false;
+    const pgn = job.games
+      .map((game) => String(game?.pgn || "").trim())
+      .filter(Boolean)
+      .join("\n\n");
+    if (!pgn) return false;
+
+    const importedAtCandidate = Date.parse(job.completedAt || job.createdAt || "");
+    const importedAt = Number.isFinite(importedAtCandidate) ? importedAtCandidate : Date.now();
+    job.prepDatabase = buildWebOtbPrepDatabase({
+      name: getOtbPrepDatabaseName({
+        ...job.request,
+        playerName: job.report?.playerName || job.request?.playerName,
+      }),
+      pgn,
+      importedAt,
+    });
+    return true;
   }
 }
 
@@ -292,6 +323,13 @@ export function parseOtbPgnGames(pgn, jobId = "otb") {
         blackElo: numericHeader(headers.BlackElo),
       };
     });
+}
+
+export function getOtbPrepDatabaseName(request) {
+  const player = String(request?.playerName || "OTB player").trim() || "OTB player";
+  const fromYear = Number.isInteger(request?.fromYear) ? request.fromYear : CURRENT_YEAR;
+  const range = fromYear < CURRENT_YEAR ? `${fromYear}-${CURRENT_YEAR}` : String(CURRENT_YEAR);
+  return `${player} OTB games ${range}.pgn`;
 }
 
 function numericHeader(value) {
