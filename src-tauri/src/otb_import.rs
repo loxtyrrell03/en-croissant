@@ -605,8 +605,6 @@ pub async fn collect_otb_games_with_runtime<R: tauri::Runtime>(
                 request,
                 collection,
             )));
-        }
-        if request.include_lichess_broadcast_archives {
             let index = lanes.len();
             lanes.push(Box::pin(finish_lane(
                 index,
@@ -616,7 +614,7 @@ pub async fn collect_otb_games_with_runtime<R: tauri::Runtime>(
                 collection,
             )));
         }
-        if request.include_lichess_community_broadcasts {
+        if request.include_lichess_broadcast_archives {
             let index = lanes.len();
             lanes.push(Box::pin(finish_lane(
                 index,
@@ -625,6 +623,8 @@ pub async fn collect_otb_games_with_runtime<R: tauri::Runtime>(
                 request,
                 collection,
             )));
+        }
+        if request.include_lichess_community_broadcasts {
             let index = lanes.len();
             lanes.push(Box::pin(finish_lane(
                 index,
@@ -794,7 +794,11 @@ where
             "{} finished — {} unique game{} added",
             report.source,
             report.unique_games_added,
-            if report.unique_games_added == 1 { "" } else { "s" }
+            if report.unique_games_added == 1 {
+                ""
+            } else {
+                "s"
+            }
         ),
     );
     (index, report)
