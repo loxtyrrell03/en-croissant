@@ -194,7 +194,7 @@ const configuredPrivateCredentialOrigins = String(process.env.EN_CROISSANT_PRIVA
     }
   });
 const privateCredentialOrigins = new Set([
-  "https://lox.tail89d19b.ts.net",
+  "https://lox-pc.tail89d19b.ts.net",
   "http://localhost:1420",
   "http://tauri.localhost",
   "https://tauri.localhost",

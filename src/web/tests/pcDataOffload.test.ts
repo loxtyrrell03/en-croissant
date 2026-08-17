@@ -29,7 +29,7 @@ describe("phone data work offload", () => {
             }),
         );
 
-        expect(url.origin).toBe("https://lox.tail89d19b.ts.net");
+        expect(url.origin).toBe("https://lox-pc.tail89d19b.ts.net");
         expect(url.pathname).toBe("/api/lichess-explorer");
         expect(url.searchParams.get("source")).toBe("lichess-all");
         expect(url.searchParams.get("player")).toBe("IfanRJ");

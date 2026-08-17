@@ -94,7 +94,7 @@
 
 - On 2026-08-04, the gaming PC was returned and `Lox` became the authoritative
   private phone-app host until a replacement machine is available. The live
-  origin is `https://lox.tail89d19b.ts.net`; phone UI, home-server, shared
+  origin is `https://lox-pc.tail89d19b.ts.net`; phone UI, home-server, shared
   Lichess, explorer/database, coach, and Stockfish defaults must use that
   origin. Publish completed phone changes locally with
   `npm run web:publish-home` and verify the `Lox` origin. This supersedes older

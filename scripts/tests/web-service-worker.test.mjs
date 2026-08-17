@@ -9,15 +9,15 @@ test("service-worker activation never waits for its client navigation", async ()
   let navigationCalls = 0;
   const navigationThatNeverFinishes = new Promise(() => {});
   const client = {
-    url: "https://lox.tail89d19b.ts.net/",
+    url: "https://lox-pc.tail89d19b.ts.net/",
     navigate() {
       navigationCalls += 1;
       return navigationThatNeverFinishes;
     },
   };
   const self = {
-    registration: { scope: "https://lox.tail89d19b.ts.net/" },
-    location: { origin: "https://lox.tail89d19b.ts.net" },
+    registration: { scope: "https://lox-pc.tail89d19b.ts.net/" },
+    location: { origin: "https://lox-pc.tail89d19b.ts.net" },
     clients: {
       async claim() {},
       async matchAll() {

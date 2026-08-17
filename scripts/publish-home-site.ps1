@@ -1,5 +1,5 @@
 param(
-  [string]$SiteUrl = "https://lox.tail89d19b.ts.net",
+  [string]$SiteUrl = "https://lox-pc.tail89d19b.ts.net",
   [string]$SiteRoot = "",
   [int]$Port = 8787,
   [switch]$SkipBuild,

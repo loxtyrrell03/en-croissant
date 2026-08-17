@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const homeServerScript = join(repoRoot, "scripts", "home-server.mjs");
-const allowedOrigin = "https://lox.tail89d19b.ts.net";
+const allowedOrigin = "https://lox-pc.tail89d19b.ts.net";
 const rejectedOrigin = "https://evil.example";
 
 test("Stockfish proxy restricts actual and preflight CORS to private origins", async () => {
