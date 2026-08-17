@@ -16,7 +16,8 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, "scripts/stats-background-worker.ts"),
       formats: ["es"],
-      fileName: () => "stats-background-worker.mjs",
+      // home-server.mjs launches this exact runtime filename.
+      fileName: () => "stats-background-worker.js",
     },
     rollupOptions: {
       external: [/^node:/],

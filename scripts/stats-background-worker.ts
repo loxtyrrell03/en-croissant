@@ -8,6 +8,7 @@ import {
   buildGameQualityStats,
   replayGamePositions,
   type AnalyzedGameEntry,
+  type BatchAnalysisMetadata,
   type EvalScore,
 } from "../src/web/statsStrength";
 
@@ -19,16 +20,6 @@ type WorkerConfig = {
 };
 
 type StoredGames = { v: 1; updatedAt: number; games: StatsGame[] };
-type BatchAnalysisMetadata = {
-  targetDepth: number;
-  nodeLimit: number | null;
-  cloudHits: number;
-  firstCloudMissPly: number | null;
-  pcPositions: number;
-  pcNodes: number;
-  policy: "lichess-local-until-first-miss-then-pc";
-};
-
 type BatchAnalyzedGameEntry = AnalyzedGameEntry & {
   batchAnalysis?: BatchAnalysisMetadata;
 };
@@ -69,18 +60,19 @@ try {
   const games = await fetchAllGames(config);
   await atomicJson(gamesPath, { v: 1, updatedAt: Date.now(), games } satisfies StoredGames);
 
-  const candidates = games
-    .filter((game) => {
-      const entry = entriesByKey.get(gameKey(game));
-      return !(
-        entry?.advanced &&
-        entry.opponentQuality?.advanced &&
-        (entry.batchAnalysis?.targetDepth || 0) >= config.depth &&
-        (entry.batchAnalysis.nodeLimit === null ||
-          (entry.batchAnalysis.nodeLimit || 0) >= config.nodesPerPosition) &&
-        entry.batchAnalysis.policy === "lichess-local-until-first-miss-then-pc"
-      );
-    })
+  const skipped = games
+    .map((game) => ({ game, reason: statsAnalysisSkipReason(game) }))
+    .filter((item): item is { game: StatsGame; reason: string } => Boolean(item.reason));
+  const skippedKeys = new Set(skipped.map(({ game }) => gameKey(game)));
+  const eligibleGames = games.filter((game) => !skippedKeys.has(gameKey(game)));
+  const skippedReasons = Object.fromEntries(
+    Array.from(new Set(skipped.map(({ reason }) => reason))).map((reason) => [
+      reason,
+      skipped.filter((item) => item.reason === reason).length,
+    ]),
+  );
+  const candidates = eligibleGames
+    .filter((game) => !hasCompletedBatch(entriesByKey.get(gameKey(game))))
     .sort((a, b) => b.end - a.end);
 
   let completed = 0;
@@ -91,6 +83,9 @@ try {
       startedAt: Number((await readJson<Record<string, unknown>>(statusPath))?.startedAt) || Date.now(),
       depth: config.depth,
       totalGames: games.length,
+      eligibleGames: eligibleGames.length,
+      skippedGames: skipped.length,
+      skippedReasons,
       queuedGames: candidates.length,
       completedGames: completed,
       failedGames: failed,
@@ -123,12 +118,20 @@ try {
   }
 
   await saveEntries();
+  const eligibleAnalyzedGames = eligibleGames.filter((game) =>
+    hasCompletedBatch(entriesByKey.get(gameKey(game))),
+  ).length;
   await writeStatus({
     state: "idle",
     finishedAt: Date.now(),
     depth: config.depth,
     totalGames: games.length,
     analyzedGames: entriesByKey.size,
+    eligibleGames: eligibleGames.length,
+    eligibleAnalyzedGames,
+    skippedGames: skipped.length,
+    skippedReasons,
+    analysisComplete: eligibleAnalyzedGames === eligibleGames.length && failed === 0,
     queuedGames: 0,
     completedGames: completed,
     failedGames: failed,
@@ -137,6 +140,32 @@ try {
 } catch (error) {
   await writeStatus({ state: "error", finishedAt: Date.now(), error: publicError(error) });
   throw error;
+}
+
+function hasCompletedBatch(entry: BatchAnalyzedGameEntry | undefined) {
+  return Boolean(
+    entry?.advanced &&
+    entry.opponentQuality?.advanced &&
+    (entry.batchAnalysis?.targetDepth || 0) >= config.depth &&
+    (entry.batchAnalysis?.nodeLimit === null ||
+      (entry.batchAnalysis?.nodeLimit || 0) >= config.nodesPerPosition) &&
+    entry.batchAnalysis?.policy === "lichess-local-until-first-miss-then-pc",
+  );
+}
+
+function statsAnalysisSkipReason(game: StatsGame): string | null {
+  if (!game.pgn?.trim()) return "missing-pgn";
+  // The quality pipeline currently starts from the normal initial position.
+  // Preserve custom-FEN games in the archive, but do not retry them on every
+  // refresh until that replay path supports an arbitrary starting side/FEN.
+  if (/\[\s*SetUp\s+"1"\s*\]/i.test(game.pgn) && /\[\s*FEN\s+"/i.test(game.pgn)) {
+    return "custom-start-position";
+  }
+  try {
+    return extractPgnMoves(game.pgn).sans.length > 0 ? null : "no-moves";
+  } catch {
+    return "invalid-pgn";
+  }
 }
 
 async function fetchAllGames(workerConfig: Required<WorkerConfig>) {

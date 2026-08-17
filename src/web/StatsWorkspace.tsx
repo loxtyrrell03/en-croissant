@@ -27,13 +27,17 @@ import {
   type WebChessCoachHealth,
   type WebChessCoachProgress,
 } from "./chessCoach";
-import { gameAnalysisKey, loadAnalyzedEntries, runStatsBatchAnalysis } from "./statsAnalysis";
+import { gameAnalysisKey, loadAnalyzedEntries } from "./statsAnalysis";
 import {
   configurePcStatsSync,
+  isCompleteAnalyzedEntry,
   loadPcAnalyzedEntries,
-  loadPcStatsGames,
   loadPcStatsConfig,
+  loadPcStatsGames,
+  loadPcStatsStatus,
   mergeAnalyzedEntries,
+  runPcStatsSync,
+  type PcStatsStatus,
 } from "./statsPcSync";
 import {
   askStatsAiReport,
@@ -919,6 +923,23 @@ function StatsStrengthSection({
   const phaseRows = STATS_PHASE_ORDER.map((phaseKey) => profile.phases[phaseKey]).filter(
     (phase): phase is PhaseProfile => Boolean(phase),
   );
+  const requestedAnalysisCount = Number.parseInt(analyzeCount, 10) || 10;
+  const selectedAnalysisGames = useMemo(
+    () =>
+      games
+        .slice()
+        .sort((left, right) => right.end - left.end)
+        .slice(0, requestedAnalysisCount),
+    [games, requestedAnalysisCount],
+  );
+  const completeEntryKeys = useMemo(
+    () => new Set(entries.filter(isCompleteAnalyzedEntry).map((entry) => entry.key)),
+    [entries],
+  );
+  const cachedAnalysisCount = selectedAnalysisGames.filter((game) =>
+    completeEntryKeys.has(gameAnalysisKey(game)),
+  ).length;
+  const missingAnalysisCount = selectedAnalysisGames.length - cachedAnalysisCount;
 
   const runAnalysis = async () => {
     if (running) return;
@@ -928,19 +949,15 @@ function StatsStrengthSection({
     setAnalysisError("");
     setBatchProgress(null);
     try {
-      await runStatsBatchAnalysis(games, {
-        maxGames: Number.parseInt(analyzeCount, 10) || 10,
-        signal: controller.signal,
-        onProgress: (info) => {
-          if (controller.signal.aborted) return;
-          setBatchProgress({
-            gamesDone: info.gamesDone,
-            gamesTotal: info.gamesTotal,
-            positionsDone: info.positionsDone,
-            positionsTotal: info.positionsTotal,
-          });
-        },
-      });
+      await runPcStatsSync(controller.signal);
+      while (!controller.signal.aborted) {
+        const status = await loadPcStatsStatus(controller.signal);
+        const gamesTotal = Math.max(0, Number(status?.status?.queuedGames) || 0);
+        const gamesDone = Math.max(0, Number(status?.status?.completedGames) || 0);
+        setBatchProgress({ gamesDone, gamesTotal, positionsDone: 0, positionsTotal: 0 });
+        if (!status?.running) break;
+        await abortableStatsDelay(1_500, controller.signal);
+      }
     } catch (analysisFailure) {
       if (!controller.signal.aborted) {
         const message =
@@ -983,9 +1000,9 @@ function StatsStrengthSection({
           value={analyzeCount}
           onChange={(value) => value && setAnalyzeCount(value)}
           data={[
-            { value: "10", label: "Analyze last 10" },
-            { value: "25", label: "Analyze last 25" },
-            { value: "50", label: "Analyze last 50" },
+            { value: "10", label: "Check last 10" },
+            { value: "25", label: "Check last 25" },
+            { value: "50", label: "Check last 50" },
           ]}
           disabled={running}
           allowDeselect={false}
@@ -995,12 +1012,17 @@ function StatsStrengthSection({
           size="xs"
           color={running ? "red" : undefined}
           variant={running ? "light" : "filled"}
+          disabled={!running && missingAnalysisCount === 0}
           onClick={() => {
             if (running) analysisRef.current?.abort();
             else void runAnalysis();
           }}
         >
-          {running ? "Cancel" : "Analyze"}
+          {running
+            ? "Cancel"
+            : missingAnalysisCount > 0
+              ? `Analyze missing (${missingAnalysisCount})`
+              : "Already cached"}
         </Button>
       </Group>
       {running ? (
@@ -1027,7 +1049,11 @@ function StatsStrengthSection({
         </Text>
       ) : null}
       <Text size="xs" c="dimmed" mt={6}>
-        Analysis uses your PC's engine — start it or try later.
+        {selectedAnalysisGames.length === 0
+          ? "No games are available in this period."
+          : missingAnalysisCount === 0
+            ? `All ${cachedAnalysisCount} selected games use the saved PC analysis; Stockfish will not run again.`
+            : `${cachedAnalysisCount}/${selectedAnalysisGames.length} selected games are already cached. Refresh starts the PC's depth-25, 1M-node worker only for genuinely missing games.`}
       </Text>
     </>
   );
@@ -2656,6 +2682,8 @@ export default function StatsWorkspace({ lichessToken = "" }: { lichessToken?: s
   const [poolRatings, setPoolRatings] = useState<StatsPoolRatings>({});
   const [refreshKey, setRefreshKey] = useState(0);
   const [analyzedEntries, setAnalyzedEntries] = useState<AnalyzedGameEntry[]>([]);
+  const [pcStatsStatus, setPcStatsStatus] = useState<PcStatsStatus | null>(null);
+  const pcEntriesUpdatedAtRef = useRef<number | null>(null);
   const cacheRef = useRef(new Map<string, StatsCacheEntry>());
   const [clockNowSec, setClockNowSec] = useState(() => Math.floor(Date.now() / 1000));
 
@@ -2668,13 +2696,28 @@ export default function StatsWorkspace({ lichessToken = "" }: { lichessToken?: s
     const local = loadAnalyzedEntries();
     setAnalyzedEntries(local);
     const controller = new AbortController();
-    const refresh = () => {
-      void loadPcAnalyzedEntries(controller.signal)
-        .then((remote) => setAnalyzedEntries(mergeAnalyzedEntries(loadAnalyzedEntries(), remote)))
-        .catch(() => undefined);
+    let inFlight = false;
+    const refresh = async (force = false) => {
+      if (inFlight) return;
+      inFlight = true;
+      try {
+        const status = await loadPcStatsStatus(controller.signal).catch(() => null);
+        if (status) setPcStatsStatus(status);
+        const updatedAt = Math.max(0, Number(status?.entriesUpdatedAt) || 0);
+        if (!force && pcEntriesUpdatedAtRef.current === updatedAt) return;
+        const remote = await loadPcAnalyzedEntries(controller.signal);
+        pcEntriesUpdatedAtRef.current = updatedAt;
+        setAnalyzedEntries(mergeAnalyzedEntries(loadAnalyzedEntries(), remote));
+      } catch {
+        // Keep the last complete archive while the PC service restarts.
+      } finally {
+        inFlight = false;
+      }
     };
-    refresh();
-    const timer = window.setInterval(refresh, 15_000);
+    void refresh(true);
+    // Poll the tiny status document; the 13 MB entries archive is fetched only
+    // when its server-side revision changes.
+    const timer = window.setInterval(() => void refresh(), 15_000);
     return () => {
       controller.abort();
       window.clearInterval(timer);
@@ -2683,8 +2726,12 @@ export default function StatsWorkspace({ lichessToken = "" }: { lichessToken?: s
   const refreshAnalyzedEntries = useCallback(() => {
     const local = loadAnalyzedEntries();
     setAnalyzedEntries(local);
-    void loadPcAnalyzedEntries()
-      .then((remote) => setAnalyzedEntries(mergeAnalyzedEntries(local, remote)))
+    void Promise.all([loadPcStatsStatus(), loadPcAnalyzedEntries()])
+      .then(([status, remote]) => {
+        setPcStatsStatus(status);
+        pcEntriesUpdatedAtRef.current = Math.max(0, Number(status?.entriesUpdatedAt) || 0);
+        setAnalyzedEntries(mergeAnalyzedEntries(local, remote));
+      })
       .catch(() => undefined);
   }, []);
 
@@ -3077,6 +3124,9 @@ export default function StatsWorkspace({ lichessToken = "" }: { lichessToken?: s
               minute: "2-digit",
             })}
             {recentPeriod ? " · refreshes each minute" : ""} · ranges use local time
+            {pcStatsStatus?.status?.analysisComplete
+              ? ` · PC analysis complete: ${pcStatsStatus.status.eligibleAnalyzedGames ?? pcStatsStatus.analyzedGames} analyzed${pcStatsStatus.status.skippedGames ? `, ${pcStatsStatus.status.skippedGames} skipped` : ""}`
+              : ""}
           </Text>
         ) : null}
       </Box>
@@ -3157,4 +3207,22 @@ export default function StatsWorkspace({ lichessToken = "" }: { lichessToken?: s
       ) : null}
     </Box>
   );
+}
+
+function abortableStatsDelay(milliseconds: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal.aborted) {
+      reject(new DOMException("Aborted", "AbortError"));
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      signal.removeEventListener("abort", onAbort);
+      resolve();
+    }, milliseconds);
+    const onAbort = () => {
+      window.clearTimeout(timer);
+      reject(new DOMException("Aborted", "AbortError"));
+    };
+    signal.addEventListener("abort", onAbort, { once: true });
+  });
 }

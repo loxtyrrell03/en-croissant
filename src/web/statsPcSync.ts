@@ -8,6 +8,24 @@ type PcStatsConfig = {
     nodesPerPosition?: number;
 };
 
+export type PcStatsStatus = {
+    running: boolean;
+    games: number;
+    analyzedGames: number;
+    gamesUpdatedAt: number;
+    entriesUpdatedAt: number;
+    status?: {
+        state?: string;
+        analysisComplete?: boolean;
+        eligibleGames?: number;
+        eligibleAnalyzedGames?: number;
+        skippedGames?: number;
+        failedGames?: number;
+        queuedGames?: number;
+        completedGames?: number;
+    };
+};
+
 export async function loadPcStatsConfig(signal?: AbortSignal): Promise<PcStatsConfig | null> {
     const response = await fetch(`${pcStatsBase}/api/stats-sync/config`, {
         cache: "no-store",
@@ -16,6 +34,16 @@ export async function loadPcStatsConfig(signal?: AbortSignal): Promise<PcStatsCo
     });
     if (!response.ok) return null;
     return (await response.json()) as PcStatsConfig;
+}
+
+export async function loadPcStatsStatus(signal?: AbortSignal): Promise<PcStatsStatus | null> {
+    const response = await fetch(`${pcStatsBase}/api/stats-sync/status`, {
+        cache: "no-store",
+        headers: { accept: "application/json" },
+        signal,
+    });
+    if (!response.ok) return null;
+    return (await response.json()) as PcStatsStatus;
 }
 
 const pcStatsBase =
@@ -83,6 +111,15 @@ export async function configurePcStatsSync(config: PcStatsConfig): Promise<void>
     if (!response.ok) throw new Error(`PC stats configuration returned HTTP ${response.status}.`);
 }
 
+export async function runPcStatsSync(signal?: AbortSignal): Promise<void> {
+    const response = await fetch(`${pcStatsBase}/api/stats-sync/run`, {
+        method: "POST",
+        headers: { accept: "application/json" },
+        signal,
+    });
+    if (!response.ok) throw new Error(`PC stats analysis returned HTTP ${response.status}.`);
+}
+
 export function mergeAnalyzedEntries(
     ...groups: readonly AnalyzedGameEntry[][]
 ): AnalyzedGameEntry[] {
@@ -90,10 +127,48 @@ export function mergeAnalyzedEntries(
     for (const entries of groups) {
         for (const entry of entries) {
             const existing = byKey.get(entry.key);
-            if (!existing || entry.ts >= existing.ts) byKey.set(entry.key, entry);
+            if (!existing || compareAnalyzedEntryQuality(entry, existing) >= 0) {
+                byKey.set(entry.key, entry);
+            }
         }
     }
     return Array.from(byKey.values()).sort((a, b) => b.end - a.end);
+}
+
+// A phone/manual result can have a newer timestamp while being much shallower
+// than the saved PC batch. Analysis quality must win before recency so opening
+// views, Strength, and the background worker all retain the 1M-node result.
+export function compareAnalyzedEntryQuality(
+    left: AnalyzedGameEntry,
+    right: AnalyzedGameEntry,
+): number {
+    const leftQuality = analyzedEntryQuality(left);
+    const rightQuality = analyzedEntryQuality(right);
+    for (let index = 0; index < leftQuality.length; index += 1) {
+        const difference = leftQuality[index] - rightQuality[index];
+        if (difference !== 0) return difference;
+    }
+    return left.ts - right.ts;
+}
+
+export function isCompleteAnalyzedEntry(
+    entry: AnalyzedGameEntry | undefined,
+): entry is AnalyzedGameEntry & Required<Pick<AnalyzedGameEntry, "advanced" | "opponentQuality">> {
+    return Boolean(entry?.advanced && entry.opponentQuality?.advanced);
+}
+
+function analyzedEntryQuality(entry: AnalyzedGameEntry): number[] {
+    const batch = entry.batchAnalysis;
+    return [
+        batch ? 1 : 0,
+        Math.max(0, Number(batch?.targetDepth) || 0),
+        batch?.nodeLimit === null
+            ? Number.MAX_SAFE_INTEGER
+            : Math.max(0, Number(batch?.nodeLimit) || 0),
+        isCompleteAnalyzedEntry(entry) ? 1 : 0,
+        Math.max(0, Number(entry.stats.analysisDepth) || 0),
+        Math.max(0, Number(entry.stats.scoredCount) || 0),
+    ];
 }
 
 export function accuracyByGameUrl(entries: readonly AnalyzedGameEntry[]) {

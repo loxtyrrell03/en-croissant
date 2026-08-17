@@ -3,6 +3,7 @@ import { AppShellSection, Stack, Tooltip } from "@mantine/core";
 import {
   type Icon,
   IconChess,
+  IconChartLine,
   IconCpu,
   IconDatabase,
   IconFiles,
@@ -55,6 +56,7 @@ function NavbarLink({ url, icon: Icon, label, onClick, onMouseEnter }: NavbarLin
 const linksdata: Pick<NavbarLinkProps, "icon" | "label" | "url">[] = [
   { icon: IconHome, label: "Home", url: "/home" },
   { icon: IconChess, label: "Board", url: "/" },
+  { icon: IconChartLine, label: "Stats", url: "/stats" },
   { icon: IconFiles, label: "Files", url: "/files" },
   {
     icon: IconDatabase,
@@ -68,6 +70,7 @@ const routePreloads: Record<string, () => Promise<unknown>> = {
   "/": () => import("@/components/tabs/BoardsPage"),
   "/home": () => import("@/components/tabs/NewTabHome"),
   "/files": () => import("@/components/files/FilesPage"),
+  "/stats": () => import("@/components/stats/StatsPage"),
   "/databases": () => import("@/components/databases/DatabasesPage"),
   "/engines": () => import("@/components/engines/EnginesPage"),
   "/settings": () => import("@/components/settings/SettingsPage"),

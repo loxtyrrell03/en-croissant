@@ -1,0 +1,12 @@
+.page {
+  height: 100%;
+  overflow: auto;
+  padding: var(--mantine-spacing-lg);
+  user-select: text;
+}
+
+@media (max-width: 48em) {
+  .page {
+    padding: var(--mantine-spacing-sm);
+  }
+}

@@ -67,6 +67,16 @@ export type AnalyzedSideQuality = {
     advanced: AdvancedGameQualityStats;
 };
 
+export type BatchAnalysisMetadata = {
+    targetDepth: number;
+    nodeLimit: number | null;
+    cloudHits: number;
+    firstCloudMissPly: number | null;
+    pcPositions: number;
+    pcNodes: number;
+    policy: "lichess-local-until-first-miss-then-pc";
+};
+
 export type AnalyzedGameEntry = {
     v: 2;
     ts: number;
@@ -87,6 +97,7 @@ export type AnalyzedGameEntry = {
     counts: MoveLabelCounts;
     phaseBlunders: Record<StrengthPhase, number>;
     advanced?: AdvancedGameQualityStats;
+    batchAnalysis?: BatchAnalysisMetadata;
     opponentQuality?: AnalyzedSideQuality;
 };
 

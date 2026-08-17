@@ -25,6 +25,7 @@ import {
 } from "./home-library-index.mjs";
 import { OtbImportService } from "./otb-import-service.mjs";
 import { FidePlayerSearchService } from "./fide-player-search.mjs";
+import { compareStatsEntryQuality } from "./stats-entry-quality.mjs";
 import { getOpeningIdentificationBook, publicDerivedEvidence } from "./chess-coach-derived.mjs";
 import {
   buildCodexCoachInvocation,
@@ -651,6 +652,8 @@ async function getStatsSyncSummary() {
     nodesPerPosition: normalized.nodesPerPosition,
     games: Array.isArray(games?.games) ? games.games.length : 0,
     analyzedGames: Array.isArray(entries?.entries) ? entries.entries.length : 0,
+    gamesUpdatedAt: Math.max(0, Number(games?.updatedAt) || 0),
+    entriesUpdatedAt: Math.max(0, Number(entries?.updatedAt) || 0),
     status: status || { state: "idle" },
   };
 }
@@ -716,7 +719,9 @@ async function mergeStatsSyncEntries(request, response) {
   for (const entry of [...(Array.isArray(stored?.entries) ? stored.entries : []), ...incoming]) {
     if (!isStatsSyncEntry(entry)) continue;
     const existing = byKey.get(entry.key);
-    if (!existing || Number(entry.ts) >= Number(existing.ts)) byKey.set(entry.key, entry);
+    if (!existing || compareStatsEntryQuality(entry, existing) >= 0) {
+      byKey.set(entry.key, entry);
+    }
   }
   const entries = Array.from(byKey.values()).sort((a, b) => Number(b.end) - Number(a.end));
   await writeAtomicJson(statsSyncEntriesPath, { v: 1, updatedAt: Date.now(), entries });

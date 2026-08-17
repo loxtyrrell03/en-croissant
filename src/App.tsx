@@ -396,6 +396,7 @@ function preloadAppFeatureChunks() {
     () => import("@/components/boards/BoardAnalysis"),
     () => import("@/components/tabs/NewTabHome"),
     () => import("@/components/files/FilesPage"),
+    () => import("@/components/stats/StatsPage"),
     () => import("@/components/databases/DatabasesPage"),
     () => import("@/components/engines/EnginesPage"),
     () => import("@/components/settings/SettingsPage"),

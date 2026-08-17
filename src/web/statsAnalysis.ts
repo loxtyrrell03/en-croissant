@@ -4,7 +4,12 @@ import { positionFromFen } from "@/utils/chessops";
 import type { WebEngineLine } from "./model";
 import { analyzeWithWebStockfish18 } from "./stockfishEngine";
 import type { StatsGame } from "./statsRating";
-import { savePcAnalyzedEntries } from "./statsPcSync";
+import {
+    compareAnalyzedEntryQuality,
+    isCompleteAnalyzedEntry,
+    mergeAnalyzedEntries,
+    savePcAnalyzedEntries,
+} from "./statsPcSync";
 import {
     buildGameQualityStats,
     replayGamePositions,
@@ -83,7 +88,9 @@ export function saveAnalyzedEntries(entries: AnalyzedGameEntry[]): void {
     for (const entry of entries) {
         if (!isAnalyzedGameEntry(entry)) continue;
         const existing = byKey.get(entry.key);
-        if (!existing || entry.ts >= existing.ts) byKey.set(entry.key, entry);
+        if (!existing || compareAnalyzedEntryQuality(entry, existing) >= 0) {
+            byKey.set(entry.key, entry);
+        }
     }
 
     const kept = Array.from(byKey.values())
@@ -199,6 +206,7 @@ export async function runStatsBatchAnalysis(
         maxGames?: number;
         depth?: number;
         signal?: AbortSignal;
+        existingEntries?: readonly AnalyzedGameEntry[];
         onProgress?: (info: {
             gamesDone: number;
             gamesTotal: number;
@@ -215,7 +223,8 @@ export async function runStatsBatchAnalysis(
         .slice(0, maxGames);
 
     let stored = loadAnalyzedEntries();
-    const byKey = new Map(stored.map((entry) => [entry.key, entry]));
+    const available = mergeAnalyzedEntries(stored, [...(opts.existingEntries ?? [])]);
+    const byKey = new Map(available.map((entry) => [entry.key, entry]));
     const results: AnalyzedGameEntry[] = [];
     const gamesTotal = candidates.length;
     let gamesDone = 0;
@@ -225,7 +234,7 @@ export async function runStatsBatchAnalysis(
 
         const key = gameAnalysisKey(game);
         const existing = byKey.get(key);
-        if (existing?.advanced && existing.opponentQuality?.advanced) {
+        if (isCompleteAnalyzedEntry(existing)) {
             results.push(existing);
             gamesDone += 1;
             opts.onProgress?.({
@@ -259,10 +268,12 @@ export async function runStatsBatchAnalysis(
         }
 
         if (entry) {
-            byKey.set(key, entry);
-            stored = [entry, ...stored.filter((candidate) => candidate.key !== key)];
+            const preferred =
+                existing && compareAnalyzedEntryQuality(existing, entry) > 0 ? existing : entry;
+            byKey.set(key, preferred);
+            stored = [preferred, ...stored.filter((candidate) => candidate.key !== key)];
             saveAnalyzedEntries(stored);
-            results.push(entry);
+            results.push(preferred);
         }
         gamesDone += 1;
         opts.onProgress?.({

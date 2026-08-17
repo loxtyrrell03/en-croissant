@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StatsRouteImport } from './routes/stats'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as FilesRouteImport } from './routes/files'
@@ -18,6 +19,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DatabasesIndexRouteImport } from './routes/databases/index'
 import { Route as DatabasesDatabaseIdRouteImport } from './routes/databases/$databaseId'
 
+const StatsRoute = StatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/files': typeof FilesRoute
   '/home': typeof HomeRoute
   '/settings': typeof SettingsRoute
+  '/stats': typeof StatsRoute
   '/databases/$databaseId': typeof DatabasesDatabaseIdRoute
   '/databases/': typeof DatabasesIndexRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/files': typeof FilesRoute
   '/home': typeof HomeRoute
   '/settings': typeof SettingsRoute
+  '/stats': typeof StatsRoute
   '/databases/$databaseId': typeof DatabasesDatabaseIdRoute
   '/databases': typeof DatabasesIndexRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/files': typeof FilesRoute
   '/home': typeof HomeRoute
   '/settings': typeof SettingsRoute
+  '/stats': typeof StatsRoute
   '/databases/$databaseId': typeof DatabasesDatabaseIdRoute
   '/databases/': typeof DatabasesIndexRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/files'
     | '/home'
     | '/settings'
+    | '/stats'
     | '/databases/$databaseId'
     | '/databases/'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/files'
     | '/home'
     | '/settings'
+    | '/stats'
     | '/databases/$databaseId'
     | '/databases'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/files'
     | '/home'
     | '/settings'
+    | '/stats'
     | '/databases/$databaseId'
     | '/databases/'
   fileRoutesById: FileRoutesById
@@ -130,12 +142,20 @@ export interface RootRouteChildren {
   FilesRoute: typeof FilesRoute
   HomeRoute: typeof HomeRoute
   SettingsRoute: typeof SettingsRoute
+  StatsRoute: typeof StatsRoute
   DatabasesDatabaseIdRoute: typeof DatabasesDatabaseIdRoute
   DatabasesIndexRoute: typeof DatabasesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/stats': {
+      id: '/stats'
+      path: '/stats'
+      fullPath: '/stats'
+      preLoaderRoute: typeof StatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -202,6 +222,7 @@ const rootRouteChildren: RootRouteChildren = {
   FilesRoute: FilesRoute,
   HomeRoute: HomeRoute,
   SettingsRoute: SettingsRoute,
+  StatsRoute: StatsRoute,
   DatabasesDatabaseIdRoute: DatabasesDatabaseIdRoute,
   DatabasesIndexRoute: DatabasesIndexRoute,
 }

@@ -18,8 +18,12 @@ const REMOTE_STOCKFISH_MAX_ATTEMPTS = 2;
 const STORED_CLOUD_CACHE_LIMIT = 160;
 const STORED_CLOUD_PREFETCH_LIMIT = 3;
 const STOCKFISH_MAX_DEPTH = 70;
+const desktopStockfishUrl =
+    window.location.hostname === "tauri.localhost" ? "http://127.0.0.1:8787" : "";
 const configuredRemoteStockfishUrl = String(
-    import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ?? `${window.location.origin}/stockfish`,
+    import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ||
+        desktopStockfishUrl ||
+        `${window.location.origin}/stockfish`,
 ).trim();
 const REMOTE_STOCKFISH_URL = configuredRemoteStockfishUrl.replace(/\/+$/, "");
 

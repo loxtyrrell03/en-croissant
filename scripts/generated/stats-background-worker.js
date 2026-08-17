@@ -2200,10 +2200,14 @@ try {
 		updatedAt: Date.now(),
 		games
 	});
-	const candidates = games.filter((game) => {
-		const entry = entriesByKey.get(gameKey(game));
-		return !(entry?.advanced && entry.opponentQuality?.advanced && (entry.batchAnalysis?.targetDepth || 0) >= config.depth && (entry.batchAnalysis.nodeLimit === null || (entry.batchAnalysis.nodeLimit || 0) >= config.nodesPerPosition) && entry.batchAnalysis.policy === "lichess-local-until-first-miss-then-pc");
-	}).sort((a, b) => b.end - a.end);
+	const skipped = games.map((game) => ({
+		game,
+		reason: statsAnalysisSkipReason(game)
+	})).filter((item) => Boolean(item.reason));
+	const skippedKeys = new Set(skipped.map(({ game }) => gameKey(game)));
+	const eligibleGames = games.filter((game) => !skippedKeys.has(gameKey(game)));
+	const skippedReasons = Object.fromEntries(Array.from(new Set(skipped.map(({ reason }) => reason))).map((reason) => [reason, skipped.filter((item) => item.reason === reason).length]));
+	const candidates = eligibleGames.filter((game) => !hasCompletedBatch(entriesByKey.get(gameKey(game)))).sort((a, b) => b.end - a.end);
 	let completed = 0;
 	let failed = 0;
 	for (const game of candidates) {
@@ -2212,6 +2216,9 @@ try {
 			startedAt: Number((await readJson(statusPath))?.startedAt) || Date.now(),
 			depth: config.depth,
 			totalGames: games.length,
+			eligibleGames: eligibleGames.length,
+			skippedGames: skipped.length,
+			skippedReasons,
 			queuedGames: candidates.length,
 			completedGames: completed,
 			failedGames: failed,
@@ -2244,12 +2251,18 @@ try {
 		completed += 1;
 	}
 	await saveEntries();
+	const eligibleAnalyzedGames = eligibleGames.filter((game) => hasCompletedBatch(entriesByKey.get(gameKey(game)))).length;
 	await writeStatus({
 		state: "idle",
 		finishedAt: Date.now(),
 		depth: config.depth,
 		totalGames: games.length,
 		analyzedGames: entriesByKey.size,
+		eligibleGames: eligibleGames.length,
+		eligibleAnalyzedGames,
+		skippedGames: skipped.length,
+		skippedReasons,
+		analysisComplete: eligibleAnalyzedGames === eligibleGames.length && failed === 0,
 		queuedGames: 0,
 		completedGames: completed,
 		failedGames: failed,
@@ -2262,6 +2275,18 @@ try {
 		error: publicError(error)
 	});
 	throw error;
+}
+function hasCompletedBatch(entry) {
+	return Boolean(entry?.advanced && entry.opponentQuality?.advanced && (entry.batchAnalysis?.targetDepth || 0) >= config.depth && (entry.batchAnalysis?.nodeLimit === null || (entry.batchAnalysis?.nodeLimit || 0) >= config.nodesPerPosition) && entry.batchAnalysis?.policy === "lichess-local-until-first-miss-then-pc");
+}
+function statsAnalysisSkipReason(game) {
+	if (!game.pgn?.trim()) return "missing-pgn";
+	if (/\[\s*SetUp\s+"1"\s*\]/i.test(game.pgn) && /\[\s*FEN\s+"/i.test(game.pgn)) return "custom-start-position";
+	try {
+		return extractPgnMoves(game.pgn).sans.length > 0 ? null : "no-moves";
+	} catch {
+		return "invalid-pgn";
+	}
 }
 async function fetchAllGames(workerConfig) {
 	const collected = [];
