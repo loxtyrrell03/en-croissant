@@ -36,6 +36,8 @@ export function FidePlayerSearchInput({
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption(),
   });
+  const comboboxRef = useRef(combobox);
+  comboboxRef.current = combobox;
   const [results, setResults] = useState<FidePlayer[]>([]);
   const [searching, setSearching] = useState(false);
   const [searched, setSearched] = useState("");
@@ -49,7 +51,7 @@ export function FidePlayerSearchInput({
       setResults([]);
       setSearched("");
       setSearching(false);
-      combobox.closeDropdown();
+      comboboxRef.current.closeDropdown();
       return;
     }
     const ticket = ++requestTicket.current;
@@ -60,21 +62,21 @@ export function FidePlayerSearchInput({
           if (ticket !== requestTicket.current) return;
           setResults(players);
           setSearched(trimmed);
-          combobox.openDropdown();
-          combobox.updateSelectedOptionIndex();
+          comboboxRef.current.openDropdown();
+          comboboxRef.current.updateSelectedOptionIndex();
         })
         .catch(() => {
           if (ticket !== requestTicket.current) return;
           setResults([]);
           setSearched(trimmed);
-          combobox.openDropdown();
+          comboboxRef.current.openDropdown();
         })
         .finally(() => {
           if (ticket === requestTicket.current) setSearching(false);
         });
     }, SEARCH_DEBOUNCE_MS);
     return () => window.clearTimeout(timer);
-  }, [combobox, disabled, searchPlayers, settled, trimmed]);
+  }, [disabled, searchPlayers, settled, trimmed]);
 
   const showEmpty = !searching && searched === trimmed && results.length === 0;
 
