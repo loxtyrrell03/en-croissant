@@ -303,6 +303,7 @@ import {
 } from "./boardTitle";
 import { formatWebEngineScore } from "./engineScore";
 import OnlineGameAnalysisPanel from "./OnlineGameAnalysisPanel";
+import type { WebPgnImportRequest } from "./pgnImport";
 import StatsWorkspace from "./StatsWorkspace";
 import { getWebOnlineAnalysisTitle, getWebOnlinePlayerColor } from "./onlineAnalysis";
 import { analyzeWithWebStockfish18, stopWebStockfish18Search } from "./stockfishEngine";
@@ -343,6 +344,7 @@ type WebOnlineImportHandler = (request: {
 }) => Promise<WebImportResult | null>;
 type WebOnlineAnalysisHandler = (game: WebOnlineImportedGame) => Promise<WebGame | null>;
 type WebOtbAnalysisHandler = (game: WebOtbImportedGame) => Promise<WebGame | null>;
+type WebPgnImportHandler = (request: WebPgnImportRequest) => Promise<void>;
 type WebPrepBranchStatus = "new" | "started" | "prepared" | "skipped";
 type WebPrepSortDirection = "asc" | "desc";
 type WebPrepSortColumn = WebPrepOpponentSortColumn;
@@ -798,6 +800,19 @@ export default function WebApp() {
       return game;
     },
     [importPgnText, loadGameOnBoard],
+  );
+
+  const importPgnForAnalysis = useCallback<WebPgnImportHandler>(
+    async ({ name, pgn }) => {
+      await importPgnText({
+        name,
+        pgn,
+        notificationTitle: "PGN opened",
+        notificationMessage: (imported) =>
+          `${pluralWeb(imported.games.length, "game")} imported. The first game is open.`,
+      });
+    },
+    [importPgnText],
   );
 
   const openCompletedOtbImportForPrep = useCallback(
@@ -1265,6 +1280,7 @@ export default function WebApp() {
               importHostedFolder={openHostedDatabaseSource}
               importOnlineGameForAnalysis={importOnlineGameForAnalysis}
               importOtbGameForAnalysis={importOtbGameForAnalysis}
+              importPgnForAnalysis={importPgnForAnalysis}
               importOnlineGames={importOnlineGames}
               loadGameOnBoard={loadGameOnBoard}
               onStartBlankBoard={openEmptyBoard}
@@ -1293,6 +1309,7 @@ function BoardWorkspace({
   importHostedFolder,
   importOnlineGameForAnalysis,
   importOtbGameForAnalysis,
+  importPgnForAnalysis,
   importOnlineGames,
   loadGameOnBoard,
   onStartBlankBoard,
@@ -1306,6 +1323,7 @@ function BoardWorkspace({
   importHostedFolder: WebHostedFolderImportHandler;
   importOnlineGameForAnalysis: WebOnlineAnalysisHandler;
   importOtbGameForAnalysis: WebOtbAnalysisHandler;
+  importPgnForAnalysis: WebPgnImportHandler;
   importOnlineGames: WebOnlineImportHandler;
   loadGameOnBoard: (game: WebGame) => void;
   onStartBlankBoard: () => void;
@@ -1906,6 +1924,7 @@ function BoardWorkspace({
                 <OnlineGameAnalysisPanel
                   onAnalyzeGame={analyzeOnlineGame}
                   onAnalyzeOtbGame={analyzeOtbGame}
+                  onImportPgn={importPgnForAnalysis}
                 />
               ) : panelMode === "database" ? (
                 <DatabaseUnderBoardPanel

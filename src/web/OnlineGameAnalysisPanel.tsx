@@ -11,8 +11,15 @@ import {
   Stack,
   Text,
   TextInput,
+  Textarea,
 } from "@mantine/core";
-import { IconChess, IconChevronDown, IconCloudDownload, IconPlayerPlay } from "@tabler/icons-react";
+import {
+  IconChess,
+  IconChevronDown,
+  IconCloudDownload,
+  IconFileImport,
+  IconPlayerPlay,
+} from "@tabler/icons-react";
 import { useEffect, useMemo, useState } from "react";
 import {
   fetchWebOnlineGames,
@@ -33,6 +40,12 @@ import {
 import type { AnalyzedGameEntry } from "./statsStrength";
 import PhoneOtbImportPanel from "./PhoneOtbImportPanel";
 import type { WebOtbImportedGame } from "./otbImport";
+import {
+  createWebPgnImportRequest,
+  readWebPgnImportFile,
+  WEB_PGN_FILE_ACCEPT,
+  type WebPgnImportRequest,
+} from "./pgnImport";
 import classes from "./OnlineGameAnalysisPanel.module.css";
 
 const WEB_ANALYSIS_SOURCE_KEY = "encroissant-web-analysis-source";
@@ -40,14 +53,16 @@ const WEB_ANALYSIS_CHESSCOM_USERNAME_KEY = "encroissant-web-analysis-chesscom-us
 const WEB_ANALYSIS_LICHESS_USERNAME_KEY = "encroissant-web-analysis-lichess-username";
 const INITIAL_GAME_COUNT = 12;
 const MAX_GAME_COUNT = 60;
-type WebImportSource = WebOnlineSource | "otb";
+type WebImportSource = WebOnlineSource | "pgn" | "otb";
 
 export default function OnlineGameAnalysisPanel({
   onAnalyzeGame,
   onAnalyzeOtbGame,
+  onImportPgn,
 }: {
   onAnalyzeGame: (game: WebOnlineImportedGame) => Promise<void>;
   onAnalyzeOtbGame: (game: WebOtbImportedGame) => Promise<void>;
+  onImportPgn: (request: WebPgnImportRequest) => Promise<void>;
 }) {
   const [source, setSource] = useStoredImportSource();
   const [chessComUsername, setChessComUsername] = useStoredString(
@@ -55,8 +70,9 @@ export default function OnlineGameAnalysisPanel({
   );
   const [lichessUsername, setLichessUsername] = useStoredString(WEB_ANALYSIS_LICHESS_USERNAME_KEY);
   const [games, setGames] = useState<WebOnlineImportedGame[]>([]);
+  const [pgnText, setPgnText] = useState("");
   const [requestedCount, setRequestedCount] = useState(INITIAL_GAME_COUNT);
-  const [loading, setLoading] = useState<"latest" | "list" | "more" | "game" | null>(null);
+  const [loading, setLoading] = useState<"latest" | "list" | "more" | "game" | "pgn" | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [analyzedEntries, setAnalyzedEntries] = useState<AnalyzedGameEntry[]>([]);
@@ -127,7 +143,7 @@ export default function OnlineGameAnalysisPanel({
   );
 
   async function fetchGames(count: number, action: "latest" | "list" | "more") {
-    if (source === "otb") return [];
+    if (source === "otb" || source === "pgn") return [];
     const trimmedUsername = username.trim();
     if (!trimmedUsername || loading) return [];
 
@@ -204,6 +220,22 @@ export default function OnlineGameAnalysisPanel({
     }
   }
 
+  async function importPgn(request: () => Promise<WebPgnImportRequest>) {
+    if (loading) return;
+    setLoading("pgn");
+    setError(null);
+    try {
+      await onImportPgn(await request());
+      setPgnText("");
+    } catch (importError) {
+      setError(
+        importError instanceof Error ? importError.message : "This PGN could not be imported.",
+      );
+    } finally {
+      setLoading(null);
+    }
+  }
+
   const isBusy = loading !== null;
   return (
     <Box className={classes.shell}>
@@ -216,7 +248,7 @@ export default function OnlineGameAnalysisPanel({
             Import a game
           </Text>
           <Text c="dimmed" size="xs">
-            Choose Chess.com, Lichess, or run an OTB search on your PC.
+            Choose a PGN, Chess.com, Lichess, or run an OTB search on your PC.
           </Text>
         </Box>
       </Group>
@@ -227,12 +259,68 @@ export default function OnlineGameAnalysisPanel({
         value={source}
         onChange={(value) => setSource(value as WebImportSource)}
         data={[
+          { value: "pgn", label: "PGN" },
           { value: "chesscom", label: "Chess.com" },
           { value: "lichess", label: "Lichess" },
           { value: "otb", label: "OTB" },
         ]}
       />
-      {source === "otb" ? (
+      {source === "pgn" ? (
+        <Stack gap="sm">
+          <Box>
+            <Button
+              component="label"
+              fullWidth
+              leftSection={<IconFileImport size={17} />}
+              loading={loading === "pgn"}
+              size="sm"
+            >
+              Choose PGN file
+              <input
+                hidden
+                type="file"
+                accept={WEB_PGN_FILE_ACCEPT}
+                onChange={(event) => {
+                  const file = event.currentTarget.files?.[0];
+                  if (file) void importPgn(() => readWebPgnImportFile(file));
+                  event.currentTarget.value = "";
+                }}
+              />
+            </Button>
+            <Text c="dimmed" mt={5} size="xs" ta="center">
+              Opens the first game and keeps every game in the file.
+            </Text>
+          </Box>
+
+          <Text c="dimmed" fw={700} size="xs" ta="center">
+            OR PASTE A PGN
+          </Text>
+          <Textarea
+            aria-label="Paste PGN text"
+            autosize
+            disabled={isBusy}
+            minRows={5}
+            maxRows={12}
+            placeholder={'[Event "My game"]\n\n1. e4 e5 2. Nf3 *'}
+            value={pgnText}
+            onChange={(event) => setPgnText(event.currentTarget.value)}
+          />
+          <Button
+            disabled={!pgnText.trim()}
+            leftSection={<IconPlayerPlay size={16} />}
+            loading={loading === "pgn"}
+            onClick={() => void importPgn(async () => createWebPgnImportRequest({ pgn: pgnText }))}
+            variant="light"
+          >
+            Import pasted PGN
+          </Button>
+          {error ? (
+            <Alert color="red" variant="light">
+              {error}
+            </Alert>
+          ) : null}
+        </Stack>
+      ) : source === "otb" ? (
         <PhoneOtbImportPanel onAnalyzeGame={onAnalyzeOtbGame} />
       ) : (
         <>
@@ -364,7 +452,7 @@ function useStoredImportSource() {
   const [source, setSource] = useState<WebImportSource>(() => {
     try {
       const stored = window.localStorage.getItem(WEB_ANALYSIS_SOURCE_KEY);
-      return stored === "lichess" || stored === "otb" ? stored : "chesscom";
+      return stored === "lichess" || stored === "pgn" || stored === "otb" ? stored : "chesscom";
     } catch {
       return "chesscom";
     }

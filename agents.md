@@ -1,5 +1,12 @@
 # AGENTS.md
 
+- On 2026-08-21, the phone Import workspace gained PGN as a first-class source
+  beside Chess.com, Lichess, and OTB. It offers a one-tap mobile file picker and
+  a paste box; both use the existing local phone PGN parser, retain every game
+  in a multi-game file, and open the first imported game immediately. Keep this
+  visible Import-tab route even though the compact header upload shortcut also
+  remains available.
+
 - On 2026-08-21, the PC-hosted phone Engine settings gained separate saved
   performance presets for Stockfish and LC0: Max performance, Good performance,
   Balanced, and Low impact. The values match the measured Chrome-extension
