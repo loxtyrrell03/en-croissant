@@ -286,7 +286,7 @@ function EngineSummary({
     tabEngineSettingsFamily({
       tab: activeTab!,
       engineId: engine.id,
-      defaultSettings: engine.type === "local" ? engine.settings || [] : undefined,
+      defaultSettings: engine.settings ?? undefined,
       defaultGo: engine.go ?? undefined,
     }),
   );

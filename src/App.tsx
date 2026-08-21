@@ -28,6 +28,7 @@ import {
   activeTabAtom,
   boardStyleAtom,
   databaseConversionStateAtom,
+  enginesAtom,
   fontSizeAtom,
   mistakeReviewScanProgressAtom,
   pieceSetAtom,
@@ -58,6 +59,7 @@ import "@/styles/global.css";
 
 import { commands, events } from "./bindings";
 import { openFile } from "./utils/files";
+import { createGamingPcLc0Engine } from "./utils/engines";
 
 const STALE_DOWNLOAD_CONVERSION_MS = 2 * 60 * 1000;
 const STALE_DATABASE_CONVERSION_MS = 20 * 60 * 1000;
@@ -505,6 +507,15 @@ function useStopInteractiveEnginesWhenInactive() {
   }, []);
 }
 
+function useEnsureGamingPcLc0Engine() {
+  const [engines, setEngines] = useAtom(enginesAtom);
+
+  useEffect(() => {
+    if (!engines || engines.some((engine) => engine.id === "gaming-pc-lc0")) return;
+    void setEngines([...engines, createGamingPcLc0Engine()]);
+  }, [engines, setEngines]);
+}
+
 export default function App() {
   const primaryColor = useAtomValue(primaryColorAtom);
   const pieceSet = useAtomValue(pieceSetAtom);
@@ -520,6 +531,7 @@ export default function App() {
   useAppStartup();
   useSharedLichessSession();
   useStopInteractiveEnginesWhenInactive();
+  useEnsureGamingPcLc0Engine();
   useOnlineDatabaseAutoUpdater();
   useLichessStudyDatabaseAutoUpdater();
   useOpeningReviewDeckAutoUpdater();

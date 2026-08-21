@@ -5,8 +5,7 @@ import { analyzeWithWebStockfish18, dedupeWebStockfishLines } from "../stockfish
 const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const MISSING_FEN = "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1";
 const PREFETCH_ROOT_FEN = "rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR b KQkq - 0 1";
-const PREFETCH_NEXT_FEN =
-    "rnbqkbnr/pppp1ppp/8/4p3/2P5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 2";
+const PREFETCH_NEXT_FEN = "rnbqkbnr/pppp1ppp/8/4p3/2P5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 2";
 const ABORT_FEN = "rnbqkbnr/pppppppp/8/8/4N3/8/PPPPPPPP/RNBQKB1R b KQkq - 1 1";
 const RETRY_FEN = "rnbqkbnr/pppp1ppp/8/4p3/6P1/8/PPPPPP1P/RNBQKBNR b KQkq - 0 2";
 const PC_ONLY_FEN = "rnbqkbnr/pppppp1p/6p1/8/5P2/8/PPPPP1PP/RNBQKBNR w KQkq - 0 2";
@@ -38,7 +37,9 @@ function jsonResponse(status: number, body?: unknown) {
 
 function streamingAnalyzeResponse(...messages: unknown[]) {
     const encoder = new TextEncoder();
-    const chunk = encoder.encode(`${messages.map((message) => JSON.stringify(message)).join("\n")}\n`);
+    const chunk = encoder.encode(
+        `${messages.map((message) => JSON.stringify(message)).join("\n")}\n`,
+    );
     return {
         ok: true,
         status: 200,
@@ -66,7 +67,8 @@ describe("Stockfish phone line updates", () => {
             ],
         };
         const fetchMock = vi.fn(async (input: URL | RequestInfo) => {
-            if (String(input).includes("/v1/cloud-eval")) return jsonResponse(200, storedEvaluation);
+            if (String(input).includes("/v1/cloud-eval"))
+                return jsonResponse(200, storedEvaluation);
             await new Promise((resolve) => setTimeout(resolve, 10));
             return streamingAnalyzeResponse(
                 {
@@ -89,9 +91,7 @@ describe("Stockfish phone line updates", () => {
         expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/cloud-eval?");
         expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/v1/analyze");
         // The saved evaluation renders immediately, then the live search takes over.
-        expect(
-            updates[0]?.map((line) => [line.source, line.depth, line.uciMoves[0]]),
-        ).toEqual([
+        expect(updates[0]?.map((line) => [line.source, line.depth, line.uciMoves[0]])).toEqual([
             ["lichess-cloud", 65, "c2c4"],
             ["lichess-cloud", 65, "e2e4"],
             ["lichess-cloud", 65, "g1f3"],
@@ -199,6 +199,50 @@ describe("Stockfish phone line updates", () => {
         expect(liveUpdates.at(-1)).toEqual(lines);
     });
 
+    it("runs LCZero only on the PC and preserves the selected odds network metadata", async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            streamingAnalyzeResponse(
+                {
+                    type: "meta",
+                    engine: "LCZero 0.32.1",
+                    engineKind: "lc0",
+                    networkMode: "queen",
+                    networkName: "Queen odds",
+                },
+                {
+                    type: "uci",
+                    line: "info depth 8 multipv 1 score cp -420 nodes 2048 nps 4900 pv e2e4 e7e5",
+                },
+                { type: "done", bestmove: "e2e4" },
+            ),
+        );
+        vi.stubGlobal("fetch", fetchMock);
+
+        const lines = await analyzeWithWebStockfish18({
+            fen: INITIAL_FEN,
+            multipv: 1,
+            depth: 14,
+            engineKind: "lc0",
+            lc0AutoNetwork: false,
+            lc0Network: "queen",
+        });
+
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/analyze");
+        expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
+            engineKind: "lc0",
+            lc0AutoNetwork: false,
+            lc0Network: "queen",
+        });
+        expect(lines[0]).toMatchObject({
+            source: "lc0",
+            executionLocation: "gaming-pc",
+            engineName: "LCZero 0.32.1",
+            networkMode: "queen",
+            networkName: "Queen odds",
+        });
+    });
+
     it("retries a broken PC stream on the PC without starting the phone engine", async () => {
         const fetchMock = vi
             .fn()
@@ -223,7 +267,10 @@ describe("Stockfish phone line updates", () => {
         expect(fetchMock).toHaveBeenCalledTimes(3);
         expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/v1/analyze");
         expect(String(fetchMock.mock.calls[2]?.[0])).toContain("/v1/analyze");
-        expect(lines[0]).toMatchObject({ executionLocation: "gaming-pc", uciMoves: ["g1f3", "d7d5"] });
+        expect(lines[0]).toMatchObject({
+            executionLocation: "gaming-pc",
+            uciMoves: ["g1f3", "d7d5"],
+        });
         expect(workerConstructor).not.toHaveBeenCalled();
     });
 

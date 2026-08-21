@@ -10,7 +10,9 @@ import ReportPanel from "./ReportPanel";
 function AnalysisPanel() {
   const { t } = useTranslation();
   const engines = useAtomValue(enginesAtom);
-  const loadedEngines = (engines ?? []).filter((engine) => engine.loaded);
+  const loadedLocalEngines = (engines ?? []).filter(
+    (engine) => engine.loaded && engine.type === "local",
+  );
   const [tab, setTab] = useAtom(currentAnalysisTabAtom);
 
   return (
@@ -30,7 +32,7 @@ function AnalysisPanel() {
         <Tabs.List>
           <Tabs.Tab value="engines">{t("Board.Analysis.Engines")}</Tabs.Tab>
           <Tabs.Tab value="report">{t("Board.Analysis.Report")}</Tabs.Tab>
-          <Tabs.Tab value="logs" disabled={loadedEngines.length === 0}>
+          <Tabs.Tab value="logs" disabled={loadedLocalEngines.length === 0}>
             {t("Board.Analysis.Logs")}
           </Tabs.Tab>
         </Tabs.List>

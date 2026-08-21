@@ -24,12 +24,14 @@ import { positionFromFen, swapMove } from "@/utils/chessops";
 import {
   type Engine,
   type LocalEngine,
+  type PcEngine,
   getBestMoves as localGetBestMoves,
   killEngine,
   stopEngine,
   stopMatchingEngine,
 } from "@/utils/engines";
 import { getBestMoves as lichessGetBestMoves, getLichessCloudFailure } from "@/utils/lichess/api";
+import { getPcEngineBestMoves, type PcEngineAnalysisUpdate } from "@/utils/pcEngine";
 import { BoundedSet, withLimitedMapEntry } from "@/utils/boundedCache";
 import { TreeStateContext } from "../common/TreeStateContext";
 
@@ -356,6 +358,7 @@ function EngineListener({
     let startedLocalSearch = false;
     let localRestartAttempts = 0;
     let localRestartTimer: number | null = null;
+    let pcController: AbortController | null = null;
 
     if (!settings.enabled) {
       if (engine.type === "local") {
@@ -397,16 +400,57 @@ function EngineListener({
         });
       };
 
-      const bestMovesPromise =
-        engine.type === "local"
-          ? getLocalBestMovesWithLichessCloud(
-              engine,
-              tab,
-              settings.go,
-              engineOptions,
-              updateCloudStatus,
-            )
-          : getLichessBestMovesWithStatus(tab, settings.go, engineOptions, updateCloudStatus);
+      const applyPcUpdate = ({ progress, lines }: PcEngineAnalysisUpdate) => {
+        if (
+          cancelled ||
+          requestSequenceRef.current !== requestId ||
+          latestSearchKeyRef.current !== searchKey ||
+          lines.length === 0
+        ) {
+          return;
+        }
+        startTransition(() => {
+          setEngineVariation((prev) =>
+            withLimitedMapEntry(prev, searchKey, lines, MAX_ENGINE_RESULT_CACHE_ENTRIES),
+          );
+          setProgress(progress);
+          const currentFirstEngineWithLines = firstEngineWithLinesRef.current;
+          if (currentFirstEngineWithLines === engine.id || currentFirstEngineWithLines === null) {
+            setLiveEval({
+              fen,
+              movesKey: displayedMovesKey,
+              score: lines[0].score,
+            });
+          }
+        });
+      };
+
+      let bestMovesPromise: Promise<[number, BestMoves[]] | null>;
+      if (engine.type === "local") {
+        bestMovesPromise = getLocalBestMovesWithLichessCloud(
+          engine,
+          tab,
+          settings.go,
+          engineOptions,
+          updateCloudStatus,
+        );
+      } else if (engine.type === "pc") {
+        pcController = new AbortController();
+        bestMovesPromise = getPcEngineBestMoves({
+          engine: engine as PcEngine,
+          goMode: settings.go,
+          options: engineOptions,
+          signal: pcController.signal,
+          onUpdate: applyPcUpdate,
+        });
+      } else {
+        bestMovesPromise = getLichessBestMovesWithStatus(
+          tab,
+          settings.go,
+          engineOptions,
+          updateCloudStatus,
+        );
+      }
 
       bestMovesPromise
         .then((moves) => {
@@ -516,6 +560,7 @@ function EngineListener({
           }
         })
         .catch((error) => {
+          if (error instanceof DOMException && error.name === "AbortError") return;
           if (
             cancelled ||
             requestSequenceRef.current !== requestId ||
@@ -561,6 +606,7 @@ function EngineListener({
         if (localRestartTimer !== null) {
           window.clearTimeout(localRestartTimer);
         }
+        pcController?.abort();
         if (startedLocalSearch && engine.type === "local") {
           void stopMatchingEngine(engine, tab, settings.go, engineOptions).catch((error) => {
             console.error(`Failed to cancel stale analysis for ${engine.name}`, error);
@@ -576,6 +622,7 @@ function EngineListener({
       if (localRestartTimer !== null) {
         window.clearTimeout(localRestartTimer);
       }
+      pcController?.abort();
       if (startedLocalSearch && engine.type === "local") {
         void stopMatchingEngine(engine, tab, settings.go, engineOptions).catch((error) => {
           console.error(`Failed to cancel stale analysis for ${engine.name}`, error);

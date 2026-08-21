@@ -3,10 +3,11 @@ import { appendFileSync, existsSync, readFileSync } from "node:fs";
 import { createServer as createHttpServer } from "node:http";
 import { createServer as createTcpServer } from "node:net";
 import { constants as osConstants, setPriority } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 import { createLocalLichessEvalStore } from "./lichess-local-eval-reader.mjs";
+import { LC0_PROFILE_OPTIONS, selectLc0Network } from "./lc0-network-routing.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const localAppData =
@@ -53,6 +54,35 @@ const localEvalPath = resolve(
     join(roamingAppData, "org.encroissant.app", "lichess-cloud-evals"),
 );
 const localEvalStore = createLocalLichessEvalStore(localEvalPath);
+const lc0Root = join(localAppData, "ChessTrainer", "engines", "lc0-v0.32.1-fresh");
+const lc0Path = resolve(
+  process.env.EN_CROISSANT_LC0_ENGINE || config.lc0Path || join(lc0Root, "lc0.exe"),
+);
+const lc0NetworkPaths = Object.freeze({
+  bt4: resolve(
+    process.env.EN_CROISSANT_LC0_BT4_WEIGHTS ||
+      config.lc0Networks?.bt4 ||
+      join(lc0Root, "BT4-it332.pb.gz"),
+  ),
+  t1: resolve(
+    process.env.EN_CROISSANT_LC0_T1_WEIGHTS ||
+      config.lc0Networks?.t1 ||
+      join(lc0Root, "T1-odds.pb.gz"),
+  ),
+  lqo: resolve(
+    process.env.EN_CROISSANT_LC0_LQO_WEIGHTS ||
+      config.lc0Networks?.lqo ||
+      join(lc0Root, "queen-odds", "lqo_v2.pb.gz"),
+  ),
+});
+const lc0Tuning = Object.freeze({
+  threads: positiveInteger(config.lc0Threads, 1, 0, 128),
+  minibatchSize: positiveInteger(config.lc0MinibatchSize, 8, 0, 1024),
+  nnCacheSize: positiveInteger(config.lc0NnCacheSize, 50_000, 0, 50_000_000),
+  backend: String(config.lc0Backend || "cuda-fp16"),
+});
+const lc0Available =
+  existsSync(lc0Path) && Object.values(lc0NetworkPaths).every((path) => existsSync(path));
 const allowedOrigins = new Set(
   (Array.isArray(config.allowedOrigins) ? config.allowedOrigins : [])
     .map((value) => String(value).replace(/\/$/, ""))
@@ -64,6 +94,7 @@ if (!existsSync(enginePath)) {
 }
 
 let httpEngine = null;
+const lc0Engines = new Map();
 const startedAt = new Date().toISOString();
 
 const httpServer = createHttpServer((request, response) => {
@@ -88,7 +119,7 @@ const uciServer = createTcpServer((socket) => {
     windowsHide: true,
     stdio: ["pipe", "pipe", "pipe"],
   });
-  setStockfishResponsivePriority(child, "UCI");
+  setEngineResponsivePriority(child, "UCI", "Stockfish");
   const output = createInterface({ input: child.stdout });
   child.stdin.write(`setoption name Threads value ${threads}\n`);
   child.stdin.write(`setoption name Hash value ${hashMb}\n`);
@@ -129,6 +160,7 @@ uciServer.listen(uciPort, uciHost, () => {
 for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, () => {
     httpEngine?.close();
+    for (const engine of lc0Engines.values()) engine.close();
     httpServer.close();
     uciServer.close();
   });
@@ -157,6 +189,33 @@ async function handleHttpRequest(request, response) {
       processId: process.pid,
       engineReady: httpEngine.ready,
       queuedAnalyses: httpEngine.queued,
+      engines: {
+        stockfish: {
+          available: true,
+          ready: httpEngine.ready,
+          queuedAnalyses: httpEngine.queued,
+          name: "Stockfish 18",
+        },
+        lc0: {
+          available: lc0Available,
+          ready: lc0Available && Array.from(lc0Engines.values()).every((engine) => engine.ready),
+          name: "LCZero 0.32.1",
+          enginePath: lc0Path,
+          tuning: lc0Tuning,
+          profiles: LC0_PROFILE_OPTIONS,
+          networks: Object.fromEntries(
+            Object.entries(lc0NetworkPaths).map(([family, path]) => [
+              family,
+              {
+                path,
+                available: existsSync(path),
+                ready: lc0Engines.get(family)?.ready === true,
+                queuedAnalyses: lc0Engines.get(family)?.queued || 0,
+              },
+            ]),
+          ),
+        },
+      },
       localEvals: localEvalStore.status,
     });
   }
@@ -191,7 +250,41 @@ async function handleHttpRequest(request, response) {
   const multipv = positiveInteger(body?.multipv, 3, 1, maxMultiPv);
   const depth = positiveInteger(body?.depth, 70, 1, maxDepth);
   const infinite = body?.infinite === true;
+  const engineKind = String(body?.engineKind || body?.engine || "stockfish").toLowerCase();
   if (!fen) return writeJson(response, 400, { error: "A valid FEN is required." });
+  if (!new Set(["stockfish", "lc0"]).has(engineKind)) {
+    return writeJson(response, 400, { error: "engineKind must be stockfish or lc0." });
+  }
+
+  let selectedEngine = httpEngine;
+  let selection = null;
+  let dynamicOptions = {};
+  if (engineKind === "lc0") {
+    if (!lc0Available) {
+      return writeJson(response, 503, {
+        error: "LCZero or one of its configured network files is unavailable on the gaming PC.",
+      });
+    }
+    selection = selectLc0Network({
+      fen,
+      autoNetwork: body?.lc0AutoNetwork === true,
+      manualMode: body?.lc0Network,
+    });
+    selectedEngine = lc0Engines.get(selection.family);
+    if (!selectedEngine) {
+      return writeJson(response, 503, {
+        error: `LCZero ${selection.family} network is unavailable.`,
+      });
+    }
+    if (selection.family === "lqo") {
+      const playsBlack = selection.playerColor === "black";
+      dynamicOptions = {
+        CPuct: 1.5,
+        FpuValue: 0.4,
+        DrawScore: playsBlack ? 0.6 : -0.4,
+      };
+    }
+  }
 
   response.writeHead(200, {
     "cache-control": "no-store",
@@ -201,7 +294,19 @@ async function handleHttpRequest(request, response) {
   });
   response.flushHeaders?.();
   response.write(
-    `${JSON.stringify({ type: "meta", engine: "Stockfish 18", build: "bmi2", threads, hashMb })}\n`,
+    `${JSON.stringify({
+      type: "meta",
+      engine: engineKind === "lc0" ? "LCZero 0.32.1" : "Stockfish 18",
+      engineKind,
+      build: engineKind === "lc0" ? lc0Tuning.backend : "bmi2",
+      threads: engineKind === "lc0" ? lc0Tuning.threads : threads,
+      hashMb: engineKind === "stockfish" ? hashMb : undefined,
+      networkMode: selection?.mode,
+      networkFamily: selection?.family,
+      networkName: selection?.label,
+      networkReason: selection?.reason,
+      weights: selection ? basename(lc0NetworkPaths[selection.family]) : undefined,
+    })}\n`,
   );
 
   const controller = new AbortController();
@@ -212,12 +317,13 @@ async function handleHttpRequest(request, response) {
   });
 
   try {
-    const bestmove = await httpEngine.analyze(
+    const bestmove = await selectedEngine.analyze(
       { fen, multipv, depth, infinite },
       (line) => {
         if (!response.destroyed) response.write(`${JSON.stringify({ type: "uci", line })}\n`);
       },
       controller.signal,
+      dynamicOptions,
     );
     if (!response.destroyed) {
       response.end(`${JSON.stringify({ type: "done", bestmove })}\n`);
@@ -229,10 +335,12 @@ async function handleHttpRequest(request, response) {
   }
 }
 
-class PersistentStockfish {
-  constructor(path, options) {
+class PersistentUciEngine {
+  constructor(path, { label, initialOptions = {}, priorityRole = "HTTP" }) {
     this.path = path;
-    this.options = options;
+    this.label = label;
+    this.initialOptions = initialOptions;
+    this.priorityRole = priorityRole;
     this.child = null;
     this.reader = null;
     this.waiters = [];
@@ -243,7 +351,7 @@ class PersistentStockfish {
     this.queued = 0;
   }
 
-  async analyze(params, onInfo, signal) {
+  async analyze(params, onInfo, signal, dynamicOptions = {}) {
     this.queued += 1;
     let release;
     const previous = this.queueTail;
@@ -255,7 +363,11 @@ class PersistentStockfish {
     try {
       if (signal?.aborted) throw abortError();
       await this.start();
-      await this.sendAndWaitReady(`setoption name MultiPV value ${params.multipv}`);
+      this.send(`setoption name MultiPV value ${params.multipv}`);
+      for (const [name, value] of Object.entries(dynamicOptions)) {
+        this.send(`setoption name ${name} value ${formatUciOptionValue(value)}`);
+      }
+      await this.sendAndWaitReady();
       if (signal?.aborted) throw abortError();
       this.send(`position fen ${params.fen}`);
       return await this.runSearch(
@@ -285,24 +397,24 @@ class PersistentStockfish {
       windowsHide: true,
       stdio: ["pipe", "pipe", "pipe"],
     });
-    setStockfishResponsivePriority(child, "HTTP");
+    setEngineResponsivePriority(child, this.priorityRole, this.label);
     this.child = child;
     this.reader = createInterface({ input: child.stdout });
     this.reader.on("line", (line) => this.handleLine(line));
-    child.stderr.on("data", (chunk) => log(`Stockfish HTTP stderr: ${String(chunk).trim()}`));
+    child.stderr.on("data", (chunk) => log(`${this.label} stderr: ${String(chunk).trim()}`));
     child.on("error", (error) => this.handleExit(error));
-    child.on("exit", (code) => this.handleExit(new Error(`Stockfish exited with code ${code}.`)));
+    child.on("exit", (code) =>
+      this.handleExit(new Error(`${this.label} exited with code ${code}.`)),
+    );
 
     this.send("uci");
     await this.waitFor((line) => line === "uciok", 20_000, "uciok");
-    this.send(`setoption name Threads value ${this.options.threads}`);
-    this.send(`setoption name Hash value ${this.options.hashMb}`);
-    this.send("setoption name UCI_ShowWDL value true");
+    for (const [name, value] of Object.entries(this.initialOptions)) {
+      this.send(`setoption name ${name} value ${formatUciOptionValue(value)}`);
+    }
     await this.sendAndWaitReady();
     this.ready = true;
-    log(
-      `Persistent Stockfish ready (${this.options.threads} threads, ${this.options.hashMb} MiB hash)`,
-    );
+    log(`Persistent ${this.label} ready`);
   }
 
   sendAndWaitReady(command) {
@@ -312,11 +424,11 @@ class PersistentStockfish {
   }
 
   runSearch(command, onInfo, signal) {
-    if (this.activeJob) throw new Error("Stockfish already has an active search.");
+    if (this.activeJob) throw new Error(`${this.label} already has an active search.`);
     return new Promise((resolvePromise, rejectPromise) => {
       const timeoutId = setTimeout(() => {
         if (!this.activeJob) return;
-        this.activeJob.abortReason = new Error("Stockfish analysis timed out.");
+        this.activeJob.abortReason = new Error(`${this.label} analysis timed out.`);
         this.send("stop");
       }, 180_000);
       timeoutId.unref();
@@ -346,7 +458,7 @@ class PersistentStockfish {
       const waiter = { predicate, resolve: resolvePromise, reject: rejectPromise, timeoutId: null };
       waiter.timeoutId = setTimeout(() => {
         this.waiters = this.waiters.filter((candidate) => candidate !== waiter);
-        rejectPromise(new Error(`Timed out waiting for Stockfish ${label}.`));
+        rejectPromise(new Error(`Timed out waiting for ${this.label} ${label}.`));
       }, timeoutMs);
       waiter.timeoutId.unref();
       this.waiters.push(waiter);
@@ -390,7 +502,7 @@ class PersistentStockfish {
   }
 
   send(command) {
-    if (!this.child?.stdin?.writable) throw new Error("Stockfish is not running.");
+    if (!this.child?.stdin?.writable) throw new Error(`${this.label} is not running.`);
     this.child.stdin.write(`${command}\n`);
   }
 
@@ -401,10 +513,71 @@ class PersistentStockfish {
   }
 }
 
-httpEngine = new PersistentStockfish(enginePath, { threads, hashMb });
+httpEngine = new PersistentUciEngine(enginePath, {
+  label: "Stockfish 18",
+  initialOptions: {
+    Threads: threads,
+    Hash: hashMb,
+    UCI_ShowWDL: true,
+  },
+});
 void httpEngine.start().catch((error) => {
   log(`Persistent Stockfish warmup failed: ${error?.stack || error}`);
 });
+
+if (lc0Available) {
+  for (const [family, weightsPath] of Object.entries(lc0NetworkPaths)) {
+    const engine = new PersistentUciEngine(lc0Path, {
+      label: `LCZero ${family.toUpperCase()}`,
+      priorityRole: `HTTP ${family.toUpperCase()}`,
+      initialOptions: {
+        WeightsFile: weightsPath,
+        Backend: lc0Tuning.backend,
+        Threads: lc0Tuning.threads,
+        MinibatchSize: lc0Tuning.minibatchSize,
+        NNCacheSize: lc0Tuning.nnCacheSize,
+        UCI_ShowWDL: true,
+        Contempt: 0,
+        ContemptMode: "play",
+      },
+    });
+    lc0Engines.set(family, engine);
+  }
+  void prewarmLc0Engines();
+} else {
+  log(`LCZero is unavailable (engine=${lc0Path}; networks=${JSON.stringify(lc0NetworkPaths)})`);
+}
+
+async function prewarmLc0Engines() {
+  // Load one network at a time. This keeps CUDA's startup peak bounded when the
+  // chess trainer already owns its own three-network warm pool on the same GPU.
+  for (const [family, engine] of lc0Engines.entries()) {
+    try {
+      await prewarmLc0Engine(engine, family);
+    } catch (error) {
+      log(`Persistent LCZero ${family} warmup failed: ${error?.stack || error}`);
+    }
+  }
+}
+
+async function prewarmLc0Engine(engine, family) {
+  await engine.analyze(
+    {
+      fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      multipv: 1,
+      depth: 1,
+      infinite: false,
+    },
+    () => {},
+    undefined,
+  );
+  log(`LCZero ${family} network prewarmed`);
+}
+
+function formatUciOptionValue(value) {
+  if (typeof value === "boolean") return value ? "true" : "false";
+  return String(value ?? "");
+}
 
 function rewriteUciDefault(line) {
   if (line.startsWith("option name Threads type spin default ")) {
@@ -471,21 +644,21 @@ function readJson(path) {
 }
 
 function abortError() {
-  const error = new Error("Stockfish analysis was cancelled.");
+  const error = new Error("Engine analysis was cancelled.");
   error.name = "AbortError";
   return error;
 }
 
-function setStockfishResponsivePriority(child, role) {
+function setEngineResponsivePriority(child, role, engineLabel) {
   try {
     setPriority(child.pid, osConstants.priority.PRIORITY_ABOVE_NORMAL);
   } catch (error) {
-    log(`Could not set ${role} Stockfish responsive priority: ${error?.message || error}`);
+    log(`Could not set ${role} ${engineLabel} responsive priority: ${error?.message || error}`);
   }
 }
 
 function publicError(error) {
-  return error instanceof Error ? error.message : "Stockfish request failed.";
+  return error instanceof Error ? error.message : "Engine request failed.";
 }
 
 function log(message) {

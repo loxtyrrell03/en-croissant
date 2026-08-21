@@ -66,7 +66,42 @@ const remoteEngineSchema = z.object({
 
 export type RemoteEngine = z.output<typeof remoteEngineSchema>;
 
-export const engineSchema = z.union([localEngineSchema, remoteEngineSchema]);
+const pcEngineSchema = z.object({
+    type: z.literal("pc"),
+    id: z.string().default(() => crypto.randomUUID()),
+    name: z.string(),
+    url: z.string(),
+    engineKind: z.enum(["stockfish", "lc0"]),
+    image: z.string().nullish(),
+    loaded: z.boolean().nullish(),
+    enabled: z.boolean().nullish(),
+    go: goModeSchema.nullish(),
+    settings: engineSettingsSchema.nullish(),
+});
+
+export type PcEngine = z.output<typeof pcEngineSchema>;
+
+export function createGamingPcLc0Engine(): PcEngine {
+    return {
+        type: "pc",
+        id: "gaming-pc-lc0",
+        name: "Gaming PC LC0",
+        url: String(
+            import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ?? "http://127.0.0.1:38419",
+        ).replace(/\/+$/, ""),
+        engineKind: "lc0",
+        loaded: true,
+        go: { t: "Depth", c: 14 },
+        settings: [
+            { name: "MultiPV", value: 3 },
+            { name: "Depth", value: 14 },
+            { name: "AutoNetwork", value: true },
+            { name: "OddsMode", value: "none" },
+        ],
+    };
+}
+
+export const engineSchema = z.union([localEngineSchema, remoteEngineSchema, pcEngineSchema]);
 export type Engine = z.output<typeof engineSchema>;
 
 export function stopEngine(engine: LocalEngine, tab: string): Promise<void> {

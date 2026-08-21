@@ -16,6 +16,7 @@ import {
   SimpleGrid,
   Space,
   Stack,
+  Switch,
   Text,
   TextInput,
   ThemeIcon,
@@ -47,6 +48,12 @@ import {
   type LocalEngine,
   requiredEngineSettings,
 } from "@/utils/engines";
+import {
+  LC0_NETWORK_PROFILES,
+  normalizeLc0NetworkProfile,
+  readEngineSetting,
+  replaceEngineSetting,
+} from "@/utils/lc0Networks";
 import { unwrap } from "@/utils/unwrap";
 import ConfirmModal from "../common/ConfirmModal";
 import GenericCard from "../common/GenericCard";
@@ -84,6 +91,8 @@ export default function EnginesPage() {
         item.id,
         item.type,
         item.type === "local" ? item.path : "",
+        item.type !== "local" ? item.url : "",
+        item.type === "pc" ? item.engineKind : "",
         item.type === "local" ? (item.version ?? "") : "",
         item.type === "local" && item.elo ? item.elo.toString() : "",
       ];
@@ -131,7 +140,12 @@ export default function EnginesPage() {
                             value: item.elo ? item.elo.toString() : "??",
                           },
                         ]
-                      : [{ label: "Type", value: "Cloud" }];
+                      : [
+                          {
+                            label: "Type",
+                            value: item.type === "pc" ? "Gaming PC" : "Cloud",
+                          },
+                        ];
                   if (item.type === "local" && item.version) {
                     stats.push({
                       label: t("Common.Version"),
@@ -235,21 +249,89 @@ export default function EnginesPage() {
                   />
                 </Stack>
 
-                <Group justify="right">
-                  <Button
-                    color="red"
-                    onClick={() => {
-                      setEngines(async (prev) => {
-                        const copy = [...(await prev)];
-                        copy.splice(selected, 1);
-                        return copy;
-                      });
-                      setSelected(null);
-                    }}
-                  >
-                    {t("Common.Remove")}
-                  </Button>
-                </Group>
+                {selectedEngine.type === "pc" && selectedEngine.engineKind === "lc0" && (
+                  <Stack w="50%">
+                    <Group justify="space-between" wrap="nowrap">
+                      <Stack gap={0}>
+                        <Text fw="bold">Auto network switching</Text>
+                        <Text size="xs" c="dimmed">
+                          Select BT4, T1, or LQO from the board's odds material.
+                        </Text>
+                      </Stack>
+                      <Switch
+                        checked={
+                          readEngineSetting(selectedEngine.settings ?? [], "AutoNetwork") !== false
+                        }
+                        onChange={(event) => {
+                          const checked = event.currentTarget.checked;
+                          setEngines(async (prev) => {
+                            const copy = [...(await prev)];
+                            copy[selected] = {
+                              ...copy[selected],
+                              settings: replaceEngineSetting(
+                                copy[selected].settings ?? [],
+                                "AutoNetwork",
+                                checked,
+                              ),
+                            };
+                            return copy;
+                          });
+                        }}
+                      />
+                    </Group>
+                    <Select
+                      label="Odds network"
+                      description="Turn off auto switching to force a profile."
+                      allowDeselect={false}
+                      disabled={
+                        readEngineSetting(selectedEngine.settings ?? [], "AutoNetwork") !== false
+                      }
+                      value={normalizeLc0NetworkProfile(
+                        readEngineSetting(selectedEngine.settings ?? [], "OddsMode"),
+                      )}
+                      data={LC0_NETWORK_PROFILES.map((profile) => ({
+                        value: profile.value,
+                        label: profile.label,
+                      }))}
+                      onChange={(value) => {
+                        setEngines(async (prev) => {
+                          const copy = [...(await prev)];
+                          copy[selected] = {
+                            ...copy[selected],
+                            settings: replaceEngineSetting(
+                              copy[selected].settings ?? [],
+                              "OddsMode",
+                              normalizeLc0NetworkProfile(value),
+                            ),
+                          };
+                          return copy;
+                        });
+                      }}
+                    />
+                  </Stack>
+                )}
+
+                {selectedEngine.id === "gaming-pc-lc0" ? (
+                  <Text size="xs" c="dimmed">
+                    This managed option uses the LC0 service running on your gaming PC.
+                  </Text>
+                ) : (
+                  <Group justify="right">
+                    <Button
+                      color="red"
+                      onClick={() => {
+                        setEngines(async (prev) => {
+                          const copy = [...(await prev)];
+                          copy.splice(selected, 1);
+                          return copy;
+                        });
+                        setSelected(null);
+                      }}
+                    >
+                      {t("Common.Remove")}
+                    </Button>
+                  </Group>
+                )}
               </Stack>
             )}
           </Paper>
@@ -645,6 +727,8 @@ function EngineName({ engine }: { engine: Engine }) {
     <Group wrap="nowrap">
       {engine.image ? (
         <LocalImage src={engine.image} alt={engine.name} h="2.5rem" fit="contain" flex={0} />
+      ) : engine.type === "pc" ? (
+        <IconCpu size="2.5rem" />
       ) : engine.type !== "local" ? (
         <IconCloud size="2.5rem" />
       ) : (

@@ -2,8 +2,10 @@ import {
   ActionIcon,
   Checkbox,
   Group,
+  Select,
   type MantineColor,
   Stack,
+  Switch,
   Text,
   Tooltip,
 } from "@mantine/core";
@@ -16,6 +18,12 @@ import type { GoMode } from "@/bindings";
 import GoModeInput from "@/components/common/GoModeInput";
 import { activeTabAtom, enginesAtom } from "@/state/atoms";
 import { type Engine, type EngineSettings, killEngine } from "@/utils/engines";
+import {
+  LC0_NETWORK_PROFILES,
+  normalizeLc0NetworkProfile,
+  readEngineSetting,
+  replaceEngineSetting,
+} from "@/utils/lc0Networks";
 import CoresSlider from "./CoresSlider";
 import HashSlider from "./HashSlider";
 import LinesSlider from "./LinesSlider";
@@ -51,6 +59,11 @@ function EngineSettingsForm({
   const multipv = settings.settings.find((o) => o.name === "MultiPV");
   const threads = settings.settings.find((o) => o.name === "Threads");
   const hash = settings.settings.find((o) => o.name === "Hash");
+  const isPcLc0 = engine.type === "pc" && engine.engineKind === "lc0";
+  const autoNetwork = readEngineSetting(settings.settings, "AutoNetwork") !== false;
+  const selectedNetwork = normalizeLc0NetworkProfile(
+    readEngineSetting(settings.settings, "OddsMode"),
+  );
   const activeTab = useAtomValue(activeTabAtom);
 
   const setGoMode = useCallback(
@@ -89,6 +102,60 @@ function EngineSettingsForm({
             color={color}
           />
         </Group>
+      )}
+
+      {!minimal && isPcLc0 && (
+        <Stack gap="xs">
+          <Group justify="space-between" wrap="nowrap">
+            <Stack gap={0}>
+              <Text size="sm" fw="bold">
+                Auto network switching
+              </Text>
+              <Text size="xs" c="dimmed">
+                Match BT4, T1, or LQO to the odds material on the board.
+              </Text>
+            </Stack>
+            <Switch
+              checked={autoNetwork}
+              onChange={(event) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  settings: replaceEngineSetting(
+                    prev.settings,
+                    "AutoNetwork",
+                    event.currentTarget.checked,
+                  ),
+                }))
+              }
+              aria-label="Auto LC0 network switching"
+            />
+          </Group>
+          <Select
+            label="Odds network"
+            description={
+              autoNetwork
+                ? "Auto switching is active. Turn it off to force one profile."
+                : "Choose the odds profile LC0 should use."
+            }
+            allowDeselect={false}
+            disabled={autoNetwork}
+            value={selectedNetwork}
+            data={LC0_NETWORK_PROFILES.map((profile) => ({
+              value: profile.value,
+              label: profile.label,
+            }))}
+            onChange={(value) =>
+              setSettings((prev) => ({
+                ...prev,
+                settings: replaceEngineSetting(
+                  prev.settings,
+                  "OddsMode",
+                  normalizeLc0NetworkProfile(value),
+                ),
+              }))
+            }
+          />
+        </Stack>
       )}
 
       {!remote && threads && (

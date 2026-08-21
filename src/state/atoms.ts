@@ -1578,7 +1578,7 @@ export const bestMovesFamily = atomFamily(
                 const settingsAtom = tabEngineSettingsFamily({
                     tab,
                     engineId: engine.id,
-                    defaultSettings: engine.type === "local" ? engine.settings || [] : undefined,
+                    defaultSettings: engine.settings ?? undefined,
                     defaultGo: engine.go ?? undefined,
                 });
                 if (!get(settingsAtom).enabled) {
@@ -1652,7 +1652,7 @@ export const firstEngineWithLinesFamily = atomFamily(
                 const settingsAtom = tabEngineSettingsFamily({
                     tab,
                     engineId: engine.id,
-                    defaultSettings: engine.type === "local" ? engine.settings || [] : undefined,
+                    defaultSettings: engine.settings ?? undefined,
                     defaultGo: engine.go ?? undefined,
                 });
                 if (!get(settingsAtom).enabled) continue;
@@ -1711,7 +1711,7 @@ export const allEnabledAtom = atom((get) => {
             const atom = tabEngineSettingsFamily({
                 tab: get(activeTabAtom)!,
                 engineId: engine.id,
-                defaultSettings: engine.type === "local" ? engine.settings || [] : undefined,
+                defaultSettings: engine.settings ?? undefined,
                 defaultGo: engine.go ?? undefined,
             });
             return get(atom).enabled;
@@ -1728,7 +1728,7 @@ export const enableAllAtom = atom(null, (get, set, value: boolean) => {
         const atom = tabEngineSettingsFamily({
             tab: get(activeTabAtom)!,
             engineId: engine.id,
-            defaultSettings: engine.type === "local" ? engine.settings || [] : undefined,
+            defaultSettings: engine.settings ?? undefined,
             defaultGo: engine.go ?? undefined,
         });
         const current = get(atom);
