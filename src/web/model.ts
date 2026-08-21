@@ -167,12 +167,15 @@ export type WebEngineScore =
           value: number;
       };
 
-export type WebEngineLineSource = "stockfish" | "lichess-cloud";
+export type WebEngineLineSource = "stockfish" | "lichess-cloud" | "lc0";
 export type WebEngineExecutionLocation = "gaming-pc" | "phone";
 
 export type WebEngineLine = {
     source: WebEngineLineSource;
     executionLocation?: WebEngineExecutionLocation;
+    engineName?: string;
+    networkMode?: string;
+    networkName?: string;
     multipv: number;
     depth: number;
     seldepth?: number | null;

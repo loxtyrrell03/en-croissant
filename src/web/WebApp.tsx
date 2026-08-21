@@ -104,6 +104,13 @@ import {
 } from "@/utils/coachModels";
 import { getWinChance, normalizeScore } from "@/utils/score";
 import {
+  getLc0NetworkDisplayName,
+  LC0_NETWORK_PROFILES,
+  type Lc0NetworkProfile,
+  normalizeLc0NetworkProfile,
+  type PcEngineKind,
+} from "@/utils/lc0Networks";
+import {
   loadSharedLichessCredential,
   saveSharedLichessCredential,
 } from "@/utils/sharedLichessAuth";
@@ -435,6 +442,9 @@ type WebEnginePanelSettings = {
   multipv: number;
   depth: number;
   infinite: boolean;
+  engineKind: PcEngineKind;
+  lc0AutoNetwork: boolean;
+  lc0Network: Lc0NetworkProfile;
 };
 
 const DEFAULT_WEB_ENGINE_PANEL_SETTINGS: WebEnginePanelSettings = {
@@ -443,6 +453,9 @@ const DEFAULT_WEB_ENGINE_PANEL_SETTINGS: WebEnginePanelSettings = {
   multipv: 3,
   depth: 14,
   infinite: false,
+  engineKind: "stockfish",
+  lc0AutoNetwork: true,
+  lc0Network: "none",
 };
 
 type WebPrepStoredSetup = {
@@ -4530,6 +4543,9 @@ function EngineUnderBoardPanel({
       multipv: settings.multipv,
       depth: settings.depth,
       infinite: settings.infinite,
+      engineKind: settings.engineKind,
+      lc0AutoNetwork: settings.lc0AutoNetwork,
+      lc0Network: settings.lc0Network,
       prefetchFens: upcomingFens,
       signal: controller.signal,
       onUpdate: (lines) => {
@@ -4547,7 +4563,7 @@ function EngineUnderBoardPanel({
         if (!active || isAbortError(engineError)) return;
         setStockfishLines([]);
         setStatus("error");
-        setError(engineError instanceof Error ? engineError.message : "Stockfish 18 failed.");
+        setError(engineError instanceof Error ? engineError.message : "PC engine failed.");
       });
 
     return () => {
@@ -4558,7 +4574,10 @@ function EngineUnderBoardPanel({
     currentFen,
     settings.depth,
     settings.enabled,
+    settings.engineKind,
     settings.infinite,
+    settings.lc0AutoNetwork,
+    settings.lc0Network,
     settings.multipv,
     suspended,
     upcomingFens,
@@ -4588,7 +4607,11 @@ function EngineUnderBoardPanel({
   });
   const liveLineSpeed = topLine ? formatWebEngineNodeSpeed(topLine.nps) : null;
   const nodeCount = topLine ? formatWebEngineNodeCount(topLine.nodes) : null;
-  const analysisSource = topLine ? getWebEngineSourceLabel(topLine) : "Stockfish";
+  const engineLabel = settings.engineKind === "lc0" ? "LCZero 0.32.1" : "Stockfish 18";
+  const selectedNetworkName = settings.lc0AutoNetwork
+    ? "Auto network"
+    : getLc0NetworkDisplayName(settings.lc0Network);
+  const analysisSource = topLine ? getWebEngineSourceLabel(topLine) : engineLabel;
   const compactEngineMeta = getWebCompactEngineMeta({
     enabled: analysisEnabled,
     topLine,
@@ -4624,7 +4647,7 @@ function EngineUnderBoardPanel({
               </Text>
             ) : null}
             <Switch
-              aria-label="Toggle Stockfish 18 analysis"
+              aria-label={`Toggle ${engineLabel} analysis`}
               checked={settings.enabled}
               onChange={(event) => updateSettings({ enabled: event.currentTarget.checked })}
               size="xs"
@@ -4688,10 +4711,10 @@ function EngineUnderBoardPanel({
           className={classes.enginePanelToggle}
           aria-label={
             suspended
-              ? "Stockfish 18 paused while Coach reviews"
+              ? `${engineLabel} paused while Coach reviews`
               : settings.enabled
-                ? "Pause Stockfish 18"
-                : "Start Stockfish 18"
+                ? `Pause ${engineLabel}`
+                : `Start ${engineLabel}`
           }
           variant={analysisEnabled ? "filled" : "subtle"}
           color={analysisEnabled ? "blue" : "gray"}
@@ -4703,8 +4726,13 @@ function EngineUnderBoardPanel({
         <Box className={classes.enginePanelTitleArea}>
           <Group gap={6} wrap="nowrap" miw={0}>
             <Text fw={700} size="sm" truncate>
-              Stockfish 18
+              {engineLabel}
             </Text>
+            {settings.engineKind === "lc0" ? (
+              <Code className={classes.enginePanelCode} title="LCZero network selection">
+                {topLine?.networkName || selectedNetworkName}
+              </Code>
+            ) : null}
             {suspended && settings.enabled ? (
               <Code className={classes.enginePanelCode}>Coach review</Code>
             ) : headerStatus ? (
@@ -4764,6 +4792,48 @@ function EngineUnderBoardPanel({
 
       <Collapse in={settingsOpen}>
         <Box className={classes.enginePanelSettings}>
+          <Stack gap="xs" mb="xs">
+            <Select
+              label="PC engine"
+              description="Both choices run on your gaming PC."
+              allowDeselect={false}
+              data={[
+                { value: "stockfish", label: "Stockfish 18" },
+                { value: "lc0", label: "LCZero 0.32.1" },
+              ]}
+              value={settings.engineKind}
+              onChange={(value) =>
+                updateSettings({ engineKind: value === "lc0" ? "lc0" : "stockfish" })
+              }
+            />
+            {settings.engineKind === "lc0" ? (
+              <>
+                <Switch
+                  label="Auto network switching"
+                  description="Uses BT4 for normal positions, T1 for supported piece-odds positions, and LQO for queen odds."
+                  checked={settings.lc0AutoNetwork}
+                  onChange={(event) =>
+                    updateSettings({ lc0AutoNetwork: event.currentTarget.checked })
+                  }
+                />
+                <Select
+                  label="Manual LC0 network"
+                  description={
+                    settings.lc0AutoNetwork
+                      ? "Turn off automatic switching to choose a fixed odds profile."
+                      : "The selected odds profile stays active until you change it."
+                  }
+                  allowDeselect={false}
+                  disabled={settings.lc0AutoNetwork}
+                  data={LC0_NETWORK_PROFILES.map(({ value, label }) => ({ value, label }))}
+                  value={settings.lc0Network}
+                  onChange={(value) =>
+                    updateSettings({ lc0Network: normalizeLc0NetworkProfile(value) })
+                  }
+                />
+              </>
+            ) : null}
+          </Stack>
           <Group gap="xs" grow className={classes.engineSettingsRow}>
             <EngineNumberStepper
               label="Lines"
@@ -4825,6 +4895,7 @@ function EngineLineTable({
   settings: WebEnginePanelSettings;
   onPlayMove: (uci: string) => void;
 }) {
+  const engineLabel = settings.engineKind === "lc0" ? "LCZero 0.32.1" : "Stockfish 18";
   if (!enabled) {
     return (
       <Box className={classes.enginePanelMessage}>
@@ -4833,7 +4904,7 @@ function EngineLineTable({
           Inactive engine
         </Text>
         <Text size="xs" c="dimmed">
-          Press play to start Stockfish 18 analysis.
+          Press play to start {engineLabel} analysis on the gaming PC.
         </Text>
       </Box>
     );
@@ -4874,7 +4945,7 @@ function EngineLineTable({
           </Table.Tbody>
         </Table>
         <Text size="xs" c="dimmed" className={classes.enginePanelLoadingText}>
-          Waiting for Stockfish lines from this position
+          Waiting for {engineLabel} lines from this position
         </Text>
       </Box>
     );
@@ -8022,11 +8093,12 @@ function getWebEngineHeaderStatus({
   if (!enabled) return "Off";
   if (status === "error") return "Error";
   if (topLine) return getWebEngineSourceLabel(topLine);
-  return "Stockfish";
+  return "PC engine";
 }
 
 function getWebEngineSourceLabel(line: WebEngineLine) {
   if (line.source === "lichess-cloud") return "PC cloud evals";
+  if (line.source === "lc0") return line.networkName ? `PC LC0 · ${line.networkName}` : "PC LC0";
   if (line.executionLocation === "gaming-pc") return "PC";
   if (line.executionLocation === "phone") return "Local phone";
   return "Stockfish";
@@ -8058,6 +8130,7 @@ function getWebCompactEngineMeta({
     liveLineSpeed ? liveLineSpeed.replace(" NPS", " n/s") : null,
   ].filter(Boolean);
   const accessibleParts = [
+    topLine.networkName ? `LCZero ${topLine.networkName}` : null,
     depth ? `depth ${depth}` : null,
     topLine.nodes ? `${topLine.nodes.toLocaleString()} total nodes` : null,
     liveLineSpeed,
@@ -9619,6 +9692,9 @@ function normalizeWebEnginePanelSettings(
     multipv: clampWholeNumber(value?.multipv, 1, 8, DEFAULT_WEB_ENGINE_PANEL_SETTINGS.multipv),
     depth: clampWholeNumber(value?.depth, 6, 70, DEFAULT_WEB_ENGINE_PANEL_SETTINGS.depth),
     infinite: Boolean(value?.infinite),
+    engineKind: value?.engineKind === "lc0" ? "lc0" : "stockfish",
+    lc0AutoNetwork: value?.lc0AutoNetwork !== false,
+    lc0Network: normalizeLc0NetworkProfile(value?.lc0Network),
   };
 }
 

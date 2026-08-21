@@ -4,6 +4,7 @@ import { parseUci } from "chessops";
 import { normalizeMove } from "chessops/chess";
 import { makeSan } from "chessops/san";
 import { positionFromFen } from "@/utils/chessops";
+import type { Lc0NetworkProfile, PcEngineKind } from "@/utils/lc0Networks";
 import type { WebEngineLine, WebEngineScore } from "./model";
 import { normalizeWebEngineScoreForWhite } from "./engineScore";
 import { type WebLichessCloudData, webLichessCloudDataToLines } from "./lichessCloud";
@@ -44,6 +45,9 @@ export type WebStockfishAnalyzeRequest = {
     infinite?: boolean;
     signal?: AbortSignal;
     prefetchFens?: string[];
+    engineKind?: PcEngineKind;
+    lc0AutoNetwork?: boolean;
+    lc0Network?: Lc0NetworkProfile;
     onUpdate?: (lines: WebEngineLine[]) => void;
 };
 
@@ -54,20 +58,25 @@ export async function analyzeWithWebStockfish18({
     infinite = false,
     signal,
     prefetchFens = [],
+    engineKind = "stockfish",
+    lc0AutoNetwork = true,
+    lc0Network = "none",
     onUpdate,
 }: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
     if (REMOTE_STOCKFISH_URL) {
-        try {
-            const storedLines = await queryRemoteStoredCloudLines({ fen, multipv, signal });
-            throwIfAborted(signal);
-            if (storedLines.length > 0) {
-                onUpdate?.(storedLines);
-                void prefetchRemoteStoredCloudLines(prefetchFens, multipv);
-                return storedLines;
+        if (engineKind === "stockfish") {
+            try {
+                const storedLines = await queryRemoteStoredCloudLines({ fen, multipv, signal });
+                throwIfAborted(signal);
+                if (storedLines.length > 0) {
+                    onUpdate?.(storedLines);
+                    void prefetchRemoteStoredCloudLines(prefetchFens, multipv);
+                    return storedLines;
+                }
+            } catch (error) {
+                if (isAbortError(error)) throw error;
+                console.warn("Stored cloud eval lookup failed; using Gaming PC Stockfish.", error);
             }
-        } catch (error) {
-            if (isAbortError(error)) throw error;
-            console.warn("Stored cloud eval lookup failed; using Gaming PC Stockfish.", error);
         }
 
         return await analyzeWithRemoteStockfish18WithRetry({
@@ -76,8 +85,15 @@ export async function analyzeWithWebStockfish18({
             depth,
             infinite,
             signal,
+            engineKind,
+            lc0AutoNetwork,
+            lc0Network,
             onUpdate,
         });
+    }
+
+    if (engineKind === "lc0") {
+        throw new Error("LCZero requires the gaming PC analysis service.");
     }
 
     return await analyzeWithLocalStockfish18({
@@ -97,19 +113,23 @@ async function analyzeWithRemoteStockfish18WithRetry(
 
     for (let attempt = 1; attempt <= REMOTE_STOCKFISH_MAX_ATTEMPTS; attempt += 1) {
         throwIfAborted(request.signal);
-        if (attempt > 1) await waitForAbortableDelay(REMOTE_STOCKFISH_RETRY_DELAY_MS, request.signal);
+        if (attempt > 1)
+            await waitForAbortableDelay(REMOTE_STOCKFISH_RETRY_DELAY_MS, request.signal);
 
         try {
             return await analyzeWithRemoteStockfish18(request);
         } catch (error) {
             if (isAbortError(error) || request.signal?.aborted) throw error;
             lastError = error;
-            console.warn(`Gaming PC Stockfish attempt ${attempt} failed.`, error);
+            console.warn(`Gaming PC engine attempt ${attempt} failed.`, error);
         }
     }
 
     const detail = lastError instanceof Error ? ` ${lastError.message}` : "";
-    throw new Error(`Gaming PC Stockfish is unavailable; phone analysis is disabled.${detail}`);
+    const engineLabel = request.engineKind === "lc0" ? "LCZero" : "Stockfish";
+    throw new Error(
+        `Gaming PC ${engineLabel} is unavailable; phone analysis is disabled.${detail}`,
+    );
 }
 
 export async function queryRemoteStoredCloudLines({
@@ -209,7 +229,8 @@ function waitForStoredCloudLineRequest(
     throwIfAborted(signal);
 
     return new Promise((resolve, reject) => {
-        const onAbort = () => reject(new DOMException("Stockfish analysis was cancelled.", "AbortError"));
+        const onAbort = () =>
+            reject(new DOMException("Stockfish analysis was cancelled.", "AbortError"));
         signal.addEventListener("abort", onAbort, { once: true });
         request.then(resolve, reject).finally(() => signal.removeEventListener("abort", onAbort));
     });
@@ -233,6 +254,9 @@ async function analyzeWithRemoteStockfish18({
     depth,
     infinite,
     signal,
+    engineKind = "stockfish",
+    lc0AutoNetwork = true,
+    lc0Network = "none",
     onUpdate,
 }: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
     const searchId = ++activeSearchId;
@@ -246,10 +270,11 @@ async function analyzeWithRemoteStockfish18({
     signal?.addEventListener("abort", onAbort, { once: true });
     let lastUpdateAt = 0;
     let firstLineTimedOut = false;
+    const firstLineGuardMs = engineKind === "lc0" ? 15_000 : REMOTE_STOCKFISH_FIRST_LINE_TIMEOUT_MS;
     let firstLineTimeoutId: number | null = window.setTimeout(() => {
         firstLineTimedOut = true;
         controller.abort();
-    }, REMOTE_STOCKFISH_FIRST_LINE_TIMEOUT_MS);
+    }, firstLineGuardMs);
 
     const markAnalysisStarted = () => {
         if (firstLineTimeoutId === null) return;
@@ -275,18 +300,26 @@ async function analyzeWithRemoteStockfish18({
                 multipv: requestedMultipv,
                 depth: requestedDepth,
                 infinite: infinite === true,
+                engineKind,
+                lc0AutoNetwork: engineKind === "lc0" && lc0AutoNetwork,
+                lc0Network: engineKind === "lc0" ? lc0Network : undefined,
             }),
             signal: controller.signal,
         });
         if (!response.ok) {
-            throw new Error(`Gaming PC Stockfish returned HTTP ${response.status}.`);
+            throw new Error(`Gaming PC engine returned HTTP ${response.status}.`);
         }
-        if (!response.body) throw new Error("Gaming PC Stockfish returned an empty response.");
+        if (!response.body) throw new Error("Gaming PC engine returned an empty response.");
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
         let remoteError: Error | null = null;
+        let remoteMeta: {
+            engine?: string;
+            networkMode?: string;
+            networkName?: string;
+        } = {};
 
         const consumeLine = (rawLine: string) => {
             const line = rawLine.trim();
@@ -295,14 +328,31 @@ async function analyzeWithRemoteStockfish18({
                 type?: string;
                 line?: string;
                 message?: string;
+                engine?: string;
+                networkMode?: string;
+                networkName?: string;
             };
+            if (message.type === "meta") {
+                remoteMeta = { ...remoteMeta, ...message };
+                return;
+            }
             if (message.type === "error") {
-                remoteError = new Error(message.message || "Gaming PC Stockfish failed.");
+                remoteError = new Error(message.message || "Gaming PC engine failed.");
                 return;
             }
             if (message.type !== "uci" || !message.line) return;
-            const parsed = parseStockfishInfoLine(message.line, fen, "gaming-pc");
-            if (!parsed || parsed.multipv > requestedMultipv) return;
+            const parsedLine = parseStockfishInfoLine(message.line, fen, "gaming-pc");
+            if (!parsedLine || parsedLine.multipv > requestedMultipv) return;
+            const parsed: WebEngineLine =
+                engineKind === "lc0"
+                    ? {
+                          ...parsedLine,
+                          source: "lc0",
+                          engineName: remoteMeta.engine || "LCZero 0.32.1",
+                          networkMode: remoteMeta.networkMode,
+                          networkName: remoteMeta.networkName,
+                      }
+                    : parsedLine;
             markAnalysisStarted();
             linesByPv.set(parsed.multipv, parsed);
             publish();
@@ -322,13 +372,14 @@ async function analyzeWithRemoteStockfish18({
 
         if (remoteError) throw remoteError;
         if (linesByPv.size === 0) {
-            throw new Error("Gaming PC Stockfish returned no analysis lines.");
+            throw new Error("Gaming PC engine returned no analysis lines.");
         }
         publish(true);
         return sortEngineLines(linesByPv);
     } catch (error) {
         if (firstLineTimedOut) {
-            throw new Error("Gaming PC Stockfish did not begin analysis within four seconds.");
+            const engineLabel = engineKind === "lc0" ? "LCZero" : "Stockfish";
+            throw new Error(`Gaming PC ${engineLabel} did not begin analysis in time.`);
         }
         throw error;
     } finally {

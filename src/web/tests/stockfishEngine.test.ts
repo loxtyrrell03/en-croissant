@@ -5,8 +5,7 @@ import { analyzeWithWebStockfish18, dedupeWebStockfishLines } from "../stockfish
 const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const MISSING_FEN = "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1";
 const PREFETCH_ROOT_FEN = "rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR b KQkq - 0 1";
-const PREFETCH_NEXT_FEN =
-    "rnbqkbnr/pppp1ppp/8/4p3/2P5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 2";
+const PREFETCH_NEXT_FEN = "rnbqkbnr/pppp1ppp/8/4p3/2P5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 2";
 const ABORT_FEN = "rnbqkbnr/pppppppp/8/8/4N3/8/PPPPPPPP/RNBQKB1R b KQkq - 1 1";
 const RETRY_FEN = "rnbqkbnr/pppp1ppp/8/4p3/6P1/8/PPPPPP1P/RNBQKBNR b KQkq - 0 2";
 const PC_ONLY_FEN = "rnbqkbnr/pppppp1p/6p1/8/5P2/8/PPPPP1PP/RNBQKBNR w KQkq - 0 2";
@@ -54,9 +53,7 @@ describe("Stockfish phone line updates", () => {
 
         expect(fetchMock).toHaveBeenCalledTimes(1);
         expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/cloud-eval?");
-        expect(
-            lines.map((line) => [line.source, line.depth, line.uciMoves[0]]),
-        ).toEqual([
+        expect(lines.map((line) => [line.source, line.depth, line.uciMoves[0]])).toEqual([
             ["lichess-cloud", 65, "c2c4"],
             ["lichess-cloud", 65, "e2e4"],
             ["lichess-cloud", 65, "g1f3"],
@@ -115,6 +112,58 @@ describe("Stockfish phone line updates", () => {
         expect(liveUpdates.at(-1)).toEqual(lines);
     });
 
+    it("runs LCZero directly on the PC and preserves odds network metadata", async () => {
+        const encoder = new TextEncoder();
+        const remoteChunk = encoder.encode(
+            `${JSON.stringify({
+                type: "meta",
+                engine: "LCZero 0.32.1",
+                networkMode: "queen",
+                networkName: "Queen odds",
+            })}\n${JSON.stringify({
+                type: "uci",
+                line: "info depth 8 multipv 1 score cp -420 nodes 2048 nps 4900 pv e2e4 e7e5",
+            })}\n${JSON.stringify({ type: "done", bestmove: "e2e4" })}\n`,
+        );
+        const fetchMock = vi.fn().mockResolvedValue({
+            ok: true,
+            status: 200,
+            body: {
+                getReader: () => ({
+                    read: vi
+                        .fn()
+                        .mockResolvedValueOnce({ value: remoteChunk, done: false })
+                        .mockResolvedValueOnce({ value: undefined, done: true }),
+                }),
+            },
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const lines = await analyzeWithWebStockfish18({
+            fen: INITIAL_FEN,
+            multipv: 1,
+            depth: 14,
+            engineKind: "lc0",
+            lc0AutoNetwork: false,
+            lc0Network: "queen",
+        });
+
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/analyze");
+        expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
+            engineKind: "lc0",
+            lc0AutoNetwork: false,
+            lc0Network: "queen",
+        });
+        expect(lines[0]).toMatchObject({
+            source: "lc0",
+            executionLocation: "gaming-pc",
+            engineName: "LCZero 0.32.1",
+            networkMode: "queen",
+            networkName: "Queen odds",
+        });
+    });
+
     it("retries a broken PC stream on the PC without starting the phone engine", async () => {
         const encoder = new TextEncoder();
         const remoteChunk = encoder.encode(
@@ -152,7 +201,10 @@ describe("Stockfish phone line updates", () => {
         expect(fetchMock).toHaveBeenCalledTimes(3);
         expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/v1/analyze");
         expect(String(fetchMock.mock.calls[2]?.[0])).toContain("/v1/analyze");
-        expect(lines[0]).toMatchObject({ executionLocation: "gaming-pc", uciMoves: ["g1f3", "d7d5"] });
+        expect(lines[0]).toMatchObject({
+            executionLocation: "gaming-pc",
+            uciMoves: ["g1f3", "d7d5"],
+        });
         expect(workerConstructor).not.toHaveBeenCalled();
     });
 
