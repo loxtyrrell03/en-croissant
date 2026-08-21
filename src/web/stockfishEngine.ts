@@ -4,6 +4,7 @@ import { parseUci } from "chessops";
 import { normalizeMove } from "chessops/chess";
 import { makeSan } from "chessops/san";
 import { positionFromFen } from "@/utils/chessops";
+import type { EnginePerformancePreset } from "@/utils/enginePerformance";
 import type { Lc0NetworkProfile, PcEngineKind } from "@/utils/lc0Networks";
 import type { WebEngineLine, WebEngineScore } from "./model";
 import { normalizeWebEngineScoreForWhite } from "./engineScore";
@@ -47,6 +48,7 @@ export type WebStockfishAnalyzeRequest = {
     signal?: AbortSignal;
     prefetchFens?: string[];
     engineKind?: PcEngineKind;
+    performancePreset?: EnginePerformancePreset;
     lc0AutoNetwork?: boolean;
     lc0Network?: Lc0NetworkProfile;
     onUpdate?: (lines: WebEngineLine[]) => void;
@@ -60,6 +62,7 @@ export async function analyzeWithWebStockfish18({
     signal,
     prefetchFens = [],
     engineKind = "stockfish",
+    performancePreset = "good",
     lc0AutoNetwork = true,
     lc0Network = "none",
     onUpdate,
@@ -87,6 +90,7 @@ export async function analyzeWithWebStockfish18({
             infinite,
             signal,
             engineKind,
+            performancePreset,
             lc0AutoNetwork,
             lc0Network,
             onUpdate,
@@ -256,6 +260,7 @@ async function analyzeWithRemoteStockfish18({
     infinite,
     signal,
     engineKind = "stockfish",
+    performancePreset = "good",
     lc0AutoNetwork = true,
     lc0Network = "none",
     onUpdate,
@@ -302,6 +307,7 @@ async function analyzeWithRemoteStockfish18({
                 depth: requestedDepth,
                 infinite: infinite === true,
                 engineKind,
+                performancePreset,
                 lc0AutoNetwork: engineKind === "lc0" && lc0AutoNetwork,
                 lc0Network: engineKind === "lc0" ? lc0Network : undefined,
                 lc0SessionId: engineKind === "lc0" ? WEB_LC0_SESSION_ID : undefined,

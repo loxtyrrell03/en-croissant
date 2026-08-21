@@ -21,6 +21,7 @@ $serverRoot = Join-Path $installRoot "server"
 $serverScript = Join-Path $serverRoot "stockfish-remote-server.mjs"
 $localEvalReader = Join-Path $serverRoot "lichess-local-eval-reader.mjs"
 $lc0NetworkRouting = Join-Path $serverRoot "lc0-network-routing.mjs"
+$enginePerformancePresets = Join-Path $serverRoot "engine-performance-presets.mjs"
 $configPath = Join-Path $installRoot "config.json"
 $logPath = Join-Path $installRoot "stockfish-remote-server.log"
 $existingConfig = if (Test-Path -LiteralPath $configPath -PathType Leaf) {
@@ -99,6 +100,7 @@ New-Item -ItemType Directory -Force -Path $serverRoot | Out-Null
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\stockfish-remote-server.mjs") -Destination $serverScript -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\lichess-local-eval-reader.mjs") -Destination $localEvalReader -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\lc0-network-routing.mjs") -Destination $lc0NetworkRouting -Force
+Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\engine-performance-presets.mjs") -Destination $enginePerformancePresets -Force
 
 $config = [ordered]@{
   enginePath = $EnginePath

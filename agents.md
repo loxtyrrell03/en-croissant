@@ -1,5 +1,16 @@
 # AGENTS.md
 
+- On 2026-08-21, the PC-hosted phone Engine settings gained separate saved
+  performance presets for Stockfish and LC0: Max performance, Good performance,
+  Balanced, and Low impact. The values match the measured Chrome-extension
+  profiles for this gaming PC. Every live phone request sends the selected
+  preset, and the PC backend applies the corresponding Stockfish Threads/Hash
+  or LC0 Threads/MinibatchSize/NNCacheSize options before searching while
+  preserving the selected LC0 network and warm worker. Keep the PC as the
+  authoritative tuning boundary, preserve independent choices when switching
+  engines, and update the backend preset regression whenever those measured
+  values change.
+
 - On 2026-08-17, the phone's top-level `Online` workspace was renamed
   `Import` and gained an OTB source beside Chess.com and Lichess. Phone OTB
   searches are thin private-PC jobs: the phone submits identity, date, and
@@ -107,7 +118,6 @@
   instructions that name `gaming-pc` as the current host, deployment target,
   or default service origin. The retired machine is unavailable and must not
   be treated as a blocker or deployment target.
-
 - On 2026-07-25, Outpost's desktop PGN parser stopped overwriting adjacent
   comment blocks at the same position. Chessable exports often put a full
   lesson annotation beside an exporter-only `{-KEY-}` marker, so the old

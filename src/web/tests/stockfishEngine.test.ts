@@ -100,6 +100,7 @@ describe("Stockfish phone line updates", () => {
         expect(JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body))).toMatchObject({
             depth: 70,
             infinite: true,
+            performancePreset: "good",
         });
         expect(
             lines.map((line) => [
@@ -144,6 +145,7 @@ describe("Stockfish phone line updates", () => {
             multipv: 1,
             depth: 14,
             engineKind: "lc0",
+            performancePreset: "eco",
             lc0AutoNetwork: false,
             lc0Network: "queen",
         });
@@ -152,6 +154,7 @@ describe("Stockfish phone line updates", () => {
         expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/analyze");
         expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
             engineKind: "lc0",
+            performancePreset: "eco",
             lc0AutoNetwork: false,
             lc0Network: "queen",
         });
