@@ -8,6 +8,7 @@ param(
   [string]$UciHost = "",
   [string]$NodePath = "",
   [string]$Lc0Path = "",
+  [string]$Lc0SearchContemptPath = "",
   [string]$Lc0Bt4Weights = "",
   [string]$Lc0T1Weights = "",
   [string]$Lc0LqoWeights = ""
@@ -63,10 +64,11 @@ if (-not (Test-Path -LiteralPath $tailscale -PathType Leaf)) {
 }
 $lc0Root = Join-Path $env:LOCALAPPDATA "ChessTrainer\engines\lc0-v0.32.1-fresh"
 if (-not $Lc0Path) { $Lc0Path = Join-Path $lc0Root "lc0.exe" }
+if (-not $Lc0SearchContemptPath) { $Lc0SearchContemptPath = Join-Path $lc0Root "lc0_sc_cuda.exe" }
 if (-not $Lc0Bt4Weights) { $Lc0Bt4Weights = Join-Path $lc0Root "BT4-it332.pb.gz" }
 if (-not $Lc0T1Weights) { $Lc0T1Weights = Join-Path $lc0Root "T1-odds.pb.gz" }
 if (-not $Lc0LqoWeights) { $Lc0LqoWeights = Join-Path $lc0Root "queen-odds\lqo_v2.pb.gz" }
-foreach ($lc0File in @($Lc0Path, $Lc0Bt4Weights, $Lc0T1Weights, $Lc0LqoWeights)) {
+foreach ($lc0File in @($Lc0Path, $Lc0SearchContemptPath, $Lc0Bt4Weights, $Lc0T1Weights, $Lc0LqoWeights)) {
   if (-not (Test-Path -LiteralPath $lc0File -PathType Leaf)) {
     throw "Required LCZero file not found: $lc0File"
   }
@@ -109,6 +111,7 @@ $config = [ordered]@{
   maxDepth = 999
   maxMultiPv = 8
   lc0Path = [IO.Path]::GetFullPath($Lc0Path)
+  lc0SearchContemptPath = [IO.Path]::GetFullPath($Lc0SearchContemptPath)
   lc0Networks = [ordered]@{
     bt4 = [IO.Path]::GetFullPath($Lc0Bt4Weights)
     t1 = [IO.Path]::GetFullPath($Lc0T1Weights)

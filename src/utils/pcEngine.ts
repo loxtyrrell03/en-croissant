@@ -13,6 +13,7 @@ import type { PcEngine } from "@/utils/engines";
 
 const PC_ENGINE_MAX_DEPTH = 70;
 const PC_ENGINE_FIRST_LINE_TIMEOUT_MS = 15_000;
+const PC_LC0_SESSION_ID = "en-croissant-desktop";
 
 export type PcEngineAnalysisUpdate = {
     progress: number;
@@ -88,6 +89,7 @@ export async function getPcEngineBestMoves({
                 engineKind: engine.engineKind,
                 lc0AutoNetwork: engine.engineKind === "lc0" && lc0AutoNetwork,
                 lc0Network: engine.engineKind === "lc0" ? lc0Network : undefined,
+                lc0SessionId: engine.engineKind === "lc0" ? PC_LC0_SESSION_ID : undefined,
             }),
             signal: controller.signal,
         });

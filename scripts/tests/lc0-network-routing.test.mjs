@@ -33,7 +33,10 @@ test("automatic routing selects T1 for either side's exact piece-odds topology",
   const whiteKnightOdds = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKB1R w KQkq - 0 1";
   const blackRookOdds = "1nbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQk - 0 1";
 
-  assert.match(selectLc0Network({ fen: whiteKnightOdds, autoNetwork: true }).label, /Knight odds/);
+  assert.match(
+    selectLc0Network({ fen: whiteKnightOdds, autoNetwork: true, objectiveScoreCp: -450 }).label,
+    /Knight odds/,
+  );
   assert.equal(selectLc0Network({ fen: whiteKnightOdds, autoNetwork: true }).playerColor, "white");
   assert.equal(selectLc0Network({ fen: blackRookOdds, autoNetwork: true }).mode, "rook");
   assert.equal(selectLc0Network({ fen: blackRookOdds, autoNetwork: true }).playerColor, "black");
@@ -41,9 +44,58 @@ test("automatic routing selects T1 for either side's exact piece-odds topology",
 
 test("automatic routing selects LQO for queen odds and exits after material recovery", () => {
   const queenOdds = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1";
-  const recovered = "rnbqk1nr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1";
+  const recovered = "rnbqkbnr/pppppppp/8/8/8/8/5PPP/RNBQKBNR w KQkq - 0 1";
 
-  assert.equal(selectLc0Network({ fen: queenOdds, autoNetwork: true }).family, "lqo");
-  assert.equal(selectLc0Network({ fen: queenOdds, autoNetwork: true }).mode, "queen");
-  assert.equal(selectLc0Network({ fen: recovered, autoNetwork: true }).family, "bt4");
+  const entered = selectLc0Network({ fen: queenOdds, autoNetwork: true, objectiveScoreCp: -900 });
+  assert.equal(entered.family, "lqo");
+  assert.equal(entered.mode, "queen");
+  assert.equal(
+    selectLc0Network({
+      fen: recovered,
+      autoNetwork: true,
+      objectiveScoreCp: -800,
+      previousSelection: entered,
+    }).family,
+    "bt4",
+  );
+});
+
+test("objective hysteresis prevents every-ply switching near the boundary", () => {
+  const queenOdds = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1";
+  assert.equal(
+    selectLc0Network({ fen: queenOdds, autoNetwork: true, objectiveScoreCp: -350 }).mode,
+    "none",
+  );
+
+  const entered = selectLc0Network({ fen: queenOdds, autoNetwork: true, objectiveScoreCp: -450 });
+  const held = selectLc0Network({
+    fen: queenOdds,
+    autoNetwork: true,
+    objectiveScoreCp: -300,
+    previousSelection: entered,
+  });
+  assert.equal(held.mode, "queen");
+  assert.equal(held.reason, "objective_hybrid_hold_specialist");
+  assert.equal(
+    selectLc0Network({
+      fen: queenOdds,
+      autoNetwork: true,
+      objectiveScoreCp: -150,
+      previousSelection: held,
+    }).mode,
+    "none",
+  );
+});
+
+test("pawn deficits and queen-for-bishop never masquerade as trained piece odds", () => {
+  const fivePawnsDown = "rnbqkbnr/pppppppp/8/8/8/8/5PPP/RNBQKBNR w KQkq - 0 1";
+  const queenForBishop = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1K1NR w KQkq - 0 1";
+  assert.equal(
+    selectLc0Network({ fen: fivePawnsDown, autoNetwork: true, objectiveScoreCp: -800 }).mode,
+    "none",
+  );
+  assert.equal(
+    selectLc0Network({ fen: queenForBishop, autoNetwork: true, objectiveScoreCp: -800 }).mode,
+    "none",
+  );
 });

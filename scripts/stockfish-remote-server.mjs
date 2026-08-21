@@ -58,6 +58,11 @@ const lc0Root = join(localAppData, "ChessTrainer", "engines", "lc0-v0.32.1-fresh
 const lc0Path = resolve(
   process.env.EN_CROISSANT_LC0_ENGINE || config.lc0Path || join(lc0Root, "lc0.exe"),
 );
+const lc0ScPath = resolve(
+  process.env.EN_CROISSANT_LC0_SC_ENGINE ||
+    config.lc0SearchContemptPath ||
+    join(lc0Root, "lc0_sc_cuda.exe"),
+);
 const lc0NetworkPaths = Object.freeze({
   bt4: resolve(
     process.env.EN_CROISSANT_LC0_BT4_WEIGHTS ||
@@ -81,8 +86,17 @@ const lc0Tuning = Object.freeze({
   nnCacheSize: positiveInteger(config.lc0NnCacheSize, 50_000, 0, 50_000_000),
   backend: String(config.lc0Backend || "cuda-fp16"),
 });
-const lc0Available =
-  existsSync(lc0Path) && Object.values(lc0NetworkPaths).every((path) => existsSync(path));
+const lc0EnginePaths = Object.freeze({ bt4: lc0Path, t1: lc0Path, lqo: lc0ScPath });
+const lc0EngineArguments = Object.freeze({ bt4: [], t1: [], lqo: ["--show-hidden"] });
+const lc0FamilyAvailable = Object.freeze(
+  Object.fromEntries(
+    Object.keys(lc0NetworkPaths).map((family) => [
+      family,
+      existsSync(lc0EnginePaths[family]) && existsSync(lc0NetworkPaths[family]),
+    ]),
+  ),
+);
+const lc0Available = lc0FamilyAvailable.bt4;
 const allowedOrigins = new Set(
   (Array.isArray(config.allowedOrigins) ? config.allowedOrigins : [])
     .map((value) => String(value).replace(/\/$/, ""))
@@ -94,7 +108,11 @@ if (!existsSync(enginePath)) {
 }
 
 let httpEngine = null;
+let selectorEngine = null;
 const lc0Engines = new Map();
+const unavailableLc0Families = new Set();
+const lc0SessionSelections = new Map();
+let lc0WarmupPromise = Promise.resolve();
 const startedAt = new Date().toISOString();
 
 const httpServer = createHttpServer((request, response) => {
@@ -160,6 +178,7 @@ uciServer.listen(uciPort, uciHost, () => {
 for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, () => {
     httpEngine?.close();
+    selectorEngine?.close();
     for (const engine of lc0Engines.values()) engine.close();
     httpServer.close();
     uciServer.close();
@@ -198,9 +217,13 @@ async function handleHttpRequest(request, response) {
         },
         lc0: {
           available: lc0Available,
-          ready: lc0Available && Array.from(lc0Engines.values()).every((engine) => engine.ready),
+          ready:
+            lc0Available &&
+            lc0Engines.get("bt4")?.ready === true &&
+            !unavailableLc0Families.has("bt4"),
           name: "LCZero 0.32.1",
           enginePath: lc0Path,
+          searchContemptEnginePath: lc0ScPath,
           tuning: lc0Tuning,
           profiles: LC0_PROFILE_OPTIONS,
           networks: Object.fromEntries(
@@ -208,7 +231,9 @@ async function handleHttpRequest(request, response) {
               family,
               {
                 path,
-                available: existsSync(path),
+                enginePath: lc0EnginePaths[family],
+                available:
+                  lc0FamilyAvailable[family] && !unavailableLc0Families.has(family),
                 ready: lc0Engines.get(family)?.ready === true,
                 queuedAnalyses: lc0Engines.get(family)?.queued || 0,
               },
@@ -265,13 +290,49 @@ async function handleHttpRequest(request, response) {
         error: "LCZero or one of its configured network files is unavailable on the gaming PC.",
       });
     }
+    await lc0WarmupPromise;
+    const autoNetwork = body?.lc0AutoNetwork === true;
+    const sessionId = normalizeSessionId(body?.lc0SessionId, request.socket.remoteAddress);
+    const previousSelection = lc0SessionSelections.get(sessionId);
+    const preliminarySelection = selectLc0Network({
+      fen,
+      autoNetwork,
+      manualMode: body?.lc0Network,
+      previousSelection,
+    });
+    let objectiveScoreCp;
+    if (autoNetwork && preliminarySelection.playerColor) {
+      objectiveScoreCp = await evaluateObjectiveScore(fen, preliminarySelection.playerColor);
+    }
     selection = selectLc0Network({
       fen,
-      autoNetwork: body?.lc0AutoNetwork === true,
+      autoNetwork,
       manualMode: body?.lc0Network,
+      objectiveScoreCp,
+      previousSelection,
     });
+
+    if (
+      selection.family !== "bt4" &&
+      (!lc0Engines.has(selection.family) || unavailableLc0Families.has(selection.family))
+    ) {
+      if (!autoNetwork) {
+        return writeJson(response, 503, {
+          error: `LCZero ${selection.family} network is unavailable.`,
+        });
+      }
+      selection = {
+        mode: "none",
+        family: "bt4",
+        label: "Standard strength",
+        playerColor: null,
+        reason: "specialist_unavailable_cached",
+        objectiveScoreCp,
+      };
+    }
+    if (autoNetwork) lc0SessionSelections.set(sessionId, selection);
     selectedEngine = lc0Engines.get(selection.family);
-    if (!selectedEngine) {
+    if (!selectedEngine || unavailableLc0Families.has(selection.family)) {
       return writeJson(response, 503, {
         error: `LCZero ${selection.family} network is unavailable.`,
       });
@@ -279,6 +340,8 @@ async function handleHttpRequest(request, response) {
     if (selection.family === "lqo") {
       const playsBlack = selection.playerColor === "black";
       dynamicOptions = {
+        SwapColors: playsBlack,
+        ScLimit: playsBlack ? 32 : 40,
         CPuct: 1.5,
         FpuValue: 0.4,
         DrawScore: playsBlack ? 0.6 : -0.4,
@@ -305,6 +368,7 @@ async function handleHttpRequest(request, response) {
       networkFamily: selection?.family,
       networkName: selection?.label,
       networkReason: selection?.reason,
+      networkObjectiveScoreCp: selection?.objectiveScoreCp,
       weights: selection ? basename(lc0NetworkPaths[selection.family]) : undefined,
     })}\n`,
   );
@@ -329,15 +393,55 @@ async function handleHttpRequest(request, response) {
       response.end(`${JSON.stringify({ type: "done", bestmove })}\n`);
     }
   } catch (error) {
+    if (engineKind === "lc0" && selection?.family && selection.family !== "bt4") {
+      unavailableLc0Families.add(selection.family);
+      log(`LCZero ${selection.family} quarantined after analysis failure: ${error?.message || error}`);
+    }
     if (!response.destroyed) {
       response.end(`${JSON.stringify({ type: "error", message: publicError(error) })}\n`);
     }
   }
 }
 
+async function evaluateObjectiveScore(fen, playerColor) {
+  let sideToMoveScoreCp;
+  try {
+    await selectorEngine.analyze(
+      { fen, multipv: 1, depth: 10, infinite: false },
+      (line) => {
+        if (/\bmultipv\s+(?!1\b)\d+/.test(line)) return;
+        const match = line.match(/\bscore\s+(cp|mate)\s+(-?\d+)/);
+        if (!match) return;
+        sideToMoveScoreCp =
+          match[1] === "mate"
+            ? Math.sign(Number(match[2]) || 1) * 100_000
+            : Number(match[2]);
+      },
+      undefined,
+    );
+  } catch (error) {
+    log(`LCZero objective selector failed; retaining topology state: ${error?.message || error}`);
+    return undefined;
+  }
+  if (!Number.isFinite(sideToMoveScoreCp)) return undefined;
+  const sideToMove = fen.split(/\s+/)[1] === "b" ? "black" : "white";
+  return sideToMove === playerColor ? sideToMoveScoreCp : -sideToMoveScoreCp;
+}
+
+function normalizeSessionId(value, fallback) {
+  const normalized = String(value || fallback || "default")
+    .trim()
+    .slice(0, 128);
+  return normalized || "default";
+}
+
 class PersistentUciEngine {
-  constructor(path, { label, initialOptions = {}, priorityRole = "HTTP" }) {
+  constructor(
+    path,
+    { label, args = [], initialOptions = {}, priorityRole = "HTTP", requiredOptions = [] },
+  ) {
     this.path = path;
+    this.args = args;
     this.label = label;
     this.initialOptions = initialOptions;
     this.priorityRole = priorityRole;
@@ -349,6 +453,8 @@ class PersistentUciEngine {
     this.queueTail = Promise.resolve();
     this.ready = false;
     this.queued = 0;
+    this.supportedOptions = new Set();
+    this.requiredOptions = requiredOptions;
   }
 
   async analyze(params, onInfo, signal, dynamicOptions = {}) {
@@ -392,7 +498,7 @@ class PersistentUciEngine {
   }
 
   async startProcess() {
-    const child = spawn(this.path, [], {
+    const child = spawn(this.path, this.args, {
       cwd: dirname(this.path),
       windowsHide: true,
       stdio: ["pipe", "pipe", "pipe"],
@@ -409,6 +515,12 @@ class PersistentUciEngine {
 
     this.send("uci");
     await this.waitFor((line) => line === "uciok", 20_000, "uciok");
+    const missingOptions = this.requiredOptions.filter(
+      (option) => !this.supportedOptions.has(option),
+    );
+    if (missingOptions.length > 0) {
+      throw new Error(`${this.label} is missing required UCI options: ${missingOptions.join(", ")}`);
+    }
     for (const [name, value] of Object.entries(this.initialOptions)) {
       this.send(`setoption name ${name} value ${formatUciOptionValue(value)}`);
     }
@@ -466,6 +578,8 @@ class PersistentUciEngine {
   }
 
   handleLine(line) {
+    const optionMatch = line.match(/^option name (.+?) type /);
+    if (optionMatch) this.supportedOptions.add(optionMatch[1]);
     for (const waiter of [...this.waiters]) {
       if (!waiter.predicate(line)) continue;
       clearTimeout(waiter.timeoutId);
@@ -521,15 +635,33 @@ httpEngine = new PersistentUciEngine(enginePath, {
     UCI_ShowWDL: true,
   },
 });
+selectorEngine = new PersistentUciEngine(enginePath, {
+  label: "Stockfish 18 LC0 selector",
+  priorityRole: "LC0 selector",
+  initialOptions: {
+    Threads: 2,
+    Hash: 128,
+    UCI_ShowWDL: false,
+  },
+});
 void httpEngine.start().catch((error) => {
   log(`Persistent Stockfish warmup failed: ${error?.stack || error}`);
+});
+void selectorEngine.start().catch((error) => {
+  log(`LC0 objective selector warmup failed: ${error?.stack || error}`);
 });
 
 if (lc0Available) {
   for (const [family, weightsPath] of Object.entries(lc0NetworkPaths)) {
-    const engine = new PersistentUciEngine(lc0Path, {
+    if (!lc0FamilyAvailable[family]) {
+      unavailableLc0Families.add(family);
+      continue;
+    }
+    const engine = new PersistentUciEngine(lc0EnginePaths[family], {
       label: `LCZero ${family.toUpperCase()}`,
+      args: lc0EngineArguments[family],
       priorityRole: `HTTP ${family.toUpperCase()}`,
+      requiredOptions: family === "lqo" ? ["SwapColors", "ScLimit"] : [],
       initialOptions: {
         WeightsFile: weightsPath,
         Backend: lc0Tuning.backend,
@@ -543,9 +675,11 @@ if (lc0Available) {
     });
     lc0Engines.set(family, engine);
   }
-  void prewarmLc0Engines();
+  lc0WarmupPromise = prewarmLc0Engines();
 } else {
-  log(`LCZero is unavailable (engine=${lc0Path}; networks=${JSON.stringify(lc0NetworkPaths)})`);
+  log(
+    `LCZero BT4 is unavailable (engines=${JSON.stringify(lc0EnginePaths)}; networks=${JSON.stringify(lc0NetworkPaths)})`,
+  );
 }
 
 async function prewarmLc0Engines() {
@@ -555,6 +689,7 @@ async function prewarmLc0Engines() {
     try {
       await prewarmLc0Engine(engine, family);
     } catch (error) {
+      unavailableLc0Families.add(family);
       log(`Persistent LCZero ${family} warmup failed: ${error?.stack || error}`);
     }
   }

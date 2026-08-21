@@ -35,6 +35,7 @@ let storedCloudOrigin: string | null = null;
 const listeners = new Set<StockfishLineListener>();
 const storedCloudLineCache = new Map<string, WebEngineLine[]>();
 const storedCloudLineRequests = new Map<string, Promise<WebEngineLine[]>>();
+const WEB_LC0_SESSION_ID = "en-croissant-phone";
 
 export type WebStockfishAnalyzeRequest = {
     fen: string;
@@ -434,6 +435,7 @@ async function analyzeWithRemoteStockfish18({
                 engineKind,
                 lc0AutoNetwork: engineKind === "lc0" && lc0AutoNetwork,
                 lc0Network: engineKind === "lc0" ? lc0Network : undefined,
+                lc0SessionId: engineKind === "lc0" ? WEB_LC0_SESSION_ID : undefined,
             }),
             signal: controller.signal,
         });
