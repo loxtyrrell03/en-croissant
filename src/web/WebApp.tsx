@@ -99,6 +99,13 @@ import {
   type PcEngineKind,
 } from "@/utils/lc0Networks";
 import {
+  ENGINE_PERFORMANCE_PRESETS,
+  type EnginePerformancePreset,
+  getEnginePerformanceDescription,
+  getEnginePerformancePreset,
+  normalizeEnginePerformancePreset,
+} from "@/utils/enginePerformance";
+import {
   loadSharedLichessCredential,
   saveSharedLichessCredential,
 } from "@/utils/sharedLichessAuth";
@@ -415,6 +422,8 @@ type WebEnginePanelSettings = {
   depth: number;
   infinite: boolean;
   engineKind: PcEngineKind;
+  stockfishPreset: EnginePerformancePreset;
+  lc0Preset: EnginePerformancePreset;
   lc0AutoNetwork: boolean;
   lc0Network: Lc0NetworkProfile;
 };
@@ -426,6 +435,8 @@ const DEFAULT_WEB_ENGINE_PANEL_SETTINGS: WebEnginePanelSettings = {
   depth: 14,
   infinite: false,
   engineKind: "stockfish",
+  stockfishPreset: "good",
+  lc0Preset: "good",
   lc0AutoNetwork: true,
   lc0Network: "none",
 };
@@ -4082,6 +4093,8 @@ function EngineUnderBoardPanel({
   const [status, setStatus] = useState<WebEnginePanelStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const performancePreset =
+    settings.engineKind === "lc0" ? settings.lc0Preset : settings.stockfishPreset;
 
   const updateSettings = (patch: Partial<WebEnginePanelSettings>) => {
     setSettings((current) => normalizeWebEnginePanelSettings({ ...current, ...patch }));
@@ -4115,6 +4128,7 @@ function EngineUnderBoardPanel({
       depth: settings.depth,
       infinite: settings.infinite,
       engineKind: settings.engineKind,
+      performancePreset,
       lc0AutoNetwork: settings.lc0AutoNetwork,
       lc0Network: settings.lc0Network,
       prefetchFens: upcomingFens,
@@ -4150,6 +4164,7 @@ function EngineUnderBoardPanel({
     settings.lc0AutoNetwork,
     settings.lc0Network,
     settings.multipv,
+    performancePreset,
     suspended,
     upcomingFens,
   ]);
@@ -4299,6 +4314,9 @@ function EngineUnderBoardPanel({
             <Text fw={700} size="sm" truncate>
               {engineLabel}
             </Text>
+            <Code className={classes.enginePanelCode} title="PC engine performance level">
+              {getEnginePerformancePreset(performancePreset).label}
+            </Code>
             {settings.engineKind === "lc0" ? (
               <Code className={classes.enginePanelCode} title="LCZero network selection">
                 {topLine?.networkName || selectedNetworkName}
@@ -4376,6 +4394,21 @@ function EngineUnderBoardPanel({
               onChange={(value) =>
                 updateSettings({ engineKind: value === "lc0" ? "lc0" : "stockfish" })
               }
+            />
+            <Select
+              label="Performance"
+              description={getEnginePerformanceDescription(settings.engineKind, performancePreset)}
+              allowDeselect={false}
+              data={ENGINE_PERFORMANCE_PRESETS.map(({ value, label }) => ({ value, label }))}
+              value={performancePreset}
+              onChange={(value) => {
+                const preset = normalizeEnginePerformancePreset(value);
+                updateSettings(
+                  settings.engineKind === "lc0"
+                    ? { lc0Preset: preset }
+                    : { stockfishPreset: preset },
+                );
+              }}
             />
             {settings.engineKind === "lc0" ? (
               <>
@@ -9233,6 +9266,8 @@ function normalizeWebEnginePanelSettings(
     depth: clampWholeNumber(value?.depth, 6, 70, DEFAULT_WEB_ENGINE_PANEL_SETTINGS.depth),
     infinite: Boolean(value?.infinite),
     engineKind: value?.engineKind === "lc0" ? "lc0" : "stockfish",
+    stockfishPreset: normalizeEnginePerformancePreset(value?.stockfishPreset),
+    lc0Preset: normalizeEnginePerformancePreset(value?.lc0Preset),
     lc0AutoNetwork: value?.lc0AutoNetwork !== false,
     lc0Network: normalizeLc0NetworkProfile(value?.lc0Network),
   };

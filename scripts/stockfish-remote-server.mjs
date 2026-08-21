@@ -8,6 +8,11 @@ import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 import { createLocalLichessEvalStore } from "./lichess-local-eval-reader.mjs";
 import { LC0_PROFILE_OPTIONS, selectLc0Network } from "./lc0-network-routing.mjs";
+import {
+  ENGINE_PERFORMANCE_PRESETS,
+  enginePerformanceSettings,
+  normalizeEnginePerformancePreset,
+} from "./engine-performance-presets.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const localAppData =
@@ -202,6 +207,7 @@ async function handleHttpRequest(request, response) {
       enginePath,
       threads,
       hashMb,
+      performancePresets: ENGINE_PERFORMANCE_PRESETS,
       http: { host: httpHost, port: httpPort },
       uci: { host: uciHost, port: uciPort },
       startedAt,
@@ -232,8 +238,7 @@ async function handleHttpRequest(request, response) {
               {
                 path,
                 enginePath: lc0EnginePaths[family],
-                available:
-                  lc0FamilyAvailable[family] && !unavailableLc0Families.has(family),
+                available: lc0FamilyAvailable[family] && !unavailableLc0Families.has(family),
                 ready: lc0Engines.get(family)?.ready === true,
                 queuedAnalyses: lc0Engines.get(family)?.queued || 0,
               },
@@ -276,14 +281,38 @@ async function handleHttpRequest(request, response) {
   const depth = positiveInteger(body?.depth, 70, 1, maxDepth);
   const infinite = body?.infinite === true;
   const engineKind = String(body?.engineKind || body?.engine || "stockfish").toLowerCase();
+  const hasPerformancePreset = body?.performancePreset != null;
+  const performancePreset = normalizeEnginePerformancePreset(body?.performancePreset);
   if (!fen) return writeJson(response, 400, { error: "A valid FEN is required." });
   if (!new Set(["stockfish", "lc0"]).has(engineKind)) {
     return writeJson(response, 400, { error: "engineKind must be stockfish or lc0." });
   }
+  if (hasPerformancePreset && !performancePreset) {
+    return writeJson(response, 400, {
+      error: "performancePreset must be max, good, balanced, or eco.",
+    });
+  }
+
+  const performanceSettings = performancePreset
+    ? enginePerformanceSettings(engineKind, performancePreset)
+    : engineKind === "lc0"
+      ? {
+          threads: lc0Tuning.threads,
+          minibatchSize: lc0Tuning.minibatchSize,
+          nnCacheSize: lc0Tuning.nnCacheSize,
+        }
+      : { threads, hashMb };
 
   let selectedEngine = httpEngine;
   let selection = null;
-  let dynamicOptions = {};
+  let dynamicOptions =
+    engineKind === "lc0"
+      ? {
+          Threads: performanceSettings.threads,
+          MinibatchSize: performanceSettings.minibatchSize,
+          NNCacheSize: performanceSettings.nnCacheSize,
+        }
+      : { Threads: performanceSettings.threads, Hash: performanceSettings.hashMb };
   if (engineKind === "lc0") {
     if (!lc0Available) {
       return writeJson(response, 503, {
@@ -340,6 +369,7 @@ async function handleHttpRequest(request, response) {
     if (selection.family === "lqo") {
       const playsBlack = selection.playerColor === "black";
       dynamicOptions = {
+        ...dynamicOptions,
         SwapColors: playsBlack,
         ScLimit: playsBlack ? 32 : 40,
         CPuct: 1.5,
@@ -362,8 +392,14 @@ async function handleHttpRequest(request, response) {
       engine: engineKind === "lc0" ? "LCZero 0.32.1" : "Stockfish 18",
       engineKind,
       build: engineKind === "lc0" ? lc0Tuning.backend : "bmi2",
-      threads: engineKind === "lc0" ? lc0Tuning.threads : threads,
-      hashMb: engineKind === "stockfish" ? hashMb : undefined,
+      performancePreset: performancePreset || "server",
+      performanceLabel: performancePreset
+        ? ENGINE_PERFORMANCE_PRESETS[performancePreset].label
+        : "Server default",
+      threads: performanceSettings.threads,
+      hashMb: engineKind === "stockfish" ? performanceSettings.hashMb : undefined,
+      minibatchSize: engineKind === "lc0" ? performanceSettings.minibatchSize : undefined,
+      nnCacheSize: engineKind === "lc0" ? performanceSettings.nnCacheSize : undefined,
       networkMode: selection?.mode,
       networkFamily: selection?.family,
       networkName: selection?.label,
@@ -395,7 +431,9 @@ async function handleHttpRequest(request, response) {
   } catch (error) {
     if (engineKind === "lc0" && selection?.family && selection.family !== "bt4") {
       unavailableLc0Families.add(selection.family);
-      log(`LCZero ${selection.family} quarantined after analysis failure: ${error?.message || error}`);
+      log(
+        `LCZero ${selection.family} quarantined after analysis failure: ${error?.message || error}`,
+      );
     }
     if (!response.destroyed) {
       response.end(`${JSON.stringify({ type: "error", message: publicError(error) })}\n`);
@@ -413,9 +451,7 @@ async function evaluateObjectiveScore(fen, playerColor) {
         const match = line.match(/\bscore\s+(cp|mate)\s+(-?\d+)/);
         if (!match) return;
         sideToMoveScoreCp =
-          match[1] === "mate"
-            ? Math.sign(Number(match[2]) || 1) * 100_000
-            : Number(match[2]);
+          match[1] === "mate" ? Math.sign(Number(match[2]) || 1) * 100_000 : Number(match[2]);
       },
       undefined,
     );
@@ -454,6 +490,7 @@ class PersistentUciEngine {
     this.ready = false;
     this.queued = 0;
     this.supportedOptions = new Set();
+    this.optionValues = new Map();
     this.requiredOptions = requiredOptions;
   }
 
@@ -469,9 +506,9 @@ class PersistentUciEngine {
     try {
       if (signal?.aborted) throw abortError();
       await this.start();
-      this.send(`setoption name MultiPV value ${params.multipv}`);
+      this.setOptionIfChanged("MultiPV", params.multipv);
       for (const [name, value] of Object.entries(dynamicOptions)) {
-        this.send(`setoption name ${name} value ${formatUciOptionValue(value)}`);
+        this.setOptionIfChanged(name, value);
       }
       await this.sendAndWaitReady();
       if (signal?.aborted) throw abortError();
@@ -519,10 +556,12 @@ class PersistentUciEngine {
       (option) => !this.supportedOptions.has(option),
     );
     if (missingOptions.length > 0) {
-      throw new Error(`${this.label} is missing required UCI options: ${missingOptions.join(", ")}`);
+      throw new Error(
+        `${this.label} is missing required UCI options: ${missingOptions.join(", ")}`,
+      );
     }
     for (const [name, value] of Object.entries(this.initialOptions)) {
-      this.send(`setoption name ${name} value ${formatUciOptionValue(value)}`);
+      this.setOptionIfChanged(name, value);
     }
     await this.sendAndWaitReady();
     this.ready = true;
@@ -601,6 +640,7 @@ class PersistentUciEngine {
     this.ready = false;
     this.startPromise = null;
     this.child = null;
+    this.optionValues.clear();
     this.reader?.close();
     this.reader = null;
     for (const waiter of this.waiters.splice(0)) {
@@ -618,6 +658,13 @@ class PersistentUciEngine {
   send(command) {
     if (!this.child?.stdin?.writable) throw new Error(`${this.label} is not running.`);
     this.child.stdin.write(`${command}\n`);
+  }
+
+  setOptionIfChanged(name, value) {
+    const formatted = formatUciOptionValue(value);
+    if (this.optionValues.get(name) === formatted) return;
+    this.send(`setoption name ${name} value ${formatted}`);
+    this.optionValues.set(name, formatted);
   }
 
   close() {

@@ -9,6 +9,7 @@ import { normalizeWebEngineScoreForWhite } from "./engineScore";
 import { type WebLichessCloudData, webLichessCloudDataToLines } from "./lichessCloud";
 import { WEB_SERVER_BASE_URL } from "./serverUrl";
 import type { Lc0NetworkProfile, PcEngineKind } from "@/utils/lc0Networks";
+import type { EnginePerformancePreset } from "@/utils/enginePerformance";
 
 const STOCKFISH_READY_TIMEOUT_MS = 20_000;
 const STOCKFISH_SEARCH_TIMEOUT_MS = 90_000;
@@ -50,6 +51,7 @@ export type WebStockfishAnalyzeRequest = {
      */
     preferStoredEvaluation?: boolean;
     engineKind?: PcEngineKind;
+    performancePreset?: EnginePerformancePreset;
     lc0AutoNetwork?: boolean;
     lc0Network?: Lc0NetworkProfile;
     onUpdate?: (lines: WebEngineLine[]) => void;
@@ -64,6 +66,7 @@ export async function analyzeWithWebStockfish18({
     prefetchFens = [],
     preferStoredEvaluation = false,
     engineKind = "stockfish",
+    performancePreset = "good",
     lc0AutoNetwork = true,
     lc0Network = "none",
     onUpdate,
@@ -90,6 +93,7 @@ export async function analyzeWithWebStockfish18({
             infinite,
             signal,
             engineKind,
+            performancePreset,
             lc0AutoNetwork,
             lc0Network,
             onUpdate,
@@ -117,6 +121,7 @@ export async function analyzeWithWebStockfish18({
             infinite,
             signal,
             engineKind,
+            performancePreset,
             onUpdate,
         });
     }
@@ -153,6 +158,7 @@ export async function analyzeWithWebStockfish18({
             infinite,
             signal,
             engineKind,
+            performancePreset,
             onUpdate: (lines) => {
                 publishedLines = true;
                 deepestLiveDepth = Math.max(deepestLiveDepth, maxLineDepth(lines));
@@ -387,6 +393,7 @@ async function analyzeWithRemoteStockfish18({
     infinite,
     signal,
     engineKind = "stockfish",
+    performancePreset = "good",
     lc0AutoNetwork = true,
     lc0Network = "none",
     onUpdate,
@@ -433,6 +440,7 @@ async function analyzeWithRemoteStockfish18({
                 depth: requestedDepth,
                 infinite: infinite === true,
                 engineKind,
+                performancePreset,
                 lc0AutoNetwork: engineKind === "lc0" && lc0AutoNetwork,
                 lc0Network: engineKind === "lc0" ? lc0Network : undefined,
                 lc0SessionId: engineKind === "lc0" ? WEB_LC0_SESSION_ID : undefined,
