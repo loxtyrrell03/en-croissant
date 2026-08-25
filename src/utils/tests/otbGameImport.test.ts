@@ -2,10 +2,14 @@ import { describe, expect, test } from "vitest";
 import {
     applyOtbImportLaneProgress,
     createOtbImportRequest,
+    DEFAULT_OTB_IMPORT_SOURCES,
+    formatOtbImportEta,
     getOtbImportDescription,
+    getOtbImportEtaSeconds,
     getOtbImportLaneLabel,
     getOtbImportLaneSummary,
     getOtbImportProgressPercent,
+    mergeOtbImportProgress,
     normalizeOtbFideId,
     validateOtbImportRequest,
 } from "@/utils/otbGameImport";
@@ -19,6 +23,8 @@ describe("OTB game import", () => {
             fromYear: 2024,
             sources: {
                 lichessBroadcasts: true,
+                broadcastArchives: false,
+                communityBroadcasts: false,
                 chessResults: true,
                 chessbaseNews: true,
                 officialPgnIndexes: true,
@@ -35,6 +41,8 @@ describe("OTB game import", () => {
             fideId: "343413994",
             fromYear: 2024,
             includeLichessBroadcasts: true,
+            includeLichessBroadcastArchives: false,
+            includeLichessCommunityBroadcasts: false,
             includeChessResults: true,
             includeChessbaseNews: true,
             includeOfficialPgnIndexes: true,
@@ -43,8 +51,8 @@ describe("OTB game import", () => {
             cacheDir: "cache",
             outputPath: "sameera-otb.pgn",
         });
-        expect(Object.keys(request).join(" ").toLowerCase()).not.toContain("chesscom");
-        expect(Object.keys(request).join(" ").toLowerCase()).not.toContain("username");
+        expect(Object.keys(request)).not.toContain("chessComUsername");
+        expect(Object.keys(request)).not.toContain("username");
     });
 
     test("requires a deterministic identity and at least one OTB source", () => {
@@ -55,6 +63,8 @@ describe("OTB game import", () => {
             fromYear: 2024,
             sources: {
                 lichessBroadcasts: false,
+                broadcastArchives: false,
+                communityBroadcasts: false,
                 chessResults: false,
                 chessbaseNews: false,
                 officialPgnIndexes: false,
@@ -107,10 +117,16 @@ describe("OTB game import", () => {
             message: "",
         });
 
-        let lanes = applyOtbImportLaneProgress({}, event("The Week in Chess", "downloading", 3, 12));
+        let lanes = applyOtbImportLaneProgress(
+            {},
+            event("The Week in Chess", "downloading", 3, 12),
+        );
         lanes = applyOtbImportLaneProgress(lanes, event("All sources", "starting", 0, 9));
         lanes = applyOtbImportLaneProgress(lanes, event("Complete", "complete", 1, 1));
-        lanes = applyOtbImportLaneProgress(lanes, event("BritBase public OTB archive", "done", 1, 1));
+        lanes = applyOtbImportLaneProgress(
+            lanes,
+            event("BritBase public OTB archive", "done", 1, 1),
+        );
 
         const summary = getOtbImportLaneSummary(lanes, 9);
         expect(Object.keys(lanes)).toEqual(["The Week in Chess", "BritBase public OTB archive"]);
@@ -135,5 +151,64 @@ describe("OTB game import", () => {
             }),
         ).toBe(25);
         expect(getOtbImportProgressPercent(null)).toBeNull();
+    });
+
+    test("enables exhaustive broadcast scans by default", () => {
+        expect(DEFAULT_OTB_IMPORT_SOURCES.broadcastArchives).toBe(true);
+        expect(DEFAULT_OTB_IMPORT_SOURCES.communityBroadcasts).toBe(true);
+        expect(DEFAULT_OTB_IMPORT_SOURCES.lichessBroadcasts).toBe(true);
+    });
+
+    test("estimates the slowest parallel lane and formats the ETA", () => {
+        const lanes = [
+            {
+                jobId: "otb-eta",
+                source: "Community",
+                phase: "downloading",
+                current: 25,
+                total: 100,
+                gamesFound: 3,
+                message: "Checking rosters",
+            },
+            {
+                jobId: "otb-eta",
+                source: "TWIC",
+                phase: "done",
+                current: 1,
+                total: 1,
+                gamesFound: 3,
+                message: "Done",
+            },
+        ];
+        expect(getOtbImportEtaSeconds(lanes, { Community: 10_000, TWIC: 10_000 }, 40_000)).toBe(90);
+        expect(formatOtbImportEta(90)).toBe("about 2 min");
+        expect(formatOtbImportEta(3_600)).toBe("about 1 hr");
+    });
+
+    test("does not let a stale parallel lane reset the games-found count", () => {
+        const current = {
+            jobId: "otb-4",
+            source: "TWIC",
+            phase: "scan",
+            current: 12,
+            total: 100,
+            gamesFound: 37,
+            message: "Scanning TWIC",
+        };
+        const staleLane = {
+            ...current,
+            source: "Lichess broadcast database",
+            current: 2,
+            gamesFound: 0,
+            message: "Scanning broadcasts",
+        };
+
+        expect(mergeOtbImportProgress(current, staleLane)).toEqual({
+            ...staleLane,
+            gamesFound: 37,
+        });
+        expect(mergeOtbImportProgress(current, { ...staleLane, jobId: "otb-5" }).gamesFound).toBe(
+            0,
+        );
     });
 });

@@ -2,6 +2,8 @@ import type { OtbImportProgress, OtbImportReport, OtbImportRequest } from "@/bin
 
 export type OtbImportSourceSelection = {
     lichessBroadcasts: boolean;
+    broadcastArchives: boolean;
+    communityBroadcasts: boolean;
     chessResults: boolean;
     chessbaseNews: boolean;
     officialPgnIndexes: boolean;
@@ -10,6 +12,8 @@ export type OtbImportSourceSelection = {
 
 export const DEFAULT_OTB_IMPORT_SOURCES: OtbImportSourceSelection = {
     lichessBroadcasts: true,
+    broadcastArchives: true,
+    communityBroadcasts: true,
     chessResults: true,
     chessbaseNews: true,
     officialPgnIndexes: true,
@@ -19,8 +23,18 @@ export const DEFAULT_OTB_IMPORT_SOURCES: OtbImportSourceSelection = {
 export const OTB_IMPORT_SOURCE_DETAILS = [
     {
         key: "lichessBroadcasts" as const,
-        label: "Broadcast archives",
-        detail: "Lichess official, live, and community broadcasts, plus Chessscope discovery",
+        label: "Targeted broadcasts",
+        detail: "FIDE-linked Lichess broadcasts plus Chessscope player search",
+    },
+    {
+        key: "broadcastArchives" as const,
+        label: "Full Lichess archive",
+        detail: "Searches the indexed official monthly broadcast archive in the date range",
+    },
+    {
+        key: "communityBroadcasts" as const,
+        label: "Community broadcasts",
+        detail: "Checks user-created Lichess events not already covered by Chess-Results",
     },
     {
         key: "chessResults" as const,
@@ -82,6 +96,8 @@ export function createOtbImportRequest(options: {
         fideId: fideId || null,
         fromYear: options.fromYear,
         includeLichessBroadcasts: options.sources.lichessBroadcasts,
+        includeLichessBroadcastArchives: options.sources.broadcastArchives,
+        includeLichessCommunityBroadcasts: options.sources.communityBroadcasts,
         includeChessResults: options.sources.chessResults,
         includeChessbaseNews: options.sources.chessbaseNews,
         includeOfficialPgnIndexes: options.sources.officialPgnIndexes,
@@ -100,6 +116,8 @@ export function validateOtbImportRequest(request: OtbImportRequest, currentYear:
     }
     if (
         !request.includeLichessBroadcasts &&
+        !request.includeLichessBroadcastArchives &&
+        !request.includeLichessCommunityBroadcasts &&
         !request.includeChessResults &&
         !request.includeChessbaseNews &&
         !request.includeOfficialPgnIndexes &&
@@ -114,6 +132,49 @@ export function validateOtbImportRequest(request: OtbImportRequest, currentYear:
 export function getOtbImportProgressPercent(progress: OtbImportProgress | null) {
     if (!progress || progress.total <= 0) return null;
     return Math.max(0, Math.min(100, (progress.current / progress.total) * 100));
+}
+
+/** Estimates wall-clock time remaining for parallel lanes from their observed
+ * average throughput. The slowest active lane determines the overall ETA. */
+export function getOtbImportEtaSeconds(
+    lanes: OtbImportProgress[],
+    startedAtBySource: Record<string, number>,
+    now: number,
+) {
+    const active = lanes.filter((lane) => lane.phase !== "done");
+    if (active.length === 0) return 0;
+
+    const estimates: number[] = [];
+    for (const lane of active) {
+        const startedAt = startedAtBySource[lane.source];
+        if (!startedAt || lane.total <= 0 || lane.current <= 0) return null;
+        const elapsedSeconds = Math.max(1, (now - startedAt) / 1_000);
+        const remaining = Math.max(0, lane.total - lane.current);
+        estimates.push((elapsedSeconds * remaining) / lane.current);
+    }
+    return Math.ceil(Math.max(...estimates));
+}
+
+export function formatOtbImportEta(seconds: number) {
+    if (seconds < 60) return "less than a minute";
+    const minutes = Math.ceil(seconds / 60);
+    if (minutes < 60) return `about ${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    const remainder = minutes % 60;
+    return remainder === 0 ? `about ${hours} hr` : `about ${hours} hr ${remainder} min`;
+}
+
+/** Parallel source lanes can report an older snapshot of the shared result
+ * count after another lane has found games. Keep the visible count monotonic. */
+export function mergeOtbImportProgress(
+    current: OtbImportProgress | null,
+    incoming: OtbImportProgress,
+) {
+    if (!current || current.jobId !== incoming.jobId) return incoming;
+    return {
+        ...incoming,
+        gamesFound: Math.max(current.gamesFound, incoming.gamesFound),
+    };
 }
 
 export type OtbImportLaneMap = Record<string, OtbImportProgress>;
