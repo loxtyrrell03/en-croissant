@@ -1,5 +1,20 @@
 # AGENTS.md
 
+- On 2026-08-25, the desktop and PC-hosted phone OTB finder moved immutable and
+  slow archive sources onto one persistent SQLite corpus index. Archives are
+  decompressed and parsed once, with normalized player/FIDE lookup indexes and
+  compressed full-PGN storage; every search still applies the original exact
+  identity, year, online-event exclusion, provenance, and move-dedupe rules.
+  Index errors must fall back to the cached source archive so speed work cannot
+  silently reduce quality. Official Lichess history and community broadcasts
+  are selected by default on both surfaces, and the BritBase lane uses a bounded
+  mirror-health probe rather than waiting on thousands of unreachable files.
+  The full-career, all-source Thomas Brown acceptance search returned 390 unique
+  games in 3.945 seconds after indexing, compared with the shipped phone run's
+  389 games in 11m26s. Preserve the all-source defaults, exact filtering,
+  failure-visible fallbacks, below-normal phone worker priority, and the
+  under-30-second warm acceptance benchmark when changing this importer.
+
 - On 2026-08-21, the phone Import workspace gained PGN as a first-class source
   beside Chess.com, Lichess, and OTB. It offers a one-tap mobile file picker and
   a paste box; both use the existing local phone PGN parser, retain every game

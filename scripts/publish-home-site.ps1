@@ -11,6 +11,7 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 . (Join-Path $PSScriptRoot "phone-publish-guard.ps1")
 
 $serverRoot = Join-Path $env:LOCALAPPDATA "EnCroissantHomeServer"
+$runtimeRoot = Join-Path $serverRoot "runtime"
 $appReleasesRoot = Join-Path $serverRoot "app-releases"
 $activeAppPath = Join-Path $serverRoot "active-app.json"
 if (-not $SiteRoot) {
@@ -58,6 +59,18 @@ try {
       Copy-EnCroissantPhonePublicShell `
         -PublicRoot (Join-Path $repoRoot "public") `
         -DistRoot (Join-Path $repoRoot "dist")
+
+      $cargoCommand = Get-Command cargo.exe -ErrorAction SilentlyContinue
+      if (-not $cargoCommand) {
+        throw "The phone OTB collector build needs cargo.exe."
+      }
+      & $cargoCommand.Source build --release `
+        --manifest-path (Join-Path $repoRoot "src-tauri\Cargo.toml") `
+        --bin collect_otb_games `
+        --features headless-otb
+      if ($LASTEXITCODE -ne 0) {
+        throw "Phone OTB collector build failed with exit code $LASTEXITCODE."
+      }
     }
   } finally {
     Pop-Location
@@ -113,6 +126,18 @@ try {
     }
   }
 
+  $collectorName = if ($env:OS -eq "Windows_NT") { "collect_otb_games.exe" } else { "collect_otb_games" }
+  $collectorSource = Join-Path $repoRoot "src-tauri\target\release\$collectorName"
+  if (-not (Test-Path -LiteralPath $collectorSource)) {
+    throw "The matching phone OTB collector is missing at $collectorSource."
+  }
+  New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
+  $collectorDestination = Join-Path $runtimeRoot $collectorName
+  $temporaryCollector = "$collectorDestination.next-$PID"
+  Copy-Item -LiteralPath $collectorSource -Destination $temporaryCollector -Force
+  Move-Item -LiteralPath $temporaryCollector -Destination $collectorDestination -Force
+  $collectorHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $collectorDestination).Hash
+
   $activeApp = [ordered]@{
     schemaVersion = 1
     releaseId = $releaseId
@@ -154,6 +179,7 @@ try {
     SiteRoot = (Resolve-Path -LiteralPath $SiteRoot).Path
     ActiveAppRoot = $health.activeAppRoot
     SourceCommit = $health.deployment.sourceCommit
+    OtbImporterSha256 = $collectorHash
     PrivateTailscale = $true
     Stockfish = "$($SiteUrl.TrimEnd('/'))/v1/analyze"
     StockfishThreads = $stockfish.threads

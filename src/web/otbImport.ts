@@ -67,8 +67,8 @@ export type WebOtbImportJob = {
 
 export const DEFAULT_WEB_OTB_IMPORT_SOURCES: WebOtbImportSources = {
     lichessBroadcasts: true,
-    broadcastArchives: false,
-    communityBroadcasts: false,
+    broadcastArchives: true,
+    communityBroadcasts: true,
     chessResults: true,
     chessbaseNews: true,
     officialPgnIndexes: true,

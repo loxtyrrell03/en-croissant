@@ -242,8 +242,8 @@ export function normalizeOtbImportPayload(input) {
 
   const sources = {
     lichessBroadcasts: input?.sources?.lichessBroadcasts !== false,
-    broadcastArchives: input?.sources?.broadcastArchives === true,
-    communityBroadcasts: input?.sources?.communityBroadcasts === true,
+    broadcastArchives: input?.sources?.broadcastArchives !== false,
+    communityBroadcasts: input?.sources?.communityBroadcasts !== false,
     chessResults: input?.sources?.chessResults !== false,
     chessbaseNews: input?.sources?.chessbaseNews !== false,
     officialPgnIndexes: input?.sources?.officialPgnIndexes !== false,

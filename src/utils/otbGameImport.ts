@@ -12,8 +12,8 @@ export type OtbImportSourceSelection = {
 
 export const DEFAULT_OTB_IMPORT_SOURCES: OtbImportSourceSelection = {
     lichessBroadcasts: true,
-    broadcastArchives: false,
-    communityBroadcasts: false,
+    broadcastArchives: true,
+    communityBroadcasts: true,
     chessResults: true,
     chessbaseNews: true,
     officialPgnIndexes: true,
@@ -29,14 +29,12 @@ export const OTB_IMPORT_SOURCE_DETAILS = [
     {
         key: "broadcastArchives" as const,
         label: "Full Lichess archive",
-        detail: "Downloads and scans every official monthly broadcast archive in the date range",
-        note: "Slow first import — large downloads",
+        detail: "Searches the indexed official monthly broadcast archive in the date range",
     },
     {
         key: "communityBroadcasts" as const,
         label: "Community broadcasts",
         detail: "Checks user-created Lichess events not already covered by Chess-Results",
-        note: "May be slower on the first search",
     },
     {
         key: "chessResults" as const,
