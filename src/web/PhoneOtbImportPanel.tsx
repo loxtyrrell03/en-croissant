@@ -278,7 +278,7 @@ export default function PhoneOtbImportPanel({
             setSources={setSources}
           />
           <SourceCheckbox
-            detail="Scans large monthly Lichess dumps on the PC; slower first run"
+            detail="Searches indexed official monthly Lichess broadcasts"
             disabled={running}
             label="Full Lichess archive"
             source="broadcastArchives"

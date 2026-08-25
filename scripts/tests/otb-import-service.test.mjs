@@ -33,7 +33,7 @@ test("serializes overlapping job saves and preserves the newest snapshot", async
   }
 });
 
-test("normalizes a phone request with fast PC defaults", () => {
+test("normalizes a phone request with every PC source enabled", () => {
   const request = normalizeOtbImportPayload({
     playerName: "  Kodukula,   Sameera ",
     fideId: "FIDE 343413994",
@@ -46,8 +46,8 @@ test("normalizes a phone request with fast PC defaults", () => {
     fromYear: 2024,
     sources: {
       lichessBroadcasts: true,
-      broadcastArchives: false,
-      communityBroadcasts: false,
+      broadcastArchives: true,
+      communityBroadcasts: true,
       chessResults: true,
       chessbaseNews: true,
       officialPgnIndexes: true,

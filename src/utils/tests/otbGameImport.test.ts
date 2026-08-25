@@ -153,9 +153,9 @@ describe("OTB game import", () => {
         expect(getOtbImportProgressPercent(null)).toBeNull();
     });
 
-    test("keeps exhaustive broadcast scans opt-in", () => {
-        expect(DEFAULT_OTB_IMPORT_SOURCES.broadcastArchives).toBe(false);
-        expect(DEFAULT_OTB_IMPORT_SOURCES.communityBroadcasts).toBe(false);
+    test("enables exhaustive broadcast scans by default", () => {
+        expect(DEFAULT_OTB_IMPORT_SOURCES.broadcastArchives).toBe(true);
+        expect(DEFAULT_OTB_IMPORT_SOURCES.communityBroadcasts).toBe(true);
         expect(DEFAULT_OTB_IMPORT_SOURCES.lichessBroadcasts).toBe(true);
     });
 
