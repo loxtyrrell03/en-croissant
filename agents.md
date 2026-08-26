@@ -12,6 +12,9 @@
   identities must deduplicate through the exact identity candidate index, and
   live Lichess discovery must cover only the gap after the newest monthly dump
   verified in SQLite; the monthly lane owns completed historical coverage.
+  Chessscope must use its exact date, row year, or authoritative Lichess round
+  timestamp to prove that same coverage, and fetch one tournament aggregate
+  instead of separately downloading every uncovered round.
 
 - On 2026-08-25, the desktop and PC-hosted phone OTB finder moved immutable and
   slow archive sources onto one persistent SQLite corpus index. Archives are
