@@ -1635,7 +1635,7 @@ async fn scan_chessscope_broadcasts(
         }
     }))
     .buffered(ARCHIVE_CONCURRENCY);
-    let mut rounds = HashMap::<String, (bool, Option<String>)>::new();
+    let mut rounds = HashMap::<String, (Option<u16>, Option<String>)>::new();
     let current_year = Utc::now().year().max(1900) as u16;
     let mut checked_game_pages = 0usize;
     let mut consecutive_transport_failures = 0usize;
@@ -1658,18 +1658,17 @@ async fn scan_chessscope_broadcasts(
             Ok(Some(html)) => {
                 consecutive_transport_failures = 0;
                 report.archives_checked = report.archives_checked.saturating_add(1);
-                let recent = year.is_none_or(|year| year >= current_year);
                 let game_date = extract_chessscope_game_date(&html);
-                for round_id in extract_chessscope_round_ids(&html) {
+                for round_path in extract_chessscope_round_paths(&html) {
                     rounds
-                        .entry(round_id)
-                        .and_modify(|(existing_recent, existing_date)| {
-                            *existing_recent |= recent;
+                        .entry(round_path)
+                        .and_modify(|(existing_year, existing_date)| {
+                            *existing_year = (*existing_year).max(year);
                             if game_date > *existing_date {
                                 *existing_date = game_date.clone();
                             }
                         })
-                        .or_insert_with(|| (recent, game_date.clone()));
+                        .or_insert_with(|| (year, game_date.clone()));
                 }
             }
             Ok(None) => consecutive_transport_failures = 0,
@@ -1693,31 +1692,45 @@ async fn scan_chessscope_broadcasts(
 
     let mut rounds = rounds.into_iter().collect::<Vec<_>>();
     rounds.sort_by(|left, right| left.0.cmp(&right.0));
-    let mut historical_specs = Vec::new();
-    let mut recent_specs = Vec::new();
+    let mut historical_rounds = Vec::new();
+    let mut recent_rounds = Vec::new();
     // Chessscope points back to Lichess broadcast rounds. Completed monthly
     // Lichess dumps already contain those exact historical broadcasts, so only
     // fetch a round whose game date falls in the not-yet-archived gap. Unknown
     // dates retain the original fetch path to avoid losing any result.
     let corpus_cutoff = lichess_live_cutoff(request).await;
-    for (round_id, (recent, game_date)) in rounds {
-        if game_date
-            .as_deref()
-            .is_some_and(|date| date < corpus_cutoff.as_str())
-        {
+    for (round_path, (year, game_date)) in rounds {
+        // Some older Chessscope rows have a real event year but no exact game
+        // date. The whole year is covered only when even its final day precedes
+        // the verified monthly cutoff; otherwise retain the original fetch.
+        if chessscope_round_is_in_corpus(year, game_date.as_deref(), &corpus_cutoff) {
             continue;
         }
-        let url = format!("https://lichess.org/api/broadcast/round/{round_id}.pgn");
-        let cache_path = request
-            .cache_dir
-            .join(cache_file_name("lichess-broadcast", &url));
-        let spec = IndexedArchiveSpec::lichess(url, cache_path);
+        let recent = year.is_none_or(|year| year >= current_year);
         if recent {
-            recent_specs.push(spec);
+            recent_rounds.push(round_path);
         } else {
-            historical_specs.push(spec);
+            historical_rounds.push(round_path);
         }
     }
+    let historical_specs = resolve_lichess_tour_specs(
+        client,
+        request,
+        historical_rounds,
+        &corpus_cutoff,
+        SOURCE,
+        &mut report,
+    )
+    .await;
+    let recent_specs = resolve_lichess_tour_specs(
+        client,
+        request,
+        recent_rounds,
+        &corpus_cutoff,
+        SOURCE,
+        &mut report,
+    )
+    .await;
     scan_indexed_archives(
         client,
         request,
@@ -1746,6 +1759,93 @@ async fn scan_chessscope_broadcasts(
     .await;
 
     report
+}
+
+/// Resolves Chessscope's per-round links to tournament aggregates. A player can
+/// have dozens of rounds from only a handful of events; fetching each event PGN
+/// once preserves every round while avoiding repeated large Lichess downloads.
+/// If metadata cannot be resolved, the exact round PGN remains the fallback.
+async fn resolve_lichess_tour_specs(
+    client: &Client,
+    request: &OtbImportRequest,
+    round_paths: Vec<String>,
+    corpus_cutoff: &str,
+    source: &'static str,
+    report: &mut OtbImportSourceReport,
+) -> Vec<IndexedArchiveSpec> {
+    let mut lookups = stream::iter(round_paths.into_iter().map(|round_path| {
+        let client = client.clone();
+        let cache_dir = request.cache_dir.clone();
+        async move {
+            let api_url = format!("https://lichess.org/api{round_path}");
+            let cache_path = cache_dir.join(cache_file_name("lichess-fide-round", &api_url));
+            let result: Result<(String, Option<String>), String> = async {
+                let (bytes, _) = fetch_lichess_cached_within(
+                    &client,
+                    &api_url,
+                    &cache_path,
+                    Some(PAGE_CACHE_MAX_AGE),
+                )
+                .await?;
+                let value = serde_json::from_slice::<serde_json::Value>(&bytes)
+                    .map_err(|error| error.to_string())?;
+                let tour_id = value
+                    .get("tour")
+                    .and_then(|tour| tour.get("id"))
+                    .and_then(serde_json::Value::as_str)
+                    .map(str::to_string)
+                    .ok_or_else(|| {
+                        "Lichess round metadata did not contain a tour ID".to_string()
+                    })?;
+                let starts_at = value
+                    .get("round")
+                    .and_then(|round| round.get("startsAt"))
+                    .and_then(serde_json::Value::as_i64)
+                    .and_then(chrono::DateTime::<Utc>::from_timestamp_millis)
+                    .map(|date| date.format("%Y-%m-%d").to_string());
+                Ok((tour_id, starts_at))
+            }
+            .await;
+            (round_path, api_url, result)
+        }
+    }))
+    .buffered(LICHESS_CONCURRENCY);
+
+    let mut tour_ids = HashSet::new();
+    let mut fallback_round_ids = HashSet::new();
+    while let Some((round_path, api_url, result)) = lookups.next().await {
+        match result {
+            Ok((_, Some(starts_at))) if starts_at.as_str() < corpus_cutoff => {}
+            Ok((tour_id, _)) => {
+                tour_ids.insert(tour_id);
+            }
+            Err(error) => {
+                report.errors.push(format!("{source} {api_url}: {error}"));
+                if let Some(round_id) = round_path.rsplit('/').next() {
+                    fallback_round_ids.insert(round_id.to_string());
+                }
+            }
+        }
+    }
+
+    let mut urls = tour_ids
+        .into_iter()
+        .map(|tour_id| format!("https://lichess.org/api/broadcast/{tour_id}.pgn"))
+        .chain(
+            fallback_round_ids
+                .into_iter()
+                .map(|round_id| format!("https://lichess.org/api/broadcast/round/{round_id}.pgn")),
+        )
+        .collect::<Vec<_>>();
+    urls.sort();
+    urls.into_iter()
+        .map(|url| {
+            let cache_path = request
+                .cache_dir
+                .join(cache_file_name("lichess-broadcast", &url));
+            IndexedArchiveSpec::lichess(url, cache_path)
+        })
+        .collect()
 }
 
 async fn scan_lichess_broadcasts(
@@ -3975,25 +4075,29 @@ fn extract_chessscope_games(html: &str, from_year: u16) -> Vec<(String, Option<u
 }
 
 fn extract_chessscope_round_ids(html: &str) -> Vec<String> {
-    let mut round_ids = extract_quoted_values(html, "href=")
+    extract_chessscope_round_paths(html)
+        .into_iter()
+        .filter_map(|path| path.rsplit('/').next().map(str::to_string))
+        .collect()
+}
+
+fn extract_chessscope_round_paths(html: &str) -> Vec<String> {
+    let mut round_paths = extract_quoted_values(html, "href=")
         .into_iter()
         .filter(|href| href.contains("lichess.org/broadcast/"))
         .filter_map(|href| {
             let clean = decode_basic_html_entities(&href);
-            let round_id = clean
+            let path = clean
                 .split(['?', '#'])
                 .next()?
                 .trim_end_matches(".pgn")
-                .trim_end_matches('/')
-                .rsplit('/')
-                .next()?;
-            (round_id.len() == 8 && round_id.chars().all(|char| char.is_ascii_alphanumeric()))
-                .then(|| round_id.to_string())
+                .strip_prefix("https://lichess.org")?;
+            is_lichess_round_path(path).then(|| path.to_string())
         })
         .collect::<Vec<_>>();
-    round_ids.sort();
-    round_ids.dedup();
-    round_ids
+    round_paths.sort();
+    round_paths.dedup();
+    round_paths
 }
 
 fn extract_chessscope_game_date(html: &str) -> Option<String> {
@@ -4040,6 +4144,11 @@ fn extract_chessscope_game_date(html: &str) -> Option<String> {
         }
     }
     None
+}
+
+fn chessscope_round_is_in_corpus(year: Option<u16>, date: Option<&str>, cutoff: &str) -> bool {
+    date.is_some_and(|date| date < cutoff)
+        || year.is_some_and(|year| format!("{year:04}-12-31").as_str() < cutoff)
 }
 
 fn extract_britbase_archive_urls(html: &str, from_year: u16, origin: &str) -> Vec<String> {
@@ -4806,6 +4915,16 @@ mod tests {
             extract_chessscope_game_date("<p>September 3, 2026 · Round 4</p>"),
             Some("2026-09-03".to_string())
         );
+        assert!(chessscope_round_is_in_corpus(
+            Some(2022),
+            None,
+            "2026-08-01"
+        ));
+        assert!(!chessscope_round_is_in_corpus(
+            Some(2026),
+            None,
+            "2026-08-01"
+        ));
     }
 
     #[test]
