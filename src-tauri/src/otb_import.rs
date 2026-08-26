@@ -260,13 +260,13 @@ struct CollectedGame {
     black: String,
     result: String,
     source: String,
-    target_side: String,
     mainline_moves: String,
 }
 
 #[derive(Default)]
 struct Collection {
     games: Vec<CollectedGame>,
+    identity_fingerprints: HashMap<String, Vec<usize>>,
     broad_fingerprints: HashMap<String, Vec<usize>>,
     move_fingerprints: HashMap<String, Vec<usize>>,
     duplicates_removed: u32,
@@ -935,6 +935,11 @@ async fn scan_lichess_fide_broadcasts(
             .push("Live Lichess tournament discovery requires a FIDE ID.".to_string());
         return report;
     };
+    // Completed monthly broadcast dumps already contain every historical
+    // Lichess broadcast. The live FIDE lane only needs the gap after the newest
+    // dump that is actually present in our corpus; downloading dozens of full
+    // historical tours again adds no games and dominates new-player searches.
+    let live_cutoff = lichess_live_cutoff(request).await;
     let mut round_paths = HashSet::new();
 
     for page in 1..=20u32 {
@@ -967,11 +972,15 @@ async fn scan_lichess_fide_broadcasts(
             }
         };
         let html = String::from_utf8_lossy(&bytes).into_owned();
-        let paths = extract_lichess_round_paths_for_range(&html, request.from_year);
-        let page_reaches_before_range = extract_quoted_values(&html, "datetime=")
-            .into_iter()
-            .filter_map(|value| value.get(..4)?.parse::<u16>().ok())
-            .any(|year| year < request.from_year);
+        let paths = extract_lichess_round_paths_since(&html, &live_cutoff);
+        let page_reaches_before_range =
+            extract_quoted_values(&html, "datetime=")
+                .into_iter()
+                .any(|value| {
+                    value
+                        .get(..10)
+                        .is_some_and(|date| date < live_cutoff.as_str())
+                });
         if paths.is_empty() {
             break;
         }
@@ -3451,15 +3460,22 @@ fn add_game(collection: &mut Collection, pgn: String, source: &str, target_side:
     }
     let mainline_moves = mainline_move_fingerprint(&pgn).unwrap_or_else(|| moves.clone());
     let move_fingerprint = format!("{target_side}|{mainline_moves}");
+    let normalized_white = normalized_name(&white);
+    let normalized_black = normalized_name(&black);
+    let identity_fingerprint =
+        format!("{target_side}|{normalized_white}|{normalized_black}|{result}");
 
-    if let Some(index) = collection.games.iter().position(|existing| {
-        existing.target_side == target_side
-            && normalized_name(&existing.white) == normalized_name(&white)
-            && normalized_name(&existing.black) == normalized_name(&black)
-            && existing.result == result
-            && (existing.date == date || existing.date.contains('?') || date.contains('?'))
-            && move_lines_are_prefixes(&existing.mainline_moves, &mainline_moves)
-    }) {
+    let prefix_duplicate = collection
+        .identity_fingerprints
+        .get(&identity_fingerprint)
+        .and_then(|indices| {
+            indices.iter().copied().find(|index| {
+                let existing = &collection.games[*index];
+                (existing.date == date || existing.date.contains('?') || date.contains('?'))
+                    && move_lines_are_prefixes(&existing.mainline_moves, &mainline_moves)
+            })
+        });
+    if let Some(index) = prefix_duplicate {
         let existing = &collection.games[index];
         let incoming_is_better = mainline_moves.split_whitespace().count()
             > existing.mainline_moves.split_whitespace().count()
@@ -3493,7 +3509,6 @@ fn add_game(collection: &mut Collection, pgn: String, source: &str, target_side:
                 black,
                 result,
                 source: source.to_string(),
-                target_side: target_side.to_string(),
                 mainline_moves,
             };
         }
@@ -3513,10 +3528,7 @@ fn add_game(collection: &mut Collection, pgn: String, source: &str, target_side:
 
     let broad_fingerprint = format!(
         "{}|{}|{}|{}",
-        normalized_name(&white),
-        normalized_name(&black),
-        result,
-        moves
+        normalized_white, normalized_black, result, moves
     );
     if let Some(indices) = collection.broad_fingerprints.get(&broad_fingerprint) {
         let duplicate = indices.iter().any(|index| {
@@ -3530,6 +3542,11 @@ fn add_game(collection: &mut Collection, pgn: String, source: &str, target_side:
     }
 
     let index = collection.games.len();
+    collection
+        .identity_fingerprints
+        .entry(identity_fingerprint)
+        .or_default()
+        .push(index);
     collection
         .broad_fingerprints
         .entry(broad_fingerprint)
@@ -3548,7 +3565,6 @@ fn add_game(collection: &mut Collection, pgn: String, source: &str, target_side:
         black,
         result,
         source: source.to_string(),
-        target_side: target_side.to_string(),
         mainline_moves,
     });
 }
@@ -4171,7 +4187,40 @@ fn is_lichess_round_path(value: &str) -> bool {
         && segments[3].chars().all(|char| char.is_ascii_alphanumeric())
 }
 
-fn extract_lichess_round_paths_for_range(html: &str, from_year: u16) -> Vec<String> {
+async fn lichess_live_cutoff(request: &OtbImportRequest) -> String {
+    let requested_cutoff = format!("{:04}-01-01", request.from_year);
+    let Ok(Some(list)) =
+        read_page_cache_stale(LICHESS_BROADCAST_LIST, &request.cache_dir, "lichess-index").await
+    else {
+        return requested_cutoff;
+    };
+    let Some((url, month)) = list
+        .lines()
+        .map(str::trim)
+        .filter_map(|url| archive_month(url).map(|month| (url.to_string(), month)))
+        .max_by_key(|(_, month)| *month)
+    else {
+        return requested_cutoff;
+    };
+    let indexed = index::indexed_urls(
+        &archive_index_path(&request.cache_dir),
+        &[url.clone()],
+        None,
+    )
+    .await
+    .unwrap_or_default();
+    if !indexed.contains(&url) {
+        return requested_cutoff;
+    }
+    let (year, month) = if month.1 == 12 {
+        (month.0.saturating_add(1), 1)
+    } else {
+        (month.0, month.1 + 1)
+    };
+    requested_cutoff.max(format!("{year:04}-{month:02}-01"))
+}
+
+fn extract_lichess_round_paths_since(html: &str, cutoff: &str) -> Vec<String> {
     html.split("<a")
         .skip(1)
         .filter_map(|tail| tail.split_once("</a>").map(|(anchor, _)| anchor))
@@ -4182,8 +4231,7 @@ fn extract_lichess_round_paths_for_range(html: &str, from_year: u16) -> Vec<Stri
             }
             let in_range = extract_quoted_values(anchor, "datetime=")
                 .into_iter()
-                .filter_map(|value| value.get(..4)?.parse::<u16>().ok())
-                .all(|year| year >= from_year);
+                .all(|value| value.get(..10).is_none_or(|date| date >= cutoff));
             in_range.then_some(href)
         })
         .collect()
@@ -4258,9 +4306,15 @@ fn find_iso_date(value: &str) -> Option<String> {
 }
 
 fn archive_year(url: &str) -> Option<u16> {
+    archive_month(url).map(|month| month.0)
+}
+
+fn archive_month(url: &str) -> Option<(u16, u8)> {
     let marker = "lichess_db_broadcast_";
     let start = url.find(marker)? + marker.len();
-    url.get(start..start + 4)?.parse().ok()
+    let year = url.get(start..start + 4)?.parse().ok()?;
+    let month = url.get(start + 5..start + 7)?.parse::<u8>().ok()?;
+    (1..=12).contains(&month).then_some((year, month))
 }
 
 fn file_name_from_url(url: &str) -> String {
@@ -4621,6 +4675,26 @@ mod tests {
         assert!(!is_lichess_round_path(
             "/broadcast/event-name/round-5/BErZv5hY/chapter1"
         ));
+    }
+
+    #[test]
+    fn live_lichess_discovery_skips_months_already_in_the_corpus() {
+        let html = r#"<a href="/broadcast/old-event/round-1/OldRound" datetime="2026-07-31T18:00:00Z">Old</a>
+<a href="/broadcast/new-event/round-1/NewRound" datetime="2026-08-01T18:00:00Z">New</a>
+<a href="/broadcast/undated-event/round-1/NoDate01">Undated</a>"#;
+        assert_eq!(
+            extract_lichess_round_paths_since(html, "2026-08-01"),
+            vec![
+                "/broadcast/new-event/round-1/NewRound".to_string(),
+                "/broadcast/undated-event/round-1/NoDate01".to_string(),
+            ]
+        );
+        assert_eq!(
+            archive_month(
+                "https://database.lichess.org/broadcast/lichess_db_broadcast_2026-07.pgn.zst"
+            ),
+            Some((2026, 7))
+        );
     }
 
     #[test]

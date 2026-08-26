@@ -8,7 +8,10 @@
   bounded Chessscope host circuit, and fail-fast Lichess cooldown handling;
   indexed/cached games and every source lane remain enabled. Preserve truthful
   overall progress, immediate unlock after stop, Retry-After respect, and the
-  under-30-second all-source failure-path acceptance run.
+  under-30-second all-source failure-path acceptance run. High-volume new
+  identities must deduplicate through the exact identity candidate index, and
+  live Lichess discovery must cover only the gap after the newest monthly dump
+  verified in SQLite; the monthly lane owns completed historical coverage.
 
 - On 2026-08-25, the desktop and PC-hosted phone OTB finder moved immutable and
   slow archive sources onto one persistent SQLite corpus index. Archives are
