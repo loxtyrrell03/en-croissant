@@ -58,6 +58,17 @@ const LICHESS_CONCURRENCY: usize = 8;
 /// Minimum spacing between lichess requests across every concurrent task, so the
 /// lane stays around eight requests a second instead of bursting.
 const LICHESS_MIN_REQUEST_SPACING: Duration = Duration::from_millis(120);
+/// A dead upstream must not make an indexed all-source search look frozen.
+/// Connection setup and gaps between response chunks are bounded separately,
+/// so large PGNs can still download for as long as they keep transferring.
+const NETWORK_CONNECT_TIMEOUT: Duration = Duration::from_secs(4);
+const NETWORK_READ_STALL_TIMEOUT: Duration = Duration::from_secs(6);
+/// Search/index pages are small. A per-page deadline prevents a host that
+/// accepts a socket but never serves a body from holding a source lane open.
+const DISCOVERY_PAGE_TIMEOUT: Duration = Duration::from_secs(6);
+/// Respect a Lichess cooldown without parking an interactive search behind it.
+/// Cached/indexed data remains available and a later search can refresh it.
+const MAX_INTERACTIVE_LICHESS_WAIT: Duration = Duration::from_secs(2);
 /// Upper bound on an honoured `Retry-After`, so one header cannot stall a run.
 const MAX_RETRY_AFTER_SECONDS: u64 = 120;
 /// Discovery pages (search results, archive indexes) move slowly but are not
@@ -163,6 +174,10 @@ pub struct OtbImportProgress {
     pub total: u32,
     pub games_found: u32,
     pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub overall_current: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub overall_total: Option<u32>,
 }
 
 static OTB_IMPORT_CANCELLATIONS: OnceLock<Mutex<HashMap<String, Arc<AtomicBool>>>> =
@@ -531,6 +546,18 @@ pub async fn collect_otb_games_with_runtime<R: tauri::Runtime>(
     request: OtbImportRequest,
     app: tauri::AppHandle<R>,
 ) -> Result<OtbImportReport, String> {
+    let progress = |event: OtbImportProgress| {
+        let _ = event.emit(&app);
+    };
+    collect_otb_games_with_progress(request, &progress).await
+}
+
+type OtbProgressSink<'a> = dyn Fn(OtbImportProgress) + Sync + 'a;
+
+pub async fn collect_otb_games_with_progress(
+    request: OtbImportRequest,
+    app: &OtbProgressSink<'_>,
+) -> Result<OtbImportReport, String> {
     let current_year = Utc::now().year().max(2020) as u16;
     if request.from_year < 1900 || request.from_year > current_year {
         return Err(format!(
@@ -553,8 +580,16 @@ pub async fn collect_otb_games_with_runtime<R: tauri::Runtime>(
         &request.player_name,
         request.fide_id.as_deref(),
     )?);
+    lichess_failed_hosts()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .clear();
     let cancellation = CancellationRegistration::new(&request.job_id)?;
     create_dir_all(&request.cache_dir).map_err(|error| error.to_string())?;
+    let index_path = archive_index_path(&request.cache_dir);
+    if !index_path.exists() {
+        let _ = index::initialize(&index_path).await;
+    }
     if let Some(parent) = request.output_path.parent() {
         create_dir_all(parent).map_err(|error| error.to_string())?;
     }
@@ -563,8 +598,8 @@ pub async fn collect_otb_games_with_runtime<R: tauri::Runtime>(
     // large on slow links. The read timeout only fires when a transfer stalls.
     let client = Client::builder()
         .user_agent(USER_AGENT)
-        .connect_timeout(Duration::from_secs(15))
-        .read_timeout(Duration::from_secs(60))
+        .connect_timeout(NETWORK_CONNECT_TIMEOUT)
+        .read_timeout(NETWORK_READ_STALL_TIMEOUT)
         .build()
         .map_err(|error| error.to_string())?;
     let collection = Mutex::new(Collection::default());
@@ -690,13 +725,13 @@ pub async fn collect_otb_games_with_runtime<R: tauri::Runtime>(
             )));
         }
 
-        emit_progress(
+        let lane_total = lanes.len();
+        emit_overall_progress(
             app,
             request,
-            "All sources",
             "starting",
             0,
-            lanes.len(),
+            lane_total,
             0,
             format!("Searching {} public source lanes in parallel", lanes.len()),
         );
@@ -705,7 +740,18 @@ pub async fn collect_otb_games_with_runtime<R: tauri::Runtime>(
             let next_lane = Box::pin(lanes.next());
             let stop_requested = Box::pin(wait_for_cancellation(cancellation.signal.clone()));
             match future::select(next_lane, stop_requested).await {
-                Either::Left((Some(result), _)) => finished.push(result),
+                Either::Left((Some(result), _)) => {
+                    finished.push(result);
+                    emit_overall_progress(
+                        app,
+                        request,
+                        "searching",
+                        finished.len(),
+                        lane_total,
+                        games_len(collection),
+                        format!("{} of {} source lanes finished", finished.len(), lane_total),
+                    );
+                }
                 Either::Left((None, _)) => break,
                 Either::Right(((), pending_lane)) => {
                     drop(pending_lane);
@@ -721,7 +767,7 @@ pub async fn collect_otb_games_with_runtime<R: tauri::Runtime>(
 
     // All archive writers have finished, so fold the temporary WAL back into
     // the compact corpus before returning to the desktop or phone service.
-    let _ = index::checkpoint(&archive_index_path(&request.cache_dir), true).await;
+    let _ = index::checkpoint(&index_path, false).await;
 
     let mut collection = collection
         .into_inner()
@@ -784,10 +830,10 @@ pub async fn collect_otb_games_with_runtime<R: tauri::Runtime>(
 
 /// Awaits one source lane, then announces its completion so the UI can mark
 /// the lane done the moment it finishes rather than when the whole run ends.
-async fn finish_lane<R: tauri::Runtime, F>(
+async fn finish_lane<F>(
     index: usize,
     scan: F,
-    app: &tauri::AppHandle<R>,
+    app: &OtbProgressSink<'_>,
     request: &OtbImportRequest,
     collection: &Mutex<Collection>,
 ) -> (usize, OtbImportSourceReport)
@@ -817,11 +863,11 @@ where
     (index, report)
 }
 
-async fn scan_local_pgn_sources<R: tauri::Runtime>(
+async fn scan_local_pgn_sources(
     request: &OtbImportRequest,
     identity: &Arc<PlayerIdentity>,
     collection: &Mutex<Collection>,
-    app: &tauri::AppHandle<R>,
+    app: &OtbProgressSink<'_>,
 ) -> OtbImportSourceReport {
     const SOURCE: &str = "Local PGN / ChessBase export";
     let mut report = OtbImportSourceReport::new(SOURCE);
@@ -874,12 +920,12 @@ async fn scan_local_pgn_sources<R: tauri::Runtime>(
     report
 }
 
-async fn scan_lichess_fide_broadcasts<R: tauri::Runtime>(
+async fn scan_lichess_fide_broadcasts(
     client: &Client,
     request: &OtbImportRequest,
     identity: &Arc<PlayerIdentity>,
     collection: &Mutex<Collection>,
-    app: &tauri::AppHandle<R>,
+    app: &OtbProgressSink<'_>,
 ) -> OtbImportSourceReport {
     const SOURCE: &str = "Lichess live FIDE broadcasts";
     let mut report = OtbImportSourceReport::new(SOURCE);
@@ -1165,12 +1211,12 @@ struct IndexedArchiveAttempt {
 /// The archive cache remains the source-of-truth fallback: if the SQLite query
 /// fails, indexed hits are read and filtered directly with the same matcher.
 /// An index failure can therefore cost time, but never silently reduce results.
-async fn scan_indexed_archives<R: tauri::Runtime>(
+async fn scan_indexed_archives(
     client: &Client,
     request: &OtbImportRequest,
     identity: &Arc<PlayerIdentity>,
     collection: &Mutex<Collection>,
-    app: &tauri::AppHandle<R>,
+    app: &OtbProgressSink<'_>,
     source: &'static str,
     report: &mut OtbImportSourceReport,
     specs: Vec<IndexedArchiveSpec>,
@@ -1186,21 +1232,64 @@ async fn scan_indexed_archives<R: tauri::Runtime>(
         .iter()
         .map(|spec| spec.url.clone())
         .collect::<Vec<_>>();
-    let indexed = match index::indexed_urls(&index_path, &urls, max_age).await {
+    let mut indexed = match index::indexed_urls(&index_path, &urls, max_age).await {
         Ok(indexed) => indexed,
         Err(error) => {
             report.errors.push(format!("Archive index: {error}"));
             HashSet::new()
         }
     };
+    let fresh_pending = specs
+        .iter()
+        .filter(|spec| !indexed.contains(&spec.url))
+        .collect::<Vec<_>>();
+    let preflight_circuit_open = fresh_pending.len() >= concurrency.max(1)
+        && fresh_pending.first().is_some_and(|spec| !spec.lichess)
+        && !archive_host_responds(client, &fresh_pending[0].url).await;
+    if preflight_circuit_open {
+        // An expired index is still the highest-quality answer available while
+        // its host is offline. Re-enable all complete stale rows in one query;
+        // raw cache entries without index rows are handled locally below.
+        if max_age.is_some() {
+            if let Ok(stale_indexed) = index::indexed_urls(&index_path, &urls, None).await {
+                indexed.extend(stale_indexed);
+            }
+        }
+        report.errors.push(format!(
+            "{source} archive host did not answer one bounded health probe; stale indexed and cached games were kept without retrying every URL."
+        ));
+    }
+    // Indexed archives do not need one future (and one progress event) apiece.
+    // Seed their attempts directly, query them in one SQLite operation below,
+    // and reserve the network fan-out for genuinely missing/stale artifacts.
+    let mut attempts = specs
+        .iter()
+        .filter(|spec| indexed.contains(&spec.url))
+        .cloned()
+        .map(|spec| {
+            (
+                spec.url.clone(),
+                IndexedArchiveAttempt {
+                    spec,
+                    cached: true,
+                    outcome: None,
+                    error: None,
+                },
+            )
+        })
+        .collect::<HashMap<_, _>>();
+    let pending_specs = specs
+        .iter()
+        .filter(|spec| !indexed.contains(&spec.url))
+        .cloned()
+        .collect::<Vec<_>>();
     let started = AtomicUsize::new(0);
     let games_found = AtomicUsize::new(games_len(collection));
-    let total = specs.len();
-    let mut scans = stream::iter(specs.clone().into_iter().map(|spec| {
+    let total = pending_specs.len();
+    let mut scans = stream::iter(pending_specs.into_iter().map(|spec| {
         let client = client.clone();
         let identity = Arc::clone(identity);
         let index_path = index_path.clone();
-        let indexed = indexed.contains(&spec.url);
         let started = &started;
         let games_found = &games_found;
         async move {
@@ -1209,26 +1298,20 @@ async fn scan_indexed_archives<R: tauri::Runtime>(
                 app,
                 request,
                 source,
-                if indexed { "indexed" } else { "downloading" },
+                "downloading",
                 position,
                 total,
                 games_found.load(Ordering::Relaxed),
-                if indexed {
-                    format!("Reading indexed {}", spec.label)
-                } else {
-                    format!("Indexing {} of {}", position + 1, total)
-                },
+                format!("Indexing {} of {} missing archives", position + 1, total),
             );
-            if indexed {
-                return IndexedArchiveAttempt {
-                    spec,
-                    cached: true,
-                    outcome: None,
-                    error: None,
-                };
-            }
-
-            match fetch_indexed_archive(&client, &spec, max_age).await {
+            let fetched = if preflight_circuit_open {
+                Ok(read_cache_entry(&spec.cache_path, None)
+                    .await
+                    .map(|bytes| (bytes, true)))
+            } else {
+                fetch_indexed_archive(&client, &spec, max_age).await
+            };
+            match fetched {
                 Ok(Some((bytes, cached))) => {
                     let indexed = index::index_and_scan(
                         &index_path,
@@ -1264,10 +1347,25 @@ async fn scan_indexed_archives<R: tauri::Runtime>(
     }))
     .buffered(concurrency);
 
-    let mut attempts = HashMap::<String, IndexedArchiveAttempt>::new();
+    let mut consecutive_transport_failures = 0usize;
+    let mut unreachable_host_circuit_open = preflight_circuit_open;
     while let Some(attempt) = scans.next().await {
+        if attempt.error.as_deref().is_some_and(is_transport_failure) {
+            consecutive_transport_failures += 1;
+        } else {
+            consecutive_transport_failures = 0;
+        }
         attempts.insert(attempt.spec.url.clone(), attempt);
+        if consecutive_transport_failures >= concurrency.max(1) {
+            unreachable_host_circuit_open = true;
+            report.errors.push(format!(
+                "{source} stopped retrying its unreachable archive host after {} consecutive transport failures; indexed and cached games were kept.",
+                consecutive_transport_failures
+            ));
+            break;
+        }
     }
+    drop(scans);
 
     let mut indexed_hits = Vec::new();
     for spec in &specs {
@@ -1350,9 +1448,11 @@ async fn scan_indexed_archives<R: tauri::Runtime>(
     for spec in specs {
         report.archives_checked = report.archives_checked.saturating_add(1);
         let Some(mut attempt) = attempts.remove(&spec.url) else {
-            report
-                .errors
-                .push(format!("{}: no archive result", spec.label));
+            if !unreachable_host_circuit_open {
+                report
+                    .errors
+                    .push(format!("{}: no archive result", spec.label));
+            }
             continue;
         };
         if attempt.cached {
@@ -1372,7 +1472,6 @@ async fn scan_indexed_archives<R: tauri::Runtime>(
         report.unique_games_added = report.unique_games_added.saturating_add(added);
         games_found.store(games_len(collection), Ordering::Relaxed);
     }
-    let _ = index::checkpoint(&index_path, false).await;
 }
 
 async fn fetch_indexed_archive(
@@ -1389,12 +1488,21 @@ async fn fetch_indexed_archive(
     }
 }
 
-async fn scan_chessscope_broadcasts<R: tauri::Runtime>(
+async fn archive_host_responds(client: &Client, url: &str) -> bool {
+    client
+        .head(url)
+        .timeout(DISCOVERY_PAGE_TIMEOUT)
+        .send()
+        .await
+        .is_ok()
+}
+
+async fn scan_chessscope_broadcasts(
     client: &Client,
     request: &OtbImportRequest,
     identity: &Arc<PlayerIdentity>,
     collection: &Mutex<Collection>,
-    app: &tauri::AppHandle<R>,
+    app: &OtbProgressSink<'_>,
 ) -> OtbImportSourceReport {
     const SOURCE: &str = "Chessscope broadcast discovery";
     let mut report = OtbImportSourceReport::new(SOURCE);
@@ -1409,28 +1517,29 @@ async fn scan_chessscope_broadcasts<R: tauri::Runtime>(
         "Resolving the player on Chessscope".to_string(),
     );
 
-    let search_html = match client
+    let (search_html, chessscope_online) = match client
         .get(format!("{CHESSCOPE_ORIGIN}/search"))
         .query(&[("q", identity.canonical_name.as_str())])
+        .timeout(DISCOVERY_PAGE_TIMEOUT)
         .send()
         .await
     {
         Ok(response) => match response.error_for_status() {
             Ok(response) => match response.text().await {
-                Ok(html) => html,
+                Ok(html) => (html, true),
                 Err(error) => {
                     report.errors.push(error.to_string());
-                    String::new()
+                    (String::new(), false)
                 }
             },
             Err(error) => {
                 report.errors.push(error.to_string());
-                String::new()
+                (String::new(), false)
             }
         },
         Err(error) => {
             report.errors.push(error.to_string());
-            String::new()
+            (String::new(), false)
         }
     };
     report.archives_checked = 1;
@@ -1468,8 +1577,11 @@ async fn scan_chessscope_broadcasts<R: tauri::Runtime>(
                 games_so_far,
                 format!("Checking Chessscope player candidate {}", position + 1),
             );
-            let html =
-                fetch_page_cached(&client, &player_url, &cache_dir, "chessscope-player").await;
+            let html = if chessscope_online {
+                fetch_page_cached(&client, &player_url, &cache_dir, "chessscope-player").await
+            } else {
+                read_page_cache_stale(&player_url, &cache_dir, "chessscope-player").await
+            };
             (player_url, html)
         }
     }))
@@ -1505,7 +1617,11 @@ async fn scan_chessscope_broadcasts<R: tauri::Runtime>(
         let client = client.clone();
         let cache_dir = request.cache_dir.clone();
         async move {
-            let html = fetch_page_cached(&client, &game_url, &cache_dir, "chessscope").await;
+            let html = if chessscope_online {
+                fetch_page_cached(&client, &game_url, &cache_dir, "chessscope").await
+            } else {
+                read_page_cache_stale(&game_url, &cache_dir, "chessscope").await
+            };
             (game_url, year, html)
         }
     }))
@@ -1513,6 +1629,7 @@ async fn scan_chessscope_broadcasts<R: tauri::Runtime>(
     let mut rounds = HashMap::<String, bool>::new();
     let current_year = Utc::now().year().max(1900) as u16;
     let mut checked_game_pages = 0usize;
+    let mut consecutive_transport_failures = 0usize;
     while let Some((game_url, year, result)) = game_pages.next().await {
         checked_game_pages += 1;
         emit_progress(
@@ -1530,6 +1647,7 @@ async fn scan_chessscope_broadcasts<R: tauri::Runtime>(
         );
         match result {
             Ok(Some(html)) => {
+                consecutive_transport_failures = 0;
                 report.archives_checked = report.archives_checked.saturating_add(1);
                 let recent = year.is_none_or(|year| year >= current_year);
                 for round_id in extract_chessscope_round_ids(&html) {
@@ -1539,8 +1657,22 @@ async fn scan_chessscope_broadcasts<R: tauri::Runtime>(
                         .or_insert(recent);
                 }
             }
-            Ok(None) => {}
-            Err(error) => report.errors.push(format!("{game_url}: {error}")),
+            Ok(None) => consecutive_transport_failures = 0,
+            Err(error) => {
+                if is_transport_failure(&error) {
+                    consecutive_transport_failures += 1;
+                } else {
+                    consecutive_transport_failures = 0;
+                }
+                report.errors.push(format!("{game_url}: {error}"));
+                if consecutive_transport_failures >= ARCHIVE_CONCURRENCY {
+                    report.errors.push(format!(
+                        "Chessscope stopped retrying this unreachable host after {} consecutive transport failures; indexed and cached games were kept.",
+                        consecutive_transport_failures
+                    ));
+                    break;
+                }
+            }
         }
     }
 
@@ -1590,12 +1722,12 @@ async fn scan_chessscope_broadcasts<R: tauri::Runtime>(
     report
 }
 
-async fn scan_lichess_broadcasts<R: tauri::Runtime>(
+async fn scan_lichess_broadcasts(
     client: &Client,
     request: &OtbImportRequest,
     identity: &Arc<PlayerIdentity>,
     collection: &Mutex<Collection>,
-    app: &tauri::AppHandle<R>,
+    app: &OtbProgressSink<'_>,
 ) -> OtbImportSourceReport {
     const SOURCE: &str = "Lichess broadcast database";
     let mut report = OtbImportSourceReport::new(SOURCE);
@@ -1660,12 +1792,12 @@ async fn scan_lichess_broadcasts<R: tauri::Runtime>(
 /// Lichess's `communityOwner` marker, checks each tournament's much smaller
 /// player roster, and downloads a PGN only when the target appears. Tours
 /// without a usable roster still fall back to a full scan for completeness.
-async fn scan_lichess_community_broadcasts<R: tauri::Runtime>(
+async fn scan_lichess_community_broadcasts(
     client: &Client,
     request: &OtbImportRequest,
     identity: &Arc<PlayerIdentity>,
     collection: &Mutex<Collection>,
-    app: &tauri::AppHandle<R>,
+    app: &OtbProgressSink<'_>,
 ) -> OtbImportSourceReport {
     const SOURCE: &str = "Lichess community broadcasts";
     let mut report = OtbImportSourceReport::new(SOURCE);
@@ -2033,17 +2165,25 @@ async fn fetch_lichess_cached_within(
     if let Some(bytes) = read_cache_entry(cache_path, max_age).await {
         return Ok((bytes, true));
     }
-    let bytes = get_lichess_with_backoff(client, url).await?;
+    let stale = if max_age.is_some() {
+        read_cache_entry(cache_path, None).await
+    } else {
+        None
+    };
+    let bytes = match get_lichess_with_backoff(client, url).await {
+        Ok(bytes) => bytes,
+        Err(error) => return stale.map(|bytes| (bytes, true)).ok_or(error),
+    };
     write_cache_entry(cache_path, &bytes).await;
     Ok((bytes, false))
 }
 
-async fn scan_chess_results<R: tauri::Runtime>(
+async fn scan_chess_results(
     client: &Client,
     request: &OtbImportRequest,
     identity: &Arc<PlayerIdentity>,
     collection: &Mutex<Collection>,
-    app: &tauri::AppHandle<R>,
+    app: &OtbProgressSink<'_>,
 ) -> OtbImportSourceReport {
     // Chess-Results is a stateful ASP.NET form flow (cookie plus __VIEWSTATE
     // round-trip), so nothing here can be served from the disk cache.
@@ -2144,6 +2284,7 @@ async fn chess_results_download(
 ) -> Result<Vec<u8>, String> {
     let initial_response = client
         .get(CHESS_RESULTS_PLAYER_SEARCH)
+        .timeout(DISCOVERY_PAGE_TIMEOUT)
         .send()
         .await
         .map_err(|error| error.to_string())?
@@ -2166,7 +2307,10 @@ async fn chess_results_download(
     );
     set_form_field(&mut search_form, "ctl00$P1$cb_SuchenPartie", "Search");
 
-    let mut search_request = client.post(CHESS_RESULTS_PLAYER_SEARCH).form(&search_form);
+    let mut search_request = client
+        .post(CHESS_RESULTS_PLAYER_SEARCH)
+        .form(&search_form)
+        .timeout(DISCOVERY_PAGE_TIMEOUT);
     if !cookie.is_empty() {
         search_request = search_request.header(COOKIE, &cookie);
     }
@@ -2213,12 +2357,12 @@ async fn chess_results_download(
     Ok(bytes.to_vec())
 }
 
-async fn scan_chessbase_news<R: tauri::Runtime>(
+async fn scan_chessbase_news(
     client: &Client,
     request: &OtbImportRequest,
     identity: &Arc<PlayerIdentity>,
     collection: &Mutex<Collection>,
-    app: &tauri::AppHandle<R>,
+    app: &OtbProgressSink<'_>,
 ) -> OtbImportSourceReport {
     const SOURCE: &str = "ChessBase public news PGNs";
     let mut report = OtbImportSourceReport::new(SOURCE);
@@ -2340,12 +2484,12 @@ async fn scan_chessbase_news<R: tauri::Runtime>(
     report
 }
 
-async fn scan_4ncl_otb_archive<R: tauri::Runtime>(
+async fn scan_4ncl_otb_archive(
     client: &Client,
     request: &OtbImportRequest,
     identity: &Arc<PlayerIdentity>,
     collection: &Mutex<Collection>,
-    app: &tauri::AppHandle<R>,
+    app: &OtbProgressSink<'_>,
 ) -> OtbImportSourceReport {
     const SOURCE: &str = "Official tournament PGN indexes (4NCL)";
     let mut report = OtbImportSourceReport::new(SOURCE);
@@ -2452,12 +2596,12 @@ fn is_4ncl_otb_archive_url(url: &str) -> bool {
         || lower.contains("gmspring")
 }
 
-async fn scan_britbase<R: tauri::Runtime>(
+async fn scan_britbase(
     client: &Client,
     request: &OtbImportRequest,
     identity: &Arc<PlayerIdentity>,
     collection: &Mutex<Collection>,
-    app: &tauri::AppHandle<R>,
+    app: &OtbProgressSink<'_>,
 ) -> OtbImportSourceReport {
     const SOURCE: &str = "BritBase public OTB archive";
     let mut report = OtbImportSourceReport::new(SOURCE);
@@ -2627,12 +2771,12 @@ async fn britbase_archive_host_available(client: &Client, archive_urls: &[String
     false
 }
 
-async fn scan_pgn_mentor<R: tauri::Runtime>(
+async fn scan_pgn_mentor(
     client: &Client,
     request: &OtbImportRequest,
     identity: &Arc<PlayerIdentity>,
     collection: &Mutex<Collection>,
-    app: &tauri::AppHandle<R>,
+    app: &OtbProgressSink<'_>,
 ) -> OtbImportSourceReport {
     const SOURCE: &str = "PGN Mentor public collections";
     let mut report = OtbImportSourceReport::new(SOURCE);
@@ -2695,12 +2839,12 @@ async fn scan_pgn_mentor<R: tauri::Runtime>(
     report
 }
 
-async fn scan_twic<R: tauri::Runtime>(
+async fn scan_twic(
     client: &Client,
     request: &OtbImportRequest,
     identity: &Arc<PlayerIdentity>,
     collection: &Mutex<Collection>,
-    app: &tauri::AppHandle<R>,
+    app: &OtbProgressSink<'_>,
 ) -> OtbImportSourceReport {
     const SOURCE: &str = "The Week in Chess";
     let mut report = OtbImportSourceReport::new(SOURCE);
@@ -2790,12 +2934,21 @@ async fn fetch_cached_within(
     if let Some(bytes) = read_cache_entry(cache_path, max_age).await {
         return Ok(Some((bytes, true)));
     }
+    let stale = if max_age.is_some() {
+        read_cache_entry(cache_path, None).await
+    } else {
+        None
+    };
 
-    let response = client
-        .get(url)
-        .send()
-        .await
-        .map_err(|error| error.to_string())?;
+    let response = match client.get(url).send().await {
+        Ok(response) => response,
+        Err(error) => {
+            return match stale {
+                Some(bytes) => Ok(Some((bytes, true))),
+                None => Err(error.to_string()),
+            };
+        }
+    };
     if response.status() == reqwest::StatusCode::NOT_FOUND {
         return Ok(None);
     }
@@ -2815,6 +2968,7 @@ async fn fetch_cached_within(
 async fn fetch_page_live(client: &Client, url: &str) -> Result<Option<String>, String> {
     let response = client
         .get(url)
+        .timeout(DISCOVERY_PAGE_TIMEOUT)
         .send()
         .await
         .map_err(|error| error.to_string())?;
@@ -2839,12 +2993,48 @@ async fn fetch_page_cached(
     prefix: &str,
 ) -> Result<Option<String>, String> {
     let cache_path = cache_dir.join(cache_file_name(prefix, url));
-    let Some((bytes, _cached)) =
-        fetch_cached_within(client, url, &cache_path, Some(PAGE_CACHE_MAX_AGE)).await?
-    else {
-        return Ok(None);
+    if let Some(bytes) = read_cache_entry(&cache_path, Some(PAGE_CACHE_MAX_AGE)).await {
+        return Ok(Some(String::from_utf8_lossy(&bytes).into_owned()));
+    }
+    let stale = read_cache_entry(&cache_path, None).await;
+    let response = match client.get(url).timeout(DISCOVERY_PAGE_TIMEOUT).send().await {
+        Ok(response) => response,
+        Err(error) => {
+            return match stale {
+                Some(bytes) => Ok(Some(String::from_utf8_lossy(&bytes).into_owned())),
+                None => Err(error.to_string()),
+            };
+        }
     };
+    if response.status() == reqwest::StatusCode::NOT_FOUND {
+        return Ok(None);
+    }
+    let bytes = match response.error_for_status() {
+        Ok(response) => response
+            .bytes()
+            .await
+            .map_err(|error| error.to_string())?
+            .to_vec(),
+        Err(error) => {
+            return match stale {
+                Some(bytes) => Ok(Some(String::from_utf8_lossy(&bytes).into_owned())),
+                None => Err(error.to_string()),
+            };
+        }
+    };
+    write_cache_entry(&cache_path, &bytes).await;
     Ok(Some(String::from_utf8_lossy(&bytes).into_owned()))
+}
+
+async fn read_page_cache_stale(
+    url: &str,
+    cache_dir: &Path,
+    prefix: &str,
+) -> Result<Option<String>, String> {
+    let cache_path = cache_dir.join(cache_file_name(prefix, url));
+    Ok(read_cache_entry(&cache_path, None)
+        .await
+        .map(|bytes| String::from_utf8_lossy(&bytes).into_owned()))
 }
 
 /// Fetches a Lichess discovery page through both the shared rate-limit lane and
@@ -2860,7 +3050,11 @@ async fn fetch_lichess_page_cached(
     if let Some(bytes) = read_cache_entry(&cache_path, Some(PAGE_CACHE_MAX_AGE)).await {
         return Ok(bytes);
     }
-    let bytes = get_lichess_with_backoff(client, url).await?;
+    let stale = read_cache_entry(&cache_path, None).await;
+    let bytes = match get_lichess_with_backoff(client, url).await {
+        Ok(bytes) => bytes,
+        Err(error) => return stale.ok_or(error),
+    };
     write_cache_entry(&cache_path, &bytes).await;
     Ok(bytes)
 }
@@ -2979,51 +3173,60 @@ async fn write_cache_entry(cache_path: &Path, bytes: &[u8]) {
 static CACHE_WRITE_TICKET: AtomicUsize = AtomicUsize::new(0);
 
 async fn get_lichess_with_backoff(client: &Client, url: &str) -> Result<Vec<u8>, String> {
-    let mut last_error = None;
-    let mut retry_delay = None;
-    for attempt in 0_u32..3 {
-        // Only a genuine retry waits; the first attempt starts immediately.
-        if let Some(delay) = retry_delay.take() {
-            tokio::time::sleep(delay).await;
+    // Hold the permit through the body download so every Lichess source shares
+    // one polite request lane. A failed request returns immediately; cached or
+    // indexed fallbacks are handled by the caller instead of retrying a dead
+    // host until the phone appears frozen.
+    let host = request_host(url);
+    if lichess_failed_hosts()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .contains(&host)
+    {
+        return Err(format!(
+            "{host} did not answer an earlier request in this search; cached and indexed data were kept"
+        ));
+    }
+    let _request_permit = LICHESS_REQUEST_LANE.lock().await;
+    if lichess_failed_hosts()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .contains(&host)
+    {
+        return Err(format!(
+            "{host} did not answer an earlier request in this search; cached and indexed data were kept"
+        ));
+    }
+    take_lichess_slot().await?;
+    match client.get(url).send().await {
+        Ok(response) if response.status() == reqwest::StatusCode::TOO_MANY_REQUESTS => {
+            let retry_seconds = retry_after_seconds(&response).unwrap_or(60);
+            hold_lichess_lane(Duration::from_secs(retry_seconds));
+            Err(format!(
+                "Lichess rate-limited {url}; respecting Retry-After without blocking this search"
+            ))
         }
-        // Lichess explicitly asks API clients to make only one request at a
-        // time. Hold this permit through body download, not just until headers,
-        // so parallel source lanes cannot collectively trigger avoidable 429s.
-        let _request_permit = LICHESS_REQUEST_LANE.lock().await;
-        take_lichess_slot().await;
-        match client.get(url).send().await {
-            Ok(response) if response.status() == reqwest::StatusCode::TOO_MANY_REQUESTS => {
-                let retry_seconds = retry_after_seconds(&response).unwrap_or(60);
-                last_error = Some(format!("Lichess rate-limited {url}"));
-                // Rate limiting is a property of the host, not of this request:
-                // hold the whole lane so the concurrent siblings back off too.
-                hold_lichess_lane(Duration::from_secs(retry_seconds));
-                retry_delay = None;
-            }
-            Ok(response) if response.status().is_server_error() => {
-                let status = response.status();
-                let retry_seconds =
-                    retry_after_seconds(&response).unwrap_or_else(|| 2_u64.pow(attempt));
-                last_error = Some(format!("Lichess returned {status} for {url}"));
-                hold_lichess_lane(Duration::from_secs(retry_seconds.max(1)));
-                retry_delay = None;
-            }
-            Ok(response) => {
-                return response
-                    .error_for_status()
-                    .map_err(|error| error.to_string())?
-                    .bytes()
-                    .await
-                    .map(|bytes| bytes.to_vec())
-                    .map_err(|error| error.to_string());
-            }
-            Err(error) => {
-                last_error = Some(error.to_string());
-                retry_delay = Some(Duration::from_secs(2_u64.pow(attempt)));
-            }
+        Ok(response) if response.status().is_server_error() => {
+            let status = response.status();
+            let retry_seconds = retry_after_seconds(&response).unwrap_or(2);
+            hold_lichess_lane(Duration::from_secs(retry_seconds.max(1)));
+            Err(format!("Lichess returned {status} for {url}"))
+        }
+        Ok(response) => response
+            .error_for_status()
+            .map_err(|error| error.to_string())?
+            .bytes()
+            .await
+            .map(|bytes| bytes.to_vec())
+            .map_err(|error| error.to_string()),
+        Err(error) => {
+            lichess_failed_hosts()
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner())
+                .insert(host);
+            Err(error.to_string())
         }
     }
-    Err(last_error.unwrap_or_else(|| format!("Could not download {url}")))
 }
 
 fn retry_after_seconds(response: &reqwest::Response) -> Option<u64> {
@@ -3047,7 +3250,7 @@ fn parse_retry_after(value: &str) -> Option<u64> {
 /// Waits for the shared lichess lane and reserves the next slot in it. The lane
 /// paces every lichess request (whatever source issued it) and a rate-limit hold
 /// applies to all of them, not only the task that was refused.
-async fn take_lichess_slot() {
+async fn take_lichess_slot() -> Result<(), String> {
     loop {
         let now = Instant::now();
         let wait = {
@@ -3063,8 +3266,14 @@ async fn take_lichess_slot() {
             }
         };
         match wait {
+            Some(delay) if delay > MAX_INTERACTIVE_LICHESS_WAIT => {
+                return Err(format!(
+                    "Lichess is cooling down for {} more seconds; cached and indexed data were kept",
+                    delay.as_secs().max(1)
+                ));
+            }
             Some(delay) => tokio::time::sleep(delay).await,
-            None => return,
+            None => return Ok(()),
         }
     }
 }
@@ -3082,6 +3291,15 @@ fn hold_lichess_lane(delay: Duration) {
 
 static LICHESS_LANE_GATE: Mutex<Option<Instant>> = Mutex::new(None);
 static LICHESS_REQUEST_LANE: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+static LICHESS_FAILED_HOSTS: OnceLock<Mutex<HashSet<String>>> = OnceLock::new();
+
+fn lichess_failed_hosts() -> &'static Mutex<HashSet<String>> {
+    LICHESS_FAILED_HOSTS.get_or_init(|| Mutex::new(HashSet::new()))
+}
+
+fn request_host(url: &str) -> String {
+    url.split('/').nth(2).unwrap_or(url).to_ascii_lowercase()
+}
 
 fn scan_local_path(
     path: &Path,
@@ -4059,8 +4277,8 @@ fn write_collection(path: &Path, games: &[CollectedGame]) -> Result<(), String> 
     Ok(())
 }
 
-fn emit_progress<R: tauri::Runtime>(
-    app: &tauri::AppHandle<R>,
+fn emit_progress(
+    app: &OtbProgressSink<'_>,
     request: &OtbImportRequest,
     source: &str,
     phase: &str,
@@ -4069,7 +4287,7 @@ fn emit_progress<R: tauri::Runtime>(
     games_found: usize,
     message: String,
 ) {
-    let _ = OtbImportProgress {
+    app(OtbImportProgress {
         job_id: request.job_id.clone(),
         source: source.to_string(),
         phase: phase.to_string(),
@@ -4077,8 +4295,40 @@ fn emit_progress<R: tauri::Runtime>(
         total: total.min(u32::MAX as usize) as u32,
         games_found: games_found.min(u32::MAX as usize) as u32,
         message,
-    }
-    .emit(app);
+        overall_current: None,
+        overall_total: None,
+    });
+}
+
+fn emit_overall_progress(
+    app: &OtbProgressSink<'_>,
+    request: &OtbImportRequest,
+    phase: &str,
+    current: usize,
+    total: usize,
+    games_found: usize,
+    message: String,
+) {
+    app(OtbImportProgress {
+        job_id: request.job_id.clone(),
+        source: "All sources".to_string(),
+        phase: phase.to_string(),
+        current: current.min(u32::MAX as usize) as u32,
+        total: total.min(u32::MAX as usize) as u32,
+        games_found: games_found.min(u32::MAX as usize) as u32,
+        message,
+        overall_current: Some(current.min(u32::MAX as usize) as u32),
+        overall_total: Some(total.min(u32::MAX as usize) as u32),
+    });
+}
+
+fn is_transport_failure(error: &str) -> bool {
+    let error = error.to_ascii_lowercase();
+    error.contains("error sending request")
+        || error.contains("timed out")
+        || error.contains("connection")
+        || error.contains("dns")
+        || error.contains("resolve")
 }
 
 #[cfg(test)]
