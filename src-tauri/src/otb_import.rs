@@ -1635,7 +1635,7 @@ async fn scan_chessscope_broadcasts(
         }
     }))
     .buffered(ARCHIVE_CONCURRENCY);
-    let mut rounds = HashMap::<String, bool>::new();
+    let mut rounds = HashMap::<String, (bool, Option<String>)>::new();
     let current_year = Utc::now().year().max(1900) as u16;
     let mut checked_game_pages = 0usize;
     let mut consecutive_transport_failures = 0usize;
@@ -1659,11 +1659,17 @@ async fn scan_chessscope_broadcasts(
                 consecutive_transport_failures = 0;
                 report.archives_checked = report.archives_checked.saturating_add(1);
                 let recent = year.is_none_or(|year| year >= current_year);
+                let game_date = extract_chessscope_game_date(&html);
                 for round_id in extract_chessscope_round_ids(&html) {
                     rounds
                         .entry(round_id)
-                        .and_modify(|existing| *existing |= recent)
-                        .or_insert(recent);
+                        .and_modify(|(existing_recent, existing_date)| {
+                            *existing_recent |= recent;
+                            if game_date > *existing_date {
+                                *existing_date = game_date.clone();
+                            }
+                        })
+                        .or_insert_with(|| (recent, game_date.clone()));
                 }
             }
             Ok(None) => consecutive_transport_failures = 0,
@@ -1689,7 +1695,18 @@ async fn scan_chessscope_broadcasts(
     rounds.sort_by(|left, right| left.0.cmp(&right.0));
     let mut historical_specs = Vec::new();
     let mut recent_specs = Vec::new();
-    for (round_id, recent) in rounds {
+    // Chessscope points back to Lichess broadcast rounds. Completed monthly
+    // Lichess dumps already contain those exact historical broadcasts, so only
+    // fetch a round whose game date falls in the not-yet-archived gap. Unknown
+    // dates retain the original fetch path to avoid losing any result.
+    let corpus_cutoff = lichess_live_cutoff(request).await;
+    for (round_id, (recent, game_date)) in rounds {
+        if game_date
+            .as_deref()
+            .is_some_and(|date| date < corpus_cutoff.as_str())
+        {
+            continue;
+        }
         let url = format!("https://lichess.org/api/broadcast/round/{round_id}.pgn");
         let cache_path = request
             .cache_dir
@@ -3979,6 +3996,52 @@ fn extract_chessscope_round_ids(html: &str) -> Vec<String> {
     round_ids
 }
 
+fn extract_chessscope_game_date(html: &str) -> Option<String> {
+    const MONTHS: &[&str] = &[
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+        "January",
+        "February",
+        "March",
+        "April",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ];
+    for month in MONTHS {
+        for (position, _) in html.match_indices(month) {
+            let tail = &html[position..html.len().min(position + 24)];
+            let Some(comma) = tail.find(',') else {
+                continue;
+            };
+            let end = comma.saturating_add(6);
+            let Some(candidate) = tail.get(..end) else {
+                continue;
+            };
+            for format in ["%b %e, %Y", "%B %e, %Y"] {
+                if let Ok(date) = chrono::NaiveDate::parse_from_str(candidate, format) {
+                    return Some(date.format("%Y-%m-%d").to_string());
+                }
+            }
+        }
+    }
+    None
+}
+
 fn extract_britbase_archive_urls(html: &str, from_year: u16, origin: &str) -> Vec<String> {
     let mut urls = extract_quoted_values(html, "href=")
         .into_iter()
@@ -4732,6 +4795,16 @@ mod tests {
                 r#"<a href="https://lichess.org/broadcast/event/round/M5XEUuPJ">Source</a>"#
             ),
             vec!["M5XEUuPJ".to_string()]
+        );
+        assert_eq!(
+            extract_chessscope_game_date(
+                r#"<meta name="description" content="Event, Dec 30, 2024. White vs Black">"#
+            ),
+            Some("2024-12-30".to_string())
+        );
+        assert_eq!(
+            extract_chessscope_game_date("<p>September 3, 2026 · Round 4</p>"),
+            Some("2026-09-03".to_string())
         );
     }
 
