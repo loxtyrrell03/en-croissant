@@ -82,6 +82,60 @@ test("parses collector events and keeps result counts monotonic", () => {
   assert.equal(parseOtbCollectorLine("diagnostic output"), null);
 });
 
+test("keeps overall source progress when a lane emits a local progress update", () => {
+  const overall = {
+    jobId: "x",
+    source: "All sources",
+    gamesFound: 7,
+    overallCurrent: 6,
+    overallTotal: 10,
+  };
+  const merged = mergeOtbProgress(overall, {
+    jobId: "x",
+    source: "Chessscope",
+    current: 1,
+    total: 1,
+    gamesFound: 3,
+  });
+  assert.equal(merged.gamesFound, 7);
+  assert.equal(merged.overallCurrent, 6);
+  assert.equal(merged.overallTotal, 10);
+});
+
+test("cancels a running phone job and unlocks it durably", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-croissant-otb-cancel-"));
+  try {
+    const service = new OtbImportService({ root, binaryPath: join(root, "unused") });
+    await service.initialize();
+    const job = {
+      id: "otb-stop",
+      status: "running",
+      progress: { jobId: "otb-stop", gamesFound: 7 },
+      updatedAt: new Date().toISOString(),
+      completedAt: null,
+      error: null,
+    };
+    let killed = false;
+    service.jobs.set(job.id, job);
+    service.processes.set(job.id, {
+      killed: false,
+      kill() {
+        killed = true;
+      },
+    });
+
+    const stopped = await service.cancelJob(job.id);
+    assert.equal(killed, true);
+    assert.equal(stopped.status, "failed");
+    assert.equal(stopped.error, "The PC OTB import failed. Search stopped.");
+    assert.equal(service.processes.has(job.id), false);
+    const saved = JSON.parse(await readFile(join(root, "jobs", `${job.id}.json`), "utf8"));
+    assert.equal(saved.status, "failed");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("splits and summarizes verified PGNs on the PC", () => {
   const games = parseOtbPgnGames(
     `[Event "Congress"]\n[Date "2026.08.01"]\n[White "A"]\n[Black "B"]\n[Result "1-0"]\n\n1. e4 e5 1-0\n\n[Event "Open"]\n[Date "2026.08.02"]\n[White "B"]\n[Black "C"]\n[Result "1/2-1/2"]\n\n1. d4 d5 1/2-1/2`,

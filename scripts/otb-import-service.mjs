@@ -62,6 +62,18 @@ export class OtbImportService {
     return job;
   }
 
+  async cancelJob(id) {
+    const job = this.jobs.get(id) ?? null;
+    if (!job) return null;
+    if (job.status !== "queued" && job.status !== "running") return job;
+
+    const child = this.processes.get(id);
+    this.processes.delete(id);
+    if (child && !child.killed) child.kill();
+    await this.finishFailed(job, "Search stopped.");
+    return job;
+  }
+
   async createJob(input) {
     if (!(await this.isAvailable())) {
       throw new Error("The PC OTB importer is not installed yet.");
@@ -295,7 +307,16 @@ export function parseOtbCollectorLine(line) {
 
 export function mergeOtbProgress(current, incoming) {
   if (!current || current.jobId !== incoming.jobId) return incoming;
-  return { ...incoming, gamesFound: Math.max(current.gamesFound || 0, incoming.gamesFound || 0) };
+  const overallTotal = Math.max(current.overallTotal || 0, incoming.overallTotal || 0);
+  const overallCurrent = Math.min(
+    overallTotal,
+    Math.max(current.overallCurrent || 0, incoming.overallCurrent || 0),
+  );
+  return {
+    ...incoming,
+    gamesFound: Math.max(current.gamesFound || 0, incoming.gamesFound || 0),
+    ...(overallTotal ? { overallCurrent, overallTotal } : {}),
+  };
 }
 
 export function parseOtbPgnGames(pgn, jobId = "otb") {

@@ -378,8 +378,13 @@ async function handleRequest(request, response) {
 
   const otbJobMatch = pathname.match(/^\/api\/otb-import\/jobs\/([A-Za-z0-9_-]+)$/);
   if (otbJobMatch) {
-    if (method !== "GET") return writeJson(response, 405, { error: "Method not allowed." });
-    const job = otbImportService.getJob(otbJobMatch[1]);
+    if (method !== "GET" && method !== "DELETE") {
+      return writeJson(response, 405, { error: "Method not allowed." });
+    }
+    const job =
+      method === "DELETE"
+        ? await otbImportService.cancelJob(otbJobMatch[1])
+        : otbImportService.getJob(otbJobMatch[1]);
     return job
       ? writeJson(response, 200, job, { "cache-control": "no-store" })
       : writeJson(response, 404, { error: "OTB import job not found." });
@@ -3018,7 +3023,7 @@ function writeJsonIfConnected(response, status, body, extraHeaders = {}) {
 
 function setCorsHeaders(request, response, sensitive = false) {
   response.setHeader("access-control-allow-headers", "content-type");
-  response.setHeader("access-control-allow-methods", "GET, HEAD, POST, PUT, OPTIONS");
+  response.setHeader("access-control-allow-methods", "GET, HEAD, POST, PUT, DELETE, OPTIONS");
   const origin = String(request.headers.origin || "").replace(/\/$/, "");
   if (!sensitive) {
     response.setHeader("access-control-allow-origin", "*");

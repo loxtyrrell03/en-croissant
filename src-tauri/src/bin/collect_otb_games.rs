@@ -1,10 +1,14 @@
 #[path = "../otb_import.rs"]
 mod otb_import;
 
-use std::{env, io, path::PathBuf};
+use std::{
+    env,
+    io::{self, Write},
+    path::PathBuf,
+    time::Duration,
+};
 
-use otb_import::{collect_otb_games_with_runtime, OtbImportProgress, OtbImportRequest};
-use tauri::Listener;
+use otb_import::{collect_otb_games_with_progress, OtbImportRequest};
 
 type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
@@ -25,8 +29,25 @@ struct Args {
     include_twic: bool,
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Error> {
+fn main() -> Result<(), Error> {
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?;
+    let result = runtime.block_on(run());
+    // Futures dropped after a host circuit opens can still own non-cancellable
+    // spawn_blocking work. The result and PGN are already durable at this point,
+    // so do not keep the phone job running while irrelevant workers wind down.
+    runtime.shutdown_timeout(Duration::from_millis(250));
+    if result.is_ok() {
+        // This is a single-shot helper. Successful collection has already
+        // flushed its machine-readable result and output file; terminate any
+        // detached workers with the process instead of delaying phone status.
+        std::process::exit(0);
+    }
+    result
+}
+
+async fn run() -> Result<(), Error> {
     let args = parse_args()?;
     let request = OtbImportRequest {
         job_id: args.job_id,
@@ -45,17 +66,17 @@ async fn main() -> Result<(), Error> {
         output_path: args.output_path,
     };
 
-    let app = tauri::test::mock_app();
-    let specta_builder = tauri_specta::Builder::<tauri::test::MockRuntime>::new()
-        .events(tauri_specta::collect_events![OtbImportProgress]);
-    specta_builder.mount_events(&app);
-    app.listen("otb-import-progress", |event| {
-        println!("PROGRESS\t{}", event.payload());
-    });
-    let report = collect_otb_games_with_runtime(request, app.handle().clone())
+    let progress = |event| {
+        println!(
+            "PROGRESS\t{}",
+            serde_json::to_string(&event).unwrap_or_else(|_| "{}".to_string())
+        );
+    };
+    let report = collect_otb_games_with_progress(request, &progress)
         .await
         .map_err(invalid_input)?;
     println!("RESULT\t{}", serde_json::to_string(&report)?);
+    io::stdout().flush()?;
     Ok(())
 }
 

@@ -1,5 +1,15 @@
 # AGENTS.md
 
+- On 2026-08-26, the phone OTB importer stopped presenting one completed source
+  lane as a completed all-source search. Native progress now carries monotonic
+  overall lane counts, a running bar never reaches 100%, and the phone exposes
+  an explicit Stop search action backed by the PC job service. Dead upstreams
+  use short connect/read-stall bounds, stale-if-error discovery caches, a
+  bounded Chessscope host circuit, and fail-fast Lichess cooldown handling;
+  indexed/cached games and every source lane remain enabled. Preserve truthful
+  overall progress, immediate unlock after stop, Retry-After respect, and the
+  under-30-second all-source failure-path acceptance run.
+
 - On 2026-08-25, the desktop and PC-hosted phone OTB finder moved immutable and
   slow archive sources onto one persistent SQLite corpus index. Archives are
   decompressed and parsed once, with normalized player/FIDE lookup indexes and

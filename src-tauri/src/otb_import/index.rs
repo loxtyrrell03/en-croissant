@@ -2,11 +2,11 @@ use std::{
     collections::{HashMap, HashSet},
     io::{BufRead, BufReader, Cursor, Read},
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{Arc, Mutex, OnceLock},
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-use rusqlite::{params, Connection, OptionalExtension, Statement, Transaction};
+use rusqlite::{params, Connection, OpenFlags, OptionalExtension, Statement, Transaction};
 
 use super::{
     add_provenance_headers, canonicalize_target_name, date_before_year, header,
@@ -17,6 +17,20 @@ use super::{
 
 const INDEX_FILE_NAME: &str = "otb-archive-index-v2.sqlite3";
 const INDEX_SCHEMA_VERSION: i64 = 2;
+/// Every query uses connection-local temporary lookup tables and `open_index`
+/// also verifies the schema. Letting all source lanes do that concurrently can
+/// put nominally read-only searches behind SQLite's 60-second busy timeout.
+/// The actual indexed lookups are short, so one process-local gate is faster
+/// and deterministic while archive decompression still happens in parallel.
+static INDEX_CONNECTION_GATE: Mutex<()> = Mutex::new(());
+type MatchingNameCache = HashMap<(PathBuf, String, i64), Arc<Vec<i64>>>;
+static MATCHING_NAME_CACHE: OnceLock<Mutex<MatchingNameCache>> = OnceLock::new();
+
+fn lock_index_connection() -> std::sync::MutexGuard<'static, ()> {
+    INDEX_CONNECTION_GATE
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
 
 #[derive(Clone, Copy, Debug)]
 pub(super) enum ArchiveFormat {
@@ -53,18 +67,29 @@ pub(super) fn archive_index_path(cache_dir: &Path) -> PathBuf {
 
 pub(super) async fn initialize(index_path: &Path) -> Result<(), String> {
     let index_path = index_path.to_path_buf();
-    tokio::task::spawn_blocking(move || open_index(&index_path).map(|_| ()))
-        .await
-        .map_err(|error| error.to_string())?
+    tokio::task::spawn_blocking(move || {
+        let _gate = lock_index_connection();
+        open_index(&index_path).map(|_| ())
+    })
+    .await
+    .map_err(|error| error.to_string())?
 }
 
 pub(super) async fn checkpoint(index_path: &Path, truncate: bool) -> Result<(), String> {
     let index_path = index_path.to_path_buf();
     tokio::task::spawn_blocking(move || {
+        let _gate = lock_index_connection();
         if !index_path.exists() {
             return Ok(());
         }
-        let connection = open_index(&index_path)?;
+        let connection = Connection::open_with_flags(
+            &index_path,
+            OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_NO_MUTEX,
+        )
+        .map_err(|error| error.to_string())?;
+        connection
+            .busy_timeout(Duration::from_secs(5))
+            .map_err(|error| error.to_string())?;
         connection
             .execute_batch(if truncate {
                 "PRAGMA wal_checkpoint(TRUNCATE); PRAGMA optimize;"
@@ -88,7 +113,7 @@ pub(super) async fn indexed_urls(
     let index_path = index_path.to_path_buf();
     let urls = urls.to_vec();
     tokio::task::spawn_blocking(move || {
-        let mut connection = open_index(&index_path)?;
+        let mut connection = open_query_index(&index_path)?;
         let transaction = connection
             .transaction()
             .map_err(|error| error.to_string())?;
@@ -160,30 +185,49 @@ pub(super) async fn query_indexed(
     let index_path = index_path.to_path_buf();
     let archive_urls = archive_urls.to_vec();
     tokio::task::spawn_blocking(move || {
-        let mut connection = open_index(&index_path)?;
+        let mut connection = open_query_index(&index_path)?;
         let transaction = connection
             .transaction()
             .map_err(|error| error.to_string())?;
         populate_selected_archives(&transaction, &archive_urls)?;
-        populate_matching_names(&transaction, &identity)?;
+        populate_matching_names(&transaction, &index_path, &identity)?;
 
         let target_fide_id = identity.fide_id.as_deref().unwrap_or_default();
         let mut statement = transaction
             .prepare(
-                "SELECT archive.archive_url, game.pgn_zstd, game.pgn_size
-                 FROM indexed_game AS game
-                 JOIN archive_state AS archive
-                   ON archive.id = game.archive_id
-                 JOIN selected_archives AS selected
-                   ON selected.archive_url = archive.archive_url
-                 LEFT JOIN matching_names AS white_match
-                   ON white_match.name_id = game.white_name_id
-                 LEFT JOIN matching_names AS black_match
-                   ON black_match.name_id = game.black_name_id
-                 WHERE (?1 <> '' AND (game.white_fide_id = ?1 OR game.black_fide_id = ?1))
-                    OR white_match.name_id IS NOT NULL
-                    OR black_match.name_id IS NOT NULL
-                 ORDER BY archive.archive_url, game.ordinal",
+                "SELECT archive_url, pgn_zstd, pgn_size
+                 FROM (
+                   SELECT archive.archive_url, game.ordinal, game.pgn_zstd, game.pgn_size
+                   FROM indexed_game AS game INDEXED BY indexed_game_white_fide
+                   JOIN archive_state AS archive ON archive.id = game.archive_id
+                   JOIN selected_archives AS selected ON selected.archive_url = archive.archive_url
+                   WHERE ?1 <> '' AND game.white_fide_id = ?1
+                   UNION
+                   SELECT archive.archive_url, game.ordinal, game.pgn_zstd, game.pgn_size
+                   FROM indexed_game AS game INDEXED BY indexed_game_black_fide
+                   JOIN archive_state AS archive ON archive.id = game.archive_id
+                   JOIN selected_archives AS selected ON selected.archive_url = archive.archive_url
+                   WHERE ?1 <> '' AND game.black_fide_id = ?1
+                   UNION
+                   SELECT archive.archive_url, game.ordinal, game.pgn_zstd, game.pgn_size
+                   FROM matching_names AS matched
+                   CROSS JOIN indexed_game AS game INDEXED BY indexed_game_white_name
+                   CROSS JOIN archive_state AS archive
+                   CROSS JOIN selected_archives AS selected
+                   WHERE game.white_name_id = matched.name_id
+                     AND archive.id = game.archive_id
+                     AND selected.archive_url = archive.archive_url
+                   UNION
+                   SELECT archive.archive_url, game.ordinal, game.pgn_zstd, game.pgn_size
+                   FROM matching_names AS matched
+                   CROSS JOIN indexed_game AS game INDEXED BY indexed_game_black_name
+                   CROSS JOIN archive_state AS archive
+                   CROSS JOIN selected_archives AS selected
+                   WHERE game.black_name_id = matched.name_id
+                     AND archive.id = game.archive_id
+                     AND selected.archive_url = archive.archive_url
+                 ) AS matches
+                 ORDER BY archive_url, ordinal",
             )
             .map_err(|error| error.to_string())?;
         let mut rows = statement
@@ -288,6 +332,18 @@ fn open_index(path: &Path) -> Result<Connection, String> {
     Ok(connection)
 }
 
+fn open_query_index(path: &Path) -> Result<Connection, String> {
+    let connection = Connection::open_with_flags(
+        path,
+        OpenFlags::SQLITE_OPEN_READ_ONLY | OpenFlags::SQLITE_OPEN_NO_MUTEX,
+    )
+    .map_err(|error| error.to_string())?;
+    connection
+        .busy_timeout(Duration::from_secs(5))
+        .map_err(|error| error.to_string())?;
+    Ok(connection)
+}
+
 fn populate_selected_archives(
     transaction: &Transaction<'_>,
     urls: &[String],
@@ -313,6 +369,7 @@ fn populate_selected_archives(
 
 fn populate_matching_names(
     transaction: &Transaction<'_>,
+    index_path: &Path,
     identity: &PlayerIdentity,
 ) -> Result<(), String> {
     transaction
@@ -323,29 +380,84 @@ fn populate_matching_names(
              ) WITHOUT ROWID;",
         )
         .map_err(|error| error.to_string())?;
-    let mut read = transaction
-        .prepare("SELECT id, normalized_name FROM player_name")
-        .map_err(|error| error.to_string())?;
-    let rows = read
-        .query_map([], |row| {
-            Ok((row.get::<_, i64>(0)?, row.get::<_, String>(1)?))
+    let maximum_name_id = transaction
+        .query_row("SELECT COALESCE(MAX(id), 0) FROM player_name", [], |row| {
+            row.get::<_, i64>(0)
         })
         .map_err(|error| error.to_string())?;
-    let matching = rows
-        .filter_map(Result::ok)
-        .filter(|(_, candidate)| identity.name_matches(candidate))
-        .map(|(id, _)| id)
-        .collect::<Vec<_>>();
-    drop(read);
+    let cache_key = (
+        index_path.to_path_buf(),
+        normalized_name(&identity.canonical_name),
+        maximum_name_id,
+    );
+    let cache = MATCHING_NAME_CACHE.get_or_init(|| Mutex::new(HashMap::new()));
+    // Every source lane asks the same question at roughly the same time. Keep
+    // the cache lock through the first lookup so ten lanes do not each scan the
+    // multi-million-row name table and thrash the same database pages.
+    let matching = {
+        let mut cache = cache
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        match cache.get(&cache_key).cloned() {
+            Some(matching) => matching,
+            None => {
+                let patterns = matching_name_patterns(identity);
+                let predicates = std::iter::repeat_n("normalized_name LIKE ?", patterns.len())
+                    .collect::<Vec<_>>()
+                    .join(" OR ");
+                let mut read = transaction
+                    .prepare(&format!(
+                        "SELECT id, normalized_name FROM player_name WHERE {predicates}"
+                    ))
+                    .map_err(|error| error.to_string())?;
+                let rows = read
+                    .query_map(rusqlite::params_from_iter(patterns.iter()), |row| {
+                        Ok((row.get::<_, i64>(0)?, row.get::<_, String>(1)?))
+                    })
+                    .map_err(|error| error.to_string())?;
+                let matching = Arc::new(
+                    rows.filter_map(Result::ok)
+                        .filter(|(_, candidate)| identity.name_matches(candidate))
+                        .map(|(id, _)| id)
+                        .collect::<Vec<_>>(),
+                );
+                drop(read);
+                if cache.len() >= 32 {
+                    cache.clear();
+                }
+                cache.insert(cache_key, Arc::clone(&matching));
+                matching
+            }
+        }
+    };
     let mut write = transaction
         .prepare("INSERT OR IGNORE INTO matching_names(name_id) VALUES (?1)")
         .map_err(|error| error.to_string())?;
-    for name_id in matching {
+    for name_id in matching.iter() {
         write
             .execute(params![name_id])
             .map_err(|error| error.to_string())?;
     }
     Ok(())
+}
+
+fn matching_name_patterns(identity: &PlayerIdentity) -> Vec<String> {
+    let mut patterns = HashSet::new();
+    for surname in &identity.surname_tokens {
+        let characters = surname.chars().collect::<Vec<_>>();
+        if identity.fide_id.is_some() && characters.len() >= 5 {
+            let split = characters.len() / 2;
+            let prefix = characters[..split].iter().collect::<String>();
+            let suffix = characters[split..].iter().collect::<String>();
+            patterns.insert(format!("%{prefix}%"));
+            patterns.insert(format!("%{suffix}%"));
+        } else {
+            patterns.insert(format!("%{surname}%"));
+        }
+    }
+    let mut patterns = patterns.into_iter().collect::<Vec<_>>();
+    patterns.sort();
+    patterns
 }
 
 fn store_archive(path: &Path, archive_url: &str, parsed: &ParsedArchive) -> Result<(), String> {
@@ -358,6 +470,7 @@ fn store_archive(path: &Path, archive_url: &str, parsed: &ParsedArchive) -> Resu
                 .map_err(|error| error.to_string())
         })
         .collect::<Result<Vec<_>, _>>()?;
+    let _gate = lock_index_connection();
     let mut connection = open_index(path)?;
     let transaction = connection
         .transaction()

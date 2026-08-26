@@ -38,6 +38,8 @@ export type WebOtbImportProgress = {
     total: number;
     gamesFound: number;
     message: string;
+    overallCurrent?: number;
+    overallTotal?: number;
 };
 
 export type WebOtbImportJob = {
@@ -90,6 +92,27 @@ export async function startWebOtbImport(request: {
 
 export async function loadWebOtbImportJob(jobId: string, signal?: AbortSignal) {
     return requestWebOtbJob(`api/otb-import/jobs/${encodeURIComponent(jobId)}`, { signal });
+}
+
+export async function cancelWebOtbImport(jobId: string) {
+    return requestWebOtbJob(`api/otb-import/jobs/${encodeURIComponent(jobId)}`, {
+        method: "DELETE",
+    });
+}
+
+export function getWebOtbProgressValue(
+    progress: WebOtbImportProgress | null | undefined,
+    running: boolean,
+) {
+    if (!progress) return 0;
+    const total = progress.overallTotal || 0;
+    const current = progress.overallCurrent || 0;
+    const raw = total > 0
+        ? Math.round((current / total) * 100)
+        : progress.total > 0
+          ? Math.round((progress.current / progress.total) * 100)
+          : 10;
+    return Math.max(0, Math.min(running ? 95 : 100, raw));
 }
 
 export async function searchWebFidePlayers(

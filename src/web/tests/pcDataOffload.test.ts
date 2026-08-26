@@ -1,7 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildWebExplorerProxyUrl, fetchWebExplorerMoveStats } from "../explorer";
 import { fetchHostedDatabasePositionMoves } from "../hostedDatabaseIndex";
-import { loadWebOtbImportJob, startWebOtbImport } from "../otbImport";
+import {
+    cancelWebOtbImport,
+    getWebOtbProgressValue,
+    loadWebOtbImportJob,
+    startWebOtbImport,
+} from "../otbImport";
 
 const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -198,5 +203,48 @@ describe("phone data work offload", () => {
         expect(
             fetchMock.mock.calls.every(([input]) => !String(input).includes("lichess.org")),
         ).toBe(true);
+    });
+
+    it("stops phone OTB imports through the PC and never paints a running job as complete", async () => {
+        const fetchMock = vi.fn().mockResolvedValue({
+            ok: true,
+            status: 200,
+            json: async () => ({ id: "otb-test", status: "failed" }),
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        await cancelWebOtbImport("otb-test");
+
+        expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: "DELETE" });
+        expect(
+            getWebOtbProgressValue(
+                {
+                    jobId: "otb-test",
+                    source: "Chessscope",
+                    phase: "done",
+                    current: 1,
+                    total: 1,
+                    gamesFound: 7,
+                    message: "Found 7 unique OTB games",
+                    overallCurrent: 8,
+                    overallTotal: 10,
+                },
+                true,
+            ),
+        ).toBe(80);
+        expect(
+            getWebOtbProgressValue(
+                {
+                    jobId: "otb-test",
+                    source: "Chessscope",
+                    phase: "done",
+                    current: 1,
+                    total: 1,
+                    gamesFound: 7,
+                    message: "Found 7 unique OTB games",
+                },
+                true,
+            ),
+        ).toBe(95);
     });
 });

@@ -13,14 +13,21 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
-import { IconChevronDown, IconDeviceDesktop, IconSearch } from "@tabler/icons-react";
+import {
+  IconChevronDown,
+  IconDeviceDesktop,
+  IconPlayerStop,
+  IconSearch,
+} from "@tabler/icons-react";
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { FidePlayerSearchInput } from "@/components/common/FidePlayerSearchInput";
 import type { FidePlayer } from "@/utils/fidePlayer";
 import {
   DEFAULT_WEB_OTB_IMPORT_SOURCES,
+  cancelWebOtbImport,
   findExactWebFidePlayer,
   getWebOtbImportedGames,
+  getWebOtbProgressValue,
   loadWebOtbImportJob,
   searchWebFidePlayers,
   startWebOtbImport,
@@ -51,6 +58,7 @@ export default function PhoneOtbImportPanel({
   const [job, setJob] = useState<WebOtbImportJob | null>(null);
   const [jobId, setJobId] = useState(() => window.localStorage.getItem(WEB_OTB_JOB_STORAGE_KEY));
   const [starting, setStarting] = useState(false);
+  const [stopping, setStopping] = useState(false);
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const games = useMemo(() => (job ? getWebOtbImportedGames(job) : []), [job]);
@@ -191,10 +199,30 @@ export default function PhoneOtbImportPanel({
     }
   }
 
+  async function stopSearch() {
+    if (!job?.id || !running || stopping) return;
+    setStopping(true);
+    setError(null);
+    try {
+      await cancelWebOtbImport(job.id);
+      window.localStorage.removeItem(WEB_OTB_JOB_STORAGE_KEY);
+      setJobId(null);
+      setJob(null);
+    } catch (stopError) {
+      setError(stopError instanceof Error ? stopError.message : "The PC search could not stop.");
+    } finally {
+      setStopping(false);
+    }
+  }
+
   const progress = job?.progress;
-  const progressValue = progress?.total
-    ? Math.min(100, Math.round((progress.current / progress.total) * 100))
-    : 100;
+  const progressValue = getWebOtbProgressValue(progress, running);
+  const overallFinished = progress?.overallCurrent ?? 0;
+  const overallTotal = progress?.overallTotal ?? 0;
+  const progressMessage =
+    overallTotal > 0 && overallFinished >= overallTotal
+      ? "Finishing and saving the verified games on your PC…"
+      : progress?.message;
 
   return (
     <Stack gap="sm">
@@ -296,24 +324,41 @@ export default function PhoneOtbImportPanel({
         </Stack>
       </Collapse>
 
-      <Button
-        disabled={!playerName.trim() || running}
-        leftSection={<IconSearch size={16} />}
-        loading={starting}
-        onClick={() => void startSearch()}
-      >
-        Search OTB games on PC
-      </Button>
+      {running ? (
+        <Button
+          color="red"
+          leftSection={<IconPlayerStop size={16} />}
+          loading={stopping}
+          onClick={() => void stopSearch()}
+          variant="light"
+        >
+          Stop search
+        </Button>
+      ) : (
+        <Button
+          disabled={!playerName.trim()}
+          leftSection={<IconSearch size={16} />}
+          loading={starting}
+          onClick={() => void startSearch()}
+        >
+          Search OTB games on PC
+        </Button>
+      )}
 
       {running && progress ? (
         <Stack gap={4}>
           <Group justify="space-between" wrap="nowrap">
             <Text c="dimmed" size="xs" truncate>
-              {progress.message}
+              {progressMessage}
             </Text>
             <Badge variant="light">{progress.gamesFound} found</Badge>
           </Group>
-          <Progress animated={!progress.total} size="xs" value={progressValue} />
+          {overallTotal > 0 ? (
+            <Text c="dimmed" size="0.65rem">
+              {Math.min(overallFinished, overallTotal)} of {overallTotal} source lanes finished
+            </Text>
+          ) : null}
+          <Progress animated={running} size="xs" value={progressValue} />
         </Stack>
       ) : null}
       {job?.status === "completed" ? (
