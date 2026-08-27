@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { WebEngineLine } from "../model";
-import { analyzeWithWebStockfish18, dedupeWebStockfishLines } from "../stockfishEngine";
+import {
+    analyzeWithWebStockfish18,
+    dedupeWebStockfishLines,
+    releaseWebLc0Engine,
+} from "../stockfishEngine";
 
 const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const MISSING_FEN = "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1";
@@ -126,18 +130,21 @@ describe("Stockfish phone line updates", () => {
                 line: "info depth 8 multipv 1 score cp -420 nodes 2048 nps 4900 pv e2e4 e7e5",
             })}\n${JSON.stringify({ type: "done", bestmove: "e2e4" })}\n`,
         );
-        const fetchMock = vi.fn().mockResolvedValue({
-            ok: true,
-            status: 200,
-            body: {
-                getReader: () => ({
-                    read: vi
-                        .fn()
-                        .mockResolvedValueOnce({ value: remoteChunk, done: false })
-                        .mockResolvedValueOnce({ value: undefined, done: true }),
-                }),
-            },
-        });
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValueOnce({ ok: true, status: 200 })
+            .mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                body: {
+                    getReader: () => ({
+                        read: vi
+                            .fn()
+                            .mockResolvedValueOnce({ value: remoteChunk, done: false })
+                            .mockResolvedValueOnce({ value: undefined, done: true }),
+                    }),
+                },
+            });
         vi.stubGlobal("fetch", fetchMock);
 
         const lines = await analyzeWithWebStockfish18({
@@ -150,9 +157,10 @@ describe("Stockfish phone line updates", () => {
             lc0Network: "queen",
         });
 
-        expect(fetchMock).toHaveBeenCalledTimes(1);
-        expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/analyze");
-        expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/api/engine/start");
+        expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/v1/analyze");
+        expect(JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body))).toMatchObject({
             engineKind: "lc0",
             performancePreset: "eco",
             lc0AutoNetwork: false,
@@ -164,6 +172,20 @@ describe("Stockfish phone line updates", () => {
             engineName: "LCZero 0.32.1",
             networkMode: "queen",
             networkName: "Queen odds",
+        });
+    });
+
+    it("releases the PC LCZero worker when phone analysis is disabled", async () => {
+        const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+        vi.stubGlobal("fetch", fetchMock);
+
+        await releaseWebLc0Engine();
+
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/lc0/release");
+        expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: "POST", keepalive: true });
+        expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toEqual({
+            lc0SessionId: "en-croissant-phone",
         });
     });
 

@@ -98,6 +98,9 @@ const host = "127.0.0.1";
 const stockfishBackendUrl = new URL(
   process.env.EN_CROISSANT_STOCKFISH_BACKEND_URL || "http://127.0.0.1:38419",
 );
+const stockfishTaskName =
+  process.env.EN_CROISSANT_STOCKFISH_TASK_NAME || "\\EnCroissant\\Stockfish18Remote";
+let stockfishStartPromise = null;
 const documentsRoot = resolve(
   process.env.EN_CROISSANT_HOME_FILES_DIR || join(userProfile, "Documents", "EnCroissant"),
 );
@@ -286,6 +289,7 @@ async function handleRequest(request, response) {
     pathname === "/api/lichess-credential" ||
     pathname.startsWith("/api/chess-coach") ||
     pathname.startsWith("/api/chess-books") ||
+    pathname === "/api/engine/start" ||
     pathname.startsWith("/api/stats-sync") ||
     pathname.startsWith("/api/otb-import") ||
     pathname === "/v1" ||
@@ -294,6 +298,16 @@ async function handleRequest(request, response) {
   if (method === "OPTIONS") {
     response.writeHead(204);
     return response.end();
+  }
+
+  if (method === "POST" && pathname === "/api/engine/start") {
+    const health = await ensureStockfishBackend();
+    return writeJson(response, 200, {
+      ok: true,
+      service: "stockfish-18-remote",
+      processId: health.processId ?? null,
+      lc0Available: health.engines?.lc0?.available === true,
+    });
   }
 
   if (pathname === "/v1" || pathname.startsWith("/v1/")) {
@@ -569,6 +583,48 @@ function proxyStockfishRequest(request, response, requestUrl) {
     });
     request.pipe(upstream);
   });
+}
+
+async function ensureStockfishBackend() {
+  const current = await readStockfishBackendHealth();
+  if (current) return current;
+  stockfishStartPromise ??= startStockfishBackend().finally(() => {
+    stockfishStartPromise = null;
+  });
+  return await stockfishStartPromise;
+}
+
+async function startStockfishBackend() {
+  if (process.platform !== "win32") {
+    throw new Error("The Stockfish backend is unavailable and cannot be started on this host.");
+  }
+  await appendLog(`starting ${stockfishTaskName} on demand for phone analysis`);
+  await runProcess("schtasks.exe", ["/Run", "/TN", stockfishTaskName]);
+  const deadline = Date.now() + 20_000;
+  while (Date.now() < deadline) {
+    await new Promise((resolvePromise) => setTimeout(resolvePromise, 250));
+    const health = await readStockfishBackendHealth();
+    if (health) return health;
+  }
+  throw new Error("The Stockfish backend did not become healthy after it was started.");
+}
+
+async function readStockfishBackendHealth() {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 1500);
+  try {
+    const response = await fetch(new URL("/v1/health", stockfishBackendUrl), {
+      headers: { accept: "application/json" },
+      signal: controller.signal,
+    });
+    if (!response.ok) return null;
+    const health = await response.json();
+    return health?.ok === true ? health : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 function scheduleStatsSync(delayMs = 0) {

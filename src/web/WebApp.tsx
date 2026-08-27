@@ -306,7 +306,11 @@ import OnlineGameAnalysisPanel from "./OnlineGameAnalysisPanel";
 import type { WebPgnImportRequest } from "./pgnImport";
 import StatsWorkspace from "./StatsWorkspace";
 import { getWebOnlineAnalysisTitle, getWebOnlinePlayerColor } from "./onlineAnalysis";
-import { analyzeWithWebStockfish18, stopWebStockfish18Search } from "./stockfishEngine";
+import {
+  analyzeWithWebStockfish18,
+  releaseWebLc0Engine,
+  stopWebStockfish18Search,
+} from "./stockfishEngine";
 import {
   getWebOtbJobPlayerName,
   loadWebOtbImportJob,
@@ -4558,6 +4562,7 @@ function EngineUnderBoardPanel({
   useEffect(() => {
     if (!settings.enabled || suspended) {
       stopWebStockfish18Search();
+      if (settings.engineKind === "lc0") void releaseWebLc0Engine();
       setStatus("idle");
       setError(null);
       setStockfishLines([]);
@@ -4839,9 +4844,13 @@ function EngineUnderBoardPanel({
                 { value: "lc0", label: "LCZero 0.32.1" },
               ]}
               value={settings.engineKind}
-              onChange={(value) =>
-                updateSettings({ engineKind: value === "lc0" ? "lc0" : "stockfish" })
-              }
+              onChange={(value) => {
+                const engineKind = value === "lc0" ? "lc0" : "stockfish";
+                if (settings.engineKind === "lc0" && engineKind !== "lc0") {
+                  void releaseWebLc0Engine();
+                }
+                updateSettings({ engineKind });
+              }}
             />
             <Select
               label="Performance"

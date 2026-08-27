@@ -35,6 +35,7 @@ let worker: Worker | null = null;
 let readyPromise: Promise<void> | null = null;
 let activeSearchId = 0;
 let activeRemoteController: AbortController | null = null;
+let remoteLc0WakePromise: Promise<void> | null = null;
 const listeners = new Set<StockfishLineListener>();
 const storedCloudLineCache = new Map<string, WebEngineLine[]>();
 const storedCloudLineRequests = new Map<string, Promise<WebEngineLine[]>>();
@@ -122,9 +123,11 @@ async function analyzeWithRemoteStockfish18WithRetry(
             await waitForAbortableDelay(REMOTE_STOCKFISH_RETRY_DELAY_MS, request.signal);
 
         try {
+            if (request.engineKind === "lc0") await ensureRemoteLc0Service(request.signal);
             return await analyzeWithRemoteStockfish18(request);
         } catch (error) {
             if (isAbortError(error) || request.signal?.aborted) throw error;
+            if (request.engineKind === "lc0") remoteLc0WakePromise = null;
             lastError = error;
             console.warn(`Gaming PC engine attempt ${attempt} failed.`, error);
         }
@@ -506,6 +509,47 @@ export function stopWebStockfish18Search() {
     activeRemoteController?.abort();
     activeRemoteController = null;
     postStockfish("stop");
+}
+
+export async function releaseWebLc0Engine() {
+    stopWebStockfish18Search();
+    if (!REMOTE_STOCKFISH_URL) return;
+
+    try {
+        const response = await fetch(`${REMOTE_STOCKFISH_URL}/v1/lc0/release`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ lc0SessionId: WEB_LC0_SESSION_ID }),
+            keepalive: true,
+        });
+        if (!response.ok) {
+            console.warn(`Gaming PC LCZero release returned HTTP ${response.status}.`);
+        }
+    } catch (error) {
+        console.warn("Could not release Gaming PC LCZero.", error);
+    }
+}
+
+async function ensureRemoteLc0Service(signal?: AbortSignal) {
+    remoteLc0WakePromise ??= (async () => {
+        const response = await fetch(`${REMOTE_STOCKFISH_URL}/api/engine/start`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: "{}",
+            signal,
+        });
+        // Direct connections to the standalone engine service do not expose the
+        // home-host wake endpoint. A 404 there still proves the service is awake.
+        if (!response.ok && response.status !== 404) {
+            throw new Error(`Gaming PC engine wake returned HTTP ${response.status}.`);
+        }
+    })();
+    try {
+        await remoteLc0WakePromise;
+    } catch (error) {
+        remoteLc0WakePromise = null;
+        throw error;
+    }
 }
 
 function ensureStockfishReady() {

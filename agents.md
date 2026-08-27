@@ -1,5 +1,15 @@
 # AGENTS.md
 
+- On 2026-08-27, the PC-hosted phone LCZero switch became authoritative over
+  GPU residency. Turning it on first wakes the lightweight scheduled engine
+  service when necessary and then lazily starts only the selected LC0 network;
+  turning it off, suspending analysis, or switching back to Stockfish aborts
+  the phone search and releases idle LC0 children so CUDA weights no longer
+  occupy VRAM. A release that races an active request waits for that request to
+  drain, while a new LC0 request cancels the pending shutdown. Preserve the
+  on-demand service wake, zero-LC0 idle baseline, and real process/health
+  verification when changing the phone engine lifecycle.
+
 - On 2026-08-26, the phone OTB importer stopped presenting one completed source
   lane as a completed all-source search. Native progress now carries monotonic
   overall lane counts, a running bar never reaches 100%, and the phone exposes
