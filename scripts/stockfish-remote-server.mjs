@@ -53,6 +53,12 @@ const uciPort = positiveInteger(
 );
 const maxDepth = positiveInteger(config.maxDepth, 999, 1, 999);
 const maxMultiPv = positiveInteger(config.maxMultiPv, 8, 1, 256);
+const engineIdleMs = positiveInteger(
+  process.env.STOCKFISH_REMOTE_ENGINE_IDLE_MS || config.engineIdleMs,
+  30_000,
+  1_000,
+  10 * 60_000,
+);
 const localEvalPath = resolve(
   process.env.STOCKFISH_REMOTE_LOCAL_EVAL_PATH ||
     config.localEvalPath ||
@@ -117,7 +123,7 @@ let selectorEngine = null;
 const lc0Engines = new Map();
 const unavailableLc0Families = new Set();
 const lc0SessionSelections = new Map();
-let lc0WarmupPromise = Promise.resolve();
+let lc0ShutdownPending = false;
 const startedAt = new Date().toISOString();
 
 const httpServer = createHttpServer((request, response) => {
@@ -207,6 +213,7 @@ async function handleHttpRequest(request, response) {
       enginePath,
       threads,
       hashMb,
+      engineIdleMs,
       performancePresets: ENGINE_PERFORMANCE_PRESETS,
       http: { host: httpHost, port: httpPort },
       uci: { host: uciHost, port: uciPort },
@@ -223,6 +230,7 @@ async function handleHttpRequest(request, response) {
         },
         lc0: {
           available: lc0Available,
+          shutdownPending: lc0ShutdownPending,
           ready:
             lc0Available &&
             lc0Engines.get("bt4")?.ready === true &&
@@ -271,6 +279,19 @@ async function handleHttpRequest(request, response) {
     return writeJson(response, 200, evaluation);
   }
 
+  if (request.method === "POST" && requestUrl.pathname === "/v1/lc0/release") {
+    const body = await readJsonBody(request, 4 * 1024);
+    const sessionId = normalizeSessionId(body?.lc0SessionId, request.socket.remoteAddress);
+    lc0SessionSelections.delete(sessionId);
+    lc0ShutdownPending = true;
+    const shutdown = shutdownIdleLc0Engines();
+    return writeJson(response, 200, {
+      ok: true,
+      sessionId,
+      ...shutdown,
+    });
+  }
+
   if (request.method !== "POST" || requestUrl.pathname !== "/v1/analyze") {
     return writeJson(response, 404, { error: "Not found." });
   }
@@ -303,6 +324,16 @@ async function handleHttpRequest(request, response) {
         }
       : { threads, hashMb };
 
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  if (request.aborted || response.destroyed) abort();
+  else {
+    request.once("aborted", abort);
+    response.once("close", () => {
+      if (!response.writableEnded) abort();
+    });
+  }
+
   let selectedEngine = httpEngine;
   let selection = null;
   let dynamicOptions =
@@ -319,7 +350,9 @@ async function handleHttpRequest(request, response) {
         error: "LCZero or one of its configured network files is unavailable on the gaming PC.",
       });
     }
-    await lc0WarmupPromise;
+    // A fresh LC0 request means at least one client still wants GPU analysis.
+    // Cancel a pending idle shutdown before selecting/starting its lazy worker.
+    lc0ShutdownPending = false;
     const autoNetwork = body?.lc0AutoNetwork === true;
     const sessionId = normalizeSessionId(body?.lc0SessionId, request.socket.remoteAddress);
     const previousSelection = lc0SessionSelections.get(sessionId);
@@ -331,7 +364,11 @@ async function handleHttpRequest(request, response) {
     });
     let objectiveScoreCp;
     if (autoNetwork && preliminarySelection.playerColor) {
-      objectiveScoreCp = await evaluateObjectiveScore(fen, preliminarySelection.playerColor);
+      objectiveScoreCp = await evaluateObjectiveScore(
+        fen,
+        preliminarySelection.playerColor,
+        controller.signal,
+      );
     }
     selection = selectLc0Network({
       fen,
@@ -409,13 +446,6 @@ async function handleHttpRequest(request, response) {
     })}\n`,
   );
 
-  const controller = new AbortController();
-  const abort = () => controller.abort();
-  request.once("aborted", abort);
-  response.once("close", () => {
-    if (!response.writableEnded) abort();
-  });
-
   try {
     const bestmove = await selectedEngine.analyze(
       { fen, multipv, depth, infinite },
@@ -438,10 +468,12 @@ async function handleHttpRequest(request, response) {
     if (!response.destroyed) {
       response.end(`${JSON.stringify({ type: "error", message: publicError(error) })}\n`);
     }
+  } finally {
+    if (engineKind === "lc0" && lc0ShutdownPending) shutdownIdleLc0Engines();
   }
 }
 
-async function evaluateObjectiveScore(fen, playerColor) {
+async function evaluateObjectiveScore(fen, playerColor, signal) {
   let sideToMoveScoreCp;
   try {
     await selectorEngine.analyze(
@@ -453,7 +485,7 @@ async function evaluateObjectiveScore(fen, playerColor) {
         sideToMoveScoreCp =
           match[1] === "mate" ? Math.sign(Number(match[2]) || 1) * 100_000 : Number(match[2]);
       },
-      undefined,
+      signal,
     );
   } catch (error) {
     log(`LCZero objective selector failed; retaining topology state: ${error?.message || error}`);
@@ -474,7 +506,14 @@ function normalizeSessionId(value, fallback) {
 class PersistentUciEngine {
   constructor(
     path,
-    { label, args = [], initialOptions = {}, priorityRole = "HTTP", requiredOptions = [] },
+    {
+      label,
+      args = [],
+      initialOptions = {},
+      priorityRole = "HTTP",
+      requiredOptions = [],
+      idleCloseMs = engineIdleMs,
+    },
   ) {
     this.path = path;
     this.args = args;
@@ -492,9 +531,12 @@ class PersistentUciEngine {
     this.supportedOptions = new Set();
     this.optionValues = new Map();
     this.requiredOptions = requiredOptions;
+    this.idleCloseMs = idleCloseMs;
+    this.idleCloseTimer = null;
   }
 
   async analyze(params, onInfo, signal, dynamicOptions = {}) {
+    this.clearIdleClose();
     this.queued += 1;
     let release;
     const previous = this.queueTail;
@@ -521,10 +563,12 @@ class PersistentUciEngine {
     } finally {
       this.queued -= 1;
       release();
+      this.scheduleIdleClose();
     }
   }
 
   async start() {
+    if (!this.child || this.child.killed) this.startPromise = null;
     this.startPromise ||= this.startProcess();
     try {
       await this.startPromise;
@@ -545,9 +589,9 @@ class PersistentUciEngine {
     this.reader = createInterface({ input: child.stdout });
     this.reader.on("line", (line) => this.handleLine(line));
     child.stderr.on("data", (chunk) => log(`${this.label} stderr: ${String(chunk).trim()}`));
-    child.on("error", (error) => this.handleExit(error));
+    child.on("error", (error) => this.handleExit(error, child));
     child.on("exit", (code) =>
-      this.handleExit(new Error(`${this.label} exited with code ${code}.`)),
+      this.handleExit(new Error(`${this.label} exited with code ${code}.`), child),
     );
 
     this.send("uci");
@@ -636,7 +680,9 @@ class PersistentUciEngine {
     else job.resolve(line.split(/\s+/)[1] || "(none)");
   }
 
-  handleExit(error) {
+  handleExit(error, child) {
+    if (child && this.child !== child) return;
+    this.clearIdleClose();
     this.ready = false;
     this.startPromise = null;
     this.child = null;
@@ -667,9 +713,28 @@ class PersistentUciEngine {
     this.optionValues.set(name, formatted);
   }
 
+  clearIdleClose() {
+    if (!this.idleCloseTimer) return;
+    clearTimeout(this.idleCloseTimer);
+    this.idleCloseTimer = null;
+  }
+
+  scheduleIdleClose() {
+    this.clearIdleClose();
+    if (!this.child || this.activeJob || this.queued > 0) return;
+    this.idleCloseTimer = setTimeout(() => {
+      this.idleCloseTimer = null;
+      if (!this.child || this.activeJob || this.queued > 0) return;
+      log(`${this.label} released after ${this.idleCloseMs} ms idle.`);
+      this.close();
+    }, this.idleCloseMs);
+    this.idleCloseTimer.unref();
+  }
+
   close() {
+    this.clearIdleClose();
     if (!this.child) return;
-    this.child.stdin.write("quit\n");
+    if (this.child.stdin.writable) this.child.stdin.write("quit\n");
     this.child.kill();
   }
 }
@@ -691,12 +756,7 @@ selectorEngine = new PersistentUciEngine(enginePath, {
     UCI_ShowWDL: false,
   },
 });
-void httpEngine.start().catch((error) => {
-  log(`Persistent Stockfish warmup failed: ${error?.stack || error}`);
-});
-void selectorEngine.start().catch((error) => {
-  log(`LC0 objective selector warmup failed: ${error?.stack || error}`);
-});
+log(`Chess engines configured for lazy start and ${engineIdleMs} ms idle shutdown.`);
 
 if (lc0Available) {
   for (const [family, weightsPath] of Object.entries(lc0NetworkPaths)) {
@@ -722,38 +782,30 @@ if (lc0Available) {
     });
     lc0Engines.set(family, engine);
   }
-  lc0WarmupPromise = prewarmLc0Engines();
+  // Keep CUDA/VRAM idle until a client actually asks for LC0 analysis. The
+  // selected PersistentUciEngine starts lazily from the request path.
+  log("LCZero networks configured for lazy start.");
 } else {
   log(
     `LCZero BT4 is unavailable (engines=${JSON.stringify(lc0EnginePaths)}; networks=${JSON.stringify(lc0NetworkPaths)})`,
   );
 }
 
-async function prewarmLc0Engines() {
-  // Load one network at a time. This keeps CUDA's startup peak bounded when the
-  // chess trainer already owns its own three-network warm pool on the same GPU.
+function shutdownIdleLc0Engines() {
+  let busy = 0;
+  let stopped = 0;
   for (const [family, engine] of lc0Engines.entries()) {
-    try {
-      await prewarmLc0Engine(engine, family);
-    } catch (error) {
-      unavailableLc0Families.add(family);
-      log(`Persistent LCZero ${family} warmup failed: ${error?.stack || error}`);
+    if (engine.activeJob || engine.queued > 0) {
+      busy += 1;
+      continue;
     }
+    if (!engine.child) continue;
+    engine.close();
+    stopped += 1;
+    log(`LCZero ${family} released after the client disabled analysis.`);
   }
-}
-
-async function prewarmLc0Engine(engine, family) {
-  await engine.analyze(
-    {
-      fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-      multipv: 1,
-      depth: 1,
-      infinite: false,
-    },
-    () => {},
-    undefined,
-  );
-  log(`LCZero ${family} network prewarmed`);
+  lc0ShutdownPending = busy > 0;
+  return { pending: lc0ShutdownPending, busy, stopped };
 }
 
 function formatUciOptionValue(value) {
