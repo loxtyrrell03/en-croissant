@@ -11,7 +11,9 @@ param(
   [string]$Lc0SearchContemptPath = "",
   [string]$Lc0Bt4Weights = "",
   [string]$Lc0T1Weights = "",
-  [string]$Lc0LqoWeights = ""
+  [string]$Lc0LqoWeights = "",
+  [switch]$EnableAutoStart,
+  [switch]$StartNow
 )
 
 $ErrorActionPreference = "Stop"
@@ -138,12 +140,20 @@ $config | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $configPath -Encodi
 $taskName = "Stockfish18Remote"
 $taskPath = "\EnCroissant\"
 $action = New-ScheduledTaskAction -Execute $node -Argument "`"$serverScript`"" -WorkingDirectory $serverRoot
-$trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
 $settings.Priority = 4
 $taskUser = [Security.Principal.WindowsIdentity]::GetCurrent().Name
 $principal = New-ScheduledTaskPrincipal -UserId $taskUser -LogonType Interactive -RunLevel Limited
-$task = New-ScheduledTask -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Description "Runs the private Stockfish 18 and LCZero phone-analysis backend."
+$taskParameters = @{
+  Action = $action
+  Settings = $settings
+  Principal = $principal
+  Description = "Runs the private Stockfish 18 and LCZero phone-analysis backend on demand."
+}
+if ($EnableAutoStart) {
+  $taskParameters.Trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+}
+$task = New-ScheduledTask @taskParameters
 Register-ScheduledTask -TaskName $taskName -TaskPath $taskPath -InputObject $task -Force | Out-Null
 
 Stop-ScheduledTask -TaskName $taskName -TaskPath $taskPath -ErrorAction SilentlyContinue
@@ -164,34 +174,36 @@ if ($serverProcess -or $taskState -eq "Running") {
   throw "The previous Stockfish remote server instance did not stop cleanly."
 }
 
-Start-ScheduledTask -TaskName $taskName -TaskPath $taskPath
-
 & $tailscale serve --bg --yes --https $HttpsPort "http://127.0.0.1:$HttpPort" | Out-Host
 if ($LASTEXITCODE -ne 0) { throw "Could not expose the HTTPS analysis service through Tailscale." }
 
-$deadline = (Get-Date).AddSeconds(20)
-do {
-  Start-Sleep -Milliseconds 250
-  try {
-    $health = Invoke-RestMethod -UseBasicParsing "http://127.0.0.1:$HttpPort/v1/health" -TimeoutSec 2
-  } catch {
-    $health = $null
-  }
-} until ($health -or (Get-Date) -ge $deadline)
+if ($StartNow) {
+  Start-ScheduledTask -TaskName $taskName -TaskPath $taskPath
+  $deadline = (Get-Date).AddSeconds(20)
+  do {
+    Start-Sleep -Milliseconds 250
+    try {
+      $health = Invoke-RestMethod -UseBasicParsing "http://127.0.0.1:$HttpPort/v1/health" -TimeoutSec 2
+    } catch {
+      $health = $null
+    }
+  } until ($health -or (Get-Date) -ge $deadline)
 
-if (-not $health) {
-  throw "Stockfish remote server did not become healthy. See $logPath"
+  if (-not $health) {
+    throw "Stockfish remote server did not become healthy. See $logPath"
+  }
 }
 
 [pscustomobject]@{
-  ProcessId = $health.processId
-  EnginePath = $health.enginePath
-  Threads = $health.threads
-  HashMB = $health.hashMb
-  Lc0Available = $health.engines.lc0.available
-  Lc0Networks = $health.engines.lc0.networks
-  LocalHealth = "http://127.0.0.1:$HttpPort/v1/health"
+  ProcessId = if ($health) { $health.processId } else { $null }
+  EnginePath = if ($health) { $health.enginePath } else { $EnginePath }
+  Threads = if ($health) { $health.threads } else { $Threads }
+  HashMB = if ($health) { $health.hashMb } else { $HashMB }
+  Lc0Available = if ($health) { $health.engines.lc0.available } else { $null }
+  Lc0Networks = if ($health) { $health.engines.lc0.networks } else { $null }
+  LocalHealth = if ($StartNow) { "http://127.0.0.1:$HttpPort/v1/health" } else { "offline until explicitly started" }
   TailnetUci = "$($tailscaleDnsName):$UciPort"
   TailnetHttps = "https://$($tailscaleDnsName):$HttpsPort"
   ScheduledTask = "$taskPath$taskName"
+  AutoStart = [bool]$EnableAutoStart
 } | Format-List

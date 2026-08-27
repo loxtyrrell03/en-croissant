@@ -59,6 +59,12 @@ const engineIdleMs = positiveInteger(
   1_000,
   10 * 60_000,
 );
+const backendIdleMs = positiveInteger(
+  process.env.STOCKFISH_REMOTE_BACKEND_IDLE_MS || config.backendIdleMs,
+  30_000,
+  1_000,
+  10 * 60_000,
+);
 const localEvalPath = resolve(
   process.env.STOCKFISH_REMOTE_LOCAL_EVAL_PATH ||
     config.localEvalPath ||
@@ -124,9 +130,21 @@ const lc0Engines = new Map();
 const unavailableLc0Families = new Set();
 const lc0SessionSelections = new Map();
 let lc0ShutdownPending = false;
+let activeHttpRequests = 0;
+let activeUciClients = 0;
+let backendIdleTimer = null;
 const startedAt = new Date().toISOString();
 
 const httpServer = createHttpServer((request, response) => {
+  beginBackendUse("http");
+  let requestFinished = false;
+  const finishRequest = () => {
+    if (requestFinished) return;
+    requestFinished = true;
+    endBackendUse("http");
+  };
+  response.once("finish", finishRequest);
+  response.once("close", finishRequest);
   void handleHttpRequest(request, response).catch((error) => {
     log(`HTTP request failed: ${error?.stack || error}`);
     if (!response.headersSent) {
@@ -138,6 +156,7 @@ const httpServer = createHttpServer((request, response) => {
 });
 
 const uciServer = createTcpServer((socket) => {
+  beginBackendUse("uci");
   socket.setNoDelay(true);
   socket.setKeepAlive(true, 30_000);
   const peer = `${socket.remoteAddress || "unknown"}:${socket.remotePort || 0}`;
@@ -176,6 +195,7 @@ const uciServer = createTcpServer((socket) => {
       setTimeout(() => child.kill(), 500).unref();
     }
     log(`UCI client disconnected: ${peer}`);
+    endBackendUse("uci");
   });
 });
 
@@ -188,6 +208,7 @@ uciServer.listen(uciPort, uciHost, () => {
 
 for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, () => {
+    clearBackendIdleShutdown();
     httpEngine?.close();
     selectorEngine?.close();
     for (const engine of lc0Engines.values()) engine.close();
@@ -214,6 +235,7 @@ async function handleHttpRequest(request, response) {
       threads,
       hashMb,
       engineIdleMs,
+      backendIdleMs,
       performancePresets: ENGINE_PERFORMANCE_PRESETS,
       http: { host: httpHost, port: httpPort },
       uci: { host: uciHost, port: uciPort },
@@ -791,6 +813,8 @@ if (lc0Available) {
   );
 }
 
+scheduleBackendIdleShutdown();
+
 function shutdownIdleLc0Engines() {
   let busy = 0;
   let stopped = 0;
@@ -806,6 +830,41 @@ function shutdownIdleLc0Engines() {
   }
   lc0ShutdownPending = busy > 0;
   return { pending: lc0ShutdownPending, busy, stopped };
+}
+
+function beginBackendUse(kind) {
+  clearBackendIdleShutdown();
+  if (kind === "uci") activeUciClients += 1;
+  else activeHttpRequests += 1;
+}
+
+function endBackendUse(kind) {
+  if (kind === "uci") activeUciClients = Math.max(0, activeUciClients - 1);
+  else activeHttpRequests = Math.max(0, activeHttpRequests - 1);
+  scheduleBackendIdleShutdown();
+}
+
+function clearBackendIdleShutdown() {
+  if (!backendIdleTimer) return;
+  clearTimeout(backendIdleTimer);
+  backendIdleTimer = null;
+}
+
+function scheduleBackendIdleShutdown() {
+  clearBackendIdleShutdown();
+  if (activeHttpRequests > 0 || activeUciClients > 0) return;
+  backendIdleTimer = setTimeout(() => {
+    backendIdleTimer = null;
+    if (activeHttpRequests > 0 || activeUciClients > 0) return;
+    log(`Analysis backend exiting after ${backendIdleMs} ms without a client.`);
+    httpEngine?.close();
+    selectorEngine?.close();
+    for (const engine of lc0Engines.values()) engine.close();
+    httpServer.close();
+    uciServer.close();
+    setTimeout(() => process.exit(0), 500);
+  }, backendIdleMs);
+  backendIdleTimer.unref();
 }
 
 function formatUciOptionValue(value) {
