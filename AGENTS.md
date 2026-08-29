@@ -1,5 +1,12 @@
 # AGENTS.md
 
+## Shared product synchronization
+
+- En Croissant desktop, the PC-hosted En Croissant phone companion, and Outpost are separate delivery targets for shared chess features. A shared-feature improvement is not complete until it has been evaluated, carried across all three targets where applicable, and verified separately on each target.
+- This rule applies especially to the OTB importer, FIDE identity lookup, source coverage/defaults, caching/indexing, filtering, deduplication, progress/cancellation, and failure handling. Record any intentional target-specific exception and its reason here and in the delivery handoff; never silently leave one target behind.
+- Port behavior through each product's native architecture rather than copying incompatible whole files. Preserve Outpost's proprietary/licensing boundary and dependency-free tolerant PGN parser; preserve En Croissant's Tauri bindings and the phone companion's deployed native collector/service boundary.
+- On 2026-08-29, the persistent SQLite OTB index, all-source defaults, failure bounds, coverage-gap logic, aggregate downloads, and shared-cache behavior were ported to Outpost and verified with 27 focused Rust tests, all 176 non-ignored Outpost Rust tests, all 2,109 Outpost TypeScript tests, a production build, and a seeded 10-lane Anish Giri run returning 3,941 games in 11.315 seconds.
+
 - On 2026-08-26, the phone OTB importer stopped presenting one completed source
   lane as a completed all-source search. Native progress now carries monotonic
   overall lane counts, a running bar never reaches 100%, and the phone exposes
