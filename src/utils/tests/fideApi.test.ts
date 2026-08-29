@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
     describeFidePlayer,
+    getFideImportStartYear,
     parseFidePlayer,
     rankFidePlayers,
     type FidePlayer,
@@ -48,5 +49,15 @@ describe("FIDE player lookup", () => {
             }),
         ).toBe("HKG · b. 2003 · 1852");
         expect(describeFidePlayer({ id: 1, name: "X", inactive: true })).toBe("inactive");
+    });
+
+    test("uses a valid birth year for imports and falls back to 1900", () => {
+        const currentYear = 2026;
+        expect(getFideImportStartYear({ year: 2003 }, currentYear)).toBe(2003);
+        expect(getFideImportStartYear({ year: 2003 }, currentYear, 2018)).toBe(2018);
+        expect(getFideImportStartYear({ year: 1899 }, currentYear)).toBe(1900);
+        expect(getFideImportStartYear({ year: 2027 }, currentYear)).toBe(1900);
+        expect(getFideImportStartYear({ year: 2003.5 }, currentYear)).toBe(1900);
+        expect(getFideImportStartYear(null, currentYear)).toBe(1900);
     });
 });

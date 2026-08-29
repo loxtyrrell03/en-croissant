@@ -18,6 +18,29 @@ export interface FidePlayer {
     inactive?: boolean;
 }
 
+export const FIDE_IMPORT_FALLBACK_YEAR = 1900;
+
+/**
+ * Uses an explicit valid year when the user has chosen one; otherwise the
+ * player's valid FIDE birth year starts a full-career import. Unknown or
+ * malformed birth years fall back to 1900 so no available games are skipped.
+ */
+export function getFideImportStartYear(
+    player: Pick<FidePlayer, "year"> | null | undefined,
+    currentYear: number,
+    manualYear?: number | null,
+): number {
+    const isValidYear = (year: number | null | undefined): year is number =>
+        typeof year === "number" &&
+        Number.isInteger(year) &&
+        year >= FIDE_IMPORT_FALLBACK_YEAR &&
+        year <= currentYear;
+
+    if (isValidYear(manualYear)) return manualYear;
+    if (isValidYear(player?.year)) return player.year;
+    return FIDE_IMPORT_FALLBACK_YEAR;
+}
+
 interface RawFidePlayer {
     id?: number;
     name?: string;

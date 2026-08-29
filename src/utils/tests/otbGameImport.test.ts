@@ -153,10 +153,16 @@ describe("OTB game import", () => {
         expect(getOtbImportProgressPercent(null)).toBeNull();
     });
 
-    test("enables exhaustive broadcast scans by default", () => {
-        expect(DEFAULT_OTB_IMPORT_SOURCES.broadcastArchives).toBe(true);
-        expect(DEFAULT_OTB_IMPORT_SOURCES.communityBroadcasts).toBe(true);
-        expect(DEFAULT_OTB_IMPORT_SOURCES.lichessBroadcasts).toBe(true);
+    test("enables every OTB source by default", () => {
+        expect(DEFAULT_OTB_IMPORT_SOURCES).toEqual({
+            lichessBroadcasts: true,
+            broadcastArchives: true,
+            communityBroadcasts: true,
+            chessResults: true,
+            chessbaseNews: true,
+            officialPgnIndexes: true,
+            twic: true,
+        });
     });
 
     test("estimates the slowest parallel lane and formats the ETA", () => {

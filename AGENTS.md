@@ -15,6 +15,16 @@
 - Port behavior through each product's native architecture rather than copying incompatible whole files. Preserve Outpost's proprietary/licensing boundary and dependency-free tolerant PGN parser; preserve En Croissant's Tauri bindings and the phone companion's deployed native collector/service boundary.
 - On 2026-08-29, the persistent SQLite OTB index, all-source defaults, failure bounds, coverage-gap logic, aggregate downloads, and shared-cache behavior were ported to Outpost and verified with 27 focused Rust tests, all 176 non-ignored Outpost Rust tests, all 2,109 Outpost TypeScript tests, a production build, and a seeded 10-lane Anish Giri run returning 3,941 games in 11.315 seconds.
 
+- On 2026-08-29, the desktop OTB import form began deriving `Since` from a
+  selected or import-time-resolved player's valid FIDE birth year, with 1900
+  retained only as the unknown-year fallback. A manually edited year remains
+  authoritative, and the freshly resolved year is used directly for the same
+  import's title and request rather than waiting for React state. All seven OTB
+  source groups remain enabled by default. The two focused utility suites passed
+  12 tests, touched-file formatting/lint passed, and the TypeScript production
+  build passed. This desktop-only milestone did not change the shared Rust
+  collector or phone companion files.
+
 - On 2026-08-26, the phone OTB importer stopped presenting one completed source
   lane as a completed all-source search. Native progress now carries monotonic
   overall lane counts, a running bar never reaches 100%, and the phone exposes

@@ -24,7 +24,12 @@ import FidePlayerPicker from "@/components/panels/prep/FidePlayerPicker";
 import { databaseConversionStateAtom } from "@/state/atoms";
 import { getDatabases, type SuccessDatabaseInfo } from "@/utils/db";
 import { getDatabasesDir } from "@/utils/directories";
-import { lookupFidePlayer, type FidePlayer } from "@/utils/fideApi";
+import {
+  FIDE_IMPORT_FALLBACK_YEAR,
+  getFideImportStartYear,
+  lookupFidePlayer,
+  type FidePlayer,
+} from "@/utils/fideApi";
 import {
   DEFAULT_OTB_IMPORT_SOURCES,
   OTB_IMPORT_SOURCE_DETAILS,
@@ -80,7 +85,7 @@ export default function OtbGameImportPanel({
   const [fideId, setFideId] = useState("");
   const [selectedPlayer, setSelectedPlayer] = useState<FidePlayer | null>(null);
   const [fideIdAuto, setFideIdAuto] = useState(false);
-  const [fromYear, setFromYear] = useState(Math.max(2020, currentYear - 2));
+  const [fromYear, setFromYear] = useState(FIDE_IMPORT_FALLBACK_YEAR);
   const [sources, setSources] = useState<OtbImportSourceSelection>(DEFAULT_OTB_IMPORT_SOURCES);
   const [localPgnPaths, setLocalPgnPaths] = useState<string[]>([]);
   const [saveDatabase, setSaveDatabase] = useState(true);
@@ -95,6 +100,7 @@ export default function OtbGameImportPanel({
   const [, setConversionState] = useAtom(databaseConversionStateAtom);
   const activeJobIdRef = useRef<string | null>(null);
   const initialNameAppliedRef = useRef(initialPlayerName);
+  const fromYearManuallyEditedRef = useRef(false);
 
   useEffect(() => {
     if (initialPlayerName && (!playerName.trim() || playerName === initialNameAppliedRef.current)) {
@@ -130,6 +136,9 @@ export default function OtbGameImportPanel({
     setPlayerName(player.name);
     setFideId(String(player.id));
     setFideIdAuto(true);
+    if (!fromYearManuallyEditedRef.current) {
+      setFromYear(getFideImportStartYear(player, currentYear));
+    }
   };
 
   const clearSelectedPlayer = () => {
@@ -162,9 +171,11 @@ export default function OtbGameImportPanel({
     // so nobody has to type both.
     let effectivePlayerName = playerName.trim();
     let effectiveFideId = fideId.trim();
+    let effectivePlayer = selectedPlayer;
     if (!selectedPlayer && /^\d+$/.test(effectivePlayerName)) {
       const resolved = await lookupFidePlayer(effectivePlayerName);
       if (resolved) {
+        effectivePlayer = resolved;
         effectivePlayerName = resolved.name;
         if (!effectiveFideId) effectiveFideId = String(resolved.id);
         setSelectedPlayer(resolved);
@@ -173,8 +184,16 @@ export default function OtbGameImportPanel({
         setFideIdAuto(true);
       }
     }
+    const effectiveFromYear = getFideImportStartYear(
+      effectivePlayer,
+      currentYear,
+      fromYearManuallyEditedRef.current ? fromYear : null,
+    );
+    if (!fromYearManuallyEditedRef.current && effectiveFromYear !== fromYear) {
+      setFromYear(effectiveFromYear);
+    }
     const jobId = `otb-import-${Date.now()}`;
-    const baseTitle = getOtbImportTitle(effectivePlayerName, fromYear);
+    const baseTitle = getOtbImportTitle(effectivePlayerName, effectiveFromYear);
     const title = shouldSaveDatabase
       ? getUniqueOtbDatabaseTitle(baseTitle, localDatabases)
       : baseTitle;
@@ -195,7 +214,7 @@ export default function OtbGameImportPanel({
       jobId,
       playerName: effectivePlayerName,
       fideId: effectiveFideId,
-      fromYear,
+      fromYear: effectiveFromYear,
       sources,
       localPgnPaths,
       cacheDir,
@@ -363,7 +382,10 @@ export default function OtbGameImportPanel({
         <NumberInput
           label="Since"
           value={fromYear}
-          onChange={(value) => setFromYear(Number(value) || currentYear - 2)}
+          onChange={(value) => {
+            fromYearManuallyEditedRef.current = true;
+            setFromYear(Number(value) || FIDE_IMPORT_FALLBACK_YEAR);
+          }}
           min={1900}
           max={currentYear}
           step={1}
@@ -431,9 +453,7 @@ export default function OtbGameImportPanel({
           ml={asDialog ? "auto" : undefined}
           color={running ? "orange" : undefined}
           variant={running ? "light" : "filled"}
-          leftSection={
-            running ? <IconX size="0.95rem" /> : <IconCloudSearch size="0.95rem" />
-          }
+          leftSection={running ? <IconX size="0.95rem" /> : <IconCloudSearch size="0.95rem" />}
           loading={stopping}
           onClick={() => void (running ? stopAndCreateDatabase() : runImport())}
         >
