@@ -1,5 +1,13 @@
 # AGENTS.md
 
+## Milestone documentation
+
+- Agents must update this `AGENTS.md` after every meaningful, verified milestone and include that update in the same milestone commit.
+- Record concise, durable context: important behavior or architecture changes, decisions and their rationale, relevant tests or verification, deployment or runtime state, and material limitations or follow-up work.
+- Update or replace stale guidance instead of accumulating contradictory history; keep notes factual and useful to future agents.
+- Do not record secrets, credentials, personal data, raw transcripts, routine command logs, or transient debugging noise.
+
+
 - On 2026-08-21, the phone Import workspace gained PGN as a first-class source
   beside Chess.com, Lichess, and OTB. It offers a one-tap mobile file picker and
   a paste box; both use the existing local phone PGN parser, retain every game
