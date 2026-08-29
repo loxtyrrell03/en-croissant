@@ -5,6 +5,7 @@ import { createInterface } from "node:readline";
 import { constants as priorityConstants, setPriority } from "node:os";
 import { join } from "node:path";
 import { buildWebOtbPrepDatabase } from "./generated/otb-prep-database.js";
+import { buildWebOtbPrepDatabaseParallel } from "./otb-prep-parallel.mjs";
 
 const CURRENT_YEAR = new Date().getFullYear();
 const MAX_PLAYER_NAME_LENGTH = 120;
@@ -201,19 +202,28 @@ export class OtbImportService {
   async finishCompleted(job, report, outputPath) {
     if (job.status === "completed" || job.status === "failed") return;
     const pgn = await readFile(outputPath, "utf8");
+    if (job.status === "failed") return;
     const games = parseOtbPgnGames(pgn, job.id);
     const preparedAt = new Date().toISOString();
-    const artifactJob = {
-      ...job,
-      status: "completed",
-      report,
-      games,
-      prepDatabase: null,
-      completedAt: preparedAt,
-    };
-    this.ensurePrepDatabase(artifactJob);
-    const artifact = extractOtbImportArtifact(artifactJob);
-    if (!artifact) throw new Error("The PC could not prepare the completed OTB result artifact.");
+    const importedAtCandidate = Date.parse(preparedAt);
+    const importedAt = Number.isFinite(importedAtCandidate) ? importedAtCandidate : Date.now();
+    const pgnGames = games.map((game) => String(game?.pgn || "").trim()).filter(Boolean);
+    const prepDatabase = pgnGames.length
+      ? await buildWebOtbPrepDatabaseParallel({
+          name: getOtbPrepDatabaseName({
+            ...job.request,
+            playerName: report?.playerName || job.request?.playerName,
+          }),
+          pgnGames,
+          importedAt,
+          onFallback: (message) =>
+            this.onLog(`Parallel OTB prep construction fell back to one thread: ${message}`),
+        })
+      : null;
+    // Worker construction yields to cancellation; never publish an artifact
+    // after the user has stopped the import in that interval.
+    if (job.status === "failed") return;
+    const artifact = { jobId: job.id, games, prepDatabase };
 
     job.report = report;
     job.gameCount = games.length;

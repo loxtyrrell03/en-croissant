@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
+import { buildWebOtbPrepDatabase } from "../generated/otb-prep-database.js";
 import {
   OtbImportService,
   buildOtbImporterArgs,
@@ -14,6 +15,7 @@ import {
   parseOtbCollectorLine,
   parseOtbPgnGames,
 } from "../otb-import-service.mjs";
+import { buildWebOtbPrepDatabaseParallel } from "../otb-prep-parallel.mjs";
 
 test("serializes overlapping job saves and preserves the newest snapshot", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-croissant-otb-persist-"));
@@ -322,4 +324,62 @@ test("compact polling transfers one artifact instead of repeating the full resul
   assert.deepEqual(artifact.prepDatabase, prepDatabase);
   assert.ok(statusBytes < fullBytes / 1_000);
   assert.ok(compactTransferBytes < legacyTransferBytes / 10);
+});
+
+test("parallel prep construction preserves deterministic games, warnings, and metadata", async () => {
+  const pgnGames = Array.from({ length: 132 }, (_, index) => {
+    const day = String((index % 28) + 1).padStart(2, "0");
+    const moves =
+      index % 17 === 0
+        ? "1. e4 e5 2. Ke4 *"
+        : index % 13 === 0
+          ? "1. d4 d5 (1... Nf6 { Indian }) 2. c4 e6 1/2-1/2"
+          : "1. e4 e5 2. Nf3 Nc6 1-0";
+    const result = index % 17 === 0 ? "*" : index % 13 === 0 ? "1/2-1/2" : "1-0";
+    return `[Event "Open ${index + 1}"]\n[Date "2026.08.${day}"]\n[White "Target, Player"]\n[Black "Opponent ${index % 9}"]\n[Result "${result}"]\n\n${moves}`;
+  });
+  // A service-side PGN slice can contain more than one parser game when the
+  // second game has no Event header. This protects global warning/index offsets
+  // across worker boundaries, including the shape found in the 4,681-game job.
+  pgnGames[63] +=
+    '\n\n[Site "Extra board"]\n[Date "2026.08.30"]\n[White "Target, Player"]\n[Black "Extra Opponent"]\n[Result "*"]\n\n1. e4 e5 2. Ke4 *';
+  pgnGames[70] =
+    '[Event "Broken setup"]\n[SetUp "1"]\n[FEN "not a FEN"]\n[White "Target, Player"]\n[Black "Broken Opponent"]\n[Result "*"]\n\n*';
+
+  const input = {
+    name: "Target Player OTB games 2020-2026.pgn",
+    importedAt: 1_777_777_777_777,
+  };
+  const sequential = buildWebOtbPrepDatabase({
+    ...input,
+    pgn: pgnGames.join("\n\n"),
+  });
+  const parallel = await buildWebOtbPrepDatabaseParallel({
+    ...input,
+    pgnGames,
+    workerCount: 3,
+  });
+
+  assert.deepEqual(parallel, sequential);
+  assert.ok(parallel.warnings.some((warning) => warning.includes("illegal move Ke4")));
+  assert.ok(
+    parallel.warnings.some((warning) => warning.includes("could not read starting position")),
+  );
+  assert.ok(
+    parallel.games.some(
+      (game, index) => index > 0 && game.index > parallel.games[index - 1].index + 1,
+    ),
+  );
+  assert.deepEqual(
+    parallel.games.map((game) => game.index),
+    sequential.games.map((game) => game.index),
+  );
+});
+
+test("the managed home-server runtime includes the parallel prep worker modules", async () => {
+  const launcher = await readFile(new URL("../start-home-server.ps1", import.meta.url), "utf8");
+  for (const fileName of ["otb-prep-parallel.mjs", "otb-prep-worker.mjs"]) {
+    assert.match(launcher, new RegExp(`Join-Path \\$PSScriptRoot '${fileName}'`));
+    assert.match(launcher, new RegExp(`Join-Path \\$runtimeRoot '${fileName}'`));
+  }
 });

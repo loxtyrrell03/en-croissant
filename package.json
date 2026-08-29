@@ -14,6 +14,7 @@
     "stats-worker:build": "vite build --config vite.stats-worker.config.ts",
     "otb-prep:build": "vite build --config vite.otb-prep.config.ts",
     "otb-import:benchmark-payload": "node scripts/benchmark-otb-job-payload.mjs",
+    "otb-import:benchmark-prep": "node scripts/benchmark-otb-prep-artifact.mjs",
     "lichess-evals:build": "cargo run --release --manifest-path src-tauri/Cargo.toml --bin build_lichess_eval_db --",
     "build-web-library": "npm run web:library && npm run build-vite",
     "build-vite": "npm run otb-prep:build && tsgo --noEmit && vite build",

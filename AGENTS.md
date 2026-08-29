@@ -29,6 +29,30 @@
   milestone is not deployed; it deliberately does not alter the Rust collector,
   birth-year form behavior, scheduled launcher, or managed-process cleanup.
 
+- On 2026-08-30, new phone OTB jobs began constructing the complete prep
+  artifact in at most four contiguous worker-thread chunks after the native
+  collector exits. The merge uses parsed-game prefixes rather than wrapper
+  counts, preserves intentional invalid-start gaps, concatenates games and
+  warnings in source order, deterministically rebuilds metadata, terminates
+  sibling workers on failure, and falls back to the unchanged lossless
+  single-thread builder. Mainline hydration also reuses each exact `fenAfter`
+  as the next move's `fenBefore`, avoiding one duplicate FEN conversion per
+  ply; the generated Node builder and managed runtime copy list were refreshed.
+  The existing sequential legacy-job migration remains unchanged. On the real
+  4,681-wrapper/4,684-prep-game fixture with 24 warnings and a 112,145,404-byte
+  atomically written artifact, the historical 6.388-second source-ready
+  interval plus measured completion work projected a pre-change single-thread
+  total of 11.359 seconds. Five final four-worker projections were
+  8.372-9.635 seconds (8.507-second median), including parsing, construction,
+  JSON serialization, atomic artifact write and byte scan, and both durable
+  compact-status writes. Every run
+  retained game SHA-256 `7bf5a310be24fcb29f18621922c77577df8307b867f5f8a23b40d4b18b83a1c7`
+  and prep SHA-256 `70c362135004ed76fa82095b01690c80e4f538033ed2f7566d4282a81ad84b2f`.
+  Verification passed 13 focused service tests, the OTB Prep and live-replay
+  web tests, TypeScript checking, lint/format checks, and production builds.
+  This milestone is source-only and not deployed; it does not alter the Rust
+  collector, birth-year form, scheduled task, or live managed processes.
+
 - On 2026-08-27, the PC-hosted phone LCZero switch became authoritative over
   GPU residency. Turning it on first wakes the lightweight scheduled engine
   service when necessary and then lazily starts only the selected LC0 network;

@@ -36,6 +36,8 @@ $sourceLibraryIndex = Join-Path $PSScriptRoot 'home-library-index.mjs'
 $sourceChessCoachService = Join-Path $PSScriptRoot 'chess-coach-service.mjs'
 $sourceChessCoachDerived = Join-Path $PSScriptRoot 'chess-coach-derived.mjs'
 $sourceOtbImportService = Join-Path $PSScriptRoot 'otb-import-service.mjs'
+$sourceOtbPrepParallel = Join-Path $PSScriptRoot 'otb-prep-parallel.mjs'
+$sourceOtbPrepWorker = Join-Path $PSScriptRoot 'otb-prep-worker.mjs'
 $sourceFidePlayerSearch = Join-Path $PSScriptRoot 'fide-player-search.mjs'
 $sourceStatsEntryQuality = Join-Path $PSScriptRoot 'stats-entry-quality.mjs'
 $sourceStatsWorkerRoot = Join-Path $PSScriptRoot 'generated'
@@ -59,6 +61,8 @@ foreach ($runtimeFile in @(
   @{ Source = $sourceChessCoachService; Destination = (Join-Path $runtimeRoot 'chess-coach-service.mjs') },
   @{ Source = $sourceChessCoachDerived; Destination = (Join-Path $runtimeRoot 'chess-coach-derived.mjs') }
   @{ Source = $sourceOtbImportService; Destination = (Join-Path $runtimeRoot 'otb-import-service.mjs') }
+  @{ Source = $sourceOtbPrepParallel; Destination = (Join-Path $runtimeRoot 'otb-prep-parallel.mjs') }
+  @{ Source = $sourceOtbPrepWorker; Destination = (Join-Path $runtimeRoot 'otb-prep-worker.mjs') }
   @{ Source = $sourceFidePlayerSearch; Destination = (Join-Path $runtimeRoot 'fide-player-search.mjs') }
   @{ Source = $sourceStatsEntryQuality; Destination = (Join-Path $runtimeRoot 'stats-entry-quality.mjs') }
 )) {

@@ -265,11 +265,13 @@ function buildWebMoveLine({
     let currentChild = firstChild;
     let currentPosition = position.clone();
     let currentPly = previousPly;
+    let currentFen = makeFen(currentPosition.toSetup());
 
     while (currentChild) {
         const parsed = buildWebMove({
             child: currentChild,
             position: currentPosition,
+            fenBefore: currentFen,
             previousPly: currentPly,
             gameIndex,
             warnings,
@@ -278,6 +280,7 @@ function buildWebMoveLine({
 
         line.push(parsed.move);
         currentPosition = parsed.positionAfter;
+        currentFen = parsed.move.fenAfter;
         currentPly = parsed.move.ply;
         currentChild = currentChild.children[0];
     }
@@ -288,17 +291,18 @@ function buildWebMoveLine({
 function buildWebMove({
     child,
     position,
+    fenBefore,
     previousPly,
     gameIndex,
     warnings,
 }: {
     child: ChildNode<PgnNodeData>;
     position: Position;
+    fenBefore: string;
     previousPly: number;
     gameIndex: number;
     warnings: string[];
 }) {
-    const fenBefore = makeFen(position.toSetup());
     const parsedMove = parseSan(position, child.data.san);
     if (!parsedMove) {
         warnings.push(`Game ${gameIndex + 1}: stopped at illegal move ${child.data.san}.`);
