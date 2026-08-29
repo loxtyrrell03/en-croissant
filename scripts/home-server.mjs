@@ -390,6 +390,20 @@ async function handleRequest(request, response) {
     }
   }
 
+  const otbArtifactMatch = pathname.match(/^\/api\/otb-import\/jobs\/([A-Za-z0-9_-]+)\/artifact$/);
+  if (otbArtifactMatch) {
+    if (method !== "GET") return writeJson(response, 405, { error: "Method not allowed." });
+    const job = otbImportService.getJob(otbArtifactMatch[1]);
+    if (!job) return writeJson(response, 404, { error: "OTB import job not found." });
+    if (job.status !== "completed") {
+      return writeJson(response, 409, { error: "The OTB import result is not ready yet." });
+    }
+    const artifact = await otbImportService.getJobArtifact(job.id);
+    return artifact
+      ? writeJsonArtifact(response, artifact)
+      : writeJson(response, 500, { error: "The completed OTB result artifact is missing." });
+  }
+
   const otbJobMatch = pathname.match(/^\/api\/otb-import\/jobs\/([A-Za-z0-9_-]+)$/);
   if (otbJobMatch) {
     if (method !== "GET" && method !== "DELETE") {
@@ -3070,6 +3084,18 @@ function writeJson(response, status, body, extraHeaders = {}) {
     ...extraHeaders,
   });
   response.end(text);
+}
+
+function writeJsonArtifact(response, artifact) {
+  response.writeHead(200, {
+    "cache-control": "no-store",
+    "content-length": artifact.size,
+    "content-type": "application/json; charset=utf-8",
+    "x-content-type-options": "nosniff",
+  });
+  const stream = createReadStream(artifact.path);
+  stream.on("error", (error) => response.destroy(error));
+  return stream.pipe(response);
 }
 
 function writeJsonIfConnected(response, status, body, extraHeaders = {}) {

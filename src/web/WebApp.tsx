@@ -313,7 +313,7 @@ import {
 } from "./stockfishEngine";
 import {
   getWebOtbJobPlayerName,
-  loadWebOtbImportJob,
+  watchWebOtbImportJob,
   WEB_OTB_JOB_STORAGE_KEY,
   WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY,
   type WebOtbImportedGame,
@@ -845,17 +845,13 @@ export default function WebApp() {
     if (!loaded) return;
     let active = true;
     let monitoredJobId: string | null = null;
+    let unsubscribe: (() => void) | null = null;
     let terminal = false;
     let inFlight = false;
 
-    const refresh = async () => {
-      const jobId = window.localStorage.getItem(WEB_OTB_JOB_STORAGE_KEY);
-      if (jobId !== monitoredJobId) {
-        monitoredJobId = jobId;
-        terminal = false;
-      }
-      if (!jobId || terminal || inFlight) return;
-
+    const handleJob = async (job: WebOtbImportJob) => {
+      const jobId = job.id;
+      if (!active || jobId !== monitoredJobId || terminal || inFlight) return;
       const handledJobId = window.localStorage.getItem(WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY);
       const completionExists = state.prepWorkspaces.some((prep) => prep.id === `prep-${jobId}`);
       if (handledJobId === jobId && completionExists) {
@@ -864,8 +860,6 @@ export default function WebApp() {
       }
 
       try {
-        const job = await loadWebOtbImportJob(jobId);
-        if (!active) return;
         if (
           job.status === "failed" ||
           (job.status === "completed" && !job.prepDatabase?.games.length)
@@ -903,10 +897,26 @@ export default function WebApp() {
       }
     };
 
-    void refresh();
-    const timer = window.setInterval(() => void refresh(), 1_500);
+    const monitorActiveJob = () => {
+      const jobId = window.localStorage.getItem(WEB_OTB_JOB_STORAGE_KEY);
+      if (jobId === monitoredJobId) return;
+      unsubscribe?.();
+      unsubscribe = null;
+      monitoredJobId = jobId;
+      terminal = false;
+      inFlight = false;
+      if (jobId) {
+        unsubscribe = watchWebOtbImportJob(jobId, (job) => void handleJob(job));
+      }
+    };
+
+    monitorActiveJob();
+    // This interval only notices same-page localStorage changes. API polling is
+    // owned and deduplicated by watchWebOtbImportJob for every subscriber.
+    const timer = window.setInterval(monitorActiveJob, 1_500);
     return () => {
       active = false;
+      unsubscribe?.();
       window.clearInterval(timer);
     };
   }, [loaded, openCompletedOtbImportForPrep, state.prepWorkspaces]);

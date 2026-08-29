@@ -28,9 +28,9 @@ import {
   findExactWebFidePlayer,
   getWebOtbImportedGames,
   getWebOtbProgressValue,
-  loadWebOtbImportJob,
   searchWebFidePlayers,
   startWebOtbImport,
+  watchWebOtbImportJob,
   WEB_OTB_JOB_STORAGE_KEY,
   WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY,
   type WebOtbImportedGame,
@@ -63,38 +63,21 @@ export default function PhoneOtbImportPanel({
   const [error, setError] = useState<string | null>(null);
   const games = useMemo(() => (job ? getWebOtbImportedGames(job) : []), [job]);
   const running = job?.status === "queued" || job?.status === "running";
-  const shouldPoll = Boolean(jobId && (!job || running));
   const openedInPrep = Boolean(
     job?.id && window.localStorage.getItem(WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY) === job.id,
   );
 
   useEffect(() => {
-    if (!jobId || !shouldPoll) return;
-    let active = true;
-    let controller: AbortController | null = null;
-    const refresh = () => {
-      controller?.abort();
-      controller = new AbortController();
-      void loadWebOtbImportJob(jobId, controller.signal)
-        .then((next) => {
-          if (!active) return;
-          setJob(next);
-          setError(next.status === "failed" ? next.error || "The PC OTB import failed." : null);
-        })
-        .catch((loadError) => {
-          if (active && !(loadError instanceof DOMException && loadError.name === "AbortError")) {
-            setError("The PC connection dropped. Reconnecting automatically…");
-          }
-        });
-    };
-    refresh();
-    const timer = window.setInterval(refresh, 1_500);
-    return () => {
-      active = false;
-      controller?.abort();
-      window.clearInterval(timer);
-    };
-  }, [jobId, shouldPoll]);
+    if (!jobId) return;
+    return watchWebOtbImportJob(
+      jobId,
+      (next) => {
+        setJob(next);
+        setError(next.status === "failed" ? next.error || "The PC OTB import failed." : null);
+      },
+      () => setError("The PC connection dropped. Reconnecting automatically…"),
+    );
+  }, [jobId]);
 
   function selectFidePlayer(player: FidePlayer) {
     setSelectedPlayer(player);

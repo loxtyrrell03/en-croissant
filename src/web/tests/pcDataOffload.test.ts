@@ -6,6 +6,8 @@ import {
     getWebOtbProgressValue,
     loadWebOtbImportJob,
     startWebOtbImport,
+    watchWebOtbImportJob,
+    type WebOtbImportJob,
 } from "../otbImport";
 
 const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -246,5 +248,76 @@ describe("phone data work offload", () => {
                 true,
             ),
         ).toBe(95);
+    });
+
+    it("shares one status poll and one completed artifact across phone subscribers", async () => {
+        const jobId = "otb-shared-artifact";
+        const status = {
+            id: jobId,
+            status: "completed",
+            request: {
+                playerName: "Player, Target",
+                fideId: "12345678",
+                fromYear: 2020,
+                sources: {},
+            },
+            progress: null,
+            report: {
+                playerName: "Player, Target",
+                fideId: "12345678",
+                cancelled: false,
+                gamesFound: 1,
+                duplicatesRemoved: 0,
+            },
+            gameCount: 1,
+            artifactAvailable: true,
+            artifactBytes: 10_000_000,
+            createdAt: "2026-08-29T00:00:00Z",
+            updatedAt: "2026-08-29T00:00:05Z",
+            completedAt: "2026-08-29T00:00:05Z",
+            error: null,
+        };
+        const artifact = {
+            jobId,
+            games: [
+                {
+                    id: `${jobId}:1`,
+                    pgn: '[Event "Open"]\n\n1. e4 e5 1-0',
+                    event: "Open",
+                    site: "",
+                    date: "2026.08.29",
+                    white: "Player, Target",
+                    black: "Opponent",
+                    result: "1-0",
+                    whiteElo: 2400,
+                    blackElo: 2300,
+                },
+            ],
+            prepDatabase: null,
+        };
+        const fetchMock = vi.fn().mockImplementation(async (input: RequestInfo | URL) => ({
+            ok: true,
+            status: 200,
+            json: async () => (String(input).endsWith("/artifact") ? artifact : status),
+        }));
+        vi.stubGlobal("fetch", fetchMock);
+
+        let unsubscribeFirst: () => void = () => undefined;
+        let unsubscribeSecond: () => void = () => undefined;
+        const first = new Promise<WebOtbImportJob>((resolve) => {
+            unsubscribeFirst = watchWebOtbImportJob(jobId, resolve);
+        });
+        const second = new Promise<WebOtbImportJob>((resolve) => {
+            unsubscribeSecond = watchWebOtbImportJob(jobId, resolve);
+        });
+        const [firstJob, secondJob] = await Promise.all([first, second]);
+        unsubscribeFirst();
+        unsubscribeSecond();
+
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(String(fetchMock.mock.calls[0]?.[0])).toContain(`/jobs/${jobId}`);
+        expect(String(fetchMock.mock.calls[1]?.[0])).toContain(`/jobs/${jobId}/artifact`);
+        expect(firstJob.games).toEqual(artifact.games);
+        expect(secondJob.prepDatabase).toBe(artifact.prepDatabase);
     });
 });

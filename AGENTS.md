@@ -15,6 +15,20 @@
 - Port behavior through each product's native architecture rather than copying incompatible whole files. Preserve Outpost's proprietary/licensing boundary and dependency-free tolerant PGN parser; preserve En Croissant's Tauri bindings and the phone companion's deployed native collector/service boundary.
 - On 2026-08-29, the persistent SQLite OTB index, all-source defaults, failure bounds, coverage-gap logic, aggregate downloads, and shared-cache behavior were ported to Outpost and verified with 27 focused Rust tests, all 176 non-ignored Outpost Rust tests, all 2,109 Outpost TypeScript tests, a production build, and a seeded 10-lane Anish Giri run returning 3,941 games in 11.315 seconds.
 
+- On 2026-08-30, the phone OTB job service split compact poll status from one
+  immutable completed game/prep artifact. Legacy inline jobs migrate
+  sequentially and losslessly at startup, `completedAt` is assigned only after
+  the artifact rename succeeds, the artifact is streamed without server-side
+  reparsing, and a shared browser watcher gives the Import panel and Prep
+  completion consumer one status poll and one artifact fetch per job. On the
+  existing 4,681-game/112 MB phone result, ten completion polls fell from
+  1,121,481,140 transferred bytes to 112,173,514 (89.998% less); the game/prep
+  content SHA-256 remained identical and the compact status was 2,811 bytes.
+  Verification passed 11 focused Node service tests, 14 focused web tests,
+  TypeScript checking, and both OTB-prep and production Vite builds. This
+  milestone is not deployed; it deliberately does not alter the Rust collector,
+  birth-year form behavior, scheduled launcher, or managed-process cleanup.
+
 - On 2026-08-27, the PC-hosted phone LCZero switch became authoritative over
   GPU residency. Turning it on first wakes the lightweight scheduled engine
   service when necessary and then lazily starts only the selected LC0 network;
