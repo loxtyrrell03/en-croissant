@@ -53,6 +53,23 @@
   This milestone is source-only and not deployed; it does not alter the Rust
   collector, birth-year form, scheduled task, or live managed processes.
 
+- On 2026-08-30, the phone home-server scheduled task moved to an installed,
+  source-independent launcher under the managed server root. Publishing now
+  migrates and verifies that task action before changing runtime files, while
+  `start-home-server.ps1` is only the explicit checkout-to-runtime stager; an
+  older checkout in a historical task action can no longer overwrite a newer
+  deployment at logon. OTB jobs durably record their job-bound collector PID,
+  and Stop or restart recovery uses an executable- and `--job-id`-verified
+  Windows `taskkill /T /F` helper so the exact collector process tree is gone
+  before the job unlocks without risking a reused PID. Parallel prep also has
+  a regression proving a synchronous Worker-constructor failure is caught,
+  every already-created sibling is terminated, and the lossless sequential
+  fallback is returned. Verification passed all 85 home-server Node tests,
+  the focused PowerShell launcher/parser and live PID-refusal checks, and
+  formatter/linter checks. This milestone is source-only: do not claim the
+  scheduled task or live runtime is migrated until the task action and health
+  deployment commit are inspected after a real publish.
+
 - On 2026-08-27, the PC-hosted phone LCZero switch became authoritative over
   GPU residency. Turning it on first wakes the lightweight scheduled engine
   service when necessary and then lazily starts only the selected LC0 network;

@@ -44,6 +44,7 @@ if (-not (Test-Path -LiteralPath $tailscale)) {
   throw 'Tailscale is required to expose the home server.'
 }
 $startScript = Join-Path $PSScriptRoot 'start-home-server.ps1'
+$launcherInstaller = Join-Path $PSScriptRoot 'install-home-server-launcher.ps1'
 $taskName = 'EnCroissantHomeServer'
 $tailscaleStatus = & $tailscale status --json | ConvertFrom-Json
 $dnsName = $DnsName.Trim().TrimEnd('.')
@@ -171,29 +172,11 @@ try {
   Pop-Location
 }
 
-$powershell = (Get-Command powershell.exe -ErrorAction Stop).Source
-$taskUser = [Security.Principal.WindowsIdentity]::GetCurrent().Name
-$taskAction = New-ScheduledTaskAction `
-  -Execute $powershell `
-  -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$startScript`" -Port $Port"
-$taskTrigger = New-ScheduledTaskTrigger -AtLogOn -User $taskUser
-$taskPrincipal = New-ScheduledTaskPrincipal `
-  -UserId $taskUser `
-  -LogonType Interactive `
-  -RunLevel Limited
-$taskSettings = New-ScheduledTaskSettingsSet `
-  -AllowStartIfOnBatteries `
-  -DontStopIfGoingOnBatteries `
-  -RestartCount 3 `
-  -RestartInterval (New-TimeSpan -Minutes 1)
-$taskSettings.Priority = 4
-Register-ScheduledTask `
-  -TaskName $taskName `
-  -Action $taskAction `
-  -Trigger $taskTrigger `
-  -Principal $taskPrincipal `
-  -Settings $taskSettings `
-  -Force | Out-Null
+& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File `
+  $launcherInstaller -Port $Port -TaskName $taskName -ServerRoot $serverRoot | Out-Null
+if ($LASTEXITCODE -ne 0) {
+  throw 'The source-independent home-server launcher could not be installed.'
+}
 
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $startScript -Port $Port
 if ($LASTEXITCODE -ne 0) {

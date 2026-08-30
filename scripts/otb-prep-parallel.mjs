@@ -12,6 +12,7 @@ export async function buildWebOtbPrepDatabaseParallel({
   importedAt,
   workerCount = defaultWorkerCount(),
   onFallback = () => undefined,
+  workerFactory = createPrepWorker,
 }) {
   const normalizedGames = pgnGames.map((pgn) => String(pgn || "").trim()).filter(Boolean);
   const fullPgn = normalizedGames.join("\n\n");
@@ -27,7 +28,7 @@ export async function buildWebOtbPrepDatabaseParallel({
   const workers = [];
   try {
     for (const [index, chunk] of chunks.entries()) {
-      workers.push(startPrepWorker({ name, importedAt, chunk, index }));
+      workers.push(startPrepWorker({ name, importedAt, chunk, index, workerFactory }));
     }
     const results = await Promise.all(workers.map(({ result }) => result));
     return mergeWebOtbPrepDatabaseChunks({ name, fullPgn, importedAt, chunks: results });
@@ -90,8 +91,8 @@ export function mergeWebOtbPrepDatabaseChunks({ name, fullPgn, importedAt, chunk
   };
 }
 
-function startPrepWorker({ name, importedAt, chunk, index }) {
-  const worker = new Worker(new URL("./otb-prep-worker.mjs", import.meta.url), {
+function startPrepWorker({ name, importedAt, chunk, index, workerFactory }) {
+  const worker = workerFactory(new URL("./otb-prep-worker.mjs", import.meta.url), {
     name: `otb-prep-${index + 1}`,
     workerData: {
       name,
@@ -118,6 +119,10 @@ function startPrepWorker({ name, importedAt, chunk, index }) {
     });
   });
   return { worker, result };
+}
+
+function createPrepWorker(url, options) {
+  return new Worker(url, options);
 }
 
 function partitionContiguousPgns(pgnGames, workerCount) {

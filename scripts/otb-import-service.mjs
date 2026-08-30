@@ -1,9 +1,10 @@
-import { spawn } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, readdir, rename, stat, writeFile } from "node:fs/promises";
 import { createInterface } from "node:readline";
 import { constants as priorityConstants, setPriority } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { buildWebOtbPrepDatabase } from "./generated/otb-prep-database.js";
 import { buildWebOtbPrepDatabaseParallel } from "./otb-prep-parallel.mjs";
 
@@ -12,11 +13,18 @@ const MAX_PLAYER_NAME_LENGTH = 120;
 const MAX_ERROR_LENGTH = 12_000;
 
 export class OtbImportService {
-  constructor({ root, binaryPath, onLog = () => undefined, spawnProcess = spawn }) {
+  constructor({
+    root,
+    binaryPath,
+    onLog = () => undefined,
+    spawnProcess = spawn,
+    terminateProcessTree = terminateCollectorProcessTree,
+  }) {
     this.root = root;
     this.binaryPath = binaryPath;
     this.onLog = onLog;
     this.spawnProcess = spawnProcess;
+    this.terminateProcessTree = terminateProcessTree;
     this.jobs = new Map();
     this.processes = new Map();
     this.persistQueues = new Map();
@@ -51,6 +59,10 @@ export class OtbImportService {
         }
         const legacyArtifact =
           persisted.status === "completed" ? extractOtbImportArtifact(persisted) : null;
+        const staleCollectorProcess = normalizeCollectorProcess(
+          persisted.collectorProcess,
+          persisted.id,
+        );
         let job = compactOtbImportJob(persisted);
         let artifactStat = await stat(this.getArtifactPath(job.id)).catch(() => null);
         if (legacyArtifact && !artifactStat) {
@@ -59,6 +71,26 @@ export class OtbImportService {
         }
 
         if (job.status === "running" || job.status === "queued") {
+          if (staleCollectorProcess) {
+            try {
+              const stopped = await this.terminateProcessTree({
+                ...staleCollectorProcess,
+                binaryPath: this.binaryPath,
+              });
+              this.onLog(
+                stopped === false
+                  ? `Ignored reused stale OTB PID ${staleCollectorProcess.pid} for ${job.id}`
+                  : `Stopped stale OTB collector ${staleCollectorProcess.pid} for ${job.id}`,
+              );
+            } catch (error) {
+              const cleanupError = new Error(
+                `Could not stop stale OTB collector ${staleCollectorProcess.pid} for ${job.id}.`,
+                { cause: error },
+              );
+              cleanupError.code = "OTB_STALE_CLEANUP_FAILED";
+              throw cleanupError;
+            }
+          }
           if (artifactStat && Number.isInteger(job.gameCount)) {
             job.status = "completed";
             job.error = null;
@@ -87,7 +119,8 @@ export class OtbImportService {
 
         this.jobs.set(job.id, job);
         await this.persist(job);
-      } catch {
+      } catch (error) {
+        if (error?.code === "OTB_STALE_CLEANUP_FAILED") throw error;
         // A damaged historical status file must not prevent new imports.
       }
     }
@@ -116,8 +149,27 @@ export class OtbImportService {
     if (job.status !== "queued" && job.status !== "running") return this.getJob(id);
 
     const child = this.processes.get(id);
+    job.cancellationRequested = true;
+    try {
+      if (child) {
+        await this.terminateProcessTree({
+          child,
+          pid: Number.isInteger(child.pid) ? child.pid : job.collectorProcess?.pid,
+          jobId: job.id,
+          binaryPath: this.binaryPath,
+        });
+      } else if (job.collectorProcess) {
+        await this.terminateProcessTree({
+          ...job.collectorProcess,
+          binaryPath: this.binaryPath,
+        });
+      }
+    } catch (error) {
+      job.cancellationRequested = false;
+      throw error;
+    }
     this.processes.delete(id);
-    if (child && !child.killed) child.kill();
+    job.collectorProcess = null;
     await this.finishFailed(job, "Search stopped.");
     return this.getJob(id);
   }
@@ -144,21 +196,28 @@ export class OtbImportService {
     };
     this.jobs.set(id, job);
     await this.persist(job);
-    this.start(job);
+    await this.start(job);
     return this.getJob(id);
   }
 
-  start(job) {
+  async start(job) {
     const outputPath = join(this.outputRoot, `${job.id}.pgn`);
     const args = buildOtbImporterArgs(job, this.cacheRoot, outputPath);
     const child = this.spawnProcess(this.binaryPath, args, {
+      detached: process.platform !== "win32",
       windowsHide: true,
       stdio: ["ignore", "pipe", "pipe"],
     });
     this.processes.set(job.id, child);
+    job.collectorProcess = Number.isInteger(child.pid)
+      ? {
+          pid: child.pid,
+          jobId: job.id,
+          startedAt: new Date().toISOString(),
+        }
+      : null;
     job.status = "running";
     job.updatedAt = new Date().toISOString();
-    this.persistInBackground(job);
 
     try {
       if (child.pid) {
@@ -190,6 +249,7 @@ export class OtbImportService {
     child.on("exit", (code, signal) => {
       void (async () => {
         this.processes.delete(job.id);
+        job.collectorProcess = null;
         if (code !== 0 || !report) {
           const detail = stderr.trim() || `collector exited with ${signal || `code ${code}`}`;
           return this.finishFailed(job, detail);
@@ -197,12 +257,15 @@ export class OtbImportService {
         await this.finishCompleted(job, report, outputPath);
       })().catch((error) => this.finishFailedInBackground(job, error?.stack || String(error)));
     });
+    // The job-bound PID must be durable before createJob returns so a server
+    // restart can identify and stop the exact collector tree it launched.
+    await this.persist(job);
   }
 
   async finishCompleted(job, report, outputPath) {
-    if (job.status === "completed" || job.status === "failed") return;
+    if (job.status === "completed" || job.status === "failed" || job.cancellationRequested) return;
     const pgn = await readFile(outputPath, "utf8");
-    if (job.status === "failed") return;
+    if (job.status === "failed" || job.cancellationRequested) return;
     const games = parseOtbPgnGames(pgn, job.id);
     const preparedAt = new Date().toISOString();
     const importedAtCandidate = Date.parse(preparedAt);
@@ -258,8 +321,10 @@ export class OtbImportService {
   async finishFailed(job, message) {
     if (job.status === "completed" || job.status === "failed") return;
     this.processes.delete(job.id);
+    job.collectorProcess = null;
     job.status = "failed";
-    job.error = publicOtbImportError(message);
+    job.error = publicOtbImportError(job.cancellationRequested ? "Search stopped." : message);
+    job.cancellationRequested = false;
     job.updatedAt = new Date().toISOString();
     job.completedAt = job.updatedAt;
     await this.persist(job);
@@ -268,7 +333,7 @@ export class OtbImportService {
 
   async persist(job) {
     const destination = join(this.jobRoot, `${job.id}.json`);
-    const snapshot = JSON.stringify(compactOtbImportJob(job));
+    const snapshot = JSON.stringify(persistedOtbImportJob(job));
     const previous = this.persistQueues.get(job.id) ?? Promise.resolve();
     const pending = previous
       .catch(() => undefined)
@@ -342,6 +407,8 @@ export function compactOtbImportJob(job) {
   const games = status.games;
   delete status.games;
   delete status.prepDatabase;
+  delete status.collectorProcess;
+  delete status.cancellationRequested;
   const gameCount = Number.isInteger(status.gameCount)
     ? status.gameCount
     : Array.isArray(games)
@@ -355,6 +422,90 @@ export function compactOtbImportJob(job) {
     artifactAvailable: status.artifactAvailable === true,
     artifactBytes: Number.isFinite(status.artifactBytes) ? status.artifactBytes : null,
   };
+}
+
+export function persistedOtbImportJob(job) {
+  const status = compactOtbImportJob(job);
+  const collectorProcess = normalizeCollectorProcess(job?.collectorProcess, job?.id);
+  return collectorProcess ? { ...status, collectorProcess } : status;
+}
+
+export async function terminateCollectorProcessTree({
+  child = null,
+  pid,
+  jobId,
+  binaryPath,
+  platform = process.platform,
+  runFile = runExecutable,
+  killProcess = process.kill,
+}) {
+  const targetPid = Number(pid);
+  if (!Number.isInteger(targetPid) || targetPid <= 0) {
+    if (child && !child.killed) child.kill("SIGKILL");
+    return;
+  }
+
+  if (platform === "win32") {
+    const terminatorPath = fileURLToPath(
+      new URL("./terminate-collector-process-tree.ps1", import.meta.url),
+    );
+    try {
+      await runFile(
+        "powershell.exe",
+        [
+          "-NoProfile",
+          "-NonInteractive",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          terminatorPath,
+          "-TargetProcessId",
+          String(targetPid),
+          "-ExpectedExecutable",
+          String(binaryPath || ""),
+          "-ExpectedJobId",
+          String(jobId || ""),
+        ],
+        { windowsHide: true, timeout: 15_000 },
+      );
+      return true;
+    } catch (error) {
+      if (!child && (Number(error?.code) === 20 || Number(error?.code) === 21)) return false;
+      throw error;
+    }
+  }
+
+  try {
+    killProcess(-targetPid, "SIGKILL");
+  } catch (error) {
+    if (error?.code !== "ESRCH") throw error;
+  }
+  return true;
+}
+
+function normalizeCollectorProcess(value, expectedJobId) {
+  const pid = Number(value?.pid);
+  const jobId = String(value?.jobId || "");
+  if (!Number.isInteger(pid) || pid <= 0 || !jobId || jobId !== expectedJobId) return null;
+  return {
+    pid,
+    jobId,
+    startedAt: typeof value?.startedAt === "string" ? value.startedAt : null,
+  };
+}
+
+function runExecutable(command, args, options) {
+  return new Promise((resolve, reject) => {
+    execFile(command, args, options, (error, stdout, stderr) => {
+      if (error) {
+        error.stdout = stdout;
+        error.stderr = stderr;
+        reject(error);
+      } else {
+        resolve({ stdout, stderr });
+      }
+    });
+  });
 }
 
 export function extractOtbImportArtifact(job) {

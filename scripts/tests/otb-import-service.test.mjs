@@ -14,6 +14,7 @@ import {
   normalizeOtbImportPayload,
   parseOtbCollectorLine,
   parseOtbPgnGames,
+  terminateCollectorProcessTree,
 } from "../otb-import-service.mjs";
 import { buildWebOtbPrepDatabaseParallel } from "../otb-prep-parallel.mjs";
 
@@ -138,6 +139,166 @@ test("cancels a running phone job and unlocks it durably", async () => {
   } finally {
     await rm(root, { recursive: true, force: true });
   }
+});
+
+test("cancellation terminates the exact collector process tree before unlocking", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-croissant-otb-tree-cancel-"));
+  try {
+    const terminations = [];
+    const service = new OtbImportService({
+      root,
+      binaryPath: join(root, "collect_otb_games.exe"),
+      terminateProcessTree: async (request) => terminations.push(request),
+    });
+    await service.initialize();
+    const job = {
+      id: "otb-tree-stop",
+      status: "running",
+      progress: null,
+      collectorProcess: {
+        pid: 4321,
+        jobId: "otb-tree-stop",
+        startedAt: "2026-08-30T12:00:00.000Z",
+      },
+      updatedAt: "2026-08-30T12:00:00.000Z",
+      completedAt: null,
+      error: null,
+    };
+    const child = { pid: 4321, killed: false };
+    service.jobs.set(job.id, job);
+    service.processes.set(job.id, child);
+
+    const stopped = await service.cancelJob(job.id);
+
+    assert.equal(terminations.length, 1);
+    assert.equal(terminations[0].child, child);
+    assert.equal(terminations[0].pid, 4321);
+    assert.equal(terminations[0].jobId, job.id);
+    assert.equal(terminations[0].binaryPath, service.binaryPath);
+    assert.equal(stopped.status, "failed");
+    assert.equal(stopped.error, "The PC OTB import failed. Search stopped.");
+    const saved = JSON.parse(await readFile(join(root, "jobs", `${job.id}.json`), "utf8"));
+    assert.equal(saved.collectorProcess, undefined);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("startup recovery terminates a persisted job-bound collector tree", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-croissant-otb-stale-tree-"));
+  try {
+    await mkdir(join(root, "jobs"), { recursive: true });
+    await writeFile(
+      join(root, "jobs", "otb-stale.json"),
+      JSON.stringify({
+        id: "otb-stale",
+        status: "running",
+        request: { playerName: "Stale, Player", fromYear: 2020 },
+        collectorProcess: {
+          pid: 7654,
+          jobId: "otb-stale",
+          startedAt: "2026-08-30T11:00:00.000Z",
+        },
+        gameCount: 0,
+        createdAt: "2026-08-30T11:00:00.000Z",
+        updatedAt: "2026-08-30T11:00:00.000Z",
+      }),
+    );
+    const terminations = [];
+    const service = new OtbImportService({
+      root,
+      binaryPath: join(root, "collect_otb_games.exe"),
+      terminateProcessTree: async (request) => terminations.push(request),
+    });
+
+    await service.initialize();
+
+    assert.deepEqual(terminations, [
+      {
+        pid: 7654,
+        jobId: "otb-stale",
+        startedAt: "2026-08-30T11:00:00.000Z",
+        binaryPath: service.binaryPath,
+      },
+    ]);
+    assert.equal(service.getJob("otb-stale").status, "failed");
+    const saved = JSON.parse(await readFile(join(root, "jobs", "otb-stale.json"), "utf8"));
+    assert.equal(saved.collectorProcess, undefined);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("startup refuses to unlock a stale job when its exact collector tree cannot be stopped", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-croissant-otb-stale-failure-"));
+  try {
+    await mkdir(join(root, "jobs"), { recursive: true });
+    await writeFile(
+      join(root, "jobs", "otb-stuck.json"),
+      JSON.stringify({
+        id: "otb-stuck",
+        status: "running",
+        collectorProcess: { pid: 8765, jobId: "otb-stuck" },
+      }),
+    );
+    const service = new OtbImportService({
+      root,
+      binaryPath: join(root, "collect_otb_games.exe"),
+      terminateProcessTree: async () => {
+        throw new Error("synthetic taskkill failure");
+      },
+    });
+
+    await assert.rejects(service.initialize(), (error) => {
+      assert.equal(error.code, "OTB_STALE_CLEANUP_FAILED");
+      assert.match(error.message, /Could not stop stale OTB collector 8765/);
+      return true;
+    });
+    assert.equal(service.getJob("otb-stuck"), null);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("Windows tree termination passes only an exact PID, executable, and job identity", async () => {
+  const calls = [];
+  await terminateCollectorProcessTree({
+    pid: 2468,
+    jobId: "otb-exact-job",
+    binaryPath: "C:\\runtime\\collect_otb_games.exe",
+    platform: "win32",
+    runFile: async (...args) => calls.push(args),
+  });
+
+  assert.equal(calls.length, 1);
+  const [command, args, options] = calls[0];
+  assert.equal(command, "powershell.exe");
+  assert.deepEqual(args.slice(-6), [
+    "-TargetProcessId",
+    "2468",
+    "-ExpectedExecutable",
+    "C:\\runtime\\collect_otb_games.exe",
+    "-ExpectedJobId",
+    "otb-exact-job",
+  ]);
+  assert.equal(options.windowsHide, true);
+  assert.equal(options.timeout, 15_000);
+});
+
+test("restart recovery treats a reused Windows PID as non-matching instead of killing it", async () => {
+  const identityMismatch = new Error("not the collector");
+  identityMismatch.code = 20;
+  const stopped = await terminateCollectorProcessTree({
+    pid: 2468,
+    jobId: "otb-old-job",
+    binaryPath: "C:\\runtime\\collect_otb_games.exe",
+    platform: "win32",
+    runFile: async () => {
+      throw identityMismatch;
+    },
+  });
+
+  assert.equal(stopped, false);
 });
 
 test("splits and summarizes verified PGNs on the PC", () => {
@@ -376,10 +537,55 @@ test("parallel prep construction preserves deterministic games, warnings, and me
   );
 });
 
+test("a synchronous worker creation failure terminates already-created siblings", async () => {
+  const pgnGames = Array.from(
+    { length: 128 },
+    (_, index) =>
+      `[Event "Open ${index + 1}"]\n[Date "2026.08.30"]\n[White "Target, Player"]\n[Black "Opponent"]\n[Result "1-0"]\n\n1. e4 e5 1-0`,
+  );
+  const expected = buildWebOtbPrepDatabase({
+    name: "Worker failure fallback.pgn",
+    pgn: pgnGames.join("\n\n"),
+    importedAt: 1_777_777_777_777,
+  });
+  let creationCount = 0;
+  let terminationCount = 0;
+  const fallbackMessages = [];
+
+  const actual = await buildWebOtbPrepDatabaseParallel({
+    name: "Worker failure fallback.pgn",
+    pgnGames,
+    importedAt: 1_777_777_777_777,
+    workerCount: 2,
+    workerFactory: () => {
+      creationCount += 1;
+      if (creationCount === 2) throw new Error("synthetic Worker constructor failure");
+      return {
+        once() {
+          return this;
+        },
+        async terminate() {
+          terminationCount += 1;
+        },
+      };
+    },
+    onFallback: (message) => fallbackMessages.push(message),
+  });
+
+  assert.equal(creationCount, 2);
+  assert.equal(terminationCount, 1);
+  assert.deepEqual(fallbackMessages, ["synthetic Worker constructor failure"]);
+  assert.deepEqual(actual, expected);
+});
+
 test("the managed home-server runtime includes the parallel prep worker modules", async () => {
   const launcher = await readFile(new URL("../start-home-server.ps1", import.meta.url), "utf8");
-  for (const fileName of ["otb-prep-parallel.mjs", "otb-prep-worker.mjs"]) {
-    assert.match(launcher, new RegExp(`Join-Path \\$PSScriptRoot '${fileName}'`));
-    assert.match(launcher, new RegExp(`Join-Path \\$runtimeRoot '${fileName}'`));
+  for (const fileName of [
+    "otb-prep-parallel.mjs",
+    "otb-prep-worker.mjs",
+    "terminate-collector-process-tree.ps1",
+  ]) {
+    assert.match(launcher, new RegExp(`'${fileName.replaceAll(".", "\\.")}'`));
   }
+  assert.match(launcher, /Join-Path \$runtimeRoot \$fileName/);
 });

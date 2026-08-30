@@ -30,6 +30,17 @@ try {
     -DeploymentMetadataPath $activeAppPath `
     -TargetName "PC phone site"
 
+  # Migrate the scheduled task before touching the deployed runtime. Its
+  # installed launcher never copies files from a checkout, so an older checkout
+  # cannot overwrite this release at the next logon.
+  & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File `
+    (Join-Path $PSScriptRoot "install-home-server-launcher.ps1") `
+    -Port $Port `
+    -ServerRoot $serverRoot | Out-Null
+  if ($LASTEXITCODE -ne 0) {
+    throw "The source-independent home-server launcher could not be installed."
+  }
+
   Push-Location $repoRoot
   try {
     if (-not $SkipBuild) {
@@ -151,13 +162,27 @@ try {
     -PublishContext $publishContext
   Write-EnCroissantJsonAtomically -Path $activeAppPath -Value $activeApp
 
-  if (-not $SkipRestart) {
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File `
-      (Join-Path $PSScriptRoot "start-home-server.ps1") -Port $Port -ForceRestart
-    if ($LASTEXITCODE -ne 0) {
-      throw "The PC phone server did not restart."
-    }
+  $startArguments = @(
+    '-NoProfile',
+    '-NonInteractive',
+    '-ExecutionPolicy',
+    'Bypass',
+    '-File',
+    (Join-Path $PSScriptRoot "start-home-server.ps1"),
+    '-Port',
+    [string]$Port
+  )
+  if ($SkipRestart) {
+    $startArguments += '-StageOnly'
+  } else {
+    $startArguments += '-ForceRestart'
+  }
+  & powershell.exe @startArguments
+  if ($LASTEXITCODE -ne 0) {
+    throw "The PC phone server runtime could not be staged or restarted."
+  }
 
+  if (-not $SkipRestart) {
     & (Get-Command tailscale.exe -ErrorAction Stop).Source serve --bg --yes $Port
     if ($LASTEXITCODE -ne 0) {
       throw "Tailscale Serve could not expose the PC phone site privately."
