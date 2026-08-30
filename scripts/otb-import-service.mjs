@@ -264,6 +264,11 @@ export class OtbImportService {
 
   async finishCompleted(job, report, outputPath) {
     if (job.status === "completed" || job.status === "failed" || job.cancellationRequested) return;
+    if (report?.cancelled !== true && report?.coverageComplete !== true) {
+      job.report = report;
+      await this.finishFailed(job, incompleteOtbCoverageError(report));
+      return;
+    }
     const pgn = await readFile(outputPath, "utf8");
     if (job.status === "failed" || job.cancellationRequested) return;
     const games = parseOtbPgnGames(pgn, job.id);
@@ -562,8 +567,16 @@ export function buildOtbImporterArgs(job, cacheRoot, outputPath) {
   ];
   if (request.fideId) args.push("--fide-id", request.fideId);
   if (!request.sources.lichessBroadcasts) args.push("--no-lichess-broadcasts");
-  if (request.sources.broadcastArchives) args.push("--lichess-broadcast-archives");
-  if (request.sources.communityBroadcasts) args.push("--lichess-community-broadcasts");
+  args.push(
+    request.sources.broadcastArchives
+      ? "--lichess-broadcast-archives"
+      : "--no-lichess-broadcast-archives",
+  );
+  args.push(
+    request.sources.communityBroadcasts
+      ? "--lichess-community-broadcasts"
+      : "--no-lichess-community-broadcasts",
+  );
   if (!request.sources.chessResults) args.push("--no-chess-results");
   if (!request.sources.chessbaseNews) args.push("--no-chessbase-news");
   if (!request.sources.officialPgnIndexes) args.push("--no-official-pgn-indexes");
@@ -704,4 +717,16 @@ function publicOtbImportError(message) {
   const text = String(message || "The PC OTB import failed.").trim();
   if (/player.*full name|fide id|start year|source/i.test(text)) return text.slice(0, 500);
   return `The PC OTB import failed. ${text.slice(0, 500)}`;
+}
+
+function incompleteOtbCoverageError(report) {
+  const coverageGaps = Array.isArray(report?.coverageGaps)
+    ? report.coverageGaps
+        .filter((gap) => typeof gap === "string" && gap.trim())
+        .map((gap) => gap.trim())
+        .slice(0, 12)
+    : [];
+  return coverageGaps.length
+    ? `Not every selected OTB source completed. Coverage gaps: ${coverageGaps.join(" | ")}`
+    : "Not every selected OTB source completed. The collector did not prove complete coverage.";
 }

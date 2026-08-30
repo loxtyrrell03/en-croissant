@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { parseFidePlayers, rankFidePlayers, type FidePlayer } from "@/utils/fidePlayer";
+import {
+    FIDE_IMPORT_FALLBACK_YEAR,
+    getFideImportStartYear,
+    parseFidePlayers,
+    rankFidePlayers,
+    type FidePlayer,
+} from "@/utils/fidePlayer";
 
 const player = (id: number, name: string, extra: Partial<FidePlayer> = {}): FidePlayer => ({
     id,
@@ -39,5 +45,21 @@ describe("FIDE player matching", () => {
             player(3, "CARLSEN, MAGNUS", { standard: 2600 }),
         ];
         expect(rankFidePlayers("Carlsen", players).map(({ id }) => id)).toEqual([3, 2, 1]);
+    });
+
+    it("uses a valid FIDE birth year unless a valid manual year was supplied", () => {
+        const currentYear = 2026;
+        expect(getFideImportStartYear({ year: 2003 }, currentYear)).toBe(2003);
+        expect(getFideImportStartYear({ year: 2003 }, currentYear, 2018)).toBe(2018);
+        expect(getFideImportStartYear({ year: 1899 }, currentYear)).toBe(
+            FIDE_IMPORT_FALLBACK_YEAR,
+        );
+        expect(getFideImportStartYear({ year: 2027 }, currentYear)).toBe(
+            FIDE_IMPORT_FALLBACK_YEAR,
+        );
+        expect(getFideImportStartYear({ year: 2003.5 }, currentYear)).toBe(
+            FIDE_IMPORT_FALLBACK_YEAR,
+        );
+        expect(getFideImportStartYear(null, currentYear)).toBe(FIDE_IMPORT_FALLBACK_YEAR);
     });
 });

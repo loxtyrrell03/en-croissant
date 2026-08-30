@@ -30,6 +30,22 @@
   engine-detail wording, audio mocking, and timestamp expectations. This
   milestone is source-only and was not deployed.
 
+- On 2026-08-30, the phone OTB form adopted the same birth-year rule as the
+  desktop importer: a valid FIDE birth year is the automatic full-career start,
+  unknown or malformed years fall back to 1900, and an explicitly edited year
+  remains authoritative. Identity resolved during Start supplies its year to
+  that same request rather than waiting for React state. All seven source lanes
+  remain default-on and are shown separately, including distinct ChessBase-news
+  and official-index controls. The PC service now refuses to read, transform,
+  or persist a non-cancelled collector result unless it proves complete source
+  coverage, retaining the reported gaps in the failed status while historical
+  completed jobs without the newer fields still load. Focused model, web, and
+  service tests plus type and production builds passed. Explicitly unticking
+  either Lichess archive lane is serialized with its native `--no-*` flag, so
+  the phone controls remain authoritative after the native collector changed
+  those lanes to default-on. This milestone is source-only and was not
+  deployed.
+
 - On 2026-08-30, the phone OTB job service split compact poll status from one
   immutable completed game/prep artifact. Legacy inline jobs migrate
   sequentially and losslessly at startup, `completedAt` is assigned only after

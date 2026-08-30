@@ -58,6 +58,9 @@ export type WebOtbImportJobStatus = {
         cancelled: boolean;
         gamesFound: number;
         duplicatesRemoved: number;
+        /** Optional so completed jobs saved by older phone runtimes remain readable. */
+        coverageComplete?: boolean;
+        coverageGaps?: string[];
     } | null;
     gameCount?: number;
     artifactAvailable?: boolean;

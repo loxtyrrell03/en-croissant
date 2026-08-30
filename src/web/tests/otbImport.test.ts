@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findExactWebFidePlayer } from "../otbImport";
+import { DEFAULT_WEB_OTB_IMPORT_SOURCES, findExactWebFidePlayer } from "../otbImport";
 
 const players = [
     {
@@ -25,5 +25,18 @@ describe("phone OTB identity resolution", () => {
 
     it("does not guess a partial name", () => {
         expect(findExactWebFidePlayer(players, "Tyrrell")).toBeNull();
+    });
+
+    it("defaults every distinct phone source lane on", () => {
+        expect(DEFAULT_WEB_OTB_IMPORT_SOURCES).toEqual({
+            lichessBroadcasts: true,
+            broadcastArchives: true,
+            communityBroadcasts: true,
+            chessResults: true,
+            chessbaseNews: true,
+            officialPgnIndexes: true,
+            twic: true,
+        });
+        expect(Object.keys(DEFAULT_WEB_OTB_IMPORT_SOURCES)).toHaveLength(7);
     });
 });

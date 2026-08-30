@@ -80,6 +80,21 @@ test("builds native collector arguments on the PC", () => {
   assert.equal(args[args.indexOf("--player") + 1], "Player, Example");
 });
 
+test("serializes explicit archive source opt-outs against native default-on sources", () => {
+  const request = normalizeOtbImportPayload({
+    playerName: "Player, Example",
+    fideId: "12345678",
+    fromYear: 2025,
+    sources: { broadcastArchives: false, communityBroadcasts: false },
+  });
+  const args = buildOtbImporterArgs({ id: "otb-opt-out", request }, "C:/cache", "C:/out.pgn");
+
+  assert.ok(args.includes("--no-lichess-broadcast-archives"));
+  assert.ok(args.includes("--no-lichess-community-broadcasts"));
+  assert.ok(!args.includes("--lichess-broadcast-archives"));
+  assert.ok(!args.includes("--lichess-community-broadcasts"));
+});
+
 test("parses collector events and keeps result counts monotonic", () => {
   const first = parseOtbCollectorLine('PROGRESS\t{"jobId":"x","source":"TWIC","gamesFound":14}');
   assert.equal(first.type, "progress");
@@ -454,7 +469,13 @@ test("sets completedAt only after the complete artifact is durably written", asy
 
     await service.finishCompleted(
       job,
-      { playerName: "Player, Target", gamesFound: 1, duplicatesRemoved: 0 },
+      {
+        playerName: "Player, Target",
+        gamesFound: 1,
+        duplicatesRemoved: 0,
+        coverageComplete: true,
+        coverageGaps: [],
+      },
       outputPath,
     );
 
@@ -501,7 +522,12 @@ test("completed compact artifacts preserve consecutive Eventless games exactly",
 
     await service.finishCompleted(
       job,
-      { playerName: "Alpha", gamesFound: consecutiveEventlessPgnFixture.expected.length },
+      {
+        playerName: "Alpha",
+        gamesFound: consecutiveEventlessPgnFixture.expected.length,
+        coverageComplete: true,
+        coverageGaps: [],
+      },
       outputPath,
     );
 
@@ -519,6 +545,59 @@ test("completed compact artifacts preserve consecutive Eventless games exactly",
       artifact.prepDatabase.games.length,
       consecutiveEventlessPgnFixture.expected.length,
     );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("refuses incomplete source coverage before reading or persisting an artifact", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-croissant-otb-incomplete-coverage-"));
+  try {
+    const service = new OtbImportService({ root, binaryPath: join(root, "unused") });
+    await service.initialize();
+    const job = {
+      id: "otb-incomplete-coverage",
+      status: "running",
+      request: { playerName: "Target, Player", fromYear: 2000 },
+      progress: null,
+      report: null,
+      gameCount: 0,
+      artifactAvailable: false,
+      artifactBytes: null,
+      createdAt: "2026-08-30T10:00:00.000Z",
+      updatedAt: "2026-08-30T10:00:00.000Z",
+      completedAt: null,
+      error: null,
+    };
+    service.jobs.set(job.id, job);
+    let artifactWrites = 0;
+    service.persistArtifact = async () => {
+      artifactWrites += 1;
+      return 0;
+    };
+
+    await service.finishCompleted(
+      job,
+      {
+        playerName: "Player, Target",
+        cancelled: false,
+        gamesFound: 12,
+        coverageComplete: false,
+        coverageGaps: ["BritBase: 425 archives not attempted", "ChessBase: unavailable"],
+      },
+      join(service.outputRoot, "missing-by-design.pgn"),
+    );
+
+    assert.equal(job.status, "failed");
+    assert.equal(job.artifactAvailable, false);
+    assert.equal(artifactWrites, 0);
+    assert.match(job.error, /not every selected otb source completed/i);
+    assert.match(job.error, /BritBase: 425 archives not attempted/);
+    assert.match(job.error, /ChessBase: unavailable/);
+    assert.deepEqual(job.report.coverageGaps, [
+      "BritBase: 425 archives not attempted",
+      "ChessBase: unavailable",
+    ]);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

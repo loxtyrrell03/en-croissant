@@ -19,9 +19,13 @@ import {
   IconPlayerStop,
   IconSearch,
 } from "@tabler/icons-react";
-import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { FidePlayerSearchInput } from "@/components/common/FidePlayerSearchInput";
-import type { FidePlayer } from "@/utils/fidePlayer";
+import {
+  FIDE_IMPORT_FALLBACK_YEAR,
+  getFideImportStartYear,
+  type FidePlayer,
+} from "@/utils/fidePlayer";
 import {
   DEFAULT_WEB_OTB_IMPORT_SOURCES,
   cancelWebOtbImport,
@@ -40,7 +44,6 @@ import {
 import classes from "./OnlineGameAnalysisPanel.module.css";
 
 const WEB_OTB_PLAYER_KEY = "encroissant-web-otb-player";
-const FULL_CAREER_FROM_YEAR = 1900;
 
 export default function PhoneOtbImportPanel({
   onAnalyzeGame,
@@ -52,7 +55,7 @@ export default function PhoneOtbImportPanel({
   const [fideId, setFideId] = useState("");
   const [selectedPlayer, setSelectedPlayer] = useState<FidePlayer | null>(null);
   const [fideIdAuto, setFideIdAuto] = useState(false);
-  const [fromYear, setFromYear] = useState(FULL_CAREER_FROM_YEAR);
+  const [fromYear, setFromYear] = useState(FIDE_IMPORT_FALLBACK_YEAR);
   const [sources, setSources] = useState<WebOtbImportSources>(DEFAULT_WEB_OTB_IMPORT_SOURCES);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [job, setJob] = useState<WebOtbImportJob | null>(null);
@@ -61,6 +64,7 @@ export default function PhoneOtbImportPanel({
   const [stopping, setStopping] = useState(false);
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const fromYearManuallyEditedRef = useRef(false);
   const games = useMemo(() => (job ? getWebOtbImportedGames(job) : []), [job]);
   const running = job?.status === "queued" || job?.status === "running";
   const openedInPrep = Boolean(
@@ -84,6 +88,9 @@ export default function PhoneOtbImportPanel({
     setPlayerName(player.name);
     setFideId(String(player.id));
     setFideIdAuto(true);
+    if (!fromYearManuallyEditedRef.current) {
+      setFromYear(getFideImportStartYear(player, currentYear));
+    }
     setError(null);
   }
 
@@ -119,12 +126,14 @@ export default function PhoneOtbImportPanel({
   async function resolveIdentity() {
     let name = playerName.trim();
     let id = fideId.trim();
+    let resolvedPlayer = selectedPlayer;
     const lookup = /^\d+$/.test(name) ? name : /^\d{4,}$/.test(id) ? id : "";
     if (!selectedPlayer && lookup) {
       const player = (await searchWebFidePlayers(lookup)).find(
         (candidate) => String(candidate.id) === lookup,
       );
       if (player) {
+        resolvedPlayer = player;
         selectFidePlayer(player);
         name = player.name;
         id = String(player.id);
@@ -133,12 +142,21 @@ export default function PhoneOtbImportPanel({
     if (!selectedPlayer && !lookup && name) {
       const player = findExactWebFidePlayer(await searchWebFidePlayers(name).catch(() => []), name);
       if (player) {
+        resolvedPlayer = player;
         selectFidePlayer(player);
         name = player.name;
         id = String(player.id);
       }
     }
-    return { name, id };
+    const resolvedFromYear = getFideImportStartYear(
+      resolvedPlayer,
+      currentYear,
+      fromYearManuallyEditedRef.current ? fromYear : null,
+    );
+    if (!fromYearManuallyEditedRef.current && resolvedFromYear !== fromYear) {
+      setFromYear(resolvedFromYear);
+    }
+    return { name, id, fromYear: resolvedFromYear };
   }
 
   async function startSearch() {
@@ -150,7 +168,7 @@ export default function PhoneOtbImportPanel({
       const next = await startWebOtbImport({
         playerName: identity.name,
         fideId: identity.id,
-        fromYear,
+        fromYear: identity.fromYear,
         sources,
       });
       setJob(next);
@@ -236,13 +254,17 @@ export default function PhoneOtbImportPanel({
           disabled={running}
           label="Games since"
           max={currentYear}
-          min={FULL_CAREER_FROM_YEAR}
+          min={FIDE_IMPORT_FALLBACK_YEAR}
           value={fromYear}
-          onChange={(value) => setFromYear(Number(value) || FULL_CAREER_FROM_YEAR)}
+          onChange={(value) => {
+            fromYearManuallyEditedRef.current = true;
+            setFromYear(Number(value) || FIDE_IMPORT_FALLBACK_YEAR);
+          }}
         />
       </Group>
       <Text c="dimmed" size="xs">
-        Defaults to 1900 for a full-career search. Enter a later year only to narrow the import.
+        Defaults to the selected player&apos;s FIDE birth year, or 1900 when it is unavailable.
+        Enter a later year only to narrow the import.
       </Text>
 
       <Button
@@ -273,9 +295,17 @@ export default function PhoneOtbImportPanel({
             setSources={setSources}
           />
           <SourceCheckbox
-            detail="ChessBase news, organiser archives, BritBase and PGN Mentor"
+            detail="Public tournament PGNs linked from ChessBase news coverage"
             disabled={running}
-            label="Public OTB archives"
+            label="ChessBase news PGNs"
+            source="chessbaseNews"
+            sources={sources}
+            setSources={setSources}
+          />
+          <SourceCheckbox
+            detail="Organiser archives, BritBase and PGN Mentor"
+            disabled={running}
+            label="Official public PGN indexes"
             source="officialPgnIndexes"
             sources={sources}
             setSources={setSources}
@@ -347,7 +377,7 @@ export default function PhoneOtbImportPanel({
       {job?.status === "completed" ? (
         <Alert color={games.length > 0 ? "green" : "yellow"} variant="light">
           {games.length > 0
-            ? `${games.length} verified OTB game${games.length === 1 ? "" : "s"} ready from ${job.request.fromYear <= FULL_CAREER_FROM_YEAR ? "the full career" : `since ${job.request.fromYear}`}. ${openedInPrep ? "Loaded in Prep." : "Opening Prep…"}`
+            ? `${games.length} verified OTB game${games.length === 1 ? "" : "s"} ready from ${job.request.fromYear <= FIDE_IMPORT_FALLBACK_YEAR ? "the full career" : `since ${job.request.fromYear}`}. ${openedInPrep ? "Loaded in Prep." : "Opening Prep…"}`
             : "The PC search completed without any usable OTB games."}
         </Alert>
       ) : null}
