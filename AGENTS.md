@@ -67,6 +67,19 @@
   engines, and update the backend preset regression whenever those measured
   values change.
 
+- On 2026-08-30, phone engine launch was made explicitly on-demand for both
+  Stockfish and LC0 after a newer installed home-server runtime lost the
+  `/api/engine/start` route while the analysis task was configured as
+  on-demand-only. Every PC analysis attempt now asks the home server to ensure
+  the scheduled backend is healthy before `/v1/analyze`; completed wake checks
+  are not cached because the backend deliberately exits after being idle.
+  Pausing, switching away from LC0, closing the engine surface, or a phone
+  `pagehide` aborts the active request and explicitly releases the phone LC0
+  session so CUDA workers cannot remain behind. Preserve the lightweight
+  backend's idle exit and the engines' lazy start; source, installed runtime,
+  live phone bundle, endpoint behavior, and zero-idle-process state must be
+  verified separately.
+
 - On 2026-07-25, Outpost's desktop PGN parser stopped overwriting adjacent
   comment blocks at the same position. Chessable exports often put a full
   lesson annotation beside an exporter-only `{-KEY-}` marker, so the old

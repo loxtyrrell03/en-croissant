@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { WebEngineLine } from "../model";
-import { analyzeWithWebStockfish18, dedupeWebStockfishLines } from "../stockfishEngine";
+import {
+    analyzeWithWebStockfish18,
+    dedupeWebStockfishLines,
+    releaseWebLc0Engine,
+} from "../stockfishEngine";
 
 const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const MISSING_FEN = "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1";
@@ -54,6 +58,10 @@ function streamingAnalyzeResponse(...messages: unknown[]) {
     };
 }
 
+function engineWakeResponse() {
+    return { ok: true, status: 200 };
+}
+
 describe("Stockfish phone line updates", () => {
     it("shows the stored evaluation first and lets PC analysis supersede it", async () => {
         const storedEvaluation = {
@@ -69,6 +77,7 @@ describe("Stockfish phone line updates", () => {
         const fetchMock = vi.fn(async (input: URL | RequestInfo) => {
             if (String(input).includes("/v1/cloud-eval"))
                 return jsonResponse(200, storedEvaluation);
+            if (String(input).includes("/api/engine/start")) return engineWakeResponse();
             await new Promise((resolve) => setTimeout(resolve, 10));
             return streamingAnalyzeResponse(
                 {
@@ -89,7 +98,8 @@ describe("Stockfish phone line updates", () => {
         });
 
         expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/cloud-eval?");
-        expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/v1/analyze");
+        expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/api/engine/start");
+        expect(String(fetchMock.mock.calls[2]?.[0])).toContain("/v1/analyze");
         // The saved evaluation renders immediately, then the live search takes over.
         expect(updates[0]?.map((line) => [line.source, line.depth, line.uciMoves[0]])).toEqual([
             ["lichess-cloud", 65, "c2c4"],
@@ -139,6 +149,7 @@ describe("Stockfish phone line updates", () => {
                     pvs: [{ moves: "e7e5", cp: -12 }],
                 });
             }
+            if (String(input).includes("/api/engine/start")) return engineWakeResponse();
             throw new TypeError("PC stream failed");
         });
         vi.stubGlobal("fetch", fetchMock);
@@ -161,6 +172,7 @@ describe("Stockfish phone line updates", () => {
         const fetchMock = vi
             .fn()
             .mockResolvedValueOnce(jsonResponse(404, { error: "No stored cloud evaluation." }))
+            .mockResolvedValueOnce(engineWakeResponse())
             .mockResolvedValueOnce(
                 streamingAnalyzeResponse(
                     {
@@ -181,10 +193,11 @@ describe("Stockfish phone line updates", () => {
             onUpdate: (nextLines) => liveUpdates.push(nextLines),
         });
 
-        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock).toHaveBeenCalledTimes(3);
         expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/cloud-eval?");
-        expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/v1/analyze");
-        expect(JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body))).toMatchObject({
+        expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/api/engine/start");
+        expect(String(fetchMock.mock.calls[2]?.[0])).toContain("/v1/analyze");
+        expect(JSON.parse(String(fetchMock.mock.calls[2]?.[1]?.body))).toMatchObject({
             depth: 70,
             infinite: true,
             performancePreset: "good",
@@ -201,22 +214,25 @@ describe("Stockfish phone line updates", () => {
     });
 
     it("runs LCZero only on the PC and preserves the selected odds network metadata", async () => {
-        const fetchMock = vi.fn().mockResolvedValue(
-            streamingAnalyzeResponse(
-                {
-                    type: "meta",
-                    engine: "LCZero 0.32.1",
-                    engineKind: "lc0",
-                    networkMode: "queen",
-                    networkName: "Queen odds",
-                },
-                {
-                    type: "uci",
-                    line: "info depth 8 multipv 1 score cp -420 nodes 2048 nps 4900 pv e2e4 e7e5",
-                },
-                { type: "done", bestmove: "e2e4" },
-            ),
-        );
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValueOnce(engineWakeResponse())
+            .mockResolvedValueOnce(
+                streamingAnalyzeResponse(
+                    {
+                        type: "meta",
+                        engine: "LCZero 0.32.1",
+                        engineKind: "lc0",
+                        networkMode: "queen",
+                        networkName: "Queen odds",
+                    },
+                    {
+                        type: "uci",
+                        line: "info depth 8 multipv 1 score cp -420 nodes 2048 nps 4900 pv e2e4 e7e5",
+                    },
+                    { type: "done", bestmove: "e2e4" },
+                ),
+            );
         vi.stubGlobal("fetch", fetchMock);
 
         const lines = await analyzeWithWebStockfish18({
@@ -229,9 +245,10 @@ describe("Stockfish phone line updates", () => {
             lc0Network: "queen",
         });
 
-        expect(fetchMock).toHaveBeenCalledTimes(1);
-        expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/analyze");
-        expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/api/engine/start");
+        expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/v1/analyze");
+        expect(JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body))).toMatchObject({
             engineKind: "lc0",
             performancePreset: "eco",
             lc0AutoNetwork: false,
@@ -250,7 +267,9 @@ describe("Stockfish phone line updates", () => {
         const fetchMock = vi
             .fn()
             .mockResolvedValueOnce(jsonResponse(404, { error: "No stored cloud evaluation." }))
+            .mockResolvedValueOnce(engineWakeResponse())
             .mockRejectedValueOnce(new TypeError("socket closed"))
+            .mockResolvedValueOnce(engineWakeResponse())
             .mockResolvedValueOnce(
                 streamingAnalyzeResponse({
                     type: "uci",
@@ -267,9 +286,11 @@ describe("Stockfish phone line updates", () => {
             depth: 70,
         });
 
-        expect(fetchMock).toHaveBeenCalledTimes(3);
-        expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/v1/analyze");
+        expect(fetchMock).toHaveBeenCalledTimes(5);
+        expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/api/engine/start");
         expect(String(fetchMock.mock.calls[2]?.[0])).toContain("/v1/analyze");
+        expect(String(fetchMock.mock.calls[3]?.[0])).toContain("/api/engine/start");
+        expect(String(fetchMock.mock.calls[4]?.[0])).toContain("/v1/analyze");
         expect(lines[0]).toMatchObject({
             executionLocation: "gaming-pc",
             uciMoves: ["g1f3", "d7d5"],
@@ -281,7 +302,9 @@ describe("Stockfish phone line updates", () => {
         const fetchMock = vi
             .fn()
             .mockResolvedValueOnce(jsonResponse(404, { error: "No stored cloud evaluation." }))
+            .mockResolvedValueOnce(engineWakeResponse())
             .mockRejectedValueOnce(new TypeError("first PC stream failed"))
+            .mockResolvedValueOnce(engineWakeResponse())
             .mockRejectedValueOnce(new TypeError("second PC stream failed"));
         const workerConstructor = vi.fn();
         vi.stubGlobal("fetch", fetchMock);
@@ -290,7 +313,7 @@ describe("Stockfish phone line updates", () => {
         await expect(
             analyzeWithWebStockfish18({ fen: PC_ONLY_FEN, multipv: 3, depth: 70 }),
         ).rejects.toThrow("phone analysis is disabled");
-        expect(fetchMock).toHaveBeenCalledTimes(3);
+        expect(fetchMock).toHaveBeenCalledTimes(5);
         expect(workerConstructor).not.toHaveBeenCalled();
     });
 
@@ -336,16 +359,18 @@ describe("Stockfish phone line updates", () => {
     });
 
     it("publishes nothing when a move change cancels a pending lookup and search", async () => {
-        const fetchMock = vi.fn(
-            (_input: URL | RequestInfo, init?: RequestInit) =>
-                new Promise((_resolve, reject) => {
-                    init?.signal?.addEventListener(
-                        "abort",
-                        () => reject(new DOMException("Aborted", "AbortError")),
-                        { once: true },
-                    );
-                }),
-        );
+        const fetchMock = vi.fn((input: URL | RequestInfo, init?: RequestInit) => {
+            if (String(input).includes("/api/engine/start")) {
+                return Promise.resolve(engineWakeResponse());
+            }
+            return new Promise((_resolve, reject) => {
+                init?.signal?.addEventListener(
+                    "abort",
+                    () => reject(new DOMException("Aborted", "AbortError")),
+                    { once: true },
+                );
+            });
+        });
         vi.stubGlobal("fetch", fetchMock);
         const controller = new AbortController();
         const updates: WebEngineLine[][] = [];
@@ -357,13 +382,28 @@ describe("Stockfish phone line updates", () => {
             signal: controller.signal,
             onUpdate: (nextLines) => updates.push(nextLines),
         });
-        await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+        await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
         controller.abort();
 
         await expect(analysis).rejects.toMatchObject({ name: "AbortError" });
         expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/cloud-eval?");
-        expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/v1/analyze");
+        expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/api/engine/start");
+        expect(String(fetchMock.mock.calls[2]?.[0])).toContain("/v1/analyze");
         expect(updates).toEqual([]);
+    });
+
+    it("releases the PC LCZero worker when phone analysis stops", async () => {
+        const fetchMock = vi.fn().mockResolvedValue(engineWakeResponse());
+        vi.stubGlobal("fetch", fetchMock);
+
+        await releaseWebLc0Engine();
+
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/lc0/release");
+        expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: "POST", keepalive: true });
+        expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toEqual({
+            lc0SessionId: "en-croissant-phone",
+        });
     });
 
     it("removes a stale duplicate root move while MultiPV ranks advance depth", () => {

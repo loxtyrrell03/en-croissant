@@ -81,6 +81,19 @@ test("Stockfish proxy restricts actual and preflight CORS to private origins", a
     assert.equal(allowedPreflight.status, 204);
     assert.equal(allowedPreflight.headers.get("access-control-allow-origin"), allowedOrigin);
 
+    const engineStart = await fetch(`${baseUrl}/api/engine/start`, {
+      method: "POST",
+      headers: { Origin: allowedOrigin },
+    });
+    assert.equal(engineStart.status, 200);
+    assert.equal(engineStart.headers.get("access-control-allow-origin"), allowedOrigin);
+    assert.deepEqual(await engineStart.json(), {
+      ok: true,
+      service: "stockfish-18-remote",
+      processId: null,
+      lc0Available: false,
+    });
+
     const rejectedPreflight = await fetch(`${baseUrl}/v1/analyze`, {
       method: "OPTIONS",
       headers: {
@@ -92,7 +105,7 @@ test("Stockfish proxy restricts actual and preflight CORS to private origins", a
     assert.equal(rejectedPreflight.status, 204);
     assert.equal(rejectedPreflight.headers.get("access-control-allow-origin"), null);
 
-    assert.equal(upstreamOrigins.length, 3);
+    assert.equal(upstreamOrigins.length, 4);
     assert.ok(upstreamOrigins.every((origin) => origin === null));
   } finally {
     child?.kill();

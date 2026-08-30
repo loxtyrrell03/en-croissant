@@ -32,6 +32,7 @@ let worker: Worker | null = null;
 let readyPromise: Promise<void> | null = null;
 let activeSearchId = 0;
 let activeRemoteController: AbortController | null = null;
+let remoteEngineWakePromise: Promise<void> | null = null;
 let storedCloudOrigin: string | null = null;
 const listeners = new Set<StockfishLineListener>();
 const storedCloudLineCache = new Map<string, WebEngineLine[]>();
@@ -191,6 +192,7 @@ async function analyzeWithRemoteStockfish18WithRetry(
             await waitForAbortableDelay(REMOTE_STOCKFISH_RETRY_DELAY_MS, request.signal);
 
         try {
+            await ensureRemoteEngineService(request.signal);
             return await analyzeWithRemoteStockfish18(request);
         } catch (error) {
             if (isAbortError(error) || request.signal?.aborted) throw error;
@@ -632,6 +634,49 @@ export function stopWebStockfish18Search() {
     activeRemoteController?.abort();
     activeRemoteController = null;
     postStockfish("stop");
+}
+
+export async function releaseWebLc0Engine() {
+    stopWebStockfish18Search();
+    if (!REMOTE_STOCKFISH_URL) return;
+
+    try {
+        const response = await fetch(`${REMOTE_STOCKFISH_URL}/v1/lc0/release`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ lc0SessionId: WEB_LC0_SESSION_ID }),
+            keepalive: true,
+        });
+        if (!response.ok) {
+            console.warn(`Gaming PC LCZero release returned HTTP ${response.status}.`);
+        }
+    } catch (error) {
+        console.warn("Could not release Gaming PC LCZero.", error);
+    }
+}
+
+async function ensureRemoteEngineService(signal?: AbortSignal) {
+    remoteEngineWakePromise ??= (async () => {
+        const response = await fetch(`${REMOTE_STOCKFISH_URL}/api/engine/start`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: "{}",
+            signal,
+        });
+        // A direct connection to an already-running engine service has no wake
+        // route. Its 404 still proves that the service is available.
+        if (!response.ok && response.status !== 404) {
+            throw new Error(`Gaming PC engine wake returned HTTP ${response.status}.`);
+        }
+    })();
+    const wakePromise = remoteEngineWakePromise;
+    try {
+        await wakePromise;
+    } finally {
+        // The backend intentionally exits after an idle period, so a completed
+        // wake cannot be cached across later analysis sessions.
+        if (remoteEngineWakePromise === wakePromise) remoteEngineWakePromise = null;
+    }
 }
 
 function ensureStockfishReady() {

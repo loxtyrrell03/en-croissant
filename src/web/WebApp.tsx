@@ -291,7 +291,11 @@ import { formatWebEngineScore } from "./engineScore";
 import OnlineGameAnalysisPanel from "./OnlineGameAnalysisPanel";
 import StatsWorkspace from "./StatsWorkspace";
 import { getWebOnlineAnalysisTitle, getWebOnlinePlayerColor } from "./onlineAnalysis";
-import { analyzeWithWebStockfish18, stopWebStockfish18Search } from "./stockfishEngine";
+import {
+  analyzeWithWebStockfish18,
+  releaseWebLc0Engine,
+  stopWebStockfish18Search,
+} from "./stockfishEngine";
 
 type ViewMode = "board" | "stats" | "files";
 type BoardPanelMode = "moves" | "online" | "database" | "prep" | "engine" | "coach";
@@ -4110,6 +4114,7 @@ function EngineUnderBoardPanel({
   useEffect(() => {
     if (!settings.enabled || suspended) {
       stopWebStockfish18Search();
+      if (settings.engineKind === "lc0") void releaseWebLc0Engine();
       setStatus("idle");
       setError(null);
       setStockfishLines([]);
@@ -4168,6 +4173,18 @@ function EngineUnderBoardPanel({
     suspended,
     upcomingFens,
   ]);
+
+  useEffect(() => {
+    const releaseEngine = () => {
+      stopWebStockfish18Search();
+      if (settings.engineKind === "lc0") void releaseWebLc0Engine();
+    };
+    window.addEventListener("pagehide", releaseEngine);
+    return () => {
+      window.removeEventListener("pagehide", releaseEngine);
+      releaseEngine();
+    };
+  }, [settings.engineKind]);
 
   const displayLines = stockfishLines;
   useEffect(() => {
@@ -4391,9 +4408,13 @@ function EngineUnderBoardPanel({
                 { value: "lc0", label: "LCZero 0.32.1" },
               ]}
               value={settings.engineKind}
-              onChange={(value) =>
-                updateSettings({ engineKind: value === "lc0" ? "lc0" : "stockfish" })
-              }
+              onChange={(value) => {
+                const engineKind = value === "lc0" ? "lc0" : "stockfish";
+                if (settings.engineKind === "lc0" && engineKind !== "lc0") {
+                  void releaseWebLc0Engine();
+                }
+                updateSettings({ engineKind });
+              }}
             />
             <Select
               label="Performance"
