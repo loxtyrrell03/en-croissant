@@ -80,6 +80,10 @@
   backend's idle exit and the engines' lazy start; source, installed runtime,
   live phone bundle, endpoint behavior, and zero-idle-process state must be
   verified separately.
+  The canonical private phone origin is `https://lox-pc.tail89d19b.ts.net/`;
+  do not compile phone bundles with the obsolete `gaming-pc` hostname. The
+  guarded publisher starts the on-demand backend before its final engine health
+  probe, then allows the backend and workers to return to their idle-off state.
 
 - On 2026-07-25, Outpost's desktop PGN parser stopped overwriting adjacent
   comment blocks at the same position. Chessable exports often put a full

@@ -1,5 +1,5 @@
 param(
-  [string]$SiteUrl = "https://gaming-pc.tail89d19b.ts.net",
+  [string]$SiteUrl = "https://lox-pc.tail89d19b.ts.net",
   [string]$SiteRoot = "",
   [int]$Port = 8787,
   [switch]$SkipBuild,
@@ -124,8 +124,14 @@ try {
   }
 
   $health = Invoke-RestMethod -Uri "http://127.0.0.1:$Port/api/health" -TimeoutSec 5
+  $stockfishStart = Invoke-RestMethod `
+    -Method Post `
+    -Uri "http://127.0.0.1:$Port/api/engine/start" `
+    -ContentType "application/json" `
+    -Body "{}" `
+    -TimeoutSec 25
   $stockfish = Invoke-RestMethod -Uri "http://127.0.0.1:$Port/v1/health" -TimeoutSec 5
-  if (-not $health.ok -or -not $stockfish.ok) {
+  if (-not $health.ok -or -not $stockfishStart.ok -or -not $stockfish.ok) {
     throw "The PC phone site or Stockfish proxy failed its health check."
   }
   if ([string]$health.deployment.sourceCommit -ne $publishContext.SourceCommit) {
