@@ -25,7 +25,11 @@ import { FidePlayerSearchInput } from "@/components/common/FidePlayerSearchInput
 import { databaseConversionStateAtom } from "@/state/atoms";
 import { getDatabases, type SuccessDatabaseInfo } from "@/utils/db";
 import { getDatabasesDir } from "@/utils/directories";
-import type { FidePlayer } from "@/utils/fidePlayer";
+import {
+  FIDE_IMPORT_FALLBACK_YEAR,
+  getFideImportStartYear,
+  type FidePlayer,
+} from "@/utils/fidePlayer";
 import { searchFidePlayers } from "@/utils/lichess/api";
 import {
   DEFAULT_OTB_IMPORT_SOURCES,
@@ -85,7 +89,7 @@ export default function OtbGameImportPanel({
   const [fideId, setFideId] = useState("");
   const [selectedPlayer, setSelectedPlayer] = useState<FidePlayer | null>(null);
   const [fideIdAuto, setFideIdAuto] = useState(false);
-  const [fromYear, setFromYear] = useState(Math.max(2020, currentYear - 2));
+  const [fromYear, setFromYear] = useState(FIDE_IMPORT_FALLBACK_YEAR);
   const [sources, setSources] = useState<OtbImportSourceSelection>(DEFAULT_OTB_IMPORT_SOURCES);
   const [localPgnPaths, setLocalPgnPaths] = useState<string[]>([]);
   const [saveDatabase, setSaveDatabase] = useState(true);
@@ -103,6 +107,7 @@ export default function OtbGameImportPanel({
   const activeJobIdRef = useRef<string | null>(null);
   const laneStartedAtRef = useRef<Record<string, number>>({});
   const initialNameAppliedRef = useRef(initialPlayerName);
+  const fromYearManuallyEditedRef = useRef(false);
 
   useEffect(() => {
     if (initialPlayerName && (!playerName.trim() || playerName === initialNameAppliedRef.current)) {
@@ -165,6 +170,9 @@ export default function OtbGameImportPanel({
     setPlayerName(player.name);
     setFideId(String(player.id));
     setFideIdAuto(true);
+    if (!fromYearManuallyEditedRef.current) {
+      setFromYear(getFideImportStartYear(player, currentYear));
+    }
   };
 
   const clearSelectedPlayer = () => {
@@ -197,18 +205,42 @@ export default function OtbGameImportPanel({
   const resolveImportIdentity = async () => {
     let name = playerName.trim();
     let id = fideId.trim();
+    let resolvedPlayer = selectedPlayer;
     const lookup = /^\d+$/.test(name) ? name : /^\d{4,}$/.test(id) ? id : "";
     if (!selectedPlayer && lookup) {
       const player = (await searchFidePlayers(lookup)).find(
         (candidate) => String(candidate.id) === lookup,
       );
       if (player) {
+        resolvedPlayer = player;
         selectFidePlayer(player);
         name = player.name;
         id = String(player.id);
       }
     }
-    return { name, id };
+    if (!resolvedPlayer && !lookup && name) {
+      const normalizedName = name.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+      const player = (await searchFidePlayers(name).catch(() => [])).find(
+        (candidate) =>
+          candidate.name.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim() ===
+          normalizedName,
+      );
+      if (player) {
+        resolvedPlayer = player;
+        selectFidePlayer(player);
+        name = player.name;
+        id = String(player.id);
+      }
+    }
+    const resolvedFromYear = getFideImportStartYear(
+      resolvedPlayer,
+      currentYear,
+      fromYearManuallyEditedRef.current ? fromYear : null,
+    );
+    if (!fromYearManuallyEditedRef.current && resolvedFromYear !== fromYear) {
+      setFromYear(resolvedFromYear);
+    }
+    return { name, id, fromYear: resolvedFromYear };
   };
 
   const runImport = async () => {
@@ -217,7 +249,7 @@ export default function OtbGameImportPanel({
     const identity = await resolveImportIdentity();
     setResolvingIdentity(false);
     const jobId = `otb-import-${Date.now()}`;
-    const baseTitle = getOtbImportTitle(identity.name, fromYear);
+    const baseTitle = getOtbImportTitle(identity.name, identity.fromYear);
     const title = shouldSaveDatabase
       ? getUniqueOtbDatabaseTitle(baseTitle, localDatabases)
       : baseTitle;
@@ -238,7 +270,7 @@ export default function OtbGameImportPanel({
       jobId,
       playerName: identity.name,
       fideId: identity.id,
-      fromYear,
+      fromYear: identity.fromYear,
       sources,
       localPgnPaths,
       cacheDir,
@@ -291,6 +323,11 @@ export default function OtbGameImportPanel({
           result.cancelled
             ? "The search was stopped before any games were found."
             : sourceError || "No verified public OTB PGNs were found for this player.",
+        );
+      }
+      if (!result.coverageComplete && !result.cancelled) {
+        throw new Error(
+          `The search kept its verified games but did not build a database because not every selected source completed: ${result.coverageGaps.join(" ")}`,
         );
       }
 
@@ -404,8 +441,11 @@ export default function OtbGameImportPanel({
         <NumberInput
           label="Since"
           value={fromYear}
-          onChange={(value) => setFromYear(Number(value) || currentYear - 2)}
-          min={1900}
+          onChange={(value) => {
+            fromYearManuallyEditedRef.current = true;
+            setFromYear(Number(value) || FIDE_IMPORT_FALLBACK_YEAR);
+          }}
+          min={FIDE_IMPORT_FALLBACK_YEAR}
           max={currentYear}
           step={1}
           size={controlSize}
@@ -522,7 +562,11 @@ export default function OtbGameImportPanel({
         </Stack>
       ) : null}
       {report ? (
-        <Alert color={sourceWarnings > 0 ? "yellow" : "green"} variant="light" p={dense ? 6 : "xs"}>
+        <Alert
+          color={!report.coverageComplete || sourceWarnings > 0 ? "yellow" : "green"}
+          variant="light"
+          p={dense ? 6 : "xs"}
+        >
           <Stack gap={3}>
             <Text size="xs" fw={600}>
               {report.cancelled ? "Stopped early · " : ""}
@@ -532,6 +576,11 @@ export default function OtbGameImportPanel({
             {importedGameCount !== null ? (
               <Text size="xs" fw={600}>
                 {importedGameCount} usable games imported into the prep database
+              </Text>
+            ) : null}
+            {!report.coverageComplete ? (
+              <Text size="xs" c="yellow.8">
+                Coverage incomplete · {report.coverageGaps.join(" · ")}
               </Text>
             ) : null}
             {report.sources.map((source) => (

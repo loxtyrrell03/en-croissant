@@ -451,6 +451,20 @@ impl TempGame {
         self.event_name = Some(study_event);
     }
 
+    fn has_meaningful_zero_move_metadata(&self) -> bool {
+        [
+            self.white_name.as_deref(),
+            self.black_name.as_deref(),
+            self.event_name.as_deref(),
+            self.site_name.as_deref(),
+            self.date.as_deref(),
+            self.round.as_deref(),
+        ]
+        .into_iter()
+        .any(|value| clean_import_header(value).is_some())
+            || self.fen.is_some()
+    }
+
     pub fn insert_to_db(&self, db: &mut SqliteConnection) -> Result<(), diesel::result::Error> {
         let pawn_home = get_pawn_home(self.position.board());
 
@@ -526,12 +540,18 @@ struct Importer {
     game: TempGame,
     timestamp: Option<i64>,
     skip: bool,
+    mainline_truncated: bool,
+    valid_mainline_plies: usize,
+    skipped_variation_ends: usize,
     frames: Vec<ImportFrame>,
 }
 
 struct ImportFrame {
     position: Chess,
     pre_move_positions: Vec<Chess>,
+    variation_marker: Option<usize>,
+    valid_plies: usize,
+    truncated: bool,
 }
 
 impl ImportFrame {
@@ -539,6 +559,19 @@ impl ImportFrame {
         Self {
             position,
             pre_move_positions: Vec::new(),
+            variation_marker: None,
+            valid_plies: 0,
+            truncated: false,
+        }
+    }
+
+    fn variation(position: Chess, variation_marker: usize) -> Self {
+        Self {
+            position,
+            pre_move_positions: Vec::new(),
+            variation_marker: Some(variation_marker),
+            valid_plies: 0,
+            truncated: false,
         }
     }
 }
@@ -549,6 +582,9 @@ impl Importer {
             game: TempGame::default(),
             timestamp,
             skip: false,
+            mainline_truncated: false,
+            valid_mainline_plies: 0,
+            skipped_variation_ends: 0,
             frames: Vec::new(),
         }
     }
@@ -560,6 +596,9 @@ impl Visitor for Importer {
     fn begin_game(&mut self) {
         self.game = TempGame::default();
         self.skip = false;
+        self.mainline_truncated = false;
+        self.valid_mainline_plies = 0;
+        self.skipped_variation_ends = 0;
         self.frames.clear();
     }
 
@@ -654,6 +693,9 @@ impl Visitor for Importer {
     }
 
     fn san(&mut self, san: SanPlus) {
+        if self.mainline_truncated {
+            return;
+        }
         if self.frames.is_empty() {
             self.frames
                 .push(ImportFrame::new(self.game.position.clone()));
@@ -661,6 +703,9 @@ impl Visitor for Importer {
 
         let is_mainline = self.frames.len() == 1;
         let frame = self.frames.last_mut().unwrap();
+        if frame.truncated {
+            return;
+        }
         let pre_move_position = frame.position.clone();
 
         let m = san.san.to_move(&frame.position).ok();
@@ -679,19 +724,43 @@ impl Visitor for Importer {
                 .push(encode_move(&m, &frame.position).unwrap());
             frame.pre_move_positions.push(pre_move_position);
             frame.position.play_unchecked(&m);
+            frame.valid_plies = frame.valid_plies.saturating_add(1);
 
             if is_mainline {
                 self.game.position = frame.position.clone();
+                self.valid_mainline_plies = self.valid_mainline_plies.saturating_add(1);
             }
+        } else if is_mainline {
+            // Public archives occasionally end an otherwise usable game with
+            // an impossible source move. Preserve the full legal prefix and
+            // headers/result instead of dropping the entire game. Subsequent
+            // SAN cannot be interpreted once the position diverges, so the
+            // remainder is deliberately ignored.
+            self.mainline_truncated = true;
         } else {
-            self.skip = true;
+            // A broken side line must not invalidate the main line or its
+            // sibling variations. Retain this branch's legal prefix and
+            // ignore only the unreadable remainder until its matching `)`.
+            frame.truncated = true;
         }
     }
 
     fn begin_variation(&mut self) -> Skip {
+        if self.mainline_truncated {
+            return Skip(true);
+        }
         if self.frames.is_empty() {
             self.frames
                 .push(ImportFrame::new(self.game.position.clone()));
+        }
+
+        // Once a branch diverges on an illegal move, positions inside a
+        // nested branch cannot be reconstructed. pgn-reader still calls
+        // `end_variation` after a skipped branch, so no frame is pushed here;
+        // the truncated parent remains active until its own closing `)`.
+        if self.frames.last().is_some_and(|frame| frame.truncated) {
+            self.skipped_variation_ends = self.skipped_variation_ends.saturating_add(1);
+            return Skip(true);
         }
 
         let parent = self.frames.last().unwrap();
@@ -701,15 +770,30 @@ impl Visitor for Importer {
             .cloned()
             .unwrap_or_else(|| parent.position.clone());
 
+        let variation_marker = self.game.moves.len();
         self.game.moves.push(VARIATION_START_MARKER);
-        self.frames.push(ImportFrame::new(variation_start));
+        self.frames
+            .push(ImportFrame::variation(variation_start, variation_marker));
         Skip(false)
     }
 
     fn end_variation(&mut self) {
-        self.game.moves.push(VARIATION_END_MARKER);
+        if self.mainline_truncated {
+            return;
+        }
+        if self.skipped_variation_ends > 0 {
+            self.skipped_variation_ends -= 1;
+            return;
+        }
         if self.frames.len() > 1 {
-            self.frames.pop();
+            let frame = self.frames.pop().unwrap();
+            if frame.truncated && frame.valid_plies == 0 {
+                if let Some(marker) = frame.variation_marker {
+                    self.game.moves.truncate(marker);
+                }
+            } else {
+                self.game.moves.push(VARIATION_END_MARKER);
+            }
         } else {
             self.skip = true;
         }
@@ -720,17 +804,26 @@ impl Visitor for Importer {
     }
 
     fn comment(&mut self, comment: pgn_reader::RawComment<'_>) {
+        if self.mainline_truncated || self.frames.last().is_some_and(|frame| frame.truncated) {
+            return;
+        }
         let comment = String::from_utf8_lossy(comment.as_bytes());
         encode_comment(comment.as_ref(), &mut self.game.moves);
     }
 
     fn nag(&mut self, nag: Nag) {
+        if self.mainline_truncated || self.frames.last().is_some_and(|frame| frame.truncated) {
+            return;
+        }
         encode_nag(&nag.to_string(), &mut self.game.moves);
     }
 
     fn end_game(&mut self) -> Self::Result {
         self.frames.clear();
-        if self.skip {
+        if self.skip
+            || (self.valid_mainline_plies == 0
+                && (self.mainline_truncated || !self.game.has_meaningful_zero_move_metadata()))
+        {
             self.game = TempGame::default();
             None
         } else {
@@ -764,11 +857,11 @@ impl Drop for ActiveConversionGuard<'_> {
     }
 }
 
-fn convert_pgn_inner(
+fn convert_pgn_inner<R: tauri::Runtime>(
     file: &Path,
     db_path: &Path,
     timestamp: Option<f64>,
-    app: &tauri::AppHandle,
+    app: &tauri::AppHandle<R>,
     title: String,
     description: Option<String>,
     state: &tauri::State<'_, AppState>,
@@ -791,6 +884,7 @@ fn convert_pgn_inner(
     };
 
     let description = description.unwrap_or_default();
+    let source_path = file.to_path_buf();
     let extension = file.extension();
 
     // create the database file
@@ -820,21 +914,34 @@ fn convert_pgn_inner(
     let start = Instant::now();
 
     let mut importer = Importer::new(timestamp.map(|t| t.floor() as i64));
+    let mut imported_games = 0usize;
+    let mut parser_failure = None;
     db.transaction::<_, diesel::result::Error, _>(|db| {
-        for (i, game) in BufferedReader::new(uncompressed)
-            .into_iter(&mut importer)
-            .flatten()
-            .flatten()
-            .enumerate()
-        {
-            if i % 1000 == 0 {
-                let elapsed = start.elapsed().as_millis() as u32;
-                // A failed emit (e.g. webview mid-reload) must not panic: the
-                // panic would drop the invoke responder and leave the frontend
-                // awaiting this command forever.
-                let _ = app.emit("convert_progress", (i, elapsed));
+        let mut reader = BufferedReader::new(uncompressed);
+        loop {
+            match reader.read_game(&mut importer) {
+                Ok(Some(Some(game))) => {
+                    if imported_games % 1000 == 0 {
+                        let elapsed = start.elapsed().as_millis() as u32;
+                        // A failed emit (e.g. webview mid-reload) must not panic: the
+                        // panic would drop the invoke responder and leave the frontend
+                        // awaiting this command forever.
+                        let _ = app.emit("convert_progress", (imported_games, elapsed));
+                    }
+                    game.insert_to_db(db)?;
+                    imported_games = imported_games.saturating_add(1);
+                }
+                Ok(Some(None)) => {}
+                Ok(None) => break,
+                Err(error) => {
+                    // Iterator::flatten used to erase this error and could
+                    // repeatedly poll a reader that could no longer advance.
+                    // Commit the valid prefix, finish its database metadata,
+                    // then report the exact interruption to the caller.
+                    parser_failure = Some(error);
+                    break;
+                }
             }
-            game.insert_to_db(db)?;
         }
         Ok(())
     })?;
@@ -867,6 +974,17 @@ fn convert_pgn_inner(
     }
 
     invalidate_database_search_index(state, db_path);
+
+    if let Some(error) = parser_failure {
+        return Err(io::Error::new(
+            error.kind(),
+            format!(
+                "PGN import from {} stopped after preserving {imported_games} successfully parsed game(s): {error}",
+                source_path.display()
+            ),
+        )
+        .into());
+    }
 
     Ok(())
 }
@@ -2685,7 +2803,7 @@ pub async fn delete_empty_games(
 ) -> Result<(), Error> {
     let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
 
-    diesel::delete(games::table.filter(games::ply_count.eq(0))).execute(db)?;
+    delete_nonmeaningful_empty_games(db)?;
 
     let game_count: i64 = games::table.count().get_result(db)?;
     update_info_count(db, "GameCount", game_count)?;
@@ -2693,6 +2811,23 @@ pub async fn delete_empty_games(
     invalidate_database_search_index(&state, &file);
 
     Ok(())
+}
+
+fn delete_nonmeaningful_empty_games(
+    db: &mut SqliteConnection,
+) -> Result<usize, diesel::result::Error> {
+    diesel::delete(
+        games::table
+            .filter(games::ply_count.eq(0))
+            .filter(games::white_id.eq(0))
+            .filter(games::black_id.eq(0))
+            .filter(games::event_id.eq(0))
+            .filter(games::site_id.eq(0))
+            .filter(games::date.is_null())
+            .filter(games::round.is_null())
+            .filter(games::fen.is_null()),
+    )
+    .execute(db)
 }
 
 struct PgnGame {
@@ -3109,6 +3244,42 @@ mod tests {
     }
 
     #[test]
+    fn importer_truncates_only_the_malformed_variation() {
+        let pgn = r#"[Event "Recovery"]
+[Site "S"]
+[White "W"]
+[Black "B"]
+[Result "*"]
+
+1. e4 (1. d4 d5 2. Ke2 (2. c4) 2... e6) (1. c4 e5) e5 *
+"#;
+
+        let game = import_single_game(pgn);
+        let movetext = decode_game_to_movetext(&game.moves, Fen::default()).unwrap();
+
+        assert_eq!(movetext, "1. e4 (1. d4 d5) (1. c4 e5) 1... e5");
+        assert!(!movetext.contains("Ke2"));
+        assert!(!movetext.contains("e6"));
+    }
+
+    #[test]
+    fn importer_removes_a_malformed_variation_without_a_legal_prefix() {
+        let pgn = r#"[Event "Recovery"]
+[White "W"]
+[Black "B"]
+[Result "*"]
+
+1. e4 (1. Ke2 d5) (1. c4 e5) e5 *
+"#;
+
+        let game = import_single_game(pgn);
+        let movetext = decode_game_to_movetext(&game.moves, Fen::default()).unwrap();
+
+        assert_eq!(movetext, "1. e4 (1. c4 e5) 1... e5");
+        assert!(!movetext.contains("()"));
+    }
+
+    #[test]
     fn importer_handles_symbolic_and_numeric_nags() {
         let pgn = r#"[Event "T"]
 [Site "S"]
@@ -3335,6 +3506,154 @@ mod tests {
         assert_eq!(title.as_deref(), Some("Prep import"));
     }
 
+    #[cfg(feature = "headless-otb")]
+    #[test]
+    fn conversion_reports_parser_failure_after_committing_the_valid_prefix() {
+        use tauri::Manager;
+
+        let temp = tempfile::tempdir().expect("create parser failure test directory");
+        let source = temp.path().join("partially-malformed.pgn");
+        let db_path = temp.path().join("partially-malformed.db3");
+        std::fs::write(
+            &source,
+            r#"[Event "Good game"]
+[White "Player, One"]
+[Black "Player, Two"]
+[Result "*"]
+
+1. e4 e5 *
+
+[Event "Broken game"]
+
+{unterminated archive comment
+"#,
+        )
+        .expect("write malformed PGN fixture");
+        let app = tauri::test::mock_builder()
+            .manage(AppState::default())
+            .build(tauri::test::mock_context(tauri::test::noop_assets()))
+            .expect("build mock app");
+        let state = app.state::<AppState>();
+
+        let error = convert_pgn_inner(
+            &source,
+            &db_path,
+            None,
+            app.handle(),
+            "Parser failure test".to_string(),
+            None,
+            &state,
+        )
+        .expect_err("the malformed second record must be surfaced");
+        let message = error.to_string();
+        assert!(message.contains("partially-malformed.pgn"), "{message}");
+        assert!(
+            message.contains("preserving 1 successfully parsed game(s)"),
+            "{message}"
+        );
+
+        let database = rusqlite::Connection::open(&db_path).expect("open partial database");
+        let games: i64 = database
+            .query_row("SELECT COUNT(*) FROM Games", [], |row| row.get(0))
+            .expect("count preserved games");
+        assert_eq!(games, 1);
+    }
+
+    /// Run with:
+    /// `ENCROISSANT_OTB_BENCH_PGN=<path> cargo test --release
+    ///  --features headless-otb benchmarks_full_otb_pgn_conversion -- --ignored --nocapture`
+    ///
+    /// This measures the synchronous conversion that the Import button waits
+    /// for after collection, rather than timing the source collector alone.
+    #[cfg(feature = "headless-otb")]
+    #[test]
+    #[ignore = "requires a real all-source OTB PGN fixture"]
+    fn benchmarks_full_otb_pgn_conversion() {
+        use tauri::Manager;
+
+        let source = std::env::var_os("ENCROISSANT_OTB_BENCH_PGN")
+            .map(PathBuf::from)
+            .expect("set ENCROISSANT_OTB_BENCH_PGN");
+        let temp = tempfile::tempdir().expect("create benchmark directory");
+        let db_path = temp.path().join("otb-benchmark.db3");
+        let app = tauri::test::mock_builder()
+            .manage(AppState::default())
+            .build(tauri::test::mock_context(tauri::test::noop_assets()))
+            .expect("build mock app");
+        let state = app.state::<AppState>();
+        let started = Instant::now();
+        convert_pgn_inner(
+            &source,
+            &db_path,
+            None,
+            app.handle(),
+            "OTB conversion benchmark".to_string(),
+            None,
+            &state,
+        )
+        .expect("convert benchmark PGN");
+        let elapsed = started.elapsed();
+        let database = rusqlite::Connection::open(&db_path).expect("open converted database");
+        let games: i64 = database
+            .query_row("SELECT COUNT(*) FROM Games", [], |row| row.get(0))
+            .expect("count converted games");
+        let unknown_player_games: i64 = database
+            .query_row(
+                "SELECT COUNT(*) FROM Games WHERE WhiteID = 0 OR BlackID = 0",
+                [],
+                |row| row.get(0),
+            )
+            .expect("count converted games with missing players");
+        // Every accepted record gets exactly one provenance header, including
+        // legitimate event-less games. Counting Event would undercount those.
+        let source_game_headers = std::fs::read_to_string(&source)
+            .expect("read benchmark PGN")
+            .lines()
+            .filter(|line| line.starts_with("[OutpostSource \""))
+            .count() as i64;
+        if unknown_player_games > 0 {
+            let mut diagnostic_importer = Importer::new(None);
+            let parsed = BufferedReader::new(File::open(&source).expect("reopen benchmark PGN"))
+                .into_iter(&mut diagnostic_importer)
+                .flatten()
+                .flatten()
+                .collect::<Vec<_>>();
+            for (index, game) in parsed
+                .iter()
+                .enumerate()
+                .filter(|(_, game)| game.white_name.is_none() || game.black_name.is_none())
+            {
+                println!(
+                    "OTB_CONVERT_PHANTOM index={} previous_event={:?} next_event={:?} result={:?} plies={}",
+                    index,
+                    index
+                        .checked_sub(1)
+                        .and_then(|previous| parsed.get(previous))
+                        .and_then(|game| game.event_name.as_deref()),
+                    parsed
+                        .get(index + 1)
+                        .and_then(|game| game.event_name.as_deref()),
+                    game.result,
+                    iter_mainline_move_bytes(&game.moves).count(),
+                );
+            }
+        }
+
+        assert!(games > 0);
+        println!(
+            "OTB_CONVERT_BENCH elapsed_ms={} games={} source_headers={} unknown_player_games={} bytes={}",
+            elapsed.as_millis(),
+            games,
+            source_game_headers,
+            unknown_player_games,
+            std::fs::metadata(&db_path)
+                .expect("database metadata")
+                .len()
+        );
+        assert_eq!(games, source_game_headers);
+        assert_eq!(unknown_player_games, 0);
+    }
+
     fn import_single_game(pgn: &str) -> TempGame {
         let mut importer = Importer::new(None);
         BufferedReader::new(pgn.as_bytes())
@@ -3343,6 +3662,95 @@ mod tests {
             .flatten()
             .next()
             .unwrap()
+    }
+
+    #[test]
+    fn import_keeps_the_legal_prefix_of_a_malformed_archive_game() {
+        let legal_prefix = r#"[Event "Test"]
+[White "Caruana, Fabiano"]
+[Black "Opponent"]
+[Result "1-0"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 1-0
+"#;
+        let malformed = legal_prefix.replace("7. Bb3 1-0", "7. Bb3 Ke7 8. d4 1-0");
+
+        let expected = import_single_game(legal_prefix);
+        let repaired = import_single_game(&malformed);
+        assert_eq!(repaired.moves, expected.moves);
+        assert_eq!(repaired.result, Some("1-0".to_string()));
+        assert_eq!(repaired.event_name, Some("Test".to_string()));
+    }
+
+    #[test]
+    fn import_still_rejects_a_game_with_no_legal_move_prefix() {
+        let pgn = "[Result \"1-0\"]\n\n1. Ke4 1-0\n";
+        let mut importer = Importer::new(None);
+        let imported = BufferedReader::new(pgn.as_bytes())
+            .read_game(&mut importer)
+            .unwrap();
+        assert!(matches!(imported, Some(None)));
+    }
+
+    #[test]
+    fn import_keeps_named_zero_move_stubs_but_rejects_bare_results() {
+        let stub = import_single_game(
+            "[Event \"Adjourned OTB game\"]\n[White \"Player, One\"]\n[Black \"Player, Two\"]\n[Result \"*\"]\n\n*\n",
+        );
+        assert_eq!(stub.event_name.as_deref(), Some("Adjourned OTB game"));
+        assert_eq!(iter_mainline_move_bytes(&stub.moves).count(), 0);
+
+        let event_only = import_single_game("[Event \"Unplayed pairing\"]\n[Result \"*\"]\n\n*\n");
+        assert_eq!(event_only.event_name.as_deref(), Some("Unplayed pairing"));
+
+        let headerless = import_single_game("1. e4 e5 *\n");
+        assert_eq!(iter_mainline_move_bytes(&headerless.moves).count(), 2);
+
+        for raw in ["*\n", "{orphaned source annotation}\n*\n"] {
+            let mut importer = Importer::new(None);
+            let imported = BufferedReader::new(raw.as_bytes())
+                .read_game(&mut importer)
+                .unwrap();
+            assert!(matches!(imported, Some(None)));
+        }
+    }
+
+    #[test]
+    fn empty_cleanup_retains_named_zero_move_stubs_only() {
+        let db = &mut setup_test_db();
+        let mut stub = TempGame::default();
+        stub.event_name = Some("Unplayed pairing".to_string());
+        stub.white_name = Some("Player, One".to_string());
+        stub.black_name = Some("Player, Two".to_string());
+        stub.result = Some("*".to_string());
+        stub.insert_to_db(db).unwrap();
+        TempGame::default().insert_to_db(db).unwrap();
+
+        assert_eq!(games::table.count().get_result::<i64>(db).unwrap(), 2);
+        assert_eq!(delete_nonmeaningful_empty_games(db).unwrap(), 1);
+        let retained: Game = games::table.first(db).unwrap();
+        assert_eq!(retained.ply_count, Some(0));
+        assert_ne!(retained.event_id, 0);
+        assert_ne!(retained.white_id, 0);
+        assert_ne!(retained.black_id, 0);
+    }
+
+    #[test]
+    fn import_rejects_headerless_comment_only_records() {
+        let mut importer = Importer::new(None);
+        let imported = BufferedReader::new(b"{orphaned source annotation}\n".as_slice())
+            .read_game(&mut importer)
+            .unwrap();
+        assert!(matches!(imported, Some(None)));
+    }
+
+    #[test]
+    fn import_rejects_provenance_only_records() {
+        let mut importer = Importer::new(None);
+        let imported = BufferedReader::new(b"[OutpostSource \"Archive\"]\n\n".as_slice())
+            .read_game(&mut importer)
+            .unwrap();
+        assert!(matches!(imported, Some(None)));
     }
 
     #[test]

@@ -14,11 +14,12 @@ use chrono::{Datelike, Utc};
 use futures_util::future::{self, BoxFuture, Either};
 use futures_util::stream::FuturesUnordered;
 use futures_util::{stream, StreamExt};
-use pgn_reader::{BufferedReader as PgnReader, SanPlus, Skip, Visitor};
-use reqwest::header::{COOKIE, SET_COOKIE};
+use pgn_reader::{BufferedReader as PgnReader, RawHeader, SanPlus, Skip, Visitor};
+use reqwest::header::{COOKIE, REFERER, SET_COOKIE};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use shakmaty::{fen::Fen, CastlingMode, Chess, FromSetup, Position, PositionError};
 use specta::Type;
 use tauri_specta::Event;
 
@@ -44,6 +45,7 @@ const LICHESS_COMMUNITY_CACHE_SETTLE: Duration = Duration::from_secs(14 * 24 * 6
 const FOUR_NCL_PGN_INDEX: &str = "https://www.4ncl.co.uk/pgn-replay.htm";
 const FOUR_NCL_ORIGIN: &str = "https://www.4ncl.co.uk";
 const CHESSCOPE_ORIGIN: &str = "https://chesscope.com";
+const BRITBASE_CANONICAL_ORIGIN: &str = "https://www.saund.org.uk";
 const BRITBASE_ORIGINS: &[&str] = &["https://www.saund.org.uk", "https://www.saund.co.uk"];
 const PGN_MENTOR_INDEX: &str = "https://www.pgnmentor.com/files.html?outpost=1";
 const USER_AGENT: &str = "En Croissant OTB importer/0.4";
@@ -51,7 +53,10 @@ const USER_AGENT: &str = "En Croissant OTB importer/0.4";
 /// Bounded fan-out for general archive hosts. Downloads dominate the wall clock,
 /// so archives are fetched concurrently and merged in their sorted order.
 const ARCHIVE_CONCURRENCY: usize = 8;
-const BRITBASE_CONCURRENCY: usize = 32;
+/// BritBase's public host applies anti-hotlink and abuse protection. Keep both
+/// the connection fan-out and request start rate deliberately small.
+const BRITBASE_CONCURRENCY: usize = 2;
+const BRITBASE_MIN_REQUEST_SPACING: Duration = Duration::from_millis(350);
 /// Lichess work keeps modest CPU fan-out, while the network helper below
 /// serializes requests as required by Lichess's published API guidance.
 const LICHESS_CONCURRENCY: usize = 8;
@@ -118,6 +123,10 @@ pub struct OtbImportRequest {
 #[serde(rename_all = "camelCase")]
 pub struct OtbImportSourceReport {
     pub source: String,
+    /// Wall-clock time for this concurrent source lane. This is deliberately
+    /// measured around the whole lane so benchmark reports expose discovery,
+    /// network, index, and merge stalls rather than only download time.
+    pub elapsed_ms: u64,
     pub archives_checked: u32,
     pub cached_archives: u32,
     pub matched_games: u32,
@@ -129,6 +138,7 @@ impl OtbImportSourceReport {
     fn new(source: impl Into<String>) -> Self {
         Self {
             source: source.into(),
+            elapsed_ms: 0,
             archives_checked: 0,
             cached_archives: 0,
             matched_games: 0,
@@ -160,6 +170,8 @@ pub struct OtbImportReport {
     pub duplicates_removed: u32,
     pub suspected_online_games_excluded: u32,
     pub identity_mismatches_excluded: u32,
+    pub coverage_complete: bool,
+    pub coverage_gaps: Vec<String>,
     pub newest_game: Option<OtbImportNewestGame>,
     pub sources: Vec<OtbImportSourceReport>,
 }
@@ -191,6 +203,14 @@ fn lock_cancellations() -> std::sync::MutexGuard<'static, HashMap<String, Arc<At
     cancellation_registry()
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
+fn index_run_for_request(request: &OtbImportRequest) -> index::IndexRun {
+    let signal = lock_cancellations()
+        .get(request.job_id.trim())
+        .cloned()
+        .unwrap_or_else(|| Arc::new(AtomicBool::new(false)));
+    index::IndexRun::new(request.job_id.clone(), signal)
 }
 
 /// Owns one registry entry and removes only that exact run on drop. This keeps
@@ -261,6 +281,76 @@ struct CollectedGame {
     result: String,
     source: String,
     mainline_moves: String,
+    legal_mainline: bool,
+}
+
+#[derive(Clone)]
+struct CandidateGame {
+    game: CollectedGame,
+    target_side: String,
+    identity_fingerprint: String,
+    broad_fingerprint: String,
+    move_fingerprint: Option<String>,
+}
+
+#[derive(Clone, Debug)]
+struct LichessCorpusCoverage {
+    complete_months: HashSet<(u16, u8)>,
+}
+
+impl LichessCorpusCoverage {
+    fn from_complete_months(_from_year: u16, complete_months: HashSet<(u16, u8)>) -> Self {
+        Self { complete_months }
+    }
+
+    fn empty(from_year: u16) -> Self {
+        Self::from_complete_months(from_year, HashSet::new())
+    }
+
+    fn covers_date(&self, date: &str) -> bool {
+        let Some(year) = date.get(..4).and_then(|value| value.parse::<u16>().ok()) else {
+            return false;
+        };
+        let Some(month) = date.get(5..7).and_then(|value| value.parse::<u8>().ok()) else {
+            return false;
+        };
+        self.complete_months.contains(&(year, month))
+    }
+
+    fn covers_year(&self, year: u16) -> bool {
+        (1..=12).all(|month| self.complete_months.contains(&(year, month)))
+    }
+
+    fn covers_timestamp_range(&self, start_millis: i64, end_millis: i64) -> bool {
+        let Some(start) = chrono::DateTime::<Utc>::from_timestamp_millis(start_millis) else {
+            return false;
+        };
+        let Some(end) = chrono::DateTime::<Utc>::from_timestamp_millis(end_millis) else {
+            return false;
+        };
+        if end < start {
+            return false;
+        }
+
+        let mut year = start.year().clamp(0, u16::MAX as i32) as u16;
+        let mut month = start.month() as u8;
+        let end_year = end.year().clamp(0, u16::MAX as i32) as u16;
+        let end_month = end.month() as u8;
+        loop {
+            if !self.complete_months.contains(&(year, month)) {
+                return false;
+            }
+            if (year, month) == (end_year, end_month) {
+                return true;
+            }
+            if month == 12 {
+                year = year.saturating_add(1);
+                month = 1;
+            } else {
+                month += 1;
+            }
+        }
+    }
 }
 
 #[derive(Default)]
@@ -272,9 +362,40 @@ struct Collection {
     duplicates_removed: u32,
     suspected_online_games_excluded: u32,
     identity_mismatches_excluded: u32,
+    candidate_games: Vec<CandidateGame>,
+    capture_candidates: bool,
 }
 
 impl Collection {
+    fn capturing() -> Self {
+        Self {
+            capture_candidates: true,
+            ..Self::default()
+        }
+    }
+
+    /// Source lanes merge concurrently for speed, so their provisional unique
+    /// counts can arrive in any order. Replaying every accepted candidate in a
+    /// total order makes fuzzy-prefix duplicate clusters and the chosen PGN
+    /// byte-for-byte repeatable without serializing network work.
+    fn into_deterministic(mut self) -> Self {
+        self.candidate_games.sort_by(|left, right| {
+            left.target_side
+                .cmp(&right.target_side)
+                .then_with(|| left.game.source.cmp(&right.game.source))
+                .then_with(|| left.game.pgn.cmp(&right.game.pgn))
+        });
+        let mut rebuilt = Self {
+            suspected_online_games_excluded: self.suspected_online_games_excluded,
+            identity_mismatches_excluded: self.identity_mismatches_excluded,
+            ..Self::default()
+        };
+        for candidate in self.candidate_games {
+            add_candidate(&mut rebuilt, candidate);
+        }
+        rebuilt
+    }
+
     /// Folds one archive's scan into the shared collection and reports
     /// `(matched, unique_added)`. Archives download concurrently but are merged
     /// in their sorted order, so deduplication stays deterministic.
@@ -602,7 +723,7 @@ pub async fn collect_otb_games_with_progress(
         .read_timeout(NETWORK_READ_STALL_TIMEOUT)
         .build()
         .map_err(|error| error.to_string())?;
-    let collection = Mutex::new(Collection::default());
+    let collection = Mutex::new(Collection::capturing());
     let mut reports = Vec::new();
     let mut cancelled = false;
 
@@ -765,13 +886,23 @@ pub async fn collect_otb_games_with_progress(
         reports.extend(finished.into_iter().map(|(_, report)| report));
     }
 
+    // Dropping a lane cancels its async future but cannot abort an already
+    // running `spawn_blocking` closure. Drain those cooperatively-cancelled
+    // workers before checkpointing so no stale writer survives this import.
+    index::wait_for_workers(&request.job_id).await;
     // All archive writers have finished, so fold the temporary WAL back into
     // the compact corpus before returning to the desktop or phone service.
     let _ = index::checkpoint(&index_path, false).await;
 
     let mut collection = collection
         .into_inner()
-        .unwrap_or_else(|poisoned| poisoned.into_inner());
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .into_deterministic();
+
+    // Provisional lane counts reflect lock-arrival order. Reconcile them from
+    // the deterministic final winners so the durable report names the source
+    // whose PGN was actually retained and is byte-for-byte repeatable.
+    reconcile_source_reports(&mut reports, &collection.games);
 
     collection.games.sort_by(|left, right| {
         left.date
@@ -779,13 +910,17 @@ pub async fn collect_otb_games_with_progress(
             .then_with(|| left.event.cmp(&right.event))
             .then_with(|| left.white.cmp(&right.white))
             .then_with(|| left.black.cmp(&right.black))
+            .then_with(|| left.result.cmp(&right.result))
+            .then_with(|| left.mainline_moves.cmp(&right.mainline_moves))
+            .then_with(|| left.pgn.cmp(&right.pgn))
+            .then_with(|| left.source.cmp(&right.source))
     });
     write_collection(&request.output_path, &collection.games)?;
 
     let newest_game = collection
         .games
         .iter()
-        .filter(|game| game.date.len() >= 4 && game.date != "????.??.??")
+        .filter(|game| pgn_date_has_numeric_year(&game.date))
         .max_by(|left, right| left.date.cmp(&right.date))
         .map(|game| OtbImportNewestGame {
             date: game.date.clone(),
@@ -795,6 +930,23 @@ pub async fn collect_otb_games_with_progress(
             result: game.result.clone(),
             source: game.source.clone(),
         });
+
+    let mut coverage_gaps = reports
+        .iter()
+        .flat_map(|report| {
+            report
+                .errors
+                .iter()
+                .map(|error| format!("{}: {error}", report.source))
+        })
+        .collect::<Vec<_>>();
+    if cancelled {
+        coverage_gaps
+            .push("Import was cancelled before every selected source finished.".to_string());
+    }
+    coverage_gaps.sort();
+    coverage_gaps.dedup();
+    let coverage_complete = coverage_gaps.is_empty();
 
     emit_progress(
         &app,
@@ -809,8 +961,15 @@ pub async fn collect_otb_games_with_progress(
                 "Search stopped — keeping {} unique OTB games found so far",
                 collection.games.len()
             )
-        } else {
+        } else if coverage_complete {
             format!("Found {} unique OTB games", collection.games.len())
+        } else {
+            format!(
+                "Found {} unique OTB games, but {} coverage gap{} must be resolved",
+                collection.games.len(),
+                coverage_gaps.len(),
+                if coverage_gaps.len() == 1 { "" } else { "s" }
+            )
         },
     );
 
@@ -823,9 +982,17 @@ pub async fn collect_otb_games_with_progress(
         duplicates_removed: collection.duplicates_removed,
         suspected_online_games_excluded: collection.suspected_online_games_excluded,
         identity_mismatches_excluded: collection.identity_mismatches_excluded,
+        coverage_complete,
+        coverage_gaps,
         newest_game,
         sources: reports,
     })
+}
+
+fn pgn_date_has_numeric_year(date: &str) -> bool {
+    date.as_bytes()
+        .get(..4)
+        .is_some_and(|year| year.iter().all(u8::is_ascii_digit))
 }
 
 /// Awaits one source lane, then announces its completion so the UI can mark
@@ -840,7 +1007,9 @@ async fn finish_lane<F>(
 where
     F: std::future::Future<Output = OtbImportSourceReport>,
 {
-    let report = scan.await;
+    let started = Instant::now();
+    let mut report = scan.await;
+    report.elapsed_ms = started.elapsed().as_millis().try_into().unwrap_or(u64::MAX);
     emit_progress(
         app,
         request,
@@ -850,8 +1019,9 @@ where
         1,
         games_len(collection),
         format!(
-            "{} finished — {} unique game{} added",
+            "{} finished in {:.2}s — {} unique game{} added",
             report.source,
+            report.elapsed_ms as f64 / 1_000.0,
             report.unique_games_added,
             if report.unique_games_added == 1 {
                 ""
@@ -939,8 +1109,15 @@ async fn scan_lichess_fide_broadcasts(
     // Lichess broadcast. The live FIDE lane only needs the gap after the newest
     // dump that is actually present in our corpus; downloading dozens of full
     // historical tours again adds no games and dominates new-player searches.
-    let live_cutoff = lichess_live_cutoff(request).await;
-    let mut round_paths = HashSet::new();
+    let corpus_coverage = lichess_corpus_coverage(request).await;
+    // Discover the player's full requested range, then use each tournament's
+    // exact date span to remove only tours whose every month is already in the
+    // indexed dump. A cutoff derived from the player's birth year is unsafe:
+    // the broadcast database starts much later, so the missing pre-database
+    // years otherwise force every already-indexed tour to be downloaded again.
+    let requested_cutoff = format!("{:04}-01-01", request.from_year);
+    let mut seen_round_paths = HashSet::new();
+    let mut uncovered_round_paths = HashSet::new();
 
     for page in 1..=20u32 {
         emit_progress(
@@ -972,101 +1149,61 @@ async fn scan_lichess_fide_broadcasts(
             }
         };
         let html = String::from_utf8_lossy(&bytes).into_owned();
-        let paths = extract_lichess_round_paths_since(&html, &live_cutoff);
+        let paths = extract_lichess_rounds_since(&html, &requested_cutoff);
         let page_reaches_before_range =
             extract_quoted_values(&html, "datetime=")
                 .into_iter()
                 .any(|value| {
                     value
                         .get(..10)
-                        .is_some_and(|date| date < live_cutoff.as_str())
+                        .is_some_and(|date| date < requested_cutoff.as_str())
                 });
         if paths.is_empty() {
             break;
         }
-        let before_count = round_paths.len();
-        round_paths.extend(paths);
+        let before_count = seen_round_paths.len();
+        for (round_path, date) in paths {
+            if !seen_round_paths.insert(round_path.clone()) {
+                continue;
+            }
+            if let Some(date) = date {
+                // The FIDE listing already dates each round. A fully indexed
+                // monthly dump is authoritative for that month, so do not
+                // spend two live requests (metadata + PGN) rediscovering it.
+                if corpus_coverage.covers_date(&date) {
+                    continue;
+                }
+                uncovered_round_paths.insert(round_path);
+            } else {
+                // Undated cards are uncommon; retain the metadata fallback so
+                // they are skipped only after the API proves corpus coverage.
+                uncovered_round_paths.insert(round_path);
+            }
+        }
         let has_next = html.contains("rel=\"next\"") || html.contains("rel='next'");
-        if page_reaches_before_range || !has_next || round_paths.len() == before_count {
+        if page_reaches_before_range || !has_next || seen_round_paths.len() == before_count {
             break;
         }
     }
 
-    let mut round_paths = round_paths.into_iter().collect::<Vec<_>>();
+    let mut round_paths = uncovered_round_paths.into_iter().collect::<Vec<_>>();
     round_paths.sort();
-    let mut tours = HashMap::<String, String>::new();
-    let mut round_lookups = stream::iter(round_paths.into_iter().map(|round_path| {
-        let client = client.clone();
-        let api_url = format!("https://lichess.org/api{round_path}");
-        let cache_path = request
-            .cache_dir
-            .join(cache_file_name("lichess-fide-round", &api_url));
-        async move {
-            let value = async {
-                let (bytes, _) = fetch_lichess_cached_within(
-                    &client,
-                    &api_url,
-                    &cache_path,
-                    Some(PAGE_CACHE_MAX_AGE),
-                )
-                .await?;
-                serde_json::from_slice::<serde_json::Value>(&bytes)
-                    .map_err(|error| error.to_string())
-            }
-            .await;
-            (api_url, value)
-        }
-    }))
-    .buffered(LICHESS_CONCURRENCY);
-    while let Some((api_url, result)) = round_lookups.next().await {
-        let value = match result {
-            Ok(value) => value,
-            Err(error) => {
-                report.errors.push(format!("{api_url}: {error}"));
-                continue;
-            }
-        };
-        let Some(tour_id) = value
-            .get("tour")
-            .and_then(|tour| tour.get("id"))
-            .and_then(serde_json::Value::as_str)
-        else {
-            continue;
-        };
-        let starts_at = value
-            .get("round")
-            .and_then(|round| round.get("startsAt"))
-            .and_then(serde_json::Value::as_i64);
-        if starts_at.is_some_and(|timestamp| timestamp_year(timestamp) < request.from_year) {
-            continue;
-        }
-        tours.insert(
-            tour_id.to_string(),
-            value
-                .get("tour")
-                .and_then(|tour| tour.get("name"))
-                .and_then(serde_json::Value::as_str)
-                .unwrap_or("Lichess broadcast")
-                .to_string(),
-        );
-    }
-
-    let mut tours = tours.into_iter().collect::<Vec<_>>();
-    tours.sort_by(|left, right| left.1.cmp(&right.1));
-    // The six-hour refresh window keeps a currently-running tour fresh while
-    // avoiding the old behavior of redownloading every historical tour for
-    // every search.
-    let specs = tours
-        .into_iter()
-        .map(|(tour_id, _)| {
-            let url = format!("https://lichess.org/api/broadcast/{tour_id}.pgn");
-            let cache_path = request
-                .cache_dir
-                .join(cache_file_name("lichess-broadcast", &url));
-            IndexedArchiveSpec::lichess(url, cache_path)
-        })
-        .collect();
-    scan_indexed_archives(
+    // Round metadata identifies the exact study chapter for this FIDE player.
+    // A chapter export is byte-for-byte the same annotated game as the whole
+    // round export but avoids making Lichess synthesize every board in the
+    // round. Missing/ambiguous metadata and failed chapter downloads retain a
+    // lossless whole-round fallback.
+    let specs = resolve_lichess_round_specs(
+        client,
+        request,
+        round_paths,
+        &corpus_coverage,
+        identity,
+        SOURCE,
+        &mut report,
+    )
+    .await;
+    scan_direct_lichess_pgn_archives(
         client,
         request,
         identity,
@@ -1076,7 +1213,6 @@ async fn scan_lichess_fide_broadcasts(
         &mut report,
         specs,
         Some(GROWING_ARCHIVE_CACHE_MAX_AGE),
-        LICHESS_CONCURRENCY,
     )
     .await;
 
@@ -1180,6 +1316,7 @@ struct IndexedArchiveSpec {
     format: ArchiveFormat,
     optional: bool,
     lichess: bool,
+    lichess_fallback: Option<(String, PathBuf)>,
 }
 
 impl IndexedArchiveSpec {
@@ -1191,6 +1328,7 @@ impl IndexedArchiveSpec {
             format,
             optional: false,
             lichess: false,
+            lichess_fallback: None,
         }
     }
 
@@ -1202,8 +1340,177 @@ impl IndexedArchiveSpec {
             format: ArchiveFormat::Pgn,
             optional: false,
             lichess: true,
+            lichess_fallback: None,
         }
     }
+
+    fn lichess_with_fallback(
+        url: String,
+        cache_path: PathBuf,
+        fallback_url: String,
+        fallback_cache_path: PathBuf,
+    ) -> Self {
+        Self {
+            label: file_name_from_url(&url),
+            url,
+            cache_path,
+            format: ArchiveFormat::Pgn,
+            optional: false,
+            lichess: true,
+            lichess_fallback: Some((fallback_url, fallback_cache_path)),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+struct BritBaseArchiveSpec {
+    url: String,
+    label: String,
+    referer: String,
+    fetch_urls: Vec<String>,
+    index_keys: Vec<String>,
+    cache_paths: Vec<PathBuf>,
+    format: ArchiveFormat,
+}
+
+impl BritBaseArchiveSpec {
+    fn new(url: String, referer: String, cache_dir: &Path) -> Self {
+        let index_keys = britbase_equivalent_urls(&url);
+        let url = canonical_britbase_url(&url);
+        let fetch_urls = index_keys.clone();
+        let cache_paths = index_keys
+            .iter()
+            .map(|key| cache_dir.join(cache_file_name("britbase", key)))
+            .collect();
+        Self {
+            label: file_name_from_url(&url),
+            format: archive_format_from_url(&url),
+            url,
+            referer,
+            fetch_urls,
+            index_keys,
+            cache_paths,
+        }
+    }
+}
+
+#[derive(Default, Debug, Eq, PartialEq)]
+struct BritBaseCoverage {
+    advertised: usize,
+    indexed: usize,
+    raw_cached: usize,
+    live_attempted: usize,
+    live_downloaded: usize,
+    confirmed_absent: usize,
+    forbidden: usize,
+    rate_limited: usize,
+    not_found: usize,
+    http_errors: usize,
+    transport_errors: usize,
+}
+
+impl BritBaseCoverage {
+    fn available(&self) -> usize {
+        self.indexed
+            .saturating_add(self.raw_cached)
+            .saturating_add(self.live_downloaded)
+    }
+
+    fn failed_live_attempts(&self) -> usize {
+        self.live_attempted
+            .saturating_sub(self.live_downloaded)
+            .saturating_sub(self.confirmed_absent)
+    }
+
+    fn accounted(&self) -> usize {
+        self.available().saturating_add(self.confirmed_absent)
+    }
+
+    fn not_attempted(&self) -> usize {
+        self.advertised
+            .saturating_sub(self.accounted())
+            .saturating_sub(self.failed_live_attempts())
+    }
+
+    fn is_complete(&self) -> bool {
+        self.accounted() == self.advertised
+    }
+
+    fn incomplete_message(&self) -> String {
+        let mut statuses = Vec::new();
+        if self.forbidden > 0 {
+            statuses.push(format!("{} returned HTTP 403 Forbidden", self.forbidden));
+        }
+        if self.rate_limited > 0 {
+            statuses.push(format!("{} were rate-limited", self.rate_limited));
+        }
+        if self.not_found > 0 {
+            statuses.push(format!(
+                "{} were confirmed absent after all equivalent URLs returned HTTP 404",
+                self.not_found
+            ));
+        }
+        if self.http_errors > 0 {
+            statuses.push(format!("{} returned other HTTP errors", self.http_errors));
+        }
+        if self.transport_errors > 0 {
+            statuses.push(format!(
+                "{} timed out or had transport errors",
+                self.transport_errors
+            ));
+        }
+        let status_summary = if statuses.is_empty() {
+            "no live archive request was completed".to_string()
+        } else {
+            statuses.join(", ")
+        };
+        format!(
+            "BritBase coverage is partial: {}/{} advertised files are accounted for ({} available from the index/cache/download and {} confirmed absent after every equivalent URL returned 404); {} advertised files were attempted live this run ({} downloaded; {}); {} advertised files were not attempted. These are file counts, not missing-game counts.",
+            self.accounted(),
+            self.advertised,
+            self.available(),
+            self.confirmed_absent,
+            self.live_attempted,
+            self.live_downloaded,
+            status_summary,
+            self.not_attempted(),
+        )
+    }
+}
+
+#[derive(Debug)]
+enum BritBaseFetchFailure {
+    Forbidden,
+    RateLimited(Option<u64>),
+    Http(u16),
+    Transport(String),
+}
+
+impl BritBaseFetchFailure {
+    fn blocks_host(&self) -> bool {
+        matches!(
+            self,
+            Self::Forbidden | Self::RateLimited(_) | Self::Transport(_)
+        ) || matches!(self, Self::Http(status) if *status >= 500)
+    }
+
+    fn description(&self) -> String {
+        match self {
+            Self::Forbidden => "HTTP 403 Forbidden".to_string(),
+            Self::RateLimited(Some(seconds)) => {
+                format!("HTTP 429 Too Many Requests (Retry-After {seconds}s)")
+            }
+            Self::RateLimited(None) => "HTTP 429 Too Many Requests".to_string(),
+            Self::Http(status) => format!("HTTP {status}"),
+            Self::Transport(error) => format!("transport error: {error}"),
+        }
+    }
+}
+
+enum BritBaseLiveFetch {
+    Downloaded(Vec<u8>),
+    NotFound,
+    Failed(BritBaseFetchFailure),
 }
 
 struct IndexedArchiveAttempt {
@@ -1211,6 +1518,149 @@ struct IndexedArchiveAttempt {
     cached: bool,
     outcome: Option<ScanOutcome>,
     error: Option<String>,
+}
+
+/// Scans small Lichess round or tournament PGNs straight from the same persistent
+/// byte cache used by the archive index. Updating the global SQLite indexes for
+/// a transient broadcast can dominate an otherwise sub-second player filter;
+/// direct parsing preserves the exact payload, matcher, freshness, and source
+/// accounting without performing that multi-gigabyte index write.
+async fn scan_direct_lichess_pgn_archives(
+    client: &Client,
+    request: &OtbImportRequest,
+    identity: &Arc<PlayerIdentity>,
+    collection: &Mutex<Collection>,
+    app: &OtbProgressSink<'_>,
+    source: &'static str,
+    report: &mut OtbImportSourceReport,
+    specs: Vec<IndexedArchiveSpec>,
+    max_age: Option<Duration>,
+) {
+    if specs.is_empty() {
+        return;
+    }
+
+    let total = specs.len();
+    let completed = AtomicUsize::new(0);
+    let mut scans = stream::iter(specs.into_iter().map(|spec| {
+        let client = client.clone();
+        let identity = Arc::clone(identity);
+        let completed = &completed;
+        async move {
+            emit_progress(
+                app,
+                request,
+                source,
+                "downloading",
+                completed.load(Ordering::Relaxed),
+                total,
+                games_len(collection),
+                format!("Scanning broadcast {}", spec.url),
+            );
+            let primary = fetch_and_scan_direct_lichess_pgn(
+                &client,
+                Arc::clone(&identity),
+                source,
+                request.from_year,
+                &spec.url,
+                &spec.cache_path,
+                max_age,
+            )
+            .await;
+            let needs_fallback = match &primary {
+                Ok((_, outcome)) => outcome.matched == 0 || outcome.error.is_some(),
+                Err(_) => true,
+            };
+            let result = if needs_fallback {
+                if let Some((fallback_url, fallback_cache_path)) = &spec.lichess_fallback {
+                    match fetch_and_scan_direct_lichess_pgn(
+                        &client,
+                        identity,
+                        source,
+                        request.from_year,
+                        fallback_url,
+                        fallback_cache_path,
+                        max_age,
+                    )
+                    .await
+                    {
+                        Ok((cached, mut outcome)) => {
+                            if outcome.matched == 0 && outcome.error.is_none() {
+                                outcome.error = Some(format!(
+                                    "The exact-game endpoint and whole-round fallback contained no matching game for {}.",
+                                    spec.url
+                                ));
+                            }
+                            Ok((cached, outcome))
+                        }
+                        Err(fallback_error) => match primary {
+                            Ok((cached, mut outcome)) => {
+                                let primary_error = outcome.error.take().unwrap_or_else(|| {
+                                    "the exact-game endpoint contained no matching game".to_string()
+                                });
+                                outcome.error = Some(format!(
+                                    "{primary_error}; whole-round fallback {fallback_url} also failed: {fallback_error}"
+                                ));
+                                Ok((cached, outcome))
+                            }
+                            Err(primary_error) => Err(format!(
+                                "exact-game endpoint failed: {primary_error}; whole-round fallback {fallback_url} also failed: {fallback_error}"
+                            )),
+                        },
+                    }
+                } else {
+                    primary
+                }
+            } else {
+                primary
+            };
+            (spec, result)
+        }
+    }))
+    .buffered(LICHESS_CONCURRENCY);
+
+    while let Some((spec, result)) = scans.next().await {
+        report.archives_checked = report.archives_checked.saturating_add(1);
+        match result {
+            Ok((cached, mut outcome)) => {
+                if cached {
+                    report.cached_archives = report.cached_archives.saturating_add(1);
+                }
+                if let Some(error) = outcome.error.take() {
+                    report.errors.push(format!("{}: {error}", spec.url));
+                }
+                let (matched, added) = merge_into(collection, outcome, source);
+                report.matched_games = report.matched_games.saturating_add(matched);
+                report.unique_games_added = report.unique_games_added.saturating_add(added);
+            }
+            Err(error) => report.errors.push(format!("{}: {error}", spec.url)),
+        }
+        let done = completed.fetch_add(1, Ordering::Relaxed) + 1;
+        emit_progress(
+            app,
+            request,
+            source,
+            "downloading",
+            done,
+            total,
+            games_len(collection),
+            format!("Scanned {done} of {total} broadcasts"),
+        );
+    }
+}
+
+async fn fetch_and_scan_direct_lichess_pgn(
+    client: &Client,
+    identity: Arc<PlayerIdentity>,
+    source: &'static str,
+    from_year: u16,
+    url: &str,
+    cache_path: &Path,
+    max_age: Option<Duration>,
+) -> Result<(bool, ScanOutcome), String> {
+    let (bytes, cached) = fetch_lichess_cached_within(client, url, cache_path, max_age).await?;
+    let outcome = scan_pgn_bytes(bytes, identity, source, url.to_string(), from_year).await;
+    Ok((cached, outcome))
 }
 
 /// Scans a set of archives through the persistent corpus index. Immutable files
@@ -1237,17 +1687,19 @@ async fn scan_indexed_archives(
     }
 
     let index_path = archive_index_path(&request.cache_dir);
+    let index_run = index_run_for_request(request);
     let urls = specs
         .iter()
         .map(|spec| spec.url.clone())
         .collect::<Vec<_>>();
-    let mut indexed = match index::indexed_urls(&index_path, &urls, max_age).await {
-        Ok(indexed) => indexed,
-        Err(error) => {
-            report.errors.push(format!("Archive index: {error}"));
-            HashSet::new()
-        }
-    };
+    let mut indexed =
+        match index::indexed_urls(&index_path, &urls, max_age, index_run.clone()).await {
+            Ok(indexed) => indexed,
+            Err(error) => {
+                report.errors.push(format!("Archive index: {error}"));
+                HashSet::new()
+            }
+        };
     let fresh_pending = specs
         .iter()
         .filter(|spec| !indexed.contains(&spec.url))
@@ -1260,7 +1712,9 @@ async fn scan_indexed_archives(
         // its host is offline. Re-enable all complete stale rows in one query;
         // raw cache entries without index rows are handled locally below.
         if max_age.is_some() {
-            if let Ok(stale_indexed) = index::indexed_urls(&index_path, &urls, None).await {
+            if let Ok(stale_indexed) =
+                index::indexed_urls(&index_path, &urls, None, index_run.clone()).await
+            {
                 indexed.extend(stale_indexed);
             }
         }
@@ -1299,6 +1753,7 @@ async fn scan_indexed_archives(
         let client = client.clone();
         let identity = Arc::clone(identity);
         let index_path = index_path.clone();
+        let index_run = index_run.clone();
         let started = &started;
         let games_found = &games_found;
         async move {
@@ -1330,6 +1785,7 @@ async fn scan_indexed_archives(
                         identity,
                         source,
                         request.from_year,
+                        index_run,
                     )
                     .await;
                     IndexedArchiveAttempt {
@@ -1388,6 +1844,7 @@ async fn scan_indexed_archives(
         Arc::clone(identity),
         source,
         request.from_year,
+        index_run.clone(),
     )
     .await
     {
@@ -1410,6 +1867,7 @@ async fn scan_indexed_archives(
                 let client = client.clone();
                 let identity = Arc::clone(identity);
                 let index_path = index_path.clone();
+                let index_run = index_run.clone();
                 async move {
                     let result = fetch_indexed_archive(&client, &spec, max_age).await;
                     let attempt = match result {
@@ -1422,6 +1880,7 @@ async fn scan_indexed_archives(
                                 identity,
                                 source,
                                 request.from_year,
+                                index_run,
                             )
                             .await;
                             IndexedArchiveAttempt {
@@ -1621,6 +2080,29 @@ async fn scan_chessscope_broadcasts(
 
     let mut game_urls = game_urls.into_iter().collect::<Vec<_>>();
     game_urls.sort_by(|left, right| left.0.cmp(&right.0));
+    // A historical Chessscope row ultimately points back to a Lichess round.
+    // Once the complete year is already inside the verified monthly corpus,
+    // fetching its per-game HTML merely rediscovers data the indexed archive
+    // lane is already querying. Unknown and partially covered years retain the
+    // original page path, so this removes requests without removing coverage.
+    let corpus_coverage = lichess_corpus_coverage(request).await;
+    let discovered_game_pages = game_urls.len();
+    game_urls.retain(|(_, year)| !year.is_some_and(|year| corpus_coverage.covers_year(year)));
+    let corpus_covered_game_pages = discovered_game_pages.saturating_sub(game_urls.len());
+    if corpus_covered_game_pages > 0 {
+        emit_progress(
+            app,
+            request,
+            SOURCE,
+            "discovering",
+            corpus_covered_game_pages,
+            discovered_game_pages,
+            games_len(collection),
+            format!(
+                "Skipped {corpus_covered_game_pages} historical Chessscope pages already covered by the indexed Lichess corpus"
+            ),
+        );
+    }
     let total_game_pages = game_urls.len();
     let mut game_pages = stream::iter(game_urls.into_iter().map(|(game_url, year)| {
         let client = client.clone();
@@ -1698,12 +2180,15 @@ async fn scan_chessscope_broadcasts(
     // Lichess dumps already contain those exact historical broadcasts, so only
     // fetch a round whose game date falls in the not-yet-archived gap. Unknown
     // dates retain the original fetch path to avoid losing any result.
-    let corpus_cutoff = lichess_live_cutoff(request).await;
     for (round_path, (year, game_date)) in rounds {
         // Some older Chessscope rows have a real event year but no exact game
         // date. The whole year is covered only when even its final day precedes
         // the verified monthly cutoff; otherwise retain the original fetch.
-        if chessscope_round_is_in_corpus(year, game_date.as_deref(), &corpus_cutoff) {
+        if game_date
+            .as_deref()
+            .is_some_and(|date| corpus_coverage.covers_date(date))
+            || (game_date.is_none() && year.is_some_and(|year| corpus_coverage.covers_year(year)))
+        {
             continue;
         }
         let recent = year.is_none_or(|year| year >= current_year);
@@ -1713,25 +2198,27 @@ async fn scan_chessscope_broadcasts(
             historical_rounds.push(round_path);
         }
     }
-    let historical_specs = resolve_lichess_tour_specs(
+    let historical_specs = resolve_lichess_round_specs(
         client,
         request,
         historical_rounds,
-        &corpus_cutoff,
+        &corpus_coverage,
+        identity,
         SOURCE,
         &mut report,
     )
     .await;
-    let recent_specs = resolve_lichess_tour_specs(
+    let recent_specs = resolve_lichess_round_specs(
         client,
         request,
         recent_rounds,
-        &corpus_cutoff,
+        &corpus_coverage,
+        identity,
         SOURCE,
         &mut report,
     )
     .await;
-    scan_indexed_archives(
+    scan_direct_lichess_pgn_archives(
         client,
         request,
         identity,
@@ -1741,10 +2228,9 @@ async fn scan_chessscope_broadcasts(
         &mut report,
         historical_specs,
         None,
-        LICHESS_CONCURRENCY,
     )
     .await;
-    scan_indexed_archives(
+    scan_direct_lichess_pgn_archives(
         client,
         request,
         identity,
@@ -1754,24 +2240,25 @@ async fn scan_chessscope_broadcasts(
         &mut report,
         recent_specs,
         Some(GROWING_ARCHIVE_CACHE_MAX_AGE),
-        LICHESS_CONCURRENCY,
     )
     .await;
 
     report
 }
 
-/// Resolves Chessscope's per-round links to tournament aggregates. A player can
-/// have dozens of rounds from only a handful of events; fetching each event PGN
-/// once preserves every round while avoiding repeated large Lichess downloads.
-/// If metadata cannot be resolved, the exact round PGN remains the fallback.
-async fn resolve_lichess_tour_specs(
+/// Resolves already-known player rounds to exact single-game study PGNs.
+/// Lichess round metadata contains the chapter IDs and player FIDE IDs, so a
+/// target chapter preserves every PGN byte and annotation without synthesizing
+/// the other boards. Any missing, ambiguous, or failed exact export falls back
+/// to the whole round in [`scan_direct_lichess_pgn_archives`].
+async fn resolve_lichess_round_specs(
     client: &Client,
     request: &OtbImportRequest,
     round_paths: Vec<String>,
-    corpus_cutoff: &str,
-    source: &'static str,
-    report: &mut OtbImportSourceReport,
+    corpus_coverage: &LichessCorpusCoverage,
+    identity: &Arc<PlayerIdentity>,
+    _source: &'static str,
+    _report: &mut OtbImportSourceReport,
 ) -> Vec<IndexedArchiveSpec> {
     let mut lookups = stream::iter(round_paths.into_iter().map(|round_path| {
         let client = client.clone();
@@ -1779,7 +2266,7 @@ async fn resolve_lichess_tour_specs(
         async move {
             let api_url = format!("https://lichess.org/api{round_path}");
             let cache_path = cache_dir.join(cache_file_name("lichess-fide-round", &api_url));
-            let result: Result<(String, Option<String>), String> = async {
+            let result: Result<(Option<String>, serde_json::Value), String> = async {
                 let (bytes, _) = fetch_lichess_cached_within(
                     &client,
                     &api_url,
@@ -1789,21 +2276,13 @@ async fn resolve_lichess_tour_specs(
                 .await?;
                 let value = serde_json::from_slice::<serde_json::Value>(&bytes)
                     .map_err(|error| error.to_string())?;
-                let tour_id = value
-                    .get("tour")
-                    .and_then(|tour| tour.get("id"))
-                    .and_then(serde_json::Value::as_str)
-                    .map(str::to_string)
-                    .ok_or_else(|| {
-                        "Lichess round metadata did not contain a tour ID".to_string()
-                    })?;
                 let starts_at = value
                     .get("round")
                     .and_then(|round| round.get("startsAt"))
                     .and_then(serde_json::Value::as_i64)
                     .and_then(chrono::DateTime::<Utc>::from_timestamp_millis)
                     .map(|date| date.format("%Y-%m-%d").to_string());
-                Ok((tour_id, starts_at))
+                Ok((starts_at, value))
             }
             .await;
             (round_path, api_url, result)
@@ -1811,41 +2290,107 @@ async fn resolve_lichess_tour_specs(
     }))
     .buffered(LICHESS_CONCURRENCY);
 
-    let mut tour_ids = HashSet::new();
-    let mut fallback_round_ids = HashSet::new();
-    while let Some((round_path, api_url, result)) = lookups.next().await {
+    let mut specs = HashMap::<String, IndexedArchiveSpec>::new();
+    while let Some((round_path, _api_url, result)) = lookups.next().await {
+        let Some(round_id) = round_path.rsplit('/').next().filter(|id| !id.is_empty()) else {
+            continue;
+        };
+        let fallback_url = format!("https://lichess.org/api/broadcast/round/{round_id}.pgn");
+        let fallback_cache_path = request
+            .cache_dir
+            .join(cache_file_name("lichess-broadcast", &fallback_url));
         match result {
-            Ok((_, Some(starts_at))) if starts_at.as_str() < corpus_cutoff => {}
-            Ok((tour_id, _)) => {
-                tour_ids.insert(tour_id);
-            }
-            Err(error) => {
-                report.errors.push(format!("{source} {api_url}: {error}"));
-                if let Some(round_id) = round_path.rsplit('/').next() {
-                    fallback_round_ids.insert(round_id.to_string());
+            Ok((Some(starts_at), _)) if corpus_coverage.covers_date(&starts_at) => {}
+            Ok((_, value)) => {
+                if let Some(chapter_ids) = lichess_player_chapter_ids(&value, identity) {
+                    for chapter_id in chapter_ids {
+                        let url =
+                            format!("https://lichess.org/api/study/{round_id}/{chapter_id}.pgn");
+                        let cache_path = request
+                            .cache_dir
+                            .join(cache_file_name("lichess-broadcast-game", &url));
+                        specs.insert(
+                            url.clone(),
+                            IndexedArchiveSpec::lichess_with_fallback(
+                                url,
+                                cache_path,
+                                fallback_url.clone(),
+                                fallback_cache_path.clone(),
+                            ),
+                        );
+                    }
+                } else {
+                    specs.insert(
+                        fallback_url.clone(),
+                        IndexedArchiveSpec::lichess(fallback_url, fallback_cache_path),
+                    );
                 }
+            }
+            Err(_error) => {
+                // Metadata is only an optimization. The original whole-round
+                // request remains authoritative, so report a coverage error
+                // only if that fallback also fails during the direct scan.
+                specs.insert(
+                    fallback_url.clone(),
+                    IndexedArchiveSpec::lichess(fallback_url, fallback_cache_path),
+                );
             }
         }
     }
 
-    let mut urls = tour_ids
-        .into_iter()
-        .map(|tour_id| format!("https://lichess.org/api/broadcast/{tour_id}.pgn"))
-        .chain(
-            fallback_round_ids
-                .into_iter()
-                .map(|round_id| format!("https://lichess.org/api/broadcast/round/{round_id}.pgn")),
-        )
-        .collect::<Vec<_>>();
-    urls.sort();
-    urls.into_iter()
-        .map(|url| {
-            let cache_path = request
-                .cache_dir
-                .join(cache_file_name("lichess-broadcast", &url));
-            IndexedArchiveSpec::lichess(url, cache_path)
-        })
-        .collect()
+    let mut specs = specs.into_values().collect::<Vec<_>>();
+    specs.sort_by(|left, right| left.url.cmp(&right.url));
+    specs
+}
+
+fn lichess_player_chapter_ids(
+    value: &serde_json::Value,
+    identity: &PlayerIdentity,
+) -> Option<Vec<String>> {
+    let games = value.get("games")?.as_array()?;
+    if games.is_empty() {
+        return None;
+    }
+
+    let mut usable_roster = false;
+    let mut chapter_ids = Vec::new();
+    for game in games {
+        let Some(players) = game.get("players").and_then(serde_json::Value::as_array) else {
+            continue;
+        };
+        let matched = players.iter().any(|player| {
+            let fide_id = roster_fide_id(player);
+            let name = player.get("name").and_then(serde_json::Value::as_str);
+            if fide_id.is_some() || name.is_some() {
+                usable_roster = true;
+            }
+            if let Some(target_id) = identity.fide_id.as_deref() {
+                fide_id.as_deref() == Some(target_id)
+                    || (fide_id.is_none() && name.is_some_and(|name| identity.name_matches(name)))
+            } else {
+                name.is_some_and(|name| identity.name_matches(name))
+            }
+        });
+        if !matched {
+            continue;
+        }
+        let Some(chapter_id) = game
+            .get("id")
+            .and_then(serde_json::Value::as_str)
+            .filter(|id| {
+                id.len() == 8
+                    && id
+                        .chars()
+                        .all(|character| character.is_ascii_alphanumeric())
+            })
+        else {
+            return None;
+        };
+        chapter_ids.push(chapter_id.to_string());
+    }
+    chapter_ids.sort();
+    chapter_ids.dedup();
+    (usable_roster && !chapter_ids.is_empty()).then_some(chapter_ids)
 }
 
 async fn scan_lichess_broadcasts(
@@ -1878,10 +2423,19 @@ async fn scan_lichess_broadcasts(
         }
     };
 
-    let mut urls = list
+    let advertised_urls = list
         .lines()
         .map(str::trim)
         .filter(|url| url.ends_with(".pgn.zst"))
+        .collect::<Vec<_>>();
+    if let Err(error) =
+        validate_discovery_count(SOURCE, LICHESS_BROADCAST_LIST, advertised_urls.len())
+    {
+        report.errors.push(error);
+        return report;
+    }
+    let mut urls = advertised_urls
+        .into_iter()
         .filter(|url| archive_year(url).is_some_and(|year| year >= request.from_year))
         .map(str::to_string)
         .collect::<Vec<_>>();
@@ -1960,6 +2514,7 @@ async fn scan_lichess_community_broadcasts(
                     break;
                 }
             },
+            Err(error) if page > 1 && lichess_listing_is_exhausted(&error) => break,
             Err(error) => {
                 report.errors.push(error);
                 break;
@@ -2005,13 +2560,10 @@ async fn scan_lichess_community_broadcasts(
         ));
     }
 
-    // A tournament with a Chess-Results standings link is already searched by
-    // the dedicated player-name/FIDE-ID lane. Avoid asking Lichess for the same
-    // hundreds of rosters again when that lane is enabled; the community lane
-    // remains responsible for events without a searchable Chess-Results entry.
-    if request.include_chess_results {
-        tours.retain(|tour| !tour.3);
-    }
+    // A Chess-Results standings link is not proof that its concurrent lane
+    // succeeded or served the same (possibly richer/corrected) PGN. Retain
+    // those tours, let the roster reject non-target events cheaply, and let
+    // final deterministic deduplication select the best copy.
     tours.sort_by(|left, right| left.0.cmp(&right.0));
     let total = tours.len();
     let completed = AtomicUsize::new(0);
@@ -2258,6 +2810,10 @@ fn extract_community_tour_page(
         has_next,
         oldest_dated,
     )
+}
+
+fn lichess_listing_is_exhausted(error: &str) -> bool {
+    error.to_ascii_lowercase().contains("resource too old")
 }
 
 /// Downloads a lichess PGN through the paced lane, optionally backed by an
@@ -2590,7 +3146,13 @@ async fn scan_chessbase_news(
         .into_iter()
         .map(|url| {
             let cache_path = request.cache_dir.join(cache_file_name("chessbase", &url));
-            IndexedArchiveSpec::immutable(url, cache_path, ArchiveFormat::Pgn)
+            let mut spec = IndexedArchiveSpec::immutable(url, cache_path, ArchiveFormat::Pgn);
+            // ChessBase articles commonly retain placeholder or retired live
+            // board links ending in `.pgn`. A confirmed 404 contains no online
+            // game to omit; keep retrying it on later imports without turning
+            // a fully completed search into a false coverage failure.
+            spec.optional = true;
+            spec
         })
         .collect();
     scan_indexed_archives(
@@ -2644,8 +3206,9 @@ async fn scan_4ncl_otb_archive(
     // The archive index can lag behind a just-finished congress. Probe the
     // current Easter congress' stable section paths as a small deterministic
     // supplement; missing sections are silently ignored.
-    let year = Utc::now().year();
-    let season = format!(
+    let now = Utc::now();
+    let year = now.year();
+    let easter_season = format!(
         "{:02}{:02}",
         (year - 1).rem_euclid(100),
         year.rem_euclid(100)
@@ -2653,15 +3216,29 @@ async fn scan_4ncl_otb_archive(
     let easter = format!("easter{}", year.rem_euclid(100));
     let mut optional_current_urls = HashSet::new();
     for section in ["open", "u2000", "u1700", "u1500", "u1400", "u1200"] {
-        let url = format!("{FOUR_NCL_ORIGIN}/pgn/{season}/congress/{easter}/{section}.pgn");
+        let url = format!("{FOUR_NCL_ORIGIN}/pgn/{easter_season}/congress/{easter}/{section}.pgn");
         optional_current_urls.insert(url.clone());
         pgn_urls.insert(url);
     }
 
+    // 4NCL seasons roll over in autumn, and the index can advertise the new
+    // directory before a calendar-only calculation would. Refresh whichever
+    // season is newest between the calendar and the observed index so the
+    // first early snapshot of a new season never becomes immutable.
+    let calendar_season = four_ncl_season_for_date(year, now.month());
+    let season = pgn_urls
+        .iter()
+        .filter_map(|url| four_ncl_season_from_url(url))
+        .max()
+        .map_or(calendar_season.clone(), |observed| {
+            observed.max(calendar_season)
+        });
+
     let mut pgn_urls = pgn_urls.into_iter().collect::<Vec<_>>();
     pgn_urls.sort();
-    // Season aggregates keep growing while the season runs, so both their
-    // downloaded bytes and index entries expire together.
+    // Only the current season can still grow. Historical PGNs are immutable;
+    // expiring every indexed season together caused needless host probes and
+    // re-indexing on a brand-new player's first search.
     let specs = pgn_urls
         .into_iter()
         .map(|url| IndexedArchiveSpec {
@@ -2670,9 +3247,13 @@ async fn scan_4ncl_otb_archive(
             format: ArchiveFormat::Pgn,
             optional: optional_current_urls.contains(&url),
             lichess: false,
+            lichess_fallback: None,
             url,
         })
-        .collect();
+        .collect::<Vec<_>>();
+    let (growing_specs, immutable_specs): (Vec<_>, Vec<_>) = specs
+        .into_iter()
+        .partition(|spec| four_ncl_archive_is_growing(&spec.url, &season));
     scan_indexed_archives(
         client,
         request,
@@ -2681,13 +3262,48 @@ async fn scan_4ncl_otb_archive(
         app,
         SOURCE,
         &mut report,
-        specs,
+        immutable_specs,
+        None,
+        ARCHIVE_CONCURRENCY,
+    )
+    .await;
+    scan_indexed_archives(
+        client,
+        request,
+        identity,
+        collection,
+        app,
+        SOURCE,
+        &mut report,
+        growing_specs,
         Some(GROWING_ARCHIVE_CACHE_MAX_AGE),
         ARCHIVE_CONCURRENCY,
     )
     .await;
 
     report
+}
+
+fn four_ncl_archive_is_growing(url: &str, current_season: &str) -> bool {
+    url.to_ascii_lowercase()
+        .contains(&format!("/pgn/{}/", current_season.to_ascii_lowercase()))
+}
+
+fn four_ncl_season_for_date(year: i32, month: u32) -> String {
+    let (start, end) = if month >= 9 {
+        (year, year + 1)
+    } else {
+        (year - 1, year)
+    };
+    format!("{:02}{:02}", start.rem_euclid(100), end.rem_euclid(100))
+}
+
+fn four_ncl_season_from_url(url: &str) -> Option<String> {
+    let lower = url.to_ascii_lowercase();
+    let tail = lower.split("/pgn/").nth(1)?;
+    let season = tail.split('/').next()?;
+    (season.len() == 4 && season.chars().all(|char| char.is_ascii_digit()))
+        .then(|| season.to_string())
 }
 
 fn absolute_4ncl_url(href: &str) -> Option<String> {
@@ -2760,8 +3376,9 @@ async fn scan_britbase(
                 games_so_far,
                 format!("Checking BritBase archive index {}", position + 1),
             );
-            // Each index is mirrored on two hosts; the fallback stays sequential
-            // so a healthy primary is never double-fetched.
+            // These names currently share one physical host. Keep the alias
+            // fallback sequential and normalize every discovered archive to one
+            // stable key so failover never invalidates an existing index row.
             let mut errors = Vec::new();
             let mut checked = 0u32;
             let mut urls = Vec::new();
@@ -2771,7 +3388,11 @@ async fn scan_britbase(
                 match fetch_page_cached(&client, &index_url, &cache_dir, "britbase-index").await {
                     Ok(Some(html)) => {
                         checked += 1;
-                        urls = extract_britbase_archive_urls(&html, from_year, origin);
+                        urls = extract_britbase_archive_urls(
+                            &html,
+                            from_year,
+                            BRITBASE_CANONICAL_ORIGIN,
+                        );
                         loaded = true;
                         break;
                     }
@@ -2783,46 +3404,48 @@ async fn scan_britbase(
                 errors.push(format!(
                     "BritBase index {path} was unavailable from both public hosts"
                 ));
+            } else if urls.is_empty() {
+                errors.push(
+                    validate_discovery_count(
+                        SOURCE,
+                        &format!("{BRITBASE_CANONICAL_ORIGIN}{path}"),
+                        0,
+                    )
+                    .expect_err("an empty BritBase index must be rejected"),
+                );
+            } else {
+                // A failed alias is only fallback telemetry. Once an equivalent
+                // index loads, retaining that transient error would incorrectly
+                // mark the source and whole import as coverage-incomplete.
+                errors.clear();
             }
-            (checked, errors, urls)
+            (
+                checked,
+                errors,
+                format!("{BRITBASE_CANONICAL_ORIGIN}{path}"),
+                urls,
+            )
         }
     }))
     .buffered(ARCHIVE_CONCURRENCY);
 
-    let mut archive_urls = HashSet::new();
-    while let Some((checked, errors, urls)) = indexes.next().await {
+    let mut archive_referers = HashMap::new();
+    while let Some((checked, errors, referer, urls)) = indexes.next().await {
         report.archives_checked = report.archives_checked.saturating_add(checked);
         report.errors.extend(errors);
-        archive_urls.extend(urls);
+        for url in urls {
+            archive_referers
+                .entry(canonical_britbase_url(&url))
+                .or_insert_with(|| (url, referer.clone()));
+        }
     }
 
-    let mut archive_urls = archive_urls.into_iter().collect::<Vec<_>>();
-    archive_urls.sort();
-    let index_path = archive_index_path(&request.cache_dir);
-    let indexed = index::indexed_urls(&index_path, &archive_urls, None)
-        .await
-        .unwrap_or_default();
-    if indexed.len() < archive_urls.len()
-        && !britbase_archive_host_available(client, &archive_urls).await
-    {
-        let discovered = archive_urls.len();
-        archive_urls.retain(|url| indexed.contains(url));
-        report.errors.push(format!(
-            "BritBase's archive hosts did not answer bounded health probes; used {} already indexed files and skipped {}/{} unreachable downloads for this search.",
-            archive_urls.len(),
-            discovered.saturating_sub(archive_urls.len()),
-            discovered,
-        ));
-    }
-    let specs = archive_urls
+    let mut specs = archive_referers
         .into_iter()
-        .map(|url| {
-            let cache_path = request.cache_dir.join(cache_file_name("britbase", &url));
-            let format = archive_format_from_url(&url);
-            IndexedArchiveSpec::immutable(url, cache_path, format)
-        })
-        .collect();
-    scan_indexed_archives(
+        .map(|(_, (url, referer))| BritBaseArchiveSpec::new(url, referer, &request.cache_dir))
+        .collect::<Vec<_>>();
+    specs.sort_by(|left, right| left.url.cmp(&right.url));
+    scan_britbase_archives(
         client,
         request,
         identity,
@@ -2831,70 +3454,343 @@ async fn scan_britbase(
         SOURCE,
         &mut report,
         specs,
-        None,
-        BRITBASE_CONCURRENCY,
     )
     .await;
 
     report
 }
 
-async fn britbase_archive_host_available(client: &Client, archive_urls: &[String]) -> bool {
-    if archive_urls.is_empty() {
-        return true;
+async fn scan_britbase_archives(
+    client: &Client,
+    request: &OtbImportRequest,
+    identity: &Arc<PlayerIdentity>,
+    collection: &Mutex<Collection>,
+    app: &OtbProgressSink<'_>,
+    source: &'static str,
+    report: &mut OtbImportSourceReport,
+    specs: Vec<BritBaseArchiveSpec>,
+) {
+    if specs.is_empty() {
+        if report.errors.is_empty() {
+            report.errors.push(
+                validate_discovery_count(source, "the selected BritBase indexes", 0)
+                    .expect_err("an empty BritBase discovery must be rejected"),
+            );
+        }
+        return;
     }
-    let mut probe_paths = Vec::new();
-    for index in [
-        0,
-        archive_urls.len() / 2,
-        archive_urls.len().saturating_sub(1),
-    ] {
-        let Some(url) = archive_urls.get(index) else {
+
+    let index_path = archive_index_path(&request.cache_dir);
+    let index_run = index_run_for_request(request);
+    let all_index_keys = specs
+        .iter()
+        .flat_map(|spec| spec.index_keys.iter().cloned())
+        .collect::<Vec<_>>();
+    let indexed_keys =
+        match index::indexed_urls(&index_path, &all_index_keys, None, index_run.clone()).await {
+            Ok(indexed) => indexed,
+            Err(error) => {
+                report.errors.push(format!("Archive index: {error}"));
+                HashSet::new()
+            }
+        };
+    let selected_index_keys = specs
+        .iter()
+        .filter_map(|spec| {
+            spec.index_keys
+                .iter()
+                .find(|key| indexed_keys.contains(*key))
+                .map(|key| (spec.url.clone(), key.clone()))
+        })
+        .collect::<Vec<_>>();
+    let key_to_canonical = selected_index_keys
+        .iter()
+        .map(|(canonical, key)| (key.clone(), canonical.clone()))
+        .collect::<HashMap<_, _>>();
+    let query_keys = selected_index_keys
+        .iter()
+        .map(|(_, key)| key.clone())
+        .collect::<Vec<_>>();
+    let mut coverage = BritBaseCoverage {
+        advertised: specs.len(),
+        ..BritBaseCoverage::default()
+    };
+    let mut available = HashSet::new();
+
+    if !query_keys.is_empty() {
+        match index::query_indexed(
+            &index_path,
+            &query_keys,
+            Arc::clone(identity),
+            source,
+            request.from_year,
+            index_run.clone(),
+        )
+        .await
+        {
+            Ok(outcomes) => {
+                for (key, outcome) in outcomes {
+                    let Some(canonical) = key_to_canonical.get(&key) else {
+                        continue;
+                    };
+                    available.insert(canonical.clone());
+                    coverage.indexed += 1;
+                    report.archives_checked = report.archives_checked.saturating_add(1);
+                    report.cached_archives = report.cached_archives.saturating_add(1);
+                    merge_britbase_outcome(collection, report, outcome, source, canonical);
+                }
+            }
+            Err(error) => report.errors.push(format!("Archive index query: {error}")),
+        }
+    }
+
+    // A downloaded file can survive a cancelled or interrupted index write.
+    // Recover every such cache entry before deciding whether network access is
+    // needed; alias-named cache files are recognized without rewriting them.
+    let cache_candidates = specs
+        .iter()
+        .filter(|spec| !available.contains(&spec.url))
+        .cloned()
+        .collect::<Vec<_>>();
+    for spec in &cache_candidates {
+        let Some(bytes) = read_britbase_cache_entry(spec).await else {
             continue;
         };
-        let path = BRITBASE_ORIGINS
-            .iter()
-            .find_map(|origin| url.strip_prefix(origin))
-            .unwrap_or(url);
-        probe_paths.push(path.to_string());
-    }
-    probe_paths.sort();
-    probe_paths.dedup();
-    let required_paths = probe_paths.len() / 2 + 1;
-
-    // A single exceptional file must not unlock more than a thousand archive
-    // requests. Treat a sampled path as reachable when either mirror serves it,
-    // then require a majority of independent paths to pass.
-    let mut requests = stream::iter(probe_paths.into_iter().map(|path| {
-        let client = client.clone();
-        async move {
-            future::join_all(BRITBASE_ORIGINS.iter().map(|origin| {
-                let client = client.clone();
-                let url = format!("{origin}{path}");
-                async move {
-                    tokio::time::timeout(Duration::from_secs(3), client.get(url).send())
-                        .await
-                        .ok()
-                        .and_then(Result::ok)
-                        .is_some_and(|response| response.status().is_success())
-                }
-            }))
-            .await
-            .into_iter()
-            .any(|available| available)
+        let indexed = index::index_and_scan(
+            &index_path,
+            spec.url.clone(),
+            bytes,
+            spec.format,
+            Arc::clone(identity),
+            source,
+            request.from_year,
+            index_run.clone(),
+        )
+        .await;
+        if let Some(error) = indexed.index_error {
+            report
+                .errors
+                .push(format!("{}: index: {error}", spec.label));
         }
-    }))
-    .buffer_unordered(3);
-    let mut available_paths = 0usize;
-    while let Some(available) = requests.next().await {
-        if available {
-            available_paths += 1;
-            if available_paths >= required_paths {
-                return true;
+        available.insert(spec.url.clone());
+        coverage.raw_cached += 1;
+        report.archives_checked = report.archives_checked.saturating_add(1);
+        report.cached_archives = report.cached_archives.saturating_add(1);
+        merge_britbase_outcome(collection, report, indexed.outcome, source, &spec.url);
+    }
+
+    let pending = specs
+        .iter()
+        .filter(|spec| !available.contains(&spec.url))
+        .cloned()
+        .collect::<Vec<_>>();
+    let mut consecutive_host_failures = 0usize;
+    let mut stop_live_fetches = false;
+    let mut diagnostics = Vec::new();
+
+    // Fetch in explicit batches so observing two host-level failures cannot
+    // accidentally start a third request while the stream buffer refills.
+    for batch in pending.chunks(BRITBASE_CONCURRENCY) {
+        let results = future::join_all(batch.iter().cloned().map(|spec| {
+            let client = client.clone();
+            async move {
+                let result = fetch_britbase_archive(&client, &spec).await;
+                (spec, result)
+            }
+        }))
+        .await;
+
+        for (spec, result) in results {
+            coverage.live_attempted += 1;
+            report.archives_checked = report.archives_checked.saturating_add(1);
+            emit_progress(
+                app,
+                request,
+                source,
+                "downloading",
+                coverage.live_attempted,
+                pending.len(),
+                games_len(collection),
+                format!(
+                    "Tried {} of {} missing BritBase archives",
+                    coverage.live_attempted,
+                    pending.len()
+                ),
+            );
+            match result {
+                BritBaseLiveFetch::Downloaded(bytes) => {
+                    consecutive_host_failures = 0;
+                    coverage.live_downloaded += 1;
+                    available.insert(spec.url.clone());
+                    let indexed = index::index_and_scan(
+                        &index_path,
+                        spec.url.clone(),
+                        bytes,
+                        spec.format,
+                        Arc::clone(identity),
+                        source,
+                        request.from_year,
+                        index_run.clone(),
+                    )
+                    .await;
+                    if let Some(error) = indexed.index_error {
+                        report
+                            .errors
+                            .push(format!("{}: index: {error}", spec.label));
+                    }
+                    merge_britbase_outcome(collection, report, indexed.outcome, source, &spec.url);
+                }
+                BritBaseLiveFetch::NotFound => {
+                    consecutive_host_failures = 0;
+                    coverage.not_found += 1;
+                    coverage.confirmed_absent += 1;
+                    if diagnostics.len() < 3 {
+                        diagnostics.push(format!(
+                            "{}: every equivalent URL returned HTTP 404 Not Found",
+                            spec.url
+                        ));
+                    }
+                }
+                BritBaseLiveFetch::Failed(failure) => {
+                    let blocks_host = failure.blocks_host();
+                    let rate_limited = matches!(failure, BritBaseFetchFailure::RateLimited(_));
+                    match &failure {
+                        BritBaseFetchFailure::Forbidden => coverage.forbidden += 1,
+                        BritBaseFetchFailure::RateLimited(_) => coverage.rate_limited += 1,
+                        BritBaseFetchFailure::Http(_) => coverage.http_errors += 1,
+                        BritBaseFetchFailure::Transport(_) => coverage.transport_errors += 1,
+                    }
+                    if diagnostics.len() < 3 {
+                        diagnostics.push(format!("{}: {}", spec.url, failure.description()));
+                    }
+                    if blocks_host {
+                        consecutive_host_failures += 1;
+                    } else {
+                        consecutive_host_failures = 0;
+                    }
+                    stop_live_fetches |= rate_limited;
+                }
             }
         }
+        if stop_live_fetches || consecutive_host_failures >= BRITBASE_CONCURRENCY {
+            break;
+        }
     }
-    false
+
+    if !coverage.is_complete() {
+        let mut message = coverage.incomplete_message();
+        if !diagnostics.is_empty() {
+            message.push_str(" Examples: ");
+            message.push_str(&diagnostics.join("; "));
+        }
+        report.errors.push(message);
+    }
+}
+
+fn merge_britbase_outcome(
+    collection: &Mutex<Collection>,
+    report: &mut OtbImportSourceReport,
+    mut outcome: ScanOutcome,
+    source: &'static str,
+    url: &str,
+) {
+    if let Some(error) = outcome.error.take() {
+        report.errors.push(format!("{url}: {error}"));
+    }
+    let (matched, added) = merge_into(collection, outcome, source);
+    report.matched_games = report.matched_games.saturating_add(matched);
+    report.unique_games_added = report.unique_games_added.saturating_add(added);
+}
+
+async fn read_britbase_cache_entry(spec: &BritBaseArchiveSpec) -> Option<Vec<u8>> {
+    for path in &spec.cache_paths {
+        if let Some(bytes) = read_cache_entry(path, None).await {
+            return Some(bytes);
+        }
+    }
+    None
+}
+
+fn britbase_request(
+    client: &Client,
+    spec: &BritBaseArchiveSpec,
+    url: &str,
+) -> reqwest::RequestBuilder {
+    client.get(url).header(REFERER, &spec.referer)
+}
+
+async fn fetch_britbase_archive(client: &Client, spec: &BritBaseArchiveSpec) -> BritBaseLiveFetch {
+    for url in &spec.fetch_urls {
+        take_britbase_slot().await;
+        let response = match britbase_request(client, spec, url).send().await {
+            Ok(response) => response,
+            Err(error) => {
+                return BritBaseLiveFetch::Failed(BritBaseFetchFailure::Transport(
+                    error.to_string(),
+                ))
+            }
+        };
+        let status = response.status();
+        if status == reqwest::StatusCode::NOT_FOUND {
+            continue;
+        }
+        if status == reqwest::StatusCode::FORBIDDEN {
+            return BritBaseLiveFetch::Failed(BritBaseFetchFailure::Forbidden);
+        }
+        if status == reqwest::StatusCode::TOO_MANY_REQUESTS {
+            let retry_after = retry_after_seconds(&response);
+            hold_britbase_lane(Duration::from_secs(retry_after.unwrap_or(60)));
+            return BritBaseLiveFetch::Failed(BritBaseFetchFailure::RateLimited(retry_after));
+        }
+        if !status.is_success() {
+            return BritBaseLiveFetch::Failed(BritBaseFetchFailure::Http(status.as_u16()));
+        }
+        let bytes = match response.bytes().await {
+            Ok(bytes) => bytes.to_vec(),
+            Err(error) => {
+                return BritBaseLiveFetch::Failed(BritBaseFetchFailure::Transport(
+                    error.to_string(),
+                ))
+            }
+        };
+        if let Some(cache_path) = spec.cache_paths.first() {
+            write_cache_entry(cache_path, &bytes).await;
+        }
+        return BritBaseLiveFetch::Downloaded(bytes);
+    }
+    BritBaseLiveFetch::NotFound
+}
+
+async fn take_britbase_slot() {
+    loop {
+        let now = Instant::now();
+        let wait = {
+            let mut gate = BRITBASE_LANE_GATE
+                .lock()
+                .unwrap_or_else(|error| error.into_inner());
+            match gate.filter(|open_at| *open_at > now) {
+                Some(open_at) => Some(open_at.saturating_duration_since(now)),
+                None => {
+                    *gate = Some(now + BRITBASE_MIN_REQUEST_SPACING);
+                    None
+                }
+            }
+        };
+        match wait {
+            Some(delay) => tokio::time::sleep(delay).await,
+            None => return,
+        }
+    }
+}
+
+fn hold_britbase_lane(delay: Duration) {
+    let open_at = Instant::now() + delay;
+    let mut gate = BRITBASE_LANE_GATE
+        .lock()
+        .unwrap_or_else(|error| error.into_inner());
+    if gate.is_none_or(|existing| existing < open_at) {
+        *gate = Some(open_at);
+    }
 }
 
 async fn scan_pgn_mentor(
@@ -2986,7 +3882,12 @@ async fn scan_twic(
             return report;
         }
     };
-    let mut archives = parse_twic_archive_links(&page)
+    let parsed_archives = parse_twic_archive_links(&page);
+    if let Err(error) = validate_discovery_count(SOURCE, TWIC_ARCHIVE, parsed_archives.len()) {
+        report.errors.push(error);
+        return report;
+    }
+    let mut archives = parsed_archives
         .into_iter()
         .filter(|archive| {
             archive
@@ -3021,6 +3922,15 @@ async fn scan_twic(
     .await;
 
     report
+}
+
+fn validate_discovery_count(source: &str, index_url: &str, count: usize) -> Result<(), String> {
+    if count > 0 {
+        return Ok(());
+    }
+    Err(format!(
+        "{index_url}: {source} discovery returned no usable archive links; refusing to treat a possible challenge or changed index page as complete coverage"
+    ))
 }
 
 /// Downloads an artifact that never changes once published, reusing the cached
@@ -3338,9 +4248,18 @@ async fn get_lichess_with_backoff(client: &Client, url: &str) -> Result<Vec<u8>,
             hold_lichess_lane(Duration::from_secs(retry_seconds.max(1)));
             Err(format!("Lichess returned {status} for {url}"))
         }
+        Ok(response) if response.status().is_client_error() => {
+            let status = response.status();
+            let body = response.text().await.unwrap_or_default();
+            let body = body.split_whitespace().collect::<Vec<_>>().join(" ");
+            let body = body.chars().take(240).collect::<String>();
+            Err(if body.is_empty() {
+                format!("Lichess returned {status} for {url}")
+            } else {
+                format!("Lichess returned {status} for {url}: {body}")
+            })
+        }
         Ok(response) => response
-            .error_for_status()
-            .map_err(|error| error.to_string())?
             .bytes()
             .await
             .map(|bytes| bytes.to_vec())
@@ -3415,6 +4334,7 @@ fn hold_lichess_lane(delay: Duration) {
     }
 }
 
+static BRITBASE_LANE_GATE: Mutex<Option<Instant>> = Mutex::new(None);
 static LICHESS_LANE_GATE: Mutex<Option<Instant>> = Mutex::new(None);
 static LICHESS_REQUEST_LANE: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 static LICHESS_FAILED_HOSTS: OnceLock<Mutex<HashSet<String>>> = OnceLock::new();
@@ -3553,6 +4473,7 @@ fn scan_pgn_reader<R: BufRead>(
         }
 
         let canonical_pgn = canonicalize_target_name(&game, side, &identity.canonical_name);
+        let canonical_pgn = sanitize_pgn_headers(&canonical_pgn);
         let canonical_pgn = add_provenance_headers(&canonical_pgn, source, source_url);
         outcome.games.push(PendingGame {
             pgn: canonical_pgn,
@@ -3563,118 +4484,78 @@ fn scan_pgn_reader<R: BufRead>(
 }
 
 fn add_game(collection: &mut Collection, pgn: String, source: &str, target_side: &str) {
+    let Some(candidate) = prepare_candidate(pgn, source, target_side) else {
+        return;
+    };
+    if collection.capture_candidates {
+        collection.candidate_games.push(candidate.clone());
+    }
+    add_candidate(collection, candidate);
+}
+
+/// Performs the expensive header, legality, and movetext work exactly once.
+/// The concurrent capture pass can still maintain live unique counts, while
+/// deterministic replay reuses this prepared record instead of parsing every
+/// accepted PGN a second time after all source lanes finish.
+fn prepare_candidate(pgn: String, source: &str, target_side: &str) -> Option<CandidateGame> {
     let headers = parse_headers(&pgn);
-    let white = header(&headers, "White").unwrap_or("Unknown").to_string();
-    let black = header(&headers, "Black").unwrap_or("Unknown").to_string();
+    let white = header(&headers, "White")?.trim();
+    let black = header(&headers, "Black")?.trim();
+    // Stateful public exporters occasionally emit a torn tail containing the
+    // target name and a result but no opponent (or vice versa). It is not a
+    // reconstructable game and strict readers turn it into an Unknown-player
+    // phantom, so require the two player identities every real pairing has.
+    if white.is_empty() || black.is_empty() {
+        return None;
+    }
+    let white = white.to_string();
+    let black = black.to_string();
     let date = header(&headers, "Date").unwrap_or("????.??.??").to_string();
     let event = header(&headers, "Event")
         .unwrap_or("Unknown event")
         .to_string();
+    let round = header(&headers, "Round").unwrap_or("");
+    let site = header(&headers, "Site").unwrap_or("");
     let result = header(&headers, "Result").unwrap_or("*").to_string();
     let moves = normalized_movetext(&pgn);
-    if moves.is_empty() {
-        return;
+    let legal_mainline = pgn_has_legal_standard_mainline(&pgn);
+    let mainline = mainline_move_fingerprint(&pgn);
+    let mainline_moves = mainline.moves;
+    if mainline_moves.is_empty() {
+        let target_header = if target_side.eq_ignore_ascii_case("White") {
+            header(&headers, "White")
+        } else {
+            header(&headers, "Black")
+        };
+        // A matched, named zero-move OTB record can be a forfeit, bye, or
+        // adjourned pairing and is still part of the player's online corpus.
+        // Bare/result/comment-only fragments have no target-side player and
+        // remain rejected.
+        if target_header.is_none_or(|value| value.trim().is_empty()) {
+            return None;
+        }
     }
-    let mainline_moves = mainline_move_fingerprint(&pgn).unwrap_or_else(|| moves.clone());
-    let move_fingerprint = format!("{target_side}|{mainline_moves}");
     let normalized_white = normalized_name(&white);
     let normalized_black = normalized_name(&black);
+    let normalized_event = normalized_name(&event);
+    let normalized_round = normalized_name(round);
+    let normalized_site = normalized_name(site);
+    let opponent = if target_side.eq_ignore_ascii_case("White") {
+        &black
+    } else {
+        &white
+    };
+    let opponent_key = normalized_player_key(opponent);
+    let record_identity =
+        format!("{date}|{normalized_event}|{normalized_round}|{normalized_site}|{result}");
     let identity_fingerprint =
-        format!("{target_side}|{normalized_white}|{normalized_black}|{result}");
-
-    let prefix_duplicate = collection
-        .identity_fingerprints
-        .get(&identity_fingerprint)
-        .and_then(|indices| {
-            indices.iter().copied().find(|index| {
-                let existing = &collection.games[*index];
-                (existing.date == date || existing.date.contains('?') || date.contains('?'))
-                    && move_lines_are_prefixes(&existing.mainline_moves, &mainline_moves)
-            })
-        });
-    if let Some(index) = prefix_duplicate {
-        let existing = &collection.games[index];
-        let incoming_is_better = mainline_moves.split_whitespace().count()
-            > existing.mainline_moves.split_whitespace().count()
-            || (mainline_moves.split_whitespace().count()
-                == existing.mainline_moves.split_whitespace().count()
-                && pgn.len() > existing.pgn.len());
-        collection.duplicates_removed = collection.duplicates_removed.saturating_add(1);
-        if incoming_is_better {
-            let broad_fingerprint = format!(
-                "{}|{}|{}|{}",
-                normalized_name(&white),
-                normalized_name(&black),
-                result,
-                moves
-            );
-            collection
-                .broad_fingerprints
-                .entry(broad_fingerprint)
-                .or_default()
-                .push(index);
-            collection
-                .move_fingerprints
-                .entry(move_fingerprint)
-                .or_default()
-                .push(index);
-            collection.games[index] = CollectedGame {
-                pgn,
-                date,
-                event,
-                white,
-                black,
-                result,
-                source: source.to_string(),
-                mainline_moves,
-            };
-        }
-        return;
-    }
-
-    if let Some(indices) = collection.move_fingerprints.get(&move_fingerprint) {
-        let duplicate = indices.iter().any(|index| {
-            let existing = &collection.games[*index];
-            dates_overlap(&existing.date, &date, &mainline_moves)
-        });
-        if duplicate {
-            collection.duplicates_removed = collection.duplicates_removed.saturating_add(1);
-            return;
-        }
-    }
-
-    let broad_fingerprint = format!(
-        "{}|{}|{}|{}",
-        normalized_white, normalized_black, result, moves
-    );
-    if let Some(indices) = collection.broad_fingerprints.get(&broad_fingerprint) {
-        let duplicate = indices.iter().any(|index| {
-            let existing = &collection.games[*index];
-            dates_overlap(&existing.date, &date, &moves)
-        });
-        if duplicate {
-            collection.duplicates_removed = collection.duplicates_removed.saturating_add(1);
-            return;
-        }
-    }
-
-    let index = collection.games.len();
-    collection
-        .identity_fingerprints
-        .entry(identity_fingerprint)
-        .or_default()
-        .push(index);
-    collection
-        .broad_fingerprints
-        .entry(broad_fingerprint)
-        .or_default()
-        .push(index);
-    collection
-        .move_fingerprints
-        .entry(move_fingerprint)
-        .or_default()
-        .push(index);
-    collection.games.push(CollectedGame {
+        format!("{target_side}|{normalized_white}|{normalized_black}|{record_identity}");
+    let broad_fingerprint =
+        format!("{normalized_white}|{normalized_black}|{record_identity}|{moves}");
+    let move_fingerprint = (legal_mainline && mainline.complete)
+        .then(|| format!("{target_side}|{opponent_key}|{record_identity}|{mainline_moves}"));
+    let game = CollectedGame {
+        legal_mainline,
         pgn,
         date,
         event,
@@ -3683,7 +4564,174 @@ fn add_game(collection: &mut Collection, pgn: String, source: &str, target_side:
         result,
         source: source.to_string(),
         mainline_moves,
-    });
+    };
+
+    Some(CandidateGame {
+        game,
+        target_side: target_side.to_string(),
+        identity_fingerprint,
+        broad_fingerprint,
+        move_fingerprint,
+    })
+}
+
+fn add_candidate(collection: &mut Collection, candidate: CandidateGame) {
+    let CandidateGame {
+        game: incoming,
+        identity_fingerprint,
+        broad_fingerprint,
+        move_fingerprint,
+        ..
+    } = candidate;
+
+    let prefix_duplicate = collection
+        .identity_fingerprints
+        .get(&identity_fingerprint)
+        .and_then(|indices| {
+            indices.iter().copied().find(|index| {
+                let existing = &collection.games[*index];
+                move_lines_are_prefixes(&existing.mainline_moves, &incoming.mainline_moves)
+            })
+        });
+    if let Some(index) = prefix_duplicate {
+        collection.duplicates_removed = collection.duplicates_removed.saturating_add(1);
+        retain_preferred_duplicate(
+            collection,
+            index,
+            incoming,
+            &identity_fingerprint,
+            &broad_fingerprint,
+            move_fingerprint.as_deref(),
+        );
+        return;
+    }
+
+    let move_duplicate = move_fingerprint
+        .as_deref()
+        .and_then(|fingerprint| collection.move_fingerprints.get(fingerprint))
+        .and_then(|indices| indices.first().copied());
+    if let Some(index) = move_duplicate {
+        collection.duplicates_removed = collection.duplicates_removed.saturating_add(1);
+        retain_preferred_duplicate(
+            collection,
+            index,
+            incoming,
+            &identity_fingerprint,
+            &broad_fingerprint,
+            move_fingerprint.as_deref(),
+        );
+        return;
+    }
+
+    let broad_duplicate = collection
+        .broad_fingerprints
+        .get(&broad_fingerprint)
+        .and_then(|indices| indices.first().copied());
+    if let Some(index) = broad_duplicate {
+        collection.duplicates_removed = collection.duplicates_removed.saturating_add(1);
+        retain_preferred_duplicate(
+            collection,
+            index,
+            incoming,
+            &identity_fingerprint,
+            &broad_fingerprint,
+            move_fingerprint.as_deref(),
+        );
+        return;
+    }
+
+    let index = collection.games.len();
+    register_game_fingerprints(
+        collection,
+        index,
+        &identity_fingerprint,
+        &broad_fingerprint,
+        move_fingerprint.as_deref(),
+    );
+    collection.games.push(incoming);
+}
+
+/// Every duplicate path uses the same total quality ordering. This matters
+/// because source lanes finish concurrently: keeping the first copy makes an
+/// annotated Lichess PGN or a plain archive PGN win nondeterministically.
+fn retain_preferred_duplicate(
+    collection: &mut Collection,
+    index: usize,
+    incoming: CollectedGame,
+    identity_fingerprint: &str,
+    broad_fingerprint: &str,
+    move_fingerprint: Option<&str>,
+) {
+    if !collected_game_is_better(&incoming, &collection.games[index]) {
+        return;
+    }
+    register_game_fingerprints(
+        collection,
+        index,
+        identity_fingerprint,
+        broad_fingerprint,
+        move_fingerprint,
+    );
+    collection.games[index] = incoming;
+}
+
+fn collected_game_is_better(incoming: &CollectedGame, existing: &CollectedGame) -> bool {
+    let incoming_moves = incoming.mainline_moves.split_whitespace().count();
+    let existing_moves = existing.mainline_moves.split_whitespace().count();
+    let incoming_annotations = incoming.pgn.matches("[%").count();
+    let existing_annotations = existing.pgn.matches("[%").count();
+
+    (
+        incoming.legal_mainline,
+        incoming_moves,
+        incoming_annotations,
+        incoming.pgn.len(),
+        &incoming.pgn,
+    ) > (
+        existing.legal_mainline,
+        existing_moves,
+        existing_annotations,
+        existing.pgn.len(),
+        &existing.pgn,
+    )
+}
+
+fn reconcile_source_reports(reports: &mut [OtbImportSourceReport], games: &[CollectedGame]) {
+    let mut retained = HashMap::<&str, u32>::new();
+    for game in games {
+        let count = retained.entry(game.source.as_str()).or_default();
+        *count = count.saturating_add(1);
+    }
+    for report in reports {
+        report.unique_games_added = retained.get(report.source.as_str()).copied().unwrap_or(0);
+    }
+}
+
+fn register_game_fingerprints(
+    collection: &mut Collection,
+    index: usize,
+    identity_fingerprint: &str,
+    broad_fingerprint: &str,
+    move_fingerprint: Option<&str>,
+) {
+    for (fingerprints, fingerprint) in [
+        (&mut collection.identity_fingerprints, identity_fingerprint),
+        (&mut collection.broad_fingerprints, broad_fingerprint),
+    ] {
+        let indices = fingerprints.entry(fingerprint.to_string()).or_default();
+        if !indices.contains(&index) {
+            indices.push(index);
+        }
+    }
+    if let Some(fingerprint) = move_fingerprint {
+        let indices = collection
+            .move_fingerprints
+            .entry(fingerprint.to_string())
+            .or_default();
+        if !indices.contains(&index) {
+            indices.push(index);
+        }
+    }
 }
 
 fn move_lines_are_prefixes(left: &str, right: &str) -> bool {
@@ -3693,40 +4741,295 @@ fn move_lines_are_prefixes(left: &str, right: &str) -> bool {
     shared >= 12 && left[..shared] == right[..shared]
 }
 
-#[derive(Default)]
-struct MainlineMoveVisitor {
-    moves: Vec<String>,
+struct MainlineLegalityVisitor {
+    position: Chess,
+    legal: bool,
 }
 
-impl Visitor for MainlineMoveVisitor {
-    type Result = Vec<String>;
+impl Default for MainlineLegalityVisitor {
+    fn default() -> Self {
+        Self {
+            position: Chess::default(),
+            legal: true,
+        }
+    }
+}
+
+impl Visitor for MainlineLegalityVisitor {
+    type Result = bool;
 
     fn begin_game(&mut self) {
-        self.moves.clear();
+        self.position = Chess::default();
+        self.legal = true;
+    }
+
+    fn header(&mut self, key: &[u8], value: RawHeader<'_>) {
+        if key != b"FEN" {
+            return;
+        }
+        self.position = Fen::from_ascii(value.as_bytes())
+            .ok()
+            .and_then(|fen| {
+                let setup = fen.into_setup();
+                let castling_mode = CastlingMode::detect(&setup);
+                Chess::from_setup(setup, castling_mode)
+                    .or_else(PositionError::ignore_too_much_material)
+                    .ok()
+            })
+            .unwrap_or_else(|| {
+                self.legal = false;
+                Chess::default()
+            });
+    }
+
+    fn end_headers(&mut self) -> Skip {
+        Skip(!self.legal)
     }
 
     fn san(&mut self, san: SanPlus) {
-        self.moves.push(san.to_string());
+        let Some(chess_move) = san.san.to_move(&self.position).ok() else {
+            self.legal = false;
+            return;
+        };
+        self.position.play_unchecked(&chess_move);
     }
 
     fn begin_variation(&mut self) -> Skip {
+        // Duplicate selection only needs to know whether the complete mainline
+        // can be used by every consumer. Source annotations and variations are
+        // still retained when that mainline is legal.
         Skip(true)
     }
 
     fn end_game(&mut self) -> Self::Result {
-        self.moves.clone()
+        self.legal
     }
 }
 
-fn mainline_move_fingerprint(game: &str) -> Option<String> {
+fn pgn_has_legal_standard_mainline(game: &str) -> bool {
     let mut reader = PgnReader::new(game.as_bytes());
-    let mut visitor = MainlineMoveVisitor::default();
+    let mut visitor = MainlineLegalityVisitor::default();
     reader
         .read_game(&mut visitor)
         .ok()
         .flatten()
-        .filter(|moves| !moves.is_empty())
-        .map(|moves| moves.join(" "))
+        .unwrap_or(false)
+}
+
+struct MainlineFingerprint {
+    moves: String,
+    complete: bool,
+}
+
+/// Returns a notation-only fingerprint of the mainline. Unknown source words
+/// remain explicit sentinels: deleting them could make two distinct games look
+/// identical. Only a complete, independently legal fingerprint is eligible for
+/// the cross-source exact-move index.
+fn mainline_move_fingerprint(game: &str) -> MainlineFingerprint {
+    let movetext = game
+        .lines()
+        .filter(|line| !line.trim_start().starts_with('['))
+        .collect::<Vec<_>>()
+        .join("\n");
+    let mut words = Vec::new();
+    let mut word = String::new();
+    let mut brace_depth = 0u32;
+    let mut variation_depth = 0u32;
+    let mut line_comment = false;
+
+    for char in movetext.chars() {
+        if line_comment {
+            if char == '\n' {
+                line_comment = false;
+            }
+            continue;
+        }
+        if brace_depth > 0 {
+            match char {
+                '{' => brace_depth = brace_depth.saturating_add(1),
+                '}' => brace_depth = brace_depth.saturating_sub(1),
+                _ => {}
+            }
+            continue;
+        }
+        match char {
+            '{' => {
+                push_mainline_word(&mut words, &mut word);
+                brace_depth = 1;
+            }
+            ';' => {
+                push_mainline_word(&mut words, &mut word);
+                line_comment = true;
+            }
+            '(' => {
+                push_mainline_word(&mut words, &mut word);
+                variation_depth = variation_depth.saturating_add(1);
+            }
+            ')' => {
+                push_mainline_word(&mut words, &mut word);
+                variation_depth = variation_depth.saturating_sub(1);
+            }
+            '$' if variation_depth == 0 => push_mainline_word(&mut words, &mut word),
+            value if value.is_whitespace() => push_mainline_word(&mut words, &mut word),
+            value if variation_depth == 0 => word.push(value),
+            _ => {}
+        }
+    }
+    push_mainline_word(&mut words, &mut word);
+
+    let mut moves = Vec::new();
+    let mut complete = true;
+    for word in words {
+        let word = strip_pgn_move_number(&word);
+        let word = word.trim_end_matches(['!', '?']);
+        if word.is_empty()
+            || word
+                .chars()
+                .all(|char| char.is_ascii_digit() || char == '.')
+            || matches!(
+                word,
+                "1-0" | "0-1" | "1/2-1/2" | "*" | "e.p." | "e.p" | "ep"
+            )
+        {
+            continue;
+        }
+        match canonicalize_san_word(word) {
+            SanWord::Move(san) => moves.push(san),
+            SanWord::Unknown => {
+                complete = false;
+                moves.push(format!("?{word}"));
+            }
+        }
+    }
+    MainlineFingerprint {
+        moves: moves.join(" "),
+        complete: complete && !moves.is_empty(),
+    }
+}
+
+fn push_mainline_word(words: &mut Vec<String>, word: &mut String) {
+    if !word.is_empty() {
+        words.push(std::mem::take(word));
+    }
+}
+
+fn strip_pgn_move_number(word: &str) -> &str {
+    let bytes = word.as_bytes();
+    let mut index = 0;
+    while index < bytes.len() && bytes[index].is_ascii_digit() {
+        index += 1;
+    }
+    if index == 0 || index >= bytes.len() || bytes[index] != b'.' {
+        return word;
+    }
+    while index < bytes.len() && bytes[index] == b'.' {
+        index += 1;
+    }
+    &word[index..]
+}
+
+enum SanWord {
+    Move(String),
+    Unknown,
+}
+
+fn canonicalize_san_word(word: &str) -> SanWord {
+    let (core, suffix) = if let Some(core) = word.strip_suffix("++") {
+        (core, "+")
+    } else if let Some(core) = word.strip_suffix('+') {
+        (core, "+")
+    } else if let Some(core) = word.strip_suffix('#') {
+        (core, "#")
+    } else {
+        (word, "")
+    };
+
+    let castle = core.replace('0', "O");
+    if matches!(castle.as_str(), "O-O" | "O-O-O") {
+        return SanWord::Move(format!("{castle}{suffix}"));
+    }
+    if core == "--" {
+        return SanWord::Move(format!("{core}{suffix}"));
+    }
+    if let Some(drop) = canonical_san_drop(core) {
+        return SanWord::Move(format!("{drop}{suffix}"));
+    }
+
+    let (move_body, promotion) = match core.rsplit_once('=') {
+        Some((body, promotion))
+            if promotion.len() == 1
+                && matches!(promotion.as_bytes()[0], b'Q' | b'R' | b'B' | b'N') =>
+        {
+            (body, Some(promotion))
+        }
+        Some(_) => return SanWord::Unknown,
+        None => (core, None),
+    };
+    let bytes = move_body.as_bytes();
+    if promotion.is_none()
+        && bytes.len() >= 3
+        && matches!(bytes[bytes.len() - 1], b'Q' | b'R' | b'B' | b'N')
+        && matches!(bytes[bytes.len() - 2], b'1' | b'8')
+        && bytes[0].is_ascii_lowercase()
+    {
+        return SanWord::Unknown;
+    }
+    if bytes.len() < 2
+        || !matches!(bytes[bytes.len() - 2], b'a'..=b'h')
+        || !matches!(bytes[bytes.len() - 1], b'1'..=b'8')
+    {
+        return SanWord::Unknown;
+    }
+    if promotion.is_some() && !matches!(bytes[bytes.len() - 1], b'1' | b'8') {
+        return SanWord::Unknown;
+    }
+
+    let prefix = &move_body[..move_body.len() - 2];
+    let valid = if prefix.is_empty() {
+        true
+    } else if prefix.as_bytes()[0].is_ascii_lowercase() {
+        prefix.len() == 2
+            && matches!(prefix.as_bytes()[0], b'a'..=b'h')
+            && prefix.as_bytes()[1] == b'x'
+    } else if matches!(prefix.as_bytes()[0], b'K' | b'Q' | b'R' | b'B' | b'N') {
+        valid_piece_disambiguation(&prefix[1..])
+    } else {
+        false
+    };
+    if !valid {
+        return SanWord::Unknown;
+    }
+    SanWord::Move(format!("{core}{suffix}"))
+}
+
+fn canonical_san_drop(core: &str) -> Option<&str> {
+    let bytes = core.as_bytes();
+    if bytes.len() == 3
+        && bytes[0] == b'@'
+        && matches!(bytes[1], b'a'..=b'h')
+        && matches!(bytes[2], b'1'..=b'8')
+    {
+        return Some(core);
+    }
+    if bytes.len() == 4
+        && matches!(bytes[0], b'P' | b'N' | b'B' | b'R' | b'Q' | b'K')
+        && bytes[1] == b'@'
+        && matches!(bytes[2], b'a'..=b'h')
+        && matches!(bytes[3], b'1'..=b'8')
+    {
+        return Some(if bytes[0] == b'P' { &core[1..] } else { core });
+    }
+    None
+}
+
+fn valid_piece_disambiguation(value: &str) -> bool {
+    let value = value.strip_suffix('x').unwrap_or(value);
+    match value.as_bytes() {
+        [] => true,
+        [file_or_rank] => matches!(file_or_rank, b'a'..=b'h' | b'1'..=b'8'),
+        [file, rank] => matches!(file, b'a'..=b'h') && matches!(rank, b'1'..=b'8'),
+        _ => false,
+    }
 }
 
 fn read_next_game<R: BufRead>(
@@ -3738,6 +5041,7 @@ fn read_next_game<R: BufRead>(
     let mut raw_line = Vec::new();
     let mut in_comment = false;
     let mut saw_movetext = false;
+    let mut saw_event_header = false;
 
     loop {
         line.clear();
@@ -3763,10 +5067,16 @@ fn read_next_game<R: BufRead>(
 
         let trimmed = line.trim();
         let is_header = !in_comment && trimmed.starts_with('[');
-        if is_header && saw_movetext {
+        let is_event_header = is_header
+            && trimmed
+                .strip_prefix("[Event")
+                .and_then(|tail| tail.chars().next())
+                .is_some_and(char::is_whitespace);
+        if is_header && (saw_movetext || (is_event_header && saw_event_header)) {
             state.pending_line = Some(line.clone());
             break;
         }
+        saw_event_header |= is_event_header;
         if !is_header && !trimmed.is_empty() {
             saw_movetext = true;
         }
@@ -3819,6 +5129,26 @@ fn match_player_side(
 ) -> Option<&'static str> {
     let white_id = normalized_fide_header(header(headers, "WhiteFideId"));
     let black_id = normalized_fide_header(header(headers, "BlackFideId"));
+    let white_name_matches =
+        header(headers, "White").is_some_and(|name| identity.name_matches(name));
+    let black_name_matches =
+        header(headers, "Black").is_some_and(|name| identity.name_matches(name));
+    if white_name_matches && black_name_matches {
+        // A damaged exporter can repeat the target on both sides when several
+        // header-only records are concatenated. Only distinct FIDE IDs can
+        // disambiguate a genuinely same-named pairing.
+        let target_id = identity.fide_id.as_deref()?;
+        return match (
+            white_id.as_deref() == Some(target_id),
+            black_id.as_deref() == Some(target_id),
+        ) {
+            (true, false) => Some("White"),
+            (false, true) => Some("Black"),
+            (false, false) if white_id.is_some() && black_id.is_none() => Some("Black"),
+            (false, false) if white_id.is_none() && black_id.is_some() => Some("White"),
+            _ => None,
+        };
+    }
     if let Some(target_id) = identity.fide_id.as_deref() {
         if white_id.as_deref() == Some(target_id) {
             return Some("White");
@@ -3828,13 +5158,13 @@ fn match_player_side(
         }
     }
 
-    if header(headers, "White").is_some_and(|name| identity.name_matches(name)) {
+    if white_name_matches {
         if identity.fide_id.is_none() || white_id.is_none() {
             return Some("White");
         }
         return None;
     }
-    if header(headers, "Black").is_some_and(|name| identity.name_matches(name)) {
+    if black_name_matches {
         if identity.fide_id.is_none() || black_id.is_none() {
             return Some("Black");
         }
@@ -3874,13 +5204,59 @@ fn canonicalize_target_name(game: &str, side: &str, canonical_name: &str) -> Str
         + "\n"
 }
 
+/// Public archives sometimes place literal quotes inside a tag value without
+/// PGN escaping (for example an event name containing a quoted sponsor). Our
+/// permissive matcher can still read those tags, but a strict downstream PGN
+/// reader may treat the following tags as separate phantom games. Normalize
+/// every header escape exactly once while leaving movetext byte-for-byte intact.
+fn sanitize_pgn_headers(game: &str) -> String {
+    let mut in_headers = true;
+    let mut output = Vec::new();
+    for line in game.lines() {
+        let trimmed = line.trim();
+        if in_headers && trimmed.is_empty() {
+            output.push(String::new());
+            continue;
+        }
+        if in_headers && trimmed.starts_with('[') {
+            output.push(sanitize_pgn_header_line(trimmed).unwrap_or_else(|| line.to_string()));
+            continue;
+        }
+        in_headers = false;
+        output.push(line.to_string());
+    }
+    output.join("\n") + "\n"
+}
+
+fn sanitize_pgn_header_line(line: &str) -> Option<String> {
+    let line = line.strip_prefix('[')?;
+    let header_end = line.rfind(']')?;
+    let trailing = line[header_end + 1..].trim();
+    if !trailing.is_empty() && !matches!(trailing, "1-0" | "0-1" | "1/2-1/2" | "*") {
+        return None;
+    }
+    let inner = &line[..header_end];
+    let split = inner.find(char::is_whitespace)?;
+    let key = &inner[..split];
+    let raw = inner[split..].trim();
+    let value = raw.strip_prefix('"')?.strip_suffix('"')?;
+    let decoded = value.replace("\\\"", "\"").replace("\\\\", "\\");
+    Some(format!("[{key} \"{}\"]", escape_pgn_header(&decoded)))
+}
+
 fn add_provenance_headers(game: &str, source: &str, source_url: &str) -> String {
     let mut output = String::new();
     let mut inserted = false;
     for line in game.lines() {
-        if !inserted && !line.trim().starts_with('[') {
+        if !inserted && line.trim().is_empty() {
+            // Archives occasionally contain several blank header separators.
+            // Ignore all of them here and emit exactly one below; otherwise a
+            // strict reader sees the detached movetext as a phantom game.
+            continue;
+        }
+        if !inserted && !line.trim_start().starts_with('[') {
             output.push_str(&format!(
-                "[OutpostSource \"{}\"]\n[OutpostSourceUrl \"{}\"]\n",
+                "[OutpostSource \"{}\"]\n[OutpostSourceUrl \"{}\"]\n\n",
                 escape_pgn_header(source),
                 escape_pgn_header(source_url)
             ));
@@ -3891,7 +5267,7 @@ fn add_provenance_headers(game: &str, source: &str, source_url: &str) -> String 
     }
     if !inserted {
         output.push_str(&format!(
-            "[OutpostSource \"{}\"]\n[OutpostSourceUrl \"{}\"]\n",
+            "[OutpostSource \"{}\"]\n[OutpostSourceUrl \"{}\"]\n\n",
             escape_pgn_header(source),
             escape_pgn_header(source_url)
         ));
@@ -3926,6 +5302,10 @@ fn is_suspected_online_game(headers: &[(String, String)]) -> bool {
         return true;
     }
 
+    let event_words = format!(" {} ", normalized_name(&event));
+    if event_words.contains(" titled tuesday ") || event_words.contains(" titled tue ") {
+        return true;
+    }
     let combined = format!("{event} {site}");
     [
         "playchess",
@@ -3934,6 +5314,7 @@ fn is_suspected_online_game(headers: &[(String, String)]) -> bool {
         "internet chess",
         "live chess",
         "titled arena",
+        "playzone game",
         "web chess",
         "chessable masters online",
     ]
@@ -4128,7 +5509,13 @@ fn extract_chessscope_game_date(html: &str) -> Option<String> {
     ];
     for month in MONTHS {
         for (position, _) in html.match_indices(month) {
-            let tail = &html[position..html.len().min(position + 24)];
+            let Some(rest) = html.get(position..) else {
+                continue;
+            };
+            // Chessscope descriptions often contain typographic dashes or
+            // accented names. Bound by characters, not bytes, so a nearby
+            // multibyte code point can never crash the entire import.
+            let tail = rest.chars().take(24).collect::<String>();
             let Some(comma) = tail.find(',') else {
                 continue;
             };
@@ -4144,11 +5531,6 @@ fn extract_chessscope_game_date(html: &str) -> Option<String> {
         }
     }
     None
-}
-
-fn chessscope_round_is_in_corpus(year: Option<u16>, date: Option<&str>, cutoff: &str) -> bool {
-    date.is_some_and(|date| date < cutoff)
-        || year.is_some_and(|year| format!("{year:04}-12-31").as_str() < cutoff)
 }
 
 fn extract_britbase_archive_urls(html: &str, from_year: u16, origin: &str) -> Vec<String> {
@@ -4178,6 +5560,64 @@ fn absolute_britbase_url(href: &str, origin: &str) -> Option<String> {
         return Some(format!("{origin}{href}"));
     }
     (!href.is_empty()).then(|| format!("{origin}/britbase/{}", href.trim_start_matches("./")))
+}
+
+fn canonical_britbase_url(url: &str) -> String {
+    let canonical_host = BRITBASE_ORIGINS
+        .iter()
+        .find_map(|origin| {
+            url.strip_prefix(origin)
+                .filter(|path| path.starts_with('/'))
+        })
+        .map_or_else(
+            || url.to_string(),
+            |path| format!("{BRITBASE_CANONICAL_ORIGIN}{path}"),
+        );
+    let Some(path) = canonical_host.strip_prefix(BRITBASE_CANONICAL_ORIGIN) else {
+        return canonical_host;
+    };
+    let Some(file_name) = path.strip_prefix("/britbase/") else {
+        return canonical_host;
+    };
+    // Modern BritBase stores PGNs below /britbase/pgn/. The 2010s index has
+    // one bare 201707countyfinal.pgn link while every other current PGN uses
+    // that directory. Repair only this unambiguous root-PGN shape; legacy root
+    // ZIP files are intentionally left where the archive advertises them.
+    if !file_name.contains('/') && file_name.to_ascii_lowercase().ends_with(".pgn") {
+        format!("{BRITBASE_CANONICAL_ORIGIN}/britbase/pgn/{file_name}")
+    } else {
+        canonical_host
+    }
+}
+
+fn britbase_equivalent_urls(url: &str) -> Vec<String> {
+    let canonical = canonical_britbase_url(url);
+    let Some(path) = canonical.strip_prefix(BRITBASE_CANONICAL_ORIGIN) else {
+        return vec![canonical];
+    };
+    let original_host_normalized = BRITBASE_ORIGINS
+        .iter()
+        .find_map(|origin| {
+            url.strip_prefix(origin)
+                .filter(|candidate| candidate.starts_with('/'))
+        })
+        .map(|candidate| candidate.to_string());
+    let mut paths = vec![path.to_string()];
+    if let Some(original_path) = original_host_normalized {
+        if original_path != path {
+            paths.push(original_path);
+        }
+    }
+    let mut keys = paths
+        .into_iter()
+        .flat_map(|path| {
+            BRITBASE_ORIGINS
+                .iter()
+                .map(move |origin| format!("{origin}{path}"))
+        })
+        .collect::<Vec<_>>();
+    keys.dedup();
+    keys
 }
 
 fn extract_pgn_mentor_archive_urls(
@@ -4359,40 +5799,43 @@ fn is_lichess_round_path(value: &str) -> bool {
         && segments[3].chars().all(|char| char.is_ascii_alphanumeric())
 }
 
-async fn lichess_live_cutoff(request: &OtbImportRequest) -> String {
-    let requested_cutoff = format!("{:04}-01-01", request.from_year);
+async fn lichess_corpus_coverage(request: &OtbImportRequest) -> LichessCorpusCoverage {
+    if !request.include_lichess_broadcast_archives {
+        return LichessCorpusCoverage::empty(request.from_year);
+    }
     let Ok(Some(list)) =
         read_page_cache_stale(LICHESS_BROADCAST_LIST, &request.cache_dir, "lichess-index").await
     else {
-        return requested_cutoff;
+        return LichessCorpusCoverage::empty(request.from_year);
     };
-    let Some((url, month)) = list
+    let advertised = list
         .lines()
         .map(str::trim)
         .filter_map(|url| archive_month(url).map(|month| (url.to_string(), month)))
-        .max_by_key(|(_, month)| *month)
-    else {
-        return requested_cutoff;
-    };
+        .collect::<Vec<_>>();
+    if advertised.is_empty() {
+        return LichessCorpusCoverage::empty(request.from_year);
+    }
+    let urls = advertised
+        .iter()
+        .map(|(url, _)| url.clone())
+        .collect::<Vec<_>>();
     let indexed = index::indexed_urls(
         &archive_index_path(&request.cache_dir),
-        &[url.clone()],
+        &urls,
         None,
+        index_run_for_request(request),
     )
     .await
     .unwrap_or_default();
-    if !indexed.contains(&url) {
-        return requested_cutoff;
-    }
-    let (year, month) = if month.1 == 12 {
-        (month.0.saturating_add(1), 1)
-    } else {
-        (month.0, month.1 + 1)
-    };
-    requested_cutoff.max(format!("{year:04}-{month:02}-01"))
+    let complete_months = advertised
+        .into_iter()
+        .filter_map(|(url, month)| indexed.contains(&url).then_some(month))
+        .collect::<HashSet<_>>();
+    LichessCorpusCoverage::from_complete_months(request.from_year, complete_months)
 }
 
-fn extract_lichess_round_paths_since(html: &str, cutoff: &str) -> Vec<String> {
+fn extract_lichess_rounds_since(html: &str, cutoff: &str) -> Vec<(String, Option<String>)> {
     html.split("<a")
         .skip(1)
         .filter_map(|tail| tail.split_once("</a>").map(|(anchor, _)| anchor))
@@ -4401,18 +5844,16 @@ fn extract_lichess_round_paths_since(html: &str, cutoff: &str) -> Vec<String> {
             if !is_lichess_round_path(&href) {
                 return None;
             }
-            let in_range = extract_quoted_values(anchor, "datetime=")
+            let date = extract_quoted_values(anchor, "datetime=")
                 .into_iter()
-                .all(|value| value.get(..10).is_none_or(|date| date >= cutoff));
-            in_range.then_some(href)
+                .next();
+            let in_range = date
+                .as_deref()
+                .and_then(|value| value.get(..10))
+                .is_none_or(|value| value >= cutoff);
+            in_range.then_some((href, date))
         })
         .collect()
-}
-
-fn timestamp_year(timestamp_millis: i64) -> u16 {
-    chrono::DateTime::<Utc>::from_timestamp_millis(timestamp_millis)
-        .map(|date| date.year().max(0).min(u16::MAX as i32) as u16)
-        .unwrap_or_default()
 }
 
 fn normalized_name(name: &str) -> String {
@@ -4430,11 +5871,11 @@ fn normalized_name(name: &str) -> String {
     output.trim().to_string()
 }
 
-fn dates_overlap(left: &str, right: &str, normalized_moves: &str) -> bool {
-    if left.contains('?') || right.contains('?') {
-        return true;
-    }
-    left == right || normalized_moves.split_whitespace().count() >= 12
+fn normalized_player_key(name: &str) -> String {
+    let mut tokens = player_name_tokens(name);
+    tokens.sort();
+    tokens.dedup();
+    tokens.join(" ")
 }
 
 fn parse_twic_archive_links(html: &str) -> Vec<TwicArchiveLink> {
@@ -4659,6 +6100,19 @@ mod tests {
     }
 
     #[test]
+    fn treats_only_lichess_resource_too_old_as_the_listing_boundary() {
+        assert!(lichess_listing_is_exhausted(
+            "Lichess returned 400 Bad Request for https://lichess.org/api/broadcast/top?page=6: resource too old"
+        ));
+        assert!(!lichess_listing_is_exhausted(
+            "Lichess returned 400 Bad Request: malformed page"
+        ));
+        assert!(!lichess_listing_is_exhausted(
+            "Lichess returned 503 Service Unavailable"
+        ));
+    }
+
+    #[test]
     fn filters_community_tours_by_roster_identity() {
         let identity = identity();
         let exact_id = serde_json::json!([
@@ -4768,6 +6222,30 @@ mod tests {
     }
 
     #[test]
+    fn tolerant_mainline_fingerprint_keeps_moves_after_noisy_archive_words() {
+        let pgn = "[Result \"1-0\"]\n\n1. e4 e5 2. Nf3 archive-noise 2... Nc6 3. Bb5 a6 1-0";
+        let fingerprint = mainline_move_fingerprint(pgn);
+        assert_eq!(fingerprint.moves, "e4 e5 Nf3 ?archive-noise Nc6 Bb5 a6");
+        assert!(!fingerprint.complete);
+    }
+
+    #[test]
+    fn malformed_pawn_promotion_cannot_enter_the_exact_move_index() {
+        let pgn = "[Result \"1-0\"]\n\n1. e4 a5 2. e5 a4 3. e6 a3 4. e7 a2 5. e8Q 1-0";
+        let fingerprint = mainline_move_fingerprint(pgn);
+        assert!(fingerprint.moves.contains("?e8Q"));
+        assert!(!fingerprint.complete);
+    }
+
+    #[test]
+    fn double_check_notation_remains_a_fingerprint_ply() {
+        let pgn = "[Result \"1-0\"]\n\n1. e4 e5 2. Nf3++ Nc6 1-0";
+        let fingerprint = mainline_move_fingerprint(pgn);
+        assert_eq!(fingerprint.moves, "e4 e5 Nf3+ Nc6");
+        assert!(fingerprint.complete);
+    }
+
+    #[test]
     fn identifies_obvious_online_events_but_not_lichess_broadcast_provenance() {
         let otb = parse_headers(
             "[Event \"British Championship\"]\n[Site \"https://lichess.org/broadcast/event/round/id\"]\n[BroadcastURL \"https://lichess.org/broadcast/x\"]\n",
@@ -4776,9 +6254,106 @@ mod tests {
             parse_headers("[Event \"Online Chess Championship\"]\n[Site \"https://chess.com\"]\n");
         let id_chess =
             parse_headers("[Event \"World Schools Team Championship\"]\n[Site \"idChess.com\"]\n");
+        let titled_tuesday =
+            parse_headers("[Event \"Titled Tue 14th Jul 2026\"]\n[Site \"The Internet\"]\n");
+        let untitled_tuesday =
+            parse_headers("[Event \"Untitled Tuesday OTB Open\"]\n[Site \"Cardiff Chess Club\"]\n");
+        let playzone = parse_headers(
+            "[Event \"Playzone game\"]\n[Site \"https://lichess.org/broadcast/archive/round/id\"]\n",
+        );
         assert!(!is_suspected_online_game(&otb));
         assert!(!is_suspected_online_game(&id_chess));
         assert!(is_suspected_online_game(&online));
+        assert!(is_suspected_online_game(&titled_tuesday));
+        assert!(!is_suspected_online_game(&untitled_tuesday));
+        assert!(is_suspected_online_game(&playzone));
+    }
+
+    #[test]
+    fn provenance_normalizes_multiple_header_separators() {
+        let game = "[Event \"Test\"]\n[Result \"1-0\"]\n\n\n1. d4 1-0\n";
+        let enriched = add_provenance_headers(game, "Archive", "https://example.test/a.pgn");
+        assert!(enriched.contains("[OutpostSourceUrl \"https://example.test/a.pgn\"]\n\n1. d4 1-0"));
+        assert!(!enriched.contains("\n\n\n"));
+    }
+
+    #[test]
+    fn repeated_event_headers_split_header_only_games_without_phantoms() {
+        let malformed = r#"[Event "Header-only one"]
+[Date "2024.01.01"]
+[White "Opponent, One"]
+[Black "Royal, Shreyas"]
+[Result "0-1"]
+[Event "Header-only two"]
+[Date "2024.01.02"]
+[White "Royal, Shreyas"]
+[Black "Opponent, Two"]
+[Result "1-0"]
+[BlackClock "0:12:44"] 1-0
+[Event "Corrupt repeated target"]
+[Date "2024.01.03"]
+[White "Royal, Shreyas"]
+[Black "Royal, Shreyas"]
+[Result "1-0"]
+
+1. e4 e5 1-0
+"#;
+        let identity = PlayerIdentity::new("Royal, Shreyas", Some("448869")).unwrap();
+        let outcome = scan_pgn_reader(
+            BufReader::new(Cursor::new(malformed.as_bytes())),
+            &identity,
+            "Chess-Results player search",
+            "https://example.test/player.pgn",
+            2020,
+        );
+
+        assert_eq!(outcome.matched, 2);
+        assert_eq!(outcome.games.len(), 2);
+        assert!(outcome.games.iter().all(|game| {
+            game.pgn.matches("[Event ").count() == 1
+                && game.pgn.matches("[OutpostSource ").count() == 1
+        }));
+        assert!(outcome.games[1].pgn.contains("[BlackClock \"0:12:44\"]\n"));
+    }
+
+    #[test]
+    fn sanitizer_escapes_literal_quotes_inside_header_values() {
+        let game = "[Event \"The \"Open\" Final\"]\n[Result \"*\"]\n\n1. e4 *\n";
+        let sanitized = sanitize_pgn_headers(game);
+
+        assert_eq!(
+            sanitized,
+            "[Event \"The \\\"Open\\\" Final\"]\n[Result \"*\"]\n\n1. e4 *\n"
+        );
+    }
+
+    #[test]
+    fn sanitizer_removes_a_result_stranded_after_a_header() {
+        assert_eq!(
+            sanitize_pgn_header_line("[BlackClock \"0:12:44\"] 0-1"),
+            Some("[BlackClock \"0:12:44\"]".to_string())
+        );
+    }
+
+    #[test]
+    fn sanitizer_round_trips_existing_header_escapes() {
+        let game = r#"[Event "The \"Open\" at C:\\Chess"]
+[Site "A\\B \"Hall\""]
+
+1. d4 d5 *
+"#;
+
+        assert_eq!(sanitize_pgn_headers(game), game);
+    }
+
+    #[test]
+    fn sanitizer_leaves_movetext_untouched() {
+        let movetext =
+            "1. e4 {literal \"quote\", \\\\ slash, and  two spaces} e5 *\n[not a header here]\n";
+        let game = format!("[Event \"The \"Open\" Final\"]\n\n{movetext}");
+        let sanitized = sanitize_pgn_headers(&game);
+
+        assert_eq!(sanitized.split_once("\n\n").unwrap().1, movetext);
     }
 
     #[test]
@@ -4816,13 +6391,15 @@ mod tests {
     }
 
     #[test]
-    fn dedupes_complete_games_despite_source_date_disagreement() {
-        assert!(dates_overlap(
-            "2026.05.10",
-            "2026.05.13",
-            "1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 1-0"
-        ));
-        assert!(!dates_overlap("2026.06.01", "2026.06.03", "1. e4 1-0"));
+    fn exact_move_dedupe_does_not_merge_different_records() {
+        let first = "[Event \"Open\"]\n[Date \"2026.05.10\"]\n[Round \"1\"]\n[White \"Target\"]\n[Black \"Opponent One\"]\n[Result \"1-0\"]\n\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 1-0\n";
+        let different_date = first.replace("2026.05.10", "2026.05.13");
+        let different_opponent = first.replace("Opponent One", "Opponent Two");
+        let mut collection = Collection::default();
+        add_game(&mut collection, first.to_string(), "A", "White");
+        add_game(&mut collection, different_date, "B", "White");
+        add_game(&mut collection, different_opponent, "C", "White");
+        assert_eq!(collection.games.len(), 3);
     }
 
     #[test]
@@ -4855,10 +6432,16 @@ mod tests {
 <a href="/broadcast/new-event/round-1/NewRound" datetime="2026-08-01T18:00:00Z">New</a>
 <a href="/broadcast/undated-event/round-1/NoDate01">Undated</a>"#;
         assert_eq!(
-            extract_lichess_round_paths_since(html, "2026-08-01"),
+            extract_lichess_rounds_since(html, "2026-08-01"),
             vec![
-                "/broadcast/new-event/round-1/NewRound".to_string(),
-                "/broadcast/undated-event/round-1/NoDate01".to_string(),
+                (
+                    "/broadcast/new-event/round-1/NewRound".to_string(),
+                    Some("2026-08-01T18:00:00Z".to_string()),
+                ),
+                (
+                    "/broadcast/undated-event/round-1/NoDate01".to_string(),
+                    None,
+                ),
             ]
         );
         assert_eq!(
@@ -4866,6 +6449,47 @@ mod tests {
                 "https://database.lichess.org/broadcast/lichess_db_broadcast_2026-07.pgn.zst"
             ),
             Some((2026, 7))
+        );
+    }
+
+    #[test]
+    fn resolves_exact_lichess_study_chapters_by_fide_id() {
+        let identity = PlayerIdentity::new("Price, Gwilym", Some("443980")).unwrap();
+        let round = serde_json::json!({
+            "games": [
+                {
+                    "id": "iNMW9Eeg",
+                    "name": "Roberson, Peter T - Price, Gwilym",
+                    "players": [
+                        { "name": "Roberson, Peter T", "fideId": 412384 },
+                        { "name": "Price, Gwilym", "fideId": 443980 }
+                    ]
+                },
+                {
+                    "id": "Other001",
+                    "name": "Other - Players",
+                    "players": [
+                        { "name": "Other, One", "fideId": 1 },
+                        { "name": "Other, Two", "fideId": 2 }
+                    ]
+                }
+            ]
+        });
+        assert_eq!(
+            lichess_player_chapter_ids(&round, &identity),
+            Some(vec!["iNMW9Eeg".to_string()])
+        );
+
+        let conflicting_id = serde_json::json!({
+            "games": [{
+                "id": "iNMW9Eeg",
+                "players": [{ "name": "Price, Gwilym", "fideId": 999999 }]
+            }]
+        });
+        assert_eq!(
+            lichess_player_chapter_ids(&conflicting_id, &identity),
+            None,
+            "an ambiguous roster must retain the whole-round fallback"
         );
     }
 
@@ -4880,6 +6504,21 @@ mod tests {
         assert!(!is_4ncl_otb_archive_url(
             "https://www.4ncl.co.uk/pgn/2425/congress/online/onlines11/4NCLonline11all.pgn"
         ));
+        assert!(four_ncl_archive_is_growing(
+            "https://www.4ncl.co.uk/pgn/2526/otb/4NCLotb2526all.pgn",
+            "2526"
+        ));
+        assert!(!four_ncl_archive_is_growing(
+            "https://www.4ncl.co.uk/pgn/2425/congress/easter25/easter25all.pgn",
+            "2526"
+        ));
+        assert_eq!(four_ncl_season_for_date(2026, 1), "2526");
+        assert_eq!(four_ncl_season_for_date(2026, 10), "2627");
+        assert_eq!(
+            four_ncl_season_from_url("https://www.4ncl.co.uk/pgn/2627/otb/4NCLotb2627all.pgn")
+                .as_deref(),
+            Some("2627")
+        );
     }
 
     #[test]
@@ -4915,16 +6554,92 @@ mod tests {
             extract_chessscope_game_date("<p>September 3, 2026 · Round 4</p>"),
             Some("2026-09-03".to_string())
         );
-        assert!(chessscope_round_is_in_corpus(
-            Some(2022),
-            None,
-            "2026-08-01"
-        ));
-        assert!(!chessscope_round_is_in_corpus(
-            Some(2026),
-            None,
-            "2026-08-01"
-        ));
+        assert_eq!(
+            extract_chessscope_game_date("<p>September 3, 2026 abcde—multibyte tail</p>"),
+            Some("2026-09-03".to_string())
+        );
+        let mut complete_months = (1..=12).map(|month| (2022, month)).collect::<HashSet<_>>();
+        complete_months.extend([(2024, 1), (2024, 3)]);
+        let coverage = LichessCorpusCoverage::from_complete_months(2022, complete_months);
+        assert!(coverage.covers_year(2022));
+        assert!(!coverage.covers_year(2024));
+        assert!(coverage.covers_date("2024-03-10"));
+        assert!(!coverage.covers_date("2024-02-10"));
+        let january = year_start_millis(2024);
+        let march = january + 60 * 24 * 60 * 60 * 1_000;
+        assert!(!coverage.covers_timestamp_range(january, march));
+        let first_quarter = LichessCorpusCoverage::from_complete_months(
+            2024,
+            HashSet::from([(2024, 1), (2024, 2), (2024, 3)]),
+        );
+        assert!(first_quarter.covers_timestamp_range(january, march));
+
+        let latest_only =
+            LichessCorpusCoverage::from_complete_months(2024, HashSet::from([(2026, 8)]));
+        assert!(!latest_only.covers_year(2025));
+    }
+
+    #[tokio::test]
+    async fn scans_growing_lichess_pgn_directly_from_the_fresh_byte_cache() {
+        let temp = tempfile::tempdir().expect("temporary cache");
+        let url = "https://lichess.org/api/broadcast/direct-cache-test.pgn".to_string();
+        let cache_path = temp.path().join(cache_file_name("lichess-broadcast", &url));
+        tokio::fs::write(
+            &cache_path,
+            br#"[Event "Direct cache test"]
+[Site "London ENG"]
+[Date "2024.01.01"]
+[Round "1"]
+[White "Lapidus, Alexey M."]
+[Black "Example, Opponent"]
+[Result "1-0"]
+[WhiteFideId "24276111"]
+
+1. e4 e5 2. Nf3 Nc6 1-0
+"#,
+        )
+        .await
+        .expect("cache write");
+        let request = OtbImportRequest {
+            job_id: "direct-cache-test".to_string(),
+            player_name: "Lapidus, Alexey M.".to_string(),
+            fide_id: Some("24276111".to_string()),
+            from_year: 2020,
+            include_lichess_broadcasts: true,
+            include_lichess_broadcast_archives: true,
+            include_lichess_community_broadcasts: true,
+            include_chess_results: true,
+            include_chessbase_news: true,
+            include_official_pgn_indexes: true,
+            include_twic: true,
+            local_pgn_paths: Vec::new(),
+            cache_dir: temp.path().to_path_buf(),
+            output_path: temp.path().join("unused.pgn"),
+        };
+        let identity = Arc::new(identity());
+        let collection = Mutex::new(Collection::default());
+        let progress = |_progress: OtbImportProgress| {};
+        let mut report = OtbImportSourceReport::new("Chessscope broadcast discovery");
+
+        scan_direct_lichess_pgn_archives(
+            &Client::new(),
+            &request,
+            &identity,
+            &collection,
+            &progress,
+            "Chessscope broadcast discovery",
+            &mut report,
+            vec![IndexedArchiveSpec::lichess(url, cache_path)],
+            Some(GROWING_ARCHIVE_CACHE_MAX_AGE),
+        )
+        .await;
+
+        assert_eq!(report.archives_checked, 1);
+        assert_eq!(report.cached_archives, 1);
+        assert_eq!(report.matched_games, 1);
+        assert_eq!(report.unique_games_added, 1);
+        assert!(report.errors.is_empty(), "{:?}", report.errors);
+        assert_eq!(games_len(&collection), 1);
     }
 
     #[test]
@@ -4935,6 +6650,230 @@ mod tests {
             extract_britbase_archive_urls(html, 2024, BRITBASE_ORIGINS[0]),
             vec!["https://www.saund.org.uk/britbase/pgn/202506event.pgn".to_string()]
         );
+    }
+
+    #[test]
+    fn repairs_the_bare_britbase_pgn_and_keeps_alias_keys_compatible() {
+        let advertised = "https://www.saund.co.uk/britbase/201707countyfinal.pgn";
+        let canonical = "https://www.saund.org.uk/britbase/pgn/201707countyfinal.pgn";
+        assert_eq!(canonical_britbase_url(advertised), canonical);
+        assert_eq!(
+            britbase_equivalent_urls(advertised),
+            vec![
+                canonical.to_string(),
+                "https://www.saund.co.uk/britbase/pgn/201707countyfinal.pgn".to_string(),
+                "https://www.saund.org.uk/britbase/201707countyfinal.pgn".to_string(),
+                advertised.to_string(),
+            ]
+        );
+        assert_eq!(
+            canonical_britbase_url("https://www.saund.co.uk/britbase/pg20034ncl2.zip"),
+            "https://www.saund.org.uk/britbase/pg20034ncl2.zip"
+        );
+    }
+
+    #[test]
+    fn britbase_live_request_uses_its_decade_index_as_referer() {
+        let cache = tempfile::tempdir().expect("temporary cache");
+        let spec = BritBaseArchiveSpec::new(
+            "https://www.saund.org.uk/britbase/pgn/202608lancaster.pgn".to_string(),
+            "https://www.saund.org.uk/britbase/brit2020.htm".to_string(),
+            cache.path(),
+        );
+        let request = britbase_request(&Client::new(), &spec, &spec.fetch_urls[0])
+            .build()
+            .expect("BritBase request");
+        assert_eq!(request.url().as_str(), spec.url);
+        assert_eq!(
+            request
+                .headers()
+                .get(REFERER)
+                .and_then(|value| value.to_str().ok()),
+            Some(spec.referer.as_str())
+        );
+    }
+
+    #[tokio::test]
+    async fn reads_an_alias_named_britbase_cache_before_live_fetching() {
+        let cache = tempfile::tempdir().expect("temporary cache");
+        let spec = BritBaseArchiveSpec::new(
+            "https://www.saund.co.uk/britbase/pgn/201807bcf.pgn".to_string(),
+            "https://www.saund.org.uk/britbase/brit2010.htm".to_string(),
+            cache.path(),
+        );
+        let alias_path = cache
+            .path()
+            .join(cache_file_name("britbase", &spec.index_keys[1]));
+        std::fs::write(&alias_path, b"cached BritBase bytes").expect("alias cache write");
+        assert_eq!(
+            read_britbase_cache_entry(&spec).await,
+            Some(b"cached BritBase bytes".to_vec())
+        );
+    }
+
+    #[tokio::test]
+    async fn britbase_404_falls_through_to_an_equivalent_moved_url() {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("mock BritBase listener");
+        let address = listener.local_addr().expect("mock address");
+        let server = tokio::spawn(async move {
+            for (status, body) in [
+                ("404 Not Found", ""),
+                ("200 OK", "[Event \"Recovered\"]\n\n*\n"),
+            ] {
+                let (mut socket, _) = listener.accept().await.expect("mock accept");
+                let mut request = Vec::new();
+                loop {
+                    let mut chunk = [0u8; 1024];
+                    let read = socket.read(&mut chunk).await.expect("mock request read");
+                    if read == 0 {
+                        break;
+                    }
+                    request.extend_from_slice(&chunk[..read]);
+                    if request.windows(4).any(|window| window == b"\r\n\r\n") {
+                        break;
+                    }
+                }
+                let request = String::from_utf8_lossy(&request).to_ascii_lowercase();
+                assert!(request.contains("referer: https://www.saund.org.uk/britbase/brit2010.htm"));
+                let response = format!(
+                    "HTTP/1.1 {status}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                    body.len()
+                );
+                socket
+                    .write_all(response.as_bytes())
+                    .await
+                    .expect("mock response write");
+            }
+        });
+
+        let cache = tempfile::tempdir().expect("temporary cache");
+        let mut spec = BritBaseArchiveSpec::new(
+            "https://www.saund.org.uk/britbase/201707countyfinal.pgn".to_string(),
+            "https://www.saund.org.uk/britbase/brit2010.htm".to_string(),
+            cache.path(),
+        );
+        spec.fetch_urls = vec![
+            format!("http://{address}/missing.pgn"),
+            format!("http://{address}/moved.pgn"),
+        ];
+        match fetch_britbase_archive(&Client::new(), &spec).await {
+            BritBaseLiveFetch::Downloaded(bytes) => {
+                assert_eq!(bytes, b"[Event \"Recovered\"]\n\n*\n")
+            }
+            _ => panic!("equivalent moved URL should have been downloaded"),
+        }
+        server.await.expect("mock server task");
+    }
+
+    #[test]
+    fn britbase_partial_coverage_counts_attempted_and_unattempted_files() {
+        let coverage = BritBaseCoverage {
+            advertised: 427,
+            indexed: 2,
+            live_attempted: 2,
+            forbidden: 2,
+            ..BritBaseCoverage::default()
+        };
+        assert!(!coverage.is_complete());
+        assert_eq!(coverage.not_attempted(), 423);
+        let message = coverage.incomplete_message();
+        assert!(message.contains("2/427 advertised files"));
+        assert!(message.contains("2 returned HTTP 403 Forbidden"));
+        assert!(message.contains("423 advertised files were not attempted"));
+        assert!(message.contains("file counts, not missing-game counts"));
+    }
+
+    #[test]
+    fn all_equivalent_404s_account_for_an_absent_britbase_artifact() {
+        let coverage = BritBaseCoverage {
+            advertised: 1,
+            live_attempted: 1,
+            confirmed_absent: 1,
+            not_found: 1,
+            ..BritBaseCoverage::default()
+        };
+        assert!(coverage.is_complete());
+        assert_eq!(coverage.accounted(), 1);
+        assert_eq!(coverage.not_attempted(), 0);
+    }
+
+    #[test]
+    fn empty_discovery_pages_cannot_claim_complete_coverage() {
+        assert!(validate_discovery_count("TWIC", "https://example.test/index", 1).is_ok());
+        let error = validate_discovery_count("TWIC", "https://example.test/index", 0)
+            .expect_err("a structurally empty index must be rejected");
+        assert!(error.contains("no usable archive links"));
+        assert!(error.contains("challenge or changed index page"));
+    }
+
+    #[test]
+    fn deterministic_collection_keeps_named_zero_move_otb_records() {
+        let zero_move = r#"[Event "Forfeit"]
+[Site "London ENG"]
+[Date "2026.08.30"]
+[Round "4"]
+[White "Lapidus, Alexey M."]
+[Black "Opponent, One"]
+[Result "1-0"]
+
+1-0
+"#;
+        let mut collection = Collection::capturing();
+        add_game(&mut collection, zero_move.to_string(), "Archive", "White");
+        add_game(
+            &mut collection,
+            "[Result \"1-0\"]\n\n1-0\n".to_string(),
+            "Broken fragment",
+            "White",
+        );
+
+        assert_eq!(collection.games.len(), 1);
+        let rebuilt = collection.into_deterministic();
+        assert_eq!(rebuilt.games.len(), 1);
+        assert_eq!(rebuilt.games[0].event, "Forfeit");
+        assert!(rebuilt.games[0].mainline_moves.is_empty());
+    }
+
+    #[test]
+    fn rejects_torn_records_without_both_player_names() {
+        let missing_black = r#"[White "Ding, Liren"]
+[BlackFideId "4126025"] [ECO "A00"] [PlyCount
+"0"] [EventDate "2023.09.13"] 0-1
+"#;
+        let missing_white = r#"[Black "Ding, Liren"]
+[Result "1-0"]
+
+1. e4 e5 1-0
+"#;
+        let mut collection = Collection::capturing();
+        add_game(
+            &mut collection,
+            missing_black.to_string(),
+            "Broken exporter tail",
+            "White",
+        );
+        add_game(
+            &mut collection,
+            missing_white.to_string(),
+            "Broken exporter tail",
+            "Black",
+        );
+
+        assert!(collection.games.is_empty());
+        assert!(collection.candidate_games.is_empty());
+    }
+
+    #[test]
+    fn newest_game_dates_require_a_numeric_year() {
+        assert!(pgn_date_has_numeric_year("2026.08.30"));
+        assert!(pgn_date_has_numeric_year("2026.??.??"));
+        assert!(!pgn_date_has_numeric_year("????.??.??"));
+        assert!(!pgn_date_has_numeric_year("øøøø.øø.øø"));
+        assert!(!pgn_date_has_numeric_year("202"));
     }
 
     #[test]
@@ -5014,6 +6953,122 @@ mod tests {
         assert_eq!(collection.duplicates_removed, 1);
         assert_eq!(collection.games[0].pgn, full);
         assert_eq!(collection.games[0].source, "Lichess broadcast");
+    }
+
+    #[test]
+    fn duplicate_quality_winner_is_independent_of_source_completion_order() {
+        let plain = r#"[Event "Sinquefield Cup"]
+[Date "2026.08.20"]
+[White "Caruana, Fabiano"]
+[Black "So, Wesley"]
+[Result "1-0"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 1-0
+"#;
+        // The opponent spelling intentionally differs so this exercises the
+        // exact-move duplicate path rather than the identity-prefix path.
+        let annotated = r#"[Event "Sinquefield Cup"]
+[Date "2026.08.20"]
+[White "Caruana, Fabiano"]
+[Black "Wesley So"]
+[Result "1-0"]
+
+1. e4 {[%clk 1:59:58]} e5 {[%clk 1:59:54]} 2. Nf3 Nc6 3. Bb5 a6 1-0
+"#;
+
+        for rich_first in [false, true] {
+            let mut collection = Collection::default();
+            if rich_first {
+                add_game(&mut collection, annotated.to_string(), "Rich", "White");
+                add_game(&mut collection, plain.to_string(), "Plain", "White");
+            } else {
+                add_game(&mut collection, plain.to_string(), "Plain", "White");
+                add_game(&mut collection, annotated.to_string(), "Rich", "White");
+            }
+            assert_eq!(collection.games.len(), 1);
+            assert_eq!(collection.duplicates_removed, 1);
+            assert_eq!(collection.games[0].pgn, annotated);
+            assert_eq!(collection.games[0].source, "Rich");
+        }
+    }
+
+    #[test]
+    fn legal_archive_copy_beats_a_longer_but_illegal_duplicate() {
+        let legal = r#"[Event "Test"]
+[Date "2026.08.20"]
+[White "Caruana, Fabiano"]
+[Black "Opponent"]
+[Result "1-0"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 1-0
+"#;
+        let illegal = legal.replace("7. Bb3 1-0", "7. Bb3 Ke7 {[%clk 1:20:00]} 1-0");
+        assert!(pgn_has_legal_standard_mainline(legal));
+        assert!(!pgn_has_legal_standard_mainline(&illegal));
+
+        for illegal_first in [false, true] {
+            let mut collection = Collection::default();
+            if illegal_first {
+                add_game(
+                    &mut collection,
+                    illegal.clone(),
+                    "Rich but invalid",
+                    "White",
+                );
+                add_game(
+                    &mut collection,
+                    legal.to_string(),
+                    "Plain and valid",
+                    "White",
+                );
+            } else {
+                add_game(
+                    &mut collection,
+                    legal.to_string(),
+                    "Plain and valid",
+                    "White",
+                );
+                add_game(
+                    &mut collection,
+                    illegal.clone(),
+                    "Rich but invalid",
+                    "White",
+                );
+            }
+            assert_eq!(collection.games.len(), 1);
+            assert_eq!(collection.games[0].pgn, legal);
+            assert_eq!(collection.games[0].source, "Plain and valid");
+        }
+    }
+
+    #[test]
+    fn deterministic_rebuild_ignores_candidate_arrival_order() {
+        let plain = "[Event \"Test\"]\n[Date \"2026.08.20\"]\n[White \"Player\"]\n[Black \"Opponent\"]\n[Result \"1-0\"]\n\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 1-0\n";
+        let rich = plain.replace("1. e4", "1. e4 {[%clk 1:59:58]}");
+        let inputs = [
+            (plain.to_string(), "Archive"),
+            (rich.clone(), "Broadcast"),
+            (plain.to_string(), "Mirror"),
+        ];
+        let rebuild = |reverse: bool| {
+            let mut collection = Collection::capturing();
+            let order = if reverse {
+                inputs.iter().rev().collect::<Vec<_>>()
+            } else {
+                inputs.iter().collect::<Vec<_>>()
+            };
+            for (pgn, source) in order {
+                add_game(&mut collection, pgn.clone(), source, "White");
+            }
+            collection.into_deterministic()
+        };
+
+        let forward = rebuild(false);
+        let reverse = rebuild(true);
+        assert_eq!(forward.games.len(), 1);
+        assert_eq!(forward.games[0].pgn, rich);
+        assert_eq!(forward.games[0].pgn, reverse.games[0].pgn);
+        assert_eq!(forward.duplicates_removed, reverse.duplicates_removed);
     }
 
     #[test]

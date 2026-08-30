@@ -2,11 +2,15 @@ use std::{
     collections::{HashMap, HashSet},
     io::{BufRead, BufReader, Cursor, Read},
     path::{Path, PathBuf},
-    sync::{Arc, Mutex, OnceLock},
+    sync::{
+        atomic::{AtomicBool, AtomicUsize, Ordering},
+        Arc, Mutex, OnceLock,
+    },
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
 use rusqlite::{params, Connection, OpenFlags, OptionalExtension, Statement, Transaction};
+use tokio::sync::Notify;
 
 use super::{
     add_provenance_headers, canonicalize_target_name, date_before_year, header,
@@ -23,8 +27,168 @@ const INDEX_SCHEMA_VERSION: i64 = 2;
 /// The actual indexed lookups are short, so one process-local gate is faster
 /// and deterministic while archive decompression still happens in parallel.
 static INDEX_CONNECTION_GATE: Mutex<()> = Mutex::new(());
-type MatchingNameCache = HashMap<(PathBuf, String, i64), Arc<Vec<i64>>>;
+
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+struct MatchingIdentitySignature {
+    canonical_name: String,
+    fide_id: Option<String>,
+    surname_tokens: Vec<String>,
+    name_tokens: Vec<String>,
+}
+
+impl MatchingIdentitySignature {
+    fn new(identity: &PlayerIdentity) -> Self {
+        Self {
+            canonical_name: normalized_name(&identity.canonical_name),
+            fide_id: identity.fide_id.clone(),
+            surname_tokens: identity.surname_tokens.clone(),
+            name_tokens: identity.name_tokens.clone(),
+        }
+    }
+}
+
+type MatchingNameCache = HashMap<(PathBuf, MatchingIdentitySignature, i64), Arc<Vec<i64>>>;
 static MATCHING_NAME_CACHE: OnceLock<Mutex<MatchingNameCache>> = OnceLock::new();
+static INDEX_WORKERS: OnceLock<Mutex<HashMap<String, Arc<IndexWorkerState>>>> = OnceLock::new();
+
+#[derive(Clone)]
+pub(super) struct IndexRun {
+    job_id: String,
+    cancelled: Arc<AtomicBool>,
+    #[cfg(test)]
+    before_store: Option<Arc<TestStoreBarrier>>,
+}
+
+impl IndexRun {
+    pub(super) fn new(job_id: impl Into<String>, cancelled: Arc<AtomicBool>) -> Self {
+        Self {
+            job_id: job_id.into(),
+            cancelled,
+            #[cfg(test)]
+            before_store: None,
+        }
+    }
+
+    fn is_cancelled(&self) -> bool {
+        self.cancelled.load(Ordering::Acquire)
+    }
+
+    fn check_cancelled(&self) -> Result<(), String> {
+        if self.is_cancelled() {
+            Err("OTB archive indexing was cancelled".to_string())
+        } else {
+            Ok(())
+        }
+    }
+
+    #[cfg(test)]
+    fn with_store_barrier(mut self, barrier: Arc<TestStoreBarrier>) -> Self {
+        self.before_store = Some(barrier);
+        self
+    }
+
+    #[cfg(test)]
+    fn wait_before_store(&self) {
+        if let Some(barrier) = &self.before_store {
+            barrier.reached.wait();
+            barrier.release.wait();
+        }
+    }
+}
+
+#[derive(Default)]
+struct IndexWorkerState {
+    active: AtomicUsize,
+    idle: Notify,
+}
+
+struct IndexWorkerGuard {
+    state: Arc<IndexWorkerState>,
+}
+
+impl Drop for IndexWorkerGuard {
+    fn drop(&mut self) {
+        if self.state.active.fetch_sub(1, Ordering::AcqRel) == 1 {
+            self.state.idle.notify_waiters();
+        }
+    }
+}
+
+fn index_workers() -> &'static Mutex<HashMap<String, Arc<IndexWorkerState>>> {
+    INDEX_WORKERS.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn lock_index_workers() -> std::sync::MutexGuard<'static, HashMap<String, Arc<IndexWorkerState>>> {
+    index_workers()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
+fn register_index_worker(job_id: &str) -> IndexWorkerGuard {
+    let state = lock_index_workers()
+        .entry(job_id.to_string())
+        .or_default()
+        .clone();
+    state.active.fetch_add(1, Ordering::AcqRel);
+    IndexWorkerGuard { state }
+}
+
+fn spawn_tracked_blocking<T, F>(run: IndexRun, work: F) -> tokio::task::JoinHandle<T>
+where
+    T: Send + 'static,
+    F: FnOnce(IndexRun) -> T + Send + 'static,
+{
+    let worker = register_index_worker(&run.job_id);
+    tokio::task::spawn_blocking(move || {
+        let _worker = worker;
+        work(run)
+    })
+}
+
+async fn wait_until_idle(state: &IndexWorkerState) {
+    loop {
+        let notified = state.idle.notified();
+        if state.active.load(Ordering::Acquire) == 0 {
+            return;
+        }
+        notified.await;
+    }
+}
+
+/// Drains blocking index work that survived cancellation of its async lane.
+/// `spawn_blocking` cannot be aborted once running, so every worker owns a guard
+/// and cooperatively observes the same per-import cancellation flag.
+pub(super) async fn wait_for_workers(job_id: &str) {
+    let state = lock_index_workers().get(job_id).cloned();
+    let Some(state) = state else {
+        return;
+    };
+    wait_until_idle(&state).await;
+    let mut workers = lock_index_workers();
+    if workers
+        .get(job_id)
+        .is_some_and(|current| Arc::ptr_eq(current, &state))
+        && state.active.load(Ordering::Acquire) == 0
+    {
+        workers.remove(job_id);
+    }
+}
+
+#[cfg(test)]
+struct TestStoreBarrier {
+    reached: std::sync::Barrier,
+    release: std::sync::Barrier,
+}
+
+#[cfg(test)]
+impl TestStoreBarrier {
+    fn new() -> Self {
+        Self {
+            reached: std::sync::Barrier::new(2),
+            release: std::sync::Barrier::new(2),
+        }
+    }
+}
 
 fn lock_index_connection() -> std::sync::MutexGuard<'static, ()> {
     INDEX_CONNECTION_GATE
@@ -45,6 +209,16 @@ pub(super) struct IndexAndScanResult {
     pub index_error: Option<String>,
 }
 
+impl IndexAndScanResult {
+    fn cancelled() -> Self {
+        Self {
+            outcome: ScanOutcome::default(),
+            indexed_games: 0,
+            index_error: None,
+        }
+    }
+}
+
 #[derive(Debug)]
 struct IndexedGame {
     ordinal: i64,
@@ -59,6 +233,7 @@ struct IndexedGame {
 struct ParsedArchive {
     games: Vec<IndexedGame>,
     error: Option<String>,
+    cancelled: bool,
 }
 
 pub(super) fn archive_index_path(cache_dir: &Path) -> PathBuf {
@@ -106,13 +281,15 @@ pub(super) async fn indexed_urls(
     index_path: &Path,
     urls: &[String],
     max_age: Option<Duration>,
+    run: IndexRun,
 ) -> Result<HashSet<String>, String> {
     if urls.is_empty() {
         return Ok(HashSet::new());
     }
     let index_path = index_path.to_path_buf();
     let urls = urls.to_vec();
-    tokio::task::spawn_blocking(move || {
+    spawn_tracked_blocking(run, move |run| {
+        run.check_cancelled()?;
         let mut connection = open_query_index(&index_path)?;
         let transaction = connection
             .transaction()
@@ -135,8 +312,10 @@ pub(super) async fn indexed_urls(
             .map_err(|error| error.to_string())?;
         let mut indexed = HashSet::new();
         for row in rows {
+            run.check_cancelled()?;
             indexed.insert(row.map_err(|error| error.to_string())?);
         }
+        run.check_cancelled()?;
         Ok(indexed)
     })
     .await
@@ -151,13 +330,21 @@ pub(super) async fn index_and_scan(
     identity: Arc<PlayerIdentity>,
     source: &'static str,
     from_year: u16,
+    run: IndexRun,
 ) -> IndexAndScanResult {
     let index_path = index_path.to_path_buf();
-    tokio::task::spawn_blocking(move || {
-        let parsed = parse_archive(bytes, format);
-        let outcome = scan_parsed_archive(&parsed, &identity, source, &archive_url, from_year);
+    spawn_tracked_blocking(run, move |run| {
+        let parsed = parse_archive(bytes, format, &run);
+        if parsed.cancelled || run.is_cancelled() {
+            return IndexAndScanResult::cancelled();
+        }
+        let outcome =
+            scan_parsed_archive(&parsed, &identity, source, &archive_url, from_year, &run);
+        if run.is_cancelled() {
+            return IndexAndScanResult::cancelled();
+        }
         let indexed_games = parsed.games.len();
-        let index_error = store_archive(&index_path, &archive_url, &parsed).err();
+        let index_error = store_archive(&index_path, &archive_url, &parsed, &run).err();
         IndexAndScanResult {
             outcome,
             indexed_games,
@@ -178,13 +365,15 @@ pub(super) async fn query_indexed(
     identity: Arc<PlayerIdentity>,
     source: &'static str,
     from_year: u16,
+    run: IndexRun,
 ) -> Result<HashMap<String, ScanOutcome>, String> {
     if archive_urls.is_empty() {
         return Ok(HashMap::new());
     }
     let index_path = index_path.to_path_buf();
     let archive_urls = archive_urls.to_vec();
-    tokio::task::spawn_blocking(move || {
+    spawn_tracked_blocking(run, move |run| {
+        run.check_cancelled()?;
         let mut connection = open_query_index(&index_path)?;
         let transaction = connection
             .transaction()
@@ -239,6 +428,7 @@ pub(super) async fn query_indexed(
             .map(|url| (url, ScanOutcome::default()))
             .collect::<HashMap<_, _>>();
         while let Some(row) = rows.next().map_err(|error| error.to_string())? {
+            run.check_cancelled()?;
             let archive_url = row.get::<_, String>(0).map_err(|error| error.to_string())?;
             let pgn_zstd = row
                 .get::<_, Vec<u8>>(1)
@@ -251,6 +441,7 @@ pub(super) async fn query_indexed(
                 filter_game(&pgn, &identity, source, &archive_url, from_year, outcome);
             }
         }
+        run.check_cancelled()?;
         Ok(outcomes)
     })
     .await
@@ -387,7 +578,7 @@ fn populate_matching_names(
         .map_err(|error| error.to_string())?;
     let cache_key = (
         index_path.to_path_buf(),
-        normalized_name(&identity.canonical_name),
+        MatchingIdentitySignature::new(identity),
         maximum_name_id,
     );
     let cache = MATCHING_NAME_CACHE.get_or_init(|| Mutex::new(HashMap::new()));
@@ -460,18 +651,28 @@ fn matching_name_patterns(identity: &PlayerIdentity) -> Vec<String> {
     patterns
 }
 
-fn store_archive(path: &Path, archive_url: &str, parsed: &ParsedArchive) -> Result<(), String> {
-    let encoded_games = parsed
-        .games
-        .iter()
-        .map(|game| {
-            zstd::bulk::compress(game.pgn.as_bytes(), 1)
-                .map(|compressed| (game, compressed))
-                .map_err(|error| error.to_string())
-        })
-        .collect::<Result<Vec<_>, _>>()?;
+fn store_archive(
+    path: &Path,
+    archive_url: &str,
+    parsed: &ParsedArchive,
+    run: &IndexRun,
+) -> Result<(), String> {
+    let mut encoded_games = Vec::with_capacity(parsed.games.len());
+    for game in &parsed.games {
+        run.check_cancelled()?;
+        let compressed =
+            zstd::bulk::compress(game.pgn.as_bytes(), 1).map_err(|error| error.to_string())?;
+        encoded_games.push((game, compressed));
+    }
+    #[cfg(test)]
+    run.wait_before_store();
+    // Acquiring the process-wide writer gate can itself take time. Recheck on
+    // both sides so a cancelled import never starts a queued transaction.
+    run.check_cancelled()?;
     let _gate = lock_index_connection();
+    run.check_cancelled()?;
     let mut connection = open_index(path)?;
+    run.check_cancelled()?;
     let transaction = connection
         .transaction()
         .map_err(|error| error.to_string())?;
@@ -522,6 +723,7 @@ fn store_archive(path: &Path, archive_url: &str, parsed: &ParsedArchive) -> Resu
             .map_err(|error| error.to_string())?;
         let mut name_ids = HashMap::new();
         for (game, compressed) in encoded_games {
+            run.check_cancelled()?;
             let white_name_id = resolve_name_id(
                 &mut insert_name,
                 &mut select_name,
@@ -548,6 +750,7 @@ fn store_archive(path: &Path, archive_url: &str, parsed: &ParsedArchive) -> Resu
                 .map_err(|error| error.to_string())?;
         }
     }
+    run.check_cancelled()?;
     transaction.commit().map_err(|error| error.to_string())
 }
 
@@ -573,21 +776,27 @@ fn resolve_name_id(
     Ok(Some(id))
 }
 
-fn parse_archive(bytes: Vec<u8>, format: ArchiveFormat) -> ParsedArchive {
+fn parse_archive(bytes: Vec<u8>, format: ArchiveFormat, run: &IndexRun) -> ParsedArchive {
+    if run.is_cancelled() {
+        return ParsedArchive {
+            cancelled: true,
+            ..ParsedArchive::default()
+        };
+    }
     match format {
-        ArchiveFormat::Pgn => parse_reader(BufReader::new(Cursor::new(bytes)), 0),
+        ArchiveFormat::Pgn => parse_reader(BufReader::new(Cursor::new(bytes)), 0, run),
         ArchiveFormat::Zstd => match zstd::stream::read::Decoder::new(Cursor::new(bytes)) {
-            Ok(decoder) => parse_reader(BufReader::new(decoder), 0),
+            Ok(decoder) => parse_reader(BufReader::new(decoder), 0, run),
             Err(error) => ParsedArchive {
                 error: Some(error.to_string()),
                 ..ParsedArchive::default()
             },
         },
-        ArchiveFormat::Zip => parse_zip(bytes),
+        ArchiveFormat::Zip => parse_zip(bytes, run),
     }
 }
 
-fn parse_zip(bytes: Vec<u8>) -> ParsedArchive {
+fn parse_zip(bytes: Vec<u8>, run: &IndexRun) -> ParsedArchive {
     let mut archive = match zip::ZipArchive::new(Cursor::new(bytes)) {
         Ok(archive) => archive,
         Err(error) => {
@@ -599,6 +808,10 @@ fn parse_zip(bytes: Vec<u8>) -> ParsedArchive {
     };
     let mut parsed = ParsedArchive::default();
     for index in 0..archive.len() {
+        if run.is_cancelled() {
+            parsed.cancelled = true;
+            break;
+        }
         let mut file = match archive.by_index(index) {
             Ok(file) => file,
             Err(error) => {
@@ -615,8 +828,12 @@ fn parse_zip(bytes: Vec<u8>) -> ParsedArchive {
             break;
         }
         let next_ordinal = parsed.games.len() as i64;
-        let next = parse_reader(BufReader::new(Cursor::new(entry)), next_ordinal);
+        let next = parse_reader(BufReader::new(Cursor::new(entry)), next_ordinal, run);
         parsed.games.extend(next.games);
+        if next.cancelled {
+            parsed.cancelled = true;
+            break;
+        }
         if next.error.is_some() {
             parsed.error = next.error;
             break;
@@ -625,10 +842,14 @@ fn parse_zip(bytes: Vec<u8>) -> ParsedArchive {
     parsed
 }
 
-fn parse_reader<R: BufRead>(mut reader: R, first_ordinal: i64) -> ParsedArchive {
+fn parse_reader<R: BufRead>(mut reader: R, first_ordinal: i64, run: &IndexRun) -> ParsedArchive {
     let mut state = PgnStreamState::new();
     let mut parsed = ParsedArchive::default();
     loop {
+        if run.is_cancelled() {
+            parsed.cancelled = true;
+            break;
+        }
         let game = match read_next_game(&mut reader, &mut state) {
             Ok(game) => game,
             Err(error) => {
@@ -660,9 +881,13 @@ fn scan_parsed_archive(
     source: &str,
     archive_url: &str,
     from_year: u16,
+    run: &IndexRun,
 ) -> ScanOutcome {
     let mut outcome = ScanOutcome::default();
     for game in &parsed.games {
+        if run.is_cancelled() {
+            return ScanOutcome::default();
+        }
         filter_game(
             &game.pgn,
             identity,
@@ -720,6 +945,10 @@ fn unix_timestamp() -> i64 {
 mod tests {
     use super::*;
 
+    fn test_run(job_id: &str) -> IndexRun {
+        IndexRun::new(job_id, Arc::new(AtomicBool::new(false)))
+    }
+
     fn sample_pgn() -> String {
         r#"[Event "OTB Test"]
 [Site "London"]
@@ -753,6 +982,7 @@ mod tests {
         initialize(&path).await.unwrap();
         let identity =
             Arc::new(PlayerIdentity::new("Tyrrell, Lachlan Baly Hughes", Some("6003788")).unwrap());
+        let run = test_run("indexed-query-filter-test");
         let indexed = index_and_scan(
             &path,
             "https://example.test/games.pgn".to_string(),
@@ -761,6 +991,7 @@ mod tests {
             Arc::clone(&identity),
             "Fixture",
             1900,
+            run.clone(),
         )
         .await;
         assert_eq!(indexed.indexed_games, 2);
@@ -774,6 +1005,7 @@ mod tests {
             identity,
             "Fixture",
             1900,
+            run,
         )
         .await
         .unwrap();
@@ -788,10 +1020,66 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn name_only_cache_cannot_hide_fuzzy_matches_from_fide_pinned_query() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = archive_index_path(temp.path());
+        initialize(&path).await.unwrap();
+        let archive_url = "https://example.test/typo-name.pgn".to_string();
+        let pgn = r#"[Event "OTB Typo Test"]
+[Site "London"]
+[Date "2026.08.22"]
+[Round "1"]
+[White "Tyrell, Lachlan"]
+[Black "Opponent, One"]
+[Result "1-0"]
+
+1. e4 e5 2. Nf3 Nc6 1-0
+"#;
+        let pinned_identity =
+            Arc::new(PlayerIdentity::new("Tyrrell, Lachlan", Some("6003788")).unwrap());
+        let run = test_run("identity-cache-index-test");
+        let indexed = index_and_scan(
+            &path,
+            archive_url.clone(),
+            pgn.as_bytes().to_vec(),
+            ArchiveFormat::Pgn,
+            Arc::clone(&pinned_identity),
+            "Fixture",
+            1900,
+            run.clone(),
+        )
+        .await;
+        assert_eq!(indexed.indexed_games, 1);
+        assert_eq!(indexed.outcome.games.len(), 1);
+
+        let archive_urls = vec![archive_url.clone()];
+        let name_only = query_indexed(
+            &path,
+            &archive_urls,
+            Arc::new(PlayerIdentity::new("Tyrrell, Lachlan", None).unwrap()),
+            "Fixture",
+            1900,
+            run.clone(),
+        )
+        .await
+        .unwrap();
+        assert!(name_only[&archive_url].games.is_empty());
+
+        let pinned = query_indexed(&path, &archive_urls, pinned_identity, "Fixture", 1900, run)
+            .await
+            .unwrap();
+        assert_eq!(pinned[&archive_url].games.len(), 1);
+        assert!(pinned[&archive_url].games[0]
+            .pgn
+            .contains("[White \"Tyrrell, Lachlan\"]"));
+    }
+
+    #[tokio::test]
     async fn only_complete_fresh_archives_are_reused() {
         let temp = tempfile::tempdir().unwrap();
         let path = archive_index_path(temp.path());
         let identity = Arc::new(PlayerIdentity::new("Tyrrell, Lachlan", Some("6003788")).unwrap());
+        let run = test_run("fresh-archive-test");
         index_and_scan(
             &path,
             "https://example.test/games.pgn".to_string(),
@@ -800,16 +1088,90 @@ mod tests {
             identity,
             "Fixture",
             1900,
+            run.clone(),
         )
         .await;
         let urls = vec!["https://example.test/games.pgn".to_string()];
-        assert_eq!(indexed_urls(&path, &urls, None).await.unwrap().len(), 1);
         assert_eq!(
-            indexed_urls(&path, &urls, Some(Duration::from_secs(0)))
+            indexed_urls(&path, &urls, None, run.clone())
                 .await
                 .unwrap()
                 .len(),
             1
         );
+        assert_eq!(
+            indexed_urls(&path, &urls, Some(Duration::from_secs(0)), run.clone(),)
+                .await
+                .unwrap()
+                .len(),
+            1
+        );
+        wait_for_workers(&run.job_id).await;
+    }
+
+    #[tokio::test]
+    async fn cancelled_detached_writer_is_drained_without_committing() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = archive_index_path(temp.path());
+        initialize(&path).await.unwrap();
+        let identity = Arc::new(PlayerIdentity::new("Tyrrell, Lachlan", Some("6003788")).unwrap());
+        let cancellation = Arc::new(AtomicBool::new(false));
+        let barrier = Arc::new(TestStoreBarrier::new());
+        let run = IndexRun::new("detached-cancel-test", Arc::clone(&cancellation))
+            .with_store_barrier(Arc::clone(&barrier));
+        let worker_path = path.clone();
+        let worker_run = run.clone();
+        let task = tokio::spawn(async move {
+            index_and_scan(
+                &worker_path,
+                "https://example.test/cancelled.pgn".to_string(),
+                sample_pgn().into_bytes(),
+                ArchiveFormat::Pgn,
+                identity,
+                "Fixture",
+                1900,
+                worker_run,
+            )
+            .await
+        });
+
+        let reached = Arc::clone(&barrier);
+        tokio::task::spawn_blocking(move || reached.reached.wait())
+            .await
+            .unwrap();
+        task.abort();
+        match task.await {
+            Err(error) => assert!(error.is_cancelled()),
+            Ok(_) => panic!("the async owner should have been aborted"),
+        }
+        cancellation.store(true, Ordering::Release);
+
+        let job_id = run.job_id.clone();
+        let drain = tokio::spawn(async move { wait_for_workers(&job_id).await });
+        tokio::task::yield_now().await;
+        assert!(
+            !drain.is_finished(),
+            "the drain must wait for a detached blocking worker"
+        );
+
+        let release = Arc::clone(&barrier);
+        tokio::task::spawn_blocking(move || release.release.wait())
+            .await
+            .unwrap();
+        tokio::time::timeout(Duration::from_secs(2), drain)
+            .await
+            .expect("detached writer drained")
+            .expect("drain task completed");
+
+        let inspect_run = test_run("detached-cancel-inspection");
+        let urls = vec!["https://example.test/cancelled.pgn".to_string()];
+        assert!(
+            indexed_urls(&path, &urls, None, inspect_run.clone())
+                .await
+                .unwrap()
+                .is_empty(),
+            "a cancellation observed before the transaction must not mark the archive complete"
+        );
+        wait_for_workers(&inspect_run.job_id).await;
     }
 }

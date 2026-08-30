@@ -13,6 +13,8 @@
 - En Croissant desktop, the PC-hosted En Croissant phone companion, and Outpost are separate delivery targets for shared chess features. A shared-feature improvement is not complete until it has been evaluated, carried across all three targets where applicable, and verified separately on each target.
 - This rule applies especially to the OTB importer, FIDE identity lookup, source coverage/defaults, caching/indexing, filtering, deduplication, progress/cancellation, and failure handling. Record any intentional target-specific exception and its reason here and in the delivery handoff; never silently leave one target behind.
 - Port behavior through each product's native architecture rather than copying incompatible whole files. Preserve Outpost's proprietary/licensing boundary and dependency-free tolerant PGN parser; preserve En Croissant's Tauri bindings and the phone companion's deployed native collector/service boundary.
+- On 2026-08-30, the shared collector became deterministic and coverage-strict: all ten source lanes run concurrently and report elapsed time, accepted candidates replay in a total order, cancellation-aware index workers drain before checkpointing, and a non-cancelled source gap prevents creation of a misleading partial prep database. Complete indexed months suppress redundant historical live-broadcast downloads. Lichess FIDE/Chessscope rounds resolve exact single-chapter PGNs from round metadata, preserving clocks, evaluations, and annotations with whole-round fallback on any ambiguity or failure; this reduced Adam Taylor's exact 580-game collection from 69.818s to 3.105s and Gwilym Price's full import from 52.5s to 5.352s without dropping a canonical game.
+- The same milestone enables every public source by default, derives the untouched start year from the selected FIDE player's valid birth year (falling back to 1900 only when unknown), fully discovers and indexes BritBase, sanitizes malformed public PGN headers, preserves meaningful header-only games, and rejects only ambiguous same-player-on-both-sides composites. Fresh all-source acceptance including strict database conversion completed Praggnanandhaa R at 3,908/3,908 games in 7.039s and James Tapp at 85/85 in 2.065s, both with ten complete source reports, no coverage gaps, exact provenance counts, and zero unknown-player games. Preserve the exact-game fallback, source-complete gate, player-independent corpus reuse, and under-10-second brand-new-player benchmark when changing this importer.
 - On 2026-08-29, the persistent SQLite OTB index, all-source defaults, failure bounds, coverage-gap logic, aggregate downloads, and shared-cache behavior were ported to Outpost and verified with 27 focused Rust tests, all 176 non-ignored Outpost Rust tests, all 2,109 Outpost TypeScript tests, a production build, and a seeded 10-lane Anish Giri run returning 3,941 games in 11.315 seconds.
 
 - On 2026-08-27, the PC-hosted phone LCZero switch became authoritative over
@@ -54,7 +56,7 @@
   games in 3.945 seconds after indexing, compared with the shipped phone run's
   389 games in 11m26s. Preserve the all-source defaults, exact filtering,
   failure-visible fallbacks, below-normal phone worker priority, and the
-  under-30-second warm acceptance benchmark when changing this importer.
+  under-10-second source-complete cold-player acceptance benchmark when changing this importer.
 
 - On 2026-08-21, the phone Import workspace gained PGN as a first-class source
   beside Chess.com, Lichess, and OTB. It offers a one-tap mobile file picker and
