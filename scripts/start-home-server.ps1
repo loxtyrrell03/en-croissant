@@ -1,117 +1,113 @@
 param(
   [int]$Port = 8787,
-  [switch]$ForceRestart
+  [switch]$ForceRestart,
+  [switch]$StageOnly
 )
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$gitCommonDirectory = (& git -C $repoRoot rev-parse --path-format=absolute --git-common-dir).Trim()
-if ($LASTEXITCODE -ne 0) {
-  throw 'Could not resolve the canonical En Croissant checkout.'
+$gitCommand = Get-Command git.exe -ErrorAction SilentlyContinue
+if (-not $gitCommand) {
+  $bundledGit = 'C:\Users\Lox\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\git\cmd\git.exe'
+  if (Test-Path -LiteralPath $bundledGit) {
+    $gitCommand = Get-Item -LiteralPath $bundledGit
+  }
 }
-$canonicalRepoRoot = Split-Path -Parent $gitCommonDirectory
+$gitExe = if ($gitCommand -is [System.Management.Automation.ApplicationInfo]) {
+  $gitCommand.Source
+} elseif ($gitCommand) {
+  $gitCommand.FullName
+}
+$sourceCommit = $null
+if ($gitCommand) {
+  $gitCommonDirectory = (& $gitExe -C $repoRoot rev-parse --path-format=absolute --git-common-dir).Trim()
+  if ($LASTEXITCODE -eq 0 -and $gitCommonDirectory) {
+    $canonicalRepoRoot = Split-Path -Parent $gitCommonDirectory
+    $sourceCommit = (& $gitExe -C $repoRoot rev-parse HEAD).Trim()
+  }
+}
+if (-not $canonicalRepoRoot) {
+  $canonicalRepoRoot = $repoRoot
+}
+
 $serverRoot = Join-Path $env:LOCALAPPDATA 'EnCroissantHomeServer'
-$pidPath = Join-Path $serverRoot 'home-server.pid'
-$stdoutPath = Join-Path $serverRoot 'stdout.log'
-$stderrPath = Join-Path $serverRoot 'stderr.log'
 $runtimeRoot = Join-Path $serverRoot 'runtime'
-$serverScript = Join-Path $runtimeRoot 'home-server.mjs'
-$sourceServerScript = Join-Path $PSScriptRoot 'home-server.mjs'
-$sourceLibraryIndex = Join-Path $PSScriptRoot 'home-library-index.mjs'
-$sourceChessCoachService = Join-Path $PSScriptRoot 'chess-coach-service.mjs'
-$sourceChessCoachDerived = Join-Path $PSScriptRoot 'chess-coach-derived.mjs'
-$sourceLocalEvalReader = Join-Path $PSScriptRoot 'lichess-local-eval-reader.mjs'
-$node = (Get-Command node.exe -ErrorAction Stop).Source
-$healthUrl = "http://127.0.0.1:$Port/api/health"
+$runtimeGeneratedRoot = Join-Path $runtimeRoot 'generated'
+$launcherRoot = Join-Path $serverRoot 'launcher'
+$installedLauncher = Join-Path $launcherRoot 'run-installed-home-server.ps1'
+$deploymentPath = Join-Path $serverRoot 'runtime-deployment.json'
+$sourceStatsWorkerRoot = Join-Path $PSScriptRoot 'generated'
+$sourceLauncher = Join-Path $PSScriptRoot 'run-installed-home-server.ps1'
 
 New-Item -ItemType Directory -Path $serverRoot -Force | Out-Null
 New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
+New-Item -ItemType Directory -Path $runtimeGeneratedRoot -Force | Out-Null
+New-Item -ItemType Directory -Path $launcherRoot -Force | Out-Null
 
-foreach ($runtimeFile in @(
-  @{ Source = $sourceServerScript; Destination = $serverScript },
-  @{ Source = $sourceLibraryIndex; Destination = (Join-Path $runtimeRoot 'home-library-index.mjs') },
-  @{ Source = $sourceChessCoachService; Destination = (Join-Path $runtimeRoot 'chess-coach-service.mjs') },
-  @{ Source = $sourceChessCoachDerived; Destination = (Join-Path $runtimeRoot 'chess-coach-derived.mjs') },
-  @{ Source = $sourceLocalEvalReader; Destination = (Join-Path $runtimeRoot 'lichess-local-eval-reader.mjs') }
-)) {
-  $temporaryRuntimeFile = "$($runtimeFile.Destination).next-$PID"
-  Copy-Item -LiteralPath $runtimeFile.Source -Destination $temporaryRuntimeFile -Force
-  Move-Item -LiteralPath $temporaryRuntimeFile -Destination $runtimeFile.Destination -Force
+$runtimeFiles = @(
+  'home-server.mjs',
+  'home-library-index.mjs',
+  'chess-coach-service.mjs',
+  'chess-coach-derived.mjs',
+  'lichess-local-eval-reader.mjs',
+  'otb-import-service.mjs',
+  'otb-prep-parallel.mjs',
+  'otb-prep-worker.mjs',
+  'terminate-collector-process-tree.ps1',
+  'fide-player-search.mjs',
+  'stats-entry-quality.mjs'
+)
+foreach ($fileName in $runtimeFiles) {
+  $source = Join-Path $PSScriptRoot $fileName
+  $destination = Join-Path $runtimeRoot $fileName
+  $temporary = "$destination.next-$PID"
+  Copy-Item -LiteralPath $source -Destination $temporary -Force
+  Move-Item -LiteralPath $temporary -Destination $destination -Force
 }
 
-function Test-EnCroissantHomeServerProcess {
-  param($Process)
-
-  if (-not $Process) { return $false }
-  $commandLine = [string]$Process.CommandLine
-  return $commandLine -like "*$serverScript*" -or $commandLine -like "*$sourceServerScript*"
-}
-
-if (-not $ForceRestart) {
-  try {
-    $health = Invoke-RestMethod -Uri $healthUrl -TimeoutSec 2
-    if ($health.ok) {
-      exit 0
+if (Test-Path -LiteralPath $sourceStatsWorkerRoot) {
+  Get-ChildItem -LiteralPath $sourceStatsWorkerRoot -File | ForEach-Object {
+    foreach ($destinationRoot in @($runtimeRoot, $runtimeGeneratedRoot)) {
+      $destination = Join-Path $destinationRoot $_.Name
+      $temporary = "$destination.next-$PID"
+      Copy-Item -LiteralPath $_.FullName -Destination $temporary -Force
+      Move-Item -LiteralPath $temporary -Destination $destination -Force
     }
-  } catch {
   }
 }
 
-if (Test-Path -LiteralPath $pidPath) {
-  $oldPid = [int](Get-Content -Raw -LiteralPath $pidPath)
-  $oldProcess = Get-CimInstance Win32_Process -Filter "ProcessId=$oldPid" -ErrorAction SilentlyContinue
-  if (Test-EnCroissantHomeServerProcess $oldProcess) {
-    Stop-Process -Id $oldPid -Force -ErrorAction SilentlyContinue
-    Wait-Process -Id $oldPid -Timeout 5 -ErrorAction SilentlyContinue
-  }
+$temporaryLauncher = "$installedLauncher.next-$PID"
+Copy-Item -LiteralPath $sourceLauncher -Destination $temporaryLauncher -Force
+Move-Item -LiteralPath $temporaryLauncher -Destination $installedLauncher -Force
+
+$deployment = [ordered]@{
+  schemaVersion = 1
+  sourceCommit = $sourceCommit
+  repoRoot = $canonicalRepoRoot
+  stagedAt = (Get-Date).ToUniversalTime().ToString('o')
+}
+$temporaryDeployment = "$deploymentPath.next-$PID"
+$deployment | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath $temporaryDeployment -Encoding utf8
+Move-Item -LiteralPath $temporaryDeployment -Destination $deploymentPath -Force
+
+if ($StageOnly) {
+  exit 0
 }
 
+$arguments = @(
+  '-NoProfile',
+  '-NonInteractive',
+  '-ExecutionPolicy',
+  'Bypass',
+  '-File',
+  $installedLauncher,
+  '-Port',
+  [string]$Port,
+  '-ServerRoot',
+  $serverRoot
+)
 if ($ForceRestart) {
-  $listeners = @(Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue)
-  foreach ($listener in $listeners) {
-    $listenerProcess = Get-CimInstance Win32_Process `
-      -Filter "ProcessId=$($listener.OwningProcess)" `
-      -ErrorAction SilentlyContinue
-    if (-not $listenerProcess) {
-      continue
-    }
-    if (-not (Test-EnCroissantHomeServerProcess $listenerProcess)) {
-      throw "Port $Port is already owned by another process: $($listenerProcess.CommandLine)"
-    }
-    Stop-Process -Id $listener.OwningProcess -Force -ErrorAction SilentlyContinue
-    Wait-Process -Id $listener.OwningProcess -Timeout 5 -ErrorAction SilentlyContinue
-  }
+  $arguments += '-ForceRestart'
 }
-
-$env:EN_CROISSANT_HOME_SERVER_PORT = [string]$Port
-$env:EN_CROISSANT_REPO_ROOT = $canonicalRepoRoot
-$process = Start-Process -FilePath $node `
-  -ArgumentList "`"$serverScript`"" `
-  -WorkingDirectory $canonicalRepoRoot `
-  -WindowStyle Hidden `
-  -RedirectStandardOutput $stdoutPath `
-  -RedirectStandardError $stderrPath `
-  -PassThru
-
-# The phone proxy must be able to forward stream chunks and cancellations even
-# while Stockfish occupies every logical processor.
-$process.PriorityClass = 'Normal'
-
-Set-Content -LiteralPath $pidPath -Value $process.Id -Encoding ascii
-
-$deadline = (Get-Date).AddSeconds(30)
-while ((Get-Date) -lt $deadline) {
-  Start-Sleep -Milliseconds 500
-  if ($process.HasExited) {
-    throw "Home server exited during startup. See $stderrPath"
-  }
-  try {
-    $health = Invoke-RestMethod -Uri $healthUrl -TimeoutSec 2
-    if ($health.ok -and [int]$health.pid -eq $process.Id) {
-      exit 0
-    }
-  } catch {
-  }
-}
-
-throw "Timed out waiting for the home server. See $stderrPath"
+& powershell.exe @arguments
+exit $LASTEXITCODE

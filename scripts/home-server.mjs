@@ -23,6 +23,8 @@ import {
   HostedLibraryIndexCache,
   listHostedLibraryDirectory,
 } from "./home-library-index.mjs";
+import { FidePlayerSearchService } from "./fide-player-search.mjs";
+import { OtbImportService } from "./otb-import-service.mjs";
 import { getOpeningIdentificationBook, publicDerivedEvidence } from "./chess-coach-derived.mjs";
 import {
   buildCodexCoachInvocation,
@@ -124,6 +126,12 @@ const coachWorkRoot = join(serverRoot, "coach-work");
 const coachLibraryPlanSchemaPath = join(coachWorkRoot, "library-plan.schema.json");
 const coachReviewSchemaPath = join(coachWorkRoot, "coach-review.schema.json");
 const statsReportSchemaPath = join(coachWorkRoot, "stats-report.schema.json");
+const otbImportRoot = join(serverRoot, "otb-import");
+const otbImportBinaryPath = join(
+  serverRoot,
+  "runtime",
+  process.platform === "win32" ? "collect_otb_games.exe" : "collect_otb_games",
+);
 const coachSweepDepth = positiveInteger(process.env.EN_CROISSANT_COACH_SWEEP_DEPTH, 18);
 const coachProcessEnv = {
   ...process.env,
@@ -141,6 +149,7 @@ const maxStateBytes = 256 * 1024 * 1024;
 const maxCredentialBytes = 4 * 1024;
 const maxCoachRequestBytes = 512 * 1024;
 const maxCoachReviewBytes = 2 * 1024 * 1024;
+const maxOtbImportRequestBytes = 32 * 1024;
 const lichessExplorerFreshMs = 30 * 60 * 1000;
 const lichessPlayerExplorerFreshMs = 5 * 60 * 1000;
 const lichessMastersExplorerFreshMs = 24 * 60 * 60 * 1000;
@@ -160,6 +169,7 @@ const configuredPrivateCredentialOrigins = String(process.env.EN_CROISSANT_PRIVA
     }
   });
 const privateCredentialOrigins = new Set([
+  "https://lox-pc.tail89d19b.ts.net",
   "https://gaming-pc.tail89d19b.ts.net",
   "http://localhost:1420",
   "http://tauri.localhost",
@@ -196,10 +206,17 @@ let coachAuthenticationCache = { checkedAt: 0, status: "unknown" };
 let coachUsageLimitCache = null;
 let coachAuthenticationProbe = null;
 let localEvalStoreIssueLogged = false;
+const otbImportService = new OtbImportService({
+  root: otbImportRoot,
+  binaryPath: otbImportBinaryPath,
+  onLog: (message) => void appendLog(message),
+});
+const fidePlayerSearch = new FidePlayerSearchService();
 
 await mkdir(serverRoot, { recursive: true });
 await mkdir(dirname(statePath), { recursive: true });
 await mkdir(coachWorkRoot, { recursive: true });
+await otbImportService.initialize();
 await Promise.all([
   writeFile(coachLibraryPlanSchemaPath, JSON.stringify(COACH_LIBRARY_PLAN_SCHEMA, null, 2)),
   writeFile(coachReviewSchemaPath, JSON.stringify(COACH_REVIEW_SCHEMA, null, 2)),
@@ -235,6 +252,7 @@ async function handleRequest(request, response) {
     pathname.startsWith("/api/chess-coach") ||
     pathname.startsWith("/api/chess-books") ||
     pathname === "/api/engine/start" ||
+    pathname.startsWith("/api/otb-import") ||
     pathname === "/v1" ||
     pathname.startsWith("/v1/");
   setCorsHeaders(request, response, sensitiveApi);
@@ -299,7 +317,71 @@ async function handleRequest(request, response) {
       chessBookCorpusAvailable: Boolean(await stat(chessBookCorpusPath).catch(() => null)),
       coachModel,
       coachCommandAvailable: Boolean(await stat(coachCommandPath).catch(() => null)),
+      otbImporterAvailable: await otbImportService.isAvailable(),
+      otbImportJobs: otbImportService.jobs.size,
     });
+  }
+
+  if (pathname === "/api/otb-import/jobs") {
+    if (method !== "POST") return writeJson(response, 405, { error: "Method not allowed." });
+    try {
+      const payload = await readJsonBody(request, maxOtbImportRequestBytes);
+      const job = await otbImportService.createJob(payload);
+      return writeJson(response, 202, job, { "cache-control": "no-store" });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const status = /not installed/i.test(message) ? 503 : 400;
+      return writeJson(response, status, { error: message }, { "cache-control": "no-store" });
+    }
+  }
+
+  if (pathname === "/api/otb-import/players") {
+    if (method !== "GET") return writeJson(response, 405, { error: "Method not allowed." });
+    const query = String(requestUrl.searchParams.get("q") || "").trim();
+    const minimum = /^\d+$/.test(query) ? 4 : 3;
+    if (query.length < minimum) {
+      return writeJson(response, 400, { error: "Enter more of the player name or FIDE ID." });
+    }
+    try {
+      return writeJson(
+        response,
+        200,
+        { players: await fidePlayerSearch.search(query) },
+        { "cache-control": "private, max-age=300" },
+      );
+    } catch (error) {
+      return writeJson(response, 502, {
+        error: error instanceof Error ? error.message : "FIDE player search failed.",
+      });
+    }
+  }
+
+  const otbArtifactMatch = pathname.match(/^\/api\/otb-import\/jobs\/([A-Za-z0-9_-]+)\/artifact$/);
+  if (otbArtifactMatch) {
+    if (method !== "GET") return writeJson(response, 405, { error: "Method not allowed." });
+    const job = otbImportService.getJob(otbArtifactMatch[1]);
+    if (!job) return writeJson(response, 404, { error: "OTB import job not found." });
+    if (job.status !== "completed") {
+      return writeJson(response, 409, { error: "The OTB import result is not ready yet." });
+    }
+    const artifact = await otbImportService.getJobArtifact(job.id);
+    return artifact
+      ? writeJsonArtifact(response, artifact)
+      : writeJson(response, 500, { error: "The completed OTB result artifact is missing." });
+  }
+
+  const otbJobMatch = pathname.match(/^\/api\/otb-import\/jobs\/([A-Za-z0-9_-]+)$/);
+  if (otbJobMatch) {
+    if (method !== "GET" && method !== "DELETE") {
+      return writeJson(response, 405, { error: "Method not allowed." });
+    }
+    const job =
+      method === "DELETE"
+        ? await otbImportService.cancelJob(otbJobMatch[1])
+        : otbImportService.getJob(otbJobMatch[1]);
+    return job
+      ? writeJson(response, 200, job, { "cache-control": "no-store" })
+      : writeJson(response, 404, { error: "OTB import job not found." });
   }
 
   if (pathname === "/api/chess-coach/health") {
@@ -2367,6 +2449,18 @@ function writeJson(response, status, body, extraHeaders = {}) {
   response.end(text);
 }
 
+function writeJsonArtifact(response, artifact) {
+  response.writeHead(200, {
+    "cache-control": "no-store",
+    "content-length": artifact.size,
+    "content-type": "application/json; charset=utf-8",
+    "x-content-type-options": "nosniff",
+  });
+  const stream = createReadStream(artifact.path);
+  stream.on("error", (error) => response.destroy(error));
+  return stream.pipe(response);
+}
+
 function writeJsonIfConnected(response, status, body, extraHeaders = {}) {
   if (response.destroyed || response.writableEnded) return;
   return writeJson(response, status, body, extraHeaders);
@@ -2374,7 +2468,7 @@ function writeJsonIfConnected(response, status, body, extraHeaders = {}) {
 
 function setCorsHeaders(request, response, sensitive = false) {
   response.setHeader("access-control-allow-headers", "content-type");
-  response.setHeader("access-control-allow-methods", "GET, HEAD, POST, PUT, OPTIONS");
+  response.setHeader("access-control-allow-methods", "GET, HEAD, POST, PUT, DELETE, OPTIONS");
   const origin = String(request.headers.origin || "").replace(/\/$/, "");
   if (!sensitive) {
     response.setHeader("access-control-allow-origin", "*");

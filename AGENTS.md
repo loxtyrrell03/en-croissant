@@ -15,15 +15,118 @@
 - Port behavior through each product's native architecture rather than copying incompatible whole files. Preserve Outpost's proprietary/licensing boundary and dependency-free tolerant PGN parser; preserve En Croissant's Tauri bindings and the phone companion's deployed native collector/service boundary.
 - On 2026-08-29, the persistent SQLite OTB index, all-source defaults, failure bounds, coverage-gap logic, aggregate downloads, and shared-cache behavior were ported to Outpost and verified with 27 focused Rust tests, all 176 non-ignored Outpost Rust tests, all 2,109 Outpost TypeScript tests, a production build, and a seeded 10-lane Anish Giri run returning 3,941 games in 11.315 seconds.
 
-- On 2026-08-29, the desktop OTB import form began deriving `Since` from a
-  selected or import-time-resolved player's valid FIDE birth year, with 1900
-  retained only as the unknown-year fallback. A manually edited year remains
-  authoritative, and the freshly resolved year is used directly for the same
-  import's title and request rather than waiting for React state. All seven OTB
-  source groups remain enabled by default. The two focused utility suites passed
-  12 tests, touched-file formatting/lint passed, and the TypeScript production
-  build passed. This desktop-only milestone did not change the shared Rust
-  collector or phone companion files.
+- On 2026-08-30, phone collector PGN output stopped using an `Event`-only
+  boundary regex. The service now starts a new game at any top-level PGN tag
+  after movetext, carries multiline brace-comment state, ignores semicolon
+  comment lookalikes, and reads summary metadata only from the real header
+  block. Consecutive Eventless games, reordered `Event` tags, zero-move games,
+  and a headerless game followed by tagged games retain their exact trimmed PGN
+  blocks and deterministic IDs in the immutable compact artifact. Existing
+  artifact migration and collector/process lifecycle behavior are unchanged.
+  Verification passed 21 focused service tests, all 87 home-server Node tests,
+  15 focused OTB web tests, TypeScript checking, targeted formatter checks, the
+  OTB-prep build, and the production Vite build. The full web suite retained 655
+  passing tests and its five unrelated baseline failures in private-server URL,
+  engine-detail wording, audio mocking, and timestamp expectations. This
+  milestone is source-only and was not deployed.
+
+- On 2026-08-30, the phone OTB form adopted the same birth-year rule as the
+  desktop importer: a valid FIDE birth year is the automatic full-career start,
+  unknown or malformed years fall back to 1900, and an explicitly edited year
+  remains authoritative. Identity resolved during Start supplies its year to
+  that same request rather than waiting for React state. All seven source lanes
+  remain default-on and are shown separately, including distinct ChessBase-news
+  and official-index controls. The PC service now refuses to read, transform,
+  or persist a non-cancelled collector result unless it proves complete source
+  coverage, retaining the reported gaps in the failed status while historical
+  completed jobs without the newer fields still load. Focused model, web, and
+  service tests plus type and production builds passed. Explicitly unticking
+  either Lichess archive lane is serialized with its native `--no-*` flag, so
+  the phone controls remain authoritative after the native collector changed
+  those lanes to default-on. This milestone is source-only and was not
+  deployed.
+
+- On 2026-08-30, the phone OTB job service split compact poll status from one
+  immutable completed game/prep artifact. Legacy inline jobs migrate
+  sequentially and losslessly at startup, `completedAt` is assigned only after
+  the artifact rename succeeds, the artifact is streamed without server-side
+  reparsing, and a shared browser watcher gives the Import panel and Prep
+  completion consumer one status poll and one artifact fetch per job. On the
+  existing 4,681-game/112 MB phone result, ten completion polls fell from
+  1,121,481,140 transferred bytes to 112,173,514 (89.998% less); the game/prep
+  content SHA-256 remained identical and the compact status was 2,811 bytes.
+  Verification passed 11 focused Node service tests, 14 focused web tests,
+  TypeScript checking, and both OTB-prep and production Vite builds. This
+  milestone is not deployed; it deliberately does not alter the Rust collector,
+  birth-year form behavior, scheduled launcher, or managed-process cleanup.
+
+- On 2026-08-30, new phone OTB jobs began constructing the complete prep
+  artifact in at most four contiguous worker-thread chunks after the native
+  collector exits. The merge uses parsed-game prefixes rather than wrapper
+  counts, preserves intentional invalid-start gaps, concatenates games and
+  warnings in source order, deterministically rebuilds metadata, terminates
+  sibling workers on failure, and falls back to the unchanged lossless
+  single-thread builder. Mainline hydration also reuses each exact `fenAfter`
+  as the next move's `fenBefore`, avoiding one duplicate FEN conversion per
+  ply; the generated Node builder and managed runtime copy list were refreshed.
+  The existing sequential legacy-job migration remains unchanged. On the real
+  4,681-wrapper/4,684-prep-game fixture with 24 warnings and a 112,145,404-byte
+  atomically written artifact, the historical 6.388-second source-ready
+  interval plus measured completion work projected a pre-change single-thread
+  total of 11.359 seconds. Five final four-worker projections were
+  8.372-9.635 seconds (8.507-second median), including parsing, construction,
+  JSON serialization, atomic artifact write and byte scan, and both durable
+  compact-status writes. Every run
+  retained game SHA-256 `7bf5a310be24fcb29f18621922c77577df8307b867f5f8a23b40d4b18b83a1c7`
+  and prep SHA-256 `70c362135004ed76fa82095b01690c80e4f538033ed2f7566d4282a81ad84b2f`.
+  Verification passed 13 focused service tests, the OTB Prep and live-replay
+  web tests, TypeScript checking, lint/format checks, and production builds.
+  This milestone is source-only and not deployed; it does not alter the Rust
+  collector, birth-year form, scheduled task, or live managed processes.
+
+- On 2026-08-30, the phone home-server scheduled task moved to an installed,
+  source-independent launcher under the managed server root. Publishing now
+  migrates and verifies that task action before changing runtime files, while
+  `start-home-server.ps1` is only the explicit checkout-to-runtime stager; an
+  older checkout in a historical task action can no longer overwrite a newer
+  deployment at logon. OTB jobs durably record their job-bound collector PID,
+  and Stop or restart recovery uses an executable- and `--job-id`-verified
+  Windows `taskkill /T /F` helper so the exact collector process tree is gone
+  before the job unlocks without risking a reused PID. Parallel prep also has
+  a regression proving a synchronous Worker-constructor failure is caught,
+  every already-created sibling is terminated, and the lossless sequential
+  fallback is returned. Verification passed all 85 home-server Node tests,
+  the focused PowerShell launcher/parser and live PID-refusal checks, and
+  formatter/linter checks. This milestone is source-only: do not claim the
+  scheduled task or live runtime is migrated until the task action and health
+  deployment commit are inspected after a real publish.
+
+- On 2026-08-30, phone engine launch was made explicitly on-demand for both
+  Stockfish and LC0 after a newer installed home-server runtime lost the
+  `/api/engine/start` route while the analysis task was configured as
+  on-demand-only. Every PC analysis attempt now asks the home server to ensure
+  the scheduled backend is healthy before `/v1/analyze`; completed wake checks
+  are not cached because the backend deliberately exits after being idle.
+  Pausing, switching engines, closing the engine surface, or a phone `pagehide`
+  aborts the active request and explicitly releases the selected Stockfish or
+  LC0 worker; LC0 also clears the phone session so CUDA workers cannot remain
+  behind. Preserve the lightweight backend's idle exit and the engines' lazy
+  start; source, installed runtime, live phone bundle, endpoint behavior, and
+  zero-idle-process state must be verified separately. The canonical private
+  phone origin is `https://lox-pc.tail89d19b.ts.net/`; do not compile bundles
+  with the obsolete `gaming-pc` hostname. The guarded publisher starts the
+  on-demand backend before its final engine health probe, then allows the
+  backend and workers to return to their idle-off state.
+
+- On 2026-08-27, the PC-hosted phone LCZero switch became authoritative over
+  GPU residency. Turning it on first wakes the lightweight scheduled engine
+  service when necessary and then lazily starts only the selected LC0 network;
+  turning it off, suspending analysis, or switching back to Stockfish aborts
+  the phone search and releases idle LC0 children so CUDA weights no longer
+  occupy VRAM. A release that races an active request waits for that request to
+  drain, while a new LC0 request cancels the pending shutdown. Preserve the
+  on-demand service wake, zero-LC0 idle baseline, and real process/health
+  verification when changing the phone engine lifecycle.
 
 - On 2026-08-26, the phone OTB importer stopped presenting one completed source
   lane as a completed all-source search. Native progress now carries monotonic
@@ -56,6 +159,13 @@
   failure-visible fallbacks, below-normal phone worker priority, and the
   under-30-second warm acceptance benchmark when changing this importer.
 
+- On 2026-08-21, the phone Import workspace gained PGN as a first-class source
+  beside Chess.com, Lichess, and OTB. It offers a one-tap mobile file picker and
+  a paste box; both use the existing local phone PGN parser, retain every game
+  in a multi-game file, and open the first imported game immediately. Keep this
+  visible Import-tab route even though the compact header upload shortcut also
+  remains available.
+
 - On 2026-08-21, the PC-hosted phone Engine settings gained separate saved
   performance presets for Stockfish and LC0: Max performance, Good performance,
   Balanced, and Low impact. The values match the measured Chrome-extension
@@ -67,24 +177,113 @@
   engines, and update the backend preset regression whenever those measured
   values change.
 
-- On 2026-08-30, phone engine launch was made explicitly on-demand for both
-  Stockfish and LC0 after a newer installed home-server runtime lost the
-  `/api/engine/start` route while the analysis task was configured as
-  on-demand-only. Every PC analysis attempt now asks the home server to ensure
-  the scheduled backend is healthy before `/v1/analyze`; completed wake checks
-  are not cached because the backend deliberately exits after being idle.
-  Pausing, switching engines, closing the engine surface, or a phone `pagehide`
-  aborts the active request and explicitly releases the selected Stockfish or
-  LC0 worker; LC0 also clears the phone session so CUDA workers cannot remain
-  behind. Preserve the lightweight
-  backend's idle exit and the engines' lazy start; source, installed runtime,
-  live phone bundle, endpoint behavior, and zero-idle-process state must be
-  verified separately.
-  The canonical private phone origin is `https://lox-pc.tail89d19b.ts.net/`;
-  do not compile phone bundles with the obsolete `gaming-pc` hostname. The
-  guarded publisher starts the on-demand backend before its final engine health
-  probe, then allows the backend and workers to return to their idle-off state.
+- On 2026-08-17, the phone's top-level `Online` workspace was renamed
+  `Import` and gained an OTB source beside Chess.com and Lichess. Phone OTB
+  searches are thin private-PC jobs: the phone submits identity, date, and
+  source choices, then only polls progress and renders the verified results.
+  The PC home server runs the headless Rust collector below normal priority,
+  performs the downloads, roster filtering, identity validation, online-event
+  exclusion, provenance tracking, move deduplication, PGN splitting, and
+  durable job storage. The native collector also includes the August Outpost
+  speed and coverage work: targeted broadcasts by default, opt-in exhaustive
+  Lichess archives/community events, serialized Lichess downloads, roster and
+  filtered-archive caches, monotonic result counts, ETA support, and public
+  broadcast-history warnings. Both desktop and phone OTB forms use the public
+  FIDE player mirror for ranked name/ID suggestions and canonical name/ID
+  autofill; the phone delegates that lookup, typo-aware ranking, caching, and
+  request deduplication to the PC home server. A selected FIDE ID pins the
+  collector identity so initials, reversed name order, partial given names,
+  and a one-letter surname typo remain safe while name-only searches stay
+  strict. Keep importer computation off the phone, keep
+  the exhaustive lanes opt-in, and deploy the matching headless collector with
+  the home-server runtime whenever these request types change.
 
+- On 2026-08-07, whole-game AI Coach reviews became human-first multi-agent
+  reviews on both shipped surfaces. Before any Stockfish, cloud, database, or
+  book evidence is introduced, a forced Gemini 3.1 Pro/high Antigravity pass
+  reads only the PGN and supplies the game story, strategic questions, and
+  future-facing opening plan. That pass is the editorial spine for source
+  selection and final synthesis; later engine evidence remains the accuracy
+  guardrail rather than the narrative outline. The PC-hosted phone Coach then
+  runs one Gemini 3.6 Flash/high specialist per AI-selected category in
+  parallel, scoped to that category's permitted passages and verified evidence,
+  before the user's selected model performs the final edit. Opening categories
+  must devote most of their explanation to future plans in the exact structure:
+  piece homes and routes, prepared pawn breaks, useful exchanges, opponent
+  counterplay, and an if-then checklist. Every proposed continuation is emitted
+  as a structured SAN line, replayed deterministically from its exact game FEN
+  with chessops, and repaired up to twice by Gemini 3.6 Flash if validation
+  rejects the answer. The verifier reports all bad numbered references together
+  and supplies the rejected response to the repair pass. The phone UI renders
+  exact numbered played moves as links that open an
+  inline board, and renders every verified suggested move as a button on a
+  navigable board with the next-move arrow. Preserve PGN-only isolation for the
+  first pass, category/source boundaries, final-model choice, deterministic
+  move legality, old-review compatibility, and the PC-owned background job
+  lifecycle.
+
+- On 2026-08-07, Coach pre-review engine evidence became opening-bounded for
+  speed. Whole-game requests now read the chronological PC cloud/cache prefix
+  only until its first miss, run at most one live Stockfish 18 check on that
+  boundary at default depth 16 with an eight-second guard, and deliberately do
+  not query or analyze later game positions. A failed optional boundary check
+  falls back to the useful cached prefix; current-position questions still
+  require one verified cache or live result. Coverage and prompts explicitly
+  report the skipped tail, and native validation accepts only a contiguous,
+  fully verified move prefix. Preserve exact FEN/source/depth evidence and
+  never describe the skipped PGN tail as engine-analyzed. This owner request
+  supersedes the 2026-07-24/2026-07-20 rules requiring every whole-game
+  position to be checked and every cache miss to receive live Stockfish.
+
+- On 2026-08-07, both AI Coach chat surfaces gained a persistent model and
+  reasoning selector. The allowlist contains GPT-5.6 Sol, Terra, and Luna via
+  the authenticated Codex CLI, plus Gemini 3.1 Pro, Gemini 3.5 Flash, and the
+  current general Flash option Gemini 3.6 Flash via the authenticated
+  Antigravity `agy` CLI. OpenAI supports low/medium/high/xhigh/max; Antigravity
+  exposes low/high for 3.1 Pro and low/medium/high for both Flash models. There
+  is no fabricated Gemini 3.1 Flash slug. One normalized selection owns every
+  model stage in a review, saved answers record the model and effort, phone
+  health reports the two providers separately, and arbitrary commands/models
+  are rejected. Antigravity print mode does not consume a large prompt from
+  stdin, so the full tool-free chess request is embedded in the enforced JSON
+  schema description and the CLI receives only a short fixed instruction;
+  retain `--sandbox`, request-review permissions, schema validation, and never
+  add `--dangerously-skip-permissions`. This owner request supersedes the
+  2026-07-20 rule pinning every shipped Coach stage to GPT-5.6 Sol, while Sol
+  medium remains the migration-safe default.
+
+- On 2026-08-07, opening explanations in both AI Coach surfaces became
+  plan-first instead of book-line-first. Corpus schema v3 adds deterministic
+  full-pawn-placement `structure_anchors`; the phone Node service and native
+  Rust coach match played positions against those anchors before library
+  planning, prioritize the matching plan chapter during retrieval, and tell
+  the model to lead with the structure, plans/counterplay for both sides,
+  ideal and misplaced pieces, thematic breaks, exchanges, and manoeuvres.
+  Every standard plan must still be filtered through the exact pieces, squares,
+  tempi, move order, and Stockfish evidence in the played position. Concrete
+  variations are proof or illustration, not the outline of the explanation.
+  The private user-owned *Chess Structures: A Grandmaster Guide* Chessable
+  export (30 chapter PGNs, 853 annotated variations) is ingested locally with
+  tolerant legality checking and 75 structure anchors; its text must never be
+  redistributed. The lawful supplemental shelf also includes a revision-pinned
+  151-page CC BY-SA 4.0 snapshot of broad Wikibooks *Chess Opening Theory*
+  family pages with permanent-link attribution and public-domain Capablanca
+  *Chess Fundamentals*. Preserve source/access scopes, attribution, older-corpus
+  fallback when `structure_anchors` is absent, exact-position opening identity,
+  and engine-over-book authority. Rebuild with
+  `scripts/sync-open-chess-sources.py` then
+  `scripts/build-chess-book-corpus.py`; regressions cover tolerant PGN parsing,
+  structure-key parity, plan-led retrieval, and both coach prompts.
+
+- On 2026-08-04, the gaming PC was returned and `Lox` became the authoritative
+  private phone-app host until a replacement machine is available. The live
+  origin is `https://lox-pc.tail89d19b.ts.net`; phone UI, home-server, shared
+  Lichess, explorer/database, coach, and Stockfish defaults must use that
+  origin. Publish completed phone changes locally with
+  `npm run web:publish-home` and verify the `Lox` origin. This supersedes older
+  instructions that name `gaming-pc` as the current host, deployment target,
+  or default service origin. The retired machine is unavailable and must not
+  be treated as a blocker or deployment target.
 - On 2026-07-25, Outpost's desktop PGN parser stopped overwriting adjacent
   comment blocks at the same position. Chessable exports often put a full
   lesson annotation beside an exporter-only `{-KEY-}` marker, so the old

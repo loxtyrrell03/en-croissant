@@ -11,6 +11,7 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 . (Join-Path $PSScriptRoot "phone-publish-guard.ps1")
 
 $serverRoot = Join-Path $env:LOCALAPPDATA "EnCroissantHomeServer"
+$runtimeRoot = Join-Path $serverRoot "runtime"
 $appReleasesRoot = Join-Path $serverRoot "app-releases"
 $activeAppPath = Join-Path $serverRoot "active-app.json"
 if (-not $SiteRoot) {
@@ -29,19 +30,63 @@ try {
     -DeploymentMetadataPath $activeAppPath `
     -TargetName "PC phone site"
 
+  # Migrate the scheduled task before touching the deployed runtime. Its
+  # installed launcher never copies files from a checkout, so an older checkout
+  # cannot overwrite this release at the next logon.
+  & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File `
+    (Join-Path $PSScriptRoot "install-home-server-launcher.ps1") `
+    -Port $Port `
+    -ServerRoot $serverRoot | Out-Null
+  if ($LASTEXITCODE -ne 0) {
+    throw "The source-independent home-server launcher could not be installed."
+  }
+
   Push-Location $repoRoot
   try {
     if (-not $SkipBuild) {
       $env:VITE_EN_CROISSANT_HOME_BUILD = "1"
       $env:VITE_EN_CROISSANT_SERVER_URL = $SiteUrl.TrimEnd("/")
       $env:VITE_EN_CROISSANT_STOCKFISH_URL = $SiteUrl.TrimEnd("/")
-      & (Get-Command npm.cmd -ErrorAction Stop).Source run build-vite
-      if ($LASTEXITCODE -ne 0) {
-        throw "Phone app build failed with exit code $LASTEXITCODE."
+      $npmCommand = Get-Command npm.cmd -ErrorAction SilentlyContinue
+      if ($npmCommand) {
+        & $npmCommand.Source run build-vite
+        if ($LASTEXITCODE -ne 0) {
+          throw "Phone app build failed with exit code $LASTEXITCODE."
+        }
+      } else {
+        $bundledNode = 'C:\Users\Lox\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+        if (-not (Test-Path -LiteralPath $bundledNode)) {
+          throw "Phone app build needs Node.js, but neither npm.cmd nor the bundled Codex runtime is available."
+        }
+        & $bundledNode (Join-Path $repoRoot 'node_modules\vite\bin\vite.js') `
+          build --config (Join-Path $repoRoot 'vite.otb-prep.config.ts')
+        if ($LASTEXITCODE -ne 0) {
+          throw "Phone OTB prep build failed with exit code $LASTEXITCODE."
+        }
+        & $bundledNode (Join-Path $repoRoot 'node_modules\@typescript\native-preview\bin\tsgo.js') --noEmit
+        if ($LASTEXITCODE -ne 0) {
+          throw "Phone app typecheck failed with exit code $LASTEXITCODE."
+        }
+        & $bundledNode (Join-Path $repoRoot 'node_modules\vite\bin\vite.js') build
+        if ($LASTEXITCODE -ne 0) {
+          throw "Phone app build failed with exit code $LASTEXITCODE."
+        }
       }
       Copy-EnCroissantPhonePublicShell `
         -PublicRoot (Join-Path $repoRoot "public") `
         -DistRoot (Join-Path $repoRoot "dist")
+
+      $cargoCommand = Get-Command cargo.exe -ErrorAction SilentlyContinue
+      if (-not $cargoCommand) {
+        throw "The phone OTB collector build needs cargo.exe."
+      }
+      & $cargoCommand.Source build --release `
+        --manifest-path (Join-Path $repoRoot "src-tauri\Cargo.toml") `
+        --bin collect_otb_games `
+        --features headless-otb
+      if ($LASTEXITCODE -ne 0) {
+        throw "Phone OTB collector build failed with exit code $LASTEXITCODE."
+      }
     }
   } finally {
     Pop-Location
@@ -97,6 +142,18 @@ try {
     }
   }
 
+  $collectorName = if ($env:OS -eq "Windows_NT") { "collect_otb_games.exe" } else { "collect_otb_games" }
+  $collectorSource = Join-Path $repoRoot "src-tauri\target\release\$collectorName"
+  if (-not (Test-Path -LiteralPath $collectorSource)) {
+    throw "The matching phone OTB collector is missing at $collectorSource."
+  }
+  New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
+  $collectorDestination = Join-Path $runtimeRoot $collectorName
+  $temporaryCollector = "$collectorDestination.next-$PID"
+  Copy-Item -LiteralPath $collectorSource -Destination $temporaryCollector -Force
+  Move-Item -LiteralPath $temporaryCollector -Destination $collectorDestination -Force
+  $collectorHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $collectorDestination).Hash
+
   $activeApp = [ordered]@{
     schemaVersion = 1
     releaseId = $releaseId
@@ -110,13 +167,27 @@ try {
     -PublishContext $publishContext
   Write-EnCroissantJsonAtomically -Path $activeAppPath -Value $activeApp
 
-  if (-not $SkipRestart) {
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File `
-      (Join-Path $PSScriptRoot "start-home-server.ps1") -Port $Port -ForceRestart
-    if ($LASTEXITCODE -ne 0) {
-      throw "The PC phone server did not restart."
-    }
+  $startArguments = @(
+    '-NoProfile',
+    '-NonInteractive',
+    '-ExecutionPolicy',
+    'Bypass',
+    '-File',
+    (Join-Path $PSScriptRoot "start-home-server.ps1"),
+    '-Port',
+    [string]$Port
+  )
+  if ($SkipRestart) {
+    $startArguments += '-StageOnly'
+  } else {
+    $startArguments += '-ForceRestart'
+  }
+  & powershell.exe @startArguments
+  if ($LASTEXITCODE -ne 0) {
+    throw "The PC phone server runtime could not be staged or restarted."
+  }
 
+  if (-not $SkipRestart) {
     & (Get-Command tailscale.exe -ErrorAction Stop).Source serve --bg --yes $Port
     if ($LASTEXITCODE -ne 0) {
       throw "Tailscale Serve could not expose the PC phone site privately."
@@ -144,6 +215,7 @@ try {
     SiteRoot = (Resolve-Path -LiteralPath $SiteRoot).Path
     ActiveAppRoot = $health.activeAppRoot
     SourceCommit = $health.deployment.sourceCommit
+    OtbImporterSha256 = $collectorHash
     PrivateTailscale = $true
     Stockfish = "$($SiteUrl.TrimEnd('/'))/v1/analyze"
     StockfishThreads = $stockfish.threads

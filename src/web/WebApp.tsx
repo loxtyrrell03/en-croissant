@@ -296,6 +296,15 @@ import {
   releaseWebPcEngine,
   stopWebStockfish18Search,
 } from "./stockfishEngine";
+import {
+  getWebOtbJobPlayerName,
+  watchWebOtbImportJob,
+  WEB_OTB_JOB_STORAGE_KEY,
+  WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY,
+  type WebOtbImportedGame,
+  type WebOtbImportJob,
+} from "./otbImport";
+import { applyWebOtbPrepCompletion, shouldOpenWebOtbPrep } from "./otbPrep";
 
 type ViewMode = "board" | "stats" | "files";
 type BoardPanelMode = "moves" | "online" | "database" | "prep" | "engine" | "coach";
@@ -319,6 +328,7 @@ type WebOnlineImportHandler = (request: {
   setProgress: (progress: number | null) => void;
 }) => Promise<WebImportResult | null>;
 type WebOnlineAnalysisHandler = (game: WebOnlineImportedGame) => Promise<WebGame | null>;
+type WebOtbAnalysisHandler = (game: WebOtbImportedGame) => Promise<WebGame | null>;
 type WebPrepBranchStatus = "new" | "started" | "prepared" | "skipped";
 type WebPrepSortDirection = "asc" | "desc";
 type WebPrepSortColumn = WebPrepOpponentSortColumn;
@@ -749,6 +759,128 @@ export default function WebApp() {
     [importPgnText, loadGameOnBoard],
   );
 
+  const importOtbGameForAnalysis = useCallback<WebOtbAnalysisHandler>(
+    async (otbGame) => {
+      const title = `${otbGame.white} – ${otbGame.black}${otbGame.date ? ` · ${otbGame.date}` : ""}`;
+      const imported = await importPgnText({
+        name: title,
+        pgn: otbGame.pgn,
+        notificationTitle: "OTB game ready to analyze",
+        notificationMessage: () => "PC-imported OTB game opened with Stockfish.",
+        databasePatch: { sourceKind: "opened-file" },
+        openFirstGame: false,
+      });
+      const game = imported.games[0];
+      if (!game) throw new Error("This PC-imported OTB game did not contain readable moves.");
+      const target = normalizeWebPlayerName(otbGame.playerName);
+      const orientation = normalizeWebPlayerName(otbGame.black) === target ? "black" : "white";
+      loadGameOnBoard(game, { cursor: 0, orientation });
+      return game;
+    },
+    [importPgnText, loadGameOnBoard],
+  );
+
+  const openCompletedOtbImportForPrep = useCallback(
+    (job: WebOtbImportJob) => {
+      const imported = job.prepDatabase;
+      if (job.status !== "completed" || !imported || imported.games.length === 0) {
+        throw new Error("The PC did not return a usable OTB prep database.");
+      }
+
+      const userColor = activePrep?.userColor ?? readStoredWebPrepUserColor();
+      setState((current) => applyWebOtbPrepCompletion(current, job, userColor)?.state ?? current);
+      setSelectedDatabaseId(imported.database.id);
+      setSelectedGameId(null);
+      setView("board");
+      setBoardPanelMode("prep");
+      notifications.show({
+        title: "OTB prep ready",
+        message: `${pluralWeb(imported.games.length, "game")} loaded for ${getWebOtbJobPlayerName(job)}.`,
+        color: "green",
+      });
+    },
+    [activePrep?.userColor],
+  );
+
+  useEffect(() => {
+    if (!loaded) return;
+    let active = true;
+    let monitoredJobId: string | null = null;
+    let unsubscribe: (() => void) | null = null;
+    let terminal = false;
+    let inFlight = false;
+
+    const handleJob = async (job: WebOtbImportJob) => {
+      const jobId = job.id;
+      if (!active || jobId !== monitoredJobId || terminal || inFlight) return;
+      const handledJobId = window.localStorage.getItem(WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY);
+      const completionExists = state.prepWorkspaces.some((prep) => prep.id === `prep-${jobId}`);
+      if (handledJobId === jobId && completionExists) {
+        terminal = true;
+        return;
+      }
+
+      try {
+        if (
+          job.status === "failed" ||
+          (job.status === "completed" && !job.prepDatabase?.games.length)
+        ) {
+          terminal = true;
+          return;
+        }
+        if (
+          !shouldOpenWebOtbPrep(
+            job,
+            completionExists ? handledJobId : null,
+            inFlight ? jobId : null,
+          )
+        ) {
+          return;
+        }
+
+        inFlight = true;
+        await Promise.resolve(openCompletedOtbImportForPrep(job));
+        window.localStorage.setItem(WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY, job.id);
+        terminal = true;
+      } catch (error) {
+        if (active && inFlight) {
+          terminal = true;
+          notifications.show({
+            title: "Could not open OTB Prep",
+            message:
+              error instanceof Error
+                ? error.message
+                : "The imported OTB database could not be opened in Prep.",
+            color: "red",
+          });
+        }
+      } finally {
+        inFlight = false;
+      }
+    };
+
+    const monitorActiveJob = () => {
+      const jobId = window.localStorage.getItem(WEB_OTB_JOB_STORAGE_KEY);
+      if (jobId === monitoredJobId) return;
+      unsubscribe?.();
+      unsubscribe = null;
+      monitoredJobId = jobId;
+      terminal = false;
+      inFlight = false;
+      if (jobId) {
+        unsubscribe = watchWebOtbImportJob(jobId, (job) => void handleJob(job));
+      }
+    };
+
+    monitorActiveJob();
+    const timer = window.setInterval(monitorActiveJob, 1_500);
+    return () => {
+      active = false;
+      unsubscribe?.();
+      window.clearInterval(timer);
+    };
+  }, [loaded, openCompletedOtbImportForPrep, state.prepWorkspaces]);
+
   const importFiles = useCallback(
     async (files: FileList | null) => {
       if (!files || files.length === 0) return;
@@ -1121,6 +1253,7 @@ export default function WebApp() {
               activePrep={activePrep}
               importHostedFolder={openHostedDatabaseSource}
               importOnlineGameForAnalysis={importOnlineGameForAnalysis}
+              importOtbGameForAnalysis={importOtbGameForAnalysis}
               importOnlineGames={importOnlineGames}
               loadGameOnBoard={loadGameOnBoard}
               onStartBlankBoard={openEmptyBoard}
@@ -1148,6 +1281,7 @@ function BoardWorkspace({
   activePrep,
   importHostedFolder,
   importOnlineGameForAnalysis,
+  importOtbGameForAnalysis,
   importOnlineGames,
   loadGameOnBoard,
   onStartBlankBoard,
@@ -1160,6 +1294,7 @@ function BoardWorkspace({
   activePrep: WebPrepWorkspace | null;
   importHostedFolder: WebHostedFolderImportHandler;
   importOnlineGameForAnalysis: WebOnlineAnalysisHandler;
+  importOtbGameForAnalysis: WebOtbAnalysisHandler;
   importOnlineGames: WebOnlineImportHandler;
   loadGameOnBoard: (game: WebGame) => void;
   onStartBlankBoard: () => void;
@@ -1590,6 +1725,13 @@ function BoardWorkspace({
     setOnlineAnalysisRequestId((requestId) => requestId + 1);
   };
 
+  const analyzeOtbGame = async (otbGame: WebOtbImportedGame) => {
+    const game = await importOtbGameForAnalysis(otbGame);
+    if (!game) return;
+    setPanelMode("engine");
+    setOnlineAnalysisRequestId((requestId) => requestId + 1);
+  };
+
   const playMoveFromPrepRoot = (stat: WebPrepMoveStat) => {
     if (!prepBranchFen) return;
     const played = playSanMove(prepBranchFen, stat.move);
@@ -1750,7 +1892,10 @@ function BoardWorkspace({
                   sourceComments={activePrep ? [] : (board.sourceComments ?? [])}
                 />
               ) : panelMode === "online" ? (
-                <OnlineGameAnalysisPanel onAnalyzeGame={analyzeOnlineGame} />
+                <OnlineGameAnalysisPanel
+                  onAnalyzeGame={analyzeOnlineGame}
+                  onAnalyzeOtbGame={analyzeOtbGame}
+                />
               ) : panelMode === "database" ? (
                 <DatabaseUnderBoardPanel
                   currentFen={currentFen}
@@ -9291,6 +9436,31 @@ function normalizeWebEnginePanelSettings(
     lc0AutoNetwork: value?.lc0AutoNetwork !== false,
     lc0Network: normalizeLc0NetworkProfile(value?.lc0Network),
   };
+}
+
+function normalizeWebPlayerName(value: string) {
+  return value
+    .toLocaleLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .split(" ")
+    .sort()
+    .join(" ");
+}
+
+function readStoredWebPrepUserColor(): WebColor {
+  try {
+    const stored = JSON.parse(
+      window.localStorage.getItem(WEB_PREP_SETUP_STORAGE_KEY) || "null",
+    ) as {
+      userColor?: unknown;
+    } | null;
+    return stored?.userColor === "black" ? "black" : "white";
+  } catch {
+    return "white";
+  }
 }
 
 function clampWholeNumber(value: unknown, min: number, max: number, fallback: number) {

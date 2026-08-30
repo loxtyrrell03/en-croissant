@@ -1,8 +1,10 @@
 param(
   [int]$Port = 8787,
   [int]$MaxDatabaseMB = 1024,
+  [string]$DnsName,
   [switch]$SkipInitialLibrary,
-  [switch]$SkipFrontendBuild
+  [switch]$SkipFrontendBuild,
+  [switch]$SkipTailscaleServe
 )
 
 $ErrorActionPreference = 'Stop'
@@ -15,20 +17,51 @@ $documentsRoot = Join-Path $env:USERPROFILE 'Documents\EnCroissant'
 $databaseRoots = @(
   (Join-Path $env:APPDATA 'org.encroissant.app\db')
 ) | Where-Object { Test-Path -LiteralPath $_ }
-$npm = (Get-Command npm.cmd -ErrorAction Stop).Source
-$tailscale = (Get-Command tailscale.exe -ErrorAction Stop).Source
+$nodeCommand = Get-Command node.exe -ErrorAction SilentlyContinue
+if (-not $nodeCommand) {
+  $bundledNode = 'C:\Users\Lox\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+  if (-not (Test-Path -LiteralPath $bundledNode)) {
+    throw 'Node.js is required to install the home server.'
+  }
+  $nodeCommand = Get-Item -LiteralPath $bundledNode
+}
+$env:Path = "$(Split-Path -Parent $nodeCommand.FullName);$env:Path"
+$packageManager = Get-Command npm.cmd -ErrorAction SilentlyContinue
+if (-not $packageManager) {
+  $bundledPnpm = 'C:\Users\Lox\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback\pnpm.cmd'
+  if (-not (Test-Path -LiteralPath $bundledPnpm)) {
+    throw 'npm or pnpm is required to build the phone app.'
+  }
+  $packageManager = Get-Item -LiteralPath $bundledPnpm
+}
+$tailscaleCommand = Get-Command tailscale.exe -ErrorAction SilentlyContinue
+$tailscale = if ($tailscaleCommand) {
+  $tailscaleCommand.Source
+} else {
+  'C:\Program Files\Tailscale\tailscale.exe'
+}
+if (-not (Test-Path -LiteralPath $tailscale)) {
+  throw 'Tailscale is required to expose the home server.'
+}
 $startScript = Join-Path $PSScriptRoot 'start-home-server.ps1'
+$launcherInstaller = Join-Path $PSScriptRoot 'install-home-server-launcher.ps1'
 $taskName = 'EnCroissantHomeServer'
-$dnsName = (& $tailscale status --json | ConvertFrom-Json).Self.DNSName.TrimEnd('.')
+$tailscaleStatus = & $tailscale status --json | ConvertFrom-Json
+$dnsName = $DnsName.Trim().TrimEnd('.')
+if (-not $dnsName) {
+  $dnsName = $tailscaleStatus.Self.DNSName.TrimEnd('.')
+}
 if (-not $dnsName) {
   throw 'This machine does not have an active Tailscale DNS name.'
 }
 $privateOrigin = "https://$dnsName"
+$tailscaleIpv4 = @($tailscaleStatus.Self.TailscaleIPs | Where-Object { $_ -match '^\d+\.\d+\.\d+\.\d+$' })[0]
 $configuredPrivateOrigins = @(
   ([Environment]::GetEnvironmentVariable('EN_CROISSANT_PRIVATE_ORIGINS', 'User') -split '[,;\r\n]') |
     ForEach-Object { $_.Trim().TrimEnd('/') } |
     Where-Object { $_ }
   $privateOrigin
+  if ($tailscaleIpv4) { "http://$tailscaleIpv4" }
 ) | Select-Object -Unique
 $privateOriginsValue = $configuredPrivateOrigins -join ','
 [Environment]::SetEnvironmentVariable(
@@ -39,6 +72,11 @@ $privateOriginsValue = $configuredPrivateOrigins -join ','
 $env:EN_CROISSANT_PRIVATE_ORIGINS = $privateOriginsValue
 
 New-Item -ItemType Directory -Path $serverRoot -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $serverRoot 'runtime') -Force | Out-Null
+$runtimeNode = Join-Path $serverRoot 'runtime\node.exe'
+if (-not (Test-Path -LiteralPath $runtimeNode)) {
+  Copy-Item -LiteralPath $nodeCommand.FullName -Destination $runtimeNode -Force
+}
 
 # Installation owns the export cache while it builds the staged library. Stop
 # only this server's existing Node process so its file watcher cannot start a
@@ -72,22 +110,25 @@ try {
       (Get-Item -LiteralPath $queryHelper).LastWriteTimeUtc
   ) {
     $rustup = Get-Command rustup.exe -ErrorAction SilentlyContinue
+    $cargo = Get-Command cargo.exe -ErrorAction SilentlyContinue
     if ($rustup) {
       & $rustup.Source run stable cargo build `
         --manifest-path (Join-Path $repoRoot 'src-tauri\Cargo.toml') `
         --bin query_db_position
-    } else {
-      & (Get-Command cargo.exe -ErrorAction Stop).Source build `
+    } elseif ($cargo) {
+      & $cargo.Source build `
         --manifest-path (Join-Path $repoRoot 'src-tauri\Cargo.toml') `
         --bin query_db_position
+    } else {
+      Write-Warning 'Rust is unavailable; database position queries will remain disabled until query_db_position.exe is built.'
     }
-    if ($LASTEXITCODE -ne 0) {
+    if (($rustup -or $cargo) -and $LASTEXITCODE -ne 0) {
       throw "Database query helper build failed with exit code $LASTEXITCODE."
     }
   }
 
   if (-not $SkipFrontendBuild) {
-    & $npm run build-vite
+    & $packageManager.FullName run build-vite
     if ($LASTEXITCODE -ne 0) {
       throw "Phone app build failed with exit code $LASTEXITCODE."
     }
@@ -106,7 +147,7 @@ try {
     $env:EN_CROISSANT_WEB_DATABASE_DIRS = $databaseRoots -join [IO.Path]::PathSeparator
     $env:EN_CROISSANT_WEB_DB_MAX_MB = [string]$MaxDatabaseMB
     $env:EN_CROISSANT_WEB_DB_EXPORT_CACHE = Join-Path $serverRoot 'db-exports'
-    & (Get-Command node.exe -ErrorAction Stop).Source `
+    & $nodeCommand.FullName `
       (Join-Path $PSScriptRoot 'build-web-library.mjs') `
       --output (Join-Path $stagingRoot 'web-library')
     if ($LASTEXITCODE -ne 0) {
@@ -131,38 +172,22 @@ try {
   Pop-Location
 }
 
-$powershell = (Get-Command powershell.exe -ErrorAction Stop).Source
-$taskUser = [Security.Principal.WindowsIdentity]::GetCurrent().Name
-$taskAction = New-ScheduledTaskAction `
-  -Execute $powershell `
-  -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$startScript`" -Port $Port"
-$taskTrigger = New-ScheduledTaskTrigger -AtLogOn -User $taskUser
-$taskPrincipal = New-ScheduledTaskPrincipal `
-  -UserId $taskUser `
-  -LogonType Interactive `
-  -RunLevel Limited
-$taskSettings = New-ScheduledTaskSettingsSet `
-  -AllowStartIfOnBatteries `
-  -DontStopIfGoingOnBatteries `
-  -RestartCount 3 `
-  -RestartInterval (New-TimeSpan -Minutes 1)
-$taskSettings.Priority = 4
-Register-ScheduledTask `
-  -TaskName $taskName `
-  -Action $taskAction `
-  -Trigger $taskTrigger `
-  -Principal $taskPrincipal `
-  -Settings $taskSettings `
-  -Force | Out-Null
+& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File `
+  $launcherInstaller -Port $Port -TaskName $taskName -ServerRoot $serverRoot | Out-Null
+if ($LASTEXITCODE -ne 0) {
+  throw 'The source-independent home-server launcher could not be installed.'
+}
 
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $startScript -Port $Port
 if ($LASTEXITCODE -ne 0) {
   throw "The home server did not start."
 }
 
-& $tailscale serve --bg --yes $Port
-if ($LASTEXITCODE -ne 0) {
-  throw "Tailscale Serve could not expose the home server."
+if (-not $SkipTailscaleServe) {
+  & $tailscale serve --bg --yes $Port
+  if ($LASTEXITCODE -ne 0) {
+    throw "Tailscale Serve could not expose the home server."
+  }
 }
 
 # Keep the server available while the PC is plugged in. Turning the display
@@ -170,7 +195,7 @@ if ($LASTEXITCODE -ne 0) {
 & powercfg.exe /change standby-timeout-ac 0 | Out-Null
 & powercfg.exe /change hibernate-timeout-ac 0 | Out-Null
 
-$status = & $tailscale serve status --json | ConvertFrom-Json
+$status = if ($SkipTailscaleServe) { $null } else { & $tailscale serve status --json | ConvertFrom-Json }
 [pscustomobject]@{
   Installed = $true
   Url = "https://$dnsName/"

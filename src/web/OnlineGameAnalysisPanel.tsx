@@ -21,6 +21,8 @@ import {
   type WebOnlineSource,
 } from "./onlineImport";
 import { getWebOnlineGameSummary } from "./onlineAnalysis";
+import PhoneOtbImportPanel from "./PhoneOtbImportPanel";
+import type { WebOtbImportedGame } from "./otbImport";
 import classes from "./OnlineGameAnalysisPanel.module.css";
 
 const WEB_ANALYSIS_SOURCE_KEY = "encroissant-web-analysis-source";
@@ -28,13 +30,16 @@ const WEB_ANALYSIS_CHESSCOM_USERNAME_KEY = "encroissant-web-analysis-chesscom-us
 const WEB_ANALYSIS_LICHESS_USERNAME_KEY = "encroissant-web-analysis-lichess-username";
 const INITIAL_GAME_COUNT = 12;
 const MAX_GAME_COUNT = 60;
+type WebImportSource = WebOnlineSource | "otb";
 
 export default function OnlineGameAnalysisPanel({
   onAnalyzeGame,
+  onAnalyzeOtbGame,
 }: {
   onAnalyzeGame: (game: WebOnlineImportedGame) => Promise<void>;
+  onAnalyzeOtbGame: (game: WebOtbImportedGame) => Promise<void>;
 }) {
-  const [source, setSource] = useStoredOnlineSource();
+  const [source, setSource] = useStoredImportSource();
   const [chessComUsername, setChessComUsername] = useStoredString(
     WEB_ANALYSIS_CHESSCOM_USERNAME_KEY,
   );
@@ -55,6 +60,7 @@ export default function OnlineGameAnalysisPanel({
   }, [source, username]);
 
   async function fetchGames(count: number, action: "latest" | "list" | "more") {
+    if (source === "otb") return [];
     const trimmedUsername = username.trim();
     if (!trimmedUsername || loading) return [];
 
@@ -140,10 +146,10 @@ export default function OnlineGameAnalysisPanel({
         </Box>
         <Box miw={0}>
           <Text fw={750} size="sm">
-            Analyze an online game
+            Import a game
           </Text>
           <Text c="dimmed" size="xs">
-            Load a public Chess.com or Lichess game straight into the board and Stockfish.
+            Load a public Chess.com, Lichess, or OTB game straight into the board and Stockfish.
           </Text>
         </Box>
       </Group>
@@ -152,109 +158,116 @@ export default function OnlineGameAnalysisPanel({
         fullWidth
         size="xs"
         value={source}
-        onChange={(value) => setSource(value as WebOnlineSource)}
+        onChange={(value) => setSource(value as WebImportSource)}
         data={[
           { value: "chesscom", label: "Chess.com" },
           { value: "lichess", label: "Lichess" },
+          { value: "otb", label: "OTB" },
         ]}
       />
-      <TextInput
-        aria-label={`${getWebOnlineSourceLabel(source)} username`}
-        autoCapitalize="none"
-        autoCorrect="off"
-        disabled={isBusy}
-        label="Username"
-        placeholder="Your username"
-        size="sm"
-        value={username}
-        onChange={(event) => setUsername(event.currentTarget.value)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") void analyzeLatestGame();
-        }}
-      />
+      {source === "otb" ? (
+        <PhoneOtbImportPanel onAnalyzeGame={onAnalyzeOtbGame} />
+      ) : (
+        <>
+          <TextInput
+            aria-label={`${getWebOnlineSourceLabel(source)} username`}
+            autoCapitalize="none"
+            autoCorrect="off"
+            disabled={isBusy}
+            label="Username"
+            placeholder="Your username"
+            size="sm"
+            value={username}
+            onChange={(event) => setUsername(event.currentTarget.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") void analyzeLatestGame();
+            }}
+          />
 
-      <Box className={classes.actions}>
-        <Button
-          disabled={!username.trim()}
-          leftSection={<IconPlayerPlay size={16} />}
-          loading={loading === "latest" || loading === "game"}
-          onClick={() => void analyzeLatestGame()}
-        >
-          Analyze last game
-        </Button>
-        <Button
-          disabled={!username.trim()}
-          leftSection={<IconCloudDownload size={16} />}
-          loading={loading === "list"}
-          onClick={() => void chooseGame()}
-          variant="light"
-        >
-          Choose a game
-        </Button>
-      </Box>
-
-      {progress !== null && isBusy ? <Progress animated size="xs" value={progress} /> : null}
-      {error ? (
-        <Alert color="red" variant="light">
-          {error}
-        </Alert>
-      ) : null}
-
-      <Collapse in={games.length > 0}>
-        <Stack gap="xs">
-          <Group justify="space-between" gap="xs">
-            <Text fw={700} size="xs">
-              Recent games
-            </Text>
-            <Badge variant="light">{games.length}</Badge>
-          </Group>
-          <ScrollArea.Autosize mah={420}>
-            <Box className={classes.gameList}>
-              {games.map((game, index) => {
-                const summary = getWebOnlineGameSummary(game);
-                return (
-                  <Box className={classes.gameCard} key={`${game.url}-${index}`}>
-                    <Box className={classes.gameDetails}>
-                      <Group gap={6} wrap="nowrap">
-                        <Text fw={700} size="xs" truncate>
-                          {summary.white} – {summary.black}
-                        </Text>
-                        <Badge size="xs" variant="light">
-                          {summary.result}
-                        </Badge>
-                      </Group>
-                      <Text c="dimmed" size="0.68rem" truncate>
-                        {formatOnlineGameDate(game.playedAt)} · {summary.opening}
-                      </Text>
-                    </Box>
-                    <Button
-                      aria-label={`Analyze ${summary.white} against ${summary.black}`}
-                      loading={loading === "game"}
-                      onClick={() => void analyzeGame(game)}
-                      size="compact-xs"
-                      variant="light"
-                    >
-                      Analyze
-                    </Button>
-                  </Box>
-                );
-              })}
-            </Box>
-          </ScrollArea.Autosize>
-          {games.length >= requestedCount && requestedCount < MAX_GAME_COUNT ? (
+          <Box className={classes.actions}>
             <Button
-              fullWidth
-              leftSection={<IconChevronDown size={15} />}
-              loading={loading === "more"}
-              onClick={() => void showMoreGames()}
-              size="xs"
-              variant="subtle"
+              disabled={!username.trim()}
+              leftSection={<IconPlayerPlay size={16} />}
+              loading={loading === "latest" || loading === "game"}
+              onClick={() => void analyzeLatestGame()}
             >
-              Show more games
+              Analyze last game
             </Button>
+            <Button
+              disabled={!username.trim()}
+              leftSection={<IconCloudDownload size={16} />}
+              loading={loading === "list"}
+              onClick={() => void chooseGame()}
+              variant="light"
+            >
+              Choose a game
+            </Button>
+          </Box>
+
+          {progress !== null && isBusy ? <Progress animated size="xs" value={progress} /> : null}
+          {error ? (
+            <Alert color="red" variant="light">
+              {error}
+            </Alert>
           ) : null}
-        </Stack>
-      </Collapse>
+
+          <Collapse in={games.length > 0}>
+            <Stack gap="xs">
+              <Group justify="space-between" gap="xs">
+                <Text fw={700} size="xs">
+                  Recent games
+                </Text>
+                <Badge variant="light">{games.length}</Badge>
+              </Group>
+              <ScrollArea.Autosize mah={420}>
+                <Box className={classes.gameList}>
+                  {games.map((game, index) => {
+                    const summary = getWebOnlineGameSummary(game);
+                    return (
+                      <Box className={classes.gameCard} key={`${game.url}-${index}`}>
+                        <Box className={classes.gameDetails}>
+                          <Group gap={6} wrap="nowrap">
+                            <Text fw={700} size="xs" truncate>
+                              {summary.white} – {summary.black}
+                            </Text>
+                            <Badge size="xs" variant="light">
+                              {summary.result}
+                            </Badge>
+                          </Group>
+                          <Text c="dimmed" size="0.68rem" truncate>
+                            {formatOnlineGameDate(game.playedAt)} · {summary.opening}
+                          </Text>
+                        </Box>
+                        <Button
+                          aria-label={`Analyze ${summary.white} against ${summary.black}`}
+                          loading={loading === "game"}
+                          onClick={() => void analyzeGame(game)}
+                          size="compact-xs"
+                          variant="light"
+                        >
+                          Analyze
+                        </Button>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </ScrollArea.Autosize>
+              {games.length >= requestedCount && requestedCount < MAX_GAME_COUNT ? (
+                <Button
+                  fullWidth
+                  leftSection={<IconChevronDown size={15} />}
+                  loading={loading === "more"}
+                  onClick={() => void showMoreGames()}
+                  size="xs"
+                  variant="subtle"
+                >
+                  Show more games
+                </Button>
+              ) : null}
+            </Stack>
+          </Collapse>
+        </>
+      )}
     </Box>
   );
 }
@@ -270,12 +283,11 @@ function formatOnlineGameDate(value: number) {
   });
 }
 
-function useStoredOnlineSource() {
-  const [source, setSource] = useState<WebOnlineSource>(() => {
+function useStoredImportSource() {
+  const [source, setSource] = useState<WebImportSource>(() => {
     try {
-      return window.localStorage.getItem(WEB_ANALYSIS_SOURCE_KEY) === "lichess"
-        ? "lichess"
-        : "chesscom";
+      const stored = window.localStorage.getItem(WEB_ANALYSIS_SOURCE_KEY);
+      return stored === "lichess" || stored === "otb" ? stored : "chesscom";
     } catch {
       return "chesscom";
     }
