@@ -1,5 +1,10 @@
 # Repository guidance
 
+## Local checkout
+
+- The canonical Windows checkout is `C:\Users\Lox\Desktop\repo\en-croissant`, where Git metadata, root configuration, source, build output, and native build artifacts were reunited during the 2026-08-30 Desktop consolidation.
+- The hidden `C:\Users\Lox\Desktop\Development\repo\en-croissant` path is compatibility-only. New launchers and tooling must use the canonical checkout, and the preserved `.compat\en-croissant-old-node_modules` copy must not be removed until canonical dependency verification is complete.
+
 ## Milestone documentation
 
 - Agents must update this `AGENTS.md` after every meaningful, verified milestone and include that update in the same milestone commit.
