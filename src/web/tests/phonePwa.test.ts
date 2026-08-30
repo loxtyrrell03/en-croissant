@@ -25,6 +25,7 @@ describe("phone standalone app shell", () => {
 
     test("activates new builds without navigating a suspended phone window", () => {
         expect(serviceWorkerText).not.toContain("client.navigate");
+        expect(serviceWorkerText).not.toContain("skipWaiting");
         expect(serviceWorkerText).toContain("key.startsWith(CACHE_PREFIX)");
         expect(serviceWorkerText).toContain('type: "EN_CROISSANT_SW_ACTIVATED"');
         expect(serviceWorkerText).toContain('url.pathname.endsWith("/app-version.json")');
