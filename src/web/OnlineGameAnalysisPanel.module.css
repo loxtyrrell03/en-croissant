@@ -45,6 +45,12 @@
   min-width: 0;
 }
 
+.importError {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 390px) {
   .actions {
     grid-template-columns: 1fr;

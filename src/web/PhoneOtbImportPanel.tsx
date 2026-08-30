@@ -384,7 +384,7 @@ export default function PhoneOtbImportPanel({
         </Alert>
       ) : null}
       {error ? (
-        <Alert color="red" variant="light">
+        <Alert className={classes.importError} color="red" variant="light">
           {error}
         </Alert>
       ) : null}

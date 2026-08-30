@@ -66,6 +66,11 @@ const LICHESS_CONCURRENCY: usize = 8;
 /// overlap. Reserving the next start keeps a long exact-game import below the
 /// observed burst limit; slower responses naturally satisfy the interval.
 const LICHESS_MIN_REQUEST_SPACING: Duration = Duration::from_millis(120);
+/// One dropped connection must not poison every remaining Lichess artifact in
+/// the import. Retry once inside the serialized lane, then retain the existing
+/// host circuit so a genuinely dead upstream still fails in bounded time.
+const LICHESS_TRANSPORT_ATTEMPTS: usize = 2;
+const LICHESS_TRANSPORT_RETRY_DELAY: Duration = Duration::from_millis(250);
 /// Study exports are the only Lichess PGN route that lets callers retain the
 /// complete broadcast payload. Keep all four flags explicit: the broadcast
 /// round API silently drops comments and variations, which is unacceptable for
@@ -5127,7 +5132,9 @@ async fn get_lichess_with_backoff_mode(
     // Hold the permit through the body download so every Lichess source shares
     // one strictly serial request lane. The shared start gate also prevents a
     // burst of tiny sequential responses from triggering a minute-long 429.
-    // A failed request returns immediately and callers keep cached/indexed data.
+    // A single transport failure is retried inside this same permit. Only an
+    // exhausted retry opens the host circuit, so an exact chapter can recover
+    // without letting all queued futures stampede a struggling upstream.
     let host = request_host(url);
     if lichess_failed_hosts()
         .lock()
@@ -5148,49 +5155,98 @@ async fn get_lichess_with_backoff_mode(
             "{host} did not answer an earlier request in this search; cached and indexed data were kept"
         ));
     }
-    wait_for_lichess_lane().await?;
-    let mut request = client.get(url);
-    if accept_json {
-        request = request.header(ACCEPT, "application/json");
-    }
-    match request.send().await {
-        Ok(response) if response.status() == reqwest::StatusCode::TOO_MANY_REQUESTS => {
+    for attempt in 0..LICHESS_TRANSPORT_ATTEMPTS {
+        wait_for_lichess_lane().await?;
+        let mut request = client.get(url);
+        if accept_json {
+            request = request.header(ACCEPT, "application/json");
+        }
+        let response = match request.send().await {
+            Ok(response) => response,
+            Err(error) => {
+                if lichess_transport_error_is_retryable(&error)
+                    && attempt + 1 < LICHESS_TRANSPORT_ATTEMPTS
+                {
+                    hold_lichess_lane(LICHESS_TRANSPORT_RETRY_DELAY);
+                    continue;
+                }
+                if lichess_transport_error_is_retryable(&error) {
+                    lichess_failed_hosts()
+                        .lock()
+                        .unwrap_or_else(|poisoned| poisoned.into_inner())
+                        .insert(host.clone());
+                }
+                return Err(if attempt == 0 {
+                    error.to_string()
+                } else {
+                    format!(
+                        "{} after {LICHESS_TRANSPORT_ATTEMPTS} transport attempts",
+                        error
+                    )
+                });
+            }
+        };
+
+        if response.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
             let retry_seconds = retry_after_seconds(&response).unwrap_or(60);
             hold_lichess_lane(Duration::from_secs(retry_seconds));
-            Err(format!(
+            return Err(format!(
                 "Lichess rate-limited {url}; respecting Retry-After without blocking this search"
-            ))
+            ));
         }
-        Ok(response) if response.status().is_server_error() => {
+        if response.status().is_server_error() {
             let status = response.status();
             let retry_seconds = retry_after_seconds(&response).unwrap_or(2);
             hold_lichess_lane(Duration::from_secs(retry_seconds.max(1)));
-            Err(format!("Lichess returned {status} for {url}"))
+            return Err(format!("Lichess returned {status} for {url}"));
         }
-        Ok(response) if response.status().is_client_error() => {
+        if response.status().is_client_error() {
             let status = response.status();
             let body = response.text().await.unwrap_or_default();
             let body = body.split_whitespace().collect::<Vec<_>>().join(" ");
             let body = body.chars().take(240).collect::<String>();
-            Err(if body.is_empty() {
+            return Err(if body.is_empty() {
                 format!("Lichess returned {status} for {url}")
             } else {
                 format!("Lichess returned {status} for {url}: {body}")
-            })
+            });
         }
-        Ok(response) => response
-            .bytes()
-            .await
-            .map(|bytes| bytes.to_vec())
-            .map_err(|error| error.to_string()),
-        Err(error) => {
-            lichess_failed_hosts()
-                .lock()
-                .unwrap_or_else(|poisoned| poisoned.into_inner())
-                .insert(host);
-            Err(error.to_string())
+
+        match response.bytes().await {
+            Ok(bytes) => return Ok(bytes.to_vec()),
+            Err(error)
+                if lichess_transport_error_is_retryable(&error)
+                    && attempt + 1 < LICHESS_TRANSPORT_ATTEMPTS =>
+            {
+                hold_lichess_lane(LICHESS_TRANSPORT_RETRY_DELAY);
+            }
+            Err(error) => {
+                if lichess_transport_error_is_retryable(&error) {
+                    lichess_failed_hosts()
+                        .lock()
+                        .unwrap_or_else(|poisoned| poisoned.into_inner())
+                        .insert(host.clone());
+                }
+                return Err(if attempt == 0 {
+                    error.to_string()
+                } else {
+                    format!(
+                        "{} after {LICHESS_TRANSPORT_ATTEMPTS} transport attempts",
+                        error
+                    )
+                });
+            }
         }
     }
+    unreachable!("the bounded Lichess transport loop always returns")
+}
+
+fn lichess_transport_error_is_retryable(error: &reqwest::Error) -> bool {
+    error.is_connect()
+        || error.is_timeout()
+        || error.is_body()
+        || error.is_decode()
+        || (error.is_request() && !error.is_builder() && !error.is_redirect())
 }
 
 fn retry_after_seconds(response: &reqwest::Response) -> Option<u64> {
@@ -8668,6 +8724,141 @@ mod tests {
         assert!(collection.games[0].pgn.contains("{fallback comment}"));
         assert!(collection.games[0].pgn.contains("(1... c5)"));
         assert!(collection.games[1].pgn.contains("{exact comment}"));
+    }
+
+    #[tokio::test]
+    async fn lichess_lane_retries_one_header_transport_failure_before_opening_the_circuit() {
+        let _lane = LICHESS_TEST_LANE.lock().await;
+        reset_lichess_test_state();
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("mock Lichess listener");
+        let address = listener.local_addr().expect("mock address");
+        let server = tokio::spawn(async move {
+            let (mut first, _) = listener.accept().await.expect("first mock accept");
+            let first_path = read_mock_request(&mut first)
+                .await
+                .lines()
+                .next()
+                .unwrap_or_default()
+                .to_string();
+            tokio::time::sleep(Duration::from_millis(150)).await;
+            drop(first);
+
+            let (mut second, _) = listener.accept().await.expect("retry mock accept");
+            let second_path = read_mock_request(&mut second)
+                .await
+                .lines()
+                .next()
+                .unwrap_or_default()
+                .to_string();
+            write_mock_response(&mut second, "200 OK", "recovered").await;
+            vec![first_path, second_path]
+        });
+
+        let client = Client::builder()
+            .read_timeout(Duration::from_millis(100))
+            .build()
+            .expect("short-timeout client");
+        let url = format!("http://{address}/exact-chapter");
+        let body = get_lichess_with_backoff(&client, &url)
+            .await
+            .expect("the serialized retry should recover");
+        let requests = server.await.expect("mock server task");
+
+        assert_eq!(body, b"recovered");
+        assert_eq!(requests.len(), LICHESS_TRANSPORT_ATTEMPTS);
+        assert!(requests
+            .iter()
+            .all(|request| request.contains("/exact-chapter")));
+        assert!(!lichess_failed_hosts()
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .contains(&request_host(&url)));
+        reset_lichess_test_state();
+    }
+
+    #[tokio::test]
+    async fn lichess_lane_retries_a_truncated_success_body_before_caching_it() {
+        use tokio::io::AsyncWriteExt;
+
+        let _lane = LICHESS_TEST_LANE.lock().await;
+        reset_lichess_test_state();
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("mock Lichess listener");
+        let address = listener.local_addr().expect("mock address");
+        let server = tokio::spawn(async move {
+            let (mut first, _) = listener.accept().await.expect("first mock accept");
+            let _ = read_mock_request(&mut first).await;
+            first
+                .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 9\r\nConnection: close\r\n\r\ntorn")
+                .await
+                .expect("truncated mock response");
+            drop(first);
+
+            let (mut second, _) = listener.accept().await.expect("retry mock accept");
+            let _ = read_mock_request(&mut second).await;
+            write_mock_response(&mut second, "200 OK", "complete!").await;
+        });
+
+        let temp = tempfile::tempdir().expect("temporary cache");
+        let url = format!("http://{address}/complete-body");
+        let cache_path = temp.path().join("complete-body.pgn");
+        let (body, cached) = fetch_lichess_cached_within(
+            &Client::new(),
+            &url,
+            &cache_path,
+            Some(GROWING_ARCHIVE_CACHE_MAX_AGE),
+        )
+        .await
+        .expect("the body retry should recover");
+        server.await.expect("mock server task");
+
+        assert_eq!(body, b"complete!");
+        assert!(!cached);
+        assert_eq!(
+            tokio::fs::read(&cache_path).await.expect("complete cache"),
+            b"complete!"
+        );
+        reset_lichess_test_state();
+    }
+
+    #[tokio::test]
+    async fn two_lichess_transport_failures_open_the_bounded_host_circuit() {
+        let _lane = LICHESS_TEST_LANE.lock().await;
+        reset_lichess_test_state();
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("mock Lichess listener");
+        let address = listener.local_addr().expect("mock address");
+        let server = tokio::spawn(async move {
+            for _ in 0..LICHESS_TRANSPORT_ATTEMPTS {
+                let (mut socket, _) = listener.accept().await.expect("mock accept");
+                let _ = read_mock_request(&mut socket).await;
+                tokio::time::sleep(Duration::from_millis(150)).await;
+                drop(socket);
+            }
+        });
+
+        let client = Client::builder()
+            .read_timeout(Duration::from_millis(100))
+            .build()
+            .expect("short-timeout client");
+        let url = format!("http://{address}/dead-host");
+        let error = get_lichess_with_backoff(&client, &url)
+            .await
+            .expect_err("both transport attempts should fail");
+        server.await.expect("mock server task");
+        assert!(error.contains("after 2 transport attempts"), "{error}");
+
+        let fast_fail_started = Instant::now();
+        let fast_fail = get_lichess_with_backoff(&client, &url)
+            .await
+            .expect_err("the exhausted host should fast-fail");
+        assert!(fast_fail.contains("earlier request"), "{fast_fail}");
+        assert!(fast_fail_started.elapsed() < Duration::from_millis(50));
+        reset_lichess_test_state();
     }
 
     #[tokio::test]
