@@ -44,6 +44,7 @@ const localEngineSchema = z.object({
     elo: z.number().nullish(),
     downloadSize: z.number().nullish(),
     downloadLink: z.string().nullish(),
+    managedInstall: z.literal("chessbot-lc0-0.32.1").nullish(),
     loaded: z.boolean().nullish(),
     go: goModeSchema.nullish(),
     enabled: z.boolean().nullish(),
@@ -51,6 +52,35 @@ const localEngineSchema = z.object({
 });
 
 export type LocalEngine = z.output<typeof localEngineSchema>;
+
+export const CHESSBOT_LC0_ENGINE: LocalEngine = {
+    type: "local",
+    id: "catalog-lc0-0.32.1-bt4-it332",
+    name: "LCZero",
+    version: "0.32.1",
+    path: "lc0-0.32.1-bt4-it332/lc0.exe",
+    image: "https://lczero.org/images/logo.svg",
+    elo: 3440,
+    downloadSize: 581_970_338 + 382_645_315,
+    managedInstall: "chessbot-lc0-0.32.1",
+};
+
+export function mergeManagedEngineCatalog(
+    engines: LocalEngine[],
+    os: Platform,
+): LocalEngine[] {
+    if (os !== "windows") return engines;
+    const withoutStaleLc0 = engines.filter((engine) => {
+        const name = engine.name.toLowerCase();
+        const path = engine.path.toLowerCase();
+        return !(
+            name.includes("leela chess zero") ||
+            name.includes("lczero") ||
+            /(^|[\\/])lc0(?:-|[\\/.])/.test(path)
+        );
+    });
+    return [...withoutStaleLc0, CHESSBOT_LC0_ENGINE];
+}
 
 const remoteEngineSchema = z.object({
     type: z.enum(["chessdb", "lichess"]),
@@ -147,9 +177,10 @@ export function useDefaultEngines(os: Platform | undefined, opened: boolean) {
         if (!data.ok) {
             throw new Error("Failed to fetch engines");
         }
-        return (await data.json()).filter(
+        const engines = (await data.json()).filter(
             (e: { os: Platform; bmi2: boolean }) => e.os === os && e.bmi2 === bmi2,
         );
+        return mergeManagedEngineCatalog(engines, os);
     });
     return {
         defaultEngines: data as LocalEngine[],

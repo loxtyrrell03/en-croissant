@@ -15,6 +15,7 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconAlertCircle, IconDatabase, IconTrophy } from "@tabler/icons-react";
+import { invoke } from "@tauri-apps/api/core";
 import { join, resolve } from "@tauri-apps/api/path";
 import { useAtom } from "jotai";
 import { useCallback, useState } from "react";
@@ -33,6 +34,13 @@ import { formatBytes } from "@/utils/format";
 import { unwrap } from "@/utils/unwrap";
 import ProgressButton from "../common/ProgressButton";
 import EngineForm from "./EngineForm";
+
+type ManagedLc0Install = {
+  path: string;
+  weightsPath: string;
+  version: string;
+  network: string;
+};
 
 function AddEngine({
   opened,
@@ -195,40 +203,65 @@ function EngineCard({
   const { t } = useTranslation();
 
   const [inProgress, setInProgress] = useState<boolean>(false);
+  const [installError, setInstallError] = useState<string | null>(null);
   const [, setEngines] = useAtom(enginesAtom);
-  const downloadEngine = useCallback(
-    async (id: number, url: string) => {
+  const installEngine = useCallback(
+    async (id: number) => {
       setInProgress(true);
-      const enginesDir = await getEnginesDir();
-      let path = await resolve(enginesDir, `${url.slice(url.lastIndexOf("/") + 1)}`);
-      if (url.endsWith(".zip") || url.endsWith(".tar")) {
-        path = enginesDir;
+      setInstallError(null);
+      try {
+        const enginesDir = await getEnginesDir();
+        let enginePath: string;
+        let weightsPath: string | null = null;
+        if (engine.managedInstall === "chessbot-lc0-0.32.1") {
+          const installed = await invoke<ManagedLc0Install>("install_chessbot_lc0", {
+            id: `engine_${id}`,
+            enginesDir,
+          });
+          enginePath = installed.path;
+          weightsPath = installed.weightsPath;
+        } else {
+          const url = engine.downloadLink;
+          if (!url) throw new Error("This engine does not have an install source.");
+          let path = await resolve(enginesDir, `${url.slice(url.lastIndexOf("/") + 1)}`);
+          if (url.endsWith(".zip") || url.endsWith(".tar")) {
+            path = enginesDir;
+          }
+          await commands.downloadFile(`engine_${id}`, url, path, null, null, null);
+          let enginesDirPath = enginesDir;
+          if (enginesDirPath.endsWith("/") || enginesDirPath.endsWith("\\")) {
+            enginesDirPath = enginesDirPath.slice(0, -1);
+          }
+          enginePath = await join(enginesDirPath, ...engine.path.split("/"));
+          await commands.setFileAsExecutable(enginePath);
+        }
+        const config = unwrap(await commands.getEngineConfig(enginePath));
+        const settings = config.options
+          .filter((option) => requiredEngineSettings.includes(option.value.name))
+          .map((option) => ({
+            name: option.value.name,
+            // @ts-expect-error generated UCI option defaults have a wider union
+            value: option.value.default,
+          }));
+        if (weightsPath) {
+          settings.push({ name: "WeightsFile", value: weightsPath });
+        }
+        setEngines(async (prev) => [
+          ...(await prev),
+          {
+            ...engine,
+            id: crypto.randomUUID(),
+            type: "local",
+            path: enginePath,
+            loaded: true,
+            settings,
+          },
+        ]);
+      } catch (error) {
+        setInstallError(String(error));
+      } finally {
+        setInProgress(false);
       }
-      await commands.downloadFile(`engine_${id}`, url, path, null, null, null);
-      let enginesDirPath = enginesDir;
-      if (enginesDirPath.endsWith("/") || enginesDirPath.endsWith("\\")) {
-        enginesDirPath = enginesDirPath.slice(0, -1);
-      }
-      const enginePath = await join(enginesDirPath, ...engine.path.split("/"));
-      await commands.setFileAsExecutable(enginePath);
-      const config = unwrap(await commands.getEngineConfig(enginePath));
-      setEngines(async (prev) => [
-        ...(await prev),
-        {
-          ...engine,
-          id: crypto.randomUUID(),
-          type: "local",
-          path: enginePath,
-          loaded: true,
-          settings: config.options
-            .filter((o) => requiredEngineSettings.includes(o.value.name))
-            .map((o) => ({
-              name: o.value.name,
-              // @ts-expect-error
-              value: o.value.default,
-            })),
-        },
-      ]);
     },
     [engine, setEngines],
   );
@@ -266,12 +299,16 @@ function EngineCard({
               finalizing: t("Common.Extracting"),
             }}
             onClick={() => {
-              if (!engine.downloadLink) return;
-              downloadEngine(engineId, engine.downloadLink);
+              void installEngine(engineId);
             }}
             inProgress={inProgress}
             setInProgress={setInProgress}
           />
+          {installError && (
+            <Text size="xs" c="red" mt="xs">
+              {installError}
+            </Text>
+          )}
         </Box>
       </Group>
     </Paper>

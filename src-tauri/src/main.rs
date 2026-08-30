@@ -8,6 +8,7 @@ mod coach;
 mod coach_persistence;
 mod db;
 mod engine;
+mod engine_install;
 mod error;
 mod game;
 
@@ -232,6 +233,7 @@ fn main() {
             authenticate,
             write_game,
             download_file,
+            engine_install::install_chessbot_lc0,
             get_tournaments,
             get_db_info,
             get_games,
