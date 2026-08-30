@@ -1,4 +1,4 @@
-//#region ../en-croissant-phone-artifact/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/types.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/types.js
 var FILE_NAMES = [
 	"a",
 	"b",
@@ -32,7 +32,7 @@ var CASTLING_SIDES = ["a", "h"];
 var isDrop = (v) => "role" in v;
 var isNormal = (v) => "from" in v;
 //#endregion
-//#region ../en-croissant-phone-artifact/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/util.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/util.js
 var defined = (v) => v !== void 0;
 var opposite = (color) => color === "white" ? "black" : "white";
 var squareRank = (square) => square >> 3;
@@ -72,7 +72,7 @@ var makeUci = (move) => isDrop(move) ? `${roleToChar(move.role).toUpperCase()}@$
 var kingCastlesTo = (color, side) => color === "white" ? side === "a" ? 2 : 6 : side === "a" ? 58 : 62;
 var rookCastlesTo = (color, side) => color === "white" ? side === "a" ? 3 : 5 : side === "a" ? 59 : 61;
 //#endregion
-//#region ../en-croissant-phone-artifact/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/squareSet.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/squareSet.js
 var popcnt32 = (n) => {
 	n = n - (n >>> 1 & 1431655765);
 	n = (n & 858993459) + (n >>> 2 & 858993459);
@@ -254,7 +254,7 @@ var SquareSet = class SquareSet {
 	}
 };
 //#endregion
-//#region ../en-croissant-phone-artifact/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/attacks.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/attacks.js
 /**
 * Compute attacks and rays.
 *
@@ -396,7 +396,7 @@ var ray = (a, b) => {
 */
 var between = (a, b) => ray(a, b).intersect(SquareSet.full().shl64(a).xor(SquareSet.full().shl64(b))).withoutFirst();
 //#endregion
-//#region ../en-croissant-phone-artifact/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/board.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/board.js
 /**
 * Piece positions on a board.
 *
@@ -510,7 +510,7 @@ var Board = class Board {
 	}
 };
 //#endregion
-//#region ../en-croissant-phone-artifact/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/setup.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/setup.js
 var MaterialSide = class MaterialSide {
 	constructor() {}
 	static empty() {
@@ -615,7 +615,7 @@ var RemainingChecks = class RemainingChecks {
 	}
 };
 //#endregion
-//#region ../en-croissant-phone-artifact/node_modules/.pnpm/@badrap+result@0.2.13/node_modules/@badrap/result/dist/index.modern.mjs
+//#region node_modules/.pnpm/@badrap+result@0.2.13/node_modules/@badrap/result/dist/index.modern.mjs
 var r$1 = class {
 	unwrap(r, t) {
 		const e = this._chain((t) => n$1.ok(r ? r(t) : t), (r) => t ? n$1.ok(t(r)) : n$1.err(r));
@@ -671,7 +671,7 @@ var n$1;
 	};
 })(n$1 || (n$1 = {}));
 //#endregion
-//#region ../en-croissant-phone-artifact/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/chess.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/chess.js
 var IllegalSetup;
 (function(IllegalSetup) {
 	IllegalSetup["Empty"] = "ERR_EMPTY";
@@ -1356,7 +1356,7 @@ var makeFen = (setup, opts) => [
 	...(opts === null || opts === void 0 ? void 0 : opts.epd) ? [] : [Math.max(0, Math.min(setup.halfmoves, 9999)), Math.max(1, Math.min(setup.fullmoves, 9999))]
 ].join(" ");
 //#endregion
-//#region ../en-croissant-phone-artifact/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/san.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/san.js
 var makeSanWithoutSuffix = (pos, move) => {
 	let san = "";
 	if (isDrop(move)) {
@@ -1456,7 +1456,7 @@ var parseSan = (pos, san) => {
 	};
 };
 //#endregion
-//#region ../en-croissant-phone-artifact/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/variant.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/variant.js
 var Crazyhouse = class extends Position {
 	constructor() {
 		super("crazyhouse");
@@ -1945,7 +1945,7 @@ var setupPosition = (rules, setup) => {
 	}
 };
 //#endregion
-//#region ../en-croissant-phone-artifact/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/pgn.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/pgn.js
 /**
 * Parse, transform and write PGN.
 *
@@ -2481,7 +2481,7 @@ var parseComment = (comment) => {
 	};
 };
 //#endregion
-//#region ../en-croissant-phone-artifact/node_modules/.pnpm/ts-pattern@5.0.8/node_modules/ts-pattern/dist/index.js
+//#region node_modules/.pnpm/ts-pattern@5.0.8/node_modules/ts-pattern/dist/index.js
 var t = Symbol.for("@ts-pattern/matcher"), e = Symbol.for("@ts-pattern/isVariadic"), n = "@ts-pattern/anonymous-select-key", r = (t) => Boolean(t && "object" == typeof t), i = (e) => e && !!e[t], s = (n, o, c) => {
 	if (i(n)) {
 		const { matched: r, selections: i } = n[t]().match(o);
