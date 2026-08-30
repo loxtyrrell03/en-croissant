@@ -1,6 +1,6 @@
 const configuredPrivateServerUrl = String(import.meta.env.VITE_EN_CROISSANT_SERVER_URL ?? "").trim();
 const privateServerUrl = (
-  configuredPrivateServerUrl || "https://gaming-pc.tail89d19b.ts.net"
+  configuredPrivateServerUrl || "https://lox-pc.tail89d19b.ts.net"
 ).replace(/\/+$/, "");
 
 const sharedCredentialUrl = `${privateServerUrl}/api/lichess-credential`;

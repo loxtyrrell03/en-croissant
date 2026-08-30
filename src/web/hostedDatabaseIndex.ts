@@ -25,7 +25,7 @@ type WebHostedPositionIndexShard = {
 };
 
 const configuredPrivateServerUrl = String(
-  import.meta.env.VITE_EN_CROISSANT_SERVER_URL ?? "https://gaming-pc.tail89d19b.ts.net",
+  import.meta.env.VITE_EN_CROISSANT_SERVER_URL ?? "https://lox-pc.tail89d19b.ts.net",
 ).trim();
 const PRIVATE_SERVER_URL = configuredPrivateServerUrl.replace(/\/+$/, "");
 const PRIVATE_POSITION_TIMEOUT_MS = 2_500;

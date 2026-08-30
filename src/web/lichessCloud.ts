@@ -25,7 +25,7 @@ const LICHESS_CLOUD_RATE_LIMIT_COOLDOWN_MS = 60_000;
 const PC_STORED_EVAL_TIMEOUT_MS = 2_000;
 const configuredRemoteStockfishUrl = String(
   import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ??
-    "https://gaming-pc.tail89d19b.ts.net:8443",
+    "https://lox-pc.tail89d19b.ts.net",
 ).trim();
 const REMOTE_STOCKFISH_URL = configuredRemoteStockfishUrl.replace(/\/+$/, "");
 
