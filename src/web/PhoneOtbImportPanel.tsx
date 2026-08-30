@@ -223,7 +223,9 @@ export default function PhoneOtbImportPanel({
   const progressMessage =
     overallTotal > 0 && overallFinished >= overallTotal
       ? "Finishing and saving the verified games on your PC…"
-      : progress?.message;
+      : overallTotal > 0 && progress
+        ? `Latest source update — ${progress.source}: ${progress.message}`
+        : progress?.message;
 
   return (
     <Stack gap="sm">

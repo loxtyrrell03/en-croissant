@@ -15,7 +15,7 @@ use futures_util::future::{self, BoxFuture, Either};
 use futures_util::stream::FuturesUnordered;
 use futures_util::{stream, StreamExt};
 use pgn_reader::{BufferedReader as PgnReader, RawHeader, SanPlus, Skip, Visitor};
-use reqwest::header::{COOKIE, REFERER, SET_COOKIE};
+use reqwest::header::{ACCEPT, COOKIE, REFERER, SET_COOKIE};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -62,6 +62,10 @@ const BRITBASE_CONCURRENCY: usize = 16;
 /// Lichess work keeps modest CPU fan-out, while the network helper below
 /// serializes complete requests as required by Lichess's published API guidance.
 const LICHESS_CONCURRENCY: usize = 8;
+/// Lichess also rate-limits rapid sequential requests even when no requests
+/// overlap. Reserving the next start keeps a long exact-game import below the
+/// observed burst limit; slower responses naturally satisfy the interval.
+const LICHESS_MIN_REQUEST_SPACING: Duration = Duration::from_millis(120);
 /// A dead upstream must not make an indexed all-source search look frozen.
 /// Connection setup and gaps between response chunks are bounded separately,
 /// so large PGNs can still download for as long as they keep transferring.
@@ -1114,102 +1118,21 @@ async fn scan_lichess_fide_broadcasts(
     // indexed dump. A cutoff derived from the player's birth year is unsafe:
     // the broadcast database starts much later, so the missing pre-database
     // years otherwise force every already-indexed tour to be downloaded again.
-    let requested_cutoff = format!("{:04}-01-01", request.from_year);
-    let mut seen_round_paths = HashSet::new();
-    let mut uncovered_round_paths = HashSet::new();
     // The placeholder slug redirects to Lichess's canonical player URL. Every
     // later cursor must come from that response's rel=next link: synthesizing
     // `/player?page=N` makes the redirect discard `page=N` and repeats page 1.
-    let mut page_url = format!("https://lichess.org/fide/{fide_id}/player");
-    let mut seen_page_urls = HashSet::new();
-
-    for page in 1..=20u32 {
-        if !seen_page_urls.insert(page_url.clone()) {
-            report.errors.push(format!(
-                "Lichess FIDE pagination repeated {page_url}; coverage may be incomplete"
-            ));
-            break;
-        }
-        emit_progress(
-            app,
-            request,
-            SOURCE,
-            "discovering",
-            page.saturating_sub(1) as usize,
-            20,
-            games_len(collection),
-            format!("Checking Lichess FIDE tournament page {page}"),
-        );
-        let cache_path = request
-            .cache_dir
-            .join(cache_file_name("lichess-fide-page", &page_url));
-        let bytes = match fetch_lichess_cached_within(
-            client,
-            &page_url,
-            &cache_path,
-            Some(PAGE_CACHE_MAX_AGE),
-        )
-        .await
-        {
-            Ok((bytes, _)) => bytes,
-            Err(error) => {
-                report.errors.push(error);
-                break;
-            }
-        };
-        let html = String::from_utf8_lossy(&bytes).into_owned();
-        let paths = extract_lichess_rounds_since(&html, &requested_cutoff);
-        let page_reaches_before_range =
-            extract_quoted_values(&html, "datetime=")
-                .into_iter()
-                .any(|value| {
-                    value
-                        .get(..10)
-                        .is_some_and(|date| date < requested_cutoff.as_str())
-                });
-        for (round_path, date) in paths {
-            if !seen_round_paths.insert(round_path.clone()) {
-                continue;
-            }
-            if let Some(date) = date {
-                // The FIDE listing already dates each round. A fully indexed
-                // monthly dump is authoritative for that month, so do not
-                // spend two live requests (metadata + PGN) rediscovering it.
-                if corpus_coverage.covers_date(&date) {
-                    continue;
-                }
-                uncovered_round_paths.insert(round_path);
-            } else {
-                // Undated cards are uncommon; retain the metadata fallback so
-                // they are skipped only after the API proves corpus coverage.
-                uncovered_round_paths.insert(round_path);
-            }
-        }
-        if page_reaches_before_range {
-            break;
-        }
-        let next_page_url = match lichess_fide_next_page_url(&html, fide_id, &seen_page_urls) {
-            Ok(next_page_url) => next_page_url,
-            Err(error) => {
-                report.errors.push(error);
-                break;
-            }
-        };
-        let Some(next_page_url) = next_page_url else {
-            break;
-        };
-        if page == 20 {
-            report.errors.push(
-                "Lichess FIDE tournament discovery exceeded the 20-page safety cap; coverage may be incomplete"
-                    .to_string(),
-            );
-            break;
-        }
-        page_url = next_page_url;
-    }
-
-    let mut round_paths = uncovered_round_paths.into_iter().collect::<Vec<_>>();
-    round_paths.sort();
+    let (round_paths, discovery_errors) = discover_lichess_fide_rounds(
+        client,
+        request,
+        collection,
+        app,
+        SOURCE,
+        fide_id,
+        "https://lichess.org",
+        &format!("https://lichess.org/fide/{fide_id}/player"),
+    )
+    .await;
+    report.errors.extend(discovery_errors);
     // Round metadata identifies the exact study chapter for this FIDE player.
     // A chapter export is byte-for-byte the same annotated game as the whole
     // round export but avoids making Lichess synthesize every board in the
@@ -1231,6 +1154,79 @@ async fn scan_lichess_fide_broadcasts(
     .await;
 
     report
+}
+
+async fn discover_lichess_fide_rounds(
+    client: &Client,
+    request: &OtbImportRequest,
+    collection: &Mutex<Collection>,
+    app: &OtbProgressSink<'_>,
+    source: &'static str,
+    fide_id: &str,
+    origin: &str,
+    initial_url: &str,
+) -> (Vec<String>, Vec<String>) {
+    let requested_cutoff = format!("{:04}-01-01", request.from_year);
+    let mut seen_round_paths = HashSet::new();
+    let mut seen_page_urls = HashSet::new();
+    let mut errors = Vec::new();
+    let mut page_url = initial_url.to_string();
+    let mut page = 1usize;
+    loop {
+        if !seen_page_urls.insert(page_url.clone()) {
+            errors.push(format!(
+                "Lichess FIDE pagination repeated {page_url}; coverage may be incomplete"
+            ));
+            break;
+        }
+        emit_progress(
+            app,
+            request,
+            source,
+            "discovering",
+            page.saturating_sub(1),
+            0,
+            games_len(collection),
+            format!("Checking Lichess FIDE tournament page {page}"),
+        );
+        let cache_path = request
+            .cache_dir
+            .join(cache_file_name("lichess-fide-page", &page_url));
+        let bytes = match fetch_lichess_cached_within(
+            client,
+            &page_url,
+            &cache_path,
+            Some(PAGE_CACHE_MAX_AGE),
+        )
+        .await
+        {
+            Ok((bytes, _)) => bytes,
+            Err(error) => {
+                errors.push(error);
+                break;
+            }
+        };
+        let html = String::from_utf8_lossy(&bytes).into_owned();
+        for (round_path, _) in extract_lichess_rounds_since(&html, &requested_cutoff) {
+            seen_round_paths.insert(round_path);
+        }
+        let next_page_url =
+            match lichess_fide_next_page_url_at_origin(&html, fide_id, &seen_page_urls, origin) {
+                Ok(next_page_url) => next_page_url,
+                Err(error) => {
+                    errors.push(error);
+                    break;
+                }
+            };
+        let Some(next_page_url) = next_page_url else {
+            break;
+        };
+        page_url = next_page_url;
+        page = page.saturating_add(1);
+    }
+    let mut round_paths = seen_round_paths.into_iter().collect::<Vec<_>>();
+    round_paths.sort();
+    (round_paths, errors)
 }
 
 /// Parses a downloaded PGN payload on the blocking pool. A parse failure comes
@@ -1331,6 +1327,7 @@ struct IndexedArchiveSpec {
     optional: bool,
     lichess: bool,
     lichess_fallback: Option<(String, PathBuf)>,
+    require_match: bool,
 }
 
 impl IndexedArchiveSpec {
@@ -1343,6 +1340,7 @@ impl IndexedArchiveSpec {
             optional: false,
             lichess: false,
             lichess_fallback: None,
+            require_match: false,
         }
     }
 
@@ -1355,6 +1353,7 @@ impl IndexedArchiveSpec {
             optional: false,
             lichess: true,
             lichess_fallback: None,
+            require_match: false,
         }
     }
 
@@ -1372,7 +1371,14 @@ impl IndexedArchiveSpec {
             optional: false,
             lichess: true,
             lichess_fallback: Some((fallback_url, fallback_cache_path)),
+            require_match: false,
         }
+    }
+
+    fn lichess_complete_tour(url: String, cache_path: PathBuf) -> Self {
+        let mut spec = Self::lichess(url, cache_path);
+        spec.require_match = true;
+        spec
     }
 }
 
@@ -1701,6 +1707,19 @@ async fn fetch_and_scan_direct_lichess_spec(
         }
     } else {
         primary
+    };
+    let result = if spec.require_match {
+        result.map(|(cached, mut outcome)| {
+            if outcome.matched == 0 && outcome.error.is_none() {
+                outcome.error = Some(
+                    "The complete tournament export contained no matching game for the FIDE player advertised by Lichess."
+                        .to_string(),
+                );
+            }
+            (cached, outcome)
+        })
+    } else {
+        result
     };
     DirectLichessAttempt { spec, result }
 }
@@ -2302,10 +2321,21 @@ async fn scan_chessscope_broadcasts(
     report
 }
 
-/// Resolves and scans each known player round as one bounded unit. This starts
-/// exact chapter work after the first concurrency window of metadata instead of
-/// waiting for metadata from the player's entire history. The network request
-/// lane remains strictly serial; parsing and cached work can overlap it.
+/// Resolves each advertised card to its complete tournament, then asks Lichess
+/// for every exact chapter belonging to this player. FIDE cards link only the
+/// last round of multi-round events, so scanning the card's round alone is not a
+/// complete player import. Each bounded chunk resolves metadata concurrently,
+/// then finishes its selected tours while the network lane remains serial.
+struct LichessFideResolvedCard {
+    round_path: String,
+    tour_id: Option<String>,
+    dates: Option<(i64, i64)>,
+    finished: bool,
+    player_keys: Vec<String>,
+    fallback: Option<IndexedArchiveSpec>,
+    error: Option<String>,
+}
+
 async fn scan_lichess_rounds_pipelined(
     client: &Client,
     request: &OtbImportRequest,
@@ -2331,43 +2361,111 @@ async fn scan_lichess_rounds_pipelined(
     }
 
     let total_rounds = round_paths.len();
-    let started = AtomicUsize::new(0);
-    let mut rounds = stream::iter(round_paths.into_iter().map(|round_path| {
-        let client = client.clone();
-        let identity = Arc::clone(identity);
-        let cache_dir = request.cache_dir.clone();
-        let origin = origin.to_string();
-        let started = &started;
-        async move {
-            let position = started.fetch_add(1, Ordering::Relaxed);
-            emit_progress(
-                app,
-                request,
-                source,
-                "downloading",
-                position,
-                total_rounds,
-                games_len(collection),
-                format!("Resolving broadcast {}", round_path),
-            );
-            let specs = resolve_lichess_round_specs_for_path(
-                &client,
-                &cache_dir,
-                &round_path,
-                corpus_coverage,
-                &identity,
-                &origin,
+    let mut seen_tours = HashSet::<String>::new();
+    let mut attempts = Vec::new();
+    let mut errors = Vec::new();
+    for (chunk_index, chunk) in round_paths.chunks(LICHESS_CONCURRENCY).enumerate() {
+        let chunk_start = chunk_index * LICHESS_CONCURRENCY;
+        let mut resolutions = stream::iter(chunk.iter().cloned().enumerate().map(
+            |(offset, round_path)| {
+                let client = client.clone();
+                let identity = Arc::clone(identity);
+                let cache_dir = request.cache_dir.clone();
+                let origin = origin.to_string();
+                async move {
+                    emit_progress(
+                        app,
+                        request,
+                        source,
+                        "downloading",
+                        chunk_start + offset,
+                        total_rounds,
+                        games_len(collection),
+                        format!("Resolving broadcast {round_path}"),
+                    );
+                    resolve_lichess_fide_card_metadata(
+                        &client, &cache_dir, round_path, &identity, &origin,
+                    )
+                    .await
+                }
+            },
+        ))
+        .buffer_unordered(LICHESS_CONCURRENCY);
+
+        let mut resolved = Vec::with_capacity(chunk.len());
+        while let Some(card) = resolutions.next().await {
+            resolved.push(card);
+        }
+        resolved.sort_by(|left, right| {
+            left.tour_id
+                .as_deref()
+                .unwrap_or("")
+                .cmp(right.tour_id.as_deref().unwrap_or(""))
+                .then_with(|| left.round_path.cmp(&right.round_path))
+        });
+
+        // Finish the selected tours from this bounded metadata window before
+        // opening the next one. Sorting above makes duplicate-tour selection
+        // independent of cache/network response order.
+        for card in resolved {
+            if let Some(error) = card.error {
+                errors.push(error);
+            }
+            let Some(tour_id) = card.tour_id else {
+                if let Some(spec) = card.fallback {
+                    attempts.push(
+                        fetch_and_scan_direct_lichess_spec(
+                            client,
+                            Arc::clone(identity),
+                            source,
+                            request.from_year,
+                            spec,
+                            max_age,
+                        )
+                        .await,
+                    );
+                }
+                continue;
+            };
+            if card
+                .dates
+                .is_some_and(|(starts, ends)| corpus_coverage.covers_timestamp_range(starts, ends))
+            {
+                continue;
+            }
+            if !seen_tours.insert(tour_id.clone()) {
+                continue;
+            }
+
+            // Player-tour JSON has no per-game dates. If even one month in the
+            // tour is uncovered, fetch every exact chapter and let the PGN year
+            // filter decide; skipping individual chapters would lose games.
+            let mut specs = resolve_lichess_tour_player_specs(
+                client,
+                &request.cache_dir,
+                origin.trim_end_matches('/'),
+                &tour_id,
+                &card.player_keys,
+                card.finished,
             )
             .await;
-            let mut attempts = Vec::with_capacity(specs.len());
-            // A round can contain the target on multiple boards. Keeping those
-            // exact chapters inside this task bounds live Lichess fan-out at the
-            // same LICHESS_CONCURRENCY value as metadata discovery.
+            if specs.is_empty() {
+                // Every player key failed or returned no complete game list.
+                // Scan the full tour as the lossless, required-match fallback.
+                let url = format!(
+                    "{}/api/broadcast/{tour_id}.pgn",
+                    origin.trim_end_matches('/')
+                );
+                let cache_path = request
+                    .cache_dir
+                    .join(cache_file_name("lichess-broadcast-tour", &url));
+                specs.push(IndexedArchiveSpec::lichess_complete_tour(url, cache_path));
+            }
             for spec in specs {
                 attempts.push(
                     fetch_and_scan_direct_lichess_spec(
-                        &client,
-                        Arc::clone(&identity),
+                        client,
+                        Arc::clone(identity),
                         source,
                         request.from_year,
                         spec,
@@ -2376,18 +2474,272 @@ async fn scan_lichess_rounds_pipelined(
                     .await,
                 );
             }
-            attempts
         }
-    }))
-    .buffer_unordered(LICHESS_CONCURRENCY);
-
-    let mut attempts = Vec::new();
-    while let Some(mut round_attempts) = rounds.next().await {
-        attempts.append(&mut round_attempts);
     }
+    errors.sort();
+    report.errors.extend(errors);
     // Task completion is intentionally unordered. Merge only after restoring a
     // total URL order so source precedence, deduplication and output are stable.
     merge_direct_lichess_attempts(request, collection, app, source, report, attempts);
+}
+
+async fn resolve_lichess_fide_card_metadata(
+    client: &Client,
+    cache_dir: &Path,
+    round_path: String,
+    identity: &PlayerIdentity,
+    origin: &str,
+) -> LichessFideResolvedCard {
+    let origin = origin.trim_end_matches('/');
+    let Some(round_id) = round_path.rsplit('/').next().filter(|id| !id.is_empty()) else {
+        return LichessFideResolvedCard {
+            round_path: round_path.clone(),
+            tour_id: None,
+            dates: None,
+            finished: false,
+            player_keys: Vec::new(),
+            fallback: None,
+            error: Some(format!("Invalid Lichess round path {round_path}")),
+        };
+    };
+    let round_id = round_id.to_string();
+    let api_url = format!("{origin}/api{round_path}");
+    let metadata_cache_path = cache_dir.join(cache_file_name("lichess-fide-round", &api_url));
+    let metadata = async {
+        let (bytes, _) = fetch_lichess_cached_within(
+            client,
+            &api_url,
+            &metadata_cache_path,
+            Some(PAGE_CACHE_MAX_AGE),
+        )
+        .await?;
+        serde_json::from_slice::<serde_json::Value>(&bytes).map_err(|error| error.to_string())
+    }
+    .await;
+
+    let value = match metadata {
+        Ok(value) => value,
+        Err(error) => {
+            return LichessFideResolvedCard {
+                round_path,
+                tour_id: None,
+                dates: None,
+                finished: false,
+                player_keys: Vec::new(),
+                fallback: Some(lichess_round_fallback_spec(cache_dir, origin, &round_id)),
+                error: Some(format!(
+                    "{api_url}: round metadata failed ({error}); only the advertised round could be recovered, so tournament coverage may be incomplete"
+                )),
+            };
+        }
+    };
+    let Some((tour_id, dates)) = lichess_tour_id_and_dates(&value) else {
+        return LichessFideResolvedCard {
+            round_path,
+            tour_id: None,
+            dates: None,
+            finished: false,
+            player_keys: Vec::new(),
+            fallback: Some(lichess_round_fallback_spec(cache_dir, origin, &round_id)),
+            error: Some(format!(
+                "{api_url}: round metadata did not identify its tournament; only the advertised round could be recovered, so tournament coverage may be incomplete"
+            )),
+        };
+    };
+    let player_keys = lichess_tour_player_keys(&value, identity);
+    let finished = value
+        .get("round")
+        .and_then(|round| round.get("finished"))
+        .and_then(serde_json::Value::as_bool)
+        == Some(true);
+    LichessFideResolvedCard {
+        round_path,
+        tour_id: Some(tour_id),
+        dates,
+        finished,
+        player_keys,
+        fallback: None,
+        error: None,
+    }
+}
+
+async fn resolve_lichess_tour_player_specs(
+    client: &Client,
+    cache_dir: &Path,
+    origin: &str,
+    tour_id: &str,
+    player_keys: &[String],
+    finished: bool,
+) -> Vec<IndexedArchiveSpec> {
+    for player_key in player_keys {
+        let url = format!("{origin}/broadcast/{tour_id}/players/{player_key}");
+        let cache_path = cache_dir.join(cache_file_name("lichess-fide-tour-player", &url));
+        let fetched = if finished {
+            fetch_lichess_json_cached_within(client, &url, &cache_path, Some(PAGE_CACHE_MAX_AGE))
+                .await
+        } else {
+            fetch_lichess_json_fresh(client, &url, &cache_path).await
+        };
+        let value = match fetched {
+            Ok((bytes, _)) => serde_json::from_slice::<serde_json::Value>(&bytes).ok(),
+            Err(_) => None,
+        };
+        if let Some(specs) = value
+            .as_ref()
+            .and_then(|value| lichess_tour_player_specs(value, cache_dir, origin))
+        {
+            return specs;
+        }
+    }
+    Vec::new()
+}
+
+/// Chooses the most specific tour-player key without wasting a request known to
+/// be absent. Older broadcasts often have the exact player name but no FIDE ID;
+/// their advertised round proves that before the tour lookup. Modern tagged
+/// rounds keep the FIDE ID first, and every ordering retains the other key as a
+/// lossless fallback.
+fn lichess_tour_player_keys(
+    round_metadata: &serde_json::Value,
+    identity: &PlayerIdentity,
+) -> Vec<String> {
+    let mut exact_names = Vec::new();
+    let mut target_fide_is_tagged = false;
+    if let Some(games) = round_metadata
+        .get("games")
+        .and_then(serde_json::Value::as_array)
+    {
+        for player in games
+            .iter()
+            .filter_map(|game| game.get("players").and_then(serde_json::Value::as_array))
+            .flatten()
+        {
+            let fide_id = roster_fide_id(player);
+            let name = player.get("name").and_then(serde_json::Value::as_str);
+            let matched = identity.fide_id.as_deref().is_some_and(|target_id| {
+                fide_id.as_deref() == Some(target_id)
+                    || (fide_id.is_none() && name.is_some_and(|name| identity.name_matches(name)))
+            });
+            if !matched {
+                continue;
+            }
+            target_fide_is_tagged |= fide_id.is_some();
+            if let Some(name) = name {
+                exact_names.push(percent_encode_path_segment(name));
+            }
+        }
+    }
+    exact_names.sort();
+    exact_names.dedup();
+
+    let numeric = identity.fide_id.clone();
+    let canonical_name = percent_encode_path_segment(&identity.canonical_name);
+    let mut keys = Vec::new();
+    if target_fide_is_tagged {
+        keys.extend(numeric.iter().cloned());
+        keys.extend(exact_names);
+        keys.push(canonical_name);
+    } else if !exact_names.is_empty() {
+        keys.extend(exact_names);
+        keys.push(canonical_name);
+        keys.extend(numeric);
+    } else {
+        keys.extend(numeric);
+        keys.push(canonical_name);
+    }
+    let mut seen = HashSet::new();
+    keys.retain(|key| seen.insert(key.clone()));
+    keys
+}
+
+fn lichess_tour_id_and_dates(value: &serde_json::Value) -> Option<(String, Option<(i64, i64)>)> {
+    let tour = value.get("tour")?;
+    let id = tour
+        .get("id")
+        .and_then(serde_json::Value::as_str)
+        .filter(|id| !id.is_empty())?
+        .to_string();
+    let dates = tour
+        .get("dates")
+        .and_then(serde_json::Value::as_array)
+        .and_then(|dates| {
+            let starts = dates.first()?.as_i64()?;
+            let ends = dates
+                .get(1)
+                .and_then(serde_json::Value::as_i64)
+                .unwrap_or(starts);
+            Some((starts, ends))
+        });
+    Some((id, dates))
+}
+
+fn lichess_tour_player_specs(
+    value: &serde_json::Value,
+    cache_dir: &Path,
+    origin: &str,
+) -> Option<Vec<IndexedArchiveSpec>> {
+    let games = value.get("games").and_then(serde_json::Value::as_array)?;
+    if games.is_empty() {
+        return None;
+    }
+    let mut specs = HashMap::new();
+    for game in games {
+        let round_id = game
+            .get("round")
+            .and_then(serde_json::Value::as_str)
+            .filter(|id| valid_lichess_id(id))?;
+        let chapter_id = game
+            .get("id")
+            .and_then(serde_json::Value::as_str)
+            .filter(|id| valid_lichess_id(id))?;
+        let url = format!("{origin}/api/study/{round_id}/{chapter_id}.pgn");
+        let cache_path = cache_dir.join(cache_file_name("lichess-broadcast-game", &url));
+        let fallback = lichess_round_fallback_spec(cache_dir, origin, round_id);
+        specs.insert(
+            url.clone(),
+            IndexedArchiveSpec::lichess_with_fallback(
+                url,
+                cache_path,
+                fallback.url,
+                fallback.cache_path,
+            ),
+        );
+    }
+    let mut specs = specs.into_values().collect::<Vec<_>>();
+    specs.sort_by(|left, right| left.url.cmp(&right.url));
+    (!specs.is_empty()).then_some(specs)
+}
+
+fn lichess_round_fallback_spec(
+    cache_dir: &Path,
+    origin: &str,
+    round_id: &str,
+) -> IndexedArchiveSpec {
+    let url = format!("{origin}/api/broadcast/round/{round_id}.pgn");
+    let cache_path = cache_dir.join(cache_file_name("lichess-broadcast", &url));
+    IndexedArchiveSpec::lichess(url, cache_path)
+}
+
+fn valid_lichess_id(id: &str) -> bool {
+    id.len() == 8
+        && id
+            .chars()
+            .all(|character| character.is_ascii_alphanumeric())
+}
+
+fn percent_encode_path_segment(value: &str) -> String {
+    const HEX: &[u8; 16] = b"0123456789ABCDEF";
+    let mut encoded = String::new();
+    for byte in value.as_bytes() {
+        if byte.is_ascii_alphanumeric() || matches!(*byte, b'-' | b'.' | b'_' | b'~') {
+            encoded.push(*byte as char);
+        } else {
+            encoded.push('%');
+            encoded.push(HEX[(byte >> 4) as usize] as char);
+            encoded.push(HEX[(byte & 0x0f) as usize] as char);
+        }
+    }
+    encoded
 }
 
 /// Resolves already-known player rounds to exact single-game study PGNs.
@@ -2541,12 +2893,7 @@ fn lichess_player_chapter_ids(
         let Some(chapter_id) = game
             .get("id")
             .and_then(serde_json::Value::as_str)
-            .filter(|id| {
-                id.len() == 8
-                    && id
-                        .chars()
-                        .all(|character| character.is_ascii_alphanumeric())
-            })
+            .filter(|id| valid_lichess_id(id))
         else {
             return None;
         };
@@ -3008,6 +3355,38 @@ async fn fetch_lichess_cached_within(
     cache_path: &Path,
     max_age: Option<Duration>,
 ) -> Result<(Vec<u8>, bool), String> {
+    fetch_lichess_cached_within_mode(client, url, cache_path, max_age, false).await
+}
+
+async fn fetch_lichess_json_cached_within(
+    client: &Client,
+    url: &str,
+    cache_path: &Path,
+    max_age: Option<Duration>,
+) -> Result<(Vec<u8>, bool), String> {
+    fetch_lichess_cached_within_mode(client, url, cache_path, max_age, true).await
+}
+
+/// Ongoing tournament rosters can gain a new round between imports. Bypass any
+/// cached copy and never substitute stale bytes for a failed live refresh; the
+/// caller will use the complete-tour PGN fallback instead.
+async fn fetch_lichess_json_fresh(
+    client: &Client,
+    url: &str,
+    cache_path: &Path,
+) -> Result<(Vec<u8>, bool), String> {
+    let bytes = get_lichess_with_backoff_mode(client, url, true).await?;
+    write_cache_entry(cache_path, &bytes).await;
+    Ok((bytes, false))
+}
+
+async fn fetch_lichess_cached_within_mode(
+    client: &Client,
+    url: &str,
+    cache_path: &Path,
+    max_age: Option<Duration>,
+    accept_json: bool,
+) -> Result<(Vec<u8>, bool), String> {
     if let Some(bytes) = read_cache_entry(cache_path, max_age).await {
         return Ok((bytes, true));
     }
@@ -3016,7 +3395,7 @@ async fn fetch_lichess_cached_within(
     } else {
         None
     };
-    let bytes = match get_lichess_with_backoff(client, url).await {
+    let bytes = match get_lichess_with_backoff_mode(client, url, accept_json).await {
         Ok(bytes) => bytes,
         Err(error) => return stale.map(|bytes| (bytes, true)).ok_or(error),
     };
@@ -3412,6 +3791,7 @@ async fn scan_4ncl_otb_archive(
             optional: optional_current_urls.contains(&url),
             lichess: false,
             lichess_fallback: None,
+            require_match: false,
             url,
         })
         .collect::<Vec<_>>();
@@ -4377,9 +4757,17 @@ async fn write_cache_entry(cache_path: &Path, bytes: &[u8]) {
 static CACHE_WRITE_TICKET: AtomicUsize = AtomicUsize::new(0);
 
 async fn get_lichess_with_backoff(client: &Client, url: &str) -> Result<Vec<u8>, String> {
+    get_lichess_with_backoff_mode(client, url, false).await
+}
+
+async fn get_lichess_with_backoff_mode(
+    client: &Client,
+    url: &str,
+    accept_json: bool,
+) -> Result<Vec<u8>, String> {
     // Hold the permit through the body download so every Lichess source shares
-    // one strictly serial request lane. Successful responses need no artificial
-    // post-response sleep; only an explicit upstream cooldown closes the gate.
+    // one strictly serial request lane. The shared start gate also prevents a
+    // burst of tiny sequential responses from triggering a minute-long 429.
     // A failed request returns immediately and callers keep cached/indexed data.
     let host = request_host(url);
     if lichess_failed_hosts()
@@ -4402,7 +4790,11 @@ async fn get_lichess_with_backoff(client: &Client, url: &str) -> Result<Vec<u8>,
         ));
     }
     wait_for_lichess_lane().await?;
-    match client.get(url).send().await {
+    let mut request = client.get(url);
+    if accept_json {
+        request = request.header(ACCEPT, "application/json");
+    }
+    match request.send().await {
         Ok(response) if response.status() == reqwest::StatusCode::TOO_MANY_REQUESTS => {
             let retry_seconds = retry_after_seconds(&response).unwrap_or(60);
             hold_lichess_lane(Duration::from_secs(retry_seconds));
@@ -4460,18 +4852,24 @@ fn parse_retry_after(value: &str) -> Option<u64> {
         .map(|seconds| seconds.clamp(1, MAX_RETRY_AFTER_SECONDS))
 }
 
-/// Waits only for an explicit shared Lichess cooldown. Request serialization is
-/// enforced independently by `LICHESS_REQUEST_LANE`, so successful responses do
-/// not need a fixed inter-request delay.
+/// Waits for an explicit shared cooldown or the next polite request-start slot.
+/// Complete-body serialization is enforced independently by
+/// `LICHESS_REQUEST_LANE`; this gate matters only when responses finish faster
+/// than the minimum start interval.
 async fn wait_for_lichess_lane() -> Result<(), String> {
     loop {
         let now = Instant::now();
         let wait = {
-            let gate = LICHESS_LANE_GATE
+            let mut gate = LICHESS_LANE_GATE
                 .lock()
                 .unwrap_or_else(|error| error.into_inner());
-            gate.filter(|open_at| *open_at > now)
-                .map(|open_at| open_at.saturating_duration_since(now))
+            match gate.filter(|open_at| *open_at > now) {
+                Some(open_at) => Some(open_at.saturating_duration_since(now)),
+                None => {
+                    *gate = Some(now + LICHESS_MIN_REQUEST_SPACING);
+                    None
+                }
+            }
         };
         match wait {
             Some(delay) if delay > MAX_INTERACTIVE_LICHESS_WAIT => {
@@ -6027,8 +6425,18 @@ fn lichess_fide_next_page_url(
     fide_id: &str,
     seen_page_urls: &HashSet<String>,
 ) -> Result<Option<String>, String> {
+    lichess_fide_next_page_url_at_origin(html, fide_id, seen_page_urls, "https://lichess.org")
+}
+
+fn lichess_fide_next_page_url_at_origin(
+    html: &str,
+    fide_id: &str,
+    seen_page_urls: &HashSet<String>,
+    origin: &str,
+) -> Result<Option<String>, String> {
     let mut next_urls = Vec::new();
-    let expected_player_prefix = format!("https://lichess.org/fide/{fide_id}/");
+    let origin = origin.trim_end_matches('/');
+    let expected_player_prefix = format!("{origin}/fide/{fide_id}/");
     for tail in html.split("<a").skip(1) {
         let Some((anchor, _)) = tail.split_once('>') else {
             continue;
@@ -6053,8 +6461,8 @@ fn lichess_fide_next_page_url(
             })?;
         let href = decode_basic_html_entities(&href);
         let next_url = if href.starts_with("/fide/") {
-            format!("https://lichess.org{href}")
-        } else if href.starts_with("https://lichess.org/fide/") {
+            format!("{origin}{href}")
+        } else if href.starts_with(&format!("{origin}/fide/")) {
             href
         } else {
             return Err(format!(
@@ -6745,7 +7153,7 @@ mod tests {
     }
 
     #[test]
-    fn live_lichess_discovery_skips_months_already_in_the_corpus() {
+    fn live_lichess_listing_filters_cards_by_cutoff_but_keeps_undated_cards() {
         let html = r#"<a href="/broadcast/old-event/round-1/OldRound" datetime="2026-07-31T18:00:00Z">Old</a>
 <a href="/broadcast/new-event/round-1/NewRound" datetime="2026-08-01T18:00:00Z">New</a>
 <a href="/broadcast/undated-event/round-1/NoDate01">Undated</a>"#;
@@ -6824,6 +7232,77 @@ mod tests {
         );
     }
 
+    #[tokio::test]
+    async fn lichess_fide_discovery_follows_every_page_even_after_an_old_card() {
+        let _lane = LICHESS_TEST_LANE.lock().await;
+        reset_lichess_test_state();
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("mock Lichess listener");
+        let address = listener.local_addr().expect("mock address");
+        let server = tokio::spawn(async move {
+            let mut requested = Vec::new();
+            for page in 1..=21usize {
+                let (mut socket, _) = listener.accept().await.expect("mock accept");
+                let request = read_mock_request(&mut socket).await;
+                requested.push(
+                    request
+                        .lines()
+                        .next()
+                        .and_then(|line| line.split_whitespace().nth(1))
+                        .expect("request path")
+                        .to_string(),
+                );
+                let date = if page == 1 {
+                    "2010-01-01"
+                } else {
+                    "2026-01-01"
+                };
+                let next = if page < 21 {
+                    format!(
+                        "<a rel=\"next\" href=\"/fide/24276111/Lapidus_Alexey?page={}\">Next</a>",
+                        page + 1
+                    )
+                } else {
+                    String::new()
+                };
+                let body = format!(
+                    "<a href=\"/broadcast/test/round-{page}/P{page:07}\" datetime=\"{date}T00:00:00Z\">Card</a>{next}"
+                );
+                write_mock_response(&mut socket, "200 OK", &body).await;
+            }
+            requested
+        });
+
+        let temp = tempfile::tempdir().expect("temporary cache");
+        let request = test_request(temp.path());
+        let collection = Mutex::new(Collection::default());
+        let progress = |_progress: OtbImportProgress| {};
+        let origin = format!("http://{address}");
+        let (rounds, errors) = discover_lichess_fide_rounds(
+            &Client::new(),
+            &request,
+            &collection,
+            &progress,
+            "Lichess live FIDE broadcasts",
+            "24276111",
+            &origin,
+            &format!("{origin}/fide/24276111/player"),
+        )
+        .await;
+        let requested = server.await.expect("mock server task");
+
+        assert_eq!(requested.len(), 21, "discovery must not stop at page 20");
+        assert_eq!(
+            rounds.len(),
+            20,
+            "the old card is filtered, not a stop signal"
+        );
+        assert!(rounds.iter().any(|round| round.ends_with("P0000021")));
+        assert!(errors.is_empty(), "{errors:?}");
+        reset_lichess_test_state();
+    }
+
     #[test]
     fn resolves_exact_lichess_study_chapters_by_fide_id() {
         let identity = PlayerIdentity::new("Price, Gwilym", Some("443980")).unwrap();
@@ -6862,6 +7341,36 @@ mod tests {
             lichess_player_chapter_ids(&conflicting_id, &identity),
             None,
             "an ambiguous roster must retain the whole-round fallback"
+        );
+    }
+
+    #[test]
+    fn avoids_known_missing_fide_lookup_for_legacy_tours() {
+        let identity = PlayerIdentity::new("Houska, Jovanka", Some("405094")).unwrap();
+        let legacy = serde_json::json!({
+            "games": [{
+                "players": [
+                    { "name": "Houska, Jovanka" },
+                    { "name": "Example, Opponent" }
+                ]
+            }]
+        });
+        assert_eq!(
+            lichess_tour_player_keys(&legacy, &identity),
+            vec!["Houska%2C%20Jovanka".to_string(), "405094".to_string()]
+        );
+
+        let tagged = serde_json::json!({
+            "games": [{
+                "players": [
+                    { "name": "Houska, Jovanka", "fideId": 405094 },
+                    { "name": "Example, Opponent", "fideId": 1 }
+                ]
+            }]
+        });
+        assert_eq!(
+            lichess_tour_player_keys(&tagged, &identity),
+            vec!["405094".to_string(), "Houska%2C%20Jovanka".to_string()]
         );
     }
 
@@ -6952,17 +7461,38 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn lichess_round_pipeline_scans_exact_games_before_the_next_window_of_metadata() {
+    async fn lichess_fide_tour_pipeline_recovers_every_round_by_encoded_name_and_dedupes_cards() {
         let _lane = LICHESS_TEST_LANE.lock().await;
         reset_lichess_test_state();
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
             .await
             .expect("mock Lichess listener");
         let address = listener.local_addr().expect("mock address");
-        let expected_requests = (LICHESS_CONCURRENCY + 1) * 2;
+        let temp = tempfile::tempdir().expect("temporary cache");
+        let request = test_request(temp.path());
+        let origin = format!("http://{address}");
+        let first_card = "/broadcast/test/a-card/Last0001";
+        let cached_later_card = "/broadcast/test/z-card/Dupl0001";
+        let cached_metadata_url = format!("{origin}/api{cached_later_card}");
+        std::fs::write(
+            temp.path()
+                .join(cache_file_name("lichess-fide-round", &cached_metadata_url)),
+            serde_json::to_vec(&serde_json::json!({
+                "tour": { "id": "Tour0001", "dates": [1767225600000i64, 1769904000000i64] },
+                "round": { "finished": true },
+                "games": [{
+                    "players": [
+                        { "name": "Lapidus, Alexey M." },
+                        { "name": "Example, Opponent" }
+                    ]
+                }]
+            }))
+            .expect("cached metadata JSON"),
+        )
+        .expect("cached later-card metadata");
         let server = tokio::spawn(async move {
             let mut paths = Vec::new();
-            for _ in 0..expected_requests {
+            for _ in 0..5 {
                 let (mut socket, _) = listener.accept().await.expect("mock accept");
                 let request = read_mock_request(&mut socket).await;
                 let path = request
@@ -6971,16 +7501,167 @@ mod tests {
                     .and_then(|line| line.split_whitespace().nth(1))
                     .expect("request path")
                     .to_string();
-                let body = if path.starts_with("/api/broadcast/test/round-") {
-                    let round_id = path.rsplit('/').next().expect("round id");
-                    let index = round_id
-                        .strip_prefix("Round")
-                        .expect("round prefix")
-                        .parse::<usize>()
-                        .expect("round index");
+                if path.contains("/players/") {
+                    assert!(
+                        request
+                            .to_ascii_lowercase()
+                            .contains("accept: application/json"),
+                        "player lookup must request JSON"
+                    );
+                }
+                let (status, body) = if path.starts_with("/api/broadcast/test/") {
+                    (
+                        "200 OK",
+                        serde_json::json!({
+                            "tour": { "id": "Tour0001", "dates": [1767225600000i64, 1769904000000i64] },
+                            "round": { "finished": true },
+                            "games": [{
+                                "players": [
+                                    { "name": "Lapidus, Alexey M.", "fideId": 24276111 },
+                                    { "name": "Example, Opponent", "fideId": 1 }
+                                ]
+                            }]
+                        })
+                        .to_string(),
+                    )
+                } else if path == "/broadcast/Tour0001/players/24276111" {
+                    ("404 Not Found", String::new())
+                } else if path == "/broadcast/Tour0001/players/Lapidus%2C%20Alexey%20M." {
+                    (
+                        "200 OK",
+                        serde_json::json!({
+                            "games": [
+                                { "round": "Early001", "id": "Chap0001" },
+                                { "round": "Last0001", "id": "Chap0002" }
+                            ]
+                        })
+                        .to_string(),
+                    )
+                } else if path == "/api/study/Early001/Chap0001.pgn" {
+                    (
+                        "200 OK",
+                        "[Event \"Early round\"]\n[Site \"London ENG\"]\n[Date \"2026.01.01\"]\n[Round \"1\"]\n[White \"Lapidus, Alexey M.\"]\n[Black \"Example, Opponent\"]\n[Result \"1-0\"]\n[WhiteFideId \"24276111\"]\n\n1. e4 e5 {early annotation} 2. Nf3 Nc6 1-0\n".to_string(),
+                    )
+                } else if path == "/api/study/Last0001/Chap0002.pgn" {
+                    (
+                        "200 OK",
+                        "[Event \"Last round\"]\n[Site \"London ENG\"]\n[Date \"2026.02.01\"]\n[Round \"9\"]\n[White \"Example, Opponent\"]\n[Black \"Lapidus, Alexey M.\"]\n[Result \"0-1\"]\n[BlackFideId \"24276111\"]\n\n1. d4 d5 2. c4 e6 0-1\n".to_string(),
+                    )
+                } else {
+                    panic!("unexpected mock request {path}");
+                };
+                paths.push(path);
+                write_mock_response(&mut socket, status, &body).await;
+            }
+            paths
+        });
+
+        let identity = Arc::new(identity());
+        let collection = Mutex::new(Collection::default());
+        let progress = |_progress: OtbImportProgress| {};
+        let mut report = OtbImportSourceReport::new("Lichess live FIDE broadcasts");
+        let round_paths = vec![cached_later_card.to_string(), first_card.to_string()];
+
+        tokio::time::timeout(
+            Duration::from_secs(5),
+            scan_lichess_rounds_pipelined(
+                &Client::new(),
+                &request,
+                &identity,
+                &collection,
+                &progress,
+                "Lichess live FIDE broadcasts",
+                &mut report,
+                round_paths,
+                &LichessCorpusCoverage::empty(2020),
+                &origin,
+                Some(GROWING_ARCHIVE_CACHE_MAX_AGE),
+            ),
+        )
+        .await
+        .expect("pipelined tour scan should not stall");
+        let paths = server.await.expect("mock server task");
+        let player_requests = paths
+            .iter()
+            .filter(|path| path.contains("/players/"))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            player_requests.first().map(|path| path.as_str()),
+            Some("/broadcast/Tour0001/players/24276111"),
+            "the lexically first card must deterministically choose the tagged FIDE key even when the duplicate card resolves from cache first: {paths:?}"
+        );
+        assert_eq!(
+            paths
+                .iter()
+                .filter(|path| path.contains("/players/24276111"))
+                .count(),
+            1,
+            "duplicate cards must resolve the tour player only once: {paths:?}"
+        );
+        assert!(paths
+            .iter()
+            .any(|path| path.ends_with("Lapidus%2C%20Alexey%20M.")));
+        assert!(paths
+            .iter()
+            .any(|path| path.contains("/Early001/Chap0001.pgn")));
+        assert!(paths
+            .iter()
+            .any(|path| path.contains("/Last0001/Chap0002.pgn")));
+        assert_eq!(report.archives_checked, 2);
+        assert_eq!(report.matched_games, 2);
+        assert!(report.errors.is_empty(), "{:?}", report.errors);
+        let collection = lock_collection(&collection);
+        assert_eq!(
+            collection
+                .games
+                .iter()
+                .map(|game| game.event.as_str())
+                .collect::<Vec<_>>(),
+            vec!["Early round", "Last round"]
+        );
+        reset_lichess_test_state();
+    }
+
+    #[tokio::test]
+    async fn ongoing_lichess_tour_refreshes_a_cached_roster_before_scanning() {
+        let _lane = LICHESS_TEST_LANE.lock().await;
+        reset_lichess_test_state();
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("mock Lichess listener");
+        let address = listener.local_addr().expect("mock address");
+        let temp = tempfile::tempdir().expect("temporary cache");
+        let request = test_request(temp.path());
+        let origin = format!("http://{address}");
+        let player_url = format!("{origin}/broadcast/TourLive/players/24276111");
+        let player_cache = temp
+            .path()
+            .join(cache_file_name("lichess-fide-tour-player", &player_url));
+        std::fs::write(
+            &player_cache,
+            serde_json::to_vec(&serde_json::json!({
+                "games": [{ "round": "OldR0001", "id": "Chap0001" }]
+            }))
+            .expect("stale roster JSON"),
+        )
+        .expect("stale ongoing roster cache");
+
+        let server = tokio::spawn(async move {
+            let mut paths = Vec::new();
+            for _ in 0..4 {
+                let (mut socket, _) = listener.accept().await.expect("mock accept");
+                let request = read_mock_request(&mut socket).await;
+                let path = request
+                    .lines()
+                    .next()
+                    .and_then(|line| line.split_whitespace().nth(1))
+                    .expect("request path")
+                    .to_string();
+                let body = if path.starts_with("/api/broadcast/test/") {
                     serde_json::json!({
+                        "tour": { "id": "TourLive", "dates": [1767225600000i64, 1769904000000i64] },
+                        "round": { "finished": false },
                         "games": [{
-                            "id": format!("C{index:07}"),
                             "players": [
                                 { "name": "Lapidus, Alexey M.", "fideId": 24276111 },
                                 { "name": "Example, Opponent", "fideId": 1 }
@@ -6988,10 +7669,127 @@ mod tests {
                         }]
                     })
                     .to_string()
-                } else if path.starts_with("/api/study/") {
-                    format!(
-                        "[Event \"Pipeline {path}\"]\n[Site \"London ENG\"]\n[Date \"2026.01.01\"]\n[Round \"1\"]\n[White \"Lapidus, Alexey M.\"]\n[Black \"Example, Opponent\"]\n[Result \"1-0\"]\n[WhiteFideId \"24276111\"]\n\n1. e4 e5 {{exact annotation}} 2. Nf3 Nc6 1-0\n"
-                    )
+                } else if path == "/broadcast/TourLive/players/24276111" {
+                    serde_json::json!({
+                        "games": [
+                            { "round": "OldR0001", "id": "Chap0001" },
+                            { "round": "NewR0002", "id": "Chap0002" }
+                        ]
+                    })
+                    .to_string()
+                } else if path == "/api/study/OldR0001/Chap0001.pgn" {
+                    "[Event \"Existing live round\"]\n[Date \"2026.01.01\"]\n[White \"Lapidus, Alexey M.\"]\n[Black \"Example, Opponent\"]\n[Result \"1-0\"]\n[WhiteFideId \"24276111\"]\n\n1. e4 e5 1-0\n".to_string()
+                } else if path == "/api/study/NewR0002/Chap0002.pgn" {
+                    "[Event \"New live round\"]\n[Date \"2026.02.01\"]\n[White \"Example, Opponent\"]\n[Black \"Lapidus, Alexey M.\"]\n[Result \"0-1\"]\n[BlackFideId \"24276111\"]\n\n1. d4 d5 0-1\n".to_string()
+                } else {
+                    panic!("unexpected mock request {path}");
+                };
+                paths.push(path);
+                write_mock_response(&mut socket, "200 OK", &body).await;
+            }
+            paths
+        });
+
+        let identity = Arc::new(identity());
+        let collection = Mutex::new(Collection::default());
+        let progress = |_progress: OtbImportProgress| {};
+        let mut report = OtbImportSourceReport::new("Lichess live FIDE broadcasts");
+        tokio::time::timeout(
+            Duration::from_secs(5),
+            scan_lichess_rounds_pipelined(
+                &Client::new(),
+                &request,
+                &identity,
+                &collection,
+                &progress,
+                "Lichess live FIDE broadcasts",
+                &mut report,
+                vec!["/broadcast/test/live/Live0001".to_string()],
+                &LichessCorpusCoverage::empty(2020),
+                &origin,
+                Some(GROWING_ARCHIVE_CACHE_MAX_AGE),
+            ),
+        )
+        .await
+        .expect("ongoing tour scan should not stall");
+        let paths = tokio::time::timeout(Duration::from_secs(5), server)
+            .await
+            .expect("ongoing roster must be fetched live")
+            .expect("mock server task");
+
+        assert!(paths
+            .iter()
+            .any(|path| path == "/broadcast/TourLive/players/24276111"));
+        assert!(paths
+            .iter()
+            .any(|path| path == "/api/study/NewR0002/Chap0002.pgn"));
+        assert_eq!(report.archives_checked, 2);
+        assert_eq!(report.matched_games, 2);
+        let refreshed = serde_json::from_slice::<serde_json::Value>(
+            &std::fs::read(player_cache).expect("refreshed roster cache"),
+        )
+        .expect("refreshed roster JSON");
+        assert_eq!(
+            refreshed
+                .get("games")
+                .and_then(serde_json::Value::as_array)
+                .map(Vec::len),
+            Some(2)
+        );
+        reset_lichess_test_state();
+    }
+
+    #[tokio::test]
+    async fn lichess_fide_tour_falls_back_to_annotated_full_tour_pgn() {
+        let _lane = LICHESS_TEST_LANE.lock().await;
+        reset_lichess_test_state();
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("mock Lichess listener");
+        let address = listener.local_addr().expect("mock address");
+        let server = tokio::spawn(async move {
+            let mut paths = Vec::new();
+            for _ in 0..4 {
+                let (mut socket, _) = listener.accept().await.expect("mock accept");
+                let request = read_mock_request(&mut socket).await;
+                let path = request
+                    .lines()
+                    .next()
+                    .and_then(|line| line.split_whitespace().nth(1))
+                    .expect("request path")
+                    .to_string();
+                let body = if path.starts_with("/api/broadcast/test/") {
+                    serde_json::json!({
+                        "tour": { "id": "Tour0002", "dates": [1767225600000i64, 1769904000000i64] }
+                    })
+                    .to_string()
+                } else if path.ends_with("/players/24276111") {
+                    serde_json::json!({ "games": [] }).to_string()
+                } else if path.contains("/players/Lapidus%2C%20Alexey%20M.") {
+                    serde_json::json!({ "name": "Lapidus, Alexey M." }).to_string()
+                } else if path == "/api/broadcast/Tour0002.pgn" {
+                    r#"[Event "Full tour target"]
+[Site "London ENG"]
+[Date "2026.01.10"]
+[Round "2"]
+[White "Lapidus, Alexey M."]
+[Black "Example, Opponent"]
+[Result "1-0"]
+[WhiteFideId "24276111"]
+
+1. e4 {full-tour annotation} e5 (1... c5 2. Nf3) 2. Nf3 Nc6 1-0
+
+[Event "Unrelated board"]
+[Site "London ENG"]
+[Date "2026.01.10"]
+[Round "2"]
+[White "Other, One"]
+[Black "Other, Two"]
+[Result "*"]
+
+*
+"#
+                    .to_string()
                 } else {
                     panic!("unexpected mock request {path}");
                 };
@@ -7007,46 +7805,133 @@ mod tests {
         let collection = Mutex::new(Collection::default());
         let progress = |_progress: OtbImportProgress| {};
         let mut report = OtbImportSourceReport::new("Lichess live FIDE broadcasts");
-        let round_paths = (0..=LICHESS_CONCURRENCY)
-            .map(|index| format!("/broadcast/test/round-{index}/Round{index:03}"))
-            .collect::<Vec<_>>();
-
-        tokio::time::timeout(
-            Duration::from_secs(5),
-            scan_lichess_rounds_pipelined(
-                &Client::new(),
-                &request,
-                &identity,
-                &collection,
-                &progress,
-                "Lichess live FIDE broadcasts",
-                &mut report,
-                round_paths,
-                &LichessCorpusCoverage::empty(2020),
-                &format!("http://{address}"),
-                Some(GROWING_ARCHIVE_CACHE_MAX_AGE),
-            ),
+        let origin = format!("http://{address}");
+        scan_lichess_rounds_pipelined(
+            &Client::new(),
+            &request,
+            &identity,
+            &collection,
+            &progress,
+            "Lichess live FIDE broadcasts",
+            &mut report,
+            vec!["/broadcast/test/last/Last0002".to_string()],
+            &LichessCorpusCoverage::empty(2020),
+            &origin,
+            Some(GROWING_ARCHIVE_CACHE_MAX_AGE),
         )
-        .await
-        .expect("pipelined round scan should not stall");
+        .await;
         let paths = server.await.expect("mock server task");
-        let first_exact = paths
-            .iter()
-            .position(|path| path == "/api/study/Round000/C0000000.pgn")
-            .expect("first exact chapter request");
-        let next_window_metadata = paths
-            .iter()
-            .position(|path| path == "/api/broadcast/test/round-8/Round008")
-            .expect("next metadata window request");
 
-        assert!(
-            first_exact < next_window_metadata,
-            "the first exact chapter must be scanned before metadata discovery advances beyond the bounded window: {paths:?}"
+        assert!(paths
+            .iter()
+            .any(|path| path == "/api/broadcast/Tour0002.pgn"));
+        assert_eq!(report.archives_checked, 1);
+        assert_eq!(report.matched_games, 1);
+        assert!(report.errors.is_empty(), "{:?}", report.errors);
+        let collection = lock_collection(&collection);
+        assert_eq!(collection.games.len(), 1);
+        assert!(collection.games[0].pgn.contains("{full-tour annotation}"));
+        assert!(collection.games[0].pgn.contains("(1... c5 2. Nf3)"));
+        reset_lichess_test_state();
+    }
+
+    #[tokio::test]
+    async fn lichess_fide_tour_skips_only_when_its_complete_date_span_is_covered() {
+        let _lane = LICHESS_TEST_LANE.lock().await;
+        reset_lichess_test_state();
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("mock Lichess listener");
+        let address = listener.local_addr().expect("mock address");
+        let server = tokio::spawn(async move {
+            let (mut socket, _) = listener.accept().await.expect("mock accept");
+            let request = read_mock_request(&mut socket).await;
+            let path = request
+                .lines()
+                .next()
+                .and_then(|line| line.split_whitespace().nth(1))
+                .expect("request path")
+                .to_string();
+            write_mock_response(
+                &mut socket,
+                "200 OK",
+                &serde_json::json!({
+                    "tour": { "id": "Tour0003", "dates": [1767225600000i64, 1769904000000i64] }
+                })
+                .to_string(),
+            )
+            .await;
+            path
+        });
+
+        let temp = tempfile::tempdir().expect("temporary cache");
+        let request = test_request(temp.path());
+        let identity = Arc::new(identity());
+        let collection = Mutex::new(Collection::default());
+        let progress = |_progress: OtbImportProgress| {};
+        let mut report = OtbImportSourceReport::new("Lichess live FIDE broadcasts");
+        let coverage = LichessCorpusCoverage::from_complete_months(
+            2020,
+            HashSet::from([(2026, 1), (2026, 2)]),
         );
-        assert_eq!(report.archives_checked as usize, LICHESS_CONCURRENCY + 1);
-        assert_eq!(report.matched_games as usize, LICHESS_CONCURRENCY + 1);
+        scan_lichess_rounds_pipelined(
+            &Client::new(),
+            &request,
+            &identity,
+            &collection,
+            &progress,
+            "Lichess live FIDE broadcasts",
+            &mut report,
+            vec!["/broadcast/test/last/Last0003".to_string()],
+            &coverage,
+            &format!("http://{address}"),
+            Some(GROWING_ARCHIVE_CACHE_MAX_AGE),
+        )
+        .await;
+        let path = server.await.expect("mock server task");
+
+        assert!(path.ends_with("/api/broadcast/test/last/Last0003"));
+        assert_eq!(report.archives_checked, 0);
+        assert_eq!(report.matched_games, 0);
         assert!(report.errors.is_empty(), "{:?}", report.errors);
         reset_lichess_test_state();
+    }
+
+    #[tokio::test]
+    async fn complete_lichess_tour_without_the_advertised_player_fails_coverage() {
+        let temp = tempfile::tempdir().expect("temporary cache");
+        let request = test_request(temp.path());
+        let identity = Arc::new(identity());
+        let collection = Mutex::new(Collection::default());
+        let progress = |_progress: OtbImportProgress| {};
+        let mut report = OtbImportSourceReport::new("Lichess live FIDE broadcasts");
+        let url = "https://lichess.org/api/broadcast/TourMiss.pgn".to_string();
+        let cache_path = temp
+            .path()
+            .join(cache_file_name("lichess-broadcast-tour", &url));
+        std::fs::write(
+            &cache_path,
+            b"[Event \"Unrelated board\"]\n[White \"Other, One\"]\n[Black \"Other, Two\"]\n[Result \"*\"]\n\n*\n",
+        )
+        .expect("tour cache");
+
+        scan_direct_lichess_pgn_archives(
+            &Client::new(),
+            &request,
+            &identity,
+            &collection,
+            &progress,
+            "Lichess live FIDE broadcasts",
+            &mut report,
+            vec![IndexedArchiveSpec::lichess_complete_tour(url, cache_path)],
+            Some(GROWING_ARCHIVE_CACHE_MAX_AGE),
+        )
+        .await;
+
+        assert_eq!(report.archives_checked, 1);
+        assert_eq!(report.matched_games, 0);
+        assert_eq!(report.errors.len(), 1);
+        assert!(report.errors[0].contains("complete tournament export"));
     }
 
     #[tokio::test]
