@@ -37,6 +37,11 @@ import {
     engineSettingsToOptions,
     type EngineSettings,
 } from "@/utils/engines";
+import {
+    classifyMistakeReviewMotifs,
+    MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
+} from "@/utils/tacticalMotifs/mistakeReviewAdapter";
+import type { TacticalMotifEvidence } from "@/utils/tacticalMotifs/types";
 
 export const MISTAKE_REVIEW_EXTENSION = ".mistake-review.json";
 export const MISTAKE_REVIEW_VERSION = 1;
@@ -429,6 +434,14 @@ export type MistakeReviewNatureCounts = Record<
     }
 >;
 
+export type MistakeReviewMotifCounts = Record<
+    string,
+    {
+        total: number;
+        due: number;
+    }
+>;
+
 export type MistakeReviewTimeManagementSummary = {
     readyCount: number;
     clockDataCount: number;
@@ -475,6 +488,38 @@ export async function migrateMistakeReviewDeckNatureClassifications(
         const classification = classifyMistakeReviewNature(position);
         if (positions === deck.positions) positions = [...deck.positions];
         positions[index] = applyMistakeReviewNatureClassification(position, classification);
+        updatedCount += 1;
+
+        if (updatedCount % chunkSize === 0) {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+    }
+
+    return {
+        deck: updatedCount > 0 ? { ...deck, positions } : deck,
+        updatedCount,
+    };
+}
+
+export function needsMistakeReviewDeckMotifMigration(deck: MistakeReviewDeck) {
+    return deck.positions.some(shouldMigrateMistakeReviewMotifClassification);
+}
+
+export async function migrateMistakeReviewDeckMotifClassifications(
+    deck: MistakeReviewDeck,
+    options: { chunkSize?: number } = {},
+) {
+    const chunkSize = Math.max(1, Math.trunc(options.chunkSize ?? 2));
+    let positions = deck.positions;
+    let updatedCount = 0;
+
+    for (let index = 0; index < deck.positions.length; index += 1) {
+        const position = deck.positions[index];
+        if (!shouldMigrateMistakeReviewMotifClassification(position)) continue;
+
+        const classification = classifyMistakeReviewMotifs(getMistakeReviewMotifInput(position));
+        if (positions === deck.positions) positions = [...deck.positions];
+        positions[index] = applyMistakeReviewMotifClassification(position, classification);
         updatedCount += 1;
 
         if (updatedCount % chunkSize === 0) {
@@ -621,6 +666,7 @@ export function createMistakeReviewPosition(
 ): Position {
     const severityLabel = mistakeReviewSeverityLabel(result.severity);
     const natureClassification = classifyMistakeReviewNature(result);
+    const motifClassification = classifyMistakeReviewMotifs(result);
     const natureLabel = mistakeReviewNatureLabel(natureClassification.nature);
     const dateText = result.date ? ` on ${result.date}` : "";
     const occurrenceText =
@@ -698,6 +744,9 @@ export function createMistakeReviewPosition(
             missedNature: natureClassification.missedNature,
             missedNatureReason: natureClassification.missedReason,
             natureClassifierVersion: MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION,
+            allowedMotifs: motifClassification.allowedMotifs,
+            missedMotifs: motifClassification.missedMotifs,
+            motifClassifierVersion: motifClassification.motifClassifierVersion,
             gameId: result.gameId,
             lastGameId: result.lastGameId,
             ply: result.ply,
@@ -1194,6 +1243,68 @@ export function getMistakeReviewNatureBatchIndices(
     );
 }
 
+export function getMistakeReviewMotifBatch(
+    positions: Position[],
+    motifIdInput: string,
+    options: { now?: Date; includeScheduled?: boolean } = {},
+) {
+    return getMistakeReviewMotifBatchEntries(positions, motifIdInput, options).map(
+        (entry) => entry.position,
+    );
+}
+
+export function getMistakeReviewMotifBatchIndices(
+    positions: Position[],
+    motifIdInput: string,
+    options: { now?: Date; includeScheduled?: boolean } = {},
+) {
+    return getMistakeReviewMotifBatchEntries(positions, motifIdInput, options).map(
+        (entry) => entry.index,
+    );
+}
+
+function getMistakeReviewMotifBatchEntries(
+    positions: Position[],
+    motifIdInput: string,
+    options: { now?: Date; includeScheduled?: boolean } = {},
+) {
+    const motifId = motifIdInput.trim();
+    if (!motifId) return [];
+
+    const now = options.now ?? new Date();
+    const motifPositions = positions
+        .map((position, index) => ({ position, index }))
+        .filter(
+            (entry) =>
+                entry.position.mistakeReview &&
+                getMistakeReviewMotifs(entry.position).some((motif) => motif.id === motifId),
+        );
+    const repsFor = (entry: { position: Position }) =>
+        Math.max(0, Math.trunc(Number(entry.position.card.reps) || 0));
+    const due = motifPositions
+        .filter(
+            (entry) => repsFor(entry) > 0 && isMistakeReviewSrsPracticeReady(entry.position, now),
+        )
+        .sort((a, b) => sortMistakeReviewPhaseDueCards(a.position, b.position));
+    const fresh = motifPositions
+        .filter(
+            (entry) =>
+                repsFor(entry) === 0 &&
+                isMistakeReviewSrsPracticeReady(entry.position, now, options.includeScheduled),
+        )
+        .sort((a, b) => sortMistakeReviewNewCards(a.position, b.position));
+    const scheduled = motifPositions
+        .filter(
+            (entry) =>
+                options.includeScheduled &&
+                repsFor(entry) > 0 &&
+                !isMistakeReviewSrsPracticeReady(entry.position, now),
+        )
+        .sort((a, b) => sortMistakeReviewPhaseScheduledCards(a.position, b.position));
+
+    return [...due, ...fresh, ...scheduled];
+}
+
 function getMistakeReviewNatureBatchEntries(
     positions: Position[],
     natureInput: MistakeReviewNature,
@@ -1303,6 +1414,40 @@ export function getMistakeReviewNatureCounts(
     return counts;
 }
 
+export function getMistakeReviewMotifCounts(
+    positions: Position[],
+    options: { now?: Date } = {},
+): MistakeReviewMotifCounts {
+    const now = options.now ?? new Date();
+    const counts: MistakeReviewMotifCounts = {};
+
+    for (const position of positions) {
+        if (!position.mistakeReview) continue;
+        const motifIds = new Set(getMistakeReviewMotifs(position).map((motif) => motif.id));
+        for (const motifId of motifIds) {
+            const row = (counts[motifId] ??= { total: 0, due: 0 });
+            row.total += 1;
+            if (position.card.reps > 0 && new Date(position.card.due) <= now) {
+                row.due += 1;
+            }
+        }
+    }
+
+    return counts;
+}
+
+export function getMistakeReviewAllowedMotifs(position: Position): TacticalMotifEvidence[] {
+    return position.mistakeReview?.allowedMotifs ?? [];
+}
+
+export function getMistakeReviewMissedMotifs(position: Position): TacticalMotifEvidence[] {
+    return position.mistakeReview?.missedMotifs ?? [];
+}
+
+export function getMistakeReviewMotifs(position: Position): TacticalMotifEvidence[] {
+    return [...getMistakeReviewAllowedMotifs(position), ...getMistakeReviewMissedMotifs(position)];
+}
+
 function getStoredMistakeReviewNature(position: Position): MistakeReviewNature | null {
     const metadata = position.mistakeReview;
     return normalizeMistakeReviewNature(
@@ -1394,6 +1539,50 @@ function shouldMigrateMistakeReviewNatureClassification(position: Position) {
     return Boolean(
         metadata && metadata.natureClassifierVersion !== MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION,
     );
+}
+
+function shouldMigrateMistakeReviewMotifClassification(position: Position) {
+    const metadata = position.mistakeReview;
+    return Boolean(
+        metadata && metadata.motifClassifierVersion !== MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
+    );
+}
+
+function getMistakeReviewMotifInput(position: Position) {
+    const metadata = position.mistakeReview;
+    return {
+        fen: position.fen,
+        bestMoveSan: metadata?.bestMoveSan ?? position.answer,
+        bestMoveUci: metadata?.bestMoveUci ?? position.answerUci,
+        playedMoveSan: metadata?.playedMoveSan,
+        playedMoveUci: metadata?.playedMoveUci,
+        pvSan: metadata?.pvSan,
+        pvUci: metadata?.pvUci,
+        refutationSan: metadata?.refutationSan,
+        refutationUci: metadata?.refutationUci,
+        cpLoss: metadata?.cpLoss,
+        cpBefore: metadata?.cpBefore,
+        cpAfter: metadata?.cpAfter,
+        winProbabilityDrop: metadata?.winProbabilityDrop,
+        reachedDepth: metadata?.reachedDepth,
+    };
+}
+
+function applyMistakeReviewMotifClassification(
+    position: Position,
+    classification: ReturnType<typeof classifyMistakeReviewMotifs>,
+): Position {
+    if (!position.mistakeReview) return position;
+
+    return {
+        ...position,
+        mistakeReview: {
+            ...position.mistakeReview,
+            allowedMotifs: classification.allowedMotifs,
+            missedMotifs: classification.missedMotifs,
+            motifClassifierVersion: classification.motifClassifierVersion,
+        },
+    };
 }
 
 function applyMistakeReviewNatureClassification(

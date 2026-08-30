@@ -3140,6 +3140,19 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
 
 - Mistake Review scans games for mistakes and saves them as spaced-repetition
   cards.
+- Desktop Mistake Review now keeps its v3 tactical/positional nature classifier
+  and separately stores versioned `allowedMotifs` and `missedMotifs` evidence
+  from the vendored Chess Mistake Trainer v54 detector, including the
+  DOM-free named-mate module. Old decks migrate only while practice is idle;
+  motif filters are available from the idle focused-training panel, while
+  per-card motif badges and evidence stay hidden until answer/reveal. The
+  vendor and sync boundary is `src/utils/tacticalMotifs/siteClassifier`, with
+  En Croissant input adaptation in `mistakeReviewAdapter.ts`. This feature is
+  intentionally desktop-only: the phone companion and Outpost do not expose
+  Mistake Review, so there is no corresponding surface to port. Focused motif
+  and Mistake Review tests pass 45/45, and touched TypeScript files pass oxlint
+  plus oxfmt checks; the full TypeScript check and production Vite build also
+  pass.
 - Local scans and online selected-game scans both create normal review decks.
 - Analysis settings include single Stockfish pass or layered fast/deep
   confirmation, severity filters, win-probability drop thresholds, and time

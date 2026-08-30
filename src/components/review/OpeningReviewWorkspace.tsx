@@ -146,6 +146,11 @@ import {
   formatMistakeReviewLastSeen,
   getMistakeReviewDailyBatchIndices,
   getMistakeReviewDailyProgress,
+  getMistakeReviewAllowedMotifs,
+  getMistakeReviewMissedMotifs,
+  getMistakeReviewMotifBatchIndices,
+  getMistakeReviewMotifCounts,
+  getMistakeReviewMotifs,
   getMistakeReviewNature,
   getMistakeReviewNatureBatchIndices,
   getMistakeReviewNatureConfidence,
@@ -157,8 +162,10 @@ import {
   getMistakeReviewTimeManagementBatchIndices,
   getMistakeReviewTimeManagementSummary,
   isMistakeReviewTimeManagementPosition,
+  migrateMistakeReviewDeckMotifClassifications,
   migrateMistakeReviewDeckNatureClassifications,
   mistakeReviewPositionKey,
+  needsMistakeReviewDeckMotifMigration,
   needsMistakeReviewDeckNatureMigration,
   mistakeReviewNatureColor,
   mistakeReviewNatureLabel,
@@ -174,6 +181,10 @@ import {
   type MistakeReviewDeck,
   writeMistakeReviewDeck,
 } from "@/utils/mistakeReview";
+import {
+  tacticalMotifColor,
+  tacticalMotifLabel,
+} from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { hydrateMistakeReviewClockData } from "@/utils/mistakeReviewClockHydration";
 import {
   formatOpeningReviewLastPlayed,
@@ -529,6 +540,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const autoUpdateRevisionRef = useRef(0);
   const clockHydrationRef = useRef("");
   const natureMigrationRef = useRef("");
+  const motifMigrationRef = useRef("");
   const latestReviewSaveRef = useRef<ReviewDeckSaveSnapshot | null>(null);
   const reviewSaveReadyRef = useRef(false);
   const pendingReviewCardUpdatesRef = useRef<ReviewCardPerformanceUpdate[]>([]);
@@ -837,6 +849,81 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
       disposed = true;
       if (!migrationStarted && natureMigrationRef.current === migrationKey) {
         natureMigrationRef.current = "";
+      }
+      window.clearTimeout(timer);
+    };
+  }, [
+    deck.logs,
+    deferredBackgroundPositions,
+    deckInfo,
+    deckPath,
+    isMistakeReview,
+    loadError,
+    loaded,
+    practicing,
+    setDeck,
+  ]);
+
+  useEffect(() => {
+    if (!isMistakeReview || !loaded || loadError || !deckInfo || practicing) return;
+
+    const currentDeck: MistakeReviewDeck = {
+      ...(deckInfo as MistakeReviewDeck),
+      positions: deferredBackgroundPositions,
+      logs: deck.logs as MistakeReviewDeck["logs"],
+    };
+
+    const migrationKey = `${deckPath}:${currentDeck.positions.length}:${currentDeck.updatedAt}`;
+    if (motifMigrationRef.current === migrationKey) return;
+    motifMigrationRef.current = migrationKey;
+
+    let disposed = false;
+    const timer = window.setTimeout(() => {
+      if (!needsMistakeReviewDeckMotifMigration(currentDeck)) return;
+
+      void migrateMistakeReviewDeckMotifClassifications(currentDeck, { chunkSize: 2 })
+        .then((result) => {
+          if (disposed || result.updatedCount === 0) return;
+
+          const migratedByKey = new Map(
+            result.deck.positions.map((position) => [mistakeReviewPositionKey(position), position]),
+          );
+          startTransition(() => {
+            setDeck((current) => ({
+              positions: current.positions.map((position) => {
+                const migrated = migratedByKey.get(mistakeReviewPositionKey(position));
+                const migratedMistake = migrated?.mistakeReview;
+                if (!migratedMistake || !position.mistakeReview) return position;
+                if (
+                  position.mistakeReview.motifClassifierVersion ===
+                  migratedMistake.motifClassifierVersion
+                ) {
+                  return position;
+                }
+
+                return {
+                  ...position,
+                  mistakeReview: {
+                    ...position.mistakeReview,
+                    allowedMotifs: migratedMistake.allowedMotifs,
+                    missedMotifs: migratedMistake.missedMotifs,
+                    motifClassifierVersion: migratedMistake.motifClassifierVersion,
+                  },
+                };
+              }),
+              logs: current.logs,
+            }));
+          });
+        })
+        .catch(() => {
+          // Motif migration is best-effort; new scans still save fresh metadata.
+        });
+    }, 450);
+
+    return () => {
+      disposed = true;
+      if (motifMigrationRef.current === migrationKey) {
+        motifMigrationRef.current = "";
       }
       window.clearTimeout(timer);
     };
@@ -2141,6 +2228,22 @@ function OpeningReviewPanel({
     () => (isMistakeReview ? getMistakeReviewNatureCounts(summaryPositions) : null),
     [summaryPositions, isMistakeReview],
   );
+  const mistakeMotifCounts = useMemo(
+    () => (isMistakeReview ? getMistakeReviewMotifCounts(summaryPositions) : null),
+    [summaryPositions, isMistakeReview],
+  );
+  const mistakeMotifOptions = useMemo(
+    () =>
+      Object.entries(mistakeMotifCounts ?? {})
+        .map(([id, count]) => ({
+          id,
+          label: tacticalMotifLabel(id),
+          color: tacticalMotifColor(id),
+          ...count,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [mistakeMotifCounts],
+  );
   const timeManagementMinMoveSeconds =
     mistakeTimeManagementSettings?.minMoveSeconds ??
     DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
@@ -2783,6 +2886,52 @@ function OpeningReviewPanel({
           remainingPositions.length === 1 ? "" : "s"
         }.`,
         color: mistakeReviewNatureColor(nature),
+      });
+    },
+    [deck.positions, isMistakeReview, newPractice, setSessionStatsInTransition],
+  );
+
+  const startMistakeMotifPractice = useCallback(
+    (motifId: string) => {
+      if (!isMistakeReview) return;
+
+      const label = tacticalMotifLabel(motifId);
+      const remainingPositions = getMistakeReviewMotifBatchIndices(deck.positions, motifId);
+
+      if (remainingPositions.length === 0) {
+        const hasMotifPositions = deck.positions.some(
+          (position) =>
+            position.mistakeReview &&
+            getMistakeReviewMotifs(position).some((motif) => motif.id === motifId),
+        );
+        notifications.show({
+          title: hasMotifPositions ? "Nothing ready to train" : "No positions to train",
+          message: hasMotifPositions
+            ? `No due or new ${label.toLowerCase()} mistakes are ready right now.`
+            : `No ${label.toLowerCase()} mistakes found in this set yet.`,
+          color: "yellow",
+        });
+        return;
+      }
+
+      const nextStats = {
+        mode: "srs-list" as const,
+        remainingPositions,
+        queueKind: "indices" as const,
+        queueOffset: 0,
+        correct: 0,
+        incorrect: 0,
+        streak: 0,
+        bestStreak: 0,
+      };
+      setSessionStatsInTransition((current) => ({ ...current, ...nextStats }));
+      newPractice(nextStats);
+      notifications.show({
+        title: "Train by motif started",
+        message: `Training ${remainingPositions.length} ${label.toLowerCase()} mistake${
+          remainingPositions.length === 1 ? "" : "s"
+        }.`,
+        color: tacticalMotifColor(motifId),
       });
     },
     [deck.positions, isMistakeReview, newPractice, setSessionStatsInTransition],
@@ -3532,6 +3681,42 @@ function OpeningReviewPanel({
                           </Menu.Dropdown>
                         </Menu>
                       )}
+                      <Menu width={300} position="bottom" withinPortal>
+                        <Menu.Target>
+                          <Button
+                            className={classes.reviewActionButton}
+                            fullWidth
+                            variant="light"
+                            color="orange"
+                            rightSection={<IconChevronDown size={14} />}
+                            disabled={mistakeMotifOptions.length === 0}
+                          >
+                            By motif
+                          </Button>
+                        </Menu.Target>
+                        <Menu.Dropdown mah={360} style={{ overflowY: "auto" }}>
+                          {mistakeMotifOptions.map((motif) => (
+                            <Menu.Item
+                              key={motif.id}
+                              onClick={() => startMistakeMotifPractice(motif.id)}
+                              rightSection={
+                                <Group gap={4} wrap="nowrap">
+                                  <Badge size="xs" variant="light" color="yellow">
+                                    {formatReviewCount(motif.due)} due
+                                  </Badge>
+                                  <Badge size="xs" variant="light" color="gray">
+                                    {formatReviewCount(motif.total)}
+                                  </Badge>
+                                </Group>
+                              }
+                            >
+                              <Text size="sm" c={motif.color}>
+                                {motif.label}
+                              </Text>
+                            </Menu.Item>
+                          ))}
+                        </Menu.Dropdown>
+                      </Menu>
                       {mistakePhaseCounts && (
                         <Menu width={260} position="bottom" withinPortal>
                           <Menu.Target>
@@ -6267,6 +6452,10 @@ function MistakeReviewGameInfoPanel({
   const natureConfidence = revealAnswer
     ? getMistakeReviewNatureConfidence(position)
     : getStoredMistakeReviewNatureConfidence(position);
+  const revealedMotifs = revealAnswer
+    ? [...getMistakeReviewAllowedMotifs(position), ...getMistakeReviewMissedMotifs(position)]
+    : [];
+  const visibleMotifs = revealedMotifs.slice(0, 4);
 
   return (
     <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
@@ -6281,6 +6470,36 @@ function MistakeReviewGameInfoPanel({
             </Text>
           </Stack>
           <Group gap={4} wrap="wrap" justify="flex-end" className={classes.reviewBadgeGroup}>
+            {visibleMotifs.map((motif, index) => (
+              <Tooltip
+                key={`${motif.source}:${motif.id}:${index}`}
+                label={`${motif.source === "allowed" ? "Allowed" : "Missed"} motif, ${
+                  motif.confidence
+                } confidence: ${motif.evidence}`}
+                multiline
+                maw={360}
+              >
+                <Badge
+                  size="xs"
+                  color={tacticalMotifColor(motif.id)}
+                  variant={motif.source === "allowed" ? "filled" : "light"}
+                >
+                  {motif.source === "allowed" ? "Allowed" : "Missed"} · {motif.label}
+                </Badge>
+              </Tooltip>
+            ))}
+            {revealedMotifs.length > visibleMotifs.length && (
+              <Tooltip
+                label={revealedMotifs
+                  .slice(visibleMotifs.length)
+                  .map((motif) => motif.label)
+                  .join(", ")}
+              >
+                <Badge size="xs" variant="light" color="gray">
+                  +{revealedMotifs.length - visibleMotifs.length}
+                </Badge>
+              </Tooltip>
+            )}
             {nature && natureLabel && (
               <Tooltip label={`${natureLabel}, ${natureConfidence ?? "unknown"} confidence`}>
                 <Badge size="xs" color={mistakeReviewNatureColor(nature)} variant="light">

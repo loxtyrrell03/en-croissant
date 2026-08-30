@@ -12,6 +12,9 @@ import {
     formatMistakeReviewLastSeen,
     getMistakeReviewDailyBatch,
     getMistakeReviewDailyProgress,
+    getMistakeReviewMotifBatch,
+    getMistakeReviewMotifCounts,
+    getMistakeReviewMotifs,
     getMistakeReviewNature,
     getMistakeReviewNatureBatch,
     getMistakeReviewNatureCounts,
@@ -21,6 +24,7 @@ import {
     getMistakeReviewTimeManagementBatch,
     getMistakeReviewTimeManagementSummary,
     isMistakeReviewPassingLabel,
+    migrateMistakeReviewDeckMotifClassifications,
     migrateMistakeReviewDeckNatureClassifications,
     mergeMistakeReviewPositions,
     type MistakeReviewDeck,
@@ -928,6 +932,88 @@ describe("mistake review helpers", () => {
         expect(migrated.natureClassifierVersion).toBeDefined();
 
         const secondMigration = await migrateMistakeReviewDeckNatureClassifications(
+            firstMigration.deck,
+            { chunkSize: 1 },
+        );
+        expect(secondMigration.updatedCount).toBe(0);
+    });
+
+    test("motif training uses stored allowed and missed evidence without eager classification", () => {
+        const now = new Date("2026-04-26T12:00:00Z");
+        const evidence = (id: string, source: "allowed" | "missed") => ({
+            id,
+            label: id === "deflection" ? "Deflection" : "Interference",
+            confidence: "high" as const,
+            evidence: `${id} is verified in the engine line.`,
+            source,
+            ply: 1,
+            moveUci: "a1a2",
+        });
+        const due = position({
+            reviewKey: "motif-due",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-24T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                allowedMotifs: [evidence("deflection", "allowed")],
+                missedMotifs: [evidence("interference", "missed")],
+                motifClassifierVersion: "fixture",
+            },
+        });
+        const fresh = position({
+            reviewKey: "motif-fresh",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                missedMotifs: [evidence("deflection", "missed")],
+                motifClassifierVersion: "fixture",
+            },
+        });
+        const unclassified = position({ reviewKey: "motif-unclassified" });
+
+        const positions = [unclassified, fresh, due];
+        const counts = getMistakeReviewMotifCounts(positions, { now });
+        const batch = getMistakeReviewMotifBatch(positions, "deflection", { now });
+
+        expect(counts).toEqual({
+            deflection: { total: 2, due: 1 },
+            interference: { total: 1, due: 1 },
+        });
+        expect(batch.map((item) => item.reviewKey)).toEqual(["motif-due", "motif-fresh"]);
+        expect(getMistakeReviewMotifs(unclassified)).toEqual([]);
+    });
+
+    test("motif migration classifies old cards once and preserves nature metadata", async () => {
+        const oldCard = position({
+            fen: "r5k1/1b3p1p/p2P2pP/1p5n/5N2/3B3q/PP4PB/R2Q2RK b - - 0 29",
+            answer: "Ng3#",
+            answerUci: "h5g3",
+            reviewKey: "old-motif",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                bestMoveSan: "Ng3#",
+                bestMoveUci: "h5g3",
+                pvSan: ["Ng3#"],
+                pvUci: ["h5g3"],
+                nature: "tactical",
+                natureClassifierVersion: 3,
+            },
+        });
+
+        const firstMigration = await migrateMistakeReviewDeckMotifClassifications(deck([oldCard]), {
+            chunkSize: 1,
+        });
+        const migrated = firstMigration.deck.positions[0].mistakeReview!;
+
+        expect(firstMigration.updatedCount).toBe(1);
+        expect(migrated.motifClassifierVersion).toBeDefined();
+        expect(migrated.missedMotifs?.map((motif) => motif.id)).toContain("smotheredMate");
+        expect(migrated.nature).toBe("tactical");
+        expect(migrated.natureClassifierVersion).toBe(3);
+
+        const secondMigration = await migrateMistakeReviewDeckMotifClassifications(
             firstMigration.deck,
             { chunkSize: 1 },
         );
