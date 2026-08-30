@@ -1391,12 +1391,10 @@ impl IndexedArchiveSpec {
 #[derive(Clone, Debug)]
 struct BritBaseArchiveSpec {
     url: String,
-    label: String,
     referer: String,
     fetch_urls: Vec<String>,
     index_keys: Vec<String>,
     cache_paths: Vec<PathBuf>,
-    format: ArchiveFormat,
 }
 
 impl BritBaseArchiveSpec {
@@ -1409,8 +1407,6 @@ impl BritBaseArchiveSpec {
             .map(|key| cache_dir.join(cache_file_name("britbase", key)))
             .collect();
         Self {
-            label: file_name_from_url(&url),
-            format: archive_format_from_url(&url),
             url,
             referer,
             fetch_urls,
@@ -1535,6 +1531,19 @@ impl BritBaseFetchFailure {
 
 enum BritBaseLiveFetch {
     Downloaded(Vec<u8>),
+    NotFound,
+    Failed(BritBaseFetchFailure),
+}
+
+/// An unindexed BritBase file is filtered directly for the requested player.
+/// Building the all-player SQLite corpus one archive at a time used to make a
+/// cold interactive import spend tens of seconds compressing and inserting
+/// games that the current player did not need. The exact downloaded bytes stay
+/// cached, and the direct scanner applies the same identity/year/PGN rules as
+/// every other source without putting corpus maintenance on the button path.
+enum BritBaseArchiveScan {
+    RawCached(ScanOutcome),
+    Downloaded(ScanOutcome),
     NotFound,
     Failed(BritBaseFetchFailure),
 }
@@ -2336,6 +2345,7 @@ struct LichessFideResolvedCard {
     round_path: String,
     tour_id: Option<String>,
     dates: Option<(i64, i64)>,
+    tour_round_ids: Vec<String>,
     finished: bool,
     player_keys: Vec<String>,
     direct_specs: Vec<IndexedArchiveSpec>,
@@ -2452,6 +2462,7 @@ async fn scan_lichess_rounds_pipelined(
             // the complete player roster and a second HTTP lookup cannot add a
             // game. Multi-round tours retain the complete player endpoint.
             let mut specs = card.direct_specs;
+            let mut exhaustive_study_fallback = false;
             if specs.is_empty() {
                 specs = resolve_lichess_tour_player_specs(
                     client,
@@ -2464,17 +2475,36 @@ async fn scan_lichess_rounds_pipelined(
                 .await;
             }
             if specs.is_empty() {
-                // Every player key failed or returned no complete game list.
-                // Scan the full tour as the lossless, required-match fallback.
-                let url = format!(
-                    "{}/api/broadcast/{tour_id}.pgn",
-                    origin.trim_end_matches('/')
-                );
-                let cache_path = request
-                    .cache_dir
-                    .join(cache_file_name("lichess-broadcast-tour", &url));
-                specs.push(IndexedArchiveSpec::lichess_complete_tour(url, cache_path));
+                if card.tour_round_ids.is_empty() {
+                    // The compatibility API does not expose an exhaustive
+                    // round list. The tour exporter covers every round and,
+                    // unlike the single-round broadcast exporter, honours all
+                    // explicit PGN fidelity flags. Filter its complete payload
+                    // locally for the advertised player.
+                    let url = format!(
+                        "{}/api/broadcast/{tour_id}.pgn?{LICHESS_STUDY_EXPORT_QUERY}",
+                        origin.trim_end_matches('/'),
+                    );
+                    let cache_path = request
+                        .cache_dir
+                        .join(cache_file_name("lichess-broadcast-tour", &url));
+                    specs.push(IndexedArchiveSpec::lichess_complete_tour(url, cache_path));
+                } else {
+                    // The page bootstrap proves the exhaustive round list.
+                    // Export every underlying study with all fidelity flags;
+                    // unlike the broadcast-tour PGN route, these retain
+                    // comments, clocks and variations.
+                    specs.extend(card.tour_round_ids.iter().map(|round_id| {
+                        lichess_round_fallback_spec(
+                            &request.cache_dir,
+                            origin.trim_end_matches('/'),
+                            round_id,
+                        )
+                    }));
+                    exhaustive_study_fallback = true;
+                }
             }
+            let fallback_attempt_start = attempts.len();
             for spec in specs {
                 attempts.push(
                     fetch_and_scan_direct_lichess_spec(
@@ -2487,6 +2517,15 @@ async fn scan_lichess_rounds_pipelined(
                     )
                     .await,
                 );
+            }
+            if exhaustive_study_fallback
+                && !attempts[fallback_attempt_start..].iter().any(
+                    |attempt| matches!(&attempt.result, Ok((_, outcome)) if outcome.matched > 0),
+                )
+            {
+                errors.push(format!(
+                    "The exhaustive full-fidelity study exports for Lichess tournament {tour_id} contained no matching game for the advertised FIDE player"
+                ));
             }
         }
     }
@@ -2510,6 +2549,7 @@ async fn resolve_lichess_fide_card_metadata(
             round_path: round_path.clone(),
             tour_id: None,
             dates: None,
+            tour_round_ids: Vec::new(),
             finished: false,
             player_keys: Vec::new(),
             direct_specs: Vec::new(),
@@ -2530,6 +2570,7 @@ async fn resolve_lichess_fide_card_metadata(
                 round_path,
                 tour_id: None,
                 dates: None,
+                tour_round_ids: Vec::new(),
                 finished: false,
                 player_keys: Vec::new(),
                 direct_specs: Vec::new(),
@@ -2545,6 +2586,7 @@ async fn resolve_lichess_fide_card_metadata(
             round_path,
             tour_id: None,
             dates: None,
+            tour_round_ids: Vec::new(),
             finished: false,
             player_keys: Vec::new(),
             direct_specs: Vec::new(),
@@ -2555,6 +2597,7 @@ async fn resolve_lichess_fide_card_metadata(
         };
     };
     let player_keys = lichess_tour_player_keys(&value, identity);
+    let tour_round_ids = lichess_tour_round_ids(&value);
     let direct_specs =
         lichess_single_round_player_specs(&value, identity, cache_dir, origin, &round_id);
     let finished = value
@@ -2566,6 +2609,7 @@ async fn resolve_lichess_fide_card_metadata(
         round_path,
         tour_id: Some(tour_id),
         dates,
+        tour_round_ids,
         finished,
         player_keys,
         direct_specs,
@@ -2588,28 +2632,21 @@ async fn fetch_lichess_round_metadata(
     let origin = origin.trim_end_matches('/');
     let page_url = format!("{origin}{round_path}");
     let page_cache_path = cache_dir.join(cache_file_name("lichess-round-page", &page_url));
-    let page_error = match fetch_cached_within(
+    let page_error = match fetch_lichess_round_page_metadata(
         client,
         &page_url,
         &page_cache_path,
-        Some(PAGE_CACHE_MAX_AGE),
+        round_id,
     )
     .await
     {
-        Ok(Some((bytes, _))) => {
-            let html = String::from_utf8_lossy(&bytes);
-            match extract_lichess_round_page_metadata(&html, round_id) {
-                Ok(value) => return Ok(value),
-                Err(error) => error,
-            }
-        }
-        Ok(None) => "the public round page returned 404".to_string(),
+        Ok(value) => return Ok(value),
         Err(error) => error,
     };
 
     let api_url = format!("{origin}/api{round_path}");
     let api_cache_path = cache_dir.join(cache_file_name("lichess-fide-round", &api_url));
-    let api_result = async {
+    let api_result: Result<serde_json::Value, String> = async {
         let (bytes, _) = fetch_lichess_json_cached_within(
             client,
             &api_url,
@@ -2617,12 +2654,64 @@ async fn fetch_lichess_round_metadata(
             Some(PAGE_CACHE_MAX_AGE),
         )
         .await?;
-        serde_json::from_slice::<serde_json::Value>(&bytes).map_err(|error| error.to_string())
+        let value = serde_json::from_slice::<serde_json::Value>(&bytes)
+            .map_err(|error| error.to_string())?;
+        if value.get("tourRounds").is_none() {
+            if let Some(tour_url) = value
+                .get("tour")
+                .and_then(|tour| tour.get("url"))
+                .and_then(serde_json::Value::as_str)
+                .filter(|tour_url| *tour_url != page_url)
+            {
+                let tour_cache_path =
+                    cache_dir.join(cache_file_name("lichess-tour-page", tour_url));
+                if let Ok(page_value) =
+                    fetch_lichess_round_page_metadata(client, tour_url, &tour_cache_path, round_id)
+                        .await
+                {
+                    return Ok(page_value);
+                }
+            }
+        }
+        Ok(value)
     }
     .await;
     api_result.map_err(|api_error| {
         format!("public round page failed ({page_error}); API fallback failed ({api_error})")
     })
+}
+
+/// Uses only parsed round pages as cache entries. A rate-limit response may
+/// reuse an older page that was already validated, but a challenge page or a
+/// changed HTML contract is never written over that known-good metadata.
+async fn fetch_lichess_round_page_metadata(
+    client: &Client,
+    page_url: &str,
+    cache_path: &Path,
+    round_id: &str,
+) -> Result<serde_json::Value, String> {
+    if let Some(bytes) = read_cache_entry(cache_path, Some(PAGE_CACHE_MAX_AGE)).await {
+        let html = String::from_utf8_lossy(&bytes);
+        if let Ok(value) = extract_lichess_round_page_metadata(&html, round_id) {
+            return Ok(value);
+        }
+    }
+    let stale = read_cache_entry(cache_path, None).await.and_then(|bytes| {
+        let html = String::from_utf8_lossy(&bytes);
+        extract_lichess_round_page_metadata(&html, round_id).ok()
+    });
+    let bytes = match get_lichess_with_backoff(client, page_url).await {
+        Ok(bytes) => bytes,
+        Err(error) => return stale.ok_or(error),
+    };
+    let html = String::from_utf8_lossy(&bytes);
+    match extract_lichess_round_page_metadata(&html, round_id) {
+        Ok(value) => {
+            write_cache_entry(cache_path, &bytes).await;
+            Ok(value)
+        }
+        Err(error) => stale.ok_or(error),
+    }
 }
 
 fn extract_lichess_round_page_metadata(
@@ -2702,10 +2791,13 @@ fn lichess_single_round_player_specs(
         .and_then(|round| round.get("id"))
         .and_then(serde_json::Value::as_str)
         == Some(round_id);
-    // A live singleton can still gain chapters. Only a finished round makes
-    // the page bootstrap roster exhaustive enough to replace the fresh player
-    // endpoint without risking a silent partial import.
-    if !finished || !single_round {
+    // A live or newly finished singleton can still gain chapters or become a
+    // multi-round tour. Reuse its embedded roster only after the same settling
+    // window used for immutable community broadcasts.
+    if !finished || !single_round || !lichess_tour_is_settled(value) {
+        return Vec::new();
+    }
+    if !lichess_round_chapter_roster_is_complete(value) {
         return Vec::new();
     }
     let Some(chapter_ids) = lichess_player_chapter_ids(value, identity) else {
@@ -2726,6 +2818,47 @@ fn lichess_single_round_player_specs(
             )
         })
         .collect()
+}
+
+fn lichess_tour_is_settled(value: &serde_json::Value) -> bool {
+    let Some(ends_at) = value
+        .get("tour")
+        .and_then(|tour| tour.get("dates"))
+        .and_then(serde_json::Value::as_array)
+        .and_then(|dates| dates.get(1).or_else(|| dates.first()))
+        .and_then(serde_json::Value::as_i64)
+    else {
+        return false;
+    };
+    Utc::now().timestamp_millis().saturating_sub(ends_at)
+        > LICHESS_COMMUNITY_CACHE_SETTLE.as_millis() as i64
+}
+
+fn lichess_round_chapter_roster_is_complete(value: &serde_json::Value) -> bool {
+    value
+        .get("games")
+        .and_then(serde_json::Value::as_array)
+        .filter(|games| !games.is_empty())
+        .is_some_and(|games| {
+            games.iter().all(|game| {
+                game.get("id")
+                    .and_then(serde_json::Value::as_str)
+                    .is_some_and(valid_lichess_id)
+                    && game
+                        .get("players")
+                        .and_then(serde_json::Value::as_array)
+                        .filter(|players| players.len() >= 2)
+                        .is_some_and(|players| {
+                            players.iter().all(|player| {
+                                player
+                                    .get("name")
+                                    .and_then(serde_json::Value::as_str)
+                                    .is_some_and(|name| !name.trim().is_empty())
+                                    || roster_fide_id(player).is_some()
+                            })
+                        })
+            })
+        })
 }
 
 async fn resolve_lichess_tour_player_specs(
@@ -2798,23 +2931,39 @@ fn lichess_tour_player_keys(
     exact_names.dedup();
 
     let numeric = identity.fide_id.clone();
-    let canonical_name = percent_encode_path_segment(&identity.canonical_name);
+    let mut name_keys = lichess_player_name_keys(identity);
     let mut keys = Vec::new();
     if target_fide_is_tagged {
         keys.extend(numeric.iter().cloned());
         keys.extend(exact_names);
-        keys.push(canonical_name);
+        keys.append(&mut name_keys);
     } else if !exact_names.is_empty() {
         keys.extend(exact_names);
-        keys.push(canonical_name);
+        keys.append(&mut name_keys);
         keys.extend(numeric);
     } else {
         keys.extend(numeric);
-        keys.push(canonical_name);
+        keys.append(&mut name_keys);
     }
     let mut seen = HashSet::new();
     keys.retain(|key| seen.insert(key.clone()));
     keys
+}
+
+fn lichess_player_name_keys(identity: &PlayerIdentity) -> Vec<String> {
+    let mut names = Vec::new();
+    if let Some((surname, given_names)) = identity.canonical_name.split_once(',') {
+        names.push(format!("{} {}", surname.trim(), given_names.trim()));
+        names.push(format!("{} {}", given_names.trim(), surname.trim()));
+    }
+    names.push(identity.canonical_name.clone());
+    let mut seen = HashSet::new();
+    names
+        .into_iter()
+        .filter(|name| !name.trim().is_empty())
+        .map(|name| percent_encode_path_segment(name.trim()))
+        .filter(|name| seen.insert(name.clone()))
+        .collect()
 }
 
 fn lichess_tour_id_and_dates(value: &serde_json::Value) -> Option<(String, Option<(i64, i64)>)> {
@@ -2836,6 +2985,30 @@ fn lichess_tour_id_and_dates(value: &serde_json::Value) -> Option<(String, Optio
             Some((starts, ends))
         });
     Some((id, dates))
+}
+
+fn lichess_tour_round_ids(value: &serde_json::Value) -> Vec<String> {
+    let Some(rounds) = value
+        .get("tourRounds")
+        .and_then(serde_json::Value::as_array)
+        .filter(|rounds| !rounds.is_empty())
+    else {
+        return Vec::new();
+    };
+    let mut ids = Vec::with_capacity(rounds.len());
+    for round in rounds {
+        let Some(id) = round
+            .get("id")
+            .and_then(serde_json::Value::as_str)
+            .filter(|id| valid_lichess_id(id))
+        else {
+            return Vec::new();
+        };
+        ids.push(id.to_string());
+    }
+    ids.sort();
+    ids.dedup();
+    ids
 }
 
 fn lichess_tour_player_specs(
@@ -4259,131 +4432,121 @@ async fn scan_britbase_archives(
         }
     }
 
-    // A downloaded file can survive a cancelled or interrupted index write.
-    // Recover every such cache entry before deciding whether network access is
-    // needed; alias-named cache files are recognized without rewriting them.
-    let cache_candidates = specs
-        .iter()
-        .filter(|spec| !available.contains(&spec.url))
-        .cloned()
-        .collect::<Vec<_>>();
-    for spec in &cache_candidates {
-        let Some(bytes) = read_britbase_cache_entry(spec).await else {
-            continue;
-        };
-        let indexed = index::index_and_scan(
-            &index_path,
-            spec.url.clone(),
-            bytes,
-            spec.format,
-            Arc::clone(identity),
-            source,
-            request.from_year,
-            index_run.clone(),
-        )
-        .await;
-        if let Some(error) = indexed.index_error {
-            report
-                .errors
-                .push(format!("{}: index: {error}", spec.label));
-        }
-        available.insert(spec.url.clone());
-        coverage.raw_cached += 1;
-        report.archives_checked = report.archives_checked.saturating_add(1);
-        report.cached_archives = report.cached_archives.saturating_add(1);
-        merge_britbase_outcome(collection, report, indexed.outcome, source, &spec.url);
-    }
-
+    // Indexed files can answer a new identity in one bulk SQLite query. Raw
+    // cached and newly downloaded files are instead parsed directly and in
+    // parallel. This keeps the interactive path lossless while avoiding the
+    // much more expensive all-player corpus build for hundreds of cold files.
     let pending = specs
         .iter()
         .filter(|spec| !available.contains(&spec.url))
         .cloned()
         .collect::<Vec<_>>();
-    let mut consecutive_host_failures = 0usize;
-    let mut stop_live_fetches = false;
-    let mut diagnostics = Vec::new();
-
-    // Fetch in explicit batches so a host-level failure burst cannot
-    // accidentally start another batch while the stream buffer refills.
-    for batch in pending.chunks(BRITBASE_CONCURRENCY) {
-        let results = fetch_britbase_batch(client, batch).await;
-
-        for (spec, result) in results {
-            coverage.live_attempted += 1;
-            report.archives_checked = report.archives_checked.saturating_add(1);
+    let pending_total = pending.len();
+    let started = AtomicUsize::new(0);
+    let mut scans = stream::iter(pending.into_iter().map(|spec| {
+        let client = client.clone();
+        let identity = Arc::clone(identity);
+        let started = &started;
+        async move {
+            let position = started.fetch_add(1, Ordering::Relaxed);
             emit_progress(
                 app,
                 request,
                 source,
-                "downloading",
-                coverage.live_attempted,
-                pending.len(),
+                "scanning",
+                position,
+                pending_total,
                 games_len(collection),
                 format!(
-                    "Tried {} of {} missing BritBase archives",
-                    coverage.live_attempted,
-                    pending.len()
+                    "Scanning {} of {} unindexed BritBase archives",
+                    position + 1,
+                    pending_total
                 ),
             );
-            match result {
-                BritBaseLiveFetch::Downloaded(bytes) => {
+            let result = scan_unindexed_britbase_archive(
+                &client,
+                &spec,
+                identity,
+                source,
+                request.from_year,
+            )
+            .await;
+            (spec, result)
+        }
+    }))
+    .buffer_unordered(BRITBASE_CONCURRENCY);
+
+    let mut consecutive_host_failures = 0usize;
+    let mut stop_live_fetches = false;
+    let mut diagnostics = Vec::new();
+    let mut completed = 0usize;
+    while let Some((spec, result)) = scans.next().await {
+        completed += 1;
+        report.archives_checked = report.archives_checked.saturating_add(1);
+        emit_progress(
+            app,
+            request,
+            source,
+            "scanning",
+            completed,
+            pending_total,
+            games_len(collection),
+            format!(
+                "Scanned {} of {} unindexed BritBase archives",
+                completed, pending_total
+            ),
+        );
+        match result {
+            BritBaseArchiveScan::RawCached(outcome) => {
+                consecutive_host_failures = 0;
+                coverage.raw_cached += 1;
+                report.cached_archives = report.cached_archives.saturating_add(1);
+                merge_britbase_outcome(collection, report, outcome, source, &spec.url);
+            }
+            BritBaseArchiveScan::Downloaded(outcome) => {
+                consecutive_host_failures = 0;
+                coverage.live_attempted += 1;
+                coverage.live_downloaded += 1;
+                merge_britbase_outcome(collection, report, outcome, source, &spec.url);
+            }
+            BritBaseArchiveScan::NotFound => {
+                consecutive_host_failures = 0;
+                coverage.live_attempted += 1;
+                coverage.not_found += 1;
+                coverage.confirmed_absent += 1;
+                if diagnostics.len() < 3 {
+                    diagnostics.push(format!(
+                        "{}: every equivalent URL returned HTTP 404 Not Found",
+                        spec.url
+                    ));
+                }
+            }
+            BritBaseArchiveScan::Failed(failure) => {
+                coverage.live_attempted += 1;
+                let blocks_host = failure.blocks_host();
+                let rate_limited = matches!(failure, BritBaseFetchFailure::RateLimited(_));
+                match &failure {
+                    BritBaseFetchFailure::Forbidden => coverage.forbidden += 1,
+                    BritBaseFetchFailure::RateLimited(_) => coverage.rate_limited += 1,
+                    BritBaseFetchFailure::Http(_) => coverage.http_errors += 1,
+                    BritBaseFetchFailure::Transport(_) => coverage.transport_errors += 1,
+                }
+                if diagnostics.len() < 3 {
+                    diagnostics.push(format!("{}: {}", spec.url, failure.description()));
+                }
+                if blocks_host {
+                    consecutive_host_failures += 1;
+                } else {
                     consecutive_host_failures = 0;
-                    coverage.live_downloaded += 1;
-                    available.insert(spec.url.clone());
-                    let indexed = index::index_and_scan(
-                        &index_path,
-                        spec.url.clone(),
-                        bytes,
-                        spec.format,
-                        Arc::clone(identity),
-                        source,
-                        request.from_year,
-                        index_run.clone(),
-                    )
-                    .await;
-                    if let Some(error) = indexed.index_error {
-                        report
-                            .errors
-                            .push(format!("{}: index: {error}", spec.label));
-                    }
-                    merge_britbase_outcome(collection, report, indexed.outcome, source, &spec.url);
                 }
-                BritBaseLiveFetch::NotFound => {
-                    consecutive_host_failures = 0;
-                    coverage.not_found += 1;
-                    coverage.confirmed_absent += 1;
-                    if diagnostics.len() < 3 {
-                        diagnostics.push(format!(
-                            "{}: every equivalent URL returned HTTP 404 Not Found",
-                            spec.url
-                        ));
-                    }
-                }
-                BritBaseLiveFetch::Failed(failure) => {
-                    let blocks_host = failure.blocks_host();
-                    let rate_limited = matches!(failure, BritBaseFetchFailure::RateLimited(_));
-                    match &failure {
-                        BritBaseFetchFailure::Forbidden => coverage.forbidden += 1,
-                        BritBaseFetchFailure::RateLimited(_) => coverage.rate_limited += 1,
-                        BritBaseFetchFailure::Http(_) => coverage.http_errors += 1,
-                        BritBaseFetchFailure::Transport(_) => coverage.transport_errors += 1,
-                    }
-                    if diagnostics.len() < 3 {
-                        diagnostics.push(format!("{}: {}", spec.url, failure.description()));
-                    }
-                    if blocks_host {
-                        consecutive_host_failures += 1;
-                    } else {
-                        consecutive_host_failures = 0;
-                    }
-                    stop_live_fetches |= rate_limited;
-                }
+                stop_live_fetches |= rate_limited;
             }
         }
         if stop_live_fetches || consecutive_host_failures >= BRITBASE_CONCURRENCY {
             break;
         }
     }
+    drop(scans);
 
     if !coverage.is_complete() {
         let mut message = coverage.incomplete_message();
@@ -4408,6 +4571,30 @@ fn merge_britbase_outcome(
     let (matched, added) = merge_into(collection, outcome, source);
     report.matched_games = report.matched_games.saturating_add(matched);
     report.unique_games_added = report.unique_games_added.saturating_add(added);
+}
+
+async fn scan_unindexed_britbase_archive(
+    client: &Client,
+    spec: &BritBaseArchiveSpec,
+    identity: Arc<PlayerIdentity>,
+    source: &'static str,
+    from_year: u16,
+) -> BritBaseArchiveScan {
+    if let Some(bytes) = read_britbase_cache_entry(spec).await {
+        let outcome =
+            scan_archive_bytes(bytes, identity, source, spec.url.clone(), from_year).await;
+        return BritBaseArchiveScan::RawCached(outcome);
+    }
+
+    match fetch_britbase_archive(client, spec).await {
+        BritBaseLiveFetch::Downloaded(bytes) => {
+            let outcome =
+                scan_archive_bytes(bytes, identity, source, spec.url.clone(), from_year).await;
+            BritBaseArchiveScan::Downloaded(outcome)
+        }
+        BritBaseLiveFetch::NotFound => BritBaseArchiveScan::NotFound,
+        BritBaseLiveFetch::Failed(failure) => BritBaseArchiveScan::Failed(failure),
+    }
 }
 
 async fn read_britbase_cache_entry(spec: &BritBaseArchiveSpec) -> Option<Vec<u8>> {
@@ -4469,6 +4656,7 @@ async fn fetch_britbase_archive(client: &Client, spec: &BritBaseArchiveSpec) -> 
     BritBaseLiveFetch::NotFound
 }
 
+#[cfg(test)]
 async fn fetch_britbase_batch(
     client: &Client,
     specs: &[BritBaseArchiveSpec],
@@ -7616,6 +7804,56 @@ mod tests {
             )
             .is_empty());
         }
+
+        let partial_roster = lichess_round_page(
+            "Tour0001",
+            [1767225600000, 1767312000000],
+            &[("Round001", true)],
+            serde_json::json!([
+                {
+                    "id": "Chap0001",
+                    "players": [
+                        { "name": "Lapidus, Alexey M.", "fideId": 24276111 },
+                        { "name": "Example, Opponent", "fideId": 1 }
+                    ]
+                },
+                { "id": "Chap0002" }
+            ]),
+        );
+        let partial_roster = extract_lichess_round_page_metadata(&partial_roster, "Round001")
+            .expect("valid partial-roster bootstrap");
+        assert!(lichess_single_round_player_specs(
+            &partial_roster,
+            &identity(),
+            temp.path(),
+            "https://lichess.org",
+            "Round001",
+        )
+        .is_empty());
+
+        let recent_end = Utc::now().timestamp_millis();
+        let recent_finished = lichess_round_page(
+            "Tour0001",
+            [recent_end.saturating_sub(60_000), recent_end],
+            &[("Round001", true)],
+            serde_json::json!([{
+                "id": "Chap0001",
+                "players": [
+                    { "name": "Lapidus, Alexey M.", "fideId": 24276111 },
+                    { "name": "Example, Opponent", "fideId": 1 }
+                ]
+            }]),
+        );
+        let recent_finished = extract_lichess_round_page_metadata(&recent_finished, "Round001")
+            .expect("valid recent bootstrap");
+        assert!(lichess_single_round_player_specs(
+            &recent_finished,
+            &identity(),
+            temp.path(),
+            "https://lichess.org",
+            "Round001",
+        )
+        .is_empty());
     }
 
     #[tokio::test]
@@ -7628,7 +7866,7 @@ mod tests {
         let address = listener.local_addr().expect("mock address");
         let server = tokio::spawn(async move {
             let mut paths = Vec::new();
-            for _ in 0..2 {
+            for _ in 0..3 {
                 let (mut socket, _) = listener.accept().await.expect("mock accept");
                 let request = read_mock_request(&mut socket).await;
                 let path = request
@@ -7646,12 +7884,20 @@ mod tests {
                     serde_json::json!({
                         "tour": {
                             "id": "Tour0001",
-                            "dates": [1767225600000i64, 1767312000000i64]
+                            "dates": [1767225600000i64, 1767312000000i64],
+                            "url": format!("http://{address}/broadcast/test/Tour0001")
                         },
                         "round": { "id": "Round001", "finished": true },
                         "games": []
                     })
                     .to_string()
+                } else if path == "/broadcast/test/Tour0001" {
+                    lichess_round_page(
+                        "Tour0001",
+                        [1767225600000i64, 1767312000000i64],
+                        &[("Round001", true)],
+                        serde_json::json!([]),
+                    )
                 } else {
                     panic!("unexpected mock request {path}");
                 };
@@ -7677,12 +7923,22 @@ mod tests {
             paths,
             vec![
                 "/broadcast/test/round/Round001".to_string(),
-                "/api/broadcast/test/round/Round001".to_string()
+                "/api/broadcast/test/round/Round001".to_string(),
+                "/broadcast/test/Tour0001".to_string()
             ]
         );
         assert_eq!(
             lichess_tour_id_and_dates(&value).map(|(id, _)| id),
             Some("Tour0001".to_string())
+        );
+        assert_eq!(lichess_tour_round_ids(&value), vec!["Round001"]);
+        let page_url = format!("{origin}/broadcast/test/round/Round001");
+        assert!(
+            !temp
+                .path()
+                .join(cache_file_name("lichess-round-page", &page_url))
+                .exists(),
+            "malformed HTML must not poison the validated page cache"
         );
         reset_lichess_test_state();
     }
@@ -7700,7 +7956,12 @@ mod tests {
         });
         assert_eq!(
             lichess_tour_player_keys(&legacy, &identity),
-            vec!["Houska%2C%20Jovanka".to_string(), "405094".to_string()]
+            vec![
+                "Houska%2C%20Jovanka".to_string(),
+                "Houska%20Jovanka".to_string(),
+                "Jovanka%20Houska".to_string(),
+                "405094".to_string()
+            ]
         );
 
         let tagged = serde_json::json!({
@@ -7713,7 +7974,23 @@ mod tests {
         });
         assert_eq!(
             lichess_tour_player_keys(&tagged, &identity),
-            vec!["405094".to_string(), "Houska%2C%20Jovanka".to_string()]
+            vec![
+                "405094".to_string(),
+                "Houska%2C%20Jovanka".to_string(),
+                "Houska%20Jovanka".to_string(),
+                "Jovanka%20Houska".to_string()
+            ]
+        );
+
+        let no_roster = serde_json::json!({ "games": [] });
+        assert_eq!(
+            lichess_tour_player_keys(&no_roster, &identity),
+            vec![
+                "405094".to_string(),
+                "Houska%20Jovanka".to_string(),
+                "Jovanka%20Houska".to_string(),
+                "Houska%2C%20Jovanka".to_string()
+            ]
         );
     }
 
@@ -8089,7 +8366,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn lichess_fide_tour_falls_back_to_annotated_full_tour_pgn() {
+    async fn lichess_fide_tour_falls_back_to_every_full_fidelity_round_study() {
         let _lane = LICHESS_TEST_LANE.lock().await;
         reset_lichess_test_state();
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
@@ -8098,7 +8375,7 @@ mod tests {
         let address = listener.local_addr().expect("mock address");
         let server = tokio::spawn(async move {
             let mut paths = Vec::new();
-            for _ in 0..4 {
+            for _ in 0..7 {
                 let (mut socket, _) = listener.accept().await.expect("mock accept");
                 let request = read_mock_request(&mut socket).await;
                 let path = request
@@ -8114,12 +8391,22 @@ mod tests {
                         &[("Prev0002", true), ("Last0002", true)],
                         serde_json::json!([]),
                     )
-                } else if path.ends_with("/players/24276111") {
-                    serde_json::json!({ "games": [] }).to_string()
-                } else if path.contains("/players/Lapidus%2C%20Alexey%20M.") {
-                    serde_json::json!({ "name": "Lapidus, Alexey M." }).to_string()
-                } else if path == "/api/broadcast/Tour0002.pgn" {
-                    r#"[Event "Full tour target"]
+                } else if path.starts_with("/broadcast/Tour0002/players/") {
+                    serde_json::json!({ "name": "Lapidus, Alexey M.", "games": [] }).to_string()
+                } else if path.starts_with("/api/study/Prev0002.pgn?") {
+                    r#"[Event "Unrelated earlier board"]
+[Site "London ENG"]
+[Date "2026.01.09"]
+[Round "1"]
+[White "Other, One"]
+[Black "Other, Two"]
+[Result "*"]
+
+*
+"#
+                    .to_string()
+                } else if path.starts_with("/api/study/Last0002.pgn?") {
+                    r#"[Event "Full fidelity target"]
 [Site "London ENG"]
 [Date "2026.01.10"]
 [Round "2"]
@@ -8128,17 +8415,7 @@ mod tests {
 [Result "1-0"]
 [WhiteFideId "24276111"]
 
-1. e4 {full-tour annotation} e5 (1... c5 2. Nf3) 2. Nf3 Nc6 1-0
-
-[Event "Unrelated board"]
-[Site "London ENG"]
-[Date "2026.01.10"]
-[Round "2"]
-[White "Other, One"]
-[Black "Other, Two"]
-[Result "*"]
-
-*
+1. e4 {full-study annotation} e5 (1... c5 2. Nf3) 2. Nf3 Nc6 1-0
 "#
                     .to_string()
                 } else {
@@ -8173,15 +8450,27 @@ mod tests {
         .await;
         let paths = server.await.expect("mock server task");
 
+        assert!(
+            paths
+                .iter()
+                .any(|path| path.starts_with("/api/study/Prev0002.pgn?")),
+            "{paths:?}"
+        );
+        assert!(
+            paths
+                .iter()
+                .any(|path| path.starts_with("/api/study/Last0002.pgn?")),
+            "{paths:?}"
+        );
         assert!(paths
             .iter()
-            .any(|path| path == "/api/broadcast/Tour0002.pgn"));
-        assert_eq!(report.archives_checked, 1);
+            .all(|path| path != "/api/broadcast/Tour0002.pgn"));
+        assert_eq!(report.archives_checked, 2);
         assert_eq!(report.matched_games, 1);
         assert!(report.errors.is_empty(), "{:?}", report.errors);
         let collection = lock_collection(&collection);
         assert_eq!(collection.games.len(), 1);
-        assert!(collection.games[0].pgn.contains("{full-tour annotation}"));
+        assert!(collection.games[0].pgn.contains("{full-study annotation}"));
         assert!(collection.games[0].pgn.contains("(1... c5 2. Nf3)"));
         reset_lichess_test_state();
     }
@@ -8593,6 +8882,52 @@ mod tests {
         assert_eq!(
             read_britbase_cache_entry(&spec).await,
             Some(b"cached BritBase bytes".to_vec())
+        );
+    }
+
+    #[tokio::test]
+    async fn unindexed_britbase_cache_is_filtered_directly_without_building_the_corpus() {
+        let cache = tempfile::tempdir().expect("temporary cache");
+        let spec = BritBaseArchiveSpec::new(
+            "https://www.saund.org.uk/britbase/pgn/202401fixture.pgn".to_string(),
+            "https://www.saund.org.uk/britbase/brit2020.htm".to_string(),
+            cache.path(),
+        );
+        let pgn = br#"[Event "Fixture"]
+[Site "London ENG"]
+[Date "2024.01.01"]
+[Round "1"]
+[White "Wadsworth, Matthew J"]
+[Black "Opponent, One"]
+[Result "1-0"]
+[WhiteFideId "415804"]
+
+1. e4 e5 2. Nf3 Nc6 1-0
+"#;
+        std::fs::write(&spec.cache_paths[0], pgn).expect("raw BritBase cache");
+        let identity = Arc::new(
+            PlayerIdentity::new("Wadsworth, Matthew J", Some("415804")).expect("player identity"),
+        );
+
+        match scan_unindexed_britbase_archive(
+            &Client::new(),
+            &spec,
+            identity,
+            "BritBase public OTB archive",
+            2000,
+        )
+        .await
+        {
+            BritBaseArchiveScan::RawCached(outcome) => {
+                assert_eq!(outcome.matched, 1);
+                assert_eq!(outcome.games.len(), 1);
+                assert!(outcome.error.is_none());
+            }
+            _ => panic!("raw BritBase bytes should be scanned without a live request"),
+        }
+        assert!(
+            !archive_index_path(cache.path()).exists(),
+            "an interactive raw-cache scan must not build the all-player corpus"
         );
     }
 
