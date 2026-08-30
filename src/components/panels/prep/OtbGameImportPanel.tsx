@@ -1,6 +1,7 @@
 import {
   Alert,
   Badge,
+  Box,
   Button,
   Checkbox,
   Group,
@@ -20,26 +21,29 @@ import { useAtom } from "jotai";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { mutate } from "swr";
 import { commands, events, type OtbImportProgress, type OtbImportReport } from "@/bindings";
-import FidePlayerPicker from "@/components/panels/prep/FidePlayerPicker";
+import { FidePlayerSearchInput } from "@/components/common/FidePlayerSearchInput";
 import { databaseConversionStateAtom } from "@/state/atoms";
 import { getDatabases, type SuccessDatabaseInfo } from "@/utils/db";
 import { getDatabasesDir } from "@/utils/directories";
 import {
   FIDE_IMPORT_FALLBACK_YEAR,
   getFideImportStartYear,
-  lookupFidePlayer,
   type FidePlayer,
-} from "@/utils/fideApi";
+} from "@/utils/fidePlayer";
+import { searchFidePlayers } from "@/utils/fideApi";
 import {
   DEFAULT_OTB_IMPORT_SOURCES,
   OTB_IMPORT_SOURCE_DETAILS,
   applyOtbImportLaneProgress,
   createOtbImportRequest,
+  formatOtbImportEta,
   getOtbImportDescription,
+  getOtbImportEtaSeconds,
   getOtbImportLaneLabel,
   getOtbImportLaneSummary,
   getOtbImportTitle,
   getOtbImportWarningCount,
+  mergeOtbImportProgress,
   sanitizeOtbImportFilename,
   validateOtbImportRequest,
   type OtbImportLaneMap,
@@ -90,15 +94,18 @@ export default function OtbGameImportPanel({
   const [localPgnPaths, setLocalPgnPaths] = useState<string[]>([]);
   const [saveDatabase, setSaveDatabase] = useState(true);
   const [running, setRunning] = useState(false);
+  const [resolvingIdentity, setResolvingIdentity] = useState(false);
   const [stopping, setStopping] = useState(false);
   const [progress, setProgress] = useState<OtbImportProgress | null>(null);
   const [lanes, setLanes] = useState<OtbImportLaneMap>({});
   const [laneTotal, setLaneTotal] = useState(0);
   const [report, setReport] = useState<OtbImportReport | null>(null);
   const [importedGameCount, setImportedGameCount] = useState<number | null>(null);
+  const [etaNow, setEtaNow] = useState(() => Date.now());
   const shouldSaveDatabase = forceSaveDatabase || saveDatabase;
   const [, setConversionState] = useAtom(databaseConversionStateAtom);
   const activeJobIdRef = useRef<string | null>(null);
+  const laneStartedAtRef = useRef<Record<string, number>>({});
   const initialNameAppliedRef = useRef(initialPlayerName);
   const fromYearManuallyEditedRef = useRef(false);
 
@@ -112,43 +119,36 @@ export default function OtbGameImportPanel({
   useEffect(() => {
     const unlisten = events.otbImportProgress.listen(({ payload }) => {
       if (payload.jobId !== activeJobIdRef.current) return;
-      setProgress(payload);
+      setProgress((current) => mergeOtbImportProgress(current, payload));
       // Sources search in parallel; each event narrates one lane.
       if (payload.source === "All sources") setLaneTotal(payload.total);
-      else setLanes((current) => applyOtbImportLaneProgress(current, payload));
+      else {
+        if (payload.source !== "Complete" && !(payload.source in laneStartedAtRef.current)) {
+          laneStartedAtRef.current[payload.source] = Date.now();
+        }
+        setLanes((current) => applyOtbImportLaneProgress(current, payload));
+      }
+      setEtaNow(Date.now());
     });
     return () => {
       void unlisten.then((stop) => stop());
     };
   }, []);
 
+  useEffect(() => {
+    if (!running || !progress) return;
+    const timer = window.setInterval(() => setEtaNow(Date.now()), 1_000);
+    return () => window.clearInterval(timer);
+  }, [progress, running]);
+
   const laneSummary = getOtbImportLaneSummary(lanes, laneTotal);
+  const etaSeconds = getOtbImportEtaSeconds(laneSummary.entries, laneStartedAtRef.current, etaNow);
+  const etaLabel = etaSeconds === null ? "estimating" : formatOtbImportEta(etaSeconds);
   const sourceWarnings = report ? getOtbImportWarningCount(report) : 0;
   const localPgnLabels = useMemo(
     () => localPgnPaths.map((path) => path.split(/[\\/]/).at(-1) ?? path),
     [localPgnPaths],
   );
-
-  /** Picking a player pins the canonical FIDE spelling and fills the ID the
-   *  targeted sources need. */
-  const selectPlayer = (player: FidePlayer) => {
-    setSelectedPlayer(player);
-    setPlayerName(player.name);
-    setFideId(String(player.id));
-    setFideIdAuto(true);
-    if (!fromYearManuallyEditedRef.current) {
-      setFromYear(getFideImportStartYear(player, currentYear));
-    }
-  };
-
-  const clearSelectedPlayer = () => {
-    setSelectedPlayer(null);
-    // Only drop an ID we filled ourselves — never a value the user typed.
-    if (fideIdAuto) {
-      setFideId("");
-      setFideIdAuto(false);
-    }
-  };
 
   const addLocalPgnSources = async () => {
     const selected = await open({
@@ -165,35 +165,91 @@ export default function OtbGameImportPanel({
     setLocalPgnPaths((current) => Array.from(new Set([...current, ...paths])));
   };
 
-  const runImport = async () => {
-    if (running) return;
-    // A bare FIDE ID is enough on its own: resolve it to the canonical name
-    // so nobody has to type both.
-    let effectivePlayerName = playerName.trim();
-    let effectiveFideId = fideId.trim();
-    let effectivePlayer = selectedPlayer;
-    if (!selectedPlayer && /^\d+$/.test(effectivePlayerName)) {
-      const resolved = await lookupFidePlayer(effectivePlayerName);
-      if (resolved) {
-        effectivePlayer = resolved;
-        effectivePlayerName = resolved.name;
-        if (!effectiveFideId) effectiveFideId = String(resolved.id);
-        setSelectedPlayer(resolved);
-        setPlayerName(resolved.name);
-        setFideId(effectiveFideId);
-        setFideIdAuto(true);
+  const selectFidePlayer = (player: FidePlayer) => {
+    setSelectedPlayer(player);
+    setPlayerName(player.name);
+    setFideId(String(player.id));
+    setFideIdAuto(true);
+    if (!fromYearManuallyEditedRef.current) {
+      setFromYear(getFideImportStartYear(player, currentYear));
+    }
+  };
+
+  const clearSelectedPlayer = () => {
+    setSelectedPlayer(null);
+    if (fideIdAuto) {
+      setFideId("");
+      setFideIdAuto(false);
+    }
+  };
+
+  const changePlayerName = (value: string) => {
+    setPlayerName(value);
+    if (selectedPlayer && value.trim() !== selectedPlayer.name) clearSelectedPlayer();
+  };
+
+  const changeFideId = (value: string) => {
+    const clean = value.replace(/\D/g, "");
+    setFideId(clean);
+    setFideIdAuto(false);
+    if (selectedPlayer && clean !== String(selectedPlayer.id)) setSelectedPlayer(null);
+  };
+
+  const autofillFromFideId = async () => {
+    const id = fideId.trim();
+    if (!/^\d{4,}$/.test(id) || id === String(selectedPlayer?.id ?? "")) return;
+    const player = (await searchFidePlayers(id)).find((candidate) => String(candidate.id) === id);
+    if (player) selectFidePlayer(player);
+  };
+
+  const resolveImportIdentity = async () => {
+    let name = playerName.trim();
+    let id = fideId.trim();
+    let resolvedPlayer = selectedPlayer;
+    const lookup = /^\d+$/.test(name) ? name : /^\d{4,}$/.test(id) ? id : "";
+    if (!selectedPlayer && lookup) {
+      const player = (await searchFidePlayers(lookup)).find(
+        (candidate) => String(candidate.id) === lookup,
+      );
+      if (player) {
+        resolvedPlayer = player;
+        selectFidePlayer(player);
+        name = player.name;
+        id = String(player.id);
       }
     }
-    const effectiveFromYear = getFideImportStartYear(
-      effectivePlayer,
+    if (!resolvedPlayer && !lookup && name) {
+      const normalizedName = name.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+      const player = (await searchFidePlayers(name).catch(() => [])).find(
+        (candidate) =>
+          candidate.name.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim() ===
+          normalizedName,
+      );
+      if (player) {
+        resolvedPlayer = player;
+        selectFidePlayer(player);
+        name = player.name;
+        id = String(player.id);
+      }
+    }
+    const resolvedFromYear = getFideImportStartYear(
+      resolvedPlayer,
       currentYear,
       fromYearManuallyEditedRef.current ? fromYear : null,
     );
-    if (!fromYearManuallyEditedRef.current && effectiveFromYear !== fromYear) {
-      setFromYear(effectiveFromYear);
+    if (!fromYearManuallyEditedRef.current && resolvedFromYear !== fromYear) {
+      setFromYear(resolvedFromYear);
     }
+    return { name, id, fromYear: resolvedFromYear };
+  };
+
+  const runImport = async () => {
+    if (running || resolvingIdentity) return;
+    setResolvingIdentity(true);
+    const identity = await resolveImportIdentity();
+    setResolvingIdentity(false);
     const jobId = `otb-import-${Date.now()}`;
-    const baseTitle = getOtbImportTitle(effectivePlayerName, effectiveFromYear);
+    const baseTitle = getOtbImportTitle(identity.name, identity.fromYear);
     const title = shouldSaveDatabase
       ? getUniqueOtbDatabaseTitle(baseTitle, localDatabases)
       : baseTitle;
@@ -212,9 +268,9 @@ export default function OtbGameImportPanel({
     const cacheDir = await resolve(await appCacheDir(), "otb-game-import");
     const request = createOtbImportRequest({
       jobId,
-      playerName: effectivePlayerName,
-      fideId: effectiveFideId,
-      fromYear: effectiveFromYear,
+      playerName: identity.name,
+      fideId: identity.id,
+      fromYear: identity.fromYear,
       sources,
       localPgnPaths,
       cacheDir,
@@ -235,6 +291,8 @@ export default function OtbGameImportPanel({
     setProgress(null);
     setLanes({});
     setLaneTotal(0);
+    laneStartedAtRef.current = {};
+    setEtaNow(Date.now());
     setReport(null);
     setImportedGameCount(null);
     setStopping(false);
@@ -265,6 +323,11 @@ export default function OtbGameImportPanel({
           result.cancelled
             ? "The search was stopped before any games were found."
             : sourceError || "No verified public OTB PGNs were found for this player.",
+        );
+      }
+      if (!result.coverageComplete && !result.cancelled) {
+        throw new Error(
+          `The search kept its verified games but did not build a database because not every selected source completed: ${result.coverageGaps.join(" ")}`,
         );
       }
 
@@ -347,35 +410,31 @@ export default function OtbGameImportPanel({
       {asDialog ? null : (
         <Alert color="blue" variant="light" p={dense ? 6 : "xs"}>
           <Text size="xs">
-            OTB only. Personal Chess.com and Lichess account games are never included. FIDE ID is
-            strongly recommended to avoid same-name players. Coverage is exhaustive across the
-            selected public PGN sources, but events that publish results without moves cannot be
-            imported.
+            OTB only. Search and select a FIDE player to autofill the canonical name and ID. A
+            selected ID also safely enables initials, alternate name order, and one-letter typo
+            matching in public PGNs. Personal Chess.com and Lichess games are never included.
           </Text>
         </Alert>
       )}
-      <Group gap={dense ? 4 : "sm"} wrap="wrap" align="flex-start">
-        <FidePlayerPicker
-          label={asDialog ? "Player" : "Opponent"}
-          query={playerName}
-          onQueryChange={setPlayerName}
-          selected={selectedPlayer}
-          onSelect={selectPlayer}
-          onClearSelection={clearSelectedPlayer}
-          disabled={running}
-          size={controlSize}
-          onSubmit={() => void runImport()}
-          {...(asDialog ? { flex: 1, miw: 220 } : { w: dense ? 200 : 250 })}
-        />
+      <Group gap={dense ? 4 : "sm"} wrap="wrap" align="flex-end">
+        <Box style={asDialog ? { flex: 1, minWidth: 220 } : { width: dense ? 210 : 260 }}>
+          <FidePlayerSearchInput
+            disabled={running || resolvingIdentity}
+            label={asDialog ? "Player" : "Opponent"}
+            onChange={changePlayerName}
+            onSelect={selectFidePlayer}
+            searchPlayers={searchFidePlayers}
+            selected={selectedPlayer}
+            size={controlSize}
+            value={playerName}
+          />
+        </Box>
         <TextInput
           label="FIDE ID"
-          placeholder="Recommended"
-          description={fideIdAuto ? "From the selected player" : undefined}
+          placeholder="Autofilled"
           value={fideId}
-          onChange={(event) => {
-            setFideId(event.currentTarget.value);
-            setFideIdAuto(false);
-          }}
+          onBlur={() => void autofillFromFideId()}
+          onChange={(event) => changeFideId(event.currentTarget.value)}
           size={controlSize}
           w={dense ? 112 : 132}
         />
@@ -386,7 +445,7 @@ export default function OtbGameImportPanel({
             fromYearManuallyEditedRef.current = true;
             setFromYear(Number(value) || FIDE_IMPORT_FALLBACK_YEAR);
           }}
-          min={1900}
+          min={FIDE_IMPORT_FALLBACK_YEAR}
           max={currentYear}
           step={1}
           size={controlSize}
@@ -405,7 +464,12 @@ export default function OtbGameImportPanel({
         {OTB_IMPORT_SOURCE_DETAILS.map((source) => (
           <Tooltip key={source.key} label={source.detail}>
             <Checkbox
-              label={source.label}
+              label={
+                <span>
+                  {source.label}
+                  {"note" in source && source.note ? ` · ${source.note}` : ""}
+                </span>
+              }
               checked={sources[source.key]}
               onChange={(event) =>
                 setSources((current) => ({
@@ -454,7 +518,7 @@ export default function OtbGameImportPanel({
           color={running ? "orange" : undefined}
           variant={running ? "light" : "filled"}
           leftSection={running ? <IconX size="0.95rem" /> : <IconCloudSearch size="0.95rem" />}
-          loading={stopping}
+          loading={stopping || resolvingIdentity}
           onClick={() => void (running ? stopAndCreateDatabase() : runImport())}
         >
           {running ? "Stop and create database" : submitLabel}
@@ -469,7 +533,7 @@ export default function OtbGameImportPanel({
                 : progress.message}
             </Text>
             <Badge variant="light" size="sm">
-              {progress.gamesFound} found
+              {progress.gamesFound} found · {etaLabel}
             </Badge>
           </Group>
           <Progress
@@ -498,7 +562,11 @@ export default function OtbGameImportPanel({
         </Stack>
       ) : null}
       {report ? (
-        <Alert color={sourceWarnings > 0 ? "yellow" : "green"} variant="light" p={dense ? 6 : "xs"}>
+        <Alert
+          color={!report.coverageComplete || sourceWarnings > 0 ? "yellow" : "green"}
+          variant="light"
+          p={dense ? 6 : "xs"}
+        >
           <Stack gap={3}>
             <Text size="xs" fw={600}>
               {report.cancelled ? "Stopped early · " : ""}
@@ -508,6 +576,11 @@ export default function OtbGameImportPanel({
             {importedGameCount !== null ? (
               <Text size="xs" fw={600}>
                 {importedGameCount} usable games imported into the prep database
+              </Text>
+            ) : null}
+            {!report.coverageComplete ? (
+              <Text size="xs" c="yellow.8">
+                Coverage incomplete · {report.coverageGaps.join(" · ")}
               </Text>
             ) : null}
             {report.sources.map((source) => (

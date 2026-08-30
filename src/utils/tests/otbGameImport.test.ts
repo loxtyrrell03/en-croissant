@@ -88,10 +88,13 @@ describe("OTB game import", () => {
             duplicatesRemoved: 65,
             suspectedOnlineGamesExcluded: 38,
             identityMismatchesExcluded: 2,
+            coverageComplete: false,
+            coverageGaps: ["Import was cancelled before every selected source finished."],
             newestGame: null,
             sources: [
                 {
                     source: "Lichess broadcast database",
+                    elapsedMs: 0,
                     archivesChecked: 30,
                     cachedArchives: 0,
                     matchedGames: 74,
@@ -102,6 +105,7 @@ describe("OTB game import", () => {
         });
         expect(description).toContain("OTB-only");
         expect(description).toContain("retained from a search stopped early");
+        expect(description).toContain("Coverage incomplete");
         expect(description).toContain("38 suspected online games excluded");
         expect(description).toContain("Lichess broadcast database: 73 unique");
     });

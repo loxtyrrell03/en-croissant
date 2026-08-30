@@ -81,6 +81,10 @@ async fn run() -> Result<(), Error> {
 }
 
 fn parse_args() -> Result<Args, Error> {
+    parse_args_from(env::args().skip(1))
+}
+
+fn parse_args_from(args: impl IntoIterator<Item = String>) -> Result<Args, Error> {
     let mut job_id = "headless-otb-collector".to_string();
     let mut player_name = None;
     let mut fide_id = None;
@@ -89,13 +93,13 @@ fn parse_args() -> Result<Args, Error> {
     let mut output_path = None;
     let mut local_pgn_paths = Vec::new();
     let mut include_lichess_broadcasts = true;
-    let mut include_lichess_broadcast_archives = false;
-    let mut include_lichess_community_broadcasts = false;
+    let mut include_lichess_broadcast_archives = true;
+    let mut include_lichess_community_broadcasts = true;
     let mut include_chess_results = true;
     let mut include_chessbase_news = true;
     let mut include_official_pgn_indexes = true;
     let mut include_twic = true;
-    let mut args = env::args().skip(1);
+    let mut args = args.into_iter();
 
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -121,15 +125,19 @@ fn parse_args() -> Result<Args, Error> {
                 ));
             }
             "--no-lichess-broadcasts" => include_lichess_broadcasts = false,
+            // Positive forms remain accepted for older phone services, but all
+            // public lanes are now on when neither form is supplied.
             "--lichess-broadcast-archives" => include_lichess_broadcast_archives = true,
             "--lichess-community-broadcasts" => include_lichess_community_broadcasts = true,
+            "--no-lichess-broadcast-archives" => include_lichess_broadcast_archives = false,
+            "--no-lichess-community-broadcasts" => include_lichess_community_broadcasts = false,
             "--no-chess-results" => include_chess_results = false,
             "--no-chessbase-news" => include_chessbase_news = false,
             "--no-official-pgn-indexes" => include_official_pgn_indexes = false,
             "--no-twic" => include_twic = false,
             "--help" | "-h" => {
                 println!(
-                    "Usage: collect_otb_games --player <name> [--fide-id <id>] --cache-dir <folder> --output <games.pgn> [--job-id <id>] [--from-year 1900] [--lichess-broadcast-archives] [--lichess-community-broadcasts] [--local-pgn <file>]... [--no-twic]"
+                    "Usage: collect_otb_games --player <name> [--fide-id <id>] --cache-dir <folder> --output <games.pgn> [--job-id <id>] [--from-year 1900] [--no-lichess-broadcast-archives] [--no-lichess-community-broadcasts] [--local-pgn <file>]... [--no-twic]"
                 );
                 std::process::exit(0);
             }
@@ -153,6 +161,53 @@ fn parse_args() -> Result<Args, Error> {
         include_official_pgn_indexes,
         include_twic,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse_args_from;
+
+    fn required_args() -> Vec<String> {
+        [
+            "--player",
+            "Test, Player",
+            "--cache-dir",
+            "cache",
+            "--output",
+            "games.pgn",
+        ]
+        .into_iter()
+        .map(str::to_string)
+        .collect()
+    }
+
+    #[test]
+    fn all_public_sources_are_enabled_when_flags_are_omitted() {
+        let args = parse_args_from(required_args()).expect("parse defaults");
+        assert!(args.include_lichess_broadcasts);
+        assert!(args.include_lichess_broadcast_archives);
+        assert!(args.include_lichess_community_broadcasts);
+        assert!(args.include_chess_results);
+        assert!(args.include_chessbase_news);
+        assert!(args.include_official_pgn_indexes);
+        assert!(args.include_twic);
+    }
+
+    #[test]
+    fn negative_source_flags_remain_explicit_opt_outs() {
+        let mut values = required_args();
+        values.extend(
+            [
+                "--no-lichess-broadcast-archives",
+                "--no-lichess-community-broadcasts",
+            ]
+            .into_iter()
+            .map(str::to_string),
+        );
+        let args = parse_args_from(values).expect("parse opt outs");
+        assert!(!args.include_lichess_broadcast_archives);
+        assert!(!args.include_lichess_community_broadcasts);
+    }
 }
 
 fn invalid_input(message: impl Into<String>) -> Error {

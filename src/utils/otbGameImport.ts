@@ -225,6 +225,9 @@ export function getOtbImportDescription(report: OtbImportReport) {
     return [
         `OTB-only opponent import for ${report.playerName}${report.fideId ? ` (FIDE ${report.fideId})` : ""}.`,
         `${report.gamesFound} unique games${report.cancelled ? " retained from a search stopped early" : ""}; ${report.duplicatesRemoved} duplicates removed; ${report.suspectedOnlineGamesExcluded} suspected online games excluded.`,
+        report.coverageComplete
+            ? "Every selected source completed."
+            : `Coverage incomplete: ${report.coverageGaps.join("; ")}`,
         sourceSummary,
     ]
         .filter(Boolean)
@@ -232,5 +235,5 @@ export function getOtbImportDescription(report: OtbImportReport) {
 }
 
 export function getOtbImportWarningCount(report: OtbImportReport) {
-    return report.sources.reduce((sum, source) => sum + source.errors.length, 0);
+    return report.coverageGaps.length;
 }
