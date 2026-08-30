@@ -6,6 +6,7 @@ import type { RepertoireGap } from "@/bindings";
 import type { PracticeData } from "@/state/atoms";
 import type { Annotation } from "@/utils/annotation";
 import { isPrefix } from "@/utils/misc";
+import type { TacticalMotifEvidence } from "@/utils/tacticalMotifs/types";
 import { type TreeNode, treeIterator } from "@/utils/treeReducer";
 
 const REVIEW_DAY_MS = 24 * 60 * 60 * 1000;
@@ -18,6 +19,16 @@ const REPERTOIRE_FIRST_GOOD_MINUTES = 30;
 const REPERTOIRE_SECOND_GOOD_MINUTES = 4 * 60;
 const REPERTOIRE_FIRST_EASY_MINUTES = 2 * 60;
 const REPERTOIRE_SECOND_EASY_MINUTES = 12 * 60;
+
+const tacticalMotifEvidenceSchema = z.object({
+    id: z.string(),
+    label: z.string(),
+    confidence: z.enum(["high", "medium", "low"]),
+    evidence: z.string(),
+    source: z.enum(["allowed", "missed"]),
+    ply: z.number().int().positive().nullable(),
+    moveUci: z.string().nullable(),
+});
 
 type Sm2CardFields = {
     sm2EaseFactor?: number;
@@ -156,6 +167,9 @@ export const positionSchema = z.object({
             missedNature: z.enum(["tactical", "positional"]).optional(),
             missedNatureReason: z.string().optional(),
             natureClassifierVersion: z.number().optional(),
+            allowedMotifs: z.array(tacticalMotifEvidenceSchema).optional(),
+            missedMotifs: z.array(tacticalMotifEvidenceSchema).optional(),
+            motifClassifierVersion: z.string().optional(),
             gamePhase: z.string().optional(),
             positionPhase: z.string().optional(),
             summary: z
@@ -311,6 +325,9 @@ export type Position = {
         missedNature?: "tactical" | "positional";
         missedNatureReason?: string;
         natureClassifierVersion?: number;
+        allowedMotifs?: TacticalMotifEvidence[];
+        missedMotifs?: TacticalMotifEvidence[];
+        motifClassifierVersion?: string;
         gamePhase?: string;
         positionPhase?: string;
         summary?: {
