@@ -73,9 +73,10 @@
   on-demand-only. Every PC analysis attempt now asks the home server to ensure
   the scheduled backend is healthy before `/v1/analyze`; completed wake checks
   are not cached because the backend deliberately exits after being idle.
-  Pausing, switching away from LC0, closing the engine surface, or a phone
-  `pagehide` aborts the active request and explicitly releases the phone LC0
-  session so CUDA workers cannot remain behind. Preserve the lightweight
+  Pausing, switching engines, closing the engine surface, or a phone `pagehide`
+  aborts the active request and explicitly releases the selected Stockfish or
+  LC0 worker; LC0 also clears the phone session so CUDA workers cannot remain
+  behind. Preserve the lightweight
   backend's idle exit and the engines' lazy start; source, installed runtime,
   live phone bundle, endpoint behavior, and zero-idle-process state must be
   verified separately.

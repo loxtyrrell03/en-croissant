@@ -130,6 +130,7 @@ const lc0Engines = new Map();
 const unavailableLc0Families = new Set();
 const lc0SessionSelections = new Map();
 let lc0ShutdownPending = false;
+let stockfishShutdownPending = false;
 let activeHttpRequests = 0;
 let activeUciClients = 0;
 let backendIdleTimer = null;
@@ -314,6 +315,22 @@ async function handleHttpRequest(request, response) {
     });
   }
 
+  if (request.method === "POST" && requestUrl.pathname === "/v1/engine/release") {
+    const body = await readJsonBody(request, 4 * 1024);
+    const engineKind = String(body?.engineKind || "stockfish").toLowerCase();
+    if (!new Set(["stockfish", "lc0"]).has(engineKind)) {
+      return writeJson(response, 400, { error: "engineKind must be stockfish or lc0." });
+    }
+    if (engineKind === "lc0") {
+      const sessionId = normalizeSessionId(body?.lc0SessionId, request.socket.remoteAddress);
+      lc0SessionSelections.delete(sessionId);
+      lc0ShutdownPending = true;
+      return writeJson(response, 200, { ok: true, engineKind, sessionId, ...shutdownIdleLc0Engines() });
+    }
+    stockfishShutdownPending = true;
+    return writeJson(response, 200, { ok: true, engineKind, ...shutdownIdleStockfishEngine() });
+  }
+
   if (request.method !== "POST" || requestUrl.pathname !== "/v1/analyze") {
     return writeJson(response, 404, { error: "Not found." });
   }
@@ -492,6 +509,7 @@ async function handleHttpRequest(request, response) {
     }
   } finally {
     if (engineKind === "lc0" && lc0ShutdownPending) shutdownIdleLc0Engines();
+    if (engineKind === "stockfish" && stockfishShutdownPending) shutdownIdleStockfishEngine();
   }
 }
 
@@ -830,6 +848,21 @@ function shutdownIdleLc0Engines() {
   }
   lc0ShutdownPending = busy > 0;
   return { pending: lc0ShutdownPending, busy, stopped };
+}
+
+function shutdownIdleStockfishEngine() {
+  const busy = httpEngine?.activeJob || (httpEngine?.queued ?? 0) > 0 ? 1 : 0;
+  if (busy > 0) {
+    stockfishShutdownPending = true;
+    return { pending: true, busy, stopped: 0 };
+  }
+  const stopped = httpEngine?.child ? 1 : 0;
+  if (stopped) {
+    httpEngine.close();
+    log("Stockfish 18 released after the client disabled analysis.");
+  }
+  stockfishShutdownPending = false;
+  return { pending: false, busy: 0, stopped };
 }
 
 function beginBackendUse(kind) {

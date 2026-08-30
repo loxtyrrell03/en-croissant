@@ -293,7 +293,7 @@ import StatsWorkspace from "./StatsWorkspace";
 import { getWebOnlineAnalysisTitle, getWebOnlinePlayerColor } from "./onlineAnalysis";
 import {
   analyzeWithWebStockfish18,
-  releaseWebLc0Engine,
+  releaseWebPcEngine,
   stopWebStockfish18Search,
 } from "./stockfishEngine";
 
@@ -4114,7 +4114,7 @@ function EngineUnderBoardPanel({
   useEffect(() => {
     if (!settings.enabled || suspended) {
       stopWebStockfish18Search();
-      if (settings.engineKind === "lc0") void releaseWebLc0Engine();
+      void releaseWebPcEngine(settings.engineKind);
       setStatus("idle");
       setError(null);
       setStockfishLines([]);
@@ -4176,8 +4176,7 @@ function EngineUnderBoardPanel({
 
   useEffect(() => {
     const releaseEngine = () => {
-      stopWebStockfish18Search();
-      if (settings.engineKind === "lc0") void releaseWebLc0Engine();
+      void releaseWebPcEngine(settings.engineKind);
     };
     window.addEventListener("pagehide", releaseEngine);
     return () => {
@@ -4411,7 +4410,7 @@ function EngineUnderBoardPanel({
               onChange={(value) => {
                 const engineKind = value === "lc0" ? "lc0" : "stockfish";
                 if (settings.engineKind === "lc0" && engineKind !== "lc0") {
-                  void releaseWebLc0Engine();
+                  void releaseWebPcEngine("lc0");
                 }
                 updateSettings({ engineKind });
               }}

@@ -636,22 +636,25 @@ export function stopWebStockfish18Search() {
     postStockfish("stop");
 }
 
-export async function releaseWebLc0Engine() {
+export async function releaseWebPcEngine(engineKind: PcEngineKind) {
     stopWebStockfish18Search();
     if (!REMOTE_STOCKFISH_URL) return;
 
     try {
-        const response = await fetch(`${REMOTE_STOCKFISH_URL}/v1/lc0/release`, {
+        const response = await fetch(`${REMOTE_STOCKFISH_URL}/v1/engine/release`, {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ lc0SessionId: WEB_LC0_SESSION_ID }),
+            body: JSON.stringify({
+                engineKind,
+                lc0SessionId: engineKind === "lc0" ? WEB_LC0_SESSION_ID : undefined,
+            }),
             keepalive: true,
         });
         if (!response.ok) {
-            console.warn(`Gaming PC LCZero release returned HTTP ${response.status}.`);
+            console.warn(`Gaming PC engine release returned HTTP ${response.status}.`);
         }
     } catch (error) {
-        console.warn("Could not release Gaming PC LCZero.", error);
+        console.warn("Could not release the Gaming PC engine.", error);
     }
 }
 

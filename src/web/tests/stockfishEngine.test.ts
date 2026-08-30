@@ -3,7 +3,7 @@ import type { WebEngineLine } from "../model";
 import {
     analyzeWithWebStockfish18,
     dedupeWebStockfishLines,
-    releaseWebLc0Engine,
+    releaseWebPcEngine,
 } from "../stockfishEngine";
 
 const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -396,13 +396,26 @@ describe("Stockfish phone line updates", () => {
         const fetchMock = vi.fn().mockResolvedValue(engineWakeResponse());
         vi.stubGlobal("fetch", fetchMock);
 
-        await releaseWebLc0Engine();
+        await releaseWebPcEngine("lc0");
 
         expect(fetchMock).toHaveBeenCalledTimes(1);
-        expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/lc0/release");
+        expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/engine/release");
         expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: "POST", keepalive: true });
         expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toEqual({
+            engineKind: "lc0",
             lc0SessionId: "en-croissant-phone",
+        });
+    });
+
+    it("releases the PC Stockfish worker when phone analysis stops", async () => {
+        const fetchMock = vi.fn().mockResolvedValue(engineWakeResponse());
+        vi.stubGlobal("fetch", fetchMock);
+
+        await releaseWebPcEngine("stockfish");
+
+        expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/v1/engine/release");
+        expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toEqual({
+            engineKind: "stockfish",
         });
     });
 
