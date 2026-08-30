@@ -66,6 +66,12 @@ const LICHESS_CONCURRENCY: usize = 8;
 /// overlap. Reserving the next start keeps a long exact-game import below the
 /// observed burst limit; slower responses naturally satisfy the interval.
 const LICHESS_MIN_REQUEST_SPACING: Duration = Duration::from_millis(120);
+/// Study exports are the only Lichess PGN route that lets callers retain the
+/// complete broadcast payload. Keep all four flags explicit: the broadcast
+/// round API silently drops comments and variations, which is unacceptable for
+/// a lossless importer even when its main line happens to match.
+const LICHESS_STUDY_EXPORT_QUERY: &str =
+    "comments=true&clocks=true&variations=true&orientation=true";
 /// A dead upstream must not make an indexed all-source search look frozen.
 /// Connection setup and gaps between response chunks are bounded separately,
 /// so large PGNs can still download for as long as they keep transferring.
@@ -2332,6 +2338,7 @@ struct LichessFideResolvedCard {
     dates: Option<(i64, i64)>,
     finished: bool,
     player_keys: Vec<String>,
+    direct_specs: Vec<IndexedArchiveSpec>,
     fallback: Option<IndexedArchiveSpec>,
     error: Option<String>,
 }
@@ -2440,15 +2447,22 @@ async fn scan_lichess_rounds_pipelined(
             // Player-tour JSON has no per-game dates. If even one month in the
             // tour is uncovered, fetch every exact chapter and let the PGN year
             // filter decide; skipping individual chapters would lose games.
-            let mut specs = resolve_lichess_tour_player_specs(
-                client,
-                &request.cache_dir,
-                origin.trim_end_matches('/'),
-                &tour_id,
-                &card.player_keys,
-                card.finished,
-            )
-            .await;
+            // A round page also carries the tour's exhaustive round list. When
+            // it proves this is a one-round tour, its chapter roster is already
+            // the complete player roster and a second HTTP lookup cannot add a
+            // game. Multi-round tours retain the complete player endpoint.
+            let mut specs = card.direct_specs;
+            if specs.is_empty() {
+                specs = resolve_lichess_tour_player_specs(
+                    client,
+                    &request.cache_dir,
+                    origin.trim_end_matches('/'),
+                    &tour_id,
+                    &card.player_keys,
+                    card.finished,
+                )
+                .await;
+            }
             if specs.is_empty() {
                 // Every player key failed or returned no complete game list.
                 // Scan the full tour as the lossless, required-match fallback.
@@ -2498,24 +2512,16 @@ async fn resolve_lichess_fide_card_metadata(
             dates: None,
             finished: false,
             player_keys: Vec::new(),
+            direct_specs: Vec::new(),
             fallback: None,
             error: Some(format!("Invalid Lichess round path {round_path}")),
         };
     };
     let round_id = round_id.to_string();
-    let api_url = format!("{origin}/api{round_path}");
-    let metadata_cache_path = cache_dir.join(cache_file_name("lichess-fide-round", &api_url));
-    let metadata = async {
-        let (bytes, _) = fetch_lichess_cached_within(
-            client,
-            &api_url,
-            &metadata_cache_path,
-            Some(PAGE_CACHE_MAX_AGE),
-        )
-        .await?;
-        serde_json::from_slice::<serde_json::Value>(&bytes).map_err(|error| error.to_string())
-    }
-    .await;
+    let page_url = format!("{origin}{round_path}");
+    let metadata =
+        fetch_lichess_round_metadata(client, cache_dir, origin, round_path.as_str(), &round_id)
+            .await;
 
     let value = match metadata {
         Ok(value) => value,
@@ -2526,9 +2532,10 @@ async fn resolve_lichess_fide_card_metadata(
                 dates: None,
                 finished: false,
                 player_keys: Vec::new(),
+                direct_specs: Vec::new(),
                 fallback: Some(lichess_round_fallback_spec(cache_dir, origin, &round_id)),
                 error: Some(format!(
-                    "{api_url}: round metadata failed ({error}); only the advertised round could be recovered, so tournament coverage may be incomplete"
+                    "{page_url}: round metadata failed ({error}); only the advertised round could be recovered, so tournament coverage may be incomplete"
                 )),
             };
         }
@@ -2540,13 +2547,16 @@ async fn resolve_lichess_fide_card_metadata(
             dates: None,
             finished: false,
             player_keys: Vec::new(),
+            direct_specs: Vec::new(),
             fallback: Some(lichess_round_fallback_spec(cache_dir, origin, &round_id)),
             error: Some(format!(
-                "{api_url}: round metadata did not identify its tournament; only the advertised round could be recovered, so tournament coverage may be incomplete"
+                "{page_url}: round metadata did not identify its tournament; only the advertised round could be recovered, so tournament coverage may be incomplete"
             )),
         };
     };
     let player_keys = lichess_tour_player_keys(&value, identity);
+    let direct_specs =
+        lichess_single_round_player_specs(&value, identity, cache_dir, origin, &round_id);
     let finished = value
         .get("round")
         .and_then(|round| round.get("finished"))
@@ -2558,9 +2568,164 @@ async fn resolve_lichess_fide_card_metadata(
         dates,
         finished,
         player_keys,
+        direct_specs,
         fallback: None,
         error: None,
     }
+}
+
+/// The normal broadcast page already embeds the tour, exhaustive round list and
+/// current chapter roster in `page-init-data`. Reusing that one browser payload
+/// avoids a redundant unauthenticated round-API call; the official API remains
+/// the compatibility fallback if the HTML contract changes.
+async fn fetch_lichess_round_metadata(
+    client: &Client,
+    cache_dir: &Path,
+    origin: &str,
+    round_path: &str,
+    round_id: &str,
+) -> Result<serde_json::Value, String> {
+    let origin = origin.trim_end_matches('/');
+    let page_url = format!("{origin}{round_path}");
+    let page_cache_path = cache_dir.join(cache_file_name("lichess-round-page", &page_url));
+    let page_error = match fetch_cached_within(
+        client,
+        &page_url,
+        &page_cache_path,
+        Some(PAGE_CACHE_MAX_AGE),
+    )
+    .await
+    {
+        Ok(Some((bytes, _))) => {
+            let html = String::from_utf8_lossy(&bytes);
+            match extract_lichess_round_page_metadata(&html, round_id) {
+                Ok(value) => return Ok(value),
+                Err(error) => error,
+            }
+        }
+        Ok(None) => "the public round page returned 404".to_string(),
+        Err(error) => error,
+    };
+
+    let api_url = format!("{origin}/api{round_path}");
+    let api_cache_path = cache_dir.join(cache_file_name("lichess-fide-round", &api_url));
+    let api_result = async {
+        let (bytes, _) = fetch_lichess_json_cached_within(
+            client,
+            &api_url,
+            &api_cache_path,
+            Some(PAGE_CACHE_MAX_AGE),
+        )
+        .await?;
+        serde_json::from_slice::<serde_json::Value>(&bytes).map_err(|error| error.to_string())
+    }
+    .await;
+    api_result.map_err(|api_error| {
+        format!("public round page failed ({page_error}); API fallback failed ({api_error})")
+    })
+}
+
+fn extract_lichess_round_page_metadata(
+    html: &str,
+    round_id: &str,
+) -> Result<serde_json::Value, String> {
+    let json = html
+        .split("<script")
+        .skip(1)
+        .find_map(|tail| {
+            let (attributes, body) = tail.split_once('>')?;
+            let is_page_data = extract_quoted_values(attributes, "id=")
+                .into_iter()
+                .any(|id| id == "page-init-data");
+            is_page_data
+                .then(|| body.split_once("</script>").map(|(json, _)| json))
+                .flatten()
+        })
+        .ok_or_else(|| "page-init-data was missing from the public round page".to_string())?;
+    let page = serde_json::from_str::<serde_json::Value>(json)
+        .map_err(|error| format!("invalid page-init-data JSON: {error}"))?;
+    let relay = page
+        .get("relay")
+        .ok_or_else(|| "page-init-data omitted relay metadata".to_string())?;
+    let tour = relay
+        .get("tour")
+        .cloned()
+        .ok_or_else(|| "page-init-data omitted the tournament".to_string())?;
+    let rounds = relay
+        .get("rounds")
+        .and_then(serde_json::Value::as_array)
+        .filter(|rounds| !rounds.is_empty())
+        .ok_or_else(|| "page-init-data omitted the tournament round list".to_string())?;
+    let round = rounds
+        .iter()
+        .find(|round| round.get("id").and_then(serde_json::Value::as_str) == Some(round_id))
+        .cloned()
+        .ok_or_else(|| format!("page-init-data did not contain advertised round {round_id}"))?;
+    let games = page
+        .get("study")
+        .and_then(|study| study.get("chapters"))
+        .and_then(serde_json::Value::as_array)
+        .cloned()
+        .unwrap_or_default();
+
+    let mut metadata = serde_json::Map::new();
+    metadata.insert("tour".to_string(), tour);
+    metadata.insert("round".to_string(), round);
+    metadata.insert("games".to_string(), serde_json::Value::Array(games));
+    // Unlike the JSON round endpoint, the browser bootstrap includes the
+    // exhaustive tour round list. Its cardinality proves when the advertised
+    // round roster is the complete tournament roster.
+    metadata.insert(
+        "tourRounds".to_string(),
+        serde_json::Value::Array(rounds.clone()),
+    );
+    Ok(serde_json::Value::Object(metadata))
+}
+
+fn lichess_single_round_player_specs(
+    value: &serde_json::Value,
+    identity: &PlayerIdentity,
+    cache_dir: &Path,
+    origin: &str,
+    round_id: &str,
+) -> Vec<IndexedArchiveSpec> {
+    let finished = value
+        .get("round")
+        .and_then(|round| round.get("finished"))
+        .and_then(serde_json::Value::as_bool)
+        == Some(true);
+    let single_round = value
+        .get("tourRounds")
+        .and_then(serde_json::Value::as_array)
+        .filter(|rounds| rounds.len() == 1)
+        .and_then(|rounds| rounds.first())
+        .and_then(|round| round.get("id"))
+        .and_then(serde_json::Value::as_str)
+        == Some(round_id);
+    // A live singleton can still gain chapters. Only a finished round makes
+    // the page bootstrap roster exhaustive enough to replace the fresh player
+    // endpoint without risking a silent partial import.
+    if !finished || !single_round {
+        return Vec::new();
+    }
+    let Some(chapter_ids) = lichess_player_chapter_ids(value, identity) else {
+        return Vec::new();
+    };
+    let origin = origin.trim_end_matches('/');
+    let fallback = lichess_round_fallback_spec(cache_dir, origin, round_id);
+    chapter_ids
+        .into_iter()
+        .map(|chapter_id| {
+            let url = lichess_study_chapter_url(origin, round_id, &chapter_id);
+            let cache_path = cache_dir.join(cache_file_name("lichess-broadcast-game", &url));
+            IndexedArchiveSpec::lichess_with_fallback(
+                url,
+                cache_path,
+                fallback.url.clone(),
+                fallback.cache_path.clone(),
+            )
+        })
+        .collect()
 }
 
 async fn resolve_lichess_tour_player_specs(
@@ -2657,7 +2822,7 @@ fn lichess_tour_id_and_dates(value: &serde_json::Value) -> Option<(String, Optio
     let id = tour
         .get("id")
         .and_then(serde_json::Value::as_str)
-        .filter(|id| !id.is_empty())?
+        .filter(|id| valid_lichess_id(id))?
         .to_string();
     let dates = tour
         .get("dates")
@@ -2692,7 +2857,7 @@ fn lichess_tour_player_specs(
             .get("id")
             .and_then(serde_json::Value::as_str)
             .filter(|id| valid_lichess_id(id))?;
-        let url = format!("{origin}/api/study/{round_id}/{chapter_id}.pgn");
+        let url = lichess_study_chapter_url(origin, round_id, chapter_id);
         let cache_path = cache_dir.join(cache_file_name("lichess-broadcast-game", &url));
         let fallback = lichess_round_fallback_spec(cache_dir, origin, round_id);
         specs.insert(
@@ -2715,9 +2880,23 @@ fn lichess_round_fallback_spec(
     origin: &str,
     round_id: &str,
 ) -> IndexedArchiveSpec {
-    let url = format!("{origin}/api/broadcast/round/{round_id}.pgn");
+    let url = lichess_study_round_url(origin, round_id);
     let cache_path = cache_dir.join(cache_file_name("lichess-broadcast", &url));
     IndexedArchiveSpec::lichess(url, cache_path)
+}
+
+fn lichess_study_chapter_url(origin: &str, round_id: &str, chapter_id: &str) -> String {
+    format!(
+        "{}/api/study/{round_id}/{chapter_id}.pgn?{LICHESS_STUDY_EXPORT_QUERY}",
+        origin.trim_end_matches('/')
+    )
+}
+
+fn lichess_study_round_url(origin: &str, round_id: &str) -> String {
+    format!(
+        "{}/api/study/{round_id}.pgn?{LICHESS_STUDY_EXPORT_QUERY}",
+        origin.trim_end_matches('/')
+    )
 }
 
 fn valid_lichess_id(id: &str) -> bool {
@@ -2798,18 +2977,9 @@ async fn resolve_lichess_round_specs_for_path(
         return Vec::new();
     };
     let origin = origin.trim_end_matches('/');
-    let api_url = format!("{origin}/api{round_path}");
-    let metadata_cache_path = cache_dir.join(cache_file_name("lichess-fide-round", &api_url));
     let result: Result<(Option<String>, serde_json::Value), String> = async {
-        let (bytes, _) = fetch_lichess_cached_within(
-            client,
-            &api_url,
-            &metadata_cache_path,
-            Some(PAGE_CACHE_MAX_AGE),
-        )
-        .await?;
-        let value = serde_json::from_slice::<serde_json::Value>(&bytes)
-            .map_err(|error| error.to_string())?;
+        let value =
+            fetch_lichess_round_metadata(client, cache_dir, origin, round_path, round_id).await?;
         let starts_at = value
             .get("round")
             .and_then(|round| round.get("startsAt"))
@@ -2820,15 +2990,16 @@ async fn resolve_lichess_round_specs_for_path(
     }
     .await;
 
-    let fallback_url = format!("{origin}/api/broadcast/round/{round_id}.pgn");
-    let fallback_cache_path = cache_dir.join(cache_file_name("lichess-broadcast", &fallback_url));
+    let fallback = lichess_round_fallback_spec(cache_dir, origin, round_id);
+    let fallback_url = fallback.url;
+    let fallback_cache_path = fallback.cache_path;
     let mut specs = Vec::new();
     match result {
         Ok((Some(starts_at), _)) if corpus_coverage.covers_date(&starts_at) => {}
         Ok((_, value)) => {
             if let Some(chapter_ids) = lichess_player_chapter_ids(&value, identity) {
                 for chapter_id in chapter_ids {
-                    let url = format!("{origin}/api/study/{round_id}/{chapter_id}.pgn");
+                    let url = lichess_study_chapter_url(origin, round_id, &chapter_id);
                     let cache_path =
                         cache_dir.join(cache_file_name("lichess-broadcast-game", &url));
                     specs.push(IndexedArchiveSpec::lichess_with_fallback(
@@ -6701,6 +6872,34 @@ mod tests {
             .expect("mock response write");
     }
 
+    fn lichess_round_page(
+        tour_id: &str,
+        dates: [i64; 2],
+        rounds: &[(&str, bool)],
+        chapters: serde_json::Value,
+    ) -> String {
+        let rounds = rounds
+            .iter()
+            .map(|(id, finished)| {
+                serde_json::json!({
+                    "id": id,
+                    "finished": finished,
+                    "startsAt": dates[0]
+                })
+            })
+            .collect::<Vec<_>>();
+        let page = serde_json::json!({
+            "relay": {
+                "tour": { "id": tour_id, "dates": dates },
+                "rounds": rounds
+            },
+            "study": { "chapters": chapters }
+        });
+        format!(
+            "<html><script type=\"application/json\" data-test=\"round\" id=\"page-init-data\">{page}</script></html>"
+        )
+    }
+
     fn reset_lichess_test_state() {
         *LICHESS_LANE_GATE
             .lock()
@@ -7324,6 +7523,150 @@ mod tests {
     }
 
     #[test]
+    fn parses_public_round_bootstrap_and_uses_only_finished_singletons_directly() {
+        let chapters = serde_json::json!([{
+            "id": "Chap0001",
+            "players": [
+                { "name": "Lapidus, Alexey M.", "fideId": 24276111 },
+                { "name": "Example, Opponent", "fideId": 1 }
+            ]
+        }]);
+        let html = lichess_round_page(
+            "Tour0001",
+            [1767225600000, 1767312000000],
+            &[("Round001", true)],
+            chapters,
+        );
+        let value =
+            extract_lichess_round_page_metadata(&html, "Round001").expect("valid bootstrap");
+        assert_eq!(
+            lichess_tour_id_and_dates(&value),
+            Some(("Tour0001".to_string(), Some((1767225600000, 1767312000000))))
+        );
+
+        let temp = tempfile::tempdir().expect("temporary cache");
+        let specs = lichess_single_round_player_specs(
+            &value,
+            &identity(),
+            temp.path(),
+            "https://lichess.org/",
+            "Round001",
+        );
+        assert_eq!(specs.len(), 1);
+        assert_eq!(
+            specs[0].url,
+            format!(
+                "https://lichess.org/api/study/Round001/Chap0001.pgn?{LICHESS_STUDY_EXPORT_QUERY}"
+            )
+        );
+        let expected_fallback =
+            format!("https://lichess.org/api/study/Round001.pgn?{LICHESS_STUDY_EXPORT_QUERY}");
+        assert_eq!(
+            specs[0]
+                .lichess_fallback
+                .as_ref()
+                .map(|(url, _)| url.as_str()),
+            Some(expected_fallback.as_str())
+        );
+
+        for rounds in [
+            vec![("Round001", false)],
+            vec![("Round001", true), ("Round002", true)],
+        ] {
+            let html = lichess_round_page(
+                "Tour0001",
+                [1767225600000, 1767312000000],
+                &rounds,
+                serde_json::json!([{
+                    "id": "Chap0001",
+                    "players": [
+                        { "name": "Lapidus, Alexey M.", "fideId": 24276111 }
+                    ]
+                }]),
+            );
+            let value = extract_lichess_round_page_metadata(&html, "Round001")
+                .expect("valid non-direct bootstrap");
+            assert!(lichess_single_round_player_specs(
+                &value,
+                &identity(),
+                temp.path(),
+                "https://lichess.org",
+                "Round001",
+            )
+            .is_empty());
+        }
+    }
+
+    #[tokio::test]
+    async fn malformed_public_round_page_falls_back_to_the_official_api() {
+        let _lane = LICHESS_TEST_LANE.lock().await;
+        reset_lichess_test_state();
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("mock Lichess listener");
+        let address = listener.local_addr().expect("mock address");
+        let server = tokio::spawn(async move {
+            let mut paths = Vec::new();
+            for _ in 0..2 {
+                let (mut socket, _) = listener.accept().await.expect("mock accept");
+                let request = read_mock_request(&mut socket).await;
+                let path = request
+                    .lines()
+                    .next()
+                    .and_then(|line| line.split_whitespace().nth(1))
+                    .expect("request path")
+                    .to_string();
+                let body = if path == "/broadcast/test/round/Round001" {
+                    "<html>page-init-data changed</html>".to_string()
+                } else if path == "/api/broadcast/test/round/Round001" {
+                    assert!(request
+                        .to_ascii_lowercase()
+                        .contains("accept: application/json"));
+                    serde_json::json!({
+                        "tour": {
+                            "id": "Tour0001",
+                            "dates": [1767225600000i64, 1767312000000i64]
+                        },
+                        "round": { "id": "Round001", "finished": true },
+                        "games": []
+                    })
+                    .to_string()
+                } else {
+                    panic!("unexpected mock request {path}");
+                };
+                paths.push(path);
+                write_mock_response(&mut socket, "200 OK", &body).await;
+            }
+            paths
+        });
+
+        let temp = tempfile::tempdir().expect("temporary cache");
+        let origin = format!("http://{address}");
+        let value = fetch_lichess_round_metadata(
+            &Client::new(),
+            temp.path(),
+            &origin,
+            "/broadcast/test/round/Round001",
+            "Round001",
+        )
+        .await
+        .expect("API fallback metadata");
+        let paths = server.await.expect("mock server task");
+        assert_eq!(
+            paths,
+            vec![
+                "/broadcast/test/round/Round001".to_string(),
+                "/api/broadcast/test/round/Round001".to_string()
+            ]
+        );
+        assert_eq!(
+            lichess_tour_id_and_dates(&value).map(|(id, _)| id),
+            Some("Tour0001".to_string())
+        );
+        reset_lichess_test_state();
+    }
+
+    #[test]
     fn avoids_known_missing_fide_lookup_for_legacy_tours() {
         let identity = PlayerIdentity::new("Houska, Jovanka", Some("405094")).unwrap();
         let legacy = serde_json::json!({
@@ -7452,23 +7795,23 @@ mod tests {
         let origin = format!("http://{address}");
         let first_card = "/broadcast/test/a-card/Last0001";
         let cached_later_card = "/broadcast/test/z-card/Dupl0001";
-        let cached_metadata_url = format!("{origin}/api{cached_later_card}");
+        let cached_metadata_url = format!("{origin}{cached_later_card}");
         std::fs::write(
             temp.path()
-                .join(cache_file_name("lichess-fide-round", &cached_metadata_url)),
-            serde_json::to_vec(&serde_json::json!({
-                "tour": { "id": "Tour0001", "dates": [1767225600000i64, 1769904000000i64] },
-                "round": { "finished": true },
-                "games": [{
+                .join(cache_file_name("lichess-round-page", &cached_metadata_url)),
+            lichess_round_page(
+                "Tour0001",
+                [1767225600000i64, 1769904000000i64],
+                &[("Early001", true), ("Last0001", true), ("Dupl0001", true)],
+                serde_json::json!([{
                     "players": [
                         { "name": "Lapidus, Alexey M." },
                         { "name": "Example, Opponent" }
                     ]
-                }]
-            }))
-            .expect("cached metadata JSON"),
+                }]),
+            ),
         )
-        .expect("cached later-card metadata");
+        .expect("cached later-card page");
         let server = tokio::spawn(async move {
             let mut paths = Vec::new();
             for _ in 0..5 {
@@ -7488,20 +7831,20 @@ mod tests {
                         "player lookup must request JSON"
                     );
                 }
-                let (status, body) = if path.starts_with("/api/broadcast/test/") {
+                let (status, body) = if path == first_card {
                     (
                         "200 OK",
-                        serde_json::json!({
-                            "tour": { "id": "Tour0001", "dates": [1767225600000i64, 1769904000000i64] },
-                            "round": { "finished": true },
-                            "games": [{
+                        lichess_round_page(
+                            "Tour0001",
+                            [1767225600000i64, 1769904000000i64],
+                            &[("Early001", true), ("Last0001", true)],
+                            serde_json::json!([{
                                 "players": [
                                     { "name": "Lapidus, Alexey M.", "fideId": 24276111 },
                                     { "name": "Example, Opponent", "fideId": 1 }
                                 ]
-                            }]
-                        })
-                        .to_string(),
+                            }]),
+                        ),
                     )
                 } else if path == "/broadcast/Tour0001/players/24276111" {
                     ("404 Not Found", String::new())
@@ -7516,12 +7859,12 @@ mod tests {
                         })
                         .to_string(),
                     )
-                } else if path == "/api/study/Early001/Chap0001.pgn" {
+                } else if path.starts_with("/api/study/Early001/Chap0001.pgn?") {
                     (
                         "200 OK",
                         "[Event \"Early round\"]\n[Site \"London ENG\"]\n[Date \"2026.01.01\"]\n[Round \"1\"]\n[White \"Lapidus, Alexey M.\"]\n[Black \"Example, Opponent\"]\n[Result \"1-0\"]\n[WhiteFideId \"24276111\"]\n\n1. e4 e5 {early annotation} 2. Nf3 Nc6 1-0\n".to_string(),
                     )
-                } else if path == "/api/study/Last0001/Chap0002.pgn" {
+                } else if path.starts_with("/api/study/Last0001/Chap0002.pgn?") {
                     (
                         "200 OK",
                         "[Event \"Last round\"]\n[Site \"London ENG\"]\n[Date \"2026.02.01\"]\n[Round \"9\"]\n[White \"Example, Opponent\"]\n[Black \"Lapidus, Alexey M.\"]\n[Result \"0-1\"]\n[BlackFideId \"24276111\"]\n\n1. d4 d5 2. c4 e6 0-1\n".to_string(),
@@ -7586,6 +7929,12 @@ mod tests {
         assert!(paths
             .iter()
             .any(|path| path.contains("/Last0001/Chap0002.pgn")));
+        assert!(
+            paths
+                .iter()
+                .all(|path| !path.starts_with("/api/broadcast/test/")),
+            "valid public page metadata must avoid the rate-limited round API: {paths:?}"
+        );
         assert_eq!(report.archives_checked, 2);
         assert_eq!(report.matched_games, 2);
         assert!(report.errors.is_empty(), "{:?}", report.errors);
@@ -7636,18 +7985,18 @@ mod tests {
                     .and_then(|line| line.split_whitespace().nth(1))
                     .expect("request path")
                     .to_string();
-                let body = if path.starts_with("/api/broadcast/test/") {
-                    serde_json::json!({
-                        "tour": { "id": "TourLive", "dates": [1767225600000i64, 1769904000000i64] },
-                        "round": { "finished": false },
-                        "games": [{
+                let body = if path == "/broadcast/test/live/Live0001" {
+                    lichess_round_page(
+                        "TourLive",
+                        [1767225600000i64, 1769904000000i64],
+                        &[("Live0001", false)],
+                        serde_json::json!([{
                             "players": [
                                 { "name": "Lapidus, Alexey M.", "fideId": 24276111 },
                                 { "name": "Example, Opponent", "fideId": 1 }
                             ]
-                        }]
-                    })
-                    .to_string()
+                        }]),
+                    )
                 } else if path == "/broadcast/TourLive/players/24276111" {
                     serde_json::json!({
                         "games": [
@@ -7656,9 +8005,9 @@ mod tests {
                         ]
                     })
                     .to_string()
-                } else if path == "/api/study/OldR0001/Chap0001.pgn" {
+                } else if path.starts_with("/api/study/OldR0001/Chap0001.pgn?") {
                     "[Event \"Existing live round\"]\n[Date \"2026.01.01\"]\n[White \"Lapidus, Alexey M.\"]\n[Black \"Example, Opponent\"]\n[Result \"1-0\"]\n[WhiteFideId \"24276111\"]\n\n1. e4 e5 1-0\n".to_string()
-                } else if path == "/api/study/NewR0002/Chap0002.pgn" {
+                } else if path.starts_with("/api/study/NewR0002/Chap0002.pgn?") {
                     "[Event \"New live round\"]\n[Date \"2026.02.01\"]\n[White \"Example, Opponent\"]\n[Black \"Lapidus, Alexey M.\"]\n[Result \"0-1\"]\n[BlackFideId \"24276111\"]\n\n1. d4 d5 0-1\n".to_string()
                 } else {
                     panic!("unexpected mock request {path}");
@@ -7701,7 +8050,7 @@ mod tests {
             .any(|path| path == "/broadcast/TourLive/players/24276111"));
         assert!(paths
             .iter()
-            .any(|path| path == "/api/study/NewR0002/Chap0002.pgn"));
+            .any(|path| path.starts_with("/api/study/NewR0002/Chap0002.pgn?")));
         assert_eq!(report.archives_checked, 2);
         assert_eq!(report.matched_games, 2);
         let refreshed = serde_json::from_slice::<serde_json::Value>(
@@ -7737,11 +8086,13 @@ mod tests {
                     .and_then(|line| line.split_whitespace().nth(1))
                     .expect("request path")
                     .to_string();
-                let body = if path.starts_with("/api/broadcast/test/") {
-                    serde_json::json!({
-                        "tour": { "id": "Tour0002", "dates": [1767225600000i64, 1769904000000i64] }
-                    })
-                    .to_string()
+                let body = if path == "/broadcast/test/last/Last0002" {
+                    lichess_round_page(
+                        "Tour0002",
+                        [1767225600000i64, 1769904000000i64],
+                        &[("Prev0002", true), ("Last0002", true)],
+                        serde_json::json!([]),
+                    )
                 } else if path.ends_with("/players/24276111") {
                     serde_json::json!({ "games": [] }).to_string()
                 } else if path.contains("/players/Lapidus%2C%20Alexey%20M.") {
@@ -7834,10 +8185,12 @@ mod tests {
             write_mock_response(
                 &mut socket,
                 "200 OK",
-                &serde_json::json!({
-                    "tour": { "id": "Tour0003", "dates": [1767225600000i64, 1769904000000i64] }
-                })
-                .to_string(),
+                &lichess_round_page(
+                    "Tour0003",
+                    [1767225600000i64, 1769904000000i64],
+                    &[("Prev0003", true), ("Last0003", true)],
+                    serde_json::json!([]),
+                ),
             )
             .await;
             path
@@ -7869,7 +8222,7 @@ mod tests {
         .await;
         let path = server.await.expect("mock server task");
 
-        assert!(path.ends_with("/api/broadcast/test/last/Last0003"));
+        assert!(path.ends_with("/broadcast/test/last/Last0003"));
         assert_eq!(report.archives_checked, 0);
         assert_eq!(report.matched_games, 0);
         assert!(report.errors.is_empty(), "{:?}", report.errors);
@@ -7922,7 +8275,7 @@ mod tests {
         let progress = |_progress: OtbImportProgress| {};
         let mut report = OtbImportSourceReport::new("Lichess live FIDE broadcasts");
 
-        let fallback_url = "https://lichess.org/api/broadcast/round/RoundA00.pgn".to_string();
+        let fallback_url = lichess_study_round_url("https://lichess.org", "RoundA00");
         let fallback_cache = temp
             .path()
             .join(cache_file_name("lichess-broadcast", &fallback_url));
@@ -7941,7 +8294,7 @@ mod tests {
 "#,
         )
         .expect("fallback cache");
-        let a_url = "https://lichess.org/api/study/RoundA00/ChapterA.pgn".to_string();
+        let a_url = lichess_study_chapter_url("https://lichess.org", "RoundA00", "ChapterA");
         let a_cache = temp
             .path()
             .join(cache_file_name("lichess-broadcast-game", &a_url));
@@ -7951,7 +8304,7 @@ mod tests {
         )
         .expect("primary mismatch cache");
 
-        let z_url = "https://lichess.org/api/study/RoundZ00/ChapterZ.pgn".to_string();
+        let z_url = lichess_study_chapter_url("https://lichess.org", "RoundZ00", "ChapterZ");
         let z_cache = temp
             .path()
             .join(cache_file_name("lichess-broadcast-game", &z_url));
