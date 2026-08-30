@@ -1391,12 +1391,10 @@ impl IndexedArchiveSpec {
 #[derive(Clone, Debug)]
 struct BritBaseArchiveSpec {
     url: String,
-    label: String,
     referer: String,
     fetch_urls: Vec<String>,
     index_keys: Vec<String>,
     cache_paths: Vec<PathBuf>,
-    format: ArchiveFormat,
 }
 
 impl BritBaseArchiveSpec {
@@ -1409,8 +1407,6 @@ impl BritBaseArchiveSpec {
             .map(|key| cache_dir.join(cache_file_name("britbase", key)))
             .collect();
         Self {
-            label: file_name_from_url(&url),
-            format: archive_format_from_url(&url),
             url,
             referer,
             fetch_urls,
@@ -1535,6 +1531,19 @@ impl BritBaseFetchFailure {
 
 enum BritBaseLiveFetch {
     Downloaded(Vec<u8>),
+    NotFound,
+    Failed(BritBaseFetchFailure),
+}
+
+/// An unindexed BritBase file is filtered directly for the requested player.
+/// Building the all-player SQLite corpus one archive at a time used to make a
+/// cold interactive import spend tens of seconds compressing and inserting
+/// games that the current player did not need. The exact downloaded bytes stay
+/// cached, and the direct scanner applies the same identity/year/PGN rules as
+/// every other source without putting corpus maintenance on the button path.
+enum BritBaseArchiveScan {
+    RawCached(ScanOutcome),
+    Downloaded(ScanOutcome),
     NotFound,
     Failed(BritBaseFetchFailure),
 }
@@ -4259,131 +4268,121 @@ async fn scan_britbase_archives(
         }
     }
 
-    // A downloaded file can survive a cancelled or interrupted index write.
-    // Recover every such cache entry before deciding whether network access is
-    // needed; alias-named cache files are recognized without rewriting them.
-    let cache_candidates = specs
-        .iter()
-        .filter(|spec| !available.contains(&spec.url))
-        .cloned()
-        .collect::<Vec<_>>();
-    for spec in &cache_candidates {
-        let Some(bytes) = read_britbase_cache_entry(spec).await else {
-            continue;
-        };
-        let indexed = index::index_and_scan(
-            &index_path,
-            spec.url.clone(),
-            bytes,
-            spec.format,
-            Arc::clone(identity),
-            source,
-            request.from_year,
-            index_run.clone(),
-        )
-        .await;
-        if let Some(error) = indexed.index_error {
-            report
-                .errors
-                .push(format!("{}: index: {error}", spec.label));
-        }
-        available.insert(spec.url.clone());
-        coverage.raw_cached += 1;
-        report.archives_checked = report.archives_checked.saturating_add(1);
-        report.cached_archives = report.cached_archives.saturating_add(1);
-        merge_britbase_outcome(collection, report, indexed.outcome, source, &spec.url);
-    }
-
+    // Indexed files can answer a new identity in one bulk SQLite query. Raw
+    // cached and newly downloaded files are instead parsed directly and in
+    // parallel. This keeps the interactive path lossless while avoiding the
+    // much more expensive all-player corpus build for hundreds of cold files.
     let pending = specs
         .iter()
         .filter(|spec| !available.contains(&spec.url))
         .cloned()
         .collect::<Vec<_>>();
-    let mut consecutive_host_failures = 0usize;
-    let mut stop_live_fetches = false;
-    let mut diagnostics = Vec::new();
-
-    // Fetch in explicit batches so a host-level failure burst cannot
-    // accidentally start another batch while the stream buffer refills.
-    for batch in pending.chunks(BRITBASE_CONCURRENCY) {
-        let results = fetch_britbase_batch(client, batch).await;
-
-        for (spec, result) in results {
-            coverage.live_attempted += 1;
-            report.archives_checked = report.archives_checked.saturating_add(1);
+    let pending_total = pending.len();
+    let started = AtomicUsize::new(0);
+    let mut scans = stream::iter(pending.into_iter().map(|spec| {
+        let client = client.clone();
+        let identity = Arc::clone(identity);
+        let started = &started;
+        async move {
+            let position = started.fetch_add(1, Ordering::Relaxed);
             emit_progress(
                 app,
                 request,
                 source,
-                "downloading",
-                coverage.live_attempted,
-                pending.len(),
+                "scanning",
+                position,
+                pending_total,
                 games_len(collection),
                 format!(
-                    "Tried {} of {} missing BritBase archives",
-                    coverage.live_attempted,
-                    pending.len()
+                    "Scanning {} of {} unindexed BritBase archives",
+                    position + 1,
+                    pending_total
                 ),
             );
-            match result {
-                BritBaseLiveFetch::Downloaded(bytes) => {
+            let result = scan_unindexed_britbase_archive(
+                &client,
+                &spec,
+                identity,
+                source,
+                request.from_year,
+            )
+            .await;
+            (spec, result)
+        }
+    }))
+    .buffer_unordered(BRITBASE_CONCURRENCY);
+
+    let mut consecutive_host_failures = 0usize;
+    let mut stop_live_fetches = false;
+    let mut diagnostics = Vec::new();
+    let mut completed = 0usize;
+    while let Some((spec, result)) = scans.next().await {
+        completed += 1;
+        report.archives_checked = report.archives_checked.saturating_add(1);
+        emit_progress(
+            app,
+            request,
+            source,
+            "scanning",
+            completed,
+            pending_total,
+            games_len(collection),
+            format!(
+                "Scanned {} of {} unindexed BritBase archives",
+                completed, pending_total
+            ),
+        );
+        match result {
+            BritBaseArchiveScan::RawCached(outcome) => {
+                consecutive_host_failures = 0;
+                coverage.raw_cached += 1;
+                report.cached_archives = report.cached_archives.saturating_add(1);
+                merge_britbase_outcome(collection, report, outcome, source, &spec.url);
+            }
+            BritBaseArchiveScan::Downloaded(outcome) => {
+                consecutive_host_failures = 0;
+                coverage.live_attempted += 1;
+                coverage.live_downloaded += 1;
+                merge_britbase_outcome(collection, report, outcome, source, &spec.url);
+            }
+            BritBaseArchiveScan::NotFound => {
+                consecutive_host_failures = 0;
+                coverage.live_attempted += 1;
+                coverage.not_found += 1;
+                coverage.confirmed_absent += 1;
+                if diagnostics.len() < 3 {
+                    diagnostics.push(format!(
+                        "{}: every equivalent URL returned HTTP 404 Not Found",
+                        spec.url
+                    ));
+                }
+            }
+            BritBaseArchiveScan::Failed(failure) => {
+                coverage.live_attempted += 1;
+                let blocks_host = failure.blocks_host();
+                let rate_limited = matches!(failure, BritBaseFetchFailure::RateLimited(_));
+                match &failure {
+                    BritBaseFetchFailure::Forbidden => coverage.forbidden += 1,
+                    BritBaseFetchFailure::RateLimited(_) => coverage.rate_limited += 1,
+                    BritBaseFetchFailure::Http(_) => coverage.http_errors += 1,
+                    BritBaseFetchFailure::Transport(_) => coverage.transport_errors += 1,
+                }
+                if diagnostics.len() < 3 {
+                    diagnostics.push(format!("{}: {}", spec.url, failure.description()));
+                }
+                if blocks_host {
+                    consecutive_host_failures += 1;
+                } else {
                     consecutive_host_failures = 0;
-                    coverage.live_downloaded += 1;
-                    available.insert(spec.url.clone());
-                    let indexed = index::index_and_scan(
-                        &index_path,
-                        spec.url.clone(),
-                        bytes,
-                        spec.format,
-                        Arc::clone(identity),
-                        source,
-                        request.from_year,
-                        index_run.clone(),
-                    )
-                    .await;
-                    if let Some(error) = indexed.index_error {
-                        report
-                            .errors
-                            .push(format!("{}: index: {error}", spec.label));
-                    }
-                    merge_britbase_outcome(collection, report, indexed.outcome, source, &spec.url);
                 }
-                BritBaseLiveFetch::NotFound => {
-                    consecutive_host_failures = 0;
-                    coverage.not_found += 1;
-                    coverage.confirmed_absent += 1;
-                    if diagnostics.len() < 3 {
-                        diagnostics.push(format!(
-                            "{}: every equivalent URL returned HTTP 404 Not Found",
-                            spec.url
-                        ));
-                    }
-                }
-                BritBaseLiveFetch::Failed(failure) => {
-                    let blocks_host = failure.blocks_host();
-                    let rate_limited = matches!(failure, BritBaseFetchFailure::RateLimited(_));
-                    match &failure {
-                        BritBaseFetchFailure::Forbidden => coverage.forbidden += 1,
-                        BritBaseFetchFailure::RateLimited(_) => coverage.rate_limited += 1,
-                        BritBaseFetchFailure::Http(_) => coverage.http_errors += 1,
-                        BritBaseFetchFailure::Transport(_) => coverage.transport_errors += 1,
-                    }
-                    if diagnostics.len() < 3 {
-                        diagnostics.push(format!("{}: {}", spec.url, failure.description()));
-                    }
-                    if blocks_host {
-                        consecutive_host_failures += 1;
-                    } else {
-                        consecutive_host_failures = 0;
-                    }
-                    stop_live_fetches |= rate_limited;
-                }
+                stop_live_fetches |= rate_limited;
             }
         }
         if stop_live_fetches || consecutive_host_failures >= BRITBASE_CONCURRENCY {
             break;
         }
     }
+    drop(scans);
 
     if !coverage.is_complete() {
         let mut message = coverage.incomplete_message();
@@ -4408,6 +4407,30 @@ fn merge_britbase_outcome(
     let (matched, added) = merge_into(collection, outcome, source);
     report.matched_games = report.matched_games.saturating_add(matched);
     report.unique_games_added = report.unique_games_added.saturating_add(added);
+}
+
+async fn scan_unindexed_britbase_archive(
+    client: &Client,
+    spec: &BritBaseArchiveSpec,
+    identity: Arc<PlayerIdentity>,
+    source: &'static str,
+    from_year: u16,
+) -> BritBaseArchiveScan {
+    if let Some(bytes) = read_britbase_cache_entry(spec).await {
+        let outcome =
+            scan_archive_bytes(bytes, identity, source, spec.url.clone(), from_year).await;
+        return BritBaseArchiveScan::RawCached(outcome);
+    }
+
+    match fetch_britbase_archive(client, spec).await {
+        BritBaseLiveFetch::Downloaded(bytes) => {
+            let outcome =
+                scan_archive_bytes(bytes, identity, source, spec.url.clone(), from_year).await;
+            BritBaseArchiveScan::Downloaded(outcome)
+        }
+        BritBaseLiveFetch::NotFound => BritBaseArchiveScan::NotFound,
+        BritBaseLiveFetch::Failed(failure) => BritBaseArchiveScan::Failed(failure),
+    }
 }
 
 async fn read_britbase_cache_entry(spec: &BritBaseArchiveSpec) -> Option<Vec<u8>> {
@@ -4469,6 +4492,7 @@ async fn fetch_britbase_archive(client: &Client, spec: &BritBaseArchiveSpec) -> 
     BritBaseLiveFetch::NotFound
 }
 
+#[cfg(test)]
 async fn fetch_britbase_batch(
     client: &Client,
     specs: &[BritBaseArchiveSpec],
@@ -8572,6 +8596,52 @@ mod tests {
         assert_eq!(
             read_britbase_cache_entry(&spec).await,
             Some(b"cached BritBase bytes".to_vec())
+        );
+    }
+
+    #[tokio::test]
+    async fn unindexed_britbase_cache_is_filtered_directly_without_building_the_corpus() {
+        let cache = tempfile::tempdir().expect("temporary cache");
+        let spec = BritBaseArchiveSpec::new(
+            "https://www.saund.org.uk/britbase/pgn/202401fixture.pgn".to_string(),
+            "https://www.saund.org.uk/britbase/brit2020.htm".to_string(),
+            cache.path(),
+        );
+        let pgn = br#"[Event "Fixture"]
+[Site "London ENG"]
+[Date "2024.01.01"]
+[Round "1"]
+[White "Wadsworth, Matthew J"]
+[Black "Opponent, One"]
+[Result "1-0"]
+[WhiteFideId "415804"]
+
+1. e4 e5 2. Nf3 Nc6 1-0
+"#;
+        std::fs::write(&spec.cache_paths[0], pgn).expect("raw BritBase cache");
+        let identity = Arc::new(
+            PlayerIdentity::new("Wadsworth, Matthew J", Some("415804")).expect("player identity"),
+        );
+
+        match scan_unindexed_britbase_archive(
+            &Client::new(),
+            &spec,
+            identity,
+            "BritBase public OTB archive",
+            2000,
+        )
+        .await
+        {
+            BritBaseArchiveScan::RawCached(outcome) => {
+                assert_eq!(outcome.matched, 1);
+                assert_eq!(outcome.games.len(), 1);
+                assert!(outcome.error.is_none());
+            }
+            _ => panic!("raw BritBase bytes should be scanned without a live request"),
+        }
+        assert!(
+            !archive_index_path(cache.path()).exists(),
+            "an interactive raw-cache scan must not build the all-player corpus"
         );
     }
 
