@@ -228,7 +228,7 @@ export default function PhoneOtbImportPanel({
         : progress?.message;
 
   return (
-    <Stack gap="sm">
+    <Stack className={classes.otbForm} gap="sm">
       <Alert color="blue" icon={<IconDeviceDesktop size={17} />} variant="light">
         The phone only controls this search. Your PC downloads, filters, validates, deduplicates,
         stores every OTB result, and resolves FIDE player suggestions.
@@ -240,14 +240,18 @@ export default function PhoneOtbImportPanel({
         onSelect={selectFidePlayer}
         searchPlayers={searchWebFidePlayers}
         selected={selectedPlayer}
+        mobileInline
+        size="md"
         value={playerName}
       />
-      <Group align="flex-end" grow wrap="nowrap">
+      <Box className={classes.identityFields}>
         <TextInput
           autoCapitalize="none"
           disabled={running}
+          inputMode="numeric"
           label="FIDE ID"
           placeholder="Autofilled"
+          size="md"
           value={fideId}
           onBlur={() => void autofillFromFideId()}
           onChange={(event) => changeFideId(event.currentTarget.value)}
@@ -257,13 +261,14 @@ export default function PhoneOtbImportPanel({
           label="Games since"
           max={currentYear}
           min={FIDE_IMPORT_FALLBACK_YEAR}
+          size="md"
           value={fromYear}
           onChange={(value) => {
             fromYearManuallyEditedRef.current = true;
             setFromYear(Number(value) || FIDE_IMPORT_FALLBACK_YEAR);
           }}
         />
-      </Group>
+      </Box>
       <Text c="dimmed" size="xs">
         Defaults to the selected player&apos;s FIDE birth year, or 1900 when it is unavailable.
         Enter a later year only to narrow the import.
@@ -273,7 +278,7 @@ export default function PhoneOtbImportPanel({
         justify="space-between"
         onClick={() => setAdvancedOpen((open) => !open)}
         rightSection={<IconChevronDown size={15} />}
-        size="compact-sm"
+        size="md"
         variant="subtle"
       >
         PC search sources
@@ -345,6 +350,7 @@ export default function PhoneOtbImportPanel({
           leftSection={<IconPlayerStop size={16} />}
           loading={stopping}
           onClick={() => void stopSearch()}
+          size="md"
           variant="light"
         >
           Stop search
@@ -355,6 +361,7 @@ export default function PhoneOtbImportPanel({
           leftSection={<IconSearch size={16} />}
           loading={starting}
           onClick={() => void startSearch()}
+          size="md"
         >
           Search OTB games on PC
         </Button>

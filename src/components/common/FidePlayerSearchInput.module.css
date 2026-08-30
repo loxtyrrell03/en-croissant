@@ -1,0 +1,38 @@
+.mobilePicker {
+  min-width: 0;
+}
+
+.mobileResults {
+  max-height: min(20rem, 46dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: var(--mantine-radius-md);
+  background: var(--mantine-color-body);
+  box-shadow: var(--mantine-shadow-md);
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobileOption {
+  display: block;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.68rem 0.75rem;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+  color: inherit;
+  text-align: left;
+}
+
+.mobileOption:last-child {
+  border-bottom: 0;
+}
+
+.mobileOption:active,
+.mobileOption:focus-visible {
+  background: var(--mantine-primary-color-light);
+}
+
+.mobileEmpty {
+  padding: 0.8rem 0.75rem;
+}

@@ -176,7 +176,7 @@ export default function OnlineGameAnalysisPanel({
             disabled={isBusy}
             label="Username"
             placeholder="Your username"
-            size="sm"
+            size="md"
             value={username}
             onChange={(event) => setUsername(event.currentTarget.value)}
             onKeyDown={(event) => {
