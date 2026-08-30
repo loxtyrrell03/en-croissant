@@ -54,8 +54,7 @@ $runtimeFiles = @(
   'otb-prep-parallel.mjs',
   'otb-prep-worker.mjs',
   'terminate-collector-process-tree.ps1',
-  'fide-player-search.mjs',
-  'stats-entry-quality.mjs'
+  'fide-player-search.mjs'
 )
 foreach ($fileName in $runtimeFiles) {
   $source = Join-Path $PSScriptRoot $fileName
