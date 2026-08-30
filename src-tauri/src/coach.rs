@@ -31,7 +31,7 @@ use vampirc_uci::{
 };
 
 use crate::{
-    engine::{parse_fen_and_apply_moves, parse_fen_to_position, BaseEngine, GoMode},
+    engine::{parse_fen_and_apply_moves, parse_fen_to_position, BaseEngine, EngineOption, GoMode},
     error::Error,
     opening::{get_opening_from_setup, get_opening_movetext},
 };
@@ -147,6 +147,8 @@ pub struct AiCoachRequest {
     pub opening_context: Option<CoachOpeningContext>,
     pub opening_context_error: Option<String>,
     pub engine_path: PathBuf,
+    #[serde(default)]
+    pub engine_options: Vec<EngineOption>,
     pub settings: AiCoachSettings,
 }
 
@@ -3337,6 +3339,7 @@ async fn ask_ai_coach_inner(
         );
         run_stockfish_analysis(
             &request.engine_path,
+            &request.engine_options,
             &request.fen,
             &[],
             multipv,
@@ -8429,6 +8432,7 @@ async fn run_targeted_stockfish_request(
             }
             let lines = run_stockfish_analysis(
                 engine_path,
+                &coach_request.engine_options,
                 &fen,
                 &[],
                 multipv,
@@ -8463,6 +8467,7 @@ async fn run_targeted_stockfish_request(
             }
             let lines = run_stockfish_analysis(
                 engine_path,
+                &coach_request.engine_options,
                 &fen,
                 std::slice::from_ref(&uci),
                 multipv,
@@ -8519,6 +8524,7 @@ async fn run_targeted_stockfish_request(
                 }
                 let lines = run_stockfish_analysis(
                     engine_path,
+                    &coach_request.engine_options,
                     &fen,
                     std::slice::from_ref(&uci),
                     per_move_multipv,
@@ -8581,6 +8587,7 @@ async fn run_targeted_stockfish_request(
             }
             let lines = run_stockfish_analysis(
                 engine_path,
+                &coach_request.engine_options,
                 &fen,
                 &moves,
                 multipv,
@@ -8794,6 +8801,7 @@ fn detect_castling_mode(position: &shakmaty::Chess) -> CastlingMode {
 
 async fn run_stockfish_analysis(
     engine_path: &Path,
+    engine_options: &[EngineOption],
     fen: &str,
     moves: &[String],
     multipv: u8,
@@ -8805,7 +8813,9 @@ async fn run_stockfish_analysis(
     let multipv = multipv.clamp(1, 8);
     let mut engine = BaseEngine::spawn(engine_path.to_path_buf()).await?;
     engine.init_uci().await?;
-    engine.set_option("MultiPV", multipv).await?;
+    for option in coach_engine_options(engine_options, multipv) {
+        engine.set_option(&option.name, option.value).await?;
+    }
     engine.set_position(fen, moves).await?;
     engine.go(&GoMode::Depth(depth)).await?;
 
@@ -8844,6 +8854,19 @@ async fn run_stockfish_analysis(
 
     let _ = engine.quit().await;
     Ok(lines)
+}
+
+fn coach_engine_options(engine_options: &[EngineOption], multipv: u8) -> Vec<EngineOption> {
+    let mut options = engine_options
+        .iter()
+        .filter(|option| !option.name.eq_ignore_ascii_case("MultiPV"))
+        .cloned()
+        .collect::<Vec<_>>();
+    options.push(EngineOption {
+        name: "MultiPV".to_string(),
+        value: multipv.clamp(1, 8).to_string(),
+    });
+    options
 }
 
 fn parse_coach_uci_attrs(
@@ -9436,6 +9459,7 @@ mod tests {
             opening_context: None,
             opening_context_error: None,
             engine_path: PathBuf::from("stockfish"),
+            engine_options: Vec::new(),
             settings: AiCoachSettings {
                 enabled: true,
                 gemini_command: "codex".to_string(),
@@ -9452,6 +9476,31 @@ mod tests {
         assert_eq!(DEFAULT_COACH_MODEL, "gpt-5.6-sol");
         assert_eq!(DEFAULT_PLANNER_MODEL, "gpt-5.6-sol");
         assert_eq!(normalize_plan_coach_model("legacy-model"), "gpt-5.6-sol");
+    }
+
+    #[test]
+    fn coach_preserves_local_engine_profile_options_and_owns_multipv() {
+        let configured = vec![
+            EngineOption {
+                name: "WeightsFile".to_string(),
+                value: "C:/engines/BT4-it332.pb.gz".to_string(),
+            },
+            EngineOption {
+                name: "MultiPV".to_string(),
+                value: "8".to_string(),
+            },
+        ];
+
+        assert_eq!(
+            coach_engine_options(&configured, 3),
+            vec![
+                configured[0].clone(),
+                EngineOption {
+                    name: "MultiPV".to_string(),
+                    value: "3".to_string(),
+                },
+            ]
+        );
     }
 
     #[test]

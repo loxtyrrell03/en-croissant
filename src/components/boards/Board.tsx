@@ -61,6 +61,7 @@ import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import { commands, type Score } from "@/bindings";
 import { Chessground, type ChessgroundRef } from "@/chessground/Chessground";
+import { engineSettingsToOptions } from "@/utils/engines";
 import {
   boardManualSizeAtom,
   autoPromoteAtom,
@@ -856,6 +857,7 @@ function Board({
             firstMoveUci,
             enginePath: metadata.enginePath,
             engineName: metadata.engineName ?? null,
+            engineOptions: engineSettingsToOptions(metadata.engineSettings),
             depth: 12,
             maxPlies,
           });

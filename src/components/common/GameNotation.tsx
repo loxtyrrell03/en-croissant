@@ -398,11 +398,11 @@ function NotationHeader({
       return;
     }
 
-    const engine = selectStockfishEngine(engines ?? []);
+    const engine = selectLocalAnalysisEngine(engines ?? []);
     if (!engine) {
       notifications.show({
-        title: "Choose a Stockfish engine",
-        message: "Add or load a local Stockfish engine before analyzing this game.",
+        title: "Choose an analysis engine",
+        message: "Add or load a local UCI engine before analyzing this game.",
         color: "yellow",
       });
       return;
@@ -477,7 +477,7 @@ function NotationHeader({
     ? "Show moves"
     : hasGameAnalysis
       ? "Show game report"
-      : "Analyze game with Stockfish";
+      : "Analyze game with local engine";
   const notationDetailsHidden = !evalOpen || !showComments || !showMoveAnnotations;
   const focusNotationLabel = notationDetailsHidden
     ? "Show eval bar and move-quality annotations"
@@ -568,15 +568,11 @@ function NotationHeader({
   );
 }
 
-function selectStockfishEngine(engines: Engine[]): LocalEngine | null {
+function selectLocalAnalysisEngine(engines: Engine[]): LocalEngine | null {
   const loadedLocal = engines.filter(
     (engine): engine is LocalEngine => engine.type === "local" && Boolean(engine.loaded),
   );
-  return (
-    loadedLocal.find((engine) => engine.name.toLowerCase().includes("stockfish")) ??
-    loadedLocal[0] ??
-    null
-  );
+  return loadedLocal[0] ?? null;
 }
 
 function getReportGoMode(engine: LocalEngine): Exclude<GoMode, { t: "Infinite" | "PlayersTime" }> {

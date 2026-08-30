@@ -8,6 +8,7 @@ import {
 } from "@/utils/mistakeReview";
 import { isOpeningReviewSavedMove } from "@/utils/openingReviewPractice";
 import { unwrap } from "@/utils/unwrap";
+import { engineSettingsToOptions } from "@/utils/engines";
 
 export type MistakeReviewMoveAssessment = {
     label: MistakeReviewAttemptLabel;
@@ -88,6 +89,7 @@ export async function assessMistakeReviewMoveWithEngine(
                 playedMoveUci: playedMove.uci,
                 enginePath: metadata.enginePath,
                 engineName: metadata.engineName ?? null,
+                engineOptions: engineSettingsToOptions(metadata.engineSettings),
                 depth: metadata.requestedDepth ?? metadata.reachedDepth ?? 17,
                 multiPv: metadata.multiPv ?? 3,
                 thresholds: metadata.thresholds ?? DEFAULT_MISTAKE_REVIEW_THRESHOLDS,

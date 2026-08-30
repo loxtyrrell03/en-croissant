@@ -4064,11 +4064,7 @@ function selectOpeningHealthEngine(engines: Engine[]): LocalEngine | null {
   const localEngines = engines.filter(
     (engine): engine is LocalEngine => engine.type === "local" && Boolean(engine.loaded),
   );
-  return (
-    localEngines.find((engine) => engine.name.toLowerCase().includes("stockfish")) ??
-    localEngines[0] ??
-    null
-  );
+  return localEngines[0] ?? null;
 }
 
 function openingHealthUrgency(gap: RepertoireGap, verification?: EngineVerification) {

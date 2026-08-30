@@ -5,6 +5,7 @@ import { z } from "zod";
 import type { RepertoireGap } from "@/bindings";
 import type { PracticeData } from "@/state/atoms";
 import type { Annotation } from "@/utils/annotation";
+import { engineSettingsSchema, type EngineSettings } from "@/utils/engines";
 import { isPrefix } from "@/utils/misc";
 import { type TreeNode, treeIterator } from "@/utils/treeReducer";
 
@@ -143,6 +144,7 @@ export const positionSchema = z.object({
                 .optional(),
             engineName: z.string().optional(),
             enginePath: z.string().optional(),
+            engineSettings: engineSettingsSchema.optional(),
             phase: z.enum(["opening", "middlegame", "endgame"]).optional(),
             nature: z.enum(["tactical", "positional"]).optional(),
             mistakeNature: z.enum(["tactical", "positional"]).optional(),
@@ -298,6 +300,7 @@ export type Position = {
         dateRange?: "all" | "week" | "2weeks" | "month" | "3months" | "6months" | "year";
         engineName?: string;
         enginePath?: string;
+        engineSettings?: EngineSettings;
         phase?: "opening" | "middlegame" | "endgame";
         nature?: "tactical" | "positional";
         mistakeNature?: "tactical" | "positional";

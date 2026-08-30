@@ -123,7 +123,7 @@ function EvalReportChart({
       </svg>
       {coords.length === 0 && (
         <Text className={classes.emptyReport} size="sm" c="dimmed">
-          Run Stockfish analysis to see the game report.
+          Run local-engine analysis to see the game report.
         </Text>
       )}
     </Box>

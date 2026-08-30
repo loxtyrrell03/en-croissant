@@ -358,7 +358,12 @@ function EnginePlanExplorerPanel() {
         moveStrengthSettings,
         setupStrengthBySignature,
       ),
-    [filteredReport?.setups, moveStrengthSettings, practicalSetupData?.setups, setupStrengthBySignature],
+    [
+      filteredReport?.setups,
+      moveStrengthSettings,
+      practicalSetupData?.setups,
+      setupStrengthBySignature,
+    ],
   );
 
   useEffect(() => {
@@ -617,7 +622,7 @@ function EnginePlanExplorerPanel() {
     if (localEngines.length === 0) {
       return (
         <Alert color="yellow" variant="light">
-          No configured local Stockfish engine.
+          No configured local UCI engine.
         </Alert>
       );
     }
@@ -633,7 +638,7 @@ function EnginePlanExplorerPanel() {
     if (!visibleReport) {
       return (
         <Text ta="center" c="dimmed" py="xl">
-          Waiting for Stockfish PVs...
+          Waiting for engine PVs...
         </Text>
       );
     }
@@ -2198,7 +2203,7 @@ function buildEnginePlanCoachRequest(
     summary: `${plan.label}. ${plan.explanation} If this resembles a named chess setup or structure, name it only when the position and route evidence support that label.`,
     planLines: [formatEnginePlanForCoach(plan, totalPvs)],
     stats: [
-      "Source: local Stockfish PV plan extraction",
+      "Source: local engine PV plan extraction",
       `Position: ${sideToMoveLabel(rootFen)} to move`,
       `Category: ${categoryLabel(plan.category)}`,
       `Color: ${plan.color}`,
@@ -2239,8 +2244,8 @@ function buildEngineSetupCoachRequest(
     planLines: setup.plans.map((plan) => formatEnginePlanForCoach(plan, totalPvs)),
     stats: [
       blend?.practical
-        ? "Source: local Stockfish PV setup extraction plus Lichess All practical setup match"
-        : "Source: local Stockfish PV setup extraction",
+        ? "Source: local engine PV setup extraction plus Lichess All practical setup match"
+        : "Source: local engine PV setup extraction",
       `Position: ${sideToMoveLabel(rootFen)} to move`,
       `Color: ${setup.color}`,
       strength ? `Engine strength: ${strength.score}/100. ${strength.detail}` : null,

@@ -873,6 +873,7 @@ pub struct MistakeReviewScanRequest {
     pub player_name: Option<String>,
     pub engine_path: String,
     pub engine_name: Option<String>,
+    pub engine_options: Option<Vec<EngineOption>>,
     pub analysis_mode: Option<MistakeReviewAnalysisMode>,
     pub fast_depth: Option<u32>,
     pub deep_depth: Option<u32>,
@@ -1020,6 +1021,7 @@ pub struct MistakeReviewMoveScoreRequest {
     pub played_move_uci: String,
     pub engine_path: String,
     pub engine_name: Option<String>,
+    pub engine_options: Option<Vec<EngineOption>>,
     pub depth: Option<u32>,
     pub multi_pv: Option<u16>,
     pub thresholds: Option<MistakeReviewThresholds>,
@@ -1062,6 +1064,7 @@ pub struct MistakeReviewSampleLineRequest {
     pub first_move_uci: String,
     pub engine_path: String,
     pub engine_name: Option<String>,
+    pub engine_options: Option<Vec<EngineOption>>,
     pub depth: Option<u32>,
     pub max_plies: Option<u32>,
 }
@@ -1120,6 +1123,7 @@ pub async fn scan_mistake_review(
         requested_deep_depth
     };
     let multi_pv = request.multi_pv.unwrap_or(3).max(1);
+    let engine_options = request.engine_options.clone().unwrap_or_default();
     let min_win_probability_drop = request.min_win_probability_drop.unwrap_or(5.0);
     let time_management = request.time_management.unwrap_or_default();
     let long_think_threshold = time_management.min_move_seconds.max(0.0);
@@ -1134,7 +1138,7 @@ pub async fn scan_mistake_review(
         engine_path
             .file_stem()
             .and_then(|name| name.to_str())
-            .unwrap_or("Stockfish")
+            .unwrap_or("Local engine")
             .to_string()
     });
 
@@ -1310,6 +1314,7 @@ pub async fn scan_mistake_review(
                             &fen_before,
                             fast_depth,
                             multi_pv,
+                            &engine_options,
                             Some(&cancel_flag),
                         )
                         .await
@@ -1365,6 +1370,7 @@ pub async fn scan_mistake_review(
                                 &fen_after,
                                 fast_depth,
                                 1,
+                                &engine_options,
                                 Some(&cancel_flag),
                             )
                             .await
@@ -1444,6 +1450,7 @@ pub async fn scan_mistake_review(
                         &fen_before,
                         deep_depth,
                         multi_pv,
+                        &engine_options,
                         Some(&cancel_flag),
                     )
                     .await
@@ -1461,6 +1468,7 @@ pub async fn scan_mistake_review(
                         &fen_after,
                         deep_depth,
                         1,
+                        &engine_options,
                         Some(&cancel_flag),
                     )
                     .await
@@ -1880,12 +1888,13 @@ async fn score_mistake_review_move_inner(
     let thresholds = request.thresholds.unwrap_or_default();
     let depth = request.depth.unwrap_or(17).max(1);
     let multi_pv = request.multi_pv.unwrap_or(3).max(1);
+    let engine_options = request.engine_options.clone().unwrap_or_default();
     let engine_path = PathBuf::from(&request.engine_path);
     let engine_name = request.engine_name.clone().unwrap_or_else(|| {
         engine_path
             .file_stem()
             .and_then(|name| name.to_str())
-            .unwrap_or("Stockfish")
+            .unwrap_or("Local engine")
             .to_string()
     });
 
@@ -1904,12 +1913,20 @@ async fn score_mistake_review_move_inner(
         &request.fen,
         depth,
         multi_pv,
+        &engine_options,
         cancel_flag,
     )
     .await?;
-    let after =
-        analyze_mistake_review_position(&mut proc, &mut reader, &fen_after, depth, 1, cancel_flag)
-            .await?;
+    let after = analyze_mistake_review_position(
+        &mut proc,
+        &mut reader,
+        &fen_after,
+        depth,
+        1,
+        &engine_options,
+        cancel_flag,
+    )
+    .await?;
     proc.kill().await?;
 
     let best = before.first().ok_or(Error::NoMovesFound)?;
@@ -1974,12 +1991,13 @@ async fn get_mistake_review_sample_line_inner(
 ) -> Result<MistakeReviewSampleLine, Error> {
     let max_plies = request.max_plies.unwrap_or(6).min(20) as usize;
     let depth = request.depth.unwrap_or(12).max(1);
+    let engine_options = request.engine_options.clone().unwrap_or_default();
     let engine_path = PathBuf::from(&request.engine_path);
     let engine_name = request.engine_name.clone().unwrap_or_else(|| {
         engine_path
             .file_stem()
             .and_then(|name| name.to_str())
-            .unwrap_or("Stockfish")
+            .unwrap_or("Local engine")
             .to_string()
     });
 
@@ -2006,6 +2024,7 @@ async fn get_mistake_review_sample_line_inner(
         &fen_after_first,
         depth,
         1,
+        &engine_options,
         cancel_flag,
     )
     .await?;
@@ -2032,19 +2051,19 @@ async fn analyze_mistake_review_position(
     fen: &str,
     depth: u32,
     multi_pv: u16,
+    engine_options: &[EngineOption],
     cancel_flag: Option<&Arc<AtomicBool>>,
 ) -> Result<Vec<BestMoves>, Error> {
     if ui_engine_task_cancelled(cancel_flag) {
         return Err(Error::AnalysisCancelled);
     }
 
+    let extra_options = mistake_review_engine_options(engine_options, multi_pv);
+
     proc.set_options(EngineOptions {
         fen: fen.to_string(),
         moves: Vec::new(),
-        extra_options: vec![EngineOption {
-            name: "MultiPV".to_string(),
-            value: multi_pv.to_string(),
-        }],
+        extra_options,
     })
     .await?;
     proc.go(&GoMode::Depth(depth)).await?;
@@ -2091,6 +2110,22 @@ async fn analyze_mistake_review_position(
     }
 
     Ok(proc.last_best_moves.clone())
+}
+
+fn mistake_review_engine_options(
+    engine_options: &[EngineOption],
+    multi_pv: u16,
+) -> Vec<EngineOption> {
+    let mut options = engine_options
+        .iter()
+        .filter(|option| !option.name.eq_ignore_ascii_case("MultiPV"))
+        .cloned()
+        .collect::<Vec<_>>();
+    options.push(EngineOption {
+        name: "MultiPV".to_string(),
+        value: multi_pv.to_string(),
+    });
+    options
 }
 
 fn ui_engine_task_cancelled(cancel_flag: Option<&Arc<AtomicBool>>) -> bool {
@@ -3074,6 +3109,36 @@ mod tests {
         assert!(!keep_engine_running_on_app_inactive(
             "plan-explorer-engine:analysis-tab"
         ));
+    }
+
+    #[test]
+    fn mistake_review_preserves_profile_options_and_owns_multipv() {
+        let configured = vec![
+            EngineOption {
+                name: "WeightsFile".to_string(),
+                value: "C:/engines/BT4-it332.pb.gz".to_string(),
+            },
+            EngineOption {
+                name: "MultiPV".to_string(),
+                value: "9".to_string(),
+            },
+            EngineOption {
+                name: "NNCacheSize".to_string(),
+                value: "500000".to_string(),
+            },
+        ];
+
+        assert_eq!(
+            mistake_review_engine_options(&configured, 3),
+            vec![
+                configured[0].clone(),
+                configured[2].clone(),
+                EngineOption {
+                    name: "MultiPV".to_string(),
+                    value: "3".to_string(),
+                },
+            ]
+        );
     }
 
     #[test]

@@ -59,7 +59,11 @@ import "@/styles/global.css";
 
 import { commands, events } from "./bindings";
 import { openFile } from "./utils/files";
-import { createGamingPcLc0Engine } from "./utils/engines";
+import {
+  createGamingPcLc0Engine,
+  discoverInstalledDesktopEngines,
+  mergeInstalledDesktopEngines,
+} from "./utils/engines";
 
 const STALE_DOWNLOAD_CONVERSION_MS = 2 * 60 * 1000;
 const STALE_DATABASE_CONVERSION_MS = 20 * 60 * 1000;
@@ -283,7 +287,7 @@ function MistakeReviewScanProgressBanner() {
         </Group>
       </Group>
       <Text size="xs" c="dimmed" mb={4}>
-        {progress.phase ?? "Analyzing games with Stockfish"}
+        {progress.phase ?? "Analyzing games with local engine"}
       </Text>
       <Group gap="md" mb={6}>
         <Text size="xs">
@@ -507,12 +511,24 @@ function useStopInteractiveEnginesWhenInactive() {
   }, []);
 }
 
-function useEnsureGamingPcLc0Engine() {
+function useEnsureDesktopEngines() {
   const [engines, setEngines] = useAtom(enginesAtom);
+  const started = useRef(false);
 
   useEffect(() => {
-    if (!engines || engines.some((engine) => engine.id === "gaming-pc-lc0")) return;
-    void setEngines([...engines, createGamingPcLc0Engine()]);
+    if (!engines || started.current) return;
+    started.current = true;
+    void discoverInstalledDesktopEngines()
+      .catch(() => [])
+      .then((installed) => {
+        void setEngines(async (current) => {
+          const resolved = await current;
+          const withPcLc0 = resolved.some((engine) => engine.id === "gaming-pc-lc0")
+            ? resolved
+            : [...resolved, createGamingPcLc0Engine()];
+          return mergeInstalledDesktopEngines(withPcLc0, installed);
+        });
+      });
   }, [engines, setEngines]);
 }
 
@@ -531,7 +547,7 @@ export default function App() {
   useAppStartup();
   useSharedLichessSession();
   useStopInteractiveEnginesWhenInactive();
-  useEnsureGamingPcLc0Engine();
+  useEnsureDesktopEngines();
   useOnlineDatabaseAutoUpdater();
   useLichessStudyDatabaseAutoUpdater();
   useOpeningReviewDeckAutoUpdater();

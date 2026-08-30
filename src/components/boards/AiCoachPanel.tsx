@@ -71,6 +71,7 @@ import {
   sessionsAtom,
 } from "@/state/atoms";
 import { getPGN, getVariationLine, uciNormalize } from "@/utils/chess";
+import { engineSettingsToOptions } from "@/utils/engines";
 import {
   fromNativeAiCoachScope,
   getDefaultAiCoachQuestion,
@@ -313,20 +314,9 @@ function isLocalEngine(engine: Engine): engine is LocalEngine {
   return engine.type === "local";
 }
 
-function looksLikeStockfish(engine: LocalEngine): boolean {
-  const haystack = `${engine.name} ${engine.path}`.toLowerCase();
-  return haystack.includes("stockfish");
-}
-
 function pickCoachEngine(engines: Engine[] | null | undefined): LocalEngine | null {
   const localEngines = (engines ?? []).filter(isLocalEngine);
-  return (
-    localEngines.find((engine) => engine.loaded && looksLikeStockfish(engine)) ??
-    localEngines.find((engine) => engine.loaded) ??
-    localEngines.find(looksLikeStockfish) ??
-    localEngines[0] ??
-    null
-  );
+  return localEngines.find((engine) => engine.loaded) ?? localEngines[0] ?? null;
 }
 
 function toCoachLine(line: BestMoves): CoachEngineLine {
@@ -1416,9 +1406,7 @@ export default function AiCoachPanel() {
       return;
     }
     if (!coachEngine) {
-      setError(
-        "No local Stockfish engine is configured. Add or load Stockfish from Engines first.",
-      );
+      setError("No local UCI engine is configured. Add or load one from Engines first.");
       return;
     }
     const trimmedQuestion = question.trim();
@@ -1522,7 +1510,7 @@ export default function AiCoachPanel() {
           label: openingContext ? "Lichess All stats ready" : "No Lichess All stats",
           detail: openingContext
             ? `Collected ${openingContext.moves.length} explorer move(s).`
-            : "Continuing with Stockfish-only position context.",
+            : "Continuing with local-engine-only position context.",
           progress: 8,
           finished: false,
           elapsedMs: Date.now() - startedAt,
@@ -1571,7 +1559,7 @@ export default function AiCoachPanel() {
           detail:
             cloudLines.length > 0
               ? `Using ${cloudLines.length} cloud line(s) at depth ${cloudLines[0]?.depth ?? "?"}.`
-              : "Continuing with cached local lines or depth-17 Stockfish fallback.",
+              : `Continuing with cached local lines or depth-17 ${coachEngine.name} fallback.`,
           progress: 12,
           finished: false,
           elapsedMs: Date.now() - startedAt,
@@ -1614,6 +1602,7 @@ export default function AiCoachPanel() {
           openingContext,
           openingContextError,
           enginePath: coachEngine.path,
+          engineOptions: engineSettingsToOptions(coachEngine.settings),
           settings: {
             enabled,
             geminiCommand,
@@ -1773,7 +1762,7 @@ export default function AiCoachPanel() {
       <Group justify="space-between" gap="xs" wrap="wrap">
         <Group gap="xs" wrap="wrap">
           <Text fw={700}>AI Coach</Text>
-          <Badge variant="light">{coachEngine?.name ?? "No Stockfish"}</Badge>
+          <Badge variant="light">{coachEngine?.name ?? "No local engine"}</Badge>
           <Badge variant="light">{plannerModel || "GPT-5.6 Sol planner"}</Badge>
           <Badge variant="light">{modelUsed || geminiModel || "GPT-5.6 Sol"}</Badge>
           {existingLines.length > 0 && <Badge variant="outline">cached lines</Badge>}
@@ -1822,7 +1811,7 @@ export default function AiCoachPanel() {
       )}
       {!coachEngine && (
         <Alert color="red" icon={<IconAlertTriangle size="1rem" />}>
-          Add a local Stockfish engine in Engines before using Coach.
+          Add a local UCI engine in Engines before using Coach.
         </Alert>
       )}
 

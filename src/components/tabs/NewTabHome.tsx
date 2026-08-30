@@ -162,7 +162,7 @@ dayjs.extend(relativeTime);
 
 const OPENING_REVIEW_PREVIEW_BOARD_SIZE = 168;
 const MISTAKE_REVIEW_ANALYSIS_MODE_OPTIONS = [
-  { value: "single", label: "Single Stockfish pass" },
+  { value: "single", label: "Single engine pass" },
   { value: "layered", label: "Fast + deep confirmation" },
 ] as const;
 const MISTAKE_REVIEW_TIME_CONTROL_OPTIONS = [
@@ -1168,7 +1168,7 @@ function MistakeReviewModal({
         <Group justify="space-between" align="flex-start" gap="sm">
           <Stack gap={2} style={{ flex: 1, minWidth: 240 }}>
             <Text size="sm" c="dimmed">
-              Scan your own games, create Stockfish-backed mistake cards, and review them daily.
+              Scan your own games, create engine-backed mistake cards, and review them daily.
             </Text>
             <Text size="xs" c="dimmed">
               Online scans: {onlineSettingsSummary}
@@ -1440,7 +1440,7 @@ function MistakeReviewScanModal({
     if (!database || !selectedPlayer || !enginePath || !selectedEngine) {
       notifications.show({
         title: "Choose scan settings",
-        message: "Select a database, player, and local Stockfish engine.",
+        message: "Select a database, player, and local analysis engine.",
         color: "yellow",
       });
       return;
@@ -1454,6 +1454,7 @@ function MistakeReviewScanModal({
       engineName: selectedEngine.version
         ? `${selectedEngine.name} ${selectedEngine.version}`
         : selectedEngine.name,
+      engineSettings: selectedEngine.settings ?? [],
       analysisMode,
       fastDepth,
       deepDepth,
@@ -1655,7 +1656,7 @@ function MistakeReviewScanModal({
             allowDeselect={false}
           />
           <Select
-            label="Local Stockfish engine"
+            label="Local analysis engine"
             data={engineOptions}
             value={enginePath}
             onChange={setEnginePath}
@@ -1790,7 +1791,7 @@ function MistakeReviewScanModal({
             disabled={!selectedOnlineRecord}
           />
           {engineOptions.length === 0 && (
-            <Alert color="yellow">Add a local Stockfish engine in Settings before scanning.</Alert>
+            <Alert color="yellow">Add a local UCI engine in Settings before scanning.</Alert>
           )}
           <Group justify="flex-end">
             <Button variant="subtle" onClick={onClose}>
@@ -2036,7 +2037,7 @@ function OnlineMistakeReviewSettingsModal({
           of recent online games.
         </Text>
         <Select
-          label="Local Stockfish engine"
+          label="Local analysis engine"
           data={engineOptions}
           value={enginePath}
           onChange={onEnginePathChange}
@@ -2159,7 +2160,7 @@ function OnlineMistakeReviewSettingsModal({
         </SimpleGrid>
         {engineOptions.length === 0 && (
           <Alert color="yellow" variant="light">
-            Add a local Stockfish engine in Settings before scanning online games for mistakes.
+            Add a local UCI engine in Settings before scanning online games for mistakes.
           </Alert>
         )}
         <Group justify="flex-end">
@@ -2313,7 +2314,7 @@ function formatOnlineMistakeSettingsSummary(
     ? engine.version
       ? `${engine.name} ${engine.version}`
       : engine.name
-    : "No Stockfish selected";
+    : "No local engine selected";
   const modeLabel =
     settings.analysisMode === "layered"
       ? `layered depth ${settings.fastDepth}/${settings.deepDepth}`
@@ -2892,8 +2893,8 @@ export default function NewTabHome() {
       const selectedEngine = localEngines.find((engine) => engine.path === onlineMistakeEnginePath);
       if (!selectedEngine || !onlineMistakeEnginePath) {
         notifications.show({
-          title: "Choose a Stockfish engine",
-          message: "Add or select a local Stockfish engine before scanning selected games.",
+          title: "Choose an analysis engine",
+          message: "Add or select a local UCI engine before scanning selected games.",
           color: "yellow",
         });
         setOpenOnlineMistakeSettingsModal(true);
@@ -2926,6 +2927,7 @@ export default function NewTabHome() {
             engineName: selectedEngine.version
               ? `${selectedEngine.name} ${selectedEngine.version}`
               : selectedEngine.name,
+            engineSettings: selectedEngine.settings ?? [],
             analysisMode: onlineMistakeAnalysisSettings.analysisMode,
             fastDepth: onlineMistakeAnalysisSettings.fastDepth,
             deepDepth: onlineMistakeAnalysisSettings.deepDepth,
@@ -3080,8 +3082,8 @@ export default function NewTabHome() {
     const selectedEngine = localEngines.find((engine) => engine.path === onlineMistakeEnginePath);
     if (!selectedEngine || !onlineMistakeEnginePath) {
       notifications.show({
-        title: "Choose a Stockfish engine",
-        message: "Select a local Stockfish engine before scanning your latest game.",
+        title: "Choose an analysis engine",
+        message: "Select a local UCI engine before scanning your latest game.",
         color: "yellow",
       });
       setOpenOnlineMistakeSettingsModal(true);
@@ -3535,7 +3537,7 @@ export default function NewTabHome() {
         <Divider />
         <Group align="flex-end" gap="xs" wrap="nowrap">
           <Select
-            label="Local Stockfish engine"
+            label="Local analysis engine"
             data={onlineMistakeEngineOptions}
             value={onlineMistakeEnginePath}
             onChange={setOnlineMistakeEnginePath}
@@ -3559,7 +3561,7 @@ export default function NewTabHome() {
         </Text>
         {onlineMistakeEngineOptions.length === 0 && (
           <Alert color="yellow" variant="light">
-            Add a local Stockfish engine in Settings before scanning selected games.
+            Add a local UCI engine in Settings before scanning selected games.
           </Alert>
         )}
       </OnlineGamePickerModal>

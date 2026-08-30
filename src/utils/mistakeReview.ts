@@ -32,6 +32,11 @@ import type {
 import { commands } from "@/bindings";
 import { getStats, type Position } from "@/components/files/opening";
 import { positionFromFen } from "@/utils/chessops";
+import {
+    engineSettingsSchema,
+    engineSettingsToOptions,
+    type EngineSettings,
+} from "@/utils/engines";
 
 export const MISTAKE_REVIEW_EXTENSION = ".mistake-review.json";
 export const MISTAKE_REVIEW_VERSION = 1;
@@ -163,6 +168,7 @@ export type MistakeReviewSettings = {
     playerName?: string | null;
     enginePath: string;
     engineName?: string | null;
+    engineSettings?: EngineSettings;
     analysisMode: MistakeReviewAnalysisMode;
     fastDepth: number;
     deepDepth: number;
@@ -233,6 +239,7 @@ const mistakeReviewSettingsSchema = z.object({
     playerName: z.string().nullable().optional(),
     enginePath: z.string(),
     engineName: z.string().nullable().optional(),
+    engineSettings: engineSettingsSchema.optional(),
     analysisMode: z.enum(["single", "layered"]).default("single"),
     fastDepth: z.number().default(12),
     deepDepth: z.number().default(17),
@@ -589,6 +596,7 @@ export function mistakeReviewRequestFromSettings(
         playerName: settings.playerName ?? null,
         enginePath: settings.enginePath,
         engineName: settings.engineName ?? null,
+        engineOptions: engineSettingsToOptions(settings.engineSettings),
         fastDepth: settings.fastDepth,
         deepDepth: settings.deepDepth,
         analysisMode: settings.analysisMode,
@@ -676,6 +684,7 @@ export function createMistakeReviewPosition(
             dateRange: settings.dateRange,
             engineName: result.engineName,
             enginePath: settings.enginePath,
+            engineSettings: settings.engineSettings,
             phase: classifyMistakeReviewPhaseFromFen(result.fen),
             nature: natureClassification.nature,
             natureConfidence: natureClassification.confidence,

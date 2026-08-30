@@ -1114,7 +1114,7 @@ function PlanExplorerPanel() {
       )}
       {engineStrengthEnabled && localEngines.length === 0 && (
         <Alert color="yellow" variant="light">
-          No configured local Stockfish engine for Engine strength.
+          No configured local UCI engine for Engine strength.
         </Alert>
       )}
       {engineStrengthEnabled && engineStrengthState.error && (
