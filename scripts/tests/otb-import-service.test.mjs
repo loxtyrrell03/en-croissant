@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -39,6 +39,27 @@ test("serializes overlapping job saves and preserves the newest snapshot", async
     assert.equal(saved.progress.current, 24);
   } finally {
     await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("shares an explicit archive cache without mixing phone job state into it", async () => {
+  const temporaryRoot = await mkdtemp(join(tmpdir(), "en-croissant-otb-shared-cache-"));
+  const serviceRoot = join(temporaryRoot, "phone-jobs");
+  const sharedCacheRoot = join(temporaryRoot, "desktop-archive-cache");
+  try {
+    const service = new OtbImportService({
+      root: serviceRoot,
+      cacheRoot: sharedCacheRoot,
+      binaryPath: join(serviceRoot, "unused"),
+    });
+    await service.initialize();
+
+    assert.equal(service.cacheRoot, sharedCacheRoot);
+    assert.ok((await stat(sharedCacheRoot)).isDirectory());
+    assert.ok((await stat(join(serviceRoot, "jobs"))).isDirectory());
+    await assert.rejects(stat(join(sharedCacheRoot, "jobs")), { code: "ENOENT" });
+  } finally {
+    await rm(temporaryRoot, { recursive: true, force: true });
   }
 });
 

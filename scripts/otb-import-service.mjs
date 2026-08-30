@@ -15,6 +15,7 @@ const MAX_ERROR_LENGTH = 12_000;
 export class OtbImportService {
   constructor({
     root,
+    cacheRoot = join(root, "cache"),
     binaryPath,
     onLog = () => undefined,
     spawnProcess = spawn,
@@ -28,7 +29,10 @@ export class OtbImportService {
     this.jobs = new Map();
     this.processes = new Map();
     this.persistQueues = new Map();
-    this.cacheRoot = join(root, "cache");
+    // Archive bytes and the SQLite player index are product-wide data. The
+    // desktop and phone companion can safely share them while keeping mutable
+    // job state and result artifacts under their own service roots.
+    this.cacheRoot = cacheRoot;
     this.outputRoot = join(root, "output");
     this.jobRoot = join(root, "jobs");
     this.artifactRoot = join(root, "artifacts");

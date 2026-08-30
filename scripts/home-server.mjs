@@ -127,6 +127,10 @@ const coachLibraryPlanSchemaPath = join(coachWorkRoot, "library-plan.schema.json
 const coachReviewSchemaPath = join(coachWorkRoot, "coach-review.schema.json");
 const statsReportSchemaPath = join(coachWorkRoot, "stats-report.schema.json");
 const otbImportRoot = join(serverRoot, "otb-import");
+const otbImportCacheRoot = resolve(
+  process.env.EN_CROISSANT_OTB_IMPORT_CACHE_DIR ||
+    join(localAppData, "org.encroissant.app", "otb-game-import"),
+);
 const otbImportBinaryPath = join(
   serverRoot,
   "runtime",
@@ -208,6 +212,7 @@ let coachAuthenticationProbe = null;
 let localEvalStoreIssueLogged = false;
 const otbImportService = new OtbImportService({
   root: otbImportRoot,
+  cacheRoot: otbImportCacheRoot,
   binaryPath: otbImportBinaryPath,
   onLog: (message) => void appendLog(message),
 });
