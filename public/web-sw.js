@@ -1,5 +1,6 @@
 const BUILD_ID = "__EN_CROISSANT_BUILD_ID__";
-const CACHE_NAME = `en-croissant-web-${BUILD_ID}`;
+const CACHE_PREFIX = "en-croissant-web-";
+const CACHE_NAME = `${CACHE_PREFIX}${BUILD_ID}`;
 const APP_BASE = new URL(self.registration.scope).pathname;
 const APP_SHELL = [APP_BASE, `${APP_BASE}manifest.webmanifest`, `${APP_BASE}logo.png`];
 
@@ -17,14 +18,18 @@ self.addEventListener("activate", (event) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))),
+        Promise.all(
+          keys
+            .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+            .map((key) => caches.delete(key)),
+        ),
       )
       .then(() => self.clients.claim())
       .then(() => self.clients.matchAll({ type: "window", includeUncontrolled: true }))
       .then((clients) =>
         Promise.all(
           clients.map((client) =>
-            client.navigate(client.url).catch(() => null),
+            client.postMessage({ type: "EN_CROISSANT_SW_ACTIVATED", buildId: BUILD_ID }),
           ),
         ),
       ),
@@ -46,6 +51,13 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
+  // Version probes must always reach the active immutable release. Caching
+  // cache-busted probes would both hide updates and grow the cache forever.
+  if (url.pathname.endsWith("/app-version.json")) {
+    event.respondWith(fetch(request));
+    return;
+  }
 
   if (isNetworkFirst(request, url)) {
     event.respondWith(

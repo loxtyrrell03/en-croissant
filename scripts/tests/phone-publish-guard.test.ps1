@@ -62,7 +62,10 @@ try {
     throw "A clean tracked tree was reported as changed."
   }
 
-  [System.IO.File]::WriteAllText((Join-Path $buildRoot "index.html"), "<script src=`"/assets/app.js`"></script>")
+  [System.IO.File]::WriteAllText(
+    (Join-Path $buildRoot "index.html"),
+    '<meta name="en-croissant-build" content="__EN_CROISSANT_BUILD_ID__"><script src="/assets/app.js"></script>'
+  )
   [System.IO.File]::WriteAllText((Join-Path $buildRoot "assets\app.js"), "console.log('current');")
   [System.IO.File]::WriteAllText(
     (Join-Path $buildRoot "web-sw.js"),
@@ -77,6 +80,10 @@ try {
   $stampedWorker = Get-Content -Raw -LiteralPath (Join-Path $buildRoot "web-sw.js")
   if (-not $stampedWorker.Contains($newerCommit.Substring(0, 16))) {
     throw "The service worker did not receive the source-specific build ID."
+  }
+  $stampedIndex = Get-Content -Raw -LiteralPath (Join-Path $buildRoot "index.html")
+  if (-not $stampedIndex.Contains("name=`"en-croissant-build`" content=`"$newerCommit`"")) {
+    throw "The phone index did not receive the source-specific build ID."
   }
 
   [System.IO.File]::WriteAllText((Join-Path $buildRoot "assets\app.js"), "console.log('stale');")

@@ -305,6 +305,7 @@ import {
   type WebOtbImportJob,
 } from "./otbImport";
 import { applyWebOtbPrepCompletion, shouldOpenWebOtbPrep } from "./otbPrep";
+import { installWebAppLifecycle } from "./webAppLifecycle";
 
 type ViewMode = "board" | "stats" | "files";
 type BoardPanelMode = "moves" | "online" | "database" | "prep" | "engine" | "coach";
@@ -592,10 +593,8 @@ export default function WebApp() {
   }, [loaded, state]);
 
   useEffect(() => {
-    if (!("serviceWorker" in navigator) || !import.meta.env.PROD) return;
-    void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}web-sw.js`).catch((error) => {
-      console.warn("Web companion service worker registration failed", error);
-    });
+    if (!import.meta.env.PROD) return;
+    return installWebAppLifecycle(import.meta.env.BASE_URL);
   }, []);
 
   useEffect(() => {

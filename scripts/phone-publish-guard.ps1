@@ -253,6 +253,19 @@ function Set-EnCroissantPhoneBuildMetadata {
     throw "The phone build has no web-sw.js at $resolvedDist."
   }
 
+  $buildId = $PublishContext.SourceCommit
+  $index = Get-Content -Raw -LiteralPath $indexPath
+  if ($index.Contains("__EN_CROISSANT_BUILD_ID__")) {
+    $index = $index.Replace("__EN_CROISSANT_BUILD_ID__", $buildId)
+    [System.IO.File]::WriteAllText(
+      $indexPath,
+      $index,
+      [System.Text.UTF8Encoding]::new($false)
+    )
+  } elseif (-not $index.Contains("name=`"en-croissant-build`" content=`"$buildId`"")) {
+    throw "The phone index was not prepared for a source-specific build ID."
+  }
+
   $serviceWorker = Get-Content -Raw -LiteralPath $serviceWorkerPath
   if ($serviceWorker.Contains("__EN_CROISSANT_BUILD_ID__")) {
     $serviceWorker = $serviceWorker.Replace(
@@ -296,6 +309,11 @@ function Assert-EnCroissantPhoneBuildMetadata {
   }
   if ($ExpectedSourceCommit -and [string]$metadata.sourceCommit -ne $ExpectedSourceCommit) {
     throw "The phone build belongs to $($metadata.sourceCommit), not $ExpectedSourceCommit. Rebuild before publishing."
+  }
+  $indexPath = Join-Path $resolvedRoot "index.html"
+  $index = Get-Content -Raw -LiteralPath $indexPath
+  if (-not $index.Contains("name=`"en-croissant-build`" content=`"$($metadata.sourceCommit)`"")) {
+    throw "The phone index does not identify the deployment commit in app-version.json."
   }
 
   foreach ($file in @($metadata.files)) {
