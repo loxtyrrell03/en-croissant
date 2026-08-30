@@ -138,7 +138,10 @@ type WebOtbJobWatcher = {
     terminal: boolean;
 };
 
-const WEB_OTB_POLL_INTERVAL_MS = 1_500;
+// The collector finishes many complete imports between one-second boundaries.
+// Poll the local PC often enough that downloading the finished artifact does not
+// add up to 1.5 seconds of avoidable button-to-ready latency.
+const WEB_OTB_POLL_INTERVAL_MS = 500;
 const webOtbJobWatchers = new Map<string, WebOtbJobWatcher>();
 
 export function watchWebOtbImportJob(
