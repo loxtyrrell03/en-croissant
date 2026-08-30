@@ -53,10 +53,12 @@ const USER_AGENT: &str = "En Croissant OTB importer/0.4";
 /// Bounded fan-out for general archive hosts. Downloads dominate the wall clock,
 /// so archives are fetched concurrently and merged in their sorted order.
 const ARCHIVE_CONCURRENCY: usize = 8;
-/// BritBase's public host applies anti-hotlink and abuse protection. Keep both
-/// the connection fan-out and request start rate deliberately small.
-const BRITBASE_CONCURRENCY: usize = 2;
-const BRITBASE_MIN_REQUEST_SPACING: Duration = Duration::from_millis(350);
+/// BritBase's anti-hotlink check is satisfied by the decade-index Referer below.
+/// Keep a bounded burst rather than globally sleeping between every immutable
+/// archive: the latter made a cold historical decade take 350 ms per file even
+/// when the host was answering immediately. Explicit 429 cooldowns are still
+/// honoured by `wait_for_britbase_lane`.
+const BRITBASE_CONCURRENCY: usize = 16;
 /// Lichess work keeps modest CPU fan-out, while the network helper below
 /// serializes requests as required by Lichess's published API guidance.
 const LICHESS_CONCURRENCY: usize = 8;
@@ -3588,17 +3590,10 @@ async fn scan_britbase_archives(
     let mut stop_live_fetches = false;
     let mut diagnostics = Vec::new();
 
-    // Fetch in explicit batches so observing two host-level failures cannot
-    // accidentally start a third request while the stream buffer refills.
+    // Fetch in explicit batches so a host-level failure burst cannot
+    // accidentally start another batch while the stream buffer refills.
     for batch in pending.chunks(BRITBASE_CONCURRENCY) {
-        let results = future::join_all(batch.iter().cloned().map(|spec| {
-            let client = client.clone();
-            async move {
-                let result = fetch_britbase_archive(&client, &spec).await;
-                (spec, result)
-            }
-        }))
-        .await;
+        let results = fetch_britbase_batch(client, batch).await;
 
         for (spec, result) in results {
             coverage.live_attempted += 1;
@@ -3721,7 +3716,7 @@ fn britbase_request(
 
 async fn fetch_britbase_archive(client: &Client, spec: &BritBaseArchiveSpec) -> BritBaseLiveFetch {
     for url in &spec.fetch_urls {
-        take_britbase_slot().await;
+        wait_for_britbase_lane().await;
         let response = match britbase_request(client, spec, url).send().await {
             Ok(response) => response,
             Err(error) => {
@@ -3761,20 +3756,31 @@ async fn fetch_britbase_archive(client: &Client, spec: &BritBaseArchiveSpec) -> 
     BritBaseLiveFetch::NotFound
 }
 
-async fn take_britbase_slot() {
+async fn fetch_britbase_batch(
+    client: &Client,
+    specs: &[BritBaseArchiveSpec],
+) -> Vec<(BritBaseArchiveSpec, BritBaseLiveFetch)> {
+    future::join_all(specs.iter().cloned().map(|spec| {
+        let client = client.clone();
+        async move {
+            let result = fetch_britbase_archive(&client, &spec).await;
+            (spec, result)
+        }
+    }))
+    .await
+}
+
+/// Waits only for a server-requested cooldown. Successful archive requests do
+/// not extend the gate, so a cold corpus can fill the bounded download batch.
+async fn wait_for_britbase_lane() {
     loop {
         let now = Instant::now();
         let wait = {
-            let mut gate = BRITBASE_LANE_GATE
+            let gate = BRITBASE_LANE_GATE
                 .lock()
                 .unwrap_or_else(|error| error.into_inner());
-            match gate.filter(|open_at| *open_at > now) {
-                Some(open_at) => Some(open_at.saturating_duration_since(now)),
-                None => {
-                    *gate = Some(now + BRITBASE_MIN_REQUEST_SPACING);
-                    None
-                }
-            }
+            gate.filter(|open_at| *open_at > now)
+                .map(|open_at| open_at.saturating_duration_since(now))
         };
         match wait {
             Some(delay) => tokio::time::sleep(delay).await,
@@ -6767,6 +6773,97 @@ mod tests {
             _ => panic!("equivalent moved URL should have been downloaded"),
         }
         server.await.expect("mock server task");
+    }
+
+    #[tokio::test]
+    async fn britbase_cold_batch_fetches_and_caches_every_advertised_archive() {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+        assert_eq!(BRITBASE_CONCURRENCY, 16);
+        *BRITBASE_LANE_GATE
+            .lock()
+            .unwrap_or_else(|error| error.into_inner()) = None;
+
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("mock BritBase listener");
+        let address = listener.local_addr().expect("mock address");
+        let all_requests_arrived = Arc::new(tokio::sync::Barrier::new(BRITBASE_CONCURRENCY));
+        let server = tokio::spawn({
+            let all_requests_arrived = Arc::clone(&all_requests_arrived);
+            async move {
+                let mut handlers = Vec::new();
+                for index in 0..BRITBASE_CONCURRENCY {
+                    let (mut socket, _) = listener.accept().await.expect("mock accept");
+                    let all_requests_arrived = Arc::clone(&all_requests_arrived);
+                    handlers.push(tokio::spawn(async move {
+                        let mut request = Vec::new();
+                        loop {
+                            let mut chunk = [0u8; 1024];
+                            let read = socket.read(&mut chunk).await.expect("mock request read");
+                            if read == 0 {
+                                break;
+                            }
+                            request.extend_from_slice(&chunk[..read]);
+                            if request.windows(4).any(|window| window == b"\r\n\r\n") {
+                                break;
+                            }
+                        }
+                        let request = String::from_utf8_lossy(&request).to_ascii_lowercase();
+                        assert!(request.contains("referer: https://www.saund.org.uk/britbase/brit40.htm"));
+
+                        // No response is released until the whole production-size
+                        // batch has reached the server. A serial or two-wide fetch
+                        // therefore cannot make this test pass by accident.
+                        all_requests_arrived.wait().await;
+                        let body = format!("[Event \"Cold archive {index}\"]\n\n*\n");
+                        let response = format!(
+                            "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                            body.len()
+                        );
+                        socket
+                            .write_all(response.as_bytes())
+                            .await
+                            .expect("mock response write");
+                        body.into_bytes()
+                    }));
+                }
+                future::join_all(handlers)
+                    .await
+                    .into_iter()
+                    .map(|result| result.expect("mock handler"))
+                    .collect::<Vec<_>>()
+            }
+        });
+
+        let cache = tempfile::tempdir().expect("temporary cache");
+        let specs = (0..BRITBASE_CONCURRENCY)
+            .map(|index| {
+                let mut spec = BritBaseArchiveSpec::new(
+                    format!("https://www.saund.org.uk/britbase/pgn/1940{index:02}fixture.pgn"),
+                    "https://www.saund.org.uk/britbase/brit40.htm".to_string(),
+                    cache.path(),
+                );
+                spec.fetch_urls = vec![format!("http://{address}/archive-{index}.pgn")];
+                spec
+            })
+            .collect::<Vec<_>>();
+        let results = fetch_britbase_batch(&Client::new(), &specs).await;
+        let served_bodies = server.await.expect("mock server task");
+
+        assert_eq!(results.len(), BRITBASE_CONCURRENCY);
+        for ((spec, result), expected) in results.into_iter().zip(served_bodies) {
+            match result {
+                BritBaseLiveFetch::Downloaded(bytes) => assert_eq!(bytes, expected),
+                _ => panic!("every advertised archive should be downloaded"),
+            }
+            assert_eq!(
+                tokio::fs::read(&spec.cache_paths[0])
+                    .await
+                    .expect("cold archive cache"),
+                expected
+            );
+        }
     }
 
     #[test]
