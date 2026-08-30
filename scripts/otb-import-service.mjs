@@ -601,17 +601,11 @@ export function mergeOtbProgress(current, incoming) {
 }
 
 export function parseOtbPgnGames(pgn, jobId = "otb") {
-  return pgn
-    .split(/\r?\n(?=\[Event\s)/g)
+  return splitOtbPgnGameBlocks(pgn)
     .map((game) => game.trim())
     .filter(Boolean)
     .map((game, index) => {
-      const headers = Object.fromEntries(
-        Array.from(game.matchAll(/^\[([^\s]+)\s+"((?:\\.|[^"])*)"\]\s*$/gm), (match) => [
-          match[1],
-          match[2].replace(/\\"/g, '"').replace(/\\\\/g, "\\"),
-        ]),
-      );
+      const headers = parseOtbPgnHeaders(game);
       return {
         id: `${jobId}:${index + 1}`,
         pgn: game,
@@ -625,6 +619,73 @@ export function parseOtbPgnGames(pgn, jobId = "otb") {
         blackElo: numericHeader(headers.BlackElo),
       };
     });
+}
+
+function splitOtbPgnGameBlocks(pgn) {
+  const games = [];
+  let gameStart = 0;
+  let lineStart = 0;
+  let braceDepth = 0;
+  let hasGameContent = false;
+  let inMovetext = false;
+
+  while (lineStart < pgn.length) {
+    const newline = pgn.indexOf("\n", lineStart);
+    const lineEnd = newline < 0 ? pgn.length : newline;
+    const nextLineStart = newline < 0 ? pgn.length : newline + 1;
+    const line = pgn.slice(lineStart, lineEnd);
+    const trimmed = line.trimStart();
+    const atTopLevel = braceDepth === 0;
+    const isHeader = atTopLevel && looksLikePgnHeaderLine(trimmed);
+    const isEventCandidate = atTopLevel && /^\[Event(?=\s)/.test(trimmed);
+
+    if (hasGameContent && inMovetext && (isHeader || isEventCandidate)) {
+      games.push(pgn.slice(gameStart, lineStart));
+      gameStart = lineStart;
+      braceDepth = 0;
+      hasGameContent = false;
+      inMovetext = false;
+    }
+
+    if (trimmed.trim()) {
+      hasGameContent = true;
+      if (!isHeader) inMovetext = true;
+    }
+    braceDepth = updatePgnBraceDepth(line, braceDepth);
+    lineStart = nextLineStart;
+  }
+
+  if (hasGameContent) games.push(pgn.slice(gameStart));
+  return games;
+}
+
+function parseOtbPgnHeaders(game) {
+  const headers = {};
+  for (const line of game.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const match = trimmed.match(/^\[([^\s]+)\s+"((?:\\.|[^"])*)"\]\s*$/);
+    if (!match) break;
+    headers[match[1]] = match[2].replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+  }
+  return headers;
+}
+
+function looksLikePgnHeaderLine(line) {
+  if (!line.startsWith("[")) return false;
+  let index = 1;
+  while (index < line.length && /[A-Za-z0-9_]/.test(line[index])) index += 1;
+  return index > 1 && line.indexOf('"', index) >= 0;
+}
+
+function updatePgnBraceDepth(line, depth) {
+  let nextDepth = depth;
+  for (const character of line) {
+    if (nextDepth === 0 && character === ";") break;
+    if (character === "{") nextDepth += 1;
+    if (character === "}" && nextDepth > 0) nextDepth -= 1;
+  }
+  return nextDepth;
 }
 
 export function getOtbPrepDatabaseName(request) {

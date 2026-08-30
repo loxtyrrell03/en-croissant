@@ -17,6 +17,10 @@ import {
   terminateCollectorProcessTree,
 } from "../otb-import-service.mjs";
 import { buildWebOtbPrepDatabaseParallel } from "../otb-prep-parallel.mjs";
+import {
+  consecutiveEventlessPgnFixture,
+  otbPgnBoundaryFixtures,
+} from "./fixtures/otb-pgn-boundaries.mjs";
 
 test("serializes overlapping job saves and preserves the newest snapshot", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-croissant-otb-persist-"));
@@ -317,6 +321,29 @@ test("splits and summarizes verified PGNs on the PC", () => {
   );
 });
 
+test("retains exact games across Eventless and reordered-header PGN boundaries", () => {
+  for (const fixture of otbPgnBoundaryFixtures) {
+    const games = parseOtbPgnGames(fixture.input, "boundary");
+    assert.equal(games.length, fixture.expected.length, fixture.name);
+    assert.deepEqual(
+      games.map(({ pgn, event, white, black, result }) => ({
+        pgn,
+        event,
+        white,
+        black,
+        result,
+      })),
+      fixture.expected,
+      fixture.name,
+    );
+    assert.deepEqual(
+      games.map((game) => game.id),
+      fixture.expected.map((_, index) => `boundary:${index + 1}`),
+      fixture.name,
+    );
+  }
+});
+
 test("builds a phone-ready prep database on the PC", () => {
   const pgn = `[Event "Congress"]\n[Date "2026.08.01"]\n[White "Target, Player"]\n[Black "Opponent"]\n[Result "1-0"]\n\n1. e4 e5 2. Nf3 Nc6 1-0`;
   const service = new OtbImportService({ root: "C:/unused", binaryPath: "C:/unused.exe" });
@@ -443,6 +470,54 @@ test("sets completedAt only after the complete artifact is durably written", asy
     assert.deepEqual(
       artifact.prepDatabase.games[0].moves.map((move) => move.san),
       ["e4", "e5", "Nf3", "Nc6"],
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("completed compact artifacts preserve consecutive Eventless games exactly", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-croissant-otb-eventless-artifact-"));
+  try {
+    const service = new OtbImportService({ root, binaryPath: join(root, "unused") });
+    await service.initialize();
+    const job = {
+      id: "otb-eventless",
+      status: "running",
+      request: { playerName: "Alpha", fromYear: 2026 },
+      progress: null,
+      report: null,
+      gameCount: 0,
+      artifactAvailable: false,
+      artifactBytes: null,
+      createdAt: "2026-08-30T10:00:00.000Z",
+      updatedAt: "2026-08-30T10:00:00.000Z",
+      completedAt: null,
+      error: null,
+    };
+    service.jobs.set(job.id, job);
+    const outputPath = join(service.outputRoot, `${job.id}.pgn`);
+    await writeFile(outputPath, consecutiveEventlessPgnFixture.input);
+
+    await service.finishCompleted(
+      job,
+      { playerName: "Alpha", gamesFound: consecutiveEventlessPgnFixture.expected.length },
+      outputPath,
+    );
+
+    assert.equal(job.gameCount, consecutiveEventlessPgnFixture.expected.length);
+    assert.equal("games" in job, false);
+    assert.equal("prepDatabase" in job, false);
+    const artifact = JSON.parse(
+      await readFile((await service.getJobArtifact(job.id)).path, "utf8"),
+    );
+    assert.deepEqual(
+      artifact.games.map((game) => game.pgn),
+      consecutiveEventlessPgnFixture.expected.map((game) => game.pgn),
+    );
+    assert.equal(
+      artifact.prepDatabase.games.length,
+      consecutiveEventlessPgnFixture.expected.length,
     );
   } finally {
     await rm(root, { recursive: true, force: true });

@@ -15,6 +15,21 @@
 - Port behavior through each product's native architecture rather than copying incompatible whole files. Preserve Outpost's proprietary/licensing boundary and dependency-free tolerant PGN parser; preserve En Croissant's Tauri bindings and the phone companion's deployed native collector/service boundary.
 - On 2026-08-29, the persistent SQLite OTB index, all-source defaults, failure bounds, coverage-gap logic, aggregate downloads, and shared-cache behavior were ported to Outpost and verified with 27 focused Rust tests, all 176 non-ignored Outpost Rust tests, all 2,109 Outpost TypeScript tests, a production build, and a seeded 10-lane Anish Giri run returning 3,941 games in 11.315 seconds.
 
+- On 2026-08-30, phone collector PGN output stopped using an `Event`-only
+  boundary regex. The service now starts a new game at any top-level PGN tag
+  after movetext, carries multiline brace-comment state, ignores semicolon
+  comment lookalikes, and reads summary metadata only from the real header
+  block. Consecutive Eventless games, reordered `Event` tags, zero-move games,
+  and a headerless game followed by tagged games retain their exact trimmed PGN
+  blocks and deterministic IDs in the immutable compact artifact. Existing
+  artifact migration and collector/process lifecycle behavior are unchanged.
+  Verification passed 21 focused service tests, all 87 home-server Node tests,
+  15 focused OTB web tests, TypeScript checking, targeted formatter checks, the
+  OTB-prep build, and the production Vite build. The full web suite retained 655
+  passing tests and its five unrelated baseline failures in private-server URL,
+  engine-detail wording, audio mocking, and timestamp expectations. This
+  milestone is source-only and was not deployed.
+
 - On 2026-08-30, the phone OTB job service split compact poll status from one
   immutable completed game/prep artifact. Legacy inline jobs migrate
   sequentially and losslessly at startup, `completedAt` is assigned only after
