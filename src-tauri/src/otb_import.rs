@@ -1120,8 +1120,19 @@ async fn scan_lichess_fide_broadcasts(
     let requested_cutoff = format!("{:04}-01-01", request.from_year);
     let mut seen_round_paths = HashSet::new();
     let mut uncovered_round_paths = HashSet::new();
+    // The placeholder slug redirects to Lichess's canonical player URL. Every
+    // later cursor must come from that response's rel=next link: synthesizing
+    // `/player?page=N` makes the redirect discard `page=N` and repeats page 1.
+    let mut page_url = format!("https://lichess.org/fide/{fide_id}/player");
+    let mut seen_page_urls = HashSet::new();
 
     for page in 1..=20u32 {
+        if !seen_page_urls.insert(page_url.clone()) {
+            report.errors.push(format!(
+                "Lichess FIDE pagination repeated {page_url}; coverage may be incomplete"
+            ));
+            break;
+        }
         emit_progress(
             app,
             request,
@@ -1132,7 +1143,6 @@ async fn scan_lichess_fide_broadcasts(
             games_len(collection),
             format!("Checking Lichess FIDE tournament page {page}"),
         );
-        let page_url = format!("https://lichess.org/fide/{fide_id}/player?page={page}");
         let cache_path = request
             .cache_dir
             .join(cache_file_name("lichess-fide-page", &page_url));
@@ -1160,10 +1170,6 @@ async fn scan_lichess_fide_broadcasts(
                         .get(..10)
                         .is_some_and(|date| date < requested_cutoff.as_str())
                 });
-        if paths.is_empty() {
-            break;
-        }
-        let before_count = seen_round_paths.len();
         for (round_path, date) in paths {
             if !seen_round_paths.insert(round_path.clone()) {
                 continue;
@@ -1182,10 +1188,27 @@ async fn scan_lichess_fide_broadcasts(
                 uncovered_round_paths.insert(round_path);
             }
         }
-        let has_next = html.contains("rel=\"next\"") || html.contains("rel='next'");
-        if page_reaches_before_range || !has_next || seen_round_paths.len() == before_count {
+        if page_reaches_before_range {
             break;
         }
+        let next_page_url = match lichess_fide_next_page_url(&html, fide_id, &seen_page_urls) {
+            Ok(next_page_url) => next_page_url,
+            Err(error) => {
+                report.errors.push(error);
+                break;
+            }
+        };
+        let Some(next_page_url) = next_page_url else {
+            break;
+        };
+        if page == 20 {
+            report.errors.push(
+                "Lichess FIDE tournament discovery exceeded the 20-page safety cap; coverage may be incomplete"
+                    .to_string(),
+            );
+            break;
+        }
+        page_url = next_page_url;
     }
 
     let mut round_paths = uncovered_round_paths.into_iter().collect::<Vec<_>>();
@@ -5862,6 +5885,78 @@ fn extract_lichess_rounds_since(html: &str, cutoff: &str) -> Vec<(String, Option
         .collect()
 }
 
+/// Returns the canonical next page advertised by a Lichess FIDE listing.
+/// Only same-origin FIDE links are accepted, and a cursor already visited by
+/// this scan is an error rather than permission to repeat a page forever.
+fn lichess_fide_next_page_url(
+    html: &str,
+    fide_id: &str,
+    seen_page_urls: &HashSet<String>,
+) -> Result<Option<String>, String> {
+    let mut next_urls = Vec::new();
+    let expected_player_prefix = format!("https://lichess.org/fide/{fide_id}/");
+    for tail in html.split("<a").skip(1) {
+        let Some((anchor, _)) = tail.split_once('>') else {
+            continue;
+        };
+        let is_next = extract_quoted_values(anchor, "rel=")
+            .into_iter()
+            .any(|value| {
+                value
+                    .split_ascii_whitespace()
+                    .any(|relation| relation.eq_ignore_ascii_case("next"))
+            });
+        if !is_next {
+            continue;
+        }
+
+        let href = extract_quoted_values(anchor, "href=")
+            .into_iter()
+            .next()
+            .ok_or_else(|| {
+                "Lichess FIDE pagination returned rel=next without an href; coverage may be incomplete"
+                    .to_string()
+            })?;
+        let href = decode_basic_html_entities(&href);
+        let next_url = if href.starts_with("/fide/") {
+            format!("https://lichess.org{href}")
+        } else if href.starts_with("https://lichess.org/fide/") {
+            href
+        } else {
+            return Err(format!(
+                "Lichess FIDE pagination returned an invalid next-page link ({href}); coverage may be incomplete"
+            ));
+        };
+        if !next_url.starts_with(&expected_player_prefix)
+            || next_url.chars().any(char::is_whitespace)
+            || next_url.contains('#')
+        {
+            return Err(format!(
+                "Lichess FIDE pagination returned an invalid next-page link ({next_url}); coverage may be incomplete"
+            ));
+        }
+        next_urls.push(next_url);
+    }
+
+    next_urls.sort();
+    next_urls.dedup();
+    if next_urls.len() > 1 {
+        return Err(
+            "Lichess FIDE pagination returned conflicting next-page links; coverage may be incomplete"
+                .to_string(),
+        );
+    }
+    let Some(next_url) = next_urls.pop() else {
+        return Ok(None);
+    };
+    if seen_page_urls.contains(&next_url) {
+        return Err(format!(
+            "Lichess FIDE pagination repeated {next_url}; coverage may be incomplete"
+        ));
+    }
+    Ok(Some(next_url))
+}
+
 fn normalized_name(name: &str) -> String {
     let mut output = String::new();
     let mut previous_space = true;
@@ -6476,6 +6571,60 @@ mod tests {
                 "https://database.lichess.org/broadcast/lichess_db_broadcast_2026-07.pgn.zst"
             ),
             Some((2026, 7))
+        );
+    }
+
+    #[test]
+    fn follows_the_canonical_lichess_fide_next_page_link() {
+        let seen = HashSet::from(["https://lichess.org/fide/4100018/player".to_string()]);
+        let html = r#"<section class="relay-cards">
+<a class="pager" href="/fide/4100018/Kasparov_Garry?page=2&amp;order=date" rel="nofollow next">Next</a>
+</section>"#;
+
+        assert_eq!(
+            lichess_fide_next_page_url(html, "4100018", &seen).unwrap(),
+            Some("https://lichess.org/fide/4100018/Kasparov_Garry?page=2&order=date".to_string())
+        );
+    }
+
+    #[test]
+    fn lichess_fide_pagination_rejects_loops_and_external_cursors() {
+        let page_two = "https://lichess.org/fide/4100018/Kasparov_Garry?page=2";
+        let seen = HashSet::from([
+            "https://lichess.org/fide/4100018/player".to_string(),
+            page_two.to_string(),
+        ]);
+        let looped = format!(r#"<a rel='next' href='{page_two}'>Next</a>"#);
+        assert!(
+            lichess_fide_next_page_url(&looped, "4100018", &seen)
+                .unwrap_err()
+                .contains("repeated"),
+            "a previously visited cursor must stop the listing scan"
+        );
+
+        let external = r#"<a rel="next" href="https://example.com/fide/4100018?page=3">Next</a>"#;
+        assert!(
+            lichess_fide_next_page_url(external, "4100018", &seen)
+                .unwrap_err()
+                .contains("invalid next-page link"),
+            "a pagination link must remain on the Lichess FIDE origin"
+        );
+        let wrong_player = r#"<a rel="next" href="/fide/1503014/Polgar_Judit?page=3">Next</a>"#;
+        assert!(
+            lichess_fide_next_page_url(wrong_player, "4100018", &seen)
+                .unwrap_err()
+                .contains("invalid next-page link"),
+            "a pagination link must remain on the requested FIDE player"
+        );
+        assert_eq!(
+            lichess_fide_next_page_url(
+                r#"<a rel="prev" href="/fide/4100018/x?page=1">Previous</a>"#,
+                "4100018",
+                &seen
+            )
+            .unwrap(),
+            None,
+            "the absence of rel=next terminates pagination normally"
         );
     }
 
