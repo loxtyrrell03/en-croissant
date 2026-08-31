@@ -25,6 +25,7 @@ export type EnginePlanCategory =
 
 export type EngineApproval = "Strong" | "OK" | "Weak" | "Unclear";
 export type EnginePlanConfidence = "High" | "Medium" | "Low";
+export type EnginePlanContext = "rootChoice" | "continuation" | "opponentResponse";
 
 export type EnginePlanPv = {
     rank: number;
@@ -42,6 +43,7 @@ export type EnginePlanEvidence = EnginePlanPv & {
     // 0-based ply within this PV at which the owning signal/setup became true;
     // null when the signal is root-established or its ply is unavailable.
     completionPly: number | null;
+    context: EnginePlanContext;
 };
 
 export type EnginePlanSignal = {
@@ -54,17 +56,25 @@ export type EnginePlanSignal = {
     routeSegments?: [string, string][];
     origin?: "pv" | "root" | "template";
     // 0-based index into pv.uciMoves of the move that first established this
-    // signal within its PV. Undefined for root-origin signals (treated as 0).
+    // signal within its PV. Undefined for root-origin signals, which are not
+    // evidence that a setup is formed by a future PV move.
     ply?: number;
 };
 
 export type EnginePlan = EnginePlanSignal & {
+    context: EnginePlanContext;
     approval: EngineApproval;
     confidence: EnginePlanConfidence;
     explanation: string;
     supportCount: number;
     supportRatio: number;
     appearsInTopPv: boolean;
+    directSupportCount: number;
+    directSupportRatio: number;
+    directAppearsInTopPv: boolean;
+    conditionalSupportCount: number;
+    conditionalSupportRatio: number;
+    conditionalAppearsInTopPv: boolean;
     evidence: EnginePlanEvidence[];
     bestEvalCp: number | null;
     averageEvalCp: number | null;
@@ -83,12 +93,19 @@ export type EnginePlanSetup = {
     archetype: string | null;
     color: Color;
     plans: EnginePlan[];
+    context: EnginePlanContext;
     approval: EngineApproval;
     confidence: EnginePlanConfidence;
     explanation: string;
     supportCount: number;
     supportRatio: number;
     appearsInTopPv: boolean;
+    directSupportCount: number;
+    directSupportRatio: number;
+    directAppearsInTopPv: boolean;
+    conditionalSupportCount: number;
+    conditionalSupportRatio: number;
+    conditionalAppearsInTopPv: boolean;
     evidence: EnginePlanEvidence[];
     bestEvalCp: number | null;
     averageEvalCp: number | null;
@@ -108,6 +125,7 @@ export type EnginePlanReport = {
     limitLabel: string;
     pvs: EnginePlanPv[];
     plans: EnginePlan[];
+    displayPlans: EnginePlan[];
     setups: EnginePlanSetup[];
 };
 
@@ -174,7 +192,9 @@ const VIABLE_PV_CP = 80;
 const ENGINE_SETUP_FEATURED_SIGNALS_PER_COLOR = 7;
 const ENGINE_SETUP_MIN_PLANS = 3;
 const ENGINE_SETUP_MAX_PLANS = 6;
-const ENGINE_SETUP_MAX_RESULTS = 30;
+const ENGINE_SETUP_MAX_RESULTS_PER_COLOR = 4;
+const ENGINE_PLAN_MAX_ROWS_PER_COLOR = 4;
+const ENGINE_PLAN_MAX_DESTINATION_ROWS_PER_COLOR = 2;
 // Color-symmetric: the attacksEnemyPawn gate prevents false positives, so both
 // colors share one set covering every {b..h}x{4,5} break square.
 const PAWN_BREAKS: Set<string> = new Set([
@@ -436,11 +456,7 @@ const ENGINE_SETUP_TEMPLATES: EngineSetupTemplate[] = [
         id: "black-hedgehog",
         archetype: "Hedgehog",
         color: "black",
-        required: [
-            "pawn_setup:black:b6",
-            "pawn_setup:black:d6",
-            "pawn_setup:black:e6",
-        ],
+        required: ["pawn_setup:black:b6", "pawn_setup:black:d6", "pawn_setup:black:e6"],
         preferredEvidence: ["piece_destination:black:bishop:b7", "pawn_setup:black:d6"],
         components: [
             setupPawnComponent("black", "b7", "b6"),
@@ -481,6 +497,7 @@ export function buildEnginePlanReport(
                 ...pv,
                 firstMove: pv.sanMoves[0] ?? pv.uciMoves[0] ?? "",
                 completionPly: signal.ply ?? null,
+                context: contextForEvidence(signal.color, sideToMove, signal.ply ?? 0),
             };
             if (existing) {
                 existing.evidence.push(evidence);
@@ -496,6 +513,7 @@ export function buildEnginePlanReport(
     const plans = Array.from(grouped.values())
         .map((group) => scorePlan(group, pvs.length, rootBestQuality, viable))
         .sort(comparePlans);
+    const displayPlans = selectDisplayEnginePlans(plans);
     const setups = buildEnginePlanSetups(
         fen,
         signalsByPv,
@@ -513,6 +531,7 @@ export function buildEnginePlanReport(
         limitLabel: options.limitLabel,
         pvs,
         plans,
+        displayPlans,
         setups,
     };
 }
@@ -993,6 +1012,7 @@ function buildEnginePlanSetups(
     rootBestQuality: number | null,
     viable: ViablePvContext,
 ): EnginePlanSetup[] {
+    const rootSide = sideToMoveFromFen(fen);
     const plansBySignature = new Map(plans.map((plan) => [plan.signature, plan]));
     const rootSignalsBySignature = new Map(
         rootSetupSignals.map((signal) => [signal.signature, signal]),
@@ -1011,6 +1031,7 @@ function buildEnginePlanSetups(
             ...pv,
             firstMove: pv.sanMoves[0] ?? pv.uciMoves[0] ?? "",
             completionPly: null,
+            context: "continuation",
         };
         const uniqueSignals = uniqueSetupSignals([...rootSetupSignals, ...signals]);
         const byColor = groupSignalsByColor(uniqueSignals);
@@ -1061,16 +1082,24 @@ function buildEnginePlanSetups(
         .map((group) => {
             const signatures = Array.from(group.signatures).sort((a, b) => a.localeCompare(b));
             // Resolve each supporting PV's completion ply against this setup's final
-            // signature set: the latest ply among signatures that surface in that PV
-            // (root-origin signatures count as 0), or null when none appear.
-            const evidence = group.evidence.map((line) => ({
-                ...line,
-                completionPly: setupEvidenceCompletionPly(
+            // signature set. Root-established anchors do not establish the setup in
+            // a PV and therefore cannot turn it into an evaluated root choice.
+            const evidence = group.evidence.flatMap((line) => {
+                const completionPly = setupEvidenceCompletionPly(
                     signatures,
                     signalsByPv.get(line.rank) ?? [],
                     rootSignatures,
-                ),
-            }));
+                );
+                return completionPly === null
+                    ? []
+                    : [
+                          {
+                              ...line,
+                              completionPly,
+                              context: contextForSetupEvidence(group.color, rootSide),
+                          },
+                      ];
+            });
             const setupPlans = signatures
                 .map((signature) => {
                     const plan = plansBySignature.get(signature);
@@ -1107,11 +1136,71 @@ function buildEnginePlanSetups(
         pvs,
         rootBestQuality,
         viable,
-    );
+    ).filter((setup) => setup.plans.every((plan) => plan.origin !== "template"));
 
     const deduped = dedupeEngineSetups([...pvSetups, ...candidateSetups]);
     const merged = mergeContainedSetups(deduped, { totalPvs: pvs.length, rootBestQuality, viable });
-    return merged.sort(compareSetups).slice(0, ENGINE_SETUP_MAX_RESULTS);
+    return (["white", "black"] as const)
+        .flatMap((color) =>
+            merged
+                .filter((setup) => setup.color === color)
+                .filter((setup) =>
+                    isHighConfidenceEngineSetup(setup, pvs.length, viable, rootSignatures),
+                )
+                .sort(compareSetups)
+                .slice(0, ENGINE_SETUP_MAX_RESULTS_PER_COLOR),
+        )
+        .sort(compareSetups);
+}
+
+function isHighConfidenceEngineSetup(
+    setup: EnginePlanSetup,
+    totalPvs: number,
+    viable: ViablePvContext,
+    rootSignatures: Set<string>,
+) {
+    const exactRanks = new Set(setup.evidence.map((line) => line.rank));
+    const eligibleRanks =
+        viable.totalViable > 0
+            ? new Set([...exactRanks].filter((rank) => viable.viableRanks.has(rank)))
+            : exactRanks;
+    const denominator = viable.totalViable > 0 ? viable.totalViable : totalPvs;
+    const exactSupportRatio = denominator > 0 ? eligibleRanks.size / denominator : 0;
+    if (eligibleRanks.size < 2 || exactSupportRatio < 0.6) return false;
+    if (setup.plans.some((plan) => plan.origin === "template")) return false;
+
+    const salientAnchors = setup.plans.filter(
+        (plan) =>
+            plan.category === "castling" ||
+            (plan.category === "pieceDestination" &&
+                (plan.role === "bishop" || plan.role === "knight")) ||
+            (plan.category === "pawnSetup" && isFianchettoPlan(plan)),
+    );
+    if (salientAnchors.length < 2) return false;
+
+    return setup.plans.some((plan) => {
+        if (
+            plan.origin !== "pv" ||
+            plan.ply === undefined ||
+            rootSignatures.has(plan.signature) ||
+            (plan.category !== "pawnSetup" && plan.category !== "castling")
+        ) {
+            return false;
+        }
+
+        const recurringEligibleRanks = new Set(
+            plan.evidence.filter((line) => eligibleRanks.has(line.rank)).map((line) => line.rank),
+        );
+        return recurringEligibleRanks.size >= 2;
+    });
+}
+
+function isFianchettoPlan(plan: EnginePlan) {
+    const target = plan.routeSquares?.at(-1);
+    return (
+        plan.category === "pawnSetup" &&
+        (target === "b3" || target === "g3" || target === "b6" || target === "g6")
+    );
 }
 
 function buildCandidateEngineSetups(
@@ -1124,6 +1213,7 @@ function buildCandidateEngineSetups(
 ) {
     const [pos] = positionFromFen(fen);
     if (!pos) return [];
+    const rootSide = sideToMoveFromFen(fen);
 
     const rootSignalsBySignature = new Map(
         rootSetupSignals.map((signal) => [signal.signature, signal]),
@@ -1140,7 +1230,10 @@ function buildCandidateEngineSetups(
         const signatures = sortedSignalSignatures(signals);
         if (!template.required.every((signature) => anchoredSignatures.has(signature))) continue;
 
-        const evidence = collectTemplateEvidence(template, plansBySignature);
+        const evidence = collectTemplateEvidence(template, plansBySignature).map((line) => ({
+            ...line,
+            context: contextForSetupEvidence(template.color, rootSide),
+        }));
         if (evidence.length === 0) continue;
 
         const setupPlans = signals
@@ -1435,7 +1528,7 @@ function scoreSetup(
     viable: ViablePvContext,
     forcedArchetype: string | null = null,
 ): EnginePlanSetup | null {
-    if (plans.length < ENGINE_SETUP_MIN_PLANS) return null;
+    if (plans.length < ENGINE_SETUP_MIN_PLANS || evidence.length === 0) return null;
 
     const support = adjustSetupSupportForInferredComponents(
         scoreEngineEvidence(evidence, totalPvs, rootBestQuality, viable, "setup"),
@@ -1506,13 +1599,28 @@ function scoreEngineEvidence(
     viable: ViablePvContext,
     subject: "plan" | "setup",
 ) {
-    const supportCount = evidence.length;
-    const medianCompletionPly = medianCompletionPlyOf(evidence);
+    const directEvidence = evidence.filter((line) => line.context === "rootChoice");
+    const conditionalEvidence = evidence.filter((line) => line.context !== "rootChoice");
+    const directSupportCount = directEvidence.length;
+    const directSupportRatio = totalPvs > 0 ? directSupportCount / totalPvs : 0;
+    const directAppearsInTopPv = directEvidence.some((line) => line.rank === 1);
+    const conditionalSupportCount = conditionalEvidence.length;
+    const conditionalSupportRatio = totalPvs > 0 ? conditionalSupportCount / totalPvs : 0;
+    const conditionalAppearsInTopPv = conditionalEvidence.some((line) => line.rank === 1);
+    const context: EnginePlanContext =
+        directEvidence.length > 0
+            ? "rootChoice"
+            : evidence.every((line) => line.context === "opponentResponse")
+              ? "opponentResponse"
+              : "continuation";
+    const contextualEvidence = context === "rootChoice" ? directEvidence : conditionalEvidence;
+    const supportCount = contextualEvidence.length;
+    const medianCompletionPly = medianCompletionPlyOf(contextualEvidence);
     // Measure support against viable PVs (near the best eval) so junk multipv
     // lines don't dilute the ratio. Fall back to raw totals when none are viable.
     const viableSupport =
         viable.totalViable > 0
-            ? evidence.filter((line) => viable.viableRanks.has(line.rank)).length
+            ? contextualEvidence.filter((line) => viable.viableRanks.has(line.rank)).length
             : supportCount;
     const supportRatio =
         viable.totalViable > 0
@@ -1520,17 +1628,21 @@ function scoreEngineEvidence(
             : totalPvs > 0
               ? supportCount / totalPvs
               : 0;
-    const appearsInTopPv = evidence.some((line) => line.rank === 1);
-    const cpEvidence = evidence.filter((line) => line.evalCp !== null);
-    const qualityEvidence = evidence.filter((line) => line.qualityCp !== null);
-    const hasMateOrMissingEval = cpEvidence.length !== evidence.length;
-    const lowDepth = evidence.some((line) => line.depth > 0 && line.depth < MIN_STABLE_DEPTH);
-    const weightedEvalCp = weightedAverageCp(evidence, "evalCp", rootBestQuality);
-    const averageEvalCp = averageCp(evidence, "evalCp");
-    const bestEvalCp = bestSupportingEvalCp(evidence);
-    const weightedQualityCp = weightedAverageCp(evidence, "qualityCp", rootBestQuality);
-    const averageQualityCp = averageCp(evidence, "qualityCp");
-    const bestQualityCp = bestSupportingQualityCp(evidence);
+    const appearsInTopPv = contextualEvidence.some((line) => line.rank === 1);
+    // MultiPV scores evaluate root moves. A later continuation or opponent
+    // response is only conditional evidence inside that line and must not
+    // inherit the root move's evaluation or CP loss.
+    const scoredEvidence = context === "rootChoice" ? directEvidence : [];
+    const cpEvidence = scoredEvidence.filter((line) => line.evalCp !== null);
+    const qualityEvidence = scoredEvidence.filter((line) => line.qualityCp !== null);
+    const hasMateOrMissingEval = cpEvidence.length !== scoredEvidence.length;
+    const lowDepth = scoredEvidence.some((line) => line.depth > 0 && line.depth < MIN_STABLE_DEPTH);
+    const weightedEvalCp = weightedAverageCp(scoredEvidence, "evalCp", rootBestQuality);
+    const averageEvalCp = averageCp(scoredEvidence, "evalCp");
+    const bestEvalCp = bestSupportingEvalCp(scoredEvidence);
+    const weightedQualityCp = weightedAverageCp(scoredEvidence, "qualityCp", rootBestQuality);
+    const averageQualityCp = averageCp(scoredEvidence, "qualityCp");
+    const bestQualityCp = bestSupportingQualityCp(scoredEvidence);
     const bestCpLoss =
         rootBestQuality !== null && bestQualityCp !== null
             ? Math.max(0, rootBestQuality - bestQualityCp)
@@ -1553,20 +1665,20 @@ function scoreEngineEvidence(
         weightedQualityCp < rootBestQuality - DECENT_CP;
 
     let approval: EngineApproval;
-    if (
+    if (context !== "rootChoice") {
+        approval = "Unclear";
+    } else if (
         totalPvs < MIN_CLEAR_PVS ||
         hasMateOrMissingEval ||
         lowDepth ||
-        qualityEvidence.length !== evidence.length
+        qualityEvidence.length !== scoredEvidence.length
     ) {
         approval = "Unclear";
-    } else if (appearsInTopPv && nearBest && supportRatio >= 0.5) {
+    } else if (directAppearsInTopPv && nearBest) {
         approval = "Strong";
-    } else if (supportRatio >= (subject === "setup" ? 0.5 : 0.6) && nearBest) {
-        approval = "Strong";
-    } else if (supportRatio >= 0.3 || appearsInTopPv || decent) {
+    } else if (nearBest || decent) {
         approval = "OK";
-    } else if (supportRatio < 0.3 && !appearsInTopPv && mainlyWorse) {
+    } else if (mainlyWorse) {
         approval = "Weak";
     } else {
         approval = "Unclear";
@@ -1574,18 +1686,31 @@ function scoreEngineEvidence(
 
     return {
         approval,
-        confidence: confidenceForPlan(appearsInTopPv, supportRatio),
-        explanation: explanationForPlan(approval, {
+        confidence:
+            context === "rootChoice"
+                ? confidenceForPlan(directAppearsInTopPv, directSupportRatio)
+                : supportCount >= 2 && supportRatio >= 0.5
+                  ? "Medium"
+                  : "Low",
+        explanation: explanationForPlan(approval, context, {
             totalPvs,
             hasMateOrMissingEval,
             lowDepth,
             appearsInTopPv,
             nearBest,
             subject,
+            supportCount,
         }),
+        context,
         supportCount,
         supportRatio,
         appearsInTopPv,
+        directSupportCount,
+        directSupportRatio,
+        directAppearsInTopPv,
+        conditionalSupportCount,
+        conditionalSupportRatio,
+        conditionalAppearsInTopPv,
         evidence: evidence.slice().sort((a, b) => a.rank - b.rank),
         bestEvalCp,
         averageEvalCp,
@@ -1612,30 +1737,21 @@ function medianCompletionPlyOf(evidence: EnginePlanEvidence[]): number | null {
     return plies.length % 2 === 1 ? plies[mid] : (plies[mid - 1] + plies[mid]) / 2;
 }
 
-// Latest ply at which any of this setup's signatures becomes true within one PV.
-// Root-origin signatures are already established, so they contribute 0; PV
-// signatures contribute their own ply. Returns null when none of the setup's
-// signatures appear for this PV.
+// Latest ply at which a not-already-established setup signature becomes true
+// within one PV. Root-origin signatures are context only: they do not count as
+// future setup evidence or as ply-zero root choices.
 function setupEvidenceCompletionPly(
     signatures: string[],
     pvSignals: EnginePlanSignal[],
     rootSignatures: Set<string>,
 ): number | null {
-    const plyBySignature = new Map<string, number>();
-    for (const signal of pvSignals) {
-        plyBySignature.set(signal.signature, signal.ply ?? 0);
-    }
-
     let maxPly: number | null = null;
-    for (const signature of signatures) {
-        let contribution: number | null = null;
-        if (rootSignatures.has(signature)) {
-            contribution = 0;
-        } else if (plyBySignature.has(signature)) {
-            contribution = plyBySignature.get(signature)!;
-        }
-        if (contribution === null) continue;
-        maxPly = maxPly === null ? contribution : Math.max(maxPly, contribution);
+    const setupSignatures = new Set(signatures);
+    for (const signal of pvSignals) {
+        if (!setupSignatures.has(signal.signature)) continue;
+        if (rootSignatures.has(signal.signature)) continue;
+        if (signal.origin !== "pv" || signal.ply === undefined) continue;
+        maxPly = maxPly === null ? signal.ply : Math.max(maxPly, signal.ply);
     }
 
     return maxPly;
@@ -1670,8 +1786,7 @@ function setupArchetype(color: Color, plans: EnginePlan[]) {
         if (
             !best ||
             matched > best.matched ||
-            (matched === best.matched &&
-                template.required.length > best.template.required.length)
+            (matched === best.matched && template.required.length > best.template.required.length)
         ) {
             best = { template, matched };
         }
@@ -1767,6 +1882,94 @@ function scorePlan(
     };
 }
 
+function contextForEvidence(color: Color, rootSide: Color, completionPly: number) {
+    if (color !== rootSide) return "opponentResponse" as const;
+    return completionPly === 0 ? ("rootChoice" as const) : ("continuation" as const);
+}
+
+function contextForSetupEvidence(color: Color, rootSide: Color) {
+    return color === rootSide ? ("continuation" as const) : ("opponentResponse" as const);
+}
+
+/**
+ * Keep the complete evidence set for matching and setup mining while giving
+ * the panel a bounded, low-noise projection. The principal root choice stays;
+ * later ideas need recurrence or strategic salience in PV1. Other MultiPV
+ * alternatives remain in the complete `plans` evidence set.
+ */
+export function selectDisplayEnginePlans(plans: EnginePlan[]) {
+    const useful = plans.filter((plan) => {
+        // Bare pawn-square signals remain available to setup mining but are too
+        // incidental to occupy a standalone plan row, including a3/h3/b3-style
+        // moves that happen to be PV1's root choice. Real breaks have their own
+        // signal and evidence rules below.
+        if (plan.category === "pawnSetup") return false;
+
+        // Keep every MultiPV alternative in `plans` for integrations and setup
+        // mining, but show only the principal evaluated root choice in the
+        // bounded panel projection.
+        if (plan.context === "rootChoice") return plan.directAppearsInTopPv;
+
+        if (plan.category === "pieceDestination") return plan.supportCount >= 2;
+        if (plan.category === "pawnBreak") {
+            return plan.supportCount >= 2 || plan.appearsInTopPv;
+        }
+        if (plan.category === "castling") {
+            return plan.appearsInTopPv && plan.supportCount >= 2;
+        }
+
+        // A wing-level expansion signature currently merges different pawn
+        // pairs, so it remains internal until segment-level recurrence proves a
+        // concrete plan rather than a coincidental collection of pawn moves.
+        if (plan.category === "sideExpansion") return false;
+
+        // Only a top-PV, multi-move minor-piece route is plan-like enough to
+        // display once. Heavy-piece routes are commonly tactical transfers or
+        // captures within the finite PV and remain available as internal data.
+        if (plan.category === "pieceRoute") {
+            return (
+                (plan.role === "knight" || plan.role === "bishop") &&
+                plan.appearsInTopPv &&
+                (plan.routeSquares?.length ?? 0) >= 3
+            );
+        }
+        return false;
+    });
+
+    return (["white", "black"] as const)
+        .flatMap((color) => {
+            const selected: EnginePlan[] = [];
+            let destinationRows = 0;
+            for (const plan of useful
+                .filter((candidate) => candidate.color === color)
+                .sort(compareDisplayPlans)) {
+                if (
+                    plan.category === "pieceDestination" &&
+                    destinationRows >= ENGINE_PLAN_MAX_DESTINATION_ROWS_PER_COLOR
+                ) {
+                    continue;
+                }
+                selected.push(plan);
+                if (plan.category === "pieceDestination") destinationRows += 1;
+                if (selected.length === ENGINE_PLAN_MAX_ROWS_PER_COLOR) break;
+            }
+            return selected;
+        })
+        .sort(compareDisplayPlans);
+}
+
+function compareDisplayPlans(a: EnginePlan, b: EnginePlan) {
+    const contextRank = (plan: EnginePlan) =>
+        plan.context === "rootChoice" ? 3 : plan.context === "continuation" ? 2 : 1;
+    const contextDiff = contextRank(b) - contextRank(a);
+    if (contextDiff !== 0) return contextDiff;
+    if (a.supportCount !== b.supportCount) return b.supportCount - a.supportCount;
+    if (a.appearsInTopPv !== b.appearsInTopPv) return a.appearsInTopPv ? -1 : 1;
+    const categoryDiff = setupSignalPriority(b) - setupSignalPriority(a);
+    if (categoryDiff !== 0) return categoryDiff;
+    return a.label.localeCompare(b.label);
+}
+
 function confidenceForPlan(appearsInTopPv: boolean, supportRatio: number): EnginePlanConfidence {
     if (appearsInTopPv && supportRatio >= 0.5) return "High";
     if (appearsInTopPv || supportRatio >= 0.3) return "Medium";
@@ -1775,6 +1978,7 @@ function confidenceForPlan(appearsInTopPv: boolean, supportRatio: number): Engin
 
 function explanationForPlan(
     approval: EngineApproval,
+    evidenceContext: EnginePlanContext,
     context: {
         totalPvs: number;
         hasMateOrMissingEval: boolean;
@@ -1782,9 +1986,17 @@ function explanationForPlan(
         appearsInTopPv: boolean;
         nearBest: boolean;
         subject: "plan" | "setup";
+        supportCount: number;
     },
 ) {
     const subject = context.subject;
+    const support = `${context.supportCount} engine line${context.supportCount === 1 ? "" : "s"}`;
+    if (evidenceContext === "opponentResponse") {
+        return `This opponent ${subject} appears conditionally in ${support} after the root-side choices. It is PV-supported, not an independently scored best ${subject}; robustness across other replies is unmeasured.`;
+    }
+    if (evidenceContext === "continuation") {
+        return `This ${subject} is reached later in ${support} after earlier moves. It is a conditional PV-supported continuation, not an independently scored root choice; robustness across other replies is unmeasured.`;
+    }
     if (approval === "Unclear") {
         if (context.totalPvs < MIN_CLEAR_PVS) {
             return `There are not enough PVs to judge this ${subject} confidently.`;
@@ -2227,7 +2439,9 @@ function addSideExpansion(
         label: `${capitalize(color)} ${side === "central" ? "central break" : `${side} expansion`}`,
         color,
         role: "pawn",
-        routeSegments: uniqueSegments(segments.map((segment): [string, string] => [segment.from, segment.to])),
+        routeSegments: uniqueSegments(
+            segments.map((segment): [string, string] => [segment.from, segment.to]),
+        ),
         // Established when this side reached its second distinct expanded file.
         ply: sideExpansionPly(segments),
     });

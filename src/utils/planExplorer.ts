@@ -176,6 +176,16 @@ export function formatPlanRoute(squares: string[]) {
     return squares.join(" -> ");
 }
 
+/**
+ * Route prevalence is measured against every sampled game, including games in
+ * which this piece never produced a retained route. Using a piece's retained
+ * route subtotal would make a rare route look artificially common after
+ * low-support alternatives have been pruned.
+ */
+export function planRouteSharePercent(games: number, sampledGames: number) {
+    return sampledGames > 0 ? (games / sampledGames) * 100 : 0;
+}
+
 export function formatPlanPieceRoute(
     piece: Pick<PlanExplorerPiece, "color" | "role">,
     line: PlanExplorerLine,

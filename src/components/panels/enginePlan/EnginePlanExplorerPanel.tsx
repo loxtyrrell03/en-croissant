@@ -67,9 +67,9 @@ import {
   lichessOptionsAtom,
   moveStrengthSettingsAtom,
   planExplorerArrowLimitAtom,
-  sessionsAtom,
   showPlanExplorerArrowsAtom,
 } from "@/state/atoms";
+import { useLichessExplorerAuth } from "@/hooks/useSharedLichessSession";
 import {
   buildEnginePlanReport,
   categoryLabel,
@@ -172,7 +172,6 @@ function EnginePlanExplorerPanel() {
   const makeMoves = useStore(store, (s) => s.makeMoves);
   const goToMove = useStore(store, (s) => s.goToMove);
   const engines = useAtomValue(enginesAtom);
-  const sessions = useAtomValue(sessionsAtom);
   const lichessOptions = useAtomValue(lichessOptionsAtom);
   const moveStrengthSettings = useAtomValue(moveStrengthSettingsAtom);
   const activeTab = useAtomValue(activeTabAtom);
@@ -199,8 +198,12 @@ function EnginePlanExplorerPanel() {
   const returnPathRef = useRef<number[] | null>(null);
   const tokenRef = useRef(0);
   const { progress, running, error } = planState;
-  const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
-    ?.accessToken;
+  const {
+    token: explorerToken,
+    connect: connectLichess,
+    waiting: lichessLoginWaiting,
+    error: lichessLoginError,
+  } = useLichessExplorerAuth();
   const lichessOptionsKey = JSON.stringify({
     ...lichessOptions,
     player: undefined,
@@ -301,12 +304,16 @@ function EnginePlanExplorerPanel() {
         ? cachedReport
         : null;
   const filteredReport = useMemo(() => {
-    if (!visibleReport || sideFilter === "all") return visibleReport;
+    if (!visibleReport) return null;
 
     return {
       ...visibleReport,
-      plans: visibleReport.plans.filter((plan) => plan.color === sideFilter),
-      setups: visibleReport.setups.filter((setup) => setup.color === sideFilter),
+      plans: visibleReport.displayPlans.filter(
+        (plan) => sideFilter === "all" || plan.color === sideFilter,
+      ),
+      setups: visibleReport.setups.filter(
+        (setup) => sideFilter === "all" || setup.color === sideFilter,
+      ),
     };
   }, [sideFilter, visibleReport]);
   const practicalLichessOptions = useMemo(
@@ -679,6 +686,31 @@ function EnginePlanExplorerPanel() {
               Raw eval details are kept inside each row.
             </Text>
           </Group>
+
+          {view === "setups" && !explorerToken && (
+            <Alert color="yellow" title="Connect Lichess for practical setup evidence">
+              <Stack gap="xs">
+                <Text size="sm">
+                  Link one Lichess session to compare recurring engine setups with Lichess All. The
+                  authorization page opens in your browser, then this view retries automatically.
+                </Text>
+                <Group gap="xs" align="center">
+                  <Button
+                    size="xs"
+                    onClick={() => void connectLichess()}
+                    loading={lichessLoginWaiting}
+                  >
+                    {lichessLoginWaiting ? "Waiting for Lichess" : "Connect Lichess"}
+                  </Button>
+                  {lichessLoginError && (
+                    <Text size="xs" c="red">
+                      {lichessLoginError}
+                    </Text>
+                  )}
+                </Group>
+              </Stack>
+            </Alert>
+          )}
 
           {view === "plans" && (!filteredReport || filteredReport.plans.length === 0) ? (
             <Text ta="center" c="dimmed" py="xl">
@@ -1264,6 +1296,10 @@ function EngineSetupStrengthCell({
   strength: EngineSetupStrength | null;
   totalPvs: number;
 }) {
+  if (setup.context !== "rootChoice") {
+    return <EngineStrengthCell target={setup} totalPvs={totalPvs} />;
+  }
+
   if (!strength) {
     return (
       <Stack gap={2}>
@@ -1307,6 +1343,29 @@ function EngineStrengthCell({
   target: EnginePlan | EnginePlanSetup;
   totalPvs: number;
 }) {
+  if (target.context !== "rootChoice") {
+    const label = target.context === "opponentResponse" ? "Opponent response" : "Continuation";
+    const detail = [
+      target.explanation,
+      `Conditional PV support ${target.supportCount}/${totalPvs} (${(
+        target.supportRatio * 100
+      ).toFixed(0)}%).`,
+      "Root MultiPV evaluations do not independently score this later idea.",
+    ].join(" ");
+    return (
+      <Tooltip label={detail} multiline w={300} withArrow>
+        <Stack gap={2}>
+          <Badge color="gray" variant="light">
+            {label}
+          </Badge>
+          <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+            {`${target.supportCount}/${totalPvs} PVs · eval not assigned`}
+          </Text>
+        </Stack>
+      </Tooltip>
+    );
+  }
+
   const cpLoss = target.bestCpLoss ?? target.weightedCpLoss;
   const cpLossLabel = cpLoss === null ? "CP n/a" : `${formatEngineCpLoss(cpLoss)} loss`;
   const supportLabel = `${target.supportCount}/${totalPvs} PVs`;

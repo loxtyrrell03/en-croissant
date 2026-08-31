@@ -33,12 +33,35 @@ const PLAN_BRANCH_WIDTH = 6;
 const PLAN_MAX_REQUESTS = 72;
 const PLAN_MIN_CHILD_SHARE = 0.03;
 const PLAN_MAX_LINES_PER_PIECE = 8;
+const PLAN_SMALL_SAMPLE_GAMES = 200;
+const PLAN_MAX_SETUPS_PER_COLOR = 6;
 const PLAN_SETUP_FEATURED_PATHS_PER_COLOR = 7;
 const PLAN_SETUP_SEED_PATHS_PER_COLOR = 4;
 const PLAN_SETUP_MIN_PLANS = 3;
 const PLAN_SETUP_MIN_COMPACT_PLANS = 2;
 const PLAN_SETUP_MAX_PLANS = 6;
 const PLAN_SETUP_MAX_RESULTS = 40;
+const PLAN_EXPLORER_MIN_RATE_LIMIT_BACKOFF_MS = 60_000;
+
+let planExplorerRateLimitUntil = 0;
+
+export class OnlinePlanExplorerRateLimitError extends Error {
+    readonly reason = "rate-limited" as const;
+    readonly status = 429;
+    readonly retryAfterMs: number;
+
+    constructor(retryAfterMs: number, cause?: unknown) {
+        const seconds = Math.max(1, Math.ceil(retryAfterMs / 1000));
+        super(
+            `Lichess explorer is rate limited. Requests are paused; try again in about ${seconds} seconds.`,
+        );
+        this.name = "OnlinePlanExplorerRateLimitError";
+        this.retryAfterMs = retryAfterMs;
+        if (cause !== undefined) {
+            (this as Error & { cause?: unknown }).cause = cause;
+        }
+    }
+}
 
 type ExplorerMove = PositionData["moves"][number];
 
@@ -150,30 +173,63 @@ async function fetchExplorerPosition(
     play: string[],
     token?: string,
 ) {
-    if (source === "lch_all") {
-        return getLichessGames(
+    const cooldownRemaining = planExplorerRateLimitUntil - Date.now();
+    if (cooldownRemaining > 0) {
+        throw new OnlinePlanExplorerRateLimitError(cooldownRemaining);
+    }
+
+    try {
+        if (source === "lch_all") {
+            return await getLichessGames(
+                fen,
+                {
+                    ...(options as LichessGamesOptions),
+                    moves: PLAN_FETCH_MOVES,
+                    topGames: 0,
+                    recentGames: 0,
+                },
+                token,
+                play,
+            );
+        }
+
+        return await getMasterGames(
             fen,
             {
-                ...(options as LichessGamesOptions),
+                ...(options as MasterGamesOptions),
                 moves: PLAN_FETCH_MOVES,
                 topGames: 0,
-                recentGames: 0,
             },
             token,
             play,
         );
-    }
+    } catch (error) {
+        const retryAfterMs = explorerRateLimitDelay(error);
+        if (retryAfterMs === null) throw error;
 
-    return getMasterGames(
-        fen,
-        {
-            ...(options as MasterGamesOptions),
-            moves: PLAN_FETCH_MOVES,
-            topGames: 0,
-        },
-        token,
-        play,
-    );
+        const now = Date.now();
+        planExplorerRateLimitUntil = Math.max(planExplorerRateLimitUntil, now + retryAfterMs);
+        throw new OnlinePlanExplorerRateLimitError(planExplorerRateLimitUntil - now, error);
+    }
+}
+
+function explorerRateLimitDelay(error: unknown) {
+    if (!error || typeof error !== "object") return null;
+
+    const failure = error as { reason?: unknown; status?: unknown; retryAfterMs?: unknown };
+    const rateLimited = failure.reason === "rate-limited" || failure.status === 429;
+    if (!rateLimited) return null;
+
+    const requestedMs =
+        typeof failure.retryAfterMs === "number" && Number.isFinite(failure.retryAfterMs)
+            ? Math.max(0, failure.retryAfterMs)
+            : 0;
+    return Math.max(PLAN_EXPLORER_MIN_RATE_LIMIT_BACKOFF_MS, requestedMs);
+}
+
+/** Test isolation for the process-wide Plan Explorer provider cooldown. */
+export function resetOnlinePlanExplorerRateLimitForTests() {
+    planExplorerRateLimitUntil = 0;
 }
 
 function createRootNode(position: Chess, stats: ResultStats): BranchNode {
@@ -399,7 +455,10 @@ function buildPiecesFromLeaves(leaves: BranchNode[]) {
     const pieces = [...grouped.entries()]
         .map(([key, lineMap]) => {
             const [color, role, from] = key.split("|");
-            const lines = [...lineMap.values()].sort((a, b) => b.games - a.games);
+            const lines = selectSupportedPlanRoutes(
+                [...lineMap.values()].sort((a, b) => b.games - a.games),
+                sampledGames,
+            );
             const total = lines.reduce((sum, line) => sum + line.games, 0);
             return {
                 color,
@@ -417,19 +476,76 @@ function buildPiecesFromLeaves(leaves: BranchNode[]) {
                 a.from.localeCompare(b.from),
         ) as PlanExplorerPiece[];
 
-    const setupRows = setups
-        .map((group) => group.setup)
-        .map(limitSetupPlans)
-        .filter(isValidSetupRow)
+    const setupRows = selectSupportedPlanSetups(
+        setups
+            .map((group) => group.setup)
+            .map(limitSetupPlans)
+            .filter(isValidSetupRow)
+            .sort(
+                (a, b) =>
+                    b.games - a.games ||
+                    b.plans.length - a.plans.length ||
+                    setupKey(a.plans).localeCompare(setupKey(b.plans)),
+            ),
+        sampledGames,
+    ).slice(0, PLAN_SETUP_MAX_RESULTS);
+
+    return { pieces, setups: setupRows, sampledGames };
+}
+
+/**
+ * Keep small samples lossless, but make a large sample prove that a route is
+ * recurrent before it reaches the UI. The most common route always survives,
+ * so a genuinely fragmented piece still has one representative plan.
+ */
+export function adaptivePlanSupportThreshold(sampledGames: number) {
+    if (sampledGames < PLAN_SMALL_SAMPLE_GAMES) return 1;
+    return Math.max(
+        2,
+        Math.min(Math.ceil(sampledGames * 0.0025), Math.ceil(Math.sqrt(sampledGames))),
+    );
+}
+
+export function selectSupportedPlanRoutes(lines: PlanExplorerLine[], sampledGames: number) {
+    if (lines.length <= 1 || sampledGames < PLAN_SMALL_SAMPLE_GAMES) return lines;
+
+    const threshold = adaptivePlanSupportThreshold(sampledGames);
+    const dominant = lines[0];
+    return lines.filter((line) => line === dominant || line.games >= threshold);
+}
+
+export function selectSupportedPlanSetups(setups: PlanExplorerSetup[], sampledGames: number) {
+    if (setups.length === 0) return setups;
+
+    const threshold = adaptivePlanSupportThreshold(sampledGames);
+    const byColor = new Map<string, PlanExplorerSetup[]>();
+    for (const setup of setups) {
+        const color = setup.plans[0]?.color ?? "unknown";
+        getOrInsert(byColor, color, () => []).push(setup);
+    }
+
+    return [...byColor.values()]
+        .flatMap((rows) => {
+            const ordered = rows.sort(
+                (a, b) =>
+                    b.games - a.games ||
+                    b.plans.length - a.plans.length ||
+                    setupKey(a.plans).localeCompare(setupKey(b.plans)),
+            );
+            if (sampledGames < PLAN_SMALL_SAMPLE_GAMES) {
+                return ordered;
+            }
+
+            return ordered
+                .filter((setup) => setup.games >= threshold)
+                .slice(0, PLAN_MAX_SETUPS_PER_COLOR);
+        })
         .sort(
             (a, b) =>
                 b.games - a.games ||
                 b.plans.length - a.plans.length ||
                 setupKey(a.plans).localeCompare(setupKey(b.plans)),
-        )
-        .slice(0, PLAN_SETUP_MAX_RESULTS);
-
-    return { pieces, setups: setupRows, sampledGames };
+        );
 }
 
 function collectSetupRows(paths: TrackedPath[], stats: ResultStats): SetupCandidate[] {

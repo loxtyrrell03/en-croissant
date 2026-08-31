@@ -6,6 +6,8 @@ import {
     engineReportToPlanExplorerData,
     getPlanExplorerLineEnginePlan,
     getPvMovePreviews,
+    selectDisplayEnginePlans,
+    type EnginePlan,
 } from "@/utils/enginePlanExplorer";
 import {
     formatPlanPieceRoute,
@@ -14,6 +16,7 @@ import {
     PLAN_WHITE_BRUSH,
     planLineToShapes,
     planLinesToShapes,
+    planRouteSharePercent,
     summarizePlanPiece,
     type ColoredPlanExplorerLine,
 } from "@/utils/planExplorer";
@@ -47,6 +50,40 @@ function pv(rank: number, uciMoves: string[], cp: number, depth = 12): BestMoves
     };
 }
 
+function displayPlan(overrides: Partial<EnginePlan>): EnginePlan {
+    return {
+        signature: "test-plan",
+        category: "pieceDestination",
+        label: "Test plan",
+        color: "white",
+        role: "knight",
+        context: "continuation",
+        approval: "Unclear",
+        confidence: "Medium",
+        explanation: "Test evidence",
+        supportCount: 2,
+        supportRatio: 0.4,
+        appearsInTopPv: true,
+        directSupportCount: 0,
+        directSupportRatio: 0,
+        directAppearsInTopPv: false,
+        conditionalSupportCount: 2,
+        conditionalSupportRatio: 0.4,
+        conditionalAppearsInTopPv: true,
+        evidence: [],
+        bestEvalCp: null,
+        averageEvalCp: null,
+        weightedEvalCp: null,
+        bestQualityCp: null,
+        averageQualityCp: null,
+        weightedQualityCp: null,
+        bestCpLoss: null,
+        weightedCpLoss: null,
+        medianCompletionPly: 2,
+        ...overrides,
+    };
+}
+
 describe("Engine Plan Explorer", () => {
     test("extracts and scores recurring PV plan signals", () => {
         const report = buildEnginePlanReport(
@@ -63,16 +100,20 @@ describe("Engine Plan Explorer", () => {
         );
 
         const e4Break = report.plans.find((plan) => plan.signature === "pawn_break:white:e4");
-        expect(e4Break?.approval).toBe("Strong");
-        expect(e4Break?.confidence).toBe("High");
+        expect(e4Break?.approval).toBe("Unclear");
+        expect(e4Break?.confidence).toBe("Medium");
+        expect(e4Break?.context).toBe("continuation");
         expect(e4Break?.supportCount).toBe(2);
         expect(e4Break?.appearsInTopPv).toBe(true);
         expect(e4Break?.routeSquares).toEqual(["e2", "e4"]);
+        expect(e4Break?.weightedEvalCp).toBeNull();
+        expect(e4Break?.explanation).toContain("conditional PV-supported continuation");
 
         const knightRoute = report.plans.find(
             (plan) => plan.signature === "piece_route:black:Nb8-d7-c5",
         );
-        expect(knightRoute?.approval).toBe("OK");
+        expect(knightRoute?.approval).toBe("Unclear");
+        expect(knightRoute?.context).toBe("opponentResponse");
         expect(knightRoute?.routeSquares).toEqual(["b8", "d7", "c5"]);
 
         const knightDestination = report.plans.find(
@@ -114,9 +155,7 @@ describe("Engine Plan Explorer", () => {
             },
         );
 
-        const route = report.plans.find(
-            (plan) => plan.signature === "piece_route:white:Nb1-c3-d5",
-        );
+        const route = report.plans.find((plan) => plan.signature === "piece_route:white:Nb1-c3-d5");
         expect(route).toBeDefined();
         expect(route?.evidence.find((line) => line.rank === 1)?.completionPly).toBe(6);
     });
@@ -224,9 +263,11 @@ describe("Engine Plan Explorer", () => {
             );
         });
 
-        expect(setup?.approval).toBe("Strong");
+        expect(setup?.approval).toBe("Unclear");
+        expect(setup?.context).toBe("opponentResponse");
         expect(setup?.supportCount).toBe(2);
         expect(setup?.appearsInTopPv).toBe(true);
+        expect(setup?.weightedEvalCp).toBeNull();
         expect(setup?.plans.map((plan) => plan.signature)).toEqual(
             expect.arrayContaining([
                 "pawn_setup:black:g6",
@@ -269,16 +310,26 @@ describe("Engine Plan Explorer", () => {
         });
 
         expect(catalan?.label).toContain("Catalan");
-        expect(catalan?.approval).toBe("Strong");
+        expect(catalan?.approval).toBe("Unclear");
+        expect(catalan?.context).toBe("continuation");
         expect(catalan?.supportCount).toBe(2);
         expect(catalan?.appearsInTopPv).toBe(true);
-        // d4/c4/Nf3 are already on the board (root-origin, ply 0); the PV moves
-        // g3 (0), Bg2 (2) and O-O (4) drive completion. Root contributes 0 and so
-        // never lifts the median above the PV plies: both PVs finish at ply 4.
+        expect(catalan?.weightedEvalCp).toBeNull();
+        // d4/c4/Nf3 are already on the board and are ignored as completion
+        // evidence. The PV moves g3 (0), Bg2 (2) and O-O (4) drive completion,
+        // so both PVs finish the setup at ply 4.
         expect(catalan?.medianCompletionPly).toBe(4);
+        expect(
+            catalan?.plans.some(
+                (plan) =>
+                    plan.origin === "pv" &&
+                    (plan.category === "pawnSetup" || plan.category === "castling") &&
+                    new Set(plan.evidence.map((line) => line.rank)).size >= 2,
+            ),
+        ).toBe(true);
     });
 
-    test("shows full Catalan candidate arrows when the PV only starts with g3", () => {
+    test("does not manufacture a full Catalan setup from one g3 PV", () => {
         const report = buildEnginePlanReport(
             QUEENS_GAMBIT_NF3_FEN,
             [
@@ -293,19 +344,10 @@ describe("Engine Plan Explorer", () => {
         );
 
         const catalan = report.setups.find((setup) => setup.archetype === "Catalan");
-        const bySignature = new Map(catalan?.plans.map((plan) => [plan.signature, plan]));
-
-        expect(catalan?.approval).toBe("OK");
-        expect(catalan?.explanation).toContain("inferred from the setup template");
-        expect(bySignature.get("pawn_setup:white:g3")?.routeSquares).toEqual(["g2", "g3"]);
-        expect(bySignature.get("piece_destination:white:bishop:g2")?.routeSquares).toEqual([
-            "f1",
-            "g2",
-        ]);
-        expect(bySignature.get("castling:white:kingside")?.routeSquares).toEqual(["e1", "g1"]);
+        expect(catalan).toBeUndefined();
     });
 
-    test("shows full King's Indian candidate arrows from a supported ...g6 start", () => {
+    test("does not manufacture a full King's Indian setup from one ...g6 PV", () => {
         const report = buildEnginePlanReport(
             AFTER_D4_NF6_NF3_FEN,
             [
@@ -320,17 +362,7 @@ describe("Engine Plan Explorer", () => {
         );
 
         const kid = report.setups.find((setup) => setup.archetype === "King's Indian");
-        const bySignature = new Map(kid?.plans.map((plan) => [plan.signature, plan]));
-
-        expect(kid?.approval).toBe("OK");
-        expect(kid?.explanation).toContain("inferred from the setup template");
-        expect(bySignature.get("pawn_setup:black:g6")?.routeSquares).toEqual(["g7", "g6"]);
-        expect(bySignature.get("piece_destination:black:bishop:g7")?.routeSquares).toEqual([
-            "f8",
-            "g7",
-        ]);
-        expect(bySignature.get("pawn_setup:black:d6")?.routeSquares).toEqual(["d7", "d6"]);
-        expect(bySignature.get("castling:black:kingside")?.routeSquares).toEqual(["e8", "g8"]);
+        expect(kid).toBeUndefined();
     });
 
     test("does not promote King's Indian from generic Nf6 and castling evidence", () => {
@@ -362,7 +394,7 @@ describe("Engine Plan Explorer", () => {
         expect(be7?.bestCpLoss).toBe(19);
     });
 
-    test("shows London candidate arrows when Bf4 is engine-supported", () => {
+    test("does not fill a London setup from one-move template evidence", () => {
         const report = buildEnginePlanReport(
             AFTER_D4_D5_FEN,
             [
@@ -377,22 +409,10 @@ describe("Engine Plan Explorer", () => {
         );
 
         const london = report.setups.find((setup) => setup.archetype === "London");
-        const bySignature = new Map(london?.plans.map((plan) => [plan.signature, plan]));
-
-        expect(london?.approval).toBe("Strong");
-        expect(bySignature.get("piece_destination:white:bishop:f4")?.routeSquares).toEqual([
-            "c1",
-            "f4",
-        ]);
-        expect(bySignature.get("piece_destination:white:knight:f3")?.routeSquares).toEqual([
-            "g1",
-            "f3",
-        ]);
-        expect(bySignature.get("pawn_setup:white:e3")?.routeSquares).toEqual(["e2", "e3"]);
-        expect(bySignature.get("castling:white:kingside")?.routeSquares).toEqual(["e1", "g1"]);
+        expect(london).toBeUndefined();
     });
 
-    test("merges compatible setup details while splitting conflicting piece destinations", () => {
+    test("does not merge unrelated root choices around pre-existing setup anchors", () => {
         const report = buildEnginePlanReport(
             BLACK_FIANCHETTO_ROOT_FEN,
             [pv(1, ["e8g8"], 30), pv(2, ["b8c6"], 20), pv(3, ["c8g4"], 10), pv(4, ["c8f5"], 8)],
@@ -410,22 +430,13 @@ describe("Engine Plan Explorer", () => {
                 signatures.has("pawn_setup:black:d6")
             );
         });
-        const withBg4 = skeletonSetups.find((setup) => {
-            const signatures = new Set(setup.plans.map((plan) => plan.signature));
-            return (
-                signatures.has("castling:black:kingside") &&
-                signatures.has("piece_destination:black:knight:c6") &&
-                signatures.has("piece_destination:black:bishop:g4")
-            );
-        });
-        const withBf5 = skeletonSetups.find((setup) => {
-            const signatures = new Set(setup.plans.map((plan) => plan.signature));
-            return signatures.has("piece_destination:black:bishop:f5");
-        });
-
-        expect(skeletonSetups.length).toBeGreaterThanOrEqual(2);
-        expect(withBg4?.supportCount).toBe(3);
-        expect(withBf5?.supportCount).toBe(1);
+        expect(report.plans.some((plan) => plan.signature === "castling:black:kingside")).toBe(
+            true,
+        );
+        expect(
+            report.plans.some((plan) => plan.signature === "piece_destination:black:knight:c6"),
+        ).toBe(true);
+        expect(skeletonSetups).toEqual([]);
     });
 
     test("builds per-move board previews from a PV", () => {
@@ -620,8 +631,10 @@ describe("Engine Plan Explorer", () => {
         );
 
         expect(match?.match).toBe("pawnBreak");
-        expect(match?.plan.approval).toBe("Strong");
+        expect(match?.plan.approval).toBe("Unclear");
+        expect(match?.plan.context).toBe("continuation");
         expect(match?.plan.supportCount).toBe(2);
+        expect(match?.plan.bestCpLoss).toBeNull();
     });
 
     test("matches database pawn setup lines to engine setup signals", () => {
@@ -756,7 +769,7 @@ describe("Engine Plan Explorer", () => {
         expect(stonewall?.color).toBe("white");
     });
 
-    test("uses viable-PV support so a plan backed by most near-best lines reaches Strong", () => {
+    test("keeps direct root-choice scoring separate from later recurring support", () => {
         const report = buildEnginePlanReport(
             BREAK_FEN,
             [
@@ -780,26 +793,112 @@ describe("Engine Plan Explorer", () => {
         );
 
         const e4Break = report.plans.find((plan) => plan.signature === "pawn_break:white:e4");
-        expect(e4Break?.supportCount).toBe(4);
+        expect(e4Break?.context).toBe("rootChoice");
+        expect(e4Break?.supportCount).toBe(1);
+        expect(e4Break?.directSupportCount).toBe(1);
+        expect(e4Break?.conditionalSupportCount).toBe(3);
         expect(e4Break?.appearsInTopPv).toBe(true);
         expect(e4Break?.approval).toBe("Strong");
-        expect(e4Break?.confidence).toBe("High");
+        expect(e4Break?.confidence).toBe("Medium");
+        expect(e4Break?.bestCpLoss).toBe(0);
+        expect(
+            report.plans.some((plan) => plan.signature === "piece_destination:white:knight:f3"),
+        ).toBe(true);
+        expect(
+            report.displayPlans.some(
+                (plan) => plan.signature === "piece_destination:white:knight:f3",
+            ),
+        ).toBe(false);
+        expect(report.displayPlans.length).toBeLessThanOrEqual(8);
     });
 
-    test("merges a subset setup into its superset with unioned support", () => {
+    test("keeps recurring and top-PV pawn squares as setup evidence without listing them", () => {
+        const recurring = buildEnginePlanReport(
+            INITIAL_FEN,
+            [
+                pv(1, ["g1f3", "g8f6", "g2g3"], 40),
+                pv(2, ["c2c4", "g8f6", "g2g3"], 20),
+                pv(3, ["d2d4", "g8f6", "a2a3"], 0),
+            ],
+            { requestedMultipv: 3, limitLabel: "Depth 12" },
+        );
+        const topRoot = buildEnginePlanReport(
+            INITIAL_FEN,
+            [pv(1, ["g2g3", "g8f6"], 40), pv(2, ["g1f3", "g8f6"], 20)],
+            { requestedMultipv: 2, limitLabel: "Depth 12" },
+        );
+        const recurringG3 = recurring.plans.find(
+            (plan) => plan.signature === "pawn_setup:white:g3",
+        );
+        const topG3 = topRoot.plans.find((plan) => plan.signature === "pawn_setup:white:g3");
+
+        expect(recurringG3).toMatchObject({ context: "continuation", supportCount: 2 });
+        expect(recurring.displayPlans).not.toContain(recurringG3);
+        expect(topG3).toMatchObject({ context: "rootChoice", directAppearsInTopPv: true });
+        expect(topRoot.displayPlans).not.toContain(topG3);
+    });
+
+    test("keeps a destination that recurs outside PV1", () => {
+        const report = buildEnginePlanReport(
+            INITIAL_FEN,
+            [pv(1, ["g1f3", "e7e5"], 40), pv(2, ["c2c4", "g8f6"], 20), pv(3, ["d2d4", "g8f6"], 0)],
+            { requestedMultipv: 3, limitLabel: "Depth 12" },
+        );
+        const f6 = report.plans.find(
+            (plan) => plan.signature === "piece_destination:black:knight:f6",
+        );
+
+        expect(f6).toMatchObject({
+            context: "opponentResponse",
+            supportCount: 2,
+            appearsInTopPv: false,
+        });
+        expect(report.displayPlans).toContain(f6);
+    });
+
+    test("keeps heavy-piece routes internally without presenting tactical paths as plans", () => {
+        const fen = "4k3/8/8/8/8/8/8/3QK3 w - - 0 1";
+        const report = buildEnginePlanReport(fen, [pv(1, ["d1a4", "e8e7", "a4b5"], 20)], {
+            requestedMultipv: 1,
+            limitLabel: "Depth 12",
+        });
+        const queenRoute = report.plans.find((plan) => plan.category === "pieceRoute");
+
+        expect(queenRoute).toMatchObject({ role: "queen", context: "continuation" });
+        expect(report.displayPlans).not.toContain(queenRoute);
+    });
+
+    test("caps routine destinations so a concrete break still has display room", () => {
+        const plans = [
+            displayPlan({ signature: "n1", label: "Knight one", supportCount: 5 }),
+            displayPlan({ signature: "n2", label: "Knight two", supportCount: 4 }),
+            displayPlan({ signature: "n3", label: "Knight three", supportCount: 3 }),
+            displayPlan({
+                signature: "break",
+                category: "pawnBreak",
+                label: "Central pawn break",
+                role: "pawn",
+                supportCount: 2,
+            }),
+        ];
+
+        const displayed = selectDisplayEnginePlans(plans);
+        expect(displayed.filter((plan) => plan.category === "pieceDestination")).toHaveLength(2);
+        expect(displayed.map((plan) => plan.signature)).toContain("break");
+    });
+
+    test("measures route prevalence against all sampled games", () => {
+        expect(planRouteSharePercent(20, 100)).toBe(20);
+        expect(planRouteSharePercent(20, 25)).toBe(80);
+        expect(planRouteSharePercent(20, 0)).toBe(0);
+    });
+
+    test("drops recurring pawn bags that have only one salient setup anchor", () => {
         const report = buildEnginePlanReport(
             INITIAL_FEN,
             [
-                pv(
-                    1,
-                    ["e2e4", "g8f6", "d2d3", "b8c6", "c2c3", "e7e6", "g1f3", "f8e7"],
-                    30,
-                ),
-                pv(
-                    2,
-                    ["e2e4", "b8c6", "d2d3", "g8f6", "c2c3", "e7e6", "g1f3", "f8e7"],
-                    20,
-                ),
+                pv(1, ["e2e4", "g8f6", "d2d3", "b8c6", "c2c3", "e7e6", "g1f3", "f8e7"], 30),
+                pv(2, ["e2e4", "b8c6", "d2d3", "g8f6", "c2c3", "e7e6", "g1f3", "f8e7"], 20),
                 pv(3, ["e2e4", "g8f6", "d2d3", "b8c6", "g1f3", "e7e6"], 10),
             ],
             {
@@ -818,8 +917,7 @@ describe("Engine Plan Explorer", () => {
             );
         });
 
-        expect(whiteSetups).toHaveLength(1);
-        expect(whiteSetups[0].supportCount).toBe(3);
+        expect(whiteSetups).toEqual([]);
     });
 
     test("recognizes King's Indian Attack only when its required signatures are present", () => {

@@ -3,6 +3,7 @@ import {
   Alert,
   Badge,
   Box,
+  Button,
   Group,
   NumberInput,
   Progress,
@@ -24,7 +25,6 @@ import {
   IconRefresh,
   IconRoute,
 } from "@tabler/icons-react";
-import { Link } from "@tanstack/react-router";
 import type { Piece } from "@lichess-org/chessground/types";
 import {
   commands,
@@ -75,9 +75,9 @@ import {
   planExplorerSourceAtom,
   planExplorerViewAtom,
   referenceDbAtom,
-  sessionsAtom,
   showPlanExplorerArrowsAtom,
 } from "@/state/atoms";
+import { useLichessExplorerAuth } from "@/hooks/useSharedLichessSession";
 import {
   buildEnginePlanReport,
   enginePlanStrengthScore,
@@ -110,6 +110,7 @@ import {
   isPlanBrush,
   planLineToShapes,
   planLinesToShapes,
+  planRouteSharePercent,
   summarizePlanPiece,
   withPlanLineColor,
   type ColoredPlanExplorerLine,
@@ -177,7 +178,6 @@ function PlanExplorerPanel() {
   const [localOptions, setLocalOptions] = useAtom(currentLocalOptionsAtom);
   const lichessOptions = useAtomValue(lichessOptionsAtom);
   const masterOptions = useAtomValue(masterOptionsAtom);
-  const sessions = useAtomValue(sessionsAtom);
   const setPlanExplorerData = useSetAtom(currentPlanExplorerDataAtom);
   const setPreviewLine = useSetAtom(currentPlanExplorerPreviewLineAtom);
   const [engineStrengthEnabled, setEngineStrengthEnabled] = useAtom(
@@ -196,12 +196,16 @@ function PlanExplorerPanel() {
   const [sideFilter, setSideFilter] = useState<SideFilter>("all");
   const [maxPlies, setMaxPlies] = useState("8");
   const [sort, setSort] = useState<PlanSort>({ key: "engine", direction: "desc" });
+  const {
+    token: explorerToken,
+    connect: connectLichess,
+    waiting: lichessLoginWaiting,
+    error: lichessLoginError,
+  } = useLichessExplorerAuth();
   const engineRequestRef = useRef<PlanExplorerEngineRequest | null>(null);
   const engineUnlistenRef = useRef<(() => void) | null>(null);
   const engineWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const engineTokenRef = useRef(0);
-  const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
-    ?.accessToken;
   const lichessOptionsKey = JSON.stringify(lichessOptions);
   const masterOptionsKey = JSON.stringify(masterOptions);
   const isLocalSource = source === "local";
@@ -746,9 +750,23 @@ function PlanExplorerPanel() {
 
     if (missingExplorerToken) {
       return (
-        <Alert color="yellow">
-          {t("Board.Database.ExplorerAuthRequired1")} <Link to="/accounts">Users</Link>{" "}
-          {t("Board.Database.ExplorerAuthRequired2")}
+        <Alert color="yellow" title="Connect Lichess to use the explorer">
+          <Stack gap="xs">
+            <Text size="sm">
+              Lichess All and Lichess Masters require one authenticated Lichess session. The browser
+              will open Lichess, then this panel will retry automatically.
+            </Text>
+            <Group gap="xs">
+              <Button size="xs" onClick={() => void connectLichess()} loading={lichessLoginWaiting}>
+                {lichessLoginWaiting ? "Waiting for Lichess" : "Connect Lichess"}
+              </Button>
+              {lichessLoginError && (
+                <Text size="xs" c="red">
+                  {lichessLoginError}
+                </Text>
+              )}
+            </Group>
+          </Stack>
         </Alert>
       );
     }
@@ -824,6 +842,7 @@ function PlanExplorerPanel() {
                     <PieceRow
                       key={`${piece.color}-${piece.role}-${piece.from}`}
                       piece={piece}
+                      sampledGames={planData?.sampled_games ?? 0}
                       drawLine={drawLine}
                       previewLine={setPreviewLine}
                       engineStrengthEnabled={engineStrengthEnabled}
@@ -1947,6 +1966,7 @@ function EngineStrengthCell({
 
 function PieceRow({
   piece,
+  sampledGames,
   drawLine,
   previewLine,
   engineStrengthEnabled,
@@ -1956,6 +1976,7 @@ function PieceRow({
   strength,
 }: {
   piece: PlanExplorerPiece;
+  sampledGames: number;
   drawLine: (line: ColoredPlanExplorerLine) => void;
   previewLine: (line: ColoredPlanExplorerLine | null) => void;
   engineStrengthEnabled: boolean;
@@ -1978,7 +1999,7 @@ function PieceRow({
         const lineMatch = engineStrengthEnabled
           ? getPlanExplorerLineEnginePlan(piece, rawLine, engineReport)
           : null;
-        const share = piece.total > 0 ? (line.games / piece.total) * 100 : 0;
+        const share = planRouteSharePercent(line.games, sampledGames);
 
         return (
           <Table.Tr

@@ -36,6 +36,31 @@ const LICHESS_EXPLORER_TIMEOUT_MS = 20_000;
 const LICHESS_GAME_EXPORT_TIMEOUT_MS = 15_000;
 const LICHESS_CLOUD_MAX_MULTIPV = 5;
 
+export type LichessExplorerRequestFailureReason = "rate-limited" | "http";
+
+/**
+ * Structured opening-explorer failure used by multi-request consumers such as
+ * Plan Explorer. Keeping the HTTP status and Retry-After delay lets callers
+ * stop the whole crawl instead of immediately sending the next branch.
+ */
+export class LichessExplorerRequestError extends Error {
+  readonly reason: LichessExplorerRequestFailureReason;
+  readonly status: number;
+  readonly retryAfterMs?: number;
+
+  constructor(
+    reason: LichessExplorerRequestFailureReason,
+    message: string,
+    options: { status: number; retryAfterMs?: number },
+  ) {
+    super(message);
+    this.name = "LichessExplorerRequestError";
+    this.reason = reason;
+    this.status = options.status;
+    this.retryAfterMs = options.retryAfterMs;
+  }
+}
+
 export const MIN_DATE = new Date(1952, 0, 1);
 
 export type LichessCloudFailureReason =
@@ -639,7 +664,7 @@ export async function getLichessGames(
     "Lichess All search timed out. Try again in a moment.",
   );
   if (!res.ok) {
-    throw new Error(`Failed to fetch Lichess games: ${res.status} ${res.statusText}`);
+    throw lichessExplorerRequestError("Lichess All", res);
   }
   return await res.json();
 }
@@ -666,9 +691,36 @@ export async function getMasterGames(
     "Lichess Masters search timed out. Try again in a moment.",
   );
   if (!res.ok) {
-    throw new Error(`Failed to fetch master games: ${res.status} ${res.statusText}`);
+    throw lichessExplorerRequestError("Lichess Masters", res);
   }
   return await res.json();
+}
+
+function lichessExplorerRequestError(label: string, response: Response) {
+  const reason = response.status === 429 ? "rate-limited" : "http";
+  const statusText = response.statusText ? ` ${response.statusText}` : "";
+  return new LichessExplorerRequestError(
+    reason,
+    `Failed to fetch ${label} games: ${response.status}${statusText}`,
+    {
+      status: response.status,
+      retryAfterMs:
+        response.status === 429
+          ? parseExplorerRetryAfterMs(response.headers.get("retry-after"))
+          : undefined,
+    },
+  );
+}
+
+function parseExplorerRetryAfterMs(value: string | null, now = Date.now()) {
+  if (!value) return undefined;
+
+  const seconds = Number(value.trim());
+  if (Number.isFinite(seconds) && seconds >= 0) return seconds * 1000;
+
+  const retryAt = Date.parse(value);
+  if (!Number.isFinite(retryAt)) return undefined;
+  return Math.max(0, retryAt - now);
 }
 
 export async function getPlayerGames(fen: string, player: string, color: Color, token?: string) {

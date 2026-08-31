@@ -1,5 +1,13 @@
-import { describe, expect, test, vi } from "vitest";
-import { getOnlinePlanExplorer } from "@/utils/lichess/planExplorer";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import type { PlanExplorerSetup } from "@/bindings";
+import {
+    adaptivePlanSupportThreshold,
+    getOnlinePlanExplorer,
+    resetOnlinePlanExplorerRateLimitForTests,
+    selectSupportedPlanRoutes,
+    selectSupportedPlanSetups,
+} from "@/utils/lichess/planExplorer";
+import { getLichessGames, getMasterGames } from "@/utils/lichess/api";
 
 vi.mock("@/utils/lichess/api", () => {
     const PAWN_NOISE = new Map([
@@ -85,7 +93,104 @@ const QUEENS_GAMBIT_NF3_FEN = "rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/5N2/PP2PPPP/RNBQKB
 const PAWN_NOISE_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const BISHOP_ROUTE_FEN = "rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 2";
 
+beforeEach(() => {
+    vi.clearAllMocks();
+    resetOnlinePlanExplorerRateLimitForTests();
+});
+
+afterEach(() => {
+    vi.useRealTimers();
+});
+
+function setup(games: number, destination: string): PlanExplorerSetup {
+    return {
+        plans: [
+            {
+                color: "white",
+                role: "knight",
+                from: "g1",
+                line: {
+                    squares: ["g1", destination],
+                    san: [`N${destination}`],
+                    uci: [`g1${destination}`],
+                    games,
+                    white: games,
+                    draw: 0,
+                    black: 0,
+                },
+            },
+        ],
+        games,
+        white: games,
+        draw: 0,
+        black: 0,
+    };
+}
+
 describe("online plan explorer setups", () => {
+    test("stops both online sources for at least a minute after a 429", async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date("2026-08-31T12:00:00Z"));
+        vi.mocked(getLichessGames).mockRejectedValueOnce(
+            Object.assign(new Error("Failed to fetch Lichess All games: 429 Too Many Requests"), {
+                reason: "rate-limited",
+                status: 429,
+                retryAfterMs: 2_000,
+            }),
+        );
+
+        await expect(
+            getOnlinePlanExplorer("lch_all", PAWN_NOISE_FEN, {}, 1, "token"),
+        ).rejects.toMatchObject({
+            name: "OnlinePlanExplorerRateLimitError",
+            reason: "rate-limited",
+            status: 429,
+            retryAfterMs: 60_000,
+        });
+
+        await expect(
+            getOnlinePlanExplorer("lch_master", PAWN_NOISE_FEN, {}, 1, "token"),
+        ).rejects.toMatchObject({
+            name: "OnlinePlanExplorerRateLimitError",
+            reason: "rate-limited",
+            status: 429,
+        });
+        expect(getMasterGames).not.toHaveBeenCalled();
+
+        vi.advanceTimersByTime(60_001);
+        await expect(
+            getOnlinePlanExplorer("lch_all", PAWN_NOISE_FEN, {}, 1, "token"),
+        ).resolves.toMatchObject({ fen: PAWN_NOISE_FEN, max_plies: 1 });
+    });
+
+    test("keeps small samples lossless and prunes coincidental large-sample routes", () => {
+        const lines = [
+            { squares: ["g1", "f3"], san: ["Nf3"], uci: ["g1f3"], games: 170 },
+            { squares: ["g1", "h3"], san: ["Nh3"], uci: ["g1h3"], games: 18 },
+            { squares: ["g1", "e2"], san: ["Ne2"], uci: ["g1e2"], games: 1 },
+        ].map((line) => ({ ...line, white: line.games, draw: 0, black: 0 }));
+
+        expect(selectSupportedPlanRoutes(lines, 199)).toHaveLength(3);
+        expect(adaptivePlanSupportThreshold(400)).toBe(2);
+        expect(selectSupportedPlanRoutes(lines, 400).map((line) => line.squares.at(-1))).toEqual([
+            "f3",
+            "h3",
+        ]);
+
+        const fragmented = lines.map((line) => ({ ...line, games: 1 }));
+        expect(selectSupportedPlanRoutes(fragmented, 400)).toEqual([fragmented[0]]);
+    });
+
+    test("keeps small-sample setups lossless but drops all unsupported large-sample setups", () => {
+        const lowSupport = [setup(1, "f3"), setup(1, "h3")];
+
+        expect(selectSupportedPlanSetups(lowSupport, 199)).toEqual(lowSupport);
+        expect(selectSupportedPlanSetups(lowSupport, 400)).toEqual([]);
+        expect(selectSupportedPlanSetups([setup(2, "f3"), ...lowSupport], 400)).toEqual([
+            setup(2, "f3"),
+        ]);
+    });
+
     test("infers a setup family from sampled database route co-occurrence", async () => {
         const data = await getOnlinePlanExplorer("lch_all", QUEENS_GAMBIT_NF3_FEN, {}, 6, "token");
 
