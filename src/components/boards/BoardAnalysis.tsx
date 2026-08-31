@@ -15,6 +15,7 @@ import { useHotkeys, useToggle } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import {
   IconBulb,
+  IconBolt,
   IconDatabase,
   IconDeviceFloppy,
   IconGitCompare,
@@ -54,6 +55,7 @@ import {
 import { keyMapAtom } from "@/state/keybinds";
 import { defaultPGN } from "@/utils/chess";
 import { getTabFile, getTabGameNumber, getTabPracticeKey, saveToFile } from "@/utils/tabs";
+import type { LiveTacticalScan } from "@/utils/tacticalMotifs/liveTactics";
 import DetachedEval from "../common/DetachedEval";
 import { ResponsivePanel } from "../common/ResponsivePanel";
 import { TreeStateContext } from "../common/TreeStateContext";
@@ -78,6 +80,7 @@ const OpponentPrepPanel = lazy(() => import("../panels/prep/OpponentPrepPanel"))
 const PlanExplorerPanel = lazy(() => import("../panels/plan/PlanExplorerPanel"));
 const PracticePanel = lazy(() => import("../panels/practice/PracticePanel"));
 const PawnStructurePanel = lazy(() => import("../panels/structure/PawnStructurePanel"));
+const TacticalClassifierPanel = lazy(() => import("../panels/tactics/TacticalClassifierPanel"));
 
 const scrollablePanelStyle = {
   minHeight: 0,
@@ -156,6 +159,7 @@ function BoardAnalysis() {
   const [underBoardMode, setUnderBoardMode] = useState<UnderBoardMode>("moves");
   const [savingCopy, setSavingCopy] = useState(false);
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
+  const [tacticalScan, setTacticalScan] = useState<LiveTacticalScan | null>(null);
   const [topBarActionsTarget, setTopBarActionsTarget] = useState<HTMLElement | null>(null);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const tabFile = getTabFile(currentTab);
@@ -283,6 +287,7 @@ function BoardAnalysis() {
     structures: "Structures",
     planExplorer: "Plan Explorer",
     enginePlans: "Engine Plans",
+    tactics: "Tactics",
     compare: "Compare",
     info: t("Board.Tabs.Info"),
   };
@@ -413,6 +418,7 @@ function BoardAnalysis() {
               editingMode={editingMode}
               boardRef={boardRef}
               selectedPiece={selectedPiece}
+              tacticalScan={selectedPanel === "tactics" ? tacticalScan : null}
             />
           }
           underBoard={
@@ -528,6 +534,11 @@ function BoardAnalysis() {
                   value="engine-plans"
                 />
                 <BoardAnalysisTab
+                  icon={<IconBolt size="1rem" />}
+                  label={tabLabels.tactics}
+                  value="tactics"
+                />
+                <BoardAnalysisTab
                   icon={<IconGitCompare size="1rem" />}
                   label={tabLabels.compare}
                   value="compare"
@@ -599,6 +610,13 @@ function BoardAnalysis() {
                 <EngineDockedPanel>
                   <DeferredPanel>
                     <EnginePlanExplorerPanel />
+                  </DeferredPanel>
+                </EngineDockedPanel>
+              </Tabs.Panel>
+              <Tabs.Panel value="tactics" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+                <EngineDockedPanel>
+                  <DeferredPanel>
+                    <TacticalClassifierPanel onScanChange={setTacticalScan} />
                   </DeferredPanel>
                 </EngineDockedPanel>
               </Tabs.Panel>

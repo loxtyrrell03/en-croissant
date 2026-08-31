@@ -1,5 +1,5 @@
 export type TacticalMotifConfidence = "high" | "medium" | "low";
-export type TacticalMotifSource = "allowed" | "missed";
+export type TacticalMotifSource = "allowed" | "missed" | "available";
 
 export type TacticalMotifEvidence = {
     id: string;
@@ -14,5 +14,10 @@ export type TacticalMotifEvidence = {
 export type MistakeReviewMotifClassification = {
     allowedMotifs: TacticalMotifEvidence[];
     missedMotifs: TacticalMotifEvidence[];
+    motifClassifierVersion: string;
+};
+
+export type PositionTacticalMotifClassification = {
+    motifs: TacticalMotifEvidence[];
     motifClassifierVersion: string;
 };

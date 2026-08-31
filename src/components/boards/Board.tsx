@@ -144,6 +144,7 @@ import {
   planLinesToShapes,
 } from "@/utils/planExplorer";
 import { getTabGameNumber, getTabPracticeKey } from "@/utils/tabs";
+import type { LiveTacticalScan } from "@/utils/tacticalMotifs/liveTactics";
 import { findFen } from "@/utils/treeReducer";
 import ShowMaterial from "../common/ShowMaterial";
 import { TreeStateContext } from "../common/TreeStateContext";
@@ -156,6 +157,7 @@ import Clock from "./Clock";
 import EvalBar from "./EvalBar";
 import MoveInput from "./MoveInput";
 import PromotionModal from "./PromotionModal";
+import { TacticalBoardOverlay } from "./TacticalBoardOverlay";
 
 const LARGE_BRUSH = 11;
 const MEDIUM_BRUSH = 7.5;
@@ -168,6 +170,9 @@ const MIN_MANUAL_BOARD_SIZE = 280;
 const MISTAKE_REVIEW_PANEL_MIN_HEIGHT = 108;
 const MISTAKE_REVIEW_ENGINE_CONFIRMATION_DELAY_MS = 900;
 const OPENING_REVIEW_CLOUD_MULTIPV = 5;
+const TACTICAL_PRIMARY_BRUSH = "tacticalPrimary";
+const TACTICAL_REPLY_BRUSH = "tacticalReply";
+const TACTICAL_TRIGGER_BRUSH = "tacticalTrigger";
 const INACTIVE_REVIEW_DECK_KEY = "__inactive-board-review__.opening-review.json";
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
 
@@ -451,6 +456,7 @@ interface ChessboardProps {
   enablePremoves?: boolean;
   showDestsOverride?: boolean;
   moveHighlightOverride?: boolean;
+  tacticalScan?: LiveTacticalScan | null;
   blindfoldOverlay?: {
     hidden: boolean;
     revealed?: boolean;
@@ -477,6 +483,7 @@ function Board({
   enablePremoves = false,
   showDestsOverride,
   moveHighlightOverride,
+  tacticalScan,
   blindfoldOverlay,
 }: ChessboardProps) {
   const { t } = useTranslation();
@@ -1371,6 +1378,30 @@ function Board({
       nextShapes = nextShapes.concat(planLinesToShapes(previewLines, 16));
     }
 
+    if (
+      currentTabSelected === "tactics" &&
+      tacticalScan?.fen === boardFen &&
+      !boardPreviewShapes?.displayFen
+    ) {
+      for (const arrow of tacticalScan.arrows) {
+        const brush =
+          arrow.role === "trigger"
+            ? TACTICAL_TRIGGER_BRUSH
+            : arrow.role === "reply"
+              ? TACTICAL_REPLY_BRUSH
+              : TACTICAL_PRIMARY_BRUSH;
+        const shape = uciArrowShape(`${arrow.from}${arrow.to}`, brush);
+        if (
+          shape &&
+          !nextShapes.some(
+            (candidate) => candidate.orig === shape.orig && candidate.dest === shape.dest,
+          )
+        ) {
+          nextShapes.push(shape);
+        }
+      }
+    }
+
     if (boardPreviewShapes?.fen === boardFen) {
       nextShapes = nextShapes.concat(boardPreviewShapes.shapes);
     }
@@ -1455,6 +1486,7 @@ function Board({
     showConsecutiveArrows,
     showPlanExplorerArrows,
     showVariationArrows,
+    tacticalScan,
     engineArrowsEnabled,
   ]);
 
@@ -2085,6 +2117,24 @@ function Board({
                         opacity: 0.9,
                         lineWidth: 10,
                       },
+                      [TACTICAL_PRIMARY_BRUSH]: {
+                        key: "t",
+                        color: "#f08c00",
+                        opacity: 0.9,
+                        lineWidth: 10,
+                      },
+                      [TACTICAL_REPLY_BRUSH]: {
+                        key: "r",
+                        color: "#339af0",
+                        opacity: 0.72,
+                        lineWidth: 7,
+                      },
+                      [TACTICAL_TRIGGER_BRUSH]: {
+                        key: "g",
+                        color: "#fa5252",
+                        opacity: 0.96,
+                        lineWidth: 12,
+                      },
                       preview: {
                         key: "x",
                         color: "#4dabf7",
@@ -2097,6 +2147,12 @@ function Board({
                     },
                   }}
                 />
+                {currentTabSelected === "tactics" &&
+                  tacticalScan?.fen === boardFen &&
+                  tacticalScan.labels.length > 0 &&
+                  !boardPreviewShapes?.displayFen && (
+                    <TacticalBoardOverlay labels={tacticalScan.labels} orientation={orientation} />
+                  )}
                 {blindfoldOverlay?.hidden && (
                   <Box
                     pos="absolute"

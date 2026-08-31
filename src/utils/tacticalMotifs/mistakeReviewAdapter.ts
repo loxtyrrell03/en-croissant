@@ -8,12 +8,14 @@ import {
 import { ChessLite } from "./siteClassifier/analysis.js";
 import type {
     MistakeReviewMotifClassification,
+    PositionTacticalMotifClassification,
     TacticalMotifEvidence,
     TacticalMotifSource,
 } from "./types";
 
 export type {
     MistakeReviewMotifClassification,
+    PositionTacticalMotifClassification,
     TacticalMotifConfidence,
     TacticalMotifEvidence,
     TacticalMotifSource,
@@ -34,6 +36,13 @@ export type MistakeReviewMotifInput = {
     cpAfter?: number | null;
     winProbabilityDrop?: number | null;
     reachedDepth?: number | null;
+};
+
+export type PositionTacticalMotifInput = {
+    fen?: string | null;
+    pvUci?: string[] | null;
+    previousFen?: string | null;
+    previousMoveUci?: string | null;
 };
 
 type SiteThemeStep = {
@@ -154,7 +163,12 @@ function toMotifEvidence(
         const stepIndex = Number.isInteger(mappedIndex) ? mappedIndex : fallbackIndex;
         const moveUci = stepIndex >= 0 ? cleanUci(steps[stepIndex]?.uci) : null;
         const label = tacticalMotifLabel(id);
-        const lineLabel = source === "allowed" ? "opponent refutation" : "missed best line";
+        const lineLabel =
+            source === "allowed"
+                ? "opponent refutation"
+                : source === "available"
+                  ? "current best line"
+                  : "missed best line";
         const evidence = moveUci
             ? `${label} appears on ${moveUci} at ply ${stepIndex + 1} of the ${lineLabel}.`
             : `${label} is detected in the verified ${lineLabel}.`;
@@ -169,6 +183,35 @@ function toMotifEvidence(
             moveUci,
         };
     });
+}
+
+export function classifyPositionTacticalMotifs(
+    input: PositionTacticalMotifInput,
+): PositionTacticalMotifClassification {
+    const fen = String(input.fen ?? "").trim();
+    const bestLine = cleanUciLine(input.pvUci);
+    const bestMoveUci = bestLine[0] ?? null;
+    let detail: SiteThemeDetail | null = null;
+
+    if (fen && bestMoveUci) {
+        try {
+            detail = detectThemesDetailed({
+                fen,
+                side: fenSide(fen),
+                best: bestMoveUci,
+                bestLine,
+                _prevFen: String(input.previousFen ?? "").trim() || null,
+                _prevPlayedMove: cleanUci(input.previousMoveUci),
+            }) as SiteThemeDetail;
+        } catch {
+            detail = null;
+        }
+    }
+
+    return {
+        motifs: toMotifEvidence(detail, "available"),
+        motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
+    };
 }
 
 function cacheKey(input: MistakeReviewMotifInput) {
