@@ -98,6 +98,10 @@ import {
   type PositionData,
 } from "@/utils/lichess/api";
 import type { LichessGamesOptions, MasterGamesOptions } from "@/utils/lichess/explorer";
+import {
+  getLocalLichessOpeningStatus,
+  hasLocalLichessOpeningSource,
+} from "@/utils/lichess/localOpening";
 import { getTabGameNumber, getTabPracticeKey } from "@/utils/tabs";
 import { positionFromFen } from "@/utils/chessops";
 import type { Engine, LocalEngine } from "@/utils/engines";
@@ -287,6 +291,10 @@ function RepertoireGapsPanel({
   const onlineDatabaseUpdates = useAtomValue(onlineDatabaseUpdatesAtom);
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
     ?.accessToken;
+  const { data: localLichessStatus } = useSWR("local-lichess-opening-status", () =>
+    getLocalLichessOpeningStatus(),
+  );
+  const localMastersAvailable = hasLocalLichessOpeningSource(localLichessStatus, "lichess-masters");
   const { documentDir } = useLoaderData({ from: "/" });
 
   const { data: databases } = useSWR("databases", () => getDatabases());
@@ -306,11 +314,16 @@ function RepertoireGapsPanel({
         group: "Online",
         items: [
           { value: LICHESS_ALL_SOURCE, label: "Lichess All" },
-          { value: LICHESS_MASTER_SOURCE, label: "Lichess Masters" },
+          {
+            value: LICHESS_MASTER_SOURCE,
+            label: localMastersAvailable
+              ? "Lichess Masters (local broadcast snapshot)"
+              : "Lichess Masters",
+          },
         ],
       },
     ],
-    [databaseOptions],
+    [databaseOptions, localMastersAvailable],
   );
 
   const [personalDb, setPersonalDb] = useState<string | null>(null);
@@ -749,6 +762,36 @@ function RepertoireGapsPanel({
 
   useEffect(() => clearMovePreview, [clearMovePreview]);
 
+  async function canUseOnlineReference(source: OnlineReferenceSource | null) {
+    if (!source) return true;
+
+    let status = localLichessStatus;
+    try {
+      status ??= await getLocalLichessOpeningStatus();
+    } catch (error) {
+      notifications.show({
+        title: "Local Lichess snapshot unavailable",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+      return false;
+    }
+
+    const localAvailable = hasLocalLichessOpeningSource(
+      status,
+      source === LICHESS_MASTER_SOURCE ? "lichess-masters" : "lichess-all",
+    );
+    if (localAvailable || explorerToken) return true;
+
+    notifications.show({
+      title: "Lichess connection required",
+      message:
+        "No local snapshot covers this source. Link Lichess before using the paced online fallback.",
+      color: "yellow",
+    });
+    return false;
+  }
+
   async function analyze(overrides?: { personalDb: string; playerId: number }) {
     const scanPersonalDb = overrides?.personalDb ?? personalDb;
     if (overrides === undefined) {
@@ -775,14 +818,7 @@ function RepertoireGapsPanel({
     const playerId = overrides?.playerId ?? Number(subjectPlayerId);
 
     const onlineReference = getOnlineReferenceSource(referenceDb);
-    if (onlineReference && !explorerToken) {
-      notifications.show({
-        title: "Lichess login required",
-        message: "Sign in to Lichess before using Lichess All or Lichess Masters here.",
-        color: "yellow",
-      });
-      return;
-    }
+    if (!(await canUseOnlineReference(onlineReference))) return;
 
     if (!openingHealthDateBoundsAreValid(scanDateBounds)) {
       notifications.show({
@@ -838,7 +874,7 @@ function RepertoireGapsPanel({
             personalDb: scanPersonalDb,
             playerId,
             source: onlineReference,
-            explorerToken: explorerToken!,
+            explorerToken,
             lichessOptions,
             masterOptions,
             maxPlies,
@@ -1059,14 +1095,7 @@ function RepertoireGapsPanel({
       });
       return;
     }
-    if (getOnlineReferenceSource(referenceDb) && !explorerToken) {
-      notifications.show({
-        title: "Lichess login required",
-        message: "Sign in to Lichess before using Lichess All or Lichess Masters here.",
-        color: "yellow",
-      });
-      return;
-    }
+    if (!(await canUseOnlineReference(getOnlineReferenceSource(referenceDb)))) return;
     if (!openingHealthDateBoundsAreValid(scanDateBounds)) {
       notifications.show({
         title: "Date range is invalid",
@@ -1802,7 +1831,9 @@ function RepertoireGapsPanel({
     referenceDb === LICHESS_ALL_SOURCE
       ? "Lichess All"
       : referenceDb === LICHESS_MASTER_SOURCE
-        ? "Lichess Masters"
+        ? localMastersAvailable
+          ? "Lichess Masters (local broadcast snapshot)"
+          : "Lichess Masters"
         : (localDatabases.find((database) => database.file === referenceDb)?.title ??
           "local reference");
   const setupSummary = `${
@@ -2981,7 +3012,7 @@ async function analyzeOnlineReference({
   personalDb: string;
   playerId: number;
   source: OnlineReferenceSource;
-  explorerToken: string;
+  explorerToken?: string;
   lichessOptions: LichessGamesOptions;
   masterOptions: MasterGamesOptions;
   maxPlies: number;
@@ -3096,7 +3127,7 @@ async function analyzeOnlineReference({
 async function getOnlineReferenceData(
   fen: string,
   source: OnlineReferenceSource,
-  explorerToken: string,
+  explorerToken: string | undefined,
   lichessOptions: LichessGamesOptions,
   masterOptions: MasterGamesOptions,
 ) {

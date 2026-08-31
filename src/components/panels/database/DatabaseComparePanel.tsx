@@ -50,6 +50,10 @@ import {
 import { formatNumber } from "@/utils/format";
 import { getLichessGames, getMasterGames } from "@/utils/lichess/api";
 import type { LichessGamesOptions, MasterGamesOptions } from "@/utils/lichess/explorer";
+import {
+  getLocalLichessOpeningStatus,
+  hasLocalLichessOpeningSource,
+} from "@/utils/lichess/localOpening";
 import type { OpeningMoveHealthSidePreference } from "@/utils/openingMoveHealth";
 import { getTabWorkspaceKey } from "@/utils/tabs";
 import DatabaseLoader from "./DatabaseLoader";
@@ -151,6 +155,10 @@ function DatabaseComparePanel() {
   const skipNextPersistKeyRef = useRef<string | null>(null);
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
     ?.accessToken;
+  const { data: localLichessStatus, error: localLichessStatusError } = useSWR(
+    "local-lichess-opening-status",
+    () => getLocalLichessOpeningStatus(),
+  );
   const { ref: panelRef, width: panelWidth } = useElementSize();
   const isStacked = panelWidth > 0 && panelWidth < STACKED_COMPARE_WIDTH;
   const tableDensity: OpeningTableDensity =
@@ -183,10 +191,12 @@ function DatabaseComparePanel() {
       {
         type: "lch_master",
         value: LICHESS_MASTER_SOURCE,
-        label: t("Board.Database.LichessMaster"),
+        label: hasLocalLichessOpeningSource(localLichessStatus, "lichess-masters")
+          ? `${t("Board.Database.LichessMaster")} (local broadcast snapshot)`
+          : t("Board.Database.LichessMaster"),
       },
     ],
-    [localDatabases, t],
+    [localDatabases, localLichessStatus, t],
   );
 
   useEffect(() => {
@@ -409,6 +419,8 @@ function DatabaseComparePanel() {
             lichessOptions={lichessOptions}
             masterOptions={masterOptions}
             explorerToken={explorerToken}
+            localLichessStatus={localLichessStatus}
+            localLichessStatusError={localLichessStatusError}
             moveHealthSide={moveHealthSide}
             resultPerspective={
               selectedSources[index]?.type === "local"
@@ -443,6 +455,8 @@ function CompareDatabaseTable({
   lichessOptions,
   masterOptions,
   explorerToken,
+  localLichessStatus,
+  localLichessStatusError,
   moveHealthSide,
   resultPerspective,
   density,
@@ -462,6 +476,8 @@ function CompareDatabaseTable({
   lichessOptions: LichessGamesOptions;
   masterOptions: MasterGamesOptions;
   explorerToken?: string;
+  localLichessStatus: Awaited<ReturnType<typeof getLocalLichessOpeningStatus>> | undefined;
+  localLichessStatusError: unknown;
   moveHealthSide: OpeningMoveHealthSidePreference;
   resultPerspective: ReturnType<typeof getLocalResultPerspective>;
   density: OpeningTableDensity;
@@ -482,9 +498,17 @@ function CompareDatabaseTable({
   const [openingSort, setOpeningSort] = useState<OpeningSort>("games");
   const source = sources.find((item) => item.value === sourceValue) ?? null;
   const isOnlineSource = source?.type === "lch_all" || source?.type === "lch_master";
-  const missingExplorerToken = isOnlineSource && !explorerToken;
+  const localLichessAvailable =
+    source?.type === "lch_master"
+      ? hasLocalLichessOpeningSource(localLichessStatus, "lichess-masters")
+      : source?.type === "lch_all"
+        ? hasLocalLichessOpeningSource(localLichessStatus, "lichess-all")
+        : false;
+  const missingExplorerToken =
+    isOnlineSource && localLichessStatus !== undefined && !localLichessAvailable && !explorerToken;
+  const sourceReady = !isOnlineSource || localLichessAvailable || Boolean(explorerToken);
   const searchKey =
-    source && searchId && !missingExplorerToken
+    source && searchId && sourceReady
       ? ([
           "database-compare-table",
           {
@@ -677,7 +701,13 @@ function CompareDatabaseTable({
         allowDeselect={false}
       />
       <DatabaseLoader isLoading={isLoading} tab={searchId} />
-      {missingExplorerToken ? (
+      {isOnlineSource && localLichessStatusError ? (
+        <Alert color="red" variant="light" mt="xs">
+          {localLichessStatusError instanceof Error
+            ? localLichessStatusError.message
+            : String(localLichessStatusError)}
+        </Alert>
+      ) : missingExplorerToken ? (
         <Alert color="yellow" variant="light" mt="xs">
           {t("Board.Database.ExplorerAuthRequired1")} <Link to="/accounts">Users</Link>{" "}
           {t("Board.Database.ExplorerAuthRequired2")}

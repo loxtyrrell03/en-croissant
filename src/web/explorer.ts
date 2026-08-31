@@ -65,6 +65,11 @@ type ExplorerResponse = {
     moves: ExplorerMove[];
 };
 
+type LocalExplorerResult = ExplorerResponse & {
+    available: boolean;
+    error?: string | null;
+};
+
 const EXPLORER_BASE_URL = "https://explorer.lichess.org";
 const EXPLORER_TIMEOUT_MS = 20_000;
 const EXPLORER_PC_TIMEOUT_MS = 8_000;
@@ -108,15 +113,12 @@ export async function fetchWebExplorerMoveStats({
 }: {
     source: WebDatabaseExplorerSource;
     fen: string;
-    token: string;
+    token?: string;
     options?: Partial<WebExplorerOptions>;
     strengthSettings?: Partial<PrepBuilderSettings> | null;
     signal?: AbortSignal;
 }): Promise<WebPrepMoveStat[]> {
-    const trimmedToken = token.trim();
-    if (!trimmedToken) {
-        throw new Error("Lichess token required.");
-    }
+    const trimmedToken = token?.trim() ?? "";
 
     const engineMovesRequest = queryWebLichessCloudEngineMoves({
         fen,
@@ -156,9 +158,21 @@ async function getWebExplorerData({
     const pending = explorerRequests.get(requestKey);
     if (pending) return await waitForExplorerRequest(pending, signal);
 
-    const request = fetchWebExplorerDataFromPc({ source, fen, options })
+    const request = fetchWebExplorerDataFromPcLocalFirst({ source, fen, options })
         .catch(async (error) => {
-            if (isAbortError(error) || isRateLimitError(error) || signal?.aborted) throw error;
+            if (
+                isAbortError(error) ||
+                isRateLimitError(error) ||
+                isLocalSnapshotFailure(error) ||
+                signal?.aborted
+            ) {
+                throw error;
+            }
+            if (!token) {
+                throw new Error(
+                    "The local Lichess snapshot and PC fallback are unavailable. Link Lichess to retry online.",
+                );
+            }
             return await fetchWebExplorerDataDirect(directUrl, token);
         })
         .then((data) => {
@@ -168,6 +182,58 @@ async function getWebExplorerData({
         .finally(() => explorerRequests.delete(requestKey));
     explorerRequests.set(requestKey, request);
     return await waitForExplorerRequest(request, signal);
+}
+
+async function fetchWebExplorerDataFromPcLocalFirst({
+    source,
+    fen,
+    options,
+}: {
+    source: WebDatabaseExplorerSource;
+    fen: string;
+    options?: Partial<WebExplorerOptions>;
+}) {
+    try {
+        const local = await fetchWebExplorerDataFromPcLocal({ source, fen, options });
+        if (local?.available) return normalizeExplorerResponse(local);
+    } catch (error) {
+        if (error && typeof error === "object" && "status" in error) throw error;
+        // The PC itself may be offline. Preserve the existing direct fallback;
+        // an HTTP rejection from the PC is different and remains fail-closed.
+    }
+    return await fetchWebExplorerDataFromPc({ source, fen, options });
+}
+
+async function fetchWebExplorerDataFromPcLocal({
+    source,
+    fen,
+    options,
+}: {
+    source: WebDatabaseExplorerSource;
+    fen: string;
+    options?: Partial<WebExplorerOptions>;
+}): Promise<LocalExplorerResult | null> {
+    const response = await fetchWithTimeout(
+        `${PRIVATE_SERVER_URL}/api/lichess/opening`,
+        {
+            method: "POST",
+            headers: { accept: "application/json", "content-type": "application/json" },
+            body: JSON.stringify(buildWebLocalExplorerQuery({ source, fen, options })),
+        },
+        EXPLORER_PC_TIMEOUT_MS,
+    );
+    if (response.status === 404) return null;
+    if (!response.ok) {
+        const error = explorerHttpError(
+            "Gaming PC local Lichess snapshot",
+            response.status,
+        ) as Error & {
+            localSnapshotFailure?: boolean;
+        };
+        error.localSnapshotFailure = true;
+        throw error;
+    }
+    return (await response.json()) as LocalExplorerResult;
 }
 
 async function fetchWebExplorerDataFromPc({
@@ -220,6 +286,46 @@ async function fetchWebExplorerDataDirect(url: string, token: string) {
     return normalizeExplorerResponse(JSON.parse(lastLine));
 }
 
+export function buildWebLocalExplorerQuery({
+    source,
+    fen,
+    options,
+}: {
+    source: WebDatabaseExplorerSource;
+    fen: string;
+    options?: Partial<WebExplorerOptions>;
+}) {
+    if (source === "lichess-all") {
+        const lichess = normalizeWebLichessExplorerOptions(options?.lichess);
+        return {
+            source: lichess.player ? "lichess-player" : "lichess-all",
+            fen,
+            speeds: lichess.speeds,
+            ratings: lichess.ratings,
+            player: lichess.player ?? null,
+            color: lichess.player ? lichess.color : null,
+            since: lichess.since ?? null,
+            until: lichess.until ?? null,
+            topGames: 0,
+            recentGames: 0,
+        };
+    }
+
+    const masters = normalizeWebMastersExplorerOptions(options?.masters);
+    return {
+        source: "lichess-masters",
+        fen,
+        speeds: [],
+        ratings: [],
+        player: null,
+        color: null,
+        since: masters.since ?? null,
+        until: masters.until ?? null,
+        topGames: 0,
+        recentGames: null,
+    };
+}
+
 function explorerHttpError(label: string, status: number, retryAfterMs?: number) {
     const error = new Error(`${label} returned HTTP ${status}.`) as Error & {
         status?: number;
@@ -228,6 +334,15 @@ function explorerHttpError(label: string, status: number, retryAfterMs?: number)
     error.status = status;
     error.retryAfterMs = retryAfterMs;
     return error;
+}
+
+function isLocalSnapshotFailure(error: unknown) {
+    return Boolean(
+        error &&
+        typeof error === "object" &&
+        "localSnapshotFailure" in error &&
+        error.localSnapshotFailure === true,
+    );
 }
 
 function isRateLimitError(error: unknown) {
@@ -457,7 +572,11 @@ async function prefetchWebExplorerChildren({
         try {
             const requestKey = buildWebExplorerUrl({ source, fen: childFen, options });
             if (explorerCache.has(requestKey)) continue;
-            const data = await fetchWebExplorerDataFromPc({ source, fen: childFen, options });
+            const data = await fetchWebExplorerDataFromPcLocalFirst({
+                source,
+                fen: childFen,
+                options,
+            });
             rememberExplorerData(requestKey, data);
         } catch {
             break;

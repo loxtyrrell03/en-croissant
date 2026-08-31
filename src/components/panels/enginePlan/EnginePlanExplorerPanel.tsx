@@ -97,6 +97,7 @@ import {
   type PlanExplorerSegment,
 } from "@/utils/planExplorer";
 import { getOnlinePlanExplorer } from "@/utils/lichess/planExplorer";
+import { getLocalLichessOpeningStatus } from "@/utils/lichess/localOpening";
 import {
   blendExpectedScores,
   getBlendEngineWeight,
@@ -204,6 +205,11 @@ function EnginePlanExplorerPanel() {
     waiting: lichessLoginWaiting,
     error: lichessLoginError,
   } = useLichessExplorerAuth();
+  const { data: localLichessStatus } = useSWR("local-lichess-opening-status", () =>
+    getLocalLichessOpeningStatus(),
+  );
+  const localLichessAvailable =
+    localLichessStatus?.available === true && localLichessStatus.standardMonths.length > 0;
   const lichessOptionsKey = JSON.stringify({
     ...lichessOptions,
     player: undefined,
@@ -326,13 +332,13 @@ function EnginePlanExplorerPanel() {
     [lichessOptions],
   );
   const practicalSetupKey =
-    view === "setups" && visibleReport && explorerToken
+    view === "setups" && visibleReport && (localLichessAvailable || explorerToken)
       ? [
           "engine-plan-setup-practical",
           visibleReport.fen,
           lichessOptionsKey,
           ENGINE_SETUP_PRACTICAL_MAX_PLIES,
-          "auth",
+          localLichessAvailable ? `local:${localLichessStatus?.builtAt ?? "snapshot"}` : "auth",
         ]
       : null;
   const {
@@ -666,7 +672,7 @@ function EnginePlanExplorerPanel() {
                       ? "blue"
                       : practicalSetupError
                         ? "orange"
-                        : explorerToken
+                        : localLichessAvailable || explorerToken
                           ? "teal"
                           : "gray"
                   }
@@ -675,9 +681,11 @@ function EnginePlanExplorerPanel() {
                     ? "Lichess All loading"
                     : practicalSetupError
                       ? "Lichess All unavailable"
-                      : explorerToken
-                        ? "Lichess practical linked"
-                        : "Engine-only blend"}
+                      : localLichessAvailable
+                        ? "Local practical snapshot"
+                        : explorerToken
+                          ? "Lichess practical linked"
+                          : "Engine-only blend"}
                 </Badge>
               )}
               {view === "setups" && <MoveStrengthSettingsButton size="sm" />}
@@ -687,12 +695,13 @@ function EnginePlanExplorerPanel() {
             </Text>
           </Group>
 
-          {view === "setups" && !explorerToken && (
+          {view === "setups" && !localLichessAvailable && !explorerToken && (
             <Alert color="yellow" title="Connect Lichess for practical setup evidence">
               <Stack gap="xs">
                 <Text size="sm">
-                  Link one Lichess session to compare recurring engine setups with Lichess All. The
-                  authorization page opens in your browser, then this view retries automatically.
+                  No local Lichess snapshot is installed. Link one Lichess session to compare
+                  recurring engine setups with the paced Lichess All fallback. The authorization
+                  page opens in your browser, then this view retries automatically.
                 </Text>
                 <Group gap="xs" align="center">
                   <Button
@@ -748,7 +757,7 @@ function EnginePlanExplorerPanel() {
               blendBySetupSignature={practicalSetupBlends}
               practicalLoading={practicalSetupLoading}
               practicalError={practicalSetupError}
-              hasExplorerToken={!!explorerToken}
+              hasExplorerToken={localLichessAvailable || !!explorerToken}
               drawLines={drawLines}
               previewLine={setPreviewLine}
               previewMove={previewBoardMove}

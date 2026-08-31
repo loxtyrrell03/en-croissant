@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildWebExplorerProxyUrl, fetchWebExplorerMoveStats } from "../explorer";
+import {
+    buildWebExplorerProxyUrl,
+    buildWebLocalExplorerQuery,
+    fetchWebExplorerMoveStats,
+} from "../explorer";
 import { fetchHostedDatabasePositionMoves } from "../hostedDatabaseIndex";
 import {
     cancelWebOtbImport,
@@ -17,6 +21,185 @@ afterEach(() => {
 });
 
 describe("phone data work offload", () => {
+    it("builds the local PC query with the same Explorer filters", () => {
+        expect(
+            buildWebLocalExplorerQuery({
+                source: "lichess-all",
+                fen: INITIAL_FEN,
+                options: {
+                    lichess: {
+                        speeds: ["rapid"],
+                        ratings: [2000],
+                        player: "IfanRJ",
+                        color: "black",
+                        moves: 18,
+                    },
+                },
+            }),
+        ).toMatchObject({
+            source: "lichess-player",
+            fen: INITIAL_FEN,
+            speeds: ["rapid"],
+            ratings: [2000],
+            player: "IfanRJ",
+            color: "black",
+        });
+    });
+
+    it("builds a source-scoped local Masters query", () => {
+        expect(
+            buildWebLocalExplorerQuery({
+                source: "lichess-masters",
+                fen: INITIAL_FEN,
+                options: { masters: { since: "2020", until: "2026", moves: 12 } },
+            }),
+        ).toEqual({
+            source: "lichess-masters",
+            fen: INITIAL_FEN,
+            speeds: [],
+            ratings: [],
+            player: null,
+            color: null,
+            since: "2020",
+            until: "2026",
+            topGames: 0,
+            recentGames: null,
+        });
+    });
+
+    it("uses an authoritative local PC result without a phone token", async () => {
+        const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+            const url = String(input);
+            if (url.includes("/v1/cloud-eval")) return { ok: false, status: 404 };
+            if (url.includes("/api/lichess/opening")) {
+                return {
+                    ok: true,
+                    status: 200,
+                    json: async () => ({
+                        available: true,
+                        white: 8,
+                        draws: 1,
+                        black: 1,
+                        moves: [{ uci: "g1f3", san: "Nf3", white: 8, draws: 1, black: 1 }],
+                    }),
+                };
+            }
+            throw new Error(`Unexpected online request: ${url}`);
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const stats = await fetchWebExplorerMoveStats({
+            source: "lichess-all",
+            fen: "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 1 1",
+        });
+
+        expect(stats.map((stat) => stat.move)).toEqual(["Nf3"]);
+        expect(
+            fetchMock.mock.calls.some(([input]) => String(input).includes("/api/lichess-explorer")),
+        ).toBe(false);
+        expect(
+            fetchMock.mock.calls.some(([input]) =>
+                String(input).startsWith("https://explorer.lichess.org"),
+            ),
+        ).toBe(false);
+    });
+
+    it("treats an empty local position as authoritative", async () => {
+        const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+            const url = String(input);
+            if (url.includes("/v1/cloud-eval")) return { ok: false, status: 404 };
+            if (url.includes("/api/lichess/opening")) {
+                return {
+                    ok: true,
+                    status: 200,
+                    json: async () => ({
+                        available: true,
+                        white: 0,
+                        draws: 0,
+                        black: 0,
+                        moves: [],
+                    }),
+                };
+            }
+            throw new Error(`Unexpected online request: ${url}`);
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        await expect(
+            fetchWebExplorerMoveStats({
+                source: "lichess-all",
+                fen: "8/8/8/8/8/5k2/7P/6K1 w - - 0 50",
+            }),
+        ).resolves.toEqual([]);
+        expect(
+            fetchMock.mock.calls.some(([input]) => String(input).includes("/api/lichess-explorer")),
+        ).toBe(false);
+    });
+
+    it("falls through only when the local source is unavailable", async () => {
+        const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+            const url = String(input);
+            if (url.includes("/v1/cloud-eval")) return { ok: false, status: 404 };
+            if (url.includes("/api/lichess/opening")) {
+                return {
+                    ok: true,
+                    status: 200,
+                    json: async () => ({ available: false, moves: [] }),
+                };
+            }
+            if (url.includes("/api/lichess-explorer")) {
+                return {
+                    ok: true,
+                    status: 200,
+                    json: async () => ({
+                        white: 3,
+                        draws: 0,
+                        black: 0,
+                        moves: [{ uci: "b1c3", san: "Nc3", white: 3, draws: 0, black: 0 }],
+                    }),
+                };
+            }
+            throw new Error(`Unexpected direct request: ${url}`);
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const stats = await fetchWebExplorerMoveStats({
+            source: "lichess-masters",
+            fen: "rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 1",
+        });
+
+        expect(stats.map((stat) => stat.move)).toEqual(["Nc3"]);
+        expect(
+            fetchMock.mock.calls.some(([input]) => String(input).includes("/api/lichess-explorer")),
+        ).toBe(true);
+    });
+
+    it("fails closed when the PC reports an unreadable local snapshot", async () => {
+        const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+            const url = String(input);
+            if (url.includes("/v1/cloud-eval")) return { ok: false, status: 404 };
+            if (url.includes("/api/lichess/opening")) return { ok: false, status: 500 };
+            throw new Error(`Unexpected fallback request: ${url}`);
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        await expect(
+            fetchWebExplorerMoveStats({
+                source: "lichess-all",
+                fen: "rnbqkbnr/pppppppp/8/8/7N/8/PPPPPPPP/RNBQKB1R b KQkq - 1 1",
+                token: "must-not-leak-online",
+            }),
+        ).rejects.toMatchObject({ status: 500 });
+        expect(
+            fetchMock.mock.calls.some(([input]) => String(input).includes("/api/lichess-explorer")),
+        ).toBe(false);
+        expect(
+            fetchMock.mock.calls.some(([input]) =>
+                String(input).startsWith("https://explorer.lichess.org"),
+            ),
+        ).toBe(false);
+    });
+
     it("builds a private-PC explorer request with the desktop filters", () => {
         const url = new URL(
             buildWebExplorerProxyUrl({
