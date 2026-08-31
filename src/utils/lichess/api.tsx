@@ -32,6 +32,13 @@ import {
   queueLichessRequest,
   type LichessRequestSchedule,
 } from "@/utils/lichess/requestLane";
+import {
+  explorerMonth,
+  explorerYear,
+  localExplorerFen,
+  localOpeningToPositionData,
+  queryLocalLichessOpening,
+} from "@/utils/lichess/localOpening";
 import { BoundedMap, BoundedSet } from "../boundedCache";
 import { getDatabasesDir } from "../directories";
 
@@ -660,6 +667,20 @@ export async function getLichessGames(
   play: string[] = [],
   schedule: LichessRequestSchedule = {},
 ): Promise<PositionData> {
+  const local = await queryLocalLichessOpening({
+    source: options.player ? "lichess-player" : "lichess-all",
+    fen: localExplorerFen(fen, play),
+    speeds: options.speeds ?? [],
+    ratings: options.ratings ?? [],
+    player: options.player?.trim() || null,
+    color: options.player ? options.color : null,
+    since: explorerMonth(options.since),
+    until: explorerMonth(options.until),
+    topGames: options.topGames ?? null,
+    recentGames: options.recentGames ?? null,
+  });
+  if (local?.available) return localOpeningToPositionData(local);
+
   const url = match(options.player)
     .with(
       P.union(undefined, ""),
@@ -686,6 +707,20 @@ export async function getMasterGames(
   play: string[] = [],
   schedule: LichessRequestSchedule = {},
 ): Promise<PositionData> {
+  const local = await queryLocalLichessOpening({
+    source: "lichess-masters",
+    fen: localExplorerFen(fen, play),
+    speeds: [],
+    ratings: [],
+    player: null,
+    color: null,
+    since: explorerYear(options.since),
+    until: explorerYear(options.until),
+    topGames: options.topGames ?? null,
+    recentGames: null,
+  });
+  if (local?.available) return localOpeningToPositionData(local);
+
   const url = `${explorerURL}/masters?${getMasterGamesQueryParams(fen, options, play)}`;
   const res = await fetchExplorerResponse("Lichess Masters", url, token, schedule);
   if (!res.ok) {
@@ -701,6 +736,11 @@ async function fetchExplorerResponse(
   schedule: LichessRequestSchedule,
   minSpacingMs?: number,
 ) {
+  if (!token) {
+    throw new Error(
+      `${label} is not covered by the local snapshot. Link Lichess to use the paced online fallback.`,
+    );
+  }
   const remaining = lichessBackoffRemaining();
   if (remaining > 0) throw explorerCooldownError(label, remaining);
   return await queueLichessRequest(
@@ -776,6 +816,20 @@ export async function getPlayerGames(
   token?: string,
   schedule: LichessRequestSchedule = {},
 ) {
+  const local = await queryLocalLichessOpening({
+    source: "lichess-player",
+    fen,
+    speeds: [],
+    ratings: [],
+    player: player.trim(),
+    color,
+    since: null,
+    until: null,
+    topGames: null,
+    recentGames: null,
+  });
+  if (local?.available) return localOpeningToPositionData(local);
+
   const res = await fetchExplorerResponse(
     "Lichess player",
     `${explorerURL}/player?fen=${fen}&player=${player}&color=${color}`,

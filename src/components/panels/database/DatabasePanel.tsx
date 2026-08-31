@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   Alert,
+  Badge,
   Group,
   ScrollArea,
   SegmentedControl,
@@ -58,6 +59,10 @@ import {
 import { formatNumber } from "@/utils/format";
 import { convertToNormalized, getLichessGames, getMasterGames } from "@/utils/lichess/api";
 import type { LichessGamesOptions, MasterGamesOptions } from "@/utils/lichess/explorer";
+import {
+  getLocalLichessOpeningStatus,
+  hasLocalLichessOpeningSource,
+} from "@/utils/lichess/localOpening";
 import type { OpeningMoveHealthSidePreference } from "@/utils/openingMoveHealth";
 import { getTabWorkspaceKey } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
@@ -361,7 +366,20 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
     normalizePlayerText(debouncedMasterGamePlayerText).length >= 3;
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
     ?.accessToken;
-  const missingExplorerToken = db !== "local" && !explorerToken;
+  const { data: localLichessStatus, error: localLichessStatusError } = useSWR(
+    db !== "local" ? "local-lichess-opening-status" : null,
+    () => getLocalLichessOpeningStatus(),
+  );
+  const localLichessAvailable =
+    db === "lch_master"
+      ? hasLocalLichessOpeningSource(localLichessStatus, "lichess-masters")
+      : db === "lch_all"
+        ? hasLocalLichessOpeningSource(localLichessStatus, "lichess-all")
+        : false;
+  const missingExplorerToken =
+    db !== "local" && localLichessStatus !== undefined && !localLichessAvailable && !explorerToken;
+  const explorerSourceReady = db === "local" || localLichessAvailable || Boolean(explorerToken);
+  const explorerError = db !== "local" ? localLichessStatusError : null;
 
   const { data: databases } = useSWR(db === "local" ? "databases" : null, () => getDatabases());
   const { data: masterGameTextPlayer } = useSWR(
@@ -577,9 +595,7 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
     isLoading,
     error,
   } = useSWR(
-    tabType !== "options" && !missingExplorerToken
-      ? { dbType, requestId: databaseRequestId }
-      : null,
+    tabType !== "options" && explorerSourceReady ? { dbType, requestId: databaseRequestId } : null,
     async ({ dbType, requestId }) => {
       return fetchOpening(dbType, tab?.value || "", requestId, tabType, {
         ...masterGamePlayerFilters,
@@ -610,6 +626,11 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
             value={db}
             onChange={(value) => setDb(value as "local" | "lch_all" | "lch_master")}
           />
+          {db !== "local" && localLichessAvailable ? (
+            <Badge variant="light" color="teal">
+              {db === "lch_master" ? "Local broadcast-based snapshot" : "Local snapshot"}
+            </Badge>
+          ) : null}
 
           {db === "local" && (
             <DatabaseFolderSelect
@@ -733,7 +754,7 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
 
         <PanelWithError
           value="stats"
-          error={error}
+          error={explorerError ?? error}
           type={db}
           header={header}
           referenceDatabase={referenceDatabase}
@@ -751,7 +772,7 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
         </PanelWithError>
         <PanelWithError
           value="games"
-          error={error}
+          error={explorerError ?? error}
           type={db}
           header={header}
           referenceDatabase={referenceDatabase}
@@ -783,7 +804,7 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
         </PanelWithError>
         <PanelWithError
           value="options"
-          error={error}
+          error={explorerError ?? error}
           type={db}
           header={header}
           referenceDatabase={referenceDatabase}
@@ -814,7 +835,7 @@ function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
 
 function PanelWithError(props: {
   value: string;
-  error: string;
+  error: unknown;
   type: string;
   header: React.ReactNode;
   children: React.ReactNode;

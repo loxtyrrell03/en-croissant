@@ -28,8 +28,6 @@ export async function buildAiCoachOpeningContext({
     token,
     strengthSettings,
 }: BuildAiCoachOpeningContextOptions): Promise<CoachOpeningContext | null> {
-    if (!token) return null;
-
     const explorerOptions: LichessGamesOptions = {
         ...lichessOptions,
         topGames: 0,

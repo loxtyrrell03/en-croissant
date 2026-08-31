@@ -60,6 +60,7 @@ import {
 } from "./chess-coach-service.mjs";
 import { createLocalLichessEvalStore } from "./lichess-local-eval-reader.mjs";
 import { createLichessExplorerLane } from "./lichess-explorer-lane.mjs";
+import { createLocalLichessOpeningStore } from "./lichess-opening-store.mjs";
 
 const repoRoot = resolve(
   process.env.EN_CROISSANT_REPO_ROOT || resolve(dirname(fileURLToPath(import.meta.url)), ".."),
@@ -155,6 +156,7 @@ const maxCredentialBytes = 4 * 1024;
 const maxCoachRequestBytes = 512 * 1024;
 const maxCoachReviewBytes = 2 * 1024 * 1024;
 const maxOtbImportRequestBytes = 32 * 1024;
+const maxLichessOpeningRequestBytes = 64 * 1024;
 const lichessExplorerFreshMs = 30 * 60 * 1000;
 const lichessPlayerExplorerFreshMs = 5 * 60 * 1000;
 const lichessMastersExplorerFreshMs = 24 * 60 * 60 * 1000;
@@ -219,6 +221,12 @@ const otbImportService = new OtbImportService({
   onLog: (message) => void appendLog(message),
 });
 const fidePlayerSearch = new FidePlayerSearchService();
+const localLichessOpeningStore = createLocalLichessOpeningStore(
+  resolve(
+    process.env.EN_CROISSANT_LOCAL_LICHESS_OPENING_PATH ||
+      join(localAppData, "ChessData", "lichess", "opening", "opening.sqlite3"),
+  ),
+);
 
 await mkdir(serverRoot, { recursive: true });
 await mkdir(dirname(statePath), { recursive: true });
@@ -256,6 +264,7 @@ async function handleRequest(request, response) {
   const pathname = decodeURIComponent(requestUrl.pathname);
   const sensitiveApi =
     pathname === "/api/lichess-credential" ||
+    pathname.startsWith("/api/lichess/opening") ||
     pathname.startsWith("/api/chess-coach") ||
     pathname.startsWith("/api/chess-books") ||
     pathname === "/api/engine/start" ||
@@ -443,6 +452,16 @@ async function handleRequest(request, response) {
     if (method === "GET") return readLichessCredential(response);
     if (method === "PUT") return writeLichessCredential(request, response);
     return writeJson(response, 405, { error: "Method not allowed." });
+  }
+
+  if (pathname === "/api/lichess/opening/status") {
+    if (method !== "GET") return writeJson(response, 405, { error: "Method not allowed." });
+    return writeLocalLichessOpeningStatus(response);
+  }
+
+  if (pathname === "/api/lichess/opening") {
+    if (method !== "POST") return writeJson(response, 405, { error: "Method not allowed." });
+    return writeLocalLichessOpening(request, response);
   }
 
   if (pathname === "/api/lichess-explorer") {
@@ -872,6 +891,27 @@ async function writeLichessExplorer(requestUrl, response) {
         ? { "retry-after": String(Math.max(1, Math.ceil(retryAfterMs / 1000))) }
         : {},
     );
+  }
+}
+
+function writeLocalLichessOpeningStatus(response) {
+  try {
+    return writeJson(response, 200, localLichessOpeningStore.status());
+  } catch (error) {
+    return writeJson(response, 500, {
+      error: error instanceof Error ? error.message : "The local Lichess snapshot is unreadable.",
+    });
+  }
+}
+
+async function writeLocalLichessOpening(request, response) {
+  try {
+    const query = await readJsonBody(request, maxLichessOpeningRequestBytes);
+    return writeJson(response, 200, localLichessOpeningStore.query(query));
+  } catch (error) {
+    return writeJson(response, 500, {
+      error: error instanceof Error ? error.message : "The local Lichess snapshot is unreadable.",
+    });
   }
 }
 

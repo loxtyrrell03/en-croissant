@@ -96,6 +96,7 @@ import { getDatabasesDir } from "@/utils/directories";
 import { formatNumber } from "@/utils/format";
 import { getLichessGames, getMasterGames, getRecentLichessGames } from "@/utils/lichess/api";
 import type { LichessRequestSchedule } from "@/utils/lichess/requestLane";
+import { getLocalLichessOpeningStatus } from "@/utils/lichess/localOpening";
 import { isPrefix } from "@/utils/misc";
 import {
   getOnlineGameSourceLabel,
@@ -558,6 +559,17 @@ function OpponentPrepPanel({
     ?.accessToken;
   const prepMode = prep.mode ?? "player";
   const prepSource = prep.source ?? "local";
+  const { data: localLichessStatus, error: localLichessStatusError } = useSWR(
+    "local-lichess-opening-status",
+    () => getLocalLichessOpeningStatus(),
+  );
+  const localLichessAvailable =
+    localLichessStatus?.available === true &&
+    (prepSource === "lch_master"
+      ? localLichessStatus.mastersMonths.length > 0
+      : prepSource === "lch_all"
+        ? localLichessStatus.standardMonths.length > 0
+        : false);
   const builderSettings = useMemo(
     () =>
       normalizePrepBuilderSettings({
@@ -626,13 +638,22 @@ function OpponentPrepPanel({
           },
           {
             value: LICHESS_MASTER_SOURCE,
-            label: "Lichess Masters",
+            label: localLichessAvailable
+              ? "Lichess Masters (local broadcast snapshot)"
+              : "Lichess Masters",
           },
         ],
       },
       ...groupedOptions,
     ];
-  }, [localDatabases, prep.databaseLabel, prep.databasePath, prepDatabases, prepSource]);
+  }, [
+    localDatabases,
+    localLichessAvailable,
+    prep.databaseLabel,
+    prep.databasePath,
+    prepDatabases,
+    prepSource,
+  ]);
   const selectedDatabase = useMemo(
     () => prepDatabases.find((database) => database.file === prep.databasePath) ?? null,
     [prep.databasePath, prepDatabases],
@@ -664,8 +685,15 @@ function OpponentPrepPanel({
   const opponentToMove = getFenTurn(currentFen) === prep.color;
   const userColor = oppositePrepColor(prep.color);
   const hasPlayer = Boolean(prep.player) || prep.playerName.trim().length >= 3;
-  const missingExplorerToken = prepSource !== "local" && !explorerToken;
-  const sourceReady = prepSource === "local" ? Boolean(prep.databasePath) : !missingExplorerToken;
+  const missingExplorerToken =
+    prepSource !== "local" &&
+    localLichessStatus !== undefined &&
+    !localLichessAvailable &&
+    !explorerToken;
+  const sourceReady =
+    prepSource === "local"
+      ? Boolean(prep.databasePath)
+      : localLichessAvailable || Boolean(explorerToken);
   const targetReady = prepMode === "general" || hasPlayer;
   const canOpenPrepSourceGames =
     prepMode === "player" && prepSource === "local" && Boolean(prep.databasePath);
@@ -706,10 +734,19 @@ function OpponentPrepPanel({
                 moves: Math.max(12, prep.moveLimit),
               }
             : null,
-        auth: prepSource === "local" ? "local" : explorerToken ? "auth" : "no-auth",
+        auth:
+          prepSource === "local"
+            ? "local"
+            : localLichessAvailable
+              ? `local-lichess:${localLichessStatus?.builtAt ?? "snapshot"}`
+              : explorerToken
+                ? "auth"
+                : "no-auth",
       }),
     [
       explorerToken,
+      localLichessAvailable,
+      localLichessStatus?.builtAt,
       lichessOptions,
       masterOptions,
       prep.color,
@@ -806,7 +843,6 @@ function OpponentPrepPanel({
   const loadOpeningsForFen = useCallback(
     async (fen: string, moveLimitOverride?: number, schedule: LichessRequestSchedule = {}) => {
       if (prepSource === "local" && !prep.databasePath) return [];
-      if (prepSource !== "local" && !explorerToken) return [];
 
       const moveLimit = moveLimitOverride ?? prep.moveLimit;
       const cacheKey = `${queryScope}|${moveLimit}|${fen}`;
@@ -4430,10 +4466,16 @@ function OpponentPrepPanel({
         </Group>
       ) : null}
 
-      {!sourceReady ? (
+      {prepSource !== "local" && localLichessStatusError ? (
+        <Alert color="red" variant="light">
+          {localLichessStatusError instanceof Error
+            ? localLichessStatusError.message
+            : String(localLichessStatusError)}
+        </Alert>
+      ) : !sourceReady ? (
         <Alert color="yellow" variant="light">
           {missingExplorerToken
-            ? "Link a Lichess account to use Lichess All or Lichess Masters in prep."
+            ? "No local Lichess snapshot is installed. Link a Lichess account to use the paced online fallback in prep."
             : "Choose a prep source before starting."}
         </Alert>
       ) : !targetReady ? (
@@ -4467,7 +4509,11 @@ function OpponentPrepPanel({
       {showTrainingStage ? (
         <Box flex={1} style={{ minHeight: 0, overflow: "auto" }}>
           {error ? (
-            <Alert color="red">Could not search the prep source from this position.</Alert>
+            <Alert color="red">
+              {error instanceof Error
+                ? error.message
+                : "Could not search the prep source from this position."}
+            </Alert>
           ) : !configReady ? null : opponentToMove ? (
             <OpponentPrepMoveTable
               rows={currentRows}

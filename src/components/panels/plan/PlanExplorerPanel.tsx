@@ -105,6 +105,7 @@ import {
 } from "@/utils/db";
 import { formatNumber } from "@/utils/format";
 import { getOnlinePlanExplorer, type OnlinePlanExplorerSource } from "@/utils/lichess/planExplorer";
+import { getLocalLichessOpeningStatus } from "@/utils/lichess/localOpening";
 import {
   formatPlanPieceRoute,
   isPlanBrush,
@@ -209,7 +210,17 @@ function PlanExplorerPanel() {
   const lichessOptionsKey = JSON.stringify(lichessOptions);
   const masterOptionsKey = JSON.stringify(masterOptions);
   const isLocalSource = source === "local";
-  const missingExplorerToken = !isLocalSource && !explorerToken;
+  const { data: localLichessStatus, error: localLichessStatusError } = useSWR(
+    !isLocalSource ? "local-lichess-opening-status" : null,
+    () => getLocalLichessOpeningStatus(),
+  );
+  const localLichessAvailable =
+    localLichessStatus?.available === true &&
+    (source === "lch_master"
+      ? localLichessStatus.mastersMonths.length > 0
+      : localLichessStatus.standardMonths.length > 0);
+  const missingExplorerToken =
+    !isLocalSource && localLichessStatus !== undefined && !localLichessAvailable && !explorerToken;
   const clampedEngineDepth = clampNumber(engineStrengthDepth, 1, 40);
   const clampedEngineMultipv = clampNumber(engineStrengthMultipv, 1, 20);
   const localEngines = useMemo(
@@ -341,7 +352,7 @@ function PlanExplorerPanel() {
     ],
   );
 
-  const canSearch = isLocalSource ? !!referenceDatabase : !!explorerToken;
+  const canSearch = isLocalSource ? !!referenceDatabase : localLichessAvailable || !!explorerToken;
   const searchKey = canSearch
     ? [
         "plan-explorer",
@@ -748,13 +759,24 @@ function PlanExplorerPanel() {
       return <NoDatabaseWarning />;
     }
 
+    if (localLichessStatusError) {
+      return (
+        <Alert color="red" title="Local Lichess snapshot unavailable">
+          {localLichessStatusError instanceof Error
+            ? localLichessStatusError.message
+            : String(localLichessStatusError)}
+        </Alert>
+      );
+    }
+
     if (missingExplorerToken) {
       return (
         <Alert color="yellow" title="Connect Lichess to use the explorer">
           <Stack gap="xs">
             <Text size="sm">
-              Lichess All and Lichess Masters require one authenticated Lichess session. The browser
-              will open Lichess, then this panel will retry automatically.
+              No local Lichess snapshot is installed. Link one Lichess session to use the paced
+              online fallback; the browser will open Lichess, then this panel will retry
+              automatically.
             </Text>
             <Group gap="xs">
               <Button size="xs" onClick={() => void connectLichess()} loading={lichessLoginWaiting}>
@@ -943,6 +965,13 @@ function PlanExplorerPanel() {
                 { label: t("Board.Database.LichessMaster"), value: "lch_master" },
               ]}
             />
+            {!isLocalSource && localLichessAvailable ? (
+              <Badge variant="light" color="teal">
+                {source === "lch_master"
+                  ? "Local broadcast-based snapshot"
+                  : "Local Lichess snapshot"}
+              </Badge>
+            ) : null}
             {isLocalSource && (
               <>
                 <DatabaseSelector

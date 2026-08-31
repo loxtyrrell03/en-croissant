@@ -1484,11 +1484,10 @@ export default function AiCoachPanel() {
       try {
         const openingProgress: CoachProgressPayload = {
           requestId,
-          stage: explorerToken ? "opening_context" : "opening_context_skip",
-          label: explorerToken ? "Fetching Lichess All stats" : "Skipping Lichess All stats",
-          detail: explorerToken
-            ? "Pulling explorer move counts and blended strength for this FEN."
-            : "No Lichess session token is available for explorer context.",
+          stage: "opening_context",
+          label: "Checking Lichess All stats",
+          detail:
+            "Checking the local Lichess snapshot first, with the linked paced fallback if needed.",
           progress: 5,
           finished: false,
           elapsedMs: Date.now() - startedAt,

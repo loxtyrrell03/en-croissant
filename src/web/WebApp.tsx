@@ -3771,12 +3771,6 @@ function DatabaseUnderBoardPanel({
 
   useEffect(() => {
     if (source === "local") return;
-    if (!lichessToken.trim()) {
-      setOnlineStats([]);
-      setOnlineError(null);
-      setOnlineLoading(false);
-      return;
-    }
 
     const controller = new AbortController();
     let active = true;
@@ -3834,7 +3828,7 @@ function DatabaseUnderBoardPanel({
   const databaseCanStart =
     source === "local"
       ? Boolean(selectedLocalId) && !loadingLocalSource && !localLazyLoading
-      : Boolean(lichessToken.trim()) && !onlineLoading;
+      : !onlineLoading;
   const startDatabaseMoves = () => {
     setStoredView("stats");
     setStoredPanelStage("moves");
@@ -3864,12 +3858,6 @@ function DatabaseUnderBoardPanel({
         icon={<IconDatabase size={30} />}
         title="Position index unavailable"
         text={localLazyError}
-      />
-    ) : source !== "local" && !lichessToken.trim() ? (
-      <UnderBoardEmpty
-        icon={<IconDatabase size={30} />}
-        title={`${sourceLabel} locked`}
-        text="Sign in to use this source."
       />
     ) : onlineLoading && source !== "local" ? (
       <Center h={150}>
@@ -4008,7 +3996,10 @@ function DatabaseUnderBoardPanel({
               data={[
                 { value: "local", label: "Local" },
                 { value: "lichess-all", label: "Lichess All" },
-                { value: "lichess-masters", label: "Lichess Masters" },
+                {
+                  value: "lichess-masters",
+                  label: "Lichess Masters (local broadcast snapshot first)",
+                },
               ]}
             />
             {source === "local" ? (
@@ -4043,7 +4034,6 @@ function DatabaseUnderBoardPanel({
                 <ActionIcon
                   aria-label="Refresh Lichess explorer"
                   onClick={() => setRefreshKey((key) => key + 1)}
-                  disabled={!lichessToken.trim()}
                   loading={onlineLoading}
                 >
                   <IconRefresh size={16} />
@@ -5001,7 +4991,7 @@ function PrepUnderBoardPanel({
       ? Boolean(activePrepSourceId)
       : selectedPrepSource === "temporary"
         ? Boolean(selectedTemporarySource)
-        : Boolean(lichessToken.trim());
+        : true;
   const targetReady = selectedPrepMode === "general" || trimmedSelectedOpponentName.length >= 3;
   const configReady = sourceReady && targetReady;
   const selectedSourceLabel =
@@ -5012,7 +5002,7 @@ function PrepUnderBoardPanel({
       : selectedPrepSource === "lichess-all"
         ? "Lichess All"
         : selectedPrepSource === "lichess-masters"
-          ? "Lichess Masters"
+          ? "Lichess Masters (local broadcast snapshot first)"
           : activePrepSourceDatabase
             ? formatDatabasePickerLabel(activePrepSourceDatabase.name)
             : (sourceOptions
@@ -5308,15 +5298,6 @@ function PrepUnderBoardPanel({
       setOnlinePrepStats([]);
       setOnlineRootPrepStats([]);
       setOnlinePrepError(null);
-      setOnlinePrepLoading(false);
-      setOnlineRootPrepLoading(false);
-      return;
-    }
-
-    if (!lichessToken.trim()) {
-      setOnlinePrepStats([]);
-      setOnlineRootPrepStats([]);
-      setOnlinePrepError("Sign in to Lichess or paste a token to use this prep source.");
       setOnlinePrepLoading(false);
       setOnlineRootPrepLoading(false);
       return;
@@ -9068,7 +9049,9 @@ function prepBoardTitle(prep: WebPrepWorkspace) {
 }
 
 function getExplorerSourceLabel(source: WebDatabaseExplorerSource) {
-  return source === "lichess-all" ? "Lichess All" : "Lichess Masters";
+  return source === "lichess-all"
+    ? "Lichess All"
+    : "Lichess Masters (local broadcast snapshot first)";
 }
 
 function isWebDatabasePanelSource(value: string): value is WebDatabasePanelSource {
@@ -9135,8 +9118,8 @@ function getWebDatabaseSelectData({
       },
       {
         value: WEB_LICHESS_MASTERS_SOURCE_VALUE,
-        label: "Lichess Masters",
-        detail: "Explorer - saved token reused",
+        label: "Lichess Masters (local broadcast snapshot first)",
+        detail: "Local first - saved token fallback",
         searchText: "lichess masters online explorer",
       },
     ]);
