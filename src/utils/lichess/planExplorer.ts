@@ -190,6 +190,7 @@ async function fetchExplorerPosition(
                 },
                 token,
                 play,
+                { priority: "background" },
             );
         }
 
@@ -202,6 +203,7 @@ async function fetchExplorerPosition(
             },
             token,
             play,
+            { priority: "background" },
         );
     } catch (error) {
         const retryAfterMs = explorerRateLimitDelay(error);

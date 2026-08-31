@@ -26,6 +26,12 @@ import {
 } from "@/utils/lichess/explorer";
 import { countMainPly } from "@/utils/treeReducer";
 import { unwrap } from "@/utils/unwrap";
+import {
+  lichessBackoffRemaining,
+  noteLichessRateLimit,
+  queueLichessRequest,
+  type LichessRequestSchedule,
+} from "@/utils/lichess/requestLane";
 import { BoundedMap, BoundedSet } from "../boundedCache";
 import { getDatabasesDir } from "../directories";
 
@@ -166,6 +172,10 @@ async function fetchWithTimeout(
 ) {
   const controller = new AbortController();
   const timeoutId = globalThis.setTimeout(() => controller.abort(), timeoutMs);
+  const externalSignal = init?.signal;
+  const onAbort = () => controller.abort();
+  externalSignal?.addEventListener("abort", onAbort, { once: true });
+  if (externalSignal?.aborted) controller.abort();
 
   try {
     return await fetch(url, {
@@ -173,12 +183,18 @@ async function fetchWithTimeout(
       signal: controller.signal,
     });
   } catch (error) {
+    if (externalSignal?.aborted) {
+      const abort = new Error("Lichess request was cancelled.");
+      abort.name = "AbortError";
+      throw abort;
+    }
     if (isAbortError(error)) {
       throw new Error(timeoutMessage);
     }
     throw error;
   } finally {
     globalThis.clearTimeout(timeoutId);
+    externalSignal?.removeEventListener("abort", onAbort);
   }
 }
 
@@ -642,6 +658,7 @@ export async function getLichessGames(
   options: LichessGamesOptions,
   token?: string,
   play: string[] = [],
+  schedule: LichessRequestSchedule = {},
 ): Promise<PositionData> {
   const url = match(options.player)
     .with(
@@ -649,22 +666,15 @@ export async function getLichessGames(
       () => `${explorerURL}/lichess?${getLichessGamesQueryParams(fen, options, play)}`,
     )
     .otherwise(() => `${explorerURL}/player?${getLichessGamesQueryParams(fen, options, play)}`);
-  const res = await fetchWithTimeout(
+  const res = await fetchExplorerResponse(
+    "Lichess All",
     url,
-    {
-      headers: apiHeaders(
-        token
-          ? {
-              Authorization: `Bearer ${token}`,
-            }
-          : undefined,
-      ),
-    },
-    LICHESS_EXPLORER_TIMEOUT_MS,
-    "Lichess All search timed out. Try again in a moment.",
+    token,
+    schedule,
+    options.player ? 1_000 : undefined,
   );
   if (!res.ok) {
-    throw lichessExplorerRequestError("Lichess All", res);
+    throw noteExplorerFailure("Lichess All", res);
   }
   return await res.json();
 }
@@ -674,26 +684,62 @@ export async function getMasterGames(
   options: MasterGamesOptions,
   token?: string,
   play: string[] = [],
+  schedule: LichessRequestSchedule = {},
 ): Promise<PositionData> {
   const url = `${explorerURL}/masters?${getMasterGamesQueryParams(fen, options, play)}`;
-  const res = await fetchWithTimeout(
-    url,
-    {
-      headers: apiHeaders(
-        token
-          ? {
-              Authorization: `Bearer ${token}`,
-            }
-          : undefined,
-      ),
-    },
-    LICHESS_EXPLORER_TIMEOUT_MS,
-    "Lichess Masters search timed out. Try again in a moment.",
-  );
+  const res = await fetchExplorerResponse("Lichess Masters", url, token, schedule);
   if (!res.ok) {
-    throw lichessExplorerRequestError("Lichess Masters", res);
+    throw noteExplorerFailure("Lichess Masters", res);
   }
   return await res.json();
+}
+
+async function fetchExplorerResponse(
+  label: string,
+  url: string,
+  token: string | undefined,
+  schedule: LichessRequestSchedule,
+  minSpacingMs?: number,
+) {
+  const remaining = lichessBackoffRemaining();
+  if (remaining > 0) throw explorerCooldownError(label, remaining);
+  return await queueLichessRequest(
+    async () => {
+      const queuedRemaining = lichessBackoffRemaining();
+      if (queuedRemaining > 0) throw explorerCooldownError(label, queuedRemaining);
+      return await fetchWithTimeout(
+        url,
+        {
+          headers: apiHeaders(
+            token
+              ? {
+                  Authorization: `Bearer ${token}`,
+                }
+              : undefined,
+          ),
+          signal: schedule.signal,
+        },
+        LICHESS_EXPLORER_TIMEOUT_MS,
+        `${label} search timed out. Try again in a moment.`,
+      );
+    },
+    { ...schedule, minSpacingMs: Math.max(schedule.minSpacingMs ?? 0, minSpacingMs ?? 0) },
+  );
+}
+
+function explorerCooldownError(label: string, retryAfterMs: number) {
+  return new LichessExplorerRequestError(
+    "rate-limited",
+    `${label} is cooling down after a Lichess rate limit.`,
+    { status: 429, retryAfterMs },
+  );
+}
+
+function noteExplorerFailure(label: string, response: Response) {
+  if (response.status === 429) {
+    noteLichessRateLimit(response.headers.get("retry-after"));
+  }
+  return lichessExplorerRequestError(label, response);
 }
 
 function lichessExplorerRequestError(label: string, response: Response) {
@@ -723,23 +769,22 @@ function parseExplorerRetryAfterMs(value: string | null, now = Date.now()) {
   return Math.max(0, retryAt - now);
 }
 
-export async function getPlayerGames(fen: string, player: string, color: Color, token?: string) {
-  const res = await fetchWithTimeout(
+export async function getPlayerGames(
+  fen: string,
+  player: string,
+  color: Color,
+  token?: string,
+  schedule: LichessRequestSchedule = {},
+) {
+  const res = await fetchExplorerResponse(
+    "Lichess player",
     `${explorerURL}/player?fen=${fen}&player=${player}&color=${color}`,
-    {
-      headers: apiHeaders(
-        token
-          ? {
-              Authorization: `Bearer ${token}`,
-            }
-          : undefined,
-      ),
-    },
-    LICHESS_EXPLORER_TIMEOUT_MS,
-    "Lichess player search timed out. Try again in a moment.",
+    token,
+    schedule,
+    1_000,
   );
   if (!res.ok) {
-    throw new Error(`Failed to fetch player games: ${res.status} ${res.statusText}`);
+    throw noteExplorerFailure("Lichess player", res);
   }
   return await res.json();
 }

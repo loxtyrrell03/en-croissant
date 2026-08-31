@@ -136,6 +136,30 @@ describe("phone data work offload", () => {
         expect(directHeaders).toEqual({ Authorization: "Bearer fallback-test-token" });
     });
 
+    it("does not bypass a PC rate-limit response with a direct Lichess retry", async () => {
+        const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+            const url = String(input);
+            if (url.includes("/v1/cloud-eval")) return { ok: false, status: 404 };
+            if (url.includes("/api/lichess-explorer")) return { ok: false, status: 429 };
+            throw new Error(`Unexpected direct retry: ${url}`);
+        });
+        vi.stubGlobal("fetch", fetchMock);
+
+        await expect(
+            fetchWebExplorerMoveStats({
+                source: "lichess-all",
+                fen: "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1",
+                token: "rate-limit-test-token",
+            }),
+        ).rejects.toMatchObject({ status: 429 });
+
+        expect(
+            fetchMock.mock.calls.some(([input]) =>
+                String(input).startsWith("https://explorer.lichess.org"),
+            ),
+        ).toBe(false);
+    });
+
     it("uses the PC database position endpoint and reuses the phone memory result", async () => {
         const fetchMock = vi.fn().mockResolvedValue({
             ok: true,

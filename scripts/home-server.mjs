@@ -59,6 +59,7 @@ import {
   writeProcessStdinSafely,
 } from "./chess-coach-service.mjs";
 import { createLocalLichessEvalStore } from "./lichess-local-eval-reader.mjs";
+import { createLichessExplorerLane } from "./lichess-explorer-lane.mjs";
 
 const repoRoot = resolve(
   process.env.EN_CROISSANT_REPO_ROOT || resolve(dirname(fileURLToPath(import.meta.url)), ".."),
@@ -191,6 +192,7 @@ const lichessExplorerRequests = new Map();
 let lichessExplorerCacheHits = 0;
 let lichessExplorerCacheMisses = 0;
 let lichessExplorerUpstreamRequests = 0;
+const lichessExplorerLane = createLichessExplorerLane();
 let libraryRefreshTimer = null;
 let libraryRefreshRunning = false;
 let libraryRefreshQueued = false;
@@ -858,9 +860,18 @@ async function writeLichessExplorer(requestUrl, response) {
     });
   } catch (error) {
     const status = Number(error?.statusCode) || 502;
-    return writeJson(response, status, {
-      error: error instanceof Error ? error.message : "Lichess explorer request failed.",
-    });
+    const retryAfterMs = Math.max(0, Number(error?.retryAfterMs) || 0);
+    return writeJson(
+      response,
+      status,
+      {
+        error: error instanceof Error ? error.message : "Lichess explorer request failed.",
+        ...(retryAfterMs > 0 ? { retryAfterMs } : {}),
+      },
+      retryAfterMs > 0
+        ? { "retry-after": String(Math.max(1, Math.ceil(retryAfterMs / 1000))) }
+        : {},
+    );
   }
 }
 
@@ -978,32 +989,39 @@ function refreshLichessExplorer(cacheKey, upstreamUrl) {
 }
 
 async function fetchLichessExplorer(upstreamUrl) {
-  lichessExplorerUpstreamRequests += 1;
-  const upstreamResponse = await fetch(upstreamUrl, {
-    headers: {
-      accept: "application/json, application/x-ndjson",
-      authorization: `Bearer ${sharedLichessCredential.token}`,
-    },
-    signal: AbortSignal.timeout(20_000),
-  });
-  if (!upstreamResponse.ok) {
-    const error = new Error(`Lichess explorer returned HTTP ${upstreamResponse.status}.`);
-    error.statusCode = upstreamResponse.status;
-    throw error;
-  }
+  return await lichessExplorerLane.run(async () => {
+    lichessExplorerUpstreamRequests += 1;
+    const upstreamResponse = await fetch(upstreamUrl, {
+      headers: {
+        accept: "application/json, application/x-ndjson",
+        authorization: `Bearer ${sharedLichessCredential.token}`,
+      },
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (!upstreamResponse.ok) {
+      const error = new Error(`Lichess explorer returned HTTP ${upstreamResponse.status}.`);
+      error.statusCode = upstreamResponse.status;
+      if (upstreamResponse.status === 429) {
+        error.retryAfterMs = lichessExplorerLane.noteRateLimit(
+          upstreamResponse.headers.get("retry-after"),
+        );
+      }
+      throw error;
+    }
 
-  const text = await upstreamResponse.text();
-  const lastLine = text
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .at(-1);
-  if (!lastLine) throw new Error("Lichess explorer returned an empty response.");
-  const data = JSON.parse(lastLine);
-  if (!data || typeof data !== "object" || !Array.isArray(data.moves)) {
-    throw new Error("Lichess explorer returned an invalid response.");
-  }
-  return data;
+    const text = await upstreamResponse.text();
+    const lastLine = text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .at(-1);
+    if (!lastLine) throw new Error("Lichess explorer returned an empty response.");
+    const data = JSON.parse(lastLine);
+    if (!data || typeof data !== "object" || !Array.isArray(data.moves)) {
+      throw new Error("Lichess explorer returned an invalid response.");
+    }
+    return data;
+  });
 }
 
 function normalizeLichessExplorerCacheRecord(value, cacheKey) {

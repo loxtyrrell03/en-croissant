@@ -95,6 +95,7 @@ import {
 import { getDatabasesDir } from "@/utils/directories";
 import { formatNumber } from "@/utils/format";
 import { getLichessGames, getMasterGames, getRecentLichessGames } from "@/utils/lichess/api";
+import type { LichessRequestSchedule } from "@/utils/lichess/requestLane";
 import { isPrefix } from "@/utils/misc";
 import {
   getOnlineGameSourceLabel,
@@ -164,6 +165,10 @@ const MAX_PREP_MOVE_LIMIT = 20;
 const PREP_STRENGTH_MOVE_POOL_LIMIT = MAX_PREP_MOVE_LIMIT;
 const PREP_STRENGTH_ENGINE_CACHE_VERSION = "v3";
 const AFTER_PREP_PROJECTION_CONCURRENCY = 3;
+const AFTER_PREP_REMOTE_PROJECTION_LIMIT = 10;
+const AFTER_PREP_REMOTE_SUPPORT_LIMIT = 6;
+const LICHESS_PREP_DEBOUNCE_MS = 350;
+const LICHESS_AFTER_PREP_DEBOUNCE_MS = 650;
 const PREP_COACH_SCAN_LIMIT = 12;
 const PREP_BUILDER_AFTER_PREP_SCAN_LIMIT = 10;
 const DEFAULT_STRAIGHT_LINE_MODE: PrepStraightLineSearchMode = "venom";
@@ -799,7 +804,7 @@ function OpponentPrepPanel({
   }, [queryScope, rootPathKey]);
 
   const loadOpeningsForFen = useCallback(
-    async (fen: string, moveLimitOverride?: number) => {
+    async (fen: string, moveLimitOverride?: number, schedule: LichessRequestSchedule = {}) => {
       if (prepSource === "local" && !prep.databasePath) return [];
       if (prepSource !== "local" && !explorerToken) return [];
 
@@ -818,6 +823,8 @@ function OpponentPrepPanel({
             moves: getPrepBuilderExplorerMoveLimit(moveLimit),
           },
           explorerToken,
+          [],
+          schedule,
         );
         openings = lichessMovesToOpenings(data.moves);
       } else if (prepSource === "lch_master") {
@@ -828,6 +835,8 @@ function OpponentPrepPanel({
             moves: getPrepBuilderExplorerMoveLimit(moveLimit),
           },
           explorerToken,
+          [],
+          schedule,
         );
         openings = lichessMovesToOpenings(data.moves);
       } else {
@@ -871,6 +880,93 @@ function OpponentPrepPanel({
       prepSource,
       queryScope,
     ],
+  );
+
+  const currentExplorerControllerRef = useRef<AbortController | null>(null);
+  const loadCurrentOpenings = useCallback(async () => {
+    if (prepSource === "local") return await loadOpeningsForFen(currentFen);
+
+    currentExplorerControllerRef.current?.abort();
+    const controller = new AbortController();
+    currentExplorerControllerRef.current = controller;
+    await waitForPrepDelay(LICHESS_PREP_DEBOUNCE_MS, controller.signal);
+    return await loadOpeningsForFen(currentFen, undefined, {
+      signal: controller.signal,
+      priority: "interactive",
+    });
+  }, [currentFen, loadOpeningsForFen, prepSource]);
+
+  useEffect(
+    () => () => {
+      currentExplorerControllerRef.current?.abort();
+      currentExplorerControllerRef.current = null;
+    },
+    [currentFen, queryScope],
+  );
+
+  const automaticEvidenceBudgetRef = useRef<{
+    key: string;
+    controller: AbortController;
+    projections: number;
+    support: number;
+  } | null>(null);
+  const automaticEvidenceKey = `${queryScope}|${currentFen}`;
+  const loadAutomaticProjectionOpenings = useCallback(
+    async (fen: string, moveLimitOverride?: number) => {
+      if (prepSource === "local") return await loadOpeningsForFen(fen, moveLimitOverride);
+      let budget = automaticEvidenceBudgetRef.current;
+      if (!budget || budget.key !== automaticEvidenceKey) {
+        budget?.controller.abort();
+        budget = {
+          key: automaticEvidenceKey,
+          controller: new AbortController(),
+          projections: 0,
+          support: 0,
+        };
+        automaticEvidenceBudgetRef.current = budget;
+      }
+      if (budget.projections >= AFTER_PREP_REMOTE_PROJECTION_LIMIT) return [];
+      budget.projections += 1;
+      return await loadOpeningsForFen(fen, moveLimitOverride, {
+        signal: budget.controller.signal,
+        priority: "background",
+      });
+    },
+    [automaticEvidenceKey, loadOpeningsForFen, prepSource],
+  );
+  const loadAutomaticSupportOpenings = useCallback(
+    async (fen: string, moveLimitOverride?: number) => {
+      if (prepSource === "local") return await loadOpeningsForFen(fen, moveLimitOverride);
+      let budget = automaticEvidenceBudgetRef.current;
+      if (!budget || budget.key !== automaticEvidenceKey) {
+        budget?.controller.abort();
+        budget = {
+          key: automaticEvidenceKey,
+          controller: new AbortController(),
+          projections: 0,
+          support: 0,
+        };
+        automaticEvidenceBudgetRef.current = budget;
+      }
+      if (budget.support >= AFTER_PREP_REMOTE_SUPPORT_LIMIT) return [];
+      budget.support += 1;
+      return await loadOpeningsForFen(fen, moveLimitOverride, {
+        signal: budget.controller.signal,
+        priority: "background",
+      });
+    },
+    [automaticEvidenceKey, loadOpeningsForFen, prepSource],
+  );
+
+  useEffect(
+    () => () => {
+      const budget = automaticEvidenceBudgetRef.current;
+      if (budget?.key === automaticEvidenceKey) {
+        budget.controller.abort();
+        automaticEvidenceBudgetRef.current = null;
+      }
+    },
+    [automaticEvidenceKey],
   );
 
   const loadLichessAllOpeningsForFen = useCallback(
@@ -936,7 +1032,7 @@ function OpponentPrepPanel({
     isLoading,
     error,
   } = useSWR(configReady ? ["opponent-prep-openings", queryScope, currentFen] : null, () =>
-    loadOpeningsForFen(currentFen),
+    loadCurrentOpenings(),
   );
 
   const currentRows = useMemo(
@@ -1030,7 +1126,7 @@ function OpponentPrepPanel({
             parentNode: currentNode,
             row,
             opponentColor: prep.color,
-            loadOpenings: loadOpeningsForFen,
+            loadOpenings: loadAutomaticSupportOpenings,
             minGames: prep.minGames,
             moveLimit: prep.moveLimit,
             completedBranches: prep.completedBranches,
@@ -1077,7 +1173,7 @@ function OpponentPrepPanel({
             fen: currentFen,
             row,
             opponentColor: prep.color,
-            loadOpenings: loadOpeningsForFen,
+            loadOpenings: loadAutomaticProjectionOpenings,
             loadEngineMoves: loadPrepBuilderEngineMoves,
             minGames: prep.minGames,
             moveLimit: prep.moveLimit,
@@ -1094,26 +1190,32 @@ function OpponentPrepPanel({
       setCandidateLineImpactLoading(false);
     };
 
-    void run().catch(() => {
-      if (!cancelled) {
-        setCandidateLineImpactLoading(false);
-      }
-    });
+    const timer = window.setTimeout(
+      () =>
+        void run().catch(() => {
+          if (!cancelled) {
+            setCandidateLineImpactLoading(false);
+          }
+        }),
+      prepSource === "local" ? 0 : LICHESS_AFTER_PREP_DEBOUNCE_MS,
+    );
 
     return () => {
       cancelled = true;
+      window.clearTimeout(timer);
     };
   }, [
     builderSettings,
     candidateRows,
     configReady,
     currentFen,
-    loadOpeningsForFen,
+    loadAutomaticProjectionOpenings,
     loadPrepBuilderEngineMoves,
     opponentToMove,
     prep.color,
     prep.minGames,
     prep.moveLimit,
+    prepSource,
     showTrainingStage,
   ]);
 
@@ -1142,7 +1244,7 @@ function OpponentPrepPanel({
             fen: currentFen,
             row,
             userColor,
-            loadOpenings: loadOpeningsForFen,
+            loadOpenings: loadAutomaticProjectionOpenings,
             loadEngineMoves: loadPrepBuilderEngineMoves,
             minGames: prep.minGames,
             moveLimit: prep.moveLimit,
@@ -1158,26 +1260,32 @@ function OpponentPrepPanel({
       if (!cancelled) setBranchPrepProjectionLoading(false);
     };
 
-    void run().catch(() => {
-      if (!cancelled) {
-        setBranchPrepProjectionLoading(false);
-      }
-    });
+    const timer = window.setTimeout(
+      () =>
+        void run().catch(() => {
+          if (!cancelled) {
+            setBranchPrepProjectionLoading(false);
+          }
+        }),
+      prepSource === "local" ? 0 : LICHESS_AFTER_PREP_DEBOUNCE_MS,
+    );
 
     return () => {
       cancelled = true;
+      window.clearTimeout(timer);
     };
   }, [
     builderSettings,
     configReady,
     currentFen,
     currentRows,
-    loadOpeningsForFen,
+    loadAutomaticProjectionOpenings,
     loadPrepBuilderEngineMoves,
     opponentToMove,
     prep.color,
     prep.minGames,
     prep.moveLimit,
+    prepSource,
     showTrainingStage,
     userColor,
   ]);
@@ -7373,6 +7481,28 @@ function omitKey<T>(record: Record<string, T>, key: string) {
   const next = { ...record };
   delete next[key];
   return next;
+}
+
+function waitForPrepDelay(delayMs: number, signal: AbortSignal) {
+  if (signal.aborted) {
+    const error = new Error("Lichess prep request was cancelled.");
+    error.name = "AbortError";
+    return Promise.reject(error);
+  }
+
+  return new Promise<void>((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => {
+      signal.removeEventListener("abort", onAbort);
+      resolve();
+    }, delayMs);
+    const onAbort = () => {
+      window.clearTimeout(timeoutId);
+      const error = new Error("Lichess prep request was cancelled.");
+      error.name = "AbortError";
+      reject(error);
+    };
+    signal.addEventListener("abort", onAbort, { once: true });
+  });
 }
 
 export default memo(OpponentPrepPanel);
