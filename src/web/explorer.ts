@@ -170,7 +170,7 @@ async function getWebExplorerData({
             }
             if (!token) {
                 throw new Error(
-                    "The local Lichess snapshot and PC fallback are unavailable. Link Lichess to retry online.",
+                    "The local Lichess snapshot and PC fallback are unavailable. Install the shared pack in Outpost Settings > Sources on the gaming PC, or link Lichess to retry online.",
                 );
             }
             return await fetchWebExplorerDataDirect(directUrl, token);

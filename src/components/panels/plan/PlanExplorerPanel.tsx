@@ -774,9 +774,9 @@ function PlanExplorerPanel() {
         <Alert color="yellow" title="Connect Lichess to use the explorer">
           <Stack gap="xs">
             <Text size="sm">
-              No local Lichess snapshot is installed. Link one Lichess session to use the paced
-              online fallback; the browser will open Lichess, then this panel will retry
-              automatically.
+              No local Lichess snapshot is installed. Install the shared pack in Outpost Settings
+              &gt; Sources, or link one Lichess session for the paced online fallback; the browser
+              will open Lichess, then this panel will retry automatically.
             </Text>
             <Group gap="xs">
               <Button size="xs" onClick={() => void connectLichess()} loading={lichessLoginWaiting}>

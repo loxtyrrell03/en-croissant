@@ -4475,7 +4475,7 @@ function OpponentPrepPanel({
       ) : !sourceReady ? (
         <Alert color="yellow" variant="light">
           {missingExplorerToken
-            ? "No local Lichess snapshot is installed. Link a Lichess account to use the paced online fallback in prep."
+            ? "No local Lichess rated snapshot is installed. Install the shared pack in Outpost Settings > Sources, or link Lichess for the paced online fallback."
             : "Choose a prep source before starting."}
         </Alert>
       ) : !targetReady ? (

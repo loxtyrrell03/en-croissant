@@ -699,9 +699,10 @@ function EnginePlanExplorerPanel() {
             <Alert color="yellow" title="Connect Lichess for practical setup evidence">
               <Stack gap="xs">
                 <Text size="sm">
-                  No local Lichess snapshot is installed. Link one Lichess session to compare
-                  recurring engine setups with the paced Lichess All fallback. The authorization
-                  page opens in your browser, then this view retries automatically.
+                  No local Lichess rated snapshot is installed. Install the shared pack in Outpost
+                  Settings &gt; Sources, or link one Lichess session for the paced Lichess All
+                  fallback. The authorization page opens in your browser, then this view retries
+                  automatically.
                 </Text>
                 <Group gap="xs" align="center">
                   <Button
