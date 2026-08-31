@@ -3582,17 +3582,20 @@ fn add_game(collection: &mut Collection, pgn: String, source: &str, target_side:
     let identity_fingerprint =
         format!("{target_side}|{normalized_white}|{normalized_black}|{result}");
 
-    let prefix_duplicate = collection
+    let matching_game = collection
         .identity_fingerprints
         .get(&identity_fingerprint)
         .and_then(|indices| {
             indices.iter().copied().find(|index| {
                 let existing = &collection.games[*index];
                 (existing.date == date || existing.date.contains('?') || date.contains('?'))
-                    && move_lines_are_prefixes(&existing.mainline_moves, &mainline_moves)
+                    && move_lines_match_through_terminal_noise(
+                        &existing.mainline_moves,
+                        &mainline_moves,
+                    )
             })
         });
-    if let Some(index) = prefix_duplicate {
+    if let Some(index) = matching_game {
         let existing = &collection.games[index];
         let incoming_is_better = mainline_moves.split_whitespace().count()
             > existing.mainline_moves.split_whitespace().count()
@@ -3686,11 +3689,32 @@ fn add_game(collection: &mut Collection, pgn: String, source: &str, target_side:
     });
 }
 
-fn move_lines_are_prefixes(left: &str, right: &str) -> bool {
+/// Treat source copies as the same game when their mainlines agree through the
+/// finish and differ only in a tiny terminal tail. Live DGT feeds can append a
+/// few spurious plies or report the final move differently after a result is
+/// already known. Requiring the same players/date/result at the call site, a
+/// substantial exact prefix here, and no more than one full move of differing
+/// tail avoids turning ordinary opening transpositions into duplicates.
+fn move_lines_match_through_terminal_noise(left: &str, right: &str) -> bool {
+    const MIN_SHARED_PLIES: usize = 12;
+    const MAX_DIVERGENT_TAIL_PLIES: usize = 2;
+
     let left = left.split_whitespace().collect::<Vec<_>>();
     let right = right.split_whitespace().collect::<Vec<_>>();
-    let shared = left.len().min(right.len());
-    shared >= 12 && left[..shared] == right[..shared]
+    let shared_prefix = left
+        .iter()
+        .zip(&right)
+        .take_while(|(left_move, right_move)| left_move == right_move)
+        .count();
+    if shared_prefix < MIN_SHARED_PLIES {
+        return false;
+    }
+
+    let left_tail = left.len().saturating_sub(shared_prefix);
+    let right_tail = right.len().saturating_sub(shared_prefix);
+    left_tail == 0
+        || right_tail == 0
+        || (left_tail <= MAX_DIVERGENT_TAIL_PLIES && right_tail <= MAX_DIVERGENT_TAIL_PLIES)
 }
 
 #[derive(Default)]
@@ -5014,6 +5038,54 @@ mod tests {
         assert_eq!(collection.duplicates_removed, 1);
         assert_eq!(collection.games[0].pgn, full);
         assert_eq!(collection.games[0].source, "Lichess broadcast");
+    }
+
+    #[test]
+    fn dedupes_real_dgt_tail_after_the_recorded_game_ended() {
+        let official = r#"[Event "2026 Welsh Open"]
+[Date "2026.04.06"]
+[White "Thomas, Mark"]
+[Black "Tyrrell, Lachlan Baly Hughes"]
+[Result "0-1"]
+
+1. e4 g6 2. d4 Bg7 3. Nc3 d6 4. Be2 a6 5. Be3 Nd7 6. Nf3 b5 7. a3 Bb7 8. O-O Ngf6 9. e5 Nd5 10. e6 fxe6 11. Ng5 Nf8 12. Bg4 Nxc3 13. bxc3 Bd5 14. Re1 h6 15. Nh3 Qd7 16. Nf4 Bc4 17. Qf3 c6 18. Bd2 Bf6 19. a4 b4 20. cxb4 Bxd4 21. c3 Be5 22. b5 Rc8 23. Qe4 Bd5 24. Qd3 Bxf4 25. Bxf4 cxb5 26. axb5 Qxb5 27. Qh3 Qc4 28. Be3 Ra8 29. Be2 Qxc3 30. Rec1 Qf6 31. Rxa6 Rxa6 32. Bxa6 Kf7 33. Rd1 Be4 34. f3 Bc2 35. Rc1 Bb3 36. Qg4 e5 37. Qb4 Be6 38. f4 Nd7 39. Rf1 Rb8 40. Qd2 e4 41. Bd4 Qf5 42. Be2 Nf6 43. h3 h5 44. Qd1 Rb3 45. Qa1 Rg3 46. Bf2 Qxh3 47. Bxg3 Qxg3 48. Qd4 h4 49. Qf2 Ng4 50. Qxg3 hxg3 51. Bxg4 Bxg4 52. Re1 d5 53. Re3 Ke6 54. Rxg3 Kf5 55. Ra3 Kxf4 56. Kf2 d4 57. g3+ Kf5 58. Ra8 e3+ 59. Ke1 d3 0-1
+"#;
+        let dgt = official
+            .replace(
+                "2026 Welsh Open",
+                "Round 7: Thomas, Mark - Tyrrell, Lachlan Baly Hughes",
+            )
+            .replace("59. Ke1 d3 0-1", "59. Ke1 d3 60. Ra4 Ke5 61. Ra1 0-1");
+        let mut collection = Collection::default();
+
+        add_game(
+            &mut collection,
+            official.to_string(),
+            "Chess-Results player search",
+            "Black",
+        );
+        add_game(
+            &mut collection,
+            dgt,
+            "Lichess live FIDE broadcasts",
+            "Black",
+        );
+
+        assert_eq!(collection.games.len(), 1);
+        assert_eq!(collection.duplicates_removed, 1);
+    }
+
+    #[test]
+    fn dedupes_a_differently_recorded_final_move_but_not_an_earlier_divergence() {
+        let shared = "e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7 Re1 b5 Bb3 d6 c3 O-O h3";
+        assert!(move_lines_match_through_terminal_noise(
+            &format!("{shared} Nb8 d4"),
+            &format!("{shared} Na5 d4"),
+        ));
+        assert!(!move_lines_match_through_terminal_noise(
+            &format!("{shared} Nb8 d4 Nbd7 Nbd2"),
+            &format!("{shared} Na5 d4 c5 d5"),
+        ));
     }
 
     #[test]
