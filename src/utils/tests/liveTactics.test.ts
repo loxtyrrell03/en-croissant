@@ -3,11 +3,15 @@ import type { BestMoves } from "@/bindings";
 import {
     buildLiveTacticalScan,
     buildTacticalEngineOptions,
+    getLiveTacticalScanCacheKey,
     hasUsableLiveTacticalFallback,
     isLiveTacticalScanTerminal,
     isLiveTacticalTheme,
+    LIVE_TACTICAL_SCAN_MULTIPV,
     selectLiveTacticalScanLine,
+    selectLiveTacticalScanLines,
     selectLiveTacticalMotifs,
+    tacticalMotifDescription,
 } from "@/utils/tacticalMotifs/liveTactics";
 import type { TacticalMotifEvidence } from "@/utils/tacticalMotifs/types";
 
@@ -95,12 +99,12 @@ describe("live tactical classifier", () => {
             motif("interference", "Interference"),
         ]);
 
-        expect(selected.map((item) => item.id)).toEqual(["interference", "fork"]);
+        expect(selected.map((item) => item.id)).toEqual(["fork", "interference"]);
         expect(isLiveTacticalTheme("quietMove")).toBe(false);
         expect(isLiveTacticalTheme("smotheredMate")).toBe(true);
     });
 
-    test("preserves profile options while forcing a single classifier PV", () => {
+    test("preserves profile options while requesting three classifier candidates", () => {
         const options = buildTacticalEngineOptions([
             { name: "WeightsFile", value: "C:/networks/BT4-it332.pb.gz" },
             { name: "MinibatchSize", value: 256 },
@@ -112,15 +116,17 @@ describe("live tactical classifier", () => {
             { name: "WeightsFile", value: "C:/networks/BT4-it332.pb.gz" },
             { name: "MinibatchSize", value: "256" },
             { name: "NNCacheSize", value: "200000" },
-            { name: "MultiPV", value: "1" },
+            { name: "MultiPV", value: "3" },
         ]);
+        expect(LIVE_TACTICAL_SCAN_MULTIPV).toBe(3);
     });
 
-    test("accepts a completed engine event without waiting for the command promise", () => {
+    test("accepts only a requested-depth terminal event without waiting for the command promise", () => {
         const lines = [engineLine(16)];
 
-        expect(isLiveTacticalScanTerminal(99.99, lines)).toBe(false);
-        expect(isLiveTacticalScanTerminal(100, lines)).toBe(true);
+        expect(isLiveTacticalScanTerminal(99.99, lines, 16)).toBe(false);
+        expect(isLiveTacticalScanTerminal(100, [engineLine(1)], 16)).toBe(false);
+        expect(isLiveTacticalScanTerminal(100, lines, 16)).toBe(true);
         expect(selectLiveTacticalScanLine(lines)).toBe(lines[0]);
     });
 
@@ -133,5 +139,97 @@ describe("live tactical classifier", () => {
         expect(selectLiveTacticalScanLine([emptyPrincipal, secondary])).toBe(secondary);
         expect(hasUsableLiveTacticalFallback([engineLine(7)], 8)).toBe(false);
         expect(hasUsableLiveTacticalFallback([principal], 8)).toBe(true);
+    });
+
+    test("keeps up to three distinct root moves in engine priority order", () => {
+        const principal = engineLine(16, 1, ["e5f7", "d7d5"]);
+        const duplicateRoot = engineLine(16, 2, ["e5f7", "e8f7"]);
+        const second = engineLine(16, 3, ["c4f7", "e8f8"]);
+        const fourth = engineLine(16, 4, ["d1h5", "f6h5"]);
+
+        expect(
+            selectLiveTacticalScanLines([fourth, second, duplicateRoot, principal], 3, 16),
+        ).toEqual([principal, second, fourth]);
+    });
+
+    test("classifies the Nxf7 fork and Bxf7+ weak-f7 alternative independently", () => {
+        const scan = buildLiveTacticalScan({
+            fen: "rnbqk2r/p1ppbppp/1p3n2/4N3/2B5/4P3/PPPP1PPP/RNBQK2R w KQkq - 0 5",
+            pvUci: ["e5f7", "d7d5", "f7d8"],
+            pvSan: ["Nxf7", "d5", "Nxd8"],
+            engineName: "Stockfish 18",
+            depth: 16,
+            variations: [
+                {
+                    multipv: 1,
+                    depth: 16,
+                    pvUci: ["e5f7", "d7d5", "f7d8"],
+                    pvSan: ["Nxf7", "d5", "Nxd8"],
+                },
+                {
+                    multipv: 2,
+                    depth: 16,
+                    pvUci: ["c4f7", "e8f8", "f7b3"],
+                    pvSan: ["Bxf7+", "Kf8", "Bb3"],
+                },
+            ],
+        });
+
+        expect(scan.variations).toHaveLength(2);
+        const fork = scan.variations[0]?.motifs.find((motif) => motif.id === "fork");
+        const weakF7 = scan.variations[1]?.motifs.find(
+            (motif) => motif.id === "attackingF2F7",
+        );
+        expect(fork?.evidence).toMatch(/Nxf7 forks the queen on d8 and rook on h8/i);
+        expect(weakF7?.evidence).toMatch(
+            /Bxf7\+ exploits f7, which is attacked twice and defended once, and gives check/i,
+        );
+        expect(tacticalMotifDescription(fork!)).toBe(fork?.evidence);
+        expect(tacticalMotifDescription(weakF7!)).toBe(weakF7?.evidence);
+        expect(scan.motifs.map((motif) => motif.id).slice(0, 2)).toEqual(["fork", "attackingF2F7"]);
+        expect(scan.labels).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ text: "Nxf7 · Fork", square: "f7" }),
+                expect.objectContaining({ text: "Bxf7+ · Weak f7", square: "f7" }),
+            ]),
+        );
+        expect(scan.arrows).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ from: "e5", to: "f7" }),
+                expect.objectContaining({ from: "c4", to: "f7" }),
+            ]),
+        );
+    });
+
+    test("keeps a one-ply Nxf7 prefix as a provisional Weak f7 warning", () => {
+        const scan = buildLiveTacticalScan({
+            fen: "rnbqk2r/p1ppbppp/1p3n2/4N3/2B5/4P3/PPPP1PPP/RNBQK2R w KQkq - 0 5",
+            pvUci: ["e5f7"],
+            pvSan: ["Nxf7"],
+            engineName: "Stockfish 18",
+            depth: 8,
+        });
+
+        expect(scan.motifs.map((motif) => motif.id)).toEqual(["attackingF2F7"]);
+        expect(scan.labels).toEqual([
+            expect.objectContaining({ text: "Weak f7", square: "f7" }),
+        ]);
+        expect(scan.arrows).toEqual([expect.objectContaining({ from: "e5", to: "f7" })]);
+    });
+
+    test("cache identity includes both the live pipeline version and MultiPV width", () => {
+        const input = {
+            fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            engineId: "stockfish-18",
+            depth: 16,
+        };
+
+        const threeLineKey = getLiveTacticalScanCacheKey({ ...input, multipv: 3 });
+        const oneLineKey = getLiveTacticalScanCacheKey({ ...input, multipv: 1 });
+
+        expect(threeLineKey).not.toBe(oneLineKey);
+        expect(JSON.parse(threeLineKey)).toEqual(
+            expect.arrayContaining([LIVE_TACTICAL_SCAN_MULTIPV]),
+        );
     });
 });

@@ -13,7 +13,7 @@ import { ChessPrimitives } from './chess-primitives.js';
 import { ChessLite }       from './analysis.js';
 import { detectNamedMatePatterns } from './mate-pattern-detector.js';
 
-export const THEME_DETECTOR_VERSION = 54;
+export const THEME_DETECTOR_VERSION = 55;
 export const TRAINER_PRIMARY_VERSION = 3;
 
 // Keep trapped-piece detection enabled; performance is controlled via
@@ -5155,6 +5155,42 @@ function detectSequenceFork(steps, playerSide) {
   }
 
   /*
+   * Fixed-depth engine PVs may stop after the opponent's reply, before the
+   * forking side's payoff capture is printed. Accept that truncated shape
+   * only when the reply has already been played and the same forking piece
+   * still attacks two sound targets afterward. This avoids endpoint-dependent
+   * false negatives without trusting bare one-move geometry.
+   */
+  for (let i = 0; i < steps.length - 1; i++) {
+    const step = steps[i];
+    const reply = steps[i + 1];
+    if (!step?.uci || !step.boardAfter || step.side !== playerSide) continue;
+    if (!reply?.boardAfter || reply.side === playerSide) continue;
+    if (steps.slice(i + 1).some(candidate => candidate?.side === playerSide)) continue;
+
+    const attackerSquare = step.uci.slice(2, 4);
+    const attackerIdx = reply.boardAfter.sqToIdx(attackerSquare);
+    const survivor = reply.boardAfter.pieceAt(attackerIdx);
+    if (!survivor || reply.boardAfter.colorOf(survivor) !== playerSide) continue;
+    if (String(survivor).toUpperCase() !== String(step.movedPiece || '').toUpperCase()) continue;
+    if (detectFork(reply.boardAfter, attackerIdx, survivor, opponent)) return true;
+
+    // `isInBadSpot` uses pseudo-attacks and can therefore count an enemy king
+    // as a capturer even when that king cannot legally take the protected
+    // forking piece. Once the engine PV has shown that the piece survives the
+    // reply, two higher-value targets are enough stable evidence of a fork.
+    const survivorValue = reply.boardAfter.pieceValue(survivor);
+    const higherValueTargets = (reply.boardAfter.attacks(attackerIdx) || []).filter(targetIdx => {
+      const target = reply.boardAfter.pieceAt(targetIdx);
+      if (!target || reply.boardAfter.colorOf(target) !== opponent) return false;
+      const targetType = String(target).toUpperCase();
+      if (targetType === 'K' || targetType === 'P') return false;
+      return reply.boardAfter.pieceValue(target) > survivorValue;
+    });
+    if (higherValueTargets.length >= 2) return true;
+  }
+
+  /*
    * A checking fork can be sound even when the forking piece is nominally
    * attacked.  The check gives it time to take the second target (and that
    * target may itself be the apparent capturer).  Accept this less common
@@ -5906,6 +5942,7 @@ function detectSequenceZugzwang(steps, playerSide) {
 
 function collectSequenceAlignedThemes(steps, playerSide, mistake) {
   const themes = new Set();
+  const enginePvMode = mistake?._analysisMode === 'engine-pv';
   if (detectSequenceAdvancedPawn(steps, playerSide)) themes.add(THEMES.ADVANCED_PAWN);
   if (detectSequenceAttackingF2F7(steps, playerSide)) themes.add(THEMES.ATTACKING_F2F7);
   if (detectSequenceDiscoveredCheck(steps, playerSide)) themes.add(THEMES.DISCOVERED_CHECK);
@@ -5925,8 +5962,11 @@ function collectSequenceAlignedThemes(steps, playerSide, mistake) {
   if (detectSequenceAttraction(steps, playerSide)) themes.add(THEMES.ATTRACTION);
   if (detectSequenceClearance(steps, playerSide)) themes.add(THEMES.CLEARANCE);
   if (detectSequenceCapturingDefender(steps, playerSide)) themes.add(THEMES.CAPTURING_DEFENDER);
-  if (detectSequenceQuietMove(steps, playerSide)) themes.add(THEMES.QUIET_MOVE);
-  if (detectSequenceDefensiveMove(steps, playerSide)) themes.add(THEMES.DEFENSIVE_MOVE);
+  // A fixed-depth engine PV has an arbitrary endpoint. Endpoint-based quiet
+  // and defensive labels are useful for completed puzzle solutions but noisy
+  // when an engine simply happens to stop on that move.
+  if (!enginePvMode && detectSequenceQuietMove(steps, playerSide)) themes.add(THEMES.QUIET_MOVE);
+  if (!enginePvMode && detectSequenceDefensiveMove(steps, playerSide)) themes.add(THEMES.DEFENSIVE_MOVE);
   if (detectSequenceSacrifice(steps, playerSide)) themes.add(THEMES.SACRIFICE);
   if (detectSequenceExposedKing(steps, playerSide)) themes.add(THEMES.EXPOSED_KING);
   if (detectSequenceSideAttack(steps, playerSide, 'king')) themes.add(THEMES.KINGSIDE_ATTACK);
@@ -6454,6 +6494,9 @@ export function detectAllowedThemes(fenAfterBadMove, refutationPV, opponentSide,
     _prevFen: prevFen,
     _prevPlayedMove: prevPlayedMove,
   };
+  if (options && typeof options === 'object' && options.analysisMode === 'engine-pv') {
+    syntheticMistake._analysisMode = 'engine-pv';
+  }
   if (cpBefore !== null) syntheticMistake.cpBefore = cpBefore;
   if (cpAfter !== null) syntheticMistake.cpAfter = cpAfter;
   if (sacrificeIntentCp !== null) syntheticMistake._sacrificeIntentCp = sacrificeIntentCp;

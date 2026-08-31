@@ -255,6 +255,24 @@ pub struct BestMoves {
     nps: u32,
 }
 
+fn update_latest_search_snapshot(
+    latest_depth: &mut u32,
+    latest_best_moves: &mut Vec<BestMoves>,
+    latest_progress: &mut f32,
+    current_depth: u32,
+    best_moves: Vec<BestMoves>,
+    progress: f64,
+) -> bool {
+    if current_depth < *latest_depth {
+        return false;
+    }
+
+    *latest_depth = current_depth;
+    *latest_best_moves = best_moves;
+    *latest_progress = progress as f32;
+    true
+}
+
 #[derive(Clone, Serialize, Debug, Type)]
 #[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
@@ -555,7 +573,7 @@ pub async fn get_best_moves(
                         let cur_depth = best_moves.depth;
                         let cur_nodes = best_moves.nodes;
                         if let Some(best_lines) = proc.record_best_moves(best_moves) {
-                            if cur_depth >= proc.last_depth && lim.check().is_ok() {
+                            if cur_depth >= proc.last_depth {
                                 let progress = match proc.go_mode {
                                     GoMode::Depth(depth) => {
                                         (cur_depth as f64 / depth as f64) * 100.0
@@ -570,18 +588,38 @@ pub async fn get_best_moves(
                                     GoMode::PlayersTime(_) => 99.99,
                                     GoMode::Infinite => 99.99,
                                 };
-                                BestMovesPayload {
-                                    best_lines: best_lines.clone(),
-                                    engine: id.clone(),
-                                    tab: tab.clone(),
-                                    fen: proc.options.fen.clone(),
-                                    moves: proc.options.moves.clone(),
-                                    progress,
+                                let emitted_best_lines =
+                                    lim.check().is_ok().then(|| best_lines.clone());
+                                let updated = {
+                                    let EngineProcess {
+                                        last_depth,
+                                        last_best_moves,
+                                        last_progress,
+                                        ..
+                                    } = &mut *proc;
+                                    update_latest_search_snapshot(
+                                        last_depth,
+                                        last_best_moves,
+                                        last_progress,
+                                        cur_depth,
+                                        best_lines,
+                                        progress,
+                                    )
+                                };
+                                if !updated {
+                                    continue;
                                 }
-                                .emit(&app)?;
-                                proc.last_depth = cur_depth;
-                                proc.last_best_moves = best_lines;
-                                proc.last_progress = progress as f32;
+                                if let Some(best_lines) = emitted_best_lines {
+                                    BestMovesPayload {
+                                        best_lines,
+                                        engine: id.clone(),
+                                        tab: tab.clone(),
+                                        fen: proc.options.fen.clone(),
+                                        moves: proc.options.moves.clone(),
+                                        progress,
+                                    }
+                                    .emit(&app)?;
+                                }
                             }
                         }
                     }
@@ -3109,6 +3147,45 @@ mod tests {
         assert!(!keep_engine_running_on_app_inactive(
             "plan-explorer-engine:analysis-tab"
         ));
+    }
+
+    #[test]
+    fn latest_search_snapshot_advances_even_between_throttled_events() {
+        let mut latest_depth = 1;
+        let mut latest_progress = 6.25;
+        let mut latest_best_moves = vec![BestMoves {
+            depth: 1,
+            uci_moves: vec!["e5f7".to_string()],
+            ..BestMoves::default()
+        }];
+        let completed = vec![BestMoves {
+            depth: 16,
+            uci_moves: vec!["e5f7".to_string(), "d7d5".to_string(), "f7d8".to_string()],
+            ..BestMoves::default()
+        }];
+
+        assert!(update_latest_search_snapshot(
+            &mut latest_depth,
+            &mut latest_best_moves,
+            &mut latest_progress,
+            16,
+            completed,
+            100.0,
+        ));
+        assert_eq!(latest_depth, 16);
+        assert_eq!(latest_progress, 100.0);
+        assert_eq!(latest_best_moves[0].uci_moves.len(), 3);
+
+        assert!(!update_latest_search_snapshot(
+            &mut latest_depth,
+            &mut latest_best_moves,
+            &mut latest_progress,
+            12,
+            vec![BestMoves::default()],
+            75.0,
+        ));
+        assert_eq!(latest_depth, 16);
+        assert_eq!(latest_best_moves[0].uci_moves.len(), 3);
     }
 
     #[test]

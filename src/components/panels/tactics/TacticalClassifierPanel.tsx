@@ -33,7 +33,8 @@ import {
   getLiveTacticalScanCacheKey,
   hasUsableLiveTacticalFallback,
   isLiveTacticalScanTerminal,
-  selectLiveTacticalScanLine,
+  LIVE_TACTICAL_SCAN_MULTIPV,
+  selectLiveTacticalScanLines,
   tacticalMotifDescription,
   type LiveTacticalScan,
 } from "@/utils/tacticalMotifs/liveTactics";
@@ -112,6 +113,7 @@ function TacticalClassifierPanel({
             fen: position.fen,
             engineId: selectedEngine.id,
             depth: TACTICAL_SCAN_DEPTH,
+            multipv: LIVE_TACTICAL_SCAN_MULTIPV,
             previousFen: position.previousFen,
             previousMoveUci: position.previousMoveUci,
           })
@@ -179,9 +181,14 @@ function TacticalClassifierPanel({
       unlisten = null;
     };
 
-    const finishScan = (lines: BestMoves[]) => {
+    const finishScan = (lines: BestMoves[], minimumDepth: number) => {
       if (!isCurrentRequest()) return false;
-      const bestLine = selectLiveTacticalScanLine(lines);
+      const usableLines = selectLiveTacticalScanLines(
+        lines,
+        LIVE_TACTICAL_SCAN_MULTIPV,
+        minimumDepth,
+      );
+      const bestLine = usableLines[0];
       if (!bestLine) return false;
 
       settled = true;
@@ -195,6 +202,12 @@ function TacticalClassifierPanel({
         depth: bestLine.depth || TACTICAL_SCAN_DEPTH,
         previousFen: position.previousFen,
         previousMoveUci: position.previousMoveUci,
+        variations: usableLines.map((line) => ({
+          multipv: line.multipv,
+          depth: line.depth,
+          pvUci: line.uciMoves,
+          pvSan: line.sanMoves,
+        })),
       });
       rememberScan(scanCacheKey, scan);
       setState({ status: "complete", progress: 100, scan, error: null });
@@ -220,14 +233,18 @@ function TacticalClassifierPanel({
 
     const receiveLines = (lines: BestMoves[], progress: number) => {
       if (!isCurrentRequest()) return;
-      if (lines.length > 0) latestLines = lines;
+      if (lines.length > 0) {
+        const nextDepth = Math.max(...lines.map((line) => line.depth));
+        const latestDepth = Math.max(0, ...latestLines.map((line) => line.depth));
+        if (nextDepth >= latestDepth) latestLines = lines;
+      }
       setState((current) =>
         current.status === "scanning"
           ? { ...current, progress: Math.max(current.progress, progress) }
           : current,
       );
-      if (isLiveTacticalScanTerminal(progress, latestLines)) {
-        finishScan(latestLines);
+      if (isLiveTacticalScanTerminal(progress, latestLines, TACTICAL_SCAN_DEPTH)) {
+        finishScan(latestLines, TACTICAL_SCAN_DEPTH);
       }
     };
 
@@ -235,7 +252,7 @@ function TacticalClassifierPanel({
       if (!isCurrentRequest()) return;
       if (
         hasUsableLiveTacticalFallback(latestLines, TACTICAL_SCAN_FALLBACK_MIN_DEPTH) &&
-        finishScan(latestLines)
+        finishScan(latestLines, TACTICAL_SCAN_FALLBACK_MIN_DEPTH)
       ) {
         return;
       }
@@ -279,7 +296,7 @@ function TacticalClassifierPanel({
             {
               fen: position.fen,
               moves: [],
-              extraOptions: buildTacticalEngineOptions(engine.settings),
+              extraOptions: buildTacticalEngineOptions(engine.settings, LIVE_TACTICAL_SCAN_MULTIPV),
             },
           )
             .then((result) => {
@@ -327,7 +344,9 @@ function TacticalClassifierPanel({
           style={{ flex: 1 }}
           comboboxProps={{ withinPortal: true }}
         />
-        <Badge variant="light">Depth {TACTICAL_SCAN_DEPTH}</Badge>
+        <Badge variant="light">
+          Depth {TACTICAL_SCAN_DEPTH} · {LIVE_TACTICAL_SCAN_MULTIPV} lines
+        </Badge>
         <Tooltip label="Scan this position again">
           <ActionIcon
             aria-label="Scan this position again"
@@ -384,7 +403,8 @@ function TacticalScanResult({
   lastMoveSan: string | null;
 }) {
   const sideLabel = scan.side === "white" ? "White" : "Black";
-  const line = scan.lineSan.length > 0 ? scan.lineSan : scan.lineUci;
+  const tacticalVariations = scan.variations.filter((variation) => variation.motifs.length > 0);
+  const principalLine = scan.lineSan.length > 0 ? scan.lineSan : scan.lineUci;
 
   return (
     <ScrollArea flex={1} offsetScrollbars>
@@ -408,48 +428,76 @@ function TacticalScanResult({
               <Text fw={700}>No forcing tactical theme found</Text>
               <Text size="sm" c="dimmed" maw={390}>
                 The classifier found no specific fork, pin, interference, mating pattern, or related
-                motif in the engine's best line from this position.
+                motif in the engine's candidate lines from this position.
               </Text>
             </Stack>
           </Center>
         )}
 
-        {scan.motifs.map((motif) => (
-          <Paper key={motif.id} withBorder p="sm" radius="md">
-            <Stack gap={6}>
-              <Group justify="space-between" gap="xs">
-                <Badge color="orange" variant="filled">
-                  {motif.label}
-                </Badge>
-                <Group gap={6}>
-                  {motif.ply && <Badge variant="light">Ply {motif.ply}</Badge>}
-                  <Badge color={motif.confidence === "high" ? "green" : "yellow"} variant="light">
-                    {motif.confidence} confidence
-                  </Badge>
+        {tacticalVariations.map((variation) => {
+          const line = variation.lineSan.length > 0 ? variation.lineSan : variation.lineUci;
+          const rootMove = line[0] ?? `PV ${variation.multipv}`;
+
+          return (
+            <Paper
+              key={`${variation.multipv}:${variation.lineUci[0] ?? "line"}`}
+              withBorder
+              p="sm"
+              radius="md"
+            >
+              <Stack gap={6}>
+                <Group justify="space-between" gap="xs">
+                  <Group gap={6}>
+                    <Badge color="blue" variant="light">
+                      {rootMove}
+                    </Badge>
+                    {variation.motifs.map((motif) => (
+                      <Badge key={motif.id} color="orange" variant="filled">
+                        {motif.label}
+                      </Badge>
+                    ))}
+                  </Group>
+                  <Badge variant="light">PV {variation.multipv}</Badge>
                 </Group>
-              </Group>
-              <Text size="sm">{tacticalMotifDescription(motif)}</Text>
-              {motif.moveUci && (
-                <Text size="xs" c="dimmed">
-                  Triggering move: <Code>{motif.moveUci}</Code>
-                </Text>
-              )}
+                {variation.motifs.map((motif) => (
+                  <Stack key={motif.id} gap={2}>
+                    <Text size="sm">{tacticalMotifDescription(motif)}</Text>
+                    {motif.moveUci && (
+                      <Text size="xs" c="dimmed">
+                        Triggering move: <Code>{motif.moveUci}</Code> · {motif.confidence}{" "}
+                        confidence
+                      </Text>
+                    )}
+                  </Stack>
+                ))}
+                <Box>
+                  <Code style={{ whiteSpace: "normal", lineHeight: 1.7 }}>{line.join("  ")}</Code>
+                </Box>
+              </Stack>
+            </Paper>
+          );
+        })}
+
+        {tacticalVariations.length === 0 && principalLine.length > 0 && (
+          <Paper withBorder p="sm" radius="md">
+            <Stack gap={6}>
+              <Text fw={700} size="sm">
+                Engine line
+              </Text>
+              <Box>
+                <Code style={{ whiteSpace: "normal", lineHeight: 1.7 }}>
+                  {principalLine.join("  ")}
+                </Code>
+              </Box>
             </Stack>
           </Paper>
-        ))}
+        )}
 
         <Paper withBorder p="sm" radius="md">
-          <Stack gap={6}>
-            <Text fw={700} size="sm">
-              Forcing line
-            </Text>
-            <Box>
-              <Code style={{ whiteSpace: "normal", lineHeight: 1.7 }}>{line.join("  ")}</Code>
-            </Box>
-            <Text size="xs" c="dimmed">
-              {scan.engineName} · depth {scan.depth} · classifier {scan.motifClassifierVersion}
-            </Text>
-          </Stack>
+          <Text size="xs" c="dimmed">
+            {scan.engineName} · depth {scan.depth} · {scan.variations.length} candidate
+            {scan.variations.length === 1 ? "" : "s"} · classifier {scan.motifClassifierVersion}
+          </Text>
         </Paper>
       </Stack>
     </ScrollArea>

@@ -30,6 +30,7 @@ import {
 import { useToggle } from "@mantine/hooks";
 import {
   IconArrowBack,
+  IconBolt,
   IconBook,
   IconBulb,
   IconCheck,
@@ -182,6 +183,7 @@ import {
   writeMistakeReviewDeck,
 } from "@/utils/mistakeReview";
 import {
+  buildMistakeReviewTacticalExplanation,
   tacticalMotifColor,
   tacticalMotifLabel,
 } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
@@ -6456,6 +6458,12 @@ function MistakeReviewGameInfoPanel({
     ? [...getMistakeReviewAllowedMotifs(position), ...getMistakeReviewMissedMotifs(position)]
     : [];
   const visibleMotifs = revealedMotifs.slice(0, 4);
+  const tacticalExplanation = revealAnswer
+    ? buildMistakeReviewTacticalExplanation({
+        allowedMotifs: getMistakeReviewAllowedMotifs(position),
+        missedMotifs: getMistakeReviewMissedMotifs(position),
+      })
+    : null;
 
   return (
     <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
@@ -6473,7 +6481,7 @@ function MistakeReviewGameInfoPanel({
             {visibleMotifs.map((motif, index) => (
               <Tooltip
                 key={`${motif.source}:${motif.id}:${index}`}
-                label={`${motif.source === "allowed" ? "Allowed" : "Missed"} motif, ${
+                label={`${motif.source === "allowed" ? "Opponent gained" : "You missed"} motif, ${
                   motif.confidence
                 } confidence: ${motif.evidence}`}
                 multiline
@@ -6484,7 +6492,7 @@ function MistakeReviewGameInfoPanel({
                   color={tacticalMotifColor(motif.id)}
                   variant={motif.source === "allowed" ? "filled" : "light"}
                 >
-                  {motif.source === "allowed" ? "Allowed" : "Missed"} · {motif.label}
+                  {motif.source === "allowed" ? "Opponent gained" : "You missed"} · {motif.label}
                 </Badge>
               </Tooltip>
             ))}
@@ -6523,6 +6531,18 @@ function MistakeReviewGameInfoPanel({
             </Tooltip>
           </Group>
         </Group>
+        {tacticalExplanation && (
+          <Alert
+            icon={<IconBolt size={15} />}
+            title={tacticalExplanation.title}
+            color={tacticalExplanation.source === "mixed" ? "orange" : "yellow"}
+            variant="light"
+            px="xs"
+            py={6}
+          >
+            <Text size="xs">{tacticalExplanation.text}</Text>
+          </Alert>
+        )}
         {!expanded && (
           <SimpleGrid cols={3} spacing={6}>
             <ReviewDetail label="Played" value={formatMistakeReviewGameDate(mistake.date)} />
