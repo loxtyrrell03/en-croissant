@@ -25,8 +25,8 @@ export function MoveStrengthSettingsButton({ size = "sm" }: { size?: "xs" | "sm"
         <ActionIcon
           variant="default"
           size={size}
-          aria-label="Strength settings"
-          title="Strength settings"
+          aria-label="Combined score settings"
+          title="Combined score settings"
         >
           <IconSettings size="1rem" />
         </ActionIcon>
@@ -34,22 +34,30 @@ export function MoveStrengthSettingsButton({ size = "sm" }: { size?: "xs" | "sm"
       <Popover.Dropdown>
         <Stack gap="xs">
           <Text size="sm" fw={700}>
-            Strength settings
+            Combined score settings
+          </Text>
+          <Text size="xs" c="dimmed">
+            Choose how game results and engine evidence contribute to the score.
           </Text>
           <SegmentedControl
-            aria-label="Move strength mode"
+            aria-label="Combined score mode"
             data={[
-              { value: "smart", label: "Smart" },
-              { value: "engine", label: "Engine" },
-              { value: "practical", label: "Practical" },
+              { value: "smart", label: "Balanced" },
+              { value: "engine", label: "Engine-led" },
+              { value: "practical", label: "Games-led" },
             ]}
             value={normalized.mode}
             onChange={(value) => updateSettings({ mode: value as MoveStrengthSettings["mode"] })}
             size="xs"
           />
-          <Tooltip label="In Smart mode, 0 is database WDL only and 100 is cloud engine only">
+          <Tooltip label="Balanced mode only: 0 uses game results and 100 uses engine evidence">
             <NumberInput
-              label="Engine blend"
+              label="Engine evidence share"
+              description={
+                normalized.mode === "smart"
+                  ? "Applied live to Combined score"
+                  : "Balanced mode controls this value"
+              }
               suffix="%"
               value={normalized.engineWeight}
               onChange={(value) =>
@@ -59,6 +67,7 @@ export function MoveStrengthSettingsButton({ size = "sm" }: { size?: "xs" | "sm"
               max={100}
               step={5}
               size="xs"
+              disabled={normalized.mode !== "smart"}
             />
           </Tooltip>
           <Tooltip label="Moves worse than this cloud-engine drop are treated as unsafe">

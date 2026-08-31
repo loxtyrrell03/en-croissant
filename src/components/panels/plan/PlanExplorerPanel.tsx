@@ -195,7 +195,7 @@ function PlanExplorerPanel() {
   const [engineId, setEngineId] = useState<string | null>(null);
   const [sideFilter, setSideFilter] = useState<SideFilter>("all");
   const [maxPlies, setMaxPlies] = useState("8");
-  const [sort, setSort] = useState<PlanSort>({ key: "engine", direction: "desc" });
+  const [sort, setSort] = useState<PlanSort>({ key: "blend", direction: "desc" });
   const {
     token: explorerToken,
     connect: connectLichess,
@@ -244,7 +244,7 @@ function PlanExplorerPanel() {
           ...state,
           running: false,
           activeRequestKey: null,
-          error: "Engine strength timed out before returning Plan Explorer PVs.",
+          error: "Engine evidence timed out before returning Plan Explorer PVs.",
         }));
         void stopEngine(current.engine, current.tab);
       }, ENGINE_STRENGTH_WATCHDOG_MS);
@@ -777,7 +777,7 @@ function PlanExplorerPanel() {
           withTableBorder
           highlightOnHover
           stickyHeader
-          miw={view === "plans" ? (engineStrengthEnabled ? 920 : 810) : 760}
+          miw={view === "plans" ? (engineStrengthEnabled ? 950 : 840) : 800}
         >
           {view === "plans" ? (
             <>
@@ -786,17 +786,17 @@ function PlanExplorerPanel() {
                   <SortableTh sortKey="piece" sort={sort} setSort={setSort} style={{ width: 150 }}>
                     Piece
                   </SortableTh>
-                  <SortableTh sortKey="blend" sort={sort} setSort={setSort} style={{ width: 105 }}>
-                    Blend
+                  <SortableTh sortKey="blend" sort={sort} setSort={setSort} style={{ width: 135 }}>
+                    Combined score
                   </SortableTh>
                   {engineStrengthEnabled && (
                     <SortableTh
                       sortKey="engine"
                       sort={sort}
                       setSort={setSort}
-                      style={{ width: 105 }}
+                      style={{ width: 120 }}
                     >
-                      Engine
+                      Engine verdict
                     </SortableTh>
                   )}
                   <SortableTh
@@ -862,8 +862,8 @@ function PlanExplorerPanel() {
                   <SortableTh sortKey="piece" sort={sort} setSort={setSort} style={{ width: 170 }}>
                     Setup
                   </SortableTh>
-                  <SortableTh sortKey="blend" sort={sort} setSort={setSort} style={{ width: 120 }}>
-                    Blend
+                  <SortableTh sortKey="blend" sort={sort} setSort={setSort} style={{ width: 140 }}>
+                    Combined score
                   </SortableTh>
                   {engineStrengthEnabled && (
                     <SortableTh
@@ -872,7 +872,7 @@ function PlanExplorerPanel() {
                       setSort={setSort}
                       style={{ width: 130 }}
                     >
-                      Engine
+                      Engine verdict
                     </SortableTh>
                   )}
                   <SortableTh sortKey="routes" sort={sort} setSort={setSort}>
@@ -1009,13 +1009,14 @@ function PlanExplorerPanel() {
             onChange={(value) => setSideFilter(value as SideFilter)}
             data={sideFilterOptions(view, setupSideCounts)}
           />
-          <Tooltip label="Tune blended strength for plan and setup rows">
+          <Tooltip label="Configure how game results and engine evidence form Combined score">
             <Box>
               <MoveStrengthSettingsButton size="lg" />
             </Box>
           </Tooltip>
           <Switch
-            label="Engine strength"
+            label="Use engine evidence"
+            title="Runs the selected local engine and adds PV verdicts to these rows"
             size="sm"
             checked={engineStrengthEnabled}
             onChange={(event) => setEngineStrengthEnabled(event.currentTarget.checked)}
@@ -1069,7 +1070,9 @@ function PlanExplorerPanel() {
               />
               <Tooltip
                 label={
-                  engineStrengthState.running ? "Stop engine strength" : "Refresh engine strength"
+                  engineStrengthState.running
+                    ? "Stop engine evidence analysis"
+                    : "Refresh engine evidence"
                 }
               >
                 <ActionIcon
@@ -1106,8 +1109,14 @@ function PlanExplorerPanel() {
                   )}
                 </ActionIcon>
               </Tooltip>
-              {engineStrengthState.running && (
-                <Badge variant="light">{Math.round(engineStrengthState.progress)}%</Badge>
+              {selectedEngine && (
+                <Badge variant="light">
+                  {engineStrengthState.running
+                    ? `Analyzing ${Math.round(engineStrengthState.progress)}%`
+                    : visibleEngineReport
+                      ? `${visibleEngineReport.totalPvs} PVs ready`
+                      : "Starting engine"}
+                </Badge>
               )}
             </>
           )}
@@ -1133,7 +1142,7 @@ function PlanExplorerPanel() {
       )}
       {engineStrengthEnabled && localEngines.length === 0 && (
         <Alert color="yellow" variant="light">
-          No configured local UCI engine for Engine strength.
+          No configured local UCI engine is available for engine evidence.
         </Alert>
       )}
       {engineStrengthEnabled && engineStrengthState.error && (
@@ -1906,9 +1915,9 @@ function formatPlanCoachEngineStatus(
   running: boolean,
   report: EnginePlanReport | null,
 ) {
-  if (!enabled) return "Engine strength: off";
-  if (report) return `Engine strength: ${report.limitLabel}, ${report.totalPvs} PVs`;
-  return running ? "Engine strength: running" : "Engine strength: no report loaded";
+  if (!enabled) return "Engine evidence: off";
+  if (report) return `Engine evidence: ${report.limitLabel}, ${report.totalPvs} PVs`;
+  return running ? "Engine evidence: running" : "Engine evidence: no report loaded";
 }
 
 function formatEngineMatchForCoach(

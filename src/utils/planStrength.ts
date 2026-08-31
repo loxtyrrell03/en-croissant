@@ -233,9 +233,7 @@ function getSetupEngineComponents(
             return getEnginePlanComponents(match.plan, toSide(plan.color), settings);
         })
         .filter(
-            (
-                value,
-            ): value is { engineExpected: number | null; engineCpLoss: number | null } =>
+            (value): value is { engineExpected: number | null; engineCpLoss: number | null } =>
                 value !== null,
         );
     const coverage = total > 0 ? matched.length / total : 0;
@@ -324,7 +322,11 @@ function getEnginePlanBucketCpLoss(plan: EnginePlan, settings: MoveStrengthSetti
         }
     })();
     const confidencePenalty =
-        plan.confidence === "High" ? 0 : plan.confidence === "Medium" ? maxLoss * 0.08 : maxLoss * 0.16;
+        plan.confidence === "High"
+            ? 0
+            : plan.confidence === "Medium"
+              ? maxLoss * 0.08
+              : maxLoss * 0.16;
     const supportBonus = Math.min(
         maxLoss * 0.18,
         Math.max(0, plan.supportCount - 1) * maxLoss * 0.05,
@@ -523,7 +525,7 @@ export function formatPlanStrengthDetail({
             ? `${formatMode(settings.mode)} mode, ${Math.round(
                   getBlendEngineWeight(settings, engineScoreSpreadCp) * 100,
               )}% engine blend, max ${settings.maxEngineCpLoss} cp drop`
-            : "Practical only until engine strength is available",
+            : "Game results only until engine evidence is available",
     );
 
     if (usingEngine) {
@@ -543,7 +545,7 @@ export function formatPlanStrengthDetail({
     } else {
         const rawText = practicalRaw === null ? "" : ` (raw ${formatPercent(practicalRaw)})`;
         parts.push(
-            `Practical ${formatPercent(practicalExpected)} over ${games.toLocaleString()} games${rawText}`,
+            `Game results ${formatPercent(practicalExpected)} over ${games.toLocaleString()} games${rawText}`,
         );
     }
 
@@ -603,11 +605,11 @@ function clamp(value: number, min: number, max: number): number {
 function formatMode(mode: MoveStrengthSettings["mode"]): string {
     switch (mode) {
         case "smart":
-            return "Smart";
+            return "Balanced";
         case "engine":
-            return "Engine";
+            return "Engine-led";
         case "practical":
-            return "Practical";
+            return "Games-led";
     }
 }
 
