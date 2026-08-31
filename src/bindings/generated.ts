@@ -45,6 +45,17 @@ async buildLocalLichessEvalDb(request: LocalEvalBuildRequest) : Promise<Result<L
     else return { status: "error", error: e  as any };
 }
 },
+async getLocalLichessOpeningDbStatus() : Promise<LocalLichessOpeningStatus> {
+    return await TAURI_INVOKE("get_local_lichess_opening_db_status");
+},
+async queryLocalLichessOpening(query: LocalLichessOpeningQuery) : Promise<Result<LocalLichessOpeningResult, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("query_local_lichess_opening", { query }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async analyzeGame(id: string, engine: string, goMode: GoMode, options: AnalysisOptions, uciOptions: EngineOption[]) : Promise<Result<MoveAnalysis[], string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("analyze_game", { id, engine, goMode, options, uciOptions }) };
@@ -862,6 +873,14 @@ export type LocalEvalBuildRequest = { id: string | null; source: string | null; 
 export type LocalEvalDbStatus = { available: boolean; path: string; positions: bigint; shardCount: number; maxPvs: number; storageBytes: bigint; builtAt?: bigint | null; source?: string | null; error?: string | null }
 export type LocalLichessCloudEval = { fen: string; knodes: number; depth: number; pvs: LocalLichessCloudPv[] }
 export type LocalLichessCloudPv = { moves: string; cp?: number | null; mate?: number | null }
+export type LocalLichessCoverage = { source: string; standardMonths: string[]; mastersMonths: string[]; maxPlies: number }
+export type LocalLichessOpening = { eco: string; name: string }
+export type LocalLichessOpeningGame = { id: string; winner: string | null; white: LocalLichessOpeningPlayer; black: LocalLichessOpeningPlayer; year: number | null; month: string | null }
+export type LocalLichessOpeningMove = { san: string; uci: string; white: bigint; draws: bigint; black: bigint }
+export type LocalLichessOpeningPlayer = { name: string; rating: number | null }
+export type LocalLichessOpeningQuery = { source: string; fen: string; speeds?: string[]; ratings?: number[]; player: string | null; color: string | null; since: string | null; until: string | null; topGames: number | null; recentGames: number | null }
+export type LocalLichessOpeningResult = { available: boolean; white: bigint; draws: bigint; black: bigint; moves: LocalLichessOpeningMove[]; opening: LocalLichessOpening | null; topGames: LocalLichessOpeningGame[]; recentGames: LocalLichessOpeningGame[]; coverage: LocalLichessCoverage | null; error: string | null }
+export type LocalLichessOpeningStatus = { available: boolean; path: string; gameCount: bigint; moveRows: bigint; standardMonths: string[]; mastersMonths: string[]; maxPlies: number; storageBytes: bigint; builtAt: bigint | null; error: string | null }
 export type ManagedLc0Install = { path: string; weightsPath: string; version: string; network: string }
 export type MistakeReviewAnalysisMode = "single" | "layered"
 export type MistakeReviewAttemptLabel = "best" | "good" | "okay" | "inaccuracy" | "mistake" | "blunder"
