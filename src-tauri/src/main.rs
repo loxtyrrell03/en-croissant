@@ -90,6 +90,10 @@ use en_croissant_fork::local_eval::{
     self, LocalEvalBuildProgress, LocalEvalBuildReport, LocalEvalBuildRequest, LocalEvalDbStatus,
     LocalLichessCloudEval,
 };
+use en_croissant_fork::local_lichess::{
+    self as local_lichess_data, LocalLichessOpeningQuery, LocalLichessOpeningResult,
+    LocalLichessOpeningStatus,
+};
 use std::sync::atomic::AtomicBool;
 use tokio::sync::Semaphore;
 
@@ -163,6 +167,8 @@ fn main() {
             lookup_local_lichess_cloud_eval,
             get_local_lichess_eval_db_status,
             build_local_lichess_eval_db,
+            get_local_lichess_opening_db_status,
+            query_local_lichess_opening,
             analyze_game,
             scan_mistake_review,
             get_mistake_review_game_metadata,
@@ -281,6 +287,11 @@ fn main() {
         .expect("Failed to export types");
 
     #[cfg(debug_assertions)]
+    if std::env::var_os("EN_CROISSANT_EXPORT_BINDINGS_ONLY").is_some() {
+        return;
+    }
+
+    #[cfg(debug_assertions)]
     let log_targets = [TargetKind::Stdout, TargetKind::Webview];
 
     #[cfg(not(debug_assertions))]
@@ -391,4 +402,18 @@ async fn build_local_lichess_eval_db(
     app: tauri::AppHandle,
 ) -> Result<LocalEvalBuildReport, String> {
     local_eval::build_local_lichess_eval_db(request, app).await
+}
+
+#[tauri::command]
+#[specta::specta]
+fn get_local_lichess_opening_db_status() -> LocalLichessOpeningStatus {
+    local_lichess_data::opening_status()
+}
+
+#[tauri::command]
+#[specta::specta]
+fn query_local_lichess_opening(
+    query: LocalLichessOpeningQuery,
+) -> Result<LocalLichessOpeningResult, String> {
+    local_lichess_data::query_opening(query)
 }

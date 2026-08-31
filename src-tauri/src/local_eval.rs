@@ -250,7 +250,7 @@ pub fn lookup_local_lichess_cloud_eval(
     multipv: Option<u8>,
     app: tauri::AppHandle,
 ) -> Result<Option<LocalLichessCloudEval>, String> {
-    let dir = default_store_dir(&app).map_err(String::from)?;
+    let dir = lookup_store_dir(&app).map_err(String::from)?;
     lookup_eval(&dir, &fen, multipv.unwrap_or(1)).map_err(String::from)
 }
 
@@ -259,7 +259,7 @@ pub fn lookup_local_lichess_cloud_eval(
 pub fn get_local_lichess_eval_db_status(
     app: tauri::AppHandle,
 ) -> Result<LocalEvalDbStatus, String> {
-    let dir = default_store_dir(&app).map_err(String::from)?;
+    let dir = lookup_store_dir(&app).map_err(String::from)?;
     Ok(database_status(&dir))
 }
 
@@ -600,23 +600,7 @@ fn lookup_root_only_eval(
 }
 
 pub fn default_cli_store_dir() -> PathBuf {
-    if cfg!(target_os = "windows") {
-        if let Some(appdata) = std::env::var_os("APPDATA") {
-            return PathBuf::from(appdata)
-                .join("org.encroissant.app")
-                .join("lichess-cloud-evals");
-        }
-    }
-
-    if let Some(home) = std::env::var_os("HOME") {
-        return PathBuf::from(home)
-            .join(".local")
-            .join("share")
-            .join("org.encroissant.app")
-            .join("lichess-cloud-evals");
-    }
-
-    PathBuf::from("lichess-cloud-evals")
+    crate::local_lichess::shared_eval_store_dir()
 }
 
 pub fn default_source_url() -> &'static str {
@@ -649,8 +633,20 @@ fn request_to_options(
     })
 }
 
-fn default_store_dir(app: &tauri::AppHandle) -> Result<PathBuf, LocalEvalError> {
-    Ok(app.path().app_data_dir()?.join("lichess-cloud-evals"))
+fn default_store_dir(_app: &tauri::AppHandle) -> Result<PathBuf, LocalEvalError> {
+    Ok(crate::local_lichess::shared_eval_store_dir())
+}
+
+fn lookup_store_dir(app: &tauri::AppHandle) -> Result<PathBuf, LocalEvalError> {
+    let shared = crate::local_lichess::shared_eval_store_dir();
+    if shared.join(MANIFEST_FILE).is_file() {
+        return Ok(shared);
+    }
+    let legacy = app.path().app_data_dir()?.join("lichess-cloud-evals");
+    if legacy.join(MANIFEST_FILE).is_file() {
+        return Ok(legacy);
+    }
+    Ok(shared)
 }
 
 fn validate_max_pvs(max_pvs: u8) -> Result<u8, LocalEvalError> {
