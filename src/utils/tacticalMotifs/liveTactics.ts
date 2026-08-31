@@ -1,4 +1,4 @@
-import type { EngineOption } from "@/bindings";
+import type { BestMoves, EngineOption } from "@/bindings";
 import { engineSettingsToOptions, type EngineSettings } from "@/utils/engines";
 import {
     classifyPositionTacticalMotifs,
@@ -149,6 +149,26 @@ export type LiveTacticalScanInput = {
     previousFen?: string | null;
     previousMoveUci?: string | null;
 };
+
+export function selectLiveTacticalScanLine(lines: BestMoves[] | null | undefined) {
+    const available = (lines ?? []).filter((line) => line.uciMoves.length > 0);
+    return available.find((line) => line.multipv === 1) ?? available[0];
+}
+
+export function isLiveTacticalScanTerminal(
+    progress: number,
+    lines: BestMoves[] | null | undefined,
+) {
+    return progress >= 100 && Boolean(selectLiveTacticalScanLine(lines));
+}
+
+export function hasUsableLiveTacticalFallback(
+    lines: BestMoves[] | null | undefined,
+    minimumDepth: number,
+) {
+    const line = selectLiveTacticalScanLine(lines);
+    return Boolean(line && line.depth >= minimumDepth);
+}
 
 export function isLiveTacticalTheme(id: string) {
     return (

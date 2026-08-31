@@ -26,17 +26,22 @@ import { events, type BestMoves } from "@/bindings";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import { activeTabAtom, enginesAtom } from "@/state/atoms";
 import { getNodeAtPath } from "@/utils/treeReducer";
-import { getBestMoves, stopEngine, type LocalEngine } from "@/utils/engines";
+import { getBestMoves, killEngine, type LocalEngine } from "@/utils/engines";
 import {
   buildLiveTacticalScan,
   buildTacticalEngineOptions,
   getLiveTacticalScanCacheKey,
+  hasUsableLiveTacticalFallback,
+  isLiveTacticalScanTerminal,
+  selectLiveTacticalScanLine,
   tacticalMotifDescription,
   type LiveTacticalScan,
 } from "@/utils/tacticalMotifs/liveTactics";
 
 const TACTICAL_SCAN_DEPTH = 16;
 const TACTICAL_SCAN_DEBOUNCE_MS = 120;
+const TACTICAL_SCAN_TIMEOUT_MS = 6_000;
+const TACTICAL_SCAN_FALLBACK_MIN_DEPTH = 8;
 const TACTICAL_SCAN_CACHE_LIMIT = 160;
 const tacticalScanCache = new Map<string, LiveTacticalScan>();
 
@@ -143,101 +148,157 @@ function TacticalClassifierPanel({
     requestTokenRef.current = requestToken;
     const requestTab = `tactical-classifier:${activeTab ?? "board"}:${requestToken}`;
     let cancelled = false;
-    let finished = false;
+    let settled = false;
     let unlisten: (() => void) | null = null;
-    let started = false;
+    let searchStarted = false;
+    let engineReleased = false;
+    let scanTimeout: number | null = null;
+    let latestLines: BestMoves[] = [];
 
     setState({ status: "scanning", progress: 0, scan: null, error: null });
     onScanChange(null);
 
-    const timer = window.setTimeout(() => {
-      if (cancelled || requestTokenRef.current !== requestToken) return;
-      started = true;
+    const isCurrentRequest = () =>
+      !cancelled && requestTokenRef.current === requestToken && !settled;
 
-      void events.bestMovesPayload
-        .listen(({ payload }) => {
-          if (
-            cancelled ||
-            requestTokenRef.current !== requestToken ||
-            payload.engine !== engine.id ||
-            payload.tab !== requestTab ||
-            payload.fen !== position.fen ||
-            payload.moves.length !== 0
-          ) {
+    const clearScanTimeout = () => {
+      if (scanTimeout !== null) {
+        window.clearTimeout(scanTimeout);
+        scanTimeout = null;
+      }
+    };
+
+    const releaseEngine = () => {
+      if (!searchStarted || engineReleased) return;
+      engineReleased = true;
+      void killEngine(engine, requestTab).catch(() => {});
+    };
+
+    const disposeListener = () => {
+      unlisten?.();
+      unlisten = null;
+    };
+
+    const finishScan = (lines: BestMoves[]) => {
+      if (!isCurrentRequest()) return false;
+      const bestLine = selectLiveTacticalScanLine(lines);
+      if (!bestLine) return false;
+
+      settled = true;
+      clearScanTimeout();
+      disposeListener();
+      const scan = buildLiveTacticalScan({
+        fen: position.fen,
+        pvUci: bestLine.uciMoves,
+        pvSan: bestLine.sanMoves,
+        engineName: engine.version ? `${engine.name} ${engine.version}` : engine.name,
+        depth: bestLine.depth || TACTICAL_SCAN_DEPTH,
+        previousFen: position.previousFen,
+        previousMoveUci: position.previousMoveUci,
+      });
+      rememberScan(scanCacheKey, scan);
+      setState({ status: "complete", progress: 100, scan, error: null });
+      onScanChange(scan);
+      releaseEngine();
+      return true;
+    };
+
+    const failScan = (caught: unknown) => {
+      if (!isCurrentRequest()) return;
+      settled = true;
+      clearScanTimeout();
+      disposeListener();
+      setState({
+        status: "error",
+        progress: 0,
+        scan: null,
+        error: caught instanceof Error ? caught.message : String(caught),
+      });
+      onScanChange(null);
+      releaseEngine();
+    };
+
+    const receiveLines = (lines: BestMoves[], progress: number) => {
+      if (!isCurrentRequest()) return;
+      if (lines.length > 0) latestLines = lines;
+      setState((current) =>
+        current.status === "scanning"
+          ? { ...current, progress: Math.max(current.progress, progress) }
+          : current,
+      );
+      if (isLiveTacticalScanTerminal(progress, latestLines)) {
+        finishScan(latestLines);
+      }
+    };
+
+    const handleScanTimeout = () => {
+      if (!isCurrentRequest()) return;
+      if (
+        hasUsableLiveTacticalFallback(latestLines, TACTICAL_SCAN_FALLBACK_MIN_DEPTH) &&
+        finishScan(latestLines)
+      ) {
+        return;
+      }
+      failScan(
+        new Error(
+          `${engine.name} did not return a usable tactical line within ${TACTICAL_SCAN_TIMEOUT_MS / 1000} seconds.`,
+        ),
+      );
+    };
+
+    const timer = window.setTimeout(() => {
+      if (!isCurrentRequest()) return;
+      scanTimeout = window.setTimeout(handleScanTimeout, TACTICAL_SCAN_TIMEOUT_MS);
+
+      void (async () => {
+        try {
+          const dispose = await events.bestMovesPayload.listen(({ payload }) => {
+            if (
+              !isCurrentRequest() ||
+              payload.engine !== engine.id ||
+              payload.tab !== requestTab ||
+              payload.fen !== position.fen ||
+              payload.moves.length !== 0
+            ) {
+              return;
+            }
+            receiveLines(payload.bestLines, payload.progress);
+          });
+
+          if (!isCurrentRequest()) {
+            dispose();
             return;
           }
-          setState((current) =>
-            current.status === "scanning"
-              ? { ...current, progress: Math.max(current.progress, payload.progress) }
-              : current,
-          );
-        })
-        .then((dispose) => {
-          if (finished || cancelled || requestTokenRef.current !== requestToken) {
-            dispose();
-          } else {
-            unlisten = dispose;
-          }
-        })
-        .catch(() => {
-          // Completion from getBestMoves remains authoritative if progress events are unavailable.
-        });
+          unlisten = dispose;
 
-      void getBestMoves(
-        engine,
-        requestTab,
-        { t: "Depth", c: TACTICAL_SCAN_DEPTH },
-        {
-          fen: position.fen,
-          moves: [],
-          extraOptions: buildTacticalEngineOptions(engine.settings),
-        },
-      )
-        .then((result) => {
-          if (cancelled || requestTokenRef.current !== requestToken) return;
-          const bestLine = selectBestLine(result?.[1]);
-          if (!bestLine) {
-            throw new Error("The engine returned no principal variation for this position.");
-          }
-          const scan = buildLiveTacticalScan({
-            fen: position.fen,
-            pvUci: bestLine.uciMoves,
-            pvSan: bestLine.sanMoves,
-            engineName: engine.version ? `${engine.name} ${engine.version}` : engine.name,
-            depth: bestLine.depth || TACTICAL_SCAN_DEPTH,
-            previousFen: position.previousFen,
-            previousMoveUci: position.previousMoveUci,
-          });
-          rememberScan(scanCacheKey, scan);
-          setState({ status: "complete", progress: 100, scan, error: null });
-          onScanChange(scan);
-        })
-        .catch((caught) => {
-          if (cancelled || requestTokenRef.current !== requestToken) return;
-          setState({
-            status: "error",
-            progress: 0,
-            scan: null,
-            error: caught instanceof Error ? caught.message : String(caught),
-          });
-          onScanChange(null);
-        })
-        .finally(() => {
-          finished = true;
-          unlisten?.();
-          unlisten = null;
-          void stopEngine(engine, requestTab).catch(() => {});
-        });
+          searchStarted = true;
+          void getBestMoves(
+            engine,
+            requestTab,
+            { t: "Depth", c: TACTICAL_SCAN_DEPTH },
+            {
+              fen: position.fen,
+              moves: [],
+              extraOptions: buildTacticalEngineOptions(engine.settings),
+            },
+          )
+            .then((result) => {
+              if (result) receiveLines(result[1], result[0]);
+            })
+            .catch(failScan);
+        } catch (caught) {
+          failScan(caught);
+        }
+      })();
     }, TACTICAL_SCAN_DEBOUNCE_MS);
 
     return () => {
       cancelled = true;
       requestTokenRef.current++;
       window.clearTimeout(timer);
-      unlisten?.();
-      if (started) {
-        void stopEngine(engine, requestTab).catch(() => {});
-      }
+      clearScanTimeout();
+      disposeListener();
+      releaseEngine();
     };
   }, [
     activeTab,
@@ -304,8 +365,7 @@ function TacticalClassifierPanel({
             <Loader size="sm" />
             <Text fw={700}>Scanning the forcing line…</Text>
             <Text size="sm" c="dimmed" maw={360}>
-              Checking the position{position.lastMoveSan ? ` after ${position.lastMoveSan}` : ""}
-              with {selectedEngine?.name}.
+              {`Checking the position${position.lastMoveSan ? ` after ${position.lastMoveSan}` : ""} with ${selectedEngine?.name}.`}
             </Text>
           </Stack>
         </Center>
@@ -314,10 +374,6 @@ function TacticalClassifierPanel({
       ) : null}
     </Stack>
   );
-}
-
-function selectBestLine(lines: BestMoves[] | null | undefined) {
-  return (lines ?? []).find((line) => line.multipv === 1 && line.uciMoves.length > 0) ?? lines?.[0];
 }
 
 function TacticalScanResult({

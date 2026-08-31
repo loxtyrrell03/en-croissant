@@ -1,11 +1,27 @@
 import { describe, expect, test } from "vitest";
+import type { BestMoves } from "@/bindings";
 import {
     buildLiveTacticalScan,
     buildTacticalEngineOptions,
+    hasUsableLiveTacticalFallback,
+    isLiveTacticalScanTerminal,
     isLiveTacticalTheme,
+    selectLiveTacticalScanLine,
     selectLiveTacticalMotifs,
 } from "@/utils/tacticalMotifs/liveTactics";
 import type { TacticalMotifEvidence } from "@/utils/tacticalMotifs/types";
+
+function engineLine(depth: number, multipv = 1, uciMoves = ["e2e4"]): BestMoves {
+    return {
+        nodes: 10_000,
+        depth,
+        score: { value: { type: "cp", value: 20 }, wdl: null },
+        uciMoves,
+        sanMoves: ["e4"],
+        multipv,
+        nps: 100_000,
+    };
+}
 
 describe("live tactical classifier", () => {
     test("turns a named mating pattern into board labels and forcing arrows", () => {
@@ -98,5 +114,24 @@ describe("live tactical classifier", () => {
             { name: "NNCacheSize", value: "200000" },
             { name: "MultiPV", value: "1" },
         ]);
+    });
+
+    test("accepts a completed engine event without waiting for the command promise", () => {
+        const lines = [engineLine(16)];
+
+        expect(isLiveTacticalScanTerminal(99.99, lines)).toBe(false);
+        expect(isLiveTacticalScanTerminal(100, lines)).toBe(true);
+        expect(selectLiveTacticalScanLine(lines)).toBe(lines[0]);
+    });
+
+    test("uses only a sufficiently deep principal variation at the scan deadline", () => {
+        const secondary = engineLine(10, 2);
+        const principal = engineLine(9, 1);
+        const emptyPrincipal = engineLine(14, 1, []);
+
+        expect(selectLiveTacticalScanLine([secondary, principal])).toBe(principal);
+        expect(selectLiveTacticalScanLine([emptyPrincipal, secondary])).toBe(secondary);
+        expect(hasUsableLiveTacticalFallback([engineLine(7)], 8)).toBe(false);
+        expect(hasUsableLiveTacticalFallback([principal], 8)).toBe(true);
     });
 });
