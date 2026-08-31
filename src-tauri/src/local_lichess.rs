@@ -248,18 +248,11 @@ fn query_opening_at_path(
 ) -> Result<LocalLichessOpeningResult, String> {
     let status = status_at_path(path);
     if !status.available {
-        return Ok(LocalLichessOpeningResult {
-            available: false,
-            white: 0,
-            draws: 0,
-            black: 0,
-            moves: Vec::new(),
-            opening: None,
-            top_games: Vec::new(),
-            recent_games: Vec::new(),
-            coverage: None,
-            error: status.error,
-        });
+        return Ok(unavailable_result(status.error));
+    }
+    let source = normalize_source(&query.source)?;
+    if !source_has_coverage(&status, source) {
+        return Ok(unavailable_result(None));
     }
 
     let position = parse_position(&query.fen)?;
@@ -311,6 +304,29 @@ fn query_opening_at_path(
         }),
         error: None,
     })
+}
+
+fn source_has_coverage(status: &LocalLichessOpeningStatus, source: &str) -> bool {
+    if source == "lichess-masters" {
+        !status.masters_months.is_empty()
+    } else {
+        !status.standard_months.is_empty()
+    }
+}
+
+fn unavailable_result(error: Option<String>) -> LocalLichessOpeningResult {
+    LocalLichessOpeningResult {
+        available: false,
+        white: 0,
+        draws: 0,
+        black: 0,
+        moves: Vec::new(),
+        opening: None,
+        top_games: Vec::new(),
+        recent_games: Vec::new(),
+        coverage: None,
+        error,
+    }
 }
 
 fn query_aggregate_moves(
@@ -647,5 +663,23 @@ mod tests {
         let result = query_opening_at_path(query(Some("Alice")), &path).unwrap();
         assert_eq!(result.white, 1);
         assert_eq!(result.moves[0].san, "e4");
+    }
+
+    #[test]
+    fn source_availability_does_not_mask_an_uninstalled_family() {
+        let status = LocalLichessOpeningStatus {
+            available: true,
+            path: "fixture".to_string(),
+            game_count: 1,
+            move_rows: 1,
+            standard_months: Vec::new(),
+            masters_months: vec!["2026-07".to_string()],
+            max_plies: 40,
+            storage_bytes: 1,
+            built_at: Some(1),
+            error: None,
+        };
+        assert!(!source_has_coverage(&status, "lichess-all"));
+        assert!(source_has_coverage(&status, "lichess-masters"));
     }
 }
