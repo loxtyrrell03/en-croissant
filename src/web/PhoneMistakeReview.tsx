@@ -57,6 +57,7 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
   const [feedback, setFeedback] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
+  const [boardAttempt, setBoardAttempt] = useState(0);
   const controller = useRef<AbortController | null>(null);
   const savedRef = useRef(saved);
   savedRef.current = saved;
@@ -213,6 +214,9 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
     }
   }
   async function attempt(uci: string) {
+    // Chessground moves optimistically. A practice attempt keeps the question's
+    // FEN, so remount its board even when that FEN has not changed.
+    setBoardAttempt((value) => value + 1);
     if (!card || revealed || checking) return;
     if (!playUciMove(card.fen, uci)) return;
     if (uci === card.best) {
@@ -287,7 +291,7 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
             <Text size="sm">
               {session.length} left · {card.color === "white" ? "White" : "Black"} to move
             </Text>
-            <div className={classes.reviewBoard}>
+            <div className={classes.reviewBoard} key={`${card.id}:${boardAttempt}`}>
               {renderBoard(preview ?? card.fen, card.color, (uci) => void attempt(uci), null)}
             </div>
             <Text size="sm" fw={600}>

@@ -29,13 +29,11 @@ it("scans imported games, saves cards, hides the answer, and completes a daily r
       disconnect() {}
     },
   );
-  window.matchMedia = vi
-    .fn()
-    .mockImplementation(() => ({
-      matches: false,
-      addEventListener() {},
-      removeEventListener() {},
-    }));
+  window.matchMedia = vi.fn().mockImplementation(() => ({
+    matches: false,
+    addEventListener() {},
+    removeEventListener() {},
+  }));
   const imported = parsePgnDatabase(
     "review",
     '[White "Tester"]\n[Black "Opponent"]\n\n1. f3 e5 2. g4 Qh4# 0-1',
@@ -57,7 +55,9 @@ it("scans imported games, saves cards, hides the answer, and completes a daily r
             })
           }
           onImport={() => {}}
-          renderBoard={() => <div>Practice board</div>}
+          renderBoard={(_fen, _color, onMove) => (
+            <button onClick={() => onMove("a2a3")}>Practice board</button>
+          )}
         />
       </MantineProvider>
     );
@@ -81,6 +81,10 @@ it("scans imported games, saves cards, hides the answer, and completes a daily r
     });
     expect(div.textContent).toContain("Practice board");
     expect(div.textContent).not.toContain("improves on");
+    const attemptedBoard = button("Practice board");
+    await act(async () => attemptedBoard.click());
+    expect(attemptedBoard.isConnected).toBe(false);
+    expect(div.textContent).toContain("Try again");
     await act(async () => {
       button("Reveal solution").click();
     });
