@@ -83,6 +83,17 @@ it("renders a finished OTB database and opens Prep without crashing", async () =
       button.click();
     });
     expect(container.textContent).toContain(parsed.database.playerNames[0]);
+    expect(container.textContent).toContain("I'm Black");
+    const prepSide = container.querySelector<HTMLInputElement>(
+      '[aria-label="Your prep side"] input[value="black"]',
+    );
+    expect(prepSide?.checked).toBe(true);
+    const whiteSide = container.querySelector<HTMLInputElement>(
+      '[aria-label="Your prep side"] input[value="white"]',
+    );
+    await act(async () => whiteSide?.click());
+    expect(whiteSide?.checked).toBe(true);
+    expect(container.querySelector(".orientation-white")).not.toBeNull();
     // A newly finished import must keep its results accessible rather than mounting Prep.
     window.localStorage.setItem("encroissant-web-otb-job", "completed-test");
     await act(async () => {

@@ -5160,7 +5160,8 @@ function PrepUnderBoardPanel({
       normalizeWebPrepMoveSortDefaults(activePrep?.sortDefaults ?? storedPrepSetup.sortDefaults),
     [activePrep?.sortDefaults, storedPrepSetup.sortDefaults],
   );
-  const selectedPlayerColor = oppositeWebColor(activePrep?.userColor ?? userColor);
+  const selectedUserColor = activePrep?.userColor ?? userColor;
+  const selectedPlayerColor = oppositeWebColor(selectedUserColor);
   const selectedOpponentName = activePrep?.opponent ?? opponent;
   const trimmedSelectedOpponentName = selectedOpponentName.trim();
   const sourceReady =
@@ -6265,11 +6266,11 @@ function PrepUnderBoardPanel({
             ) : null}
             {selectedPrepMode === "general" ? (
               <Badge color="teal" variant="light" size="sm">
-                You as {activePrep?.userColor ?? userColor}
+                I'm {(activePrep?.userColor ?? userColor) === "white" ? "White" : "Black"}
               </Badge>
             ) : (activePrep?.opponent ?? opponent).trim() ? (
-              <Badge color="orange" variant="light" size="sm">
-                {(activePrep?.opponent ?? opponent).trim()} as {selectedPlayerColor}
+              <Badge color="teal" variant="light" size="sm">
+                I'm {selectedUserColor === "white" ? "White" : "Black"}
               </Badge>
             ) : null}
           </Group>
@@ -6473,9 +6474,10 @@ function PrepUnderBoardPanel({
                   <WebDatabasePerspectiveControls
                     playerName={selectedOpponentName}
                     playerOptions={selectedPrepDatabasePlayers}
-                    color={selectedPlayerColor}
+                    color={selectedUserColor}
                     onPlayerNameChange={updatePrepOpponent}
-                    onColorChange={(color) => updatePrepUserColor(oppositeWebColor(color))}
+                    onColorChange={updatePrepUserColor}
+                    colorPerspective="user"
                     disabled={!sourceReady}
                     playerFlex="1 1 10rem"
                     colorWidth={trimmedSelectedOpponentName ? 236 : 132}
@@ -7193,6 +7195,7 @@ function WebDatabasePerspectiveControls({
   size = "xs",
   playerFlex = "0 1 10rem",
   colorWidth = 132,
+  colorPerspective = "player",
 }: {
   playerName: string;
   playerOptions: ReturnType<typeof getDatabasePlayerCounts>;
@@ -7203,27 +7206,34 @@ function WebDatabasePerspectiveControls({
   size?: "xs" | "sm";
   playerFlex?: string;
   colorWidth?: number;
+  colorPerspective?: "player" | "user";
 }) {
   const trimmedPlayerName = playerName.trim();
   const playerData = useMemo(
     () => playerOptions.slice(0, 80).map((player) => player.name),
     [playerOptions],
   );
-  const colorOptions = trimmedPlayerName
-    ? [
-        {
-          value: "white",
-          label: <WebPlayerColorLabel playerName={trimmedPlayerName} color="white" />,
-        },
-        {
-          value: "black",
-          label: <WebPlayerColorLabel playerName={trimmedPlayerName} color="black" />,
-        },
-      ]
-    : [
-        { value: "white", label: "White" },
-        { value: "black", label: "Black" },
-      ];
+  const colorOptions =
+    colorPerspective === "user"
+      ? [
+          { value: "white", label: "I'm White" },
+          { value: "black", label: "I'm Black" },
+        ]
+      : trimmedPlayerName
+        ? [
+            {
+              value: "white",
+              label: <WebPlayerColorLabel playerName={trimmedPlayerName} color="white" />,
+            },
+            {
+              value: "black",
+              label: <WebPlayerColorLabel playerName={trimmedPlayerName} color="black" />,
+            },
+          ]
+        : [
+            { value: "white", label: "White" },
+            { value: "black", label: "Black" },
+          ];
 
   return (
     <Group gap={4} wrap="nowrap" style={{ flex: "1 1 auto", minWidth: 0 }}>
@@ -7244,13 +7254,15 @@ function WebDatabasePerspectiveControls({
       </Tooltip>
       <Tooltip
         label={
-          trimmedPlayerName
-            ? `Only games where ${trimmedPlayerName} had this color`
-            : "Only games where that player had this color"
+          colorPerspective === "user"
+            ? "Choose your colour; the board flips to match"
+            : trimmedPlayerName
+              ? `Only games where ${trimmedPlayerName} had this color`
+              : "Only games where that player had this color"
         }
       >
         <SegmentedControl
-          aria-label="Database player color"
+          aria-label={colorPerspective === "user" ? "Your prep side" : "Database player color"}
           size={size}
           data={colorOptions}
           value={color}
@@ -7258,7 +7270,7 @@ function WebDatabasePerspectiveControls({
           disabled={disabled}
           w={colorWidth}
           styles={
-            trimmedPlayerName
+            colorPerspective === "player"
               ? {
                   control: {
                     minHeight: size === "sm" ? 42 : 38,
