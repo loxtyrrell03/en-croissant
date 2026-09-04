@@ -114,9 +114,9 @@ it("renders a finished OTB database and opens Prep without crashing", async () =
       error: null,
     };
     await act(async () => watcher.callback!(job));
-    expect((container.querySelector('input[value="import"]') as HTMLInputElement).checked).toBe(
-      true,
-    );
+    expect(
+      container.querySelector('button[data-view="import"]')?.getAttribute("aria-pressed"),
+    ).toBe("true");
     expect(container.textContent).toContain("Review mistakes across my games");
     expect(container.textContent).not.toContain("This view could not open");
     expect(window.localStorage.getItem("encroissant-web-otb-prep-handled-job")).toBe(

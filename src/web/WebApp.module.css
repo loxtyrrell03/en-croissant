@@ -50,13 +50,34 @@
 }
 
 .headerNav {
+  display: flex;
   padding: 2px;
   border: 1px solid rgba(255, 255, 255, 0.055);
   border-radius: 9px;
   background: rgba(255, 255, 255, 0.045);
 }
 
-.headerNav :global(.mantine-SegmentedControl-indicator) {
+.headerNav button {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.headerNav button:focus-visible {
+  outline: 2px solid var(--mantine-color-blue-4);
+  outline-offset: 1px;
+}
+
+.headerNav button[aria-pressed="true"] {
   border: 1px solid rgba(255, 255, 255, 0.055);
   border-radius: 7px;
   box-shadow: none;
@@ -1562,7 +1583,7 @@
     gap: 0.34rem !important;
   }
 
-  .headerActions :global(.mantine-SegmentedControl-label) {
+  .headerNav button {
     min-height: 1.75rem;
     padding-inline: 0.44rem;
     font-size: 0.72rem;
@@ -1788,9 +1809,10 @@
   }
   .headerActions,
   .headerNav {
+    display: flex;
     width: 100%;
   }
-  .headerActions :global(.mantine-SegmentedControl-label) {
+  .headerNav button {
     min-height: 44px;
     display: grid;
     place-items: center;

@@ -118,6 +118,7 @@ import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import classes from "./WebApp.module.css";
 import PhoneMistakeReview from "./PhoneMistakeReview";
 import PhoneErrorBoundary from "./PhoneErrorBoundary";
+import PhoneAppBoundary from "./PhoneAppBoundary";
 import PhoneAnnotationBar from "./PhoneAnnotationBar";
 import { annotatePhoneMove } from "./phoneAnnotations";
 import {
@@ -515,6 +516,13 @@ const theme = createTheme({
 });
 
 export default function WebApp() {
+  return (
+    <PhoneAppBoundary>
+      <WebAppContent />
+    </PhoneAppBoundary>
+  );
+}
+function WebAppContent() {
   useEffect(() => {
     document.body.classList.add("phone-companion");
     return () => document.body.classList.remove("phone-companion");
@@ -806,7 +814,6 @@ export default function WebApp() {
       });
       setSelectedDatabaseId(imported.database.id);
       setSelectedGameId(null);
-      setView("board");
       setView("import");
       notifications.show({
         title: "OTB games imported",
@@ -825,7 +832,7 @@ export default function WebApp() {
     let terminal = false;
     let inFlight = false;
 
-    const handleJob = async (job: WebOtbImportJob) => {
+    const handleJob = (job: WebOtbImportJob) => {
       const jobId = job.id;
       if (!active || jobId !== monitoredJobId || terminal || inFlight) return;
       const handledJobId = window.localStorage.getItem(WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY);
@@ -854,7 +861,9 @@ export default function WebApp() {
         }
 
         inFlight = true;
-        await Promise.resolve(openCompletedOtbImportForPrep(job));
+        // Keep completion and its receipt in one synchronous turn. A cached watcher
+        // can replay as soon as the resulting state resubscribes.
+        openCompletedOtbImportForPrep(job);
         window.localStorage.setItem(WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY, job.id);
         terminal = true;
       } catch (error) {
@@ -1195,23 +1204,30 @@ export default function WebApp() {
               </Group>
             </Box>
             <Group className={classes.headerActions} justify="flex-end" gap="xs" wrap="nowrap">
-              <SegmentedControl
-                aria-label="Workspace"
-                className={classes.headerNav}
-                size="xs"
-                value={view}
-                onChange={(value) => {
-                  setView(value as ViewMode);
-                  if (value === "board") setBoardPanelMode("moves");
-                }}
-                data={[
-                  { value: "board", label: "Board" },
-                  { value: "import", label: "Import" },
-                  { value: "review", label: "Review" },
-                  { value: "files", label: "Files" },
-                  { value: "stats", label: "Stats" },
-                ]}
-              />
+              <nav aria-label="Workspace" className={classes.headerNav}>
+                {(
+                  [
+                    ["board", "Board"],
+                    ["import", "Import"],
+                    ["review", "Review"],
+                    ["files", "Files"],
+                    ["stats", "Stats"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    data-view={value}
+                    aria-pressed={view === value}
+                    onClick={() => {
+                      setView(value);
+                      if (value === "board") setBoardPanelMode("moves");
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </nav>
               <Button
                 aria-label="Import PGN files"
                 className={classes.headerImportButton}
