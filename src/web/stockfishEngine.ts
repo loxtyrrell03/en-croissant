@@ -51,6 +51,7 @@ export type WebStockfishAnalyzeRequest = {
      * stored hit returns immediately instead of also running a live PC search.
      */
     preferStoredEvaluation?: boolean;
+    minimumStoredDepth?: number;
     engineKind?: PcEngineKind;
     performancePreset?: EnginePerformancePreset;
     lc0AutoNetwork?: boolean;
@@ -66,6 +67,7 @@ export async function analyzeWithWebStockfish18({
     signal,
     prefetchFens = [],
     preferStoredEvaluation = false,
+    minimumStoredDepth = 0,
     engineKind = "stockfish",
     performancePreset = "good",
     lc0AutoNetwork = true,
@@ -105,7 +107,7 @@ export async function analyzeWithWebStockfish18({
         try {
             const storedLines = await queryRemoteStoredCloudLines({ fen, multipv, signal });
             throwIfAborted(signal);
-            if (storedLines.length > 0) {
+            if (storedLines.length > 0 && storedLines[0].depth >= minimumStoredDepth) {
                 onUpdate?.(storedLines);
                 void prefetchRemoteStoredCloudLines(prefetchFens, multipv);
                 return storedLines;
@@ -409,6 +411,15 @@ async function analyzeWithRemoteStockfish18({
     activeRemoteController = controller;
     const onAbort = () => controller.abort();
     signal?.addEventListener("abort", onAbort, { once: true });
+    let stallTimeoutId: number | null = null;
+    let stalled = false;
+    const refreshStallGuard = () => {
+        if (stallTimeoutId !== null) window.clearTimeout(stallTimeoutId);
+        stallTimeoutId = window.setTimeout(() => {
+            stalled = true;
+            controller.abort();
+        }, 15_000);
+    };
     let lastUpdateAt = 0;
     let firstLineTimedOut = false;
     const firstLineGuardMs = engineKind === "lc0" ? 15_000 : REMOTE_STOCKFISH_FIRST_LINE_TIMEOUT_MS;
@@ -489,6 +500,7 @@ async function analyzeWithRemoteStockfish18({
             const parsed = parseStockfishInfoLine(message.line, fen, "gaming-pc", remoteMeta);
             if (!parsed || parsed.multipv > requestedMultipv) return;
             markAnalysisStarted();
+            refreshStallGuard();
             linesByPv.set(parsed.multipv, parsed);
             publish();
         };
@@ -512,6 +524,7 @@ async function analyzeWithRemoteStockfish18({
         publish(true);
         return sortEngineLines(linesByPv);
     } catch (error) {
+        if (stalled) throw new Error("The PC engine stream stalled. Reconnecting…");
         if (firstLineTimedOut) {
             throw new Error(
                 `Gaming PC ${engineKind === "lc0" ? "LCZero" : "Stockfish"} did not begin analysis in time.`,
@@ -520,6 +533,7 @@ async function analyzeWithRemoteStockfish18({
         throw error;
     } finally {
         markAnalysisStarted();
+        if (stallTimeoutId !== null) window.clearTimeout(stallTimeoutId);
         signal?.removeEventListener("abort", onAbort);
         if (activeRemoteController === controller) activeRemoteController = null;
     }
@@ -658,28 +672,43 @@ export async function releaseWebPcEngine(engineKind: PcEngineKind) {
     }
 }
 
+async function waitForSharedRequest(promise: Promise<void>, signal?: AbortSignal) {
+    throwIfAborted(signal);
+    if (!signal) return promise;
+    return new Promise<void>((resolve, reject) => {
+        const abort = () => reject(new DOMException("Analysis cancelled", "AbortError"));
+        signal.addEventListener("abort", abort, { once: true });
+        promise.then(resolve, reject).finally(() => signal.removeEventListener("abort", abort));
+    });
+}
+
 async function ensureRemoteEngineService(signal?: AbortSignal) {
+    throwIfAborted(signal);
     remoteEngineWakePromise ??= (async () => {
-        const response = await fetch(`${REMOTE_STOCKFISH_URL}/api/engine/start`, {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: "{}",
-            signal,
-        });
-        // A direct connection to an already-running engine service has no wake
-        // route. Its 404 still proves that the service is available.
-        if (!response.ok && response.status !== 404) {
-            throw new Error(`Gaming PC engine wake returned HTTP ${response.status}.`);
+        const wakeController = new AbortController();
+        const timeout = window.setTimeout(() => wakeController.abort(), 20_000);
+        try {
+            const response = await fetch(`${REMOTE_STOCKFISH_URL}/api/engine/start`, {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: "{}",
+                signal: wakeController.signal,
+            });
+            // A direct connection to an already-running engine service has no wake
+            // route. Its 404 still proves that the service is available.
+            if (!response.ok && response.status !== 404) {
+                throw new Error(`Gaming PC engine wake returned HTTP ${response.status}.`);
+            }
+        } finally {
+            window.clearTimeout(timeout);
         }
     })();
     const wakePromise = remoteEngineWakePromise;
-    try {
-        await wakePromise;
-    } finally {
-        // The backend intentionally exits after an idle period, so a completed
-        // wake cannot be cached across later analysis sessions.
+    const clearWake = () => {
         if (remoteEngineWakePromise === wakePromise) remoteEngineWakePromise = null;
-    }
+    };
+    void wakePromise.then(clearWake, clearWake);
+    await waitForSharedRequest(wakePromise, signal);
 }
 
 function ensureStockfishReady() {

@@ -447,3 +447,84 @@ describe("Stockfish phone line updates", () => {
         ]);
     });
 });
+
+it("does not let a cancelled position cancel the next shared engine startup", async () => {
+    let wake!: () => void;
+    const waking = new Promise<void>((resolve) => {
+        wake = resolve;
+    });
+    const fetchMock = vi.fn(async (input: URL | RequestInfo, init?: RequestInit) => {
+        if (String(input).includes("/cloud-eval")) return jsonResponse(404);
+        if (String(input).includes("/api/engine/start")) {
+            await waking;
+            expect(init?.signal?.aborted).toBe(false);
+            return engineWakeResponse();
+        }
+        return streamingAnalyzeResponse(
+            { type: "uci", line: "info depth 14 score cp 25 pv e2e4 e7e5" },
+            { type: "done" },
+        );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const abort = new AbortController();
+    const first = analyzeWithWebStockfish18({
+        fen: INITIAL_FEN,
+        multipv: 1,
+        depth: 14,
+        signal: abort.signal,
+    }).catch((e) => e);
+    await vi.waitFor(() =>
+        expect(fetchMock.mock.calls.some((c) => String(c[0]).includes("/api/engine/start"))).toBe(
+            true,
+        ),
+    );
+    abort.abort();
+    const second = analyzeWithWebStockfish18({ fen: INITIAL_FEN, multipv: 1, depth: 14 });
+    wake();
+    expect((await first).name).toBe("AbortError");
+    expect((await second)[0].depth).toBe(14);
+});
+
+it("recovers when a stream stops after the first engine line", async () => {
+    vi.useFakeTimers();
+    let calls = 0;
+    vi.stubGlobal(
+        "fetch",
+        vi.fn(async (input: URL | RequestInfo, init?: RequestInit) => {
+            if (String(input).includes("/cloud-eval")) return jsonResponse(404);
+            if (String(input).includes("/api/engine/start")) return engineWakeResponse();
+            calls++;
+            if (calls > 1)
+                return streamingAnalyzeResponse(
+                    { type: "uci", line: "info depth 14 score cp 25 pv e2e4 e7e5" },
+                    { type: "done" },
+                );
+            return {
+                ok: true,
+                body: new ReadableStream({
+                    start(controller) {
+                        controller.enqueue(
+                            new TextEncoder().encode(
+                                JSON.stringify({
+                                    type: "uci",
+                                    line: "info depth 1 score cp 25 pv e2e4",
+                                }) + "\n",
+                            ),
+                        );
+                        init?.signal?.addEventListener("abort", () =>
+                            controller.error(new DOMException("aborted", "AbortError")),
+                        );
+                    },
+                }),
+            };
+        }),
+    );
+    try {
+        const result = analyzeWithWebStockfish18({ fen: INITIAL_FEN, multipv: 1, depth: 14 });
+        await vi.advanceTimersByTimeAsync(15150);
+        expect((await result)[0].depth).toBe(14);
+        expect(calls).toBe(2);
+    } finally {
+        vi.useRealTimers();
+    }
+});

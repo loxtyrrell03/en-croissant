@@ -4253,3 +4253,5 @@ a concrete risk that the check would resolve.
   IDs before loading full PGNs. This fixes source changes becoming trapped
   behind long SQLite work in multi-gigabyte libraries while preserving exact
   move totals, filters, recency evidence, paging, and stale-result protection.
+
+- On 2026-09-04, phone engine startup became independent of any one position's cancellation signal, so fast move navigation cannot poison a later request sharing the same service wake. A stream that stops producing lines for 15 seconds now aborts and uses the existing bounded retry; newer positions still cancel stale work. Batch consumers may require a minimum stored-evaluation depth without changing historical cache-only consumers. Verification: all 15 phone engine tests passed, including cancelled-startup and stalled-stream regressions. Source-only at this milestone; the phone UI/review release is being verified separately.
