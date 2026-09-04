@@ -56,9 +56,18 @@ $runtimeFiles = @(
   'terminate-collector-process-tree.ps1',
   'fide-player-search.mjs'
 )
+# Resolve and validate the complete import graph before staging or restarting.
+# A new relative import must not silently be omitted from the installed runtime.
+$nodeCommand = Get-Command node.exe -ErrorAction SilentlyContinue
+$runtimeNode = if ($nodeCommand) { $nodeCommand.Source } else {
+  'C:\Users\Lox\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+}
+$runtimeFiles = @(& $runtimeNode (Join-Path $PSScriptRoot 'home-server-runtime-files.mjs') $PSScriptRoot @runtimeFiles)
+if ($LASTEXITCODE -ne 0) { throw 'The home-server runtime dependency check failed before restart.' }
 foreach ($fileName in $runtimeFiles) {
   $source = Join-Path $PSScriptRoot $fileName
   $destination = Join-Path $runtimeRoot $fileName
+  New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force | Out-Null
   $temporary = "$destination.next-$PID"
   Copy-Item -LiteralPath $source -Destination $temporary -Force
   Move-Item -LiteralPath $temporary -Destination $destination -Force
