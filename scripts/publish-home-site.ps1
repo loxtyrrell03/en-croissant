@@ -63,7 +63,9 @@ try {
         if ($LASTEXITCODE -ne 0) {
           throw "Phone OTB prep build failed with exit code $LASTEXITCODE."
         }
-        & $bundledNode (Join-Path $repoRoot 'node_modules\@typescript\native-preview\bin\tsgo.js') --noEmit
+        & $bundledNode (Join-Path $repoRoot 'node_modules\vite\bin\vite.js') build --config (Join-Path $repoRoot 'vite.review-worker.config.ts')
+        if ($LASTEXITCODE -ne 0) { throw "Shared review service build failed." }
+        & $bundledNode (Join-Path $repoRoot 'node_modules\@typescript\native-preview\bin\tsgo.js') --noEmit -p tsconfig.review-worker.json
         if ($LASTEXITCODE -ne 0) {
           throw "Phone app typecheck failed with exit code $LASTEXITCODE."
         }

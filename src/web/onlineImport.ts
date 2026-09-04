@@ -24,6 +24,25 @@ const CHESSCOM_ARCHIVES_URL = "https://api.chess.com/pub/player";
 const LICHESS_GAMES_URL = "https://lichess.org/api/games/user";
 const MAX_ONLINE_GAMES = 300;
 
+// Durable PC catch-up is date-bounded, not limited by the phone's manual batch size.
+export async function fetchWebOnlineGamesSince(request: {
+    source: WebOnlineSource;
+    username: string;
+    since: number;
+    signal?: AbortSignal;
+}): Promise<WebOnlineImportedGame[]> {
+    return request.source === "chesscom"
+        ? fetchChessComGames(
+              request.username,
+              Infinity,
+              request.since,
+              undefined,
+              request.signal,
+              true,
+          )
+        : fetchLichessGames(request.username, Infinity, request.since, undefined, request.signal);
+}
+
 export async function fetchWebOnlineGames({
     source,
     username,
@@ -96,6 +115,7 @@ async function fetchChessComGames(
     since: number | null,
     onProgress?: (loaded: number, expected: number | null) => void,
     signal?: AbortSignal,
+    strict = false,
 ) {
     const archivesResponse = await fetch(
         `${CHESSCOM_ARCHIVES_URL}/${encodeURIComponent(username.toLowerCase())}/games/archives`,
@@ -114,7 +134,13 @@ async function fetchChessComGames(
 
     for (const [index, archive] of archives.entries()) {
         const response = await fetch(`${archive}/pgn`, { signal });
-        if (!response.ok) continue;
+        if (!response.ok) {
+            if (strict)
+                throw new Error(
+                    `Chess.com archive fetch failed (HTTP ${response.status}); catch-up will retry.`,
+                );
+            continue;
+        }
 
         const pgnChunk = await response.text();
         for (const pgn of splitPgnGames(pgnChunk)) {
@@ -150,7 +176,8 @@ async function fetchLichessGames(
     signal?: AbortSignal,
 ) {
     const url = new URL(`${LICHESS_GAMES_URL}/${encodeURIComponent(username)}`);
-    url.searchParams.set("max", String(limit));
+    if (Number.isFinite(limit)) url.searchParams.set("max", String(limit));
+    url.searchParams.set("ongoing", "false");
     url.searchParams.set("sort", "dateDesc");
     url.searchParams.set("pgnInJson", "true");
     url.searchParams.set("clocks", "true");
@@ -226,8 +253,9 @@ function splitPgnGames(pgn: string) {
 }
 
 function getPgnTimestamp(pgn: string) {
-    const utcDate = getPgnHeader(pgn, "UTCDate") ?? getPgnHeader(pgn, "Date");
-    const utcTime = getPgnHeader(pgn, "UTCTime") ?? "00:00:00";
+    const utcDate =
+        getPgnHeader(pgn, "EndDate") ?? getPgnHeader(pgn, "UTCDate") ?? getPgnHeader(pgn, "Date");
+    const utcTime = getPgnHeader(pgn, "EndTime") ?? getPgnHeader(pgn, "UTCTime") ?? "00:00:00";
     if (!utcDate) return 0;
 
     const normalizedDate = utcDate.replace(/\./g, "-").replace(/\?/g, "0");

@@ -42,6 +42,21 @@ import {
     MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
 } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import type { TacticalMotifEvidence } from "@/utils/tacticalMotifs/types";
+import { isSharedReviewPath } from "@/web/sharedReview";
+import { selectDailyReview, type PhoneReviewCard } from "@/web/mistakeReview";
+
+async function pcReviewDeckRequest(body?: MistakeReviewDeck): Promise<MistakeReviewDeck> {
+    const { fetch } = await import("@tauri-apps/plugin-http");
+    const response = await fetch("http://127.0.0.1:8787/api/mistake-review/deck", {
+        method: body ? "POST" : "GET",
+        connectTimeout: 10000,
+        ...(body
+            ? { headers: { "content-type": "application/json" }, body: stringifyReviewDeck(body) }
+            : {}),
+    });
+    if (!response.ok) throw new Error("The PC review collection could not be saved. Please retry.");
+    return response.json();
+}
 
 export const MISTAKE_REVIEW_EXTENSION = ".mistake-review.json";
 export const MISTAKE_REVIEW_VERSION = 1;
@@ -449,6 +464,13 @@ export type MistakeReviewTimeManagementSummary = {
 
 export async function readMistakeReviewDeck(path: string): Promise<MistakeReviewDeck> {
     const raw = await readTextFile(path);
+    if (isSharedReviewPath(path) && JSON.parse(raw).source === "pc-online-review-v1") {
+        try {
+            return await pcReviewDeckRequest();
+        } catch {
+            /* Saved file remains readable offline. */
+        }
+    }
     const parsed = mistakeReviewDeckSchema.parse(JSON.parse(raw));
     return {
         version: MISTAKE_REVIEW_VERSION,
@@ -459,6 +481,11 @@ export async function readMistakeReviewDeck(path: string): Promise<MistakeReview
 }
 
 export async function writeMistakeReviewDeck(path: string, deck: MistakeReviewDeck) {
+    if (isSharedReviewPath(path) && deck.source === "pc-online-review-v1") {
+        const saved = await pcReviewDeckRequest(deck);
+        await writeCachedMistakeReviewSummary(path, getMistakeReviewDeckSummary(path, saved));
+        return saved;
+    }
     const updatedDeck: MistakeReviewDeck = {
         ...deck,
         version: MISTAKE_REVIEW_VERSION,
@@ -887,6 +914,32 @@ function getMistakeReviewDailyBatchEntries(
     options: { now?: Date; extra?: boolean } = {},
 ) {
     const now = options.now ?? new Date();
+    if (
+        !options.extra &&
+        positions.length &&
+        positions.every((p) => p.reviewKey?.startsWith("pc:"))
+    ) {
+        const cards = positions.map(
+            (p) =>
+                ({
+                    id: p.reviewKey!,
+                    gameKey: p.reviewKey!.split(":")[1],
+                    fen: p.fen,
+                    gameDate: p.mistakeReview?.date ?? "",
+                    createdAt: p.importedAt ?? now.getTime(),
+                    drop: p.mistakeReview?.winProbabilityDrop ?? 0,
+                    reviews: p.card.reps,
+                    due: new Date(p.card.due).getTime(),
+                    lastReviewed: p.card.last_review
+                        ? new Date(p.card.last_review).getTime()
+                        : undefined,
+                }) as PhoneReviewCard,
+        );
+        return selectDailyReview(cards, now.getTime()).map((c) => {
+            const index = positions.findIndex((p) => p.reviewKey === c.id);
+            return { position: positions[index], index };
+        });
+    }
     const progress = getMistakeReviewDailyProgress(positions, settings, { now });
     const target = options.extra ? Number.POSITIVE_INFINITY : progress.remaining;
     if (!options.extra && target <= 0) return [];

@@ -47,6 +47,7 @@
                 "https://explorer.lichess.org/**",
                 "https://tablebase.lichess.org/**",
                 "https://www.chessdb.cn/**"
+                ,"http://127.0.0.1:8787/api/mistake-review/**"
             ]
         }
     ]

@@ -163,7 +163,7 @@ export function playUciMove(fen: string, uci: string) {
     if (!position) return null;
 
     const move = parseUci(uci);
-    if (!move) return null;
+    if (!move || !position.isLegal(move)) return null;
 
     const san = makeSan(position, move);
     const normalizedUci = makeMoveUci(position, move);

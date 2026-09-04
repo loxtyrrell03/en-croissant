@@ -60,6 +60,7 @@ import {
 } from "./chess-coach-service.mjs";
 import { createLocalLichessEvalStore } from "./lichess-local-eval-reader.mjs";
 import { createLichessExplorerLane } from "./lichess-explorer-lane.mjs";
+import { SharedReviewService } from "./generated/shared-review-service.js";
 
 const repoRoot = resolve(
   process.env.EN_CROISSANT_REPO_ROOT || resolve(dirname(fileURLToPath(import.meta.url)), ".."),
@@ -219,6 +220,14 @@ const otbImportService = new OtbImportService({
   onLog: (message) => void appendLog(message),
 });
 const fidePlayerSearch = new FidePlayerSearchService();
+const sharedReview = new SharedReviewService({
+  root: join(serverRoot, "analysis"),
+  documentsRoot,
+  engineConfigPath:
+    process.env.STOCKFISH_REMOTE_CONFIG || join(localAppData, "Stockfish18Server", "config.json"),
+  lookup: (fen) => localEvalStore?.lookup(fen, 1) ?? Promise.resolve(null),
+  log: (message) => void appendLog(message),
+});
 
 await mkdir(serverRoot, { recursive: true });
 await mkdir(dirname(statePath), { recursive: true });
@@ -230,6 +239,7 @@ await Promise.all([
   writeFile(statsReportSchemaPath, JSON.stringify(STATS_REPORT_SCHEMA, null, 2)),
 ]);
 sharedLichessCredential = normalizeLichessCredential(await readJsonFile(lichessCredentialPath));
+await sharedReview.initialize().catch((error) => sharedReview.fail(error));
 
 const server = createServer((request, response) => {
   void handleRequest(request, response).catch(async (error) => {
@@ -247,8 +257,14 @@ server.listen(port, host, async () => {
     .catch((error) => appendLog(`hosted library index warm-up failed: ${error}`));
 });
 
-process.on("SIGINT", () => server.close(() => process.exit(0)));
-process.on("SIGTERM", () => server.close(() => process.exit(0)));
+process.on("SIGINT", () => {
+  sharedReview.close();
+  server.close(() => process.exit(0));
+});
+process.on("SIGTERM", () => {
+  sharedReview.close();
+  server.close(() => process.exit(0));
+});
 
 async function handleRequest(request, response) {
   const method = request.method || "GET";
@@ -260,12 +276,46 @@ async function handleRequest(request, response) {
     pathname.startsWith("/api/chess-books") ||
     pathname === "/api/engine/start" ||
     pathname.startsWith("/api/otb-import") ||
+    pathname.startsWith("/api/mistake-review") ||
     pathname === "/v1" ||
     pathname.startsWith("/v1/");
   setCorsHeaders(request, response, sensitiveApi);
   if (method === "OPTIONS") {
     response.writeHead(204);
     return response.end();
+  }
+
+  if (pathname.startsWith("/api/mistake-review")) {
+    const origin = String(request.headers.origin || "").replace(/\/$/, "");
+    if (origin && !privateCredentialOrigins.has(origin))
+      return writeJson(response, 403, { error: "Origin is not allowed." });
+    response.setHeader("cache-control", "no-store");
+    try {
+      if (method === "GET" && pathname === "/api/mistake-review")
+        return writeJson(response, 200, sharedReview.phoneSnapshot());
+      if (method === "GET" && pathname === "/api/mistake-review/deck")
+        return writeJson(response, 200, await sharedReview.deck());
+      if (method === "POST" && pathname === "/api/mistake-review/deck")
+        return writeJson(
+          response,
+          200,
+          await sharedReview.saveDeck(await readJsonBody(request, maxStateBytes)),
+        );
+      if (method === "POST" && pathname === "/api/mistake-review/grade") {
+        const body = await readJsonBody(request, 4096);
+        await sharedReview.grade(body.id, body.grade, body.expectedReviews);
+        return writeJson(response, 200, sharedReview.phoneSnapshot());
+      }
+      if (method === "POST" && pathname === "/api/mistake-review/settings") {
+        const body = await readJsonBody(request, 4096);
+        if (typeof body.enabled !== "boolean") throw new Error("Enabled must be true or false.");
+        await sharedReview.setEnabled(body.enabled);
+        return writeJson(response, 200, sharedReview.phoneSnapshot());
+      }
+      return writeJson(response, 405, { error: "Method not allowed." });
+    } catch (error) {
+      return writeJson(response, 400, { error: error.message });
+    }
   }
 
   if (method === "POST" && pathname === "/api/engine/start") {

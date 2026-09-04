@@ -31,6 +31,7 @@ import {
   type PhoneReviewState,
 } from "./mistakeReview";
 import classes from "./WebApp.module.css";
+import { sharedReviewRequest, type SharedReviewSnapshot } from "./sharedReviewClient";
 
 type Props = {
   state: WebCompanionState;
@@ -58,6 +59,44 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
   const [preview, setPreview] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
   const [boardAttempt, setBoardAttempt] = useState(0);
+  const [shared, setShared] = useState<SharedReviewSnapshot | null>(null);
+  const [otherGames, setOtherGames] = useState(false);
+  const [syncError, setSyncError] = useState("");
+  const sharedMode = !!shared && Object.values(shared.accounts).some(Boolean) && !otherGames;
+  useEffect(() => {
+    const abort = new AbortController();
+    let pending = false;
+    const refresh = async () => {
+      if (pending) return;
+      pending = true;
+      try {
+        const next = await sharedReviewRequest(
+          "",
+          undefined,
+          AbortSignal.any([abort.signal, AbortSignal.timeout(15_000)]),
+        );
+        if (!abort.signal.aborted) {
+          setShared((current) =>
+            !current || next.updatedAt >= current.updatedAt ? next : current,
+          );
+          setSyncError("");
+        }
+      } catch {
+        if (!abort.signal.aborted)
+          setSyncError(
+            "PC reviews are temporarily unavailable. Saved imported-game reviews are still available.",
+          );
+      } finally {
+        pending = false;
+      }
+    };
+    void refresh();
+    const timer = setInterval(() => void refresh(), 15_000);
+    return () => {
+      abort.abort();
+      clearInterval(timer);
+    };
+  }, []);
   const controller = useRef<AbortController | null>(null);
   const savedRef = useRef(saved);
   savedRef.current = saved;
@@ -70,7 +109,9 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
     },
     [],
   );
-  const queue = selectDailyReview(saved.cards, Date.now(), player);
+  const queue = sharedMode
+    ? selectDailyReview(shared.cards)
+    : selectDailyReview(saved.cards, Date.now(), player);
   const games = useMemo(
     () =>
       Object.entries(state.gamesByDatabase)
@@ -257,12 +298,31 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
       }
     }
   }
-  function grade(value: "again" | "good" | "easy" | "hide") {
-    if (!card) return;
-    onSave({
-      ...savedRef.current,
-      cards: savedRef.current.cards.map((c) => (c.id === card.id ? gradePhoneReview(c, value) : c)),
-    });
+  async function grade(value: "again" | "good" | "easy" | "hide") {
+    if (!card || checking) return;
+    if (sharedMode) {
+      setChecking(true);
+      try {
+        setShared(
+          await sharedReviewRequest("/grade", {
+            id: card.id,
+            grade: value,
+            expectedReviews: card.reviews,
+          }),
+        );
+      } catch (e) {
+        setFeedback(e instanceof Error ? e.message : "Could not save this review.");
+        return;
+      } finally {
+        setChecking(false);
+      }
+    } else
+      onSave({
+        ...savedRef.current,
+        cards: savedRef.current.cards.map((c) =>
+          c.id === card.id ? gradePhoneReview(c, value) : c,
+        ),
+      });
     setSession((current) => current?.slice(1) ?? null);
     setRevealed(false);
     setFeedback("");
@@ -347,7 +407,7 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
                     After {card.played}: {card.refutation.join(" ")}
                   </Text>
                 )}
-                <Group grow>
+                <Group grow style={checking ? { pointerEvents: "none", opacity: 0.6 } : undefined}>
                   <Button color="orange" variant="light" onClick={() => grade("again")}>
                     Again tomorrow
                   </Button>
@@ -356,7 +416,12 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
                     Easy
                   </Button>
                 </Group>
-                <Button variant="subtle" color="gray" onClick={() => grade("hide")}>
+                <Button
+                  variant="subtle"
+                  color="gray"
+                  disabled={checking}
+                  onClick={() => void grade("hide")}
+                >
                   Not useful — hide this position
                 </Button>
               </>
@@ -379,19 +444,84 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
           Learn from your games, five positions at a time.
         </Text>
       </div>
-      <TextInput
-        label="Your player name or username"
-        description="Use the name in your games. It selects only your moves."
-        value={player}
-        disabled={busy}
-        onChange={(e) => {
-          setPlayer(e.currentTarget.value);
-          onSave({ ...savedRef.current, player: e.currentTarget.value });
-        }}
-      />
+      {shared && Object.values(shared.accounts).some(Boolean) && (
+        <>
+          <SegmentedControl
+            value={otherGames ? "other" : "online"}
+            onChange={(v) => setOtherGames(v === "other")}
+            data={[
+              { value: "online", label: "My online games" },
+              { value: "other", label: "Other games" },
+            ]}
+          />
+          {sharedMode && (
+            <Stack gap="xs">
+              <Text size="sm">
+                {Object.entries(shared.accounts)
+                  .filter(([, name]) => name)
+                  .map(
+                    ([source, name]) =>
+                      `${source === "chesscom" ? "Chess.com" : "Lichess"}: ${name}`,
+                  )
+                  .join(" · ")}
+              </Text>
+              <Text size="sm" c="dimmed">
+                {shared.reviewedGames} games prepared · {shared.usefulPositionsCount} useful
+                positions. Progress is shared with En Croissant on your PC.
+              </Text>
+              <Text size="xs" c="dimmed">
+                {shared.running
+                  ? `Preparing reviews${shared.currentGame ? ` · ${shared.currentGame}` : "…"}`
+                  : shared.enabled
+                    ? "Checks for finished games every five minutes while your PC is on."
+                    : "Automatic preparation paused."}{" "}
+                You can close this screen.
+              </Text>
+              {(shared.error || shared.discoveryError) && (
+                <Alert color="orange">
+                  {shared.error || shared.discoveryError} Saved reviews remain available; automatic
+                  preparation will retry.
+                </Alert>
+              )}
+              <Button
+                variant="subtle"
+                size="compact-sm"
+                onClick={() => {
+                  void sharedReviewRequest("/settings", { enabled: !shared.enabled })
+                    .then(setShared)
+                    .catch(() =>
+                      setSyncError("Could not change automatic preparation. Please retry."),
+                    );
+                }}
+              >
+                {shared.enabled ? "Pause automatic preparation" : "Resume automatic preparation"}
+              </Button>
+            </Stack>
+          )}
+        </>
+      )}
+      {syncError && (
+        <Text size="sm" c="orange">
+          {syncError}
+        </Text>
+      )}
+      {!sharedMode && (
+        <>
+          <TextInput
+            label="Your player name or username"
+            description="Use the name in your games. It selects only your moves."
+            value={player}
+            disabled={busy}
+            onChange={(e) => {
+              setPlayer(e.currentTarget.value);
+              onSave({ ...savedRef.current, player: e.currentTarget.value });
+            }}
+          />
+        </>
+      )}
       <Button
         size="lg"
-        disabled={!queue.length || busy || !player.trim()}
+        disabled={!queue.length || busy || (!sharedMode && !player.trim())}
         onClick={() => {
           setSession(queue);
           setRevealed(false);
@@ -404,89 +534,106 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
         Meaningful swings in winning chances, recent games and spaced retries. At most two positions
         from one game. No daily backlog to clear.
       </Text>
-      <Title order={4}>Add games to review</Title>
-      <SegmentedControl
-        fullWidth
-        value={source}
-        disabled={busy}
-        onChange={(value) => {
-          setSource(value);
-          if (count === "all") setCount("10");
-        }}
-        data={[
-          { value: "saved", label: "Imported games" },
-          { value: "chesscom", label: "Chess.com" },
-          { value: "lichess", label: "Lichess" },
-        ]}
-      />
-      {source === "saved" && (
-        <Select
-          label="Games"
-          clearable
-          placeholder="All imported games"
-          value={database}
-          disabled={busy}
-          onChange={setDatabase}
-          data={state.databases.map((d) => ({ value: d.id, label: `${d.name} (${d.gameCount})` }))}
-        />
-      )}
-      <Group grow>
-        <Select
-          label="Batch size"
-          allowDeselect={false}
-          value={count}
-          disabled={busy}
-          onChange={(v) => setCount(v ?? "10")}
-          data={[
-            ...["10", "25", "50", "100", "300"].map((value) => ({
-              value,
-              label: `${value} recent games`,
-            })),
-            ...(source === "saved" ? [{ value: "all", label: "All imported games" }] : []),
-          ]}
-        />
-        <Badge variant="light">
-          {source === "saved" ? `${eligibleCount} unreviewed` : "Recent games first"}
-        </Badge>
-      </Group>
-      <Button
-        disabled={!player.trim() || (source === "saved" && eligibleCount === 0)}
-        loading={busy}
-        onClick={() => void scan()}
-      >
-        Find my mistakes
-      </Button>
-      {busy && (
+      {sharedMode ? (
+        <Button variant="light" onClick={() => setOtherGames(true)}>
+          Review imported or other games
+        </Button>
+      ) : (
         <>
-          <Progress value={progress.total ? (progress.done / progress.total) * 100 : 0} animated />
-          <Button
-            variant="light"
-            color="gray"
-            onClick={() => {
-              controller.current?.abort();
-              setProgress((p) => ({
-                ...p,
-                text: "Stopped. Completed games are saved. Start again to resume.",
-              }));
+          <Title order={4}>Add games to review</Title>
+          <SegmentedControl
+            fullWidth
+            value={source}
+            disabled={busy}
+            onChange={(value) => {
+              setSource(value);
+              if (count === "all") setCount("10");
             }}
+            data={[
+              { value: "saved", label: "Imported games" },
+              { value: "chesscom", label: "Chess.com" },
+              { value: "lichess", label: "Lichess" },
+            ]}
+          />
+          {source === "saved" && (
+            <Select
+              label="Games"
+              clearable
+              placeholder="All imported games"
+              value={database}
+              disabled={busy}
+              onChange={setDatabase}
+              data={state.databases.map((d) => ({
+                value: d.id,
+                label: `${d.name} (${d.gameCount})`,
+              }))}
+            />
+          )}
+          <Group grow>
+            <Select
+              label="Batch size"
+              allowDeselect={false}
+              value={count}
+              disabled={busy}
+              onChange={(v) => setCount(v ?? "10")}
+              data={[
+                ...["10", "25", "50", "100", "300"].map((value) => ({
+                  value,
+                  label: `${value} recent games`,
+                })),
+                ...(source === "saved" ? [{ value: "all", label: "All imported games" }] : []),
+              ]}
+            />
+            <Badge variant="light">
+              {source === "saved" ? `${eligibleCount} unreviewed` : "Recent games first"}
+            </Badge>
+          </Group>
+          <Button
+            disabled={!player.trim() || (source === "saved" && eligibleCount === 0)}
+            loading={busy}
+            onClick={() => void scan()}
           >
-            Stop and keep progress
+            Find my mistakes
           </Button>
+          {busy && (
+            <>
+              <Progress
+                value={progress.total ? (progress.done / progress.total) * 100 : 0}
+                animated
+              />
+              <Button
+                variant="light"
+                color="gray"
+                onClick={() => {
+                  controller.current?.abort();
+                  setProgress((p) => ({
+                    ...p,
+                    text: "Stopped. Completed games are saved. Start again to resume.",
+                  }));
+                }}
+              >
+                Stop and keep progress
+              </Button>
+              <Text size="xs" c="dimmed">
+                Keep this page open while scanning. Completed games are saved automatically.
+              </Text>
+            </>
+          )}
+          {progress.text && (
+            <Text size="sm" role="status">
+              {progress.text}
+            </Text>
+          )}
+          {error && <Alert color="red">{error}</Alert>}
           <Text size="xs" c="dimmed">
-            Keep this page open while scanning. Completed games are saved automatically.
+            {
+              saved.cards.filter((c) => playerKey(c.player) === playerKey(player) && !c.hidden)
+                .length
+            }{" "}
+            useful positions saved on this device.
           </Text>
         </>
       )}
-      {progress.text && (
-        <Text size="sm" role="status">
-          {progress.text}
-        </Text>
-      )}
-      {error && <Alert color="red">{error}</Alert>}
-      <Text size="xs" c="dimmed">
-        {saved.cards.filter((c) => playerKey(c.player) === playerKey(player) && !c.hidden).length}{" "}
-        useful positions saved on this device.
-      </Text>
     </Stack>
   );
 }
