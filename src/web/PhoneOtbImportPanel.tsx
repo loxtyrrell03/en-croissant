@@ -57,6 +57,7 @@ export default function PhoneOtbImportPanel({
   const [fideIdAuto, setFideIdAuto] = useState(false);
   const [fromYear, setFromYear] = useState(FIDE_IMPORT_FALLBACK_YEAR);
   const [sources, setSources] = useState<WebOtbImportSources>(DEFAULT_WEB_OTB_IMPORT_SOURCES);
+  const [visibleGames, setVisibleGames] = useState(20);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [job, setJob] = useState<WebOtbImportJob | null>(null);
   const [jobId, setJobId] = useState(() => window.localStorage.getItem(WEB_OTB_JOB_STORAGE_KEY));
@@ -386,7 +387,7 @@ export default function PhoneOtbImportPanel({
       {job?.status === "completed" ? (
         <Alert color={games.length > 0 ? "green" : "yellow"} variant="light">
           {games.length > 0
-            ? `${games.length} verified OTB game${games.length === 1 ? "" : "s"} ready from ${job.request.fromYear <= FIDE_IMPORT_FALLBACK_YEAR ? "the full career" : `since ${job.request.fromYear}`}. ${openedInPrep ? "Loaded in Prep." : "Opening Prep…"}`
+            ? `${games.length} verified OTB game${games.length === 1 ? "" : "s"} ready from ${job.request.fromYear <= FIDE_IMPORT_FALLBACK_YEAR ? "the full career" : `since ${job.request.fromYear}`}. ${openedInPrep ? "Saved to your imported games." : "Saving your games…"}`
             : "The PC search completed without any usable OTB games."}
         </Alert>
       ) : null}
@@ -406,7 +407,7 @@ export default function PhoneOtbImportPanel({
           </Group>
           <ScrollArea.Autosize mah={420}>
             <Box className={classes.gameList}>
-              {games.map((game) => (
+              {games.slice(0, visibleGames).map((game) => (
                 <Box className={classes.gameCard} key={game.id}>
                   <Box className={classes.gameDetails}>
                     <Group gap={6} wrap="nowrap">
@@ -433,6 +434,11 @@ export default function PhoneOtbImportPanel({
               ))}
             </Box>
           </ScrollArea.Autosize>
+          {games.length > visibleGames && (
+            <Button variant="light" onClick={() => setVisibleGames((n) => n + 20)}>
+              Show more games
+            </Button>
+          )}
         </Stack>
       ) : null}
     </Stack>

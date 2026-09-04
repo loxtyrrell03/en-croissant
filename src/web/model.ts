@@ -187,6 +187,7 @@ export type WebEngineLine = {
 };
 
 export type WebCompanionState = {
+    mistakeReview?: import("./mistakeReview").PhoneReviewState;
     version: 1;
     databases: WebDatabase[];
     gamesByDatabase: Record<string, WebGame[]>;

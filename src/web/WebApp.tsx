@@ -116,6 +116,10 @@ import {
 } from "@/utils/opponentPrep";
 import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import classes from "./WebApp.module.css";
+import PhoneMistakeReview from "./PhoneMistakeReview";
+import PhoneErrorBoundary from "./PhoneErrorBoundary";
+import PhoneAnnotationBar from "./PhoneAnnotationBar";
+import { annotatePhoneMove } from "./phoneAnnotations";
 import {
   askWebChessCoach,
   createWebCoachReviewRecord,
@@ -297,7 +301,6 @@ import {
   stopWebStockfish18Search,
 } from "./stockfishEngine";
 import {
-  getWebOtbJobPlayerName,
   watchWebOtbImportJob,
   WEB_OTB_JOB_STORAGE_KEY,
   WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY,
@@ -307,7 +310,7 @@ import {
 import { applyWebOtbPrepCompletion, shouldOpenWebOtbPrep } from "./otbPrep";
 import { installWebAppLifecycle } from "./webAppLifecycle";
 
-type ViewMode = "board" | "stats" | "files";
+type ViewMode = "board" | "stats" | "files" | "review" | "import";
 type BoardPanelMode = "moves" | "online" | "database" | "prep" | "engine" | "coach";
 type WebHostedPgnImportHandler = (entry: WebHostedFileEntry) => Promise<WebImportResult | null>;
 type WebHostedFolderImportHandler = (
@@ -512,11 +515,16 @@ const theme = createTheme({
 });
 
 export default function WebApp() {
+  useEffect(() => {
+    document.body.classList.add("phone-companion");
+    return () => document.body.classList.remove("phone-companion");
+  }, []);
   const [state, setState] = useState<WebCompanionState>(() => createEmptyWebState());
   const [loaded, setLoaded] = useState(false);
   const [view, setView] = useState<ViewMode>("board");
   const [boardPanelMode, setBoardPanelMode] = useState<BoardPanelMode>("moves");
   const [importing, setImporting] = useState(false);
+  const [pastedPgn, setPastedPgn] = useState("");
   const [selectedDatabaseId, setSelectedDatabaseId] = useState<string | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const [lichessToken, setLichessToken] = usePersistentString(WEB_LICHESS_TOKEN_STORAGE_KEY, "");
@@ -707,6 +715,7 @@ export default function WebApp() {
       openFirstGame?: boolean;
     }) => {
       const parsed = parsePgnDatabase(name, pgn);
+      if (!parsed.games.length) throw new Error("No readable games found in this PGN.");
       const imported: WebImportResult = {
         ...parsed,
         database: {
@@ -749,6 +758,7 @@ export default function WebApp() {
       const game = imported.games[0];
       if (!game) throw new Error("This online game did not contain readable moves.");
 
+      enablePhoneAnalysis();
       loadGameOnBoard(game, {
         cursor: 0,
         orientation: getWebOnlinePlayerColor(onlineGame),
@@ -773,6 +783,7 @@ export default function WebApp() {
       if (!game) throw new Error("This PC-imported OTB game did not contain readable moves.");
       const target = normalizeWebPlayerName(otbGame.playerName);
       const orientation = normalizeWebPlayerName(otbGame.black) === target ? "black" : "white";
+      enablePhoneAnalysis();
       loadGameOnBoard(game, { cursor: 0, orientation });
       return game;
     },
@@ -787,14 +798,19 @@ export default function WebApp() {
       }
 
       const userColor = activePrep?.userColor ?? readStoredWebPrepUserColor();
-      setState((current) => applyWebOtbPrepCompletion(current, job, userColor)?.state ?? current);
+      setState((current) => {
+        const completed = applyWebOtbPrepCompletion(current, job, userColor);
+        return completed
+          ? { ...completed.state, activePrepId: current.activePrepId, board: current.board }
+          : current;
+      });
       setSelectedDatabaseId(imported.database.id);
       setSelectedGameId(null);
       setView("board");
-      setBoardPanelMode("prep");
+      setView("import");
       notifications.show({
-        title: "OTB prep ready",
-        message: `${pluralWeb(imported.games.length, "game")} loaded for ${getWebOtbJobPlayerName(job)}.`,
+        title: "OTB games imported",
+        message: `${pluralWeb(imported.games.length, "game")} saved. Open a game or choose Review.`,
         color: "green",
       });
     },
@@ -1183,29 +1199,17 @@ export default function WebApp() {
                 aria-label="Workspace"
                 className={classes.headerNav}
                 size="xs"
-                value={
-                  view === "files"
-                    ? "files"
-                    : view === "stats"
-                      ? "stats"
-                      : boardPanelMode === "online"
-                        ? "online"
-                        : "board"
-                }
+                value={view}
                 onChange={(value) => {
-                  if (value === "files" || value === "stats") {
-                    setView(value);
-                    return;
-                  }
-
-                  setView("board");
-                  setBoardPanelMode(value === "online" ? "online" : "moves");
+                  setView(value as ViewMode);
+                  if (value === "board") setBoardPanelMode("moves");
                 }}
                 data={[
                   { value: "board", label: "Board" },
-                  { value: "stats", label: "Stats" },
+                  { value: "import", label: "Import" },
+                  { value: "review", label: "Review" },
                   { value: "files", label: "Files" },
-                  { value: "online", label: "Online" },
+                  { value: "stats", label: "Stats" },
                 ]}
               />
               <Button
@@ -1236,38 +1240,166 @@ export default function WebApp() {
         </Box>
 
         <main className={classes.main}>
-          {!loaded || !lichessAuthReady ? (
-            <Center h="60svh">
-              <Stack align="center" gap="xs">
-                <Loader />
-                <Text size="sm" c="dimmed">
-                  Opening web workspace
-                </Text>
+          <PhoneErrorBoundary
+            onRecover={() => {
+              setView("import");
+              setBoardPanelMode("moves");
+            }}
+          >
+            {!loaded || !lichessAuthReady ? (
+              <Center h="60svh">
+                <Stack align="center" gap="xs">
+                  <Loader />
+                  <Text size="sm" c="dimmed">
+                    Opening web workspace
+                  </Text>
+                </Stack>
+              </Center>
+            ) : view === "review" ? (
+              <PhoneMistakeReview
+                state={state}
+                onSave={(mistakeReview) => setState((current) => ({ ...current, mistakeReview }))}
+                onImport={(result) => addImportedDatabases([result])}
+                renderBoard={(fen, orientation, onMove, lastMoveUci) => (
+                  <WebChessboard
+                    fen={fen}
+                    orientation={orientation}
+                    onMove={onMove}
+                    lastMoveUci={lastMoveUci}
+                    engineArrowShapes={[]}
+                    engineScore={null}
+                    canGoToPreviousMove={false}
+                    canGoToNextMove={false}
+                    onPreviousMove={() => {}}
+                    onNextMove={() => {}}
+                  />
+                )}
+              />
+            ) : view === "import" ? (
+              <Stack className={classes.reviewWorkspace}>
+                <OnlineGameAnalysisPanel
+                  onAnalyzeGame={async (game) => {
+                    await importOnlineGameForAnalysis(game);
+                    setBoardPanelMode("moves");
+                  }}
+                  onAnalyzeOtbGame={async (game) => {
+                    await importOtbGameForAnalysis(game);
+                    setBoardPanelMode("moves");
+                  }}
+                />
+                <Button component="label" variant="light">
+                  Open PGN files
+                  <input
+                    hidden
+                    multiple
+                    type="file"
+                    accept=".pgn,text/plain"
+                    onChange={(e) => {
+                      void importFiles(e.currentTarget.files);
+                      e.currentTarget.value = "";
+                    }}
+                  />
+                </Button>
+                <Textarea
+                  label="Or paste PGN"
+                  placeholder="Paste one game or a collection…"
+                  minRows={2}
+                  maxRows={5}
+                  autosize
+                  value={pastedPgn}
+                  onChange={(e) => setPastedPgn(e.currentTarget.value)}
+                />
+                <Button
+                  variant="light"
+                  disabled={!pastedPgn.trim()}
+                  onClick={() => {
+                    void importPgnText({
+                      name: "Pasted games",
+                      pgn: pastedPgn,
+                      notificationTitle: "PGN imported",
+                    })
+                      .then(() => setPastedPgn(""))
+                      .catch((error) =>
+                        notifications.show({
+                          color: "red",
+                          title: "Could not read PGN",
+                          message: String(error),
+                        }),
+                      );
+                  }}
+                >
+                  Import pasted games
+                </Button>
+                <Button variant="light" onClick={() => setView("review")}>
+                  Review mistakes across my games
+                </Button>
+                {state.databases.map((database) => (
+                  <Group key={database.id} justify="space-between" wrap="wrap">
+                    <Text size="sm" style={{ overflowWrap: "anywhere", flex: 1 }}>
+                      {database.name} · {database.gameCount} games
+                    </Text>
+                    <Button
+                      size="xs"
+                      variant="light"
+                      onClick={() => {
+                        const game = state.gamesByDatabase[database.id]?.find(
+                          (g) => g.moves.length,
+                        );
+                        if (game) {
+                          loadGameOnBoard(game, { cursor: 0 });
+                          setBoardPanelMode("moves");
+                        }
+                      }}
+                    >
+                      Open
+                    </Button>
+                    {state.prepWorkspaces.find((p) => p.sourceIds.includes(database.id)) && (
+                      <Button
+                        size="xs"
+                        variant="subtle"
+                        onClick={() => {
+                          const prep = state.prepWorkspaces.find((p) =>
+                            p.sourceIds.includes(database.id),
+                          )!;
+                          setState((current) => ({
+                            ...current,
+                            activePrepId: prep.id,
+                            board: { ...current.board, cursor: 0 },
+                          }));
+                          setView("board");
+                          setBoardPanelMode("prep");
+                        }}
+                      >
+                        Prep
+                      </Button>
+                    )}
+                  </Group>
+                ))}
               </Stack>
-            </Center>
-          ) : view === "board" ? (
-            <BoardWorkspace
-              state={state}
-              setState={setState}
-              activePrep={activePrep}
-              importHostedFolder={openHostedDatabaseSource}
-              importOnlineGameForAnalysis={importOnlineGameForAnalysis}
-              importOtbGameForAnalysis={importOtbGameForAnalysis}
-              importOnlineGames={importOnlineGames}
-              loadGameOnBoard={loadGameOnBoard}
-              onStartBlankBoard={openEmptyBoard}
-              lichessToken={lichessToken}
-              panelMode={boardPanelMode}
-              setPanelMode={setBoardPanelMode}
-            />
-          ) : view === "stats" ? (
-            <StatsWorkspace />
-          ) : (
-            <FilesWorkspace
-              importHostedPgn={importHostedPgn}
-              importHostedFolder={importHostedFolder}
-            />
-          )}
+            ) : view === "board" ? (
+              <BoardWorkspace
+                state={state}
+                setState={setState}
+                activePrep={activePrep}
+                importHostedFolder={openHostedDatabaseSource}
+                importOnlineGameForAnalysis={importOnlineGameForAnalysis}
+                importOtbGameForAnalysis={importOtbGameForAnalysis}
+                importOnlineGames={importOnlineGames}
+                loadGameOnBoard={loadGameOnBoard}
+                onStartBlankBoard={openEmptyBoard}
+                lichessToken={lichessToken}
+                panelMode={boardPanelMode}
+                setPanelMode={setBoardPanelMode}
+              />
+            ) : view === "stats" ? (
+              <StatsWorkspace />
+            ) : (
+              <FilesWorkspace
+                importHostedPgn={importHostedPgn}
+                importHostedFolder={importHostedFolder}
+              />
+            )}
+          </PhoneErrorBoundary>
         </main>
       </Box>
     </MantineProvider>
@@ -1780,7 +1912,7 @@ function BoardWorkspace({
   };
 
   return (
-    <Box className={classes.phoneBoard}>
+    <Box className={classes.phoneBoard} data-panel={panelMode}>
       <Box className={classes.boardHeader}>
         {!boardPlayers ? (
           <Box className={classes.boardHeaderTitle}>
@@ -1836,7 +1968,11 @@ function BoardWorkspace({
           orientation={orientation}
           lastMoveUci={activeLastMove}
           engineArrowShapes={engineArrowShapes}
-          engineScore={engineArrowAnalysis?.lines[0]?.score ?? null}
+          engineScore={
+            engineArrowAnalysis?.fen === currentFen
+              ? (engineArrowAnalysis.lines[0]?.score ?? null)
+              : null
+          }
           onMove={handleBoardMove}
           canGoToPreviousMove={canGoToPreviousMove}
           canGoToNextMove={canGoToNextMove}
@@ -1882,14 +2018,24 @@ function BoardWorkspace({
           {panelMode !== "engine" ? (
             <Box className={classes.underBoardTabContent}>
               {panelMode === "moves" ? (
-                <MovesUnderBoardPanel
-                  line={activeLine}
-                  cursor={cursor}
-                  setCursor={setCursor}
-                  rootLines={sourceRootLines}
-                  onChooseLine={chooseMovePanelLine}
-                  sourceComments={activePrep ? [] : (board.sourceComments ?? [])}
-                />
+                <>
+                  <PhoneAnnotationBar
+                    key={currentFen + cursor}
+                    move={activeLine[cursor - 1]}
+                    onChange={(patch) =>
+                      setState((current) => annotatePhoneMove(current, cursor, patch))
+                    }
+                    game={sourceGame}
+                  />
+                  <MovesUnderBoardPanel
+                    line={activeLine}
+                    cursor={cursor}
+                    setCursor={setCursor}
+                    rootLines={sourceRootLines}
+                    onChooseLine={chooseMovePanelLine}
+                    sourceComments={activePrep ? [] : (board.sourceComments ?? [])}
+                  />
+                </>
               ) : panelMode === "online" ? (
                 <OnlineGameAnalysisPanel
                   onAnalyzeGame={analyzeOnlineGame}
@@ -3164,7 +3310,11 @@ function MovesUnderBoardPanel({
   useEffect(() => {
     const current = moveListRef.current?.querySelector('[data-current="true"]');
     if (current instanceof HTMLElement) {
-      current.scrollIntoView({ block: "nearest", inline: "nearest" });
+      const list = moveListRef.current!;
+      const top = current.offsetTop - list.offsetTop;
+      if (top < list.scrollTop) list.scrollTop = top;
+      else if (top + current.offsetHeight > list.scrollTop + list.clientHeight)
+        list.scrollTop = top + current.offsetHeight - list.clientHeight;
     }
   }, [cursor, line]);
 
@@ -4257,8 +4407,7 @@ function EngineUnderBoardPanel({
 
   useEffect(() => {
     if (!settings.enabled || suspended) {
-      stopWebStockfish18Search();
-      void releaseWebPcEngine(settings.engineKind);
+      if (!suspended) void releaseWebPcEngine(settings.engineKind);
       setStatus("idle");
       setError(null);
       setStockfishLines([]);
@@ -4404,7 +4553,7 @@ function EngineUnderBoardPanel({
         {settings.enabled ? (
           suspended ? (
             <Text className={classes.compactEngineMessage} size="xs" c="dimmed" lineClamp={1}>
-              Paused while Coach reviews the game
+              Paused while the game is reviewed
             </Text>
           ) : error ? (
             <Text className={classes.compactEngineMessage} size="xs" c="red" lineClamp={1}>
@@ -9548,4 +9697,14 @@ function formatPercent(value: number) {
 
 function formatCount(value: number) {
   return Math.round(value).toLocaleString();
+}
+
+function enablePhoneAnalysis() {
+  try {
+    const current = JSON.parse(localStorage.getItem(WEB_ENGINE_PANEL_SETTINGS_STORAGE_KEY) || "{}");
+    localStorage.setItem(
+      WEB_ENGINE_PANEL_SETTINGS_STORAGE_KEY,
+      JSON.stringify({ ...current, enabled: true }),
+    );
+  } catch {}
 }

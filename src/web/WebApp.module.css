@@ -1740,3 +1740,102 @@
     display: none;
   }
 }
+
+/* Phone controls remain readable at native scale, including portal-rendered inputs. */
+:global(body.phone-companion input),
+:global(body.phone-companion textarea),
+:global(body.phone-companion select) {
+  font-size: 16px !important;
+}
+.shell button,
+.shell label,
+.shell a {
+  touch-action: manipulation;
+}
+.shell :global(.mantine-Button-root),
+.shell :global(.mantine-ActionIcon-root) {
+  min-height: 44px;
+}
+.shell :global(.mantine-InputWrapper-root) {
+  min-width: 0;
+  max-width: 100%;
+}
+.shell :global(.mantine-Alert-message) {
+  overflow-wrap: anywhere;
+}
+.reviewWorkspace {
+  max-width: 720px;
+  width: 100%;
+  margin-inline: auto;
+  min-width: 0;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+.reviewBoard {
+  width: min(100%, 46dvh);
+  margin-inline: auto;
+}
+.movePill {
+  min-height: 40px;
+  min-width: 38px;
+}
+@media (max-width: 600px) {
+  .headerInner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .brand,
+  .headerImportButton {
+    display: none;
+  }
+  .headerActions,
+  .headerNav {
+    width: 100%;
+  }
+  .headerActions :global(.mantine-SegmentedControl-label) {
+    min-height: 44px;
+    display: grid;
+    place-items: center;
+    font-size: 0.82rem;
+    padding-inline: 0.35rem;
+  }
+  .phoneBoard[data-panel="moves"] {
+    height: calc(100dvh - 66px - env(safe-area-inset-top));
+    grid-template-rows: auto auto auto auto minmax(120px, 1fr);
+    gap: 4px;
+  }
+  .phoneBoard[data-panel="moves"] .boardPlayerStack {
+    width: min(100%, 43dvh);
+    margin-inline: auto;
+  }
+  .phoneBoard[data-panel="moves"] .underBoardPanel {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .phoneBoard[data-panel="moves"] .compactEngineLines {
+    display: none;
+  }
+  .phoneBoard[data-panel="moves"] .moveList {
+    max-height: 20dvh;
+  }
+  .boardStartActions {
+    min-width: 0;
+  }
+  .boardStartActions :global(.mantine-Button-root) {
+    padding-inline: 4px;
+  }
+  .main {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .reviewWorkspace :global(.mantine-Group-root) {
+    flex-wrap: wrap;
+  }
+}
+@media (max-height: 540px) and (orientation: landscape) {
+  .phoneBoard[data-panel="moves"] {
+    height: auto;
+    grid-template-rows: none;
+  }
+  .phoneBoard[data-panel="moves"] .boardPlayerStack {
+    width: min(100%, 70dvh);
+  }
+}
