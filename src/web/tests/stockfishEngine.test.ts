@@ -528,3 +528,50 @@ it("recovers when a stream stops after the first engine line", async () => {
         vi.useRealTimers();
     }
 });
+
+it("keeps a deep search alive while UCI progress continues between PVs", async () => {
+    vi.useFakeTimers();
+    let calls = 0;
+    vi.stubGlobal(
+        "fetch",
+        vi.fn(async (input: URL | RequestInfo) => {
+            if (String(input).includes("/cloud-eval")) return jsonResponse(404);
+            if (String(input).includes("/api/engine/start")) return engineWakeResponse();
+            calls++;
+            return {
+                ok: true,
+                body: new ReadableStream({
+                    start(controller) {
+                        const emit = (line: string) =>
+                            controller.enqueue(
+                                new TextEncoder().encode(
+                                    JSON.stringify({ type: "uci", line }) + "\n",
+                                ),
+                            );
+                        emit("info depth 1 score cp 20 pv e2e4");
+                        setTimeout(
+                            () => emit("info depth 14 currmove e2e4 currmovenumber 1"),
+                            10000,
+                        );
+                        setTimeout(
+                            () => emit("info depth 14 currmove d2d4 currmovenumber 2"),
+                            20000,
+                        );
+                        setTimeout(() => {
+                            emit("info depth 14 score cp 25 pv e2e4 e7e5");
+                            controller.close();
+                        }, 25000);
+                    },
+                }),
+            };
+        }),
+    );
+    try {
+        const result = analyzeWithWebStockfish18({ fen: INITIAL_FEN, multipv: 1, depth: 14 });
+        await vi.advanceTimersByTimeAsync(25050);
+        expect((await result)[0].depth).toBe(14);
+        expect(calls).toBe(1);
+    } finally {
+        vi.useRealTimers();
+    }
+});

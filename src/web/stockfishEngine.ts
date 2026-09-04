@@ -497,6 +497,9 @@ async function analyzeWithRemoteStockfish18({
                 return;
             }
             if (message.type !== "uci" || !message.line) return;
+            // Deep searches may send current-move/heartbeat info between PVs.
+            // That is an active stream, not a stalled connection.
+            if (linesByPv.size > 0) refreshStallGuard();
             const parsed = parseStockfishInfoLine(message.line, fen, "gaming-pc", remoteMeta);
             if (!parsed || parsed.multipv > requestedMultipv) return;
             markAnalysisStarted();
