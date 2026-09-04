@@ -1935,3 +1935,85 @@
     grid-column: 2;
   }
 }
+.reviewSession .reviewBoard {
+  position: relative;
+}
+.reviewBoardBadge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 5;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: white;
+  pointer-events: none;
+  box-shadow: 0 2px 6px #0008;
+}
+.reviewFeedback {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border-left: 4px solid currentColor;
+}
+.reviewFeedback[data-tone="green"] {
+  color: #8ce99a;
+  background: #2b8a3e26;
+}
+.reviewFeedback[data-tone="orange"] {
+  color: #ffd43b;
+  background: #e6770026;
+}
+.reviewFeedback[data-tone="blue"] {
+  color: #74c0fc;
+  background: #1971c226;
+}
+.reviewBoardBadge[data-tone="green"] {
+  background: #2b8a3e;
+}
+.reviewBoardBadge[data-tone="red"] {
+  background: #c92a2a;
+}
+.reviewBoardBadge[data-tone="orange"] {
+  background: #b86e00;
+}
+.reviewBoardBadge[data-tone="blue"] {
+  background: #1971c2;
+}
+.reviewMoveChoices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.reviewMoveChoices button {
+  padding-inline: 8px;
+}
+.reviewChanceSwing {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.reviewChanceSwing > span:first-child {
+  color: #8ce99a;
+}
+.reviewChanceSwing > span:last-child {
+  color: #ffa8a8;
+}
+.reviewChanceSwing > div {
+  flex: 1;
+  display: grid;
+  gap: 4px;
+}
+.reviewChanceSwing > div > div {
+  height: 5px;
+  border-radius: 3px;
+  background: #51cf66;
+}
+.reviewChanceSwing > div > div:last-child {
+  background: #ff6b6b;
+}

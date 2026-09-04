@@ -5,6 +5,7 @@ import { expect, it, vi } from "vitest";
 import PhoneMistakeReview from "../PhoneMistakeReview";
 import { createEmptyWebState } from "../storage";
 import { parsePgnDatabase, playUciMove } from "../pgn";
+import { reviewMistakeFrames } from "../reviewVisuals";
 import { emptyPhoneReview } from "../mistakeReview";
 vi.mock("../stockfishEngine", () => ({
   releaseWebPcEngine: vi.fn(async () => {}),
@@ -55,12 +56,13 @@ it("scans imported games, saves cards, hides the answer, and completes a daily r
             })
           }
           onImport={() => {}}
-          renderBoard={(fen, _color, onMove, lastMove, interactive) => (
+          renderBoard={(fen, _color, onMove, lastMove, interactive, shapes) => (
             <div
               data-testid="practice"
               data-fen={fen}
               data-last-move={lastMove}
               data-interactive={interactive}
+              data-shapes={JSON.stringify(shapes)}
             >
               <button onClick={() => onMove("a2a3")}>Practice board</button>
               <button onClick={() => onMove(latest.mistakeReview!.cards[0].best)}>Best move</button>
@@ -88,7 +90,7 @@ it("scans imported games, saves cards, hides the answer, and completes a daily r
       button("Daily review").click();
     });
     expect(div.textContent).toContain("Practice board");
-    expect(div.textContent).not.toContain("improves on");
+    expect(div.textContent).not.toContain("· Mistake");
     const attemptedBoard = button("Practice board");
     await act(async () => attemptedBoard.click());
     expect(attemptedBoard.isConnected).toBe(true);
@@ -105,9 +107,20 @@ it("scans imported games, saves cards, hides the answer, and completes a daily r
     await act(async () => {
       button("Best move").click();
     });
-    expect(div.textContent).toContain("improves on");
+    expect(div.querySelector('[role="status"]')?.getAttribute("data-tone")).toBe("green");
+    expect(board().getAttribute("data-shapes")).toContain('"brush":"green"');
     expect(board().getAttribute("data-fen")).toBe(playUciMove(card.fen, card.best)!.fenAfter);
     expect(board().getAttribute("data-last-move")).toBe(card.best);
+    await act(async () => button("· Mistake").click());
+    const frames = reviewMistakeFrames(card);
+    expect(board().getAttribute("data-fen")).toBe(frames[0].fen);
+    expect(board().getAttribute("data-shapes")).toContain('"brush":"red"');
+    if (frames.length > 1) {
+      await act(async () => button("Show punishment").click());
+      expect(board().getAttribute("data-fen")).toBe(frames[1].fen);
+    }
+    await act(async () => button("· Best").click());
+    expect(board().getAttribute("data-fen")).toBe(playUciMove(card.fen, card.best)!.fenAfter);
     await act(async () => {
       button("Got it").click();
     });

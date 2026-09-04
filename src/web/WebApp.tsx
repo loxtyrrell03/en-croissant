@@ -1276,7 +1276,7 @@ function WebAppContent() {
                 state={state}
                 onSave={(mistakeReview) => setState((current) => ({ ...current, mistakeReview }))}
                 onImport={(result) => addImportedDatabases([result])}
-                renderBoard={(fen, orientation, onMove, lastMoveUci, interactive) => (
+                renderBoard={(fen, orientation, onMove, lastMoveUci, interactive, shapes) => (
                   <WebChessboard
                     fen={fen}
                     orientation={orientation}
@@ -1284,7 +1284,7 @@ function WebAppContent() {
                     lastMoveUci={lastMoveUci}
                     interactive={interactive}
                     showEvaluation={false}
-                    engineArrowShapes={[]}
+                    engineArrowShapes={shapes}
                     engineScore={null}
                     canGoToPreviousMove={false}
                     canGoToNextMove={false}

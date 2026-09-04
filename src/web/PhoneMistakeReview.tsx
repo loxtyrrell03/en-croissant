@@ -31,6 +31,9 @@ import {
   type PhoneReviewState,
 } from "./mistakeReview";
 import classes from "./WebApp.module.css";
+import type { DrawShape } from "@lichess-org/chessground/draw";
+import type { Key } from "@lichess-org/chessground/types";
+import { reviewMistakeFrames } from "./reviewVisuals";
 import { sharedReviewRequest, type SharedReviewSnapshot } from "./sharedReviewClient";
 
 type Props = {
@@ -43,6 +46,7 @@ type Props = {
     onMove: (uci: string) => void,
     lastMove: string | null,
     interactive: boolean,
+    shapes: DrawShape[],
   ) => ReactNode;
 };
 export default function PhoneMistakeReview({ state, onSave, onImport, renderBoard }: Props) {
@@ -57,6 +61,8 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
   const [session, setSession] = useState<PhoneReviewCard[] | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [tone, setTone] = useState<"green" | "orange" | "blue">("blue");
+  const [comparison, setComparison] = useState<"best" | "mistake">("best");
   const [preview, setPreview] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
   const [lastMove, setLastMove] = useState<string | null>(null);
@@ -263,12 +269,15 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
     setPreview(move.fenAfter);
     setLastMove(uci);
     if (uci === card.best) {
-      setFeedback("Correct — you found the best move.");
+      setTone("green");
+      setComparison("best");
+      setFeedback("✓ Best move");
       setRevealed(true);
       return;
     }
     setChecking(true);
-    setFeedback("Checking your move…");
+    setTone("blue");
+    setFeedback("Checking…");
     const abort = new AbortController();
     controller.current = abort;
     try {
@@ -286,12 +295,19 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
         throw new Error("The engine could not finish checking that move.");
       const drop = card.before - reviewChance(reviewCp(line.score, card.color));
       if (drop <= 5) {
-        setFeedback("Good alternative — your move preserves the position’s chances.");
+        setTone("green");
+        setComparison("best");
+        setFeedback("✓ Good alternative");
         setRevealed(true);
-      } else setFeedback("There is a stronger move. Try again, or reveal the solution.");
+      } else {
+        setTone("orange");
+        setFeedback("! Find a stronger move");
+      }
     } catch {
-      if (!abort.signal.aborted)
-        setFeedback("Could not check that move. Try again or reveal the solution.");
+      if (!abort.signal.aborted) {
+        setTone("orange");
+        setFeedback("Could not check · retry or reveal");
+      }
     } finally {
       setChecking(false);
       if (controller.current === abort) {
@@ -313,6 +329,7 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
           }),
         );
       } catch (e) {
+        setTone("orange");
         setFeedback(e instanceof Error ? e.message : "Could not save this review.");
         return;
       } finally {
@@ -333,6 +350,7 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
     setLineIndex(0);
   }
   function showLine(index: number) {
+    setComparison("best");
     if (!card) return;
     let fen = card.fen;
     let last: string | null = null;
@@ -348,6 +366,29 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
     setLastMove(last);
     setLineIndex(reached);
   }
+  const mistakeFrames = card ? reviewMistakeFrames(card) : [];
+  function showMistake(index = 0) {
+    const frame = mistakeFrames[index];
+    if (!frame) return;
+    setComparison("mistake");
+    setPreview(frame.fen);
+    setLastMove(frame.uci);
+    setLineIndex(index + 1);
+  }
+  const boardColor = revealed ? (comparison === "mistake" ? "red" : "green") : tone;
+  const shapes: DrawShape[] = lastMove
+    ? [
+        {
+          orig: lastMove.slice(0, 2) as Key,
+          dest: lastMove.slice(2, 4) as Key,
+          brush: boardColor === "orange" ? "yellow" : boardColor,
+        },
+        {
+          orig: lastMove.slice(2, 4) as Key,
+          brush: boardColor === "orange" ? "yellow" : boardColor,
+        },
+      ]
+    : [];
   if (session)
     return (
       <section className={classes.reviewSession} aria-label="Daily review">
@@ -384,6 +425,22 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
                 (uci) => void attempt(uci),
                 lastMove,
                 !preview && !revealed && !checking,
+                shapes,
+              )}
+              {lastMove && (
+                <span
+                  className={classes.reviewBoardBadge}
+                  data-tone={boardColor}
+                  aria-label={`${boardColor === "green" ? "Good move" : boardColor === "red" ? "Mistake line" : boardColor === "orange" ? "Try another move" : "Checking move"}`}
+                >
+                  {boardColor === "green"
+                    ? "✓"
+                    : boardColor === "red"
+                      ? "✕"
+                      : boardColor === "orange"
+                        ? "!"
+                        : "…"}
+                </span>
               )}
             </div>
             <div className={classes.reviewDetails}>
@@ -391,7 +448,13 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
                 {card.gameTitle} · move {Math.ceil(card.ply / 2)}
               </Text>
               {feedback && (
-                <Text role="status" size="sm" fw={600}>
+                <Text
+                  role="status"
+                  className={classes.reviewFeedback}
+                  data-tone={tone}
+                  size="sm"
+                  fw={700}
+                >
                   {feedback}
                 </Text>
               )}
@@ -414,36 +477,88 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
                 </>
               ) : (
                 <>
-                  <Text fw={700}>
-                    {card.bestSan} improves on {card.played}
-                  </Text>
-                  {card.refutation.length > 0 && (
-                    <Text size="sm">
-                      After {card.played}: {card.refutation.join(" ")}
-                    </Text>
-                  )}
-                  <div className={classes.reviewLineControls}>
+                  <div className={classes.reviewMoveChoices}>
                     <Button
-                      variant="light"
-                      onClick={() => showLine(Math.max(0, lineIndex - 1))}
-                      aria-label="Previous solution move"
+                      color="green"
+                      variant={comparison === "best" ? "filled" : "light"}
+                      aria-pressed={comparison === "best"}
+                      onClick={() => showLine(1)}
                     >
-                      ‹
-                    </Button>
-                    <Button variant="subtle" onClick={() => showLine(1)}>
-                      {lineIndex
-                        ? `${lineIndex}/${card.pv.length} · ${card.pvSan[lineIndex - 1] ?? ""}`
-                        : "Show best line"}
+                      ✓ {card.bestSan} · Best
                     </Button>
                     <Button
-                      variant="light"
-                      disabled={lineIndex >= card.pv.length}
-                      onClick={() => showLine(lineIndex + 1)}
-                      aria-label="Next solution move"
+                      color="red"
+                      variant={comparison === "mistake" ? "filled" : "light"}
+                      disabled={!mistakeFrames.length}
+                      aria-pressed={comparison === "mistake"}
+                      onClick={() => showMistake()}
                     >
-                      ›
+                      ✕ {card.played} · Mistake
                     </Button>
                   </div>
+                  <div className={classes.reviewChanceSwing} aria-label="Estimated winning chances">
+                    <span>{Math.round(card.before)}%</span>
+                    <div>
+                      <div style={{ width: `${Math.max(0, Math.min(100, card.before))}%` }} />
+                      <div style={{ width: `${Math.max(0, Math.min(100, card.after))}%` }} />
+                    </div>
+                    <span>→ {Math.round(card.after)}%</span>
+                  </div>
+                  {comparison === "mistake" ? (
+                    <div className={classes.reviewLineControls}>
+                      <Button
+                        color="red"
+                        variant="light"
+                        disabled={lineIndex <= 1}
+                        onClick={() => showMistake(lineIndex - 2)}
+                        aria-label="Previous mistake move"
+                      >
+                        ‹
+                      </Button>
+                      <Button
+                        color="red"
+                        variant="subtle"
+                        disabled={mistakeFrames.length < 2}
+                        onClick={() => showMistake(Math.min(lineIndex, mistakeFrames.length - 1))}
+                      >
+                        {lineIndex <= 1 ? "Show punishment" : mistakeFrames[lineIndex - 1]?.san}
+                      </Button>
+                      <Button
+                        color="red"
+                        variant="light"
+                        disabled={lineIndex >= mistakeFrames.length}
+                        onClick={() => showMistake(lineIndex)}
+                        aria-label="Next mistake move"
+                      >
+                        ›
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className={classes.reviewLineControls}>
+                      <Button
+                        color="green"
+                        variant="light"
+                        onClick={() => showLine(Math.max(0, lineIndex - 1))}
+                        aria-label="Previous solution move"
+                      >
+                        ‹
+                      </Button>
+                      <Button color="green" variant="subtle" onClick={() => showLine(1)}>
+                        {lineIndex
+                          ? `${lineIndex}/${card.pv.length} · ${card.pvSan[lineIndex - 1] ?? ""}`
+                          : "Show best line"}
+                      </Button>
+                      <Button
+                        color="green"
+                        variant="light"
+                        disabled={lineIndex >= card.pv.length}
+                        onClick={() => showLine(lineIndex + 1)}
+                        aria-label="Next solution move"
+                      >
+                        ›
+                      </Button>
+                    </div>
+                  )}
                   <details>
                     <summary>Why this mattered</summary>
                     <Text size="sm">{card.explanation}</Text>
