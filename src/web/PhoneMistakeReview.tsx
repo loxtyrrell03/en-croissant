@@ -42,6 +42,7 @@ type Props = {
     color: WebColor,
     onMove: (uci: string) => void,
     lastMove: string | null,
+    interactive: boolean,
   ) => ReactNode;
 };
 export default function PhoneMistakeReview({ state, onSave, onImport, renderBoard }: Props) {
@@ -58,7 +59,8 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
   const [feedback, setFeedback] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
-  const [boardAttempt, setBoardAttempt] = useState(0);
+  const [lastMove, setLastMove] = useState<string | null>(null);
+  const [lineIndex, setLineIndex] = useState(0);
   const [shared, setShared] = useState<SharedReviewSnapshot | null>(null);
   const [otherGames, setOtherGames] = useState(false);
   const [syncError, setSyncError] = useState("");
@@ -255,11 +257,11 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
     }
   }
   async function attempt(uci: string) {
-    // Chessground moves optimistically. A practice attempt keeps the question's
-    // FEN, so remount its board even when that FEN has not changed.
-    setBoardAttempt((value) => value + 1);
-    if (!card || revealed || checking) return;
-    if (!playUciMove(card.fen, uci)) return;
+    if (!card || revealed || checking || preview) return;
+    const move = playUciMove(card.fen, uci);
+    if (!move) return;
+    setPreview(move.fenAfter);
+    setLastMove(uci);
     if (uci === card.best) {
       setFeedback("Correct — you found the best move.");
       setRevealed(true);
@@ -327,12 +329,37 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
     setRevealed(false);
     setFeedback("");
     setPreview(null);
+    setLastMove(null);
+    setLineIndex(0);
+  }
+  function showLine(index: number) {
+    if (!card) return;
+    let fen = card.fen;
+    let last: string | null = null;
+    let reached = 0;
+    for (const uci of card.pv.slice(0, index)) {
+      const move = playUciMove(fen, uci);
+      if (!move) break;
+      fen = move.fenAfter;
+      last = uci;
+      reached++;
+    }
+    setPreview(fen);
+    setLastMove(last);
+    setLineIndex(reached);
   }
   if (session)
     return (
-      <Stack gap="sm" className={classes.reviewWorkspace}>
-        <Group justify="space-between">
-          <Title order={3}>Daily review</Title>
+      <section className={classes.reviewSession} aria-label="Daily review">
+        <header className={classes.reviewSessionHeader}>
+          <div>
+            <strong>Daily review</strong>
+            <Text size="xs" c="dimmed">
+              {card
+                ? `${session.length} left · ${card.color === "white" ? "White" : "Black"} to move`
+                : "Complete"}
+            </Text>
+          </div>
           <Button
             variant="subtle"
             disabled={checking}
@@ -340,101 +367,148 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
               setSession(null);
               setRevealed(false);
               setPreview(null);
+              setLastMove(null);
+              setLineIndex(0);
               setFeedback("");
             }}
           >
             Close
           </Button>
-        </Group>
+        </header>
         {card ? (
           <>
-            <Text size="sm">
-              {session.length} left · {card.color === "white" ? "White" : "Black"} to move
-            </Text>
-            <div className={classes.reviewBoard} key={`${card.id}:${boardAttempt}`}>
-              {renderBoard(preview ?? card.fen, card.color, (uci) => void attempt(uci), null)}
+            <div className={classes.reviewBoard}>
+              {renderBoard(
+                preview ?? card.fen,
+                card.color,
+                (uci) => void attempt(uci),
+                lastMove,
+                !preview && !revealed && !checking,
+              )}
             </div>
-            <Text size="sm" fw={600}>
-              {card.gameTitle}
-            </Text>
-            <Text size="xs" c="dimmed">
-              {card.gameDate} · move {Math.ceil(card.ply / 2)} · Find a better move
-            </Text>
-            {feedback && (
-              <Text role="status" size="sm">
-                {feedback}
+            <div className={classes.reviewDetails}>
+              <Text size="xs" c="dimmed">
+                {card.gameTitle} · move {Math.ceil(card.ply / 2)}
               </Text>
-            )}
-            {!revealed ? (
-              <Button variant="light" disabled={checking} onClick={() => setRevealed(true)}>
-                Reveal solution
-              </Button>
-            ) : (
-              <>
-                <Text fw={700}>
-                  {card.bestSan} improves on {card.played}
+              {feedback && (
+                <Text role="status" size="sm" fw={600}>
+                  {feedback}
                 </Text>
-                <Text size="sm">{card.explanation}</Text>
-                <Text size="xs" c="dimmed">
-                  Estimated winning chances: {Math.round(card.before)}% → {Math.round(card.after)}%
-                  after {card.played}.
-                </Text>
-                <Group gap="xs">
-                  {card.pvSan.map((san, i) => (
+              )}
+              {!revealed ? (
+                <>
+                  {!feedback && <Text>Find a better move.</Text>}
+                  {preview && (
                     <Button
-                      size="compact-sm"
                       variant="light"
-                      key={i}
+                      disabled={checking}
                       onClick={() => {
-                        let fen = card.fen;
-                        for (const uci of card.pv.slice(0, i + 1)) {
-                          const m = playUciMove(fen, uci);
-                          if (!m) break;
-                          fen = m.fenAfter;
-                        }
-                        setPreview(fen);
+                        setPreview(null);
+                        setLastMove(null);
+                        setFeedback("");
                       }}
                     >
-                      {san}
+                      Try again
                     </Button>
-                  ))}
-                  <Button size="compact-sm" variant="subtle" onClick={() => setPreview(null)}>
-                    Reset
-                  </Button>
-                </Group>
-                {card.refutation.length > 0 && (
-                  <Text size="sm">
-                    After {card.played}: {card.refutation.join(" ")}
+                  )}
+                </>
+              ) : (
+                <>
+                  <Text fw={700}>
+                    {card.bestSan} improves on {card.played}
                   </Text>
-                )}
-                <Group grow style={checking ? { pointerEvents: "none", opacity: 0.6 } : undefined}>
-                  <Button color="orange" variant="light" onClick={() => grade("again")}>
-                    Again tomorrow
-                  </Button>
-                  <Button onClick={() => grade("good")}>Got it</Button>
-                  <Button variant="light" onClick={() => grade("easy")}>
-                    Easy
-                  </Button>
-                </Group>
+                  {card.refutation.length > 0 && (
+                    <Text size="sm">
+                      After {card.played}: {card.refutation.join(" ")}
+                    </Text>
+                  )}
+                  <div className={classes.reviewLineControls}>
+                    <Button
+                      variant="light"
+                      onClick={() => showLine(Math.max(0, lineIndex - 1))}
+                      aria-label="Previous solution move"
+                    >
+                      ‹
+                    </Button>
+                    <Button variant="subtle" onClick={() => showLine(1)}>
+                      {lineIndex
+                        ? `${lineIndex}/${card.pv.length} · ${card.pvSan[lineIndex - 1] ?? ""}`
+                        : "Show best line"}
+                    </Button>
+                    <Button
+                      variant="light"
+                      disabled={lineIndex >= card.pv.length}
+                      onClick={() => showLine(lineIndex + 1)}
+                      aria-label="Next solution move"
+                    >
+                      ›
+                    </Button>
+                  </div>
+                  <details>
+                    <summary>Why this mattered</summary>
+                    <Text size="sm">{card.explanation}</Text>
+                    <Text size="xs" c="dimmed">
+                      Estimated winning chances: {Math.round(card.before)}% →{" "}
+                      {Math.round(card.after)}% after {card.played}.
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      {card.gameDate}
+                    </Text>
+                  </details>
+                </>
+              )}
+            </div>
+            <footer className={classes.reviewSessionFooter}>
+              {!revealed ? (
                 <Button
-                  variant="subtle"
-                  color="gray"
+                  fullWidth
                   disabled={checking}
-                  onClick={() => void grade("hide")}
+                  onClick={() => {
+                    setRevealed(true);
+                    showLine(1);
+                  }}
                 >
-                  Not useful — hide this position
+                  Reveal solution
                 </Button>
-              </>
-            )}
+              ) : (
+                <>
+                  <div className={classes.reviewGrades}>
+                    <Button
+                      disabled={checking}
+                      color="orange"
+                      variant="light"
+                      onClick={() => grade("again")}
+                    >
+                      Again
+                    </Button>
+                    <Button disabled={checking} onClick={() => grade("good")}>
+                      Got it
+                    </Button>
+                    <Button disabled={checking} variant="light" onClick={() => grade("easy")}>
+                      Easy
+                    </Button>
+                  </div>
+                  <Button
+                    fullWidth
+                    variant="subtle"
+                    color="gray"
+                    disabled={checking}
+                    onClick={() => void grade("hide")}
+                  >
+                    Hide this position
+                  </Button>
+                </>
+              )}
+            </footer>
           </>
         ) : (
-          <>
-            <Title order={4}>Done for today</Title>
+          <div className={classes.reviewDetails}>
+            <Title order={3}>Done for today</Title>
             <Text>Your next short review will be ready tomorrow.</Text>
             <Button onClick={() => setSession(null)}>Back to Review</Button>
-          </>
+          </div>
         )}
-      </Stack>
+      </section>
     );
   return (
     <Stack className={classes.reviewWorkspace} gap="md">

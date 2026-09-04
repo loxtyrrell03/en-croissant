@@ -1861,3 +1861,77 @@
     width: min(100%, 70dvh);
   }
 }
+
+.reviewSession {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  height: 100dvh;
+  box-sizing: border-box;
+  padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  background: #111315;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 10px;
+  overflow: hidden;
+}
+.reviewSessionHeader,
+.reviewSessionFooter,
+.reviewDetails {
+  width: min(100%, 540px);
+  margin-inline: auto;
+  min-width: 0;
+}
+.reviewSessionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.reviewSession .reviewBoard {
+  width: min(100%, 42dvh, 540px);
+}
+.reviewDetails {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.reviewDetails summary {
+  cursor: pointer;
+  padding-block: 8px;
+  font-size: 14px;
+  color: #adb5bd;
+}
+.reviewGrades {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.reviewLineControls {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  gap: 8px;
+}
+.reviewSession button {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+@media (max-height: 500px) and (min-width: 600px) {
+  .reviewSession {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+  .reviewSessionHeader {
+    grid-column: 1 / -1;
+  }
+  .reviewSession .reviewBoard {
+    grid-row: 2 / 4;
+    width: min(100%, 72dvh);
+  }
+  .reviewDetails,
+  .reviewSessionFooter {
+    grid-column: 2;
+  }
+}

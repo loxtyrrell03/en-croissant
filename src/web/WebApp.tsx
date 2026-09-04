@@ -1276,12 +1276,14 @@ function WebAppContent() {
                 state={state}
                 onSave={(mistakeReview) => setState((current) => ({ ...current, mistakeReview }))}
                 onImport={(result) => addImportedDatabases([result])}
-                renderBoard={(fen, orientation, onMove, lastMoveUci) => (
+                renderBoard={(fen, orientation, onMove, lastMoveUci, interactive) => (
                   <WebChessboard
                     fen={fen}
                     orientation={orientation}
                     onMove={onMove}
                     lastMoveUci={lastMoveUci}
+                    interactive={interactive}
+                    showEvaluation={false}
                     engineArrowShapes={[]}
                     engineScore={null}
                     canGoToPreviousMove={false}
@@ -8741,12 +8743,16 @@ function WebChessboard({
   lastMoveUci,
   engineArrowShapes,
   engineScore,
+  interactive = true,
+  showEvaluation = true,
   onMove,
   canGoToPreviousMove,
   canGoToNextMove,
   onPreviousMove,
   onNextMove,
 }: {
+  interactive?: boolean;
+  showEvaluation?: boolean;
   fen: string;
   orientation: WebColor;
   lastMoveUci: string | null;
@@ -8785,8 +8791,8 @@ function WebChessboard({
       lastMove,
       movable: {
         free: false,
-        color: turn,
-        dests,
+        color: interactive ? turn : undefined,
+        dests: interactive ? dests : new Map(),
         showDests: true,
         events: {
           after(orig: Key, dest: Key) {
@@ -8800,18 +8806,18 @@ function WebChessboard({
         },
       },
       draggable: {
-        enabled: true,
+        enabled: interactive,
       },
       drawable: {
-        enabled: true,
+        enabled: interactive,
         visible: true,
         autoShapes: engineArrowShapes,
       },
       animation: {
-        enabled: true,
+        enabled: interactive,
       },
     };
-  }, [engineArrowShapes, fen, lastMoveUci, orientation]);
+  }, [engineArrowShapes, fen, lastMoveUci, orientation, interactive]);
 
   const initialConfigRef = useRef(config);
 
@@ -8841,8 +8847,11 @@ function WebChessboard({
       : { q: "♛", r: "♜", b: "♝", n: "♞" };
 
   return (
-    <Box className={classes.boardArea}>
-      <WebBoardEvalBar score={engineScore} orientation={orientation} />
+    <Box
+      className={classes.boardArea}
+      style={showEvaluation ? undefined : { gridTemplateColumns: "minmax(0, 1fr)" }}
+    >
+      {showEvaluation && <WebBoardEvalBar score={engineScore} orientation={orientation} />}
       <Box className={classes.boardSurface}>
         <Box ref={boardRef} className={classes.boardMount} />
         {pendingPromotion && (

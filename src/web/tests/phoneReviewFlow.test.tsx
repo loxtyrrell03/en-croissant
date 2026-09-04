@@ -4,7 +4,7 @@ import { MantineProvider } from "@mantine/core";
 import { expect, it, vi } from "vitest";
 import PhoneMistakeReview from "../PhoneMistakeReview";
 import { createEmptyWebState } from "../storage";
-import { parsePgnDatabase } from "../pgn";
+import { parsePgnDatabase, playUciMove } from "../pgn";
 import { emptyPhoneReview } from "../mistakeReview";
 vi.mock("../stockfishEngine", () => ({
   releaseWebPcEngine: vi.fn(async () => {}),
@@ -55,8 +55,16 @@ it("scans imported games, saves cards, hides the answer, and completes a daily r
             })
           }
           onImport={() => {}}
-          renderBoard={(_fen, _color, onMove) => (
-            <button onClick={() => onMove("a2a3")}>Practice board</button>
+          renderBoard={(fen, _color, onMove, lastMove, interactive) => (
+            <div
+              data-testid="practice"
+              data-fen={fen}
+              data-last-move={lastMove}
+              data-interactive={interactive}
+            >
+              <button onClick={() => onMove("a2a3")}>Practice board</button>
+              <button onClick={() => onMove(latest.mistakeReview!.cards[0].best)}>Best move</button>
+            </div>
           )}
         />
       </MantineProvider>
@@ -83,12 +91,23 @@ it("scans imported games, saves cards, hides the answer, and completes a daily r
     expect(div.textContent).not.toContain("improves on");
     const attemptedBoard = button("Practice board");
     await act(async () => attemptedBoard.click());
-    expect(attemptedBoard.isConnected).toBe(false);
+    expect(attemptedBoard.isConnected).toBe(true);
+    const board = () => div.querySelector('[data-testid="practice"]')!;
+    const card = latest.mistakeReview!.cards[0];
+    expect(board().getAttribute("data-fen")).toBe(playUciMove(card.fen, "a2a3")!.fenAfter);
+    expect(board().getAttribute("data-interactive")).toBe("false");
     expect(div.textContent).toContain("Try again");
     await act(async () => {
-      button("Reveal solution").click();
+      button("Try again").click();
+    });
+    expect(board().getAttribute("data-fen")).toBe(card.fen);
+    expect(board().getAttribute("data-interactive")).toBe("true");
+    await act(async () => {
+      button("Best move").click();
     });
     expect(div.textContent).toContain("improves on");
+    expect(board().getAttribute("data-fen")).toBe(playUciMove(card.fen, card.best)!.fenAfter);
+    expect(board().getAttribute("data-last-move")).toBe(card.best);
     await act(async () => {
       button("Got it").click();
     });
