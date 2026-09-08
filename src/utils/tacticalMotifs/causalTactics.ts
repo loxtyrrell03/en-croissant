@@ -2243,7 +2243,7 @@ function rayTactics(pos: Chess, side: Color): RayTactic[] {
  * a gain after every legal defence. Track a target when it moves, consider
  * captures/checks/interpositions, and settle the selected capture legally. */
 type MaterialThreatProof =
-    | { kind: "proven"; gain: number }
+    | { kind: "proven"; gain: number; complete: boolean; defence: string }
     | { kind: "forcing"; gain: number; checks: string[] }
     | { kind: "refuted"; defence: string; checking: boolean }
     | { kind: "unknown" };
@@ -2289,6 +2289,8 @@ function computeMaterialThreatGain(
     if (!replies.length) return { kind: "unknown" };
     let minimum = Infinity;
     let incomplete = false;
+    let complete = true;
+    let limitingDefence = "";
     const checks: string[] = [];
     let mateNodes = 4096;
     for (const reply of replies) {
@@ -2378,6 +2380,7 @@ function computeMaterialThreatGain(
                 }
             }
         }
+        if (unknown) complete = false;
         if (best < 100) {
             if (unknown) {
                 incomplete = true;
@@ -2398,12 +2401,15 @@ function computeMaterialThreatGain(
                 checking: next.isCheck(),
             };
         }
-        minimum = Math.min(minimum, best);
+        if (best < minimum) {
+            minimum = best;
+            limitingDefence = makeSan(step.after, reply);
+        }
     }
     if (incomplete || !Number.isFinite(minimum)) return { kind: "unknown" };
     return checks.length
         ? { kind: "forcing", gain: minimum, checks }
-        : { kind: "proven", gain: minimum };
+        : { kind: "proven", gain: minimum, complete, defence: limitingDefence };
 }
 
 function relevantRayTactics(step: TacticalReplayStep) {
@@ -4429,7 +4435,7 @@ export function compareImmediateTacticalDefence(
     const bestSan = better[0].san;
     return motifs.map((motif) => {
         if (motif.ply !== 1 || motif.moveUci !== reply) return motif;
-        let comparison: "prevented" | "persists" | undefined;
+        let comparison: TacticalMotifEvidence["comparison"];
         let comparisonEvidence = "";
         if (!alternative) {
             comparison = "prevented";
@@ -4500,9 +4506,29 @@ export function compareImmediateTacticalDefence(
                 comparisonEvidence = `After ${bestSan}, ${alternative.san} no longer has two profitable fork targets.`;
             } else {
                 const actualTargets = winningTargets(step.after, step.move.to, step.before.turn);
-                if (targets.join(",") === actualTargets.join(",") && verifiedFork(alternative)) {
-                    comparison = "persists";
-                    comparisonEvidence = `The same immediate fork is still available after ${bestSan}.`;
+                if (targets.join(",") === actualTargets.join(",")) {
+                    const original = materialThreatProof(step, actualTargets, [step.move.to]);
+                    const other = materialThreatProof(alternative, targets, [alternative.move.to]);
+                    if (original.kind === "proven" && other.kind === "proven") {
+                        if (other.gain >= original.gain) {
+                            comparison = "persists";
+                            comparisonEvidence = `The same immediate fork is still available after ${bestSan}, with at least the same verified material gain.`;
+                        } else if (original.complete && other.complete) {
+                            comparison = "reduced";
+                            comparisonEvidence = `The fork still exists after ${bestSan}, but ${other.defence} limits its immediate target-capture gain to ${(other.gain / 100).toFixed(1)} pawns rather than ${(original.gain / 100).toFixed(1)} after ${actual[0].san}. This compares the settled fork exchange, not the full position's evaluation.`;
+                        }
+                    } else {
+                        const originalPromotion = provePromotionBackedFork(step);
+                        const otherPromotion = provePromotionBackedFork(alternative);
+                        if (
+                            originalPromotion &&
+                            otherPromotion &&
+                            otherPromotion.gain >= originalPromotion.gain
+                        ) {
+                            comparison = "persists";
+                            comparisonEvidence = `The same promotion-backed fork remains available after ${bestSan}, with at least the same verified material gain.`;
+                        }
+                    }
                 }
             }
         }

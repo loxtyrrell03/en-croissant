@@ -365,6 +365,59 @@ test.skipIf(
     180000,
 );
 
+test.skipIf(!process.env.TACTICAL_JUDGEMENT_ENGINE || !process.env.TACTICAL_FORK_SEVERITY_REPORT)(
+    "compare defended and undefended fork payoffs with fresh engine replies",
+    async () => {
+        const fen = "3qk2r/p1ppppb1/8/4N3/2B5/8/5PPP/6RK b k - 0 1";
+        const engine = process.env.TACTICAL_JUDGEMENT_ENGINE!;
+        const report = [];
+        for (const move of ["a7a6", "g7h6", "e8g8", "g7f8"]) {
+            const root = [...(await analyse(engine, fen, move)).values()];
+            const step = replayTacticalLine(fen, [move])[0];
+            const replies = [...(await analyse(engine, makeFen(step.after.toSetup()))).values()];
+            report.push({ move, san: step.san, root, replies });
+        }
+        const kept = report[0],
+            moved = report[1];
+        const classification = classifyMistakeReviewMotifs({
+            fen,
+            bestMoveUci: kept.move,
+            playedMoveUci: moved.move,
+            pvUci: [kept.move, ...kept.replies[0].pvUci],
+            refutationUci: moved.replies[0].pvUci,
+        });
+        writeFileSync(
+            process.env.TACTICAL_FORK_SEVERITY_REPORT!,
+            JSON.stringify(
+                {
+                    scope: "Constructed legal f7 comparison, not a claim a6 is globally best. O-O is searched separately as the complete defence. Fresh depth-16 roots and replies are independent of the hand-written witness.",
+                    fen,
+                    report,
+                    classification,
+                    explanation: buildMistakeReviewTacticalExplanation(classification),
+                },
+                null,
+                2,
+            ),
+        );
+        expect(report).toHaveLength(4);
+        expect(kept.root[0].cp!).toBeGreaterThan(moved.root[0].cp!);
+        expect(classification.allowedMotifs[0]).toMatchObject({
+            id: "fork",
+            comparison: "reduced",
+        });
+        const mate = classifyMistakeReviewMotifs({
+            fen,
+            bestMoveUci: "a7a6",
+            playedMoveUci: "g7f8",
+            pvUci: [kept.move, ...kept.replies[0].pvUci],
+            refutationUci: report[3].replies[0].pvUci,
+        });
+        expect(mate.allowedMotifs[0]).toMatchObject({ id: "mateIn1", comparison: "prevented" });
+    },
+    180000,
+);
+
 async function analyse(engine: string, fen: string, searchMove?: string) {
     const child = spawn(engine, [], { windowsHide: true, stdio: "pipe" });
     const lines = new Map<

@@ -246,9 +246,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 109.64340000000084,
+    "classificationMs": 86.59870000000228,
     "positionHeadline": [
       {
         "id": "trappedPiece",
@@ -604,9 +604,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 111.50100000000384,
+    "classificationMs": 98.51240000000689,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -868,9 +868,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 43.62129999999888,
+    "classificationMs": 37.12410000000091,
     "positionHeadline": [
       {
         "id": "hangingPiece",
@@ -1158,9 +1158,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 50.99209999998857,
+    "classificationMs": 43.2271000000037,
     "positionHeadline": [
       {
         "id": "hangingPiece",
@@ -1473,9 +1473,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 50.17899999998917,
+    "classificationMs": 34.481099999989965,
     "positionHeadline": [
       {
         "id": "pin",

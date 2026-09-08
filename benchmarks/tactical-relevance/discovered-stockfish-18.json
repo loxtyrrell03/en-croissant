@@ -202,9 +202,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 7.482100000008359,
+    "classificationMs": 9.327100000009523,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -406,9 +406,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 0.5130000000062864,
+    "classificationMs": 0.5317000000068219,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -742,9 +742,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 8.9206000000122,
+    "classificationMs": 10.145400000008522,
     "positionHeadline": [
       {
         "id": "discoveredCheck",
@@ -1175,9 +1175,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 11.235100000005332,
+    "classificationMs": 11.396500000002561,
     "positionHeadline": [
       {
         "id": "discoveredCheck",
@@ -1449,9 +1449,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 17.92369999999937,
+    "classificationMs": 18.189299999998184,
     "positionHeadline": [
       {
         "id": "doubleCheck",
@@ -1653,9 +1653,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 1.2658999999985099,
+    "classificationMs": 1.0727000000188127,
     "positionHeadline": [
       {
         "id": "doubleCheck",

@@ -1279,6 +1279,53 @@ not change classifier version 30 or its benchmark chess decisions. It is
 desktop presentation proof, not a running-app/physical-board check; the phone
 review and Outpost surfaces are intentionally untouched in this milestone.
 
+## Fork severity and causal explanation (adapter 31)
+
+The former immediate comparison treated the same two profitable fork targets
+as proof that a tactic was equally costly after both user choices. That misses
+a material distinction: a rook can still be forked while being defended, so
+losing the exchange is different from losing the whole rook. The existing
+all-legal-defences target-capture search now also records its limiting defence
+and whether every considered capture leaf resolved. Only complete local
+exchange comparisons receive `reduced`; unknown or checking-only proofs do not.
+Equal/greater verified gain remains `persists`, and promotion-backed forks
+retain their independent proof rather than being reduced to one capture.
+
+The explicit legal diagnostic is
+`3qk2r/p1ppppb1/8/4N3/2B5/8/5PPP/6RK b k - 0 1`.
+After a6, Nxf7 Qc8 Nxh8 Bxh8 settles at 280 cp of local material gain for White.
+After Bh6, the same Qd8/Rh8 fork has no bishop recapture on h8 and its bounded
+target-capture proof yields 600 cp. Review now says the move made an existing
+tactic more costly, not that it either created the fork or left the same loss.
+The visible badge says More costly; an unchanged threat says Existing danger.
+The new comparison also survives saved review and per-ply timeline round trips.
+
+This position compares two candidate choices; **a6 is not claimed globally
+best**. Fresh independent depth-16 searches choose Nxf7 after both a6 and Bh6,
+but give Black +495 and +455 cp respectively. Castling avoids the fork and
+scores +585 cp. These full-position evaluations account for compensation and
+subsequent play; they are not the local 280/600 cp exchange calculation. Moving
+the bishop to f8 instead blocks the king's escape and permits Bxf7#, which
+correctly outranks the fork. See `fork-severity-stockfish-18.json`.
+
+Six new regressions cover those local branches, colour-reflected f2 play,
+unchanged protection, castling, promotion-backed persistence, wording and
+serialization. All 423 selected tests pass (three opt-in skips), all sixteen
+fresh-engine tests pass, and both worker/application builds pass. The frozen
+24-position ordinary sample, 32-position mixed sample and earlier twelve
+puzzles have unchanged primary labels; long-mate proof coverage stays 29/32.
+These remain development checks, not exhaustive tactical accuracy. The shared
+desktop/phone card adapter and desktop badge are updated in source; no website,
+Outpost or running-app deployment is claimed.
+
+Add the following to the fresh-engine benchmark environment to regenerate the
+new independent comparison:
+
+```powershell
+$env:TACTICAL_FORK_SEVERITY_REPORT = 'benchmarks/tactical-relevance/fork-severity-stockfish-18.json'
+node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node -t 'defended and undefended fork'
+```
+
 ## Bounded background verification
 
 Desktop Tactics now executes classification in a separate module worker instead
@@ -1303,10 +1350,10 @@ Node worker per position with only a browser-message bridge, no DOM or Tauri.
 All 57 cases (the screenshot's two candidate roots, 24 frozen ordinary-game
 positions and 32 frozen mixed-puzzle positions) match source scan objects exactly.
 `worker-latency.json` records cold worker import, classification and structured
-result transfer: median 72 ms, nearest-rank p95 260 ms, maximum 605 ms. Every case
+result transfer on adapter 31: median 75 ms, nearest-rank p95 273 ms, maximum 615 ms. Every case
 is below the actual three-second deadline. This is host-local execution/parity
 evidence, not WebView scheduling, native-engine search or physical UI proof.
-The classifier/version and its known false negatives are unchanged.
+The worker preserves classifier decisions, including its known false negatives.
 
 Reproduce after the production Vite build in PowerShell:
 

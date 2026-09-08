@@ -200,9 +200,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 216.1286
+    "classificationMs": 219.1872999999996
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -398,9 +398,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 72.53520000000026
+    "classificationMs": 74.64929999999913
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -708,9 +708,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 163.85410000000047
+    "classificationMs": 144.15269999999873
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -906,9 +906,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 342.303100000001
+    "classificationMs": 256.79219999999987
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -1064,9 +1064,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 115.18770000000222
+    "classificationMs": 86.9323000000004
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -1242,8 +1242,8 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-30"
+      "motifClassifierVersion": "site-55.adapter-31"
     },
-    "classificationMs": 76.36179999999877
+    "classificationMs": 67.61440000000039
   }
 ]

@@ -1,0 +1,698 @@
+{
+  "scope": "Constructed legal f7 comparison, not a claim a6 is globally best. O-O is searched separately as the complete defence. Fresh depth-16 roots and replies are independent of the hand-written witness.",
+  "fen": "3qk2r/p1ppppb1/8/4N3/2B5/8/5PPP/6RK b k - 0 1",
+  "report": [
+    {
+      "move": "a7a6",
+      "san": "a6",
+      "root": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a7a6",
+            "e5f7",
+            "d8a8",
+            "f7h8",
+            "g7h8",
+            "g1c1",
+            "a8a7",
+            "c4d3",
+            "e7e6",
+            "h1g1",
+            "e8f7",
+            "c1c4",
+            "a6a5"
+          ],
+          "pvSan": [
+            "a6",
+            "Nxf7",
+            "Qa8",
+            "Nxh8",
+            "Bxh8",
+            "Rc1",
+            "Qa7",
+            "Bd3",
+            "e6",
+            "Kg1",
+            "Kf7",
+            "Rc4",
+            "a5"
+          ],
+          "cp": 495,
+          "mate": null
+        }
+      ],
+      "replies": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e5f7",
+            "d8b8",
+            "f7h8",
+            "b8b6",
+            "f2f4",
+            "g7h8",
+            "f4f5",
+            "e8f8",
+            "f5f6",
+            "e7f6",
+            "g1f1",
+            "b6d6",
+            "f1a1",
+            "d6d2",
+            "c4a6",
+            "f8e7",
+            "a6c8"
+          ],
+          "pvSan": [
+            "Nxf7",
+            "Qb8",
+            "Nxh8",
+            "Qb6",
+            "f4",
+            "Bxh8",
+            "f5",
+            "Kf8",
+            "f6",
+            "exf6",
+            "Rf1",
+            "Qd6",
+            "Ra1",
+            "Qd2",
+            "Bxa6",
+            "Ke7",
+            "Bc8"
+          ],
+          "cp": -490,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "e5f3",
+            "a6a5",
+            "g1d1",
+            "e7e6",
+            "h1g1",
+            "e8g8",
+            "c4d3",
+            "f7f5",
+            "d1b1",
+            "a5a4"
+          ],
+          "pvSan": [
+            "Nf3",
+            "a5",
+            "Rd1",
+            "e6",
+            "Kg1",
+            "O-O",
+            "Bd3",
+            "f5",
+            "Rb1",
+            "a4"
+          ],
+          "cp": -617,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "c4f7",
+            "e8f8",
+            "f2f4",
+            "g7e5",
+            "f4e5",
+            "f8f7",
+            "g1a1",
+            "d8b8",
+            "e5e6",
+            "d7e6",
+            "a1f1",
+            "f7g8",
+            "h1g1",
+            "c7c5",
+            "g2g3"
+          ],
+          "pvSan": [
+            "Bxf7+",
+            "Kf8",
+            "f4",
+            "Bxe5",
+            "fxe5",
+            "Kxf7",
+            "Ra1",
+            "Qb8",
+            "e6+",
+            "dxe6",
+            "Rf1+",
+            "Kg8",
+            "Kg1",
+            "c5",
+            "g3"
+          ],
+          "cp": -625,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "move": "g7h6",
+      "san": "Bh6",
+      "root": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g7h6",
+            "e5f7",
+            "d8b8",
+            "f7h8",
+            "b8b2",
+            "h8f7",
+            "h6d2",
+            "f2f4",
+            "e7e6",
+            "c4e6",
+            "d7e6",
+            "f7e5",
+            "a7a5",
+            "e5c6",
+            "d2f4",
+            "c6a5",
+            "b2d2"
+          ],
+          "pvSan": [
+            "Bh6",
+            "Nxf7",
+            "Qb8",
+            "Nxh8",
+            "Qb2",
+            "Nf7",
+            "Bd2",
+            "f4",
+            "e6",
+            "Bxe6",
+            "dxe6",
+            "Ne5",
+            "a5",
+            "Nc6",
+            "Bxf4",
+            "Nxa5",
+            "Qd2"
+          ],
+          "cp": 455,
+          "mate": null
+        }
+      ],
+      "replies": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e5f7",
+            "d8b8",
+            "f7h8",
+            "b8b2",
+            "h8g6",
+            "b2c2",
+            "g6e5",
+            "e7e6",
+            "h2h3",
+            "c7c6",
+            "c4e6",
+            "d7e6",
+            "e5g4",
+            "h6g7",
+            "g1e1"
+          ],
+          "pvSan": [
+            "Nxf7",
+            "Qb8",
+            "Nxh8",
+            "Qb2",
+            "Ng6",
+            "Qc2",
+            "Ne5",
+            "e6",
+            "h3",
+            "c6",
+            "Bxe6",
+            "dxe6",
+            "Ng4",
+            "Bg7",
+            "Re1"
+          ],
+          "cp": -438,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "c4f7",
+            "e8f8",
+            "f7c4",
+            "e7e6",
+            "g1d1",
+            "d7d5",
+            "c4d3",
+            "d8d6",
+            "e5g6",
+            "f8g7",
+            "g6h8",
+            "g7h8",
+            "d1a1",
+            "d6b4",
+            "h1g1",
+            "a7a5"
+          ],
+          "pvSan": [
+            "Bxf7+",
+            "Kf8",
+            "Bc4",
+            "e6",
+            "Rd1",
+            "d5",
+            "Bd3",
+            "Qd6",
+            "Ng6+",
+            "Kg7",
+            "Nxh8",
+            "Kxh8",
+            "Ra1",
+            "Qb4",
+            "Kg1",
+            "a5"
+          ],
+          "cp": -489,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "g1d1",
+            "h6f4",
+            "c4f7",
+            "e8f8",
+            "d1d7",
+            "f4e5",
+            "d7d8",
+            "f8f7",
+            "d8d3",
+            "h8b8",
+            "g2g4",
+            "e5d6",
+            "d3f3",
+            "f7g8"
+          ],
+          "pvSan": [
+            "Rd1",
+            "Bf4",
+            "Bxf7+",
+            "Kf8",
+            "Rxd7",
+            "Bxe5",
+            "Rxd8+",
+            "Kxf7",
+            "Rd3",
+            "Rb8",
+            "g4",
+            "Bd6",
+            "Rf3+",
+            "Kg8"
+          ],
+          "cp": -556,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "move": "e8g8",
+      "san": "O-O",
+      "root": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e8g8",
+            "f2f4",
+            "e7e6",
+            "c4d3",
+            "f7f5",
+            "g1d1",
+            "d8h4",
+            "e5d7",
+            "f8d8",
+            "g2g3",
+            "h4h8"
+          ],
+          "pvSan": [
+            "O-O",
+            "f4",
+            "e6",
+            "Bd3",
+            "f5",
+            "Rd1",
+            "Qh4",
+            "Nxd7",
+            "Rd8",
+            "g3",
+            "Qh8"
+          ],
+          "cp": 585,
+          "mate": null
+        }
+      ],
+      "replies": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f2f4",
+            "g7e5",
+            "f4e5",
+            "e7e6",
+            "c4b5",
+            "d8h4",
+            "b5d7",
+            "h4f2",
+            "g1c1",
+            "f8d8",
+            "h2h3",
+            "c7c5",
+            "c1d1",
+            "g8h8",
+            "d7e6",
+            "d8d1",
+            "h1h2"
+          ],
+          "pvSan": [
+            "f4",
+            "Bxe5",
+            "fxe5",
+            "e6",
+            "Bb5",
+            "Qh4",
+            "Bxd7",
+            "Qf2",
+            "Rc1",
+            "Rd8",
+            "h3",
+            "c5",
+            "Rd1",
+            "Kh8",
+            "Bxe6",
+            "Rxd1+",
+            "Kh2"
+          ],
+          "cp": -612,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "e5g6",
+            "e7e6",
+            "g6f8",
+            "g8f8",
+            "g1d1",
+            "d7d5",
+            "c4e2",
+            "c7c6",
+            "d1b1",
+            "g7e5",
+            "h1g1"
+          ],
+          "pvSan": [
+            "Ng6",
+            "e6",
+            "Nxf8",
+            "Kxf8",
+            "Rd1",
+            "d5",
+            "Be2",
+            "c6",
+            "Rb1",
+            "Be5",
+            "Kg1"
+          ],
+          "cp": -613,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "g1e1",
+            "e7e6",
+            "f2f4",
+            "g7e5",
+            "e1e5",
+            "d8f6",
+            "e5g5",
+            "f6g5",
+            "f4g5",
+            "a7a5",
+            "h1g1",
+            "f8b8",
+            "g1f2",
+            "a5a4",
+            "f2e3",
+            "g8h8",
+            "c4d3",
+            "a4a3"
+          ],
+          "pvSan": [
+            "Re1",
+            "e6",
+            "f4",
+            "Bxe5",
+            "Rxe5",
+            "Qf6",
+            "Rg5+",
+            "Qxg5",
+            "fxg5",
+            "a5",
+            "Kg1",
+            "Rb8",
+            "Kf2",
+            "a4",
+            "Ke3",
+            "Kh8",
+            "Bd3",
+            "a3"
+          ],
+          "cp": -626,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "move": "g7f8",
+      "san": "Bf8",
+      "root": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g7f8",
+            "c4f7"
+          ],
+          "pvSan": [
+            "Bf8",
+            "Bxf7#"
+          ],
+          "cp": null,
+          "mate": -1
+        }
+      ],
+      "replies": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c4f7"
+          ],
+          "pvSan": [
+            "Bxf7#"
+          ],
+          "cp": null,
+          "mate": 1
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "e5f7",
+            "h8h2",
+            "h1h2",
+            "d8b8",
+            "f7g5",
+            "e7e6",
+            "c4e6",
+            "d7e6",
+            "g5e6",
+            "c7c6",
+            "g2g3",
+            "b8e5"
+          ],
+          "pvSan": [
+            "Nxf7",
+            "Rxh2+",
+            "Kxh2",
+            "Qb8",
+            "Ng5",
+            "e6",
+            "Bxe6",
+            "dxe6",
+            "Nxe6",
+            "c6+",
+            "g3",
+            "Qe5"
+          ],
+          "cp": -397,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "g1d1",
+            "e7e6",
+            "e5f7",
+            "d8h4",
+            "f7h8",
+            "h4c4",
+            "d1b1",
+            "c4c2",
+            "b1b8",
+            "e8e7",
+            "g2g4",
+            "f8h6",
+            "h1g2",
+            "c2c6",
+            "g2g1"
+          ],
+          "pvSan": [
+            "Rd1",
+            "e6",
+            "Nxf7",
+            "Qh4",
+            "Nxh8",
+            "Qxc4",
+            "Rb1",
+            "Qc2",
+            "Rb8+",
+            "Ke7",
+            "g4",
+            "Bh6",
+            "Kg2",
+            "Qc6+",
+            "Kg1"
+          ],
+          "cp": -478,
+          "mate": null
+        }
+      ]
+    }
+  ],
+  "classification": {
+    "allowedMotifs": [
+      {
+        "id": "fork",
+        "label": "Fork",
+        "confidence": "high",
+        "evidence": "e5f7 forks the queen on d8 and rook on h8. The bishop on c4 protects f7, so the king cannot capture the knight. The line continues with f7h8, winning the rook.",
+        "source": "allowed",
+        "ply": 1,
+        "moveUci": "e5f7",
+        "relevance": "primary",
+        "value": 600,
+        "comparison": "reduced",
+        "comparisonEvidence": "The fork still exists after a6, but Qa8 limits its immediate target-capture gain to 2.8 pawns rather than 6.0 after Bh6. This compares the settled fork exchange, not the full position's evaluation."
+      },
+      {
+        "id": "attackingF2F7",
+        "label": "Weak f7",
+        "confidence": "high",
+        "evidence": "e5f7 exploits f7, which is attacked twice and defended once. The bishop on c4 protects the knight, so the king cannot recapture.",
+        "source": "allowed",
+        "ply": 1,
+        "moveUci": "e5f7",
+        "relevance": "secondary",
+        "value": 600,
+        "comparison": "persists",
+        "comparisonEvidence": "The same capture still wins material after a6."
+      }
+    ],
+    "missedMotifs": [],
+    "motifClassifierVersion": "site-55.adapter-31",
+    "allowedTimeline": [
+      {
+        "id": "fork",
+        "label": "Fork",
+        "confidence": "high",
+        "evidence": "e5f7 forks the queen on d8 and rook on h8. The bishop on c4 protects f7, so the king cannot capture the knight. The line continues with f7h8, winning the rook.",
+        "source": "allowed",
+        "ply": 1,
+        "moveUci": "e5f7",
+        "relevance": "primary",
+        "value": 600,
+        "comparison": "reduced",
+        "comparisonEvidence": "The fork still exists after a6, but Qa8 limits its immediate target-capture gain to 2.8 pawns rather than 6.0 after Bh6. This compares the settled fork exchange, not the full position's evaluation.",
+        "actor": "white"
+      },
+      {
+        "id": "attackingF2F7",
+        "label": "Weak f7",
+        "confidence": "high",
+        "evidence": "e5f7 exploits f7, which is attacked twice and defended once. The bishop on c4 protects the knight, so the king cannot recapture.",
+        "source": "allowed",
+        "ply": 1,
+        "moveUci": "e5f7",
+        "relevance": "secondary",
+        "value": 600,
+        "comparison": "persists",
+        "comparisonEvidence": "The same capture still wins material after a6.",
+        "actor": "white"
+      },
+      {
+        "id": "hangingPiece",
+        "label": "Hanging Piece",
+        "confidence": "high",
+        "evidence": "f7h8 wins the loose rook on h8.",
+        "source": "allowed",
+        "ply": 3,
+        "moveUci": "f7h8",
+        "relevance": "secondary",
+        "value": 500,
+        "actor": "white"
+      }
+    ]
+  },
+  "explanation": {
+    "title": "Why the move was tactically bad",
+    "text": "Your move made an existing tactic more costly: e5f7 forks the queen on d8 and rook on h8. The bishop on c4 protects f7, so the king cannot capture the knight. The line continues with f7h8, winning the rook. The fork still exists after a6, but Qa8 limits its immediate target-capture gain to 2.8 pawns rather than 6.0 after Bh6. This compares the settled fork exchange, not the full position's evaluation.",
+    "source": "allowed",
+    "primary": {
+      "id": "fork",
+      "label": "Fork",
+      "confidence": "high",
+      "evidence": "e5f7 forks the queen on d8 and rook on h8. The bishop on c4 protects f7, so the king cannot capture the knight. The line continues with f7h8, winning the rook.",
+      "source": "allowed",
+      "ply": 1,
+      "moveUci": "e5f7",
+      "relevance": "primary",
+      "value": 600,
+      "comparison": "reduced",
+      "comparisonEvidence": "The fork still exists after a6, but Qa8 limits its immediate target-capture gain to 2.8 pawns rather than 6.0 after Bh6. This compares the settled fork exchange, not the full position's evaluation."
+    }
+  }
+}

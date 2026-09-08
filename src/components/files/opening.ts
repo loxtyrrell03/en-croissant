@@ -32,7 +32,7 @@ const tacticalMotifEvidenceSchema = z.object({
     relevance: z.enum(["primary", "secondary"]).optional(),
     value: z.number().optional(),
     actor: z.enum(["white", "black"]).optional(),
-    comparison: z.enum(["prevented", "persists"]).optional(),
+    comparison: z.enum(["prevented", "persists", "reduced"]).optional(),
     comparisonEvidence: z.string().optional(),
 });
 

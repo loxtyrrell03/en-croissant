@@ -104,7 +104,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 30;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 31;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -668,6 +668,15 @@ export type MistakeReviewTacticalExplanation = {
     primary: TacticalMotifEvidence;
 };
 
+/** A post-move tactic is not automatically a newly caused one. */
+export function tacticalMotifPerspective(motif: TacticalMotifEvidence) {
+    if (motif.source === "missed") return "You missed";
+    if (motif.source === "available") return "Available tactic";
+    if (motif.comparison === "persists") return "Existing danger";
+    if (motif.comparison === "reduced") return "More costly";
+    return motif.comparison === "prevented" ? "Opponent gained" : "Opponent tactic";
+}
+
 export function buildMistakeReviewTacticalExplanation({
     allowedMotifs,
     missedMotifs,
@@ -716,7 +725,9 @@ export function buildMistakeReviewTacticalExplanation({
             text:
                 allowed.comparison === "persists"
                     ? `${allowed.evidence} ${allowed.comparisonEvidence} This threat alone does not explain the difference between the two moves.`
-                    : `Your move allowed this tactic: ${allowed.evidence}${allowed.comparisonEvidence ? ` ${allowed.comparisonEvidence}` : ""}`,
+                    : allowed.comparison === "reduced"
+                      ? `Your move made an existing tactic more costly: ${allowed.evidence} ${allowed.comparisonEvidence}`
+                      : `Your move allowed this tactic: ${allowed.evidence}${allowed.comparisonEvidence ? ` ${allowed.comparisonEvidence}` : ""}`,
             source: "allowed",
             primary: allowed,
         };

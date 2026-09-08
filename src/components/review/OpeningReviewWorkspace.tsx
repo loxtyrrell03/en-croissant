@@ -185,6 +185,7 @@ import {
 } from "@/utils/mistakeReview";
 import {
   buildMistakeReviewTacticalExplanation,
+  tacticalMotifPerspective,
   tacticalMotifColor,
   tacticalMotifLabel,
 } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
@@ -6484,7 +6485,7 @@ function MistakeReviewGameInfoPanel({
             {visibleMotifs.map((motif, index) => (
               <Tooltip
                 key={`${motif.source}:${motif.id}:${index}`}
-                label={`${motif.source === "allowed" ? "Opponent gained" : "You missed"} motif, ${
+                label={`${tacticalMotifPerspective(motif)} motif, ${
                   motif.confidence
                 } confidence: ${motif.evidence}`}
                 multiline
@@ -6495,7 +6496,7 @@ function MistakeReviewGameInfoPanel({
                   color={tacticalMotifColor(motif.id)}
                   variant={motif.source === "allowed" ? "filled" : "light"}
                 >
-                  {motif.source === "allowed" ? "Opponent gained" : "You missed"} · {motif.label}
+                  {tacticalMotifPerspective(motif)} · {motif.label}
                 </Badge>
               </Tooltip>
             ))}

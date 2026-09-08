@@ -10957,6 +10957,8 @@ function computeMaterialThreatGain(step, targets, capturers, interpositions, all
 	if (!replies.length) return { kind: "unknown" };
 	let minimum = Infinity;
 	let incomplete = false;
+	let complete = true;
+	let limitingDefence = "";
 	const checks = [];
 	let mateNodes = 4096;
 	for (const reply of replies) {
@@ -11030,6 +11032,7 @@ function computeMaterialThreatGain(step, targets, capturers, interpositions, all
 				break;
 			}
 		}
+		if (unknown) complete = false;
 		if (best < 100) {
 			if (unknown) {
 				incomplete = true;
@@ -11045,7 +11048,10 @@ function computeMaterialThreatGain(step, targets, capturers, interpositions, all
 				checking: next.isCheck()
 			};
 		}
-		minimum = Math.min(minimum, best);
+		if (best < minimum) {
+			minimum = best;
+			limitingDefence = makeSan(step.after, reply);
+		}
 	}
 	if (incomplete || !Number.isFinite(minimum)) return { kind: "unknown" };
 	return checks.length ? {
@@ -11054,7 +11060,9 @@ function computeMaterialThreatGain(step, targets, capturers, interpositions, all
 		checks
 	} : {
 		kind: "proven",
-		gain: minimum
+		gain: minimum,
+		complete,
+		defence: limitingDefence
 	};
 }
 function relevantRayTactics(step) {
@@ -12220,9 +12228,25 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 				comparisonEvidence = `After ${bestSan}, ${alternative.san} no longer has two profitable fork targets.`;
 			} else {
 				const actualTargets = winningTargets(step.after, step.move.to, step.before.turn);
-				if (targets.join(",") === actualTargets.join(",") && verifiedFork(alternative)) {
-					comparison = "persists";
-					comparisonEvidence = `The same immediate fork is still available after ${bestSan}.`;
+				if (targets.join(",") === actualTargets.join(",")) {
+					const original = materialThreatProof(step, actualTargets, [step.move.to]);
+					const other = materialThreatProof(alternative, targets, [alternative.move.to]);
+					if (original.kind === "proven" && other.kind === "proven") {
+						if (other.gain >= original.gain) {
+							comparison = "persists";
+							comparisonEvidence = `The same immediate fork is still available after ${bestSan}, with at least the same verified material gain.`;
+						} else if (original.complete && other.complete) {
+							comparison = "reduced";
+							comparisonEvidence = `The fork still exists after ${bestSan}, but ${other.defence} limits its immediate target-capture gain to ${(other.gain / 100).toFixed(1)} pawns rather than ${(original.gain / 100).toFixed(1)} after ${actual[0].san}. This compares the settled fork exchange, not the full position's evaluation.`;
+						}
+					} else {
+						const originalPromotion = provePromotionBackedFork(step);
+						const otherPromotion = provePromotionBackedFork(alternative);
+						if (originalPromotion && otherPromotion && otherPromotion.gain >= originalPromotion.gain) {
+							comparison = "persists";
+							comparisonEvidence = `The same promotion-backed fork remains available after ${bestSan}, with at least the same verified material gain.`;
+						}
+					}
 				}
 			}
 		}
@@ -12237,7 +12261,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 30;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 31;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -12673,7 +12697,7 @@ function buildMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs }) 
 		};
 		return {
 			title: allowed.comparison === "persists" ? "Tactical danger in the position" : "Why the move was tactically bad",
-			text: allowed.comparison === "persists" ? `${allowed.evidence} ${allowed.comparisonEvidence} This threat alone does not explain the difference between the two moves.` : `Your move allowed this tactic: ${allowed.evidence}${allowed.comparisonEvidence ? ` ${allowed.comparisonEvidence}` : ""}`,
+			text: allowed.comparison === "persists" ? `${allowed.evidence} ${allowed.comparisonEvidence} This threat alone does not explain the difference between the two moves.` : allowed.comparison === "reduced" ? `Your move made an existing tactic more costly: ${allowed.evidence} ${allowed.comparisonEvidence}` : `Your move allowed this tactic: ${allowed.evidence}${allowed.comparisonEvidence ? ` ${allowed.comparisonEvidence}` : ""}`,
 			source: "allowed",
 			primary: allowed
 		};

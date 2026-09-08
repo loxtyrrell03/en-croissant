@@ -13,7 +13,7 @@ export type TacticalMotifEvidence = {
     /** Material payoff in centipawns; 10000 represents a mating continuation. */
     value?: number;
     actor?: "white" | "black";
-    comparison?: "prevented" | "persists";
+    comparison?: "prevented" | "persists" | "reduced";
     comparisonEvidence?: string;
 };
 
