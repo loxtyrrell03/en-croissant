@@ -267,6 +267,77 @@ test.skipIf(!process.env.TACTICAL_JUDGEMENT_ENGINE || !process.env.TACTICAL_CHEC
     180000,
 );
 
+test.skipIf(
+    !process.env.TACTICAL_JUDGEMENT_ENGINE || !process.env.TACTICAL_FORK_PREPARATION_REPORT,
+)(
+    "inspect real fork preparations and their defensive alternatives",
+    async () => {
+        const inputs = [
+            {
+                id: "fJrhT",
+                fen: "8/7R/5kp1/2R2p2/5n2/7P/1r6/5K2 b - - 1 45",
+                roots: ["b2b1", "f4d3"],
+                prefixes: [["b2b1", "c5c1"]],
+            },
+            {
+                id: "NGZzo",
+                fen: "r5k1/5p2/Br2p1p1/1PNpPb1q/3P4/4P1Q1/5K1P/6R1 w - - 0 33",
+                roots: ["c5d7"],
+                prefixes: [["c5d7", "b6b7"]],
+            },
+            {
+                id: "opGD7",
+                fen: "7k/1ppQ3p/p2b2p1/3p4/8/2P2q1P/PP2R3/3K4 b - - 3 40",
+                roots: ["f3f1"],
+                prefixes: [],
+            },
+        ];
+        const report = [];
+        for (const item of inputs) {
+            for (const { root, prefix } of [
+                ...item.roots.map((root) => ({ root, prefix: [] as string[] })),
+                ...item.prefixes.map((prefix) => ({ root: undefined, prefix })),
+            ]) {
+                const pos = Chess.fromSetup(parseFen(item.fen).unwrap()).unwrap();
+                for (const uci of prefix) {
+                    const move = parseUci(uci)!;
+                    expect(pos.isLegal(move)).toBe(true);
+                    pos.play(move);
+                }
+                const lines = [
+                    ...(
+                        await analyse(
+                            process.env.TACTICAL_JUDGEMENT_ENGINE!,
+                            makeFen(pos.toSetup()),
+                            root,
+                        )
+                    ).values(),
+                ];
+                const classification = classifyPositionTacticalMotifs({
+                    fen: item.fen,
+                    pvUci: [...prefix, ...lines[0].pvUci],
+                });
+                report.push({ id: item.id, fen: item.fen, root, prefix, lines, classification });
+            }
+        }
+        writeFileSync(
+            process.env.TACTICAL_FORK_PREPARATION_REPORT!,
+            JSON.stringify(report, null, 2),
+        );
+        const checking = report.find((item) => item.id === "fJrhT" && item.root === "b2b1")!;
+        const immediate = report.find((item) => item.id === "fJrhT" && item.root === "f4d3")!;
+        expect(checking.lines[0].cp!).toBeGreaterThan(immediate.lines[0].cp! + 300);
+        expect(checking.classification.motifs[0]).toMatchObject({ id: "forkPreparation", ply: 1 });
+        expect(
+            report.find((item) => item.id === "fJrhT" && item.prefix.length)?.classification
+                .motifs[0],
+        ).toMatchObject({ id: "forkPreparation", ply: 1 });
+        // NGZzo's double threat and opGD7's longer king drive are still diagnostic,
+        // not accepted empty results or claims that their primary lessons are solved.
+    },
+    180000,
+);
+
 async function analyse(engine: string, fen: string, searchMove?: string) {
     const child = spawn(engine, [], { windowsHide: true, stdio: "pipe" });
     const lines = new Map<
@@ -1057,6 +1128,22 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     source: "allowed",
                     primary: "fork",
                     why: "Black should deal with f7; the quiet b6 move permits a protected queen-rook fork.",
+                },
+                {
+                    name: "The real Rc5 mistake permits a checking fork preparation",
+                    fen: "8/7R/5kp1/4Rp2/5n2/7P/1r6/5K2 w - - 0 45",
+                    played: "e5c5",
+                    source: "allowed",
+                    primary: "forkPreparation",
+                    why: "Rb1+ forces Kf2 into Nd3+'s fork or wins the interposing rook after Rc1. Re1 would instead be a protected block when the rook stays on e5.",
+                },
+                {
+                    name: "Playing Nd3 too early misses the checking preparation",
+                    fen: "8/7R/5kp1/2R2p2/5n2/7P/1r6/5K2 b - - 1 45",
+                    played: "f4d3",
+                    source: "missed",
+                    primary: "forkPreparation",
+                    why: "Rb1+ must first drive the king onto a checking-fork square. Immediate Nd3 permits Rc4 and only draws in the fresh engine search.",
                 },
                 {
                     name: "Retreating the bishop misses the checking clearance",

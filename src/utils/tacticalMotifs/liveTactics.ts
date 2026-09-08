@@ -9,6 +9,7 @@ import type { TacticalMotifEvidence } from "./types";
 import { tacticalBoardEvidence } from "./causalTactics";
 
 const CORE_TACTICAL_THEME_IDS = new Set([
+    "forkPreparation",
     "tacticalPreparation",
     "fork",
     "pin",
@@ -86,6 +87,8 @@ const THEME_PRIORITY = [
 ];
 
 const THEME_DESCRIPTIONS: Record<string, string> = {
+    forkPreparation:
+        "A forcing check prepares a profitable checking fork; blocking alternatives are included in the proof.",
     tacticalPreparation:
         "A quiet move prepares a verified tactical threat; other defences may lead to a different continuation.",
     fork: "One piece attacks two or more important targets at the same time.",
@@ -118,7 +121,7 @@ const THEME_DESCRIPTIONS: Record<string, string> = {
 };
 
 const NAMED_MATE_PATTERN = /Mate$/;
-const MATE_DISTANCE_PATTERN = /^mate(?:In[1-5])?$/;
+const MATE_DISTANCE_PATTERN = /^mate(?:In\d+)?$/;
 const VALID_UCI_PATTERN = /^[a-h][1-8][a-h][1-8][qrbn]?$/;
 const FACT_RICH_THEME_IDS = new Set([
     "fork",
@@ -129,7 +132,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 22;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 23;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {

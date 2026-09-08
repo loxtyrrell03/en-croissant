@@ -7,6 +7,7 @@ import {
     classifyPositionTacticalMotifs,
 } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { proveCheckingMate, replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
+import { buildLiveTacticalScan } from "@/utils/tacticalMotifs/liveTactics";
 
 const fen = "5r2/bpp2q1k/p2pR1p1/3P4/1PP3QP/P7/1B4P1/7K b - - 3 32";
 const pvUci = ["f7f1", "h1h2", "f1g1", "h2h3", "g1h1", "h3g3", "a7f2"];
@@ -17,6 +18,20 @@ const developmentExample = (id: string) => {
     ).cases as { id: string; startFen: string; bestLine: string[] }[];
     return cases.find((example) => example.id === `lichess:${id}`)!;
 };
+
+test.each(["O3OKR", "nUdHj"])(
+    "live display retains a verified mate beyond five moves: %s",
+    (id) => {
+        const item = developmentExample(id);
+        const scan = buildLiveTacticalScan({
+            fen: item.startFen,
+            pvUci: item.bestLine,
+            depth: 16,
+            engineName: "Regression",
+        });
+        expect(scan.motifs[0]).toMatchObject({ id: "mateIn6", ply: 1 });
+    },
+);
 
 test.each(["41frD", "bBtM1", "n48BE", "nUdHj"])(
     "real mating payoffs stay at checkmate and cannot duplicate or displace the root attack: %s",

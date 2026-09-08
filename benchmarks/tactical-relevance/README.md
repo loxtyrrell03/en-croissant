@@ -848,6 +848,63 @@ formatting/lint, the shared-review worker and the 8,851-module production
 build. Type checking retains only the unrelated OTB number/bigint fixture
 error. No runtime restart, hosting deployment or GUI verification was performed.
 
+## Checking fork preparation and branch-independent lessons (adapter 23)
+
+Real fJrhT previously displayed only the ply-3 fork. That omitted the useful
+move-order lesson: **Rb1+ first**, then Nd3+. Fresh root-restricted Stockfish
+scores Rb1+ at +459 cp and immediate Nd3 at 0 cp. Kf2 permits Nd3+'s king/rook
+fork, but Kf2 is not compulsory: Rc1 blocks, and Rxc1+ wins that rook directly.
+The new root lesson is Fork Preparation in either continuation, even when only
+Rb1+ is supplied. Its proof does not inspect the supplied PV at all.
+
+Every legal reply to a non-capturing check must permit either a profitable
+checking fork or a profitable capture of the interposing piece by the checking
+piece. Every defence to a nominated fork is then checked, including capturing
+the forker and legal recaptures. Targets are tracked through defensive moves;
+captured/promoted material and the stronger of an immediate recapture or an
+off-square loss of an attacking participant are debited. The same checking
+fork must not already work without the preparation. Work has a 4,096
+traversal/leaf-operation budget plus the existing bounded 256-node exchange
+leaves; unknown/exhausted proofs abstain and cannot borrow cached success from
+a larger budget. Castling's encoded rook destination is not treated as an
+occupied checking-piece square. Capturing checks, quiet double threats and
+longer fork setups remain outside this particular proof.
+
+The original square relationship matters. With the White rook on e5 instead
+of c5, Re1 blocks safely because Rxe1+ Kxe1 only exchanges rooks. That control,
+a knight capturing the checking rook and a pawn capturing the future forker
+all reject the cooperative supplied fork. Current board arrows show Rb2-b1
+and the actual b1-f1 checking ray, not a knight supposedly already on d3. The
+fork and rook capture remain at plies 3 and 5. A same-target before/better-line
+comparison prevents two irrelevant pawn moves from being assigned different
+causes for an already existing preparation.
+
+`fork-preparation-stockfish-18.json` records the root move-order comparison,
+the Rc1 branch and two unresolved diagnostics. Fresh before/after searches in
+`causal-stockfish-18.json` verify the actual Rc5 mistake (Ra5 preserves the
+draw) and the missed preparation when Black plays Nd3 too soon. The proof's
+500 cp local material gain is not Stockfish's whole-position score.
+
+The unresolved diagnostics give concrete next questions: NGZzo's Nd7 combines
+an attack on Rb6 with the threat Nf6+, forking Kg8/Qh5 if the rook escapes;
+Kg7 instead permits Nxb6. It needs a quiet double-threat proof, not a root
+fork label. opGD7's Qf1+ Kd2 Bf4+ Re3 Qf2+ Bxe3 involves a longer king drive
+and pin; a later pin alone still does not explain the initiating check.
+Neither diagnostic is counted as a correct empty result.
+
+Only fJrhT's headline changes in the frozen mixed 32-position expansion.
+The live selector also now accepts validated mate-distance IDs beyond five
+moves: O3OKR and nUdHj retain their proved mate-in-six root lesson instead
+of dropping it in favour of a later payoff. Ordinary-game noise, quiet/longer
+preparations, the previously recorded five unresolved mating attacks and real
+runtime verification remain open.
+
+Adapter-23 verification passed 275 selected tests in 27 files including the
+opt-in development corpus audit, all fourteen Stockfish tests, targeted
+formatting/lint, the shared-review worker and the 8,851-module production build.
+Type checking retains only the unrelated OTB number/bigint fixture error.
+These are source/build checks, not running-app or hosting deployment proof.
+
 Run in PowerShell with the configured Node runtime on PATH:
 
 ```powershell
@@ -865,6 +922,7 @@ $env:TACTICAL_EXPANSION_ENGINE_REPORT = 'benchmarks/tactical-relevance/expanded-
 $env:TACTICAL_EXCHANGE_DISCOVERY_REPORT = 'benchmarks/tactical-relevance/exchange-discovery-stockfish-18.json'
 $env:TACTICAL_PIN_PREPARATION_REPORT = 'benchmarks/tactical-relevance/pin-preparation-stockfish-18.json'
 $env:TACTICAL_CHECKING_MATE_REPORT = 'benchmarks/tactical-relevance/checking-mate-stockfish-18.json'
+$env:TACTICAL_FORK_PREPARATION_REPORT = 'benchmarks/tactical-relevance/fork-preparation-stockfish-18.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node
 $env:TACTICAL_REAL_PUZZLE_REPORT = 'benchmarks/tactical-relevance/real-puzzle-judgement.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/realPuzzleJudgement.test.ts --environment node

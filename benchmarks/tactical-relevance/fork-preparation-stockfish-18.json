@@ -1,0 +1,683 @@
+[
+  {
+    "id": "fJrhT",
+    "fen": "8/7R/5kp1/2R2p2/5n2/7P/1r6/5K2 b - - 1 45",
+    "root": "b2b1",
+    "prefix": [],
+    "lines": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "b2b1",
+          "f1f2",
+          "f4d3",
+          "f2f3",
+          "d3c5",
+          "h3h4",
+          "b1b3",
+          "f3g2",
+          "c5e4",
+          "h4h5",
+          "b3b2",
+          "g2g1",
+          "b2a2",
+          "h7h6",
+          "f6g5",
+          "h6g6",
+          "g5h5",
+          "g6g8",
+          "f5f4"
+        ],
+        "pvSan": [
+          "Rb1+",
+          "Kf2",
+          "Nd3+",
+          "Kf3",
+          "Nxc5",
+          "h4",
+          "Rb3+",
+          "Kg2",
+          "Ne4",
+          "h5",
+          "Rb2+",
+          "Kg1",
+          "Ra2",
+          "Rh6",
+          "Kg5",
+          "Rxg6+",
+          "Kxh5",
+          "Rg8",
+          "f4"
+        ],
+        "cp": 459,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "motifs": [
+        {
+          "id": "forkPreparation",
+          "label": "Fork Preparation",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "b2b1",
+          "value": 500,
+          "evidence": "Rb1+ prepares a checking fork. After Kf2, Nd3+ forks the king on f2 and rook on c5. Blocking with Rc1 instead allows Rxc1+, winning the blocking piece. All 2 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+          "relevance": "primary"
+        },
+        {
+          "id": "fork",
+          "label": "Fork",
+          "confidence": "high",
+          "evidence": "f4d3 forks the king on f2 and rook on c5. The line continues with d3c5, winning the rook.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "f4d3",
+          "relevance": "secondary",
+          "value": 500
+        }
+      ],
+      "timeline": [
+        {
+          "id": "forkPreparation",
+          "label": "Fork Preparation",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "b2b1",
+          "value": 500,
+          "evidence": "Rb1+ prepares a checking fork. After Kf2, Nd3+ forks the king on f2 and rook on c5. Blocking with Rc1 instead allows Rxc1+, winning the blocking piece. All 2 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "fork",
+          "label": "Fork",
+          "confidence": "high",
+          "evidence": "f4d3 forks the king on f2 and rook on c5. The line continues with d3c5, winning the rook.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "f4d3",
+          "relevance": "secondary",
+          "value": 500,
+          "actor": "black"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "d3c5 wins the loose rook on c5.",
+          "source": "available",
+          "ply": 5,
+          "moveUci": "d3c5",
+          "relevance": "secondary",
+          "value": 500,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-23"
+    }
+  },
+  {
+    "id": "fJrhT",
+    "fen": "8/7R/5kp1/2R2p2/5n2/7P/1r6/5K2 b - - 1 45",
+    "root": "f4d3",
+    "prefix": [],
+    "lines": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "f4d3",
+          "c5c4",
+          "b2f2",
+          "f1g1",
+          "f2a2",
+          "c4c3",
+          "d3e5",
+          "h7c7"
+        ],
+        "pvSan": [
+          "Nd3",
+          "Rc4",
+          "Rf2+",
+          "Kg1",
+          "Ra2",
+          "Rc3",
+          "Ne5",
+          "Rhc7"
+        ],
+        "cp": 0,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-23"
+    }
+  },
+  {
+    "id": "fJrhT",
+    "fen": "8/7R/5kp1/2R2p2/5n2/7P/1r6/5K2 b - - 1 45",
+    "prefix": [
+      "b2b1",
+      "c5c1"
+    ],
+    "lines": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "b1c1",
+          "f1f2",
+          "f6g5",
+          "h3h4",
+          "g5g4",
+          "h7h8",
+          "c1b1",
+          "h8a8",
+          "g4h4",
+          "f2f3",
+          "b1f1",
+          "f3e3",
+          "h4g4",
+          "a8a4",
+          "f1e1",
+          "e3d2"
+        ],
+        "pvSan": [
+          "Rxc1+",
+          "Kf2",
+          "Kg5",
+          "h4+",
+          "Kg4",
+          "Rh8",
+          "Rb1",
+          "Ra8",
+          "Kxh4",
+          "Kf3",
+          "Rf1+",
+          "Ke3",
+          "Kg4",
+          "Ra4",
+          "Re1+",
+          "Kd2"
+        ],
+        "cp": 567,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "b1b2",
+          "c1c3",
+          "g6g5",
+          "h7h6",
+          "f6e5"
+        ],
+        "pvSan": [
+          "Rb2",
+          "Rc3",
+          "g5",
+          "Rh6+",
+          "Ke5"
+        ],
+        "cp": 9,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "b1b3",
+          "h3h4",
+          "b3f3",
+          "f1e1",
+          "f4g2",
+          "e1e2",
+          "f3h3",
+          "c1c4",
+          "f6e5",
+          "e2f2",
+          "g2f4",
+          "h7h8",
+          "h3h2",
+          "f2f3",
+          "h2h3",
+          "f3f2"
+        ],
+        "pvSan": [
+          "Rb3",
+          "h4",
+          "Rf3+",
+          "Ke1",
+          "Ng2+",
+          "Ke2",
+          "Rh3",
+          "Rc4",
+          "Ke5",
+          "Kf2",
+          "Nf4",
+          "Rh8",
+          "Rh2+",
+          "Kf3",
+          "Rh3+",
+          "Kf2"
+        ],
+        "cp": 0,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "motifs": [
+        {
+          "id": "forkPreparation",
+          "label": "Fork Preparation",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "b2b1",
+          "value": 500,
+          "evidence": "Rb1+ prepares a checking fork. After Kf2, Nd3+ forks the king on f2 and rook on c5. Blocking with Rc1 instead allows Rxc1+, winning the blocking piece. All 2 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+          "relevance": "primary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "forkPreparation",
+          "label": "Fork Preparation",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "b2b1",
+          "value": 500,
+          "evidence": "Rb1+ prepares a checking fork. After Kf2, Nd3+ forks the king on f2 and rook on c5. Blocking with Rc1 instead allows Rxc1+, winning the blocking piece. All 2 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+          "relevance": "primary",
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-23"
+    }
+  },
+  {
+    "id": "NGZzo",
+    "fen": "r5k1/5p2/Br2p1p1/1PNpPb1q/3P4/4P1Q1/5K1P/6R1 w - - 0 33",
+    "root": "c5d7",
+    "prefix": [],
+    "lines": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "c5d7",
+          "g8g7",
+          "d7b6",
+          "a8a7",
+          "b6a4",
+          "f5d3",
+          "g3g4",
+          "h5h2",
+          "g1g2",
+          "h2h1",
+          "g4f4",
+          "h1d1",
+          "a4c5",
+          "d3b5",
+          "a6b5",
+          "a7a2",
+          "f2g3",
+          "d1e1",
+          "g3h2",
+          "a2a1",
+          "b5e2",
+          "g7g8",
+          "f4f2"
+        ],
+        "pvSan": [
+          "Nd7",
+          "Kg7",
+          "Nxb6",
+          "Ra7",
+          "Na4",
+          "Bd3",
+          "Qg4",
+          "Qxh2+",
+          "Rg2",
+          "Qh1",
+          "Qf4",
+          "Qd1",
+          "Nc5",
+          "Bxb5",
+          "Bxb5",
+          "Ra2+",
+          "Kg3",
+          "Qe1+",
+          "Kh2",
+          "Ra1",
+          "Be2",
+          "Kg8",
+          "Qf2"
+        ],
+        "cp": 264,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-23"
+    }
+  },
+  {
+    "id": "NGZzo",
+    "fen": "r5k1/5p2/Br2p1p1/1PNpPb1q/3P4/4P1Q1/5K1P/6R1 w - - 0 33",
+    "prefix": [
+      "c5d7",
+      "b6b7"
+    ],
+    "lines": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d7f6",
+          "g8f8",
+          "f6h5",
+          "b7c7",
+          "h5f6",
+          "c7c2",
+          "f2f3",
+          "f8g7",
+          "g3f4",
+          "a8h8",
+          "h2h4",
+          "f5d3",
+          "h4h5",
+          "g7f8",
+          "h5h6",
+          "d3e2",
+          "f3g3"
+        ],
+        "pvSan": [
+          "Nf6+",
+          "Kf8",
+          "Nxh5",
+          "Rc7",
+          "Nf6",
+          "Rc2+",
+          "Kf3",
+          "Kg7",
+          "Qf4",
+          "Rh8",
+          "h4",
+          "Bd3",
+          "h5",
+          "Kf8",
+          "h6",
+          "Be2+",
+          "Kg3"
+        ],
+        "cp": 532,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "g3g6",
+          "f7g6",
+          "d7f6",
+          "g8f7",
+          "f6h5",
+          "b7c7",
+          "h5f6",
+          "a8h8",
+          "b5b6",
+          "c7c2",
+          "f2f3",
+          "h8h3",
+          "f3f4",
+          "c2h2",
+          "b6b7",
+          "h2f2",
+          "f4g5",
+          "f2b2",
+          "f6d7",
+          "h3h5",
+          "g5f4"
+        ],
+        "pvSan": [
+          "Qxg6+",
+          "fxg6",
+          "Nf6+",
+          "Kf7",
+          "Nxh5",
+          "Rc7",
+          "Nf6",
+          "Rh8",
+          "b6",
+          "Rc2+",
+          "Kf3",
+          "Rh3+",
+          "Kf4",
+          "Rcxh2",
+          "b7",
+          "Rf2+",
+          "Kg5",
+          "Rb2",
+          "Nd7",
+          "Rh5+",
+          "Kf4"
+        ],
+        "cp": -56,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "d7c5",
+          "a8a6",
+          "c5a6",
+          "b7b5",
+          "g1e1",
+          "b5b2",
+          "f2g1",
+          "f5e4",
+          "a6c5",
+          "b2g2",
+          "g3g2",
+          "e4g2",
+          "g1g2",
+          "h5g4",
+          "g2h1",
+          "g6g5",
+          "e1f1",
+          "g4h5"
+        ],
+        "pvSan": [
+          "Nc5",
+          "Rxa6",
+          "Nxa6",
+          "Rxb5",
+          "Re1",
+          "Rb2+",
+          "Kg1",
+          "Be4",
+          "Nc5",
+          "Rg2+",
+          "Qxg2",
+          "Bxg2",
+          "Kxg2",
+          "Qg4+",
+          "Kh1",
+          "g5",
+          "Rf1",
+          "Qh5"
+        ],
+        "cp": -198,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "motifs": [
+        {
+          "id": "fork",
+          "label": "Fork",
+          "confidence": "high",
+          "evidence": "d7f6 forks the king on g8 and queen on h5. The line continues with f6h5, winning the queen.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "d7f6",
+          "relevance": "primary",
+          "value": 900
+        }
+      ],
+      "timeline": [
+        {
+          "id": "fork",
+          "label": "Fork",
+          "confidence": "high",
+          "evidence": "d7f6 forks the king on g8 and queen on h5. The line continues with f6h5, winning the queen.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "d7f6",
+          "relevance": "primary",
+          "value": 900,
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "f6h5 wins the loose queen on h5.",
+          "source": "available",
+          "ply": 5,
+          "moveUci": "f6h5",
+          "relevance": "secondary",
+          "value": 580,
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-23"
+    }
+  },
+  {
+    "id": "opGD7",
+    "fen": "7k/1ppQ3p/p2b2p1/3p4/8/2P2q1P/PP2R3/3K4 b - - 3 40",
+    "root": "f3f1",
+    "prefix": [],
+    "lines": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "f3f1",
+          "d1d2",
+          "d6f4",
+          "e2e3",
+          "f1f2",
+          "d2d1",
+          "f4e3",
+          "d7d5",
+          "h8g7",
+          "a2a4",
+          "f2f1",
+          "d1c2",
+          "f1f5",
+          "d5d3",
+          "e3f4",
+          "c3c4",
+          "g7g8",
+          "d3f5",
+          "g6f5",
+          "c4c5",
+          "g8f7",
+          "c2d3"
+        ],
+        "pvSan": [
+          "Qf1+",
+          "Kd2",
+          "Bf4+",
+          "Re3",
+          "Qf2+",
+          "Kd1",
+          "Bxe3",
+          "Qxd5",
+          "Kg7",
+          "a4",
+          "Qf1+",
+          "Kc2",
+          "Qf5+",
+          "Qd3",
+          "Bf4",
+          "c4",
+          "Kg8",
+          "Qxf5",
+          "gxf5",
+          "c5",
+          "Kf7",
+          "Kd3"
+        ],
+        "cp": 606,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "motifs": [
+        {
+          "id": "pin",
+          "label": "Pin",
+          "confidence": "medium",
+          "evidence": "f1f2 lets the bishop on f4 pin the rook on e3 to the king on d2.",
+          "source": "available",
+          "ply": 5,
+          "moveUci": "f1f2",
+          "relevance": "primary",
+          "value": 400
+        }
+      ],
+      "timeline": [
+        {
+          "id": "pin",
+          "label": "Pin",
+          "confidence": "medium",
+          "evidence": "f1f2 lets the bishop on f4 pin the rook on e3 to the king on d2.",
+          "source": "available",
+          "ply": 5,
+          "moveUci": "f1f2",
+          "relevance": "primary",
+          "value": 400,
+          "actor": "black"
+        },
+        {
+          "id": "fork",
+          "label": "Fork",
+          "source": "available",
+          "confidence": "high",
+          "ply": 5,
+          "moveUci": "f1f2",
+          "evidence": "Qf2+ forks the king on d2 and rook on e3; no legal reply saves both targets without conceding material.",
+          "relevance": "secondary",
+          "value": 400,
+          "actor": "black"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "f4e3 wins the loose rook on e3.",
+          "source": "available",
+          "ply": 7,
+          "moveUci": "f4e3",
+          "relevance": "secondary",
+          "value": 500,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-23"
+    }
+  }
+]

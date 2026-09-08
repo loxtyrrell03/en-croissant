@@ -105,9 +105,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 295.43839999999955
+    "classificationMs": 281.8152
   },
   {
     "id": "lichess:1GRFo",
@@ -174,9 +174,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 99.68170000000009
+    "classificationMs": 82.40020000000004
   },
   {
     "id": "lichess:2Gc77",
@@ -247,9 +247,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 280.3244000000004
+    "classificationMs": 172.6862999999994
   },
   {
     "id": "lichess:2QybO",
@@ -310,6 +310,18 @@
           "actor": "white"
         },
         {
+          "id": "forkPreparation",
+          "label": "Fork Preparation",
+          "source": "available",
+          "confidence": "high",
+          "ply": 3,
+          "moveUci": "d2d7",
+          "value": 500,
+          "evidence": "Rd7+ prepares a checking fork. After Kf8, Rxd8+ forks the rook on c8 and king on f8. Blocking with Qe7 instead allows Rxe7+, winning the blocking piece. All 5 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+          "relevance": "secondary",
+          "actor": "white"
+        },
+        {
           "id": "fork",
           "label": "Fork",
           "confidence": "high",
@@ -322,9 +334,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 91.8753000000006
+    "classificationMs": 119.92790000000059
   },
   {
     "id": "lichess:2SvDe",
@@ -408,9 +420,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 24.952400000000125
+    "classificationMs": 20.799200000000383
   },
   {
     "id": "lichess:48ION",
@@ -478,9 +490,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 28.868599999999788
+    "classificationMs": 47.07350000000042
   },
   {
     "id": "lichess:4RNK5",
@@ -523,9 +535,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 19.618199999999888
+    "classificationMs": 43.71630000000005
   },
   {
     "id": "lichess:6fO6p",
@@ -569,9 +581,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 5.649899999999434
+    "classificationMs": 8.743599999999788
   },
   {
     "id": "lichess:6mAvx",
@@ -665,9 +677,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 208.39589999999953
+    "classificationMs": 219.0654000000004
   },
   {
     "id": "lichess:8DHuj",
@@ -722,9 +734,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 98.86059999999998
+    "classificationMs": 95.76580000000013
   },
   {
     "id": "lichess:8mguL",
@@ -780,9 +792,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 42.36660000000029
+    "classificationMs": 38.52720000000045
   },
   {
     "id": "lichess:9THyd",
@@ -876,8 +888,8 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 22.94669999999951
+    "classificationMs": 15.20010000000002
   }
 ]

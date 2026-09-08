@@ -170,7 +170,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     }
   },
   {
@@ -407,7 +407,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     }
   },
   {
@@ -624,6 +624,18 @@
           "actor": "white"
         },
         {
+          "id": "forkPreparation",
+          "label": "Fork Preparation",
+          "source": "available",
+          "confidence": "high",
+          "ply": 9,
+          "moveUci": "h3h7",
+          "value": 1000,
+          "evidence": "Qh7+ prepares a checking fork. After Kf8, Nxe6+ forks the queen on d4 and pawn on g7 and king on f8. All 1 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+          "relevance": "secondary",
+          "actor": "white"
+        },
+        {
           "id": "fork",
           "label": "Fork",
           "confidence": "high",
@@ -660,7 +672,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     }
   },
   {
@@ -818,7 +830,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     }
   },
   {
@@ -1005,6 +1017,18 @@
           "actor": "white"
         },
         {
+          "id": "forkPreparation",
+          "label": "Fork Preparation",
+          "source": "available",
+          "confidence": "high",
+          "ply": 9,
+          "moveUci": "h3h7",
+          "value": 1000,
+          "evidence": "Qh7+ prepares a checking fork. After Kf8, Nxe6+ forks the queen on d4 and pawn on g7 and king on f8. All 1 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+          "relevance": "secondary",
+          "actor": "white"
+        },
+        {
           "id": "fork",
           "label": "Fork",
           "confidence": "high",
@@ -1041,7 +1065,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     }
   }
 ]

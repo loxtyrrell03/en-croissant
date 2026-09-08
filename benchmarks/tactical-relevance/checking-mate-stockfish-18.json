@@ -80,7 +80,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
     "sourceClassification": {
       "motifs": [
@@ -133,9 +133,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 13.911800000001676
+    "classificationMs": 14.35529999999926
   },
   {
     "fen": "5r2/bpp2q1k/p2pR1p1/3P4/1PP3QP/P7/1B4P1/7K b - - 3 32",
@@ -294,7 +294,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
     "sourceClassification": {
       "motifs": [
@@ -347,9 +347,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 8.501100000001315
+    "classificationMs": 8.785200000002078
   },
   {
     "fen": "5r2/bpp2q1k/p2pR1p1/3P4/1PP3QP/P7/1B4P1/2R4K b - - 3 32",
@@ -397,12 +397,12 @@
     ],
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
     "sourceClassification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 20.509500000000116
+    "classificationMs": 19.59870000000228
   }
 ]

@@ -177,9 +177,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 41.70400000000518,
+    "classificationMs": 38.95490000000427,
     "positionHeadline": [
       {
         "id": "fork",
@@ -502,9 +502,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 45.690999999998894,
+    "classificationMs": 50.27189999999973,
     "positionHeadline": [
       {
         "id": "interference",
@@ -869,9 +869,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 85.47900000000664,
+    "classificationMs": 79.67039999999542,
     "positionHeadline": [
       {
         "id": "capturingDefender",
@@ -1163,9 +1163,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 38.992700000002515,
+    "classificationMs": 36.71330000000307,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -1475,9 +1475,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 28.192300000002433,
+    "classificationMs": 25.746100000003935,
     "positionHeadline": [
       {
         "id": "intermezzo",
@@ -1751,9 +1751,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 28.54370000000199,
+    "classificationMs": 26.902500000003783,
     "positionHeadline": [
       {
         "id": "interference",
@@ -2105,9 +2105,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 20.208299999998417,
+    "classificationMs": 19.417900000000373,
     "positionHeadline": [
       {
         "id": "tacticalPreparation",
@@ -2478,9 +2478,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 0.480199999998149,
+    "classificationMs": 0.475800000000163,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -2774,9 +2774,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 30.586599999995087,
+    "classificationMs": 31.133999999998196,
     "positionHeadline": [
       {
         "id": "trappedPiece",
@@ -3098,9 +3098,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 47.640999999995984,
+    "classificationMs": 47.76209999999992,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -3356,9 +3356,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 19.60670000000391,
+    "classificationMs": 19.06319999999687,
     "positionHeadline": [
       {
         "id": "trappedPiece",
@@ -3729,9 +3729,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-22"
+      "motifClassifierVersion": "site-55.adapter-23"
     },
-    "classificationMs": 26.458800000000338,
+    "classificationMs": 26.903400000002875,
     "positionHeadline": [
       {
         "id": "intermezzo",

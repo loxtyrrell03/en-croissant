@@ -9340,6 +9340,7 @@ var VALUE = {
 	king: 2e4
 };
 var MECHANISMS = new Set([
+	"forkPreparation",
 	"fork",
 	"pin",
 	"skewer",
@@ -9943,6 +9944,119 @@ function winningTargets(pos, from, side) {
 * a checking counterattack, or one move that protects both targets. */
 function verifiedFork(step) {
 	return immediateFork(step) || provePromotionBackedFork(step) !== null;
+}
+var forkPreparationCache = /* @__PURE__ */ new Map();
+/** A preparatory check must force a profitable checking fork or win a
+* blocking piece on that checking ray. The supplied continuation is not used:
+* king evasions, captures and interpositions are all checked independently. */
+function proveCheckingForkPreparation(root, nodeLimit = 4096) {
+	if (root.capture || root.move.promotion || !root.after.isCheck() || root.after.isEnd()) return null;
+	const side = root.before.turn;
+	const king = root.after.board.kingOf(opposite(side));
+	const checker = root.after.board.get(root.move.to);
+	if (!checker || checker.color !== side || !attacks(checker, root.move.to, root.after.board.occupied).has(king)) return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (nodeLimit === 4096 && forkPreparationCache.has(key)) return forkPreparationCache.get(key);
+	const budget = { nodes: nodeLimit };
+	const visit = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("Fork preparation budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const delta = (pos, move) => capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+	const fork = (pos, move, pieces) => {
+		const after = visit(pos, move);
+		const piece = after.board.get(move.to);
+		if (!piece || piece.color !== side) return null;
+		const targets = [...attacks(piece, move.to, after.board.occupied).intersect(after.board[opposite(side)])];
+		if (!after.isCheck() || !targets.some((sq) => after.board.get(sq)?.role === "king")) return null;
+		const victims = targets.filter((sq) => !["king", "pawn"].includes(after.board.get(sq).role));
+		if (!victims.length || after.isEnd()) return null;
+		let minimum = Infinity;
+		for (const reply of legalMoves(after)) {
+			const next = visit(after, reply);
+			if (next.isEnd()) return null;
+			const capturedForker = reply.to === move.to && capturedValue(after, reply) > 0;
+			const named = capturedForker ? [move.to] : victims.map((sq) => reply.from === sq ? reply.to : sq);
+			let best = -Infinity;
+			for (const capture of legalMoves(next)) {
+				if (!named.includes(capture.to) || !capturedValue(next, capture) || !capturedForker && capture.from !== move.to) continue;
+				const gain = participantCaptureGain(next, capture, pieces, budget);
+				if (gain !== null) best = Math.max(best, delta(pos, move) - delta(after, reply) + gain);
+			}
+			if (best < 100) return null;
+			minimum = Math.min(minimum, best);
+		}
+		return Number.isFinite(minimum) ? {
+			gain: minimum,
+			victims,
+			targets: targets.map((sq) => `${after.board.get(sq).role} on ${makeSquare(sq)}`)
+		} : null;
+	};
+	let proof = null;
+	try {
+		const branches = [];
+		const targets = /* @__PURE__ */ new Set();
+		let minimum = Infinity;
+		let hasFork = false;
+		for (const reply of legalMoves(root.after)) {
+			const next = visit(root.after, reply);
+			if (next.isEnd()) throw new Error("Terminal defensive resource");
+			const balance = -delta(root.after, reply);
+			const blockCapture = {
+				from: root.move.to,
+				to: reply.to
+			};
+			if (between(root.move.to, king).has(reply.to) && next.isLegal(blockCapture)) {
+				const gain = participantCaptureGain(next, blockCapture, [root.move.to], budget);
+				if (gain !== null && balance + gain >= 100) {
+					minimum = Math.min(minimum, balance + gain);
+					branches.push({
+						reply: makeSan(root.after, reply),
+						answer: makeSan(next, blockCapture),
+						kind: "block",
+						targets: []
+					});
+					targets.add(reply.from);
+					continue;
+				}
+			}
+			let won = false;
+			for (const answer of legalMoves(next)) {
+				const result = fork(next, answer, [root.move.to, answer.to]);
+				if (!result || balance + result.gain < 100) continue;
+				const direct = {
+					...answer,
+					from: answer.from === root.move.to ? root.move.from : answer.from
+				};
+				const baseline = root.before.isLegal(direct) ? fork(root.before, direct, [root.move.from, direct.to]) : null;
+				if (baseline && baseline.gain >= balance + result.gain) continue;
+				minimum = Math.min(minimum, balance + result.gain);
+				branches.push({
+					reply: makeSan(root.after, reply),
+					answer: makeSan(next, answer),
+					kind: "fork",
+					targets: result.targets
+				});
+				for (const sq of result.victims) targets.add(sq === reply.to ? reply.from : sq);
+				hasFork = true;
+				won = true;
+				break;
+			}
+			if (!won) throw new Error("A legal defence avoids the preparation");
+		}
+		if (hasFork && Number.isFinite(minimum)) proof = {
+			gain: minimum,
+			targets: [...targets],
+			branches
+		};
+	} catch {}
+	if (nodeLimit === 4096) {
+		forkPreparationCache.set(key, proof);
+		if (forkPreparationCache.size > 128) forkPreparationCache.delete(forkPreparationCache.keys().next().value);
+	}
+	return proof;
 }
 function immediateFork(step) {
 	const side = step.before.turn;
@@ -10915,6 +11029,7 @@ function causeRank(motif, directGain = 0) {
 		"interference",
 		"attraction",
 		"fork",
+		"forkPreparation",
 		"pin",
 		"skewer",
 		"trappedPiece",
@@ -10966,6 +11081,21 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		settled = -VALUE.king;
 	}
 	const candidates = [];
+	const forkPreparation = !mate && !verifiedFork(steps[0]) ? proveCheckingForkPreparation(steps[0]) : null;
+	if (forkPreparation) {
+		const fork = forkPreparation.branches.find((branch) => branch.kind === "fork");
+		const block = forkPreparation.branches.find((branch) => branch.kind === "block");
+		candidates.push({
+			id: "forkPreparation",
+			label: "Fork Preparation",
+			source: proposals[0]?.source ?? "available",
+			confidence: "high",
+			ply: 1,
+			moveUci: steps[0].uci,
+			value: forkPreparation.gain,
+			evidence: `${steps[0].san} prepares a checking fork. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}.${block ? ` Blocking with ${block.reply} instead allows ${block.answer}, winning the blocking piece.` : ""} All ${forkPreparation.branches.length} legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.`
+		});
+	}
 	if (checkingMate) candidates.push({
 		id: `mateIn${checkingMate.maxMoves}`,
 		label: "Forcing Mate",
@@ -11395,6 +11525,12 @@ function materialLesson(steps, motif) {
 			targets = proof.extended ? [...proof.targets, step.move.to] : [proof.target];
 			gain = proof.gain;
 		}
+	} else if (motif.id === "forkPreparation") {
+		const proof = proveCheckingForkPreparation(step);
+		if (proof) {
+			targets = proof.targets;
+			gain = proof.gain;
+		}
 	} else if (motif.id === "fork") {
 		targets = winningTargets(step.after, step.move.to, step.before.turn);
 		gain = targets.length >= 2 ? materialThreatGain(step, targets, [step.move.to]) : null;
@@ -11556,7 +11692,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 22;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 23;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -11892,6 +12028,7 @@ function toMotifEvidence(detailInput, source, sanLineInput) {
 	});
 }
 var IMPORTANT_TACTICAL_THEME_IDS = new Set([
+	"forkPreparation",
 	"tacticalPreparation",
 	"fork",
 	"pin",
