@@ -325,10 +325,10 @@
       "expectedSource": "allowed",
       "primary": "discoveredAttack",
       "source": "allowed",
-      "comparison": "unproved",
+      "comparison": "prevented",
       "secondary": null,
       "secondarySource": null,
-      "explanation": "The opponent has this tactic in the analysed position: Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including the defender exchange and up to two checking counterattacks; recaptures and exposed attacking pieces are included. The comparison has not established whether the better move prevents or reduces it, so this tactic alone is not a verified explanation of the mistake."
+      "explanation": "Your move allowed this tactic: Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including the defender exchange and up to two checking counterattacks; recaptures and exposed attacking pieces are included. After Nh4, Ne5 no longer uncovers an attack on an enemy piece. Qb3 answers the remaining immediate threats; legal captures, a defender exchange and checking forks do not force a local material gain. This prevents this discovered-attack mechanism, not every possible later combination."
     },
     {
       "name": "Taking a pawn misses the promotion-backed knight fork",

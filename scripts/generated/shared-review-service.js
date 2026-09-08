@@ -12179,6 +12179,12 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 		if (!alternative) {
 			comparison = "prevented";
 			comparisonEvidence = `${bestSan} makes the immediate reply ${step.san} illegal.`;
+		} else if (motif.id === "discoveredAttack" && !step.capture && !step.after.isCheck() && revealedRays(step).length > 0 && revealedRays(alternative).length === 0) {
+			const defence = quietMaterialDefence(alternative);
+			if (defence) {
+				comparison = "prevented";
+				comparisonEvidence = `After ${bestSan}, ${alternative.san} no longer uncovers an attack on an enemy piece. ${defence} answers the remaining immediate threats; legal captures, a defender exchange and checking forks do not force a local material gain. This prevents this discovered-attack mechanism, not every possible later combination.`;
+			}
 		} else if (motif.id === "promotionCombination") if (!alternative.capture) {
 			comparison = "prevented";
 			comparisonEvidence = `After ${bestSan}, ${alternative.san} no longer captures the promotion-path defender.`;
@@ -12281,6 +12287,74 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 			comparisonEvidence
 		} : motif;
 	});
+}
+/** Positive quiet defence to immediate material threats. Enumerate captures
+* through a defender exchange, with settled exchange leaves; checking forks
+* must have an explicit non-checking material refutation. Other checks abstain.
+* The caller must independently establish that the original mechanism vanished. */
+function quietMaterialDefence(root, nodeLimit = 8192) {
+	if (!Number.isFinite(nodeLimit) || nodeLimit <= 0 || root.capture || root.move.promotion || root.after.isCheck() || root.after.isEnd()) return null;
+	let nodes = nodeLimit;
+	const visit = (pos, move) => {
+		if (--nodes < 0) throw new Error("Quiet defence budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const delta = (pos, move) => capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+	const safe = (pos, balance, exchanges) => {
+		if (pos.isEnd() || balance >= 100) return false;
+		for (const move of legalMoves(pos)) {
+			const next = visit(pos, move);
+			if (next.isEnd()) return false;
+			const capture = delta(pos, move);
+			if (!capture && !next.isCheck()) continue;
+			if (!capture) {
+				if (balance > 0) return false;
+				const targets = winningTargets(next, move.to, pos.turn);
+				if (targets.length < 2 || !targets.some((sq) => next.board.get(sq)?.role === "king")) return false;
+				const proof = materialThreatProof({
+					before: pos,
+					after: next,
+					move,
+					uci: makeUci(move),
+					san: makeSan(pos, move),
+					capture: 0,
+					balance: 0
+				}, targets, [move.to]);
+				if (proof.kind !== "refuted" || proof.checking) return false;
+				continue;
+			}
+			if (!exchanges) {
+				const gain = tacticalExchangeGain(pos, move);
+				if (gain <= -VALUE.king || balance + gain >= 100) return false;
+				continue;
+			}
+			let answered = false;
+			for (const recapture of legalMoves(next)) {
+				if (recapture.to !== move.to || !capturedValue(next, recapture)) continue;
+				const after = visit(next, recapture);
+				if (after.isCheck()) continue;
+				if (safe(after, balance + capture - delta(next, recapture), exchanges - 1)) {
+					answered = true;
+					break;
+				}
+			}
+			if (!answered) return false;
+		}
+		return true;
+	};
+	try {
+		for (const move of legalMoves(root.after)) {
+			if (capturedValue(root.after, move) || move.promotion) continue;
+			const next = visit(root.after, move);
+			if (next.isCheck() || next.isEnd()) continue;
+			if (safe(next, 0, 2)) return makeSan(root.after, move);
+		}
+	} catch {
+		return null;
+	}
+	return null;
 }
 /** Refute a formerly checking move by capturing its now-exposed attacker.
 * Check every immediate reply; a countercheck needs a legal king flight with
@@ -12397,7 +12471,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 33;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 34;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

@@ -493,6 +493,52 @@ async function analyse(engine: string, fen: string, searchMove?: string) {
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
     test.skipIf(!engine || !existsSync(engine))(
+        "verify the quiet queen defence to the overloaded discovery with fresh searches",
+        async () => {
+            const fen = "2kr1br1/pp1n1p2/2p2p1p/q6b/2BpN3/P2Q1N1P/1PP2PP1/R3R1K1 w - - 0 15";
+            const reached = (line: string[]) =>
+                makeFen(replayTacticalLine(fen, line).at(-1)!.after.toSetup());
+            const actual = reached(["f3d4", "d7e5"]);
+            const alternative = reached(["f3h4", "d7e5"]);
+            const safe = [...(await analyse(engine, alternative, "d3b3")).values()][0];
+            const badQueenEscape = [...(await analyse(engine, alternative, "d3c3")).values()][0];
+            const exposedKnight = [...(await analyse(engine, actual, "d3b3")).values()][0];
+            expect(safe.pvSan[0]).toBe("Qb3");
+            expect(safe.cp).toBeGreaterThan(-100);
+            expect(safe.cp!).toBeGreaterThan(badQueenEscape.cp! + 100);
+            expect(safe.cp!).toBeGreaterThan(exposedKnight.cp! + 100);
+            const classification = classifyMistakeReviewMotifs({
+                fen,
+                bestMoveUci: "f3h4",
+                playedMoveUci: "f3d4",
+                pvUci: ["f3h4"],
+                refutationUci: ["d7e5"],
+            });
+            expect(classification.allowedMotifs[0]).toMatchObject({
+                id: "discoveredAttack",
+                comparison: "prevented",
+            });
+            if (process.env.TACTICAL_DISCOVERY_DEFENCE_REPORT)
+                writeFileSync(
+                    process.env.TACTICAL_DISCOVERY_DEFENCE_REPORT,
+                    JSON.stringify(
+                        {
+                            fen,
+                            actual,
+                            alternative,
+                            safe,
+                            badQueenEscape,
+                            exposedKnight,
+                            classification,
+                        },
+                        null,
+                        2,
+                    ),
+                );
+        },
+        60000,
+    );
+    test.skipIf(!engine || !existsSync(engine))(
         "verify the Re2 checking attack and Kc1 capture defence with fresh searches",
         async () => {
             const fen = "7k/1ppQ3p/p2b2p1/3p4/8/2P2q1P/PP6/3KR3 w - - 2 40";
@@ -1466,6 +1512,7 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     played: "f3d4",
                     source: "allowed",
                     primary: "discoveredAttack",
+                    comparison: "prevented",
                     why: "Nxd4 places a knight on the rook's blocked file; Ne5 reveals that attack while attacking the queen and bishop, and Qc3 is met by Qxc3.",
                 },
                 {

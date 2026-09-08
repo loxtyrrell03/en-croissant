@@ -1513,6 +1513,62 @@ fresh branch test and existing 32-case fresh before/after causal test pass.
 Targeted lint passes; TypeScript retains only the unrelated OTB number/bigint
 fixture error.
 
+## Adapter 34: defend the remaining threats after removing a discovery
+
+The real Nxd4/Ne5 comparison now has a concrete defence instead of an unproved
+causal label. Nxd4 places the knight on the d-file, where Ne5 uncovers Rd8's
+attack while also attacking Qd3 and Bc4. Nh4 leaves the d4 pawn in place and
+keeps the knight off that ray. After Ne5, Qb3 preserves the queen's defence of
+Bc4; Nxc4 Qxc4 no longer permits Rxd4. Nh4 also provides Nxf3 against Nf3+,
+and Qb3 can recapture on f3 if the bishop then takes the knight.
+
+Geometry alone is not used as proof. The new comparison requires the original
+quiet non-capturing discovery to exist and every revealed ray to disappear
+under the alternative. It then searches for a positive quiet defence to the
+remaining forcing moves: all legal captures through two recapture rounds,
+settled legal-exchange leaves, and checking forks with explicit non-checking
+material refutations. Other checking continuations, missing recaptures,
+promotions that cannot be met, terminal states and the 8,192-operation budget
+abstain. Existing bounded exchange/fork leaves retain their separate bounds.
+This is a local causal witness, not exhaustive defence against arbitrary quiet
+combinations. Different-reply persistence checks remain in force.
+
+The distinction between Qb3 and Qc3 is important. After the actual Nxd4, Qc3
+allows Qxc3 bxc3 Nxc4: an equal queen exchange removes the bishop's defender.
+After Nh4 instead, Qc3 is even worse because the retained d4 pawn can take the
+queen with dxc3. Both mechanisms are explicitly replayed in the controls; they
+must not be confused or inferred from a label.
+
+Fresh depth-16, root-restricted Stockfish evidence in
+`discovery-defence-stockfish-18.json` scores Qb3 after Nh4/Ne5 at -19 cp for
+White, Qc3 there at -660 cp, and Qb3 after Nxd4/Ne5 at -388 cp. The classifier
+does not turn those full-position evaluations into its local material values.
+Fifteen dedicated regressions cover original/root-only lines, reflection,
+defender exchanges, Nf3+ recaptures, invalid/exhausted budgets, a changed reply
+that itself captures a knight, and an extra bishop attack that invalidates the
+claimed defence. The original forced discovery still has no certified escape.
+
+Reproduce the independent engine check in PowerShell:
+
+```powershell
+$env:TACTICAL_JUDGEMENT_ENGINE = '<Stockfish executable>'
+$env:TACTICAL_DISCOVERY_DEFENCE_REPORT = 'benchmarks/tactical-relevance/discovery-defence-stockfish-18.json'
+node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node -t 'verify the quiet queen defence'
+```
+
+The frozen 32-case primary themes and owners remain unchanged; Nxd4's comparison
+alone changes from unproved to prevented in `lesson-priority-review.json`.
+Adapter/live pipeline 34 invalidates stale classifications, and the shared review
+service is rebuilt. The earlier Re2 proof and worker import fix are retained.
+Remaining unproved real comparisons: Nd7 after g6 and Bh7+ after Qxd4.
+
+Verification passes 300 selected tests in 19 files (two opt-in skips), the new
+fresh branch check, all 32 fresh before/after causal judgements, targeted lint,
+shared-review-worker/8,854-module production builds, development HTTP worker
+loading and all 57 rebuilt-production-worker parity cases. TypeScript retains
+only the unrelated OTB number/bigint fixture error. No native ZIP, website,
+Outpost or service deployment, physical UI proof or general accuracy is claimed.
+
 ## What remains to establish
 
 These are relevance milestones, not completion of the broader tuning
