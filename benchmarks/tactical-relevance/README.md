@@ -350,6 +350,52 @@ fresh-engine scenarios now include exact f7 timeline assertions; this is not a
 larger independent accuracy sample. Long non-mating quiet combinations may need
 richer dependency evidence than the two-quiet-ply heuristic.
 
+## Interference must survive defensive choice
+
+Four new constructed positions in `interference-stockfish-18.json` were searched
+both unrestricted (three candidates) and with e7 explicitly selected, always
+with fresh Stockfish 18 depth-16 searches. The restricted search tests that
+candidate; it is not presented as the engine's best move.
+
+In `3k4/1r5q/3PP3/8/8/8/8/K6Q w - - 0 1`, e7+ interrupts Rb7's
+defence of Qh7. The old classifier labelled the later Qxh7 as the interference
+and accepted the same cooperative line even after removing the d6 pawn.
+The new classifier anchors interference to e7+ and checks every legal reply:
+king moves lose the queen, while Rxe7 dxe7+ Qxe7 loses a rook for two pawns.
+That is a 300 cp local material gain, not a guaranteed queen win. Fresh engine
+evaluation is 0: this is a drawing resource from a material deficit, not a
+winning position. Without d6, taking e7 safely refutes the supposed tactic.
+
+Moving the black king to c8 changes the judgement again. e7? now loses to
+Qg7+ and Qb2 mate, but d7+ is a different, genuine drawing interference.
+The position headline must retain that good candidate while rejecting e7.
+Finally, with Kb8/Rb7 facing Rb1, the rook is already pinned. Cutting its
+horizontal line does not explain the queen's vulnerability: Qxh7 exploits
+the existing pin. This exposed and corrected an incidental `Removing the
+Defender` headline that credited the queen's defence of the rook instead.
+
+Interference now requires a real pre-existing sliding defence that the move
+interrupts. Removing only the new blocker in a protection probe must worsen
+the named target's legal exchange; the probe is not a legal variation. Every
+real reply must then allow a positive, recapture-adjusted material gain on
+that target or the piece taking the blocker. Neither an unrelated loose piece
+nor a cooperative PV ending can certify this. Evidence and board arrows name
+the blocked defender, blocking square and target; later capture rows remain
+secondary. Single-ply and colour-reversed cases are covered.
+
+Removing a defender likewise no longer outranks a capture that already earns
+the full proved gain, and cannot borrow an unrelated line's mate flag as proof.
+Purely mating defender-removal and delayed/mating interference need additional
+causal proofs; this material verifier abstains on those unsupported cases.
+
+Eight new deterministic cases plus the four fresh-engine positions passed,
+alongside the existing 35 judgement scenarios. The new restricted-candidate
+classification times were 0.6–44.1 ms, excluding engine search. These are
+small constructed controls, not a broad accuracy or latency estimate. The
+169 focused tests, shared-review worker build and 8,851-module production build
+passed; whole-project type checking retains the unrelated OTB fixture mismatch.
+No running-app visual or hosting deployment proof was performed.
+
 Run in PowerShell with the configured Node runtime on PATH:
 
 ```powershell
@@ -359,6 +405,7 @@ $env:TACTICAL_CAUSAL_REPORT = 'benchmarks/tactical-relevance/causal-stockfish-18
 $env:TACTICAL_QUIET_REPORT = 'benchmarks/tactical-relevance/quiet-stockfish-18.json'
 $env:TACTICAL_MATERIAL_REPORT = 'benchmarks/tactical-relevance/material-stockfish-18.json'
 $env:TACTICAL_DISCOVERED_REPORT = 'benchmarks/tactical-relevance/discovered-stockfish-18.json'
+$env:TACTICAL_INTERFERENCE_REPORT = 'benchmarks/tactical-relevance/interference-stockfish-18.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node
 ```
 

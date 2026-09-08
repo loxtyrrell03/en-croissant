@@ -389,7 +389,8 @@ function verifiedFork(step: TacticalReplayStep) {
 function hasConcreteThreat(step: TacticalReplayStep) {
     return (
         winningTargets(step.after, step.move.to, step.before.turn).length > 0 ||
-        Boolean(discoveredEvidence([step], "available"))
+        Boolean(discoveredEvidence([step], "available")) ||
+        Boolean(interferenceProof(step, "available"))
     );
 }
 
@@ -868,11 +869,24 @@ export function tacticalBoardEvidence(
 ) {
     if (
         !motif?.ply ||
-        !["fork", "pin", "skewer", "deflection", ...DISCOVERED_THEMES].includes(motif.id)
+        !["fork", "pin", "skewer", "deflection", "interference", ...DISCOVERED_THEMES].includes(
+            motif.id,
+        )
     )
         return null;
     const step = replayTacticalLine(fen, line.slice(0, motif.ply))[motif.ply - 1];
     if (!step) return null;
+    if (motif.id === "interference") {
+        const proof = interferenceProof(step, motif.source);
+        if (!proof) return null;
+        return {
+            square: makeSquare(step.move.to),
+            arrows: [
+                { from: makeSquare(proof.defender), to: makeSquare(step.move.to) },
+                { from: makeSquare(proof.capturer), to: makeSquare(proof.target) },
+            ],
+        };
+    }
     if (motif.id === "deflection") {
         const suffix = replayTacticalLine(fen, line).slice(motif.ply - 1);
         if (!deflectionEvidence(suffix, motif.source)) return null;
@@ -969,6 +983,10 @@ function capturedDefenderProof(
         });
         const gain = capturers.length ? materialThreatGain(step, [target], capturers) : null;
         if (gain === null) continue;
+        // Winning a loose queen may incidentally remove a rook's defender.
+        // That relationship is not the cause if the capture already earns
+        // at least the entire proved gain without exploiting the rook.
+        if (tacticalExchangeGain(step.before, step.move) >= gain) continue;
         return {
             target,
             capturers,
@@ -1057,6 +1075,65 @@ function deflectionEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
         evidence: `${bait.san} draws the ${defender.role} from ${makeSquare(reply.move.from)} to ${makeSquare(reply.move.to)}, removing its protection of the ${victim.role} on ${makeSquare(payoff.move.to)}. In this line, ${reply.san} ${payoff.san} wins that target. Every legal defence concedes material or immediate mate.`,
     };
     return motif;
+}
+
+/** Cutting a defensive ray is a candidate, not proof. Removing only the
+ * blocker is a protection probe (not a legal variation): the legal exchange
+ * on the named target must improve. Then test EVERY real defence, including
+ * capturing the blocker, using only that target and the blocking square. */
+function interferenceProof(step: TacticalReplayStep, source: TacticalMotifEvidence["source"]) {
+    const side = step.before.turn;
+    const enemy = opposite(side);
+    // An occupied landing square already interrupted this defensive ray.
+    if (step.before.board.get(step.move.to)) return null;
+    const probe = withTurn(step.after, side);
+    const unblocked = probe.clone();
+    unblocked.board.take(step.move.to);
+    for (const defender of step.before.board[enemy]) {
+        const piece = step.before.board.get(defender)!;
+        if (!["rook", "bishop", "queen"].includes(piece.role)) continue;
+        const targets = attacks(piece, defender, step.before.board.occupied).intersect(
+            step.before.board[enemy],
+        );
+        for (const target of targets) {
+            const victim = step.after.board.get(target)!;
+            if (victim.role === "king" || VALUE[victim.role] < 320) continue;
+            if (!between(defender, target).has(step.move.to)) continue;
+            if (attacks(piece, defender, step.after.board.occupied).has(target)) continue;
+            const capturer = [...step.after.board[side]].find((from) => {
+                if (from === step.move.to) return false;
+                const blockedGain = tacticalExchangeGain(probe, { from, to: target });
+                const restoredGain = tacticalExchangeGain(unblocked, { from, to: target });
+                return (
+                    restoredGain > -VALUE.king &&
+                    blockedGain >= 100 &&
+                    blockedGain - restoredGain >= 100
+                );
+            });
+            if (capturer === undefined) continue;
+            const proof = materialThreatProof(
+                step,
+                [target],
+                [...step.after.board[side]],
+                [step.move.to],
+            );
+            if (proof.kind !== "proven") continue;
+            if (step.capture && tacticalExchangeGain(step.before, step.move) >= proof.gain)
+                continue;
+            const motif: TacticalMotifEvidence = {
+                id: "interference",
+                label: "Interference",
+                source,
+                confidence: "high",
+                ply: 1,
+                moveUci: step.uci,
+                value: proof.gain,
+                evidence: `${step.san} blocks the ${piece.role} on ${makeSquare(defender)} from defending the ${victim.role} on ${makeSquare(target)}${step.after.isCheck() ? ", with check" : ""}. Every legal reply permits a profitable capture of that target or of a piece taking the blocker on ${makeSquare(step.move.to)}; legal recaptures are included.`,
+            };
+            return { motif, defender, target, capturer };
+        }
+    }
+    return null;
 }
 
 export function hasTacticalStart(fen: string, line: string[]) {
@@ -1155,6 +1232,8 @@ export function auditTacticalMotifs(
             proposals[0]?.source ?? "available",
         );
         if (deflection) candidates.push({ ...deflection, ply: index + 1 });
+        const interference = interferenceProof(episode[index], proposals[0]?.source ?? "available");
+        if (interference) candidates.push({ ...interference.motif, ply: index + 1 });
     }
     // Only the engine-evaluated root may admit a check-tempo threat; never
     // turn unevaluated later PV rows into speculative tactical headlines.
@@ -1213,7 +1292,11 @@ export function auditTacticalMotifs(
     for (let proposal of proposals) {
         // These labels are reconstructed from the actual vacated blocker and
         // proved continuation, not inherited PV-level anchors or gain totals.
-        if (DISCOVERED_THEMES.has(proposal.id) || proposal.id === "deflection") continue;
+        if (
+            DISCOVERED_THEMES.has(proposal.id) ||
+            ["deflection", "interference"].includes(proposal.id)
+        )
+            continue;
         if (proposal.id === "promotion" || proposal.id === "underPromotion") {
             const index = episode.findIndex(
                 (s) =>
@@ -1288,7 +1371,7 @@ export function auditTacticalMotifs(
                 (pinnedRecapturer(step) && settled >= 100) ||
                 rayMaterialEvidence(step, proposal.source).some((m) => m.id === "pin");
         else if (proposal.id === "capturingDefender")
-            sound = mate || Boolean(capturedDefenderEvidence(step, proposal.source));
+            sound = Boolean(capturedDefenderEvidence(step, proposal.source));
         else if (proposal.id === "attackingF2F7")
             sound = step.capture > 0 && tacticalExchangeGain(step.before, step.move) >= 100;
         else if (proposal.id === "hangingPiece")

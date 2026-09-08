@@ -265,7 +265,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-11",
+      "motifClassifierVersion": "site-55.adapter-12",
       "allowedTimeline": [
         {
           "id": "discoveredAttack",
@@ -313,7 +313,7 @@
         "comparisonEvidence": "g6 makes the immediate reply Bxh7+ illegal."
       }
     },
-    "classificationMs": 12.988000000001193
+    "classificationMs": 12.586499999997613
   },
   {
     "name": "A different reply wins the same queen after the better move",
@@ -643,7 +643,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-11",
+      "motifClassifierVersion": "site-55.adapter-12",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -705,7 +705,7 @@
         "comparisonEvidence": "Even after Kg7, Rf5+ still forces at least the same net material gain on the queen on f8. The better move changes the continuation, not the existence of that material loss."
       }
     },
-    "classificationMs": 12.657899999998335
+    "classificationMs": 11.516799999997602
   },
   {
     "name": "Ignored double-check mate instead of making a king escape",
@@ -939,7 +939,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-11",
+      "motifClassifierVersion": "site-55.adapter-12",
       "allowedTimeline": [
         {
           "id": "doubleCheck",
@@ -1003,7 +1003,7 @@
         "comparisonEvidence": "Rg8+ makes the immediate reply Bb5# illegal."
       }
     },
-    "classificationMs": 22.90309999999954
+    "classificationMs": 25.00669999999809
   },
   {
     "name": "Failed to unpin the knight",
@@ -1257,7 +1257,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-11",
+      "motifClassifierVersion": "site-55.adapter-12",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -1305,7 +1305,7 @@
         "comparisonEvidence": "After Kd7, Kxd6 answers d6; a profitable immediate follow-up capture of the knight on e7 is no longer forced."
       }
     },
-    "classificationMs": 17.731599999999162
+    "classificationMs": 25.363100000002305
   },
   {
     "name": "Allowed a king-queen skewer instead of preserving the queen",
@@ -1569,7 +1569,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-11",
+      "motifClassifierVersion": "site-55.adapter-12",
       "allowedTimeline": [
         {
           "id": "skewer",
@@ -1617,7 +1617,7 @@
         "comparisonEvidence": "After Kf4, Qxd3 answers Bd3; a profitable immediate follow-up capture of the queen on h7 is no longer forced."
       }
     },
-    "classificationMs": 6.385299999994459
+    "classificationMs": 5.840400000000955
   },
   {
     "name": "Allowed checking defender removal and lost the queen",
@@ -1913,7 +1913,7 @@
           "value": 500
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-11",
+      "motifClassifierVersion": "site-55.adapter-12",
       "allowedTimeline": [
         {
           "id": "capturingDefender",
@@ -1975,7 +1975,7 @@
         "comparisonEvidence": "Qxd1+ makes the immediate reply gxf6+ illegal."
       }
     },
-    "classificationMs": 21.98240000000078
+    "classificationMs": 19.944100000000617
   },
   {
     "name": "Missed quiet mate while leaving the queen attacked",
@@ -2193,7 +2193,7 @@
           "value": 10000
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-11",
+      "motifClassifierVersion": "site-55.adapter-12",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -2277,7 +2277,7 @@
         "value": 10000
       }
     },
-    "classificationMs": 10.414700000001176
+    "classificationMs": 6.74369999999908
   },
   {
     "name": "b6 permits the f7 fork",
@@ -2600,7 +2600,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-11",
+      "motifClassifierVersion": "site-55.adapter-12",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -2674,7 +2674,7 @@
         "comparisonEvidence": "After O-O, Nxf7 no longer has two profitable fork targets."
       }
     },
-    "classificationMs": 64.80100000000675
+    "classificationMs": 64.66719999999623
   },
   {
     "name": "Missed queen while the knight is already attacked",
@@ -2966,7 +2966,7 @@
           "value": 900
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-11",
+      "motifClassifierVersion": "site-55.adapter-12",
       "missedTimeline": [
         {
           "id": "hangingPiece",
@@ -2998,7 +2998,7 @@
         "value": 900
       }
     },
-    "classificationMs": 15.140500000001339
+    "classificationMs": 15.152399999999034
   },
   {
     "name": "Failed to create a back-rank escape",
@@ -3200,7 +3200,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-11",
+      "motifClassifierVersion": "site-55.adapter-12",
       "allowedTimeline": [
         {
           "id": "backRankMate",
@@ -3236,6 +3236,6 @@
         "comparisonEvidence": "After g5, Kg7 is a legal answer to Re8+; it is no longer mate."
       }
     },
-    "classificationMs": 1.7915999999968335
+    "classificationMs": 1.653599999997823
   }
 ]

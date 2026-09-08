@@ -9643,7 +9643,7 @@ function verifiedFork(step) {
 	});
 }
 function hasConcreteThreat(step) {
-	return winningTargets(step.after, step.move.to, step.before.turn).length > 0 || Boolean(discoveredEvidence([step], "available"));
+	return winningTargets(step.after, step.move.to, step.before.turn).length > 0 || Boolean(discoveredEvidence([step], "available")) || Boolean(interferenceProof(step, "available"));
 }
 var DISCOVERED_THEMES = new Set([
 	"discoveredAttack",
@@ -9997,6 +9997,7 @@ function capturedDefenderProof(step, source) {
 		});
 		const gain = capturers.length ? materialThreatGain(step, [target], capturers) : null;
 		if (gain === null) continue;
+		if (tacticalExchangeGain(step.before, step.move) >= gain) continue;
 		return {
 			target,
 			capturers,
@@ -10047,6 +10048,65 @@ function deflectionEvidence(steps, source) {
 		value: proof.gain,
 		evidence: `${bait.san} draws the ${defender.role} from ${makeSquare(reply.move.from)} to ${makeSquare(reply.move.to)}, removing its protection of the ${victim.role} on ${makeSquare(payoff.move.to)}. In this line, ${reply.san} ${payoff.san} wins that target. Every legal defence concedes material or immediate mate.`
 	};
+}
+/** Cutting a defensive ray is a candidate, not proof. Removing only the
+* blocker is a protection probe (not a legal variation): the legal exchange
+* on the named target must improve. Then test EVERY real defence, including
+* capturing the blocker, using only that target and the blocking square. */
+function interferenceProof(step, source) {
+	const side = step.before.turn;
+	const enemy = opposite(side);
+	if (step.before.board.get(step.move.to)) return null;
+	const probe = withTurn(step.after, side);
+	const unblocked = probe.clone();
+	unblocked.board.take(step.move.to);
+	for (const defender of step.before.board[enemy]) {
+		const piece = step.before.board.get(defender);
+		if (![
+			"rook",
+			"bishop",
+			"queen"
+		].includes(piece.role)) continue;
+		const targets = attacks(piece, defender, step.before.board.occupied).intersect(step.before.board[enemy]);
+		for (const target of targets) {
+			const victim = step.after.board.get(target);
+			if (victim.role === "king" || VALUE[victim.role] < 320) continue;
+			if (!between(defender, target).has(step.move.to)) continue;
+			if (attacks(piece, defender, step.after.board.occupied).has(target)) continue;
+			const capturer = [...step.after.board[side]].find((from) => {
+				if (from === step.move.to) return false;
+				const blockedGain = tacticalExchangeGain(probe, {
+					from,
+					to: target
+				});
+				const restoredGain = tacticalExchangeGain(unblocked, {
+					from,
+					to: target
+				});
+				return restoredGain > -VALUE.king && blockedGain >= 100 && blockedGain - restoredGain >= 100;
+			});
+			if (capturer === void 0) continue;
+			const proof = materialThreatProof(step, [target], [...step.after.board[side]], [step.move.to]);
+			if (proof.kind !== "proven") continue;
+			if (step.capture && tacticalExchangeGain(step.before, step.move) >= proof.gain) continue;
+			return {
+				motif: {
+					id: "interference",
+					label: "Interference",
+					source,
+					confidence: "high",
+					ply: 1,
+					moveUci: step.uci,
+					value: proof.gain,
+					evidence: `${step.san} blocks the ${piece.role} on ${makeSquare(defender)} from defending the ${victim.role} on ${makeSquare(target)}${step.after.isCheck() ? ", with check" : ""}. Every legal reply permits a profitable capture of that target or of a piece taking the blocker on ${makeSquare(step.move.to)}; legal recaptures are included.`
+				},
+				defender,
+				target,
+				capturer
+			};
+		}
+	}
+	return null;
 }
 function hasTacticalStart(fen, line) {
 	const steps = replayTacticalLine(fen, line.slice(0, 5));
@@ -10105,6 +10165,11 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			...deflection,
 			ply: index + 1
 		});
+		const interference = interferenceProof(episode[index], proposals[0]?.source ?? "available");
+		if (interference) candidates.push({
+			...interference.motif,
+			ply: index + 1
+		});
 	}
 	const rayEvidence = rayMaterialEvidence(steps[0], proposals[0]?.source ?? "available", typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= -30);
 	candidates.push(...rayEvidence);
@@ -10143,7 +10208,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		}];
 	}
 	for (let proposal of proposals) {
-		if (DISCOVERED_THEMES.has(proposal.id) || proposal.id === "deflection") continue;
+		if (DISCOVERED_THEMES.has(proposal.id) || ["deflection", "interference"].includes(proposal.id)) continue;
 		if (proposal.id === "promotion" || proposal.id === "underPromotion") {
 			const index = episode.findIndex((s) => s.before.turn === attacker && s.move.promotion && (proposal.id !== "underPromotion" || s.move.promotion !== "queen"));
 			if (index < 0) continue;
@@ -10184,7 +10249,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		else if (proposal.id === "fork") sound = verifiedFork(step);
 		else if (proposal.id === "skewer") sound = mate || rayMaterialEvidence(step, proposal.source).some((m) => m.id === "skewer");
 		else if (proposal.id === "pin") sound = mate || pinnedRecapturer(step) && settled >= 100 || rayMaterialEvidence(step, proposal.source).some((m) => m.id === "pin");
-		else if (proposal.id === "capturingDefender") sound = mate || Boolean(capturedDefenderEvidence(step, proposal.source));
+		else if (proposal.id === "capturingDefender") sound = Boolean(capturedDefenderEvidence(step, proposal.source));
 		else if (proposal.id === "attackingF2F7") sound = step.capture > 0 && tacticalExchangeGain(step.before, step.move) >= 100;
 		else if (proposal.id === "hangingPiece") sound = step.capture >= 320 && tacticalExchangeGain(step.before, step.move) >= 100;
 		else if (proposal.id === "attacking_undefended_piece") sound = materialThreatGain(step, winningTargets(step.after, step.move.to, attacker), [step.move.to]) !== null;
@@ -10471,7 +10536,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 11;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 12;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

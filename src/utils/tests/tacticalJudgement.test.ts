@@ -138,6 +138,89 @@ async function analyse(engine: string, fen: string, searchMove?: string) {
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
     test.skipIf(!engine || !existsSync(engine))(
+        "judge interference against captures and quiet escapes",
+        async () => {
+            const examples = [
+                {
+                    name: "Checking pawn blocks a real queen defender",
+                    fen: "3k4/1r5q/3PP3/8/8/8/8/K6Q w - - 0 1",
+                    expected: "interference",
+                    primary: "interference",
+                    why: "e7+ cuts Rb7-Qh7. King moves lose the queen; Rxe7 dxe7 Qxe7 still loses rook for two pawns. The d6 pawn makes taking the blocker costly. This is a drawing resource from a material deficit, not proof of a winning position.",
+                },
+                {
+                    name: "Undefended blocker can simply be captured",
+                    fen: "3k4/1r5q/4P3/8/8/8/8/K6Q w - - 0 1",
+                    expected: null,
+                    primary: null,
+                    why: "A cooperative Kc8 Qxh7 line is misleading: Rxe7 safely removes the pawn and restores the queen's protection.",
+                },
+                {
+                    name: "Quiet block permits the queen to escape",
+                    fen: "2k5/1r5q/3PP3/8/8/8/8/K6Q w - - 0 1",
+                    expected: null,
+                    primary: "interference",
+                    why: "e7 without check loses to Qg7+ and Qb2 mate. The different move d7+ is a genuine drawing interference: Rxd7 exd7+ wins rook for two pawns.",
+                },
+                {
+                    name: "Pinned rook was not a legal queen defender",
+                    fen: "1k6/1r5q/3PP3/8/8/8/8/KR5Q w - - 0 1",
+                    expected: null,
+                    primary: "pin",
+                    why: "Rb7 is already pinned to Kb8 by Rb1. Cutting its horizontal ray does not cause the queen's vulnerability. Qxh7 exploits that pin; the queen's incidental defence of the rook is not the cause.",
+                },
+            ];
+            const report = [];
+            for (const item of examples) {
+                const unrestricted = [...(await analyse(engine, item.fen)).values()];
+                const candidate = [...(await analyse(engine, item.fen, "e6e7")).values()][0];
+                const started = performance.now();
+                const classification = classifyPositionTacticalMotifs({
+                    fen: item.fen,
+                    ...candidate,
+                    rootCp: candidate.cp,
+                });
+                const classificationMs = performance.now() - started;
+                const scan = buildLiveTacticalScan({
+                    fen: item.fen,
+                    ...unrestricted[0],
+                    engineName: "Stockfish",
+                    variations: unrestricted,
+                });
+                report.push({
+                    ...item,
+                    unrestricted,
+                    candidate,
+                    classification,
+                    classificationMs,
+                    positionHeadline: scan.motifs,
+                    positionCandidates: scan.variations.map((v) => ({
+                        moves: v.lineSan,
+                        motifs: v.motifs,
+                        timeline: v.timeline,
+                    })),
+                });
+            }
+            if (process.env.TACTICAL_INTERFERENCE_REPORT)
+                writeFileSync(
+                    process.env.TACTICAL_INTERFERENCE_REPORT,
+                    JSON.stringify(report, null, 2),
+                );
+            for (const item of report) {
+                expect({
+                    name: item.name,
+                    interference:
+                        item.classification.motifs.find((m) => m.id === "interference")?.id ?? null,
+                }).toEqual({ name: item.name, interference: item.expected });
+                expect({ name: item.name, primary: item.positionHeadline[0]?.id ?? null }).toEqual({
+                    name: item.name,
+                    primary: item.primary,
+                });
+            }
+        },
+        180000,
+    );
+    test.skipIf(!engine || !existsSync(engine))(
         "judge discovered threats against engine-selected defences",
         async () => {
             const examples = [
