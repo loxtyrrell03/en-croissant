@@ -9,6 +9,7 @@ import { buildLiveTacticalScan } from "@/utils/tacticalMotifs/liveTactics";
 import {
     buildMistakeReviewTacticalExplanation,
     classifyMistakeReviewMotifs,
+    classifyPositionTacticalMotifs,
 } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 
 // Deliberately judged as positions, not by agreement with puzzle tags. The
@@ -136,6 +137,72 @@ async function analyse(engine: string, fen: string, searchMove?: string) {
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(!engine || !existsSync(engine))(
+        "judge material mechanisms against engine defences",
+        async () => {
+            const examples = [
+                {
+                    name: "Exploit an absolute pin",
+                    fen: "4k3/4n3/8/3P4/2B5/8/8/4R1K1 w - - 0 1",
+                    move: "d5d6",
+                    expected: "pin",
+                },
+                {
+                    name: "Rook captures the pinning attacker's pawn",
+                    fen: "4k3/4n3/r7/3P4/2B5/8/8/4R1K1 w - - 0 1",
+                    move: "d5d6",
+                    expected: null,
+                },
+                {
+                    name: "King-queen skewer",
+                    fen: "8/7q/8/5k2/2B5/8/8/6K1 w - - 0 1",
+                    move: "c4d3",
+                    expected: "skewer",
+                },
+                {
+                    name: "Pawn interposes against the skewer",
+                    fen: "8/7q/8/4pk2/2B5/8/8/6K1 w - - 0 1",
+                    move: "c4d3",
+                    expected: null,
+                },
+                {
+                    name: "Remove the queen's defender with check",
+                    fen: "8/6k1/5n2/3qP1P1/8/8/8/3R2K1 w - - 0 1",
+                    move: "e5f6",
+                    expected: "capturingDefender",
+                },
+            ];
+            const report = [];
+            for (const item of examples) {
+                const unrestricted = [...(await analyse(engine, item.fen)).values()];
+                const candidate = [...(await analyse(engine, item.fen, item.move)).values()][0];
+                const start = performance.now();
+                const classification = classifyPositionTacticalMotifs({
+                    fen: item.fen,
+                    ...candidate,
+                });
+                report.push({
+                    ...item,
+                    unrestricted,
+                    candidate,
+                    classification,
+                    classificationMs: performance.now() - start,
+                });
+                expect(classification.motifs[0]?.id ?? null).toBe(item.expected);
+                for (const motif of classification.motifs.filter(
+                    (m) => m.id === "promotion" || m.id === "underPromotion",
+                )) {
+                    expect(motif.moveUci).toMatch(/[qrbn]$/);
+                }
+            }
+            if (process.env.TACTICAL_MATERIAL_REPORT)
+                writeFileSync(
+                    process.env.TACTICAL_MATERIAL_REPORT,
+                    JSON.stringify(report, null, 2),
+                );
+        },
+        180000,
+    );
     test.skipIf(!engine || !existsSync(engine))(
         "inspect quiet mating preparations",
         async () => {

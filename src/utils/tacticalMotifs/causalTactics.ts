@@ -357,6 +357,245 @@ function hasConcreteThreat(step: TacticalReplayStep) {
     return winningTargets(step.after, step.move.to, step.before.turn).length > 0;
 }
 
+type RayTactic = { kind: "pin" | "skewer"; pinner: Square; front: Square; rear: Square };
+
+function rayTactics(pos: Chess, side: Color): RayTactic[] {
+    const rays: RayTactic[] = [];
+    for (const pinner of pos.board[side]) {
+        const role = pos.board.get(pinner)!.role;
+        if (!["bishop", "rook", "queen"].includes(role)) continue;
+        for (const [dx, dy] of [
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1],
+            [1, 1],
+            [1, -1],
+            [-1, 1],
+            [-1, -1],
+        ]) {
+            if (role === "bishop" && (!dx || !dy)) continue;
+            if (role === "rook" && dx && dy) continue;
+            const blockers: Square[] = [];
+            for (
+                let x = (pinner % 8) + dx, y = Math.floor(pinner / 8) + dy;
+                x >= 0 && x < 8 && y >= 0 && y < 8;
+                x += dx, y += dy
+            ) {
+                const sq = y * 8 + x;
+                if (pos.board.get(sq)) blockers.push(sq);
+                if (blockers.length === 2) break;
+            }
+            if (blockers.length !== 2) continue;
+            const [front, rear] = blockers;
+            const a = pos.board.get(front)!,
+                b = pos.board.get(rear)!;
+            if (a.color === side || b.color === side || VALUE[a.role] === VALUE[b.role]) continue;
+            rays.push({
+                kind: VALUE[a.role] < VALUE[b.role] ? "pin" : "skewer",
+                pinner,
+                front,
+                rear,
+            });
+        }
+    }
+    return rays;
+}
+
+/** Prove that the named targets, not an unrelated loose piece elsewhere, yield
+ * a gain after every legal defence. Track a target when it moves, consider
+ * captures/checks/interpositions, and settle the selected capture legally. */
+const materialProofCache = new Map<string, number | null>();
+function materialThreatGain(step: TacticalReplayStep, targets: Square[], capturers: Square[]) {
+    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}`;
+    if (materialProofCache.has(key)) return materialProofCache.get(key)!;
+    const proof = computeMaterialThreatGain(step, targets, capturers);
+    materialProofCache.set(key, proof);
+    if (materialProofCache.size > 256)
+        materialProofCache.delete(materialProofCache.keys().next().value!);
+    return proof;
+}
+
+function computeMaterialThreatGain(
+    step: TacticalReplayStep,
+    targets: Square[],
+    capturers: Square[],
+) {
+    const replies = legalMoves(step.after);
+    if (!replies.length) return null;
+    let minimum = Infinity;
+    for (const reply of replies) {
+        const next = step.after.clone();
+        next.play(reply);
+        let best = -VALUE.king;
+        // Capturing the attacking piece with the skewered queen may itself
+        // lose the queen to a supporter. Consider that legal recapture too.
+        const availableCapturers =
+            (capturedValue(step.after, reply) && capturers.includes(reply.to)) || next.isCheck()
+                ? [...new Set([...capturers, ...next.board[step.before.turn]])]
+                : capturers;
+        for (const original of targets) {
+            const victim = step.after.board.get(original);
+            if (!victim || victim.role === "king") continue;
+            const target = reply.from === original ? reply.to : original;
+            if (next.board.get(target)?.color !== opposite(step.before.turn)) continue;
+            for (const from of availableCapturers) {
+                if (next.board.get(from)?.color !== step.before.turn) continue;
+                const move: NormalMove = { from, to: target };
+                if (next.board.get(from)?.role === "pawn" && (target < 8 || target >= 56))
+                    move.promotion = "queen";
+                best = Math.max(
+                    best,
+                    step.capture +
+                        (step.move.promotion ? VALUE[step.move.promotion] - VALUE.pawn : 0) -
+                        capturedValue(step.after, reply) -
+                        (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0) +
+                        tacticalExchangeGain(next, move),
+                );
+            }
+        }
+        if (best < 100) return null;
+        minimum = Math.min(minimum, best);
+    }
+    return minimum;
+}
+
+function relevantRayTactics(step: TacticalReplayStep) {
+    const before = rayTactics(step.before, step.before.turn);
+    const moved = step.after.board.get(step.move.to)!;
+    return rayTactics(step.after, step.before.turn).filter((ray) => {
+        const created = !before.some(
+            (r) => r.pinner === ray.pinner && r.front === ray.front && r.rear === ray.rear,
+        );
+        return (
+            created ||
+            ray.pinner === step.move.to ||
+            attacks(moved, step.move.to, step.after.board.occupied).has(ray.front)
+        );
+    });
+}
+
+function rayMaterialEvidence(step: TacticalReplayStep, source: TacticalMotifEvidence["source"]) {
+    if (
+        step.capture >= 320 &&
+        tacticalExchangeGain(step.before, step.move) >= 100 &&
+        !pinnedRecapturer(step)
+    )
+        return [];
+    const motifs: TacticalMotifEvidence[] = [];
+    for (const ray of relevantRayTactics(step)) {
+        const gain = materialThreatGain(step, [ray.front, ray.rear], [ray.pinner, step.move.to]);
+        if (gain === null) continue;
+        const pinner = step.after.board.get(ray.pinner)!;
+        const front = step.after.board.get(ray.front)!;
+        const rear = step.after.board.get(ray.rear)!;
+        motifs.push({
+            id: ray.kind,
+            label: ray.kind === "pin" ? "Pin" : "Skewer",
+            source,
+            confidence: "high",
+            ply: 1,
+            moveUci: step.uci,
+            value: gain,
+            evidence:
+                ray.kind === "pin"
+                    ? `${step.san} exploits the ${front.role} on ${makeSquare(ray.front)}, pinned to the ${rear.role} on ${makeSquare(ray.rear)} by the ${pinner.role} on ${makeSquare(ray.pinner)}. No legal reply avoids material loss in the immediate exchange.`
+                    : `${step.san} skewers the ${front.role} on ${makeSquare(ray.front)} and the ${rear.role} on ${makeSquare(ray.rear)}. No legal reply saves the rear target without conceding material.`,
+        });
+    }
+    return motifs;
+}
+
+/** Board relationships come from the same legal geometry as the classifier,
+ * never by parsing explanatory prose or pretending a PV reply is mandatory. */
+export function tacticalBoardEvidence(
+    fen: string,
+    line: string[],
+    motif: TacticalMotifEvidence | undefined,
+) {
+    if (!motif?.ply || !["fork", "pin", "skewer"].includes(motif.id)) return null;
+    const step = replayTacticalLine(fen, line.slice(0, motif.ply))[motif.ply - 1];
+    if (!step) return null;
+    if (motif.id === "fork" && verifiedFork(step))
+        return {
+            square: makeSquare(step.move.to),
+            arrows: winningTargets(step.after, step.move.to, step.before.turn).map((to) => ({
+                from: makeSquare(step.move.to),
+                to: makeSquare(to),
+            })),
+        };
+    const ray =
+        relevantRayTactics(step).find(
+            (r) =>
+                r.kind === motif.id &&
+                materialThreatGain(step, [r.front, r.rear], [r.pinner, step.move.to]) !== null,
+        ) ??
+        rayTactics(step.after, step.before.turn).find(
+            (r) =>
+                r.kind === "pin" &&
+                motif.id === "pin" &&
+                step.after.ctx().blockers.has(r.front) &&
+                attacks(step.after.board.get(r.front)!, r.front, step.after.board.occupied).has(
+                    step.move.to,
+                ),
+        );
+    if (!ray) return null;
+    return {
+        square: makeSquare(motif.id === "pin" ? ray.front : step.move.to),
+        arrows: [{ from: makeSquare(ray.pinner), to: makeSquare(ray.rear) }],
+    };
+}
+
+function pinnedRecapturer(step: TacticalReplayStep) {
+    const ctx = step.after.ctx();
+    return [...step.after.board[step.after.turn]].some((from) => {
+        const piece = step.after.board.get(from)!;
+        return (
+            ctx.blockers.has(from) &&
+            attacks(piece, from, step.after.board.occupied).has(step.move.to) &&
+            !step.after.isLegal({ from, to: step.move.to })
+        );
+    });
+}
+
+function capturedDefenderEvidence(
+    step: TacticalReplayStep,
+    source: TacticalMotifEvidence["source"],
+): TacticalMotifEvidence | null {
+    const defender = step.before.board.get(step.move.to);
+    if (!defender || defender.color === step.before.turn || defender.role === "king") return null;
+    const targets = attacks(defender, step.move.to, step.before.board.occupied).intersect(
+        step.before.board[defender.color],
+    );
+    const afterProbe = withTurn(step.after, step.before.turn);
+    for (const target of targets) {
+        const victim = step.after.board.get(target);
+        if (!victim || victim.role === "king" || VALUE[victim.role] < 320) continue;
+        const capturers = [...step.after.board[step.before.turn]].filter((from) => {
+            if (from === step.move.to || step.before.board.get(from)?.color !== step.before.turn)
+                return false;
+            const oldGain = tacticalExchangeGain(step.before, { from, to: target });
+            const newGain = tacticalExchangeGain(afterProbe, { from, to: target });
+            // A geometrical defender that was already pinned was not saving
+            // the target. Removing it must improve the legal exchange itself.
+            return oldGain > -VALUE.king && newGain - oldGain >= 100;
+        });
+        const gain = capturers.length ? materialThreatGain(step, [target], capturers) : null;
+        if (gain === null) continue;
+        return {
+            id: "capturingDefender",
+            label: "Removing the Defender",
+            source,
+            confidence: "high",
+            ply: 1,
+            moveUci: step.uci,
+            value: gain,
+            evidence: `${step.san} removes the ${defender.role} on ${makeSquare(step.move.to)} that defended the ${victim.role} on ${makeSquare(target)}${step.after.isCheck() ? ", with check" : ""}. Every legal reply allows a profitable capture of that target.`,
+        };
+    }
+    return null;
+}
+
 export function hasTacticalStart(fen: string, line: string[]) {
     const steps = replayTacticalLine(fen, line.slice(0, 5));
     const root = steps[0];
@@ -441,6 +680,13 @@ export function auditTacticalMotifs(
         settled = -VALUE.king;
     }
     const candidates: TacticalMotifEvidence[] = [];
+    const rayEvidence = rayMaterialEvidence(steps[0], proposals[0]?.source ?? "available");
+    candidates.push(...rayEvidence);
+    const defenderEvidence = capturedDefenderEvidence(
+        steps[0],
+        proposals[0]?.source ?? "available",
+    );
+    if (defenderEvidence) candidates.push(defenderEvidence);
     const quietMate = proveQuietMateThreat(steps[0]);
     const preparation = !quietMate ? quietPreparation(steps) : null;
     if (quietMate) {
@@ -483,6 +729,24 @@ export function auditTacticalMotifs(
         ];
     }
     for (let proposal of proposals) {
+        if (proposal.id === "promotion" || proposal.id === "underPromotion") {
+            const index = episode.findIndex(
+                (s) =>
+                    s.before.turn === attacker &&
+                    s.move.promotion &&
+                    (proposal.id !== "underPromotion" || s.move.promotion !== "queen"),
+            );
+            if (index < 0) continue;
+            const promotion = episode[index];
+            proposal = {
+                ...proposal,
+                ply: index + 1,
+                moveUci: promotion.uci,
+                evidence: `${promotion.san} promotes the pawn to a ${promotion.move.promotion}.`,
+            };
+        }
+        if (proposal.ply === 1 && defenderEvidence && proposal.id === "capturingDefender") continue;
+        if (proposal.ply === 1 && rayEvidence.some((m) => m.id === proposal.id)) continue;
         if (preparation && proposal.id === "mateIn3") continue;
         if (
             !MECHANISMS.has(proposal.id) &&
@@ -517,16 +781,7 @@ export function auditTacticalMotifs(
             step.capture >= 320 &&
             tacticalExchangeGain(step.before, step.move) >= 100
         ) {
-            const ctx = step.after.ctx();
-            const pinnedRecapturer = [...step.after.board[step.after.turn]].some((from) => {
-                const piece = step.after.board.get(from)!;
-                return (
-                    ctx.blockers.has(from) &&
-                    attacks(piece, from, step.after.board.occupied).has(step.move.to) &&
-                    !step.after.isLegal({ from, to: step.move.to })
-                );
-            });
-            if (!pinnedRecapturer) continue;
+            if (!pinnedRecapturer(step)) continue;
         }
         if (proposal.id === "deflection") {
             const reply = episode[proposal.ply];
@@ -561,12 +816,25 @@ export function auditTacticalMotifs(
         let sound = false;
         if (MATE.test(proposal.id)) sound = mate;
         else if (proposal.id === "fork") sound = verifiedFork(step);
+        else if (proposal.id === "skewer")
+            sound =
+                mate || rayMaterialEvidence(step, proposal.source).some((m) => m.id === "skewer");
+        else if (proposal.id === "pin")
+            sound =
+                mate ||
+                (pinnedRecapturer(step) && settled >= 100) ||
+                rayMaterialEvidence(step, proposal.source).some((m) => m.id === "pin");
+        else if (proposal.id === "capturingDefender")
+            sound = mate || Boolean(capturedDefenderEvidence(step, proposal.source));
         else if (proposal.id === "attackingF2F7")
             sound = step.capture > 0 && tacticalExchangeGain(step.before, step.move) >= 100;
         else if (proposal.id === "hangingPiece")
             sound = step.capture >= 320 && tacticalExchangeGain(step.before, step.move) >= 100;
         else if (proposal.id === "attacking_undefended_piece")
-            sound = hasConcreteThreat(step) && settled >= 100;
+            sound =
+                materialThreatGain(step, winningTargets(step.after, step.move.to, attacker), [
+                    step.move.to,
+                ]) !== null;
         else sound = mate || settled >= 100;
         if (!sound) continue;
         candidates.push({
@@ -615,6 +883,18 @@ export function auditTacticalMotifs(
             )
                 return false;
             if (
+                m.id === "attacking_undefended_piece" &&
+                candidates.some(
+                    (other) => other.ply === m.ply && ["pin", "skewer"].includes(other.id),
+                )
+            )
+                return false;
+            if (
+                m.id === "hangingPiece" &&
+                candidates.some((other) => other.ply === m.ply && other.id === "capturingDefender")
+            )
+                return false;
+            if (
                 m.id === "sacrifice" &&
                 candidates.some((other) => MECHANISMS.has(other.id) && other.ply === m.ply)
             )
@@ -646,7 +926,7 @@ export function auditTacticalMotifs(
                 ? 10000
                 : motif.id === "hangingPiece" && motif.ply === 1
                   ? tacticalExchangeGain(root.before, root.move)
-                  : Math.max(100, settled),
+                  : (motif.value ?? Math.max(100, settled)),
     }));
 }
 

@@ -28,6 +28,15 @@ function engineLine(depth: number, multipv = 1, uciMoves = ["e2e4"]): BestMoves 
 }
 
 describe("live tactical classifier", () => {
+    test("fork arrows show both targets rather than a speculative defensive reply", () => {
+        const scan = buildLiveTacticalScan({
+            fen: "rnbqk2r/p1ppbppp/1p3n2/4N3/2B5/4P3/PPPP1PPP/RNBQK2R w KQkq - 0 5",
+            pvUci: ["e5f7", "d7d5", "f7d8"],
+            depth: 16,
+            engineName: "Regression",
+        });
+        expect(scan.arrows.map((a) => `${a.from}${a.to}`)).toEqual(["e5f7", "f7d8", "f7h8"]);
+    });
     test("turns a named mating pattern into board labels and forcing arrows", () => {
         const scan = buildLiveTacticalScan({
             fen: "rr6/p3p2k/3pNpp1/1pp5/2q1P3/5R2/P2Q2PP/6K1 w - - 0 27",
@@ -205,7 +214,11 @@ describe("live tactical classifier", () => {
 
         expect(scan.motifs.map((motif) => motif.id)).toEqual(["fork"]);
         expect(scan.labels).toEqual([expect.objectContaining({ text: "Fork", square: "f7" })]);
-        expect(scan.arrows).toEqual([expect.objectContaining({ from: "e5", to: "f7" })]);
+        expect(scan.arrows).toEqual([
+            expect.objectContaining({ from: "e5", to: "f7", role: "trigger" }),
+            expect.objectContaining({ from: "f7", to: "d8", role: "attacker" }),
+            expect.objectContaining({ from: "f7", to: "h8", role: "attacker" }),
+        ]);
     });
 
     test("cache identity includes both the live pipeline version and MultiPV width", () => {

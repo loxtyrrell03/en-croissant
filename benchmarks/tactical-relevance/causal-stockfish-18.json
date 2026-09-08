@@ -215,7 +215,7 @@
           "value": 10000
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-5",
+      "motifClassifierVersion": "site-55.adapter-6",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -241,6 +241,18 @@
           "evidence": "Qh2 is a quiet mating preparation. All 4 legal Black replies allow forced mate within two more moves; for example, h5 Kxg6 h4 Qb8#.",
           "relevance": "primary",
           "value": 10000,
+          "actor": "white"
+        },
+        {
+          "id": "pin",
+          "label": "Pin",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 3,
+          "moveUci": "f6g6",
+          "value": 10000,
+          "evidence": "Kxg6 exploits the pawn on h5, pinned to the king on h8 by the queen on h2. No legal reply avoids material loss in the immediate exchange.",
+          "relevance": "secondary",
           "actor": "white"
         },
         {
@@ -285,7 +297,7 @@
         "value": 10000
       }
     },
-    "classificationMs": 8.100599999999758
+    "classificationMs": 7.752900000001318
   },
   {
     "name": "b6 permits the f7 fork",
@@ -608,7 +620,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-5",
+      "motifClassifierVersion": "site-55.adapter-6",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -690,7 +702,7 @@
         "comparisonEvidence": "After O-O, Nxf7 no longer has two profitable fork targets."
       }
     },
-    "classificationMs": 75.72700000000077
+    "classificationMs": 63.86269999999786
   },
   {
     "name": "Missed queen while the knight is already attacked",
@@ -968,19 +980,7 @@
       }
     ],
     "classification": {
-      "allowedMotifs": [
-        {
-          "id": "promotion",
-          "label": "Promotion",
-          "confidence": "medium",
-          "evidence": "Promotion appears on hxg5 at ply 3 of the opponent refutation.",
-          "source": "allowed",
-          "ply": 3,
-          "moveUci": "h6g5",
-          "relevance": "primary",
-          "value": 320
-        }
-      ],
+      "allowedMotifs": [],
       "missedMotifs": [
         {
           "id": "hangingPiece",
@@ -994,33 +994,7 @@
           "value": 900
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-5",
-      "allowedTimeline": [
-        {
-          "id": "promotion",
-          "label": "Promotion",
-          "confidence": "medium",
-          "evidence": "Promotion appears on hxg5 at ply 3 of the opponent refutation.",
-          "source": "allowed",
-          "ply": 3,
-          "moveUci": "h6g5",
-          "relevance": "primary",
-          "value": 320,
-          "actor": "black"
-        },
-        {
-          "id": "hangingPiece",
-          "label": "Hanging Piece",
-          "confidence": "high",
-          "evidence": "hxg5 wins the loose knight on g5.",
-          "source": "allowed",
-          "ply": 3,
-          "moveUci": "h6g5",
-          "relevance": "secondary",
-          "value": 320,
-          "actor": "black"
-        }
-      ],
+      "motifClassifierVersion": "site-55.adapter-6",
       "missedTimeline": [
         {
           "id": "hangingPiece",
@@ -1052,7 +1026,7 @@
         "value": 900
       }
     },
-    "classificationMs": 26.131099999998696
+    "classificationMs": 15.81840000000011
   },
   {
     "name": "Failed to create a back-rank escape",
@@ -1254,7 +1228,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-5",
+      "motifClassifierVersion": "site-55.adapter-6",
       "allowedTimeline": [
         {
           "id": "backRankMate",
@@ -1288,6 +1262,6 @@
         "comparisonEvidence": "After g5, Kg7 is a legal answer to Re8+; it is no longer mate."
       }
     },
-    "classificationMs": 1.8548999999984517
+    "classificationMs": 1.4899999999979627
   }
 ]

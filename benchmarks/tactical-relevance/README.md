@@ -96,8 +96,8 @@ Bg5+ also refutes the longer cooperative preparation example.
 
 Proofs have 4,096-node (mate next turn) and 16,384-node (mate within three)
 caps and bounded caches. An incomplete proof is withheld, not reported as a
-proven absence of tactics. The two added live-scan classifications took about
-34–45 ms in the recorded run, excluding engine search; timing is diagnostic,
+proven absence of tactics. The JSON records live-scan classification timing
+separately from engine search; timing is diagnostic,
 depends on host load/cache state, and is not a UI latency guarantee.
 
 Candidate-search limitation: unrestricted depth-16 MultiPV selected mate in
@@ -107,6 +107,51 @@ all-defences check agrees. Do not treat the selected engine line as proof that
 no faster tactic exists. Local proof strengthens the explanation of supplied
 candidates; it is not an exhaustive replacement for root candidate search.
 
+## Material mechanisms, not just a favourable PV endpoint
+
+`material-stockfish-18.json` records five additional candidate judgements. Each
+has a fresh unrestricted depth-16/MultiPV3 search and a separate search
+restricted to the move being judged, so the refutation is engine-selected:
+
+| Candidate | Judged lesson | Observed defence/payoff |
+| --- | --- | --- |
+| d6 attacks Ne7 pinned by Re1 to Ke8 | Pin, not generic piece pressure | The king moves and dxe7 wins the knight |
+| Same d6 with an enemy rook on a6 | No claimed pin win | Rxd6 takes the attacking pawn |
+| Bd3+ lines up Kf5 and Qh7 | Skewer | The king moves and Bxh7 takes the queen |
+| Same Bd3+ with an enemy pawn on e5 | No claimed skewer win | e4 blocks the bishop's line |
+| exf6+ captures the knight defending Qd5 | Removing the Defender | A king reply permits Rxd5 without the knight's recapture |
+
+The king–queen skewer reaches a bishop-versus-king dead draw. It wins material
+and avoids the previous disadvantage; it does **not** win the game. Timeline
+classification now stops at checkmate, stalemate or dead material, instead of
+tagging an arbitrary bishop capture in a later engine shuffle.
+
+The local material proof follows the named targets through every legal
+defence and requires a profitable legal capture of those targets, not a loose
+piece elsewhere. It includes defensive captures, interpositions, checks,
+promotion gains and legal recaptures after an attacking piece is captured.
+A protected queen–rook skewer remains valid when Qxd3 loses the queen to cxd3;
+the unprotected version is rejected. Defender removal additionally requires
+the target's legal exchange to improve after the defender is taken. Merely
+removing an already pinned pseudo-defender does not qualify.
+
+Twelve deterministic material regressions cover those examples, promotion
+counterplay, the already-pinned defender, an escaping queen, promotion ply
+anchoring, and the dead-draw boundary. The initial skewer construction was
+discarded because its bishop already checked the non-moving king; the corrected
+bishop starts on c4. An initial bishop-capture defender-removal construction
+was also rejected: that bishop already pinned the knight, so the knight was
+not legally defending the queen. The pawn-capture variant establishes the
+actual mechanism, and the pinned variant remains a negative control.
+
+The inherited detector also misattached a later promotion to dxe7 or exf6.
+Promotion evidence now requires an actual promotion move and uses that ply;
+it cannot survive at a non-promoting capture. Live board relationships now
+show both fork targets, or the pin/skewer ray, with the pin label on the pinned
+piece. These come from legal board geometry, not parsed prose or a supposedly
+mandatory engine reply. Existing preparatory moves are retained for later-ply
+motifs. This is source/render-data proof, not physical running-app proof.
+
 Run in PowerShell with the configured Node runtime on PATH:
 
 ```powershell
@@ -114,6 +159,7 @@ $env:TACTICAL_JUDGEMENT_ENGINE = 'absolute path to a local Stockfish executable'
 $env:TACTICAL_JUDGEMENT_REPORT = 'benchmarks/tactical-relevance/stockfish-18.json'
 $env:TACTICAL_CAUSAL_REPORT = 'benchmarks/tactical-relevance/causal-stockfish-18.json'
 $env:TACTICAL_QUIET_REPORT = 'benchmarks/tactical-relevance/quiet-stockfish-18.json'
+$env:TACTICAL_MATERIAL_REPORT = 'benchmarks/tactical-relevance/material-stockfish-18.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node
 ```
 

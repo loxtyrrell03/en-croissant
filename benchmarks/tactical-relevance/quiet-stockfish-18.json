@@ -89,6 +89,18 @@
           {
             "id": "pin",
             "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h5h3",
+            "value": 10000,
+            "evidence": "Qh3 exploits the pawn on h7, pinned to the king on h8 by the queen on h3. No legal reply avoids material loss in the immediate exchange.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "pin",
+            "label": "Pin",
             "confidence": "medium",
             "evidence": "Pin appears on Qxh6# at ply 3 of the current best line.",
             "source": "available",
@@ -134,13 +146,13 @@
           {
             "id": "pin",
             "label": "Pin",
-            "confidence": "medium",
-            "evidence": "Rh6 lets the rook on h6 pin the pawn on h7 to the king on h8.",
             "source": "available",
+            "confidence": "high",
             "ply": 1,
             "moveUci": "g6h6",
-            "relevance": "secondary",
             "value": 10000,
+            "evidence": "Rh6 exploits the pawn on h7, pinned to the king on h8 by the rook on h6. No legal reply avoids material loss in the immediate exchange.",
+            "relevance": "secondary",
             "actor": "white"
           },
           {
@@ -203,7 +215,7 @@
         ]
       }
     ],
-    "classificationMs": 44.99090000000024
+    "classificationMs": 17.808199999999488
   },
   {
     "fen": "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",
@@ -304,6 +316,18 @@
             "evidence": "Qh2 is a quiet mating preparation. All 4 legal Black replies allow forced mate within two more moves; for example, h5 Kxg6 h4 Qb8#.",
             "relevance": "primary",
             "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "f6g6",
+            "value": 10000,
+            "evidence": "Kxg6 exploits the pawn on h5, pinned to the king on h8 by the queen on h2. No legal reply avoids material loss in the immediate exchange.",
+            "relevance": "secondary",
             "actor": "white"
           },
           {
@@ -415,7 +439,7 @@
         ]
       }
     ],
-    "classificationMs": 33.773299999999836
+    "classificationMs": 27.089200000000346
   },
   {
     "fen": "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",

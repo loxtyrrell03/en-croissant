@@ -6,6 +6,7 @@ import {
     tacticalMotifColor,
 } from "./mistakeReviewAdapter";
 import type { TacticalMotifEvidence } from "./types";
+import { tacticalBoardEvidence } from "./causalTactics";
 
 const CORE_TACTICAL_THEME_IDS = new Set([
     "fork",
@@ -125,7 +126,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 5;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 6;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {
@@ -303,17 +304,27 @@ function buildLiveTacticalVariation(
     const furthestTrigger = Math.max(1, ...triggerPlies);
     const arrowLimit =
         motifs.length > 0 ? Math.min(lineUci.length, Math.max(3, furthestTrigger + 1), 6) : 0;
-    const arrows = lineUci.slice(0, arrowLimit).map<LiveTacticalBoardArrow>((move, index) => ({
+    const geometry = tacticalBoardEvidence(input.fen, lineUci, motifs[0]);
+    const prefixLimit = geometry ? Math.min(motifs[0].ply ?? 1, 6) : arrowLimit;
+    const arrows = lineUci.slice(0, prefixLimit).map<LiveTacticalBoardArrow>((move, index) => ({
         from: move.slice(0, 2),
         to: move.slice(2, 4),
         ply: index + 1,
         role: triggerPlies.has(index + 1) ? "trigger" : index % 2 === 0 ? "attacker" : "reply",
     }));
-    const labels = motifs.slice(0, 3).map<LiveTacticalBoardLabel>((motif) => ({
+    if (geometry)
+        for (const arrow of geometry.arrows) {
+            if (
+                !arrows.some((existing) => existing.from === arrow.from && existing.to === arrow.to)
+            )
+                arrows.push({ ...arrow, ply: motifs[0].ply ?? 1, role: "attacker" });
+        }
+    const labels = motifs.slice(0, 3).map<LiveTacticalBoardLabel>((motif, index) => ({
         id: motif.id,
         text: motif.label,
         color: tacticalMotifColor(motif.id),
         square:
+            (index === 0 ? geometry?.square : null) ??
             motif.moveUci?.slice(2, 4) ??
             (motif.id === "attackingF2F7" ? lineUci[0]?.slice(2, 4) : null) ??
             null,

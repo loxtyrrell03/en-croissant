@@ -96,7 +96,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 5;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 6;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -751,7 +751,11 @@ export function buildTacticalTimeline(
     rootMotifs: TacticalMotifEvidence[],
     sanLine?: string[] | null,
 ) {
-    const replay = replayTacticalLine(fen, line);
+    const fullReplay = replayTacticalLine(fen, line);
+    const terminal = fullReplay.findIndex((step) => step.after.isEnd());
+    // Some engine PVs continue shuffling after a dead-material draw. Those
+    // legal but outcome-irrelevant moves must not manufacture new lessons.
+    const replay = terminal < 0 ? fullReplay : fullReplay.slice(0, terminal + 1);
     const legalLine = replay.map((step) => step.uci);
     const rawSteps = walkPV(fen, legalLine, fenSide(fen)) as SiteThemeStep[];
     const evidence = new Map<string, TacticalMotifEvidence>();
