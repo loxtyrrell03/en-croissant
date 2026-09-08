@@ -431,6 +431,16 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     process.env.TACTICAL_JUDGEMENT_REPORT,
                     JSON.stringify(report, null, 2),
                 );
+            const f7 = report.find((entry) => entry.position === "Protected f7 fork")!;
+            expect(f7.lines.find((entry) => entry.moves.startsWith("Nxf7 "))?.timeline).toEqual([
+                "white:fork@1",
+                "white:attackingF2F7@1",
+                "white:hangingPiece@3",
+                "black:hangingPiece@4",
+            ]);
+            expect(f7.lines.find((entry) => entry.moves.startsWith("Bxf7+ "))?.timeline).toEqual([
+                "white:attackingF2F7@1",
+            ]);
             console.log(JSON.stringify(report));
         },
         180000,

@@ -9406,6 +9406,28 @@ function capturedValue(pos, move) {
 	if (victim?.color === opposite(pos.turn)) return VALUE[victim.role];
 	return pos.board.get(move.from)?.role === "pawn" && move.to === pos.epSquare ? VALUE.pawn : 0;
 }
+/** A piece which is still sitting on its profitable capture square may be
+* recaptured after an intervening check or counter-capture. That is exchange
+* continuation, not a newly hanging piece. A queen which only took a pawn
+* does not qualify, and moving the piece again clears this local credit. */
+function isCompensatedContinuationCapture(steps, index) {
+	const step = steps[index];
+	if (!step?.capture || index === 0) return false;
+	const square = step.move.to;
+	const victim = step.before.board.get(square);
+	if (!victim) return false;
+	for (let i = index - 1; i >= 0; i--) {
+		const previous = steps[i];
+		const after = previous.after.board.get(square);
+		if (after?.color !== victim.color || after.role !== victim.role) return false;
+		const before = previous.before.board.get(square);
+		if (previous.move.to === square || before?.color !== victim.color || before.role !== victim.role) {
+			const earned = previous.capture + (previous.move.promotion ? VALUE[previous.move.promotion] - VALUE.pawn : 0);
+			return previous.move.to === square && previous.capture > 0 && earned >= VALUE[victim.role] - 50;
+		}
+	}
+	return false;
+}
 function legalMoves(pos) {
 	const result = [];
 	for (const [from, dests] of pos.allDests()) for (const to of dests) if (pos.board.get(from)?.role === "pawn" && (to < 8 || to >= 56)) for (const promotion of [
@@ -10189,6 +10211,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 	const specificMate = candidates.find((m) => /Mate$/.test(m.id));
 	const fork = candidates.find((m) => m.id === "fork");
 	const filtered = candidates.filter((m) => {
+		if (m.id === "clearance" && candidates.some((other) => other.ply === m.ply && DISCOVERED_THEMES.has(other.id))) return false;
 		if (specificMate && /^mate(?:In\d+)?$/.test(m.id) && !(preparation && m.id === "mateIn3" && m.ply === 1)) return false;
 		if (fork?.ply === m.ply && [
 			"clearance",
@@ -10448,7 +10471,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 10;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 11;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -10902,10 +10925,18 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 			actor: step.before.turn
 		});
 	}
+	let quietPlies = 0;
+	let connectedPlies = replay.length;
 	for (let index = 0; index < replay.length; index++) {
 		const step = replay[index];
 		const suffix = legalLine.slice(index);
-		if (!hasTacticalStart(rawSteps[index]?.fenBefore ?? "", suffix)) continue;
+		const tacticalStart = hasTacticalStart(rawSteps[index]?.fenBefore ?? "", suffix);
+		quietPlies = tacticalStart || step.before.isCheck() ? 0 : quietPlies + 1;
+		if (quietPlies >= 2) {
+			connectedPlies = index;
+			break;
+		}
+		if (!tacticalStart) continue;
 		const side = step.before.turn === "white" ? "w" : "b";
 		const themes = detectStepThemes(rawSteps[index], side, { steps: rawSteps });
 		const detail = {
@@ -10928,7 +10959,7 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 			});
 		}
 	}
-	return [...evidence.values()].filter((motif) => motif.id !== "mate" || ![...evidence.values()].some((other) => other.ply === motif.ply && (/Mate$/.test(other.id) || /^mateIn\d+$/.test(other.id)))).sort((a, b) => (a.ply ?? 0) - (b.ply ?? 0));
+	return [...evidence.values()].filter((motif) => (motif.ply ?? 0) <= connectedPlies && !(motif.id === "hangingPiece" && isCompensatedContinuationCapture(replay, (motif.ply ?? 0) - 1))).filter((motif) => motif.id !== "mate" || ![...evidence.values()].some((other) => other.ply === motif.ply && (/Mate$/.test(other.id) || /^mateIn\d+$/.test(other.id)))).sort((a, b) => (a.ply ?? 0) - (b.ply ?? 0));
 }
 function cacheKey(input) {
 	return JSON.stringify([

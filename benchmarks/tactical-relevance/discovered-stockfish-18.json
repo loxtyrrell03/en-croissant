@@ -190,18 +190,6 @@
           "actor": "white"
         },
         {
-          "id": "clearance",
-          "label": "Clearance Sacrifice",
-          "confidence": "medium",
-          "evidence": "Clearance Sacrifice appears on Bxh7+ at ply 1 of the current best line.",
-          "source": "available",
-          "ply": 1,
-          "moveUci": "e4h7",
-          "relevance": "secondary",
-          "value": 500,
-          "actor": "white"
-        },
-        {
           "id": "hangingPiece",
           "label": "Hanging Piece",
           "confidence": "high",
@@ -214,9 +202,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-10"
+      "motifClassifierVersion": "site-55.adapter-11"
     },
-    "classificationMs": 49.75660000000016,
+    "classificationMs": 41.73100000000022,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -271,18 +259,6 @@
             "evidence": "Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
             "value": 500,
             "relevance": "primary",
-            "actor": "white"
-          },
-          {
-            "id": "clearance",
-            "label": "Clearance Sacrifice",
-            "confidence": "medium",
-            "evidence": "Clearance Sacrifice appears on Bxh7+ at ply 1 of the current best line.",
-            "source": "available",
-            "ply": 1,
-            "moveUci": "e4h7",
-            "relevance": "secondary",
-            "value": 500,
             "actor": "white"
           },
           {
@@ -430,9 +406,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-10"
+      "motifClassifierVersion": "site-55.adapter-11"
     },
-    "classificationMs": 1.5510000000003856,
+    "classificationMs": 1.672099999999773,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -487,18 +463,6 @@
             "evidence": "Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
             "value": 500,
             "relevance": "primary",
-            "actor": "white"
-          },
-          {
-            "id": "clearance",
-            "label": "Clearance Sacrifice",
-            "confidence": "medium",
-            "evidence": "Clearance Sacrifice appears on Bxh7+ at ply 1 of the current best line.",
-            "source": "available",
-            "ply": 1,
-            "moveUci": "e4h7",
-            "relevance": "secondary",
-            "value": 500,
             "actor": "white"
           },
           {
@@ -778,9 +742,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-10"
+      "motifClassifierVersion": "site-55.adapter-11"
     },
-    "classificationMs": 17.858000000000175,
+    "classificationMs": 14.385599999999613,
     "positionHeadline": [
       {
         "id": "discoveredCheck",
@@ -1187,9 +1151,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-10"
+      "motifClassifierVersion": "site-55.adapter-11"
     },
-    "classificationMs": 13.213799999999537,
+    "classificationMs": 10.17529999999988,
     "positionHeadline": [
       {
         "id": "discoveredCheck",
@@ -1461,9 +1425,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-10"
+      "motifClassifierVersion": "site-55.adapter-11"
     },
-    "classificationMs": 18.70089999999982,
+    "classificationMs": 18.55949999999939,
     "positionHeadline": [
       {
         "id": "doubleCheck",
@@ -1745,9 +1709,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-10"
+      "motifClassifierVersion": "site-55.adapter-11"
     },
-    "classificationMs": 1.1524000000008527,
+    "classificationMs": 1.1939000000002125,
     "positionHeadline": [
       {
         "id": "doubleCheck",

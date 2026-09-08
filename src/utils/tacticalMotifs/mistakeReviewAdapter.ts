@@ -14,6 +14,7 @@ import {
     compareBestLineTacticalDefence,
     compareImmediateTacticalDefence,
     hasTacticalStart,
+    isCompensatedContinuationCapture,
     replayTacticalLine,
 } from "./causalTactics";
 import type {
@@ -99,7 +100,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 10;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 11;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -767,10 +768,21 @@ export function buildTacticalTimeline(
         const step = replay[(motif.ply ?? 0) - 1];
         if (step) evidence.set(`${motif.ply}:${motif.id}`, { ...motif, actor: step.before.turn });
     }
+    let quietPlies = 0;
+    let connectedPlies = replay.length;
     for (let index = 0; index < replay.length; index++) {
         const step = replay[index];
         const suffix = legalLine.slice(index);
-        if (!hasTacticalStart(rawSteps[index]?.fenBefore ?? "", suffix)) continue;
+        const tacticalStart = hasTacticalStart(rawSteps[index]?.fenBefore ?? "", suffix);
+        // A forced king evasion is not a quiet pause. Nor is a locally
+        // verified quiet mating preparation. Two genuinely quiet plies mark
+        // a relevance boundary, not a claim that later tactics cannot exist.
+        quietPlies = tacticalStart || step.before.isCheck() ? 0 : quietPlies + 1;
+        if (quietPlies >= 2) {
+            connectedPlies = index;
+            break;
+        }
+        if (!tacticalStart) continue;
         const side = step.before.turn === "white" ? "w" : "b";
         const themes = detectStepThemes(rawSteps[index], side, { steps: rawSteps });
         const detail: SiteThemeDetail = {
@@ -805,6 +817,14 @@ export function buildTacticalTimeline(
         }
     }
     return [...evidence.values()]
+        .filter(
+            (motif) =>
+                (motif.ply ?? 0) <= connectedPlies &&
+                !(
+                    motif.id === "hangingPiece" &&
+                    isCompensatedContinuationCapture(replay, (motif.ply ?? 0) - 1)
+                ),
+        )
         .filter(
             (motif) =>
                 motif.id !== "mate" ||

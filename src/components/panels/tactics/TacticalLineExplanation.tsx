@@ -18,7 +18,8 @@ export function TacticalLineExplanation({
       <summary style={{ cursor: "pointer", fontSize: "0.8rem" }}>{title}</summary>
       <Stack gap={6} mt="xs">
         <Text size="xs" c="dimmed">
-          These themes belong to this continuation; later moves depend on the replies shown.
+          Labels focus on the connected tactical sequence. Later moves depend on the replies shown;
+          a quiet pause ends the tactical labels, not the engine line.
         </Text>
         {moves.map((move, index) => {
           const here = motifs.filter((motif) => motif.ply === index + 1);

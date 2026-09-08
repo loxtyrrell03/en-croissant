@@ -223,9 +223,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-10"
+      "motifClassifierVersion": "site-55.adapter-11"
     },
-    "classificationMs": 29.46680000000015
+    "classificationMs": 29.899900000000343
   },
   {
     "name": "King escape declines the deflection bait",
@@ -412,9 +412,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-10"
+      "motifClassifierVersion": "site-55.adapter-11"
     },
-    "classificationMs": 13.188099999999395
+    "classificationMs": 12.974899999999252
   },
   {
     "name": "The alleged deflected defender was already pinned",
@@ -611,9 +611,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-10"
+      "motifClassifierVersion": "site-55.adapter-11"
     },
-    "classificationMs": 6.014499999999316
+    "classificationMs": 6.932400000001508
   },
   {
     "name": "Exploit an absolute pin",
@@ -871,9 +871,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-10"
+      "motifClassifierVersion": "site-55.adapter-11"
     },
-    "classificationMs": 29.687599999999293
+    "classificationMs": 34.282499999999345
   },
   {
     "name": "Rook captures the pinning attacker's pawn",
@@ -1034,9 +1034,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-10"
+      "motifClassifierVersion": "site-55.adapter-11"
     },
-    "classificationMs": 17.655800000000454
+    "classificationMs": 17.53019999999924
   },
   {
     "name": "King-queen skewer",
@@ -1225,9 +1225,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-10"
+      "motifClassifierVersion": "site-55.adapter-11"
     },
-    "classificationMs": 3.68920000000071
+    "classificationMs": 3.7893999999978405
   },
   {
     "name": "Pawn interposes against the skewer",
@@ -1458,9 +1458,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-10"
+      "motifClassifierVersion": "site-55.adapter-11"
     },
-    "classificationMs": 21.237499999999272
+    "classificationMs": 19.921699999998964
   },
   {
     "name": "Remove the queen's defender with check",
@@ -1675,22 +1675,10 @@
           "relevance": "secondary",
           "value": 900,
           "actor": "white"
-        },
-        {
-          "id": "hangingPiece",
-          "label": "Hanging Piece",
-          "source": "available",
-          "confidence": "high",
-          "ply": 12,
-          "moveUci": "e6d7",
-          "evidence": "Kxd7 wins the loose rook on d7.",
-          "relevance": "secondary",
-          "value": 500,
-          "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-10"
+      "motifClassifierVersion": "site-55.adapter-11"
     },
-    "classificationMs": 23.12959999999657
+    "classificationMs": 11.831399999999121
   }
 ]

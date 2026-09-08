@@ -320,6 +320,36 @@ second rook could recapture the checking rook: it was not mate. The retained
 example verifies the actual mating board and both defender branches. These
 are source/render-data checks, not running-app visual verification.
 
+## Connected continuation labels
+
+The existing engine positions exposed another source of misleading labels:
+the Bxf7+ alternative displayed a Black capture at ply 18 alongside the
+immediate weak-f7 lesson, despite ordinary development separating the events.
+Timeline labels now stop after two consecutive quiet plies without a capture,
+promotion, check, direct material threat or locally verified mating preparation.
+Answering check is not a quiet pause. This is a relevance boundary, not proof
+that later tactics are absent or every earlier move is forced. The complete
+engine line remains visible, and viewing a later position assesses it independently.
+
+The fresh Nxf7 timeline retains fork and weak-f7 evidence at ply 1, the queen
+capture at ply 3 and Black's bishop capture at ply 4. It no longer describes
+Bxd8 at ply 6 as a newly hanging knight: that knight already won the queen.
+The Bxf7+ alternative retains its immediate weak-f7 lesson without the distant
+ply-18 label. Counterforks, repeated forks and verified quiet mating preparations
+remain covered by the regression suite.
+
+Deferred exchange recognition requires the victim's last arrival on its current
+square to have captured approximately its own value or more, including promotion
+gain. Moving again clears that credit; a queen which captured only a pawn does
+not qualify. Existing immediate-recapture suppression is unchanged. Same-ply
+clearance labels are also removed when a discovered attack or check already
+explains the line opening.
+
+Six regressions and a rendered-row check cover these boundaries. The same 35
+fresh-engine scenarios now include exact f7 timeline assertions; this is not a
+larger independent accuracy sample. Long non-mating quiet combinations may need
+richer dependency evidence than the two-quiet-ply heuristic.
+
 Run in PowerShell with the configured Node runtime on PATH:
 
 ```powershell
