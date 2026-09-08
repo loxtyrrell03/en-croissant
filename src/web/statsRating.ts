@@ -1,8 +1,12 @@
+import {
+    periodPerformance,
+    preparePerformanceGames,
+    strengthHistory,
+    type PerformanceGame,
+} from "../shared/truePerformance";
 // Performance-rating engine and game fetchers for the phone Stats feature.
-// The rating math is an EXACT port of EloGuard's lib/smart-bracket.js
-// (Surprise-Weighted Bayesian performance rating): every constant, clamp,
-// rounding and iteration count is preserved so both apps report identical
-// numbers for identical inputs.
+// Result estimates use the shared numerical Bayesian model. Session/tilt
+// diagnostics retain their existing behavior independently of the estimator.
 
 export type StatsSource = "chesscom" | "lichess";
 export type StatsTimeClass = "bullet" | "blitz" | "rapid" | "classical" | "daily";
@@ -17,6 +21,7 @@ export type StatsGame = {
     end: number;
     start: number | null;
     rating: number;
+    preGameRating?: number | null;
     result: StatsGameResult;
     termination: StatsTermination;
     opp: number | null;
@@ -56,9 +61,39 @@ export type StatsFormSummary = {
     latestSessionGames: number;
 };
 
-type StatsRatingGame = Pick<StatsGame, "end" | "start" | "rating" | "result" | "opp">;
+type StatsRatingGame = Pick<StatsGame, "end" | "start" | "rating" | "result" | "opp"> &
+    Partial<
+        Pick<
+            StatsGame,
+            | "id"
+            | "source"
+            | "timeClass"
+            | "color"
+            | "rated"
+            | "oppName"
+            | "url"
+            | "openingName"
+            | "preGameRating"
+        >
+    >;
 
-// Constants from smart-bracket.js — values must never drift from the original.
+export function toPerformanceGames(games: readonly StatsRatingGame[]): PerformanceGame[] {
+    return games.map((g, i) => ({
+        id: g.id ?? `${g.end}:${i}`,
+        pool: `${g.source ?? "legacy"}:${g.timeClass ?? "unknown"}`,
+        at: g.end,
+        rating: g.preGameRating !== undefined ? g.preGameRating : g.rating,
+        opponentRating: g.opp,
+        score: g.result === "win" ? 1 : g.result === "draw" ? 0.5 : 0,
+        white: g.color !== "b",
+        rated: g.rated !== false,
+        opponent: g.oppName ?? "",
+        url: g.url ?? undefined,
+        opening: g.openingName ?? undefined,
+    }));
+}
+
+// Existing session diagnostics remain separate from result-based strength.
 const PERFORMANCE_WINDOW_DAYS = 7;
 const PERFORMANCE_MIN_GAMES = 3;
 const SESSION_GAP_SECONDS = 3600;
@@ -81,71 +116,11 @@ function mean(values: number[]) {
     return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
-// Abramowitz & Stegun 7.1.26 error-function approximation (closed form, deterministic).
-function erf(x: number) {
-    const sign = x < 0 ? -1 : 1;
-    const ax = Math.abs(x);
-    const t = 1 / (1 + 0.3275911 * ax);
-    const poly =
-        ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t +
-            0.254829592) *
-        t;
-    return sign * (1 - poly * Math.exp(-ax * ax));
-}
-
-function normalCdf(z: number) {
-    return 0.5 * (1 + erf(z / Math.SQRT2));
-}
-
 function hasFiniteOpp<T extends { opp: number | null }>(game: T): game is T & { opp: number } {
     return typeof game.opp === "number" && Number.isFinite(game.opp);
 }
 
-// Build the recency-weighted valid-opponent sample (21-day half-life) for the MAP. Games
-// without a finite opponent rating are dropped. Returns the weighted rows and the ess sum.
-function weightValidGames(games: StatsRatingGame[], nowSec: number) {
-    const valid: { opp: number; w: number; s: number }[] = [];
-    let ess = 0;
-    for (const game of games) {
-        if (!hasFiniteOpp(game)) continue;
-        const w = Math.pow(0.5, (nowSec - game.end) / (21 * 86400));
-        const s = game.result === "win" ? 1 : game.result === "draw" ? 0.5 : 0;
-        valid.push({ opp: game.opp, w, s });
-        ess += w;
-    }
-    return { valid, ess };
-}
-
-// MAP Bradley-Terry estimate via Newton, Gaussian prior anchored at R0 (sigma0 200).
-// Pure and deterministic; H < 0 always (prior term guards it). Returns { R, sd } (Laplace).
-function mapEstimate(valid: { opp: number; w: number; s: number }[], R0: number) {
-    const k = Math.LN10 / 400;
-    const sigma0 = 200;
-    const priorVar = sigma0 * sigma0;
-
-    function gradients(R: number) {
-        let g = -(R - R0) / priorVar;
-        let H = -1 / priorVar;
-        for (const v of valid) {
-            const E = 1 / (1 + Math.pow(10, (v.opp - R) / 400));
-            g += k * v.w * (v.s - E);
-            H += -(k * k) * v.w * E * (1 - E);
-        }
-        return { g, H };
-    }
-
-    let R = R0;
-    for (let iter = 0; iter < 50; iter += 1) {
-        const point = gradients(R);
-        const step = point.g / point.H; // finite: H < 0
-        R = clamp(R - step, R0 - 800, R0 + 800);
-        if (Math.abs(step) < 0.005) break;
-    }
-
-    const sd = Math.sqrt(-1 / gradients(R).H); // Laplace approximation
-    return { R, sd };
-}
-
+// Session grouping is a descriptive form diagnostic, independent of inference.
 export function groupSessions<T extends { start?: number | null; end: number }>(games: T[]): T[][] {
     if (!games.length) return [];
     const sessions: T[][] = [[games[0]]];
@@ -188,9 +163,8 @@ export function recentStreak<T extends { result: StatsGameResult }>(
     return { type, len };
 }
 
-// Surprise-Weighted Bayesian performance rating: MAP Bradley-Terry with a Gaussian prior
-// anchored on the window-start rating. Pure and deterministic. Returns null when the
-// opponent-tagged sample has fewer than three games.
+// Selected-game Bayesian performance, with full opponent marginalisation and
+// posterior quantiles. A minimum of three rated, opponent-tagged games is required.
 export function computePerformance(
     games: StatsRatingGame[],
     opts: { currentRating?: number | null; nowSec: number },
@@ -201,13 +175,15 @@ export function computePerformance(
             : null;
     const nowSec = opts.nowSec;
 
-    const { valid, ess } = weightValidGames(games, nowSec);
-    const gamesWithOpp = valid.length;
-    if (gamesWithOpp < PERFORMANCE_MIN_GAMES) return null;
-
-    const R0 = games[0].rating;
-    const { R, sd } = mapEstimate(valid, R0);
-    const perf = Math.round(R);
+    const valid = preparePerformanceGames(toPerformanceGames(games), nowSec);
+    const estimate = periodPerformance(valid);
+    if (!estimate) return null;
+    const gamesWithOpp = valid.filter((g) => g.rated && g.opponentRating !== null).length;
+    const R0 = [...valid].sort((a, b) => a.at - b.at)[0].rating ?? games[0].rating;
+    const R = estimate.mean,
+        sd = estimate.sd,
+        perf = Math.round(R);
+    const ess = gamesWithOpp;
 
     // Recent-session surprise vs the CURRENT rating (drives the tilt refinement).
     const sessions = groupSessions(games);
@@ -224,14 +200,15 @@ export function computePerformance(
         }
     }
 
-    const probAboveCurrent =
-        currentRating !== null ? Math.round(normalCdf((R - currentRating) / sd) * 100) / 100 : null;
+    // Retired: the previous normal approximation was presented as a calibrated
+    // probability of true ability. The new view reports model quantiles instead.
+    const probAboveCurrent = null;
 
     return {
         perf,
         sd,
         ci68: [perf - Math.round(sd), perf + Math.round(sd)],
-        ci95: [perf - Math.round(2 * sd), perf + Math.round(2 * sd)],
+        ci95: [Math.round(estimate.low), Math.round(estimate.high)],
         ess: Math.round(ess * 10) / 10,
         gamesWithOpp,
         windowStartRating: R0,
@@ -241,8 +218,8 @@ export function computePerformance(
 }
 
 // Headline/report performance for an explicitly selected time period. Keep this
-// separate from computePerformanceSeries: the latter is a rolling chart and its
-// final point covers only the latest rolling window, not the full selected period.
+// separate from computePerformanceSeries: the latter follows changing strength
+// through history, while this estimates constant performance in the selected games.
 export function computePeriodPerformance(
     games: StatsRatingGame[],
     opts: {
@@ -267,26 +244,17 @@ export function computePeriodPerformance(
     });
 }
 
-// Rolling SWB-TPR series for the stats chart. For each game index i, the window is the
-// up-to-windowSize games ending at i, with per-window nowSec = games[i].end (recency
-// relative to the window's end) and R0 = window's first game rating. A point is emitted
-// only once the window carries at least PERFORMANCE_MIN_GAMES opponent-tagged games.
+// Chronological Bayesian strength; changing the visible period never resets the prior.
 export function computePerformanceSeries(
     games: StatsRatingGame[],
     opts?: { windowSize?: number },
 ): StatsPerformancePoint[] {
-    const windowSize = opts?.windowSize === undefined ? 20 : opts.windowSize;
-    const series: StatsPerformancePoint[] = [];
-    for (let i = 0; i < games.length; i += 1) {
-        const window = games.slice(Math.max(0, i - windowSize + 1), i + 1);
-        const nowSec = games[i].end;
-        const R0 = window[0].rating;
-        const { valid } = weightValidGames(window, nowSec);
-        if (valid.length < PERFORMANCE_MIN_GAMES) continue;
-        const { R, sd } = mapEstimate(valid, R0);
-        series.push({ end: games[i].end, perf: Math.round(R), sd });
-    }
-    return series;
+    // Current-strength chronology is independent of a display window. Keep the
+    // legacy option accepted for callers, but never reset history at its edge.
+    void opts;
+    return strengthHistory(toPerformanceGames(games))
+        .points.slice(2)
+        .map((p) => ({ end: p.at, perf: Math.round(p.mean), sd: p.sd }));
 }
 
 // Form summary distilled from computeSmartBracket's internals (smart-bracket.js:361-647):
@@ -504,7 +472,16 @@ async function fetchChessComStatsGames(opts: {
         `${CHESSCOM_API_URL}/${encodeURIComponent(opts.username)}/games/archives`,
         opts.signal,
     )) as { archives?: string[] };
-    const archives = Array.isArray(archiveIndex.archives) ? archiveIndex.archives : [];
+    if (!Array.isArray(archiveIndex.archives))
+        throw new Error("Chess.com returned an invalid archive list.");
+    const expected = new RegExp(
+        `^https://api\\.chess\\.com/pub/player/${encodeURIComponent(opts.username)}/games/\\d{4}/\\d{2}$`,
+        "i",
+    );
+    const archives = [...new Set(archiveIndex.archives)];
+    if (archives.some((url) => typeof url !== "string" || !expected.test(url)))
+        throw new Error("Unexpected Chess.com archive address.");
+    archives.sort();
     const collected: StatsGame[] = [];
     let monthsFetched = 0;
 
@@ -512,6 +489,8 @@ async function fetchChessComStatsGames(opts: {
         const archive = (await getChessComJson(archives[i], opts.signal)) as {
             games?: ChessComArchiveGame[];
         };
+        if (!Array.isArray(archive.games))
+            throw new Error("Chess.com returned an invalid game archive.");
         monthsFetched += 1;
         const monthGames = normalizeChessComArchiveGames(
             archive.games,
@@ -531,7 +510,10 @@ async function fetchChessComStatsGames(opts: {
 }
 
 async function getChessComJson(url: string, signal?: AbortSignal): Promise<unknown> {
-    const response = await fetch(url, signal ? { signal } : undefined);
+    const timeout = AbortSignal.timeout(45000);
+    const response = await fetch(url, {
+        signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
+    });
     if (!response.ok) {
         throw new Error(`Chess.com request failed (${response.status}): ${url}`);
     }
@@ -566,6 +548,12 @@ function normalizeChessComArchiveGames(
         if (!mine || typeof mine.rating !== "number" || typeof game.end_time !== "number") continue;
 
         const opponent = mine === game.white ? game.black : game.white;
+        if (
+            mine.result !== "win" &&
+            !DRAW_RESULTS.has(mine.result ?? "") &&
+            opponent?.result !== "win"
+        )
+            continue;
         const oppRating =
             opponent && typeof opponent.rating === "number" && Number.isFinite(opponent.rating)
                 ? opponent.rating
@@ -580,6 +568,8 @@ function normalizeChessComArchiveGames(
             end: game.end_time,
             start: parsePgnStart(pgn),
             rating: mine.rating,
+            preGameRating:
+                Number(getPgnHeader(pgn, mine === game.white ? "WhiteElo" : "BlackElo")) || null,
             result: normalizeChessComResult(mine.result),
             termination: getChessComTermination(mine.result, opponent?.result),
             opp: oppRating,
@@ -728,9 +718,10 @@ async function fetchLichessStatsGames(opts: {
     const headers: Record<string, string> = { Accept: "application/x-ndjson" };
     if (opts.lichessToken) headers.Authorization = `Bearer ${opts.lichessToken}`;
 
+    const timeout = AbortSignal.timeout(45000);
     const response = await fetch(url.toString(), {
         headers,
-        ...(opts.signal ? { signal: opts.signal } : {}),
+        signal: opts.signal ? AbortSignal.any([opts.signal, timeout]) : timeout,
     });
     if (!response.ok) {
         throw new Error(`Lichess request failed (${response.status}) for ${opts.username}.`);
@@ -744,7 +735,7 @@ async function fetchLichessStatsGames(opts: {
         try {
             raw = JSON.parse(trimmed) as LichessNdjsonGame;
         } catch {
-            continue;
+            throw new Error("Lichess returned an incomplete game export. Refresh to try again.");
         }
         const game = normalizeLichessGame(raw, opts.username, opts.timeClass);
         if (!game) continue;
@@ -781,6 +772,20 @@ function normalizeLichessGame(
     const endMs = typeof game.lastMoveAt === "number" ? game.lastMoveAt : game.createdAt;
     if (typeof endMs !== "number" || !Number.isFinite(endMs)) return null;
 
+    if (
+        !game.status ||
+        ![
+            "mate",
+            "resign",
+            "stalemate",
+            "timeout",
+            "draw",
+            "outoftime",
+            "cheat",
+            "variantEnd",
+        ].includes(game.status)
+    )
+        return null;
     const result: StatsGameResult =
         game.winner === undefined
             ? "draw"
@@ -795,6 +800,7 @@ function normalizeLichessGame(
         end: Math.floor(endMs / 1000),
         start: typeof game.createdAt === "number" ? Math.floor(game.createdAt / 1000) : null,
         rating: mine.rating + (typeof mine.ratingDiff === "number" ? mine.ratingDiff : 0),
+        preGameRating: mine.rating,
         result,
         termination: getLichessTermination(game.status),
         opp:

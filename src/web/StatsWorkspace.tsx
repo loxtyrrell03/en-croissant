@@ -1,3 +1,5 @@
+import { TruePerformancePanel } from "../shared/TruePerformancePanel";
+import { toPerformanceGames } from "./statsRating";
 import {
   ActionIcon,
   Badge,
@@ -37,12 +39,10 @@ import {
 import {
   computeFormSummary,
   computePeriodPerformance,
-  computePerformanceSeries,
   fetchCurrentRating,
   fetchStatsGames,
   type StatsFormSummary,
   type StatsGame,
-  type StatsPerformancePoint,
   type StatsRatedFilter,
   type StatsSource,
   type StatsTimeClass,
@@ -61,7 +61,7 @@ import {
 
 const STATS_SETTINGS_STORAGE_KEY = "en-croissant-web-stats-settings";
 const STATS_MAX_GAMES = 5000;
-const STATS_BASE_HISTORY_DAYS = 90;
+const STATS_BASE_HISTORY_DAYS = 3650;
 
 // EloGuard data-semantics colors (hero/deltas/records keep the extension's
 // green/red meaning while everything else stays Mantine dark + blue).
@@ -110,7 +110,6 @@ type StatsSettings = {
 
 type StatsCacheEntry = {
   games: StatsGame[];
-  series: StatsPerformancePoint[];
   nowSec: number;
   historyDays: number;
 };
@@ -588,229 +587,6 @@ function StatsLineChart({
 // ---------------------------------------------------------------------------
 // Overview tab: EloGuard popup Stats parity (performance / rating / record /
 // form cards).
-// ---------------------------------------------------------------------------
-
-function StatsOverviewSection({
-  games,
-  series,
-  currentRating,
-  ratedFilter,
-  nowSec,
-  windowStart,
-}: {
-  games: StatsGame[];
-  series: StatsPerformancePoint[];
-  currentRating: number | null;
-  ratedFilter: StatsRatedFilter;
-  nowSec: number;
-  windowStart: number;
-}) {
-  const performance = useMemo(
-    () =>
-      computePeriodPerformance(games, {
-        currentRating,
-        nowSec,
-        windowStart,
-        windowEnd: nowSec,
-      }),
-    [currentRating, games, nowSec, windowStart],
-  );
-  const form = useMemo(
-    () => computeFormSummary(games, { currentRating, nowSec }),
-    [currentRating, games, nowSec],
-  );
-  const ratedGames = useMemo(
-    () => games.filter((game) => game.rated && Number.isFinite(game.rating)),
-    [games],
-  );
-  const perfPoints = useMemo(
-    () => series.map((point) => ({ t: point.end, v: point.perf })),
-    [series],
-  );
-  const ratedPoints = useMemo(
-    () => ratedGames.map((game) => ({ t: game.end, v: game.rating })),
-    [ratedGames],
-  );
-
-  const perfDelta =
-    performance && series.length >= 2 ? series[series.length - 1].perf - series[0].perf : null;
-  const perfTone =
-    performance && currentRating != null
-      ? performance.perf >= currentRating + 15
-        ? "up"
-        : performance.perf <= currentRating - 15
-          ? "down"
-          : "flat"
-      : "flat";
-
-  const ratingDelta =
-    ratedGames.length >= 2 ? ratedGames[ratedGames.length - 1].rating - ratedGames[0].rating : null;
-  // Empty period with a known rating: flat carry-forward baseline, no fill, so
-  // a reference line cannot be mistaken for observed movement.
-  const flatBaseline = ratedPoints.length === 0 && currentRating != null;
-  const ratingPoints = useMemo(
-    () =>
-      flatBaseline && currentRating != null
-        ? [
-            { t: windowStart, v: currentRating },
-            { t: nowSec, v: currentRating },
-          ]
-        : ratedPoints,
-    [currentRating, flatBaseline, nowSec, ratedPoints, windowStart],
-  );
-
-  const record = useMemo(() => {
-    let wins = 0;
-    let draws = 0;
-    let losses = 0;
-    for (const game of games) {
-      if (game.result === "win") wins += 1;
-      else if (game.result === "draw") draws += 1;
-      else losses += 1;
-    }
-    return { wins, draws, losses };
-  }, [games]);
-
-  const trend = Math.round(form.slopePerWeek);
-  const trendDir = deltaDir(trend);
-
-  return (
-    <Box className={styles.cardGrid}>
-      <Box className={styles.card}>
-        <Box className={styles.cardHead}>
-          <span className={styles.cardLabel}>Performance rating</span>
-          <span className={styles.heroWrap}>
-            {performance ? (
-              <span className={styles.hero} data-tone={perfTone}>
-                {Math.round(performance.perf)}
-              </span>
-            ) : null}
-            <StatsDeltaChip value={perfDelta} />
-          </span>
-        </Box>
-        {performance ? (
-          <>
-            <StatsLineChart points={perfPoints} stroke={STATS_GREEN} extendTo={nowSec} />
-            <Text className={styles.dataLine}>
-              Likely range {performance.ci68[0]} to {performance.ci68[1]} ·{" "}
-              {pluralStats(performance.gamesWithOpp, "game")}
-            </Text>
-          </>
-        ) : (
-          <Text className={styles.emptyLine}>Not enough games.</Text>
-        )}
-      </Box>
-
-      <Box className={styles.card}>
-        <Box className={styles.cardHead}>
-          <span className={styles.cardLabel}>Rating</span>
-          <span className={styles.heroWrap}>
-            {currentRating != null ? (
-              <span className={styles.hero}>{Math.round(currentRating)}</span>
-            ) : null}
-            <StatsDeltaChip value={ratingDelta} />
-          </span>
-        </Box>
-        {ratedFilter === "casual" ? (
-          <Text className={styles.emptyLine}>Rated games only.</Text>
-        ) : ratingPoints.length > 0 ? (
-          <StatsLineChart
-            points={ratingPoints}
-            stroke="var(--mantine-color-blue-4)"
-            fill={!flatBaseline}
-            extendTo={nowSec}
-          />
-        ) : (
-          <Text className={styles.emptyLine}>Not enough games.</Text>
-        )}
-      </Box>
-
-      <Box className={styles.card}>
-        <span className={styles.cardLabel}>Record</span>
-        <div className={styles.recordGrid}>
-          <div className={styles.recordCell}>
-            <span className={styles.recordValue} data-tone="win">
-              {record.wins}
-            </span>
-            <span className={styles.recordLabel}>Wins</span>
-          </div>
-          <div className={styles.recordCell}>
-            <span className={styles.recordValue} data-tone="draw">
-              {record.draws}
-            </span>
-            <span className={styles.recordLabel}>Draws</span>
-          </div>
-          <div className={styles.recordCell}>
-            <span className={styles.recordValue} data-tone="loss">
-              {record.losses}
-            </span>
-            <span className={styles.recordLabel}>Losses</span>
-          </div>
-          <div className={styles.recordCell}>
-            <span className={styles.recordValue}>{games.length}</span>
-            <span className={styles.recordLabel}>Games</span>
-          </div>
-        </div>
-      </Box>
-
-      <Box className={styles.card}>
-        <span className={styles.cardLabel}>Form</span>
-        {games.length === 0 ? (
-          <Text className={styles.emptyLine}>No games in this period.</Text>
-        ) : (
-          <>
-            <div className={styles.formRows}>
-              <div className={styles.formRow}>
-                <Text size="sm">Trend</Text>
-                <Text size="sm" className={styles.formValue} data-dir={trendDir}>
-                  {trendDir === "up" ? "▲ " : trendDir === "down" ? "▼ " : ""}
-                  {formatSignedStats(trend)} / week
-                </Text>
-              </div>
-              <div className={styles.formRow}>
-                <Text size="sm">Current streak</Text>
-                <Text size="sm" className={styles.formValue}>
-                  {formatStatsStreak(form.streak)}
-                </Text>
-              </div>
-              <div className={styles.formRow}>
-                <Text size="sm">Sessions in period</Text>
-                <Text size="sm" className={styles.formValue}>
-                  {form.sessions}
-                </Text>
-              </div>
-              <div className={styles.formRow}>
-                <Text size="sm">Net last 10</Text>
-                <Text
-                  size="sm"
-                  className={styles.formValue}
-                  data-dir={form.net10 !== 0 ? deltaDir(form.net10) : undefined}
-                >
-                  {formatSignedStats(form.net10)}
-                </Text>
-              </div>
-            </div>
-            {form.tilt ? (
-              <Box className={styles.tiltNote}>
-                <Badge color="red" variant="light">
-                  Tilt risk
-                </Badge>
-                <Text size="xs" c="dimmed" mt={4}>
-                  Losses are stacking up in quick sessions. A short break usually earns the points
-                  back.
-                </Text>
-              </Box>
-            ) : null}
-          </>
-        )}
-      </Box>
-    </Box>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Strength tab: EloGuard strength-profile parity (pool cards, phases, recent
-// analyzed games) plus the batch-analysis controls.
 // ---------------------------------------------------------------------------
 
 function StatsStrengthSection({
@@ -1836,6 +1612,7 @@ export default function StatsWorkspace() {
 
   const [data, setData] = useState<StatsCacheEntry | null>(null);
   const [loading, setLoading] = useState(false);
+  const gamesAbortRef = useRef<AbortController | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fetchedRating, setFetchedRating] = useState<number | null>(null);
   const [poolRatings, setPoolRatings] = useState<StatsPoolRatings>({});
@@ -1852,9 +1629,10 @@ export default function StatsWorkspace() {
   }, []);
 
   const requestedDays = Math.max(STATS_BASE_HISTORY_DAYS, getStatsPeriodDays(settings.period));
-  const cacheKey = `${settings.source}|${trimmedUsername.toLowerCase()}|${settings.timeClass}|${settings.rated}`;
+  const effectiveRated = settings.tab === "overview" ? "rated" : settings.rated;
+  const cacheKey = `${settings.source}|${trimmedUsername.toLowerCase()}|${settings.timeClass}|${effectiveRated}`;
 
-  // Game + rolling-series fetch. Period switches inside the cached coverage
+  // Completed-game fetch. Period switches inside the cached coverage
   // only re-filter; only a larger period (or manual refresh) refetches.
   useEffect(() => {
     if (!trimmedUsername) {
@@ -1871,6 +1649,7 @@ export default function StatsWorkspace() {
       return;
     }
     const controller = new AbortController();
+    gamesAbortRef.current = controller;
     let active = true;
     setLoading(true);
     setError(null);
@@ -1878,7 +1657,7 @@ export default function StatsWorkspace() {
       source: settings.source,
       username: trimmedUsername,
       timeClass: settings.timeClass,
-      ratedFilter: settings.rated,
+      ratedFilter: effectiveRated,
       maxGames: STATS_MAX_GAMES,
       maxDays: requestedDays,
       monthsCap: Math.ceil(requestedDays / 28) + 1,
@@ -1887,8 +1666,7 @@ export default function StatsWorkspace() {
       .then((games) => {
         if (!active) return;
         const nowSec = Math.floor(Date.now() / 1000);
-        const series = computePerformanceSeries(games, { windowSize: 20 });
-        const entry: StatsCacheEntry = { games, series, nowSec, historyDays: requestedDays };
+        const entry: StatsCacheEntry = { games, nowSec, historyDays: requestedDays };
         const existing = cacheRef.current.get(cacheKey);
         if (!existing || existing.historyDays <= entry.historyDays) {
           cacheRef.current.set(cacheKey, entry);
@@ -1911,7 +1689,7 @@ export default function StatsWorkspace() {
     cacheKey,
     refreshKey,
     requestedDays,
-    settings.rated,
+    effectiveRated,
     settings.source,
     settings.timeClass,
     trimmedUsername,
@@ -2003,16 +1781,6 @@ export default function StatsWorkspace() {
         : [],
     [data, periodWindow.end, periodWindow.start],
   );
-  const periodSeries = useMemo(
-    () =>
-      data
-        ? data.series.filter(
-            (point) => point.end >= periodWindow.start && point.end <= periodWindow.end,
-          )
-        : [],
-    [data, periodWindow.end, periodWindow.start],
-  );
-
   // Current rating: last rated game in period, then the live fetched rating,
   // then the newest rated game in the wider cache (EloGuard order).
   const currentRating = useMemo(() => {
@@ -2081,9 +1849,10 @@ export default function StatsWorkspace() {
 
       <Box className={`${classes.panel} ${styles.controlsCard}`}>
         <Group gap="xs" wrap="nowrap" className={styles.controlsRow}>
-          <SegmentedControl
+          <Select
             size="xs"
             value={settings.source}
+            allowDeselect={false}
             onChange={(value) =>
               updateSettings({ source: value === "lichess" ? "lichess" : "chesscom" })
             }
@@ -2117,7 +1886,8 @@ export default function StatsWorkspace() {
           />
           <Select
             size="xs"
-            value={settings.rated}
+            value={effectiveRated}
+            disabled={settings.tab === "overview"}
             onChange={(value) => value && updateSettings({ rated: value as StatsRatedFilter })}
             data={[
               { value: "rated", label: "Rated" },
@@ -2127,6 +1897,7 @@ export default function StatsWorkspace() {
             allowDeselect={false}
             aria-label="Rated filter"
           />
+          {settings.tab !== "overview" && (
           <Select
             size="xs"
             value={settings.period}
@@ -2138,6 +1909,7 @@ export default function StatsWorkspace() {
             allowDeselect={false}
             aria-label="Stats period"
           />
+          )}
         </div>
       </Box>
 
@@ -2171,6 +1943,7 @@ export default function StatsWorkspace() {
             <Text size="xs" c="dimmed">
               Loading your games...
             </Text>
+            <Button size="xs" variant="light" onClick={() => gamesAbortRef.current?.abort()}>Stop</Button>
           </Stack>
         </Center>
       ) : error ? (
@@ -2182,13 +1955,13 @@ export default function StatsWorkspace() {
         </Box>
       ) : data ? (
         settings.tab === "overview" ? (
-          <StatsOverviewSection
-            games={periodGames}
-            series={periodSeries}
-            currentRating={currentRating}
-            ratedFilter={settings.rated}
-            nowSec={effectiveNowSec}
-            windowStart={periodWindow.start}
+          <TruePerformancePanel
+            key={`${settings.source}:${trimmedUsername}:${settings.timeClass}`}
+            games={toPerformanceGames(data.games)}
+            poolLabel={`${getStatsSourceLabel(settings.source)} · ${settings.timeClass}`}
+            asOf={data.nowSec}
+            coverage={`${data.games.length.toLocaleString()} games loaded · Up to 5,000 games / 10 years of available history`}
+            onOpenGame={(game) => { if (game.url && /^https:\/\/(?:lichess\.org|(?:www\.)?chess\.com)\//i.test(game.url)) window.open(game.url, "_blank", "noopener,noreferrer"); }}
           />
         ) : settings.tab === "strength" ? (
           <StatsStrengthSection

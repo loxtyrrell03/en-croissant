@@ -1,3 +1,4 @@
+import { TruePerformanceOnline } from "@/shared/TruePerformanceOnline";
 import {
   Alert,
   Badge,
@@ -197,7 +198,8 @@ export default function AccountStatsPanel() {
   const currentBand = report?.comparisons.find((comparison) => comparison.id === "current");
 
   return (
-    <Stack h="100%" gap="sm" style={{ overflow: "hidden" }}>
+    <ScrollArea h="100%" type="auto">
+    <Stack gap="sm">
       <Group justify="space-between" align="flex-end" gap="xs">
         <Box>
           <Group gap={6}>
@@ -208,8 +210,7 @@ export default function AccountStatsPanel() {
             {isLinkedStatsSource && <Badge color="green">Linked</Badge>}
           </Group>
           <Text size="xs" c="dimmed">
-            Estimated Lichess benchmark bands use the selected account, time control, and rating
-            mapping.
+            Online results and imported game analysis.
           </Text>
         </Box>
         <Button
@@ -231,6 +232,11 @@ export default function AccountStatsPanel() {
         </Button>
       </Group>
 
+      <TruePerformanceOnline accounts={accounts.map(account => ({ id: accountKey(account), provider: account.source, username: account.username }))} />
+
+      <details>
+      <summary style={{ cursor: "pointer" }}>Imported game analysis</summary>
+      <Stack gap="sm" mt="sm">
       <Group gap="xs" align="flex-end">
         <Select
           size="xs"
@@ -398,6 +404,9 @@ export default function AccountStatsPanel() {
           </ScrollArea>
         </>
       )}
+      </Stack>
+      </details>
     </Stack>
+    </ScrollArea>
   );
 }
