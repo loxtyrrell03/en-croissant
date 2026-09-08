@@ -106,6 +106,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:capturing-fork-preparation",
+                input: {
+                    fen: "8/8/6k1/5qpr/4N3/8/8/K6Q w - - 0 1",
+                    pvUci: ["h1h5", "g6h5", "e4g3"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:queen-capture-over-incidental-pin",
                 input: {
                     fen: "8/4R1pk/5q2/8/8/8/1B6/6K1 w - - 0 1",
@@ -198,7 +207,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(85);
+        expect(report).toHaveLength(86);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
@@ -218,12 +227,14 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
 );
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_PGN_SAMPLE)(
-    "the private fork and pinned capture survive the built worker boundary",
+    "the private recovered themes survive the built worker boundary",
     async () => {
         const sample = JSON.parse(readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"));
         for (const [id, theme, value] of [
             ["private-easy:145", "fork", 80],
             ["private-easy:68", "pin", 100],
+            ["private-easy:77", "forkPreparation", 100],
+            ["private-easy:97", "forkPreparation", 280],
         ] as const) {
             const row = sample.cases.find((item: { id: string }) => item.id === id);
             const input = {
