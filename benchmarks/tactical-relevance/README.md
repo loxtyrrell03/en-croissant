@@ -38,7 +38,7 @@ replace the main lesson or establish that the entire continuation is forced.
 Routine recaptures, global opening/check tags, and incidental pins that do not
 explain a winning capture are excluded from these rows.
 
-`causal-stockfish-18.json` adds fresh searches before and after four mistakes,
+`causal-stockfish-18.json` adds fresh searches before and after seven mistakes,
 with all three engine candidates and the resulting explanations:
 
 | Mistake | Engine's better move | Judged causal lesson |
@@ -47,6 +47,9 @@ with all three engine candidates and the resulting explanations:
 | White plays Kb1 with a loose black queen and attacked white knight | Nxe4 | Misses winning the queen while saving the knight |
 | Black plays b6 facing Re8# | g5 | Allows back-rank mate; g5 supplies Kg7 after Re8+ |
 | White plays Ke5 with the queen attacked in the quiet-mate example | Qh2 | The main missed opportunity is forced mate, ahead of the allowed queen loss |
+| Black plays h6 with Ne7 pinned to Ke8 | Kd7 | Kxd6 then answers d6; h6 instead permits a pin-based drawing resource |
+| Black plays a6 with Kf5 and Qh7 aligned behind Bd3+ | Kf4 | Qxd3 can answer Bd3 once the king no longer blocks the queen |
+| Black plays a6 with Nf6 defending Qd5 | Qxd1+ | White must answer check instead of playing gxf6+ and Rxd5 |
 
 The final position is already materially lost: this judges avoidance of
 immediate mate, not a change in the game's theoretical outcome. The initial
@@ -151,6 +154,38 @@ show both fork targets, or the pin/skewer ray, with the pin label on the pinned
 piece. These come from legal board geometry, not parsed prose or a supposedly
 mandatory engine reply. Existing preparatory moves are retained for later-ply
 motifs. This is source/render-data proof, not physical running-app proof.
+
+## Comparing the cause, including moved targets and checking resources
+
+The adapter now rechecks the same pin, skewer, or defender-removal reply after
+the better move. It tracks the same defending pieces across the two choices,
+including castling's relocated rook, and looks for a concrete legal answer to
+the threatened follow-up capture. It does not transplant the full old PV into
+the changed position. Saved headline and timeline evidence retain the same
+comparison. Persistent danger alone does not explain the mistake; uncertain
+or incomplete exchange proofs do not become claims that the tactic is prevented.
+
+Fresh engine evidence corrected the first pin hypothesis. After h6, d6 saves
+White from a roughly three-pawn disadvantage to an approximately equal game;
+Black can keep giving checks instead of immediately losing the knight. Hiding
+the pin loses the lesson, but calling the capture forced overstates it. The
+classifier distinguishes a fully proved immediate gain from a specific pin or
+skewer threat for which every **non-checking** reply concedes material. The latter
+is admitted only at the engine-evaluated root, with a side-to-move score of at
+least -30 cp (a small near-equality tolerance), medium confidence, and explicit
+wording that checking replies remain. It is not admitted into unevaluated
+later ply rows or losing/scoreless root scans. This is engine-supported threat
+evidence, not an exhaustive proof against long checking sequences.
+
+An immediate mating check, a material-winning checking capture/promotion,
+or a non-checking defence does not qualify as a harmless checking tempo.
+Eight comparison regressions cover an unpinned knight's escape, persistent
+pins, a relocated queen, defender-removal follow-up versus the already captured
+knight, forcing checks, castling's rook, conditional versus guaranteed pin
+evidence, and a quiet mating countercheck despite an optimistic supplied score.
+The real engine comparison prefers Kd7 and finds Kxd6; the deterministic Kf8
+case checks a different valid unpinning resource. The two supplied pawn moves
+in the persistent-pin control are not claimed to be the engine's best moves.
 
 Run in PowerShell with the configured Node runtime on PATH:
 

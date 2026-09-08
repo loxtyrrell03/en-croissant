@@ -1,5 +1,977 @@
 [
   {
+    "name": "Failed to unpin the knight",
+    "fen": "4k2r/4n2p/8/3P4/8/8/8/4R1K1 b k - 0 1",
+    "played": "h7h6",
+    "source": "allowed",
+    "primary": "pin",
+    "why": "A king move can unpin the knight while retaining its defence. h6 leaves d6 available; the comparison must find the best move's actual defensive resource.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e8d7",
+          "e1a1",
+          "e7d5",
+          "a1a7",
+          "d7d6",
+          "g1h2",
+          "d6e5",
+          "a7a5",
+          "e5e4",
+          "h2h3",
+          "h7h6",
+          "h3h4"
+        ],
+        "pvSan": [
+          "Kd7",
+          "Ra1",
+          "Nxd5",
+          "Ra7+",
+          "Kd6",
+          "Kh2",
+          "Ke5",
+          "Ra5",
+          "Ke4",
+          "Kh3",
+          "h6",
+          "Kh4"
+        ],
+        "cp": 295,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "h8g8",
+          "g1f2",
+          "g8f8",
+          "f2g3",
+          "e8f7",
+          "d5d6",
+          "e7f5",
+          "g3g4",
+          "f5d6",
+          "g4h4",
+          "f8d8",
+          "h4h5",
+          "d6f5",
+          "e1e2",
+          "d8d5",
+          "e2e1",
+          "f7f6"
+        ],
+        "pvSan": [
+          "Rg8+",
+          "Kf2",
+          "Rf8+",
+          "Kg3",
+          "Kf7",
+          "d6",
+          "Nf5+",
+          "Kg4",
+          "Nxd6",
+          "Kh4",
+          "Rd8",
+          "Kh5",
+          "Nf5",
+          "Re2",
+          "Rd5",
+          "Re1",
+          "Kf6"
+        ],
+        "cp": 292,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e8f7",
+          "e1f1",
+          "f7g7",
+          "d5d6",
+          "e7d5",
+          "f1d1",
+          "d5f6",
+          "d1d4",
+          "h8d8",
+          "d4d1",
+          "d8d7",
+          "d1d3",
+          "h7h6",
+          "d3h3",
+          "d7d6"
+        ],
+        "pvSan": [
+          "Kf7",
+          "Rf1+",
+          "Kg7",
+          "d6",
+          "Nd5",
+          "Rd1",
+          "Nf6",
+          "Rd4",
+          "Rd8",
+          "Rd1",
+          "Rd7",
+          "Rd3",
+          "h6",
+          "Rh3",
+          "Rxd6"
+        ],
+        "cp": 288,
+        "mate": null
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d5d6",
+          "h8h7",
+          "e1e6",
+          "h7g7",
+          "g1f2",
+          "e8d7",
+          "d6e7",
+          "g7e7",
+          "e6e7",
+          "d7e7",
+          "f2f3",
+          "e7f6"
+        ],
+        "pvSan": [
+          "d6",
+          "Rh7",
+          "Re6",
+          "Rg7+",
+          "Kf2",
+          "Kd7",
+          "dxe7",
+          "Rxe7",
+          "Rxe7+",
+          "Kxe7",
+          "Kf3",
+          "Kf6"
+        ],
+        "cp": -1,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "g1h2",
+          "e8d7",
+          "e1e6",
+          "e7d5",
+          "e6a6",
+          "d7e7",
+          "a6g6",
+          "d5f4",
+          "g6b6",
+          "f4e6",
+          "h2g3",
+          "h8d8",
+          "g3h4",
+          "d8d5",
+          "b6a6"
+        ],
+        "pvSan": [
+          "Kh2",
+          "Kd7",
+          "Re6",
+          "Nxd5",
+          "Ra6",
+          "Ke7",
+          "Rg6",
+          "Nf4",
+          "Rb6",
+          "Ne6",
+          "Kg3",
+          "Rd8",
+          "Kh4",
+          "Rd5",
+          "Ra6"
+        ],
+        "cp": -251,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "g1g2",
+          "h8g8",
+          "g2f3",
+          "g8g6",
+          "f3e4",
+          "e8f7",
+          "e1f1",
+          "f7g7",
+          "e4d4",
+          "g6g4",
+          "d4e5"
+        ],
+        "pvSan": [
+          "Kg2",
+          "Rg8+",
+          "Kf3",
+          "Rg6",
+          "Ke4",
+          "Kf7",
+          "Rf1+",
+          "Kg7",
+          "Kd4",
+          "Rg4+",
+          "Ke5"
+        ],
+        "cp": -266,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [
+        {
+          "id": "pin",
+          "label": "Pin",
+          "source": "allowed",
+          "confidence": "medium",
+          "ply": 1,
+          "moveUci": "d5d6",
+          "value": 220,
+          "evidence": "d6 exploits the knight on e7, pinned to the king on e8 by the rook on e1. Every non-checking reply allows material loss. Checking replies remain, so the capture is a threat, not a guaranteed immediate win.",
+          "relevance": "primary",
+          "comparison": "prevented",
+          "comparisonEvidence": "After Kd7, Kxd6 answers d6; a profitable immediate follow-up capture of the knight on e7 is no longer forced."
+        }
+      ],
+      "missedMotifs": [],
+      "motifClassifierVersion": "site-55.adapter-7",
+      "allowedTimeline": [
+        {
+          "id": "pin",
+          "label": "Pin",
+          "source": "allowed",
+          "confidence": "medium",
+          "ply": 1,
+          "moveUci": "d5d6",
+          "value": 220,
+          "evidence": "d6 exploits the knight on e7, pinned to the king on e8 by the rook on e1. Every non-checking reply allows material loss. Checking replies remain, so the capture is a threat, not a guaranteed immediate win.",
+          "relevance": "primary",
+          "comparison": "prevented",
+          "comparisonEvidence": "After Kd7, Kxd6 answers d6; a profitable immediate follow-up capture of the knight on e7 is no longer forced.",
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "dxe7 wins the loose knight on e7.",
+          "source": "allowed",
+          "ply": 7,
+          "moveUci": "d6e7",
+          "relevance": "secondary",
+          "value": 220,
+          "actor": "white"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "Why the move was tactically bad",
+      "text": "Your move allowed this tactic: d6 exploits the knight on e7, pinned to the king on e8 by the rook on e1. Every non-checking reply allows material loss. Checking replies remain, so the capture is a threat, not a guaranteed immediate win. After Kd7, Kxd6 answers d6; a profitable immediate follow-up capture of the knight on e7 is no longer forced.",
+      "source": "allowed",
+      "primary": {
+        "id": "pin",
+        "label": "Pin",
+        "source": "allowed",
+        "confidence": "medium",
+        "ply": 1,
+        "moveUci": "d5d6",
+        "value": 220,
+        "evidence": "d6 exploits the knight on e7, pinned to the king on e8 by the rook on e1. Every non-checking reply allows material loss. Checking replies remain, so the capture is a threat, not a guaranteed immediate win.",
+        "relevance": "primary",
+        "comparison": "prevented",
+        "comparisonEvidence": "After Kd7, Kxd6 answers d6; a profitable immediate follow-up capture of the knight on e7 is no longer forced."
+      }
+    },
+    "classificationMs": 18.492999999998574
+  },
+  {
+    "name": "Allowed a king-queen skewer instead of preserving the queen",
+    "fen": "8/p6q/8/5k2/2B5/8/8/6K1 b - - 0 1",
+    "played": "a7a6",
+    "source": "allowed",
+    "primary": "skewer",
+    "why": "The irrelevant pawn move allows Bd3+ and Bxh7. The better move should remove the skewer or use a forcing check; a discovered forced mate could instead be the primary missed lesson.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "f5f4",
+          "c4b5",
+          "h7b1",
+          "b5f1",
+          "b1c2",
+          "f1h3",
+          "a7a5",
+          "h3e6",
+          "a5a4",
+          "e6f7",
+          "f4e3",
+          "f7e6",
+          "c2g6",
+          "g1f1",
+          "g6e6",
+          "f1g2",
+          "e6d5",
+          "g2g1"
+        ],
+        "pvSan": [
+          "Kf4",
+          "Bb5",
+          "Qb1+",
+          "Bf1",
+          "Qc2",
+          "Bh3",
+          "a5",
+          "Be6",
+          "a4",
+          "Bf7",
+          "Ke3",
+          "Be6",
+          "Qg6+",
+          "Kf1",
+          "Qxe6",
+          "Kg2",
+          "Qd5+",
+          "Kg1"
+        ],
+        "cp": 1171,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "h7g6",
+          "g1f2",
+          "f5f4",
+          "c4d5",
+          "g6c2",
+          "f2g1",
+          "c2c5",
+          "g1f1",
+          "c5d5",
+          "f1e2",
+          "a7a5",
+          "e2e1",
+          "d5h1",
+          "e1d2"
+        ],
+        "pvSan": [
+          "Qg6+",
+          "Kf2",
+          "Kf4",
+          "Bd5",
+          "Qc2+",
+          "Kg1",
+          "Qc5+",
+          "Kf1",
+          "Qxd5",
+          "Ke2",
+          "a5",
+          "Ke1",
+          "Qh1+",
+          "Kd2"
+        ],
+        "cp": 1015,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "h7g7",
+          "g1f1",
+          "f5f4",
+          "c4d5",
+          "g7a1",
+          "f1e2",
+          "a1e5",
+          "e2d2",
+          "e5d5",
+          "d2c2",
+          "a7a5",
+          "c2c3",
+          "d5b5",
+          "c3d4",
+          "b5b2"
+        ],
+        "pvSan": [
+          "Qg7+",
+          "Kf1",
+          "Kf4",
+          "Bd5",
+          "Qa1+",
+          "Ke2",
+          "Qe5+",
+          "Kd2",
+          "Qxd5+",
+          "Kc2",
+          "a5",
+          "Kc3",
+          "Qb5",
+          "Kd4",
+          "Qb2+"
+        ],
+        "cp": 923,
+        "mate": null
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "c4d3",
+          "f5f4",
+          "d3h7",
+          "f4f3",
+          "h7d3",
+          "a6a5",
+          "d3b5",
+          "f3e4",
+          "b5a4"
+        ],
+        "pvSan": [
+          "Bd3+",
+          "Kf4",
+          "Bxh7",
+          "Kf3",
+          "Bd3",
+          "a5",
+          "Bb5",
+          "Ke4",
+          "Ba4"
+        ],
+        "cp": -20,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "c4a6",
+          "h7g7",
+          "g1f1",
+          "f5f6",
+          "a6b5",
+          "f6g6",
+          "b5e8",
+          "g6h6",
+          "f1e2",
+          "g7f8",
+          "e2d2",
+          "f8f6",
+          "d2d3",
+          "f6d6",
+          "d3e2",
+          "d6c7"
+        ],
+        "pvSan": [
+          "Bxa6",
+          "Qg7+",
+          "Kf1",
+          "Kf6",
+          "Bb5",
+          "Kg6",
+          "Be8+",
+          "Kh6",
+          "Ke2",
+          "Qf8",
+          "Kd2",
+          "Qf6",
+          "Kd3",
+          "Qd6+",
+          "Ke2",
+          "Qc7"
+        ],
+        "cp": -612,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "g1g2",
+          "h7g7",
+          "g2f1",
+          "g7d4",
+          "c4g8",
+          "f5f4",
+          "f1e2",
+          "d4e3",
+          "e2d1",
+          "e3g1",
+          "d1c2",
+          "g1g2",
+          "c2b3",
+          "g2g8",
+          "b3a4"
+        ],
+        "pvSan": [
+          "Kg2",
+          "Qg7+",
+          "Kf1",
+          "Qd4",
+          "Bg8",
+          "Kf4",
+          "Ke2",
+          "Qe3+",
+          "Kd1",
+          "Qg1+",
+          "Kc2",
+          "Qg2+",
+          "Kb3",
+          "Qxg8+",
+          "Ka4"
+        ],
+        "cp": -641,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [
+        {
+          "id": "skewer",
+          "label": "Skewer",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c4d3",
+          "value": 900,
+          "evidence": "Bd3+ skewers the king on f5 and the queen on h7. No legal reply saves the rear target without conceding material.",
+          "relevance": "primary",
+          "comparison": "prevented",
+          "comparisonEvidence": "After Kf4, Qxd3 answers Bd3; a profitable immediate follow-up capture of the queen on h7 is no longer forced."
+        }
+      ],
+      "missedMotifs": [],
+      "motifClassifierVersion": "site-55.adapter-7",
+      "allowedTimeline": [
+        {
+          "id": "skewer",
+          "label": "Skewer",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c4d3",
+          "value": 900,
+          "evidence": "Bd3+ skewers the king on f5 and the queen on h7. No legal reply saves the rear target without conceding material.",
+          "relevance": "primary",
+          "comparison": "prevented",
+          "comparisonEvidence": "After Kf4, Qxd3 answers Bd3; a profitable immediate follow-up capture of the queen on h7 is no longer forced.",
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Bxh7 wins the loose queen on h7.",
+          "source": "allowed",
+          "ply": 3,
+          "moveUci": "d3h7",
+          "relevance": "secondary",
+          "value": 900,
+          "actor": "white"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "Why the move was tactically bad",
+      "text": "Your move allowed this tactic: Bd3+ skewers the king on f5 and the queen on h7. No legal reply saves the rear target without conceding material. After Kf4, Qxd3 answers Bd3; a profitable immediate follow-up capture of the queen on h7 is no longer forced.",
+      "source": "allowed",
+      "primary": {
+        "id": "skewer",
+        "label": "Skewer",
+        "source": "allowed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "c4d3",
+        "value": 900,
+        "evidence": "Bd3+ skewers the king on f5 and the queen on h7. No legal reply saves the rear target without conceding material.",
+        "relevance": "primary",
+        "comparison": "prevented",
+        "comparisonEvidence": "After Kf4, Qxd3 answers Bd3; a profitable immediate follow-up capture of the queen on h7 is no longer forced."
+      }
+    },
+    "classificationMs": 5.551100000000588
+  },
+  {
+    "name": "Allowed checking defender removal and lost the queen",
+    "fen": "8/p5k1/5n2/3qP1P1/8/8/8/3R2K1 b - - 0 1",
+    "played": "a7a6",
+    "source": "allowed",
+    "primary": "capturingDefender",
+    "why": "exf6+ removes the knight defending the queen, then Rxd5 wins it. The large allowed loss should outrank a smaller missed capture when that is the engine's better option.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d5d1",
+          "g1f2",
+          "f6g4",
+          "f2g3",
+          "g7g6",
+          "g3f4",
+          "d1e2",
+          "e5e6",
+          "e2e6",
+          "f4f3",
+          "g6g5",
+          "f3g2",
+          "e6e2",
+          "g2g1",
+          "e2f2",
+          "g1h1",
+          "f2f1"
+        ],
+        "pvSan": [
+          "Qxd1+",
+          "Kf2",
+          "Ng4+",
+          "Kg3",
+          "Kg6",
+          "Kf4",
+          "Qe2",
+          "e6",
+          "Qxe6",
+          "Kf3",
+          "Kxg5",
+          "Kg2",
+          "Qe2+",
+          "Kg1",
+          "Qf2+",
+          "Kh1",
+          "Qf1#"
+        ],
+        "cp": null,
+        "mate": 9
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "d5c5",
+          "g1g2",
+          "c5c2",
+          "g2h3",
+          "c2d1",
+          "g5f6",
+          "g7g6",
+          "h3g3",
+          "d1d3",
+          "g3f2",
+          "d3f5",
+          "f2g1",
+          "f5e5"
+        ],
+        "pvSan": [
+          "Qc5+",
+          "Kg2",
+          "Qc2+",
+          "Kh3",
+          "Qxd1",
+          "gxf6+",
+          "Kg6",
+          "Kg3",
+          "Qd3+",
+          "Kf2",
+          "Qf5+",
+          "Kg1",
+          "Qxe5"
+        ],
+        "cp": 630,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "d5e5",
+          "g5f6",
+          "g7f6",
+          "g1f1",
+          "a7a5",
+          "d1d2",
+          "e5c5",
+          "f1e1",
+          "c5c1",
+          "e1e2",
+          "a5a4",
+          "d2d6",
+          "f6f5"
+        ],
+        "pvSan": [
+          "Qxe5",
+          "gxf6+",
+          "Kxf6",
+          "Kf1",
+          "a5",
+          "Rd2",
+          "Qc5",
+          "Ke1",
+          "Qc1+",
+          "Ke2",
+          "a4",
+          "Rd6+",
+          "Kf5"
+        ],
+        "cp": 453,
+        "mate": null
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "g5f6",
+          "g7g6",
+          "d1d5",
+          "g6f5",
+          "d5a5",
+          "f5f4",
+          "f6f7",
+          "f4e3",
+          "a5a6",
+          "e3e2",
+          "f7f8q",
+          "e2e3",
+          "f8f2",
+          "e3e4",
+          "f2e2",
+          "e4d5"
+        ],
+        "pvSan": [
+          "gxf6+",
+          "Kg6",
+          "Rxd5",
+          "Kf5",
+          "Ra5",
+          "Kf4",
+          "f7",
+          "Ke3",
+          "Rxa6",
+          "Ke2",
+          "f8=Q",
+          "Ke3",
+          "Qf2+",
+          "Ke4",
+          "Qe2+",
+          "Kd5"
+        ],
+        "cp": 870,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e5f6",
+          "g7f7",
+          "d1d5",
+          "f7e6",
+          "d5d8",
+          "a6a5",
+          "d8e8",
+          "e6d5",
+          "f6f7",
+          "a5a4",
+          "f7f8q",
+          "a4a3",
+          "f8a3",
+          "d5c4",
+          "a3f8",
+          "c4d5",
+          "e8e7"
+        ],
+        "pvSan": [
+          "exf6+",
+          "Kf7",
+          "Rxd5",
+          "Ke6",
+          "Rd8",
+          "a5",
+          "Re8+",
+          "Kd5",
+          "f7",
+          "a4",
+          "f8=Q",
+          "a3",
+          "Qxa3",
+          "Kc4",
+          "Qf8",
+          "Kd5",
+          "Re7"
+        ],
+        "cp": 829,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "d1d5",
+          "f6d5",
+          "g1f2",
+          "g7g6",
+          "f2f3",
+          "g6g5",
+          "f3e4",
+          "d5c7",
+          "e4e3",
+          "g5f5",
+          "e3d4",
+          "f5f4",
+          "e5e6",
+          "c7e6",
+          "d4d5",
+          "f4f5",
+          "d5c6",
+          "e6c7",
+          "c6b6",
+          "f5e4",
+          "b6c5"
+        ],
+        "pvSan": [
+          "Rxd5",
+          "Nxd5",
+          "Kf2",
+          "Kg6",
+          "Kf3",
+          "Kxg5",
+          "Ke4",
+          "Nc7",
+          "Ke3",
+          "Kf5",
+          "Kd4",
+          "Kf4",
+          "e6",
+          "Nxe6+",
+          "Kd5",
+          "Kf5",
+          "Kc6",
+          "Nc7",
+          "Kb6",
+          "Ke4",
+          "Kc5"
+        ],
+        "cp": -365,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [
+        {
+          "id": "capturingDefender",
+          "label": "Removing the Defender",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "g5f6",
+          "value": 1220,
+          "evidence": "gxf6+ removes the knight on f6 that defended the queen on d5, with check. Every legal reply allows a profitable capture of that target.",
+          "relevance": "primary",
+          "comparison": "prevented",
+          "comparisonEvidence": "Qxd1+ makes the immediate reply gxf6+ illegal."
+        }
+      ],
+      "missedMotifs": [
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxd1+ wins the loose rook on d1.",
+          "source": "missed",
+          "ply": 1,
+          "moveUci": "d5d1",
+          "relevance": "primary",
+          "value": 500
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-7",
+      "allowedTimeline": [
+        {
+          "id": "capturingDefender",
+          "label": "Removing the Defender",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "g5f6",
+          "value": 1220,
+          "evidence": "gxf6+ removes the knight on f6 that defended the queen on d5, with check. Every legal reply allows a profitable capture of that target.",
+          "relevance": "primary",
+          "comparison": "prevented",
+          "comparisonEvidence": "Qxd1+ makes the immediate reply gxf6+ illegal.",
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Rxd5 wins the loose queen on d5.",
+          "source": "allowed",
+          "ply": 3,
+          "moveUci": "d1d5",
+          "relevance": "secondary",
+          "value": 900,
+          "actor": "white"
+        }
+      ],
+      "missedTimeline": [
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxd1+ wins the loose rook on d1.",
+          "source": "missed",
+          "ply": 1,
+          "moveUci": "d5d1",
+          "relevance": "primary",
+          "value": 500,
+          "actor": "black"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "Why the move was tactically bad",
+      "text": "Your move allowed this tactic: gxf6+ removes the knight on f6 that defended the queen on d5, with check. Every legal reply allows a profitable capture of that target. Qxd1+ makes the immediate reply gxf6+ illegal.",
+      "source": "allowed",
+      "primary": {
+        "id": "capturingDefender",
+        "label": "Removing the Defender",
+        "source": "allowed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "g5f6",
+        "value": 1220,
+        "evidence": "gxf6+ removes the knight on f6 that defended the queen on d5, with check. Every legal reply allows a profitable capture of that target.",
+        "relevance": "primary",
+        "comparison": "prevented",
+        "comparisonEvidence": "Qxd1+ makes the immediate reply gxf6+ illegal."
+      }
+    },
+    "classificationMs": 25.069400000000314
+  },
+  {
     "name": "Missed quiet mate while leaving the queen attacked",
     "fen": "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",
     "played": "f6e5",
@@ -215,7 +1187,7 @@
           "value": 10000
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-6",
+      "motifClassifierVersion": "site-55.adapter-7",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -227,6 +1199,8 @@
           "moveUci": "g6h5",
           "relevance": "primary",
           "value": 900,
+          "comparison": "prevented",
+          "comparisonEvidence": "Qh2 makes the immediate reply gxh5 illegal.",
           "actor": "black"
         }
       ],
@@ -297,7 +1271,7 @@
         "value": 10000
       }
     },
-    "classificationMs": 7.752900000001318
+    "classificationMs": 7.658400000000256
   },
   {
     "name": "b6 permits the f7 fork",
@@ -620,7 +1594,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-6",
+      "motifClassifierVersion": "site-55.adapter-7",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -632,6 +1606,8 @@
           "moveUci": "e5f7",
           "relevance": "primary",
           "value": 670,
+          "comparison": "prevented",
+          "comparisonEvidence": "After O-O, Nxf7 no longer has two profitable fork targets.",
           "actor": "white"
         },
         {
@@ -644,6 +1620,8 @@
           "moveUci": "e5f7",
           "relevance": "secondary",
           "value": 670,
+          "comparison": "prevented",
+          "comparisonEvidence": "After O-O, Nxf7 no longer wins material in the exchange.",
           "actor": "white"
         },
         {
@@ -702,7 +1680,7 @@
         "comparisonEvidence": "After O-O, Nxf7 no longer has two profitable fork targets."
       }
     },
-    "classificationMs": 63.86269999999786
+    "classificationMs": 81.26989999999932
   },
   {
     "name": "Missed queen while the knight is already attacked",
@@ -994,7 +1972,7 @@
           "value": 900
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-6",
+      "motifClassifierVersion": "site-55.adapter-7",
       "missedTimeline": [
         {
           "id": "hangingPiece",
@@ -1026,7 +2004,7 @@
         "value": 900
       }
     },
-    "classificationMs": 15.81840000000011
+    "classificationMs": 17.043000000001484
   },
   {
     "name": "Failed to create a back-rank escape",
@@ -1228,7 +2206,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-6",
+      "motifClassifierVersion": "site-55.adapter-7",
       "allowedTimeline": [
         {
           "id": "backRankMate",
@@ -1240,6 +2218,8 @@
           "moveUci": "e1e8",
           "relevance": "primary",
           "value": 10000,
+          "comparison": "prevented",
+          "comparisonEvidence": "After g5, Kg7 is a legal answer to Re8+; it is no longer mate.",
           "actor": "white"
         }
       ]
@@ -1262,6 +2242,6 @@
         "comparisonEvidence": "After g5, Kg7 is a legal answer to Re8+; it is no longer mate."
       }
     },
-    "classificationMs": 1.4899999999979627
+    "classificationMs": 1.1599000000023807
   }
 ]

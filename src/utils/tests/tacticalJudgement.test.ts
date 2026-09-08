@@ -321,6 +321,30 @@ describe("expert tactical judgement with fresh engine lines", () => {
         async () => {
             const examples = [
                 {
+                    name: "Failed to unpin the knight",
+                    fen: "4k2r/4n2p/8/3P4/8/8/8/4R1K1 b k - 0 1",
+                    played: "h7h6",
+                    source: "allowed",
+                    primary: "pin",
+                    why: "A king move can unpin the knight while retaining its defence. h6 leaves d6 available; the comparison must find the best move's actual defensive resource.",
+                },
+                {
+                    name: "Allowed a king-queen skewer instead of preserving the queen",
+                    fen: "8/p6q/8/5k2/2B5/8/8/6K1 b - - 0 1",
+                    played: "a7a6",
+                    source: "allowed",
+                    primary: "skewer",
+                    why: "The irrelevant pawn move allows Bd3+ and Bxh7. The better move should remove the skewer or use a forcing check; a discovered forced mate could instead be the primary missed lesson.",
+                },
+                {
+                    name: "Allowed checking defender removal and lost the queen",
+                    fen: "8/p5k1/5n2/3qP1P1/8/8/8/3R2K1 b - - 0 1",
+                    played: "a7a6",
+                    source: "allowed",
+                    primary: "capturingDefender",
+                    why: "exf6+ removes the knight defending the queen, then Rxd5 wins it. The large allowed loss should outrank a smaller missed capture when that is the engine's better option.",
+                },
+                {
                     name: "Missed quiet mate while leaving the queen attacked",
                     fen: "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",
                     played: "f6e5",

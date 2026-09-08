@@ -53,6 +53,8 @@ export type PositionTacticalMotifInput = {
     pvSan?: string[] | null;
     previousFen?: string | null;
     previousMoveUci?: string | null;
+    /** Engine evaluation from this position's side to move. */
+    rootCp?: number | null;
 };
 
 type SiteThemeStep = {
@@ -96,7 +98,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 6;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 7;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -732,6 +734,7 @@ export function classifyPositionTacticalMotifs(
         fen,
         bestLine,
         toMotifEvidence(detail, "available", input.pvSan),
+        input.rootCp,
     );
     return {
         motifs,
@@ -893,6 +896,9 @@ export function classifyMistakeReviewMotifs(
             fenAfterPlayedMove ?? "",
             refutationLine,
             toMotifEvidence(allowedDetail, "allowed", input.refutationSan),
+            typeof input.cpAfter === "number"
+                ? input.cpAfter * (fenSide(fenAfterPlayedMove ?? "") === "w" ? 1 : -1)
+                : undefined,
         ).map((m) => ({ ...m, source: "allowed" as const })),
         missedMotifs:
             playedMoveUci === bestMoveUci
@@ -901,26 +907,30 @@ export function classifyMistakeReviewMotifs(
                       fen,
                       bestLine,
                       toMotifEvidence(missedDetail, "missed", input.pvSan),
+                      typeof input.cpBefore === "number"
+                          ? input.cpBefore * (fenSide(fen) === "w" ? 1 : -1)
+                          : undefined,
                   ).map((m) => ({ ...m, source: "missed" as const })),
         motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
     } satisfies MistakeReviewMotifClassification;
 
+    const allowedMotifs = compareImmediateTacticalDefence(
+        fen,
+        bestMoveUci,
+        playedMoveUci,
+        refutationLine[0],
+        classification.allowedMotifs,
+    );
     const compared: MistakeReviewMotifClassification = {
         ...classification,
-        allowedMotifs: compareImmediateTacticalDefence(
-            fen,
-            bestMoveUci,
-            playedMoveUci,
-            refutationLine[0],
-            classification.allowedMotifs,
-        ),
+        allowedMotifs,
         ...(classification.allowedMotifs.length
             ? {
                   allowedTimeline: buildTacticalTimeline(
                       fenAfterPlayedMove ?? "",
                       refutationLine,
                       "allowed",
-                      classification.allowedMotifs,
+                      allowedMotifs,
                       input.refutationSan,
                   ),
               }
