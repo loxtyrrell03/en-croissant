@@ -31,6 +31,19 @@ const MECHANISMS = new Set([
     "xRayAttack",
 ]);
 const MATE = /(?:^mate(?:In\d+)?$|Mate$)/;
+const CONCRETE_THEMES = new Set([
+    "hangingPiece",
+    "trappedPiece",
+    "sacrifice",
+    "promotion",
+    "underPromotion",
+    "attacking_undefended_piece",
+    "attackingF2F7",
+    "mateThreat",
+    "backRank",
+    "zugzwang",
+    "enPassant",
+]);
 
 export type TacticalReplayStep = {
     before: Chess;
@@ -275,6 +288,12 @@ export function auditTacticalMotifs(
         ];
     }
     for (let proposal of proposals) {
+        if (
+            !MECHANISMS.has(proposal.id) &&
+            !CONCRETE_THEMES.has(proposal.id) &&
+            !MATE.test(proposal.id)
+        )
+            continue;
         if (proposal.id === "attraction" && mate) {
             const anchor = episode.findIndex(
                 (s, i) =>
@@ -295,6 +314,24 @@ export function auditTacticalMotifs(
         if (!proposal.ply || proposal.ply > end) continue;
         const step = steps[proposal.ply - 1];
         if (!step || step.before.turn !== attacker || proposal.moveUci !== step.uci) continue;
+        // Capturing a free queen can incidentally pin a distant pawn. Only call
+        // that capture a pin tactic when a pinned recapturer explains its gain.
+        if (
+            proposal.id === "pin" &&
+            step.capture >= 320 &&
+            tacticalExchangeGain(step.before, step.move) >= 100
+        ) {
+            const ctx = step.after.ctx();
+            const pinnedRecapturer = [...step.after.board[step.after.turn]].some((from) => {
+                const piece = step.after.board.get(from)!;
+                return (
+                    ctx.blockers.has(from) &&
+                    attacks(piece, from, step.after.board.occupied).has(step.move.to) &&
+                    !step.after.isLegal({ from, to: step.move.to })
+                );
+            });
+            if (!pinnedRecapturer) continue;
+        }
         if (proposal.id === "deflection") {
             const reply = episode[proposal.ply];
             const defender = reply?.before.board.get(reply.move.from);
@@ -400,4 +437,73 @@ export function auditTacticalMotifs(
               ? tacticalExchangeGain(root.before, root.move)
               : Math.max(100, settled),
     }));
+}
+
+/** Compare the same immediate reply after the played and best moves. We only
+ * make a causal statement where legality/geometry/exchange provides a witness;
+ * replaying the old full PV after a different move would assume bad defence. */
+export function compareImmediateTacticalDefence(
+    fen: string,
+    bestMove: string | null,
+    playedMove: string | null,
+    reply: string | undefined,
+    motifs: TacticalMotifEvidence[],
+) {
+    if (!bestMove || !playedMove || !reply) return motifs;
+    const actual = replayTacticalLine(fen, [playedMove, reply]);
+    const better = replayTacticalLine(fen, [bestMove, reply]);
+    if (actual.length < 2 || !better.length) return motifs;
+    const step = actual[1];
+    const alternative = better[1];
+    const bestSan = better[0].san;
+    return motifs.map((motif) => {
+        if (motif.ply !== 1 || motif.moveUci !== reply) return motif;
+        let comparison: "prevented" | "persists" | undefined;
+        let comparisonEvidence = "";
+        if (!alternative) {
+            comparison = "prevented";
+            comparisonEvidence = `${bestSan} makes the immediate reply ${step.san} illegal.`;
+        } else if (MATE.test(motif.id) && step.after.isCheckmate()) {
+            if (!alternative.after.isCheckmate()) {
+                const escape =
+                    legalMoves(alternative.after).find(
+                        (move) => alternative.after.board.get(move.from)?.role === "king",
+                    ) ?? legalMoves(alternative.after)[0];
+                comparison = "prevented";
+                comparisonEvidence = escape
+                    ? `After ${bestSan}, ${makeSan(alternative.after, escape)} is a legal answer to ${alternative.san}; it is no longer mate.`
+                    : `After ${bestSan}, ${alternative.san} is no longer checkmate.`;
+            } else {
+                comparison = "persists";
+                comparisonEvidence = `The same immediate mate remains after ${bestSan}.`;
+            }
+        } else if (["hangingPiece", "attackingF2F7"].includes(motif.id)) {
+            const gain = tacticalExchangeGain(step.before, step.move);
+            const otherGain = tacticalExchangeGain(alternative.before, alternative.move);
+            if (gain > 0 && otherGain > -VALUE.king && otherGain <= 0) {
+                comparison = "prevented";
+                comparisonEvidence = `After ${bestSan}, ${alternative.san} no longer wins material in the exchange.`;
+            } else if (gain > 0 && otherGain >= gain) {
+                comparison = "persists";
+                comparisonEvidence = `The same capture still wins material after ${bestSan}.`;
+            }
+        } else if (motif.id === "fork") {
+            const targets = winningTargets(
+                alternative.after,
+                alternative.move.to,
+                alternative.before.turn,
+            );
+            if (targets.length < 2) {
+                comparison = "prevented";
+                comparisonEvidence = `After ${bestSan}, ${alternative.san} no longer has two profitable fork targets.`;
+            } else {
+                const actualTargets = winningTargets(step.after, step.move.to, step.before.turn);
+                if (targets.join(",") === actualTargets.join(",") && verifiedFork(alternative)) {
+                    comparison = "persists";
+                    comparisonEvidence = `The same immediate fork is still available after ${bestSan}.`;
+                }
+            }
+        }
+        return comparison ? { ...motif, comparison, comparisonEvidence } : motif;
+    });
 }

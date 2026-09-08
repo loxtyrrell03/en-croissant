@@ -4,10 +4,17 @@ import {
     THEME_LABELS,
     detectAllowedThemesDetailed,
     detectThemesDetailed,
+    detectTacticsAtStep,
+    walkPV,
 } from "./siteClassifier/theme-detector.js";
 import { ChessLite } from "./siteClassifier/analysis.js";
 import { ChessPrimitives } from "./siteClassifier/chess-primitives.js";
-import { auditTacticalMotifs, hasTacticalStart } from "./causalTactics";
+import {
+    auditTacticalMotifs,
+    compareImmediateTacticalDefence,
+    hasTacticalStart,
+    replayTacticalLine,
+} from "./causalTactics";
 import type {
     MistakeReviewMotifClassification,
     PositionTacticalMotifClassification,
@@ -67,6 +74,12 @@ type SiteThemeDetail = {
     isMate?: boolean | null;
 };
 
+const detectStepThemes = detectTacticsAtStep as unknown as (
+    step: SiteThemeStep,
+    side: "w" | "b",
+    options: { steps: SiteThemeStep[] },
+) => unknown;
+
 type SiteAllowedThemeOptions = {
     deltaCp: number | null;
     previousFen: string;
@@ -83,7 +96,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 3;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 4;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -656,7 +669,12 @@ export function buildMistakeReviewTacticalExplanation({
     const missed = selectImportantTacticalMotifs(missedMotifs, 1)[0];
     if (!allowed && !missed) return null;
 
-    if (missed && (!allowed || (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))) {
+    if (
+        missed &&
+        (!allowed ||
+            allowed.comparison === "persists" ||
+            (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))
+    ) {
         return {
             title: `What you missed: ${missed.label}`,
             text: `The better move had this tactic: ${missed.evidence}`,
@@ -666,8 +684,14 @@ export function buildMistakeReviewTacticalExplanation({
     }
     if (allowed) {
         return {
-            title: "Why the move was tactically bad",
-            text: `Your move allowed this tactic: ${allowed.evidence}`,
+            title:
+                allowed.comparison === "persists"
+                    ? "Tactical danger in the position"
+                    : "Why the move was tactically bad",
+            text:
+                allowed.comparison === "persists"
+                    ? `${allowed.evidence} ${allowed.comparisonEvidence} This threat alone does not explain the difference between the two moves.`
+                    : `Your move allowed this tactic: ${allowed.evidence}${allowed.comparisonEvidence ? ` ${allowed.comparisonEvidence}` : ""}`,
             source: "allowed",
             primary: allowed,
         };
@@ -704,14 +728,85 @@ export function classifyPositionTacticalMotifs(
         }
     }
 
+    const motifs = auditTacticalMotifs(
+        fen,
+        bestLine,
+        toMotifEvidence(detail, "available", input.pvSan),
+    );
     return {
-        motifs: auditTacticalMotifs(
-            fen,
-            bestLine,
-            toMotifEvidence(detail, "available", input.pvSan),
-        ),
+        motifs,
+        ...(motifs.length
+            ? { timeline: buildTacticalTimeline(fen, bestLine, "available", motifs, input.pvSan) }
+            : {}),
         motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
     };
+}
+
+/** Each row is assessed in its own legal position. Root causes stay separate
+ * so later repetitions and opponent counterplay cannot replace the lesson. */
+export function buildTacticalTimeline(
+    fen: string,
+    line: string[],
+    source: TacticalMotifSource,
+    rootMotifs: TacticalMotifEvidence[],
+    sanLine?: string[] | null,
+) {
+    const replay = replayTacticalLine(fen, line);
+    const legalLine = replay.map((step) => step.uci);
+    const rawSteps = walkPV(fen, legalLine, fenSide(fen)) as SiteThemeStep[];
+    const evidence = new Map<string, TacticalMotifEvidence>();
+    for (const motif of rootMotifs) {
+        const step = replay[(motif.ply ?? 0) - 1];
+        if (step) evidence.set(`${motif.ply}:${motif.id}`, { ...motif, actor: step.before.turn });
+    }
+    for (let index = 0; index < replay.length; index++) {
+        const step = replay[index];
+        const suffix = legalLine.slice(index);
+        if (!hasTacticalStart(rawSteps[index]?.fenBefore ?? "", suffix)) continue;
+        const side = step.before.turn === "white" ? "w" : "b";
+        const themes = detectStepThemes(rawSteps[index], side, { steps: rawSteps });
+        const detail: SiteThemeDetail = {
+            themes,
+            steps: rawSteps.slice(index),
+            themeStepIndex: 0,
+            themeStepIndexByTheme: Object.fromEntries(
+                normalizeThemeIds(themes).map((id) => [id, 0]),
+            ),
+        };
+        const candidates = auditTacticalMotifs(
+            rawSteps[index]?.fenBefore ?? "",
+            suffix,
+            toMotifEvidence(detail, source, sanLine?.slice(index)),
+        );
+        for (const motif of candidates.filter((m) => m.ply === 1)) {
+            if (
+                motif.id === "hangingPiece" &&
+                index > 0 &&
+                step.move.to === replay[index - 1].move.to
+            )
+                continue;
+            const key = `${index + 1}:${motif.id}`;
+            if (evidence.has(key)) continue;
+            evidence.set(key, {
+                ...motif,
+                source,
+                ply: index + 1,
+                actor: step.before.turn,
+                relevance: "secondary",
+            });
+        }
+    }
+    return [...evidence.values()]
+        .filter(
+            (motif) =>
+                motif.id !== "mate" ||
+                ![...evidence.values()].some(
+                    (other) =>
+                        other.ply === motif.ply &&
+                        (/Mate$/.test(other.id) || /^mateIn\d+$/.test(other.id)),
+                ),
+        )
+        .sort((a, b) => (a.ply ?? 0) - (b.ply ?? 0));
 }
 
 function cacheKey(input: MistakeReviewMotifInput) {
@@ -806,12 +901,45 @@ export function classifyMistakeReviewMotifs(
         motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
     } satisfies MistakeReviewMotifClassification;
 
-    motifCache.set(key, classification);
+    const compared: MistakeReviewMotifClassification = {
+        ...classification,
+        allowedMotifs: compareImmediateTacticalDefence(
+            fen,
+            bestMoveUci,
+            playedMoveUci,
+            refutationLine[0],
+            classification.allowedMotifs,
+        ),
+        ...(classification.allowedMotifs.length
+            ? {
+                  allowedTimeline: buildTacticalTimeline(
+                      fenAfterPlayedMove ?? "",
+                      refutationLine,
+                      "allowed",
+                      classification.allowedMotifs,
+                      input.refutationSan,
+                  ),
+              }
+            : {}),
+        ...(classification.missedMotifs.length
+            ? {
+                  missedTimeline: buildTacticalTimeline(
+                      fen,
+                      bestLine,
+                      "missed",
+                      classification.missedMotifs,
+                      input.pvSan,
+                  ),
+              }
+            : {}),
+    };
+
+    motifCache.set(key, compared);
     if (motifCache.size > MOTIF_CACHE_LIMIT) {
         const oldestKey = motifCache.keys().next().value;
         if (oldestKey) motifCache.delete(oldestKey);
     }
-    return classification;
+    return compared;
 }
 
 export function tacticalMotifLabel(idInput?: string | null) {

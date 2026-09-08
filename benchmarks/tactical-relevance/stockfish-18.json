@@ -4,7 +4,7 @@
     "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     "judgement": "Development; no immediate tactical win.",
     "expected": [],
-    "classificationMs": 1.9704000000001543,
+    "classificationMs": 1.8316999999997279,
     "headline": [],
     "candidates": [
       {
@@ -152,17 +152,20 @@
       {
         "multipv": 1,
         "moves": "e4 c6 d4 d5 Nc3 dxe4 Nxe4 Nf6 Ng3 Bg4 Qd3 e6",
-        "motifs": []
+        "motifs": [],
+        "timeline": []
       },
       {
         "multipv": 2,
         "moves": "d4 Nf6 c4 e6 Nf3 d5 Bg5 Be7 e3 h6 Bxf6 Bxf6 Nc3 O-O Rc1 c6 Bd3 Nd7 O-O Qe7",
-        "motifs": []
+        "motifs": [],
+        "timeline": []
       },
       {
         "multipv": 3,
         "moves": "Nf3 d5 d4 Nf6 c4 e6 Bg5 Be7 e3 O-O Nc3 Nbd7 a3 dxc4 Bxc4 c5 dxc5 Nxc5 O-O a6",
-        "motifs": []
+        "motifs": [],
+        "timeline": []
       }
     ]
   },
@@ -171,7 +174,7 @@
     "fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
     "judgement": "Normal development; f7 pressure is not a winning capture.",
     "expected": [],
-    "classificationMs": 0.7973000000001775,
+    "classificationMs": 0.7812999999996464,
     "headline": [],
     "candidates": [
       {
@@ -307,17 +310,20 @@
       {
         "multipv": 1,
         "moves": "c3 Nf6 b4 Be7 d3 d5 exd5 Nxd5 O-O Nb6 Bb3 O-O a4",
-        "motifs": []
+        "motifs": [],
+        "timeline": []
       },
       {
         "multipv": 2,
         "moves": "d3 Nf6 O-O a6 c3 d6 h3 Ba7 a4 h6 Be3 Bxe3 fxe3 Ne7 Nbd2 O-O Qe1",
-        "motifs": []
+        "motifs": [],
+        "timeline": []
       },
       {
         "multipv": 3,
         "moves": "O-O Nf6 d3 a6 c3 d6 h3 Ba7 a4 O-O Re1 Be6 Nbd2 Qd7 Bxe6 fxe6 Nf1 Qf7 N1h2",
-        "motifs": []
+        "motifs": [],
+        "timeline": []
       }
     ]
   },
@@ -326,7 +332,7 @@
     "fen": "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
     "judgement": "The c6 knight's pin is positional pressure, not a won piece.",
     "expected": [],
-    "classificationMs": 171.1957999999995,
+    "classificationMs": 401.4383999999991,
     "headline": [],
     "candidates": [
       {
@@ -488,17 +494,20 @@
       {
         "multipv": 1,
         "moves": "Nf6 O-O Nxe4 Re1 Nd6 Nxe5 Be7 Bf1 Nxe5 Rxe5 O-O Nc3 Ne8 Nd5 Bd6 Re1 c6 Ne3 Bc7 Nf5",
-        "motifs": []
+        "motifs": [],
+        "timeline": []
       },
       {
         "multipv": 2,
         "moves": "a6 Ba4 Nf6 O-O Nxe4 d4 b5 Bb3 d5 dxe5 Be6 c3 Be7 Be3 Na5 Nbd2 Nxb3 axb3 c5 Nxe4",
-        "motifs": []
+        "motifs": [],
+        "timeline": []
       },
       {
         "multipv": 3,
         "moves": "Nd4 Nxd4 exd4 O-O c6 Bc4 Nf6 Re1 d6 c3 Be7 Bb3 Qb6 d3 O-O Nd2",
-        "motifs": []
+        "motifs": [],
+        "timeline": []
       }
     ]
   },
@@ -509,7 +518,7 @@
     "expected": [
       "hangingPiece"
     ],
-    "classificationMs": 9.068300000000818,
+    "classificationMs": 13.930299999999988,
     "headline": [
       "hangingPiece@1"
     ],
@@ -607,6 +616,9 @@
         "moves": "Rxa4 g4 Ra8 Kg2 Kf8 g5 Ke7 g6 fxg6 Kg1",
         "motifs": [
           "hangingPiece@1"
+        ],
+        "timeline": [
+          "black:hangingPiece@1"
         ]
       }
     ]
@@ -618,7 +630,7 @@
     "expected": [
       "fork"
     ],
-    "classificationMs": 202.4915000000001,
+    "classificationMs": 389.1684000000005,
     "headline": [
       "fork@1"
     ],
@@ -767,6 +779,13 @@
         "motifs": [
           "fork@1",
           "attackingF2F7@1"
+        ],
+        "timeline": [
+          "white:fork@1",
+          "white:attackingF2F7@1",
+          "white:hangingPiece@3",
+          "black:hangingPiece@4",
+          "black:hangingPiece@6"
         ]
       },
       {
@@ -774,6 +793,10 @@
         "moves": "Bxf7+ Kf8 Bb3 c5 d4 Bb7 O-O d5 c4 dxc4 Bxc4 Qc7 Nc3 Nc6 Nd5 Nxd5 Bxd5 Nxe5 dxe5 Bxd5",
         "motifs": [
           "attackingF2F7@1"
+        ],
+        "timeline": [
+          "white:attackingF2F7@1",
+          "black:hangingPiece@18"
         ]
       }
     ]
@@ -785,7 +808,7 @@
     "expected": [
       "backRankMate"
     ],
-    "classificationMs": 2.4997999999995955,
+    "classificationMs": 2.1053000000010798,
     "headline": [
       "backRankMate@1"
     ],
@@ -873,6 +896,9 @@
         "moves": "Re8#",
         "motifs": [
           "backRankMate@1"
+        ],
+        "timeline": [
+          "white:backRankMate@1"
         ]
       }
     ]
@@ -884,7 +910,7 @@
     "expected": [
       "deflection"
     ],
-    "classificationMs": 22.072900000001027,
+    "classificationMs": 65.91990000000078,
     "headline": [
       "deflection@3"
     ],
@@ -1005,6 +1031,11 @@
         "motifs": [
           "deflection@3",
           "discoveredAttack@3"
+        ],
+        "timeline": [
+          "white:deflection@3",
+          "white:discoveredAttack@3",
+          "white:hangingPiece@5"
         ]
       }
     ]
@@ -1016,7 +1047,7 @@
     "expected": [
       "mateIn2"
     ],
-    "classificationMs": 1.7628999999997177,
+    "classificationMs": 2.0218000000004395,
     "headline": [
       "mateIn2@3"
     ],
@@ -1110,6 +1141,9 @@
         "moves": "Qh6+ Kg8 Qg7#",
         "motifs": [
           "mateIn2@3"
+        ],
+        "timeline": [
+          "white:mateIn2@3"
         ]
       }
     ]
@@ -1119,7 +1153,7 @@
     "fen": "8/5k2/5p2/8/8/5P2/5K2/8 w - - 0 1",
     "judgement": "Drawn pawn ending; no invented zugzwang or tactical king move.",
     "expected": [],
-    "classificationMs": 0.6691000000009808,
+    "classificationMs": 0.36639999999897555,
     "headline": [],
     "candidates": [
       {
@@ -1227,17 +1261,20 @@
       {
         "multipv": 1,
         "moves": "f4 f5 Ke2 Kg6 Kd3 Kf6 Kd2 Kg6 Ke3 Kg7 Kf3 Kf8",
-        "motifs": []
+        "motifs": [],
+        "timeline": []
       },
       {
         "multipv": 2,
         "moves": "Kg3 f5 Kh4 Kg6 f4 Kh6 Kg3 Kg7 Kf3 Kf8 Ke3",
-        "motifs": []
+        "motifs": [],
+        "timeline": []
       },
       {
         "multipv": 3,
         "moves": "Ke2 Kg7 f4 f5 Ke3 Kg6 Kd4 Kf6 Kd3 Kf7 Ke2 Kg6",
-        "motifs": []
+        "motifs": [],
+        "timeline": []
       }
     ]
   }

@@ -1,4 +1,5 @@
 import type { WebColor, WebEngineLine, WebEngineScore, WebGame } from "./model";
+import type { TacticalMotifEvidence } from "@/utils/tacticalMotifs/types";
 import { normalizeWebFen } from "./pgn";
 import {
     buildMistakeReviewTacticalExplanation,
@@ -23,6 +24,8 @@ export type PhoneReviewCard = {
     pv: string[];
     pvSan: string[];
     refutation: string[];
+    bestTimeline?: TacticalMotifEvidence[];
+    refutationTimeline?: TacticalMotifEvidence[];
     before: number;
     after: number;
     drop: number;
@@ -136,7 +139,7 @@ export function createPhoneReviewCard(
         winProbabilityDrop: before - after,
         reachedDepth: Math.min(best.depth, reply.depth),
     });
-    const motif = buildMistakeReviewTacticalExplanation(motifs)?.primary;
+    const tacticalExplanation = buildMistakeReviewTacticalExplanation(motifs);
     const gameKey = reviewGameKey(game);
     return {
         id: `${gameKey}:${index}:${playerKey(player)}`,
@@ -153,11 +156,13 @@ export function createPhoneReviewCard(
         pv: best.uciMoves.slice(0, 8),
         pvSan: best.sanMoves.slice(0, 8),
         refutation: reply.sanMoves.slice(0, 6),
+        bestTimeline: motifs.missedTimeline?.filter((m) => (m.ply ?? 0) <= 8),
+        refutationTimeline: motifs.allowedTimeline?.filter((m) => (m.ply ?? 0) <= 6),
         before,
         after,
         drop: before - after,
-        explanation: motif
-            ? `${motif.label}: ${motif.evidence}`
+        explanation: tacticalExplanation
+            ? `${tacticalExplanation.primary.label}: ${tacticalExplanation.text}`
             : `Keep the position's chances with ${best.sanMoves[0] ?? best.uciMoves[0]}. Compare the best line with the reply to ${move.san}.`,
         createdAt: now,
         due: now,

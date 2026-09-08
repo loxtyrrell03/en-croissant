@@ -12,15 +12,21 @@ export type TacticalMotifEvidence = {
     relevance?: "primary" | "secondary";
     /** Material payoff in centipawns; 10000 represents a mating continuation. */
     value?: number;
+    actor?: "white" | "black";
+    comparison?: "prevented" | "persists";
+    comparisonEvidence?: string;
 };
 
 export type MistakeReviewMotifClassification = {
     allowedMotifs: TacticalMotifEvidence[];
     missedMotifs: TacticalMotifEvidence[];
+    allowedTimeline?: TacticalMotifEvidence[];
+    missedTimeline?: TacticalMotifEvidence[];
     motifClassifierVersion: string;
 };
 
 export type PositionTacticalMotifClassification = {
     motifs: TacticalMotifEvidence[];
+    timeline?: TacticalMotifEvidence[];
     motifClassifierVersion: string;
 };

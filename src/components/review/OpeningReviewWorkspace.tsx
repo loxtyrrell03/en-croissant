@@ -910,6 +910,8 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                     ...position.mistakeReview,
                     allowedMotifs: migratedMistake.allowedMotifs,
                     missedMotifs: migratedMistake.missedMotifs,
+                    allowedTimeline: migratedMistake.allowedTimeline,
+                    missedTimeline: migratedMistake.missedTimeline,
                     motifClassifierVersion: migratedMistake.motifClassifierVersion,
                   },
                 };
@@ -6541,12 +6543,12 @@ function MistakeReviewGameInfoPanel({
                   ? mistake.refutationSan
                   : (mistake.refutationUci ?? [])
               }
-              motifs={getMistakeReviewAllowedMotifs(position)}
+              motifs={mistake.allowedTimeline ?? getMistakeReviewAllowedMotifs(position)}
             />
             <TacticalLineExplanation
               title="Better move, move by move"
               moves={mistake.pvSan?.length ? mistake.pvSan : (mistake.pvUci ?? [])}
-              motifs={getMistakeReviewMissedMotifs(position)}
+              motifs={mistake.missedTimeline ?? getMistakeReviewMissedMotifs(position)}
             />
           </Stack>
         )}

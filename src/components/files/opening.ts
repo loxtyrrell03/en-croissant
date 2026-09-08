@@ -31,6 +31,9 @@ const tacticalMotifEvidenceSchema = z.object({
     moveUci: z.string().nullable(),
     relevance: z.enum(["primary", "secondary"]).optional(),
     value: z.number().optional(),
+    actor: z.enum(["white", "black"]).optional(),
+    comparison: z.enum(["prevented", "persists"]).optional(),
+    comparisonEvidence: z.string().optional(),
 });
 
 type Sm2CardFields = {
@@ -173,6 +176,8 @@ export const positionSchema = z.object({
             natureClassifierVersion: z.number().optional(),
             allowedMotifs: z.array(tacticalMotifEvidenceSchema).optional(),
             missedMotifs: z.array(tacticalMotifEvidenceSchema).optional(),
+            allowedTimeline: z.array(tacticalMotifEvidenceSchema).optional(),
+            missedTimeline: z.array(tacticalMotifEvidenceSchema).optional(),
             motifClassifierVersion: z.string().optional(),
             gamePhase: z.string().optional(),
             positionPhase: z.string().optional(),
@@ -332,6 +337,8 @@ export type Position = {
         natureClassifierVersion?: number;
         allowedMotifs?: TacticalMotifEvidence[];
         missedMotifs?: TacticalMotifEvidence[];
+        allowedTimeline?: TacticalMotifEvidence[];
+        missedTimeline?: TacticalMotifEvidence[];
         motifClassifierVersion?: string;
         gamePhase?: string;
         positionPhase?: string;

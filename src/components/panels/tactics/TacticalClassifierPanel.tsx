@@ -483,7 +483,7 @@ function TacticalScanResult({
                 <Box>
                   <Code style={{ whiteSpace: "normal", lineHeight: 1.7 }}>{line.join("  ")}</Code>
                 </Box>
-                <TacticalLineExplanation moves={line} motifs={variation.motifs} />
+                <TacticalLineExplanation moves={line} motifs={variation.timeline} />
               </Stack>
             </Paper>
           );

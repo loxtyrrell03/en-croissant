@@ -125,7 +125,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 3;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 4;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {
@@ -146,6 +146,7 @@ export type LiveTacticalVariation = {
     multipv: number;
     depth: number;
     motifs: TacticalMotifEvidence[];
+    timeline: TacticalMotifEvidence[];
     lineUci: string[];
     lineSan: string[];
     arrows: LiveTacticalBoardArrow[];
@@ -322,6 +323,7 @@ function buildLiveTacticalVariation(
         multipv: variation.multipv ?? fallbackMultipv,
         depth: variation.depth ?? input.depth,
         motifs,
+        timeline: classification.timeline ?? motifs,
         lineUci,
         lineSan: (variation.pvSan ?? []).slice(0, lineUci.length),
         arrows,

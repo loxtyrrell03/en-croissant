@@ -1,3 +1,4 @@
+import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLineExplanation";
 import {
   Alert,
   Badge,
@@ -562,6 +563,16 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
                   <details>
                     <summary>Why this mattered</summary>
                     <Text size="sm">{card.explanation}</Text>
+                    <TacticalLineExplanation
+                      title="Better line, move by move"
+                      moves={card.pvSan}
+                      motifs={card.bestTimeline ?? []}
+                    />
+                    <TacticalLineExplanation
+                      title="Opponent's reply, move by move"
+                      moves={card.refutation}
+                      motifs={card.refutationTimeline ?? []}
+                    />
                     <Text size="xs" c="dimmed">
                       Estimated winning chances: {Math.round(card.before)}% →{" "}
                       {Math.round(card.after)}% after {card.played}.

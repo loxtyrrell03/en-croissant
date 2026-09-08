@@ -773,6 +773,8 @@ export function createMistakeReviewPosition(
             natureClassifierVersion: MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION,
             allowedMotifs: motifClassification.allowedMotifs,
             missedMotifs: motifClassification.missedMotifs,
+            allowedTimeline: motifClassification.allowedTimeline,
+            missedTimeline: motifClassification.missedTimeline,
             motifClassifierVersion: motifClassification.motifClassifierVersion,
             gameId: result.gameId,
             lastGameId: result.lastGameId,
@@ -1633,6 +1635,8 @@ function applyMistakeReviewMotifClassification(
             ...position.mistakeReview,
             allowedMotifs: classification.allowedMotifs,
             missedMotifs: classification.missedMotifs,
+            allowedTimeline: classification.allowedTimeline,
+            missedTimeline: classification.missedTimeline,
             motifClassifierVersion: classification.motifClassifierVersion,
         },
     };

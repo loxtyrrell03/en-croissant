@@ -9356,6 +9356,19 @@ var MECHANISMS = new Set([
 	"xRayAttack"
 ]);
 var MATE = /(?:^mate(?:In\d+)?$|Mate$)/;
+var CONCRETE_THEMES = new Set([
+	"hangingPiece",
+	"trappedPiece",
+	"sacrifice",
+	"promotion",
+	"underPromotion",
+	"attacking_undefended_piece",
+	"attackingF2F7",
+	"mateThreat",
+	"backRank",
+	"zugzwang",
+	"enPassant"
+]);
 /** Legal replay stops at the first invalid move: dropping it would join two
 * unrelated positions and manufacture evidence. */
 function replayTacticalLine(fen, line) {
@@ -9545,6 +9558,7 @@ function auditTacticalMotifs(fen, line, proposals) {
 		}];
 	}
 	for (let proposal of proposals) {
+		if (!MECHANISMS.has(proposal.id) && !CONCRETE_THEMES.has(proposal.id) && !MATE.test(proposal.id)) continue;
 		if (proposal.id === "attraction" && mate) {
 			const anchor = episode.findIndex((s, i) => s.before.turn === attacker && episode[i + 1]?.before.board.get(episode[i + 1].move.from)?.role === "king" && episode[i + 1].move.to === s.move.to);
 			if (anchor >= 0) {
@@ -9560,6 +9574,16 @@ function auditTacticalMotifs(fen, line, proposals) {
 		if (!proposal.ply || proposal.ply > end) continue;
 		const step = steps[proposal.ply - 1];
 		if (!step || step.before.turn !== attacker || proposal.moveUci !== step.uci) continue;
+		if (proposal.id === "pin" && step.capture >= 320 && tacticalExchangeGain(step.before, step.move) >= 100) {
+			const ctx = step.after.ctx();
+			if (![...step.after.board[step.after.turn]].some((from) => {
+				const piece = step.after.board.get(from);
+				return ctx.blockers.has(from) && attacks(piece, from, step.after.board.occupied).has(step.move.to) && !step.after.isLegal({
+					from,
+					to: step.move.to
+				});
+			})) continue;
+		}
 		if (proposal.id === "deflection") {
 			const reply = episode[proposal.ply];
 			const defender = reply?.before.board.get(reply.move.from);
@@ -9620,10 +9644,67 @@ function auditTacticalMotifs(fen, line, proposals) {
 		value: mate ? 1e4 : motif.id === "hangingPiece" && motif.ply === 1 ? tacticalExchangeGain(root.before, root.move) : Math.max(100, settled)
 	}));
 }
+/** Compare the same immediate reply after the played and best moves. We only
+* make a causal statement where legality/geometry/exchange provides a witness;
+* replaying the old full PV after a different move would assume bad defence. */
+function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motifs) {
+	if (!bestMove || !playedMove || !reply) return motifs;
+	const actual = replayTacticalLine(fen, [playedMove, reply]);
+	const better = replayTacticalLine(fen, [bestMove, reply]);
+	if (actual.length < 2 || !better.length) return motifs;
+	const step = actual[1];
+	const alternative = better[1];
+	const bestSan = better[0].san;
+	return motifs.map((motif) => {
+		if (motif.ply !== 1 || motif.moveUci !== reply) return motif;
+		let comparison;
+		let comparisonEvidence = "";
+		if (!alternative) {
+			comparison = "prevented";
+			comparisonEvidence = `${bestSan} makes the immediate reply ${step.san} illegal.`;
+		} else if (MATE.test(motif.id) && step.after.isCheckmate()) if (!alternative.after.isCheckmate()) {
+			const escape = legalMoves(alternative.after).find((move) => alternative.after.board.get(move.from)?.role === "king") ?? legalMoves(alternative.after)[0];
+			comparison = "prevented";
+			comparisonEvidence = escape ? `After ${bestSan}, ${makeSan(alternative.after, escape)} is a legal answer to ${alternative.san}; it is no longer mate.` : `After ${bestSan}, ${alternative.san} is no longer checkmate.`;
+		} else {
+			comparison = "persists";
+			comparisonEvidence = `The same immediate mate remains after ${bestSan}.`;
+		}
+		else if (["hangingPiece", "attackingF2F7"].includes(motif.id)) {
+			const gain = tacticalExchangeGain(step.before, step.move);
+			const otherGain = tacticalExchangeGain(alternative.before, alternative.move);
+			if (gain > 0 && otherGain > -VALUE.king && otherGain <= 0) {
+				comparison = "prevented";
+				comparisonEvidence = `After ${bestSan}, ${alternative.san} no longer wins material in the exchange.`;
+			} else if (gain > 0 && otherGain >= gain) {
+				comparison = "persists";
+				comparisonEvidence = `The same capture still wins material after ${bestSan}.`;
+			}
+		} else if (motif.id === "fork") {
+			const targets = winningTargets(alternative.after, alternative.move.to, alternative.before.turn);
+			if (targets.length < 2) {
+				comparison = "prevented";
+				comparisonEvidence = `After ${bestSan}, ${alternative.san} no longer has two profitable fork targets.`;
+			} else {
+				const actualTargets = winningTargets(step.after, step.move.to, step.before.turn);
+				if (targets.join(",") === actualTargets.join(",") && verifiedFork(alternative)) {
+					comparison = "persists";
+					comparisonEvidence = `The same immediate fork is still available after ${bestSan}.`;
+				}
+			}
+		}
+		return comparison ? {
+			...motif,
+			comparison,
+			comparisonEvidence
+		} : motif;
+	});
+}
 //#endregion
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
+var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 3;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 4;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -10042,15 +10123,15 @@ function buildMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs }) 
 	const allowed = selectImportantTacticalMotifs(allowedMotifs, 1)[0];
 	const missed = selectImportantTacticalMotifs(missedMotifs, 1)[0];
 	if (!allowed && !missed) return null;
-	if (missed && (!allowed || (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))) return {
+	if (missed && (!allowed || allowed.comparison === "persists" || (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))) return {
 		title: `What you missed: ${missed.label}`,
 		text: `The better move had this tactic: ${missed.evidence}`,
 		source: "missed",
 		primary: missed
 	};
 	if (allowed) return {
-		title: "Why the move was tactically bad",
-		text: `Your move allowed this tactic: ${allowed.evidence}`,
+		title: allowed.comparison === "persists" ? "Tactical danger in the position" : "Why the move was tactically bad",
+		text: allowed.comparison === "persists" ? `${allowed.evidence} ${allowed.comparisonEvidence} This threat alone does not explain the difference between the two moves.` : `Your move allowed this tactic: ${allowed.evidence}${allowed.comparisonEvidence ? ` ${allowed.comparisonEvidence}` : ""}`,
 		source: "allowed",
 		primary: allowed
 	};
@@ -10060,6 +10141,48 @@ function buildMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs }) 
 		source: "missed",
 		primary: missed
 	};
+}
+/** Each row is assessed in its own legal position. Root causes stay separate
+* so later repetitions and opponent counterplay cannot replace the lesson. */
+function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
+	const replay = replayTacticalLine(fen, line);
+	const legalLine = replay.map((step) => step.uci);
+	const rawSteps = walkPV(fen, legalLine, fenSide(fen));
+	const evidence = /* @__PURE__ */ new Map();
+	for (const motif of rootMotifs) {
+		const step = replay[(motif.ply ?? 0) - 1];
+		if (step) evidence.set(`${motif.ply}:${motif.id}`, {
+			...motif,
+			actor: step.before.turn
+		});
+	}
+	for (let index = 0; index < replay.length; index++) {
+		const step = replay[index];
+		const suffix = legalLine.slice(index);
+		if (!hasTacticalStart(rawSteps[index]?.fenBefore ?? "", suffix)) continue;
+		const side = step.before.turn === "white" ? "w" : "b";
+		const themes = detectStepThemes(rawSteps[index], side, { steps: rawSteps });
+		const detail = {
+			themes,
+			steps: rawSteps.slice(index),
+			themeStepIndex: 0,
+			themeStepIndexByTheme: Object.fromEntries(normalizeThemeIds(themes).map((id) => [id, 0]))
+		};
+		const candidates = auditTacticalMotifs(rawSteps[index]?.fenBefore ?? "", suffix, toMotifEvidence(detail, source, sanLine?.slice(index)));
+		for (const motif of candidates.filter((m) => m.ply === 1)) {
+			if (motif.id === "hangingPiece" && index > 0 && step.move.to === replay[index - 1].move.to) continue;
+			const key = `${index + 1}:${motif.id}`;
+			if (evidence.has(key)) continue;
+			evidence.set(key, {
+				...motif,
+				source,
+				ply: index + 1,
+				actor: step.before.turn,
+				relevance: "secondary"
+			});
+		}
+	}
+	return [...evidence.values()].filter((motif) => motif.id !== "mate" || ![...evidence.values()].some((other) => other.ply === motif.ply && (/Mate$/.test(other.id) || /^mateIn\d+$/.test(other.id)))).sort((a, b) => (a.ply ?? 0) - (b.ply ?? 0));
 }
 function cacheKey(input) {
 	return JSON.stringify([
@@ -10125,12 +10248,18 @@ function classifyMistakeReviewMotifs(input) {
 		})),
 		motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION
 	};
-	motifCache.set(key, classification);
+	const compared = {
+		...classification,
+		allowedMotifs: compareImmediateTacticalDefence(fen, bestMoveUci, playedMoveUci, refutationLine[0], classification.allowedMotifs),
+		...classification.allowedMotifs.length ? { allowedTimeline: buildTacticalTimeline(fenAfterPlayedMove ?? "", refutationLine, "allowed", classification.allowedMotifs, input.refutationSan) } : {},
+		...classification.missedMotifs.length ? { missedTimeline: buildTacticalTimeline(fen, bestLine, "missed", classification.missedMotifs, input.pvSan) } : {}
+	};
+	motifCache.set(key, compared);
 	if (motifCache.size > MOTIF_CACHE_LIMIT) {
 		const oldestKey = motifCache.keys().next().value;
 		if (oldestKey) motifCache.delete(oldestKey);
 	}
-	return classification;
+	return compared;
 }
 function tacticalMotifLabel(idInput) {
 	const id = String(idInput ?? "").trim();
@@ -10178,7 +10307,7 @@ function createPhoneReviewCard(game, index, player, best, reply, now = Date.now(
 	const cpBefore = reviewCp(best.score, color), cpAfter = reviewCp(reply.score, color);
 	const before = reviewChance(cpBefore), after = reviewChance(cpAfter);
 	if (!usefulReviewSwing(before, after)) return null;
-	const motif = buildMistakeReviewTacticalExplanation(classifyMistakeReviewMotifs({
+	const motifs = classifyMistakeReviewMotifs({
 		fen: move.fenBefore,
 		bestMoveUci: best.uciMoves[0],
 		bestMoveSan: best.sanMoves[0],
@@ -10191,7 +10320,8 @@ function createPhoneReviewCard(game, index, player, best, reply, now = Date.now(
 		cpLoss: cpBefore - cpAfter,
 		winProbabilityDrop: before - after,
 		reachedDepth: Math.min(best.depth, reply.depth)
-	}))?.primary;
+	});
+	const tacticalExplanation = buildMistakeReviewTacticalExplanation(motifs);
 	const gameKey = reviewGameKey(game);
 	return {
 		id: `${gameKey}:${index}:${playerKey(player)}`,
@@ -10208,10 +10338,12 @@ function createPhoneReviewCard(game, index, player, best, reply, now = Date.now(
 		pv: best.uciMoves.slice(0, 8),
 		pvSan: best.sanMoves.slice(0, 8),
 		refutation: reply.sanMoves.slice(0, 6),
+		bestTimeline: motifs.missedTimeline?.filter((m) => (m.ply ?? 0) <= 8),
+		refutationTimeline: motifs.allowedTimeline?.filter((m) => (m.ply ?? 0) <= 6),
 		before,
 		after,
 		drop: before - after,
-		explanation: motif ? `${motif.label}: ${motif.evidence}` : `Keep the position's chances with ${best.sanMoves[0] ?? best.uciMoves[0]}. Compare the best line with the reply to ${move.san}.`,
+		explanation: tacticalExplanation ? `${tacticalExplanation.primary.label}: ${tacticalExplanation.text}` : `Keep the position's chances with ${best.sanMoves[0] ?? best.uciMoves[0]}. Compare the best line with the reply to ${move.san}.`,
 		createdAt: now,
 		due: now,
 		streak: 0,

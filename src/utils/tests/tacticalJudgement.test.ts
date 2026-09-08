@@ -2,10 +2,14 @@ import { spawn } from "node:child_process";
 import { existsSync, writeFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
 import { Chess } from "chessops/chess";
-import { parseFen } from "chessops/fen";
+import { makeFen, parseFen } from "chessops/fen";
 import { makeSan } from "chessops/san";
 import { parseUci } from "chessops/util";
 import { buildLiveTacticalScan } from "@/utils/tacticalMotifs/liveTactics";
+import {
+    buildMistakeReviewTacticalExplanation,
+    classifyMistakeReviewMotifs,
+} from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 
 // Deliberately judged as positions, not by agreement with puzzle tags. The
 // quiet controls matter as much as the combinations. Run explicitly with
@@ -168,6 +172,7 @@ describe("expert tactical judgement with fresh engine lines", () => {
                         multipv: v.multipv,
                         moves: v.lineSan.join(" "),
                         motifs: v.motifs.map((m) => `${m.id}@${m.ply}`),
+                        timeline: v.timeline.map((m) => `${m.actor}:${m.id}@${m.ply}`),
                     })),
                 });
                 expect({ position: item.name, motifs: scan.motifs.map((m) => m.id) }).toEqual({
@@ -181,6 +186,88 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     JSON.stringify(report, null, 2),
                 );
             console.log(JSON.stringify(report));
+        },
+        180000,
+    );
+
+    test.skipIf(!engine || !existsSync(engine))(
+        "judge actual before/after mistake causes",
+        async () => {
+            const examples = [
+                {
+                    name: "b6 permits the f7 fork",
+                    fen: "rnbqk2r/ppppbppp/5n2/4N3/2B5/4P3/PPPP1PPP/RNBQK2R b KQkq - 0 4",
+                    played: "b7b6",
+                    source: "allowed",
+                    primary: "fork",
+                    why: "Black should deal with f7; the quiet b6 move permits a protected queen-rook fork.",
+                },
+                {
+                    name: "Missed queen while the knight is already attacked",
+                    fen: "6k1/8/7p/6N1/4q3/3P4/8/K7 w - - 0 1",
+                    played: "a1b1",
+                    source: "missed",
+                    primary: "hangingPiece",
+                    why: "Nxe4 both wins the queen and saves the attacked knight. Kb1 misses that immediate gain; the later checks and pawn promotion in the refutation should not replace this simple lesson.",
+                },
+                {
+                    name: "Failed to create a back-rank escape",
+                    fen: "6k1/1p3ppp/8/8/8/8/5PPP/4R1K1 b - - 0 1",
+                    played: "b7b6",
+                    source: "allowed",
+                    primary: "backRankMate",
+                    why: "A king-side pawn move gives the king an escape from Re8+; b6 allows Re8#. The game is already materially lost, so the lesson is preventing immediate mate.",
+                },
+            ];
+            const report = [];
+            for (const example of examples) {
+                const before = [...(await analyse(engine, example.fen)).values()].sort(
+                    (a, b) => a.multipv - b.multipv,
+                );
+                const pos = Chess.fromSetup(parseFen(example.fen).unwrap()).unwrap();
+                const played = parseUci(example.played)!;
+                expect(pos.isLegal(played)).toBe(true);
+                const rootSign = pos.turn === "white" ? 1 : -1;
+                pos.play(played);
+                const after = [...(await analyse(engine, makeFen(pos.toSetup()))).values()].sort(
+                    (a, b) => a.multipv - b.multipv,
+                );
+                const best = before[0],
+                    refutation = after[0];
+                const beforeScore = best.cp ?? Math.sign(best.mate ?? 0) * 10000;
+                const afterScore = refutation.cp ?? Math.sign(refutation.mate ?? 0) * 10000;
+                const start = performance.now();
+                const classification = classifyMistakeReviewMotifs({
+                    fen: example.fen,
+                    bestMoveUci: best.pvUci[0],
+                    playedMoveUci: example.played,
+                    pvUci: best.pvUci,
+                    pvSan: best.pvSan,
+                    refutationUci: refutation.pvUci,
+                    refutationSan: refutation.pvSan,
+                    cpBefore: beforeScore * rootSign,
+                    cpAfter: -afterScore * rootSign,
+                    cpLoss: Math.max(0, beforeScore + afterScore),
+                });
+                const explanation = buildMistakeReviewTacticalExplanation(classification);
+                report.push({
+                    ...example,
+                    before,
+                    after,
+                    classification,
+                    explanation,
+                    classificationMs: performance.now() - start,
+                });
+                if (process.env.TACTICAL_CAUSAL_REPORT)
+                    writeFileSync(
+                        process.env.TACTICAL_CAUSAL_REPORT,
+                        JSON.stringify(report, null, 2),
+                    );
+                expect({ primary: explanation?.primary.id, source: explanation?.source }).toEqual({
+                    primary: example.primary,
+                    source: example.source,
+                });
+            }
         },
         180000,
     );

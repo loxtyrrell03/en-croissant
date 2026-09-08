@@ -25,15 +25,54 @@ as a separate legal branch, with attraction as its mechanism and Anastasia's
 mate as its payoff.
 
 The recorded JSON contains the FEN, judgement, expected headline, all three
-fresh engine candidates (including excluded ones), retained line themes, and
-classification time. It is evidence for these positions, not an accuracy
+fresh engine candidates (including excluded ones), retained line themes,
+both-side ply evidence, and classification time. It is evidence for these positions, not an accuracy
 estimate for all chess. Engine timing varies with other work on this PC.
+
+## Immediate causal comparisons and continuation evidence
+
+The second milestone checks each continuation ply in its own legal position,
+including the opponent's replies and repeated occurrences of the same motif.
+Those rows remain secondary evidence in a conditional engine line; they cannot
+replace the main lesson or establish that the entire continuation is forced.
+Routine recaptures, global opening/check tags, and incidental pins that do not
+explain a winning capture are excluded from these rows.
+
+`causal-stockfish-18.json` adds fresh searches before and after three mistakes,
+with all three engine candidates and the resulting explanations:
+
+| Mistake | Engine's better move | Judged causal lesson |
+| --- | --- | --- |
+| Black plays b6 in the screenshot position | O-O | Allows Nxf7; castling removes the profitable queen/rook fork |
+| White plays Kb1 with a loose black queen and attacked white knight | Nxe4 | Misses winning the queen while saving the knight |
+| Black plays b6 facing Re8# | g5 | Allows back-rank mate; g5 supplies Kg7 after Re8+ |
+
+The final position is already materially lost: this judges avoidance of
+immediate mate, not a change in the game's theoretical outcome. The initial
+human suggestion dxe4 in the queen position was inferior to Nxe4 because it
+leaves the knight attacked. A separate deterministic test uses dxe4 to verify
+that a capture which persists after both supplied moves is not blamed on the
+played move alone. Likewise, h6 is a separately tested escape-square defence,
+not the engine's chosen g5.
+
+Causal statements compare the same immediate reply after the actual and best
+moves using legality, profitable fork targets, legal exchange analysis, and
+checkmate/escape witnesses. They do not transplant the old full refutation
+onto a changed position. Deeper differences remain unproven by this check.
+
+Regression fixtures also retain a Black counterfork at ply 2 after White wins
+a queen and two separate White forks at plies 1 and 5. Early repeated-fork
+fixtures were rejected when a pawn or bishop could capture the knight, or
+checking counterplay saved the targets. The pawn-refutation variant remains a
+negative test. A server-rendered component test checks the actor and ply rows
+and collapsed details; it is not running-app visual proof.
 
 Run in PowerShell with the configured Node runtime on PATH:
 
 ```powershell
 $env:TACTICAL_JUDGEMENT_ENGINE = 'absolute path to a local Stockfish executable'
 $env:TACTICAL_JUDGEMENT_REPORT = 'benchmarks/tactical-relevance/stockfish-18.json'
+$env:TACTICAL_CAUSAL_REPORT = 'benchmarks/tactical-relevance/causal-stockfish-18.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node
 ```
 
@@ -45,7 +84,7 @@ allowed material loss. Existing tests retain the multi-step rook fork and pin.
 
 ## What remains to establish
 
-This is the first relevance milestone, not completion of the broader tuning
+These are relevance milestones, not completion of the broader tuning
 goal. Legal exchange analysis validates local material threats and fork
 defences; it is not a full tactical search. A forcing episode ends when the
 attacking side makes a quiet move without an immediate material threat.
@@ -54,11 +93,10 @@ pure mate threats, defensive combinations and long pawn breakthroughs need
 stronger branch evidence before they can be admitted reliably. Unproven
 zugzwang is withheld because one PV cannot demonstrate its counterfactual.
 
-The next judgement pass must evaluate those false-negative risks, compare
-the refutation against what the best move actually prevents, and validate
-repeated motifs/opponent counter-tactics at their individual plies. Current
-continuation rows retain the classifier's mapped occurrences; they do not yet
-constitute a fresh all-themes classification of both sides on every ply.
+The next judgement pass must evaluate those false-negative risks and deepen
+best-move counterfactual evidence beyond immediate replies. Both-side and
+repeated-motif rows now have legal per-ply checks, but the primitive detector
+and local audit are not an exhaustive search for every possible combination.
 
 The desktop and phone card builder share the new adapter. The website's
 vendored v55 primitive detector is unchanged. These are source/build changes;

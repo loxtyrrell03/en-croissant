@@ -23,7 +23,7 @@ export function TacticalLineExplanation({
         {moves.map((move, index) => {
           const here = motifs.filter((motif) => motif.ply === index + 1);
           return (
-            <Stack key={`${index}:${move}`} gap={2}>
+            <Stack key={`${index}:${move}`} gap={2} data-tactical-ply={index + 1}>
               <Group gap={6}>
                 <Text size="xs" c="dimmed">
                   Ply {index + 1}
@@ -31,6 +31,11 @@ export function TacticalLineExplanation({
                 <Text size="sm" fw={600}>
                   {move}
                 </Text>
+                {here[0]?.actor && (
+                  <Text size="xs" c="dimmed">
+                    {here[0].actor === "white" ? "White" : "Black"}
+                  </Text>
+                )}
                 {here.map((motif) => (
                   <Badge
                     key={motif.id}
