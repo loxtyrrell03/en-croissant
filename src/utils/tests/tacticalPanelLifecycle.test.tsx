@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   listen: vi.fn(),
   getBestMoves: vi.fn(),
   killEngine: vi.fn(),
+  stopEngine: vi.fn(),
   classify: vi.fn(),
   position: {
     fen: "rnbqk2r/p1ppbppp/1p3n2/4N3/2B5/4P3/PPPP1PPP/RNBQK2R w KQkq - 0 5",
@@ -29,6 +30,7 @@ vi.mock("@/components/common/TreeStateContext", async () => ({
 vi.mock("@/utils/engines", () => ({
   getBestMoves: mocks.getBestMoves,
   killEngine: mocks.killEngine,
+  stopEngine: mocks.stopEngine,
   engineSettingsToOptions: () => [],
 }));
 vi.mock("../tacticalMotifs/liveTacticsWorker", () => ({
@@ -67,6 +69,7 @@ beforeEach(() => {
   mocks.engines = [{ ...mocks.engines[0], id: `worker-lifecycle-${++uniqueId}` }];
   mocks.listen.mockResolvedValue(dispose);
   mocks.killEngine.mockResolvedValue(undefined);
+  mocks.stopEngine.mockResolvedValue(undefined);
   mocks.getBestMoves.mockResolvedValue([
     100,
     [
@@ -90,6 +93,171 @@ beforeEach(() => {
   document.body.append(container);
   root = createRoot(container);
   onScanChange = vi.fn();
+});
+
+function emit(depth: number, progress = (depth / 16) * 100, uciMoves = ["e5f7", "d8e8", "f7h8"]) {
+  mocks.listen.mock.calls[0][0]({
+    payload: {
+      engine: mocks.engines[0].id,
+      tab: mocks.getBestMoves.mock.calls[0][1],
+      fen: mocks.position.fen,
+      moves: [],
+      progress,
+      bestLines: [
+        {
+          depth,
+          multipv: 1,
+          uciMoves,
+          sanMoves: [],
+          score: { value: { type: "cp", value: 400 }, wdl: null },
+        },
+      ],
+    },
+  });
+}
+
+test("cold startup does not consume the search allowance", async () => {
+  mocks.getBestMoves.mockImplementation(() => new Promise(() => {}));
+  await start();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(7000);
+    emit(10);
+  });
+  expect(container.textContent).not.toContain("Tactical scan failed");
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(6000);
+  });
+  expect(mocks.classify.mock.calls[0][0].depth).toBe(10);
+  await act(async () => succeed(buildLiveTacticalScan(mocks.classify.mock.calls[0][0])));
+  expect(container.textContent).toContain("Time-limited scan at depth 10");
+});
+
+test("a higher-depth empty snapshot cannot erase a usable fallback", async () => {
+  mocks.getBestMoves.mockImplementation(() => new Promise(() => {}));
+  await start();
+  await act(async () => {
+    emit(10);
+    emit(17, 100, []);
+    await vi.advanceTimersByTimeAsync(6000);
+  });
+  expect(mocks.classify.mock.calls[0][0].depth).toBe(10);
+});
+
+test("stop flushes an unthrottled usable snapshot before declaring a timeout", async () => {
+  let rejectStop!: (error: Error) => void;
+  mocks.stopEngine.mockImplementation(
+    () =>
+      new Promise((_, reject) => {
+        rejectStop = reject;
+      }),
+  );
+  mocks.getBestMoves.mockImplementation(() => new Promise(() => {}));
+  await start();
+  await act(async () => {
+    emit(2);
+    await vi.advanceTimersByTimeAsync(6000);
+  });
+  expect(mocks.stopEngine).toHaveBeenCalledTimes(1);
+  expect(mocks.classify).not.toHaveBeenCalled();
+  await act(async () => {
+    emit(12, 100);
+    rejectStop(new Error("Engine released after final snapshot"));
+    await vi.advanceTimersByTimeAsync(600);
+  });
+  expect(mocks.classify.mock.calls[0][0].depth).toBe(12);
+  expect(container.textContent).not.toContain("Tactical scan failed");
+});
+
+test("a genuinely silent engine reaches a bounded startup error and late registration is cleaned up", async () => {
+  mocks.getBestMoves.mockImplementation(() => new Promise(() => {}));
+  await start();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(12000);
+  });
+  expect(container.textContent).toContain("did not start returning analysis");
+  expect(mocks.killEngine).toHaveBeenCalledTimes(1);
+  expect(dispose).not.toHaveBeenCalled();
+  await act(async () => emit(10));
+  expect(mocks.killEngine).toHaveBeenCalledTimes(2);
+  expect(dispose).toHaveBeenCalledTimes(1);
+  expect(mocks.classify).not.toHaveBeenCalled();
+});
+
+test("cancellation during startup retains cleanup but cannot publish late results", async () => {
+  mocks.getBestMoves.mockImplementation(() => new Promise(() => {}));
+  await start();
+  const oldTab = mocks.getBestMoves.mock.calls[0][1];
+  await act(async () => root.render(null));
+  onScanChange.mockClear();
+  await act(async () => emit(16, 100));
+  expect(mocks.killEngine).toHaveBeenLastCalledWith(mocks.engines[0], oldTab);
+  expect(mocks.killEngine).toHaveBeenCalledTimes(2);
+  expect(mocks.classify).not.toHaveBeenCalled();
+  expect(onScanChange).not.toHaveBeenCalled();
+  await start();
+  expect(mocks.getBestMoves.mock.calls[1][1]).not.toBe(oldTab);
+});
+
+test("silent cancelled startup cleanup is bounded", async () => {
+  mocks.getBestMoves.mockImplementation(() => new Promise(() => {}));
+  await start();
+  await act(async () => root.render(null));
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(35000);
+  });
+  expect(mocks.killEngine).toHaveBeenCalledTimes(2);
+  expect(dispose).toHaveBeenCalledTimes(1);
+});
+
+test("a shallow stopped engine cannot hang or pretend the position has no tactics", async () => {
+  mocks.getBestMoves.mockImplementation(() => new Promise(() => {}));
+  await start();
+  await act(async () => {
+    emit(2);
+    await vi.advanceTimersByTimeAsync(6600);
+  });
+  expect(container.textContent).toContain("stopped before reaching a usable depth");
+  expect(mocks.classify).not.toHaveBeenCalled();
+  expect(mocks.killEngine).toHaveBeenCalledTimes(1);
+});
+
+test("terminal positions do not start an engine and time out waiting for an impossible PV", async () => {
+  const original = mocks.position.fen;
+  try {
+    mocks.position.fen = "7k/6Q1/5K2/8/8/8/8/8 b - - 0 1";
+    await start();
+    expect(container.textContent).toContain("Position finished");
+    expect(mocks.getBestMoves).not.toHaveBeenCalled();
+  } finally {
+    mocks.position.fen = original;
+  }
+});
+
+test.each(["7k/5K2/6Q1/8/8/8/8/8 b - - 0 1", "7k/8/5K2/8/8/8/8/8 w - - 0 1"])(
+  "stalemate and insufficient material do not time out: %s",
+  async (fen) => {
+    const original = mocks.position.fen;
+    try {
+      mocks.position.fen = fen;
+      await start();
+      expect(container.textContent).toContain("Position finished");
+      expect(mocks.getBestMoves).not.toHaveBeenCalled();
+    } finally {
+      mocks.position.fen = original;
+    }
+  },
+);
+
+test("invalid setup produces an immediate actionable error, not an effect exception", async () => {
+  const original = mocks.position.fen;
+  try {
+    mocks.position.fen = "not a fen";
+    await start();
+    expect(container.textContent).toContain("This position is not legal");
+    expect(mocks.getBestMoves).not.toHaveBeenCalled();
+  } finally {
+    mocks.position.fen = original;
+  }
 });
 afterEach(async () => {
   await act(async () => root.unmount());

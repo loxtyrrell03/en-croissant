@@ -1569,6 +1569,54 @@ loading and all 57 rebuilt-production-worker parity cases. TypeScript retains
 only the unrelated OTB number/bigint fixture error. No native ZIP, website,
 Outpost or service deployment, physical UI proof or general accuracy is claimed.
 
+## Desktop timeout-path verification (live pipeline 35; adapter 34 unchanged)
+
+The reported six-second error occurs before theme verification. The panel used
+one deadline for listener registration, cold engine startup and depth search,
+and cancellation could call native cleanup before the process was registered.
+Remounts also reused per-component numeric request IDs. This revision uses unique
+scan IDs and retains a cleanup-only listener after cancellation during startup:
+a matching late event proves registration and triggers a second cleanup, never
+classification or board updates. A final 35-second cleanup bounds that listener.
+The native startup implementation itself is unchanged; this is not a guarantee
+against an indefinitely unhealthy native process.
+
+Configured per-scan Threads and Hash are capped at 2 and 64 MB, respectively;
+the user's analysis settings and other engine options remain untouched. Cold
+startup gets a separate 12-second allowance; the six-second search allowance
+begins with the first nonempty snapshot. A depth-8-or-better fallback remains
+usable. If only shallow events arrived, `stop` gets 600 ms to flush the newest
+unthrottled snapshot. A late stop rejection cannot invalidate verification.
+Empty higher-depth events cannot overwrite a usable fallback. Checkmate,
+stalemate, insufficient material and invalid setups are handled without a search.
+Partial results display actual depth with an incomplete-coverage caveat; genuinely
+silent or unusable engines still produce a bounded error, not a false no-tactics
+result.
+
+The fresh native test uses the actual capped options against all 24 frozen
+ordinary-game positions, 32 mixed puzzle positions and both screenshot positions.
+All 58 reached depth 16; the ordinary check-evasion positions with one/two legal
+moves correctly supply fewer than three roots. `live-engine-latency.json` records
+every run. Usable snapshots took 328 ms median, 365 ms p95 and 475 ms maximum;
+total cold-start/search took 597 ms median, 1,198 ms p95 and 1,704 ms maximum.
+These measurements exclude Tauri event delivery, worker verification and WebView
+rendering; they neither reproduce nor prove the user's physical UI behaviour.
+
+```powershell
+$env:TACTICAL_LATENCY_ENGINE = '<Stockfish executable>'
+$env:TACTICAL_LATENCY_REPORT = 'benchmarks/tactical-relevance/live-engine-latency.json'
+node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalEngineLatency.test.ts --environment node
+```
+
+Twelve new lifecycle/resource regressions cover startup delay, retained partial
+lines, stop flush/rejection, late registration, bounded cleanup, remount isolation,
+terminal/invalid positions and non-mutating option caps. The selected suite passes
+178 tests (one opt-in skip); targeted lint and the 8,854-module build pass. The
+development HTTP worker and all 57 production-worker parity cases also pass.
+The classifier and its built worker are unchanged; TypeScript retains only the
+unrelated OTB number/bigint fixture error. No app restart, native delivery,
+website/Outpost deployment or physical UI verification is claimed.
+
 ## What remains to establish
 
 These are relevance milestones, not completion of the broader tuning

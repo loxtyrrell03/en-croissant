@@ -138,6 +138,26 @@ describe("live tactical classifier", () => {
         expect(selectLiveTacticalScanLine(lines)).toBe(lines[0]);
     });
 
+    test("caps per-scan resources without mutating the analysis profile", () => {
+        const profile = [
+            { name: "Threads", value: 8 },
+            { name: "Hash", value: 512 },
+        ];
+        expect(buildTacticalEngineOptions(profile)).toEqual([
+            { name: "Threads", value: "2" },
+            { name: "Hash", value: "64" },
+            { name: "MultiPV", value: "3" },
+        ]);
+        expect(profile[0].value).toBe(8);
+        expect(profile[1].value).toBe(512);
+        expect(
+            buildTacticalEngineOptions([
+                { name: "Threads", value: 1 },
+                { name: "Hash", value: 16 },
+            ])[0].value,
+        ).toBe("1");
+    });
+
     test("uses only a sufficiently deep principal variation at the scan deadline", () => {
         const secondary = engineLine(10, 2);
         const principal = engineLine(9, 1);

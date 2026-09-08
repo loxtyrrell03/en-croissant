@@ -143,7 +143,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 34;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 35;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {
@@ -494,9 +494,22 @@ export function buildTacticalEngineOptions(
     settings: EngineSettings | null | undefined,
     multipv = LIVE_TACTICAL_SCAN_MULTIPV,
 ) {
-    const options = engineSettingsToOptions(settings).filter(
-        (option) => option.name.trim().toLowerCase() !== "multipv",
-    );
+    const options = engineSettingsToOptions(settings)
+        .filter((option) => option.name.trim().toLowerCase() !== "multipv")
+        .map((option) => {
+            const name = option.name.trim().toLowerCase();
+            const cap = name === "threads" ? 2 : name === "hash" ? 64 : null;
+            if (cap === null) return option;
+            const value = Number(option.value);
+            return {
+                ...option,
+                value: String(
+                    Number.isFinite(value) && value > 0
+                        ? Math.min(cap, Math.max(1, Math.trunc(value)))
+                        : cap,
+                ),
+            };
+        });
     return [
         ...options,
         { name: "MultiPV", value: String(Math.max(1, Math.trunc(multipv))) },

@@ -1,0 +1,756 @@
+{
+  "scope": "58 fresh native UCI searches, Threads 2 / Hash 64 / MultiPV up to 3 (legal-move count), depth 16 with six-second stop; not Tauri, WebView or classification timing. Fixed development positions, not an accuracy estimate.",
+  "report": [
+    {
+      "id": "screenshot:f7",
+      "startupMs": 344.7806,
+      "usableMs": 351.6226,
+      "totalMs": 1138.3342,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "e5f7",
+        "c4f7",
+        "e3e4"
+      ]
+    },
+    {
+      "id": "screenshot:reti",
+      "startupMs": 318.42190000000005,
+      "usableMs": 328.29049999999984,
+      "totalMs": 846.9872999999998,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "d5d4",
+        "c7c6",
+        "e7e6"
+      ]
+    },
+    {
+      "id": "ordinary-1:ply8",
+      "startupMs": 324.94360000000006,
+      "usableMs": 336.8222999999998,
+      "totalMs": 1036.2282,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "a2a3",
+        "e2e4",
+        "h2h3"
+      ]
+    },
+    {
+      "id": "ordinary-1:ply13",
+      "startupMs": 319.9067,
+      "usableMs": 330.7221999999997,
+      "totalMs": 802.5545999999995,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "c7c6",
+        "h7h6",
+        "a7a6"
+      ]
+    },
+    {
+      "id": "ordinary-1:ply18",
+      "startupMs": 419.0675000000001,
+      "usableMs": 425.53279999999995,
+      "totalMs": 644.8976000000002,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "d3a6",
+        "d3d2",
+        "f3e5"
+      ]
+    },
+    {
+      "id": "ordinary-1:ply23",
+      "startupMs": 326.47159999999985,
+      "usableMs": 331.5480000000007,
+      "totalMs": 925.0824000000002,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "b6b5",
+        "c8b7",
+        "f7f5"
+      ]
+    },
+    {
+      "id": "ordinary-1:ply28",
+      "startupMs": 334.1297999999997,
+      "usableMs": 337.7668999999996,
+      "totalMs": 359.6282999999994,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "a8d8",
+        "a8c6",
+        "g5d8"
+      ]
+    },
+    {
+      "id": "ordinary-1:ply33",
+      "startupMs": 344.02869999999984,
+      "usableMs": 346.2611999999999,
+      "totalMs": 415.4436999999998,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "e8g8",
+        "e7d8",
+        "f7f5"
+      ]
+    },
+    {
+      "id": "ordinary-1:ply38",
+      "startupMs": 363.3603999999996,
+      "usableMs": 364.89759999999933,
+      "totalMs": 635.8991999999998,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "a8b7",
+        "c1b1",
+        "a8c6"
+      ]
+    },
+    {
+      "id": "ordinary-1:ply43",
+      "startupMs": 341.7393999999995,
+      "usableMs": 343.72890000000007,
+      "totalMs": 482.1745999999994,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "h7g6",
+        "a8e8",
+        "a8f8"
+      ]
+    },
+    {
+      "id": "ordinary-2:ply8",
+      "startupMs": 317.5042999999996,
+      "usableMs": 342.6152000000002,
+      "totalMs": 894.9024,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "e4e5",
+        "f1c4",
+        "g1f3"
+      ]
+    },
+    {
+      "id": "ordinary-2:ply13",
+      "startupMs": 327.0730999999996,
+      "usableMs": 332.5632999999998,
+      "totalMs": 1703.6080000000002,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "g8e7",
+        "d8e7",
+        "e8f7"
+      ]
+    },
+    {
+      "id": "ordinary-2:ply18",
+      "startupMs": 321.5537000000004,
+      "usableMs": 326.47299999999996,
+      "totalMs": 387.09320000000116,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "f6f7",
+        "d5e5",
+        "d5e4"
+      ]
+    },
+    {
+      "id": "ordinary-2:ply23",
+      "startupMs": 316.7397999999994,
+      "usableMs": 322.95470000000023,
+      "totalMs": 470.96299999999974,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "d8e7",
+        "g8e7",
+        "d7d6"
+      ]
+    },
+    {
+      "id": "ordinary-2:ply28",
+      "startupMs": 320.03689999999915,
+      "usableMs": 333.71399999999994,
+      "totalMs": 1132.0494999999992,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "c4d5",
+        "e4e5",
+        "e4d4"
+      ]
+    },
+    {
+      "id": "ordinary-2:ply33",
+      "startupMs": 320.96730000000025,
+      "usableMs": 323.6402999999991,
+      "totalMs": 489.825499999999,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "b8c6",
+        "c8d7",
+        "b7b5"
+      ]
+    },
+    {
+      "id": "ordinary-2:ply38",
+      "startupMs": 316.66979999999967,
+      "usableMs": 317.97940000000017,
+      "totalMs": 455.01800000000003,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "b2b3",
+        "d1e2",
+        "d1e1"
+      ]
+    },
+    {
+      "id": "ordinary-2:ply43",
+      "startupMs": 321.59050000000025,
+      "usableMs": 323.4809000000005,
+      "totalMs": 596.2001,
+      "depth": 16,
+      "expectedRoots": 2,
+      "roots": [
+        "f8f7",
+        "f8g8"
+      ]
+    },
+    {
+      "id": "ordinary-2:ply48",
+      "startupMs": 326.40250000000015,
+      "usableMs": 330.03009999999995,
+      "totalMs": 643.4182000000001,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "c5a4",
+        "g2g4",
+        "h1e1"
+      ]
+    },
+    {
+      "id": "ordinary-2:ply53",
+      "startupMs": 327.4249,
+      "usableMs": 333.46200000000135,
+      "totalMs": 431.63970000000154,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "c6d4",
+        "e2c2",
+        "e2d2"
+      ]
+    },
+    {
+      "id": "ordinary-2:ply58",
+      "startupMs": 326.83920000000035,
+      "usableMs": 327.3705000000009,
+      "totalMs": 327.8814000000002,
+      "depth": 16,
+      "expectedRoots": 1,
+      "roots": [
+        "f1g1"
+      ]
+    },
+    {
+      "id": "ordinary-3:ply8",
+      "startupMs": 333.91330000000016,
+      "usableMs": 363.66259999999966,
+      "totalMs": 1201.4265999999989,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "e2e4",
+        "c1f4",
+        "h2h3"
+      ]
+    },
+    {
+      "id": "ordinary-3:ply13",
+      "startupMs": 341.9337999999989,
+      "usableMs": 345.0673999999999,
+      "totalMs": 467.3097000000016,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "g7f6",
+        "e7f6",
+        "e8g8"
+      ]
+    },
+    {
+      "id": "ordinary-3:ply18",
+      "startupMs": 469.29209999999875,
+      "usableMs": 474.58320000000094,
+      "totalMs": 818.2039000000004,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "f3g5",
+        "g2g4",
+        "h2h4"
+      ]
+    },
+    {
+      "id": "ordinary-3:ply23",
+      "startupMs": 318.7435000000005,
+      "usableMs": 327.5282999999981,
+      "totalMs": 750.2243999999992,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "g8h8",
+        "e8c8",
+        "e8f7"
+      ]
+    },
+    {
+      "id": "ordinary-3:ply28",
+      "startupMs": 317.1270000000004,
+      "usableMs": 324.1369999999988,
+      "totalMs": 687.0612999999976,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "c4f7",
+        "h2h4",
+        "g2g4"
+      ]
+    },
+    {
+      "id": "lichess:DVSJh",
+      "startupMs": 330.0025999999998,
+      "usableMs": 336.1094000000012,
+      "totalMs": 438.90989999999874,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "b6h6",
+        "b4b5",
+        "b6f6"
+      ]
+    },
+    {
+      "id": "lichess:007c6",
+      "startupMs": 319.8077999999987,
+      "usableMs": 323.15260000000126,
+      "totalMs": 1198.1504999999997,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "c4a6",
+        "b2b4",
+        "d1e1"
+      ]
+    },
+    {
+      "id": "lichess:fVRuW",
+      "startupMs": 326.3192999999992,
+      "usableMs": 338.5780999999988,
+      "totalMs": 749.8257999999987,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "e4f3",
+        "e5f5",
+        "g5f4"
+      ]
+    },
+    {
+      "id": "lichess:K56tk",
+      "startupMs": 316.96050000000105,
+      "usableMs": 322.09769999999844,
+      "totalMs": 782.9243999999999,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "g5g6",
+        "d3d4",
+        "h5h6"
+      ]
+    },
+    {
+      "id": "lichess:NKnZo",
+      "startupMs": 313.01520000000164,
+      "usableMs": 315.27880000000005,
+      "totalMs": 418.6372999999985,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "h2h8",
+        "f6h8",
+        "f6g6"
+      ]
+    },
+    {
+      "id": "lichess:5hjz7",
+      "startupMs": 318.34289999999964,
+      "usableMs": 321.8041000000012,
+      "totalMs": 410.47220000000016,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "a1c3",
+        "g4f5",
+        "g4f3"
+      ]
+    },
+    {
+      "id": "lichess:GIB50",
+      "startupMs": 321.6273000000001,
+      "usableMs": 323.7464,
+      "totalMs": 415.5925000000025,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "c8d8",
+        "c8c6",
+        "c8c4"
+      ]
+    },
+    {
+      "id": "lichess:REAdh",
+      "startupMs": 317.78740000000107,
+      "usableMs": 321.08929999999964,
+      "totalMs": 510.54529999999795,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "h6e6",
+        "f2e3",
+        "h2h4"
+      ]
+    },
+    {
+      "id": "lichess:NGZzo",
+      "startupMs": 316.8920999999973,
+      "usableMs": 325.04109999999855,
+      "totalMs": 597.2154999999984,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "c5d7",
+        "g3g5",
+        "g1c1"
+      ]
+    },
+    {
+      "id": "lichess:4Osgg",
+      "startupMs": 316.1293000000005,
+      "usableMs": 321.2907000000014,
+      "totalMs": 396.60389999999825,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "f7f1",
+        "f8e8",
+        "c7c6"
+      ]
+    },
+    {
+      "id": "lichess:UCiYo",
+      "startupMs": 317.34999999999854,
+      "usableMs": 321.52950000000055,
+      "totalMs": 961.8310999999994,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "c4c5",
+        "c4d3",
+        "d5d6"
+      ]
+    },
+    {
+      "id": "lichess:CSh8J",
+      "startupMs": 314.47350000000006,
+      "usableMs": 319.09939999999915,
+      "totalMs": 427.73419999999896,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "e3d5",
+        "e3c4",
+        "f3g3"
+      ]
+    },
+    {
+      "id": "lichess:opGD7",
+      "startupMs": 315.15429999999833,
+      "usableMs": 322.71099999999933,
+      "totalMs": 586.7624999999971,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "f3f1",
+        "f3d3",
+        "d5d4"
+      ]
+    },
+    {
+      "id": "lichess:fJrhT",
+      "startupMs": 314.8675000000003,
+      "usableMs": 319.4327999999987,
+      "totalMs": 506.9769000000015,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "b2b1",
+        "b2b3",
+        "f4d3"
+      ]
+    },
+    {
+      "id": "lichess:MJZcU",
+      "startupMs": 316.26840000000084,
+      "usableMs": 326.4350999999988,
+      "totalMs": 541.358400000001,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "f4e4",
+        "c3c2",
+        "f4f6"
+      ]
+    },
+    {
+      "id": "lichess:0RleZ",
+      "startupMs": 316.21429999999964,
+      "usableMs": 319.96789999999964,
+      "totalMs": 463.7939000000006,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "a7e7",
+        "d5c7",
+        "a7g7"
+      ]
+    },
+    {
+      "id": "lichess:Z5arb",
+      "startupMs": 317.85549999999785,
+      "usableMs": 334.3680999999997,
+      "totalMs": 993.6265999999996,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "e5f3",
+        "d5c6",
+        "d5d4"
+      ]
+    },
+    {
+      "id": "lichess:iUj3e",
+      "startupMs": 326.0603999999985,
+      "usableMs": 337.98839999999836,
+      "totalMs": 444.04859999999826,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "h5e5",
+        "b3e6",
+        "e1e6"
+      ]
+    },
+    {
+      "id": "lichess:Kvpvi",
+      "startupMs": 320.2017999999989,
+      "usableMs": 323.71830000000045,
+      "totalMs": 455.29179999999906,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "c5b4",
+        "c5a3",
+        "g7g5"
+      ]
+    },
+    {
+      "id": "lichess:hz3ed",
+      "startupMs": 322.8214000000007,
+      "usableMs": 329.6735000000008,
+      "totalMs": 645.2469000000019,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "g5e3",
+        "e1e6",
+        "e1e7"
+      ]
+    },
+    {
+      "id": "lichess:o8K8i",
+      "startupMs": 322.53199999999924,
+      "usableMs": 327.5626000000011,
+      "totalMs": 567.7801,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "e5f6",
+        "g4g3",
+        "g4h3"
+      ]
+    },
+    {
+      "id": "lichess:w1lKu",
+      "startupMs": 322.6902000000009,
+      "usableMs": 328.35629999999946,
+      "totalMs": 641.2991000000002,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "d3h7",
+        "d3b1",
+        "d3e2"
+      ]
+    },
+    {
+      "id": "lichess:rqXvZ",
+      "startupMs": 325.63610000000335,
+      "usableMs": 333.74770000000353,
+      "totalMs": 823.1670000000013,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "f1f8",
+        "e6b3",
+        "e6e2"
+      ]
+    },
+    {
+      "id": "lichess:ouIHI",
+      "startupMs": 324.99490000000515,
+      "usableMs": 328.2263000000021,
+      "totalMs": 668.4490000000005,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "c4a4",
+        "f8c8",
+        "c3e5"
+      ]
+    },
+    {
+      "id": "lichess:eOCp9",
+      "startupMs": 320.2933000000048,
+      "usableMs": 348.8477000000057,
+      "totalMs": 1139.035800000005,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "f2f4",
+        "e4f5",
+        "d1d2"
+      ]
+    },
+    {
+      "id": "lichess:erSYy",
+      "startupMs": 324.44750000000204,
+      "usableMs": 327.2531999999992,
+      "totalMs": 808.8790999999983,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "e7e8n",
+        "e7e8q",
+        "e7e8r"
+      ]
+    },
+    {
+      "id": "lichess:vztmO",
+      "startupMs": 324.17819999999483,
+      "usableMs": 329.99409999999625,
+      "totalMs": 532.6257999999943,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "h8h2",
+        "e5e4",
+        "d7a4"
+      ]
+    },
+    {
+      "id": "lichess:G8wdr",
+      "startupMs": 320.7099999999991,
+      "usableMs": 340.7569000000003,
+      "totalMs": 610.5743999999977,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "d7e5",
+        "d7c5",
+        "a5c7"
+      ]
+    },
+    {
+      "id": "lichess:4GiqO",
+      "startupMs": 322.27760000000126,
+      "usableMs": 326.2606999999989,
+      "totalMs": 417.20990000000165,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "a5b4",
+        "a5a6",
+        "a5b6"
+      ]
+    },
+    {
+      "id": "lichess:wh6Ac",
+      "startupMs": 323.0370999999941,
+      "usableMs": 325.48689999999624,
+      "totalMs": 592.156799999997,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "g4g2",
+        "f7f5",
+        "d6d5"
+      ]
+    },
+    {
+      "id": "lichess:NOaM1",
+      "startupMs": 318.91300000000047,
+      "usableMs": 323.068600000006,
+      "totalMs": 579.526300000005,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "a2b1",
+        "f4d6",
+        "f7g8"
+      ]
+    },
+    {
+      "id": "lichess:JaKHo",
+      "startupMs": 324.9262000000017,
+      "usableMs": 328.81460000000516,
+      "totalMs": 1054.9356000000043,
+      "depth": 16,
+      "expectedRoots": 3,
+      "roots": [
+        "d8d1",
+        "c8a6",
+        "c5e4"
+      ]
+    }
+  ]
+}
