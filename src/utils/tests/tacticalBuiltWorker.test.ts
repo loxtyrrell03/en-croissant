@@ -3,10 +3,11 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Worker as NodeWorker } from "node:worker_threads";
 import { Chess } from "chessops/chess";
-import { parseFen } from "chessops/fen";
+import { makeFen, parseFen } from "chessops/fen";
 import { parseSan } from "chessops/san";
 import { makeUci } from "chessops/util";
 import { expect, test, vi } from "vitest";
+import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import {
     buildLiveTacticalScan,
     type LiveTacticalScanInput,
@@ -105,6 +106,30 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             bestLine: string[];
         }[];
         const cases = [
+            ...[
+                {
+                    id: "constructed:accepted-fork-sacrifice",
+                    fen: "8/8/6k1/5qpr/4N3/8/8/K6Q w - - 0 1",
+                    offer: "h1h5",
+                    acceptance: "g6h5",
+                },
+                {
+                    id: "constructed:accepted-mating-sacrifice",
+                    fen: "5rnk/6pp/4Q2N/8/8/8/8/K7 w - - 0 1",
+                    offer: "e6g8",
+                    acceptance: "f8g8",
+                },
+            ].map((item) => ({
+                id: item.id,
+                input: {
+                    fen: makeFen(replayTacticalLine(item.fen, [item.offer])[0].after.toSetup()),
+                    previousFen: item.fen,
+                    previousMoveUci: item.offer,
+                    pvUci: [item.acceptance],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            })),
             {
                 id: "constructed:capturing-fork-preparation",
                 input: {
@@ -207,7 +232,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(86);
+        expect(report).toHaveLength(88);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

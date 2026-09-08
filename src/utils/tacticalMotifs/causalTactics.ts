@@ -144,6 +144,23 @@ export function winningRecaptureEvidence(
         return motif;
     const gain = tacticalExchangeGain(step.before, step.move);
     if (gain <= -VALUE.king || gain - previous.capture < 100) return null;
+    // Same-square SEE cannot see a checking fork, compensation elsewhere,
+    // or mate after accepting a sacrifice. Only independent legal proofs
+    // may remove the gain label; neither a sacrifice tag nor a PV endpoint
+    // is evidence. The move remains visible in the continuation without a
+    // misleading hanging-piece / winning-recapture badge.
+    const allowsImmediateMate = legalMoves(step.after).some((move) => {
+        const next = step.after.clone();
+        next.play(move);
+        return next.isCheckmate();
+    });
+    if (
+        allowsImmediateMate ||
+        proveCaptureForkPreparation(previous) ||
+        provePinnedCapture(previous) ||
+        capturedDefenderProof(previous, motif.source)
+    )
+        return null;
     const victim = step.before.board.get(step.move.to);
     const traded = previous.before.board.get(previous.move.to);
     if (!victim || !traded) return motif;

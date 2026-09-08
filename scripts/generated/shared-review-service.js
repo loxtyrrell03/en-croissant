@@ -9440,6 +9440,11 @@ function winningRecaptureEvidence(steps, index, motif) {
 	if (motif.id !== "hangingPiece" || !step?.capture || !previous?.capture || previous.move.to !== step.move.to || previous.move.promotion || step.move.promotion) return motif;
 	const gain = tacticalExchangeGain(step.before, step.move);
 	if (gain <= -VALUE.king || gain - previous.capture < 100) return null;
+	if (legalMoves(step.after).some((move) => {
+		const next = step.after.clone();
+		next.play(move);
+		return next.isCheckmate();
+	}) || proveCaptureForkPreparation(previous) || provePinnedCapture(previous) || capturedDefenderProof(previous, motif.source)) return null;
 	const victim = step.before.board.get(step.move.to);
 	const traded = previous.before.board.get(previous.move.to);
 	if (!victim || !traded) return motif;
@@ -13097,7 +13102,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 42;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 43;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

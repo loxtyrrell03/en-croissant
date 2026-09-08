@@ -497,6 +497,65 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_ACCEPTANCE_ENGINE_REPORT,
+    )(
+        "validate compensation after private sacrifice acceptances",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const { provePinnedCapture } = await import("../tacticalMotifs/causalTactics");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_ACCEPTANCE_ENGINE_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"),
+            );
+            const report = [];
+            for (const index of [68, 77, 97, 125]) {
+                const row = sample.cases.find(
+                    (r: { eligibleIndex: number }) => r.eligibleIndex === index,
+                );
+                const root = replayTacticalLine(row.fen, row.sourceUci)[0];
+                const compensation =
+                    index === 68 ? provePinnedCapture(root)?.compensation : undefined;
+                const acceptance = compensation
+                    ? makeUci(parseSan(root.after, compensation.reply)!)
+                    : row.sourceUci[1];
+                const step = replayTacticalLine(row.fen, [root.uci, acceptance])[1];
+                const answer = compensation
+                    ? makeUci(parseSan(step.after, compensation.answer)!)
+                    : row.sourceUci[2];
+                const lines = [
+                    ...(await analyse(engine, makeFen(step.after.toSetup()), answer)).values(),
+                ];
+                const viewed = classifyPositionTacticalMotifs({
+                    fen: makeFen(root.after.toSetup()),
+                    previousFen: row.fen,
+                    previousMoveUci: root.uci,
+                    pvUci: [acceptance],
+                });
+                report.push({ id: row.id, acceptance, answer, lines, viewed });
+            }
+            writeFileSync(
+                output,
+                JSON.stringify({ sourceSha256: sample.sourceSha256, cases: report }, null, 2),
+                { flag: "wx" },
+            );
+            for (const item of report) {
+                expect(item.lines[0].depth).toBe(16);
+                expect(item.lines[0].cp).toBeGreaterThan(0);
+                expect(item.viewed.motifs.some((m) => m.ply === 1 && m.id === "hangingPiece")).toBe(
+                    false,
+                );
+            }
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_PREPARATION_ENGINE_REPORT,
     )(
         "validate private checking capture preparations and declined sacrifices",

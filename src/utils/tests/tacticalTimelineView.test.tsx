@@ -5,6 +5,29 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("keeps the sacrifice acceptance visible without a misleading material-win badge", () => {
+  const fen = "8/8/6k1/5qpr/4N3/8/8/K6Q w - - 0 1";
+  const line = ["h1h5", "g6h5", "e4g3"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain(
+    "Fork Preparation",
+  );
+  const acceptance = container.querySelector('[data-tactical-ply="2"]')!;
+  expect(acceptance.textContent).toContain("Kxh5");
+  expect(acceptance.textContent).not.toContain("Winning Recapture");
+  expect(acceptance.textContent).not.toContain("Hanging Piece");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Fork");
+});
+
 test("retains later engine moves without presenting them as current tactical findings", () => {
   const fen = "rnbqk2r/p1ppbppp/1p3n2/4N3/2B5/4P3/PPPP1PPP/RNBQK2R w KQkq - 0 5";
   const line = [
