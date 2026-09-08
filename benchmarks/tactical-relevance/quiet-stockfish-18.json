@@ -93,16 +93,16 @@
             "confidence": "high",
             "ply": 1,
             "moveUci": "h5h3",
-            "value": 10000,
+            "value": 100,
             "evidence": "Qh3 exploits the pawn on h7, pinned to the king on h8 by the queen on h3. No legal reply avoids material loss in the immediate exchange.",
             "relevance": "secondary",
             "actor": "white"
           },
           {
-            "id": "pin",
-            "label": "Pin",
+            "id": "mateIn2",
+            "label": "Mate in 2",
             "confidence": "medium",
-            "evidence": "Pin appears on Qxh6# at ply 3 of the current best line.",
+            "evidence": "Mate in 2 appears on Qxh6# at ply 3 of the current best line.",
             "source": "available",
             "ply": 3,
             "moveUci": "h3h6",
@@ -111,10 +111,10 @@
             "actor": "white"
           },
           {
-            "id": "mateIn2",
-            "label": "Mate in 2",
+            "id": "pin",
+            "label": "Pin",
             "confidence": "medium",
-            "evidence": "Mate in 2 appears on Qxh6# at ply 3 of the current best line.",
+            "evidence": "Pin appears on Qxh6# at ply 3 of the current best line.",
             "source": "available",
             "ply": 3,
             "moveUci": "h3h6",
@@ -150,7 +150,7 @@
             "confidence": "high",
             "ply": 1,
             "moveUci": "g6h6",
-            "value": 10000,
+            "value": 100,
             "evidence": "Rh6 exploits the pawn on h7, pinned to the king on h8 by the rook on h6. No legal reply avoids material loss in the immediate exchange.",
             "relevance": "secondary",
             "actor": "white"
@@ -184,8 +184,8 @@
             "source": "available",
             "ply": 1,
             "moveUci": "g6g8",
-            "relevance": "primary",
             "value": 10000,
+            "relevance": "primary",
             "actor": "white"
           },
           {
@@ -215,7 +215,7 @@
         ]
       }
     ],
-    "classificationMs": 9.396899999999732
+    "classificationMs": 15.073700000000827
   },
   {
     "fen": "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",
@@ -325,16 +325,16 @@
             "confidence": "high",
             "ply": 3,
             "moveUci": "f6g6",
-            "value": 10000,
+            "value": 200,
             "evidence": "Kxg6 exploits the pawn on h5, pinned to the king on h8 by the queen on h2. No legal reply avoids material loss in the immediate exchange.",
             "relevance": "secondary",
             "actor": "white"
           },
           {
-            "id": "pin",
-            "label": "Pin",
+            "id": "mate",
+            "label": "Mate",
             "confidence": "medium",
-            "evidence": "Pin appears on Qb8# at ply 5 of the current best line.",
+            "evidence": "Mate appears on Qb8# at ply 5 of the current best line.",
             "source": "available",
             "ply": 5,
             "moveUci": "h2b8",
@@ -343,10 +343,10 @@
             "actor": "white"
           },
           {
-            "id": "mate",
-            "label": "Mate",
+            "id": "pin",
+            "label": "Pin",
             "confidence": "medium",
-            "evidence": "Mate appears on Qb8# at ply 5 of the current best line.",
+            "evidence": "Pin appears on Qb8# at ply 5 of the current best line.",
             "source": "available",
             "ply": 5,
             "moveUci": "h2b8",
@@ -439,7 +439,7 @@
         ]
       }
     ],
-    "classificationMs": 20.965399999999136
+    "classificationMs": 25.829499999999825
   },
   {
     "fen": "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",

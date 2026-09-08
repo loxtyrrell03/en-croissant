@@ -102,7 +102,7 @@ describe("Mistake Review tactical motif adapter", () => {
         const deflection = result.missedMotifs.find((motif) => motif.id === "deflection");
         expect(deflection).toMatchObject({
             label: "Deflection",
-            confidence: "medium",
+            confidence: "high",
             source: "missed",
         });
         expect(deflection?.ply).toBeGreaterThan(0);

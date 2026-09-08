@@ -538,9 +538,10 @@ function discoveredEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
     ];
     const capturers = [...new Set([...rays.map((r) => r.from), step.move.to])];
     const mate =
-        step.after.isCheckmate() ||
-        (steps[2]?.after.isCheckmate() && Boolean(proveMateNextTurn(step))) ||
-        (steps[4]?.after.isCheckmate() && Boolean(proveMateWithinThree(steps.slice(0, 5))));
+        Boolean(kingRay) &&
+        (step.after.isCheckmate() ||
+            (steps[2]?.after.isCheckmate() && Boolean(proveMateNextTurn(step))) ||
+            (steps[4]?.after.isCheckmate() && Boolean(proveMateWithinThree(steps.slice(0, 5)))));
     const proof = mate
         ? null
         : materialThreatProof(
@@ -657,10 +658,17 @@ function materialThreatProof(
     targets: Square[],
     capturers: Square[],
     interpositions: Square[] = [],
+    allowMateAnswer = false,
 ) {
-    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}`;
+    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}`;
     if (materialProofCache.has(key)) return materialProofCache.get(key)!;
-    const proof = computeMaterialThreatGain(step, targets, capturers, interpositions);
+    const proof = computeMaterialThreatGain(
+        step,
+        targets,
+        capturers,
+        interpositions,
+        allowMateAnswer,
+    );
     materialProofCache.set(key, proof);
     if (materialProofCache.size > 256)
         materialProofCache.delete(materialProofCache.keys().next().value!);
@@ -672,12 +680,14 @@ function computeMaterialThreatGain(
     targets: Square[],
     capturers: Square[],
     interpositions: Square[],
+    allowMateAnswer: boolean,
 ): MaterialThreatProof {
     const replies = legalMoves(step.after);
     if (!replies.length) return { kind: "unknown" };
     let minimum = Infinity;
     let incomplete = false;
     const checks: string[] = [];
+    let mateNodes = 4096;
     for (const reply of replies) {
         const next = step.after.clone();
         next.play(reply);
@@ -722,6 +732,17 @@ function computeMaterialThreatGain(
                             (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0) +
                             exchangeGain,
                     );
+                }
+            }
+        }
+        if (best < 100 && allowMateAnswer) {
+            for (const move of legalMoves(next)) {
+                if (--mateNodes < 0) return { kind: "unknown" };
+                const answer = next.clone();
+                answer.play(move);
+                if (answer.isCheckmate()) {
+                    best = 10000;
+                    break;
                 }
             }
         }
@@ -812,10 +833,24 @@ export function tacticalBoardEvidence(
     line: string[],
     motif: TacticalMotifEvidence | undefined,
 ) {
-    if (!motif?.ply || !["fork", "pin", "skewer", ...DISCOVERED_THEMES].includes(motif.id))
+    if (
+        !motif?.ply ||
+        !["fork", "pin", "skewer", "deflection", ...DISCOVERED_THEMES].includes(motif.id)
+    )
         return null;
     const step = replayTacticalLine(fen, line.slice(0, motif.ply))[motif.ply - 1];
     if (!step) return null;
+    if (motif.id === "deflection") {
+        const suffix = replayTacticalLine(fen, line).slice(motif.ply - 1);
+        if (!deflectionEvidence(suffix, motif.source)) return null;
+        return {
+            square: makeSquare(step.move.to),
+            arrows: [
+                { from: makeSquare(suffix[1].move.from), to: makeSquare(suffix[1].move.to) },
+                { from: makeSquare(suffix[2].move.from), to: makeSquare(suffix[2].move.to) },
+            ],
+        };
+    }
     if (DISCOVERED_THEMES.has(motif.id)) {
         const rays = revealedRays(step);
         if (!rays.length) return null;
@@ -927,6 +962,70 @@ function capturedDefenderEvidence(
     return capturedDefenderProof(step, source)?.motif ?? null;
 }
 
+/** A capturing deflection needs a defender whose departure actually weakens
+ * the named target. Restoring that defender is only a protection probe, not
+ * a claimed legal variation. The real root is then checked against every
+ * legal reply, including declining the bait and immediate mating answers. */
+function deflectionEvidence(steps: TacticalReplayStep[], source: TacticalMotifEvidence["source"]) {
+    const [bait, reply, payoff] = steps;
+    if (
+        !bait ||
+        !reply ||
+        !payoff ||
+        !reply.capture ||
+        reply.move.to !== bait.move.to ||
+        reply.move.promotion ||
+        payoff.capture < 320 ||
+        payoff.before.turn !== bait.before.turn
+    )
+        return null;
+    const defender = reply.before.board.get(reply.move.from);
+    const victim = reply.before.board.get(payoff.move.to);
+    if (
+        !defender ||
+        !victim ||
+        defender.color !== victim.color ||
+        victim.role === "king" ||
+        !attacks(defender, reply.move.from, reply.before.board.occupied).has(payoff.move.to) ||
+        attacks(defender, reply.move.to, reply.after.board.occupied).has(payoff.move.to)
+    )
+        return null;
+    if (
+        reply.after.board.get(payoff.move.to)?.role !== victim.role ||
+        reply.after.board.get(payoff.move.to)?.color !== victim.color ||
+        !reply.after.isLegal(payoff.move)
+    )
+        return null;
+    const restored = reply.after.clone();
+    restored.board.take(reply.move.to);
+    restored.board.set(reply.move.from, defender);
+    const withDefender = tacticalExchangeGain(restored, payoff.move);
+    const withoutDefender = tacticalExchangeGain(reply.after, payoff.move);
+    if (
+        withDefender <= -VALUE.king ||
+        withoutDefender <= -VALUE.king ||
+        withoutDefender - withDefender < 100
+    )
+        return null;
+    const proof = materialThreatProof(bait, [payoff.move.to], [payoff.move.from], [], true);
+    if (
+        proof.kind !== "proven" ||
+        (bait.capture && tacticalExchangeGain(bait.before, bait.move) >= proof.gain)
+    )
+        return null;
+    const motif: TacticalMotifEvidence = {
+        id: "deflection",
+        label: "Deflection",
+        source,
+        confidence: "high",
+        ply: 1,
+        moveUci: bait.uci,
+        value: proof.gain,
+        evidence: `${bait.san} draws the ${defender.role} from ${makeSquare(reply.move.from)} to ${makeSquare(reply.move.to)}, removing its protection of the ${victim.role} on ${makeSquare(payoff.move.to)}. In this line, ${reply.san} ${payoff.san} wins that target. Every legal defence concedes material or immediate mate.`,
+    };
+    return motif;
+}
+
 export function hasTacticalStart(fen: string, line: string[]) {
     const steps = replayTacticalLine(fen, line.slice(0, 5));
     const root = steps[0];
@@ -1018,6 +1117,11 @@ export function auditTacticalMotifs(
             proposals[0]?.source ?? "available",
         );
         if (discovery) candidates.push({ ...discovery.motif, ply: index + 1 });
+        const deflection = deflectionEvidence(
+            episode.slice(index),
+            proposals[0]?.source ?? "available",
+        );
+        if (deflection) candidates.push({ ...deflection, ply: index + 1 });
     }
     // Only the engine-evaluated root may admit a check-tempo threat; never
     // turn unevaluated later PV rows into speculative tactical headlines.
@@ -1076,7 +1180,7 @@ export function auditTacticalMotifs(
     for (let proposal of proposals) {
         // These labels are reconstructed from the actual vacated blocker and
         // proved continuation, not inherited PV-level anchors or gain totals.
-        if (DISCOVERED_THEMES.has(proposal.id)) continue;
+        if (DISCOVERED_THEMES.has(proposal.id) || proposal.id === "deflection") continue;
         if (proposal.id === "promotion" || proposal.id === "underPromotion") {
             const index = episode.findIndex(
                 (s) =>
@@ -1115,6 +1219,7 @@ export function auditTacticalMotifs(
                     ...proposal,
                     ply: anchor + 1,
                     moveUci: bait.uci,
+                    value: 10000,
                     evidence: `${bait.san} offers the ${bait.before.board.get(bait.move.from)!.role} on ${makeSquare(bait.move.to)}. After ${episode[anchor + 1].san}, ${final.san} delivers mate.`,
                 };
             }
@@ -1130,29 +1235,6 @@ export function auditTacticalMotifs(
             tacticalExchangeGain(step.before, step.move) >= 100
         ) {
             if (!pinnedRecapturer(step)) continue;
-        }
-        if (proposal.id === "deflection") {
-            const reply = episode[proposal.ply];
-            const defender = reply?.before.board.get(reply.move.from);
-            const payoff = episode
-                .slice(proposal.ply + 1)
-                .find((s) => s.before.turn === attacker && s.capture >= 320);
-            const victim = payoff?.before.board.get(payoff.move.to);
-            if (
-                reply &&
-                defender &&
-                payoff &&
-                victim &&
-                attacks(defender, reply.move.from, reply.before.board.occupied).has(
-                    payoff.move.to,
-                ) &&
-                !attacks(defender, reply.move.to, reply.after.board.occupied).has(payoff.move.to)
-            ) {
-                proposal = {
-                    ...proposal,
-                    evidence: `In this line, ${step.san} draws the ${defender.role} from ${makeSquare(reply.move.from)} to ${makeSquare(reply.move.to)}, leaving the ${victim.role} on ${makeSquare(payoff.move.to)} without that defender. ${payoff.san} wins it.`,
-                };
-            }
         }
         // A PV cannot establish the all-moves counterfactual required by zugzwang.
         if (
@@ -1249,7 +1331,14 @@ export function auditTacticalMotifs(
                 return false;
             return true;
         })
-        .sort((a, b) => causeRank(a) - causeRank(b));
+        .sort((a, b) => {
+            // A proved material side-effect does not explain an independent
+            // forced mate. Only mechanisms with their own mating evidence
+            // may outrank the mating payoff in such a line.
+            const matingPriority = (m: TacticalMotifEvidence) =>
+                mate && (m.value === 10000 || MATE.test(m.id)) ? 0 : 1;
+            return matingPriority(a) - matingPriority(b) || causeRank(a) - causeRank(b);
+        });
     const immediateLoose = filtered.find((m) => m.id === "hangingPiece" && m.ply === 1);
     if (immediateLoose && !filtered.some((m) => MECHANISMS.has(m.id) && m.ply === 1)) {
         filtered.splice(filtered.indexOf(immediateLoose), 1);
@@ -1270,11 +1359,12 @@ export function auditTacticalMotifs(
         ...motif,
         relevance: index === 0 ? ("primary" as const) : ("secondary" as const),
         value:
-            mate || (motif.id === "mateThreat" && quietMate)
+            motif.value ??
+            (mate || (motif.id === "mateThreat" && quietMate)
                 ? 10000
                 : motif.id === "hangingPiece" && motif.ply === 1
                   ? tacticalExchangeGain(root.before, root.move)
-                  : (motif.value ?? Math.max(100, settled)),
+                  : Math.max(100, settled)),
     }));
 }
 

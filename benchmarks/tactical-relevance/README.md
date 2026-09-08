@@ -115,7 +115,7 @@ candidates; it is not an exhaustive replacement for root candidate search.
 
 ## Material mechanisms, not just a favourable PV endpoint
 
-`material-stockfish-18.json` records five additional candidate judgements. Each
+`material-stockfish-18.json` records eight candidate judgements. Each
 has a fresh unrestricted depth-16/MultiPV3 search and a separate search
 restricted to the move being judged, so the refutation is engine-selected:
 
@@ -126,6 +126,9 @@ restricted to the move being judged, so the refutation is engine-selected:
 | Bd3+ lines up Kf5 and Qh7 | Skewer | The king moves and Bxh7 takes the queen |
 | Same Bd3+ with an enemy pawn on e5 | No claimed skewer win | e4 blocks the bishop's line |
 | exf6+ captures the knight defending Qd5 | Removing the Defender | A king reply permits Rxd5 without the knight's recapture |
+| Re8+ draws Rd8 away from Qd5 | Deflection | Rxe8 Qxd5 wins queen for rook; the defender's departure changes the legal exchange |
+| Same bait with h6 providing Kh7 | No forced deflection | Kh7 declines the bait; unrestricted and restricted searches lead to an approximately drawn exchange sequence |
+| Same battery with an additional white rook pinning Rd8 | Back-rank mate | Re8+ Rxe8 Raxe8# is stronger than Qxd5; the already pinned rook was not a legal queen defender |
 
 The king–queen skewer reaches a bishop-versus-king dead draw. It wins material
 and avoids the previous disadvantage; it does **not** win the game. Timeline
@@ -278,6 +281,44 @@ These comparisons are bounded material explanations, not complete evaluations
 of positional compensation or proof that all later threats are unchanged.
 An opposing tactic which starts only after another quiet move remains outside
 this first-reply baseline check.
+
+## Deflection and irrelevant credit from a mating line
+
+The inherited deflection label could survive just because a cooperative PV
+ended with material gain. The h6/Kh7 control demonstrates the error: Rxe8
+Qxd5 is legal, but Black can decline that bait and keep the queen protected.
+Material deflections are now reconstructed from a captured bait, its moving
+defender and the immediate named-target payoff. Returning the defender to its
+original square in a protection-only probe must worsen the target's legal
+exchange; a defender that was already pinned cannot receive causal credit.
+That probe is not presented as a legal game continuation.
+
+The real bait position is then checked against every legal defence. Each must
+permit a profitable capture of the named target or an actual mate-in-one.
+Refusing the bait is not assumed to be bad: king escapes, capture alternatives,
+checking replies and recaptures are considered. The optional mating-answer
+search has a shared 4,096-move cap per proof and abstains when incomplete. This
+is still local material/exchange verification, not an unrestricted game-winning
+search. Non-capturing deflections and delayed payoffs remain outside this new
+proof and must not regain the old endpoint-only acceptance rule.
+
+The extra-rook example also corrected a judgement error: a supplied Qxd5 line
+really has a discovered attack on the queen, but fresh Stockfish instead finds
+Raxe8# after the same opening moves. A discovered attack on a **non-king** target
+can no longer borrow that independent mate's value. Its own proved material
+value is retained, and the mating lesson takes priority over that side-effect.
+Discovered checks with their own mating proof and the verified king-attraction
+branch retain their causal priority. The displayed deflection relationship now
+draws the defender's departure and the resulting target capture, not merely the
+bait's move arrow.
+
+Five regressions cover the genuine deflection and arrows, the declined bait,
+the already pinned defender, preserving the stronger mating lesson, and a
+knight-defender/bishop-block example where declining the queen loss permits
+Rxf8#. An initial version of that last construction was rejected because a
+second rook could recapture the checking rook: it was not mate. The retained
+example verifies the actual mating board and both defender branches. These
+are source/render-data checks, not running-app visual verification.
 
 Run in PowerShell with the configured Node runtime on PATH:
 

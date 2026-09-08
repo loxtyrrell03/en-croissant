@@ -265,7 +265,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-9",
+      "motifClassifierVersion": "site-55.adapter-10",
       "allowedTimeline": [
         {
           "id": "discoveredAttack",
@@ -325,7 +325,7 @@
         "comparisonEvidence": "g6 makes the immediate reply Bxh7+ illegal."
       }
     },
-    "classificationMs": 9.848199999996723
+    "classificationMs": 12.536199999998644
   },
   {
     "name": "A different reply wins the same queen after the better move",
@@ -655,7 +655,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-9",
+      "motifClassifierVersion": "site-55.adapter-10",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -717,7 +717,7 @@
         "comparisonEvidence": "Even after Kg7, Rf5+ still forces at least the same net material gain on the queen on f8. The better move changes the continuation, not the existence of that material loss."
       }
     },
-    "classificationMs": 11.806899999999587
+    "classificationMs": 13.626399999997375
   },
   {
     "name": "Ignored double-check mate instead of making a king escape",
@@ -951,7 +951,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-9",
+      "motifClassifierVersion": "site-55.adapter-10",
       "allowedTimeline": [
         {
           "id": "doubleCheck",
@@ -1015,7 +1015,7 @@
         "comparisonEvidence": "Rg8+ makes the immediate reply Bb5# illegal."
       }
     },
-    "classificationMs": 19.288100000001577
+    "classificationMs": 25.064500000000407
   },
   {
     "name": "Failed to unpin the knight",
@@ -1269,7 +1269,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-9",
+      "motifClassifierVersion": "site-55.adapter-10",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -1317,7 +1317,7 @@
         "comparisonEvidence": "After Kd7, Kxd6 answers d6; a profitable immediate follow-up capture of the knight on e7 is no longer forced."
       }
     },
-    "classificationMs": 11.844199999999546
+    "classificationMs": 30.300100000000384
   },
   {
     "name": "Allowed a king-queen skewer instead of preserving the queen",
@@ -1581,7 +1581,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-9",
+      "motifClassifierVersion": "site-55.adapter-10",
       "allowedTimeline": [
         {
           "id": "skewer",
@@ -1629,7 +1629,7 @@
         "comparisonEvidence": "After Kf4, Qxd3 answers Bd3; a profitable immediate follow-up capture of the queen on h7 is no longer forced."
       }
     },
-    "classificationMs": 5.589899999999034
+    "classificationMs": 7.887899999994261
   },
   {
     "name": "Allowed checking defender removal and lost the queen",
@@ -1925,7 +1925,7 @@
           "value": 500
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-9",
+      "motifClassifierVersion": "site-55.adapter-10",
       "allowedTimeline": [
         {
           "id": "capturingDefender",
@@ -1987,7 +1987,7 @@
         "comparisonEvidence": "Qxd1+ makes the immediate reply gxf6+ illegal."
       }
     },
-    "classificationMs": 21.898599999996804
+    "classificationMs": 30.61750000000029
   },
   {
     "name": "Missed quiet mate while leaving the queen attacked",
@@ -2183,17 +2183,6 @@
           "value": 10000
         },
         {
-          "id": "pin",
-          "label": "Pin",
-          "confidence": "medium",
-          "evidence": "Pin appears on Qb8# at ply 5 of the missed best line.",
-          "source": "missed",
-          "ply": 5,
-          "moveUci": "h2b8",
-          "relevance": "secondary",
-          "value": 10000
-        },
-        {
           "id": "mate",
           "label": "Mate",
           "confidence": "medium",
@@ -2203,9 +2192,20 @@
           "moveUci": "h2b8",
           "relevance": "secondary",
           "value": 10000
+        },
+        {
+          "id": "pin",
+          "label": "Pin",
+          "confidence": "medium",
+          "evidence": "Pin appears on Qb8# at ply 5 of the missed best line.",
+          "source": "missed",
+          "ply": 5,
+          "moveUci": "h2b8",
+          "relevance": "secondary",
+          "value": 10000
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-9",
+      "motifClassifierVersion": "site-55.adapter-10",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -2242,16 +2242,16 @@
           "confidence": "high",
           "ply": 3,
           "moveUci": "f6g6",
-          "value": 10000,
+          "value": 200,
           "evidence": "Kxg6 exploits the pawn on h5, pinned to the king on h8 by the queen on h2. No legal reply avoids material loss in the immediate exchange.",
           "relevance": "secondary",
           "actor": "white"
         },
         {
-          "id": "pin",
-          "label": "Pin",
+          "id": "mate",
+          "label": "Mate",
           "confidence": "medium",
-          "evidence": "Pin appears on Qb8# at ply 5 of the missed best line.",
+          "evidence": "Mate appears on Qb8# at ply 5 of the missed best line.",
           "source": "missed",
           "ply": 5,
           "moveUci": "h2b8",
@@ -2260,10 +2260,10 @@
           "actor": "white"
         },
         {
-          "id": "mate",
-          "label": "Mate",
+          "id": "pin",
+          "label": "Pin",
           "confidence": "medium",
-          "evidence": "Mate appears on Qb8# at ply 5 of the missed best line.",
+          "evidence": "Pin appears on Qb8# at ply 5 of the missed best line.",
           "source": "missed",
           "ply": 5,
           "moveUci": "h2b8",
@@ -2289,7 +2289,7 @@
         "value": 10000
       }
     },
-    "classificationMs": 6.027099999999336
+    "classificationMs": 8.640500000001339
   },
   {
     "name": "b6 permits the f7 fork",
@@ -2612,7 +2612,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-9",
+      "motifClassifierVersion": "site-55.adapter-10",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -2698,7 +2698,7 @@
         "comparisonEvidence": "After O-O, Nxf7 no longer has two profitable fork targets."
       }
     },
-    "classificationMs": 50.400699999998324
+    "classificationMs": 70.14110000000073
   },
   {
     "name": "Missed queen while the knight is already attacked",
@@ -2990,7 +2990,7 @@
           "value": 900
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-9",
+      "motifClassifierVersion": "site-55.adapter-10",
       "missedTimeline": [
         {
           "id": "hangingPiece",
@@ -3022,7 +3022,7 @@
         "value": 900
       }
     },
-    "classificationMs": 12.892499999998108
+    "classificationMs": 15.796999999998661
   },
   {
     "name": "Failed to create a back-rank escape",
@@ -3224,7 +3224,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-9",
+      "motifClassifierVersion": "site-55.adapter-10",
       "allowedTimeline": [
         {
           "id": "backRankMate",
@@ -3260,6 +3260,6 @@
         "comparisonEvidence": "After g5, Kg7 is a legal answer to Re8+; it is no longer mate."
       }
     },
-    "classificationMs": 1.4831999999987602
+    "classificationMs": 1.6691999999966356
   }
 ]

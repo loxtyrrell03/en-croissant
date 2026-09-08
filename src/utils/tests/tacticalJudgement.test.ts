@@ -244,6 +244,24 @@ describe("expert tactical judgement with fresh engine lines", () => {
         async () => {
             const examples = [
                 {
+                    name: "Draw the rook away from its queen",
+                    fen: "3r2k1/p4ppp/1p6/2pq4/4R3/1P2PQ2/P5PP/6K1 w - - 0 24",
+                    move: "e4e8",
+                    expected: "deflection",
+                },
+                {
+                    name: "King escape declines the deflection bait",
+                    fen: "3r2k1/p4pp1/1p5p/2pq4/4R3/1P2PQ2/P5PP/6K1 w - - 0 24",
+                    move: "e4e8",
+                    expected: null,
+                },
+                {
+                    name: "The alleged deflected defender was already pinned",
+                    fen: "R2r2k1/p4ppp/1p6/2pq4/4R3/1P2PQ2/P5PP/6K1 w - - 0 24",
+                    move: "e4e8",
+                    expected: "backRankMate",
+                },
+                {
                     name: "Exploit an absolute pin",
                     fen: "4k3/4n3/8/3P4/2B5/8/8/4R1K1 w - - 0 1",
                     move: "d5d6",
