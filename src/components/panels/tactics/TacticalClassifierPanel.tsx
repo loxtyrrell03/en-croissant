@@ -24,7 +24,6 @@ import { activeTabAtom, enginesAtom } from "@/state/atoms";
 import { getNodeAtPath } from "@/utils/treeReducer";
 import { getBestMoves, killEngine, type LocalEngine } from "@/utils/engines";
 import {
-  buildLiveTacticalScan,
   buildTacticalEngineOptions,
   getLiveTacticalScanCacheKey,
   hasUsableLiveTacticalFallback,
@@ -33,6 +32,7 @@ import {
   selectLiveTacticalScanLines,
   type LiveTacticalScan,
 } from "@/utils/tacticalMotifs/liveTactics";
+import { classifyLiveTacticsInWorker } from "@/utils/tacticalMotifs/liveTacticsWorker";
 
 const TACTICAL_SCAN_DEPTH = 16;
 const TACTICAL_SCAN_DEBOUNCE_MS = 120;
@@ -44,6 +44,7 @@ const tacticalScanCache = new Map<string, LiveTacticalScan>();
 type TacticalPanelState =
   | { status: "idle"; progress: number; scan: null; error: null }
   | { status: "scanning"; progress: number; scan: null; error: null }
+  | { status: "classifying"; progress: number; scan: null; error: null }
   | { status: "complete"; progress: number; scan: LiveTacticalScan; error: null }
   | { status: "error"; progress: number; scan: null; error: string };
 
@@ -146,6 +147,8 @@ function TacticalClassifierPanel({
     const requestTab = `tactical-classifier:${activeTab ?? "board"}:${requestToken}`;
     let cancelled = false;
     let settled = false;
+    let classifying = false;
+    const classificationController = new AbortController();
     let unlisten: (() => void) | null = null;
     let searchStarted = false;
     let engineReleased = false;
@@ -186,36 +189,46 @@ function TacticalClassifierPanel({
       const bestLine = usableLines[0];
       if (!bestLine) return false;
 
-      settled = true;
+      if (classifying) return false;
+      classifying = true;
       clearScanTimeout();
       disposeListener();
-      const scan = buildLiveTacticalScan({
-        fen: position.fen,
-        pvUci: bestLine.uciMoves,
-        pvSan: bestLine.sanMoves,
-        engineName: engine.version ? `${engine.name} ${engine.version}` : engine.name,
-        depth: bestLine.depth || TACTICAL_SCAN_DEPTH,
-        previousFen: position.previousFen,
-        previousMoveUci: position.previousMoveUci,
-        variations: usableLines.map((line) => ({
-          multipv: line.multipv,
-          depth: line.depth,
-          pvUci: line.uciMoves,
-          pvSan: line.sanMoves,
-          cp:
-            line.score.value.type === "cp"
-              ? line.score.value.value * (position.fen.split(" ")[1] === "b" ? -1 : 1)
-              : null,
-          mate:
-            line.score.value.type === "mate"
-              ? line.score.value.value * (position.fen.split(" ")[1] === "b" ? -1 : 1)
-              : null,
-        })),
-      });
-      rememberScan(scanCacheKey, scan);
-      setState({ status: "complete", progress: 100, scan, error: null });
-      onScanChange(scan);
       releaseEngine();
+      setState({ status: "classifying", progress: 99, scan: null, error: null });
+      void classifyLiveTacticsInWorker(
+        {
+          fen: position.fen,
+          pvUci: bestLine.uciMoves,
+          pvSan: bestLine.sanMoves,
+          engineName: engine.version ? `${engine.name} ${engine.version}` : engine.name,
+          depth: bestLine.depth || TACTICAL_SCAN_DEPTH,
+          previousFen: position.previousFen,
+          previousMoveUci: position.previousMoveUci,
+          variations: usableLines.map((line) => ({
+            multipv: line.multipv,
+            depth: line.depth,
+            pvUci: line.uciMoves,
+            pvSan: line.sanMoves,
+            cp:
+              line.score.value.type === "cp"
+                ? line.score.value.value * (position.fen.split(" ")[1] === "b" ? -1 : 1)
+                : null,
+            mate:
+              line.score.value.type === "mate"
+                ? line.score.value.value * (position.fen.split(" ")[1] === "b" ? -1 : 1)
+                : null,
+          })),
+        },
+        classificationController.signal,
+      )
+        .then((scan) => {
+          if (!isCurrentRequest()) return;
+          settled = true;
+          rememberScan(scanCacheKey, scan);
+          setState({ status: "complete", progress: 100, scan, error: null });
+          onScanChange(scan);
+        })
+        .catch(failScan);
       return true;
     };
 
@@ -235,7 +248,7 @@ function TacticalClassifierPanel({
     };
 
     const receiveLines = (lines: BestMoves[], progress: number) => {
-      if (!isCurrentRequest()) return;
+      if (!isCurrentRequest() || classifying) return;
       if (lines.length > 0) {
         const nextDepth = Math.max(...lines.map((line) => line.depth));
         const latestDepth = Math.max(0, ...latestLines.map((line) => line.depth));
@@ -305,7 +318,11 @@ function TacticalClassifierPanel({
             .then((result) => {
               if (result) receiveLines(result[1], result[0]);
             })
-            .catch(failScan);
+            .catch((error) => {
+              // Releasing the native engine after a complete snapshot can reject
+              // its outstanding request. It cannot invalidate worker verification.
+              if (!classifying) failScan(error);
+            });
         } catch (caught) {
           failScan(caught);
         }
@@ -314,6 +331,7 @@ function TacticalClassifierPanel({
 
     return () => {
       cancelled = true;
+      classificationController.abort();
       requestTokenRef.current++;
       window.clearTimeout(timer);
       clearScanTimeout();
@@ -355,7 +373,9 @@ function TacticalClassifierPanel({
             aria-label="Scan this position again"
             variant="default"
             size="lg"
-            disabled={!selectedEngine || state.status === "scanning"}
+            disabled={
+              !selectedEngine || state.status === "scanning" || state.status === "classifying"
+            }
             onClick={() => {
               tacticalScanCache.delete(scanCacheKey);
               setRefreshRevision((value) => value + 1);
@@ -367,8 +387,12 @@ function TacticalClassifierPanel({
       </Group>
 
       <Progress
-        value={state.status === "scanning" ? Math.min(99, state.progress) : state.progress}
-        animated={state.status === "scanning"}
+        value={
+          state.status === "scanning" || state.status === "classifying"
+            ? Math.min(99, state.progress)
+            : state.progress
+        }
+        animated={state.status === "scanning" || state.status === "classifying"}
         size="xs"
       />
 
@@ -381,13 +405,19 @@ function TacticalClassifierPanel({
         <Alert color="red" title="Tactical scan failed">
           {state.error}
         </Alert>
-      ) : state.status === "scanning" ? (
+      ) : state.status === "scanning" || state.status === "classifying" ? (
         <Center flex={1}>
           <Stack align="center" gap="xs" ta="center">
             <Loader size="sm" />
-            <Text fw={700}>Scanning the forcing line…</Text>
+            <Text fw={700}>
+              {state.status === "classifying"
+                ? "Verifying tactical themes…"
+                : "Scanning the forcing line…"}
+            </Text>
             <Text size="sm" c="dimmed" maw={360}>
-              {`Checking the position${position.lastMoveSan ? ` after ${position.lastMoveSan}` : ""} with ${selectedEngine?.name}.`}
+              {state.status === "classifying"
+                ? "Checking legal defences and choosing the main lesson."
+                : `Checking the position${position.lastMoveSan ? ` after ${position.lastMoveSan}` : ""} with ${selectedEngine?.name}.`}
             </Text>
           </Stack>
         </Center>

@@ -1,0 +1,420 @@
+{
+  "scope": "Cold production JS worker import, classification and structured result transfer on this Node host; excludes engine search and does not prove WebView or physical UI latency.",
+  "deadlineMs": 3000,
+  "cases": [
+    {
+      "id": "screenshot:f7-alternatives",
+      "elapsedMs": 114.06529999999975,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply8",
+      "elapsedMs": 246.73349999999982,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply13",
+      "elapsedMs": 136.22050000000036,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply18",
+      "elapsedMs": 274.0673999999999,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply23",
+      "elapsedMs": 206.52220000000034,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply28",
+      "elapsedMs": 58.51580000000013,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply33",
+      "elapsedMs": 104.16130000000021,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply38",
+      "elapsedMs": 44.39670000000024,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply43",
+      "elapsedMs": 122.7482,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply8",
+      "elapsedMs": 176.6228000000001,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply13",
+      "elapsedMs": 42.12620000000061,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply18",
+      "elapsedMs": 604.7510999999995,
+      "primary": [
+        "mateIn7"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply23",
+      "elapsedMs": 237.20780000000013,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply28",
+      "elapsedMs": 133.92029999999977,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply33",
+      "elapsedMs": 230.5711999999994,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply38",
+      "elapsedMs": 99.46900000000005,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply43",
+      "elapsedMs": 112.61920000000009,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply48",
+      "elapsedMs": 171.21159999999963,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply53",
+      "elapsedMs": 87.46989999999914,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply58",
+      "elapsedMs": 40.211999999999534,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply8",
+      "elapsedMs": 45.155800000000454,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply13",
+      "elapsedMs": 143.41979999999967,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply18",
+      "elapsedMs": 132.28020000000015,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply23",
+      "elapsedMs": 41.23040000000037,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply28",
+      "elapsedMs": 102.19939999999951,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:DVSJh",
+      "elapsedMs": 52.977200000001176,
+      "primary": [
+        "anastasiaMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:007c6",
+      "elapsedMs": 54.96779999999853,
+      "primary": [
+        "bodenMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:fVRuW",
+      "elapsedMs": 80.26499999999942,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:K56tk",
+      "elapsedMs": 55.30439999999908,
+      "primary": [
+        "dovetailMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:NKnZo",
+      "elapsedMs": 55.05969999999979,
+      "primary": [
+        "killBoxMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:5hjz7",
+      "elapsedMs": 53.42909999999938,
+      "primary": [
+        "bodenMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:GIB50",
+      "elapsedMs": 55.76389999999992,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:REAdh",
+      "elapsedMs": 53.166300000000774,
+      "primary": [
+        "hookMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:NGZzo",
+      "elapsedMs": 108.52909999999974,
+      "primary": [
+        "doubleThreat"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:4Osgg",
+      "elapsedMs": 72.49319999999898,
+      "primary": [
+        "mateIn4"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:UCiYo",
+      "elapsedMs": 63.59979999999996,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:CSh8J",
+      "elapsedMs": 60.65149999999994,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:opGD7",
+      "elapsedMs": 64.6789000000008,
+      "primary": [
+        "forcingAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:fJrhT",
+      "elapsedMs": 72.83059999999932,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:MJZcU",
+      "elapsedMs": 259.95980000000054,
+      "primary": [
+        "promotionCombination"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:0RleZ",
+      "elapsedMs": 52.59740000000056,
+      "primary": [
+        "hookMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:Z5arb",
+      "elapsedMs": 65.44230000000061,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:iUj3e",
+      "elapsedMs": 118.53740000000107,
+      "primary": [
+        "skewer"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:Kvpvi",
+      "elapsedMs": 68.08419999999933,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:hz3ed",
+      "elapsedMs": 56.70919999999933,
+      "primary": [
+        "triangleMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:o8K8i",
+      "elapsedMs": 80.35609999999906,
+      "primary": [
+        "enPassant"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:w1lKu",
+      "elapsedMs": 140.6880000000001,
+      "primary": [
+        "clearance"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:rqXvZ",
+      "elapsedMs": 119.76329999999871,
+      "primary": [
+        "clearance"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:ouIHI",
+      "elapsedMs": 61.600000000000364,
+      "primary": [
+        "discoveredAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:eOCp9",
+      "elapsedMs": 39.98650000000089,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:erSYy",
+      "elapsedMs": 62.09320000000116,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:vztmO",
+      "elapsedMs": 56.899100000000544,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:G8wdr",
+      "elapsedMs": 200.73509999999987,
+      "primary": [
+        "discoveredAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:4GiqO",
+      "elapsedMs": 40.03160000000025,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:wh6Ac",
+      "elapsedMs": 54.32040000000052,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:NOaM1",
+      "elapsedMs": 61.34689999999864,
+      "primary": [
+        "skewer"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:JaKHo",
+      "elapsedMs": 69.97700000000077,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    }
+  ]
+}

@@ -1279,6 +1279,47 @@ not change classifier version 30 or its benchmark chess decisions. It is
 desktop presentation proof, not a running-app/physical-board check; the phone
 review and Outpost surfaces are intentionally untouched in this milestone.
 
+## Bounded background verification
+
+Desktop Tactics now executes classification in a separate module worker instead
+of blocking the UI event loop. Each scan owns its worker and terminates it on
+success, failure, cancellation or its three-second verification deadline. The
+native engine is released before this phase; its existing six-second search
+allowance is separate. Failed or timed-out verification is an error with Retry,
+never an empty successful scan. The previous synchronous path marked the scan
+settled before calling the classifier, so an exception could bypass the failure
+handler and leave the spinner indefinitely. Request ownership now lasts through
+verification; stale engine responses and cancelled worker results are ignored.
+
+Thirteen tests cover success, abort before/after worker creation, queued stale
+results, deadline termination, thrown classifier errors, worker crashes,
+structured-transfer failures, unavailable workers, retry, native release and
+panel unmount. The selected suite passes 416 tests with four opt-in skips.
+The production build includes the standalone worker (8,853 application modules).
+Type checking retains only the unrelated OTB number/bigint fixture error.
+
+`tacticalBuiltWorker.test.ts` executes the **actual built JS artifact** in a fresh
+Node worker per position with only a browser-message bridge, no DOM or Tauri.
+All 57 cases (the screenshot's two candidate roots, 24 frozen ordinary-game
+positions and 32 frozen mixed-puzzle positions) match source scan objects exactly.
+`worker-latency.json` records cold worker import, classification and structured
+result transfer: median 72 ms, nearest-rank p95 260 ms, maximum 605 ms. Every case
+is below the actual three-second deadline. This is host-local execution/parity
+evidence, not WebView scheduling, native-engine search or physical UI proof.
+The classifier/version and its known false negatives are unchanged.
+
+Reproduce after the production Vite build in PowerShell:
+
+```powershell
+$env:TACTICAL_BUILT_WORKER = (Get-ChildItem dist/assets/liveTactics.worker-*.js | Select-Object -First 1).FullName
+$env:TACTICAL_WORKER_REPORT = 'benchmarks/tactical-relevance/worker-latency.json'
+node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalBuiltWorker.test.ts --environment node
+```
+
+This execution change applies only to the desktop Tactics panel. Phone review
+uses its existing shared review worker; the website and Outpost have their own
+execution surfaces. No runtime was restarted or deployed in this milestone.
+
 ## What remains to establish
 
 These are relevance milestones, not completion of the broader tuning
