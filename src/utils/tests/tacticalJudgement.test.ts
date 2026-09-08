@@ -62,7 +62,7 @@ const cases = [
     },
 ];
 
-async function analyse(engine: string, fen: string) {
+async function analyse(engine: string, fen: string, searchMove?: string) {
     const child = spawn(engine, [], { windowsHide: true, stdio: "pipe" });
     const lines = new Map<
         number,
@@ -94,7 +94,10 @@ async function analyse(engine: string, fen: string) {
                     child.stdin.write(
                         "setoption name Threads value 1\nsetoption name Hash value 32\nsetoption name MultiPV value 3\nisready\n",
                     );
-                if (row === "readyok") child.stdin.write(`position fen ${fen}\ngo depth 16\n`);
+                if (row === "readyok")
+                    child.stdin.write(
+                        `position fen ${fen}\ngo depth 16${searchMove ? ` searchmoves ${searchMove}` : ""}\n`,
+                    );
                 const match = row.match(
                     /info depth (\d+).* multipv (\d+).* score (cp|mate) (-?\d+).* pv (.+)/,
                 );
@@ -133,6 +136,62 @@ async function analyse(engine: string, fen: string) {
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(!engine || !existsSync(engine))(
+        "inspect quiet mating preparations",
+        async () => {
+            const report = [];
+            const examples = [
+                {
+                    fen: "7k/7p/5KR1/7Q/8/8/8/8 w - - 0 1",
+                    primary: "mateThreat",
+                    why: "The quiet queen move forces mate next turn against either pawn push; do not reject it for lacking a check or capture.",
+                },
+                {
+                    fen: "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",
+                    primary: "mateIn3",
+                    why: "The selected quiet queen move forces mate within three, with Kxg6 needed against the longest defence. The local tree, not the single mating PV, establishes this.",
+                },
+            ];
+            for (const item of examples) {
+                const { fen } = item;
+                const lines = [...(await analyse(engine, fen)).values()].sort(
+                    (a, b) => a.multipv - b.multipv,
+                );
+                const start = performance.now();
+                const scan = buildLiveTacticalScan({
+                    fen,
+                    ...lines[0],
+                    engineName: "Stockfish",
+                    variations: lines,
+                });
+                report.push({
+                    ...item,
+                    lines,
+                    headline: scan.motifs,
+                    timeline: scan.variations.map((v) => ({
+                        moves: v.lineSan,
+                        motifs: v.timeline,
+                    })),
+                    classificationMs: performance.now() - start,
+                });
+                expect(scan.motifs.map((m) => m.id)).toEqual([item.primary]);
+            }
+            const fen = examples[1].fen;
+            const forced = [...(await analyse(engine, fen, "h5h6")).values()];
+            report.push({
+                fen,
+                why: "Candidate-search limitation: unrestricted depth-16 MultiPV omitted the faster Qh6 mate. A separately restricted search confirms it; this is not classifier evidence that the other mates fail.",
+                forced,
+            });
+            expect(forced[0].mate).toBe(2);
+            expect(
+                buildLiveTacticalScan({ fen, ...forced[0], engineName: "Stockfish" }).motifs[0].id,
+            ).toBe("mateThreat");
+            if (process.env.TACTICAL_QUIET_REPORT)
+                writeFileSync(process.env.TACTICAL_QUIET_REPORT, JSON.stringify(report, null, 2));
+        },
+        60000,
+    );
     test.skipIf(!engine || !existsSync(engine))(
         "inspect primary causes and quiet controls",
         async () => {
@@ -194,6 +253,14 @@ describe("expert tactical judgement with fresh engine lines", () => {
         "judge actual before/after mistake causes",
         async () => {
             const examples = [
+                {
+                    name: "Missed quiet mate while leaving the queen attacked",
+                    fen: "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",
+                    played: "f6e5",
+                    source: "missed",
+                    primary: "mateIn3",
+                    why: "Ke5 leaves the queen en prise, but the most valuable missed opportunity is the quiet forced mating preparation selected by the engine. Its all-defences proof is stronger evidence than the single PV's final mate tag.",
+                },
                 {
                     name: "b6 permits the f7 fork",
                     fen: "rnbqk2r/ppppbppp/5n2/4N3/2B5/4P3/PPPP1PPP/RNBQK2R b KQkq - 0 4",

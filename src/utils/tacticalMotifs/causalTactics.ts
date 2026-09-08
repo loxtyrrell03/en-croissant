@@ -1,6 +1,6 @@
 import { attacks } from "chessops/attacks";
 import { Chess } from "chessops/chess";
-import { parseFen } from "chessops/fen";
+import { makeFen, parseFen } from "chessops/fen";
 import { makeSan } from "chessops/san";
 import type { Color, NormalMove, Role, Square } from "chessops/types";
 import { makeSquare, opposite, parseUci } from "chessops/util";
@@ -145,6 +145,165 @@ function withTurn(pos: Chess, turn: Color) {
     return copy;
 }
 
+type QuietMateProof = {
+    threat: string;
+    replyCount: number;
+    example: { reply: string; mate: string };
+};
+const quietMateCache = new Map<string, QuietMateProof | null>();
+const QUIET_MATE_NODE_LIMIT = 4096;
+
+/** A null-move threat is only a candidate. Certify a quiet mating move only
+ * after EVERY legal defence has a legal mate-in-one answer. A single PV, an
+ * empty/stalemated reply set, or an exhausted budget is never a proof. */
+export function proveQuietMateThreat(
+    step: TacticalReplayStep,
+    nodeLimit = QUIET_MATE_NODE_LIMIT,
+): QuietMateProof | null {
+    return proveMateNextTurn(step, nodeLimit, true);
+}
+
+function proveMateNextTurn(
+    step: TacticalReplayStep,
+    nodeLimit = QUIET_MATE_NODE_LIMIT,
+    quietOnly = false,
+): QuietMateProof | null {
+    if (quietOnly && (step.capture || step.move.promotion || step.after.isCheck())) return null;
+    const key = `${quietOnly}:${makeFen(step.after.toSetup())}`;
+    if (nodeLimit === QUIET_MATE_NODE_LIMIT && quietMateCache.has(key))
+        return quietMateCache.get(key)!;
+    let nodes = nodeLimit;
+    const mateInOne = (pos: Chess) => {
+        for (const move of legalMoves(pos)) {
+            if (--nodes < 0) throw new Error("Mate proof budget exhausted");
+            const next = pos.clone();
+            next.play(move);
+            if (next.isCheckmate()) return makeSan(pos, move);
+        }
+        return null;
+    };
+    let proof: QuietMateProof | null = null;
+    try {
+        const replies = legalMoves(step.after);
+        const threat =
+            quietOnly && replies.length ? mateInOne(withTurn(step.after, step.before.turn)) : null;
+        if (replies.length && (!quietOnly || threat)) {
+            const answers: QuietMateProof["example"][] = [];
+            for (const reply of replies) {
+                if (--nodes < 0) throw new Error("Mate proof budget exhausted");
+                const next = step.after.clone();
+                next.play(reply);
+                const mate = mateInOne(next);
+                if (!mate) break;
+                answers.push({ reply: makeSan(step.after, reply), mate });
+            }
+            if (answers.length === replies.length)
+                proof = {
+                    threat: threat ?? answers[0].mate,
+                    replyCount: replies.length,
+                    example: answers[0],
+                };
+        }
+    } catch {
+        // Unknown is withheld; it does not mean the position has no tactic.
+    }
+    if (nodeLimit === QUIET_MATE_NODE_LIMIT) {
+        quietMateCache.set(key, proof);
+        if (quietMateCache.size > 256) quietMateCache.delete(quietMateCache.keys().next().value!);
+    }
+    return proof;
+}
+
+type MatePreparationProof = { replyCount: number; example: string[] };
+const preparationCache = new Map<string, MatePreparationProof | null>();
+
+/** Verify a short supplied mate-in-three candidate with an AND/OR tree, not
+ * with the supplied replies alone. The PV only orders legal attacking moves.
+ * The cap keeps this local proof from becoming a second unbounded engine. */
+export function proveMateWithinThree(
+    steps: TacticalReplayStep[],
+    nodeLimit = 16384,
+): MatePreparationProof | null {
+    if (
+        steps.length < 5 ||
+        !steps[4].after.isCheckmate() ||
+        steps[4].before.turn !== steps[0].before.turn
+    )
+        return null;
+    const root = steps[0];
+    const key = `${makeFen(root.after.toSetup())}:${steps[2].uci}`;
+    if (nodeLimit === 16384 && preparationCache.has(key)) return preparationCache.get(key)!;
+    let nodes = nodeLimit;
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--nodes < 0) throw new Error("Preparation proof budget exhausted");
+        const next = pos.clone();
+        next.play(move);
+        return next;
+    };
+    const mateInOne = (pos: Chess) => {
+        for (const move of legalMoves(pos))
+            if (visit(pos, move).isCheckmate()) return makeSan(pos, move);
+        return null;
+    };
+    const forceMate = (pos: Chess): string[] | null => {
+        const immediate = mateInOne(pos);
+        if (immediate) return [immediate];
+        const moves = legalMoves(pos);
+        moves.sort(
+            (a, b) =>
+                Number(b.from === steps[2].move.from && b.to === steps[2].move.to) -
+                Number(a.from === steps[2].move.from && a.to === steps[2].move.to),
+        );
+        for (const move of moves) {
+            const next = visit(pos, move);
+            const replies = legalMoves(next);
+            if (!replies.length) continue;
+            let sample: string[] | null = null;
+            let allMated = true;
+            for (const reply of replies) {
+                const mate = mateInOne(visit(next, reply));
+                if (!mate) {
+                    allMated = false;
+                    break;
+                }
+                sample ??= [makeSan(pos, move), makeSan(next, reply), mate];
+            }
+            if (allMated) return sample;
+        }
+        return null;
+    };
+    let proof: MatePreparationProof | null = null;
+    try {
+        const replies = legalMoves(root.after);
+        const answers: string[][] = [];
+        for (const reply of replies) {
+            const continuation = forceMate(visit(root.after, reply));
+            if (!continuation) break;
+            answers.push([makeSan(root.after, reply), ...continuation]);
+        }
+        if (replies.length && answers.length === replies.length)
+            proof = {
+                replyCount: replies.length,
+                example: answers.sort((a, b) => b.length - a.length)[0],
+            };
+    } catch {
+        // Failed or incomplete search is not evidence of a forced mate.
+    }
+    if (nodeLimit === 16384) {
+        preparationCache.set(key, proof);
+        if (preparationCache.size > 256)
+            preparationCache.delete(preparationCache.keys().next().value!);
+    }
+    return proof;
+}
+
+function quietPreparation(steps: TacticalReplayStep[]) {
+    const root = steps[0];
+    return root && !root.capture && !root.move.promotion && !root.after.isCheck()
+        ? proveMateWithinThree(steps)
+        : null;
+}
+
 function winningTargets(pos: Chess, from: Square, side: Color) {
     const probe = withTurn(pos, side);
     const piece = probe.board.get(from);
@@ -199,10 +358,16 @@ function hasConcreteThreat(step: TacticalReplayStep) {
 }
 
 export function hasTacticalStart(fen: string, line: string[]) {
-    const root = replayTacticalLine(fen, line.slice(0, 1))[0];
+    const steps = replayTacticalLine(fen, line.slice(0, 5));
+    const root = steps[0];
     return Boolean(
         root &&
-        (root.capture || root.move.promotion || root.after.isCheck() || hasConcreteThreat(root)),
+        (root.capture ||
+            root.move.promotion ||
+            root.after.isCheck() ||
+            hasConcreteThreat(root) ||
+            proveQuietMateThreat(root) ||
+            quietPreparation(steps)),
     );
 }
 
@@ -213,7 +378,9 @@ function episodeEnd(steps: TacticalReplayStep[]) {
             !step.capture &&
             !step.move.promotion &&
             !step.after.isCheck() &&
-            !hasConcreteThreat(step)
+            !hasConcreteThreat(step) &&
+            !proveQuietMateThreat(step) &&
+            !quietPreparation(steps.slice(i, i + 5))
         )
             return i;
     }
@@ -257,7 +424,11 @@ export function auditTacticalMotifs(
     const attacker = steps[0].before.turn;
     const final = episode.at(-1)!;
     if (final.after.isCheckmate() && final.before.turn !== attacker) return [];
-    const mate = final.after.isCheckmate() && final.before.turn === attacker;
+    const mate =
+        final.after.isCheckmate() &&
+        final.before.turn === attacker &&
+        (episode.length !== 3 || Boolean(proveMateNextTurn(steps[0]))) &&
+        (episode.length !== 5 || Boolean(proveMateWithinThree(steps)));
     // Settle the last capture; merely ending a PV before a recapture must not
     // turn an equal exchange into "hanging piece" or a winning combination.
     let settled = final.balance;
@@ -270,6 +441,30 @@ export function auditTacticalMotifs(
         settled = -VALUE.king;
     }
     const candidates: TacticalMotifEvidence[] = [];
+    const quietMate = proveQuietMateThreat(steps[0]);
+    const preparation = !quietMate ? quietPreparation(steps) : null;
+    if (quietMate) {
+        candidates.push({
+            id: "mateThreat",
+            label: "Mate Threat",
+            source: proposals[0]?.source ?? "available",
+            confidence: "high",
+            ply: 1,
+            moveUci: steps[0].uci,
+            evidence: `${steps[0].san} threatens ${quietMate.threat}. All ${quietMate.replyCount} legal ${attacker === "white" ? "Black" : "White"} replies allow mate on the next move; for example, ${quietMate.example.reply} ${quietMate.example.mate}.`,
+        });
+    }
+    if (preparation) {
+        candidates.push({
+            id: "mateIn3",
+            label: "Mating Preparation",
+            source: proposals[0]?.source ?? "available",
+            confidence: "high",
+            ply: 1,
+            moveUci: steps[0].uci,
+            evidence: `${steps[0].san} is a quiet mating preparation. All ${preparation.replyCount} legal ${attacker === "white" ? "Black" : "White"} replies allow forced mate within two more moves; for example, ${preparation.example.join(" ")}.`,
+        });
+    }
     // Geometry plus legal replies also proves a fork when a fixed-depth PV is
     // too short for the puzzle classifier's sequence detector.
     if (verifiedFork(steps[0]) && !proposals.some((m) => m.id === "fork" && m.ply === 1)) {
@@ -288,6 +483,7 @@ export function auditTacticalMotifs(
         ];
     }
     for (let proposal of proposals) {
+        if (preparation && proposal.id === "mateIn3") continue;
         if (
             !MECHANISMS.has(proposal.id) &&
             !CONCRETE_THEMES.has(proposal.id) &&
@@ -407,7 +603,12 @@ export function auditTacticalMotifs(
     const fork = candidates.find((m) => m.id === "fork");
     const filtered = candidates
         .filter((m) => {
-            if (specificMate && /^mate(?:In\d+)?$/.test(m.id)) return false;
+            if (
+                specificMate &&
+                /^mate(?:In\d+)?$/.test(m.id) &&
+                !(preparation && m.id === "mateIn3" && m.ply === 1)
+            )
+                return false;
             if (
                 fork?.ply === m.ply &&
                 ["clearance", "trappedPiece", "attacking_undefended_piece"].includes(m.id)
@@ -426,16 +627,26 @@ export function auditTacticalMotifs(
         filtered.splice(filtered.indexOf(immediateLoose), 1);
         filtered.unshift(immediateLoose);
     }
+    // The quiet threat explains the preparation; the final mating pattern is
+    // its payoff and stays in the continuation rows.
+    const quietCause = filtered.find(
+        (m) => (m.id === "mateThreat" || (preparation && m.id === "mateIn3")) && m.ply === 1,
+    );
+    if (quietCause) {
+        filtered.splice(filtered.indexOf(quietCause), 1);
+        filtered.unshift(quietCause);
+    }
     // A sound exchange at the start of a combination is not a loose piece if
     // its gain depends on a later mechanism (the defender can recapture).
     return filtered.map((motif, index) => ({
         ...motif,
         relevance: index === 0 ? ("primary" as const) : ("secondary" as const),
-        value: mate
-            ? 10000
-            : motif.id === "hangingPiece" && motif.ply === 1
-              ? tacticalExchangeGain(root.before, root.move)
-              : Math.max(100, settled),
+        value:
+            mate || (motif.id === "mateThreat" && quietMate)
+                ? 10000
+                : motif.id === "hangingPiece" && motif.ply === 1
+                  ? tacticalExchangeGain(root.before, root.move)
+                  : Math.max(100, settled),
     }));
 }
 
@@ -463,6 +674,12 @@ export function compareImmediateTacticalDefence(
         if (!alternative) {
             comparison = "prevented";
             comparisonEvidence = `${bestSan} makes the immediate reply ${step.san} illegal.`;
+        } else if (
+            motif.id === "mateThreat" &&
+            (alternative.after.isCheckmate() || proveMateNextTurn(alternative))
+        ) {
+            comparison = "persists";
+            comparisonEvidence = `The same immediate reply still forces mate after ${bestSan}.`;
         } else if (MATE.test(motif.id) && step.after.isCheckmate()) {
             if (!alternative.after.isCheckmate()) {
                 const escape =

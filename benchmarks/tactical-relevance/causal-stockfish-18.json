@@ -1,5 +1,293 @@
 [
   {
+    "name": "Missed quiet mate while leaving the queen attacked",
+    "fen": "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",
+    "played": "f6e5",
+    "source": "missed",
+    "primary": "mateIn3",
+    "why": "Ke5 leaves the queen en prise, but the most valuable missed opportunity is the quiet forced mating preparation selected by the engine. Its all-defences proof is stronger evidence than the single PV's final mate tag.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "h5h2",
+          "h7h5",
+          "f6g6",
+          "h8g8",
+          "h2b8"
+        ],
+        "pvSan": [
+          "Qh2",
+          "h5",
+          "Kxg6",
+          "Kg8",
+          "Qb8#"
+        ],
+        "cp": null,
+        "mate": 3
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "h5d5",
+          "h7h5",
+          "f6g6",
+          "h5h4",
+          "d5d8"
+        ],
+        "pvSan": [
+          "Qd5",
+          "h5",
+          "Kxg6",
+          "h4",
+          "Qd8#"
+        ],
+        "cp": null,
+        "mate": 3
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "h5h4",
+          "h7h5",
+          "f6g6",
+          "h8g8",
+          "h4d8"
+        ],
+        "pvSan": [
+          "Qh4",
+          "h5",
+          "Kxg6",
+          "Kg8",
+          "Qd8#"
+        ],
+        "cp": null,
+        "mate": 3
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "g6h5",
+          "e5f4",
+          "h7h6",
+          "f4g3",
+          "h8h7",
+          "g3h3",
+          "h7g7",
+          "h3h4",
+          "g7g6",
+          "h4h3"
+        ],
+        "pvSan": [
+          "gxh5",
+          "Kf4",
+          "h6",
+          "Kg3",
+          "Kh7",
+          "Kh3",
+          "Kg7",
+          "Kh4",
+          "Kg6",
+          "Kh3"
+        ],
+        "cp": 5,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "h8g7",
+          "h5f3",
+          "g6g5",
+          "f3f6",
+          "g7g8",
+          "e5e6",
+          "h7h6",
+          "f6f7",
+          "g8h8",
+          "e6f6",
+          "g5g4",
+          "f7g7"
+        ],
+        "pvSan": [
+          "Kg7",
+          "Qf3",
+          "g5",
+          "Qf6+",
+          "Kg8",
+          "Ke6",
+          "h6",
+          "Qf7+",
+          "Kh8",
+          "Kf6",
+          "g4",
+          "Qg7#"
+        ],
+        "cp": null,
+        "mate": -6
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "h8g8",
+          "h5f3",
+          "g8g7",
+          "e5e6",
+          "g6g5",
+          "f3f6",
+          "g7g8",
+          "f6f7",
+          "g8h8",
+          "f7f8"
+        ],
+        "pvSan": [
+          "Kg8",
+          "Qf3",
+          "Kg7",
+          "Ke6",
+          "g5",
+          "Qf6+",
+          "Kg8",
+          "Qf7+",
+          "Kh8",
+          "Qf8#"
+        ],
+        "cp": null,
+        "mate": -5
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "gxh5 wins the loose queen on h5.",
+          "source": "allowed",
+          "ply": 1,
+          "moveUci": "g6h5",
+          "relevance": "primary",
+          "value": 900,
+          "comparison": "prevented",
+          "comparisonEvidence": "Qh2 makes the immediate reply gxh5 illegal."
+        }
+      ],
+      "missedMotifs": [
+        {
+          "id": "mateIn3",
+          "label": "Mating Preparation",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "h5h2",
+          "evidence": "Qh2 is a quiet mating preparation. All 4 legal Black replies allow forced mate within two more moves; for example, h5 Kxg6 h4 Qb8#.",
+          "relevance": "primary",
+          "value": 10000
+        },
+        {
+          "id": "pin",
+          "label": "Pin",
+          "confidence": "medium",
+          "evidence": "Pin appears on Qb8# at ply 5 of the missed best line.",
+          "source": "missed",
+          "ply": 5,
+          "moveUci": "h2b8",
+          "relevance": "secondary",
+          "value": 10000
+        },
+        {
+          "id": "mate",
+          "label": "Mate",
+          "confidence": "medium",
+          "evidence": "Mate appears on Qb8# at ply 5 of the missed best line.",
+          "source": "missed",
+          "ply": 5,
+          "moveUci": "h2b8",
+          "relevance": "secondary",
+          "value": 10000
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-5",
+      "allowedTimeline": [
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "gxh5 wins the loose queen on h5.",
+          "source": "allowed",
+          "ply": 1,
+          "moveUci": "g6h5",
+          "relevance": "primary",
+          "value": 900,
+          "actor": "black"
+        }
+      ],
+      "missedTimeline": [
+        {
+          "id": "mateIn3",
+          "label": "Mating Preparation",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "h5h2",
+          "evidence": "Qh2 is a quiet mating preparation. All 4 legal Black replies allow forced mate within two more moves; for example, h5 Kxg6 h4 Qb8#.",
+          "relevance": "primary",
+          "value": 10000,
+          "actor": "white"
+        },
+        {
+          "id": "pin",
+          "label": "Pin",
+          "confidence": "medium",
+          "evidence": "Pin appears on Qb8# at ply 5 of the missed best line.",
+          "source": "missed",
+          "ply": 5,
+          "moveUci": "h2b8",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "white"
+        },
+        {
+          "id": "mate",
+          "label": "Mate",
+          "confidence": "medium",
+          "evidence": "Mate appears on Qb8# at ply 5 of the missed best line.",
+          "source": "missed",
+          "ply": 5,
+          "moveUci": "h2b8",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "white"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "What you missed: Mating Preparation",
+      "text": "The better move had this tactic: Qh2 is a quiet mating preparation. All 4 legal Black replies allow forced mate within two more moves; for example, h5 Kxg6 h4 Qb8#.",
+      "source": "missed",
+      "primary": {
+        "id": "mateIn3",
+        "label": "Mating Preparation",
+        "source": "missed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "h5h2",
+        "evidence": "Qh2 is a quiet mating preparation. All 4 legal Black replies allow forced mate within two more moves; for example, h5 Kxg6 h4 Qb8#.",
+        "relevance": "primary",
+        "value": 10000
+      }
+    },
+    "classificationMs": 8.100599999999758
+  },
+  {
     "name": "b6 permits the f7 fork",
     "fen": "rnbqk2r/ppppbppp/5n2/4N3/2B5/4P3/PPPP1PPP/RNBQK2R b KQkq - 0 4",
     "played": "b7b6",
@@ -320,7 +608,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-4",
+      "motifClassifierVersion": "site-55.adapter-5",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -402,7 +690,7 @@
         "comparisonEvidence": "After O-O, Nxf7 no longer has two profitable fork targets."
       }
     },
-    "classificationMs": 130.27649999999994
+    "classificationMs": 75.72700000000077
   },
   {
     "name": "Missed queen while the knight is already attacked",
@@ -706,7 +994,7 @@
           "value": 900
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-4",
+      "motifClassifierVersion": "site-55.adapter-5",
       "allowedTimeline": [
         {
           "id": "promotion",
@@ -764,7 +1052,7 @@
         "value": 900
       }
     },
-    "classificationMs": 103.66319999999905
+    "classificationMs": 26.131099999998696
   },
   {
     "name": "Failed to create a back-rank escape",
@@ -966,7 +1254,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-4",
+      "motifClassifierVersion": "site-55.adapter-5",
       "allowedTimeline": [
         {
           "id": "backRankMate",
@@ -1000,6 +1288,6 @@
         "comparisonEvidence": "After g5, Kg7 is a legal answer to Re8+; it is no longer mate."
       }
     },
-    "classificationMs": 1.3188000000009197
+    "classificationMs": 1.8548999999984517
   }
 ]

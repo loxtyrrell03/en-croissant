@@ -1,8 +1,8 @@
 # Tactical relevance judgement, 2026-09-08
 
 This evaluates the lesson shown for a position, rather than agreement with a
-puzzle's complete tag set. Positions and expected lessons were chosen before
-the new relevance filter. Stockfish 18 searched each position afresh at depth
+puzzle's complete tag set. The initial nine positions and expected lessons were chosen before
+the first relevance filter; subsequent cases document iterative judgement below. Stockfish 18 searched each position afresh at depth
 16, MultiPV 3, one thread, 32 MB hash, with a fresh process per position.
 
 | Position | Previous presentation | Judged main lesson |
@@ -38,7 +38,7 @@ replace the main lesson or establish that the entire continuation is forced.
 Routine recaptures, global opening/check tags, and incidental pins that do not
 explain a winning capture are excluded from these rows.
 
-`causal-stockfish-18.json` adds fresh searches before and after three mistakes,
+`causal-stockfish-18.json` adds fresh searches before and after four mistakes,
 with all three engine candidates and the resulting explanations:
 
 | Mistake | Engine's better move | Judged causal lesson |
@@ -46,6 +46,7 @@ with all three engine candidates and the resulting explanations:
 | Black plays b6 in the screenshot position | O-O | Allows Nxf7; castling removes the profitable queen/rook fork |
 | White plays Kb1 with a loose black queen and attacked white knight | Nxe4 | Misses winning the queen while saving the knight |
 | Black plays b6 facing Re8# | g5 | Allows back-rank mate; g5 supplies Kg7 after Re8+ |
+| White plays Ke5 with the queen attacked in the quiet-mate example | Qh2 | The main missed opportunity is forced mate, ahead of the allowed queen loss |
 
 The final position is already materially lost: this judges avoidance of
 immediate mate, not a change in the game's theoretical outcome. The initial
@@ -67,12 +68,52 @@ checking counterplay saved the targets. The pawn-refutation variant remains a
 negative test. A server-rendered component test checks the actor and ply rows
 and collapsed details; it is not running-app visual proof.
 
+## Quiet mating preparations and adversarial replies
+
+`quiet-stockfish-18.json` records two additional fresh-engine judgements:
+
+| Position | Selected line | Main lesson |
+| --- | --- | --- |
+| White Kf6/Rg6/Qh5 against Kh8/h7 | Qh3 h6 Qxh6# | Mate threat: either legal pawn push permits mate next turn |
+| White Kf6/Qh5 against Kh8/g6/h7 | Qh2 h5 Kxg6 Kg8 Qb8# | Mating preparation: every defence permits mate within two more White moves |
+
+Quiet mate threats are no longer accepted or rejected solely because the root
+move lacks a check/capture. A hypothetical pass only identifies a candidate
+mate threat. The classifier then verifies **every legal defence** has a legal
+mate-in-one answer. For supplied mate-in-three candidates, a bounded tree
+checks every defensive reply at both levels and searches legal attacking
+answers; the PV only orders candidates, never substitutes for other defences.
+The quiet preparation becomes the headline; its final mating pattern stays
+secondary. Short mating PVs after checking or capturing roots use the same
+all-defences verification.
+
+Eleven deterministic regressions cover both colours, multiple defences, truncated
+quiet-mate lines, board labels/arrows, missed-mate priority, persistent mating
+danger, stalemate, exhausted proof budgets, queen captures, and checking
+counterattacks, and a poisoned pawn capture. In the adversarial cases the supplied PV really ends in mate,
+but another legal defence prevents that short forced-mate claim. A bishop's
+Bg5+ also refutes the longer cooperative preparation example.
+
+Proofs have 4,096-node (mate next turn) and 16,384-node (mate within three)
+caps and bounded caches. An incomplete proof is withheld, not reported as a
+proven absence of tactics. The two added live-scan classifications took about
+34–45 ms in the recorded run, excluding engine search; timing is diagnostic,
+depends on host load/cache state, and is not a UI latency guarantee.
+
+Candidate-search limitation: unrestricted depth-16 MultiPV selected mate in
+three in the second position, omitting the faster Qh6. A separately restricted
+fresh Stockfish search confirms Qh6 g5 Qg7# as mate in two, and the classifier's
+all-defences check agrees. Do not treat the selected engine line as proof that
+no faster tactic exists. Local proof strengthens the explanation of supplied
+candidates; it is not an exhaustive replacement for root candidate search.
+
 Run in PowerShell with the configured Node runtime on PATH:
 
 ```powershell
 $env:TACTICAL_JUDGEMENT_ENGINE = 'absolute path to a local Stockfish executable'
 $env:TACTICAL_JUDGEMENT_REPORT = 'benchmarks/tactical-relevance/stockfish-18.json'
 $env:TACTICAL_CAUSAL_REPORT = 'benchmarks/tactical-relevance/causal-stockfish-18.json'
+$env:TACTICAL_QUIET_REPORT = 'benchmarks/tactical-relevance/quiet-stockfish-18.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node
 ```
 
@@ -88,13 +129,13 @@ These are relevance milestones, not completion of the broader tuning
 goal. Legal exchange analysis validates local material threats and fork
 defences; it is not a full tactical search. A forcing episode ends when the
 attacking side makes a quiet move without an immediate material threat.
-This intentionally excludes speculative tails, but quiet preparatory moves,
-pure mate threats, defensive combinations and long pawn breakthroughs need
-stronger branch evidence before they can be admitted reliably. Unproven
+Verified short mating preparations are now an exception to that cutoff.
+Non-mating quiet preparations, longer mating threats, defensive combinations
+and long pawn breakthroughs still need stronger branch evidence. Unproven
 zugzwang is withheld because one PV cannot demonstrate its counterfactual.
 
-The next judgement pass must evaluate those false-negative risks and deepen
-best-move counterfactual evidence beyond immediate replies. Both-side and
+The next judgement pass must evaluate those false-negative risks, candidate
+coverage, and best-move counterfactual evidence beyond immediate replies. Both-side and
 repeated-motif rows now have legal per-ply checks, but the primitive detector
 and local audit are not an exhaustive search for every possible combination.
 
