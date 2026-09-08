@@ -420,7 +420,7 @@ successful report creation does not mean twelve correct classifications.
 | 2QybO | Genuine Nxe6+ d-file line opening retained; unlike the incidental pawn ray, it contributes to the combination. |
 | 2SvDe | Spurious clearance removed. The Bxd2+ / Rxh8 intermediate-capture explanation still needs improvement. |
 | 9THyd | Spurious clearance removed. Nxe7+ before fxe3 still needs a better timing explanation than two loose-piece labels. |
-| 2Gc77 | Open false negative: Bxd5 defender-removal combination. |
+| 2Gc77 | Bxd5 now prioritizes defender removal, with the simultaneous Bb7 attack and Rd8 behind Ne7 explaining different defences. |
 | 8DHuj | False clearance removed, but Bxf4's actual removal/overload combination remains missed. |
 | 4RNK5 | Open false negative: quiet Rb6 prepares Rh7+ and a queen-winning Rb7+ skewer. |
 | 6mAvx | Trapped Ra1 is now primary; Qc3 Bb4 and Qd4 Qxd4 establish why defending the rook fails. |
@@ -488,12 +488,48 @@ defending-resource proof does not become a claim that a move prevents the trap.
 
 Ten new regressions cover the causal headline, larger initial gain, escapes,
 defending queen, absent bishop, castled king, exchange sacrifice, comparison,
-duplicate labels and exhausted budgets. Current verification passed 192 focused
+duplicate labels and exhausted budgets. The adapter-14 milestone passed 192 focused
 tests, the earlier engine scenarios and real-puzzle audit plus the five trap
 controls, targeted lint, shared-review worker and production builds. The existing
 OTB number/bigint fixture remains the only type-check error. Runtime deployment
 and running-app visual proof were not performed; the other open diagnostic
 findings above remain unfinished work.
+
+## Branch-aware defender removal (adapter 15)
+
+Real development puzzle 2Gc77 now explains `Bxd5`: Nd5 was protecting Ne7,
+the capturing bishop also attacks Bb7, and Ne7 cannot move without exposing
+Rd8. `Rxd5 Bxe7`, `Nxd5 Bxd8`, `g5 Bxb7` and `Rf6 Bxb7` have the same causal
+headline despite different payoffs. The countercheck `Bxf2+` is answered legally
+with `Kxf2`, not ignored. The proof's minimum is 160 cp, not the sum of captures
+in an accommodating variation. Removing Bh4 or Bb7 defeats this bounded proof.
+
+The fallback considers only the defended target, the piece behind it on the
+same attacking ray, and non-pawn targets attacked by the capturing piece.
+Every legal defence must permit a profitable related capture, optionally after
+answering one checking counterattack. Legal recaptures and the strongest
+alternative off-square capture of an attacking participant are compared, not
+double-counted as if the opponent could play both at once. This remains a short
+exchange proof, not full positional or arbitrary-depth search. A 4,096-visit cap,
+bounded exchange calculations and budget-aware caching enforce abstention when
+incomplete. Independent gains cannot lend their value to defender removal.
+Multi-target proofs are not refuted by the older single-target mistake-comparison
+probe; their complete target set is retained for comparisons of actual lines.
+The board now shows the removed defender's relation and the attack on its target.
+
+`defender-stockfish-18.json` records eight fresh engine searches of defensive
+branches from two real games. Only the three Bxd5 branch classifications have
+acceptance assertions. The five Bxf4 branches remain diagnostic: intermediate
+checks and retained material after a target disappears still exceed the proof.
+A 100-cp pawn gain minus the 10-cp bishop/knight imbalance must not be discarded;
+the fallback permits 90 cp, but this alone does not solve Bxf4. These are branch
+checks, not eight independent puzzles or an accuracy estimate.
+
+Current verification: 202 focused tests in 21 files, all nine opt-in engine
+tests (including the existing real-game audit), targeted formatting/lint,
+shared-review worker and production builds passed. Type checking still reports
+only the existing OTB number/bigint fixture error. No application restart,
+runtime deployment or physical UI verification was performed.
 
 Run in PowerShell with the configured Node runtime on PATH:
 
@@ -507,6 +543,7 @@ $env:TACTICAL_DISCOVERED_REPORT = 'benchmarks/tactical-relevance/discovered-stoc
 $env:TACTICAL_INTERFERENCE_REPORT = 'benchmarks/tactical-relevance/interference-stockfish-18.json'
 $env:TACTICAL_REAL_ENGINE_REPORT = 'benchmarks/tactical-relevance/real-puzzle-stockfish-18.json'
 $env:TACTICAL_TRAP_REPORT = 'benchmarks/tactical-relevance/trapped-stockfish-18.json'
+$env:TACTICAL_DEFENDER_REPORT = 'benchmarks/tactical-relevance/defender-stockfish-18.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node
 $env:TACTICAL_REAL_PUZZLE_REPORT = 'benchmarks/tactical-relevance/real-puzzle-judgement.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/realPuzzleJudgement.test.ts --environment node

@@ -70,7 +70,7 @@
         "long",
         "middlegame"
       ],
-      "judgement": "Open false negative: Bxd5 removes Nd5's defence of Ne7. Further branch-aware proof is needed; do not bless the empty result."
+      "judgement": "Improved: Bxd5 removes Nd5's defence of Ne7 while attacking Bb7; moving Ne7 exposes Rd8. The bounded all-defences proof answers Bxf2+ and accounts for competing captures, so the 160 cp minimum is not the sum of every conditional PV capture. Missing Bh4 or Bb7 controls withhold this proof."
     },
     {
       "id": "lichess:2QybO",

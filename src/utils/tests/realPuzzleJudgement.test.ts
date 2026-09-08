@@ -39,6 +39,7 @@ test.each([
     ["1GRFo", "interference", 1],
     ["48ION", "interference", 1],
     ["2QybO", "discoveredAttack", 1],
+    ["2Gc77", "capturingDefender", 1],
 ] as const)("retain the judged cause in %s", (id, expected, ply) => {
     const item = puzzle(id);
     const result = classifyPositionTacticalMotifs({ fen: item.startFen, pvUci: item.bestLine });

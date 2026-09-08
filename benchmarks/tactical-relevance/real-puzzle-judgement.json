@@ -105,9 +105,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 72.6635
+    "classificationMs": 224.3146999999999
   },
   {
     "id": "lichess:1GRFo",
@@ -174,9 +174,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 23.283999999999992
+    "classificationMs": 163.19939999999997
   },
   {
     "id": "lichess:2Gc77",
@@ -199,7 +199,7 @@
       "long",
       "middlegame"
     ],
-    "judgement": "Open false negative: Bxd5 removes Nd5's defence of Ne7. Further branch-aware proof is needed; do not bless the empty result.",
+    "judgement": "Improved: Bxd5 removes Nd5's defence of Ne7 while attacking Bb7; moving Ne7 exposes Rd8. The bounded all-defences proof answers Bxf2+ and accounts for competing captures, so the 160 cp minimum is not the sum of every conditional PV capture. Missing Bh4 or Bb7 controls withhold this proof.",
     "san": [
       "Bxd5",
       "Rxd5",
@@ -208,10 +208,48 @@
       "Rxd1"
     ],
     "result": {
-      "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifs": [
+        {
+          "id": "capturingDefender",
+          "label": "Removing the Defender",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e4d5",
+          "value": 160,
+          "evidence": "Bxd5 removes the knight on d5 that defended the knight on e7. It also attacks the bishop on b7. Moving the defended piece exposes the rook on d8. The short combination wins material against every legal reply, including a checking counterattack; captures and exposed attacking pieces are accounted for.",
+          "relevance": "primary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "capturingDefender",
+          "label": "Removing the Defender",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e4d5",
+          "value": 160,
+          "evidence": "Bxd5 removes the knight on d5 that defended the knight on e7. It also attacks the bishop on b7. Moving the defended piece exposes the rook on d8. The short combination wins material against every legal reply, including a checking counterattack; captures and exposed attacking pieces are accounted for.",
+          "relevance": "primary",
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "h4e7 wins the loose knight on e7.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "h4e7",
+          "relevance": "secondary",
+          "value": 320,
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 15.994500000000016
+    "classificationMs": 137.77729999999997
   },
   {
     "id": "lichess:2QybO",
@@ -284,9 +322,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 19.41420000000005
+    "classificationMs": 27.462800000000016
   },
   {
     "id": "lichess:2SvDe",
@@ -370,9 +408,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 8.069499999999948
+    "classificationMs": 9.856600000000071
   },
   {
     "id": "lichess:48ION",
@@ -440,9 +478,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 15.41459999999995
+    "classificationMs": 22.42969999999991
   },
   {
     "id": "lichess:4RNK5",
@@ -485,9 +523,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 0.23339999999996053
+    "classificationMs": 0.25510000000008404
   },
   {
     "id": "lichess:6fO6p",
@@ -531,9 +569,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 0.23719999999991614
+    "classificationMs": 0.2680000000000291
   },
   {
     "id": "lichess:6mAvx",
@@ -627,9 +665,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 84.1839
+    "classificationMs": 130.3203000000001
   },
   {
     "id": "lichess:8DHuj",
@@ -684,9 +722,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 26.108099999999922
+    "classificationMs": 77.37169999999992
   },
   {
     "id": "lichess:8mguL",
@@ -742,9 +780,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 12.48720000000003
+    "classificationMs": 17.2829999999999
   },
   {
     "id": "lichess:9THyd",
@@ -838,8 +876,8 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 6.448500000000081
+    "classificationMs": 9.861200000000053
   }
 ]

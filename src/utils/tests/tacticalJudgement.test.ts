@@ -63,6 +63,60 @@ const cases = [
     },
 ];
 
+test.skipIf(!process.env.TACTICAL_JUDGEMENT_ENGINE || !process.env.TACTICAL_DEFENDER_REPORT)(
+    "inspect real defender-removal defences",
+    async () => {
+        const examples = [
+            {
+                fen: "3r1rk1/1b2n1p1/pb2P2p/1p1n1p2/2p1BN1B/5N1P/P4PP1/3RR1K1 w - - 0 26",
+                root: "e4d5",
+                replies: ["b6f2", "g7g5", "f8f6"],
+            },
+            {
+                fen: "r4rk1/pp3ppp/7q/3Np1NP/3n1P2/3P2b1/PPPQ2B1/R4K1R b - - 2 23",
+                root: "g3f4",
+                replies: ["d5f4", "d5f6", "d5e7", "g5h3", "g5e4"],
+            },
+        ];
+        const report = [];
+        for (const example of examples)
+            for (const reply of example.replies) {
+                const pos = Chess.fromSetup(parseFen(example.fen).unwrap()).unwrap();
+                pos.play(parseUci(example.root)!);
+                pos.play(parseUci(reply)!);
+                const lines = [
+                    ...(
+                        await analyse(
+                            process.env.TACTICAL_JUDGEMENT_ENGINE!,
+                            makeFen(pos.toSetup()),
+                        )
+                    ).values(),
+                ];
+                const started = performance.now();
+                const classification = classifyPositionTacticalMotifs({
+                    fen: example.fen,
+                    pvUci: [example.root, reply, ...lines[0].pvUci],
+                });
+                report.push({
+                    fen: example.fen,
+                    root: example.root,
+                    reply,
+                    lines,
+                    classification,
+                    classificationMs: performance.now() - started,
+                    judgement:
+                        example.root === "e4d5"
+                            ? "Removing Nd5's defence of Ne7 is primary, with the simultaneous bishop attack and rook behind Ne7 explaining alternative defences."
+                            : "Diagnostic only: Bxf4 is still unresolved by the bounded proof. Fresh engine lines reveal intermediate checks and a 90 cp nominal exchange gain; no correct-classification assertion is made.",
+                });
+            }
+        writeFileSync(process.env.TACTICAL_DEFENDER_REPORT!, JSON.stringify(report, null, 2));
+        for (const item of report.filter((item) => item.root === "e4d5"))
+            expect(item.classification.motifs[0]?.id).toBe("capturingDefender");
+    },
+    180000,
+);
+
 async function analyse(engine: string, fen: string, searchMove?: string) {
     const child = spawn(engine, [], { windowsHide: true, stdio: "pipe" });
     const lines = new Map<
@@ -279,6 +333,7 @@ describe("expert tactical judgement with fresh engine lines", () => {
                 ["6mAvx", "trappedPiece"],
                 ["8mguL", "trappedPiece"],
                 ["2QybO", "discoveredAttack"],
+                ["2Gc77", "capturingDefender"],
             ]) {
                 const item = report.find((entry) => entry.id === `lichess:${id}`)!;
                 expect(item.positionHeadline[0]?.id).toBe(primary);

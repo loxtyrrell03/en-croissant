@@ -1086,12 +1086,26 @@ export function tacticalBoardEvidence(
             "deflection",
             "interference",
             "trappedPiece",
+            "capturingDefender",
             ...DISCOVERED_THEMES,
         ].includes(motif.id)
     )
         return null;
     const step = replayTacticalLine(fen, line.slice(0, motif.ply))[motif.ply - 1];
     if (!step) return null;
+    if (motif.id === "capturingDefender") {
+        const proof = capturedDefenderProof(step, motif.source);
+        if (!proof) return null;
+        return {
+            square: makeSquare(step.move.to),
+            arrows: [
+                { from: makeSquare(step.move.to), to: makeSquare(proof.target) },
+                ...proof.capturers
+                    .filter((from) => from !== step.move.to)
+                    .map((from) => ({ from: makeSquare(from), to: makeSquare(proof.target) })),
+            ],
+        };
+    }
     if (motif.id === "trappedPiece") {
         const proof = trappedPieceProof(step, motif.source);
         if (!proof) return null;
@@ -1189,7 +1203,14 @@ function pinnedRecapturer(step: TacticalReplayStep) {
 function capturedDefenderProof(
     step: TacticalReplayStep,
     source: TacticalMotifEvidence["source"],
-): { motif: TacticalMotifEvidence; target: Square; capturers: Square[]; gain: number } | null {
+): {
+    motif: TacticalMotifEvidence;
+    target: Square;
+    targets: Square[];
+    capturers: Square[];
+    gain: number;
+    extended: boolean;
+} | null {
     const defender = step.before.board.get(step.move.to);
     if (!defender || defender.color === step.before.turn || defender.role === "king") return null;
     const targets = attacks(defender, step.move.to, step.before.board.occupied).intersect(
@@ -1208,16 +1229,37 @@ function capturedDefenderProof(
             // the target. Removing it must improve the legal exchange itself.
             return oldGain > -VALUE.king && newGain - oldGain >= 100;
         });
-        const gain = capturers.length ? materialThreatGain(step, [target], capturers) : null;
+        if (!capturers.length) continue;
+        const directGain = materialThreatGain(step, [target], capturers);
+        const relatedRays = rayTactics(step.after, step.before.turn).filter(
+            (ray) => ray.front === target && capturers.includes(ray.pinner),
+        );
+        const moved = step.after.board.get(step.move.to)!;
+        const additionalTargets = [
+            ...attacks(moved, step.move.to, step.after.board.occupied).intersect(
+                step.after.board[opposite(step.before.turn)],
+            ),
+        ].filter((to) => !["king", "pawn"].includes(step.after.board.get(to)!.role));
+        const proofTargets = [
+            ...new Set([target, ...relatedRays.map((ray) => ray.rear), ...additionalTargets]),
+        ];
+        const proofCapturers = [...new Set([...capturers, step.move.to])];
+        const gain = directGain ?? proveDefenderCombination(step, proofTargets, proofCapturers);
         if (gain === null) continue;
+        if (directGain === null && additionalTargets.length) {
+            const independent = materialThreatGain(step, additionalTargets, [step.move.to]);
+            if (independent !== null && independent >= gain) continue;
+        }
         // Winning a loose queen may incidentally remove a rook's defender.
         // That relationship is not the cause if the capture already earns
         // at least the entire proved gain without exploiting the rook.
         if (tacticalExchangeGain(step.before, step.move) >= gain) continue;
         return {
             target,
-            capturers,
+            targets: directGain !== null ? [target] : proofTargets,
+            capturers: directGain !== null ? capturers : proofCapturers,
             gain,
+            extended: directGain === null,
             motif: {
                 id: "capturingDefender",
                 label: "Removing the Defender",
@@ -1226,11 +1268,136 @@ function capturedDefenderProof(
                 ply: 1,
                 moveUci: step.uci,
                 value: gain,
-                evidence: `${step.san} removes the ${defender.role} on ${makeSquare(step.move.to)} that defended the ${victim.role} on ${makeSquare(target)}${step.after.isCheck() ? ", with check" : ""}. Every legal reply allows a profitable capture of that target.`,
+                evidence: `${step.san} removes the ${defender.role} on ${makeSquare(step.move.to)} that defended the ${victim.role} on ${makeSquare(target)}${step.after.isCheck() ? ", with check" : ""}. ${directGain !== null ? "Every legal reply allows a profitable capture of that target." : `${additionalTargets.length ? `It also attacks ${additionalTargets.map((to) => `the ${step.after.board.get(to)!.role} on ${makeSquare(to)}`).join(" and ")}. ` : ""}${relatedRays.length ? `Moving the defended piece exposes ${relatedRays.map((ray) => `the ${step.after.board.get(ray.rear)!.role} on ${makeSquare(ray.rear)}`).join(" and ")}. ` : ""}The short combination wins material against every legal reply, including a checking counterattack; captures and exposed attacking pieces are accounted for.`}`,
             },
         };
     }
     return null;
+}
+
+const defenderCombinationCache = new Map<string, number | null>();
+/** The extra branches must belong to this removal: the defended target,
+ * the piece behind it, or a simultaneous attack by the capturing piece.
+ * One checking counterattack may be answered; never follow a cooperative PV.
+ * Exchange leaves also debit an off-square capture of an attacking piece. */
+export function proveDefenderCombination(
+    step: TacticalReplayStep,
+    targets: Square[],
+    capturers: Square[],
+    nodeLimit = 4096,
+): number | null {
+    const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}`;
+    if (nodeLimit === 4096 && defenderCombinationCache.has(key))
+        return defenderCombinationCache.get(key)!;
+    let nodes = nodeLimit;
+    const delta = (pos: Chess, move: NormalMove) =>
+        capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--nodes < 0) throw new Error("Defender combination proof exhausted");
+        const next = pos.clone();
+        next.play(move);
+        return next;
+    };
+    const answer = (
+        pos: Chess,
+        victims: Square[],
+        pieces: Square[],
+        balance: number,
+        evasion: number,
+    ): number | null => {
+        if (pos.isEnd()) return null;
+        let best = -VALUE.king;
+        for (const move of legalMoves(pos)) {
+            if (
+                !victims.includes(move.to) ||
+                !pieces.includes(move.from) ||
+                !capturedValue(pos, move)
+            )
+                continue;
+            const gain = tacticalExchangeGain(pos, move);
+            if (gain <= -VALUE.king) continue;
+            const next = visit(pos, move);
+            if (next.isEnd() && !next.isCheckmate()) continue;
+            let liability = 0;
+            for (const reply of legalMoves(next)) {
+                if (
+                    reply.to === move.to ||
+                    !pieces.includes(reply.to) ||
+                    !capturedValue(next, reply)
+                )
+                    continue;
+                if (--nodes < 0) throw new Error("Defender combination proof exhausted");
+                const loss = tacticalExchangeGain(next, reply);
+                if (loss <= -VALUE.king) throw new Error("Unknown defender combination exchange");
+                liability = Math.max(liability, loss);
+            }
+            best = Math.max(
+                best,
+                balance + delta(pos, move) - Math.max(delta(pos, move) - gain, liability),
+            );
+        }
+        // Bishop/knight exchange imbalance must not erase a genuine pawn gain.
+        if (best >= 90) return best;
+        if (!evasion || !pos.isCheck()) return null;
+        for (const move of legalMoves(pos)) {
+            const next = visit(pos, move);
+            const gain = defend(
+                next,
+                victims.filter((to) => to !== move.to),
+                [...new Set(pieces.map((sq) => (sq === move.from ? move.to : sq)))],
+                balance + delta(pos, move),
+                evasion - 1,
+            );
+            if (gain !== null) return gain;
+        }
+        return null;
+    };
+    const defend = (
+        pos: Chess,
+        victims: Square[],
+        pieces: Square[],
+        balance: number,
+        evasion: number,
+    ): number | null => {
+        const replies = legalMoves(pos);
+        if (!replies.length) return null;
+        let minimum = Infinity;
+        for (const reply of replies) {
+            const next = visit(pos, reply);
+            const movedTargets = victims.map((sq) => (sq === reply.from ? reply.to : sq));
+            const movedPieces = pieces.filter((sq) => sq !== reply.to);
+            if (delta(pos, reply) && pieces.includes(reply.to)) {
+                movedTargets.push(reply.to);
+                movedPieces.push(
+                    ...legalMoves(next)
+                        .filter((move) => move.to === reply.to)
+                        .map((move) => move.from),
+                );
+            }
+            const gain = answer(
+                next,
+                [...new Set(movedTargets)],
+                [...new Set(movedPieces)],
+                balance - delta(pos, reply),
+                evasion,
+            );
+            if (gain === null) return null;
+            minimum = Math.min(minimum, gain);
+        }
+        return minimum;
+    };
+    let result: number | null = null;
+    try {
+        result = defend(step.after, targets, capturers, delta(step.before, step.move), 1);
+    } catch {
+        /* A bounded incomplete search is not a tactical proof. */
+    }
+    if (nodeLimit === 4096) {
+        defenderCombinationCache.set(key, result);
+        if (defenderCombinationCache.size > 256)
+            defenderCombinationCache.delete(defenderCombinationCache.keys().next().value!);
+    }
+    return result;
 }
 
 function capturedDefenderEvidence(
@@ -1869,6 +2036,9 @@ function compareMaterialCause(
     } else if (motif.id === "capturingDefender") {
         const proof = capturedDefenderProof(step, motif.source);
         if (proof) {
+            // A failed immediate capture probe cannot refute this longer,
+            // multi-target combination under an alternative user move.
+            if (proof.extended) return null;
             targets = [proof.target];
             capturers = proof.capturers;
             gain = proof.gain;
@@ -1954,7 +2124,7 @@ function materialLesson(steps: TacticalReplayStep[], motif: TacticalMotifEvidenc
     } else if (motif.id === "capturingDefender") {
         const proof = capturedDefenderProof(step, motif.source);
         if (proof) {
-            targets = [proof.target];
+            targets = proof.extended ? [...proof.targets, step.move.to] : [proof.target];
             gain = proof.gain;
         }
     } else if (motif.id === "fork") {

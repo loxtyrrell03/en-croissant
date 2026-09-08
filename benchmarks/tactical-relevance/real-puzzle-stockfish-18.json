@@ -177,9 +177,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 40.49989999999889,
+    "classificationMs": 46.85240000000158,
     "positionHeadline": [
       {
         "id": "fork",
@@ -502,9 +502,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 45.81680000000051,
+    "classificationMs": 43.168900000000576,
     "positionHeadline": [
       {
         "id": "interference",
@@ -604,7 +604,7 @@
       "long",
       "middlegame"
     ],
-    "judgement": "Open false negative: Bxd5 removes Nd5's defence of Ne7. Further branch-aware proof is needed; do not bless the empty result.",
+    "judgement": "Improved: Bxd5 removes Nd5's defence of Ne7 while attacking Bb7; moving Ne7 exposes Rd8. The bounded all-defences proof answers Bxf2+ and accounts for competing captures, so the 160 cp minimum is not the sum of every conditional PV capture. Missing Bh4 or Bb7 controls withhold this proof.",
     "unrestricted": [
       {
         "depth": 16,
@@ -818,11 +818,73 @@
       "mate": null
     },
     "classification": {
-      "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifs": [
+        {
+          "id": "capturingDefender",
+          "label": "Removing the Defender",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e4d5",
+          "value": 160,
+          "evidence": "Bxd5 removes the knight on d5 that defended the knight on e7. It also attacks the bishop on b7. Moving the defended piece exposes the rook on d8. The short combination wins material against every legal reply, including a checking counterattack; captures and exposed attacking pieces are accounted for.",
+          "relevance": "primary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "capturingDefender",
+          "label": "Removing the Defender",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e4d5",
+          "value": 160,
+          "evidence": "Bxd5 removes the knight on d5 that defended the knight on e7. It also attacks the bishop on b7. Moving the defended piece exposes the rook on d8. The short combination wins material against every legal reply, including a checking counterattack; captures and exposed attacking pieces are accounted for.",
+          "relevance": "primary",
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Bxe7 wins the loose knight on e7.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "h4e7",
+          "relevance": "secondary",
+          "value": 320,
+          "actor": "white"
+        },
+        {
+          "id": "capturingDefender",
+          "label": "Removing the Defender",
+          "source": "available",
+          "confidence": "high",
+          "ply": 12,
+          "moveUci": "c8d7",
+          "value": 320,
+          "evidence": "Bxd7 removes the rook on d7 that defended the bishop on e7. Moving the defended piece exposes the pawn on e6. The short combination wins material against every legal reply, including a checking counterattack; captures and exposed attacking pieces are accounted for.",
+          "relevance": "secondary",
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 45.024499999999534,
-    "positionHeadline": [],
+    "classificationMs": 77.08560000000216,
+    "positionHeadline": [
+      {
+        "id": "capturingDefender",
+        "label": "Removing the Defender",
+        "source": "available",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "e4d5",
+        "value": 160,
+        "evidence": "Bxd5 removes the knight on d5 that defended the knight on e7. It also attacks the bishop on b7. Moving the defended piece exposes the rook on d8. The short combination wins material against every legal reply, including a checking counterattack; captures and exposed attacking pieces are accounted for.",
+        "relevance": "primary"
+      }
+    ],
     "positionCandidates": [
       {
         "moves": [
@@ -847,8 +909,45 @@
           "Ne7+",
           "Kf7"
         ],
-        "motifs": [],
-        "timeline": []
+        "motifs": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e4d5",
+            "value": 160,
+            "evidence": "Bxd5 removes the knight on d5 that defended the knight on e7. It also attacks the bishop on b7. Moving the defended piece exposes the rook on d8. The short combination wins material against every legal reply, including a checking counterattack; captures and exposed attacking pieces are accounted for.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "capturingDefender",
+            "label": "Removing the Defender",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e4d5",
+            "value": 160,
+            "evidence": "Bxd5 removes the knight on d5 that defended the knight on e7. It also attacks the bishop on b7. Moving the defended piece exposes the rook on d8. The short combination wins material against every legal reply, including a checking counterattack; captures and exposed attacking pieces are accounted for.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxe7 wins the loose knight on e7.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h4e7",
+            "relevance": "secondary",
+            "value": 320,
+            "actor": "white"
+          }
+        ]
       }
     ]
   },
@@ -1064,9 +1163,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 38.54150000000118,
+    "classificationMs": 34.091700000000856,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -1376,9 +1475,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 32.85480000000098,
+    "classificationMs": 24.244699999999284,
     "positionHeadline": [
       {
         "id": "hangingPiece",
@@ -1652,9 +1751,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 52.3282999999974,
+    "classificationMs": 26.427800000001298,
     "positionHeadline": [
       {
         "id": "interference",
@@ -1922,9 +2021,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 0.3860999999997148,
+    "classificationMs": 0.38109999999869615,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -2200,9 +2299,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 0.544899999997142,
+    "classificationMs": 0.47110000000247965,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -2496,9 +2595,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 39.777099999999336,
+    "classificationMs": 30.231199999998353,
     "positionHeadline": [
       {
         "id": "trappedPiece",
@@ -2820,9 +2919,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 71.59869999999864,
+    "classificationMs": 85.92250000000058,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -3078,9 +3177,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 19.800500000001193,
+    "classificationMs": 25.117000000002008,
     "positionHeadline": [
       {
         "id": "trappedPiece",
@@ -3451,9 +3550,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-14"
+      "motifClassifierVersion": "site-55.adapter-15"
     },
-    "classificationMs": 28.128499999998894,
+    "classificationMs": 30.12290000000212,
     "positionHeadline": [
       {
         "id": "hangingPiece",
