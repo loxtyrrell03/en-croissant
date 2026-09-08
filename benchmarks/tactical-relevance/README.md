@@ -730,12 +730,63 @@ in w1lKu, other long combinations, named-mate overlap and broader candidate
 coverage remain open. This is development evidence, not general accuracy,
 holdout validation or running-app/hosting deployment proof.
 
-Verification passed 237 selected regression tests in 24 files, all eleven
+Adapter-20 verification passed 237 selected regression tests in 24 files, all eleven
 opt-in Stockfish tests, targeted formatting/lint, shared-review worker and
 production builds. Type checking retains only the unrelated OTB number/bigint
 fixture error. Classification timing is recorded per branch; it includes the
 conditional timeline, varies with concurrent host work and is not a UI latency
 guarantee.
+
+## Checking clearance into different quiet preparations (adapter 21)
+
+Real w1lKu corrects another incomplete early judgement: `Bh7+` does not force
+`Kf8`. `Kh8` is legal and changes the mechanism. The useful root lesson is
+**Clearance**: moving Bd3 clears the third rank for Qb3. `Kf8` permits `Qf3`,
+pinning f7 and enabling `Nxe6+`; `Kh8` permits `Qh3`, followed by a forcing attack.
+The latter must include `Bxf7+ Rxf7 Qh7+` as well as the selected king-capture
+route; it can require four checks before the queen capture.
+
+The clearance proof nominates a rook/queen victim from at most 13 supplied
+plies, then checks every legal reply independently of the supplied king move.
+Each branch must have a legal quiet slider move through the genuinely vacated
+square and a mate/material proof with at most four following checks. Outer and
+inner work share 32,768 visits. An equally good already-available forcing attack
+disqualifies that branch: the opened queen route cannot borrow an independent
+rook attack. Unknown/budget-exhausted work abstains; captures and non-checking
+clearances remain outside this particular fallback.
+
+Quiet preparation now admits a stationary checking slider and a new absolute
+pin that prevents a checking piece's recapture. Removing only the pinner must
+make that recapture legal; alignment alone is not enough. Its supplied horizon
+is at most 11 plies, with two to four checks before the named payoff and the
+existing 16,384-visit limit. The initial piece's identity remains tracked: after
+it is captured, a different piece arriving on its square cannot supply its
+participation. Existing conditional-result engine gates remain unchanged.
+
+The source branch shows Clearance at ply 1, the created Pin at ply 3 and the
+fork at ply 5. Pin evidence distinguishes creation from exploitation and states
+why the pawn cannot recapture. Root board arrows show the queen route for the
+actual king reply; pin arrows show the king/pawn alignment and the checking
+knight move. Neither arrow set asserts that one king reply is compulsory.
+
+Ten new regressions cover both routes, the four-check defence, actual ply
+placement/arrows, a bishop capturing the prepared queen, an unrelated pawn move,
+an independent open-file rook attack and exhausted budgets. Five fresh engine
+diagnostics are in `pin-preparation-stockfish-18.json`; two before/after scenarios
+add the real `Qxd4` mistake and missed clearance after `Bb1`. Only w1lKu's headline
+changes in the frozen 32-position sample. This proof's 100 cp local lower bound
+is not Stockfish's whole-position score or a claim that merely winning a pawn
+is the full point of the combination.
+
+The en-passant attack, other long combinations, named-mate overlap, broad
+candidate coverage and physical/runtime validation remain open. These remain
+development judgements, not a general accuracy claim or holdout validation.
+
+Adapter-21 verification passed 247 selected regression tests in 25 files, all
+twelve opt-in Stockfish tests, targeted formatting/lint, the shared-review worker
+build and the 8,851-module production build. Type checking retains only the
+unrelated OTB number/bigint fixture error. These checks do not establish running-app
+latency or deployed UI behaviour.
 
 Run in PowerShell with the configured Node runtime on PATH:
 
@@ -752,6 +803,7 @@ $env:TACTICAL_TRAP_REPORT = 'benchmarks/tactical-relevance/trapped-stockfish-18.
 $env:TACTICAL_DEFENDER_REPORT = 'benchmarks/tactical-relevance/defender-stockfish-18.json'
 $env:TACTICAL_EXPANSION_ENGINE_REPORT = 'benchmarks/tactical-relevance/expanded-stockfish-18.json'
 $env:TACTICAL_EXCHANGE_DISCOVERY_REPORT = 'benchmarks/tactical-relevance/exchange-discovery-stockfish-18.json'
+$env:TACTICAL_PIN_PREPARATION_REPORT = 'benchmarks/tactical-relevance/pin-preparation-stockfish-18.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node
 $env:TACTICAL_REAL_PUZZLE_REPORT = 'benchmarks/tactical-relevance/real-puzzle-judgement.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/realPuzzleJudgement.test.ts --environment node

@@ -49,9 +49,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 3.3153000000002066
+    "classificationMs": 2.767399999999725
   },
   {
     "id": "lichess:007c6",
@@ -103,9 +103,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 6.451700000000528
+    "classificationMs": 6.9439000000002125
   },
   {
     "id": "lichess:fVRuW",
@@ -135,9 +135,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 18.39350000000013
+    "classificationMs": 16.28179999999975
   },
   {
     "id": "lichess:K56tk",
@@ -189,9 +189,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 5.151100000000042
+    "classificationMs": 5.758499999999913
   },
   {
     "id": "lichess:NKnZo",
@@ -243,9 +243,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 9.02389999999923
+    "classificationMs": 10.686999999999898
   },
   {
     "id": "lichess:5hjz7",
@@ -297,9 +297,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 24.452700000000732
+    "classificationMs": 7.605500000000575
   },
   {
     "id": "lichess:GIB50",
@@ -339,9 +339,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 17.797599999999875
+    "classificationMs": 4.725400000000263
   },
   {
     "id": "lichess:REAdh",
@@ -393,9 +393,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 6.679599999999482
+    "classificationMs": 2.9833999999991647
   },
   {
     "id": "lichess:NGZzo",
@@ -413,9 +413,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 87.13349999999991
+    "classificationMs": 113.13829999999962
   },
   {
     "id": "lichess:4Osgg",
@@ -502,9 +502,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 34.81710000000021
+    "classificationMs": 27.78940000000057
   },
   {
     "id": "lichess:UCiYo",
@@ -560,9 +560,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 19.631000000000313
+    "classificationMs": 19.846700000000055
   },
   {
     "id": "lichess:CSh8J",
@@ -629,9 +629,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 9.5670999999993
+    "classificationMs": 17.4384
   },
   {
     "id": "lichess:opGD7",
@@ -649,9 +649,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 5.056000000000495
+    "classificationMs": 4.91609999999946
   },
   {
     "id": "lichess:fJrhT",
@@ -711,9 +711,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 8.319999999999709
+    "classificationMs": 32.09549999999945
   },
   {
     "id": "lichess:MJZcU",
@@ -735,9 +735,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 15.115799999999581
+    "classificationMs": 14.260800000000017
   },
   {
     "id": "lichess:0RleZ",
@@ -789,9 +789,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 4.19800000000032
+    "classificationMs": 1.7986000000000786
   },
   {
     "id": "lichess:Z5arb",
@@ -809,9 +809,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 15.031800000000658
+    "classificationMs": 6.99159999999938
   },
   {
     "id": "lichess:iUj3e",
@@ -867,9 +867,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 65.11829999999918
+    "classificationMs": 51.630199999999604
   },
   {
     "id": "lichess:Kvpvi",
@@ -925,9 +925,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 33.3755000000001
+    "classificationMs": 17.64559999999983
   },
   {
     "id": "lichess:hz3ed",
@@ -979,9 +979,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 5.127500000000509
+    "classificationMs": 5.513699999999517
   },
   {
     "id": "lichess:o8K8i",
@@ -1033,9 +1033,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 36.39429999999993
+    "classificationMs": 41.86799999999948
   },
   {
     "id": "lichess:w1lKu",
@@ -1060,10 +1060,95 @@
       "Nxd4"
     ],
     "result": {
-      "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifs": [
+        {
+          "id": "clearance",
+          "label": "Clearance",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d3h7",
+          "value": 100,
+          "evidence": "Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory.",
+          "relevance": "primary"
+        },
+        {
+          "id": "pin",
+          "label": "Pin",
+          "confidence": "medium",
+          "evidence": "Nxe6+ exploits an existing pin. The pawn on f7 cannot capture on e6 because it is pinned to its king on f8.",
+          "source": "available",
+          "ply": 5,
+          "moveUci": "g5e6",
+          "relevance": "secondary",
+          "value": 1000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "clearance",
+          "label": "Clearance",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d3h7",
+          "value": 100,
+          "evidence": "Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory.",
+          "relevance": "primary",
+          "actor": "white"
+        },
+        {
+          "id": "pin",
+          "label": "Pin",
+          "source": "available",
+          "confidence": "high",
+          "ply": 3,
+          "moveUci": "b3f3",
+          "value": 100,
+          "evidence": "Qf3 pins the pawn on f7 to its king on f8. That defender cannot capture the checking piece on e6 without exposing its king. Every legal reply permits a verified forcing material gain or mate.",
+          "relevance": "secondary",
+          "actor": "white"
+        },
+        {
+          "id": "pin",
+          "label": "Pin",
+          "confidence": "medium",
+          "evidence": "Nxe6+ exploits an existing pin. The pawn on f7 cannot capture on e6 because it is pinned to its king on f8.",
+          "source": "available",
+          "ply": 5,
+          "moveUci": "g5e6",
+          "relevance": "secondary",
+          "value": 1000,
+          "actor": "white"
+        },
+        {
+          "id": "fork",
+          "label": "Fork",
+          "source": "available",
+          "confidence": "high",
+          "ply": 5,
+          "moveUci": "g5e6",
+          "evidence": "Nxe6+ forks the queen on d4 and king on f8; no legal reply saves both targets without conceding material. The pawn on f7 cannot capture on e6 because it is pinned to its king on f8.",
+          "relevance": "secondary",
+          "value": 1000,
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "e6d4 wins the loose queen on d4.",
+          "source": "available",
+          "ply": 7,
+          "moveUci": "e6d4",
+          "relevance": "secondary",
+          "value": 900,
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 50.80289999999968
+    "classificationMs": 173.72399999999925
   },
   {
     "id": "lichess:rqXvZ",
@@ -1111,9 +1196,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 128.0079999999998
+    "classificationMs": 90.73329999999987
   },
   {
     "id": "lichess:ouIHI",
@@ -1157,7 +1242,7 @@
           "id": "pin",
           "label": "Pin",
           "confidence": "medium",
-          "evidence": "c4a4 lets the bishop on e6 pin the pawn on b3 to the king on a2.",
+          "evidence": "Ra4+ creates a pin. The pawn on b3 cannot capture on a4 because it is pinned to its king on a2.",
           "source": "available",
           "ply": 1,
           "moveUci": "c4a4",
@@ -1182,7 +1267,7 @@
           "id": "pin",
           "label": "Pin",
           "confidence": "medium",
-          "evidence": "c4a4 lets the bishop on e6 pin the pawn on b3 to the king on a2.",
+          "evidence": "Ra4+ creates a pin. The pawn on b3 cannot capture on a4 because it is pinned to its king on a2.",
           "source": "available",
           "ply": 1,
           "moveUci": "c4a4",
@@ -1215,9 +1300,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 4.191600000000108
+    "classificationMs": 4.9099999999998545
   },
   {
     "id": "lichess:eOCp9",
@@ -1235,9 +1320,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 2.0833000000002357
+    "classificationMs": 0.5335000000004584
   },
   {
     "id": "lichess:erSYy",
@@ -1316,9 +1401,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 5.3771999999999025
+    "classificationMs": 4.769199999999728
   },
   {
     "id": "lichess:vztmO",
@@ -1358,9 +1443,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 3.4645000000000437
+    "classificationMs": 3.913100000000668
   },
   {
     "id": "lichess:G8wdr",
@@ -1420,9 +1505,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 294.33339999999953
+    "classificationMs": 225.0585999999994
   },
   {
     "id": "lichess:4GiqO",
@@ -1440,9 +1525,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 0.8623999999999796
+    "classificationMs": 0.22749999999996362
   },
   {
     "id": "lichess:wh6Ac",
@@ -1482,9 +1567,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 3.499499999999898
+    "classificationMs": 1.8209999999999127
   },
   {
     "id": "lichess:NOaM1",
@@ -1540,9 +1625,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 16.829499999999825
+    "classificationMs": 7.516900000000533
   },
   {
     "id": "lichess:JaKHo",
@@ -1598,8 +1683,8 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 9.421900000000278
+    "classificationMs": 7.854199999999764
   }
 ]

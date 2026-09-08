@@ -200,9 +200,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 210.88760000000002
+    "classificationMs": 200.4318000000003
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -398,9 +398,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 68.97549999999865
+    "classificationMs": 64.38880000000063
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -591,7 +591,7 @@
           "id": "pin",
           "label": "Pin",
           "confidence": "medium",
-          "evidence": "e5f3 lets the rook on g6 pin the pawn on g2 to the king on g1.",
+          "evidence": "Nf3+ exploits an existing pin. The pawn on g2 cannot capture on f3 because it is pinned to its king on g1.",
           "source": "available",
           "ply": 7,
           "moveUci": "e5f3",
@@ -651,7 +651,7 @@
           "id": "pin",
           "label": "Pin",
           "confidence": "medium",
-          "evidence": "e5f3 lets the rook on g6 pin the pawn on g2 to the king on g1.",
+          "evidence": "Nf3+ exploits an existing pin. The pawn on g2 cannot capture on f3 because it is pinned to its king on g1.",
           "source": "available",
           "ply": 7,
           "moveUci": "e5f3",
@@ -678,7 +678,7 @@
           "confidence": "high",
           "ply": 7,
           "moveUci": "e5f3",
-          "evidence": "Nf3+ forks the rook on e1 and king on g1; no legal reply saves both targets without conceding material.",
+          "evidence": "Nf3+ forks the rook on e1 and king on g1; no legal reply saves both targets without conceding material. The pawn on g2 cannot capture on f3 because it is pinned to its king on g1.",
           "relevance": "secondary",
           "value": 230,
           "actor": "black"
@@ -720,9 +720,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 121.3125
+    "classificationMs": 132.17369999999937
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -918,9 +918,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 672.1535999999996
+    "classificationMs": 682.3047999999999
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -1076,9 +1076,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 85.54659999999967
+    "classificationMs": 91.40560000000005
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -1254,8 +1254,8 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 85.50380000000041
+    "classificationMs": 74.89789999999994
   }
 ]

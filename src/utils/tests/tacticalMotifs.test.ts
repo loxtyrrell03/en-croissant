@@ -172,7 +172,8 @@ describe("Mistake Review tactical motif adapter", () => {
         });
 
         expect(result.missedMotifs[0]).toMatchObject({ id: "pin", label: "Pin" });
-        expect(result.missedMotifs[0].evidence).toMatch(/pin the .* on .* to the .* on/);
+        expect(result.missedMotifs[0].evidence).toContain("Nh6+ creates a pin");
+        expect(result.missedMotifs[0].evidence).toContain("pawn on g7 cannot capture on h6");
     });
 
     test("returns versioned empty evidence for unusable lines", () => {

@@ -172,6 +172,46 @@ test.skipIf(
     180000,
 );
 
+test.skipIf(!process.env.TACTICAL_JUDGEMENT_ENGINE || !process.env.TACTICAL_PIN_PREPARATION_REPORT)(
+    "inspect clearance into a quiet pin and alternative king defences",
+    async () => {
+        const fen = "2rr2k1/1p3pp1/4p3/p2pP1N1/1n1q4/1Q1B4/1P3P1P/5RK1 w - - 0 22";
+        const prefixes = [
+            [],
+            ["d3h7", "g8f8"],
+            ["d3h7", "g8h8"],
+            ["d3h7", "g8f8", "b3f3"],
+            ["d3h7", "g8h8", "b3h3"],
+        ];
+        const report = [];
+        for (const prefix of prefixes) {
+            const pos = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
+            for (const uci of prefix) {
+                const move = parseUci(uci)!;
+                expect({ uci, legal: pos.isLegal(move) }).toEqual({ uci, legal: true });
+                pos.play(move);
+            }
+            const lines = [
+                ...(
+                    await analyse(process.env.TACTICAL_JUDGEMENT_ENGINE!, makeFen(pos.toSetup()))
+                ).values(),
+            ];
+            const classification = classifyPositionTacticalMotifs({
+                fen,
+                pvUci: [...prefix, ...lines[0].pvUci],
+            });
+            report.push({ fen, prefix, lines, classification });
+        }
+        writeFileSync(
+            process.env.TACTICAL_PIN_PREPARATION_REPORT!,
+            JSON.stringify(report, null, 2),
+        );
+        for (const entry of report)
+            expect(entry.classification.motifs[0]).toMatchObject({ id: "clearance", ply: 1 });
+    },
+    180000,
+);
+
 async function analyse(engine: string, fen: string, searchMove?: string) {
     const child = spawn(engine, [], { windowsHide: true, stdio: "pipe" });
     const lines = new Map<
@@ -962,6 +1002,22 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     source: "allowed",
                     primary: "fork",
                     why: "Black should deal with f7; the quiet b6 move permits a protected queen-rook fork.",
+                },
+                {
+                    name: "Retreating the bishop misses the checking clearance",
+                    fen: "2rr2k1/1p3pp1/4p3/p2pP1N1/1n1q4/1Q1B4/1P3P1P/5RK1 w - - 0 22",
+                    played: "d3b1",
+                    source: "missed",
+                    primary: "clearance",
+                    why: "Bh7+ clears the queen's third-rank route with tempo; Kf8 permits Qf3's pin, while Kh8 permits Qh3's forcing attack. Bb1 gives Black time for a checking queen move.",
+                },
+                {
+                    name: "The real Qxd4 mistake allows the checking clearance",
+                    fen: "2rr2k1/1p3pp1/1q2p3/p2pP1N1/1n1P4/1Q1B4/1P3P1P/5RK1 b - - 0 21",
+                    played: "b6d4",
+                    source: "allowed",
+                    primary: "clearance",
+                    why: "Taking on d4 places the queen on the future fork square and allows Bh7+ followed by the cleared queen route. The two king replies have different forcing continuations.",
                 },
                 {
                     name: "Developing the bishop misses the overloaded-queen discovery",

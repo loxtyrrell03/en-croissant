@@ -144,9 +144,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 4.411399999999048
+    "classificationMs": 3.38470000000234
   },
   {
     "id": "lichess:vztmO",
@@ -279,9 +279,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 2.2312000000019907
+    "classificationMs": 2.8051999999988766
   },
   {
     "id": "lichess:wh6Ac",
@@ -428,9 +428,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 1.267199999998411
+    "classificationMs": 1.6009000000012747
   },
   {
     "id": "lichess:fVRuW",
@@ -649,9 +649,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 34.3150999999998
+    "classificationMs": 29.96389999999883
   },
   {
     "id": "lichess:JaKHo",
@@ -862,9 +862,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 16.007700000001932
+    "classificationMs": 14.022600000000239
   },
   {
     "id": "lichess:ouIHI",
@@ -1023,7 +1023,7 @@
           "id": "pin",
           "label": "Pin",
           "confidence": "medium",
-          "evidence": "Ra4+ lets the bishop on e6 pin the pawn on b3 to the king on a2.",
+          "evidence": "Ra4+ creates a pin. The pawn on b3 cannot capture on a4 because it is pinned to its king on a2.",
           "source": "available",
           "ply": 1,
           "moveUci": "c4a4",
@@ -1048,7 +1048,7 @@
           "id": "pin",
           "label": "Pin",
           "confidence": "medium",
-          "evidence": "Ra4+ lets the bishop on e6 pin the pawn on b3 to the king on a2.",
+          "evidence": "Ra4+ creates a pin. The pawn on b3 cannot capture on a4 because it is pinned to its king on a2.",
           "source": "available",
           "ply": 1,
           "moveUci": "c4a4",
@@ -1081,9 +1081,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 3.268900000002759
+    "classificationMs": 2.726200000000972
   },
   {
     "id": "lichess:CSh8J",
@@ -1293,8 +1293,8 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20"
+      "motifClassifierVersion": "site-55.adapter-21"
     },
-    "classificationMs": 19.895800000002055
+    "classificationMs": 19.17320000000109
   }
 ]

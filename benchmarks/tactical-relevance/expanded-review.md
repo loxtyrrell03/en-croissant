@@ -65,7 +65,7 @@ every possible defensive continuation. “Open” is not a successful empty resu
 | Kvpvi | Core sound: Bb4+ c3 Bxc3# uses the same crossing-bishop mating structure. The supplied checkmate, not a later material target, is the payoff. |
 | hz3ed | Qe3# and the supporting e-file rook are real. Exact Triangle naming remains a separate taxonomy check. |
 | o8K8i | En passant is factually present. Whether that special capture, rather than the queen-exchange/ending mechanism, is the most valuable lesson remains open. |
-| w1lKu | Open combination: Bh7+ drives the king to f8; Qf3 pins f7, enabling Nxe6+ to fork king and queen without fxe6. The quiet pinning step is currently missed. |
+| w1lKu | Fixed and refined in adapter 21: Bh7+ clears d3 for the queen, rather than compelling Kf8. Both legal king replies are checked: Kf8 permits Qf3's pin, while Kh8 permits Qh3's different forcing attack. The root lesson is Clearance; in the source branch, Pin is created at ply 3 and exploited by the fork at ply 5. Removing the pinner makes the otherwise-illegal f7xe6 recapture legal. The other king branch includes the Rxf7 defence, requiring four checking moves before the queen capture. All branches fit a shared bounded proof; a second bishop that captures the prepared queen rejects the cooperative line. Fresh searches verify the real preceding Qxd4 mistake and the missed Bh7+ opportunity after Bb1. |
 | rqXvZ | Clearance of f1 for the other rook is a real line relationship, but the forcing/mating-threat reason behind the exchange and Rf1 deserves a stronger causal proof. Current label is only partial. |
 | ouIHI | A revealed pin of b3 prevents bxa4 and supports the mating rook manoeuvre. The mechanism is meaningful, though “Discovered Pin” would explain it better than overlapping generic discovery/pin wording. The impossible post-mate skewer is fixed. |
 | eOCp9 | Open quiet queen manoeuvre. Qf4/Qe5 has no accepted forcing proof here; its exact tactical point requires further engine-supported inspection. |
@@ -79,7 +79,7 @@ every possible defensive continuation. “Open” is not a successful empty resu
 
 ## Next work
 
-Prioritize the quiet pin in w1lKu and the unresolved long combinations. CSh8J's
+Prioritize the unresolved en-passant attack and other long combinations. CSh8J's
 promotion-backed fork now has a local all-replies proof, not a full ending solve.
 Audit named-mate overlap separately from legal checkmate.
 Retain the unresolved en-passant attack and endgame cases; do not turn them into

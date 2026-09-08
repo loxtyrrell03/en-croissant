@@ -265,7 +265,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "allowedTimeline": [
         {
           "id": "discoveredAttack",
@@ -313,7 +313,7 @@
         "comparisonEvidence": "g6 makes the immediate reply Bxh7+ illegal."
       }
     },
-    "classificationMs": 11.533899999994901
+    "classificationMs": 11.729200000001583
   },
   {
     "name": "A different reply wins the same queen after the better move",
@@ -643,7 +643,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -705,7 +705,7 @@
         "comparisonEvidence": "Even after Kg7, Rf5+ still forces at least the same net material gain on the queen on f8. The better move changes the continuation, not the existence of that material loss."
       }
     },
-    "classificationMs": 11.29299999999057
+    "classificationMs": 15.712899999998626
   },
   {
     "name": "Ignored double-check mate instead of making a king escape",
@@ -939,7 +939,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "allowedTimeline": [
         {
           "id": "doubleCheck",
@@ -1015,7 +1015,7 @@
         "comparisonEvidence": "Rg8+ makes the immediate reply Bb5# illegal."
       }
     },
-    "classificationMs": 15.786099999997532
+    "classificationMs": 16.96240000000398
   },
   {
     "name": "Failed to unpin the knight",
@@ -1269,7 +1269,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -1317,7 +1317,7 @@
         "comparisonEvidence": "After Kd7, Kxd6 answers d6; a profitable immediate follow-up capture of the knight on e7 is no longer forced."
       }
     },
-    "classificationMs": 17.49430000000575
+    "classificationMs": 17.80899999999383
   },
   {
     "name": "Allowed a king-queen skewer instead of preserving the queen",
@@ -1581,7 +1581,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "allowedTimeline": [
         {
           "id": "skewer",
@@ -1629,7 +1629,7 @@
         "comparisonEvidence": "After Kf4, Qxd3 answers Bd3; a profitable immediate follow-up capture of the queen on h7 is no longer forced."
       }
     },
-    "classificationMs": 5.9707000000053085
+    "classificationMs": 5.460500000001048
   },
   {
     "name": "Allowed checking defender removal and lost the queen",
@@ -1925,7 +1925,7 @@
           "value": 500
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "allowedTimeline": [
         {
           "id": "capturingDefender",
@@ -1987,7 +1987,7 @@
         "comparisonEvidence": "Qxd1+ makes the immediate reply gxf6+ illegal."
       }
     },
-    "classificationMs": 19.958099999988917
+    "classificationMs": 19.94680000000517
   },
   {
     "name": "Missed quiet mate while leaving the queen attacked",
@@ -2205,7 +2205,7 @@
           "value": 10000
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -2289,7 +2289,7 @@
         "value": 10000
       }
     },
-    "classificationMs": 6.805099999997765
+    "classificationMs": 6.700200000006589
   },
   {
     "name": "Missed the quiet rook preparation for mate or a queen skewer",
@@ -2595,7 +2595,7 @@
           "relevance": "secondary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "missedTimeline": [
         {
           "id": "tacticalPreparation",
@@ -2663,7 +2663,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 8.066500000000815
+    "classificationMs": 8.812799999999697
   },
   {
     "name": "Recaptured the rook before taking the queen with check",
@@ -2929,7 +2929,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -2989,7 +2989,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 70.43610000000626
+    "classificationMs": 73.99409999999625
   },
   {
     "name": "Recaptured the bishop before taking the knight with check",
@@ -3285,7 +3285,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "missedTimeline": [
         {
           "id": "intermezzo",
@@ -3329,7 +3329,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 58.615200000000186
+    "classificationMs": 61.479100000011385
   },
   {
     "name": "Allowed a checking queen capture before the rook recapture",
@@ -3655,7 +3655,7 @@
           "value": 330
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "allowedTimeline": [
         {
           "id": "intermezzo",
@@ -3729,7 +3729,7 @@
         "comparisonEvidence": "Qxg5 makes the immediate reply Bxd2+ illegal."
       }
     },
-    "classificationMs": 73.44969999999739
+    "classificationMs": 93.99550000000454
   },
   {
     "name": "Allowed an intermediate knight capture before the bishop recapture",
@@ -4081,7 +4081,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "allowedTimeline": [
         {
           "id": "intermezzo",
@@ -4129,7 +4129,7 @@
         "comparisonEvidence": "Nxd5 makes the immediate reply Nxe7+ illegal."
       }
     },
-    "classificationMs": 91.31050000000687
+    "classificationMs": 88.26310000001104
   },
   {
     "name": "b6 permits the f7 fork",
@@ -4452,7 +4452,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -4526,7 +4526,695 @@
         "comparisonEvidence": "After O-O, Nxf7 no longer has two profitable fork targets."
       }
     },
-    "classificationMs": 63.330199999996694
+    "classificationMs": 64.52889999999024
+  },
+  {
+    "name": "Retreating the bishop misses the checking clearance",
+    "fen": "2rr2k1/1p3pp1/4p3/p2pP1N1/1n1q4/1Q1B4/1P3P1P/5RK1 w - - 0 22",
+    "played": "d3b1",
+    "source": "missed",
+    "primary": "clearance",
+    "why": "Bh7+ clears the queen's third-rank route with tempo; Kf8 permits Qf3's pin, while Kh8 permits Qh3's forcing attack. Bb1 gives Black time for a checking queen move.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d3h7",
+          "g8h8",
+          "b3h3",
+          "d8d7",
+          "h7g6",
+          "h8g8",
+          "g6f7",
+          "g8f8",
+          "g5e6",
+          "f8f7",
+          "e6d4",
+          "d7c7",
+          "h3e6",
+          "f7f8",
+          "g1h1",
+          "b4c2",
+          "d4c2",
+          "c7c2",
+          "h2h4",
+          "c2c1",
+          "f1c1",
+          "c8c1",
+          "h1h2",
+          "c1c2"
+        ],
+        "pvSan": [
+          "Bh7+",
+          "Kh8",
+          "Qh3",
+          "Rd7",
+          "Bg6+",
+          "Kg8",
+          "Bxf7+",
+          "Kf8",
+          "Nxe6+",
+          "Kxf7",
+          "Nxd4",
+          "Rdc7",
+          "Qe6+",
+          "Kf8",
+          "Kh1",
+          "Nc2",
+          "Nxc2",
+          "Rxc2",
+          "h4",
+          "Rc1",
+          "Rxc1",
+          "Rxc1+",
+          "Kh2",
+          "Rc2"
+        ],
+        "cp": 551,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "d3b1",
+          "d4g4",
+          "b3g3",
+          "g4g3",
+          "f2g3",
+          "d8f8",
+          "b1h7",
+          "g8h8",
+          "f1f4",
+          "c8c1",
+          "g1g2",
+          "c1c4",
+          "f4f7",
+          "f8f7",
+          "h7g6",
+          "f7c7"
+        ],
+        "pvSan": [
+          "Bb1",
+          "Qg4+",
+          "Qg3",
+          "Qxg3+",
+          "fxg3",
+          "Rf8",
+          "Bh7+",
+          "Kh8",
+          "Rf4",
+          "Rc1+",
+          "Kg2",
+          "Rc4",
+          "Rxf7",
+          "Rxf7",
+          "Bg6",
+          "Rfc7"
+        ],
+        "cp": -298,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "d3e2",
+          "d4e5",
+          "b3e3",
+          "e5e3",
+          "f2e3",
+          "f7f6",
+          "e2g4",
+          "f6g5",
+          "g4e6",
+          "g8h8",
+          "f1f3",
+          "c8c1",
+          "g1g2",
+          "b4c2"
+        ],
+        "pvSan": [
+          "Be2",
+          "Qxe5",
+          "Qe3",
+          "Qxe3",
+          "fxe3",
+          "f6",
+          "Bg4",
+          "fxg5",
+          "Bxe6+",
+          "Kh8",
+          "Rf3",
+          "Rc1+",
+          "Kg2",
+          "Nc2"
+        ],
+        "cp": -417,
+        "mate": null
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d4g4",
+          "b3g3",
+          "g4g3",
+          "f2g3",
+          "d8f8",
+          "b1h7",
+          "g8h8",
+          "h7b1",
+          "g7g6",
+          "h2h4",
+          "b4c6",
+          "g5f7",
+          "h8g7",
+          "b1g6",
+          "g7g6",
+          "f1f6",
+          "g6g7",
+          "f7d6",
+          "c6e5"
+        ],
+        "pvSan": [
+          "Qg4+",
+          "Qg3",
+          "Qxg3+",
+          "fxg3",
+          "Rf8",
+          "Bh7+",
+          "Kh8",
+          "Bb1",
+          "g6",
+          "h4",
+          "Nc6",
+          "Nxf7+",
+          "Kg7",
+          "Bxg6",
+          "Kxg6",
+          "Rf6+",
+          "Kg7",
+          "Nd6",
+          "Nxe5"
+        ],
+        "cp": 409,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "d4f4",
+          "b1h7",
+          "g8h8",
+          "b3e3",
+          "f4e3",
+          "f2e3",
+          "b4c6",
+          "f1f7",
+          "c6e5",
+          "f7f4",
+          "g7g6",
+          "e3e4",
+          "d8e8"
+        ],
+        "pvSan": [
+          "Qf4",
+          "Bh7+",
+          "Kh8",
+          "Qe3",
+          "Qxe3",
+          "fxe3",
+          "Nc6",
+          "Rxf7",
+          "Nxe5",
+          "Rf4",
+          "g6",
+          "e4",
+          "Re8"
+        ],
+        "cp": 369,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "c8c4",
+          "b3g3",
+          "d4h4",
+          "h2h3",
+          "d8f8",
+          "b2b3",
+          "h4g3",
+          "f2g3",
+          "c4c3",
+          "b1h7",
+          "g8h8",
+          "f1f4",
+          "c3g3",
+          "g1h2",
+          "g3g5"
+        ],
+        "pvSan": [
+          "Rc4",
+          "Qg3",
+          "Qh4",
+          "h3",
+          "Rf8",
+          "b3",
+          "Qxg3+",
+          "fxg3",
+          "Rc3",
+          "Bh7+",
+          "Kh8",
+          "Rf4",
+          "Rxg3+",
+          "Kh2",
+          "Rxg5"
+        ],
+        "cp": 356,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [],
+      "missedMotifs": [
+        {
+          "id": "clearance",
+          "label": "Clearance",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d3h7",
+          "value": 100,
+          "evidence": "Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory.",
+          "relevance": "primary"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-21",
+      "missedTimeline": [
+        {
+          "id": "clearance",
+          "label": "Clearance",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d3h7",
+          "value": 100,
+          "evidence": "Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory.",
+          "relevance": "primary",
+          "actor": "white"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "What you missed: Clearance",
+      "text": "The better move had this tactic: Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory.",
+      "source": "missed",
+      "primary": {
+        "id": "clearance",
+        "label": "Clearance",
+        "source": "missed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "d3h7",
+        "value": 100,
+        "evidence": "Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory.",
+        "relevance": "primary"
+      }
+    },
+    "classificationMs": 46.34100000000035
+  },
+  {
+    "name": "The real Qxd4 mistake allows the checking clearance",
+    "fen": "2rr2k1/1p3pp1/1q2p3/p2pP1N1/1n1P4/1Q1B4/1P3P1P/5RK1 b - - 0 21",
+    "played": "b6d4",
+    "source": "allowed",
+    "primary": "clearance",
+    "why": "Taking on d4 places the queen on the future fork square and allows Bh7+ followed by the cleared queen route. The two king replies have different forcing continuations.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "g8f8",
+          "d3g6",
+          "f8e7",
+          "g5f7",
+          "b6d4",
+          "b3g3",
+          "d8f8",
+          "f7d6",
+          "b4c6",
+          "d6c8",
+          "f8c8",
+          "g3a3",
+          "d4b4",
+          "a3b4",
+          "c6b4",
+          "f2f4",
+          "c8c4",
+          "h2h4",
+          "b4c6",
+          "h4h5",
+          "c4b4",
+          "f1f2",
+          "c6d4",
+          "g6d3"
+        ],
+        "pvSan": [
+          "Kf8",
+          "Bg6",
+          "Ke7",
+          "Nxf7",
+          "Qxd4",
+          "Qg3",
+          "Rf8",
+          "Nd6",
+          "Nc6",
+          "Nxc8+",
+          "Rxc8",
+          "Qa3+",
+          "Qb4",
+          "Qxb4+",
+          "Nxb4",
+          "f4",
+          "Rc4",
+          "h4",
+          "Nc6",
+          "h5",
+          "Rb4",
+          "Rf2",
+          "Nd4",
+          "Bd3"
+        ],
+        "cp": 193,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "f7f5",
+          "d3b5",
+          "b6d4",
+          "b3h3",
+          "d4g4",
+          "h3g4",
+          "f5g4",
+          "g5e6",
+          "d8e8",
+          "b5d7",
+          "c8b8",
+          "d7e8",
+          "b8e8",
+          "e6c5",
+          "e8e5",
+          "c5b7",
+          "d5d4",
+          "b7d6",
+          "e5d5",
+          "d6e4",
+          "b4d3",
+          "b2b3",
+          "d5e5",
+          "f2f3",
+          "g4f3",
+          "f1f3",
+          "e5e4",
+          "f3d3",
+          "g8f7",
+          "d3g3",
+          "f7f6"
+        ],
+        "pvSan": [
+          "f5",
+          "Bb5",
+          "Qxd4",
+          "Qh3",
+          "Qg4+",
+          "Qxg4",
+          "fxg4",
+          "Nxe6",
+          "Re8",
+          "Bd7",
+          "Rb8",
+          "Bxe8",
+          "Rxe8",
+          "Nc5",
+          "Rxe5",
+          "Nxb7",
+          "d4",
+          "Nd6",
+          "Rd5",
+          "Ne4",
+          "Nd3",
+          "b3",
+          "Re5",
+          "f3",
+          "gxf3",
+          "Rxf3",
+          "Rxe4",
+          "Rxd3",
+          "Kf7",
+          "Rg3",
+          "Kf6"
+        ],
+        "cp": 169,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "d8d7",
+          "d3g6",
+          "f7g6",
+          "b3h3",
+          "c8e8",
+          "h3h4",
+          "b4d3",
+          "f1b1",
+          "d7c7",
+          "g1f1",
+          "a5a4",
+          "h4h7",
+          "g8f8",
+          "h7g6"
+        ],
+        "pvSan": [
+          "Rd7",
+          "Bg6",
+          "fxg6",
+          "Qh3",
+          "Re8",
+          "Qh4",
+          "Nd3",
+          "Rb1",
+          "Rc7",
+          "Kf1",
+          "a4",
+          "Qh7+",
+          "Kf8",
+          "Qxg6"
+        ],
+        "cp": 164,
+        "mate": null
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d3h7",
+          "g8h8",
+          "b3h3",
+          "d8d7",
+          "h7g6",
+          "h8g8",
+          "g6f7",
+          "g8f8",
+          "g5e6",
+          "f8f7",
+          "e6d4",
+          "d7c7",
+          "h3e6",
+          "f7f8",
+          "g1h1",
+          "b4c2",
+          "d4c2",
+          "c7c2",
+          "h2h4",
+          "c2c1",
+          "f1c1",
+          "c8c1",
+          "h1h2",
+          "c1c2"
+        ],
+        "pvSan": [
+          "Bh7+",
+          "Kh8",
+          "Qh3",
+          "Rd7",
+          "Bg6+",
+          "Kg8",
+          "Bxf7+",
+          "Kf8",
+          "Nxe6+",
+          "Kxf7",
+          "Nxd4",
+          "Rdc7",
+          "Qe6+",
+          "Kf8",
+          "Kh1",
+          "Nc2",
+          "Nxc2",
+          "Rxc2",
+          "h4",
+          "Rc1",
+          "Rxc1",
+          "Rxc1+",
+          "Kh2",
+          "Rc2"
+        ],
+        "cp": 551,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "d3b1",
+          "d4g4",
+          "b3g3",
+          "g4g3",
+          "f2g3",
+          "d8f8",
+          "b1h7",
+          "g8h8",
+          "f1f4",
+          "c8c1",
+          "g1g2",
+          "c1c4",
+          "f4f7",
+          "f8f7",
+          "h7g6",
+          "f7c7"
+        ],
+        "pvSan": [
+          "Bb1",
+          "Qg4+",
+          "Qg3",
+          "Qxg3+",
+          "fxg3",
+          "Rf8",
+          "Bh7+",
+          "Kh8",
+          "Rf4",
+          "Rc1+",
+          "Kg2",
+          "Rc4",
+          "Rxf7",
+          "Rxf7",
+          "Bg6",
+          "Rfc7"
+        ],
+        "cp": -298,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "d3e2",
+          "d4e5",
+          "b3e3",
+          "e5e3",
+          "f2e3",
+          "f7f6",
+          "e2g4",
+          "f6g5",
+          "g4e6",
+          "g8h8",
+          "f1f3",
+          "c8c1",
+          "g1g2",
+          "b4c2"
+        ],
+        "pvSan": [
+          "Be2",
+          "Qxe5",
+          "Qe3",
+          "Qxe3",
+          "fxe3",
+          "f6",
+          "Bg4",
+          "fxg5",
+          "Bxe6+",
+          "Kh8",
+          "Rf3",
+          "Rc1+",
+          "Kg2",
+          "Nc2"
+        ],
+        "cp": -417,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [
+        {
+          "id": "clearance",
+          "label": "Clearance",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d3h7",
+          "value": 100,
+          "evidence": "Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory.",
+          "relevance": "primary"
+        }
+      ],
+      "missedMotifs": [],
+      "motifClassifierVersion": "site-55.adapter-21",
+      "allowedTimeline": [
+        {
+          "id": "clearance",
+          "label": "Clearance",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d3h7",
+          "value": 100,
+          "evidence": "Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory.",
+          "relevance": "primary",
+          "actor": "white"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "Why the move was tactically bad",
+      "text": "Your move allowed this tactic: Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory.",
+      "source": "allowed",
+      "primary": {
+        "id": "clearance",
+        "label": "Clearance",
+        "source": "allowed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "d3h7",
+        "value": 100,
+        "evidence": "Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory.",
+        "relevance": "primary"
+      }
+    },
+    "classificationMs": 34.55249999999069
   },
   {
     "name": "Developing the bishop misses the overloaded-queen discovery",
@@ -4872,7 +5560,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -4978,7 +5666,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 201.52079999999842
+    "classificationMs": 271.44220000000496
   },
   {
     "name": "The real Nxd4 mistake allows the overloaded-queen discovery",
@@ -5278,7 +5966,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "allowedTimeline": [
         {
           "id": "discoveredAttack",
@@ -5346,7 +6034,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 87.10399999999208
+    "classificationMs": 91.39989999998943
   },
   {
     "name": "Taking a pawn misses the promotion-backed knight fork",
@@ -5609,7 +6297,7 @@
           "value": 480
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "missedTimeline": [
         {
           "id": "fork",
@@ -5653,7 +6341,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 15.538100000005215
+    "classificationMs": 31.22420000001148
   },
   {
     "name": "Moving onto f6 allows the promotion-backed fork",
@@ -5916,7 +6604,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -5964,7 +6652,7 @@
         "comparisonEvidence": "After Nc8, Nd5 no longer has two profitable fork targets."
       }
     },
-    "classificationMs": 19.848200000007637
+    "classificationMs": 23.910700000007637
   },
   {
     "name": "Missed queen while the knight is already attacked",
@@ -6256,7 +6944,7 @@
           "value": 900
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "missedTimeline": [
         {
           "id": "hangingPiece",
@@ -6288,7 +6976,7 @@
         "value": 900
       }
     },
-    "classificationMs": 13.527700000006007
+    "classificationMs": 17.820899999991525
   },
   {
     "name": "Failed to create a back-rank escape",
@@ -6490,7 +7178,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-20",
+      "motifClassifierVersion": "site-55.adapter-21",
       "allowedTimeline": [
         {
           "id": "backRankMate",
@@ -6538,6 +7226,6 @@
         "comparisonEvidence": "After g5, Kg7 is a legal answer to Re8+; it is no longer mate."
       }
     },
-    "classificationMs": 1.7906000000075437
+    "classificationMs": 2.42170000000624
   }
 ]
