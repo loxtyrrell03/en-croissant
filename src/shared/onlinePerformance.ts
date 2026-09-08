@@ -125,6 +125,8 @@ export function normaliseLichessPerformance(
     };
 }
 const memory = new Map<string, PerformanceSnapshot>();
+export const performanceCacheKey = (account: PerformanceAccount, speed: string) =>
+    `${account.provider}:${account.username.toLowerCase()}:${speed}`;
 export function cachedPerformance(key: string): PerformanceSnapshot | null {
     if (memory.has(key)) return memory.get(key)!;
     try {
@@ -246,7 +248,7 @@ export async function fetchOnlinePerformance(
         .sort((a, b) => a.at - b.at || a.id.localeCompare(b.id))
         .slice(-LIMIT);
     const snapshot = { games, fetchedAt: Date.now() / 1000, limited };
-    const key = `${account.id}:${speed}`;
+    const key = performanceCacheKey(account, speed);
     memory.set(key, snapshot);
     try {
         localStorage.setItem(`true-performance-v1:${key}`, JSON.stringify(snapshot));

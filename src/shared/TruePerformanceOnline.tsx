@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { TruePerformancePanel } from "./TruePerformancePanel";
 import {
   cachedPerformance,
+  performanceCacheKey,
   fetchOnlinePerformance,
   type PerformanceAccount,
   type PerformanceSnapshot,
@@ -32,7 +33,8 @@ export function TruePerformanceOnline({
         ? "classical"
         : speed;
   const active = useRef<AbortController | null>(null);
-  const key = account ? `${account.id}:${effectiveSpeed}` : "";
+  const key = account ? performanceCacheKey(account, effectiveSpeed) : "";
+  const selectedId = account?.id, provider = account?.provider, username = account?.username;
   const [state, setState] = useState<{
     key: string;
     snapshot: PerformanceSnapshot | null;
@@ -41,7 +43,8 @@ export function TruePerformanceOnline({
     error: string | null;
   }>({ key: "", snapshot: null, loading: false, message: "", error: null });
   useEffect(() => {
-    if (!account) return;
+    if (!selectedId || !provider || !username) return;
+    const requestAccount = { id: selectedId, provider, username };
     const controller = new AbortController(),
       cached = cachedPerformance(key);
     active.current = controller;
@@ -49,9 +52,9 @@ export function TruePerformanceOnline({
     if (nonce === 0 && cached && Date.now() / 1000 - cached.fetchedAt < 6 * 3600) return;
     setState((v) => ({ ...v, loading: true, message: "Loading rated games…" }));
     void (async () => {
-      const headers = (await getHeaders?.(account.provider)) ?? {};
+      const headers = (await getHeaders?.(provider)) ?? {};
       return fetchOnlinePerformance(
-        account,
+        requestAccount,
         effectiveSpeed,
         controller.signal,
         (message) => {
@@ -73,7 +76,7 @@ export function TruePerformanceOnline({
           }));
       });
     return () => controller.abort();
-  }, [key, nonce, getHeaders]);
+  }, [key, selectedId, provider, username, effectiveSpeed, nonce, getHeaders]);
   const snapshot = state.key === key ? state.snapshot : null;
   const controls = (
     <>

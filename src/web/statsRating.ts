@@ -95,7 +95,6 @@ export function toPerformanceGames(games: readonly StatsRatingGame[]): Performan
 
 // Existing session diagnostics remain separate from result-based strength.
 const PERFORMANCE_WINDOW_DAYS = 7;
-const PERFORMANCE_MIN_GAMES = 3;
 const SESSION_GAP_SECONDS = 3600;
 const RECENT_SESSION_SECONDS = 12 * 3600;
 
@@ -107,10 +106,6 @@ const DRAW_RESULTS = new Set([
     "50move",
     "timevsinsufficient",
 ]);
-
-function clamp(x: number, lo: number, hi: number) {
-    return Math.min(Math.max(x, lo), hi);
-}
 
 function mean(values: number[]) {
     return values.reduce((sum, value) => sum + value, 0) / values.length;
