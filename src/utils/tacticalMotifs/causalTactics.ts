@@ -516,6 +516,10 @@ function winningTargets(pos: Chess, from: Square, side: Color) {
 /** A fork must survive the opponent's choice, including capturing the forker,
  * a checking counterattack, or one move that protects both targets. */
 function verifiedFork(step: TacticalReplayStep) {
+    return immediateFork(step) || provePromotionBackedFork(step) !== null;
+}
+
+function immediateFork(step: TacticalReplayStep) {
     const side = step.before.turn;
     const targets = winningTargets(step.after, step.move.to, side);
     if (targets.length < 2) return false;
@@ -547,6 +551,83 @@ function verifiedFork(step: TacticalReplayStep) {
             );
         });
     });
+}
+
+type PromotionBackedFork = {
+    gain: number;
+    pawn: Square;
+    promotion: Square;
+    defenders: Square[];
+    evidence: string;
+};
+const promotionForkCache = new Map<string, PromotionBackedFork | null>();
+
+/** An attacked defender can take the forker yet abandon a promotion square.
+ * Nominate only a pawn whose promotion is currently unprofitable and guarded
+ * by a fork target. Every legal reply must then lose on the named fork targets
+ * or through this same pawn, including promotion recaptures and stalemate.
+ * This reuses the bounded local exchange proof, not a cooperative PV suffix. */
+export function provePromotionBackedFork(step: TacticalReplayStep): PromotionBackedFork | null {
+    if (step.move.promotion) return null;
+    const key = `${makeFen(step.before.toSetup())}:${step.uci}`;
+    if (promotionForkCache.has(key)) return promotionForkCache.get(key)!;
+    const side = step.before.turn;
+    const targets = winningTargets(step.after, step.move.to, side);
+    let result: PromotionBackedFork | null = null;
+    if (targets.length >= 2) {
+        const probe = withTurn(step.after, side);
+        for (const pawn of probe.board.pawn.intersect(probe.board[side])) {
+            const promotion = pawn + (side === "white" ? 8 : -8);
+            if (promotion < 0 || promotion >= 64 || (promotion >= 8 && promotion < 56)) continue;
+            const move: NormalMove = { from: pawn, to: promotion, promotion: "queen" };
+            // Test the independent promotion BEFORE the checking fork. A null
+            // turn after check would wrongly forbid the defender's recapture.
+            if (!step.before.isLegal(move)) continue;
+            const immediateGains = (["queen", "rook", "bishop", "knight"] as const).map((role) =>
+                tacticalExchangeGain(step.before, { ...move, promotion: role }),
+            );
+            if (immediateGains.some((gain) => gain <= -VALUE.king || gain >= 100)) continue;
+            const defenders = targets.filter((target) => {
+                const piece = probe.board.get(target)!;
+                return (
+                    piece.role !== "king" &&
+                    attacks(piece, target, probe.board.occupied).has(promotion)
+                );
+            });
+            if (!defenders.length) continue;
+            const proof = materialThreatProof(step, targets, [step.move.to], [], false, pawn);
+            if (proof.kind !== "proven") continue;
+            const branch = legalMoves(step.after).flatMap((reply) => {
+                if (!defenders.includes(reply.from) || reply.to !== step.move.to) return [];
+                const next = step.after.clone();
+                next.play(reply);
+                if (!next.isLegal(move)) return [];
+                const promoted = next.clone();
+                promoted.play(move);
+                if (promoted.isEnd() && !promoted.isCheckmate()) return [];
+                const gain = tacticalExchangeGain(next, move);
+                if (
+                    gain <= -VALUE.king ||
+                    step.capture - capturedValue(step.after, reply) + gain < 100
+                )
+                    return [];
+                return [`${makeSan(step.after, reply)} ${makeSan(next, move)}`];
+            });
+            if (!branch.length) continue;
+            result = {
+                gain: proof.gain,
+                pawn,
+                promotion,
+                defenders,
+                evidence: `${step.san} forks the ${targets.map((sq) => `${step.after.board.get(sq)!.role} on ${makeSquare(sq)}`).join(" and ")}. The ${defenders.map((sq) => `${step.after.board.get(sq)!.role} on ${makeSquare(sq)}`).join(" and ")} also guards ${makeSquare(promotion)}: capturing the forking piece allows promotion (${branch[0]}). Every legal reply concedes material on the fork targets or through this pawn's promotion; legal recaptures are included.`,
+            };
+            break;
+        }
+    }
+    promotionForkCache.set(key, result);
+    if (promotionForkCache.size > 256)
+        promotionForkCache.delete(promotionForkCache.keys().next().value!);
+    return result;
 }
 
 function hasConcreteThreat(step: TacticalReplayStep) {
@@ -1337,14 +1418,27 @@ export function tacticalBoardEvidence(
             ],
         };
     }
-    if (motif.id === "fork" && verifiedFork(step))
+    if (motif.id === "fork" && verifiedFork(step)) {
+        const promotion = !immediateFork(step) ? provePromotionBackedFork(step) : null;
         return {
             square: makeSquare(step.move.to),
-            arrows: winningTargets(step.after, step.move.to, step.before.turn).map((to) => ({
-                from: makeSquare(step.move.to),
-                to: makeSquare(to),
-            })),
+            arrows: [
+                ...winningTargets(step.after, step.move.to, step.before.turn).map((to) => ({
+                    from: makeSquare(step.move.to),
+                    to: makeSquare(to),
+                })),
+                ...(promotion
+                    ? [
+                          { from: makeSquare(promotion.pawn), to: makeSquare(promotion.promotion) },
+                          ...promotion.defenders.map((from) => ({
+                              from: makeSquare(from),
+                              to: makeSquare(promotion.promotion),
+                          })),
+                      ]
+                    : []),
+            ],
         };
+    }
     const ray =
         relevantRayTactics(step).find(
             (r) =>
@@ -2157,8 +2251,12 @@ export function auditTacticalMotifs(
             continue;
         let sound = false;
         if (MATE.test(proposal.id)) sound = mate;
-        else if (proposal.id === "fork") sound = verifiedFork(step);
-        else if (proposal.id === "skewer")
+        else if (proposal.id === "fork") {
+            sound = verifiedFork(step);
+            const promotion = sound && !immediateFork(step) ? provePromotionBackedFork(step) : null;
+            if (promotion)
+                proposal = { ...proposal, value: promotion.gain, evidence: promotion.evidence };
+        } else if (proposal.id === "skewer")
             sound =
                 mate || rayMaterialEvidence(step, proposal.source).some((m) => m.id === "skewer");
         else if (proposal.id === "pin")
@@ -2538,6 +2636,7 @@ function materialLesson(steps: TacticalReplayStep[], motif: TacticalMotifEvidenc
     } else if (motif.id === "fork") {
         targets = winningTargets(step.after, step.move.to, step.before.turn);
         gain = targets.length >= 2 ? materialThreatGain(step, targets, [step.move.to]) : null;
+        if (gain === null) gain = provePromotionBackedFork(step)?.gain ?? null;
     } else if (motif.id === "trappedPiece") {
         const proof = trappedPieceProof(step, motif.source);
         if (proof) {

@@ -236,6 +236,9 @@ describe("expert tactical judgement with fresh engine lines", () => {
                         ?.id,
                 ).toBe("mateIn1");
             expect(
+                report.find((item) => item.id === "lichess:CSh8J")?.classification.motifs[0],
+            ).toMatchObject({ id: "fork", ply: 1, value: 320 });
+            expect(
                 report
                     .find((item) => item.id === "lichess:JaKHo")
                     ?.classification.motifs.map((m) => m.id),
@@ -904,6 +907,22 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     source: "allowed",
                     primary: "fork",
                     why: "Black should deal with f7; the quiet b6 move permits a protected queen-rook fork.",
+                },
+                {
+                    name: "Taking a pawn misses the promotion-backed knight fork",
+                    fen: "8/2P5/1n3k2/p7/P7/4NKp1/8/8 w - - 5 65",
+                    played: "f3g3",
+                    source: "missed",
+                    primary: "fork",
+                    why: "Nd5+ wins Nb6 after a king move or promotes after Nxd5. Kxg3 takes only a pawn and lets the knight blockade c8.",
+                },
+                {
+                    name: "Moving onto f6 allows the promotion-backed fork",
+                    fen: "8/2P5/1n4k1/p7/P7/4NKp1/8/8 b - - 4 64",
+                    played: "g6f6",
+                    source: "allowed",
+                    primary: "fork",
+                    why: "Kf6 steps onto Nd5+'s king/knight fork. The knight cannot take on d5 without abandoning c8 and allowing promotion.",
                 },
                 {
                     name: "Missed queen while the knight is already attacked",

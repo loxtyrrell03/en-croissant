@@ -144,9 +144,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-18"
+      "motifClassifierVersion": "site-55.adapter-19"
     },
-    "classificationMs": 3.4434999999994034
+    "classificationMs": 4.010299999999916
   },
   {
     "id": "lichess:vztmO",
@@ -279,9 +279,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-18"
+      "motifClassifierVersion": "site-55.adapter-19"
     },
-    "classificationMs": 3.055399999999281
+    "classificationMs": 2.890799999999217
   },
   {
     "id": "lichess:wh6Ac",
@@ -428,9 +428,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-18"
+      "motifClassifierVersion": "site-55.adapter-19"
     },
-    "classificationMs": 1.3306000000011409
+    "classificationMs": 1.6576999999997497
   },
   {
     "id": "lichess:fVRuW",
@@ -649,9 +649,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-18"
+      "motifClassifierVersion": "site-55.adapter-19"
     },
-    "classificationMs": 30.126400000001013
+    "classificationMs": 31.79240000000027
   },
   {
     "id": "lichess:JaKHo",
@@ -862,9 +862,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-18"
+      "motifClassifierVersion": "site-55.adapter-19"
     },
-    "classificationMs": 12.547199999999066
+    "classificationMs": 13.02560000000085
   },
   {
     "id": "lichess:ouIHI",
@@ -1081,9 +1081,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-18"
+      "motifClassifierVersion": "site-55.adapter-19"
     },
-    "classificationMs": 3.9897000000000844
+    "classificationMs": 3.214700000000448
   },
   {
     "id": "lichess:CSh8J",
@@ -1245,18 +1245,16 @@
     "classification": {
       "motifs": [
         {
-          "id": "promotion",
-          "label": "Promotion",
-          "confidence": "medium",
-          "evidence": "c8=Q promotes the pawn to a queen.",
+          "id": "fork",
+          "label": "Fork",
           "source": "available",
-          "ply": 3,
-          "moveUci": "c7c8q",
-          "relevance": "primary",
-          "value": 480
-        }
-      ],
-      "timeline": [
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e3d5",
+          "evidence": "Nd5+ forks the knight on b6 and king on f6. The knight on b6 also guards c8: capturing the forking piece allows promotion (Nxd5 c8=Q). Every legal reply concedes material on the fork targets or through this pawn's promotion; legal recaptures are included.",
+          "value": 320,
+          "relevance": "primary"
+        },
         {
           "id": "promotion",
           "label": "Promotion",
@@ -1265,13 +1263,38 @@
           "source": "available",
           "ply": 3,
           "moveUci": "c7c8q",
+          "relevance": "secondary",
+          "value": 480
+        }
+      ],
+      "timeline": [
+        {
+          "id": "fork",
+          "label": "Fork",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e3d5",
+          "evidence": "Nd5+ forks the knight on b6 and king on f6. The knight on b6 also guards c8: capturing the forking piece allows promotion (Nxd5 c8=Q). Every legal reply concedes material on the fork targets or through this pawn's promotion; legal recaptures are included.",
+          "value": 320,
           "relevance": "primary",
+          "actor": "white"
+        },
+        {
+          "id": "promotion",
+          "label": "Promotion",
+          "confidence": "medium",
+          "evidence": "c8=Q promotes the pawn to a queen.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "c7c8q",
+          "relevance": "secondary",
           "value": 480,
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-18"
+      "motifClassifierVersion": "site-55.adapter-19"
     },
-    "classificationMs": 16.942300000000614
+    "classificationMs": 16.76180000000022
   }
 ]

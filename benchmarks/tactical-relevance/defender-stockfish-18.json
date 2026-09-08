@@ -201,9 +201,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-18"
+      "motifClassifierVersion": "site-55.adapter-19"
     },
-    "classificationMs": 158.98939999999993,
+    "classificationMs": 177.2773000000002,
     "judgement": "Removing Nd5's defence of Ne7 is primary, with the simultaneous bishop attack and rook behind Ne7 explaining alternative defences."
   },
   {
@@ -394,9 +394,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-18"
+      "motifClassifierVersion": "site-55.adapter-19"
     },
-    "classificationMs": 60.35180000000037,
+    "classificationMs": 63.742599999999584,
     "judgement": "Removing Nd5's defence of Ne7 is primary, with the simultaneous bishop attack and rook behind Ne7 explaining alternative defences."
   },
   {
@@ -567,9 +567,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-18"
+      "motifClassifierVersion": "site-55.adapter-19"
     },
-    "classificationMs": 61.97469999999976,
+    "classificationMs": 69.60040000000026,
     "judgement": "Removing Nd5's defence of Ne7 is primary, with the simultaneous bishop attack and rook behind Ne7 explaining alternative defences."
   },
   {
@@ -702,9 +702,9 @@
     ],
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-18"
+      "motifClassifierVersion": "site-55.adapter-19"
     },
-    "classificationMs": 63.9979000000003,
+    "classificationMs": 67.85290000000077,
     "judgement": "Diagnostic only: Bxf4 is still unresolved by the bounded proof. Fresh engine lines reveal intermediate checks and a 90 cp nominal exchange gain; no correct-classification assertion is made."
   },
   {
@@ -811,9 +811,9 @@
     ],
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-18"
+      "motifClassifierVersion": "site-55.adapter-19"
     },
-    "classificationMs": 21.157199999999648,
+    "classificationMs": 29.15849999999955,
     "judgement": "Diagnostic only: Bxf4 is still unresolved by the bounded proof. Fresh engine lines reveal intermediate checks and a 90 cp nominal exchange gain; no correct-classification assertion is made."
   },
   {
@@ -858,9 +858,9 @@
     ],
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-18"
+      "motifClassifierVersion": "site-55.adapter-19"
     },
-    "classificationMs": 20.163300000000163,
+    "classificationMs": 23.556499999999687,
     "judgement": "Diagnostic only: Bxf4 is still unresolved by the bounded proof. Fresh engine lines reveal intermediate checks and a 90 cp nominal exchange gain; no correct-classification assertion is made."
   },
   {
@@ -975,9 +975,9 @@
     ],
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-18"
+      "motifClassifierVersion": "site-55.adapter-19"
     },
-    "classificationMs": 20.572000000000116,
+    "classificationMs": 21.723899999999958,
     "judgement": "Diagnostic only: Bxf4 is still unresolved by the bounded proof. Fresh engine lines reveal intermediate checks and a 90 cp nominal exchange gain; no correct-classification assertion is made."
   },
   {
@@ -1086,9 +1086,9 @@
     ],
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-18"
+      "motifClassifierVersion": "site-55.adapter-19"
     },
-    "classificationMs": 33.285799999999654,
+    "classificationMs": 36.32659999999942,
     "judgement": "Diagnostic only: Bxf4 is still unresolved by the bounded proof. Fresh engine lines reveal intermediate checks and a 90 cp nominal exchange gain; no correct-classification assertion is made."
   }
 ]

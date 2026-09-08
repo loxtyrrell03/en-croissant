@@ -641,10 +641,47 @@ include a promotion-backed fork, a fork requiring an intervening queen exchange,
 a quiet pin enabling a fork, and the longer en-passant attack. Named-mate overlap
 also needs independent adjudication; see the position-by-position review.
 
-Current verification: 229 focused tests in 24 files, all ten opt-in engine tests,
+Adapter-18 verification: 229 focused tests in 24 files, all ten opt-in engine tests,
 targeted formatting/lint, shared-review worker and production builds. Type checking retains
 the unrelated OTB number/bigint fixture error. No runtime deployment or
 running-app proof is claimed.
+
+## Forks backed by a threatened promotion (adapter 19)
+
+Real CSh8J now explains `Nd5+` as the primary Fork: it attacks Kf6 and Nb6,
+and Nb6 also guards c8. A king move loses the knight; `Nxd5` abandons that
+guard and permits `c8=Q`. The local minimum is 320 cp, not the selected PV's
+480 cp promotion balance or Stockfish's complete-position evaluation.
+Promotion remains secondary evidence at ply 3. Board arrows connect the
+forking knight to both targets and show Nb6's defence of c8 and the c7-c8 push.
+
+The fallback nominates only a pawn one step from promotion whose promotion
+square is guarded by a fork target. All four immediate promotion choices are
+checked **before** the fork, so an independently profitable promotion cannot
+lend a win to an unsound double attack. Testing this with a null move after a
+checking fork would incorrectly prevent the defender from recapturing. Every
+legal reply must then yield a net gain on the named fork targets or that same
+pawn, using the existing bounded legal exchange proof. Captures, promotion
+recaptures and promotion stalemate are considered; checking replies that still
+need an unproved continuation do not qualify. A concrete defender-captures-forker
+branch must permit a sound queen promotion. This remains a local proof, not a
+general pawn-ending search or coverage of all underpromotion-only escapes.
+
+Eight regressions cover the real line, an alternative king reply, one-ply input,
+secondary timeline and arrows, the mirrored Black case, an absent pawn, an
+additional promotion guard and an unrelated passed pawn. Two fresh before/after
+Stockfish scenarios choose Fork as the missed primary after `Kxg3` and the
+allowed primary after `...Kf6`; the better `...Nc8` avoids the immediate fork.
+The expanded fresh-engine report now asserts CSh8J's root lesson as well.
+
+Verification passed 224 selected regression tests in 23 files, all ten opt-in
+engine tests, targeted formatting/lint, shared-review worker and production
+builds. Type checking retains the known unrelated OTB number/bigint fixture
+error. Only CSh8J's headline changes in the frozen 32-position expansion.
+
+The remaining queen-exchange fork and quiet-pin combinations are still open;
+they are not converted into successful empty-result tests. No running app or
+hosting deployment is asserted.
 
 Run in PowerShell with the configured Node runtime on PATH:
 

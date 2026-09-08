@@ -55,7 +55,7 @@ every possible defensive continuation. “Open” is not a successful empty resu
 | NGZzo | Open quiet-move miss. Nd7 attacks Rb6, but why a satisfactory rook escape is unavailable needs branch-level work. Do not assume a fork merely from the knight move. |
 | 4Osgg | The source line ends in Bf2# after a checking queen drive. Balestra and Morphy labels overlap; choose/adjudicate a single useful pattern rather than count both as two tactics. Still open. |
 | UCiYo | Core immediate lesson is Kxc5 winning the bishop. The subsequent two-sided promotion race is separate and not certified by this material label. |
-| CSh8J | Important partial result: Nd5+ attacks king and Nb6, which guards c8. Taking the checking knight permits promotion. The engine confirms the source route, but the classifier only names the later promotion, missing the root's fork/deflection mechanism. |
+| CSh8J | Fixed in adapter 19: Nd5+ is the primary Fork, with a verified 320 cp local minimum. Nb6 also guards c8, so Nxd5 permits c8=Q; king moves instead lose the knight. Every legal reply is checked on these targets or this same pawn, including promotion recaptures. Promotion remains the actual ply-3 payoff. A truncated one-move input and the alternative king-move line retain the same root explanation. Fresh before/after searches verify Kxg3 misses this fork and Kf6 allows it; Nc8 avoids the immediate fork. |
 | opGD7 | Open: Qf1+ Kd2 Bf4+ stops before the payoff. The checks appear to displace the king's defence of Re2, but this needs a complete legal branch audit. |
 | fJrhT | The later Nd3+ king/rook fork is real. The explanation should also establish why Rb1+ must precede it, including blocking alternatives; current root explanation is incomplete. |
 | MJZcU | Open promotion combination. Rxe4, fxe4 and c2 convert an exchange sacrifice into a promotion threat. The reason the immediate pawn advance is inferior still needs adjudication. |
@@ -79,8 +79,9 @@ every possible defensive continuation. “Open” is not a successful empty resu
 
 ## Next work
 
-Prioritize CSh8J's promotion-backed fork, G8wdr's queen-exchange branch and the
-quiet pin in w1lKu. Audit named-mate overlap separately from legal checkmate.
+Prioritize G8wdr's queen-exchange branch and the quiet pin in w1lKu. CSh8J's
+promotion-backed fork now has a local all-replies proof, not a full ending solve.
+Audit named-mate overlap separately from legal checkmate.
 Retain the unresolved en-passant attack and endgame cases; do not turn them into
 empty-result acceptance assertions. These findings expand the original tuning
 goal rather than replace it with crash-free report generation.
