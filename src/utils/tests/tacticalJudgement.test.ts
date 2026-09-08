@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
 import { Chess } from "chessops/chess";
 import { makeFen, parseFen } from "chessops/fen";
@@ -494,6 +494,89 @@ async function analyse(engine: string, fen: string, searchMove?: string) {
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_PGN_REPORT,
+    )(
+        "audit a privately supplied fixed PGN sample without publishing its contents",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requestedOutput = resolve(process.env.TACTICAL_PRIVATE_PGN_REPORT!);
+            const output = resolve(
+                realpathSync(dirname(requestedOutput)),
+                basename(requestedOutput),
+            );
+            // Use a new report filename; preserve the frozen baseline.
+            expect(existsSync(output)).toBe(false);
+            const outputRelative = relative(realpathSync(process.cwd()), output);
+            expect(
+                isAbsolute(outputRelative) ||
+                    outputRelative === ".." ||
+                    outputRelative.startsWith(`..${sep}`),
+            ).toBe(true);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"),
+            ) as {
+                sourceSha256: string;
+                selection: string;
+                eligiblePositions: number;
+                cases: { id: string; fen: string; sourceUci: string[]; sourceSan: string[] }[];
+            };
+            expect(sample.cases.length).toBeGreaterThan(0);
+            const report = [];
+            for (const row of sample.cases) {
+                expect(replayTacticalLine(row.fen, row.sourceUci)).toHaveLength(
+                    row.sourceUci.length,
+                );
+                const engineLines = [...(await analyse(engine, row.fen)).values()];
+                expect(engineLines[0].depth).toBe(16);
+                const sourceEngine =
+                    engineLines.find((line) => line.pvUci[0] === row.sourceUci[0]) ??
+                    [...(await analyse(engine, row.fen, row.sourceUci[0])).values()][0];
+                expect(sourceEngine.depth).toBe(16);
+                expect(sourceEngine.pvUci[0]).toBe(row.sourceUci[0]);
+                for (const line of [...engineLines, sourceEngine]) {
+                    expect(line.pvUci.length).toBeGreaterThan(0);
+                    expect(replayTacticalLine(row.fen, line.pvUci)).toHaveLength(line.pvUci.length);
+                }
+                const sourceResult = classifyPositionTacticalMotifs({
+                    fen: row.fen,
+                    pvUci: row.sourceUci,
+                    pvSan: row.sourceSan,
+                    rootCp: sourceEngine.cp,
+                });
+                const scan = buildLiveTacticalScan({
+                    fen: row.fen,
+                    pvUci: engineLines[0].pvUci,
+                    variations: engineLines,
+                    depth: 16,
+                    engineName: "Stockfish 18",
+                });
+                report.push({ ...row, engineLines, sourceEngine, sourceResult, scan });
+                writeFileSync(
+                    output,
+                    JSON.stringify(
+                        {
+                            scope: "Private development sample. Independent human judgements are separate; no agreement or success metric is inferred from nonempty tags. Source PGN and annotations must not be published.",
+                            sourceSha256: sample.sourceSha256,
+                            selection: sample.selection,
+                            eligiblePositions: sample.eligiblePositions,
+                            completed: report.length,
+                            requested: sample.cases.length,
+                            cases: report,
+                        },
+                        null,
+                        2,
+                    ),
+                    { flag: report.length === 1 ? "wx" : "w" },
+                );
+            }
+            expect(report).toHaveLength(sample.cases.length);
+        },
+        600000,
+    );
     test.skipIf(!engine || !process.env.TACTICAL_DISCOVERY_PRIORITY_REPORT)(
         "inspect the protected bishop and joint discovered attack against queen and rook",
         async () => {
