@@ -27,12 +27,14 @@ function Metric({
   label,
   value,
   detail,
+  description,
   accent,
   help,
 }: {
   label: string;
   value: string;
   detail: string;
+  description?: string;
   accent?: boolean;
   help?: string;
 }) {
@@ -42,6 +44,7 @@ function Metric({
         {label}
         {help && <Hint>{help}</Hint>}
       </div>
+      {description && <span className={s.metricMeaning}>{description}</span>}
       <strong className={accent ? s.accent : undefined}>{value}</strong>
       <span>{detail}</span>
     </div>
@@ -131,21 +134,23 @@ export function TruePerformancePanel({
           <div className={s.overview}>
             <div className={s.metrics}>
               <Metric
-                label="True strength"
+                label="Estimated playing strength"
+                description="Your level after your latest game."
                 value={enough ? number(last.mean) : "—"}
                 accent
                 detail={
                   enough
-                    ? `Model range ${number(last.low)}–${number(last.high)}`
+                    ? `${history.games.length.toLocaleString()} games of history · as of ${date(last.at)}`
                     : "At least 3 usable games needed"
                 }
-                help="Your estimated playing strength after the latest selected game. Earlier games inform it. The shaded range describes uncertainty under this model; it is not a verified guarantee of your true ability. Estimates use this website's rating scale."
+                help={`Uses all ${history.games.length.toLocaleString()} usable games loaded for this account, time control and game type, including games before your selected period. On this website's rating scale, the model estimates a range of ${number(last?.low)}–${number(last?.high)}; this is an estimate, not a measured true rating.`}
               />
               <Metric
-                label="Period performance"
+                label="Performance in selected games"
+                description={`How well you played in these ${selected.length.toLocaleString()} games.`}
                 value={number(performance?.mean)}
-                detail={`Across ${selected.length} selected games`}
-                help="The constant playing strength that best explains this period, balancing all these results against the rating before its first game. Every game counts once. Short samples depend more on that starting rating."
+                detail={performance ? `${PERFORMANCE_PERIODS.find(([value]) => value === period)?.[1]} · ${date(selected[0].at)}–${date(selected.at(-1)!.at)}` : "Needs 3 games and a starting rating"}
+                help="Uses only the selected games’ results and opponents’ ratings, starting from your account rating before the first game. A strong or weak run can put this above or below your estimated playing strength."
               />
               <Metric
                 label="Score"
@@ -315,14 +320,14 @@ function ProgressChart({ points }: { points: StrengthPoint[] }) {
       <div className={s.chartHead}>
         <h3>Your progress</h3>
         <span>
-          <i /> True strength <b /> Account rating
+          <i /> Estimated strength <b /> Account rating
         </span>
       </div>
       <svg
         viewBox={`0 0 ${width} 242`}
         className={s.chart}
         role="img"
-        aria-label="True strength and account rating over selected games"
+        aria-label="Estimated playing strength and account rating over selected games"
       >
         {[0, 1, 2, 3].map((i) => {
           const value = min + ((max - min) * i) / 3;
@@ -363,7 +368,7 @@ function ProgressChart({ points }: { points: StrengthPoint[] }) {
             onMouseEnter={() => setHover(i)}
           >
             <title>
-              {date(p.at)}: strength {number(p.mean)}, range {number(p.low)}–{number(p.high)}
+              {date(p.at)}: estimated strength {number(p.mean)}, range {number(p.low)}–{number(p.high)}
             </title>
           </circle>
         ))}
@@ -386,7 +391,7 @@ function ProgressChart({ points }: { points: StrengthPoint[] }) {
         />
       </label>
       <p className={s.chartReadout} aria-live="polite">
-        {date(selected.at)} · Strength <strong>{number(selected.mean)}</strong> · Model range{" "}
+        {date(selected.at)} · Estimated strength <strong>{number(selected.mean)}</strong> · Model range{" "}
         {number(selected.low)}–{number(selected.high)}
       </p>
     </div>

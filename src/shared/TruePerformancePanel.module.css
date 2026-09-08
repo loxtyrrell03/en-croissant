@@ -535,3 +535,5 @@
     min-height: 44px;
   }
 }
+
+.metric > .metricMeaning { color: var(--tp-text); font-size: 13px; line-height: 1.45; }
