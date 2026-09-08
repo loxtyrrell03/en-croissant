@@ -423,8 +423,8 @@ successful report creation does not mean twelve correct classifications.
 | 2Gc77 | Open false negative: Bxd5 defender-removal combination. |
 | 8DHuj | False clearance removed, but Bxf4's actual removal/overload combination remains missed. |
 | 4RNK5 | Open false negative: quiet Rb6 prepares Rh7+ and a queen-winning Rb7+ skewer. |
-| 6mAvx | Open ranking issue: the bishop capture exposes trapped Ra1; current primary lesson underplays that rook. |
-| 8mguL | Kd6 trapped-rook label is plausible and engine-supported, but still lacks a branch-based trapped-piece proof. |
+| 6mAvx | Trapped Ra1 is now primary; Qc3 Bb4 and Qd4 Qxd4 establish why defending the rook fails. |
+| 8mguL | Kd6 now has a branch-based trapped-rook proof; Rxb5 Rxb5 limits the guaranteed gain to the exchange. |
 | 6fO6p | Winning h4 pawn ending: no invented zugzwang, but the classification/proof boundary remains unresolved. |
 
 Interference proof now includes an attacked defender as a named target and
@@ -449,6 +449,52 @@ failure modes rather than establishing general accuracy. The unrelated OTB
 number/bigint fixture still blocks whole-project type checking. No runtime or
 hosting deployment or running-app visual verification is asserted.
 
+## Trapped pieces: escape moves and defending resources
+
+The rook in 6mAvx has no legal move after Qxb2, but that alone was insufficient
+to justify the old `Trapped Piece` tag. Qc3 and Qd4 defend Ra1: simply playing
+Qxa1 then loses the queen. The new proof checks every defence and identifies
+Qc3 Bb4 (pinning the defending queen) and Qd4 Qxd4. Fresh Stockfish also selects
+Bb4 in the actual Qc3 position. Thus the rook trap is the primary lesson, with
+the bishop capture and later rook capture kept as supporting ply evidence.
+
+`trapped-stockfish-18.json` records five fresh-engine controls: the original
+trap, an open first rank allowing escape, an initial queen capture that is more
+valuable than the extra rook, the missing pinning bishop, and the Qc3/Bb4
+defender branch. The unrestricted best move need not match the root-restricted
+candidate; both are retained. In the queen-capture control, winning 900 cp
+immediately remains primary over the additional 500 cp trapped rook.
+
+The verifier follows the same target through every legal reply and settles
+captures/counter-captures. A safe victim move refutes the trap. If another piece
+defends it, removing only that new defender in a protection probe must improve
+the target exchange; the actual defender must then be capturable or subject to
+one verified quiet absolute pin. That pin's every legal answer must concede
+the target or its defender. Capturing an unrelated piece, making an unrelated
+promotion, or merely ending the PV ahead cannot certify this. A pinned target
+does not get a redundant trapped-piece badge beside its pin.
+
+The search is capped at 256 reply/candidate visits and eight pin proofs, each
+using the bounded legal exchange verifier. Exhaustion abstains and cannot reuse
+a cached success from a larger budget. The trap must win additional material
+beyond the initiating capture. This is a local material proof, not a general
+search for every positional trap or longer defensive resource.
+
+Mistake comparisons can prove persistence of the same trap or show a legal
+escape after a different choice. A supplied Nc3 comparison permits Rb1; h3
+and h4 preserve the trap. These are explicit counterfactual controls, not claims
+that those supplied moves are the engine's optimal choices. An incomplete
+defending-resource proof does not become a claim that a move prevents the trap.
+
+Ten new regressions cover the causal headline, larger initial gain, escapes,
+defending queen, absent bishop, castled king, exchange sacrifice, comparison,
+duplicate labels and exhausted budgets. Current verification passed 192 focused
+tests, the earlier engine scenarios and real-puzzle audit plus the five trap
+controls, targeted lint, shared-review worker and production builds. The existing
+OTB number/bigint fixture remains the only type-check error. Runtime deployment
+and running-app visual proof were not performed; the other open diagnostic
+findings above remain unfinished work.
+
 Run in PowerShell with the configured Node runtime on PATH:
 
 ```powershell
@@ -460,6 +506,7 @@ $env:TACTICAL_MATERIAL_REPORT = 'benchmarks/tactical-relevance/material-stockfis
 $env:TACTICAL_DISCOVERED_REPORT = 'benchmarks/tactical-relevance/discovered-stockfish-18.json'
 $env:TACTICAL_INTERFERENCE_REPORT = 'benchmarks/tactical-relevance/interference-stockfish-18.json'
 $env:TACTICAL_REAL_ENGINE_REPORT = 'benchmarks/tactical-relevance/real-puzzle-stockfish-18.json'
+$env:TACTICAL_TRAP_REPORT = 'benchmarks/tactical-relevance/trapped-stockfish-18.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node
 $env:TACTICAL_REAL_PUZZLE_REPORT = 'benchmarks/tactical-relevance/real-puzzle-judgement.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/realPuzzleJudgement.test.ts --environment node

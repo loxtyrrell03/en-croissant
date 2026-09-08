@@ -105,9 +105,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 175.64429999999993
+    "classificationMs": 72.6635
   },
   {
     "id": "lichess:1GRFo",
@@ -174,9 +174,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 65.0268000000001
+    "classificationMs": 23.283999999999992
   },
   {
     "id": "lichess:2Gc77",
@@ -209,9 +209,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 27.29399999999987
+    "classificationMs": 15.994500000000016
   },
   {
     "id": "lichess:2QybO",
@@ -284,9 +284,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 46.40449999999964
+    "classificationMs": 19.41420000000005
   },
   {
     "id": "lichess:2SvDe",
@@ -370,9 +370,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 20.744299999999384
+    "classificationMs": 8.069499999999948
   },
   {
     "id": "lichess:48ION",
@@ -440,9 +440,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 39.655800000000454
+    "classificationMs": 15.41459999999995
   },
   {
     "id": "lichess:4RNK5",
@@ -485,9 +485,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 0.5621999999993932
+    "classificationMs": 0.23339999999996053
   },
   {
     "id": "lichess:6fO6p",
@@ -531,9 +531,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 0.5796000000000276
+    "classificationMs": 0.23719999999991614
   },
   {
     "id": "lichess:6mAvx",
@@ -556,7 +556,7 @@
       "middlegame",
       "trappedPiece"
     ],
-    "judgement": "Open ranking issue: Qxb2 wins the bishop and exposes the trapped Ra1. The trapped rook's causal importance needs stronger proof/ranking than the current bishop headline.",
+    "judgement": "Improved: the trapped Ra1 is primary over the bishop capture. Every defence is checked, including Qc3 Bb4 and Qd4 Qxd4; the rook's nominal immobility alone is not the proof. An open first rank or the missing pinning bishop withholds the trap.",
     "san": [
       "Qxb2",
       "O-O",
@@ -567,6 +567,17 @@
     "result": {
       "motifs": [
         {
+          "id": "trappedPiece",
+          "label": "Trapped Rook",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c2b2",
+          "value": 830,
+          "evidence": "Qxb2 attacks the rook on a1. It has no safe move, including captures. Defending it also concedes material: Qc3 is answered by Bb4; Qd4 is answered by Qxd4. Every legal defence loses material through the trapped piece or its defender. This wins additional material beyond the initial capture.",
+          "relevance": "primary"
+        },
+        {
           "id": "hangingPiece",
           "label": "Hanging Piece",
           "confidence": "high",
@@ -574,23 +585,24 @@
           "source": "available",
           "ply": 1,
           "moveUci": "c2b2",
-          "relevance": "primary",
-          "value": 330
-        },
-        {
-          "id": "trappedPiece",
-          "label": "Trapped Piece",
-          "confidence": "medium",
-          "evidence": "Trapped Piece appears on c2b2 at ply 1 of the current best line.",
-          "source": "available",
-          "ply": 1,
-          "moveUci": "c2b2",
           "relevance": "secondary",
-          "value": 830
+          "value": 330
         }
       ],
       "timeline": [
         {
+          "id": "trappedPiece",
+          "label": "Trapped Rook",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c2b2",
+          "value": 830,
+          "evidence": "Qxb2 attacks the rook on a1. It has no safe move, including captures. Defending it also concedes material: Qc3 is answered by Bb4; Qd4 is answered by Qxd4. Every legal defence loses material through the trapped piece or its defender. This wins additional material beyond the initial capture.",
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
           "id": "hangingPiece",
           "label": "Hanging Piece",
           "confidence": "high",
@@ -598,20 +610,8 @@
           "source": "available",
           "ply": 1,
           "moveUci": "c2b2",
-          "relevance": "primary",
-          "value": 330,
-          "actor": "black"
-        },
-        {
-          "id": "trappedPiece",
-          "label": "Trapped Piece",
-          "confidence": "medium",
-          "evidence": "Trapped Piece appears on c2b2 at ply 1 of the current best line.",
-          "source": "available",
-          "ply": 1,
-          "moveUci": "c2b2",
           "relevance": "secondary",
-          "value": 830,
+          "value": 330,
           "actor": "black"
         },
         {
@@ -627,9 +627,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 161.97149999999965
+    "classificationMs": 84.1839
   },
   {
     "id": "lichess:8DHuj",
@@ -684,9 +684,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 43.41409999999996
+    "classificationMs": 26.108099999999922
   },
   {
     "id": "lichess:8mguL",
@@ -708,7 +708,7 @@
       "short",
       "trappedPiece"
     ],
-    "judgement": "Provisional: Kd6 traps the rook as expected in the fresh engine line, but the generic trapped-piece acceptance still needs branch-based verification.",
+    "judgement": "Improved: Kd6 has a branch-based trapped-rook proof. Every legal defence concedes material; Rxb5 Rxb5 loses the exchange, so the proved minimum is 170 cp rather than the rook's full value.",
     "san": [
       "Kd6",
       "Rxb5",
@@ -718,33 +718,33 @@
       "motifs": [
         {
           "id": "trappedPiece",
-          "label": "Trapped Piece",
-          "confidence": "medium",
-          "evidence": "Trapped Piece appears on e7d6 at ply 1 of the current best line.",
+          "label": "Trapped Rook",
           "source": "available",
+          "confidence": "high",
           "ply": 1,
           "moveUci": "e7d6",
-          "relevance": "primary",
-          "value": 170
+          "value": 170,
+          "evidence": "Kd6 attacks the rook on c5. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece.",
+          "relevance": "primary"
         }
       ],
       "timeline": [
         {
           "id": "trappedPiece",
-          "label": "Trapped Piece",
-          "confidence": "medium",
-          "evidence": "Trapped Piece appears on e7d6 at ply 1 of the current best line.",
+          "label": "Trapped Rook",
           "source": "available",
+          "confidence": "high",
           "ply": 1,
           "moveUci": "e7d6",
-          "relevance": "primary",
           "value": 170,
+          "evidence": "Kd6 attacks the rook on c5. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece.",
+          "relevance": "primary",
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 16.819299999999203
+    "classificationMs": 12.48720000000003
   },
   {
     "id": "lichess:9THyd",
@@ -838,8 +838,8 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 12.114199999999983
+    "classificationMs": 6.448500000000081
   }
 ]

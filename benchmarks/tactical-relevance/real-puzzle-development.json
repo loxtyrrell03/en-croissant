@@ -239,7 +239,7 @@
         "middlegame",
         "trappedPiece"
       ],
-      "judgement": "Open ranking issue: Qxb2 wins the bishop and exposes the trapped Ra1. The trapped rook's causal importance needs stronger proof/ranking than the current bishop headline."
+      "judgement": "Improved: the trapped Ra1 is primary over the bishop capture. Every defence is checked, including Qc3 Bb4 and Qd4 Qxd4; the rook's nominal immobility alone is not the proof. An open first rank or the missing pinning bishop withholds the trap."
     },
     {
       "id": "lichess:8DHuj",
@@ -306,7 +306,7 @@
         "short",
         "trappedPiece"
       ],
-      "judgement": "Provisional: Kd6 traps the rook as expected in the fresh engine line, but the generic trapped-piece acceptance still needs branch-based verification."
+      "judgement": "Improved: Kd6 has a branch-based trapped-rook proof. Every legal defence concedes material; Rxb5 Rxb5 loses the exchange, so the proved minimum is 170 cp rather than the rook's full value."
     },
     {
       "id": "lichess:9THyd",

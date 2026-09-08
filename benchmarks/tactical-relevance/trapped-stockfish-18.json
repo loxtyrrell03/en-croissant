@@ -1,0 +1,1553 @@
+[
+  {
+    "name": "Trapped rook behind the bishop",
+    "fen": "4k2r/3nbppp/8/4p3/4P3/4Q3/PBq2PPP/RN2K2R b KQk - 0 17",
+    "move": "c2b2",
+    "expected": "trappedPiece",
+    "why": "The extra rook win is more important than the initial bishop capture. Qc3 and Qd4 need explicit refutations, not an assertion that the rook cannot be defended.",
+    "unrestricted": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "c2b2",
+          "e1g1",
+          "b2a1",
+          "b1c3",
+          "a1b2",
+          "f1b1",
+          "b2a3",
+          "b1b7",
+          "a3c5",
+          "e3d3",
+          "c5c6",
+          "d3d5",
+          "c6d5",
+          "c3d5",
+          "e7d8",
+          "g2g3",
+          "d7c5",
+          "b7a7",
+          "c5e4"
+        ],
+        "pvSan": [
+          "Qxb2",
+          "O-O",
+          "Qxa1",
+          "Nc3",
+          "Qb2",
+          "Rb1",
+          "Qa3",
+          "Rb7",
+          "Qc5",
+          "Qd3",
+          "Qc6",
+          "Qd5",
+          "Qxd5",
+          "Nxd5",
+          "Bd8",
+          "g3",
+          "Nc5",
+          "Ra7",
+          "Nxe4"
+        ],
+        "cp": 272,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e8g8",
+          "b1c3",
+          "c2b2",
+          "a1b1",
+          "b2a3",
+          "e1g1",
+          "e7c5",
+          "b1b3",
+          "a3a5",
+          "e3d2"
+        ],
+        "pvSan": [
+          "O-O",
+          "Nc3",
+          "Qxb2",
+          "Rb1",
+          "Qa3",
+          "O-O",
+          "Bc5",
+          "Rb3",
+          "Qa5",
+          "Qd2"
+        ],
+        "cp": -381,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "d7c5",
+          "e1g1",
+          "c2b2",
+          "b1c3",
+          "e8g8",
+          "f1b1",
+          "b2a3",
+          "c3d5",
+          "a3a7",
+          "b1d1",
+          "f8a8",
+          "d5e7",
+          "a7e7",
+          "a2a4"
+        ],
+        "pvSan": [
+          "Nc5",
+          "O-O",
+          "Qxb2",
+          "Nc3",
+          "O-O",
+          "Rfb1",
+          "Qa3",
+          "Nd5",
+          "Qa7",
+          "Rd1",
+          "Ra8",
+          "Nxe7+",
+          "Qxe7",
+          "a4"
+        ],
+        "cp": -418,
+        "mate": null
+      }
+    ],
+    "candidate": {
+      "depth": 16,
+      "multipv": 1,
+      "pvUci": [
+        "c2b2",
+        "e1g1",
+        "b2a1",
+        "b1c3",
+        "a1b2",
+        "f1b1",
+        "b2a3",
+        "b1b7",
+        "a3c5",
+        "c3d5",
+        "c5e3",
+        "d5e3",
+        "d7c5",
+        "b7c7",
+        "c5e6",
+        "c7a7",
+        "e7d8",
+        "a2a4",
+        "e8g8",
+        "a4a5",
+        "d8c7",
+        "a5a6",
+        "f8b8",
+        "g2g3",
+        "h7h5"
+      ],
+      "pvSan": [
+        "Qxb2",
+        "O-O",
+        "Qxa1",
+        "Nc3",
+        "Qb2",
+        "Rb1",
+        "Qa3",
+        "Rb7",
+        "Qc5",
+        "Nd5",
+        "Qxe3",
+        "Nxe3",
+        "Nc5",
+        "Rc7",
+        "Ne6",
+        "Ra7",
+        "Bd8",
+        "a4",
+        "O-O",
+        "a5",
+        "Bc7",
+        "a6",
+        "Rb8",
+        "g3",
+        "h5"
+      ],
+      "cp": 259,
+      "mate": null
+    },
+    "classification": {
+      "motifs": [
+        {
+          "id": "trappedPiece",
+          "label": "Trapped Rook",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c2b2",
+          "value": 830,
+          "evidence": "Qxb2 attacks the rook on a1. It has no safe move, including captures. Defending it also concedes material: Qc3 is answered by Bb4; Qd4 is answered by Qxd4. Every legal defence loses material through the trapped piece or its defender. This wins additional material beyond the initial capture.",
+          "relevance": "primary"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxb2 wins the loose bishop on b2.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "c2b2",
+          "relevance": "secondary",
+          "value": 330
+        }
+      ],
+      "timeline": [
+        {
+          "id": "trappedPiece",
+          "label": "Trapped Rook",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c2b2",
+          "value": 830,
+          "evidence": "Qxb2 attacks the rook on a1. It has no safe move, including captures. Defending it also concedes material: Qc3 is answered by Bb4; Qd4 is answered by Qxd4. Every legal defence loses material through the trapped piece or its defender. This wins additional material beyond the initial capture.",
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxb2 wins the loose bishop on b2.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "c2b2",
+          "relevance": "secondary",
+          "value": 330,
+          "actor": "black"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxa1 wins the loose rook on a1.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "b2a1",
+          "relevance": "secondary",
+          "value": 500,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-14"
+    },
+    "classificationMs": 165.66529999999966,
+    "positionHeadline": [
+      {
+        "id": "trappedPiece",
+        "label": "Trapped Rook",
+        "source": "available",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "c2b2",
+        "value": 830,
+        "evidence": "Qxb2 attacks the rook on a1. It has no safe move, including captures. Defending it also concedes material: Qc3 is answered by Bb4; Qd4 is answered by Qxd4. Every legal defence loses material through the trapped piece or its defender. This wins additional material beyond the initial capture.",
+        "relevance": "primary"
+      }
+    ],
+    "positionCandidates": [
+      {
+        "moves": [
+          "Qxb2",
+          "O-O",
+          "Qxa1",
+          "Nc3",
+          "Qb2",
+          "Rb1",
+          "Qa3",
+          "Rb7",
+          "Qc5",
+          "Qd3",
+          "Qc6",
+          "Qd5",
+          "Qxd5",
+          "Nxd5",
+          "Bd8",
+          "g3",
+          "Nc5",
+          "Ra7",
+          "Nxe4"
+        ],
+        "motifs": [
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Rook",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c2b2",
+            "value": 830,
+            "evidence": "Qxb2 attacks the rook on a1. It has no safe move, including captures. Defending it also concedes material: Qc3 is answered by Bb4; Qd4 is answered by Qxd4. Every legal defence loses material through the trapped piece or its defender. This wins additional material beyond the initial capture.",
+            "relevance": "primary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Qxb2 wins the loose bishop on b2.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "c2b2",
+            "relevance": "secondary",
+            "value": 330
+          }
+        ],
+        "timeline": [
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Rook",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c2b2",
+            "value": 830,
+            "evidence": "Qxb2 attacks the rook on a1. It has no safe move, including captures. Defending it also concedes material: Qc3 is answered by Bb4; Qd4 is answered by Qxd4. Every legal defence loses material through the trapped piece or its defender. This wins additional material beyond the initial capture.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Qxb2 wins the loose bishop on b2.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "c2b2",
+            "relevance": "secondary",
+            "value": 330,
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Qxa1 wins the loose rook on a1.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "b2a1",
+            "relevance": "secondary",
+            "value": 500,
+            "actor": "black"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Knight removed: rook has an escape",
+    "fen": "4k2r/3nbppp/8/4p3/4P3/4Q3/PBq2PPP/R3K2R b KQk - 0 17",
+    "move": "c2b2",
+    "expected": "hangingPiece",
+    "why": "Winning the bishop remains real, but an open first rank permits a safe rook move.",
+    "unrestricted": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e7b4",
+          "e1f1",
+          "c2b2",
+          "a1d1",
+          "b4c5",
+          "e3e2",
+          "b2b7",
+          "d1d5",
+          "c5d4",
+          "g2g3",
+          "e8g8",
+          "f1g2",
+          "d7f6",
+          "d5b5",
+          "b7e4",
+          "e2e4",
+          "f6e4",
+          "a2a4",
+          "f8c8",
+          "b5b4"
+        ],
+        "pvSan": [
+          "Bb4+",
+          "Kf1",
+          "Qxb2",
+          "Rd1",
+          "Bc5",
+          "Qe2",
+          "Qb7",
+          "Rd5",
+          "Bd4",
+          "g3",
+          "O-O",
+          "Kg2",
+          "Nf6",
+          "Rb5",
+          "Qxe4+",
+          "Qxe4",
+          "Nxe4",
+          "a4",
+          "Rc8",
+          "Rb4"
+        ],
+        "cp": 226,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "c2b2",
+          "e1g1",
+          "e7c5",
+          "e3h3",
+          "b2b7",
+          "a1d1",
+          "h7h5",
+          "g1h1",
+          "h8h6",
+          "f2f4",
+          "e5f4",
+          "h3c3",
+          "c5f8",
+          "f1f4",
+          "h6c6",
+          "c3d3",
+          "f8d6",
+          "f4f5",
+          "d7f6",
+          "f5b5",
+          "b7c7"
+        ],
+        "pvSan": [
+          "Qxb2",
+          "O-O",
+          "Bc5",
+          "Qh3",
+          "Qb7",
+          "Rad1",
+          "h5",
+          "Kh1",
+          "Rh6",
+          "f4",
+          "exf4",
+          "Qc3",
+          "Bf8",
+          "Rxf4",
+          "Rc6",
+          "Qd3",
+          "Bd6",
+          "Rf5",
+          "Nf6",
+          "Rb5",
+          "Qc7"
+        ],
+        "cp": 86,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "d7c5",
+          "e1g1",
+          "c2b2",
+          "a1b1",
+          "b2d4",
+          "f1d1",
+          "d4e3",
+          "b1b8",
+          "e7d8",
+          "f2e3",
+          "e8e7",
+          "d1d5",
+          "c5a6",
+          "b8b7",
+          "a6c7",
+          "d5d1",
+          "h7h5",
+          "a2a4",
+          "h8h6",
+          "a4a5",
+          "h6d6",
+          "d1d6",
+          "e7d6"
+        ],
+        "pvSan": [
+          "Nc5",
+          "O-O",
+          "Qxb2",
+          "Rab1",
+          "Qd4",
+          "Rfd1",
+          "Qxe3",
+          "Rb8+",
+          "Bd8",
+          "fxe3",
+          "Ke7",
+          "Rd5",
+          "Na6",
+          "Rb7+",
+          "Nc7",
+          "Rd1",
+          "h5",
+          "a4",
+          "Rh6",
+          "a5",
+          "Rd6",
+          "Rxd6",
+          "Kxd6"
+        ],
+        "cp": -110,
+        "mate": null
+      }
+    ],
+    "candidate": {
+      "depth": 16,
+      "multipv": 1,
+      "pvUci": [
+        "c2b2",
+        "e1g1",
+        "e7c5",
+        "e3h3",
+        "b2b7",
+        "a1d1",
+        "b7c7",
+        "d1d2",
+        "d7f8",
+        "h3g3",
+        "f8e6",
+        "d2d5",
+        "f7f6",
+        "g3b3",
+        "e8e7",
+        "f1d1",
+        "h8c8",
+        "h2h4",
+        "h7h5",
+        "g2g3",
+        "c5d4",
+        "d5b5",
+        "c7c2",
+        "b5b7",
+        "e7f8"
+      ],
+      "pvSan": [
+        "Qxb2",
+        "O-O",
+        "Bc5",
+        "Qh3",
+        "Qb7",
+        "Rad1",
+        "Qc7",
+        "Rd2",
+        "Nf8",
+        "Qg3",
+        "Ne6",
+        "Rd5",
+        "f6",
+        "Qb3",
+        "Ke7",
+        "Rfd1",
+        "Rc8",
+        "h4",
+        "h5",
+        "g3",
+        "Bd4",
+        "Rb5",
+        "Qc2",
+        "Rb7+",
+        "Kf8"
+      ],
+      "cp": 116,
+      "mate": null
+    },
+    "classification": {
+      "motifs": [
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxb2 wins the loose bishop on b2.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "c2b2",
+          "relevance": "primary",
+          "value": 330
+        }
+      ],
+      "timeline": [
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxb2 wins the loose bishop on b2.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "c2b2",
+          "relevance": "primary",
+          "value": 330,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-14"
+    },
+    "classificationMs": 126.78489999999965,
+    "positionHeadline": [],
+    "positionCandidates": [
+      {
+        "moves": [
+          "Bb4+",
+          "Kf1",
+          "Qxb2",
+          "Rd1",
+          "Bc5",
+          "Qe2",
+          "Qb7",
+          "Rd5",
+          "Bd4",
+          "g3",
+          "O-O",
+          "Kg2",
+          "Nf6",
+          "Rb5",
+          "Qxe4+",
+          "Qxe4",
+          "Nxe4",
+          "a4",
+          "Rc8",
+          "Rb4"
+        ],
+        "motifs": [],
+        "timeline": []
+      }
+    ]
+  },
+  {
+    "name": "Immediate queen win outranks the additional rook",
+    "fen": "4k2r/3nbppp/8/4p3/4P3/8/PQq2PPP/RN2K2R b KQk - 0 17",
+    "move": "c2b2",
+    "expected": "hangingPiece",
+    "why": "The 900 cp queen capture is the primary lesson; the further trapped rook is secondary.",
+    "unrestricted": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "c2b2",
+          "e1g1",
+          "b2a1",
+          "f1c1",
+          "a1a2",
+          "g1h1",
+          "f7f6",
+          "b1c3",
+          "a2a5"
+        ],
+        "pvSan": [
+          "Qxb2",
+          "O-O",
+          "Qxa1",
+          "Rc1",
+          "Qxa2",
+          "Kh1",
+          "f6",
+          "Nc3",
+          "Qa5"
+        ],
+        "cp": 642,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "c2e4",
+          "e1f1",
+          "e4d3",
+          "f1e1",
+          "d3d5",
+          "f2f3",
+          "e5e4",
+          "b1c3",
+          "d5a5",
+          "f3e4",
+          "e8g8",
+          "a1d1"
+        ],
+        "pvSan": [
+          "Qxe4+",
+          "Kf1",
+          "Qd3+",
+          "Ke1",
+          "Qd5",
+          "f3",
+          "e4",
+          "Nc3",
+          "Qa5",
+          "fxe4",
+          "O-O",
+          "Rd1"
+        ],
+        "cp": 124,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "c2c4",
+          "b1d2",
+          "e7b4",
+          "a1c1",
+          "c4e4",
+          "e1f1",
+          "e4d3",
+          "f1g1",
+          "b4d2",
+          "c1c8",
+          "e8e7",
+          "c8h8",
+          "e5e4",
+          "b2b3",
+          "d3d4",
+          "h2h3",
+          "e4e3",
+          "b3a3",
+          "e7f6",
+          "h8e8",
+          "e3f2",
+          "g1f1"
+        ],
+        "pvSan": [
+          "Qc4",
+          "Nd2",
+          "Bb4",
+          "Rc1",
+          "Qxe4+",
+          "Kf1",
+          "Qd3+",
+          "Kg1",
+          "Bxd2",
+          "Rc8+",
+          "Ke7",
+          "Rxh8",
+          "e4",
+          "Qb3",
+          "Qd4",
+          "h3",
+          "e3",
+          "Qa3+",
+          "Kf6",
+          "Re8",
+          "exf2+",
+          "Kf1"
+        ],
+        "cp": -115,
+        "mate": null
+      }
+    ],
+    "candidate": {
+      "depth": 16,
+      "multipv": 1,
+      "pvUci": [
+        "c2b2",
+        "e1g1",
+        "b2a1",
+        "b1d2",
+        "a1a2",
+        "d2f3",
+        "g7g5",
+        "f1c1",
+        "e7d8",
+        "g2g3",
+        "f7f6",
+        "g1g2",
+        "h8g8",
+        "c1c6",
+        "g5g4",
+        "f3d2",
+        "a2d2"
+      ],
+      "pvSan": [
+        "Qxb2",
+        "O-O",
+        "Qxa1",
+        "Nd2",
+        "Qxa2",
+        "Nf3",
+        "g5",
+        "Rc1",
+        "Bd8",
+        "g3",
+        "f6",
+        "Kg2",
+        "Rg8",
+        "Rc6",
+        "g4",
+        "Nd2",
+        "Qxd2"
+      ],
+      "cp": 748,
+      "mate": null
+    },
+    "classification": {
+      "motifs": [
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxb2 wins the loose queen on b2.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "c2b2",
+          "relevance": "primary",
+          "value": 900
+        },
+        {
+          "id": "trappedPiece",
+          "label": "Trapped Rook",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c2b2",
+          "value": 1400,
+          "evidence": "Qxb2 attacks the rook on a1. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece. This wins additional material beyond the initial capture.",
+          "relevance": "secondary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxb2 wins the loose queen on b2.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "c2b2",
+          "relevance": "primary",
+          "value": 900,
+          "actor": "black"
+        },
+        {
+          "id": "trappedPiece",
+          "label": "Trapped Rook",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c2b2",
+          "value": 1400,
+          "evidence": "Qxb2 attacks the rook on a1. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece. This wins additional material beyond the initial capture.",
+          "relevance": "secondary",
+          "actor": "black"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxa1 wins the loose rook on a1.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "b2a1",
+          "relevance": "secondary",
+          "value": 500,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-14"
+    },
+    "classificationMs": 35.34780000000046,
+    "positionHeadline": [
+      {
+        "id": "hangingPiece",
+        "label": "Hanging Piece",
+        "confidence": "high",
+        "evidence": "Qxb2 wins the loose queen on b2.",
+        "source": "available",
+        "ply": 1,
+        "moveUci": "c2b2",
+        "relevance": "primary",
+        "value": 900
+      }
+    ],
+    "positionCandidates": [
+      {
+        "moves": [
+          "Qxb2",
+          "O-O",
+          "Qxa1",
+          "Rc1",
+          "Qxa2",
+          "Kh1",
+          "f6",
+          "Nc3",
+          "Qa5"
+        ],
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Qxb2 wins the loose queen on b2.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "c2b2",
+            "relevance": "primary",
+            "value": 900
+          },
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Rook",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c2b2",
+            "value": 1400,
+            "evidence": "Qxb2 attacks the rook on a1. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece. This wins additional material beyond the initial capture.",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Qxb2 wins the loose queen on b2.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "c2b2",
+            "relevance": "primary",
+            "value": 900,
+            "actor": "black"
+          },
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Rook",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c2b2",
+            "value": 1400,
+            "evidence": "Qxb2 attacks the rook on a1. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece. This wins additional material beyond the initial capture.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Qxa1 wins the loose rook on a1.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "b2a1",
+            "relevance": "secondary",
+            "value": 500,
+            "actor": "black"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "No bishop to punish the rook defender",
+    "fen": "4k2r/3n1ppp/8/4p3/4P3/4Q3/PBq2PPP/RN2K2R b KQk - 0 17",
+    "move": "c2b2",
+    "expected": "hangingPiece",
+    "why": "Qc3 defends Ra1 and no Bb4 pin is available. Do not invent a trap from the rook's lack of flight squares.",
+    "unrestricted": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "c2b2",
+          "e1g1",
+          "b2a1",
+          "e3a3",
+          "a1d4",
+          "a3a8",
+          "e8e7",
+          "a8h8",
+          "d7f8",
+          "f1c1",
+          "d4b2",
+          "c1d1",
+          "b2c2",
+          "d1e1",
+          "c2c8",
+          "h8g7",
+          "c8a6"
+        ],
+        "pvSan": [
+          "Qxb2",
+          "O-O",
+          "Qxa1",
+          "Qa3",
+          "Qd4",
+          "Qa8+",
+          "Ke7",
+          "Qxh8",
+          "Nf8",
+          "Rc1",
+          "Qb2",
+          "Rd1",
+          "Qc2",
+          "Re1",
+          "Qc8",
+          "Qxg7",
+          "Qa6"
+        ],
+        "cp": -567,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e8g8",
+          "b1c3",
+          "c2b2",
+          "a1b1",
+          "b2a3",
+          "e1g1",
+          "f8b8",
+          "b1b8",
+          "d7b8",
+          "f1b1",
+          "b8c6",
+          "h2h4",
+          "c6d4"
+        ],
+        "pvSan": [
+          "O-O",
+          "Nc3",
+          "Qxb2",
+          "Rb1",
+          "Qa3",
+          "O-O",
+          "Rb8",
+          "Rxb8+",
+          "Nxb8",
+          "Rb1",
+          "Nc6",
+          "h4",
+          "Nd4"
+        ],
+        "cp": -625,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "f7f5",
+          "e1g1",
+          "c2b2",
+          "b1c3",
+          "e8g8",
+          "e4f5",
+          "f8f5",
+          "a1b1",
+          "b2a3",
+          "h2h3",
+          "d7f6"
+        ],
+        "pvSan": [
+          "f5",
+          "O-O",
+          "Qxb2",
+          "Nc3",
+          "O-O",
+          "exf5",
+          "Rxf5",
+          "Rab1",
+          "Qa3",
+          "h3",
+          "Nf6"
+        ],
+        "cp": -641,
+        "mate": null
+      }
+    ],
+    "candidate": {
+      "depth": 16,
+      "multipv": 1,
+      "pvUci": [
+        "c2b2",
+        "e3a3",
+        "b2a3",
+        "b1a3",
+        "d7c5",
+        "e1g1",
+        "e8g8",
+        "f2f3",
+        "c5e6",
+        "g1h1",
+        "f8c8",
+        "a1d1",
+        "e6f4",
+        "h2h4",
+        "h7h6",
+        "d1d2",
+        "c8c3",
+        "a3c2",
+        "f4d3"
+      ],
+      "pvSan": [
+        "Qxb2",
+        "Qa3",
+        "Qxa3",
+        "Nxa3",
+        "Nc5",
+        "O-O",
+        "O-O",
+        "f3",
+        "Ne6",
+        "Kh1",
+        "Rc8",
+        "Rad1",
+        "Nf4",
+        "h4",
+        "h6",
+        "Rd2",
+        "Rc3",
+        "Nc2",
+        "Nd3"
+      ],
+      "cp": -571,
+      "mate": null
+    },
+    "classification": {
+      "motifs": [
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxb2 wins the loose bishop on b2.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "c2b2",
+          "relevance": "primary",
+          "value": 330
+        }
+      ],
+      "timeline": [
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxb2 wins the loose bishop on b2.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "c2b2",
+          "relevance": "primary",
+          "value": 330,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-14"
+    },
+    "classificationMs": 52.41520000000128,
+    "positionHeadline": [
+      {
+        "id": "hangingPiece",
+        "label": "Hanging Piece",
+        "confidence": "high",
+        "evidence": "Qxb2 wins the loose bishop on b2.",
+        "source": "available",
+        "ply": 1,
+        "moveUci": "c2b2",
+        "relevance": "primary",
+        "value": 330
+      }
+    ],
+    "positionCandidates": [
+      {
+        "moves": [
+          "Qxb2",
+          "O-O",
+          "Qxa1",
+          "Qa3",
+          "Qd4",
+          "Qa8+",
+          "Ke7",
+          "Qxh8",
+          "Nf8",
+          "Rc1",
+          "Qb2",
+          "Rd1",
+          "Qc2",
+          "Re1",
+          "Qc8",
+          "Qxg7",
+          "Qa6"
+        ],
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Qxb2 wins the loose bishop on b2.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "c2b2",
+            "relevance": "primary",
+            "value": 330
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Qxb2 wins the loose bishop on b2.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "c2b2",
+            "relevance": "primary",
+            "value": 330,
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Qxa1 wins the loose rook on a1.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "b2a1",
+            "relevance": "secondary",
+            "value": 500,
+            "actor": "black"
+          }
+        ]
+      },
+      {
+        "moves": [
+          "O-O",
+          "Nc3",
+          "Qxb2",
+          "Rb1",
+          "Qa3",
+          "O-O",
+          "Rb8",
+          "Rxb8+",
+          "Nxb8",
+          "Rb1",
+          "Nc6",
+          "h4",
+          "Nd4"
+        ],
+        "motifs": [],
+        "timeline": []
+      },
+      {
+        "moves": [
+          "f5",
+          "O-O",
+          "Qxb2",
+          "Nc3",
+          "O-O",
+          "exf5",
+          "Rxf5",
+          "Rab1",
+          "Qa3",
+          "h3",
+          "Nf6"
+        ],
+        "motifs": [],
+        "timeline": []
+      }
+    ]
+  },
+  {
+    "name": "Actual Qc3 defence meets the pin",
+    "fen": "4k2r/3nbppp/8/4p3/4P3/2Q5/Pq3PPP/RN2K2R b KQk - 1 18",
+    "move": "e7b4",
+    "expected": "pin",
+    "why": "Bb4 pins the queen defending Ra1 to Ke1; every legal answer still concedes the queen or rook.",
+    "unrestricted": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e7b4",
+          "e1g1",
+          "b4c3",
+          "b1c3",
+          "b2c3",
+          "a2a4",
+          "c3a5",
+          "f1d1",
+          "f7f6",
+          "g2g3",
+          "h8f8",
+          "d1d7",
+          "e8d7",
+          "h2h4",
+          "f8d8"
+        ],
+        "pvSan": [
+          "Bb4",
+          "O-O",
+          "Bxc3",
+          "Nxc3",
+          "Qxc3",
+          "a4",
+          "Qa5",
+          "Rfd1",
+          "f6",
+          "g3",
+          "Rf8",
+          "Rxd7",
+          "Kxd7",
+          "h4",
+          "Rd8"
+        ],
+        "cp": 450,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "b2b7",
+          "e1g1",
+          "e8g8",
+          "c3f3",
+          "e7c5",
+          "b1c3",
+          "c5d4",
+          "a1c1",
+          "d7c5",
+          "c3d5",
+          "f8a8",
+          "c1c2",
+          "g7g6",
+          "h2h3"
+        ],
+        "pvSan": [
+          "Qb7",
+          "O-O",
+          "O-O",
+          "Qf3",
+          "Bc5",
+          "Nc3",
+          "Bd4",
+          "Rac1",
+          "Nc5",
+          "Nd5",
+          "Ra8",
+          "Rc2",
+          "g6",
+          "h3"
+        ],
+        "cp": -342,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "b2b8",
+          "e1g1",
+          "e7c5",
+          "c3f3",
+          "c5d4",
+          "b1c3",
+          "d7c5",
+          "a1c1",
+          "e8g8",
+          "c1c2"
+        ],
+        "pvSan": [
+          "Qb8",
+          "O-O",
+          "Bc5",
+          "Qf3",
+          "Bd4",
+          "Nc3",
+          "Nc5",
+          "Rac1",
+          "O-O",
+          "Rc2"
+        ],
+        "cp": -345,
+        "mate": null
+      }
+    ],
+    "candidate": {
+      "depth": 16,
+      "multipv": 1,
+      "pvUci": [
+        "e7b4",
+        "e1g1",
+        "b4c3",
+        "b1c3",
+        "b2c3",
+        "f1d1",
+        "c3a1",
+        "d1a1",
+        "e8e7",
+        "a2a4",
+        "h8a8",
+        "f2f4",
+        "e5f4",
+        "a4a5",
+        "d7c5",
+        "g2g3",
+        "c5e6"
+      ],
+      "pvSan": [
+        "Bb4",
+        "O-O",
+        "Bxc3",
+        "Nxc3",
+        "Qxc3",
+        "Rfd1",
+        "Qxa1",
+        "Rxa1",
+        "Ke7",
+        "a4",
+        "Ra8",
+        "f4",
+        "exf4",
+        "a5",
+        "Nc5",
+        "g3",
+        "Ne6"
+      ],
+      "cp": 442,
+      "mate": null
+    },
+    "classification": {
+      "motifs": [
+        {
+          "id": "pin",
+          "label": "Pin",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e7b4",
+          "value": 570,
+          "evidence": "Bb4 exploits the queen on c3, pinned to the king on e1 by the bishop on b4. No legal reply avoids material loss in the immediate exchange.",
+          "relevance": "primary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "pin",
+          "label": "Pin",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e7b4",
+          "value": 570,
+          "evidence": "Bb4 exploits the queen on c3, pinned to the king on e1 by the bishop on b4. No legal reply avoids material loss in the immediate exchange.",
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Bxc3 wins the loose queen on c3.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "b4c3",
+          "relevance": "secondary",
+          "value": 890,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-14"
+    },
+    "classificationMs": 36.50220000000081,
+    "positionHeadline": [
+      {
+        "id": "pin",
+        "label": "Pin",
+        "source": "available",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "e7b4",
+        "value": 570,
+        "evidence": "Bb4 exploits the queen on c3, pinned to the king on e1 by the bishop on b4. No legal reply avoids material loss in the immediate exchange.",
+        "relevance": "primary"
+      }
+    ],
+    "positionCandidates": [
+      {
+        "moves": [
+          "Bb4",
+          "O-O",
+          "Bxc3",
+          "Nxc3",
+          "Qxc3",
+          "a4",
+          "Qa5",
+          "Rfd1",
+          "f6",
+          "g3",
+          "Rf8",
+          "Rxd7",
+          "Kxd7",
+          "h4",
+          "Rd8"
+        ],
+        "motifs": [
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e7b4",
+            "value": 570,
+            "evidence": "Bb4 exploits the queen on c3, pinned to the king on e1 by the bishop on b4. No legal reply avoids material loss in the immediate exchange.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e7b4",
+            "value": 570,
+            "evidence": "Bb4 exploits the queen on c3, pinned to the king on e1 by the bishop on b4. No legal reply avoids material loss in the immediate exchange.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxc3 wins the loose queen on c3.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "b4c3",
+            "relevance": "secondary",
+            "value": 890,
+            "actor": "black"
+          }
+        ]
+      }
+    ]
+  }
+]

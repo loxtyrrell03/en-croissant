@@ -177,9 +177,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 88.22959999999966,
+    "classificationMs": 40.49989999999889,
     "positionHeadline": [
       {
         "id": "fork",
@@ -502,9 +502,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 62.13499999999931,
+    "classificationMs": 45.81680000000051,
     "positionHeadline": [
       {
         "id": "interference",
@@ -819,9 +819,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 52.44999999999982,
+    "classificationMs": 45.024499999999534,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -1064,9 +1064,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 47.33919999999944,
+    "classificationMs": 38.54150000000118,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -1376,9 +1376,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 33.116799999999785,
+    "classificationMs": 32.85480000000098,
     "positionHeadline": [
       {
         "id": "hangingPiece",
@@ -1652,9 +1652,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 65.71030000000064,
+    "classificationMs": 52.3282999999974,
     "positionHeadline": [
       {
         "id": "interference",
@@ -1922,9 +1922,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 0.5195999999996275,
+    "classificationMs": 0.3860999999997148,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -2200,9 +2200,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 0.5749000000014348,
+    "classificationMs": 0.544899999997142,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -2254,7 +2254,7 @@
       "middlegame",
       "trappedPiece"
     ],
-    "judgement": "Open ranking issue: Qxb2 wins the bishop and exposes the trapped Ra1. The trapped rook's causal importance needs stronger proof/ranking than the current bishop headline.",
+    "judgement": "Improved: the trapped Ra1 is primary over the bishop capture. Every defence is checked, including Qc3 Bb4 and Qd4 Qxd4; the rook's nominal immobility alone is not the proof. An open first rank or the missing pinning bishop withholds the trap.",
     "unrestricted": [
       {
         "depth": 16,
@@ -2436,6 +2436,17 @@
     "classification": {
       "motifs": [
         {
+          "id": "trappedPiece",
+          "label": "Trapped Rook",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c2b2",
+          "value": 830,
+          "evidence": "Qxb2 attacks the rook on a1. It has no safe move, including captures. Defending it also concedes material: Qc3 is answered by Bb4; Qd4 is answered by Qxd4. Every legal defence loses material through the trapped piece or its defender. This wins additional material beyond the initial capture.",
+          "relevance": "primary"
+        },
+        {
           "id": "hangingPiece",
           "label": "Hanging Piece",
           "confidence": "high",
@@ -2443,23 +2454,24 @@
           "source": "available",
           "ply": 1,
           "moveUci": "c2b2",
-          "relevance": "primary",
-          "value": 330
-        },
-        {
-          "id": "trappedPiece",
-          "label": "Trapped Piece",
-          "confidence": "medium",
-          "evidence": "Trapped Piece appears on Qxb2 at ply 1 of the current best line.",
-          "source": "available",
-          "ply": 1,
-          "moveUci": "c2b2",
           "relevance": "secondary",
-          "value": 830
+          "value": 330
         }
       ],
       "timeline": [
         {
+          "id": "trappedPiece",
+          "label": "Trapped Rook",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c2b2",
+          "value": 830,
+          "evidence": "Qxb2 attacks the rook on a1. It has no safe move, including captures. Defending it also concedes material: Qc3 is answered by Bb4; Qd4 is answered by Qxd4. Every legal defence loses material through the trapped piece or its defender. This wins additional material beyond the initial capture.",
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
           "id": "hangingPiece",
           "label": "Hanging Piece",
           "confidence": "high",
@@ -2467,20 +2479,8 @@
           "source": "available",
           "ply": 1,
           "moveUci": "c2b2",
-          "relevance": "primary",
-          "value": 330,
-          "actor": "black"
-        },
-        {
-          "id": "trappedPiece",
-          "label": "Trapped Piece",
-          "confidence": "medium",
-          "evidence": "Trapped Piece appears on Qxb2 at ply 1 of the current best line.",
-          "source": "available",
-          "ply": 1,
-          "moveUci": "c2b2",
           "relevance": "secondary",
-          "value": 830,
+          "value": 330,
           "actor": "black"
         },
         {
@@ -2496,20 +2496,20 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 91.23630000000048,
+    "classificationMs": 39.777099999999336,
     "positionHeadline": [
       {
-        "id": "hangingPiece",
-        "label": "Hanging Piece",
-        "confidence": "high",
-        "evidence": "Qxb2 wins the loose bishop on b2.",
+        "id": "trappedPiece",
+        "label": "Trapped Rook",
         "source": "available",
+        "confidence": "high",
         "ply": 1,
         "moveUci": "c2b2",
-        "relevance": "primary",
-        "value": 330
+        "value": 830,
+        "evidence": "Qxb2 attacks the rook on a1. It has no safe move, including captures. Defending it also concedes material: Qc3 is answered by Bb4; Qd4 is answered by Qxd4. Every legal defence loses material through the trapped piece or its defender. This wins additional material beyond the initial capture.",
+        "relevance": "primary"
       }
     ],
     "positionCandidates": [
@@ -2537,6 +2537,17 @@
         ],
         "motifs": [
           {
+            "id": "trappedPiece",
+            "label": "Trapped Rook",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c2b2",
+            "value": 830,
+            "evidence": "Qxb2 attacks the rook on a1. It has no safe move, including captures. Defending it also concedes material: Qc3 is answered by Bb4; Qd4 is answered by Qxd4. Every legal defence loses material through the trapped piece or its defender. This wins additional material beyond the initial capture.",
+            "relevance": "primary"
+          },
+          {
             "id": "hangingPiece",
             "label": "Hanging Piece",
             "confidence": "high",
@@ -2544,23 +2555,24 @@
             "source": "available",
             "ply": 1,
             "moveUci": "c2b2",
-            "relevance": "primary",
-            "value": 330
-          },
-          {
-            "id": "trappedPiece",
-            "label": "Trapped Piece",
-            "confidence": "medium",
-            "evidence": "Trapped Piece appears on Qxb2 at ply 1 of the current best line.",
-            "source": "available",
-            "ply": 1,
-            "moveUci": "c2b2",
             "relevance": "secondary",
-            "value": 830
+            "value": 330
           }
         ],
         "timeline": [
           {
+            "id": "trappedPiece",
+            "label": "Trapped Rook",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c2b2",
+            "value": 830,
+            "evidence": "Qxb2 attacks the rook on a1. It has no safe move, including captures. Defending it also concedes material: Qc3 is answered by Bb4; Qd4 is answered by Qxd4. Every legal defence loses material through the trapped piece or its defender. This wins additional material beyond the initial capture.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
             "id": "hangingPiece",
             "label": "Hanging Piece",
             "confidence": "high",
@@ -2568,20 +2580,8 @@
             "source": "available",
             "ply": 1,
             "moveUci": "c2b2",
-            "relevance": "primary",
-            "value": 330,
-            "actor": "black"
-          },
-          {
-            "id": "trappedPiece",
-            "label": "Trapped Piece",
-            "confidence": "medium",
-            "evidence": "Trapped Piece appears on Qxb2 at ply 1 of the current best line.",
-            "source": "available",
-            "ply": 1,
-            "moveUci": "c2b2",
             "relevance": "secondary",
-            "value": 830,
+            "value": 330,
             "actor": "black"
           },
           {
@@ -2820,9 +2820,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 59.07389999999941,
+    "classificationMs": 71.59869999999864,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -2873,7 +2873,7 @@
       "short",
       "trappedPiece"
     ],
-    "judgement": "Provisional: Kd6 traps the rook as expected in the fresh engine line, but the generic trapped-piece acceptance still needs branch-based verification.",
+    "judgement": "Improved: Kd6 has a branch-based trapped-rook proof. Every legal defence concedes material; Rxb5 Rxb5 loses the exchange, so the proved minimum is 170 cp rather than the rook's full value.",
     "unrestricted": [
       {
         "depth": 16,
@@ -3054,44 +3054,44 @@
       "motifs": [
         {
           "id": "trappedPiece",
-          "label": "Trapped Piece",
-          "confidence": "medium",
-          "evidence": "Trapped Piece appears on Kd6 at ply 1 of the current best line.",
+          "label": "Trapped Rook",
           "source": "available",
+          "confidence": "high",
           "ply": 1,
           "moveUci": "e7d6",
-          "relevance": "primary",
-          "value": 170
+          "value": 170,
+          "evidence": "Kd6 attacks the rook on c5. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece.",
+          "relevance": "primary"
         }
       ],
       "timeline": [
         {
           "id": "trappedPiece",
-          "label": "Trapped Piece",
-          "confidence": "medium",
-          "evidence": "Trapped Piece appears on Kd6 at ply 1 of the current best line.",
+          "label": "Trapped Rook",
           "source": "available",
+          "confidence": "high",
           "ply": 1,
           "moveUci": "e7d6",
-          "relevance": "primary",
           "value": 170,
+          "evidence": "Kd6 attacks the rook on c5. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece.",
+          "relevance": "primary",
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 21.37800000000061,
+    "classificationMs": 19.800500000001193,
     "positionHeadline": [
       {
         "id": "trappedPiece",
-        "label": "Trapped Piece",
-        "confidence": "medium",
-        "evidence": "Trapped Piece appears on Kd6 at ply 1 of the current best line.",
+        "label": "Trapped Rook",
         "source": "available",
+        "confidence": "high",
         "ply": 1,
         "moveUci": "e7d6",
-        "relevance": "primary",
-        "value": 170
+        "value": 170,
+        "evidence": "Kd6 attacks the rook on c5. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece.",
+        "relevance": "primary"
       }
     ],
     "positionCandidates": [
@@ -3121,27 +3121,27 @@
         "motifs": [
           {
             "id": "trappedPiece",
-            "label": "Trapped Piece",
-            "confidence": "medium",
-            "evidence": "Trapped Piece appears on Kd6 at ply 1 of the current best line.",
+            "label": "Trapped Rook",
             "source": "available",
+            "confidence": "high",
             "ply": 1,
             "moveUci": "e7d6",
-            "relevance": "primary",
-            "value": 170
+            "value": 170,
+            "evidence": "Kd6 attacks the rook on c5. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece.",
+            "relevance": "primary"
           }
         ],
         "timeline": [
           {
             "id": "trappedPiece",
-            "label": "Trapped Piece",
-            "confidence": "medium",
-            "evidence": "Trapped Piece appears on Kd6 at ply 1 of the current best line.",
+            "label": "Trapped Rook",
             "source": "available",
+            "confidence": "high",
             "ply": 1,
             "moveUci": "e7d6",
-            "relevance": "primary",
             "value": 170,
+            "evidence": "Kd6 attacks the rook on c5. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece.",
+            "relevance": "primary",
             "actor": "black"
           }
         ]
@@ -3451,9 +3451,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-13"
+      "motifClassifierVersion": "site-55.adapter-14"
     },
-    "classificationMs": 30.43000000000029,
+    "classificationMs": 28.128499999998894,
     "positionHeadline": [
       {
         "id": "hangingPiece",

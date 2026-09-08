@@ -138,6 +138,87 @@ async function analyse(engine: string, fen: string, searchMove?: string) {
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
     test.skipIf(!engine || !existsSync(engine))(
+        "judge trapped-piece lessons against defensive resources",
+        async () => {
+            const examples = [
+                {
+                    name: "Trapped rook behind the bishop",
+                    fen: "4k2r/3nbppp/8/4p3/4P3/4Q3/PBq2PPP/RN2K2R b KQk - 0 17",
+                    move: "c2b2",
+                    expected: "trappedPiece",
+                    why: "The extra rook win is more important than the initial bishop capture. Qc3 and Qd4 need explicit refutations, not an assertion that the rook cannot be defended.",
+                },
+                {
+                    name: "Knight removed: rook has an escape",
+                    fen: "4k2r/3nbppp/8/4p3/4P3/4Q3/PBq2PPP/R3K2R b KQk - 0 17",
+                    move: "c2b2",
+                    expected: "hangingPiece",
+                    why: "Winning the bishop remains real, but an open first rank permits a safe rook move.",
+                },
+                {
+                    name: "Immediate queen win outranks the additional rook",
+                    fen: "4k2r/3nbppp/8/4p3/4P3/8/PQq2PPP/RN2K2R b KQk - 0 17",
+                    move: "c2b2",
+                    expected: "hangingPiece",
+                    why: "The 900 cp queen capture is the primary lesson; the further trapped rook is secondary.",
+                },
+                {
+                    name: "No bishop to punish the rook defender",
+                    fen: "4k2r/3n1ppp/8/4p3/4P3/4Q3/PBq2PPP/RN2K2R b KQk - 0 17",
+                    move: "c2b2",
+                    expected: "hangingPiece",
+                    why: "Qc3 defends Ra1 and no Bb4 pin is available. Do not invent a trap from the rook's lack of flight squares.",
+                },
+                {
+                    name: "Actual Qc3 defence meets the pin",
+                    fen: "4k2r/3nbppp/8/4p3/4P3/2Q5/Pq3PPP/RN2K2R b KQk - 1 18",
+                    move: "e7b4",
+                    expected: "pin",
+                    why: "Bb4 pins the queen defending Ra1 to Ke1; every legal answer still concedes the queen or rook.",
+                },
+            ];
+            const report = [];
+            for (const item of examples) {
+                const unrestricted = [...(await analyse(engine, item.fen)).values()];
+                const candidate = [...(await analyse(engine, item.fen, item.move)).values()][0];
+                const started = performance.now();
+                const classification = classifyPositionTacticalMotifs({
+                    fen: item.fen,
+                    ...candidate,
+                    rootCp: candidate.cp,
+                });
+                const classificationMs = performance.now() - started;
+                const scan = buildLiveTacticalScan({
+                    fen: item.fen,
+                    ...unrestricted[0],
+                    engineName: "Stockfish",
+                    variations: unrestricted,
+                });
+                report.push({
+                    ...item,
+                    unrestricted,
+                    candidate,
+                    classification,
+                    classificationMs,
+                    positionHeadline: scan.motifs,
+                    positionCandidates: scan.variations.map((v) => ({
+                        moves: v.lineSan,
+                        motifs: v.motifs,
+                        timeline: v.timeline,
+                    })),
+                });
+            }
+            if (process.env.TACTICAL_TRAP_REPORT)
+                writeFileSync(process.env.TACTICAL_TRAP_REPORT, JSON.stringify(report, null, 2));
+            for (const item of report)
+                expect({
+                    name: item.name,
+                    primary: item.classification.motifs[0]?.id ?? null,
+                }).toEqual({ name: item.name, primary: item.expected });
+        },
+        180000,
+    );
+    test.skipIf(!engine || !existsSync(engine))(
         "audit real development puzzles with fresh engine choices",
         async () => {
             const fixture: {
@@ -195,6 +276,8 @@ describe("expert tactical judgement with fresh engine lines", () => {
                 ["1DoTa", "fork"],
                 ["1GRFo", "interference"],
                 ["48ION", "interference"],
+                ["6mAvx", "trappedPiece"],
+                ["8mguL", "trappedPiece"],
                 ["2QybO", "discoveredAttack"],
             ]) {
                 const item = report.find((entry) => entry.id === `lichess:${id}`)!;

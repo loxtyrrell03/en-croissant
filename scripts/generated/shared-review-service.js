@@ -9652,6 +9652,128 @@ function verifiedFork(step) {
 function hasConcreteThreat(step) {
 	return winningTargets(step.after, step.move.to, step.before.turn).length > 0 || Boolean(discoveredEvidence([step], "available")) || Boolean(interferenceProof(step, "available"));
 }
+var trapProofCache = /* @__PURE__ */ new Map();
+function proveTrappedMaterial(step, target, nodeLimit = 256, pinProofLimit = 8) {
+	const key = `${makeFen(step.before.toSetup())}:${step.uci}:${target}`;
+	const cacheable = nodeLimit === 256 && pinProofLimit === 8;
+	if (cacheable && trapProofCache.has(key)) return trapProofCache.get(key);
+	const side = step.before.turn;
+	const initial = step.capture + (step.move.promotion ? VALUE[step.move.promotion] - VALUE.pawn : 0);
+	const replies = legalMoves(step.after);
+	const defenders = [];
+	let minimum = Infinity;
+	let nodes = nodeLimit;
+	let pinProofs = pinProofLimit;
+	const capture = (pos, to) => {
+		let best = -VALUE.king;
+		let san = "";
+		for (const move of legalMoves(pos).filter((m) => m.to === to)) {
+			const gain = tacticalExchangeGain(pos, move);
+			if (gain > best) {
+				best = gain;
+				san = makeSan(pos, move);
+			}
+		}
+		return {
+			gain: best,
+			san
+		};
+	};
+	let result = null;
+	try {
+		for (const reply of replies) {
+			if (--nodes < 0) throw new Error("Trap proof budget exhausted");
+			const next = step.after.clone();
+			next.play(reply);
+			const balance = initial - capturedValue(step.after, reply) - (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0);
+			const victim = relocatedSquare({
+				before: step.after,
+				after: next,
+				move: reply
+			}, target);
+			if (victim === void 0) throw new Error("Unknown trapped-piece identity");
+			const direct = capture(next, victim);
+			if (balance + direct.gain >= initial + 100) {
+				minimum = Math.min(minimum, balance + direct.gain);
+				continue;
+			}
+			if (reply.from === target || next.isCheck() || next.board.get(reply.to)?.role === "king") throw new Error("Safe escape or checking/king defence");
+			const unprotected = next.clone();
+			unprotected.board.take(reply.to);
+			if (capture(unprotected, victim).gain - direct.gain < 100) throw new Error("Not a causal defender");
+			let answer = capture(next, reply.to);
+			if (balance + answer.gain < initial + 100) for (const move of legalMoves(next)) {
+				if (--nodes < 0) throw new Error("Trap proof budget exhausted");
+				if (capturedValue(next, move) || move.promotion) continue;
+				const after = next.clone();
+				after.play(move);
+				const continuation = {
+					before: next,
+					after,
+					move,
+					uci: makeUci(move),
+					san: makeSan(next, move),
+					capture: capturedValue(next, move),
+					balance: 0
+				};
+				if (!relevantRayTactics(continuation).some((ray) => ray.kind === "pin" && ray.front === reply.to && after.board.get(ray.rear)?.role === "king")) continue;
+				if (--pinProofs < 0) throw new Error("Trap pin proof budget exhausted");
+				const proof = materialThreatProof(continuation, [victim, reply.to], [...after.board[side]]);
+				if (proof.kind === "proven" && proof.gain > answer.gain) answer = {
+					gain: proof.gain,
+					san: continuation.san
+				};
+				if (balance + answer.gain >= initial + 100) break;
+			}
+			if (balance + answer.gain < initial + 100) throw new Error("Defender saves the trapped piece");
+			minimum = Math.min(minimum, balance + answer.gain);
+			defenders.push({
+				reply: makeSan(step.after, reply),
+				answer: answer.san
+			});
+		}
+		if (replies.length && Number.isFinite(minimum)) result = {
+			gain: minimum,
+			defenders
+		};
+	} catch {}
+	if (cacheable) {
+		trapProofCache.set(key, result);
+		if (trapProofCache.size > 256) trapProofCache.delete(trapProofCache.keys().next().value);
+	}
+	return result;
+}
+/** A trap concerns this named piece, not a favourable endpoint elsewhere.
+* Include every defence and every flight/counter-capture by the victim.
+* Extra material must be won beyond the initiating capture itself. Checks
+* alone can immobilize a piece temporarily, so those are not trap proofs. */
+function trappedPieceProof(step, source) {
+	if (step.after.isCheck()) return null;
+	const targets = winningTargets(step.after, step.move.to, step.before.turn).filter((target) => step.after.board.get(target)?.role !== "king");
+	const proofs = [];
+	for (const target of targets) {
+		const proof = proveTrappedMaterial(step, target);
+		const initial = step.capture + (step.move.promotion ? VALUE[step.move.promotion] - VALUE.pawn : 0);
+		if (!proof || proof.gain - initial < 100) continue;
+		const victim = step.after.board.get(target);
+		const motif = {
+			id: "trappedPiece",
+			label: `Trapped ${victim.role[0].toUpperCase()}${victim.role.slice(1)}`,
+			source,
+			confidence: "high",
+			ply: 1,
+			moveUci: step.uci,
+			value: proof.gain,
+			evidence: `${step.san} attacks the ${victim.role} on ${makeSquare(target)}. It has no safe move, including captures.${proof.defenders.length ? ` Defending it also concedes material: ${proof.defenders.slice(0, 2).map((d) => `${d.reply} is answered by ${d.answer}`).join("; ")}. Every legal defence loses material through the trapped piece or its defender.` : " Every legal defence still permits a profitable capture of that same piece."}${step.capture ? " This wins additional material beyond the initial capture." : ""}`
+		};
+		proofs.push({
+			motif,
+			target,
+			gain: proof.gain
+		});
+	}
+	return proofs.sort((a, b) => b.gain - a.gain)[0] ?? null;
+}
 var DISCOVERED_THEMES = new Set([
 	"discoveredAttack",
 	"discoveredCheck",
@@ -10171,8 +10293,11 @@ function episodeEnd(steps) {
 	}
 	return steps.length;
 }
-function causeRank(motif) {
-	return (MECHANISMS.has(motif.id) ? 0 : MATE.test(motif.id) ? 1 : 2) * 1e3 + (motif.ply ?? 100) * 20 + Math.max(0, [
+function trapIsMainCause(motif, directGain) {
+	return motif.id === "trappedPiece" && motif.ply === 1 && motif.confidence === "high" && (motif.value ?? 0) - directGain > directGain;
+}
+function causeRank(motif, directGain = 0) {
+	return (MECHANISMS.has(motif.id) || trapIsMainCause(motif, directGain) ? 0 : MATE.test(motif.id) ? 1 : 2) * 1e3 + (motif.ply ?? 100) * 20 + Math.max(0, [
 		"deflection",
 		"capturingDefender",
 		"interference",
@@ -10180,6 +10305,7 @@ function causeRank(motif) {
 		"fork",
 		"pin",
 		"skewer",
+		"trappedPiece",
 		"intermezzo",
 		"doubleCheck",
 		"discoveredCheck",
@@ -10242,6 +10368,11 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			...interference.motif,
 			ply: index + 1
 		});
+		const trapped = trappedPieceProof(episode[index], proposals[0]?.source ?? "available");
+		if (trapped) candidates.push({
+			...trapped.motif,
+			ply: index + 1
+		});
 	}
 	const rayEvidence = rayMaterialEvidence(steps[0], proposals[0]?.source ?? "available", typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= -30);
 	candidates.push(...rayEvidence);
@@ -10280,7 +10411,11 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		}];
 	}
 	for (let proposal of proposals) {
-		if (DISCOVERED_THEMES.has(proposal.id) || ["deflection", "interference"].includes(proposal.id)) continue;
+		if (DISCOVERED_THEMES.has(proposal.id) || [
+			"deflection",
+			"interference",
+			"trappedPiece"
+		].includes(proposal.id)) continue;
 		if (proposal.id === "promotion" || proposal.id === "underPromotion") {
 			const index = episode.findIndex((s) => s.before.turn === attacker && s.move.promotion && (proposal.id !== "underPromotion" || s.move.promotion !== "queen"));
 			if (index < 0) continue;
@@ -10342,6 +10477,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		});
 	}
 	const root = steps[0];
+	const directGain = root.capture ? Math.max(0, tacticalExchangeGain(root.before, root.move)) : 0;
 	if (root.capture >= 320 && tacticalExchangeGain(root.before, root.move) >= 100 && !candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)) {
 		const victim = root.before.board.get(root.move.to);
 		if (victim) candidates.push({
@@ -10357,6 +10493,11 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 	const specificMate = candidates.find((m) => /Mate$/.test(m.id));
 	const fork = candidates.find((m) => m.id === "fork");
 	const filtered = candidates.filter((m) => {
+		if (m.id === "trappedPiece" && m.ply && candidates.some((other) => other.id === "pin" && other.ply === m.ply)) {
+			const step = steps[m.ply - 1];
+			const trap = trappedPieceProof(step, m.source);
+			if (trap && relevantRayTactics(step).some((ray) => ray.kind === "pin" && ray.front === trap.target)) return false;
+		}
 		if (m.id === "clearance" && candidates.some((other) => other.ply === m.ply && DISCOVERED_THEMES.has(other.id))) return false;
 		if (specificMate && /^mate(?:In\d+)?$/.test(m.id) && !(preparation && m.id === "mateIn3" && m.ply === 1)) return false;
 		if (fork?.ply === m.ply && [
@@ -10370,10 +10511,10 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		return true;
 	}).sort((a, b) => {
 		const matingPriority = (m) => mate && (m.value === 1e4 || MATE.test(m.id)) ? 0 : 1;
-		return matingPriority(a) - matingPriority(b) || causeRank(a) - causeRank(b);
+		return matingPriority(a) - matingPriority(b) || causeRank(a, directGain) - causeRank(b, directGain);
 	});
 	const immediateLoose = filtered.find((m) => m.id === "hangingPiece" && m.ply === 1);
-	if (immediateLoose && !filtered.some((m) => MECHANISMS.has(m.id) && m.ply === 1)) {
+	if (immediateLoose && !filtered.some((m) => m.ply === 1 && (MECHANISMS.has(m.id) || trapIsMainCause(m, directGain)))) {
 		filtered.splice(filtered.indexOf(immediateLoose), 1);
 		filtered.unshift(immediateLoose);
 	}
@@ -10425,6 +10566,13 @@ function compareMaterialCause(actual, better, motif) {
 			capturers = proof.capturers;
 			gain = proof.gain;
 		}
+	} else if (motif.id === "trappedPiece") {
+		const proof = trappedPieceProof(step, motif.source);
+		if (proof) {
+			targets = [proof.target];
+			capturers = [...step.after.board[step.before.turn]];
+			gain = proof.gain;
+		}
 	}
 	if (gain === null) return null;
 	const mapped = [];
@@ -10437,6 +10585,19 @@ function compareMaterialCause(actual, better, motif) {
 		mapped.push(target);
 	}
 	if (!mapped.length) return null;
+	if (motif.id === "trappedPiece") {
+		const trap = proveTrappedMaterial(alternative, mapped[0]);
+		if (trap && trap.gain >= gain) return {
+			comparison: "persists",
+			comparisonEvidence: `The same reply still forces material loss through the trapped ${alternative.after.board.get(mapped[0]).role} after ${better[0].san}.`
+		};
+		const flight = materialThreatProof(alternative, mapped, capturers);
+		if (flight.kind === "refuted" && legalMoves(alternative.after).some((m) => m.from === mapped[0] && makeSan(alternative.after, m) === flight.defence)) return {
+			comparison: "prevented",
+			comparisonEvidence: `After ${better[0].san}, ${flight.defence} saves the ${alternative.after.board.get(mapped[0]).role} from ${alternative.san}.`
+		};
+		return null;
+	}
 	const proof = materialThreatProof(alternative, mapped, capturers);
 	if (proof.kind === "refuted" && (!conditional || !proof.checking)) return {
 		comparison: "prevented",
@@ -10474,6 +10635,12 @@ function materialLesson(steps, motif) {
 	} else if (motif.id === "fork") {
 		targets = winningTargets(step.after, step.move.to, step.before.turn);
 		gain = targets.length >= 2 ? materialThreatGain(step, targets, [step.move.to]) : null;
+	} else if (motif.id === "trappedPiece") {
+		const proof = trappedPieceProof(step, motif.source);
+		if (proof) {
+			targets = [proof.target, ...step.capture ? [step.move.to] : []];
+			gain = proof.gain;
+		}
 	} else if (DISCOVERED_THEMES.has(motif.id)) {
 		const proof = discoveredEvidence(steps, motif.source);
 		if (proof) {
@@ -10565,7 +10732,8 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 		} else if ([
 			"pin",
 			"skewer",
-			"capturingDefender"
+			"capturingDefender",
+			"trappedPiece"
 		].includes(motif.id)) {
 			const material = compareMaterialCause(actual, better, motif);
 			if (material) return {
@@ -10617,7 +10785,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 13;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 14;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
