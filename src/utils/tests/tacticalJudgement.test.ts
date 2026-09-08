@@ -191,6 +191,60 @@ async function analyse(engine: string, fen: string, searchMove?: string) {
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(!engine || !process.env.TACTICAL_EXPANSION_ENGINE_REPORT)(
+        "audit selected findings from the tag-blind expansion",
+        async () => {
+            const fixture = JSON.parse(
+                readFileSync("benchmarks/tactical-relevance/expanded-development.json", "utf8"),
+            ) as {
+                cases: Array<{
+                    id: string;
+                    startFen: string;
+                    bestLine: string[];
+                    sourceGameUrl: string;
+                }>;
+            };
+            const selected = ["GIB50", "vztmO", "wh6Ac", "fVRuW", "JaKHo", "ouIHI", "CSh8J"];
+            const report = [];
+            for (const id of selected) {
+                const item = fixture.cases.find((item) => item.id === `lichess:${id}`)!;
+                const unrestricted = [...(await analyse(engine, item.startFen)).values()];
+                const candidate = [
+                    ...(await analyse(engine, item.startFen, item.bestLine[0])).values(),
+                ][0];
+                const started = performance.now();
+                const classification = classifyPositionTacticalMotifs({
+                    fen: item.startFen,
+                    ...candidate,
+                    rootCp: candidate.cp,
+                });
+                report.push({
+                    ...item,
+                    unrestricted,
+                    candidate,
+                    classification,
+                    classificationMs: performance.now() - started,
+                });
+            }
+            writeFileSync(
+                process.env.TACTICAL_EXPANSION_ENGINE_REPORT!,
+                JSON.stringify(report, null, 2),
+            );
+            for (const id of ["GIB50", "vztmO", "wh6Ac"])
+                expect(
+                    report.find((item) => item.id === `lichess:${id}`)?.classification.motifs[0]
+                        ?.id,
+                ).toBe("mateIn1");
+            expect(
+                report
+                    .find((item) => item.id === "lichess:JaKHo")
+                    ?.classification.motifs.map((m) => m.id),
+            ).not.toContain("intermezzo");
+            // Other entries are diagnostic. Successful engine searches do not
+            // imply correct or complete classification of those combinations.
+        },
+        180000,
+    );
     test.skipIf(!engine || !existsSync(engine))(
         "judge trapped-piece lessons against defensive resources",
         async () => {

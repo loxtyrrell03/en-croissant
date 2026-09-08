@@ -1,0 +1,1544 @@
+[
+  {
+    "id": "lichess:DVSJh",
+    "startFen": "8/5p2/1R6/6p1/1P2N1rk/4K2n/8/8 w - - 1 57",
+    "bestLine": [
+      "b6h6"
+    ],
+    "sourceGameUrl": "https://lichess.org/mOEDgNl8/black#112",
+    "san": [
+      "Rh6#"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "anastasiaMate",
+          "label": "Anastasia Mate",
+          "confidence": "medium",
+          "evidence": "Anastasia Mate appears on b6h6 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "b6h6",
+          "relevance": "primary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "anastasiaMate",
+          "label": "Anastasia Mate",
+          "confidence": "medium",
+          "evidence": "Anastasia Mate appears on b6h6 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "b6h6",
+          "relevance": "primary",
+          "value": 10000,
+          "actor": "white"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "b6h6",
+          "value": 10000,
+          "evidence": "Rh6# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 1.7923000000000684
+  },
+  {
+    "id": "lichess:007c6",
+    "startFen": "2kr3r/p2n2pp/2pB1bp1/5q2/2B5/8/PPP2PPP/3R1RK1 w - - 0 18",
+    "bestLine": [
+      "c4a6"
+    ],
+    "sourceGameUrl": "https://lichess.org/vqwzqZHC/black#34",
+    "san": [
+      "Ba6#"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "bodenMate",
+          "label": "Boden Mate",
+          "confidence": "medium",
+          "evidence": "Boden Mate appears on c4a6 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "c4a6",
+          "relevance": "primary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "bodenMate",
+          "label": "Boden Mate",
+          "confidence": "medium",
+          "evidence": "Boden Mate appears on c4a6 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "c4a6",
+          "relevance": "primary",
+          "value": 10000,
+          "actor": "white"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c4a6",
+          "value": 10000,
+          "evidence": "Ba6# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 10.51969999999983
+  },
+  {
+    "id": "lichess:fVRuW",
+    "startFen": "3r4/5p1k/2p4p/4q1pN/1p2pP2/2b1Q1P1/2P3K1/2R4R b - f3 0 40",
+    "bestLine": [
+      "e4f3",
+      "e3f3",
+      "d8d2",
+      "g2h3",
+      "f7f5",
+      "g3g4",
+      "f5g4",
+      "f3g4",
+      "d2d4"
+    ],
+    "sourceGameUrl": "https://lichess.org/Ejf8ow6J#79",
+    "san": [
+      "exf3+",
+      "Qxf3",
+      "Rd2+",
+      "Kh3",
+      "f5",
+      "g4",
+      "fxg4+",
+      "Qxg4",
+      "Rd4"
+    ],
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 22.215100000000348
+  },
+  {
+    "id": "lichess:K56tk",
+    "startFen": "r2q1r2/1bp1pk2/1p6/p3p1QP/8/2NP4/PPP1PP2/2KR4 w - - 1 22",
+    "bestLine": [
+      "g5g6"
+    ],
+    "sourceGameUrl": "https://lichess.org/o9UQkODe/black#42",
+    "san": [
+      "Qg6#"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "dovetailMate",
+          "label": "Dovetail Mate",
+          "confidence": "medium",
+          "evidence": "Dovetail Mate appears on g5g6 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "g5g6",
+          "relevance": "primary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "dovetailMate",
+          "label": "Dovetail Mate",
+          "confidence": "medium",
+          "evidence": "Dovetail Mate appears on g5g6 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "g5g6",
+          "relevance": "primary",
+          "value": 10000,
+          "actor": "white"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "g5g6",
+          "value": 10000,
+          "evidence": "Qg6# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 4.540399999999863
+  },
+  {
+    "id": "lichess:NKnZo",
+    "startFen": "2r1rqk1/p7/2b2Qp1/4p3/3p4/1P3P2/P6R/7K w - - 0 30",
+    "bestLine": [
+      "h2h8"
+    ],
+    "sourceGameUrl": "https://lichess.org/NhsymRXl/black#58",
+    "san": [
+      "Rh8#"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "killBoxMate",
+          "label": "Kill Box Mate",
+          "confidence": "medium",
+          "evidence": "Kill Box Mate appears on h2h8 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "h2h8",
+          "relevance": "primary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "killBoxMate",
+          "label": "Kill Box Mate",
+          "confidence": "medium",
+          "evidence": "Kill Box Mate appears on h2h8 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "h2h8",
+          "relevance": "primary",
+          "value": 10000,
+          "actor": "white"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "h2h8",
+          "value": 10000,
+          "evidence": "Rh8# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 8.978399999999965
+  },
+  {
+    "id": "lichess:5hjz7",
+    "startFen": "Nn5r/pp1k1p1p/3p4/4P3/3P2bR/6P1/P1P2N2/b3KB2 b - - 0 17",
+    "bestLine": [
+      "a1c3"
+    ],
+    "sourceGameUrl": "https://lichess.org/oUQxGPRf#33",
+    "san": [
+      "Bc3#"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "bodenMate",
+          "label": "Boden Mate",
+          "confidence": "medium",
+          "evidence": "Boden Mate appears on a1c3 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "a1c3",
+          "relevance": "primary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "bodenMate",
+          "label": "Boden Mate",
+          "confidence": "medium",
+          "evidence": "Boden Mate appears on a1c3 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "a1c3",
+          "relevance": "primary",
+          "value": 10000,
+          "actor": "black"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "a1c3",
+          "value": 10000,
+          "evidence": "Bc3# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 10.382200000000012
+  },
+  {
+    "id": "lichess:GIB50",
+    "startFen": "2Rr2k1/pR6/7p/r4pp1/4p1P1/P3P3/5P1P/6K1 w - - 2 31",
+    "bestLine": [
+      "c8d8"
+    ],
+    "sourceGameUrl": "https://lichess.org/yLTMw0nH/black#60",
+    "san": [
+      "Rxd8#"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Rxd8# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "c8d8",
+          "relevance": "primary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Rxd8# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "c8d8",
+          "relevance": "primary",
+          "value": 10000,
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 11.334200000000237
+  },
+  {
+    "id": "lichess:REAdh",
+    "startFen": "8/8/7R/r3kp2/2p2Np1/2P2nP1/5K1P/8 w - - 3 44",
+    "bestLine": [
+      "h6e6"
+    ],
+    "sourceGameUrl": "https://lichess.org/5IgAYhar/black#86",
+    "san": [
+      "Re6#"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "hookMate",
+          "label": "Hook Mate",
+          "confidence": "medium",
+          "evidence": "Hook Mate appears on h6e6 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "h6e6",
+          "relevance": "primary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "hookMate",
+          "label": "Hook Mate",
+          "confidence": "medium",
+          "evidence": "Hook Mate appears on h6e6 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "h6e6",
+          "relevance": "primary",
+          "value": 10000,
+          "actor": "white"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "h6e6",
+          "value": 10000,
+          "evidence": "Re6# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 7.6961999999998625
+  },
+  {
+    "id": "lichess:NGZzo",
+    "startFen": "r5k1/5p2/Br2p1p1/1PNpPb1q/3P4/4P1Q1/5K1P/6R1 w - - 0 33",
+    "bestLine": [
+      "c5d7",
+      "g8g7",
+      "d7b6"
+    ],
+    "sourceGameUrl": "https://lichess.org/7lzGil6H/black#64",
+    "san": [
+      "Nd7",
+      "Kg7",
+      "Nxb6"
+    ],
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 104.75189999999975
+  },
+  {
+    "id": "lichess:4Osgg",
+    "startFen": "5r2/bpp2q1k/p2pR1p1/3P4/1PP3QP/P7/1B4P1/7K b - - 3 32",
+    "bestLine": [
+      "f7f1",
+      "h1h2",
+      "f1g1",
+      "h2h3",
+      "g1h1",
+      "h3g3",
+      "a7f2"
+    ],
+    "sourceGameUrl": "https://lichess.org/pEUmwLlr#63",
+    "san": [
+      "Qf1+",
+      "Kh2",
+      "Qg1+",
+      "Kh3",
+      "Qh1+",
+      "Kg3",
+      "Bf2#"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "balestraMate",
+          "label": "Balestra Mate",
+          "confidence": "medium",
+          "evidence": "Balestra Mate appears on a7f2 at ply 7 of the current best line.",
+          "source": "available",
+          "ply": 7,
+          "moveUci": "a7f2",
+          "relevance": "primary",
+          "value": 10000
+        },
+        {
+          "id": "morphysMate",
+          "label": "Morphy's Mate",
+          "confidence": "medium",
+          "evidence": "Morphy's Mate appears on a7f2 at ply 7 of the current best line.",
+          "source": "available",
+          "ply": 7,
+          "moveUci": "a7f2",
+          "relevance": "secondary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "balestraMate",
+          "label": "Balestra Mate",
+          "confidence": "medium",
+          "evidence": "Balestra Mate appears on a7f2 at ply 7 of the current best line.",
+          "source": "available",
+          "ply": 7,
+          "moveUci": "a7f2",
+          "relevance": "primary",
+          "value": 10000,
+          "actor": "black"
+        },
+        {
+          "id": "morphysMate",
+          "label": "Morphy's Mate",
+          "confidence": "medium",
+          "evidence": "Morphy's Mate appears on a7f2 at ply 7 of the current best line.",
+          "source": "available",
+          "ply": 7,
+          "moveUci": "a7f2",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "black"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 7,
+          "moveUci": "a7f2",
+          "value": 10000,
+          "evidence": "Bf2# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 25.96060000000034
+  },
+  {
+    "id": "lichess:UCiYo",
+    "startFen": "8/2p3p1/2P4p/2bPp2P/kpK1PpP1/5P2/8/8 w - - 9 50",
+    "bestLine": [
+      "c4c5",
+      "b4b3",
+      "d5d6",
+      "c7d6",
+      "c5d6",
+      "b3b2",
+      "c6c7",
+      "b2b1q",
+      "c7c8q"
+    ],
+    "sourceGameUrl": "https://lichess.org/e3jcEqi6/black#98",
+    "san": [
+      "Kxc5",
+      "b3",
+      "d6",
+      "cxd6+",
+      "Kxd6",
+      "b2",
+      "c7",
+      "b1=Q",
+      "c8=Q"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "c4c5 wins the loose bishop on c5.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "c4c5",
+          "relevance": "primary",
+          "value": 330
+        }
+      ],
+      "timeline": [
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "c4c5 wins the loose bishop on c5.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "c4c5",
+          "relevance": "primary",
+          "value": 330,
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 31.971199999999953
+  },
+  {
+    "id": "lichess:CSh8J",
+    "startFen": "8/2P5/1n3k2/p7/P7/4NKp1/8/8 w - - 5 65",
+    "bestLine": [
+      "e3d5",
+      "b6d5",
+      "c7c8q"
+    ],
+    "sourceGameUrl": "https://lichess.org/seP4J8Tb/black#128",
+    "san": [
+      "Nd5+",
+      "Nxd5",
+      "c8=Q"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "promotion",
+          "label": "Promotion",
+          "confidence": "medium",
+          "evidence": "c8=Q promotes the pawn to a queen.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "c7c8q",
+          "relevance": "primary",
+          "value": 480
+        }
+      ],
+      "timeline": [
+        {
+          "id": "promotion",
+          "label": "Promotion",
+          "confidence": "medium",
+          "evidence": "c8=Q promotes the pawn to a queen.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "c7c8q",
+          "relevance": "primary",
+          "value": 480,
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 11.608500000000276
+  },
+  {
+    "id": "lichess:opGD7",
+    "startFen": "7k/1ppQ3p/p2b2p1/3p4/8/2P2q1P/PP2R3/3K4 b - - 3 40",
+    "bestLine": [
+      "f3f1",
+      "d1d2",
+      "d6f4"
+    ],
+    "sourceGameUrl": "https://lichess.org/3Rsa9ycS#79",
+    "san": [
+      "Qf1+",
+      "Kd2",
+      "Bf4+"
+    ],
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 8.012500000000728
+  },
+  {
+    "id": "lichess:fJrhT",
+    "startFen": "8/7R/5kp1/2R2p2/5n2/7P/1r6/5K2 b - - 1 45",
+    "bestLine": [
+      "b2b1",
+      "f1f2",
+      "f4d3",
+      "f2f3",
+      "d3c5"
+    ],
+    "sourceGameUrl": "https://lichess.org/l8sSle4i#89",
+    "san": [
+      "Rb1+",
+      "Kf2",
+      "Nd3+",
+      "Kf3",
+      "Nxc5"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "fork",
+          "label": "Fork",
+          "confidence": "high",
+          "evidence": "f4d3 forks the king on f2 and rook on c5. The line continues with d3c5, winning the rook.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "f4d3",
+          "relevance": "primary",
+          "value": 500
+        }
+      ],
+      "timeline": [
+        {
+          "id": "fork",
+          "label": "Fork",
+          "confidence": "high",
+          "evidence": "f4d3 forks the king on f2 and rook on c5. The line continues with d3c5, winning the rook.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "f4d3",
+          "relevance": "primary",
+          "value": 500,
+          "actor": "black"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "d3c5 wins the loose rook on c5.",
+          "source": "available",
+          "ply": 5,
+          "moveUci": "d3c5",
+          "relevance": "secondary",
+          "value": 500,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 13.612500000000182
+  },
+  {
+    "id": "lichess:MJZcU",
+    "startFen": "3R4/5k2/6p1/p7/3pNr2/2p2P1P/P5PK/8 b - - 3 41",
+    "bestLine": [
+      "f4e4",
+      "f3e4",
+      "c3c2",
+      "d8d4",
+      "c2c1q"
+    ],
+    "sourceGameUrl": "https://lichess.org/oHeYQKb9#81",
+    "san": [
+      "Rxe4",
+      "fxe4",
+      "c2",
+      "Rxd4",
+      "c1=Q"
+    ],
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 12.906500000000051
+  },
+  {
+    "id": "lichess:0RleZ",
+    "startFen": "2r5/R5p1/1p1nk2p/1P1Np3/4P3/7P/6P1/6K1 w - - 1 41",
+    "bestLine": [
+      "a7e7"
+    ],
+    "sourceGameUrl": "https://lichess.org/Og0h3Ig3/black#80",
+    "san": [
+      "Re7#"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "hookMate",
+          "label": "Hook Mate",
+          "confidence": "medium",
+          "evidence": "Hook Mate appears on a7e7 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "a7e7",
+          "relevance": "primary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "hookMate",
+          "label": "Hook Mate",
+          "confidence": "medium",
+          "evidence": "Hook Mate appears on a7e7 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "a7e7",
+          "relevance": "primary",
+          "value": 10000,
+          "actor": "white"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "a7e7",
+          "value": 10000,
+          "evidence": "Re7# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 3.175799999999981
+  },
+  {
+    "id": "lichess:Z5arb",
+    "startFen": "6k1/p4pp1/4bb1p/3qn3/8/1PNp4/P2Q1PPP/2B2RK1 b - - 2 23",
+    "bestLine": [
+      "e5f3",
+      "g2f3",
+      "f6c3"
+    ],
+    "sourceGameUrl": "https://lichess.org/PEouuNXC#45",
+    "san": [
+      "Nf3+",
+      "gxf3",
+      "Bxc3"
+    ],
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 9.190200000000004
+  },
+  {
+    "id": "lichess:iUj3e",
+    "startFen": "4rb1r/pp1q3p/4bkp1/2p4Q/3n4/PB1P4/1PPB1PPP/R3R1K1 w - - 0 19",
+    "bestLine": [
+      "h5e5",
+      "f6f7",
+      "e5h8"
+    ],
+    "sourceGameUrl": "https://lichess.org/RQB8EABI/black#36",
+    "san": [
+      "Qe5+",
+      "Kf7",
+      "Qxh8"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "skewer",
+          "label": "Skewer",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "h5e5",
+          "value": 500,
+          "evidence": "Qe5+ skewers the king on f6 and the rook on h8. No legal reply saves the rear target without conceding material.",
+          "relevance": "primary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "skewer",
+          "label": "Skewer",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "h5e5",
+          "value": 500,
+          "evidence": "Qe5+ skewers the king on f6 and the rook on h8. No legal reply saves the rear target without conceding material.",
+          "relevance": "primary",
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "e5h8 wins the loose rook on h8.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "e5h8",
+          "relevance": "secondary",
+          "value": 500,
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 69.52279999999973
+  },
+  {
+    "id": "lichess:Kvpvi",
+    "startFen": "3rk2r/ppp2ppp/8/2b1P3/3P1Bb1/4P3/P1P2PPP/R3KB1R b KQk - 0 11",
+    "bestLine": [
+      "c5b4",
+      "c2c3",
+      "b4c3"
+    ],
+    "sourceGameUrl": "https://lichess.org/Nv8lUjlo#21",
+    "san": [
+      "Bb4+",
+      "c3",
+      "Bxc3#"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "bodenMate",
+          "label": "Boden Mate",
+          "confidence": "medium",
+          "evidence": "Boden Mate appears on b4c3 at ply 3 of the current best line.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "b4c3",
+          "relevance": "primary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "bodenMate",
+          "label": "Boden Mate",
+          "confidence": "medium",
+          "evidence": "Boden Mate appears on b4c3 at ply 3 of the current best line.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "b4c3",
+          "relevance": "primary",
+          "value": 10000,
+          "actor": "black"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 3,
+          "moveUci": "b4c3",
+          "value": 10000,
+          "evidence": "Bxc3# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 19.037600000000566
+  },
+  {
+    "id": "lichess:hz3ed",
+    "startFen": "6k1/1p3p2/p1p3p1/3p2qp/3P4/1P4NP/P1QR1KP1/4r3 b - - 1 30",
+    "bestLine": [
+      "g5e3"
+    ],
+    "sourceGameUrl": "https://lichess.org/eh5TbQXm#59",
+    "san": [
+      "Qe3#"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "triangleMate",
+          "label": "Triangle Mate",
+          "confidence": "medium",
+          "evidence": "Triangle Mate appears on g5e3 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "g5e3",
+          "relevance": "primary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "triangleMate",
+          "label": "Triangle Mate",
+          "confidence": "medium",
+          "evidence": "Triangle Mate appears on g5e3 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "g5e3",
+          "relevance": "primary",
+          "value": 10000,
+          "actor": "black"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "g5e3",
+          "value": 10000,
+          "evidence": "Qe3# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 9.292300000000068
+  },
+  {
+    "id": "lichess:o8K8i",
+    "startFen": "8/7p/2q1p1pk/4Pp2/5PK1/P7/1Q6/8 w - f6 0 46",
+    "bestLine": [
+      "e5f6",
+      "c6h1",
+      "b2f2",
+      "e6e5",
+      "f2h4",
+      "h1h4",
+      "g4h4"
+    ],
+    "sourceGameUrl": "https://lichess.org/dzJG2gxf/black#90",
+    "san": [
+      "exf6",
+      "Qh1",
+      "Qf2",
+      "e5",
+      "Qh4+",
+      "Qxh4+",
+      "Kxh4"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "enPassant",
+          "label": "En Passant",
+          "confidence": "medium",
+          "evidence": "En Passant appears on e5f6 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "e5f6",
+          "relevance": "primary",
+          "value": 100
+        }
+      ],
+      "timeline": [
+        {
+          "id": "enPassant",
+          "label": "En Passant",
+          "confidence": "medium",
+          "evidence": "En Passant appears on e5f6 at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "e5f6",
+          "relevance": "primary",
+          "value": 100,
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 39.58919999999944
+  },
+  {
+    "id": "lichess:w1lKu",
+    "startFen": "2rr2k1/1p3pp1/4p3/p2pP1N1/1n1q4/1Q1B4/1P3P1P/5RK1 w - - 0 22",
+    "bestLine": [
+      "d3h7",
+      "g8f8",
+      "b3f3",
+      "d8d7",
+      "g5e6",
+      "f8e7",
+      "e6d4"
+    ],
+    "sourceGameUrl": "https://lichess.org/be0rLECF/black#42",
+    "san": [
+      "Bh7+",
+      "Kf8",
+      "Qf3",
+      "Rd7",
+      "Nxe6+",
+      "Ke7",
+      "Nxd4"
+    ],
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 56.95539999999983
+  },
+  {
+    "id": "lichess:rqXvZ",
+    "startFen": "5r1k/p1pr2pp/2p1Q3/6B1/3q4/b2P2P1/1P5P/2KR1R2 w - - 0 20",
+    "bestLine": [
+      "f1f8",
+      "a3f8",
+      "d1f1",
+      "d7d8",
+      "g5d8"
+    ],
+    "sourceGameUrl": "https://lichess.org/IyblvP2P/black#38",
+    "san": [
+      "Rxf8+",
+      "Bxf8",
+      "Rf1",
+      "Rd8",
+      "Bxd8"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "clearance",
+          "label": "Clearance",
+          "confidence": "medium",
+          "evidence": "Rxf8+ vacates f1 for Rf1 by another piece in this continuation.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "f1f8",
+          "relevance": "primary",
+          "value": 170
+        }
+      ],
+      "timeline": [
+        {
+          "id": "clearance",
+          "label": "Clearance",
+          "confidence": "medium",
+          "evidence": "Rxf8+ vacates f1 for Rf1 by another piece in this continuation.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "f1f8",
+          "relevance": "primary",
+          "value": 170,
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 111.14460000000054
+  },
+  {
+    "id": "lichess:ouIHI",
+    "startFen": "5rk1/pp2pp2/3pb1p1/7p/2r1P2P/1PbQ1P1N/K1PB2P1/3R3R b - - 0 19",
+    "bestLine": [
+      "c4a4",
+      "a2b1",
+      "a4a1"
+    ],
+    "sourceGameUrl": "https://lichess.org/pcnTzKC6#37",
+    "san": [
+      "Ra4+",
+      "Kb1",
+      "Ra1#"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "discoveredAttack",
+          "label": "Discovered Attack",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c4a4",
+          "evidence": "Ra4+ vacates c4, uncovering the bishop on e6 against the pawn on b3. The moving rook gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply allows material gain or mate with at most one extra checking move, allowing for legal recaptures. Captures and interpositions are included in this check.",
+          "value": 10000,
+          "relevance": "primary"
+        },
+        {
+          "id": "operaMate",
+          "label": "Opera Mate",
+          "confidence": "medium",
+          "evidence": "Opera Mate appears on a4a1 at ply 3 of the current best line.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "a4a1",
+          "relevance": "secondary",
+          "value": 10000
+        },
+        {
+          "id": "pin",
+          "label": "Pin",
+          "confidence": "medium",
+          "evidence": "c4a4 lets the bishop on e6 pin the pawn on b3 to the king on a2.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "c4a4",
+          "relevance": "secondary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "discoveredAttack",
+          "label": "Discovered Attack",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c4a4",
+          "evidence": "Ra4+ vacates c4, uncovering the bishop on e6 against the pawn on b3. The moving rook gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply allows material gain or mate with at most one extra checking move, allowing for legal recaptures. Captures and interpositions are included in this check.",
+          "value": 10000,
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "pin",
+          "label": "Pin",
+          "confidence": "medium",
+          "evidence": "c4a4 lets the bishop on e6 pin the pawn on b3 to the king on a2.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "c4a4",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "black"
+        },
+        {
+          "id": "operaMate",
+          "label": "Opera Mate",
+          "confidence": "medium",
+          "evidence": "Opera Mate appears on a4a1 at ply 3 of the current best line.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "a4a1",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "black"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 3,
+          "moveUci": "a4a1",
+          "value": 10000,
+          "evidence": "Ra1# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 4.878299999999399
+  },
+  {
+    "id": "lichess:eOCp9",
+    "startFen": "2r1r1k1/R5b1/2b1p1pp/1p3p2/2q1P3/2P1B1P1/1P3QBP/3R2K1 w - f6 0 29",
+    "bestLine": [
+      "f2f4",
+      "g7f8",
+      "f4e5"
+    ],
+    "sourceGameUrl": "https://lichess.org/FODxhu6Q/black#56",
+    "san": [
+      "Qf4",
+      "Bf8",
+      "Qe5"
+    ],
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 1.6581999999998516
+  },
+  {
+    "id": "lichess:erSYy",
+    "startFen": "8/1p2Ppk1/5qp1/2P5/8/7P/6PK/8 w - - 0 39",
+    "bestLine": [
+      "e7e8n",
+      "g7f8",
+      "e8f6"
+    ],
+    "sourceGameUrl": "https://lichess.org/KWmz9y1B/black#76",
+    "san": [
+      "e8=N+",
+      "Kf8",
+      "Nxf6"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "fork",
+          "label": "Fork",
+          "confidence": "high",
+          "evidence": "e7e8n forks the king on g7 and queen on f6. The line continues with e8f6, winning the queen.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "e7e8n",
+          "relevance": "primary",
+          "value": 1120
+        },
+        {
+          "id": "underPromotion",
+          "label": "Under-Promotion",
+          "confidence": "medium",
+          "evidence": "e8=N+ promotes the pawn to a knight.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "e7e8n",
+          "relevance": "secondary",
+          "value": 1120
+        }
+      ],
+      "timeline": [
+        {
+          "id": "fork",
+          "label": "Fork",
+          "confidence": "high",
+          "evidence": "e7e8n forks the king on g7 and queen on f6. The line continues with e8f6, winning the queen.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "e7e8n",
+          "relevance": "primary",
+          "value": 1120,
+          "actor": "white"
+        },
+        {
+          "id": "underPromotion",
+          "label": "Under-Promotion",
+          "confidence": "medium",
+          "evidence": "e8=N+ promotes the pawn to a knight.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "e7e8n",
+          "relevance": "secondary",
+          "value": 1120,
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "e8f6 wins the loose queen on f6.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "e8f6",
+          "relevance": "secondary",
+          "value": 900,
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 1.843499999999949
+  },
+  {
+    "id": "lichess:vztmO",
+    "startFen": "1k1r3r/1p1b4/p7/3pp1p1/P7/2Q3p1/1P2NqBP/2R1R2K b - - 1 25",
+    "bestLine": [
+      "h8h2"
+    ],
+    "sourceGameUrl": "https://lichess.org/ztEkx5X0#49",
+    "san": [
+      "Rxh2#"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Rxh2# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "h8h2",
+          "relevance": "primary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Rxh2# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "h8h2",
+          "relevance": "primary",
+          "value": 10000,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 2.6275000000005093
+  },
+  {
+    "id": "lichess:G8wdr",
+    "startFen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
+    "bestLine": [
+      "d7e5",
+      "d3c3",
+      "a5c3",
+      "b2c3",
+      "e5c4"
+    ],
+    "sourceGameUrl": "https://lichess.org/yI9Y2Aep#29",
+    "san": [
+      "Ne5",
+      "Qc3",
+      "Qxc3",
+      "bxc3",
+      "Nxc4"
+    ],
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 113.46329999999944
+  },
+  {
+    "id": "lichess:4GiqO",
+    "startFen": "8/7p/5p2/kp2p1p1/4P1P1/1P3P1P/1K6/8 b - - 5 38",
+    "bestLine": [
+      "a5b4",
+      "b2c2",
+      "b4a3"
+    ],
+    "sourceGameUrl": "https://lichess.org/4BUsJguL#75",
+    "san": [
+      "Kb4",
+      "Kc2",
+      "Ka3"
+    ],
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 0.2866999999996551
+  },
+  {
+    "id": "lichess:wh6Ac",
+    "startFen": "1k4r1/1p2Np2/p2p4/8/6qp/1P1PQ2p/P4P1K/2R1R3 b - - 0 35",
+    "bestLine": [
+      "g4g2"
+    ],
+    "sourceGameUrl": "https://lichess.org/THTuuIz2#69",
+    "san": [
+      "Qg2#"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Qg2# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "g4g2",
+          "relevance": "primary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Qg2# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "g4g2",
+          "relevance": "primary",
+          "value": 10000,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 3.194300000000112
+  },
+  {
+    "id": "lichess:NOaM1",
+    "startFen": "8/5k2/7p/5BpP/3BKb2/5P2/b7/8 b - - 28 52",
+    "bestLine": [
+      "a2b1",
+      "e4d5",
+      "b1f5"
+    ],
+    "sourceGameUrl": "https://lichess.org/eIS3TrpJ#103",
+    "san": [
+      "Bb1+",
+      "Kd5",
+      "Bxf5"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "skewer",
+          "label": "Skewer",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "a2b1",
+          "value": 330,
+          "evidence": "Bb1+ skewers the king on e4 and the bishop on f5. No legal reply saves the rear target without conceding material.",
+          "relevance": "primary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "skewer",
+          "label": "Skewer",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "a2b1",
+          "value": 330,
+          "evidence": "Bb1+ skewers the king on e4 and the bishop on f5. No legal reply saves the rear target without conceding material.",
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "b1f5 wins the loose bishop on f5.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "b1f5",
+          "relevance": "secondary",
+          "value": 330,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 7.489599999999882
+  },
+  {
+    "id": "lichess:JaKHo",
+    "startFen": "r1br2k1/p3bppp/1pp1p3/2n1P3/4NP2/2P3P1/PPB4P/R1BR2K1 b - - 1 15",
+    "bestLine": [
+      "d8d1",
+      "c2d1",
+      "c5e4"
+    ],
+    "sourceGameUrl": "https://lichess.org/AjM3oAEe#29",
+    "san": [
+      "Rxd1+",
+      "Bxd1",
+      "Nxe4"
+    ],
+    "result": {
+      "motifs": [
+        {
+          "id": "deflection",
+          "label": "Deflection",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d8d1",
+          "value": 320,
+          "evidence": "Rxd1+ draws the bishop from c2 to d1, removing its protection of the knight on e4. In this line, Bxd1 Nxe4 wins that target. Every legal defence concedes material or immediate mate.",
+          "relevance": "primary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "deflection",
+          "label": "Deflection",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d8d1",
+          "value": 320,
+          "evidence": "Rxd1+ draws the bishop from c2 to d1, removing its protection of the knight on e4. In this line, Bxd1 Nxe4 wins that target. Every legal defence concedes material or immediate mate.",
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "c5e4 wins the loose knight on e4.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "c5e4",
+          "relevance": "secondary",
+          "value": 320,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-18"
+    },
+    "classificationMs": 4.806500000000597
+  }
+]

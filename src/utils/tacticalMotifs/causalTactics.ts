@@ -1747,8 +1747,16 @@ function interferenceProof(step: TacticalReplayStep, source: TacticalMotifEviden
             step.before.board[enemy],
         );
         for (const target of targets) {
-            const victim = step.after.board.get(target)!;
-            if (victim.role === "king" || VALUE[victim.role] < 320) continue;
+            const victim = step.after.board.get(target);
+            // En passant removes a pre-move target from a different square.
+            // Only a surviving enemy piece can still need this defence.
+            if (
+                !victim ||
+                victim.color !== enemy ||
+                victim.role === "king" ||
+                VALUE[victim.role] < 320
+            )
+                continue;
             if (!between(defender, target).has(step.move.to)) continue;
             if (attacks(piece, defender, step.after.board.occupied).has(target)) continue;
             const attacksDefender = winningTargets(step.after, step.move.to, side).includes(
@@ -2205,10 +2213,50 @@ export function auditTacticalMotifs(
                 evidence: `${root.san} wins the loose ${victim.role} on ${makeSquare(root.move.to)}.`,
             });
     }
+    if (root.after.isCheckmate() && !candidates.some((m) => MATE.test(m.id) && m.ply === 1)) {
+        candidates.push({
+            id: "mateIn1",
+            label: "Checkmate",
+            source: proposals[0]?.source ?? "available",
+            confidence: "high",
+            ply: 1,
+            moveUci: root.uci,
+            value: 10000,
+            evidence: `${root.san} is checkmate: the king is in check and there is no legal reply.`,
+        });
+    }
     const specificMate = candidates.find((m) => /Mate$/.test(m.id));
     const fork = candidates.find((m) => m.id === "fork");
     const filtered = candidates
         .filter((m) => {
+            if (
+                m.id === "promotion" &&
+                candidates.some((other) => other.id === "underPromotion" && other.ply === m.ply)
+            )
+                return false;
+            if (
+                m.ply &&
+                steps[m.ply - 1]?.after.isCheckmate() &&
+                ["hangingPiece", "skewer", "fork", "attacking_undefended_piece"].includes(m.id)
+            )
+                return false;
+            if (
+                m.id === "mate" &&
+                candidates.some((other) => /^mateIn\d+$/.test(other.id) && other.ply === m.ply)
+            )
+                return false;
+            if (m.id === "intermezzo" && m.ply) {
+                const deflection = candidates.find(
+                    (other) => other.id === "deflection" && other.ply === m.ply,
+                );
+                const order = deflection ? intermediateCaptureProof(steps[m.ply - 1]) : null;
+                if (
+                    order &&
+                    (deflection?.value ?? 0) >= order.gain &&
+                    steps[m.ply + 1]?.move.to === order.deferred.to
+                )
+                    return false;
+            }
             if (
                 m.id === "intermezzo" &&
                 m.ply &&
@@ -2321,6 +2369,15 @@ export function auditTacticalMotifs(
     // its gain depends on a later mechanism (the defender can recapture).
     return filtered.map((motif, index) => ({
         ...motif,
+        ...(/^mate(?:In\d+)?$/.test(motif.id) &&
+        motif.ply &&
+        steps[motif.ply - 1]?.after.isCheckmate()
+            ? {
+                  label: "Checkmate",
+                  confidence: "high" as const,
+                  evidence: `${steps[motif.ply - 1].san} is checkmate: the king is in check and there is no legal reply.`,
+              }
+            : {}),
         relevance: index === 0 ? ("primary" as const) : ("secondary" as const),
         value:
             motif.value ??

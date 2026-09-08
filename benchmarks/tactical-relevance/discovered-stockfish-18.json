@@ -202,9 +202,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-17"
+      "motifClassifierVersion": "site-55.adapter-18"
     },
-    "classificationMs": 28.90020000000368,
+    "classificationMs": 7.567699999999604,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -406,9 +406,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-17"
+      "motifClassifierVersion": "site-55.adapter-18"
     },
-    "classificationMs": 0.8696999999956461,
+    "classificationMs": 0.5719000000026426,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -742,9 +742,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-17"
+      "motifClassifierVersion": "site-55.adapter-18"
     },
-    "classificationMs": 14.082699999999022,
+    "classificationMs": 8.510800000003655,
     "positionHeadline": [
       {
         "id": "discoveredCheck",
@@ -1151,9 +1151,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-17"
+      "motifClassifierVersion": "site-55.adapter-18"
     },
-    "classificationMs": 11.244700000002922,
+    "classificationMs": 8.70679999999993,
     "positionHeadline": [
       {
         "id": "discoveredCheck",
@@ -1425,9 +1425,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-17"
+      "motifClassifierVersion": "site-55.adapter-18"
     },
-    "classificationMs": 22.66229999999632,
+    "classificationMs": 17.513700000003155,
     "positionHeadline": [
       {
         "id": "doubleCheck",
@@ -1494,6 +1494,18 @@
             "relevance": "secondary",
             "value": 10000,
             "actor": "white"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5e8",
+            "value": 10000,
+            "evidence": "Re8# is checkmate: the king is in check and there is no legal reply.",
+            "relevance": "secondary",
+            "actor": "white"
           }
         ]
       },
@@ -1550,6 +1562,18 @@
             "moveUci": "b2f6",
             "relevance": "secondary",
             "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "b2f6",
+            "value": 10000,
+            "evidence": "Bxf6# is checkmate: the king is in check and there is no legal reply.",
+            "relevance": "secondary",
             "actor": "white"
           }
         ]
@@ -1707,11 +1731,23 @@
           "relevance": "secondary",
           "value": 10000,
           "actor": "white"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e2b5",
+          "value": 10000,
+          "evidence": "Bb5# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
+          "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-17"
+      "motifClassifierVersion": "site-55.adapter-18"
     },
-    "classificationMs": 1.8306000000011409,
+    "classificationMs": 1.250399999997171,
     "positionHeadline": [
       {
         "id": "doubleCheck",
@@ -1801,6 +1837,18 @@
             "relevance": "secondary",
             "value": 10000,
             "actor": "white"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e2b5",
+            "value": 10000,
+            "evidence": "Bb5# is checkmate: the king is in check and there is no legal reply.",
+            "relevance": "secondary",
+            "actor": "white"
           }
         ]
       },
@@ -1878,6 +1926,18 @@
             "moveUci": "e2g4",
             "relevance": "secondary",
             "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e2g4",
+            "value": 10000,
+            "evidence": "Bg4# is checkmate: the king is in check and there is no legal reply.",
+            "relevance": "secondary",
             "actor": "white"
           }
         ]

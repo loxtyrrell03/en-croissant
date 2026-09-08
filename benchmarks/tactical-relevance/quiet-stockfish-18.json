@@ -100,9 +100,9 @@
           },
           {
             "id": "mateIn2",
-            "label": "Mate in 2",
-            "confidence": "medium",
-            "evidence": "Mate in 2 appears on Qxh6# at ply 3 of the current best line.",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qxh6# is checkmate: the king is in check and there is no legal reply.",
             "source": "available",
             "ply": 3,
             "moveUci": "h3h6",
@@ -120,6 +120,18 @@
             "moveUci": "h3h6",
             "relevance": "secondary",
             "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "h3h6",
+            "value": 10000,
+            "evidence": "Qxh6# is checkmate: the king is in check and there is no legal reply.",
+            "relevance": "secondary",
             "actor": "white"
           }
         ]
@@ -157,14 +169,26 @@
           },
           {
             "id": "mateIn2",
-            "label": "Mate in 2",
-            "confidence": "medium",
-            "evidence": "Mate in 2 appears on Qe8# at ply 3 of the current best line.",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qe8# is checkmate: the king is in check and there is no legal reply.",
             "source": "available",
             "ply": 3,
             "moveUci": "h5e8",
             "relevance": "secondary",
             "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "h5e8",
+            "value": 10000,
+            "evidence": "Qe8# is checkmate: the king is in check and there is no legal reply.",
+            "relevance": "secondary",
             "actor": "white"
           }
         ]
@@ -202,20 +226,32 @@
           },
           {
             "id": "mateIn2",
-            "label": "Mate in 2",
-            "confidence": "medium",
-            "evidence": "Mate in 2 appears on Qe8# at ply 3 of the current best line.",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qe8# is checkmate: the king is in check and there is no legal reply.",
             "source": "available",
             "ply": 3,
             "moveUci": "h5e8",
             "relevance": "secondary",
             "value": 10000,
             "actor": "white"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "h5e8",
+            "value": 10000,
+            "evidence": "Qe8# is checkmate: the king is in check and there is no legal reply.",
+            "relevance": "secondary",
+            "actor": "white"
           }
         ]
       }
     ],
-    "classificationMs": 12.515299999999115
+    "classificationMs": 10.790700000005018
   },
   {
     "fen": "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",
@@ -331,18 +367,6 @@
             "actor": "white"
           },
           {
-            "id": "mate",
-            "label": "Mate",
-            "confidence": "medium",
-            "evidence": "Mate appears on Qb8# at ply 5 of the current best line.",
-            "source": "available",
-            "ply": 5,
-            "moveUci": "h2b8",
-            "relevance": "secondary",
-            "value": 10000,
-            "actor": "white"
-          },
-          {
             "id": "pin",
             "label": "Pin",
             "confidence": "medium",
@@ -352,6 +376,18 @@
             "moveUci": "h2b8",
             "relevance": "secondary",
             "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 5,
+            "moveUci": "h2b8",
+            "value": 10000,
+            "evidence": "Qb8# is checkmate: the king is in check and there is no legal reply.",
+            "relevance": "secondary",
             "actor": "white"
           }
         ]
@@ -378,15 +414,15 @@
             "actor": "white"
           },
           {
-            "id": "mate",
-            "label": "Mate",
-            "confidence": "medium",
-            "evidence": "Mate appears on Qd8# at ply 5 of the current best line.",
+            "id": "mateIn1",
+            "label": "Checkmate",
             "source": "available",
+            "confidence": "high",
             "ply": 5,
             "moveUci": "d5d8",
-            "relevance": "secondary",
             "value": 10000,
+            "evidence": "Qd8# is checkmate: the king is in check and there is no legal reply.",
+            "relevance": "secondary",
             "actor": "white"
           }
         ]
@@ -425,21 +461,21 @@
             "actor": "white"
           },
           {
-            "id": "mate",
-            "label": "Mate",
-            "confidence": "medium",
-            "evidence": "Mate appears on Qd8# at ply 5 of the current best line.",
+            "id": "mateIn1",
+            "label": "Checkmate",
             "source": "available",
+            "confidence": "high",
             "ply": 5,
             "moveUci": "h4d8",
-            "relevance": "secondary",
             "value": 10000,
+            "evidence": "Qd8# is checkmate: the king is in check and there is no legal reply.",
+            "relevance": "secondary",
             "actor": "white"
           }
         ]
       }
     ],
-    "classificationMs": 25.24609999999666
+    "classificationMs": 21.900300000001153
   },
   {
     "fen": "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",

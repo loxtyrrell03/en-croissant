@@ -265,7 +265,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-17",
+      "motifClassifierVersion": "site-55.adapter-18",
       "allowedTimeline": [
         {
           "id": "discoveredAttack",
@@ -313,7 +313,7 @@
         "comparisonEvidence": "g6 makes the immediate reply Bxh7+ illegal."
       }
     },
-    "classificationMs": 13.711899999994785
+    "classificationMs": 12.174999999988358
   },
   {
     "name": "A different reply wins the same queen after the better move",
@@ -643,7 +643,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-17",
+      "motifClassifierVersion": "site-55.adapter-18",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -705,7 +705,7 @@
         "comparisonEvidence": "Even after Kg7, Rf5+ still forces at least the same net material gain on the queen on f8. The better move changes the continuation, not the existence of that material loss."
       }
     },
-    "classificationMs": 12.461300000009942
+    "classificationMs": 11.753200000006473
   },
   {
     "name": "Ignored double-check mate instead of making a king escape",
@@ -939,7 +939,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-17",
+      "motifClassifierVersion": "site-55.adapter-18",
       "allowedTimeline": [
         {
           "id": "doubleCheck",
@@ -982,6 +982,18 @@
           "comparison": "prevented",
           "comparisonEvidence": "Rg8+ makes the immediate reply Bb5# illegal.",
           "actor": "white"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e2b5",
+          "value": 10000,
+          "evidence": "Bb5# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
+          "actor": "white"
         }
       ]
     },
@@ -1003,7 +1015,7 @@
         "comparisonEvidence": "Rg8+ makes the immediate reply Bb5# illegal."
       }
     },
-    "classificationMs": 17.649499999999534
+    "classificationMs": 16.41939999999886
   },
   {
     "name": "Failed to unpin the knight",
@@ -1257,7 +1269,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-17",
+      "motifClassifierVersion": "site-55.adapter-18",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -1305,7 +1317,7 @@
         "comparisonEvidence": "After Kd7, Kxd6 answers d6; a profitable immediate follow-up capture of the knight on e7 is no longer forced."
       }
     },
-    "classificationMs": 20.301299999991897
+    "classificationMs": 16.895899999988615
   },
   {
     "name": "Allowed a king-queen skewer instead of preserving the queen",
@@ -1569,7 +1581,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-17",
+      "motifClassifierVersion": "site-55.adapter-18",
       "allowedTimeline": [
         {
           "id": "skewer",
@@ -1617,7 +1629,7 @@
         "comparisonEvidence": "After Kf4, Qxd3 answers Bd3; a profitable immediate follow-up capture of the queen on h7 is no longer forced."
       }
     },
-    "classificationMs": 6.115900000004331
+    "classificationMs": 5.677499999990687
   },
   {
     "name": "Allowed checking defender removal and lost the queen",
@@ -1913,7 +1925,7 @@
           "value": 500
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-17",
+      "motifClassifierVersion": "site-55.adapter-18",
       "allowedTimeline": [
         {
           "id": "capturingDefender",
@@ -1975,7 +1987,7 @@
         "comparisonEvidence": "Qxd1+ makes the immediate reply gxf6+ illegal."
       }
     },
-    "classificationMs": 21.7783000000054
+    "classificationMs": 18.94780000000901
   },
   {
     "name": "Missed quiet mate while leaving the queen attacked",
@@ -2172,9 +2184,9 @@
         },
         {
           "id": "mate",
-          "label": "Mate",
-          "confidence": "medium",
-          "evidence": "Mate appears on Qb8# at ply 5 of the missed best line.",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Qb8# is checkmate: the king is in check and there is no legal reply.",
           "source": "missed",
           "ply": 5,
           "moveUci": "h2b8",
@@ -2193,7 +2205,7 @@
           "value": 10000
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-17",
+      "motifClassifierVersion": "site-55.adapter-18",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -2236,18 +2248,6 @@
           "actor": "white"
         },
         {
-          "id": "mate",
-          "label": "Mate",
-          "confidence": "medium",
-          "evidence": "Mate appears on Qb8# at ply 5 of the missed best line.",
-          "source": "missed",
-          "ply": 5,
-          "moveUci": "h2b8",
-          "relevance": "secondary",
-          "value": 10000,
-          "actor": "white"
-        },
-        {
           "id": "pin",
           "label": "Pin",
           "confidence": "medium",
@@ -2257,6 +2257,18 @@
           "moveUci": "h2b8",
           "relevance": "secondary",
           "value": 10000,
+          "actor": "white"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 5,
+          "moveUci": "h2b8",
+          "value": 10000,
+          "evidence": "Qb8# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
           "actor": "white"
         }
       ]
@@ -2277,7 +2289,7 @@
         "value": 10000
       }
     },
-    "classificationMs": 7.3607000000047265
+    "classificationMs": 6.250800000008894
   },
   {
     "name": "Missed the quiet rook preparation for mate or a queen skewer",
@@ -2583,7 +2595,7 @@
           "relevance": "secondary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-17",
+      "motifClassifierVersion": "site-55.adapter-18",
       "missedTimeline": [
         {
           "id": "tacticalPreparation",
@@ -2651,7 +2663,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 9.064100000003236
+    "classificationMs": 7.463900000002468
   },
   {
     "name": "Recaptured the rook before taking the queen with check",
@@ -2917,7 +2929,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-17",
+      "motifClassifierVersion": "site-55.adapter-18",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -2977,7 +2989,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 77.20309999999881
+    "classificationMs": 69.6993000000075
   },
   {
     "name": "Recaptured the bishop before taking the knight with check",
@@ -3273,7 +3285,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-17",
+      "motifClassifierVersion": "site-55.adapter-18",
       "missedTimeline": [
         {
           "id": "intermezzo",
@@ -3317,7 +3329,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 62.65890000000945
+    "classificationMs": 54.461899999994785
   },
   {
     "name": "Allowed a checking queen capture before the rook recapture",
@@ -3643,7 +3655,7 @@
           "value": 330
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-17",
+      "motifClassifierVersion": "site-55.adapter-18",
       "allowedTimeline": [
         {
           "id": "intermezzo",
@@ -3717,7 +3729,7 @@
         "comparisonEvidence": "Qxg5 makes the immediate reply Bxd2+ illegal."
       }
     },
-    "classificationMs": 81.39560000000347
+    "classificationMs": 73.12290000000212
   },
   {
     "name": "Allowed an intermediate knight capture before the bishop recapture",
@@ -4069,7 +4081,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-17",
+      "motifClassifierVersion": "site-55.adapter-18",
       "allowedTimeline": [
         {
           "id": "intermezzo",
@@ -4117,7 +4129,7 @@
         "comparisonEvidence": "Nxd5 makes the immediate reply Nxe7+ illegal."
       }
     },
-    "classificationMs": 98.38169999999809
+    "classificationMs": 92.35150000000431
   },
   {
     "name": "b6 permits the f7 fork",
@@ -4440,7 +4452,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-17",
+      "motifClassifierVersion": "site-55.adapter-18",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -4514,7 +4526,7 @@
         "comparisonEvidence": "After O-O, Nxf7 no longer has two profitable fork targets."
       }
     },
-    "classificationMs": 67.75669999999809
+    "classificationMs": 65.89359999999579
   },
   {
     "name": "Missed queen while the knight is already attacked",
@@ -4806,7 +4818,7 @@
           "value": 900
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-17",
+      "motifClassifierVersion": "site-55.adapter-18",
       "missedTimeline": [
         {
           "id": "hangingPiece",
@@ -4838,7 +4850,7 @@
         "value": 900
       }
     },
-    "classificationMs": 15.03190000000177
+    "classificationMs": 15.418700000009267
   },
   {
     "name": "Failed to create a back-rank escape",
@@ -5040,7 +5052,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-17",
+      "motifClassifierVersion": "site-55.adapter-18",
       "allowedTimeline": [
         {
           "id": "backRankMate",
@@ -5054,6 +5066,18 @@
           "value": 10000,
           "comparison": "prevented",
           "comparisonEvidence": "After g5, Kg7 is a legal answer to Re8+; it is no longer mate.",
+          "actor": "white"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e1e8",
+          "value": 10000,
+          "evidence": "Re8# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
           "actor": "white"
         }
       ]
@@ -5076,6 +5100,6 @@
         "comparisonEvidence": "After g5, Kg7 is a legal answer to Re8+; it is no longer mate."
       }
     },
-    "classificationMs": 1.8104999999923166
+    "classificationMs": 1.3677000000025146
   }
 ]

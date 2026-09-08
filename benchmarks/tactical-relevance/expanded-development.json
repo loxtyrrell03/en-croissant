@@ -1,0 +1,338 @@
+{
+  "selection": "Lowest 32 SHA-256(salt:id) development rows, excluding the first twelve-game diagnostic. No theme, rating, line-length or classifier-output filtering. No holdout rows classified. Source tags deliberately omitted; this is a diagnostic sample, not an accuracy estimate.",
+  "salt": "tactical-relevance-expansion-1",
+  "sourceFixture": "chessmistaketrainer/benchmarks/tactical-classifier/lichess-2026-08-02-fixture-v1.jsonl",
+  "sourceSha256": "c80356923da60cce5b48b37046a878290f36997862f921b944015a3cf69ccc88",
+  "cases": [
+    {
+      "id": "lichess:DVSJh",
+      "startFen": "8/5p2/1R6/6p1/1P2N1rk/4K2n/8/8 w - - 1 57",
+      "bestLine": [
+        "b6h6"
+      ],
+      "sourceGameUrl": "https://lichess.org/mOEDgNl8/black#112"
+    },
+    {
+      "id": "lichess:007c6",
+      "startFen": "2kr3r/p2n2pp/2pB1bp1/5q2/2B5/8/PPP2PPP/3R1RK1 w - - 0 18",
+      "bestLine": [
+        "c4a6"
+      ],
+      "sourceGameUrl": "https://lichess.org/vqwzqZHC/black#34"
+    },
+    {
+      "id": "lichess:fVRuW",
+      "startFen": "3r4/5p1k/2p4p/4q1pN/1p2pP2/2b1Q1P1/2P3K1/2R4R b - f3 0 40",
+      "bestLine": [
+        "e4f3",
+        "e3f3",
+        "d8d2",
+        "g2h3",
+        "f7f5",
+        "g3g4",
+        "f5g4",
+        "f3g4",
+        "d2d4"
+      ],
+      "sourceGameUrl": "https://lichess.org/Ejf8ow6J#79"
+    },
+    {
+      "id": "lichess:K56tk",
+      "startFen": "r2q1r2/1bp1pk2/1p6/p3p1QP/8/2NP4/PPP1PP2/2KR4 w - - 1 22",
+      "bestLine": [
+        "g5g6"
+      ],
+      "sourceGameUrl": "https://lichess.org/o9UQkODe/black#42"
+    },
+    {
+      "id": "lichess:NKnZo",
+      "startFen": "2r1rqk1/p7/2b2Qp1/4p3/3p4/1P3P2/P6R/7K w - - 0 30",
+      "bestLine": [
+        "h2h8"
+      ],
+      "sourceGameUrl": "https://lichess.org/NhsymRXl/black#58"
+    },
+    {
+      "id": "lichess:5hjz7",
+      "startFen": "Nn5r/pp1k1p1p/3p4/4P3/3P2bR/6P1/P1P2N2/b3KB2 b - - 0 17",
+      "bestLine": [
+        "a1c3"
+      ],
+      "sourceGameUrl": "https://lichess.org/oUQxGPRf#33"
+    },
+    {
+      "id": "lichess:GIB50",
+      "startFen": "2Rr2k1/pR6/7p/r4pp1/4p1P1/P3P3/5P1P/6K1 w - - 2 31",
+      "bestLine": [
+        "c8d8"
+      ],
+      "sourceGameUrl": "https://lichess.org/yLTMw0nH/black#60"
+    },
+    {
+      "id": "lichess:REAdh",
+      "startFen": "8/8/7R/r3kp2/2p2Np1/2P2nP1/5K1P/8 w - - 3 44",
+      "bestLine": [
+        "h6e6"
+      ],
+      "sourceGameUrl": "https://lichess.org/5IgAYhar/black#86"
+    },
+    {
+      "id": "lichess:NGZzo",
+      "startFen": "r5k1/5p2/Br2p1p1/1PNpPb1q/3P4/4P1Q1/5K1P/6R1 w - - 0 33",
+      "bestLine": [
+        "c5d7",
+        "g8g7",
+        "d7b6"
+      ],
+      "sourceGameUrl": "https://lichess.org/7lzGil6H/black#64"
+    },
+    {
+      "id": "lichess:4Osgg",
+      "startFen": "5r2/bpp2q1k/p2pR1p1/3P4/1PP3QP/P7/1B4P1/7K b - - 3 32",
+      "bestLine": [
+        "f7f1",
+        "h1h2",
+        "f1g1",
+        "h2h3",
+        "g1h1",
+        "h3g3",
+        "a7f2"
+      ],
+      "sourceGameUrl": "https://lichess.org/pEUmwLlr#63"
+    },
+    {
+      "id": "lichess:UCiYo",
+      "startFen": "8/2p3p1/2P4p/2bPp2P/kpK1PpP1/5P2/8/8 w - - 9 50",
+      "bestLine": [
+        "c4c5",
+        "b4b3",
+        "d5d6",
+        "c7d6",
+        "c5d6",
+        "b3b2",
+        "c6c7",
+        "b2b1q",
+        "c7c8q"
+      ],
+      "sourceGameUrl": "https://lichess.org/e3jcEqi6/black#98"
+    },
+    {
+      "id": "lichess:CSh8J",
+      "startFen": "8/2P5/1n3k2/p7/P7/4NKp1/8/8 w - - 5 65",
+      "bestLine": [
+        "e3d5",
+        "b6d5",
+        "c7c8q"
+      ],
+      "sourceGameUrl": "https://lichess.org/seP4J8Tb/black#128"
+    },
+    {
+      "id": "lichess:opGD7",
+      "startFen": "7k/1ppQ3p/p2b2p1/3p4/8/2P2q1P/PP2R3/3K4 b - - 3 40",
+      "bestLine": [
+        "f3f1",
+        "d1d2",
+        "d6f4"
+      ],
+      "sourceGameUrl": "https://lichess.org/3Rsa9ycS#79"
+    },
+    {
+      "id": "lichess:fJrhT",
+      "startFen": "8/7R/5kp1/2R2p2/5n2/7P/1r6/5K2 b - - 1 45",
+      "bestLine": [
+        "b2b1",
+        "f1f2",
+        "f4d3",
+        "f2f3",
+        "d3c5"
+      ],
+      "sourceGameUrl": "https://lichess.org/l8sSle4i#89"
+    },
+    {
+      "id": "lichess:MJZcU",
+      "startFen": "3R4/5k2/6p1/p7/3pNr2/2p2P1P/P5PK/8 b - - 3 41",
+      "bestLine": [
+        "f4e4",
+        "f3e4",
+        "c3c2",
+        "d8d4",
+        "c2c1q"
+      ],
+      "sourceGameUrl": "https://lichess.org/oHeYQKb9#81"
+    },
+    {
+      "id": "lichess:0RleZ",
+      "startFen": "2r5/R5p1/1p1nk2p/1P1Np3/4P3/7P/6P1/6K1 w - - 1 41",
+      "bestLine": [
+        "a7e7"
+      ],
+      "sourceGameUrl": "https://lichess.org/Og0h3Ig3/black#80"
+    },
+    {
+      "id": "lichess:Z5arb",
+      "startFen": "6k1/p4pp1/4bb1p/3qn3/8/1PNp4/P2Q1PPP/2B2RK1 b - - 2 23",
+      "bestLine": [
+        "e5f3",
+        "g2f3",
+        "f6c3"
+      ],
+      "sourceGameUrl": "https://lichess.org/PEouuNXC#45"
+    },
+    {
+      "id": "lichess:iUj3e",
+      "startFen": "4rb1r/pp1q3p/4bkp1/2p4Q/3n4/PB1P4/1PPB1PPP/R3R1K1 w - - 0 19",
+      "bestLine": [
+        "h5e5",
+        "f6f7",
+        "e5h8"
+      ],
+      "sourceGameUrl": "https://lichess.org/RQB8EABI/black#36"
+    },
+    {
+      "id": "lichess:Kvpvi",
+      "startFen": "3rk2r/ppp2ppp/8/2b1P3/3P1Bb1/4P3/P1P2PPP/R3KB1R b KQk - 0 11",
+      "bestLine": [
+        "c5b4",
+        "c2c3",
+        "b4c3"
+      ],
+      "sourceGameUrl": "https://lichess.org/Nv8lUjlo#21"
+    },
+    {
+      "id": "lichess:hz3ed",
+      "startFen": "6k1/1p3p2/p1p3p1/3p2qp/3P4/1P4NP/P1QR1KP1/4r3 b - - 1 30",
+      "bestLine": [
+        "g5e3"
+      ],
+      "sourceGameUrl": "https://lichess.org/eh5TbQXm#59"
+    },
+    {
+      "id": "lichess:o8K8i",
+      "startFen": "8/7p/2q1p1pk/4Pp2/5PK1/P7/1Q6/8 w - f6 0 46",
+      "bestLine": [
+        "e5f6",
+        "c6h1",
+        "b2f2",
+        "e6e5",
+        "f2h4",
+        "h1h4",
+        "g4h4"
+      ],
+      "sourceGameUrl": "https://lichess.org/dzJG2gxf/black#90"
+    },
+    {
+      "id": "lichess:w1lKu",
+      "startFen": "2rr2k1/1p3pp1/4p3/p2pP1N1/1n1q4/1Q1B4/1P3P1P/5RK1 w - - 0 22",
+      "bestLine": [
+        "d3h7",
+        "g8f8",
+        "b3f3",
+        "d8d7",
+        "g5e6",
+        "f8e7",
+        "e6d4"
+      ],
+      "sourceGameUrl": "https://lichess.org/be0rLECF/black#42"
+    },
+    {
+      "id": "lichess:rqXvZ",
+      "startFen": "5r1k/p1pr2pp/2p1Q3/6B1/3q4/b2P2P1/1P5P/2KR1R2 w - - 0 20",
+      "bestLine": [
+        "f1f8",
+        "a3f8",
+        "d1f1",
+        "d7d8",
+        "g5d8"
+      ],
+      "sourceGameUrl": "https://lichess.org/IyblvP2P/black#38"
+    },
+    {
+      "id": "lichess:ouIHI",
+      "startFen": "5rk1/pp2pp2/3pb1p1/7p/2r1P2P/1PbQ1P1N/K1PB2P1/3R3R b - - 0 19",
+      "bestLine": [
+        "c4a4",
+        "a2b1",
+        "a4a1"
+      ],
+      "sourceGameUrl": "https://lichess.org/pcnTzKC6#37"
+    },
+    {
+      "id": "lichess:eOCp9",
+      "startFen": "2r1r1k1/R5b1/2b1p1pp/1p3p2/2q1P3/2P1B1P1/1P3QBP/3R2K1 w - f6 0 29",
+      "bestLine": [
+        "f2f4",
+        "g7f8",
+        "f4e5"
+      ],
+      "sourceGameUrl": "https://lichess.org/FODxhu6Q/black#56"
+    },
+    {
+      "id": "lichess:erSYy",
+      "startFen": "8/1p2Ppk1/5qp1/2P5/8/7P/6PK/8 w - - 0 39",
+      "bestLine": [
+        "e7e8n",
+        "g7f8",
+        "e8f6"
+      ],
+      "sourceGameUrl": "https://lichess.org/KWmz9y1B/black#76"
+    },
+    {
+      "id": "lichess:vztmO",
+      "startFen": "1k1r3r/1p1b4/p7/3pp1p1/P7/2Q3p1/1P2NqBP/2R1R2K b - - 1 25",
+      "bestLine": [
+        "h8h2"
+      ],
+      "sourceGameUrl": "https://lichess.org/ztEkx5X0#49"
+    },
+    {
+      "id": "lichess:G8wdr",
+      "startFen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
+      "bestLine": [
+        "d7e5",
+        "d3c3",
+        "a5c3",
+        "b2c3",
+        "e5c4"
+      ],
+      "sourceGameUrl": "https://lichess.org/yI9Y2Aep#29"
+    },
+    {
+      "id": "lichess:4GiqO",
+      "startFen": "8/7p/5p2/kp2p1p1/4P1P1/1P3P1P/1K6/8 b - - 5 38",
+      "bestLine": [
+        "a5b4",
+        "b2c2",
+        "b4a3"
+      ],
+      "sourceGameUrl": "https://lichess.org/4BUsJguL#75"
+    },
+    {
+      "id": "lichess:wh6Ac",
+      "startFen": "1k4r1/1p2Np2/p2p4/8/6qp/1P1PQ2p/P4P1K/2R1R3 b - - 0 35",
+      "bestLine": [
+        "g4g2"
+      ],
+      "sourceGameUrl": "https://lichess.org/THTuuIz2#69"
+    },
+    {
+      "id": "lichess:NOaM1",
+      "startFen": "8/5k2/7p/5BpP/3BKb2/5P2/b7/8 b - - 28 52",
+      "bestLine": [
+        "a2b1",
+        "e4d5",
+        "b1f5"
+      ],
+      "sourceGameUrl": "https://lichess.org/eIS3TrpJ#103"
+    },
+    {
+      "id": "lichess:JaKHo",
+      "startFen": "r1br2k1/p3bppp/1pp1p3/2n1P3/4NP2/2P3P1/PPB4P/R1BR2K1 b - - 1 15",
+      "bestLine": [
+        "d8d1",
+        "c2d1",
+        "c5e4"
+      ],
+      "sourceGameUrl": "https://lichess.org/AjM3oAEe#29"
+    }
+  ]
+}

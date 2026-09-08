@@ -609,12 +609,42 @@ missing each intermediate check and allowing it through the preceding real-game
 mistake. All four choose the intended primary/source. The twelve-game diagnostic
 and all existing engine reports were refreshed without selecting holdout data.
 
-Current verification: 220 focused tests in 23 files, all nine opt-in engine
+Adapter-17 verification: 220 focused tests in 23 files, all nine opt-in engine
 tests, targeted formatting/lint, shared-review worker and production builds.
 The unrelated OTB number/bigint fixture error remains. No runtime deployment or
 running-app proof is claimed. Non-capturing/delayed intermediate moves, arbitrary
 reversed continuations, Bxf4's longer branches and broader tactical judgement
 remain unfinished work; these checks are not a general accuracy estimate.
+
+## Tag-blind expansion, crash safety and terminal lessons (adapter 18)
+
+The [expanded review](expanded-review.md) inspects 32 additional positions from
+distinct real source games, selected by a fixed salted hash of development IDs
+before classification. Themes, rating, line length and classifier output do not
+select the cases. The frozen fixture records its source hash and omits theme
+labels. Its parent corpus is theme-balanced and mate-heavy; this is not a random
+sample of ordinary mistakes or an accuracy estimate.
+
+The expansion exposed a legal en-passant crash, a checkmate incorrectly led by
+Hanging Piece, duplicate generic mate entries and a skewer claiming material
+after the game had already ended. These are fixed. Immediate mate is also
+reconstructed without relying on a primitive tag. Same-target/gain deflection
+and Intermediate Check collapse to the more specific deflection; underpromotion
+does not also need a generic Promotion badge. Causal pins/discoveries that explain
+mate remain eligible, and earlier material gains are not indiscriminately erased.
+
+Every source line is retained in `expanded-judgement.json`, including misses.
+Seven investigated positions also have fresh unrestricted MultiPV3 and
+root-restricted searches in `expanded-stockfish-18.json`. Legal replay and crash
+freedom do not mean every displayed lesson is correct. Important open examples
+include a promotion-backed fork, a fork requiring an intervening queen exchange,
+a quiet pin enabling a fork, and the longer en-passant attack. Named-mate overlap
+also needs independent adjudication; see the position-by-position review.
+
+Current verification: 229 focused tests in 24 files, all ten opt-in engine tests,
+targeted formatting/lint, shared-review worker and production builds. Type checking retains
+the unrelated OTB number/bigint fixture error. No runtime deployment or
+running-app proof is claimed.
 
 Run in PowerShell with the configured Node runtime on PATH:
 
@@ -629,9 +659,12 @@ $env:TACTICAL_INTERFERENCE_REPORT = 'benchmarks/tactical-relevance/interference-
 $env:TACTICAL_REAL_ENGINE_REPORT = 'benchmarks/tactical-relevance/real-puzzle-stockfish-18.json'
 $env:TACTICAL_TRAP_REPORT = 'benchmarks/tactical-relevance/trapped-stockfish-18.json'
 $env:TACTICAL_DEFENDER_REPORT = 'benchmarks/tactical-relevance/defender-stockfish-18.json'
+$env:TACTICAL_EXPANSION_ENGINE_REPORT = 'benchmarks/tactical-relevance/expanded-stockfish-18.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node
 $env:TACTICAL_REAL_PUZZLE_REPORT = 'benchmarks/tactical-relevance/real-puzzle-judgement.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/realPuzzleJudgement.test.ts --environment node
+$env:TACTICAL_EXPANSION_REPORT = 'benchmarks/tactical-relevance/expanded-judgement.json'
+node node_modules/vitest/vitest.mjs run src/utils/tests/expandedTacticalJudgement.test.ts --environment node
 ```
 
 The engine test is opt-in and starts no engine during normal unit tests.
