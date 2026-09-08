@@ -709,6 +709,7 @@ async function fetchLichessStatsGames(opts: {
     url.searchParams.set("evals", "true");
     url.searchParams.set("opening", "true");
     if (opts.ratedFilter === "rated") url.searchParams.set("rated", "true");
+    if (opts.ratedFilter === "casual") url.searchParams.set("rated", "false");
 
     const headers: Record<string, string> = { Accept: "application/x-ndjson" };
     if (opts.lichessToken) headers.Authorization = `Bearer ${opts.lichessToken}`;

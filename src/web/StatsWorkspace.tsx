@@ -1300,7 +1300,7 @@ export default function StatsWorkspace() {
   }, []);
 
   const requestedDays = Math.max(STATS_BASE_HISTORY_DAYS, getStatsPeriodDays(settings.period));
-  const effectiveRated = settings.tab === "overview" ? "rated" : settings.rated;
+  const effectiveRated = settings.rated;
   const cacheKey = `${settings.source}|${trimmedUsername.toLowerCase()}|${settings.timeClass}|${effectiveRated}`;
 
   // Completed-game fetch. Period switches inside the cached coverage
@@ -1558,12 +1558,11 @@ export default function StatsWorkspace() {
           <Select
             size="xs"
             value={effectiveRated}
-            disabled={settings.tab === "overview"}
             onChange={(value) => value && updateSettings({ rated: value as StatsRatedFilter })}
             data={[
               { value: "rated", label: "Rated" },
-              { value: "casual", label: "Casual" },
-              { value: "both", label: "All games" },
+              { value: "casual", label: "Unrated" },
+              { value: "both", label: "Both" },
             ]}
             allowDeselect={false}
             aria-label="Rated filter"
@@ -1601,7 +1600,8 @@ export default function StatsWorkspace() {
       {!trimmedUsername ? (
         <Box className={`${classes.panel} ${styles.emptyState}`}>
           <IconChartLine size={30} stroke={1.5} />
-          <Text fw={600}>Add your chess.com or Lichess username</Text>
+          <Text fw={600}>Add an online account for Stats</Text>
+          <Button onClick={() => document.querySelector<HTMLInputElement>('[aria-label="Username"]')?.focus()}>Add account</Button>
           <Text size="xs" c="dimmed" maw="22rem">
             Pick a source above, type the account name, and press Enter. Games load straight from
             the public APIs.
@@ -1629,6 +1629,7 @@ export default function StatsWorkspace() {
           <TruePerformancePanel
             key={`${settings.source}:${trimmedUsername}:${settings.timeClass}`}
             games={toPerformanceGames(data.games)}
+            gameType={effectiveRated === "casual" ? "unrated" : effectiveRated}
             poolLabel={`${getStatsSourceLabel(settings.source)} · ${settings.timeClass}`}
             asOf={data.nowSec}
             coverage={`${data.games.length.toLocaleString()} games loaded · Up to 5,000 games / 10 years of available history`}

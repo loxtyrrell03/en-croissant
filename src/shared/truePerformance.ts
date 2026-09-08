@@ -199,12 +199,16 @@ function update(xs: number[], p: number[], game: PerformanceGame, model: Perform
         }
     return { posterior: normalise(next), predictive };
 }
-export function preparePerformanceGames(input: readonly PerformanceGame[], asOf = Infinity) {
+export type PerformanceGameType = "rated" | "unrated" | "both";
+export function matchesGameType(rated: boolean, gameType: PerformanceGameType) {
+    return gameType === "both" || rated === (gameType === "rated");
+}
+export function preparePerformanceGames(input: readonly PerformanceGame[], asOf = Infinity, gameType: PerformanceGameType = "rated") {
     const seen = new Set<string>();
     return input
         .filter((g) => {
             if (
-                !g.rated ||
+                !matchesGameType(g.rated, gameType) ||
                 !Number.isFinite(g.at) ||
                 g.at <= 0 ||
                 g.at > asOf ||
@@ -226,8 +230,9 @@ export function strengthHistory(
     input: readonly PerformanceGame[],
     asOf = Infinity,
     model = ONLINE_MODEL,
+    gameType: PerformanceGameType = "rated",
 ): StrengthHistory {
-    const games = preparePerformanceGames(input, asOf),
+    const games = preparePerformanceGames(input, asOf, gameType),
         xs = grid(model);
     const pool = games[0]?.pool ?? null;
     if (games.some((g) => g.pool !== pool))
@@ -262,8 +267,9 @@ export function strengthHistory(
 export function periodPerformance(
     input: readonly PerformanceGame[],
     model = ONLINE_MODEL,
+    gameType: PerformanceGameType = "rated",
 ): StrengthEstimate | null {
-    const games = preparePerformanceGames(input);
+    const games = preparePerformanceGames(input, Infinity, gameType);
     if (games.length < 3 || !finiteRating(games[0].rating)) return null;
     if (games.some((g) => g.pool !== games[0].pool)) throw new Error("Mixed rating pools");
     const xs = grid(model);
@@ -286,8 +292,9 @@ export function selectPerformancePeriod(
     games: readonly PerformanceGame[],
     period: PerformancePeriod,
     asOf: number,
+    gameType: PerformanceGameType = "rated",
 ) {
-    const ordered = preparePerformanceGames(games, asOf);
+    const ordered = preparePerformanceGames(games, asOf, gameType);
     if (period.endsWith("g")) return ordered.slice(-parseInt(period));
     const days = period === "1y" ? 365 : period === "all" ? Infinity : parseInt(period);
     return ordered.filter((g) => g.at >= asOf - days * 86400);

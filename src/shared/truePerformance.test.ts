@@ -97,3 +97,14 @@ describe("Bayesian result model", () => {
         expect(slow.sd).toBeGreaterThan(quick.sd);
     });
 });
+
+it("uses the requested game type through both strength and period estimates", () => {
+    const games = Array.from({length: 6}, (_, i) => ({id: String(i), pool: "alice:blitz", at: 1700000000 + i, rating: 1800, opponentRating: 1800, score: 1 as const, white: true, opponent: "Bob", rated: i < 3}));
+    expect(strengthHistory(games).games.length).toBe(3);
+    const casual = strengthHistory(games, Infinity, undefined, "unrated");
+    expect(casual.games.map(g => g.id)).toEqual(["3", "4", "5"]);
+    expect(casual.points.length).toBe(3);
+    expect(selectPerformancePeriod(casual.games, "20g", 1700000010, "unrated").length).toBe(3);
+    expect(periodPerformance(casual.games, undefined, "unrated")).not.toBeNull();
+    expect(strengthHistory(games, Infinity, undefined, "both").points.length).toBe(6);
+});

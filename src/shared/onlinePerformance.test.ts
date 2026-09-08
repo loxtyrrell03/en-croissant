@@ -3,6 +3,7 @@ import {
     normaliseChessComPerformance,
     normaliseLichessPerformance,
     fetchOnlinePerformance,
+    performanceCacheKey,
 } from "./onlinePerformance";
 const account = { id: "chesscom:alice", provider: "chesscom" as const, username: "Alice" };
 afterEach(() => vi.unstubAllGlobals());
@@ -66,4 +67,26 @@ it("never follows an untrusted archive URL and does not silently return partial 
         fetchOnlinePerformance(account, "blitz", new AbortController().signal, () => {}),
     ).rejects.toThrow("Unexpected");
     expect(fetch).toHaveBeenCalledTimes(1);
+});
+
+it("keeps rated, unrated and combined cache identities separate", () => {
+    expect(new Set(["rated", "unrated", "both"].map(kind => performanceCacheKey(account, "blitz", kind as "rated" | "unrated" | "both"))).size).toBe(3);
+});
+it.each(["rated", "unrated", "both"] as const)("requests and normalises the %s Lichess sample", async kind => {
+    const a = { ...account, provider: "lichess" as const };
+    const games = [true, false].map((rated, i) => ({id: `abcd123${i}`, rated, variant: "standard", speed: "blitz", status: "mate", winner: "white", createdAt: 1700000000000,
+      players: {white: {user: {name: "Alice"}, rating: 1800}, black: {user: {name: "Bob"}, rating: 1800}}}));
+    const fetcher = vi.fn().mockResolvedValue(new Response(games.map(g => JSON.stringify(g)).join("\n")));
+    vi.stubGlobal("fetch", fetcher);
+    const result = await fetchOnlinePerformance(a, "blitz", new AbortController().signal, () => {}, {}, kind);
+    const url = new URL(fetcher.mock.calls[0][0]);
+    expect(url.searchParams.get("rated")).toBe(kind === "both" ? null : String(kind === "rated"));
+    expect(result.games.map(g => g.rated)).toEqual(kind === "both" ? [true, false] : [kind === "rated"]);
+});
+it("preserves an unrated Chess.com result when requested", () => {
+    const raw = {url: "https://www.chess.com/game/live/2", rules: "chess", rated: false, time_class: "blitz", end_time: 1700000000,
+      white: {username: "Alice", result: "win"}, black: {username: "Bob", result: "resigned", rating: 1800}, pgn: '[WhiteElo "1800"]'};
+    expect(normaliseChessComPerformance(raw, account, "blitz", "unrated")?.rated).toBe(false);
+    expect(normaliseChessComPerformance(raw, account, "blitz", "both")?.score).toBe(1);
+    expect(normaliseChessComPerformance(raw, account, "blitz", "rated")).toBeNull();
 });

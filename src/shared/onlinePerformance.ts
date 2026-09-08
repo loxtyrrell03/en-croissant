@@ -1,4 +1,4 @@
-import type { PerformanceGame } from "./truePerformance";
+import { matchesGameType, type PerformanceGameType, type PerformanceGame } from "./truePerformance";
 export type PerformanceProvider = "chesscom" | "lichess";
 export interface PerformanceAccount {
     id: string;
@@ -34,6 +34,7 @@ export function normaliseChessComPerformance(
     raw: unknown,
     account: PerformanceAccount,
     speed: string,
+    gameType: PerformanceGameType = "rated",
 ): PerformanceGame | null {
     const g = obj(raw),
         white = obj(g.white),
@@ -43,7 +44,7 @@ export function normaliseChessComPerformance(
     if (!isWhite && String(black.username).toLowerCase() !== name) return null;
     if (
         g.rules !== "chess" ||
-        g.rated !== true ||
+        typeof g.rated !== "boolean" || !matchesGameType(g.rated, gameType) ||
         g.time_class !== speed ||
         !Number.isFinite(g.end_time)
     )
@@ -70,7 +71,7 @@ export function normaliseChessComPerformance(
         score,
         white: isWhite,
         opponent: String(opp.username ?? ""),
-        rated: true,
+        rated: g.rated,
         url,
         opening: header(g.pgn, "Opening") ?? header(g.pgn, "ECO"),
     };
@@ -79,6 +80,7 @@ export function normaliseLichessPerformance(
     raw: unknown,
     account: PerformanceAccount,
     speed: string,
+    gameType: PerformanceGameType = "rated",
 ): PerformanceGame | null {
     const g = obj(raw),
         players = obj(g.players),
@@ -88,7 +90,7 @@ export function normaliseLichessPerformance(
     const isWhite = name(white) === account.username.toLowerCase();
     if (!isWhite && name(black) !== account.username.toLowerCase()) return null;
     if (
-        g.rated !== true ||
+        typeof g.rated !== "boolean" || !matchesGameType(g.rated, gameType) ||
         g.variant !== "standard" ||
         g.speed !== speed ||
         ![
@@ -119,14 +121,14 @@ export function normaliseLichessPerformance(
         score,
         white: isWhite,
         opponent: String(obj(opp.user).name ?? ""),
-        rated: true,
+        rated: g.rated,
         url: `https://lichess.org/${g.id}`,
         opening: obj(g.opening).name,
     };
 }
 const memory = new Map<string, PerformanceSnapshot>();
-export const performanceCacheKey = (account: PerformanceAccount, speed: string) =>
-    `${account.provider}:${account.username.toLowerCase()}:${speed}`;
+export const performanceCacheKey = (account: PerformanceAccount, speed: string, gameType: PerformanceGameType = "rated") =>
+    `${account.provider}:${account.username.toLowerCase()}:${speed}:${gameType}`;
 export function cachedPerformance(key: string): PerformanceSnapshot | null {
     if (memory.has(key)) return memory.get(key)!;
     try {
@@ -155,6 +157,7 @@ export async function fetchOnlinePerformance(
     signal: AbortSignal,
     onProgress: (message: string) => void,
     headers: Record<string, string> = {},
+    gameType: PerformanceGameType = "rated",
 ): Promise<PerformanceSnapshot> {
     if (!/^[A-Za-z0-9_-]{2,30}$/.test(account.username))
         throw new Error("Invalid account username");
@@ -190,14 +193,14 @@ export async function fetchOnlinePerformance(
         limited = false;
     const name = encodeURIComponent(account.username);
     if (account.provider === "lichess") {
-        onProgress("Loading rated games from Lichess…");
+        onProgress("Loading games from Lichess…");
         const perf = speed === "daily" ? "correspondence" : speed;
-        const url = `https://lichess.org/api/games/user/${name}?max=${LIMIT}&perfType=${perf}&rated=true&sort=dateDesc&opening=true&clocks=false&evals=false`;
+        const url = `https://lichess.org/api/games/user/${name}?max=${LIMIT}&perfType=${perf}${gameType === "both" ? "" : `&rated=${gameType === "rated"}`}&sort=dateDesc&opening=true&clocks=false&evals=false`;
         const body = await read(url, "application/x-ndjson");
         const lines = body.split(/\r?\n/).filter((l) => l.trim());
         limited = lines.length >= LIMIT;
         games = lines
-            .map((l) => normaliseLichessPerformance(JSON.parse(l), account, perf))
+            .map((l) => normaliseLichessPerformance(JSON.parse(l), account, perf, gameType))
             .filter((g): g is PerformanceGame => g !== null);
     } else {
         const data = JSON.parse(
@@ -215,7 +218,7 @@ export async function fetchOnlinePerformance(
         const newest = urls.slice().sort().reverse();
         for (let i = 0; i < newest.length; i++) {
             onProgress(
-                `Reading archive ${i + 1} of ${newest.length} · ${games.length.toLocaleString()} rated games…`,
+                `Reading archive ${i + 1} of ${newest.length} · ${games.length.toLocaleString()} games…`,
             );
             const archive = JSON.parse(await read(newest[i]));
             if (!Array.isArray(archive.games))
@@ -227,6 +230,7 @@ export async function fetchOnlinePerformance(
                             g,
                             account,
                             speed === "correspondence" ? "daily" : speed,
+                            gameType,
                         ),
                     )
                     .filter((g: PerformanceGame | null): g is PerformanceGame => g !== null),
@@ -248,7 +252,7 @@ export async function fetchOnlinePerformance(
         .sort((a, b) => a.at - b.at || a.id.localeCompare(b.id))
         .slice(-LIMIT);
     const snapshot = { games, fetchedAt: Date.now() / 1000, limited };
-    const key = performanceCacheKey(account, speed);
+    const key = performanceCacheKey(account, speed, gameType);
     memory.set(key, snapshot);
     try {
         localStorage.setItem(`true-performance-v1:${key}`, JSON.stringify(snapshot));

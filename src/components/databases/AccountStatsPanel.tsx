@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { TruePerformanceOnline } from "@/shared/TruePerformanceOnline";
 import {
   Alert,
@@ -93,6 +94,7 @@ function bandLabel(report: AccountStatsReport, band: "below" | "current" | "abov
 }
 
 export default function AccountStatsPanel() {
+  const navigate = useNavigate();
   const database = useActiveDatabaseViewStore((s) => s.database);
   const onlineRecords = useAtomValue(onlineDatabaseUpdatesAtom);
   const [linkedDatabase, setLinkedDatabase] = useAtom(accountStatsLinkedDatabaseAtom);
@@ -232,7 +234,7 @@ export default function AccountStatsPanel() {
         </Button>
       </Group>
 
-      <TruePerformanceOnline accounts={accounts.map(account => ({ id: accountKey(account), provider: account.source, username: account.username }))} />
+      <TruePerformanceOnline onAddAccount={() => void navigate({ to: "/accounts" })} accounts={accounts.map(account => ({ id: accountKey(account), provider: account.source, username: account.username }))} />
 
       <details>
       <summary style={{ cursor: "pointer" }}>Imported game analysis</summary>

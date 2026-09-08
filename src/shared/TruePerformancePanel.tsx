@@ -5,6 +5,7 @@ import {
   selectPerformancePeriod,
   strengthHistory,
   type PerformanceGame,
+  type PerformanceGameType,
   type PerformancePeriod,
   type StrengthPoint,
 } from "./truePerformance";
@@ -48,6 +49,7 @@ function Metric({
 }
 export function TruePerformancePanel({
   games,
+  gameType = "rated",
   title = "Your performance",
   poolLabel,
   compact = false,
@@ -58,6 +60,7 @@ export function TruePerformancePanel({
   onViewAll,
 }: {
   games: readonly PerformanceGame[];
+  gameType?: PerformanceGameType;
   title?: string;
   poolLabel: string;
   compact?: boolean;
@@ -68,17 +71,17 @@ export function TruePerformancePanel({
   onViewAll?: () => void;
 }) {
   const [period, setPeriod] = useState<PerformancePeriod>("30d");
-  const history = useMemo(() => strengthHistory(games, asOf), [games, asOf]);
+  const history = useMemo(() => strengthHistory(games, asOf, undefined, gameType), [games, asOf, gameType]);
   const selected = useMemo(
-    () => selectPerformancePeriod(history.games, period, asOf),
-    [history, period, asOf],
+    () => selectPerformancePeriod(history.games, period, asOf, gameType),
+    [history, period, asOf, gameType],
   );
   const selectedIds = useMemo(() => new Set(selected.map((g) => g.id)), [selected]);
   const points = useMemo(
     () => history.points.filter((p) => selectedIds.has(p.id)),
     [history, selectedIds],
   );
-  const performance = useMemo(() => periodPerformance(selected), [selected]);
+  const performance = useMemo(() => periodPerformance(selected, undefined, gameType), [selected, gameType]);
   const last = points.at(-1),
     enough = history.points.length >= 3 && !!last;
   const wins = selected.filter((g) => g.score === 1).length,
@@ -99,6 +102,7 @@ export function TruePerformancePanel({
           </button>
         )}
       </header>
+      {gameType !== "rated" && <p className={s.note}>Includes unrated play. These estimates describe the selected games; casual results may reflect experimentation as well as strength.</p>}
       <div className={s.controls}>
         {controls}
         <label>
@@ -115,11 +119,11 @@ export function TruePerformancePanel({
             ))}
           </select>
         </label>
-        <span className={s.count}>{selected.length.toLocaleString()} rated games</span>
+        <span className={s.count}>{selected.length.toLocaleString()} {gameType === "both" ? "games" : `${gameType} games`}</span>
       </div>
       {selected.length === 0 ? (
         <div className={s.empty}>
-          <strong>No rated games in this period</strong>
+          <strong>No {gameType === "both" ? "games" : `${gameType} games`} in this period</strong>
           <p>Choose a longer period or another time control.</p>
         </div>
       ) : (
@@ -133,7 +137,7 @@ export function TruePerformancePanel({
                 detail={
                   enough
                     ? `Model range ${number(last.low)}–${number(last.high)}`
-                    : "At least 3 rated games needed"
+                    : "At least 3 usable games needed"
                 }
                 help="Your estimated playing strength after the latest selected game. Earlier games inform it. The shaded range describes uncertainty under this model; it is not a verified guarantee of your true ability. Estimates use this website's rating scale."
               />
@@ -235,7 +239,7 @@ export function TruePerformancePanel({
         {coverage && <span>{coverage}</span>}
         {history.excluded > 0 && (
           <span>
-            {history.excluded} duplicate, unrated, undated or incomplete records excluded.
+            {history.excluded} duplicate, filtered, undated or incomplete records excluded.
           </span>
         )}
         <details>

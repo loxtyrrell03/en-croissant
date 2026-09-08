@@ -7,23 +7,26 @@ import {
   type PerformanceAccount,
   type PerformanceSnapshot,
 } from "./onlinePerformance";
-import type { PerformanceGame } from "./truePerformance";
+import type { PerformanceGame, PerformanceGameType } from "./truePerformance";
 import s from "./TruePerformancePanel.module.css";
 export function TruePerformanceOnline({
   accounts,
   compact = false,
   onViewAll,
+  onAddAccount,
   onOpenGame,
   getHeaders,
 }: {
   accounts: PerformanceAccount[];
   compact?: boolean;
   onViewAll?: () => void;
+  onAddAccount?: () => void;
   onOpenGame?: (game: PerformanceGame) => void;
   getHeaders?: (provider: string) => Promise<Record<string, string>>;
 }) {
   const [accountId, setAccountId] = useState(accounts[0]?.id ?? ""),
     [speed, setSpeed] = useState("blitz"),
+    [gameType, setGameType] = useState<PerformanceGameType>("rated"),
     [nonce, setNonce] = useState(0);
   const account = accounts.find((a) => a.id === accountId) ?? accounts[0];
   const effectiveSpeed =
@@ -33,7 +36,7 @@ export function TruePerformanceOnline({
         ? "classical"
         : speed;
   const active = useRef<AbortController | null>(null);
-  const key = account ? performanceCacheKey(account, effectiveSpeed) : "";
+  const key = account ? performanceCacheKey(account, effectiveSpeed, gameType) : "";
   const selectedId = account?.id, provider = account?.provider, username = account?.username;
   const [state, setState] = useState<{
     key: string;
@@ -50,7 +53,7 @@ export function TruePerformanceOnline({
     active.current = controller;
     setState({ key, snapshot: cached, loading: false, message: "", error: null });
     if (nonce === 0 && cached && Date.now() / 1000 - cached.fetchedAt < 6 * 3600) return;
-    setState((v) => ({ ...v, loading: true, message: "Loading rated games…" }));
+    setState((v) => ({ ...v, loading: true, message: "Loading games…" }));
     void (async () => {
       const headers = (await getHeaders?.(provider)) ?? {};
       return fetchOnlinePerformance(
@@ -61,6 +64,7 @@ export function TruePerformanceOnline({
           if (!controller.signal.aborted) setState((v) => ({ ...v, message }));
         },
         headers,
+        gameType,
       );
     })()
       .then((snapshot) => {
@@ -76,7 +80,7 @@ export function TruePerformanceOnline({
           }));
       });
     return () => controller.abort();
-  }, [key, selectedId, provider, username, effectiveSpeed, nonce, getHeaders]);
+  }, [key, selectedId, provider, username, effectiveSpeed, gameType, nonce, getHeaders]);
   const snapshot = state.key === key ? state.snapshot : null;
   const controls = (
     <>
@@ -113,6 +117,14 @@ export function TruePerformanceOnline({
           ))}
         </select>
       </label>
+      <label>
+        Games
+        <select aria-label="Performance game type" value={gameType} onChange={(e) => setGameType(e.target.value as PerformanceGameType)}>
+          <option value="rated">Rated</option>
+          <option value="unrated">Unrated</option>
+          <option value="both">Both</option>
+        </select>
+      </label>
       <button
         type="button"
         className={s.button}
@@ -140,10 +152,10 @@ export function TruePerformanceOnline({
         </header>
         <div className={s.empty}>
           Link a Chess.com or Lichess account to see performance over time.
-          {onViewAll && (
+          {onAddAccount && (
             <p>
-              <button className={s.button} onClick={onViewAll}>
-                Manage accounts
+              <button className={s.button} onClick={onAddAccount}>
+                Add account
               </button>
             </p>
           )}
@@ -168,11 +180,12 @@ export function TruePerformanceOnline({
           key={key}
           title={compact ? "Your online chess" : "Your performance"}
           games={snapshot.games}
+          gameType={gameType}
           compact={compact}
           poolLabel={`${account.provider === "chesscom" ? "Chess.com" : "Lichess"} · ${effectiveSpeed}`}
           asOf={snapshot.fetchedAt}
           controls={controls}
-          coverage={`${snapshot.games.length.toLocaleString()} rated games loaded${snapshot.limited ? " · Latest 5,000-game limit reached" : ""} · Updated ${new Date(snapshot.fetchedAt * 1000).toLocaleString()}`}
+          coverage={`${snapshot.games.length.toLocaleString()} games loaded${snapshot.limited ? " · Latest 5,000-game limit reached" : ""} · Updated ${new Date(snapshot.fetchedAt * 1000).toLocaleString()}`}
           onViewAll={onViewAll}
           onOpenGame={
             onOpenGame ??
