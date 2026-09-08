@@ -30,6 +30,7 @@ import {
 import { keyMapAtom } from "@/state/keybinds";
 import { openFile } from "@/utils/files";
 import { requestExitAfterAiCoach } from "@/utils/aiCoachBackground";
+import { closeApplication, handleCloseRequest } from "@/utils/closeApplication";
 import { createTab } from "@/utils/tabs";
 
 type MenuGroup = {
@@ -138,11 +139,12 @@ function RootLayout() {
 
   const isMacOS = platform() === "macos";
   const closeOrWaitForCoach = useCallback(async () => {
-    if (requestExitAfterAiCoach()) {
-      await getCurrentWindow().hide();
-      return;
-    }
-    await exit(0);
+    await closeApplication({
+      deferForCoach: requestExitAfterAiCoach,
+      hide: () => getCurrentWindow().hide(),
+      minimize: () => getCurrentWindow().minimize(),
+      exit: () => exit(0),
+    });
   }, []);
 
   const aboutOption = useMemo<MenuAction>(
@@ -336,16 +338,14 @@ function RootLayout() {
   }, [menu, isNative]);
 
   useEffect(() => {
-    const unlisten = getCurrentWindow().onCloseRequested((event) => {
-      if (!requestExitAfterAiCoach()) return;
-      event.preventDefault();
-      void getCurrentWindow().hide();
-    });
+    const unlisten = getCurrentWindow().onCloseRequested((event) =>
+      handleCloseRequest(event, closeOrWaitForCoach),
+    );
 
     return () => {
       unlisten.then((fn) => fn());
     };
-  }, []);
+  }, [closeOrWaitForCoach]);
 
   useEffect(() => {
     const unlisten = getCurrentWindow().listen(TauriEvent.DRAG_DROP, (event) => {
