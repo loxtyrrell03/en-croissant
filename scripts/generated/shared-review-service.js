@@ -10071,6 +10071,79 @@ function proveDiscoveredMaterial(step, nodeLimit = DISCOVERY_NODE_LIMIT) {
 	}
 	return proof;
 }
+var exchangeDiscoveryCache = /* @__PURE__ */ new Map();
+/** A newly opened battery and the moving piece can overload a shared defender.
+* If a target escapes while guarding another target, allow one capture of that
+* defender, with every subsequent reply checked by the defender-removal proof.
+* The complete outer/inner search shares one budget; PV replies nominate nothing. */
+function proveExchangeDiscovery(step, nodeLimit = 8192) {
+	const rays = revealedRays(step);
+	if (!rays.length) return null;
+	const key = `${makeFen(step.before.toSetup())}:${step.uci}`;
+	if (nodeLimit === 8192 && exchangeDiscoveryCache.has(key)) return exchangeDiscoveryCache.get(key);
+	const side = step.before.turn;
+	const pieces = [...new Set([step.move.to, ...rays.map((r) => r.from)])];
+	const targets = [...new Set(pieces.flatMap((from) => [...attacks(step.after.board.get(from), from, step.after.board.occupied).intersect(step.after.board[opposite(side)])]))];
+	if (targets.length < 2) return null;
+	const budget = { nodes: nodeLimit };
+	const delta = (pos, move) => capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+	let result = null;
+	try {
+		const replies = legalMoves(step.after);
+		let minimum = Infinity;
+		let witness = null;
+		for (const reply of replies) {
+			if (--budget.nodes < 0) throw new Error("Exchange discovery proof exhausted");
+			const pos = step.after.clone();
+			pos.play(reply);
+			if (pos.isEnd()) throw new Error("Terminal defence");
+			const balance = delta(step.before, step.move) - delta(step.after, reply);
+			const victims = targets.map((to) => to === reply.from ? reply.to : to).filter((to) => pos.board.get(to)?.color === opposite(side));
+			if (pos.isCheck()) victims.push(...pos.ctx().checkers);
+			let best = -VALUE.king;
+			const moves = legalMoves(pos).filter((m) => victims.includes(m.to) && capturedValue(pos, m));
+			for (const move of moves) {
+				const gain = participantCaptureGain(pos, move, pieces, budget);
+				if (gain !== null) best = Math.max(best, balance + gain);
+			}
+			if (best < 100) for (const move of moves) {
+				const defender = pos.board.get(move.to);
+				if (!victims.filter((to) => to !== move.to && pos.board.get(to)?.role !== "king" && attacks(defender, move.to, pos.board.occupied).has(to)).length) continue;
+				if (--budget.nodes < 0) throw new Error("Exchange discovery proof exhausted");
+				const after = pos.clone();
+				after.play(move);
+				const gain = proveDefenderCombination({
+					before: pos,
+					after,
+					move,
+					uci: makeUci(move),
+					san: makeSan(pos, move),
+					capture: capturedValue(pos, move),
+					balance: delta(pos, move)
+				}, victims.filter((to) => to !== move.to), [...new Set([...pieces.filter((from) => from !== move.from), move.to])], nodeLimit, budget, 2);
+				if (gain === null || balance + gain < 100) continue;
+				best = balance + gain;
+				witness = {
+					example: [makeSan(step.after, reply), makeSan(pos, move)],
+					exchangeFrom: move.from,
+					exchangeTarget: move.to
+				};
+				break;
+			}
+			if (best < 100 || budget.nodes < 0) throw new Error(`Unproved defensive branch ${makeSan(step.after, reply)} ${budget.nodes}`);
+			minimum = Math.min(minimum, best);
+		}
+		if (witness && Number.isFinite(minimum)) result = {
+			gain: minimum,
+			...witness
+		};
+	} catch {}
+	if (nodeLimit === 8192) {
+		exchangeDiscoveryCache.set(key, result);
+		if (exchangeDiscoveryCache.size > 128) exchangeDiscoveryCache.delete(exchangeDiscoveryCache.keys().next().value);
+	}
+	return result;
+}
 function discoveredEvidence(steps, source) {
 	const step = steps[0];
 	if (!step) return null;
@@ -10082,7 +10155,9 @@ function discoveredEvidence(steps, source) {
 	const capturers = [...new Set([...rays.map((r) => r.from), step.move.to])];
 	const mate = Boolean(kingRay) && (step.after.isCheckmate() || steps[2]?.after.isCheckmate() && Boolean(proveMateNextTurn(step)) || steps[4]?.after.isCheckmate() && Boolean(proveMateWithinThree(steps.slice(0, 5))));
 	const proof = mate ? null : materialThreatProof(step, targets, capturers, kingRay ? [...between(kingRay.from, kingRay.target)] : []);
-	const gain = proof?.kind === "proven" ? proof.gain : !mate ? proveDiscoveredMaterial(step) : null;
+	const directGain = proof?.kind === "proven" ? proof.gain : !mate ? proveDiscoveredMaterial(step) : null;
+	const exchange = !mate && directGain === null ? proveExchangeDiscovery(step) : null;
+	const gain = directGain ?? exchange?.gain ?? null;
 	if (!mate && gain === null) return null;
 	if (!kingRay && gain !== null && verifiedFork(step)) {
 		const independentGain = materialThreatGain(step, winningTargets(step.after, step.move.to, step.before.turn), [step.move.to]);
@@ -10096,8 +10171,8 @@ function discoveredEvidence(steps, source) {
 	const victim = step.after.board.get(ray.target);
 	const action = `${step.san} vacates ${makeSquare(step.move.from)}, uncovering the ${slider.role} on ${makeSquare(ray.from)} against the ${victim.role} on ${makeSquare(ray.target)}.`;
 	const moverTargets = targets.filter((to) => !rays.some((r) => r.target === to) && step.after.board.get(to)?.role !== "king");
-	const accompaniment = kingRay && moverTargets.length ? ` The ${moved.role} on ${makeSquare(step.move.to)} also attacks ${moverTargets.map((to) => `the ${step.after.board.get(to).role} on ${makeSquare(to)}`).join(" and ")}.` : !kingRay && step.after.isCheck() ? ` The moving ${moved.role} gives check, so the opponent cannot simply ignore the exposed attack.` : "";
-	const consequence = mate ? step.after.isCheckmate() ? "There is no legal defence: checkmate." : "Every legal defence allows the verified short forced mate." : `Every legal ${kingRay ? "answer to the discovered check" : "reply"} ${proof?.kind === "proven" ? "concedes material" : "allows material gain or mate with at most one extra checking move, allowing for legal recaptures"}. Captures and interpositions are included in this check.`;
+	const accompaniment = (kingRay || exchange) && moverTargets.length ? ` The ${moved.role} on ${makeSquare(step.move.to)} also attacks ${moverTargets.map((to) => `the ${step.after.board.get(to).role} on ${makeSquare(to)}`).join(" and ")}.` : !kingRay && step.after.isCheck() ? ` The moving ${moved.role} gives check, so the opponent cannot simply ignore the exposed attack.` : "";
+	const consequence = mate ? step.after.isCheckmate() ? "There is no legal defence: checkmate." : "Every legal defence allows the verified short forced mate." : exchange ? `The shared defence cannot save all these targets: after ${exchange.example[0]}, ${exchange.example[1]} removes the defender. Every legal reply permits a local material gain, including the defender exchange and up to two checking counterattacks; recaptures and exposed attacking pieces are included.` : `Every legal ${kingRay ? "answer to the discovered check" : "reply"} ${proof?.kind === "proven" ? "concedes material" : "allows material gain or mate with at most one extra checking move, allowing for legal recaptures"}. Captures and interpositions are included in this check.`;
 	return {
 		motif: {
 			id,
@@ -10370,49 +10445,61 @@ function capturedDefenderProof(step, source) {
 	return null;
 }
 var defenderCombinationCache = /* @__PURE__ */ new Map();
+function participantCaptureGain(pos, move, pieces, budget) {
+	if (--budget.nodes < 0) throw new Error("Participant capture proof exhausted");
+	const gain = tacticalExchangeGain(pos, move);
+	if (gain <= -VALUE.king) return null;
+	const next = pos.clone();
+	next.play(move);
+	if (next.isEnd() && !next.isCheckmate()) return null;
+	let liability = 0;
+	for (const reply of legalMoves(next)) {
+		if (reply.to === move.to || !pieces.includes(reply.to) || !capturedValue(next, reply)) continue;
+		if (--budget.nodes < 0) throw new Error("Participant capture proof exhausted");
+		const loss = tacticalExchangeGain(next, reply);
+		if (loss <= -VALUE.king) throw new Error("Unknown participant exchange");
+		liability = Math.max(liability, loss);
+	}
+	const delta = capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+	return delta - Math.max(delta - gain, liability);
+}
 /** The extra branches must belong to this removal: the defended target,
 * the piece behind it, or a simultaneous attack by the capturing piece.
 * One checking counterattack may be answered; never follow a cooperative PV.
 * Exchange leaves also debit an off-square capture of an attacking piece. */
-function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096) {
-	const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}`;
-	if (nodeLimit === 4096 && defenderCombinationCache.has(key)) return defenderCombinationCache.get(key);
-	let nodes = nodeLimit;
+function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sharedBudget, evasionLimit = 1) {
+	const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}:${evasionLimit}`;
+	if (!sharedBudget && nodeLimit === 4096 && defenderCombinationCache.has(key)) return defenderCombinationCache.get(key);
+	const budget = sharedBudget ?? { nodes: nodeLimit };
 	const delta = (pos, move) => capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
 	const visit = (pos, move) => {
-		if (--nodes < 0) throw new Error("Defender combination proof exhausted");
+		if (--budget.nodes < 0) throw new Error("Defender combination proof exhausted");
 		const next = pos.clone();
 		next.play(move);
 		return next;
 	};
-	const answer = (pos, victims, pieces, balance, evasion) => {
+	const answer = (pos, victims, pieces, balance, evasion, retained) => {
 		if (pos.isEnd()) return null;
 		let best = -VALUE.king;
 		for (const move of legalMoves(pos)) {
 			if (!victims.includes(move.to) || !pieces.includes(move.from) || !capturedValue(pos, move)) continue;
-			const gain = tacticalExchangeGain(pos, move);
-			if (gain <= -VALUE.king) continue;
-			const next = visit(pos, move);
-			if (next.isEnd() && !next.isCheckmate()) continue;
-			let liability = 0;
-			for (const reply of legalMoves(next)) {
-				if (reply.to === move.to || !pieces.includes(reply.to) || !capturedValue(next, reply)) continue;
-				if (--nodes < 0) throw new Error("Defender combination proof exhausted");
-				const loss = tacticalExchangeGain(next, reply);
-				if (loss <= -VALUE.king) throw new Error("Unknown defender combination exchange");
-				liability = Math.max(liability, loss);
-			}
-			best = Math.max(best, balance + delta(pos, move) - Math.max(delta(pos, move) - gain, liability));
+			const gain = participantCaptureGain(pos, move, pieces, budget);
+			if (gain !== null) best = Math.max(best, balance + gain);
 		}
 		if (best >= 90) return best;
+		if (retained && !pos.isCheck()) for (const move of legalMoves(pos)) {
+			if (capturedValue(pos, move) || move.promotion) continue;
+			const gain = participantCaptureGain(pos, move, pieces, budget);
+			if (gain !== null && balance + gain >= 90) return balance + gain;
+		}
 		if (!evasion || !pos.isCheck()) return null;
 		for (const move of legalMoves(pos)) {
-			const gain = defend(visit(pos, move), victims.filter((to) => to !== move.to), [...new Set(pieces.map((sq) => sq === move.from ? move.to : sq))], balance + delta(pos, move), evasion - 1);
+			const gain = defend(visit(pos, move), victims.filter((to) => to !== move.to), [...new Set([...pieces.map((sq) => sq === move.from ? move.to : sq), move.to])], balance + delta(pos, move), evasion - 1, retained || capturedValue(pos, move) > 0);
 			if (gain !== null) return gain;
 		}
 		return null;
 	};
-	const defend = (pos, victims, pieces, balance, evasion) => {
+	const defend = (pos, victims, pieces, balance, evasion, retained = false) => {
 		const replies = legalMoves(pos);
 		if (!replies.length) return null;
 		let minimum = Infinity;
@@ -10424,7 +10511,7 @@ function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096) {
 				movedTargets.push(reply.to);
 				movedPieces.push(...legalMoves(next).filter((move) => move.to === reply.to).map((move) => move.from));
 			}
-			const gain = answer(next, [...new Set(movedTargets)], [...new Set(movedPieces)], balance - delta(pos, reply), evasion);
+			const gain = answer(next, [...new Set(movedTargets)], [...new Set(movedPieces)], balance - delta(pos, reply), evasion, retained);
 			if (gain === null) return null;
 			minimum = Math.min(minimum, gain);
 		}
@@ -10432,9 +10519,9 @@ function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096) {
 	};
 	let result = null;
 	try {
-		result = defend(step.after, targets, capturers, delta(step.before, step.move), 1);
+		result = defend(step.after, targets, capturers, delta(step.before, step.move), evasionLimit);
 	} catch {}
-	if (nodeLimit === 4096) {
+	if (!sharedBudget && nodeLimit === 4096) {
 		defenderCombinationCache.set(key, result);
 		if (defenderCombinationCache.size > 256) defenderCombinationCache.delete(defenderCombinationCache.keys().next().value);
 	}
@@ -11190,7 +11277,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 19;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 20;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -11610,18 +11697,28 @@ function buildMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs }) 
 	const allowed = selectImportantTacticalMotifs(allowedMotifs, 1)[0];
 	const missed = selectImportantTacticalMotifs(missedMotifs, 1)[0];
 	if (!allowed && !missed) return null;
-	if (missed && (!allowed || allowed.comparison === "persists" || (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))) return {
+	const conditionalMaterial = (motif) => Boolean(motif && (motif.ply ?? 0) > 1 && !MATE_MOTIF_PATTERN.test(motif.id));
+	const allowedRootOverConditional = allowed?.ply === 1 && conditionalMaterial(missed);
+	if (missed && !allowedRootOverConditional && (!allowed || allowed.comparison === "persists" || missed.ply === 1 && conditionalMaterial(allowed) || (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))) return {
 		title: `What you missed: ${missed.label}`,
 		text: `The better move had this tactic: ${missed.evidence}`,
 		source: "missed",
 		primary: missed
 	};
-	if (allowed) return {
-		title: allowed.comparison === "persists" ? "Tactical danger in the position" : "Why the move was tactically bad",
-		text: allowed.comparison === "persists" ? `${allowed.evidence} ${allowed.comparisonEvidence} This threat alone does not explain the difference between the two moves.` : `Your move allowed this tactic: ${allowed.evidence}${allowed.comparisonEvidence ? ` ${allowed.comparisonEvidence}` : ""}`,
-		source: "allowed",
-		primary: allowed
-	};
+	if (allowed) {
+		if (conditionalMaterial(allowed)) return {
+			title: "Tactic in the continuation",
+			text: `In the displayed continuation, ${allowed.evidence} This later tactic depends on the preceding replies; it is not an immediate refutation.`,
+			source: "allowed",
+			primary: allowed
+		};
+		return {
+			title: allowed.comparison === "persists" ? "Tactical danger in the position" : "Why the move was tactically bad",
+			text: allowed.comparison === "persists" ? `${allowed.evidence} ${allowed.comparisonEvidence} This threat alone does not explain the difference between the two moves.` : `Your move allowed this tactic: ${allowed.evidence}${allowed.comparisonEvidence ? ` ${allowed.comparisonEvidence}` : ""}`,
+			source: "allowed",
+			primary: allowed
+		};
+	}
 	return {
 		title: "What you missed",
 		text: `The better move had this tactic: ${missed?.evidence ?? ""}`,

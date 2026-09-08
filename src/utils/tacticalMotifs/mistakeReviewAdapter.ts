@@ -100,7 +100,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 19;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 20;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -673,11 +673,18 @@ export function buildMistakeReviewTacticalExplanation({
     const allowed = selectImportantTacticalMotifs(allowedMotifs, 1)[0];
     const missed = selectImportantTacticalMotifs(missedMotifs, 1)[0];
     if (!allowed && !missed) return null;
+    const conditionalMaterial = (motif: TacticalMotifEvidence | undefined) =>
+        Boolean(motif && (motif.ply ?? 0) > 1 && !MATE_MOTIF_PATTERN.test(motif.id));
+    // A proved root lesson must not lose to a motif that only appears after
+    // several conditional PV replies. Preserve verified mating consequences.
+    const allowedRootOverConditional = allowed?.ply === 1 && conditionalMaterial(missed);
 
     if (
         missed &&
+        !allowedRootOverConditional &&
         (!allowed ||
             allowed.comparison === "persists" ||
+            (missed.ply === 1 && conditionalMaterial(allowed)) ||
             (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))
     ) {
         return {
@@ -688,6 +695,14 @@ export function buildMistakeReviewTacticalExplanation({
         };
     }
     if (allowed) {
+        if (conditionalMaterial(allowed)) {
+            return {
+                title: "Tactic in the continuation",
+                text: `In the displayed continuation, ${allowed.evidence} This later tactic depends on the preceding replies; it is not an immediate refutation.`,
+                source: "allowed",
+                primary: allowed,
+            };
+        }
         return {
             title:
                 allowed.comparison === "persists"

@@ -265,7 +265,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "allowedTimeline": [
         {
           "id": "discoveredAttack",
@@ -313,7 +313,7 @@
         "comparisonEvidence": "g6 makes the immediate reply Bxh7+ illegal."
       }
     },
-    "classificationMs": 12.003800000005867
+    "classificationMs": 11.533899999994901
   },
   {
     "name": "A different reply wins the same queen after the better move",
@@ -643,7 +643,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -705,7 +705,7 @@
         "comparisonEvidence": "Even after Kg7, Rf5+ still forces at least the same net material gain on the queen on f8. The better move changes the continuation, not the existence of that material loss."
       }
     },
-    "classificationMs": 12.77369999999064
+    "classificationMs": 11.29299999999057
   },
   {
     "name": "Ignored double-check mate instead of making a king escape",
@@ -939,7 +939,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "allowedTimeline": [
         {
           "id": "doubleCheck",
@@ -1015,7 +1015,7 @@
         "comparisonEvidence": "Rg8+ makes the immediate reply Bb5# illegal."
       }
     },
-    "classificationMs": 15.891699999992852
+    "classificationMs": 15.786099999997532
   },
   {
     "name": "Failed to unpin the knight",
@@ -1269,7 +1269,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -1317,7 +1317,7 @@
         "comparisonEvidence": "After Kd7, Kxd6 answers d6; a profitable immediate follow-up capture of the knight on e7 is no longer forced."
       }
     },
-    "classificationMs": 16.6476999999868
+    "classificationMs": 17.49430000000575
   },
   {
     "name": "Allowed a king-queen skewer instead of preserving the queen",
@@ -1581,7 +1581,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "allowedTimeline": [
         {
           "id": "skewer",
@@ -1629,7 +1629,7 @@
         "comparisonEvidence": "After Kf4, Qxd3 answers Bd3; a profitable immediate follow-up capture of the queen on h7 is no longer forced."
       }
     },
-    "classificationMs": 5.3730000000068685
+    "classificationMs": 5.9707000000053085
   },
   {
     "name": "Allowed checking defender removal and lost the queen",
@@ -1925,7 +1925,7 @@
           "value": 500
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "allowedTimeline": [
         {
           "id": "capturingDefender",
@@ -1987,7 +1987,7 @@
         "comparisonEvidence": "Qxd1+ makes the immediate reply gxf6+ illegal."
       }
     },
-    "classificationMs": 19.471900000004098
+    "classificationMs": 19.958099999988917
   },
   {
     "name": "Missed quiet mate while leaving the queen attacked",
@@ -2205,7 +2205,7 @@
           "value": 10000
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -2289,7 +2289,7 @@
         "value": 10000
       }
     },
-    "classificationMs": 6.603800000011688
+    "classificationMs": 6.805099999997765
   },
   {
     "name": "Missed the quiet rook preparation for mate or a queen skewer",
@@ -2595,7 +2595,7 @@
           "relevance": "secondary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "missedTimeline": [
         {
           "id": "tacticalPreparation",
@@ -2663,7 +2663,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 9.396900000007008
+    "classificationMs": 8.066500000000815
   },
   {
     "name": "Recaptured the rook before taking the queen with check",
@@ -2929,7 +2929,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -2989,7 +2989,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 70.09159999999974
+    "classificationMs": 70.43610000000626
   },
   {
     "name": "Recaptured the bishop before taking the knight with check",
@@ -3285,7 +3285,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "missedTimeline": [
         {
           "id": "intermezzo",
@@ -3329,7 +3329,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 57.41309999999066
+    "classificationMs": 58.615200000000186
   },
   {
     "name": "Allowed a checking queen capture before the rook recapture",
@@ -3655,7 +3655,7 @@
           "value": 330
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "allowedTimeline": [
         {
           "id": "intermezzo",
@@ -3729,7 +3729,7 @@
         "comparisonEvidence": "Qxg5 makes the immediate reply Bxd2+ illegal."
       }
     },
-    "classificationMs": 74.49559999999474
+    "classificationMs": 73.44969999999739
   },
   {
     "name": "Allowed an intermediate knight capture before the bishop recapture",
@@ -4081,7 +4081,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "allowedTimeline": [
         {
           "id": "intermezzo",
@@ -4129,7 +4129,7 @@
         "comparisonEvidence": "Nxd5 makes the immediate reply Nxe7+ illegal."
       }
     },
-    "classificationMs": 92.57050000000163
+    "classificationMs": 91.31050000000687
   },
   {
     "name": "b6 permits the f7 fork",
@@ -4452,7 +4452,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -4526,7 +4526,827 @@
         "comparisonEvidence": "After O-O, Nxf7 no longer has two profitable fork targets."
       }
     },
-    "classificationMs": 66.59260000000359
+    "classificationMs": 63.330199999996694
+  },
+  {
+    "name": "Developing the bishop misses the overloaded-queen discovery",
+    "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
+    "played": "f8e7",
+    "source": "missed",
+    "primary": "discoveredAttack",
+    "why": "Ne5 opens Rd8 against Nd4 and overloads Qd3's defence of the two minor pieces. Be7 misses the combination.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d7e5",
+          "d3c3",
+          "a5c3",
+          "b2c3",
+          "e5c4",
+          "e4f6",
+          "g8g5",
+          "f2f4",
+          "g5a5",
+          "g2g4",
+          "h5g6",
+          "f4f5",
+          "f8c5",
+          "f5g6",
+          "f7g6",
+          "g1g2",
+          "a5a3",
+          "a1a3",
+          "c4a3",
+          "d4e6",
+          "d8d2",
+          "g2f3",
+          "a3c2",
+          "e1e4",
+          "d2d3",
+          "f3e2",
+          "d3c3",
+          "g4g5",
+          "h6g5"
+        ],
+        "pvSan": [
+          "Ne5",
+          "Qc3",
+          "Qxc3",
+          "bxc3",
+          "Nxc4",
+          "Nxf6",
+          "Rg5",
+          "f4",
+          "Ra5",
+          "g4",
+          "Bg6",
+          "f5",
+          "Bc5",
+          "fxg6",
+          "fxg6",
+          "Kg2",
+          "Rxa3",
+          "Rxa3",
+          "Nxa3",
+          "Ne6",
+          "Rd2+",
+          "Kf3",
+          "Nxc2",
+          "Re4",
+          "Rd3+",
+          "Ke2",
+          "Rxc3",
+          "g5",
+          "hxg5"
+        ],
+        "cp": 220,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "d7c5",
+          "d3e3",
+          "c5e4",
+          "e3e4",
+          "a5c5",
+          "c2c3",
+          "f8d6",
+          "e4f5",
+          "c8b8",
+          "f5c5",
+          "d6c5",
+          "c4e2",
+          "h5e2",
+          "d4e2"
+        ],
+        "pvSan": [
+          "Nc5",
+          "Qe3",
+          "Nxe4",
+          "Qxe4",
+          "Qc5",
+          "c3",
+          "Bd6",
+          "Qf5+",
+          "Kb8",
+          "Qxc5",
+          "Bxc5",
+          "Be2",
+          "Bxe2",
+          "Nxe2"
+        ],
+        "cp": 14,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "a5b6",
+          "d4f5",
+          "d7e5",
+          "d3c3",
+          "e5f3",
+          "g1f1",
+          "f3h2",
+          "f1g1"
+        ],
+        "pvSan": [
+          "Qb6",
+          "Nf5",
+          "Ne5",
+          "Qc3",
+          "Nf3+",
+          "Kf1",
+          "Nh2+",
+          "Kg1"
+        ],
+        "cp": 0,
+        "mate": null
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "b2b4",
+          "a5c7",
+          "e4g3",
+          "d7e5",
+          "d3f5",
+          "c8b8",
+          "f5h5",
+          "d8d4",
+          "c4f7",
+          "g8g5",
+          "h5e2",
+          "c6c5",
+          "e2e3",
+          "d4d8",
+          "b4b5",
+          "c5c4",
+          "g3e4",
+          "g5f5",
+          "f7e6",
+          "e5f3",
+          "g2f3",
+          "f5e5",
+          "e6g4",
+          "f6f5",
+          "a1d1",
+          "f5e4",
+          "d1d8",
+          "c7d8",
+          "f3e4",
+          "e5g5",
+          "e3f4",
+          "d8c7"
+        ],
+        "pvSan": [
+          "b4",
+          "Qc7",
+          "Ng3",
+          "Ne5",
+          "Qf5+",
+          "Kb8",
+          "Qxh5",
+          "Rxd4",
+          "Bxf7",
+          "Rg5",
+          "Qe2",
+          "c5",
+          "Qe3",
+          "Rd8",
+          "b5",
+          "c4",
+          "Ne4",
+          "Rf5",
+          "Be6",
+          "Nf3+",
+          "gxf3",
+          "Re5",
+          "Bg4",
+          "f5",
+          "Rad1",
+          "fxe4",
+          "Rxd8+",
+          "Qxd8",
+          "fxe4",
+          "Rg5",
+          "Qf4+",
+          "Qc7"
+        ],
+        "cp": 166,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "d4f5",
+          "e7f8",
+          "f5d6",
+          "c8b8",
+          "d6f7",
+          "h5f7",
+          "c4f7",
+          "g8g7",
+          "b2b4",
+          "a5c7",
+          "f7e6",
+          "d7c5",
+          "d3c4",
+          "c5e4",
+          "c4e4",
+          "f8d6",
+          "e4f3",
+          "d6e5",
+          "a1d1",
+          "a7a5",
+          "d1d8",
+          "c7d8"
+        ],
+        "pvSan": [
+          "Nf5",
+          "Bf8",
+          "Nfd6+",
+          "Kb8",
+          "Nxf7",
+          "Bxf7",
+          "Bxf7",
+          "Rg7",
+          "b4",
+          "Qc7",
+          "Be6",
+          "Nc5",
+          "Qc4",
+          "Nxe4",
+          "Qxe4",
+          "Bd6",
+          "Qf3",
+          "Be5",
+          "Rad1",
+          "a5",
+          "Rxd8+",
+          "Qxd8"
+        ],
+        "cp": 155,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e4g3",
+          "d7e5",
+          "d3f5",
+          "c8b8",
+          "f5h5",
+          "d8d4",
+          "c4f7",
+          "g8g5",
+          "b2b4",
+          "g5h5",
+          "b4a5",
+          "h5g5",
+          "f7e6",
+          "d4f4",
+          "a1d1",
+          "a7a6",
+          "e1e2",
+          "f4a4"
+        ],
+        "pvSan": [
+          "Ng3",
+          "Ne5",
+          "Qf5+",
+          "Kb8",
+          "Qxh5",
+          "Rxd4",
+          "Bxf7",
+          "Rg5",
+          "b4",
+          "Rxh5",
+          "bxa5",
+          "Rg5",
+          "Be6",
+          "Rf4",
+          "Rad1",
+          "a6",
+          "Re2",
+          "Ra4"
+        ],
+        "cp": 111,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [
+        {
+          "id": "fork",
+          "label": "Fork",
+          "confidence": "high",
+          "evidence": "Qf5+ forks the king on c8 and bishop on h5. The line continues with Qxh5, winning the bishop.",
+          "source": "allowed",
+          "ply": 5,
+          "moveUci": "d3f5",
+          "relevance": "primary",
+          "value": 110
+        }
+      ],
+      "missedMotifs": [
+        {
+          "id": "discoveredAttack",
+          "label": "Discovered Attack",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d7e5",
+          "evidence": "Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including the defender exchange and up to two checking counterattacks; recaptures and exposed attacking pieces are included.",
+          "value": 150,
+          "relevance": "primary"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-20",
+      "allowedTimeline": [
+        {
+          "id": "fork",
+          "label": "Fork",
+          "confidence": "high",
+          "evidence": "Qf5+ forks the king on c8 and bishop on h5. The line continues with Qxh5, winning the bishop.",
+          "source": "allowed",
+          "ply": 5,
+          "moveUci": "d3f5",
+          "relevance": "primary",
+          "value": 110,
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxh5 wins the loose bishop on h5.",
+          "source": "allowed",
+          "ply": 7,
+          "moveUci": "f5h5",
+          "relevance": "secondary",
+          "value": 330,
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Rxd4 wins the loose knight on d4.",
+          "source": "allowed",
+          "ply": 8,
+          "moveUci": "d8d4",
+          "relevance": "secondary",
+          "value": 320,
+          "actor": "black"
+        }
+      ],
+      "missedTimeline": [
+        {
+          "id": "discoveredAttack",
+          "label": "Discovered Attack",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d7e5",
+          "evidence": "Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including the defender exchange and up to two checking counterattacks; recaptures and exposed attacking pieces are included.",
+          "value": 150,
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Nxc4 wins the loose bishop on c4.",
+          "source": "missed",
+          "ply": 5,
+          "moveUci": "e5c4",
+          "relevance": "secondary",
+          "value": 330,
+          "actor": "black"
+        },
+        {
+          "id": "fork",
+          "label": "Fork",
+          "confidence": "high",
+          "evidence": "Nxf6 forks the rook on g8 and bishop on h5.",
+          "source": "missed",
+          "ply": 6,
+          "moveUci": "e4f6",
+          "relevance": "secondary",
+          "value": 330,
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 14,
+          "moveUci": "f5g6",
+          "evidence": "fxg6 wins the loose bishop on g6.",
+          "relevance": "secondary",
+          "value": 230,
+          "actor": "white"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "What you missed: Discovered Attack",
+      "text": "The better move had this tactic: Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including the defender exchange and up to two checking counterattacks; recaptures and exposed attacking pieces are included.",
+      "source": "missed",
+      "primary": {
+        "id": "discoveredAttack",
+        "label": "Discovered Attack",
+        "source": "missed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "d7e5",
+        "evidence": "Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including the defender exchange and up to two checking counterattacks; recaptures and exposed attacking pieces are included.",
+        "value": 150,
+        "relevance": "primary"
+      }
+    },
+    "classificationMs": 201.52079999999842
+  },
+  {
+    "name": "The real Nxd4 mistake allows the overloaded-queen discovery",
+    "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BpN3/P2Q1N1P/1PP2PP1/R3R1K1 w - - 0 15",
+    "played": "f3d4",
+    "source": "allowed",
+    "primary": "discoveredAttack",
+    "why": "Nxd4 places a knight on the rook's blocked file; Ne5 reveals that attack while attacking the queen and bishop, and Qc3 is met by Qxc3.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "f3h4",
+          "d7e5",
+          "d3b3",
+          "a5c7",
+          "c4f1",
+          "e5d7",
+          "f1e2",
+          "c7a5",
+          "e2c4",
+          "g8g7",
+          "b3d3",
+          "f6f5",
+          "e4d2",
+          "f5f4",
+          "d2f3",
+          "h5f3",
+          "h4f3",
+          "a5h5",
+          "g1h1",
+          "d7c5"
+        ],
+        "pvSan": [
+          "Nh4",
+          "Ne5",
+          "Qb3",
+          "Qc7",
+          "Bf1",
+          "Nd7",
+          "Be2",
+          "Qa5",
+          "Bc4",
+          "Rg7",
+          "Qd3",
+          "f5",
+          "Nd2",
+          "f4",
+          "Ndf3",
+          "Bxf3",
+          "Nxf3",
+          "Qh5",
+          "Kh1",
+          "Nc5"
+        ],
+        "cp": -22,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e4g3",
+          "h5g6",
+          "d3b3",
+          "f8d6",
+          "f3d4",
+          "d6g3",
+          "f2g3",
+          "d7e5",
+          "c2c3",
+          "c6c5",
+          "d4e2",
+          "d8d2",
+          "c4d5",
+          "b7b5",
+          "a1d1"
+        ],
+        "pvSan": [
+          "Ng3",
+          "Bg6",
+          "Qb3",
+          "Bd6",
+          "Nxd4",
+          "Bxg3",
+          "fxg3",
+          "Ne5",
+          "c3",
+          "c5",
+          "Ne2",
+          "Rd2",
+          "Bd5",
+          "b5",
+          "Rad1"
+        ],
+        "cp": -66,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e4d2",
+          "f8d6",
+          "d2b3",
+          "a5c7",
+          "b3d4",
+          "c8b8",
+          "d3b3",
+          "d7e5",
+          "c4e2",
+          "e5g6",
+          "g1f1",
+          "g6f4",
+          "f3h4",
+          "d6c5",
+          "e2h5",
+          "f4h5",
+          "c2c3",
+          "c5d4",
+          "c3d4",
+          "d8d4"
+        ],
+        "pvSan": [
+          "Ned2",
+          "Bd6",
+          "Nb3",
+          "Qc7",
+          "Nbxd4",
+          "Kb8",
+          "Qb3",
+          "Ne5",
+          "Be2",
+          "Ng6",
+          "Kf1",
+          "Nf4",
+          "Nh4",
+          "Bc5",
+          "Bxh5",
+          "Nxh5",
+          "c3",
+          "Bxd4",
+          "cxd4",
+          "Rxd4"
+        ],
+        "cp": -73,
+        "mate": null
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d7e5",
+          "d3c3",
+          "a5c3",
+          "b2c3",
+          "e5c4",
+          "e4f6",
+          "g8g5",
+          "f2f4",
+          "g5a5",
+          "g2g4",
+          "h5g6",
+          "f4f5",
+          "f8c5",
+          "f5g6",
+          "f7g6",
+          "g1g2",
+          "a5a3",
+          "a1a3",
+          "c4a3",
+          "d4e6",
+          "d8d2",
+          "g2f3",
+          "a3c2",
+          "e1e4",
+          "d2d3",
+          "f3e2",
+          "d3c3",
+          "g4g5",
+          "h6g5"
+        ],
+        "pvSan": [
+          "Ne5",
+          "Qc3",
+          "Qxc3",
+          "bxc3",
+          "Nxc4",
+          "Nxf6",
+          "Rg5",
+          "f4",
+          "Ra5",
+          "g4",
+          "Bg6",
+          "f5",
+          "Bc5",
+          "fxg6",
+          "fxg6",
+          "Kg2",
+          "Rxa3",
+          "Rxa3",
+          "Nxa3",
+          "Ne6",
+          "Rd2+",
+          "Kf3",
+          "Nxc2",
+          "Re4",
+          "Rd3+",
+          "Ke2",
+          "Rxc3",
+          "g5",
+          "hxg5"
+        ],
+        "cp": 220,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "d7c5",
+          "d3e3",
+          "c5e4",
+          "e3e4",
+          "a5c5",
+          "c2c3",
+          "f8d6",
+          "e4f5",
+          "c8b8",
+          "f5c5",
+          "d6c5",
+          "c4e2",
+          "h5e2",
+          "d4e2"
+        ],
+        "pvSan": [
+          "Nc5",
+          "Qe3",
+          "Nxe4",
+          "Qxe4",
+          "Qc5",
+          "c3",
+          "Bd6",
+          "Qf5+",
+          "Kb8",
+          "Qxc5",
+          "Bxc5",
+          "Be2",
+          "Bxe2",
+          "Nxe2"
+        ],
+        "cp": 14,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "a5b6",
+          "d4f5",
+          "d7e5",
+          "d3c3",
+          "e5f3",
+          "g1f1",
+          "f3h2",
+          "f1g1"
+        ],
+        "pvSan": [
+          "Qb6",
+          "Nf5",
+          "Ne5",
+          "Qc3",
+          "Nf3+",
+          "Kf1",
+          "Nh2+",
+          "Kg1"
+        ],
+        "cp": 0,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [
+        {
+          "id": "discoveredAttack",
+          "label": "Discovered Attack",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d7e5",
+          "evidence": "Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including the defender exchange and up to two checking counterattacks; recaptures and exposed attacking pieces are included.",
+          "value": 150,
+          "relevance": "primary"
+        }
+      ],
+      "missedMotifs": [],
+      "motifClassifierVersion": "site-55.adapter-20",
+      "allowedTimeline": [
+        {
+          "id": "discoveredAttack",
+          "label": "Discovered Attack",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d7e5",
+          "evidence": "Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including the defender exchange and up to two checking counterattacks; recaptures and exposed attacking pieces are included.",
+          "value": 150,
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Nxc4 wins the loose bishop on c4.",
+          "source": "allowed",
+          "ply": 5,
+          "moveUci": "e5c4",
+          "relevance": "secondary",
+          "value": 330,
+          "actor": "black"
+        },
+        {
+          "id": "fork",
+          "label": "Fork",
+          "confidence": "high",
+          "evidence": "Nxf6 forks the rook on g8 and bishop on h5.",
+          "source": "allowed",
+          "ply": 6,
+          "moveUci": "e4f6",
+          "relevance": "secondary",
+          "value": 330,
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 14,
+          "moveUci": "f5g6",
+          "evidence": "fxg6 wins the loose bishop on g6.",
+          "relevance": "secondary",
+          "value": 230,
+          "actor": "white"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "Why the move was tactically bad",
+      "text": "Your move allowed this tactic: Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including the defender exchange and up to two checking counterattacks; recaptures and exposed attacking pieces are included.",
+      "source": "allowed",
+      "primary": {
+        "id": "discoveredAttack",
+        "label": "Discovered Attack",
+        "source": "allowed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "d7e5",
+        "evidence": "Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including the defender exchange and up to two checking counterattacks; recaptures and exposed attacking pieces are included.",
+        "value": 150,
+        "relevance": "primary"
+      }
+    },
+    "classificationMs": 87.10399999999208
   },
   {
     "name": "Taking a pawn misses the promotion-backed knight fork",
@@ -4789,7 +5609,7 @@
           "value": 480
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "missedTimeline": [
         {
           "id": "fork",
@@ -4833,7 +5653,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 14.338499999998021
+    "classificationMs": 15.538100000005215
   },
   {
     "name": "Moving onto f6 allows the promotion-backed fork",
@@ -5096,7 +5916,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -5144,7 +5964,7 @@
         "comparisonEvidence": "After Nc8, Nd5 no longer has two profitable fork targets."
       }
     },
-    "classificationMs": 19.037899999995716
+    "classificationMs": 19.848200000007637
   },
   {
     "name": "Missed queen while the knight is already attacked",
@@ -5436,7 +6256,7 @@
           "value": 900
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "missedTimeline": [
         {
           "id": "hangingPiece",
@@ -5468,7 +6288,7 @@
         "value": 900
       }
     },
-    "classificationMs": 14.482300000003306
+    "classificationMs": 13.527700000006007
   },
   {
     "name": "Failed to create a back-rank escape",
@@ -5670,7 +6490,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-19",
+      "motifClassifierVersion": "site-55.adapter-20",
       "allowedTimeline": [
         {
           "id": "backRankMate",
@@ -5718,6 +6538,6 @@
         "comparisonEvidence": "After g5, Kg7 is a legal answer to Re8+; it is no longer mate."
       }
     },
-    "classificationMs": 1.4395999999978812
+    "classificationMs": 1.7906000000075437
   }
 ]

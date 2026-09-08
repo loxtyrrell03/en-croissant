@@ -71,7 +71,7 @@ every possible defensive continuation. “Open” is not a successful empty resu
 | eOCp9 | Open quiet queen manoeuvre. Qf4/Qe5 has no accepted forcing proof here; its exact tactical point requires further engine-supported inspection. |
 | erSYy | Core sound: e8=N+ forks king g7 and queen f6. Keep Fork plus the specific Underpromotion; the duplicate Promotion label is removed. |
 | vztmO | Fixed duplicate generic mate labels. Rxh2# is supported by g3; the king cannot take the rook. |
-| G8wdr | Open double-attack miss: Ne5 attacks Qd3 and Bc4; Qc3 protects the bishop, but Qxc3 bxc3 removes that defence before Nxc4. The intervening queen exchange defeats the current immediate-target proof. |
+| G8wdr | Corrected judgement and fixed in adapter 20: the earlier fork description omitted Rd8's newly uncovered attack on Nd4. Ne5 attacks Qd3/Bc4 while the rook attacks Nd4, overloading the queen's shared defence. Qc3 allows Qxc3; Qf1 instead loses Nd4. Discovered Attack is therefore the root lesson, with the defender exchange as a branch mechanism. The bounded all-replies proof includes declined recaptures and two checking sacrifices, retaining earned material when the next target escapes. Its local minimum is 150 cp, not the engine's whole-position score. Removing either Rd8 or Qa5 invalidates this proof. Fresh searches verify both the actual preceding Nxd4 mistake and the missed Ne5 opportunity after Be7. |
 | 4GiqO | Open pawn-ending judgement. Kb4/Ka3 is not enough by itself to certify zugzwang; do not add that label merely from a winning endpoint. |
 | wh6Ac | Fixed duplicate generic mate labels. Qg2# is pawn-supported; one Checkmate lesson is sufficient. |
 | NOaM1 | Core sound: Bb1+ aligns king e4 and bishop f5, enabling Bxf5 after the king moves. |
@@ -79,7 +79,7 @@ every possible defensive continuation. “Open” is not a successful empty resu
 
 ## Next work
 
-Prioritize G8wdr's queen-exchange branch and the quiet pin in w1lKu. CSh8J's
+Prioritize the quiet pin in w1lKu and the unresolved long combinations. CSh8J's
 promotion-backed fork now has a local all-replies proof, not a full ending solve.
 Audit named-mate overlap separately from legal checkmate.
 Retain the unresolved en-passant attack and endgame cases; do not turn them into

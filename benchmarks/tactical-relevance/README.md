@@ -674,7 +674,7 @@ Stockfish scenarios choose Fork as the missed primary after `Kxg3` and the
 allowed primary after `...Kf6`; the better `...Nc8` avoids the immediate fork.
 The expanded fresh-engine report now asserts CSh8J's root lesson as well.
 
-Verification passed 224 selected regression tests in 23 files, all ten opt-in
+Adapter-19 verification passed 224 selected regression tests in 23 files, all ten opt-in
 engine tests, targeted formatting/lint, shared-review worker and production
 builds. Type checking retains the known unrelated OTB number/bigint fixture
 error. Only CSh8J's headline changes in the frozen 32-position expansion.
@@ -682,6 +682,60 @@ error. Only CSh8J's headline changes in the frozen 32-position expansion.
 The remaining queen-exchange fork and quiet-pin combinations are still open;
 they are not converted into successful empty-result tests. No running app or
 hosting deployment is asserted.
+
+## An overloaded shared defence, not just a fork (adapter 20)
+
+Further inspection corrected the earlier G8wdr judgement. `...Ne5` attacks
+Qd3/Bc4 **and uncovers Rd8 against Nd4**. The queen cannot defend both minor
+pieces while escaping: `Qf1` loses Nd4, while `Qc3` allows `Qxc3 bxc3 Nxc4`.
+The primary lesson is Discovered Attack. Calling it only a fork omits the rook
+that makes other queen escapes fail; the website's defender-removal tag names
+the exchange branch, not the initiating move. No source tag is treated as truth.
+
+The new fallback nominates only an actual uncovered battery and its moving
+piece's attacked targets. After every legal reply, it checks captures of those
+targets (or a checking attacker); when a target supplies a shared defence, one
+capture of that defender may precede the payoff. Every reply to this capture
+is checked, including refusing the exchange and up to two checking counterattacks.
+All nested visits share one 8,192-node budget; unknown results abstain and small
+budgets cannot reuse cached successes. The existing exchange-leaf policy debits
+the stronger of an immediate recapture and an off-square capture of an attacking
+participant, rather than double-counting both as simultaneous moves.
+
+Checking sacrifices exposed a separate limitation: after taking a donated
+target, the proof demanded another capture even if the opponent saved the
+remaining target. It now permits an actual legal non-capture that retains the
+earned gain after settling exposed participants; a null move is not evidence.
+Checking evasions track their moved piece too. The original defender-removal
+callers keep their one-check limit, while this exchange fallback permits two.
+This remains local material verification, not a complete positional evaluation.
+
+The current minimum is 150 cp. The source fixture, one-move input, queen-escape
+line and successive checking sacrifices retain the same root lesson; removing
+either Rd8 or Qa5 rejects it. Board arrows show the new rook ray and knight
+attacks, not the conditional future queen-exchange destination. Six fresh
+Stockfish branch searches are recorded in `exchange-discovery-stockfish-18.json`.
+Two before/after scenarios additionally test the actual source game's `Nxd4`
+mistake and the missed opportunity after `...Be7`.
+
+The latter caught a ranking bug: a smaller Qf5+ fork at ply 5 of the allowed
+line displaced the missed Ne5 discovery at ply 1. A verified root lesson now
+outranks a conditional later material motif in either direction; mating
+consequences retain priority. When only a later allowed material motif is
+available, the explanation calls it conditional rather than an immediate
+refutation. Such motifs remain visible on the per-ply timeline.
+
+Only G8wdr's headline changes in the frozen 32-position sample. The quiet pin
+in w1lKu, other long combinations, named-mate overlap and broader candidate
+coverage remain open. This is development evidence, not general accuracy,
+holdout validation or running-app/hosting deployment proof.
+
+Verification passed 237 selected regression tests in 24 files, all eleven
+opt-in Stockfish tests, targeted formatting/lint, shared-review worker and
+production builds. Type checking retains only the unrelated OTB number/bigint
+fixture error. Classification timing is recorded per branch; it includes the
+conditional timeline, varies with concurrent host work and is not a UI latency
+guarantee.
 
 Run in PowerShell with the configured Node runtime on PATH:
 
@@ -697,6 +751,7 @@ $env:TACTICAL_REAL_ENGINE_REPORT = 'benchmarks/tactical-relevance/real-puzzle-st
 $env:TACTICAL_TRAP_REPORT = 'benchmarks/tactical-relevance/trapped-stockfish-18.json'
 $env:TACTICAL_DEFENDER_REPORT = 'benchmarks/tactical-relevance/defender-stockfish-18.json'
 $env:TACTICAL_EXPANSION_ENGINE_REPORT = 'benchmarks/tactical-relevance/expanded-stockfish-18.json'
+$env:TACTICAL_EXCHANGE_DISCOVERY_REPORT = 'benchmarks/tactical-relevance/exchange-discovery-stockfish-18.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node
 $env:TACTICAL_REAL_PUZZLE_REPORT = 'benchmarks/tactical-relevance/real-puzzle-judgement.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/realPuzzleJudgement.test.ts --environment node

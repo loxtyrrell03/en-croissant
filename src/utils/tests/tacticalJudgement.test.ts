@@ -117,6 +117,61 @@ test.skipIf(!process.env.TACTICAL_JUDGEMENT_ENGINE || !process.env.TACTICAL_DEFE
     180000,
 );
 
+test.skipIf(
+    !process.env.TACTICAL_JUDGEMENT_ENGINE || !process.env.TACTICAL_EXCHANGE_DISCOVERY_REPORT,
+)(
+    "inspect the overloaded-queen discovery and defensive branches",
+    async () => {
+        const fen = "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15";
+        const prefixes = [
+            [],
+            ["d7e5", "d3c3"],
+            ["d7e5", "d3f1"],
+            ["d7e5", "d3b3"],
+            ["d7e5", "d3e2"],
+            ["d7e5", "d3c3", "a5c3", "e4d6"],
+        ];
+        const report = [];
+        for (const prefix of prefixes) {
+            const pos = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
+            for (const uci of prefix) {
+                const move = parseUci(uci)!;
+                expect({ uci, legal: pos.isLegal(move) }).toEqual({ uci, legal: true });
+                pos.play(move);
+            }
+            const lines = [
+                ...(
+                    await analyse(process.env.TACTICAL_JUDGEMENT_ENGINE!, makeFen(pos.toSetup()))
+                ).values(),
+            ];
+            const started = performance.now();
+            const classification = classifyPositionTacticalMotifs({
+                fen,
+                pvUci: [...prefix, ...lines[0].pvUci],
+            });
+            report.push({
+                fen,
+                prefix,
+                lines,
+                classification,
+                classificationMs: performance.now() - started,
+            });
+        }
+        writeFileSync(
+            process.env.TACTICAL_EXCHANGE_DISCOVERY_REPORT!,
+            JSON.stringify(report, null, 2),
+        );
+        for (const entry of report) {
+            expect(entry.classification.motifs[0]).toMatchObject({
+                id: "discoveredAttack",
+                ply: 1,
+            });
+            expect(entry.classification.motifs[0].evidence).toContain("Qc3, Qxc3");
+        }
+    },
+    180000,
+);
+
 async function analyse(engine: string, fen: string, searchMove?: string) {
     const child = spawn(engine, [], { windowsHide: true, stdio: "pipe" });
     const lines = new Map<
@@ -907,6 +962,22 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     source: "allowed",
                     primary: "fork",
                     why: "Black should deal with f7; the quiet b6 move permits a protected queen-rook fork.",
+                },
+                {
+                    name: "Developing the bishop misses the overloaded-queen discovery",
+                    fen: "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
+                    played: "f8e7",
+                    source: "missed",
+                    primary: "discoveredAttack",
+                    why: "Ne5 opens Rd8 against Nd4 and overloads Qd3's defence of the two minor pieces. Be7 misses the combination.",
+                },
+                {
+                    name: "The real Nxd4 mistake allows the overloaded-queen discovery",
+                    fen: "2kr1br1/pp1n1p2/2p2p1p/q6b/2BpN3/P2Q1N1P/1PP2PP1/R3R1K1 w - - 0 15",
+                    played: "f3d4",
+                    source: "allowed",
+                    primary: "discoveredAttack",
+                    why: "Nxd4 places a knight on the rook's blocked file; Ne5 reveals that attack while attacking the queen and bishop, and Qc3 is met by Qxc3.",
                 },
                 {
                     name: "Taking a pawn misses the promotion-backed knight fork",
