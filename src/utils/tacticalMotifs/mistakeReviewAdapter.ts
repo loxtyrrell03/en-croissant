@@ -101,7 +101,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 23;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 24;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -560,6 +560,7 @@ function toMotifEvidence(
 
 const IMPORTANT_TACTICAL_THEME_IDS = new Set([
     "forkPreparation",
+    "doubleThreat",
     "tacticalPreparation",
     "fork",
     "pin",

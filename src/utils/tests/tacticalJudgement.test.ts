@@ -6,6 +6,7 @@ import { makeFen, parseFen } from "chessops/fen";
 import { makeSan } from "chessops/san";
 import { parseUci } from "chessops/util";
 import { buildLiveTacticalScan } from "@/utils/tacticalMotifs/liveTactics";
+import { proveQuietDoubleThreat, replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 import {
     buildMistakeReviewTacticalExplanation,
     classifyMistakeReviewMotifs,
@@ -317,7 +318,18 @@ test.skipIf(
                     fen: item.fen,
                     pvUci: [...prefix, ...lines[0].pvUci],
                 });
-                report.push({ id: item.id, fen: item.fen, root, prefix, lines, classification });
+                report.push({
+                    id: item.id,
+                    fen: item.fen,
+                    root,
+                    prefix,
+                    lines,
+                    classification,
+                    doubleThreatProof:
+                        item.id === "NGZzo"
+                            ? proveQuietDoubleThreat(replayTacticalLine(item.fen, ["c5d7"])[0])
+                            : undefined,
+                });
             }
         }
         writeFileSync(
@@ -332,8 +344,9 @@ test.skipIf(
             report.find((item) => item.id === "fJrhT" && item.prefix.length)?.classification
                 .motifs[0],
         ).toMatchObject({ id: "forkPreparation", ply: 1 });
-        // NGZzo's double threat and opGD7's longer king drive are still diagnostic,
-        // not accepted empty results or claims that their primary lessons are solved.
+        for (const item of report.filter((item) => item.id === "NGZzo"))
+            expect(item.classification.motifs[0]).toMatchObject({ id: "doubleThreat", ply: 1 });
+        // opGD7's longer king drive remains diagnostic, not an accepted empty result.
     },
     180000,
 );
@@ -1136,6 +1149,22 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     source: "allowed",
                     primary: "forkPreparation",
                     why: "Rb1+ forces Kf2 into Nd3+'s fork or wins the interposing rook after Rc1. Re1 would instead be a protected block when the rook stays on e5.",
+                },
+                {
+                    name: "The real g6 mistake permits Nd7's double threat",
+                    fen: "r5k1/5pp1/Br2p3/1PNpPb1q/3P4/4P1Q1/5K1P/6R1 b - - 6 32",
+                    played: "g7g6",
+                    source: "allowed",
+                    primary: "doubleThreat",
+                    why: "Nd7 attacks Rb6 and threatens Nf6+ against king and queen. Different defences allow different material wins; the root move is not itself a fork.",
+                },
+                {
+                    name: "A quiet king move misses Nd7's double threat",
+                    fen: "r5k1/5p2/Br2p1p1/1PNpPb1q/3P4/4P1Q1/5K1P/6R1 w - - 0 33",
+                    played: "f2e1",
+                    source: "missed",
+                    primary: "doubleThreat",
+                    why: "White can win material with Nd7's rook attack and separate checking-fork threat. Ke1 instead gives Black time to resolve the danger.",
                 },
                 {
                     name: "Playing Nd3 too early misses the checking preparation",

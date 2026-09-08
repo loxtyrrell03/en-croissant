@@ -223,9 +223,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     },
-    "classificationMs": 22.11469999999099
+    "classificationMs": 24.778200000000652
   },
   {
     "name": "King escape declines the deflection bait",
@@ -412,9 +412,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     },
-    "classificationMs": 13.105999999999767
+    "classificationMs": 14.202900000003865
   },
   {
     "name": "The alleged deflected defender was already pinned",
@@ -611,9 +611,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     },
-    "classificationMs": 5.570699999996577
+    "classificationMs": 6.205900000000838
   },
   {
     "name": "Exploit an absolute pin",
@@ -871,9 +871,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     },
-    "classificationMs": 11.32410000001255
+    "classificationMs": 14.239300000001094
   },
   {
     "name": "Rook captures the pinning attacker's pawn",
@@ -1034,9 +1034,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     },
-    "classificationMs": 12.532600000005914
+    "classificationMs": 14.1649000000034
   },
   {
     "name": "King-queen skewer",
@@ -1225,9 +1225,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     },
-    "classificationMs": 3.8686000000016065
+    "classificationMs": 3.414600000003702
   },
   {
     "name": "Pawn interposes against the skewer",
@@ -1458,9 +1458,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     },
-    "classificationMs": 20.13869999999588
+    "classificationMs": 19.588099999993574
   },
   {
     "name": "Remove the queen's defender with check",
@@ -1677,8 +1677,8 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     },
-    "classificationMs": 10.170999999987544
+    "classificationMs": 10.447400000004563
   }
 ]

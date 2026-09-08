@@ -117,7 +117,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     }
   },
   {
@@ -155,7 +155,7 @@
     ],
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     }
   },
   {
@@ -299,7 +299,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     }
   },
   {
@@ -366,8 +366,241 @@
       }
     ],
     "classification": {
-      "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifs": [
+        {
+          "id": "doubleThreat",
+          "label": "Double Threat",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c5d7",
+          "value": 180,
+          "evidence": "Nd7 attacks the rook on b6 and threatens Nf6+, a checking fork of the queen on h5 and king on g8. After Kg7, Nxb6 wins material; after Rc6, Nf6+ uses the fork instead. All 35 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played.",
+          "relevance": "primary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "doubleThreat",
+          "label": "Double Threat",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c5d7",
+          "value": 180,
+          "evidence": "Nd7 attacks the rook on b6 and threatens Nf6+, a checking fork of the queen on h5 and king on g8. After Kg7, Nxb6 wins material; after Rc6, Nf6+ uses the fork instead. All 35 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played.",
+          "relevance": "primary",
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "d7b6 wins the loose rook on b6.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "d7b6",
+          "relevance": "secondary",
+          "value": 500,
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-24"
+    },
+    "doubleThreatProof": {
+      "gain": 180,
+      "targets": [
+        41,
+        39
+      ],
+      "directTargets": [
+        41
+      ],
+      "threat": {
+        "from": 51,
+        "to": 45
+      },
+      "threatTargets": [
+        "queen on h5",
+        "king on g8"
+      ],
+      "branches": [
+        {
+          "reply": "Bb1",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Bc2",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Bd3",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Bh3",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Be4",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Bg4",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qd1",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qe2+",
+          "answer": "Kxe2",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qxh2+",
+          "answer": "Qxh2",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qf3+",
+          "answer": "Kxf3",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qh3",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qg4",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qh4",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qg5",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qh6",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qh7",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qh8",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Rxb5",
+          "answer": "Nf6+",
+          "kind": "fork"
+        },
+        {
+          "reply": "Rbxa6",
+          "answer": "Nf6+",
+          "kind": "fork"
+        },
+        {
+          "reply": "Rc6",
+          "answer": "Nf6+",
+          "kind": "fork"
+        },
+        {
+          "reply": "Rd6",
+          "answer": "Nf6+",
+          "kind": "fork"
+        },
+        {
+          "reply": "Rb7",
+          "answer": "Nf6+",
+          "kind": "fork"
+        },
+        {
+          "reply": "Rbb8",
+          "answer": "Nxb8",
+          "kind": "capture"
+        },
+        {
+          "reply": "g5",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "f6",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Raxa6",
+          "answer": "Nf6+",
+          "kind": "fork"
+        },
+        {
+          "reply": "Ra7",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Rab8",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Rc8",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Rd8",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Re8",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Rf8",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Kg7",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Kh7",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Kh8",
+          "answer": "Nxb6",
+          "kind": "capture"
+        }
+      ]
     }
   },
   {
@@ -524,18 +757,16 @@
     "classification": {
       "motifs": [
         {
-          "id": "fork",
-          "label": "Fork",
-          "confidence": "high",
-          "evidence": "d7f6 forks the king on g8 and queen on h5. The line continues with f6h5, winning the queen.",
+          "id": "doubleThreat",
+          "label": "Double Threat",
           "source": "available",
-          "ply": 3,
-          "moveUci": "d7f6",
-          "relevance": "primary",
-          "value": 900
-        }
-      ],
-      "timeline": [
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c5d7",
+          "value": 180,
+          "evidence": "Nd7 attacks the rook on b6 and threatens Nf6+, a checking fork of the queen on h5 and king on g8. After Bb1, Nxb6 wins material; after Rc6, Nf6+ uses the fork instead. All 35 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played.",
+          "relevance": "primary"
+        },
         {
           "id": "fork",
           "label": "Fork",
@@ -544,7 +775,32 @@
           "source": "available",
           "ply": 3,
           "moveUci": "d7f6",
+          "relevance": "secondary",
+          "value": 900
+        }
+      ],
+      "timeline": [
+        {
+          "id": "doubleThreat",
+          "label": "Double Threat",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c5d7",
+          "value": 180,
+          "evidence": "Nd7 attacks the rook on b6 and threatens Nf6+, a checking fork of the queen on h5 and king on g8. After Bb1, Nxb6 wins material; after Rc6, Nf6+ uses the fork instead. All 35 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played.",
           "relevance": "primary",
+          "actor": "white"
+        },
+        {
+          "id": "fork",
+          "label": "Fork",
+          "confidence": "high",
+          "evidence": "d7f6 forks the king on g8 and queen on h5. The line continues with f6h5, winning the queen.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "d7f6",
+          "relevance": "secondary",
           "value": 900,
           "actor": "white"
         },
@@ -561,7 +817,202 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
+    },
+    "doubleThreatProof": {
+      "gain": 180,
+      "targets": [
+        41,
+        39
+      ],
+      "directTargets": [
+        41
+      ],
+      "threat": {
+        "from": 51,
+        "to": 45
+      },
+      "threatTargets": [
+        "queen on h5",
+        "king on g8"
+      ],
+      "branches": [
+        {
+          "reply": "Bb1",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Bc2",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Bd3",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Bh3",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Be4",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Bg4",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qd1",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qe2+",
+          "answer": "Kxe2",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qxh2+",
+          "answer": "Qxh2",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qf3+",
+          "answer": "Kxf3",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qh3",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qg4",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qh4",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qg5",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qh6",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qh7",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Qh8",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Rxb5",
+          "answer": "Nf6+",
+          "kind": "fork"
+        },
+        {
+          "reply": "Rbxa6",
+          "answer": "Nf6+",
+          "kind": "fork"
+        },
+        {
+          "reply": "Rc6",
+          "answer": "Nf6+",
+          "kind": "fork"
+        },
+        {
+          "reply": "Rd6",
+          "answer": "Nf6+",
+          "kind": "fork"
+        },
+        {
+          "reply": "Rb7",
+          "answer": "Nf6+",
+          "kind": "fork"
+        },
+        {
+          "reply": "Rbb8",
+          "answer": "Nxb8",
+          "kind": "capture"
+        },
+        {
+          "reply": "g5",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "f6",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Raxa6",
+          "answer": "Nf6+",
+          "kind": "fork"
+        },
+        {
+          "reply": "Ra7",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Rab8",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Rc8",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Rd8",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Re8",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Rf8",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Kg7",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Kh7",
+          "answer": "Nxb6",
+          "kind": "capture"
+        },
+        {
+          "reply": "Kh8",
+          "answer": "Nxb6",
+          "kind": "capture"
+        }
+      ]
     }
   },
   {
@@ -677,7 +1128,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     }
   }
 ]

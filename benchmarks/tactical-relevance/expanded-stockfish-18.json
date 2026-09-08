@@ -144,9 +144,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     },
-    "classificationMs": 1.9656000000031781
+    "classificationMs": 1.7370000000009895
   },
   {
     "id": "lichess:vztmO",
@@ -279,9 +279,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     },
-    "classificationMs": 2.5322999999989406
+    "classificationMs": 2.333099999999831
   },
   {
     "id": "lichess:wh6Ac",
@@ -428,9 +428,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     },
-    "classificationMs": 1.465700000000652
+    "classificationMs": 1.8790999999982887
   },
   {
     "id": "lichess:fVRuW",
@@ -649,9 +649,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     },
-    "classificationMs": 29.852599999998347
+    "classificationMs": 28.36579999999958
   },
   {
     "id": "lichess:JaKHo",
@@ -862,9 +862,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     },
-    "classificationMs": 14.066899999997986
+    "classificationMs": 12.644400000001042
   },
   {
     "id": "lichess:ouIHI",
@@ -1069,9 +1069,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     },
-    "classificationMs": 3.673800000000483
+    "classificationMs": 2.8087999999988824
   },
   {
     "id": "lichess:CSh8J",
@@ -1281,8 +1281,8 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-23"
+      "motifClassifierVersion": "site-55.adapter-24"
     },
-    "classificationMs": 17.468999999997322
+    "classificationMs": 17.94050000000061
   }
 ]

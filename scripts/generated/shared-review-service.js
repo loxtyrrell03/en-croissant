@@ -9340,6 +9340,7 @@ var VALUE = {
 	king: 2e4
 };
 var MECHANISMS = new Set([
+	"doubleThreat",
 	"forkPreparation",
 	"fork",
 	"pin",
@@ -9945,19 +9946,7 @@ function winningTargets(pos, from, side) {
 function verifiedFork(step) {
 	return immediateFork(step) || provePromotionBackedFork(step) !== null;
 }
-var forkPreparationCache = /* @__PURE__ */ new Map();
-/** A preparatory check must force a profitable checking fork or win a
-* blocking piece on that checking ray. The supplied continuation is not used:
-* king evasions, captures and interpositions are all checked independently. */
-function proveCheckingForkPreparation(root, nodeLimit = 4096) {
-	if (root.capture || root.move.promotion || !root.after.isCheck() || root.after.isEnd()) return null;
-	const side = root.before.turn;
-	const king = root.after.board.kingOf(opposite(side));
-	const checker = root.after.board.get(root.move.to);
-	if (!checker || checker.color !== side || !attacks(checker, root.move.to, root.after.board.occupied).has(king)) return null;
-	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
-	if (nodeLimit === 4096 && forkPreparationCache.has(key)) return forkPreparationCache.get(key);
-	const budget = { nodes: nodeLimit };
+function checkingForkSearch(side, budget) {
 	const visit = (pos, move) => {
 		if (--budget.nodes < 0) throw new Error("Fork preparation budget exhausted");
 		const next = pos.clone();
@@ -9965,13 +9954,13 @@ function proveCheckingForkPreparation(root, nodeLimit = 4096) {
 		return next;
 	};
 	const delta = (pos, move) => capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
-	const fork = (pos, move, pieces) => {
+	const fork = (pos, move, pieces, excluded = []) => {
 		const after = visit(pos, move);
 		const piece = after.board.get(move.to);
 		if (!piece || piece.color !== side) return null;
 		const targets = [...attacks(piece, move.to, after.board.occupied).intersect(after.board[opposite(side)])];
 		if (!after.isCheck() || !targets.some((sq) => after.board.get(sq)?.role === "king")) return null;
-		const victims = targets.filter((sq) => !["king", "pawn"].includes(after.board.get(sq).role));
+		const victims = targets.filter((sq) => !excluded.includes(sq) && !["king", "pawn"].includes(after.board.get(sq).role));
 		if (!victims.length || after.isEnd()) return null;
 		let minimum = Infinity;
 		for (const reply of legalMoves(after)) {
@@ -9991,9 +9980,125 @@ function proveCheckingForkPreparation(root, nodeLimit = 4096) {
 		return Number.isFinite(minimum) ? {
 			gain: minimum,
 			victims,
-			targets: targets.map((sq) => `${after.board.get(sq).role} on ${makeSquare(sq)}`)
+			targets: targets.filter((sq) => after.board.get(sq).role === "king" || victims.includes(sq)).map((sq) => `${after.board.get(sq).role} on ${makeSquare(sq)}`)
 		} : null;
 	};
+	return {
+		visit,
+		delta,
+		fork
+	};
+}
+var forkPreparationCache = /* @__PURE__ */ new Map();
+var doubleThreatCache = /* @__PURE__ */ new Map();
+/** A fresh direct attack and a NEW checking fork against different material
+* must together defeat every legal reply. A null-move threat only nominates
+* the fork; it is never sufficient evidence on its own. */
+function proveQuietDoubleThreat(root, nodeLimit = 8192) {
+	if (root.capture || root.move.promotion || root.before.isCheck() || root.after.isCheck() || root.after.isEnd()) return null;
+	const side = root.before.turn;
+	const mover = root.after.board.get(root.move.to);
+	const previous = root.before.board.get(root.move.from);
+	if (!mover || !previous || mover.color !== side) return null;
+	const directTargets = winningTargets(root.after, root.move.to, side).filter((sq) => !attacks(previous, root.move.from, root.before.board.occupied).has(sq));
+	if (!directTargets.length) return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (nodeLimit === 8192 && doubleThreatCache.has(key)) return doubleThreatCache.get(key);
+	const budget = { nodes: nodeLimit };
+	const { visit, delta, fork } = checkingForkSearch(side, budget);
+	let proof = null;
+	try {
+		const probe = withTurn(root.after, side);
+		const threats = [];
+		for (const move of legalMoves(probe).filter((m) => m.from === root.move.to)) {
+			const result = fork(probe, move, [move.to], directTargets);
+			if (!result) continue;
+			const direct = {
+				...move,
+				from: root.move.from
+			};
+			const existing = root.before.isLegal(direct) ? fork(root.before, direct, [direct.to], directTargets) : null;
+			if (existing && existing.gain >= result.gain) continue;
+			threats.push({
+				move,
+				...result
+			});
+		}
+		if (!threats.length) throw new Error("No distinct checking fork threat");
+		const targets = [...new Set([...directTargets, ...threats.flatMap((threat) => threat.victims)])];
+		const branches = [];
+		let minimum = Infinity;
+		let forkThreat;
+		for (const reply of legalMoves(root.after)) {
+			const next = visit(root.after, reply);
+			if (next.isEnd()) throw new Error("Terminal defensive resource");
+			const balance = -delta(root.after, reply);
+			const mapped = targets.map((sq) => sq === reply.from ? reply.to : sq);
+			let captureAnswer;
+			let captureGain = -Infinity;
+			for (const capture of legalMoves(next)) {
+				if (!mapped.includes(capture.to) || !capturedValue(next, capture)) continue;
+				if (capture.from !== root.move.to && !(targets.includes(reply.from) && (next.isCheck() || reply.to === root.move.to && capturedValue(root.after, reply)))) continue;
+				const gain = participantCaptureGain(next, capture, [root.move.to, capture.to], budget);
+				if (gain !== null && balance + gain > captureGain) {
+					captureGain = balance + gain;
+					captureAnswer = capture;
+				}
+			}
+			if (captureAnswer && captureGain >= 100) {
+				minimum = Math.min(minimum, captureGain);
+				branches.push({
+					reply: makeSan(root.after, reply),
+					answer: makeSan(next, captureAnswer),
+					kind: "capture"
+				});
+				continue;
+			}
+			let won = false;
+			for (const threat of threats) {
+				if (next.board.get(root.move.to)?.color !== side || !next.isLegal(threat.move)) continue;
+				const result = fork(next, threat.move, [threat.move.to], directTargets.map((sq) => sq === reply.from ? reply.to : sq));
+				if (!result || balance + result.gain < 100) continue;
+				minimum = Math.min(minimum, balance + result.gain);
+				branches.push({
+					reply: makeSan(root.after, reply),
+					answer: makeSan(next, threat.move),
+					kind: "fork"
+				});
+				forkThreat ??= threat;
+				won = true;
+				break;
+			}
+			if (!won) throw new Error(`Unproved double-threat reply ${makeSan(root.after, reply)}`);
+		}
+		if (forkThreat && branches.some((branch) => branch.kind === "capture") && Number.isFinite(minimum)) proof = {
+			gain: minimum,
+			targets,
+			directTargets,
+			threat: forkThreat.move,
+			threatTargets: forkThreat.targets,
+			branches
+		};
+	} catch {}
+	if (nodeLimit === 8192) {
+		doubleThreatCache.set(key, proof);
+		if (doubleThreatCache.size > 128) doubleThreatCache.delete(doubleThreatCache.keys().next().value);
+	}
+	return proof;
+}
+/** A preparatory check must force a profitable checking fork or win a
+* blocking piece on that checking ray. The supplied continuation is not used:
+* king evasions, captures and interpositions are all checked independently. */
+function proveCheckingForkPreparation(root, nodeLimit = 4096) {
+	if (root.capture || root.move.promotion || !root.after.isCheck() || root.after.isEnd()) return null;
+	const side = root.before.turn;
+	const king = root.after.board.kingOf(opposite(side));
+	const checker = root.after.board.get(root.move.to);
+	if (!checker || checker.color !== side || !attacks(checker, root.move.to, root.after.board.occupied).has(king)) return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (nodeLimit === 4096 && forkPreparationCache.has(key)) return forkPreparationCache.get(key);
+	const budget = { nodes: nodeLimit };
+	const { visit, delta, fork } = checkingForkSearch(side, budget);
 	let proof = null;
 	try {
 		const branches = [];
@@ -11030,6 +11135,7 @@ function causeRank(motif, directGain = 0) {
 		"attraction",
 		"fork",
 		"forkPreparation",
+		"doubleThreat",
 		"pin",
 		"skewer",
 		"trappedPiece",
@@ -11081,6 +11187,25 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		settled = -VALUE.king;
 	}
 	const candidates = [];
+	const doubleThreat = !mate && !verifiedFork(steps[0]) ? proveQuietDoubleThreat(steps[0]) : null;
+	if (doubleThreat) {
+		const root = steps[0];
+		const capture = doubleThreat.branches.find((branch) => branch.kind === "capture" && branch.reply === steps[1]?.san) ?? doubleThreat.branches.find((branch) => branch.kind === "capture");
+		const escapes = legalMoves(root.after).filter((move) => doubleThreat.directTargets.includes(move.from) && !capturedValue(root.after, move)).map((move) => makeSan(root.after, move));
+		const fork = doubleThreat.branches.find((branch) => branch.kind === "fork" && escapes.includes(branch.reply)) ?? doubleThreat.branches.find((branch) => branch.kind === "fork");
+		const targets = doubleThreat.directTargets.map((sq) => `${root.after.board.get(sq).role} on ${makeSquare(sq)}`);
+		const threat = makeSan(withTurn(root.after, attacker), doubleThreat.threat);
+		candidates.push({
+			id: "doubleThreat",
+			label: "Double Threat",
+			source: proposals[0]?.source ?? "available",
+			confidence: "high",
+			ply: 1,
+			moveUci: root.uci,
+			value: doubleThreat.gain,
+			evidence: `${root.san} attacks the ${targets.join(" and ")} and threatens ${threat}, a checking fork of the ${doubleThreat.threatTargets.join(" and ")}. After ${capture.reply}, ${capture.answer} wins material; after ${fork.reply}, ${fork.answer} uses the fork instead. All ${doubleThreat.branches.length} legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played.`
+		});
+	}
 	const forkPreparation = !mate && !verifiedFork(steps[0]) ? proveCheckingForkPreparation(steps[0]) : null;
 	if (forkPreparation) {
 		const fork = forkPreparation.branches.find((branch) => branch.kind === "fork");
@@ -11525,8 +11650,8 @@ function materialLesson(steps, motif) {
 			targets = proof.extended ? [...proof.targets, step.move.to] : [proof.target];
 			gain = proof.gain;
 		}
-	} else if (motif.id === "forkPreparation") {
-		const proof = proveCheckingForkPreparation(step);
+	} else if (motif.id === "forkPreparation" || motif.id === "doubleThreat") {
+		const proof = motif.id === "doubleThreat" ? proveQuietDoubleThreat(step) : proveCheckingForkPreparation(step);
 		if (proof) {
 			targets = proof.targets;
 			gain = proof.gain;
@@ -11692,7 +11817,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 23;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 24;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -12029,6 +12154,7 @@ function toMotifEvidence(detailInput, source, sanLineInput) {
 }
 var IMPORTANT_TACTICAL_THEME_IDS = new Set([
 	"forkPreparation",
+	"doubleThreat",
 	"tacticalPreparation",
 	"fork",
 	"pin",

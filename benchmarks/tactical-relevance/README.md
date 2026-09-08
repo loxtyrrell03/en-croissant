@@ -880,17 +880,14 @@ comparison prevents two irrelevant pawn moves from being assigned different
 causes for an already existing preparation.
 
 `fork-preparation-stockfish-18.json` records the root move-order comparison,
-the Rc1 branch and two unresolved diagnostics. Fresh before/after searches in
+the Rc1 branch, NGZzo (subsequently addressed below) and the unresolved opGD7 diagnostic. Fresh before/after searches in
 `causal-stockfish-18.json` verify the actual Rc5 mistake (Ra5 preserves the
 draw) and the missed preparation when Black plays Nd3 too soon. The proof's
 500 cp local material gain is not Stockfish's whole-position score.
 
-The unresolved diagnostics give concrete next questions: NGZzo's Nd7 combines
-an attack on Rb6 with the threat Nf6+, forking Kg8/Qh5 if the rook escapes;
-Kg7 instead permits Nxb6. It needs a quiet double-threat proof, not a root
-fork label. opGD7's Qf1+ Kd2 Bf4+ Re3 Qf2+ Bxe3 involves a longer king drive
+The remaining diagnostic opGD7's Qf1+ Kd2 Bf4+ Re3 Qf2+ Bxe3 involves a longer king drive
 and pin; a later pin alone still does not explain the initiating check.
-Neither diagnostic is counted as a correct empty result.
+That unresolved diagnostic is not counted as a correct empty result.
 
 Only fJrhT's headline changes in the frozen mixed 32-position expansion.
 The live selector also now accepts validated mate-distance IDs beyond five
@@ -937,6 +934,50 @@ The engine test is opt-in and starts no engine during normal unit tests.
 geometric fork, a truncated refutation, equal queen exchanges, illegal PV
 boundaries, losing alternatives, and the priority of missed mate over a smaller
 allowed material loss. Existing tests retain the multi-step rook fork and pin.
+
+## Quiet double threats with separate payoffs (adapter 24)
+
+Real NGZzo now leads with **Double Threat**: Nd7 attacks Rb6 and threatens
+Nf6+, forking Kg8 and Qh5. The supplied source line, Nd7 Kg7 Nxb6, never
+actually plays the fork. Calling Nd7 a fork would be false; calling the rook
+simply trapped would omit why escaping with Rb7 does not solve the problem.
+The independent root proof checks all 35 legal replies. Both a direct capture
+route and a checking-fork route against different material must be necessary.
+This is not a generic detector for every possible pair of threats.
+
+The direct attack must be newly created by the moved piece. A null-move
+position nominates candidate checking forks by that same piece, but cannot
+prove them: every actual defence, followed by every defence to the fork, must
+permit a net gain. An equally profitable checking fork already available
+before the root is rejected. Captures of the attacking piece, checking target
+sacrifices, promoted/captured material, recaptures and attacking-participant
+liabilities are included. Search shares an 8,192-operation budget with
+bounded 256-node exchange leaves and a 128-entry root cache; exhausted or
+unproved branches abstain. Cache hits cannot bypass an explicitly smaller
+budget. The earlier checking-preparation search reuses the same fork evaluator.
+
+The proof's minimum local gain is 180 cp (an exchange), not the engine's
+whole-position evaluation or a promise to win a rook against best play.
+Fresh restricted searches retain Nd7 at +264 cp and the Rb7 branch at +532 cp.
+Unrestricted before/after searches prefer Bg6 before the actual g6 error,
+then Nd7 at +294 cp. A missed Nd7 after Ke1 also gets the correct primary
+source. Their full classification calls took about 61 and 74 ms in this run;
+these are local classifier timings, not end-to-end live UI latency.
+
+Root arrows show Nc5-d7 and Nd7-b6 only. Words describe Nf6+'s future fork;
+the king/queen fork belongs to ply 3 if that continuation is selected.
+Queen removal, a knight capturing Nd7 and a pawn capturing Nf6 reject the
+cooperative line. A same-target, same-net-gain counterfactual recognizes an
+existing double threat after unrelated pawn moves, but does not equate a
+cooperative whole-rook loss with a proof guaranteeing only an exchange.
+
+Only NGZzo's headline changes in the frozen mixed 32-position expansion.
+The frozen checks are development diagnostics, not a general accuracy score;
+holdout labels were not tuned against. Twelve dedicated regressions,
+287 selected tests across 28 files, all fourteen fresh-engine tests, targeted
+format/lint, the shared review worker and production build pass. Type checking
+retains the unrelated OTB number/bigint fixture error. Desktop/phone share the
+adapter in source; Outpost, website primitives and live deployments are unchanged.
 
 ## What remains to establish
 
