@@ -265,7 +265,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "discoveredAttack",
@@ -313,7 +313,7 @@
         "comparisonEvidence": "g6 makes the immediate reply Bxh7+ illegal."
       }
     },
-    "classificationMs": 12.083299999998417
+    "classificationMs": 11.835700000010547
   },
   {
     "name": "A different reply wins the same queen after the better move",
@@ -643,7 +643,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -705,7 +705,7 @@
         "comparisonEvidence": "Even after Kg7, Rf5+ still forces at least the same net material gain on the queen on f8. The better move changes the continuation, not the existence of that material loss."
       }
     },
-    "classificationMs": 15.10460000000603
+    "classificationMs": 16.115600000004633
   },
   {
     "name": "Ignored double-check mate instead of making a king escape",
@@ -926,7 +926,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "doubleCheck",
@@ -976,7 +976,7 @@
         "comparisonEvidence": "Rg8+ makes the immediate reply Bb5# illegal."
       }
     },
-    "classificationMs": 16.62180000000808
+    "classificationMs": 32.65709999999672
   },
   {
     "name": "Failed to unpin the knight",
@@ -1230,7 +1230,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -1278,7 +1278,7 @@
         "comparisonEvidence": "After Kd7, Kxd6 answers d6; a profitable immediate follow-up capture of the knight on e7 is no longer forced."
       }
     },
-    "classificationMs": 18.25900000000547
+    "classificationMs": 22.10539999998582
   },
   {
     "name": "Allowed a king-queen skewer instead of preserving the queen",
@@ -1542,7 +1542,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "skewer",
@@ -1590,7 +1590,7 @@
         "comparisonEvidence": "After Kf4, Qxd3 answers Bd3; a profitable immediate follow-up capture of the queen on h7 is no longer forced."
       }
     },
-    "classificationMs": 5.526299999997718
+    "classificationMs": 7.181400000001304
   },
   {
     "name": "Allowed checking defender removal and lost the queen",
@@ -1886,7 +1886,7 @@
           "value": 500
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "capturingDefender",
@@ -1948,7 +1948,7 @@
         "comparisonEvidence": "Qxd1+ makes the immediate reply gxf6+ illegal."
       }
     },
-    "classificationMs": 20.882199999992736
+    "classificationMs": 20.79289999997127
   },
   {
     "name": "Missed quiet mate while leaving the queen attacked",
@@ -2153,20 +2153,9 @@
           "moveUci": "h2b8",
           "relevance": "secondary",
           "value": 10000
-        },
-        {
-          "id": "pin",
-          "label": "Pin",
-          "confidence": "medium",
-          "evidence": "Pin appears on Qb8# at ply 5 of the missed best line.",
-          "source": "missed",
-          "ply": 5,
-          "moveUci": "h2b8",
-          "relevance": "secondary",
-          "value": 10000
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -2219,18 +2208,6 @@
           "relevance": "secondary",
           "value": 10000,
           "actor": "white"
-        },
-        {
-          "id": "pin",
-          "label": "Pin",
-          "confidence": "medium",
-          "evidence": "Pin appears on Qb8# at ply 5 of the missed best line.",
-          "source": "missed",
-          "ply": 5,
-          "moveUci": "h2b8",
-          "relevance": "secondary",
-          "value": 10000,
-          "actor": "white"
         }
       ]
     },
@@ -2250,7 +2227,7 @@
         "value": 10000
       }
     },
-    "classificationMs": 6.867500000007567
+    "classificationMs": 7.370400000014342
   },
   {
     "name": "Missed the quiet rook preparation for mate or a queen skewer",
@@ -2556,7 +2533,7 @@
           "relevance": "secondary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "missedTimeline": [
         {
           "id": "tacticalPreparation",
@@ -2636,7 +2613,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 9.304599999988568
+    "classificationMs": 10.109900000010384
   },
   {
     "name": "Recaptured the rook before taking the queen with check",
@@ -2902,7 +2879,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -2962,7 +2939,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 77.85970000000088
+    "classificationMs": 81.835699999996
   },
   {
     "name": "Recaptured the bishop before taking the knight with check",
@@ -3258,7 +3235,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "missedTimeline": [
         {
           "id": "intermezzo",
@@ -3302,7 +3279,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 57.778999999994994
+    "classificationMs": 60.007400000002235
   },
   {
     "name": "Allowed a checking queen capture before the rook recapture",
@@ -3628,7 +3605,7 @@
           "value": 330
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "intermezzo",
@@ -3702,7 +3679,7 @@
         "comparisonEvidence": "Qxg5 makes the immediate reply Bxd2+ illegal."
       }
     },
-    "classificationMs": 116.03119999999763
+    "classificationMs": 81.94099999999162
   },
   {
     "name": "Allowed an intermediate knight capture before the bishop recapture",
@@ -4054,7 +4031,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "intermezzo",
@@ -4102,7 +4079,7 @@
         "comparisonEvidence": "Nxd5 makes the immediate reply Nxe7+ illegal."
       }
     },
-    "classificationMs": 109.0393999999942
+    "classificationMs": 98.67879999999423
   },
   {
     "name": "b6 permits the f7 fork",
@@ -4425,7 +4402,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -4499,7 +4476,7 @@
         "comparisonEvidence": "After O-O, Nxf7 no longer has two profitable fork targets."
       }
     },
-    "classificationMs": 80.6759999999922
+    "classificationMs": 76.73339999999735
   },
   {
     "name": "The real Rc5 mistake permits a checking fork preparation",
@@ -4720,7 +4697,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "forkPreparation",
@@ -4776,7 +4753,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 28.38169999999809
+    "classificationMs": 14.508800000010524
   },
   {
     "name": "The real g6 mistake permits Nd7's double threat",
@@ -5024,7 +5001,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "doubleThreat",
@@ -5068,7 +5045,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 72.91640000000189
+    "classificationMs": 63.351499999989755
   },
   {
     "name": "The real Re2 mistake allows a forcing checking attack",
@@ -5375,7 +5352,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "forcingAttack",
@@ -5443,7 +5420,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 26.167900000000373
+    "classificationMs": 24.520900000003166
   },
   {
     "name": "Be7 hangs the bishop while also missing the checking attack",
@@ -5715,7 +5692,7 @@
           "value": 400
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -5801,7 +5778,7 @@
         "comparisonEvidence": "Qf1+ makes the immediate reply Qxe7 illegal."
       }
     },
-    "classificationMs": 52.50079999999434
+    "classificationMs": 49.748600000020815
   },
   {
     "name": "An irrelevant pawn move misses the forcing checking attack",
@@ -6092,7 +6069,7 @@
           "value": 400
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "missedTimeline": [
         {
           "id": "forcingAttack",
@@ -6160,7 +6137,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 36.2667999999976
+    "classificationMs": 37.91930000000866
   },
   {
     "name": "A quiet king move misses Nd7's double threat",
@@ -6392,7 +6369,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "missedTimeline": [
         {
           "id": "doubleThreat",
@@ -6436,7 +6413,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 53.69530000000668
+    "classificationMs": 55.38510000001406
   },
   {
     "name": "Playing Nd3 too early misses the checking preparation",
@@ -6661,7 +6638,7 @@
           "value": 500
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "missedTimeline": [
         {
           "id": "forkPreparation",
@@ -6717,7 +6694,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 32.69539999999688
+    "classificationMs": 33.55780000000959
   },
   {
     "name": "Retreating the bishop misses the checking clearance",
@@ -7007,7 +6984,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "missedTimeline": [
         {
           "id": "clearance",
@@ -7039,7 +7016,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 45.16169999999693
+    "classificationMs": 72.6480000000156
   },
   {
     "name": "The real Qxd4 mistake allows the checking clearance",
@@ -7373,7 +7350,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "clearance",
@@ -7405,7 +7382,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 54.85370000000694
+    "classificationMs": 54.62179999999353
   },
   {
     "name": "Developing the bishop misses the overloaded-queen discovery",
@@ -7751,7 +7728,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -7857,7 +7834,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 231.75820000001113
+    "classificationMs": 265.465200000006
   },
   {
     "name": "The real Nxd4 mistake allows the overloaded-queen discovery",
@@ -8157,7 +8134,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "discoveredAttack",
@@ -8225,7 +8202,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 97.86779999999271
+    "classificationMs": 335.2473000000173
   },
   {
     "name": "Taking a pawn misses the promotion-backed knight fork",
@@ -8488,7 +8465,7 @@
           "value": 480
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "missedTimeline": [
         {
           "id": "fork",
@@ -8532,7 +8509,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 16.12839999998687
+    "classificationMs": 19.493799999996554
   },
   {
     "name": "Moving onto f6 allows the promotion-backed fork",
@@ -8795,7 +8772,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -8843,7 +8820,7 @@
         "comparisonEvidence": "After Nc8, Nd5 no longer has two profitable fork targets."
       }
     },
-    "classificationMs": 21.104100000025937
+    "classificationMs": 19.783400000014808
   },
   {
     "name": "Missed queen while the knight is already attacked",
@@ -9149,7 +9126,7 @@
           "value": 900
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "forkPreparation",
@@ -9209,7 +9186,7 @@
         "value": 900
       }
     },
-    "classificationMs": 18.49330000000191
+    "classificationMs": 19.315400000021327
   },
   {
     "name": "Failed to create a back-rank escape",
@@ -9411,7 +9388,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-25",
+      "motifClassifierVersion": "site-55.adapter-26",
       "allowedTimeline": [
         {
           "id": "backRankMate",
@@ -9447,6 +9424,6 @@
         "comparisonEvidence": "After g5, Kg7 is a legal answer to Re8+; it is no longer mate."
       }
     },
-    "classificationMs": 1.7374000000127126
+    "classificationMs": 2.1093000000109896
   }
 ]

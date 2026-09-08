@@ -37,9 +37,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 5.20049999999992
+    "classificationMs": 9.86030000000028
   },
   {
     "id": "lichess:007c6",
@@ -79,9 +79,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 2.8285000000000764
+    "classificationMs": 6.0877999999993335
   },
   {
     "id": "lichess:fVRuW",
@@ -111,9 +111,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 14.911000000000058
+    "classificationMs": 34.78029999999944
   },
   {
     "id": "lichess:K56tk",
@@ -153,9 +153,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 8.087300000000141
+    "classificationMs": 13.742400000000089
   },
   {
     "id": "lichess:NKnZo",
@@ -195,9 +195,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 9.539799999999559
+    "classificationMs": 6.037499999999454
   },
   {
     "id": "lichess:5hjz7",
@@ -237,9 +237,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 12.652900000000045
+    "classificationMs": 1.6096999999999753
   },
   {
     "id": "lichess:GIB50",
@@ -279,9 +279,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 11.410899999999856
+    "classificationMs": 4.665599999999358
   },
   {
     "id": "lichess:REAdh",
@@ -321,9 +321,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 5.829299999999421
+    "classificationMs": 6.241699999999582
   },
   {
     "id": "lichess:NGZzo",
@@ -379,9 +379,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 195.91569999999956
+    "classificationMs": 134.53719999999976
   },
   {
     "id": "lichess:4Osgg",
@@ -456,9 +456,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 35.24160000000029
+    "classificationMs": 33.93119999999999
   },
   {
     "id": "lichess:UCiYo",
@@ -514,9 +514,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 17.63799999999992
+    "classificationMs": 20.55670000000009
   },
   {
     "id": "lichess:CSh8J",
@@ -583,9 +583,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 27.667099999999664
+    "classificationMs": 14.983699999999772
   },
   {
     "id": "lichess:opGD7",
@@ -629,9 +629,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 14.37249999999949
+    "classificationMs": 28.205399999999827
   },
   {
     "id": "lichess:fJrhT",
@@ -714,9 +714,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 27.859800000000178
+    "classificationMs": 26.330699999999524
   },
   {
     "id": "lichess:MJZcU",
@@ -738,9 +738,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 27.626099999999497
+    "classificationMs": 16.23109999999997
   },
   {
     "id": "lichess:0RleZ",
@@ -780,9 +780,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 12.181500000000597
+    "classificationMs": 1.6647000000002663
   },
   {
     "id": "lichess:Z5arb",
@@ -800,9 +800,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 13.628200000000106
+    "classificationMs": 16.287500000000364
   },
   {
     "id": "lichess:iUj3e",
@@ -858,9 +858,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 120.60900000000038
+    "classificationMs": 134.6331
   },
   {
     "id": "lichess:Kvpvi",
@@ -904,9 +904,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 14.684499999999389
+    "classificationMs": 17.30159999999978
   },
   {
     "id": "lichess:hz3ed",
@@ -946,9 +946,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 7.861299999999574
+    "classificationMs": 4.611300000000483
   },
   {
     "id": "lichess:o8K8i",
@@ -1000,9 +1000,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 42.9395999999997
+    "classificationMs": 44.132299999999304
   },
   {
     "id": "lichess:w1lKu",
@@ -1113,9 +1113,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 154.14420000000064
+    "classificationMs": 143.39080000000013
   },
   {
     "id": "lichess:rqXvZ",
@@ -1163,9 +1163,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 87.46360000000004
+    "classificationMs": 102.07240000000002
   },
   {
     "id": "lichess:ouIHI",
@@ -1255,9 +1255,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 5.4693999999999505
+    "classificationMs": 4.430099999999584
   },
   {
     "id": "lichess:eOCp9",
@@ -1275,9 +1275,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 0.27809999999954016
+    "classificationMs": 0.25320000000010623
   },
   {
     "id": "lichess:erSYy",
@@ -1356,9 +1356,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 6.38339999999971
+    "classificationMs": 4.527000000000044
   },
   {
     "id": "lichess:vztmO",
@@ -1398,9 +1398,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 4.840700000000652
+    "classificationMs": 3.3977999999997337
   },
   {
     "id": "lichess:G8wdr",
@@ -1460,9 +1460,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 237.1162000000004
+    "classificationMs": 254.3798999999999
   },
   {
     "id": "lichess:4GiqO",
@@ -1480,9 +1480,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 0.17309999999997672
+    "classificationMs": 4.147400000000744
   },
   {
     "id": "lichess:wh6Ac",
@@ -1522,9 +1522,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 3.662600000000566
+    "classificationMs": 3.14009999999962
   },
   {
     "id": "lichess:NOaM1",
@@ -1580,9 +1580,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 6.499200000000201
+    "classificationMs": 9.953899999999521
   },
   {
     "id": "lichess:JaKHo",
@@ -1638,8 +1638,8 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 6.458000000000538
+    "classificationMs": 9.471300000000156
   }
 ]

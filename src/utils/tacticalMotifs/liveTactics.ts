@@ -138,7 +138,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 25;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 26;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {
@@ -412,6 +412,9 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
     const best = candidateInputs.find((v) => (v.multipv ?? 1) === 1) ?? candidateInputs[0];
     const viableInputs = candidateInputs.filter((candidate) => {
         if (candidate === best) return true;
+        // An immediate finish does not need longer alternative mating stories.
+        // Equally immediate mates can still have different useful patterns.
+        if (best.mate === 1) return candidate.mate === 1;
         if (best.mate != null && best.mate > 0) return candidate.mate != null && candidate.mate > 0;
         if (candidate.mate != null) return candidate.mate > 0;
         if (best.cp == null || candidate.cp == null) return false;

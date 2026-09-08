@@ -13,6 +13,7 @@ import {
     auditTacticalMotifs,
     compareBestLineTacticalDefence,
     compareImmediateTacticalDefence,
+    filterCompensatedRootCaptures,
     hasTacticalStart,
     isCompensatedContinuationCapture,
     normalizeMatingPayoffs,
@@ -101,7 +102,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 25;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 26;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -752,16 +753,30 @@ export function classifyPositionTacticalMotifs(
         }
     }
 
-    const motifs = auditTacticalMotifs(
+    const motifs = filterCompensatedRootCaptures(
         fen,
         bestLine,
-        toMotifEvidence(detail, "available", input.pvSan),
-        input.rootCp,
+        auditTacticalMotifs(
+            fen,
+            bestLine,
+            toMotifEvidence(detail, "available", input.pvSan),
+            input.rootCp,
+        ),
+        input.previousFen,
+        cleanUci(input.previousMoveUci),
     );
     return {
         motifs,
         ...(motifs.length
-            ? { timeline: buildTacticalTimeline(fen, bestLine, "available", motifs, input.pvSan) }
+            ? {
+                  timeline: filterCompensatedRootCaptures(
+                      fen,
+                      bestLine,
+                      buildTacticalTimeline(fen, bestLine, "available", motifs, input.pvSan),
+                      input.previousFen,
+                      cleanUci(input.previousMoveUci),
+                  ),
+              }
             : {}),
         motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
     };
@@ -962,13 +977,19 @@ export function classifyMistakeReviewMotifs(
     }
 
     const classification = {
-        allowedMotifs: auditTacticalMotifs(
+        allowedMotifs: filterCompensatedRootCaptures(
             fenAfterPlayedMove ?? "",
             refutationLine,
-            toMotifEvidence(allowedDetail, "allowed", input.refutationSan),
-            typeof input.cpAfter === "number"
-                ? input.cpAfter * (fenSide(fenAfterPlayedMove ?? "") === "w" ? 1 : -1)
-                : undefined,
+            auditTacticalMotifs(
+                fenAfterPlayedMove ?? "",
+                refutationLine,
+                toMotifEvidence(allowedDetail, "allowed", input.refutationSan),
+                typeof input.cpAfter === "number"
+                    ? input.cpAfter * (fenSide(fenAfterPlayedMove ?? "") === "w" ? 1 : -1)
+                    : undefined,
+            ),
+            fen,
+            playedMoveUci,
         ).map((m) => ({ ...m, source: "allowed" as const })),
         missedMotifs:
             playedMoveUci === bestMoveUci
@@ -1002,12 +1023,18 @@ export function classifyMistakeReviewMotifs(
         allowedMotifs,
         ...(classification.allowedMotifs.length
             ? {
-                  allowedTimeline: buildTacticalTimeline(
+                  allowedTimeline: filterCompensatedRootCaptures(
                       fenAfterPlayedMove ?? "",
                       refutationLine,
-                      "allowed",
-                      allowedMotifs,
-                      input.refutationSan,
+                      buildTacticalTimeline(
+                          fenAfterPlayedMove ?? "",
+                          refutationLine,
+                          "allowed",
+                          allowedMotifs,
+                          input.refutationSan,
+                      ),
+                      fen,
+                      playedMoveUci,
                   ),
               }
             : {}),

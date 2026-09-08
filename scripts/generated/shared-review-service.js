@@ -9431,6 +9431,16 @@ function isCompensatedContinuationCapture(steps, index) {
 	}
 	return false;
 }
+/** Apply the same exchange context at a newly viewed root as inside a PV.
+* Only trusted, replay-matching history can turn a loose-piece label into
+* an ordinary recapture; other real mechanisms and mating payoffs remain. */
+function filterCompensatedRootCaptures(fen, line, motifs, previousFen, previousMove) {
+	if (!previousFen || !previousMove || !line.length) return motifs;
+	const history = replayTacticalLine(previousFen, [previousMove, line[0]]);
+	const root = replayTacticalLine(fen, [line[0]])[0];
+	if (!root || history.length !== 2 || makeFen(history[0].after.toSetup()) !== makeFen(root.before.toSetup()) || !isCompensatedContinuationCapture(history, 1)) return motifs;
+	return motifs.filter((motif) => motif.id !== "hangingPiece" || motif.ply !== 1);
+}
 function legalMoves(pos) {
 	const result = [];
 	for (const [from, dests] of pos.allDests()) for (const to of dests) if (pos.board.get(from)?.role === "pawn" && (to < 8 || to >= 56)) for (const promotion of [
@@ -10880,6 +10890,21 @@ function relevantRayTactics(step) {
 		return !before.some((r) => r.pinner === ray.pinner && r.front === ray.front && r.rear === ray.rear) || ray.pinner === step.move.to || attacks(moved, step.move.to, step.after.board.occupied).has(ray.front);
 	});
 }
+/** The pin must actually forbid capturing the checking/attacking piece.
+* An unrelated geometric pin elsewhere in a mating PV is not evidence. */
+function pinRestrictsCapture(step) {
+	return rayTactics(step.after, step.before.turn).find((ray) => {
+		if (ray.kind !== "pin" || step.after.board.get(ray.rear)?.role !== "king") return false;
+		const capture = {
+			from: ray.front,
+			to: step.move.to
+		};
+		if (step.after.isLegal(capture)) return false;
+		const unpinned = step.after.clone();
+		unpinned.board.take(ray.pinner);
+		return unpinned.isLegal(capture);
+	});
+}
 function rayMaterialEvidence(step, source, allowCheckingReplies = false) {
 	if (step.capture >= 320 && tacticalExchangeGain(step.before, step.move) >= 100 && !pinnedRecapturer(step)) return [];
 	const motifs = [];
@@ -11538,8 +11563,8 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 				value: promotion.gain,
 				evidence: promotion.evidence
 			};
-		} else if (proposal.id === "skewer") sound = mate || rayMaterialEvidence(step, proposal.source).some((m) => m.id === "skewer");
-		else if (proposal.id === "pin") sound = mate || pinnedRecapturer(step) && settled >= 100 || rayMaterialEvidence(step, proposal.source).some((m) => m.id === "pin");
+		} else if (proposal.id === "skewer") sound = rayMaterialEvidence(step, proposal.source).some((m) => m.id === "skewer");
+		else if (proposal.id === "pin") sound = mate && Boolean(pinRestrictsCapture(step)) || pinnedRecapturer(step) && settled >= 100 || rayMaterialEvidence(step, proposal.source).some((m) => m.id === "pin");
 		else if (proposal.id === "capturingDefender") sound = Boolean(capturedDefenderEvidence(step, proposal.source));
 		else if (proposal.id === "attackingF2F7") sound = step.capture > 0 && tacticalExchangeGain(step.before, step.move) >= 100;
 		else if (proposal.id === "hangingPiece") sound = step.capture >= 320 && tacticalExchangeGain(step.before, step.move) >= 100;
@@ -11560,17 +11585,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			}
 		}
 		if (proposal.id === "pin" || proposal.id === "fork") {
-			const ray = rayTactics(step.after, step.before.turn).find((r) => {
-				if (r.kind !== "pin" || step.after.board.get(r.rear)?.role !== "king") return false;
-				const capture = {
-					from: r.front,
-					to: step.move.to
-				};
-				if (step.after.isLegal(capture)) return false;
-				const unpinned = step.after.clone();
-				unpinned.board.take(r.pinner);
-				return unpinned.isLegal(capture);
-			});
+			const ray = pinRestrictsCapture(step);
 			if (ray) {
 				const existed = rayTactics(step.before, step.before.turn).some((before) => before.kind === "pin" && before.pinner === ray.pinner && before.front === ray.front && before.rear === ray.rear);
 				const restriction = `The ${step.after.board.get(ray.front).role} on ${makeSquare(ray.front)} cannot capture on ${makeSquare(step.move.to)} because it is pinned to its king on ${makeSquare(ray.rear)}.`;
@@ -11952,7 +11967,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 25;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 26;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -12512,7 +12527,7 @@ function classifyMistakeReviewMotifs(input) {
 		allowedDetail = null;
 	}
 	const classification = {
-		allowedMotifs: auditTacticalMotifs(fenAfterPlayedMove ?? "", refutationLine, toMotifEvidence(allowedDetail, "allowed", input.refutationSan), typeof input.cpAfter === "number" ? input.cpAfter * (fenSide(fenAfterPlayedMove ?? "") === "w" ? 1 : -1) : void 0).map((m) => ({
+		allowedMotifs: filterCompensatedRootCaptures(fenAfterPlayedMove ?? "", refutationLine, auditTacticalMotifs(fenAfterPlayedMove ?? "", refutationLine, toMotifEvidence(allowedDetail, "allowed", input.refutationSan), typeof input.cpAfter === "number" ? input.cpAfter * (fenSide(fenAfterPlayedMove ?? "") === "w" ? 1 : -1) : void 0), fen, playedMoveUci).map((m) => ({
 			...m,
 			source: "allowed"
 		})),
@@ -12526,7 +12541,7 @@ function classifyMistakeReviewMotifs(input) {
 	const compared = {
 		...classification,
 		allowedMotifs,
-		...classification.allowedMotifs.length ? { allowedTimeline: buildTacticalTimeline(fenAfterPlayedMove ?? "", refutationLine, "allowed", allowedMotifs, input.refutationSan) } : {},
+		...classification.allowedMotifs.length ? { allowedTimeline: filterCompensatedRootCaptures(fenAfterPlayedMove ?? "", refutationLine, buildTacticalTimeline(fenAfterPlayedMove ?? "", refutationLine, "allowed", allowedMotifs, input.refutationSan), fen, playedMoveUci) } : {},
 		...classification.missedMotifs.length ? { missedTimeline: buildTacticalTimeline(fen, bestLine, "missed", classification.missedMotifs, input.pvSan) } : {}
 	};
 	motifCache.set(key, compared);

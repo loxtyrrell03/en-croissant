@@ -920,6 +920,7 @@ $env:TACTICAL_EXCHANGE_DISCOVERY_REPORT = 'benchmarks/tactical-relevance/exchang
 $env:TACTICAL_PIN_PREPARATION_REPORT = 'benchmarks/tactical-relevance/pin-preparation-stockfish-18.json'
 $env:TACTICAL_CHECKING_MATE_REPORT = 'benchmarks/tactical-relevance/checking-mate-stockfish-18.json'
 $env:TACTICAL_FORK_PREPARATION_REPORT = 'benchmarks/tactical-relevance/fork-preparation-stockfish-18.json'
+$env:TACTICAL_ORDINARY_GAME_REPORT = 'benchmarks/tactical-relevance/ordinary-games-stockfish-18.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node
 $env:TACTICAL_REAL_PUZZLE_REPORT = 'benchmarks/tactical-relevance/real-puzzle-judgement.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/realPuzzleJudgement.test.ts --environment node
@@ -1036,6 +1037,48 @@ the unrelated OTB number/bigint fixture error. These are development/source
 proofs, not general accuracy, Outpost/website parity or live deployment proof.
 Quiet continuations, different target nominations, longer attacks and tighter
 maximum-gain proofs remain future work.
+
+## Ordinary-game noise audit (adapter 26)
+
+`ordinary-games-development.json` freezes complete legal mainlines from all
+three games in one complete public archive before classifier inspection.
+Every fifth reached ply from 8 through 60 yields 24 positions with alternating
+sides, without score/result/theme selection. `ordinary-games-stockfish-18.json`
+records fresh before/after depth-16 MultiPV3 searches, live scans with actual
+previous-move context, and causal review explanations. The complete human
+judgement, fixes and unresolved findings are in `ordinary-games-review.md`.
+
+This found two concrete false tactical labels: an incidental bishop skewer
+in a mating alternative, and a normal bishop/knight recapture described as a
+hanging bishop. Mating endpoints no longer automatically validate unrelated
+pins/skewers. Verified matching root history now shares the timeline's
+compensated-capture filter, without hiding real mating recaptures or accepting
+mismatched history. Mate-in-one positions omit longer mating alternatives.
+
+The sample now has 17 empty live headlines and six accepted immediate lessons;
+the seventh non-empty result, f7+'s mate in seven, still incorrectly leads with
+a smaller proved material idea. It remains open rather than becoming an
+accepted-label oracle. Quiet development, forced evasions and compensated
+recaptures have fixed regression judgements, while genuine capture and mate
+controls remain. This is a small developmental noise diagnostic, not general
+accuracy, end-to-end UI latency or deployment proof.
+
+Run the ordinary-game audit alone with `TACTICAL_JUDGEMENT_ENGINE` and
+`TACTICAL_ORDINARY_GAME_REPORT` set:
+
+```powershell
+node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node -t 'output-blind longitudinal'
+node node_modules/vitest/vitest.mjs run src/utils/tests/ordinaryGameJudgement.test.ts --environment node
+```
+
+The committed mainlines need no network. The opt-in `TACTICAL_GAME_SOURCE`
+freezer is not part of routine verification; do not refetch or change the
+sample while comparing classifier versions.
+
+Verification passed 332 selected regressions in 30 files, all fifteen fresh
+engine tests, targeted format/lint, the shared review worker and production
+build. The earlier frozen 32-puzzle headlines are unchanged. Type checking
+retains only the unrelated OTB number/bigint fixture error.
 
 ## What remains to establish
 

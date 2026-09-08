@@ -109,18 +109,6 @@
             "relevance": "secondary",
             "value": 10000,
             "actor": "white"
-          },
-          {
-            "id": "pin",
-            "label": "Pin",
-            "confidence": "medium",
-            "evidence": "Pin appears on Qxh6# at ply 3 of the current best line.",
-            "source": "available",
-            "ply": 3,
-            "moveUci": "h3h6",
-            "relevance": "secondary",
-            "value": 10000,
-            "actor": "white"
           }
         ]
       },
@@ -215,7 +203,7 @@
         ]
       }
     ],
-    "classificationMs": 10.935400000002119
+    "classificationMs": 14.203200000003562
   },
   {
     "fen": "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",
@@ -341,18 +329,6 @@
             "relevance": "secondary",
             "value": 10000,
             "actor": "white"
-          },
-          {
-            "id": "pin",
-            "label": "Pin",
-            "confidence": "medium",
-            "evidence": "Pin appears on Qb8# at ply 5 of the current best line.",
-            "source": "available",
-            "ply": 5,
-            "moveUci": "h2b8",
-            "relevance": "secondary",
-            "value": 10000,
-            "actor": "white"
           }
         ]
       },
@@ -439,7 +415,7 @@
         ]
       }
     ],
-    "classificationMs": 94.12800000001153
+    "classificationMs": 26.5625
   },
   {
     "fen": "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",

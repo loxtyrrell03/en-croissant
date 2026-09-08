@@ -122,6 +122,29 @@ export function isCompensatedContinuationCapture(steps: TacticalReplayStep[], in
     return false;
 }
 
+/** Apply the same exchange context at a newly viewed root as inside a PV.
+ * Only trusted, replay-matching history can turn a loose-piece label into
+ * an ordinary recapture; other real mechanisms and mating payoffs remain. */
+export function filterCompensatedRootCaptures(
+    fen: string,
+    line: string[],
+    motifs: TacticalMotifEvidence[],
+    previousFen?: string | null,
+    previousMove?: string | null,
+) {
+    if (!previousFen || !previousMove || !line.length) return motifs;
+    const history = replayTacticalLine(previousFen, [previousMove, line[0]]);
+    const root = replayTacticalLine(fen, [line[0]])[0];
+    if (
+        !root ||
+        history.length !== 2 ||
+        makeFen(history[0].after.toSetup()) !== makeFen(root.before.toSetup()) ||
+        !isCompensatedContinuationCapture(history, 1)
+    )
+        return motifs;
+    return motifs.filter((motif) => motif.id !== "hangingPiece" || motif.ply !== 1);
+}
+
 function legalMoves(pos: Chess): NormalMove[] {
     const result: NormalMove[] = [];
     for (const [from, dests] of pos.allDests()) {
@@ -2149,6 +2172,19 @@ function relevantRayTactics(step: TacticalReplayStep) {
     });
 }
 
+/** The pin must actually forbid capturing the checking/attacking piece.
+ * An unrelated geometric pin elsewhere in a mating PV is not evidence. */
+function pinRestrictsCapture(step: TacticalReplayStep) {
+    return rayTactics(step.after, step.before.turn).find((ray) => {
+        if (ray.kind !== "pin" || step.after.board.get(ray.rear)?.role !== "king") return false;
+        const capture = { from: ray.front, to: step.move.to };
+        if (step.after.isLegal(capture)) return false;
+        const unpinned = step.after.clone();
+        unpinned.board.take(ray.pinner);
+        return unpinned.isLegal(capture);
+    });
+}
+
 function rayMaterialEvidence(
     step: TacticalReplayStep,
     source: TacticalMotifEvidence["source"],
@@ -3364,11 +3400,10 @@ export function auditTacticalMotifs(
             if (promotion)
                 proposal = { ...proposal, value: promotion.gain, evidence: promotion.evidence };
         } else if (proposal.id === "skewer")
-            sound =
-                mate || rayMaterialEvidence(step, proposal.source).some((m) => m.id === "skewer");
+            sound = rayMaterialEvidence(step, proposal.source).some((m) => m.id === "skewer");
         else if (proposal.id === "pin")
             sound =
-                mate ||
+                (mate && Boolean(pinRestrictsCapture(step))) ||
                 (pinnedRecapturer(step) && settled >= 100) ||
                 rayMaterialEvidence(step, proposal.source).some((m) => m.id === "pin");
         else if (proposal.id === "capturingDefender")
@@ -3403,14 +3438,7 @@ export function auditTacticalMotifs(
             }
         }
         if (proposal.id === "pin" || proposal.id === "fork") {
-            const ray = rayTactics(step.after, step.before.turn).find((r) => {
-                if (r.kind !== "pin" || step.after.board.get(r.rear)?.role !== "king") return false;
-                const capture = { from: r.front, to: step.move.to };
-                if (step.after.isLegal(capture)) return false;
-                const unpinned = step.after.clone();
-                unpinned.board.take(r.pinner);
-                return unpinned.isLegal(capture);
-            });
+            const ray = pinRestrictsCapture(step);
             if (ray) {
                 const existed = rayTactics(step.before, step.before.turn).some(
                     (before) =>

@@ -439,6 +439,88 @@ async function analyse(engine: string, fen: string, searchMove?: string) {
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(!engine || !process.env.TACTICAL_ORDINARY_GAME_REPORT)(
+        "audit an output-blind longitudinal sample of ordinary games",
+        async () => {
+            const fixture = JSON.parse(
+                readFileSync(
+                    "benchmarks/tactical-relevance/ordinary-games-development.json",
+                    "utf8",
+                ),
+            ) as { games: { id: string; startFen: string; moves: string[] }[] };
+            const report = [];
+            const cache = new Map<string, Awaited<ReturnType<typeof analyse>>>();
+            const search = async (fen: string) => {
+                if (!cache.has(fen)) cache.set(fen, await analyse(engine, fen));
+                return [...cache.get(fen)!.values()].sort((a, b) => a.multipv - b.multipv);
+            };
+            for (const game of fixture.games) {
+                const steps = replayTacticalLine(game.startFen, game.moves);
+                expect(steps).toHaveLength(game.moves.length);
+                for (let index = 7; index < Math.min(60, steps.length); index += 5) {
+                    const step = steps[index];
+                    if (step.after.isEnd()) continue;
+                    const beforeFen = makeFen(step.before.toSetup()),
+                        fen = makeFen(step.after.toSetup());
+                    const before = await search(beforeFen),
+                        after = await search(fen);
+                    const started = performance.now();
+                    const scan = buildLiveTacticalScan({
+                        fen,
+                        ...after[0],
+                        variations: after,
+                        engineName: "Stockfish 18",
+                        previousFen: beforeFen,
+                        previousMoveUci: step.uci,
+                    });
+                    const scanMs = performance.now() - started;
+                    const mistakeStarted = performance.now();
+                    const score = (entry: (typeof before)[number]) =>
+                        entry.cp ?? Math.sign(entry.mate ?? 0) * 10000;
+                    const sign = step.before.turn === "white" ? 1 : -1;
+                    const cpLoss = Math.max(0, score(before[0]) + score(after[0]));
+                    const classification = classifyMistakeReviewMotifs({
+                        fen: beforeFen,
+                        playedMoveUci: step.uci,
+                        bestMoveUci: before[0].pvUci[0],
+                        pvUci: before[0].pvUci,
+                        refutationUci: after[0].pvUci,
+                        cpBefore: score(before[0]) * sign,
+                        cpAfter: -score(after[0]) * sign,
+                        cpLoss,
+                    });
+                    report.push({
+                        id: `${game.id}:ply${index + 1}`,
+                        ply: index + 1,
+                        played: step.san,
+                        history: steps.slice(0, index + 1).map((s) => s.san),
+                        beforeFen,
+                        fen,
+                        before,
+                        after,
+                        cpLoss,
+                        scan: {
+                            motifs: scan.motifs,
+                            labels: scan.labels,
+                            variations: scan.variations,
+                        },
+                        classification,
+                        explanation: buildMistakeReviewTacticalExplanation(classification),
+                        scanMs,
+                        mistakeMs: performance.now() - mistakeStarted,
+                    });
+                }
+            }
+            expect(report.length).toBeGreaterThan(10);
+            // Keep the previously complete fixture available to regression
+            // readers until the replacement audit has fully finished.
+            writeFileSync(
+                process.env.TACTICAL_ORDINARY_GAME_REPORT!,
+                JSON.stringify(report, null, 2),
+            );
+        },
+        240000,
+    );
     test.skipIf(!engine || !process.env.TACTICAL_EXPANSION_ENGINE_REPORT)(
         "audit selected findings from the tag-blind expansion",
         async () => {

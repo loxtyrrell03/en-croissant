@@ -202,9 +202,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 8.630000000004657,
+    "classificationMs": 8.614399999991292,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -406,9 +406,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 0.5186000000030617,
+    "classificationMs": 0.515400000003865,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -742,9 +742,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 9.838200000012876,
+    "classificationMs": 9.006500000003143,
     "positionHeadline": [
       {
         "id": "discoveredCheck",
@@ -1175,9 +1175,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 11.018599999995786,
+    "classificationMs": 30.903200000000652,
     "positionHeadline": [
       {
         "id": "discoveredCheck",
@@ -1449,9 +1449,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 18.152600000001257,
+    "classificationMs": 27.843999999997322,
     "positionHeadline": [
       {
         "id": "doubleCheck",
@@ -1515,63 +1515,6 @@
             "source": "available",
             "ply": 1,
             "moveUci": "e5e8",
-            "relevance": "secondary",
-            "value": 10000,
-            "actor": "white"
-          }
-        ]
-      },
-      {
-        "moves": [
-          "Rg5+",
-          "Rf6",
-          "Bxf6#"
-        ],
-        "motifs": [
-          {
-            "id": "discoveredCheck",
-            "label": "Discovered Check",
-            "source": "available",
-            "confidence": "high",
-            "ply": 1,
-            "moveUci": "e5g5",
-            "evidence": "Rg5+ vacates e5, uncovering the bishop on b2 against the king on h8. Every legal defence allows the verified short forced mate.",
-            "value": 10000,
-            "relevance": "primary"
-          },
-          {
-            "id": "morphysMate",
-            "label": "Morphy's Mate",
-            "confidence": "medium",
-            "evidence": "Bxf6# is checkmate (Morphy's Mate): the king is in check and there is no legal reply.",
-            "source": "available",
-            "ply": 3,
-            "moveUci": "b2f6",
-            "relevance": "secondary",
-            "value": 10000
-          }
-        ],
-        "timeline": [
-          {
-            "id": "discoveredCheck",
-            "label": "Discovered Check",
-            "source": "available",
-            "confidence": "high",
-            "ply": 1,
-            "moveUci": "e5g5",
-            "evidence": "Rg5+ vacates e5, uncovering the bishop on b2 against the king on h8. Every legal defence allows the verified short forced mate.",
-            "value": 10000,
-            "relevance": "primary",
-            "actor": "white"
-          },
-          {
-            "id": "morphysMate",
-            "label": "Morphy's Mate",
-            "confidence": "medium",
-            "evidence": "Bxf6# is checkmate (Morphy's Mate): the king is in check and there is no legal reply.",
-            "source": "available",
-            "ply": 3,
-            "moveUci": "b2f6",
             "relevance": "secondary",
             "value": 10000,
             "actor": "white"
@@ -1710,9 +1653,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-25"
+      "motifClassifierVersion": "site-55.adapter-26"
     },
-    "classificationMs": 1.0403999999980442,
+    "classificationMs": 1.053200000009383,
     "positionHeadline": [
       {
         "id": "doubleCheck",
