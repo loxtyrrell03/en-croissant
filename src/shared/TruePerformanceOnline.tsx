@@ -178,7 +178,7 @@ export function TruePerformanceOnline({
       {snapshot ? (
         <TruePerformancePanel
           key={key}
-          title={compact ? "Your online chess" : "Your performance"}
+          title={compact ? "Your online chess" : "Your chess"}
           games={snapshot.games}
           gameType={gameType}
           compact={compact}
@@ -198,7 +198,7 @@ export function TruePerformanceOnline({
       ) : (
         <>
           <header className={s.heading}>
-            <h2>{compact ? "Your online chess" : "Your performance"}</h2>
+            <h2>{compact ? "Your online chess" : "Your chess"}</h2>
           </header>
           <div className={s.controls}>{controls}</div>
           {!state.loading && !state.error && <p className={s.note}>Loading account history…</p>}

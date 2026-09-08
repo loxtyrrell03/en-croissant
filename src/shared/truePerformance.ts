@@ -283,10 +283,10 @@ export const PERFORMANCE_PERIODS: [PerformancePeriod, string][] = [
     ["30d", "30 days"],
     ["90d", "90 days"],
     ["1y", "1 year"],
-    ["all", "All history"],
-    ["20g", "Last 20"],
-    ["50g", "Last 50"],
-    ["100g", "Last 100"],
+    ["all", "All loaded games"],
+    ["20g", "Last 20 games"],
+    ["50g", "Last 50 games"],
+    ["100g", "Last 100 games"],
 ];
 export function selectPerformancePeriod(
     games: readonly PerformanceGame[],
@@ -295,7 +295,32 @@ export function selectPerformancePeriod(
     gameType: PerformanceGameType = "rated",
 ) {
     const ordered = preparePerformanceGames(games, asOf, gameType);
+    if (period === "all") return ordered;
     if (period.endsWith("g")) return ordered.slice(-parseInt(period));
-    const days = period === "1y" ? 365 : period === "all" ? Infinity : parseInt(period);
+    const days = period === "1y" ? 365 : parseInt(period);
     return ordered.filter((g) => g.at >= asOf - days * 86400);
+}
+
+
+/** Completed results stay visible even when rating evidence is missing. */
+export function selectResultPeriod(input: readonly PerformanceGame[], period: PerformancePeriod, asOf: number, gameType: PerformanceGameType = "rated") {
+    const seen = new Set<string>();
+    const ordered = input.filter(g => {
+        if (!g.id || !g.pool || !Number.isFinite(g.at) || g.at <= 0 || g.at > asOf || ![0, 0.5, 1].includes(g.score) || !matchesGameType(g.rated, gameType)) return false;
+        const key = `${g.pool}:${g.id}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    }).sort((a,b) => a.at-b.at || a.id.localeCompare(b.id));
+    if (period === "all") return ordered;
+    if (period.endsWith("g")) return ordered.slice(-parseInt(period));
+    const days = period === "1y" ? 365 : parseInt(period);
+    return ordered.filter(g => g.at >= asOf-days*86400);
+}
+
+/** One pass through the selected sample; the final point equals periodPerformance. */
+export function periodPerformanceHistory(input: readonly PerformanceGame[], asOf = Infinity, gameType: PerformanceGameType = "rated"): StrengthPoint[] {
+    const games = preparePerformanceGames(input, asOf, gameType);
+    if (games.length < 3 || !finiteRating(games[0].rating)) return [];
+    return strengthHistory(games, asOf, { ...ONLINE_MODEL, driftSdYear: 0 }, gameType).points;
 }

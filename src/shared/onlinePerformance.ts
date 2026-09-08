@@ -30,6 +30,23 @@ const preRating = (pgn: unknown, key: string) => {
     const h = header(pgn, key);
     return h && /^\d+$/.test(h) ? Number(h) : null;
 };
+/** A code is not an opening name; preserve uncertainty instead of guessing a variation. */
+export function readableOpeningName(name: unknown): string | undefined {
+    if (typeof name !== "string") return undefined;
+    const clean = name.trim();
+    return clean && !/^[A-E]\d{2}$/i.test(clean) ? clean : undefined;
+}
+export function chessComOpeningName(pgn: unknown): string | undefined {
+    const explicit = readableOpeningName(header(pgn, "Opening"));
+    if (explicit) return explicit;
+    const url = header(pgn, "ECOUrl");
+    if (!url || !/^https:\/\/(?:www\.)?chess\.com\/openings\//i.test(url)) return undefined;
+    try {
+        const slug = new URL(url).pathname.split("/").filter(Boolean).at(-1) ?? "";
+        const name = decodeURIComponent(slug).replace(/-/g, " ").split(/\.{3}|\s\d+\.|^\d+\./)[0].trim();
+        return readableOpeningName(name);
+    } catch { return undefined; }
+}
 export function normaliseChessComPerformance(
     raw: unknown,
     account: PerformanceAccount,
@@ -73,7 +90,7 @@ export function normaliseChessComPerformance(
         opponent: String(opp.username ?? ""),
         rated: g.rated,
         url,
-        opening: header(g.pgn, "Opening") ?? header(g.pgn, "ECO"),
+        opening: chessComOpeningName(g.pgn),
     };
 }
 export function normaliseLichessPerformance(
@@ -123,7 +140,7 @@ export function normaliseLichessPerformance(
         opponent: String(obj(opp.user).name ?? ""),
         rated: g.rated,
         url: `https://lichess.org/${g.id}`,
-        opening: obj(g.opening).name,
+        opening: readableOpeningName(obj(g.opening).name),
     };
 }
 const memory = new Map<string, PerformanceSnapshot>();
@@ -132,7 +149,7 @@ export const performanceCacheKey = (account: PerformanceAccount, speed: string, 
 export function cachedPerformance(key: string): PerformanceSnapshot | null {
     if (memory.has(key)) return memory.get(key)!;
     try {
-        const data = JSON.parse(localStorage.getItem(`true-performance-v1:${key}`) ?? "null");
+        const data = JSON.parse(localStorage.getItem(`true-performance-v2:${key}`) ?? "null");
         if (
             data &&
             Array.isArray(data.games) &&
@@ -255,7 +272,7 @@ export async function fetchOnlinePerformance(
     const key = performanceCacheKey(account, speed, gameType);
     memory.set(key, snapshot);
     try {
-        localStorage.setItem(`true-performance-v1:${key}`, JSON.stringify(snapshot));
+        localStorage.setItem(`true-performance-v2:${key}`, JSON.stringify(snapshot));
     } catch {
         /* Memory cache remains valid. */
     }

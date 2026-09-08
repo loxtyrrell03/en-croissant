@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { PerformanceHelp } from "./PerformanceHelp";
+import { useEffect, useMemo, useId, useRef, useState, type ReactNode } from "react";
 import {
   PERFORMANCE_PERIODS,
   periodPerformance,
-  selectPerformancePeriod,
+  selectResultPeriod,
+  periodPerformanceHistory,
+  preparePerformanceGames,
   strengthHistory,
   type PerformanceGame,
   type PerformanceGameType,
@@ -10,19 +13,12 @@ import {
   type StrengthPoint,
 } from "./truePerformance";
 import s from "./TruePerformancePanel.module.css";
+import { readableOpeningName } from "./onlinePerformance";
 const number = (n: number | null | undefined) =>
   n == null || !Number.isFinite(n) ? "—" : Math.round(n).toLocaleString();
-const signed = (n: number) => `${n > 0 ? "+" : ""}${Math.round(n)}`;
 const date = (at: number) =>
   new Date(at * 1000).toLocaleDateString(undefined, { month: "short", day: "numeric" });
-function Hint({ children }: { children: ReactNode }) {
-  return (
-    <details className={s.hint}>
-      <summary aria-label="Explain this estimate">?</summary>
-      <div>{children}</div>
-    </details>
-  );
-}
+function Hint({children}: {children: ReactNode}) { return <PerformanceHelp label="Explain this estimate">{children}</PerformanceHelp>; }
 function Metric({
   label,
   value,
@@ -53,7 +49,7 @@ function Metric({
 export function TruePerformancePanel({
   games,
   gameType = "rated",
-  title = "Your performance",
+  title = "Your chess",
   poolLabel,
   compact = false,
   asOf = Date.now() / 1000,
@@ -73,11 +69,16 @@ export function TruePerformancePanel({
   onOpenGame?: (game: PerformanceGame) => void;
   onViewAll?: () => void;
 }) {
-  const [period, setPeriod] = useState<PerformancePeriod>("30d");
+  const [period, setPeriod] = useState<PerformancePeriod>(() => {
+    try { const saved = localStorage.getItem("performance-period"); return PERFORMANCE_PERIODS.some(([p]) => p === saved) ? saved as PerformancePeriod : "30d"; } catch { return "30d"; }
+  });
+  const [compareOpen, setCompareOpen] = useState(false);
+  const [graphMode, setGraphMode] = useState<"performance" | "history">("performance");
+  const comparisonId = useId();
   const history = useMemo(() => strengthHistory(games, asOf, undefined, gameType), [games, asOf, gameType]);
   const selected = useMemo(
-    () => selectPerformancePeriod(history.games, period, asOf, gameType),
-    [history, period, asOf, gameType],
+    () => selectResultPeriod(games, period, asOf, gameType),
+    [games, period, asOf, gameType],
   );
   const selectedIds = useMemo(() => new Set(selected.map((g) => g.id)), [selected]);
   const points = useMemo(
@@ -85,19 +86,19 @@ export function TruePerformancePanel({
     [history, selectedIds],
   );
   const performance = useMemo(() => periodPerformance(selected, undefined, gameType), [selected, gameType]);
-  const last = points.at(-1),
-    enough = history.points.length >= 3 && !!last;
+  const last = points.at(-1);
+  const periodPoints = useMemo(() => periodPerformanceHistory(selected, asOf, gameType), [selected, asOf, gameType]);
+  const usable = useMemo(() => preparePerformanceGames(selected, asOf, gameType), [selected, asOf, gameType]);
+  const chartPoints = graphMode === "performance" ? periodPoints.slice(2) : points;
+  const enough = history.points.length >= 3 && !!last;
   const wins = selected.filter((g) => g.score === 1).length,
     draws = selected.filter((g) => g.score === 0.5).length,
     losses = selected.length - wins - draws;
-  const score = selected.length ? ((wins + draws / 2) / selected.length) * 100 : null;
-  const freshness = last ? Math.floor((asOf - last.at) / 86400) : 0;
   return (
     <section className={`${s.panel} ${compact ? s.compact : ""}`} aria-label={title}>
       <header className={s.heading}>
         <div>
           <h2>{title}</h2>
-          <p>{poolLabel}</p>
         </div>
         {onViewAll && (
           <button type="button" className={s.button} onClick={onViewAll}>
@@ -105,15 +106,14 @@ export function TruePerformancePanel({
           </button>
         )}
       </header>
-      {gameType !== "rated" && <p className={s.note}>Includes unrated play. These estimates describe the selected games; casual results may reflect experimentation as well as strength.</p>}
       <div className={s.controls}>
         {controls}
         <label>
-          Period
+          Choose your games
           <select
             aria-label="Performance period"
             value={period}
-            onChange={(e) => setPeriod(e.target.value as PerformancePeriod)}
+            onChange={(e) => { setPeriod(e.target.value as PerformancePeriod); try { localStorage.setItem("performance-period", e.target.value); } catch { /* Storage can be unavailable. */ } }}
           >
             {PERFORMANCE_PERIODS.map(([value, label]) => (
               <option key={value} value={value}>
@@ -122,7 +122,10 @@ export function TruePerformancePanel({
             ))}
           </select>
         </label>
-        <span className={s.count}>{selected.length.toLocaleString()} {gameType === "both" ? "games" : `${gameType} games`}</span>
+      </div>
+      <div className={s.selectionLine}>
+        <span>{selected.length.toLocaleString()} {gameType === "both" ? "games" : `${gameType} games`}</span>
+        {selected.length > 0 && <span> · {date(selected[0].at)}–{date(selected.at(-1)!.at)}</span>}
       </div>
       {selected.length === 0 ? (
         <div className={s.empty}>
@@ -131,72 +134,27 @@ export function TruePerformancePanel({
         </div>
       ) : (
         <>
-          <div className={s.overview}>
-            <div className={s.metrics}>
-              <Metric
-                label="Estimated playing strength"
-                description="Your level after your latest game."
-                value={enough ? number(last.mean) : "—"}
-                accent
-                detail={
-                  enough
-                    ? `${history.games.length.toLocaleString()} games of history · as of ${date(last.at)}`
-                    : "At least 3 usable games needed"
-                }
-                help={`Uses all ${history.games.length.toLocaleString()} usable games loaded for this account, time control and game type, including games before your selected period. On this website's rating scale, the model estimates a range of ${number(last?.low)}–${number(last?.high)}; this is an estimate, not a measured true rating.`}
-              />
-              <Metric
-                label="Performance in selected games"
-                description={`How well you played in these ${selected.length.toLocaleString()} games.`}
-                value={number(performance?.mean)}
-                detail={performance ? `${PERFORMANCE_PERIODS.find(([value]) => value === period)?.[1]} · ${date(selected[0].at)}–${date(selected.at(-1)!.at)}` : "Needs 3 games and a starting rating"}
-                help="Uses only the selected games’ results and opponents’ ratings, starting from your account rating before the first game. A strong or weak run can put this above or below your estimated playing strength."
-              />
-              <Metric
-                label="Score"
-                value={score === null ? "—" : `${score.toFixed(1)}%`}
-                detail={`${wins} wins · ${draws} draws · ${losses} losses`}
-              />
-              {!compact && (
-                <Metric
-                  label="Account rating"
-                  value={number(selected.at(-1)?.rating)}
-                  detail="Before the latest selected game"
-                />
-              )}
+          <div className={s.hero}>
+            <div className={s.heroHeading}><h3>How well did you play?</h3><Hint>{`Performance in your selected games, using their results and opponents’ ratings, starting from your account rating before the first game. ${performance ? `Estimated range: ${number(performance.low)}–${number(performance.high)}.` : "Needs at least 3 usable games and a starting rating."}`}</Hint></div>
+            <div className={s.heroRow}>
+              <div><strong className={s.heroRating}>{number(performance?.mean)}</strong><span className={s.ratingUnit}>Performance rating · {poolLabel}</span></div>
+              <button className={s.button} aria-expanded={compareOpen} aria-controls={comparisonId} onClick={() => setCompareOpen(v => !v)}>{compareOpen ? "Close comparison" : "Compare ratings"}</button>
             </div>
-            {enough && <ProgressChart points={points} />}
+            {!performance && <p className={s.note}>{usable.length < 3 ? "Needs at least 3 games with opponent ratings." : "The starting account rating is missing."}</p>}
+            {usable.length < selected.length && <p className={s.note}>{selected.length-usable.length} games lack usable rating data; their results are still included below.</p>}
           </div>
-          {freshness > 7 && (
-            <p className={s.note}>
-              Latest selected game: {date(last!.at)}. This estimate describes that point in time.
-            </p>
-          )}
+          {compareOpen && <div id={comparisonId} className={s.comparison}>
+            <Metric label="In your selected games" value={number(performance?.mean)} detail={`${usable.length} games with rating data`} help="How well you played across the selection, using your rating before its first usable game as the starting point." />
+            <Metric label="After your latest game" value={enough ? number(last.mean) : "—"} detail={`${history.games.length} games of history`} help={`Your estimated level after ${last ? date(last.at) : "the latest game"}, including earlier loaded games outside the selection. This uses the same website and time control.`} />
+            <Metric label="Website rating" value={number(selected.at(-1)?.rating)} detail="Recorded before your latest game" help="The rating recorded by the website before the last selected game; it is not either of our estimates." />
+          </div>}
+          <div className={s.graphControls}><label>Graph <select aria-label="Rating graph" value={graphMode} onChange={e => setGraphMode(e.target.value as "performance" | "history")}><option value="performance">Performance in selected games</option><option value="history">Estimated level after each game</option></select></label><Hint>{graphMode === "performance" ? "Recalculates performance as each selected game is added. Its final point matches the headline rating; games before your selection are not included." : "Your estimated level after each game, using earlier loaded games too. The selection controls which dates are shown, not how much earlier history is used."}</Hint></div>
+          {chartPoints.length > 0 ? <ProgressChart points={chartPoints} label={graphMode === "performance" ? "Performance rating" : "Estimated playing strength"} /> : <div className={s.empty}>Not enough rating data to draw this graph.</div>}
+          <div className={s.results} aria-label="Game results"><div><strong className={s.winText}>{wins}</strong><span>Wins</span></div><div><strong>{draws}</strong><span>Draws</span></div><div><strong className={s.lossText}>{losses}</strong><span>Losses</span></div></div>
           {!compact && (
             <div className={s.detailsGrid}>
               <div className={s.card}>
-                <h3>By colour</h3>
-                {[true, false].map((white) => {
-                  const subset = selected.filter((g) => g.white === white);
-                  const pct = subset.length
-                    ? (subset.reduce((a, g) => a + g.score, 0) / subset.length) * 100
-                    : 0;
-                  return (
-                    <div className={s.colour} key={String(white)}>
-                      <div>
-                        <strong>{white ? "White" : "Black"}</strong>
-                        <span>
-                          {subset.length ? `${pct.toFixed(1)}% score` : "No games"} ·{" "}
-                          {subset.length} games
-                        </span>
-                      </div>
-                      <div className={s.bar}>
-                        <span style={{ width: `${pct}%` }} />
-                      </div>
-                    </div>
-                  );
-                })}
-                <h3 className={s.openingTitle}>Most played openings</h3>
+                <h3>Openings you played</h3>
                 <OpeningSummary games={selected} />
               </div>
               <div className={s.card}>
@@ -206,13 +164,12 @@ export function TruePerformancePanel({
                     .slice(-8)
                     .reverse()
                     .map((g) => {
-                      const point = history.points.find((p) => p.id === g.id);
                       return (
                         <div className={s.game} key={g.id}>
                           <span
                             className={`${s.result} ${g.score === 1 ? s.win : g.score === 0 ? s.loss : s.draw}`}
                           >
-                            {g.score === 1 ? "W" : g.score === 0 ? "L" : "D"}
+                            {g.score === 1 ? "Won" : g.score === 0 ? "Lost" : "Drew"}
                           </span>
                           <div>
                             <button
@@ -225,12 +182,10 @@ export function TruePerformancePanel({
                             <small>
                               {date(g.at)} · {g.white ? "White" : "Black"} · Opp.{" "}
                               {number(g.opponentRating)}
+                              <br />{readableOpeningName(g.opening) ?? "Opening not identified"}
                             </small>
                           </div>
-                          <div className={s.gameRating}>
-                            <strong>{number(point?.mean)}</strong>
-                            <small>{point ? signed(point.mean - point.before) : "—"}</small>
-                          </div>
+
                         </div>
                       );
                     })}
@@ -241,16 +196,11 @@ export function TruePerformancePanel({
         </>
       )}
       <footer className={s.footer}>
-        {coverage && <span>{coverage}</span>}
-        {history.excluded > 0 && (
-          <span>
-            {history.excluded} duplicate, filtered, undated or incomplete records excluded.
-          </span>
-        )}
+        <details><summary>Game data</summary><p>{coverage}</p>{history.excluded > 0 && <p>{history.excluded} loaded records could not contribute to the longer-history estimate.</p>}</details>
         <details>
           <summary>About the estimates</summary>
           <p>
-            Based on results and opponent ratings, with uncertainty and changes over time. Website
+            Unrated play can reflect experimentation as well as strength. Based on results and opponent ratings, with uncertainty and changes over time. Website
             and time-control pools stay separate. Online model settings are provisional; they have
             not been calibrated on an independent online test set. These are not FIDE ratings. A
             single game shows its effect on the running estimate, not a standalone performance
@@ -262,31 +212,18 @@ export function TruePerformancePanel({
   );
 }
 function OpeningSummary({ games }: { games: readonly PerformanceGame[] }) {
-  const map = new Map<string, { n: number; score: number }>();
+  const [all, setAll] = useState(false);
+  const map = new Map<string, { n: number; wins: number; draws: number; losses: number }>();
   for (const g of games) {
-    if (!g.opening) continue;
-    const row = map.get(g.opening) ?? { n: 0, score: 0 };
-    row.n++;
-    row.score += g.score;
-    map.set(g.opening, row);
+    const name = readableOpeningName(g.opening) ?? "Opening not identified";
+    const row = map.get(name) ?? { n: 0, wins: 0, draws: 0, losses: 0 };
+    row.n++; if (g.score === 1) row.wins++; else if (g.score === 0.5) row.draws++; else row.losses++;
+    map.set(name, row);
   }
-  const rows = [...map].sort((a, b) => b[1].n - a[1].n).slice(0, 4);
-  return rows.length ? (
-    <div className={s.openings}>
-      {rows.map(([name, row]) => (
-        <div key={name}>
-          <span title={name}>{name}</span>
-          <small>
-            {row.n} games · {Math.round((row.score / row.n) * 100)}%
-          </small>
-        </div>
-      ))}
-    </div>
-  ) : (
-    <p className={s.note}>No opening names in these game records.</p>
-  );
+  const rows = [...map].sort((a,b) => b[1].n-a[1].n);
+  return <div className={s.namedOpenings}>{rows.slice(0, all ? undefined : 4).map(([name,row]) => <div key={name}><div><strong>{name}</strong><span>{row.n} games</span></div><small>{row.wins} wins · {row.draws} draws · {row.losses} losses</small></div>)}{rows.length > 4 && <button className={s.button} onClick={() => setAll(v => !v)}>{all ? "Show fewer openings" : "See all openings"}</button>}</div>;
 }
-function ProgressChart({ points }: { points: StrengthPoint[] }) {
+function ProgressChart({ points, label }: { points: StrengthPoint[]; label: string }) {
   const [hover, setHover] = useState<number | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(800);
@@ -303,13 +240,13 @@ function ProgressChart({ points }: { points: StrengthPoint[] }) {
     (_, i) => i === points.length - 1 || i % Math.max(1, Math.ceil(points.length / 200)) === 0,
   );
   const min =
-    Math.floor(Math.min(...plotted.map((p) => Math.min(p.low, p.rating ?? p.mean))) / 100) * 100;
+    Math.floor(Math.min(...plotted.map((p) => p.low)) / 100) * 100;
   const max = Math.max(
     min + 100,
-    Math.ceil(Math.max(...plotted.map((p) => Math.max(p.high, p.rating ?? p.mean))) / 100) * 100,
+    Math.ceil(Math.max(...plotted.map((p) => p.high)) / 100) * 100,
   );
   const x = (i: number) =>
-      48 + (plotted.length === 1 ? 0.5 : i / (plotted.length - 1)) * (width - 60),
+      48 + (plotted.at(-1)!.at === plotted[0].at ? 0.5 : (plotted[i].at - plotted[0].at) / (plotted.at(-1)!.at - plotted[0].at)) * (width - 60),
     y = (v: number) => 208 - ((v - min) / (max - min)) * 174;
   const index = Math.min(hover ?? plotted.length - 1, plotted.length - 1);
   const selected = plotted[index];
@@ -318,16 +255,16 @@ function ProgressChart({ points }: { points: StrengthPoint[] }) {
   return (
     <div className={s.card} ref={chartRef}>
       <div className={s.chartHead}>
-        <h3>Your progress</h3>
+        <h3>Rating over time</h3>
         <span>
-          <i /> Estimated strength <b /> Account rating
+          <i /> {label}
         </span>
       </div>
       <svg
         viewBox={`0 0 ${width} 242`}
         className={s.chart}
         role="img"
-        aria-label="Estimated playing strength and account rating over selected games"
+        aria-label={`${label} over selected games`}
       >
         {[0, 1, 2, 3].map((i) => {
           const value = min + ((max - min) * i) / 3;
@@ -347,16 +284,6 @@ function ProgressChart({ points }: { points: StrengthPoint[] }) {
             .join(" ")}`}
           className={s.band}
         />
-        <path
-          d={plotted
-            .map((p, i) =>
-              p.rating === null
-                ? ""
-                : `${i === 0 || plotted[i - 1].rating === null ? "M" : "L"}${x(i)},${y(p.rating)}`,
-            )
-            .join(" ")}
-          className={s.accountLine}
-        />
         <polyline points={line((p) => p.mean)} className={s.strengthLine} />
         {plotted.map((p, i) => (
           <circle
@@ -368,7 +295,7 @@ function ProgressChart({ points }: { points: StrengthPoint[] }) {
             onMouseEnter={() => setHover(i)}
           >
             <title>
-              {date(p.at)}: estimated strength {number(p.mean)}, range {number(p.low)}–{number(p.high)}
+              {date(p.at)}: {label.toLowerCase()} {number(p.mean)}, range {number(p.low)}–{number(p.high)}
             </title>
           </circle>
         ))}
@@ -391,8 +318,7 @@ function ProgressChart({ points }: { points: StrengthPoint[] }) {
         />
       </label>
       <p className={s.chartReadout} aria-live="polite">
-        {date(selected.at)} · Estimated strength <strong>{number(selected.mean)}</strong> · Model range{" "}
-        {number(selected.low)}–{number(selected.high)}
+        {date(selected.at)} · {label} <strong>{number(selected.mean)}</strong>
       </p>
     </div>
   );

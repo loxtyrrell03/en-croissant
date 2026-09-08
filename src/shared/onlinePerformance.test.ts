@@ -1,6 +1,8 @@
 import { it, expect, vi, afterEach } from "vitest";
 import {
     normaliseChessComPerformance,
+    chessComOpeningName,
+    readableOpeningName,
     normaliseLichessPerformance,
     fetchOnlinePerformance,
     performanceCacheKey,
@@ -89,4 +91,12 @@ it("preserves an unrated Chess.com result when requested", () => {
     expect(normaliseChessComPerformance(raw, account, "blitz", "unrated")?.rated).toBe(false);
     expect(normaliseChessComPerformance(raw, account, "blitz", "both")?.score).toBe(1);
     expect(normaliseChessComPerformance(raw, account, "blitz", "rated")).toBeNull();
+});
+
+it("uses opening names and ECOUrl, never a bare ECO code", () => {
+    expect(chessComOpeningName('[ECO "B20"]')).toBeUndefined();
+    expect(readableOpeningName(" B20 ")).toBeUndefined();
+    expect(chessComOpeningName('[ECOUrl "https://www.chess.com/openings/Sicilian-Defense-2.Nf3"]')).toBe("Sicilian Defense");
+    expect(chessComOpeningName('[Opening "Italian Game"]')).toBe("Italian Game");
+    expect(chessComOpeningName('[ECOUrl "https://attacker.invalid/openings/Fake"]')).toBeUndefined();
 });

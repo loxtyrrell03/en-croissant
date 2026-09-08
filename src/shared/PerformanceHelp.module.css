@@ -1,0 +1,36 @@
+.trigger {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  margin-inline: 4px;
+  padding: 0;
+  vertical-align: middle;
+  border: 1px solid var(--op-border-strong, #3d3d46);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--op-text-faint, #9a9aa5);
+  font: 600 11px/1 var(--op-font-ui, sans-serif);
+  cursor: help;
+}
+.trigger:hover, .trigger:focus-visible {
+  color: var(--op-accent, #2dd4bf);
+  border-color: var(--op-accent, #2dd4bf);
+}
+.trigger:focus-visible { outline: 2px solid var(--op-accent, #2dd4bf); outline-offset: 2px; }
+.tooltip {
+  position: fixed;
+  z-index: 100000;
+  width: max-content;
+  max-width: min(290px, calc(100vw - 16px));
+  padding: 9px 11px;
+  border: 1px solid var(--op-border-strong, #3d3d46);
+  border-radius: var(--op-radius-control, 6px);
+  background: var(--op-bg-overlay, #242428);
+  color: var(--op-text, #eee);
+  box-shadow: 0 5px 20px #0005;
+  font: 400 12px/1.5 var(--op-font-ui, sans-serif);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

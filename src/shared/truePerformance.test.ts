@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
     strengthHistory,
+    periodPerformanceHistory,
+    selectResultPeriod,
     periodPerformance,
     outcomeProbabilities,
     ONLINE_MODEL,
@@ -107,4 +109,18 @@ it("uses the requested game type through both strength and period estimates", ()
     expect(selectPerformancePeriod(casual.games, "20g", 1700000010, "unrated").length).toBe(3);
     expect(periodPerformance(casual.games, undefined, "unrated")).not.toBeNull();
     expect(strengthHistory(games, Infinity, undefined, "both").points.length).toBe(6);
+});
+
+it("the graph ends at the selected-game headline without borrowing earlier games", () => {
+    const games = sample(40), selected = games.slice(-20);
+    const points = periodPerformanceHistory(selected);
+    expect(points).toHaveLength(20);
+    expect(points.at(-1)?.mean).toBeCloseTo(periodPerformance(selected)!.mean, 10);
+});
+it("counts completed games with missing ratings in results, but not the estimate", () => {
+    const games = sample(5); games[3] = {...games[3], opponentRating:null};
+    const selected = selectResultPeriod(games, "all", Infinity);
+    expect(selected).toHaveLength(5);
+    expect(periodPerformanceHistory(selected)).toHaveLength(4);
+    expect(periodPerformanceHistory(selected).at(-1)?.mean).toBeCloseTo(periodPerformance(selected)!.mean, 10);
 });
