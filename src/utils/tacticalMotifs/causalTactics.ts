@@ -15,6 +15,7 @@ const VALUE: Record<Role, number> = {
     king: 20000,
 };
 const MECHANISMS = new Set([
+    "forcingAttack",
     "doubleThreat",
     "forkPreparation",
     "fork",
@@ -680,6 +681,178 @@ function preparationSearch(hints: string[], budget: { nodes: number }) {
         return weakest;
     };
     return { attack, defend };
+}
+
+type CheckingAttackProof = {
+    gain: number;
+    target: Square;
+    branches: { reply: string; line: string[]; gain: number }[];
+};
+const checkingAttackCache = new Map<string, CheckingAttackProof | null>();
+
+/** A PV only nominates the material target and move ordering. Every defensive
+ * branch is independently checked; a branch may end in mate instead. */
+export function proveCheckingMaterialAttack(
+    steps: TacticalReplayStep[],
+    nodeLimit = 16384,
+): CheckingAttackProof | null {
+    const root = steps[0];
+    if (
+        !root ||
+        root.capture ||
+        root.before.isCheck() ||
+        !root.after.isCheck() ||
+        root.after.isEnd()
+    )
+        return null;
+    const side = root.before.turn;
+    const checker = root.after.board.get(root.move.to);
+    if (
+        !checker ||
+        checker.color !== side ||
+        !attacks(checker, root.move.to, root.after.board.occupied).has(
+            root.after.board.kingOf(opposite(side))!,
+        )
+    )
+        return null;
+    const payoffIndex = steps.findIndex(
+        (step, i) => i >= 4 && step.before.turn === side && step.capture >= VALUE.knight,
+    );
+    let target: Square | undefined;
+    if (
+        payoffIndex >= 4 &&
+        payoffIndex <= 8 &&
+        !steps
+            .slice(0, payoffIndex)
+            .some((step) => step.before.turn === side && !step.after.isCheck())
+    ) {
+        target = steps[payoffIndex].move.to;
+        for (const step of steps.slice(1, payoffIndex).reverse())
+            if (step.before.turn !== side && step.move.to === target) target = step.move.from;
+    } else {
+        const piece = root.after.board.get(root.move.to);
+        if (!piece || piece.color !== side) return null;
+        target = [
+            ...attacks(piece, root.move.to, root.after.board.occupied).intersect(
+                root.after.board[opposite(side)],
+            ),
+        ]
+            .filter((sq) =>
+                ["knight", "bishop", "rook", "queen"].includes(root.after.board.get(sq)!.role),
+            )
+            .sort(
+                (a, b) =>
+                    VALUE[root.after.board.get(b)!.role] - VALUE[root.after.board.get(a)!.role],
+            )[0];
+    }
+    if (target === undefined) return null;
+    if (root.after.board.get(target)?.color !== opposite(side)) return null;
+    const hints = steps
+        .slice(0, payoffIndex < 0 ? 9 : payoffIndex)
+        .filter((step) => step.before.turn === side)
+        .map((step) => step.uci);
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}:${target}:${hints}`;
+    if (nodeLimit === 16384 && checkingAttackCache.has(key)) return checkingAttackCache.get(key)!;
+    const budget = { nodes: nodeLimit };
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--budget.nodes < 0) throw new Error("Checking attack budget exhausted");
+        const next = pos.clone();
+        next.play(move);
+        return next;
+    };
+    const delta = (pos: Chess, move: NormalMove) =>
+        capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+    type Win = { gain: number; line: string[] };
+    const attack = (
+        pos: Chess,
+        square: Square,
+        balance: number,
+        checks: number,
+        pieces: Square[],
+    ): Win | null => {
+        if (pos.isEnd()) return null;
+        const moves = legalMoves(pos).sort(
+            (a, b) => Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))),
+        );
+        for (const move of moves) {
+            if (move.to !== square || !capturedValue(pos, move)) continue;
+            const gain = participantCaptureGain(pos, move, [...pieces, move.to], budget);
+            if (gain !== null && balance + gain >= 100)
+                return { gain: balance + gain, line: [makeSan(pos, move)] };
+        }
+        if (!checks) return null;
+        for (const move of moves) {
+            const next = visit(pos, move);
+            if (!next.isCheck()) continue;
+            if (next.isCheckmate()) return { gain: 10000, line: [makeSan(pos, move)] };
+            const win = defend(next, square, balance + delta(pos, move), checks - 1, [
+                ...new Set([...pieces.map((sq) => (sq === move.from ? move.to : sq)), move.to]),
+            ]);
+            if (win) return { gain: win.gain, line: [makeSan(pos, move), ...win.line] };
+        }
+        return null;
+    };
+    const defend = (
+        pos: Chess,
+        square: Square,
+        balance: number,
+        checks: number,
+        pieces: Square[],
+    ): Win | null => {
+        if (pos.isEnd()) return null;
+        let minimum: Win | null = null;
+        for (const move of legalMoves(pos)) {
+            const next = visit(pos, move);
+            const win = attack(
+                next,
+                move.from === square ? move.to : square,
+                balance - delta(pos, move),
+                checks,
+                pieces.filter((sq) => sq !== move.to),
+            );
+            if (!win) return null;
+            if (!minimum || win.gain < minimum.gain)
+                minimum = { gain: win.gain, line: [makeSan(pos, move), ...win.line] };
+        }
+        return minimum;
+    };
+    let proof: CheckingAttackProof | null = null;
+    try {
+        const branches: CheckingAttackProof["branches"] = [];
+        for (const reply of legalMoves(root.after)) {
+            const next = visit(root.after, reply);
+            const win = attack(
+                next,
+                reply.from === target ? reply.to : target,
+                -delta(root.after, reply),
+                3,
+                reply.to === root.move.to ? [] : [root.move.to],
+            );
+            if (!win) throw new Error("Unproved checking attack reply");
+            branches.push({ reply: makeSan(root.after, reply), ...win });
+        }
+        const gain = Math.min(...branches.map((branch) => branch.gain));
+        // Do not inflate an immediately available material win into a longer
+        // attack. Mate-only proofs belong to the existing mate classifier.
+        if (
+            gain < 10000 &&
+            !legalMoves(root.before).some(
+                (move) =>
+                    move.to === target &&
+                    capturedValue(root.before, move) &&
+                    tacticalExchangeGain(root.before, move) >= gain,
+            )
+        )
+            proof = { gain, target, branches };
+    } catch {
+        /* Unknown leaves and exhausted work must not prove an attack. */
+    }
+    if (nodeLimit === 16384) {
+        checkingAttackCache.set(key, proof);
+        if (checkingAttackCache.size > 128)
+            checkingAttackCache.delete(checkingAttackCache.keys().next().value!);
+    }
+    return proof;
 }
 
 type ForcingClearanceProof = {
@@ -2023,6 +2196,7 @@ export function tacticalBoardEvidence(
     if (
         !motif?.ply ||
         ![
+            "forcingAttack",
             "doubleThreat",
             "forkPreparation",
             "fork",
@@ -2041,6 +2215,16 @@ export function tacticalBoardEvidence(
         return null;
     const step = replayTacticalLine(fen, line.slice(0, motif.ply))[motif.ply - 1];
     if (!step) return null;
+    if (motif.id === "forcingAttack")
+        return {
+            square: makeSquare(step.move.to),
+            arrows: [
+                {
+                    from: makeSquare(step.move.to),
+                    to: makeSquare(step.after.board.kingOf(opposite(step.before.turn))!),
+                },
+            ],
+        };
     if (motif.id === "doubleThreat") {
         const proof = proveQuietDoubleThreat(step);
         if (proof)
@@ -2769,6 +2953,7 @@ function causeRank(motif: TacticalMotifEvidence, directGain = 0) {
         "discoveredAttack",
         "clearance",
         "xRayAttack",
+        "forcingAttack",
     ];
     const family =
         MECHANISMS.has(motif.id) || trapIsMainCause(motif, directGain)
@@ -2843,6 +3028,25 @@ export function auditTacticalMotifs(
         settled = -VALUE.king;
     }
     const candidates: TacticalMotifEvidence[] = [];
+    const checkingAttack =
+        !mate && !verifiedFork(steps[0]) ? proveCheckingMaterialAttack(steps) : null;
+    if (checkingAttack) {
+        const material =
+            checkingAttack.branches.find(
+                (branch) => branch.gain < 10000 && branch.reply === steps[1]?.san,
+            ) ?? checkingAttack.branches.find((branch) => branch.gain < 10000)!;
+        const mateBranch = checkingAttack.branches.find((branch) => branch.gain === 10000);
+        candidates.push({
+            id: "forcingAttack",
+            label: "Forcing Attack",
+            source: proposals[0]?.source ?? "available",
+            confidence: "high",
+            ply: 1,
+            moveUci: steps[0].uci,
+            value: checkingAttack.gain,
+            evidence: `${steps[0].san} starts a checking attack that wins material or mates against every legal reply. After ${material.reply}, ${material.line.join(" ")} wins material.${mateBranch ? ` Instead, ${mateBranch.reply} allows ${mateBranch.line.join(" ")}, forcing mate.` : ""} The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.`,
+        });
+    }
     const doubleThreat = !mate && !verifiedFork(steps[0]) ? proveQuietDoubleThreat(steps[0]) : null;
     if (doubleThreat) {
         const root = steps[0];
@@ -3183,6 +3387,21 @@ export function auditTacticalMotifs(
             sound = (mate || settled >= 100) && exchangeGain > -VALUE.king && exchangeGain <= -90;
         } else sound = mate || settled >= 100;
         if (!sound) continue;
+        if (proposal.id === "pin") {
+            const ray = relevantRayTactics(step).find((ray) => ray.kind === "pin");
+            if (ray) {
+                const existed = rayTactics(step.before, step.before.turn).some(
+                    (before) =>
+                        before.pinner === ray.pinner &&
+                        before.front === ray.front &&
+                        before.rear === ray.rear,
+                );
+                proposal = {
+                    ...proposal,
+                    evidence: `${step.san} ${existed ? "continues the attack on" : "pins"} the ${step.after.board.get(ray.front)!.role} on ${makeSquare(ray.front)}${existed ? ", already pinned" : ""} to the ${step.after.board.get(ray.rear)!.role} on ${makeSquare(ray.rear)} by the ${step.after.board.get(ray.pinner)!.role} on ${makeSquare(ray.pinner)}.`,
+                };
+            }
+        }
         if (proposal.id === "pin" || proposal.id === "fork") {
             const ray = rayTactics(step.after, step.before.turn).find((r) => {
                 if (r.kind !== "pin" || step.after.board.get(r.rear)?.role !== "king") return false;
@@ -3357,6 +3576,16 @@ export function auditTacticalMotifs(
             if (
                 m.id === "sacrifice" &&
                 candidates.some((other) => MECHANISMS.has(other.id) && other.ply === m.ply)
+            )
+                return false;
+            if (
+                m.id === "forcingAttack" &&
+                candidates.some(
+                    (other) =>
+                        other.ply === m.ply &&
+                        other.id !== "forcingAttack" &&
+                        MECHANISMS.has(other.id),
+                )
             )
                 return false;
             return true;
@@ -3566,6 +3795,12 @@ function materialLesson(steps: TacticalReplayStep[], motif: TacticalMotifEvidenc
         const proof = capturedDefenderProof(step, motif.source);
         if (proof) {
             targets = proof.extended ? [...proof.targets, step.move.to] : [proof.target];
+            gain = proof.gain;
+        }
+    } else if (motif.id === "forcingAttack") {
+        const proof = proveCheckingMaterialAttack(steps);
+        if (proof) {
+            targets = [proof.target];
             gain = proof.gain;
         }
     } else if (motif.id === "forkPreparation" || motif.id === "doubleThreat") {

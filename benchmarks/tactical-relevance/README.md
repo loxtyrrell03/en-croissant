@@ -880,14 +880,14 @@ comparison prevents two irrelevant pawn moves from being assigned different
 causes for an already existing preparation.
 
 `fork-preparation-stockfish-18.json` records the root move-order comparison,
-the Rc1 branch, NGZzo (subsequently addressed below) and the unresolved opGD7 diagnostic. Fresh before/after searches in
+the Rc1 branch, NGZzo and opGD7 (subsequently addressed below). Fresh before/after searches in
 `causal-stockfish-18.json` verify the actual Rc5 mistake (Ra5 preserves the
 draw) and the missed preparation when Black plays Nd3 too soon. The proof's
 500 cp local material gain is not Stockfish's whole-position score.
 
-The remaining diagnostic opGD7's Qf1+ Kd2 Bf4+ Re3 Qf2+ Bxe3 involves a longer king drive
+The then-unresolved opGD7's Qf1+ Kd2 Bf4+ Re3 Qf2+ Bxe3 involves a longer king drive
 and pin; a later pin alone still does not explain the initiating check.
-That unresolved diagnostic is not counted as a correct empty result.
+It was not counted as a correct empty result; adapter 25 adds its root proof below.
 
 Only fJrhT's headline changes in the frozen mixed 32-position expansion.
 The live selector also now accepts validated mate-distance IDs beyond five
@@ -978,6 +978,64 @@ holdout labels were not tuned against. Twelve dedicated regressions,
 format/lint, the shared review worker and production build pass. Type checking
 retains the unrelated OTB number/bigint fixture error. Desktop/phone share the
 adapter in source; Outpost, website primitives and live deployments are unchanged.
+
+## Checking attacks with branch-dependent material or mate (adapter 25)
+
+Real opGD7's three-ply source stopped after Qf1+ Kd2 Bf4+, before the
+material payoff. A full Stockfish line previously showed only Pin at Qf2+,
+which did not explain Qf1+. The new root lesson is **Forcing Attack**. It
+works from the short source, full engine lines and Qf1+ alone. The source has
+no silver mechanism tag; agreement with that empty tag set is not the goal.
+
+Every legal root reply (Kc2, Kd2, Re1) and every subsequent defensive reply
+is checked independently. A non-capturing direct check nominates either a
+material target in a short all-checking continuation or the highest-value
+non-king piece it attacks now. PV moves only order the search. The proof
+allows three additional checking moves before a settled target capture;
+branches may prove mate instead. It tracks target identity, captured and
+promoted material and the moved attacking participants' exchange liabilities.
+It abstains on unknown/terminal defensive resources and exhaustion of the
+shared 16,384-operation budget plus bounded exchange leaves. Its 128-entry
+cache cannot bypass an explicitly smaller budget. An equally profitable
+immediate capture available before the check disqualifies the preparation.
+Discovered checks and castling's vacant encoded destination are left to their
+existing specialised classifiers, not drawn as fictitious direct checks.
+
+The first successful local proof guarantees 170 cp (an exchange), not the
+maximum available gain or a full engine evaluation. In its Kd2 branch,
+Bf4+ Re3 Bxe3+ Kxe3 already wins an exchange. Stockfish finds the stronger
+Qf2+ first and then Bxe3, retaining the bishop. Kc2 and Re1 independently
+allow mate in three in fresh searches, but the material certificate does not
+need to solve those mates before proving the root win. This distinction is
+intentional: the classifier must not call one branch's pin an inevitable
+mechanism, or call the whole position forced mate when Kd2 avoids it.
+
+Specific proved root mechanisms, such as Fork Preparation, outrank and
+suppress the generic attack label. The timeline does not repeat Forcing
+Attack after every check. Root arrows show Qf3-f1 and the real f1-d1 checking
+ray; the fork/pin/capture and terminal mate remain on their actual plies.
+Pin prose now distinguishes a newly created pin from continuing an attack on
+an already-pinned piece, including the e3 rook at Qf2+.
+
+Fresh before/after searches prefer Kc1 (+188 cp for White) before the actual
+Re2 error, then Qf1+ (+614 cp for Black). Black's a5 misses that attack and
+allows Qg4, leaving White at +9 cp. Be7 instead hangs a bishop to Qxe7:
+the immediate bishop loss properly leads that explanation, while missed
+Qf1+ remains separately classified. These calls took about 26, 36 and 53 ms
+respectively in this run, not including engine search or UI latency.
+The initial expectation that Be7 should headline the missed attack was
+rejected on this concrete chess evidence, not enforced on the output.
+
+Missing-bishop, checker-capture and already-available-capture controls reject
+the attack claim. Equivalent pawn moves with the same forced exchange loss
+retain existing-danger comparison. Only opGD7's headline changes in the
+frozen mixed 32-position expansion. Sixteen new regressions, 303 selected
+tests in 29 files, all fourteen fresh-engine tests, targeted format/lint,
+the shared review worker and production build pass. Type checking retains
+the unrelated OTB number/bigint fixture error. These are development/source
+proofs, not general accuracy, Outpost/website parity or live deployment proof.
+Quiet continuations, different target nominations, longer attacks and tighter
+maximum-gain proofs remain future work.
 
 ## What remains to establish
 

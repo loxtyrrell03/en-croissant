@@ -200,9 +200,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 212.1309000000001
+    "classificationMs": 218.18539999999848
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -398,9 +398,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 65.98210000000108
+    "classificationMs": 65.76620000000003
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -720,9 +720,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 131.6921999999995
+    "classificationMs": 129.62109999999848
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -918,9 +918,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 236.13050000000112
+    "classificationMs": 248.67929999999978
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -1076,9 +1076,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 96.63400000000001
+    "classificationMs": 94.88589999999931
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -1254,8 +1254,8 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 63.29919999999947
+    "classificationMs": 63.64190000000053
   }
 ]

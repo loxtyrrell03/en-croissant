@@ -9,6 +9,7 @@ import type { TacticalMotifEvidence } from "./types";
 import { tacticalBoardEvidence } from "./causalTactics";
 
 const CORE_TACTICAL_THEME_IDS = new Set([
+    "forcingAttack",
     "doubleThreat",
     "forkPreparation",
     "tacticalPreparation",
@@ -88,6 +89,8 @@ const THEME_PRIORITY = [
 ];
 
 const THEME_DESCRIPTIONS: Record<string, string> = {
+    forcingAttack:
+        "A verified sequence of checks forces material gain or mate; different defences may lead to different motifs.",
     doubleThreat:
         "A direct piece attack and a separate checking-fork threat together defeat every legal defence.",
     forkPreparation:
@@ -135,7 +138,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 24;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 25;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {

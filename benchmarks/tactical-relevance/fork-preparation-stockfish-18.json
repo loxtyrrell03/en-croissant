@@ -117,7 +117,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     }
   },
   {
@@ -155,7 +155,7 @@
     ],
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     }
   },
   {
@@ -299,7 +299,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     }
   },
   {
@@ -405,7 +405,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
     "doubleThreatProof": {
       "gain": 180,
@@ -817,7 +817,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
     "doubleThreatProof": {
       "gain": 180,
@@ -1079,27 +1079,50 @@
     "classification": {
       "motifs": [
         {
+          "id": "forcingAttack",
+          "label": "Forcing Attack",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f3f1",
+          "value": 170,
+          "evidence": "Qf1+ starts a checking attack that wins material or mates against every legal reply. After Kd2, Bf4+ Re3 Bxe3+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+          "relevance": "primary"
+        },
+        {
           "id": "pin",
           "label": "Pin",
           "confidence": "medium",
-          "evidence": "f1f2 lets the bishop on f4 pin the rook on e3 to the king on d2.",
+          "evidence": "Qf2+ continues the attack on the rook on e3, already pinned to the king on d2 by the bishop on f4.",
           "source": "available",
           "ply": 5,
           "moveUci": "f1f2",
-          "relevance": "primary",
+          "relevance": "secondary",
           "value": 400
         }
       ],
       "timeline": [
         {
+          "id": "forcingAttack",
+          "label": "Forcing Attack",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f3f1",
+          "value": 170,
+          "evidence": "Qf1+ starts a checking attack that wins material or mates against every legal reply. After Kd2, Bf4+ Re3 Bxe3+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
           "id": "pin",
           "label": "Pin",
           "confidence": "medium",
-          "evidence": "f1f2 lets the bishop on f4 pin the rook on e3 to the king on d2.",
+          "evidence": "Qf2+ continues the attack on the rook on e3, already pinned to the king on d2 by the bishop on f4.",
           "source": "available",
           "ply": 5,
           "moveUci": "f1f2",
-          "relevance": "primary",
+          "relevance": "secondary",
           "value": 400,
           "actor": "black"
         },
@@ -1128,7 +1151,444 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
+    },
+    "checkingAttackProof": {
+      "gain": 170,
+      "target": 12,
+      "branches": [
+        {
+          "reply": "Kc2",
+          "gain": 500,
+          "line": [
+            "Qxe2+"
+          ]
+        },
+        {
+          "reply": "Kd2",
+          "gain": 170,
+          "line": [
+            "Bf4+",
+            "Re3",
+            "Bxe3+"
+          ]
+        },
+        {
+          "reply": "Re1",
+          "gain": 500,
+          "line": [
+            "Qd3+",
+            "Kc1",
+            "Bf4+",
+            "Re3",
+            "Qxe3+"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "opGD7",
+    "fen": "7k/1ppQ3p/p2b2p1/3p4/8/2P2q1P/PP2R3/3K4 b - - 3 40",
+    "prefix": [
+      "f3f1",
+      "d1c2"
+    ],
+    "lines": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "f1e2",
+          "c2c1",
+          "d6f4",
+          "c1b1",
+          "e2d1"
+        ],
+        "pvSan": [
+          "Qxe2+",
+          "Kc1",
+          "Bf4+",
+          "Kb1",
+          "Qd1#"
+        ],
+        "cp": null,
+        "mate": 3
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "f1f4",
+          "e2e8",
+          "d6f8",
+          "a2a3",
+          "h7h5",
+          "d7e7",
+          "h8g8",
+          "e8d8",
+          "c7c6",
+          "e7e6",
+          "g8h7",
+          "d8d7",
+          "h7h6",
+          "d7b7",
+          "f4a4",
+          "c2c1"
+        ],
+        "pvSan": [
+          "Qf4",
+          "Re8+",
+          "Bf8",
+          "a3",
+          "h5",
+          "Qe7",
+          "Kg8",
+          "Rd8",
+          "c6",
+          "Qe6+",
+          "Kh7",
+          "Rd7+",
+          "Kh6",
+          "Rxb7",
+          "Qa4+",
+          "Kc1"
+        ],
+        "cp": -173,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "d6f8",
+          "e2d2",
+          "f8d6",
+          "d2d5",
+          "b7b5",
+          "d7g4",
+          "h8g7",
+          "d5d3",
+          "h7h5",
+          "g4f3",
+          "f1e1",
+          "f3e3",
+          "e1e3",
+          "d3e3",
+          "g6g5",
+          "c2d3",
+          "g5g4",
+          "d3e4"
+        ],
+        "pvSan": [
+          "Bf8",
+          "Rd2",
+          "Bd6",
+          "Rxd5",
+          "b5",
+          "Qg4",
+          "Kg7",
+          "Rd3",
+          "h5",
+          "Qf3",
+          "Qe1",
+          "Qe3",
+          "Qxe3",
+          "Rxe3",
+          "g5",
+          "Kd3",
+          "g4",
+          "Ke4"
+        ],
+        "cp": -187,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "motifs": [
+        {
+          "id": "forcingAttack",
+          "label": "Forcing Attack",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f3f1",
+          "value": 170,
+          "evidence": "Qf1+ starts a checking attack that wins material or mates against every legal reply. After Kc2, Qxe2+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+          "relevance": "primary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "forcingAttack",
+          "label": "Forcing Attack",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f3f1",
+          "value": 170,
+          "evidence": "Qf1+ starts a checking attack that wins material or mates against every legal reply. After Kc2, Qxe2+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "f1e2 wins the loose rook on e2.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "f1e2",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "black"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 7,
+          "moveUci": "e2d1",
+          "value": 10000,
+          "evidence": "Qd1# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-25"
+    },
+    "checkingAttackProof": {
+      "gain": 170,
+      "target": 12,
+      "branches": [
+        {
+          "reply": "Kc2",
+          "gain": 500,
+          "line": [
+            "Qxe2+"
+          ]
+        },
+        {
+          "reply": "Kd2",
+          "gain": 170,
+          "line": [
+            "Bf4+",
+            "Re3",
+            "Bxe3+"
+          ]
+        },
+        {
+          "reply": "Re1",
+          "gain": 500,
+          "line": [
+            "Qd3+",
+            "Kc1",
+            "Bf4+",
+            "Re3",
+            "Qxe3+"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "opGD7",
+    "fen": "7k/1ppQ3p/p2b2p1/3p4/8/2P2q1P/PP2R3/3K4 b - - 3 40",
+    "prefix": [
+      "f3f1",
+      "e2e1"
+    ],
+    "lines": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "f1d3",
+          "d1c1",
+          "d6f4",
+          "e1e3",
+          "f4e3"
+        ],
+        "pvSan": [
+          "Qd3+",
+          "Kc1",
+          "Bf4+",
+          "Re3",
+          "Bxe3#"
+        ],
+        "cp": null,
+        "mate": 3
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "f1f4",
+          "e1e8",
+          "d6f8",
+          "d7e7",
+          "f4f3",
+          "d1c2",
+          "f3f2",
+          "c2b3",
+          "f2b6",
+          "e7b4",
+          "b6b4",
+          "c3b4",
+          "h8g7",
+          "e8e5",
+          "c7c6",
+          "e5e8",
+          "h7h5",
+          "e8b8",
+          "g6g5",
+          "b8b7",
+          "g7g6"
+        ],
+        "pvSan": [
+          "Qf4",
+          "Re8+",
+          "Bf8",
+          "Qe7",
+          "Qf3+",
+          "Kc2",
+          "Qf2+",
+          "Kb3",
+          "Qb6+",
+          "Qb4",
+          "Qxb4+",
+          "cxb4",
+          "Kg7",
+          "Re5",
+          "c6",
+          "Re8",
+          "h5",
+          "Rb8",
+          "g5",
+          "Rxb7+",
+          "Kg6"
+        ],
+        "cp": -149,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "f1f3",
+          "d1c1",
+          "f3f4",
+          "c1b1",
+          "h7h5",
+          "e1e8",
+          "d6f8",
+          "d7d5",
+          "h8g7",
+          "d5d3",
+          "f8d6",
+          "e8e6",
+          "f4f7",
+          "e6e1",
+          "b7b6",
+          "e1g1"
+        ],
+        "pvSan": [
+          "Qf3+",
+          "Kc1",
+          "Qf4+",
+          "Kb1",
+          "h5",
+          "Re8+",
+          "Bf8",
+          "Qxd5",
+          "Kg7",
+          "Qd3",
+          "Bd6",
+          "Re6",
+          "Qf7",
+          "Re1",
+          "b6",
+          "Rg1"
+        ],
+        "cp": -165,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "motifs": [
+        {
+          "id": "forcingAttack",
+          "label": "Forcing Attack",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f3f1",
+          "value": 170,
+          "evidence": "Qf1+ starts a checking attack that wins material or mates against every legal reply. After Re1, Qd3+ Kc1 Bf4+ Re3 Qxe3+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+          "relevance": "primary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "forcingAttack",
+          "label": "Forcing Attack",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f3f1",
+          "value": 170,
+          "evidence": "Qf1+ starts a checking attack that wins material or mates against every legal reply. After Re1, Qd3+ Kc1 Bf4+ Re3 Qxe3+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 7,
+          "moveUci": "f4e3",
+          "value": 10000,
+          "evidence": "Bxe3# is checkmate: the king is in check and there is no legal reply.",
+          "relevance": "secondary",
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-25"
+    },
+    "checkingAttackProof": {
+      "gain": 170,
+      "target": 12,
+      "branches": [
+        {
+          "reply": "Kc2",
+          "gain": 500,
+          "line": [
+            "Qxe2+"
+          ]
+        },
+        {
+          "reply": "Kd2",
+          "gain": 170,
+          "line": [
+            "Bf4+",
+            "Re3",
+            "Bxe3+"
+          ]
+        },
+        {
+          "reply": "Re1",
+          "gain": 500,
+          "line": [
+            "Qd3+",
+            "Kc1",
+            "Bf4+",
+            "Re3",
+            "Qxe3+"
+          ]
+        }
+      ]
     }
   }
 ]

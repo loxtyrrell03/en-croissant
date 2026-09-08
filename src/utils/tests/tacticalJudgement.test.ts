@@ -6,7 +6,11 @@ import { makeFen, parseFen } from "chessops/fen";
 import { makeSan } from "chessops/san";
 import { parseUci } from "chessops/util";
 import { buildLiveTacticalScan } from "@/utils/tacticalMotifs/liveTactics";
-import { proveQuietDoubleThreat, replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
+import {
+    proveCheckingMaterialAttack,
+    proveQuietDoubleThreat,
+    replayTacticalLine,
+} from "@/utils/tacticalMotifs/causalTactics";
 import {
     buildMistakeReviewTacticalExplanation,
     classifyMistakeReviewMotifs,
@@ -290,7 +294,10 @@ test.skipIf(
                 id: "opGD7",
                 fen: "7k/1ppQ3p/p2b2p1/3p4/8/2P2q1P/PP2R3/3K4 b - - 3 40",
                 roots: ["f3f1"],
-                prefixes: [],
+                prefixes: [
+                    ["f3f1", "d1c2"],
+                    ["f3f1", "e2e1"],
+                ],
             },
         ];
         const report = [];
@@ -329,6 +336,12 @@ test.skipIf(
                         item.id === "NGZzo"
                             ? proveQuietDoubleThreat(replayTacticalLine(item.fen, ["c5d7"])[0])
                             : undefined,
+                    checkingAttackProof:
+                        item.id === "opGD7"
+                            ? proveCheckingMaterialAttack(
+                                  replayTacticalLine(item.fen, [...prefix, ...lines[0].pvUci]),
+                              )
+                            : undefined,
                 });
             }
         }
@@ -346,7 +359,8 @@ test.skipIf(
         ).toMatchObject({ id: "forkPreparation", ply: 1 });
         for (const item of report.filter((item) => item.id === "NGZzo"))
             expect(item.classification.motifs[0]).toMatchObject({ id: "doubleThreat", ply: 1 });
-        // opGD7's longer king drive remains diagnostic, not an accepted empty result.
+        for (const item of report.filter((item) => item.id === "opGD7"))
+            expect(item.classification.motifs[0]).toMatchObject({ id: "forcingAttack", ply: 1 });
     },
     180000,
 );
@@ -1159,6 +1173,31 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     why: "Nd7 attacks Rb6 and threatens Nf6+ against king and queen. Different defences allow different material wins; the root move is not itself a fork.",
                 },
                 {
+                    name: "The real Re2 mistake allows a forcing checking attack",
+                    fen: "7k/1ppQ3p/p2b2p1/3p4/8/2P2q1P/PP6/3KR3 w - - 2 40",
+                    played: "e1e2",
+                    source: "allowed",
+                    primary: "forcingAttack",
+                    why: "Qf1+ forces a material win after Kd2, while Kc2 and Re1 allow mating continuations. The pin later in one branch cannot explain every defensive choice.",
+                },
+                {
+                    name: "Be7 hangs the bishop while also missing the checking attack",
+                    fen: "7k/1ppQ3p/p2b2p1/3p4/8/2P2q1P/PP2R3/3K4 b - - 3 40",
+                    played: "d6e7",
+                    source: "allowed",
+                    primary: "hangingPiece",
+                    why: "Be7 simply hangs the bishop to Qxe7. That immediate concrete loss deserves the headline; the missed Qf1+ attack remains independently classified, not discarded.",
+                    missed: "forcingAttack",
+                },
+                {
+                    name: "An irrelevant pawn move misses the forcing checking attack",
+                    fen: "7k/1ppQ3p/p2b2p1/3p4/8/2P2q1P/PP2R3/3K4 b - - 3 40",
+                    played: "a6a5",
+                    source: "missed",
+                    primary: "forcingAttack",
+                    why: "Qf1+ starts the forcing attack while a5 lets White neutralize it with Qg4; unlike Be7, a5 does not simply hang a bishop.",
+                },
+                {
                     name: "A quiet king move misses Nd7's double threat",
                     fen: "r5k1/5p2/Br2p1p1/1PNpPb1q/3P4/4P1Q1/5K1P/6R1 w - - 0 33",
                     played: "f2e1",
@@ -1295,6 +1334,8 @@ describe("expert tactical judgement with fresh engine lines", () => {
             }
             for (const item of report.filter((entry) => "comparison" in entry))
                 expect(item.explanation?.primary.comparison).toBe(item.comparison);
+            for (const item of report.filter((entry) => "missed" in entry))
+                expect(item.classification.missedMotifs[0]?.id).toBe(item.missed);
         },
         180000,
     );

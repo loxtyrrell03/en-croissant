@@ -4,7 +4,7 @@
     "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     "judgement": "Development; no immediate tactical win.",
     "expected": [],
-    "classificationMs": 0.7822999999916647,
+    "classificationMs": 0.8086999999941327,
     "headline": [],
     "candidates": [
       {
@@ -174,7 +174,7 @@
     "fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
     "judgement": "Normal development; f7 pressure is not a winning capture.",
     "expected": [],
-    "classificationMs": 0.8239999999932479,
+    "classificationMs": 0.920799999992596,
     "headline": [],
     "candidates": [
       {
@@ -332,7 +332,7 @@
     "fen": "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
     "judgement": "The c6 knight's pin is positional pressure, not a won piece.",
     "expected": [],
-    "classificationMs": 109.91159999999218,
+    "classificationMs": 233.80079999999725,
     "headline": [],
     "candidates": [
       {
@@ -518,7 +518,7 @@
     "expected": [
       "hangingPiece"
     ],
-    "classificationMs": 5.009200000000419,
+    "classificationMs": 9.076900000000023,
     "headline": [
       "hangingPiece@1"
     ],
@@ -630,7 +630,7 @@
     "expected": [
       "fork"
     ],
-    "classificationMs": 126.4323999999906,
+    "classificationMs": 225.9902000000002,
     "headline": [
       "fork@1"
     ],
@@ -806,7 +806,7 @@
     "expected": [
       "backRankMate"
     ],
-    "classificationMs": 1.1662000000069384,
+    "classificationMs": 1.2774999999965075,
     "headline": [
       "backRankMate@1"
     ],
@@ -908,7 +908,7 @@
     "expected": [
       "deflection"
     ],
-    "classificationMs": 39.25489999999991,
+    "classificationMs": 36.56939999999304,
     "headline": [
       "deflection@3"
     ],
@@ -1045,7 +1045,7 @@
     "expected": [
       "mateIn2"
     ],
-    "classificationMs": 2.614000000001397,
+    "classificationMs": 2.435799999992014,
     "headline": [
       "mateIn2@3"
     ],
@@ -1151,7 +1151,7 @@
     "fen": "8/5k2/5p2/8/8/5P2/5K2/8 w - - 0 1",
     "judgement": "Drawn pawn ending; no invented zugzwang or tactical king move.",
     "expected": [],
-    "classificationMs": 0.7969000000011874,
+    "classificationMs": 0.8834999999962747,
     "headline": [],
     "candidates": [
       {

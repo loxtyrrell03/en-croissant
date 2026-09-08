@@ -101,7 +101,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 24;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 25;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -559,6 +559,7 @@ function toMotifEvidence(
 }
 
 const IMPORTANT_TACTICAL_THEME_IDS = new Set([
+    "forcingAttack",
     "forkPreparation",
     "doubleThreat",
     "tacticalPreparation",
@@ -822,6 +823,16 @@ export function buildTacticalTimeline(
             toMotifEvidence(detail, source, sanLine?.slice(index)),
         );
         for (const motif of candidates.filter((m) => m.ply === 1)) {
+            if (
+                motif.id === "forcingAttack" &&
+                [...evidence.values()].some(
+                    (previous) =>
+                        previous.id === "forcingAttack" &&
+                        previous.actor === step.before.turn &&
+                        (previous.ply ?? Infinity) < index + 1,
+                )
+            )
+                continue;
             // Recounting the same side's already-proved checking mate after
             // each reply is progress, not another tactical theme. Keep the
             // actual mating payoff and any new concrete mechanisms below.

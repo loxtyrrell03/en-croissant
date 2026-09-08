@@ -177,9 +177,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 43.851300000002084,
+    "classificationMs": 37.692800000004354,
     "positionHeadline": [
       {
         "id": "fork",
@@ -502,9 +502,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 43.631799999995565,
+    "classificationMs": 43.65260000000126,
     "positionHeadline": [
       {
         "id": "interference",
@@ -869,9 +869,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 81.63620000000083,
+    "classificationMs": 79.5937999999951,
     "positionHeadline": [
       {
         "id": "capturingDefender",
@@ -1163,9 +1163,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 33.89910000000236,
+    "classificationMs": 37.686500000003434,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -1475,9 +1475,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 27.631399999998393,
+    "classificationMs": 25.82900000000518,
     "positionHeadline": [
       {
         "id": "intermezzo",
@@ -1751,9 +1751,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 29.646600000000035,
+    "classificationMs": 30.306000000004133,
     "positionHeadline": [
       {
         "id": "interference",
@@ -2081,6 +2081,18 @@
           "actor": "white"
         },
         {
+          "id": "forcingAttack",
+          "label": "Forcing Attack",
+          "source": "available",
+          "confidence": "high",
+          "ply": 3,
+          "moveUci": "h5h7",
+          "value": 400,
+          "evidence": "Rh7+ starts a checking attack that wins material or mates against every legal reply. After Qxh7, Rb7+ Kd6 Rxh7 wins material. Instead, Kd8 allows Rb8#, forcing mate. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+          "relevance": "secondary",
+          "actor": "white"
+        },
+        {
           "id": "skewer",
           "label": "Skewer",
           "confidence": "medium",
@@ -2105,9 +2117,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 19.655299999998533,
+    "classificationMs": 22.41189999999915,
     "positionHeadline": [
       {
         "id": "tacticalPreparation",
@@ -2202,6 +2214,18 @@
             "moveUci": "h5h7",
             "value": 400,
             "evidence": "Rh7+ offers the rook. In this verified continuation, Qxh7 is met by Rb7+ Kd6 Rxh7; the sacrifice belongs to this checking move, not the later material capture.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "forcingAttack",
+            "label": "Forcing Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "h5h7",
+            "value": 400,
+            "evidence": "Rh7+ starts a checking attack that wins material or mates against every legal reply. After Qxh7, Rb7+ Kd6 Rxh7 wins material. Instead, Kd8 allows Rb8#, forcing mate. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
             "relevance": "secondary",
             "actor": "white"
           },
@@ -2478,9 +2502,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 0.574800000002142,
+    "classificationMs": 0.5040000000008149,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -2774,9 +2798,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 30.582800000003772,
+    "classificationMs": 33.07080000000133,
     "positionHeadline": [
       {
         "id": "trappedPiece",
@@ -3098,9 +3122,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 48.98210000000108,
+    "classificationMs": 51.16619999999966,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -3356,9 +3380,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 19.829799999999523,
+    "classificationMs": 19.690699999999197,
     "positionHeadline": [
       {
         "id": "trappedPiece",
@@ -3729,9 +3753,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 27.15179999999964,
+    "classificationMs": 26.933499999999185,
     "positionHeadline": [
       {
         "id": "intermezzo",

@@ -202,9 +202,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 8.201000000000931,
+    "classificationMs": 8.630000000004657,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -406,9 +406,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 0.5308999999979278,
+    "classificationMs": 0.5186000000030617,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -742,9 +742,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 9.281300000002375,
+    "classificationMs": 9.838200000012876,
     "positionHeadline": [
       {
         "id": "discoveredCheck",
@@ -848,6 +848,18 @@
         ],
         "timeline": [
           {
+            "id": "forcingAttack",
+            "label": "Forcing Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "b5g5",
+            "value": 400,
+            "evidence": "Rg5+ starts a checking attack that wins material or mates against every legal reply. After Kf7, Rf5+ Ke7 Rxf8 wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
             "id": "skewer",
             "label": "Skewer",
             "confidence": "medium",
@@ -910,6 +922,18 @@
           }
         ],
         "timeline": [
+          {
+            "id": "forcingAttack",
+            "label": "Forcing Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "d5g5",
+            "value": 400,
+            "evidence": "Rg5+ starts a checking attack that wins material or mates against every legal reply. After Kf7, Rf5+ Ke7 Rxf8 wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
           {
             "id": "skewer",
             "label": "Skewer",
@@ -1151,9 +1175,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 10.86239999999816,
+    "classificationMs": 11.018599999995786,
     "positionHeadline": [
       {
         "id": "discoveredCheck",
@@ -1425,9 +1449,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 17.50300000000425,
+    "classificationMs": 18.152600000001257,
     "positionHeadline": [
       {
         "id": "doubleCheck",
@@ -1686,9 +1710,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-24"
+      "motifClassifierVersion": "site-55.adapter-25"
     },
-    "classificationMs": 1.0146999999997206,
+    "classificationMs": 1.0403999999980442,
     "positionHeadline": [
       {
         "id": "doubleCheck",
