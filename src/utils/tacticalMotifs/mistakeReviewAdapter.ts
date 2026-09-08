@@ -666,18 +666,60 @@ export type MistakeReviewTacticalExplanation = {
     text: string;
     source: "allowed" | "missed" | "mixed";
     primary: TacticalMotifEvidence;
+    /** At most one independently supported lesson from the other side's line. */
+    secondary?: TacticalMotifEvidence;
 };
 
 /** A post-move tactic is not automatically a newly caused one. */
 export function tacticalMotifPerspective(motif: TacticalMotifEvidence) {
-    if (motif.source === "missed") return "You missed";
+    if (motif.source === "missed") return "Missed opportunity";
     if (motif.source === "available") return "Available tactic";
     if (motif.comparison === "persists") return "Existing danger";
     if (motif.comparison === "reduced") return "More costly";
-    return motif.comparison === "prevented" ? "Opponent gained" : "Opponent tactic";
+    return motif.comparison === "prevented" ? "Overlooked threat" : "Opponent tactic";
 }
 
-export function buildMistakeReviewTacticalExplanation({
+function isImmediateLesson(motif: TacticalMotifEvidence | undefined) {
+    return Boolean(
+        motif && motif.ply === 1 && motif.confidence !== "low" && (motif.value ?? 0) >= 100,
+    );
+}
+
+export function buildMistakeReviewTacticalExplanation(input: {
+    allowedMotifs: TacticalMotifEvidence[];
+    missedMotifs: TacticalMotifEvidence[];
+}): MistakeReviewTacticalExplanation | null {
+    const explanation = chooseMistakeReviewTacticalExplanation(input);
+    if (!explanation) return null;
+    // Preserve the main lesson's ownership/ranking. Do not turn conditional
+    // continuation motifs or existing/uncompared danger into another cause.
+    if (!isImmediateLesson(explanation.primary)) return explanation;
+    const primaryMissed = explanation.primary.source === "missed";
+    const other = primaryMissed ? input.allowedMotifs : input.missedMotifs;
+    const secondary = selectImportantTacticalMotifs(
+        other.filter(
+            (motif) =>
+                isImmediateLesson(motif) &&
+                (!primaryMissed ||
+                    motif.comparison === "prevented" ||
+                    motif.comparison === "reduced"),
+        ),
+        1,
+    )[0];
+    if (!secondary) return explanation;
+    const introduction = primaryMissed
+        ? secondary.comparison === "reduced"
+            ? `Your move also made an existing opponent tactic more costly (${secondary.label})`
+            : `Your move also allowed an opponent tactic (${secondary.label})`
+        : `You also missed a tactical opportunity (${secondary.label})`;
+    return {
+        ...explanation,
+        secondary,
+        text: `${explanation.text} ${introduction}: ${secondary.evidence}${primaryMissed && secondary.comparisonEvidence ? ` ${secondary.comparisonEvidence}` : ""}`,
+    };
+}
+
+function chooseMistakeReviewTacticalExplanation({
     allowedMotifs,
     missedMotifs,
 }: {
@@ -697,6 +739,7 @@ export function buildMistakeReviewTacticalExplanation({
         missed &&
         !allowedRootOverConditional &&
         (!allowed ||
+            (!allowed.comparison && isImmediateLesson(missed)) ||
             allowed.comparison === "persists" ||
             (missed.ply === 1 && conditionalMaterial(allowed)) ||
             (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))

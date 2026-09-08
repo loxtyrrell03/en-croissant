@@ -62,7 +62,7 @@ test("moving the rook out of the two-target fork with castling actually prevents
         refutationUci: ["e5f7", "d8c8", "f7h8"],
     });
     expect(result.allowedMotifs[0]).toMatchObject({ id: "fork", comparison: "prevented" });
-    expect(tacticalMotifPerspective(result.allowedMotifs[0])).toBe("Opponent gained");
+    expect(tacticalMotifPerspective(result.allowedMotifs[0])).toBe("Overlooked threat");
 });
 
 test("the reflected f2 fork compares the same settled loss for the opposite colour", () => {

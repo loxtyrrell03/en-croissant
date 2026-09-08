@@ -1402,6 +1402,59 @@ This execution change applies only to the desktop Tactics panel. Phone review
 uses its existing shared review worker; the website and Outpost have their own
 execution surfaces. No runtime was restarted or deployed in this milestone.
 
+## Missed opportunities and overlooked threats (2026-09-08)
+
+The review explanation now distinguishes **Missed opportunity** (the user's
+better move had the tactic) from **Overlooked threat** (the move allowed a
+verified opponent tactic that the better move avoids). Existing danger and
+unproved causal comparisons keep their neutral labels. This is explanation
+selection and wording, not a new tactical proof or classifier-version change.
+
+A verified immediate missed opportunity no longer loses the main lesson to a
+larger opponent motif whose causal comparison is unproved. The explanation can
+retain one significant immediate lesson from the other line: it must be at
+ply 1, not low-confidence, and have at least 100 cp of locally verified value.
+An opponent secondary lesson additionally requires `prevented` or `reduced`
+comparison evidence. Later conditional motifs stay in their existing timelines;
+they do not become extra causal accusations. Primary ownership stays unchanged
+when adding the secondary, including when two sides have the same theme.
+
+`lesson-priority-review.json` records all 32 frozen before/after scenarios,
+spanning 17 primary theme IDs. These mix real-game positions, hypothetical
+choices in those positions, and constructed controls; they are not 32 new games.
+All 32 judged primary themes/owners remain unchanged. Five explanations add a
+secondary lesson. In the opGD7-derived Be7 alternative, the primary remains
+hanging the bishop to Qxe7, while the text now also explains the missed Qf1+
+forcing attack. The queen-sacrificing missed quiet mate still leads with mate,
+and separately states the avoidable queen capture. Defender-removal and
+intermediate-check examples retain their respective missed capturing defences.
+The full evidence text is retained in the report, not just theme agreement.
+
+All 32 colour-reflected controls replay legally and retain their judged theme
+and ownership. A pinned-knight opportunity and an unpinned control distinguish
+exploiting a real pin from ordinary pawn pressure. Boundary regressions cover
+unproved/persistent danger, conditional/low-confidence/minor supporting motifs,
+and preventing versus reducing an opponent threat. Before implementation, four
+new regressions failed (priority, hidden secondary, perspective, and Be7).
+The new suite passes 77 tests including the opt-in report; the broader selected
+suite passes 256 tests with three opt-in skips. Fresh depth-16 before/after
+searches independently pass the existing 32-case causal-judgement test. Targeted
+lint and shared-review-worker/8,854-module production builds pass. The unrelated
+OTB number/bigint TypeScript fixture error remains.
+
+Reproduce the frozen audit in PowerShell:
+
+```powershell
+$env:TACTICAL_LESSON_REPORT = 'benchmarks/tactical-relevance/lesson-priority-review.json'
+node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalLessonPriority.test.ts --environment node
+```
+
+These are development diagnostics, not general accuracy or newly sampled
+holdout evidence. The four previously unproved causal comparisons (Nd7 after
+g6, Qf1+ after Re2, Bh7+ after Qxd4, Ne5 after Nxd4) remain explicitly unproved.
+Website, Outpost, native ZIP and running services were not deployed/replaced.
+No physical UI verification is claimed.
+
 ## What remains to establish
 
 These are relevance milestones, not completion of the broader tuning

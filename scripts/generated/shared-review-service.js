@@ -12734,13 +12734,30 @@ function selectImportantTacticalMotifs(motifs, limit = 3) {
 	if (unique.has("backRankMate")) unique.delete("backRank");
 	return [...unique.values()].sort((left, right) => (left.relevance === "primary" ? -1 : right.relevance === "primary" ? 1 : 0) || (left.relevance && right.relevance ? (left.ply ?? 100) - (right.ply ?? 100) : 0) || motifImportance(left.id) - motifImportance(right.id) || (left.ply ?? Number.MAX_SAFE_INTEGER) - (right.ply ?? Number.MAX_SAFE_INTEGER) || left.label.localeCompare(right.label)).slice(0, Math.max(0, limit));
 }
-function buildMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs }) {
+function isImmediateLesson(motif) {
+	return Boolean(motif && motif.ply === 1 && motif.confidence !== "low" && (motif.value ?? 0) >= 100);
+}
+function buildMistakeReviewTacticalExplanation(input) {
+	const explanation = chooseMistakeReviewTacticalExplanation(input);
+	if (!explanation) return null;
+	if (!isImmediateLesson(explanation.primary)) return explanation;
+	const primaryMissed = explanation.primary.source === "missed";
+	const secondary = selectImportantTacticalMotifs((primaryMissed ? input.allowedMotifs : input.missedMotifs).filter((motif) => isImmediateLesson(motif) && (!primaryMissed || motif.comparison === "prevented" || motif.comparison === "reduced")), 1)[0];
+	if (!secondary) return explanation;
+	const introduction = primaryMissed ? secondary.comparison === "reduced" ? `Your move also made an existing opponent tactic more costly (${secondary.label})` : `Your move also allowed an opponent tactic (${secondary.label})` : `You also missed a tactical opportunity (${secondary.label})`;
+	return {
+		...explanation,
+		secondary,
+		text: `${explanation.text} ${introduction}: ${secondary.evidence}${primaryMissed && secondary.comparisonEvidence ? ` ${secondary.comparisonEvidence}` : ""}`
+	};
+}
+function chooseMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs }) {
 	const allowed = selectImportantTacticalMotifs(allowedMotifs, 1)[0];
 	const missed = selectImportantTacticalMotifs(missedMotifs, 1)[0];
 	if (!allowed && !missed) return null;
 	const conditionalMaterial = (motif) => Boolean(motif && (motif.ply ?? 0) > 1 && !MATE_MOTIF_PATTERN.test(motif.id));
 	const allowedRootOverConditional = allowed?.ply === 1 && conditionalMaterial(missed);
-	if (missed && !allowedRootOverConditional && (!allowed || allowed.comparison === "persists" || missed.ply === 1 && conditionalMaterial(allowed) || (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))) return {
+	if (missed && !allowedRootOverConditional && (!allowed || !allowed.comparison && isImmediateLesson(missed) || allowed.comparison === "persists" || missed.ply === 1 && conditionalMaterial(allowed) || (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))) return {
 		title: `What you missed: ${missed.label}`,
 		text: `The better move had this tactic: ${missed.evidence}`,
 		source: "missed",
