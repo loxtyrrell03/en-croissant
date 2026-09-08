@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { existsSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
 import { Chess } from "chessops/chess";
 import { makeFen, parseFen } from "chessops/fen";
@@ -137,6 +137,78 @@ async function analyse(engine: string, fen: string, searchMove?: string) {
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(!engine || !existsSync(engine))(
+        "audit real development puzzles with fresh engine choices",
+        async () => {
+            const fixture: {
+                cases: Array<{
+                    id: string;
+                    startFen: string;
+                    bestLine: string[];
+                    sourceGameUrl: string;
+                }>;
+            } = JSON.parse(
+                readFileSync("benchmarks/tactical-relevance/real-puzzle-development.json", "utf8"),
+            );
+            const report = [];
+            for (const item of fixture.cases) {
+                const unrestricted = [...(await analyse(engine, item.startFen)).values()];
+                const candidate = [
+                    ...(await analyse(engine, item.startFen, item.bestLine[0])).values(),
+                ][0];
+                const started = performance.now();
+                const classification = classifyPositionTacticalMotifs({
+                    fen: item.startFen,
+                    ...candidate,
+                    rootCp: candidate.cp,
+                });
+                const classificationMs = performance.now() - started;
+                const scan = buildLiveTacticalScan({
+                    fen: item.startFen,
+                    ...unrestricted[0],
+                    engineName: "Stockfish",
+                    variations: unrestricted,
+                });
+                report.push({
+                    ...item,
+                    unrestricted,
+                    candidate,
+                    classification,
+                    classificationMs,
+                    positionHeadline: scan.motifs,
+                    positionCandidates: scan.variations.map((v) => ({
+                        moves: v.lineSan,
+                        motifs: v.motifs,
+                        timeline: v.timeline,
+                    })),
+                });
+            }
+            if (process.env.TACTICAL_REAL_ENGINE_REPORT)
+                writeFileSync(
+                    process.env.TACTICAL_REAL_ENGINE_REPORT,
+                    JSON.stringify(report, null, 2),
+                );
+            expect(report).toHaveLength(12);
+            // Only the adjudicated improvements are acceptance assertions.
+            // Other entries retain explicit open findings in the fixture/report.
+            for (const [id, primary] of [
+                ["1DoTa", "fork"],
+                ["1GRFo", "interference"],
+                ["48ION", "interference"],
+                ["2QybO", "discoveredAttack"],
+            ]) {
+                const item = report.find((entry) => entry.id === `lichess:${id}`)!;
+                expect(item.positionHeadline[0]?.id).toBe(primary);
+                expect(item.classification.motifs[0]?.id).toBe(primary);
+            }
+            for (const id of ["2SvDe", "8DHuj", "9THyd"]) {
+                const item = report.find((entry) => entry.id === `lichess:${id}`)!;
+                expect(item.positionHeadline.map((m) => m.id)).not.toContain("clearance");
+                expect(item.classification.motifs.map((m) => m.id)).not.toContain("clearance");
+            }
+        },
+        180000,
+    );
     test.skipIf(!engine || !existsSync(engine))(
         "judge interference against captures and quiet escapes",
         async () => {

@@ -346,7 +346,16 @@ function winningTargets(pos: Chess, from: Square, side: Color) {
     ].filter((to) => {
         const target = probe.board.get(to)!;
         if (target.role === "king") return true;
-        return target.role !== "pawn" && tacticalExchangeGain(probe, { from, to }) >= 100;
+        const promotions =
+            piece.role === "pawn" && (to < 8 || to >= 56)
+                ? (["queen", "rook", "bishop", "knight"] as const)
+                : [undefined];
+        return (
+            target.role !== "pawn" &&
+            promotions.some(
+                (promotion) => tacticalExchangeGain(probe, { from, to, promotion }) >= 100,
+            )
+        );
     });
 }
 
@@ -587,6 +596,17 @@ function discoveredEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
     const gain =
         proof?.kind === "proven" ? proof.gain : !mate ? proveDiscoveredMaterial(step) : null;
     if (!mate && gain === null) return null;
+    // A pawn ray uncovered incidentally by a winning knight fork does not
+    // explain that fork's payoff. Non-king discoveries need a contribution
+    // beyond what the moving piece already forces on its own targets.
+    if (!kingRay && gain !== null && verifiedFork(step)) {
+        const independentGain = materialThreatGain(
+            step,
+            winningTargets(step.after, step.move.to, step.before.turn),
+            [step.move.to],
+        );
+        if (independentGain !== null && independentGain >= gain) return null;
+    }
     // Do not promote incidental line-opening above a free piece that this
     // move already wins without needing a follow-up threat.
     if (!mate && step.capture && tacticalExchangeGain(step.before, step.move) >= gain!) return null;
@@ -693,8 +713,9 @@ function materialThreatProof(
     capturers: Square[],
     interpositions: Square[] = [],
     allowMateAnswer = false,
+    promotionFrom?: Square,
 ) {
-    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}`;
+    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}`;
     if (materialProofCache.has(key)) return materialProofCache.get(key)!;
     const proof = computeMaterialThreatGain(
         step,
@@ -702,6 +723,7 @@ function materialThreatProof(
         capturers,
         interpositions,
         allowMateAnswer,
+        promotionFrom,
     );
     materialProofCache.set(key, proof);
     if (materialProofCache.size > 256)
@@ -715,6 +737,7 @@ function computeMaterialThreatGain(
     capturers: Square[],
     interpositions: Square[],
     allowMateAnswer: boolean,
+    promotionFrom?: Square,
 ): MaterialThreatProof {
     const replies = legalMoves(step.after);
     if (!replies.length) return { kind: "unknown" };
@@ -765,6 +788,35 @@ function computeMaterialThreatGain(
                             capturedValue(step.after, reply) -
                             (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0) +
                             exchangeGain,
+                    );
+                }
+            }
+        }
+        if (
+            best < 100 &&
+            promotionFrom !== undefined &&
+            next.board.get(promotionFrom)?.color === step.before.turn &&
+            next.board.get(promotionFrom)?.role === "pawn"
+        ) {
+            const to = promotionFrom + (step.before.turn === "white" ? 8 : -8);
+            if (to >= 0 && to < 64 && (to < 8 || to >= 56)) {
+                for (const promotion of ["queen", "rook", "bishop", "knight"] as const) {
+                    const move: NormalMove = { from: promotionFrom, to, promotion };
+                    if (!next.isLegal(move)) continue;
+                    const promoted = next.clone();
+                    promoted.play(move);
+                    if (promoted.isEnd() && !promoted.isCheckmate()) continue;
+                    const gain = tacticalExchangeGain(next, move);
+                    if (gain <= -VALUE.king) {
+                        unknown = true;
+                        continue;
+                    }
+                    best = Math.max(
+                        best,
+                        step.capture -
+                            capturedValue(step.after, reply) -
+                            (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0) +
+                            gain,
                     );
                 }
             }
@@ -884,6 +936,9 @@ export function tacticalBoardEvidence(
             arrows: [
                 { from: makeSquare(proof.defender), to: makeSquare(step.move.to) },
                 { from: makeSquare(proof.capturer), to: makeSquare(proof.target) },
+                ...(proof.attacksDefender
+                    ? [{ from: makeSquare(step.move.to), to: makeSquare(proof.defender) }]
+                    : []),
             ],
         };
     }
@@ -1100,8 +1155,26 @@ function interferenceProof(step: TacticalReplayStep, source: TacticalMotifEviden
             if (victim.role === "king" || VALUE[victim.role] < 320) continue;
             if (!between(defender, target).has(step.move.to)) continue;
             if (attacks(piece, defender, step.after.board.occupied).has(target)) continue;
+            const attacksDefender = winningTargets(step.after, step.move.to, side).includes(
+                defender,
+            );
             const capturer = [...step.after.board[side]].find((from) => {
-                if (from === step.move.to) return false;
+                if (from === step.move.to) {
+                    // A bishop between queen and knight attacks BOTH. Taking
+                    // the knight now reopens the queen's ray, but every real
+                    // queen retreat can still lose a target. Establish the
+                    // queen's actual protection before testing those replies.
+                    if (!attacksDefender) return false;
+                    const withoutDefender = probe.clone();
+                    withoutDefender.board.take(defender);
+                    const protectedGain = tacticalExchangeGain(probe, { from, to: target });
+                    const exposedGain = tacticalExchangeGain(withoutDefender, { from, to: target });
+                    return (
+                        protectedGain > -VALUE.king &&
+                        exposedGain >= 100 &&
+                        exposedGain - protectedGain >= 100
+                    );
+                }
                 const blockedGain = tacticalExchangeGain(probe, { from, to: target });
                 const restoredGain = tacticalExchangeGain(unblocked, { from, to: target });
                 return (
@@ -1113,9 +1186,11 @@ function interferenceProof(step: TacticalReplayStep, source: TacticalMotifEviden
             if (capturer === undefined) continue;
             const proof = materialThreatProof(
                 step,
-                [target],
+                [target, ...(attacksDefender ? [defender] : [])],
                 [...step.after.board[side]],
                 [step.move.to],
+                false,
+                step.after.board.get(step.move.to)?.role === "pawn" ? step.move.to : undefined,
             );
             if (proof.kind !== "proven") continue;
             if (step.capture && tacticalExchangeGain(step.before, step.move) >= proof.gain)
@@ -1128,9 +1203,9 @@ function interferenceProof(step: TacticalReplayStep, source: TacticalMotifEviden
                 ply: 1,
                 moveUci: step.uci,
                 value: proof.gain,
-                evidence: `${step.san} blocks the ${piece.role} on ${makeSquare(defender)} from defending the ${victim.role} on ${makeSquare(target)}${step.after.isCheck() ? ", with check" : ""}. Every legal reply permits a profitable capture of that target or of a piece taking the blocker on ${makeSquare(step.move.to)}; legal recaptures are included.`,
+                evidence: `${step.san} blocks the ${piece.role} on ${makeSquare(defender)} from defending the ${victim.role} on ${makeSquare(target)}${step.after.isCheck() ? ", with check" : ""}.${attacksDefender ? ` It also attacks that ${piece.role}, forcing a choice between the threats.` : ""} Every legal reply allows material gain on these targets or the blocking square${step.after.board.get(step.move.to)?.role === "pawn" && (step.move.to < 16 || step.move.to >= 48) ? ", or through promotion of the blocking pawn" : ""}; legal recaptures are included.`,
             };
-            return { motif, defender, target, capturer };
+            return { motif, defender, target, capturer, attacksDefender };
         }
     }
     return null;
@@ -1188,6 +1263,34 @@ function causeRank(motif: TacticalMotifEvidence) {
     return (
         family * 1000 + (motif.ply ?? 100) * 20 + Math.max(0, mechanismPriority.indexOf(motif.id))
     );
+}
+
+/** A later detector tag must not be anchored to an arbitrary first move.
+ * Clearance needs a DIFFERENT friendly piece to use the vacated square in
+ * this connected episode for a check, sound capture or concrete threat. */
+function hasClearanceFollowup(steps: TacticalReplayStep[], index: number) {
+    const root = steps[index];
+    let mover = root.move.to;
+    for (const next of steps.slice(index + 1)) {
+        if (next.before.turn !== root.before.turn) continue;
+        if (next.move.from === mover) {
+            mover = next.move.to;
+            continue;
+        }
+        const piece = next.before.board.get(next.move.from)!;
+        const usesSquare =
+            next.move.to === root.move.from ||
+            (["rook", "bishop", "queen"].includes(piece.role) &&
+                between(next.move.from, next.move.to).has(root.move.from));
+        if (
+            usesSquare &&
+            (next.after.isCheck() ||
+                (next.capture > 0 && tacticalExchangeGain(next.before, next.move) >= 100) ||
+                hasConcreteThreat(next))
+        )
+            return next;
+    }
+    return null;
 }
 
 export function auditTacticalMotifs(
@@ -1343,6 +1446,15 @@ export function auditTacticalMotifs(
         if (!proposal.ply || proposal.ply > end) continue;
         const step = steps[proposal.ply - 1];
         if (!step || step.before.turn !== attacker || proposal.moveUci !== step.uci) continue;
+        if (proposal.id === "clearance") {
+            const followup = hasClearanceFollowup(episode, proposal.ply - 1);
+            if (!followup) continue;
+            proposal = {
+                ...proposal,
+                label: "Clearance",
+                evidence: `${step.san} vacates ${makeSquare(step.move.from)} for ${followup.san} by another piece in this continuation.`,
+            };
+        }
         // Capturing a free queen can incidentally pin a distant pawn. Only call
         // that capture a pin tactic when a pinned recapturer explains its gain.
         if (

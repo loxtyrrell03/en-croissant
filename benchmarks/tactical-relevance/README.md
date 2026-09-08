@@ -396,6 +396,59 @@ small constructed controls, not a broad accuracy or latency estimate. The
 passed; whole-project type checking retains the unrelated OTB fixture mismatch.
 No running-app visual or hosting deployment proof was performed.
 
+## Real development-puzzle audit
+
+`real-puzzle-development.json` freezes a reproducible diagnostic selection from
+the website's CC0 Lichess 2026-08-02 fixture: the first two **development** rows
+for each of sacrifice, intermezzo, capturingDefender, interference, trappedPiece
+and quietMove, then deduplication and ID sorting. There are 12 distinct source
+games. No holdout rows were selected, and source tags are retrieval metadata,
+not required output labels. Each entry retains its source game, FEN, moves and
+an explicit judgement, including unresolved failures.
+
+`real-puzzle-judgement.json` records the supplied legal puzzle continuations.
+`real-puzzle-stockfish-18.json` records fresh unrestricted MultiPV3 and
+root-restricted depth-16 searches for **all twelve** positions, including empty
+or imperfect results. Assertions cover the adjudicated improvements only;
+successful report creation does not mean twelve correct classifications.
+
+| Puzzle | Current judgement |
+| --- | --- |
+| 1DoTa | Fork retained; incidental discovered attack on e2 no longer borrows the knight's queen win. Sacrifice proof remains open. |
+| 1GRFo | Bb4 interference recovered: the bishop blocks Qa3-Nc5 and attacks the queen. Capturing the blocker loses the queen. |
+| 48ION | c7 interference recovered: Qb8-Nf4 is interrupted, the queen is attacked and the pawn threatens promotion. |
+| 2QybO | Genuine Nxe6+ d-file line opening retained; unlike the incidental pawn ray, it contributes to the combination. |
+| 2SvDe | Spurious clearance removed. The Bxd2+ / Rxh8 intermediate-capture explanation still needs improvement. |
+| 9THyd | Spurious clearance removed. Nxe7+ before fxe3 still needs a better timing explanation than two loose-piece labels. |
+| 2Gc77 | Open false negative: Bxd5 defender-removal combination. |
+| 8DHuj | False clearance removed, but Bxf4's actual removal/overload combination remains missed. |
+| 4RNK5 | Open false negative: quiet Rb6 prepares Rh7+ and a queen-winning Rb7+ skewer. |
+| 6mAvx | Open ranking issue: the bishop capture exposes trapped Ra1; current primary lesson underplays that rook. |
+| 8mguL | Kd6 trapped-rook label is plausible and engine-supported, but still lacks a branch-based trapped-piece proof. |
+| 6fO6p | Winning h4 pawn ending: no invented zugzwang, but the classification/proof boundary remains unresolved. |
+
+Interference proof now includes an attacked defender as a named target and
+can settle an immediate promotion by the blocking pawn, including recaptures
+and all four promotion pieces. Pawn attack probes must include legal promotion
+captures. When the blocker itself attacks the defended piece, a defender-removal
+protection probe establishes the relationship before checking all real replies.
+That probe is not a claimed legal move. Arrows show both the defensive line
+being interrupted and the attack on the defender.
+
+Non-king discovered attacks cannot receive an independently verified moving
+piece's fork payoff without contributing more. Clearance needs another piece
+to use the vacated square for a check, sound capture or concrete threat inside
+the connected episode. It names that use and no longer automatically says
+"sacrifice". This is a necessary relevance condition, not a complete forcing
+proof for all clearance combinations.
+
+Current verification: 182 focused tests; the 39 earlier fresh-engine scenarios
+plus the 12-position diagnostic audit and its targeted assertions; shared-review
+worker and 8,851-module production builds. These results expose remaining
+failure modes rather than establishing general accuracy. The unrelated OTB
+number/bigint fixture still blocks whole-project type checking. No runtime or
+hosting deployment or running-app visual verification is asserted.
+
 Run in PowerShell with the configured Node runtime on PATH:
 
 ```powershell
@@ -406,7 +459,10 @@ $env:TACTICAL_QUIET_REPORT = 'benchmarks/tactical-relevance/quiet-stockfish-18.j
 $env:TACTICAL_MATERIAL_REPORT = 'benchmarks/tactical-relevance/material-stockfish-18.json'
 $env:TACTICAL_DISCOVERED_REPORT = 'benchmarks/tactical-relevance/discovered-stockfish-18.json'
 $env:TACTICAL_INTERFERENCE_REPORT = 'benchmarks/tactical-relevance/interference-stockfish-18.json'
+$env:TACTICAL_REAL_ENGINE_REPORT = 'benchmarks/tactical-relevance/real-puzzle-stockfish-18.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node
+$env:TACTICAL_REAL_PUZZLE_REPORT = 'benchmarks/tactical-relevance/real-puzzle-judgement.json'
+node node_modules/vitest/vitest.mjs run src/utils/tests/realPuzzleJudgement.test.ts --environment node
 ```
 
 The engine test is opt-in and starts no engine during normal unit tests.

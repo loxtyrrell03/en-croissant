@@ -190,9 +190,9 @@
           },
           {
             "id": "clearance",
-            "label": "Clearance Sacrifice",
+            "label": "Clearance",
             "confidence": "medium",
-            "evidence": "Clearance Sacrifice appears on Rg8+ at ply 1 of the current best line.",
+            "evidence": "Rg8+ vacates g6 for Qe8# by another piece in this continuation.",
             "source": "available",
             "ply": 1,
             "moveUci": "g6g8",
@@ -215,7 +215,7 @@
         ]
       }
     ],
-    "classificationMs": 14.29870000000301
+    "classificationMs": 13.918600000004517
   },
   {
     "fen": "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",
@@ -439,7 +439,7 @@
         ]
       }
     ],
-    "classificationMs": 31.268299999999726
+    "classificationMs": 24.524199999999837
   },
   {
     "fen": "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",

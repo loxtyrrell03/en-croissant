@@ -165,7 +165,7 @@
           "ply": 1,
           "moveUci": "e6e7",
           "value": 300,
-          "evidence": "e7+ blocks the rook on b7 from defending the queen on h7, with check. Every legal reply permits a profitable capture of that target or of a piece taking the blocker on e7; legal recaptures are included.",
+          "evidence": "e7+ blocks the rook on b7 from defending the queen on h7, with check. Every legal reply allows material gain on these targets or the blocking square, or through promotion of the blocking pawn; legal recaptures are included.",
           "relevance": "primary"
         }
       ],
@@ -178,14 +178,14 @@
           "ply": 1,
           "moveUci": "e6e7",
           "value": 300,
-          "evidence": "e7+ blocks the rook on b7 from defending the queen on h7, with check. Every legal reply permits a profitable capture of that target or of a piece taking the blocker on e7; legal recaptures are included.",
+          "evidence": "e7+ blocks the rook on b7 from defending the queen on h7, with check. Every legal reply allows material gain on these targets or the blocking square, or through promotion of the blocking pawn; legal recaptures are included.",
           "relevance": "primary",
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-12"
+      "motifClassifierVersion": "site-55.adapter-13"
     },
-    "classificationMs": 44.02109999999993,
+    "classificationMs": 9.549999999999272,
     "positionHeadline": [
       {
         "id": "interference",
@@ -195,7 +195,7 @@
         "ply": 1,
         "moveUci": "e6e7",
         "value": 300,
-        "evidence": "e7+ blocks the rook on b7 from defending the queen on h7, with check. Every legal reply permits a profitable capture of that target or of a piece taking the blocker on e7; legal recaptures are included.",
+        "evidence": "e7+ blocks the rook on b7 from defending the queen on h7, with check. Every legal reply allows material gain on these targets or the blocking square, or through promotion of the blocking pawn; legal recaptures are included.",
         "relevance": "primary"
       }
     ],
@@ -222,7 +222,7 @@
             "ply": 1,
             "moveUci": "e6e7",
             "value": 300,
-            "evidence": "e7+ blocks the rook on b7 from defending the queen on h7, with check. Every legal reply permits a profitable capture of that target or of a piece taking the blocker on e7; legal recaptures are included.",
+            "evidence": "e7+ blocks the rook on b7 from defending the queen on h7, with check. Every legal reply allows material gain on these targets or the blocking square, or through promotion of the blocking pawn; legal recaptures are included.",
             "relevance": "primary"
           }
         ],
@@ -235,7 +235,7 @@
             "ply": 1,
             "moveUci": "e6e7",
             "value": 300,
-            "evidence": "e7+ blocks the rook on b7 from defending the queen on h7, with check. Every legal reply permits a profitable capture of that target or of a piece taking the blocker on e7; legal recaptures are included.",
+            "evidence": "e7+ blocks the rook on b7 from defending the queen on h7, with check. Every legal reply allows material gain on these targets or the blocking square, or through promotion of the blocking pawn; legal recaptures are included.",
             "relevance": "primary",
             "actor": "white"
           }
@@ -451,9 +451,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-12"
+      "motifClassifierVersion": "site-55.adapter-13"
     },
-    "classificationMs": 6.722199999999248,
+    "classificationMs": 6.036800000001676,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -671,9 +671,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-12"
+      "motifClassifierVersion": "site-55.adapter-13"
     },
-    "classificationMs": 1.080800000000636,
+    "classificationMs": 0.8142999999981839,
     "positionHeadline": [
       {
         "id": "interference",
@@ -683,7 +683,7 @@
         "ply": 1,
         "moveUci": "d6d7",
         "value": 300,
-        "evidence": "d7+ blocks the rook on b7 from defending the queen on h7, with check. Every legal reply permits a profitable capture of that target or of a piece taking the blocker on d7; legal recaptures are included.",
+        "evidence": "d7+ blocks the rook on b7 from defending the queen on h7, with check. Every legal reply allows material gain on these targets or the blocking square, or through promotion of the blocking pawn; legal recaptures are included.",
         "relevance": "primary"
       }
     ],
@@ -712,7 +712,7 @@
             "ply": 1,
             "moveUci": "d6d7",
             "value": 300,
-            "evidence": "d7+ blocks the rook on b7 from defending the queen on h7, with check. Every legal reply permits a profitable capture of that target or of a piece taking the blocker on d7; legal recaptures are included.",
+            "evidence": "d7+ blocks the rook on b7 from defending the queen on h7, with check. Every legal reply allows material gain on these targets or the blocking square, or through promotion of the blocking pawn; legal recaptures are included.",
             "relevance": "primary"
           }
         ],
@@ -725,7 +725,7 @@
             "ply": 1,
             "moveUci": "d6d7",
             "value": 300,
-            "evidence": "d7+ blocks the rook on b7 from defending the queen on h7, with check. Every legal reply permits a profitable capture of that target or of a piece taking the blocker on d7; legal recaptures are included.",
+            "evidence": "d7+ blocks the rook on b7 from defending the queen on h7, with check. Every legal reply allows material gain on these targets or the blocking square, or through promotion of the blocking pawn; legal recaptures are included.",
             "relevance": "primary",
             "actor": "white"
           }
@@ -889,9 +889,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-12"
+      "motifClassifierVersion": "site-55.adapter-13"
     },
-    "classificationMs": 0.6144999999996799,
+    "classificationMs": 0.5437999999994645,
     "positionHeadline": [
       {
         "id": "pin",

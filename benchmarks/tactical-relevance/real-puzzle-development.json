@@ -1,0 +1,360 @@
+{
+  "source": "Chess Mistake Trainer frozen Lichess 2026-08-02 development fixture; CC0-1.0",
+  "selection": "First two development rows in fixture order for each of sacrifice, intermezzo, capturingDefender, interference, trappedPiece, quietMove; deduplicated and sorted by ID. No holdout selection. Tags are retrieval metadata, not expected headlines.",
+  "reviewStatus": "Development diagnosis, not a completed accuracy benchmark. Open findings remain explicit.",
+  "cases": [
+    {
+      "id": "lichess:1DoTa",
+      "sourcePuzzleId": "1DoTa",
+      "sourceGameUrl": "https://lichess.org/VzM2axmW#53",
+      "split": "development",
+      "sourceFen": "3k4/p2n1Qp1/3b4/6Nr/3PnPq1/2P5/PP2P2p/RNB2R1K w - - 5 27",
+      "precedingMove": "g5e6",
+      "startFen": "3k4/p2n1Qp1/3bN3/7r/3PnPq1/2P5/PP2P2p/RNB2R1K b - - 6 27",
+      "bestLine": [
+        "g4e6",
+        "f7h5",
+        "e4g3",
+        "h1h2",
+        "g3h5"
+      ],
+      "sourceThemes": [
+        "crushing",
+        "exposedKing",
+        "fork",
+        "long",
+        "middlegame",
+        "sacrifice"
+      ],
+      "judgement": "Improved: the fork remains primary; the incidental discovered attack on e2 no longer borrows its queen win. General sacrifice proof remains open."
+    },
+    {
+      "id": "lichess:1GRFo",
+      "sourcePuzzleId": "1GRFo",
+      "sourceGameUrl": "https://lichess.org/79lqSOjV/black#46",
+      "split": "development",
+      "sourceFen": "r1b2rk1/pp2pp2/7p/2n3pP/2PpP1P1/3P1Q1B/Pq1BK3/RR6 b - - 3 23",
+      "precedingMove": "b2a3",
+      "startFen": "r1b2rk1/pp2pp2/7p/2n3pP/2PpP1P1/q2P1Q1B/P2BK3/RR6 w - - 4 24",
+      "bestLine": [
+        "d2b4",
+        "a3a4",
+        "b4c5"
+      ],
+      "sourceThemes": [
+        "advantage",
+        "interference",
+        "middlegame",
+        "short"
+      ],
+      "judgement": "Improved: Bb4 interferes with Qa3's defence of Nc5 while attacking the queen; a capture-only target check missed this."
+    },
+    {
+      "id": "lichess:2Gc77",
+      "sourcePuzzleId": "2Gc77",
+      "sourceGameUrl": "https://lichess.org/BPhtQ9HN/black#50",
+      "split": "development",
+      "sourceFen": "3r1rk1/1b2n1p1/pb2Pp1p/1p1n4/2p1BN1B/5N1P/P4PP1/3RR1K1 b - - 5 25",
+      "precedingMove": "f6f5",
+      "startFen": "3r1rk1/1b2n1p1/pb2P2p/1p1n1p2/2p1BN1B/5N1P/P4PP1/3RR1K1 w - - 0 26",
+      "bestLine": [
+        "e4d5",
+        "d8d5",
+        "h4e7",
+        "d5d1",
+        "e1d1"
+      ],
+      "sourceThemes": [
+        "capturingDefender",
+        "crushing",
+        "long",
+        "middlegame"
+      ],
+      "judgement": "Open false negative: Bxd5 removes Nd5's defence of Ne7. Further branch-aware proof is needed; do not bless the empty result."
+    },
+    {
+      "id": "lichess:2QybO",
+      "sourcePuzzleId": "2QybO",
+      "sourceGameUrl": "https://lichess.org/4LQ9aTGO/black#72",
+      "split": "development",
+      "sourceFen": "b1rr4/5pk1/pq2p1pp/4P3/PP1N4/1P4PP/3R3K/3QR3 b - - 2 36",
+      "precedingMove": "b6b4",
+      "startFen": "b1rr4/5pk1/p3p1pp/4P3/Pq1N4/1P4PP/3R3K/3QR3 w - - 0 37",
+      "bestLine": [
+        "d4e6",
+        "f7e6",
+        "d2d7",
+        "d8d7",
+        "d1d7"
+      ],
+      "sourceThemes": [
+        "clearance",
+        "collinearMove",
+        "crushing",
+        "long",
+        "middlegame",
+        "sacrifice"
+      ],
+      "judgement": "Retained: Nxe6+ clears the d-file for the rook; the discovered-attack evidence must survive suppression of incidental fork rays."
+    },
+    {
+      "id": "lichess:2SvDe",
+      "sourcePuzzleId": "2SvDe",
+      "sourceGameUrl": "https://lichess.org/cdobP834#47",
+      "split": "development",
+      "sourceFen": "2k1r2r/ppp5/4p3/5nb1/3Pb3/2P5/PP1QNP1R/2KR4 w - - 0 24",
+      "precedingMove": "h2h8",
+      "startFen": "2k1r2R/ppp5/4p3/5nb1/3Pb3/2P5/PP1QNP2/2KR4 b - - 0 24",
+      "bestLine": [
+        "g5d2",
+        "d1d2",
+        "e8h8"
+      ],
+      "sourceThemes": [
+        "advantage",
+        "intermezzo",
+        "middlegame",
+        "short"
+      ],
+      "judgement": "Partially improved: false clearance removed. Bxd2+ before Rxh8 is an in-between capture; primary timing explanation still needs improvement.",
+      "observedEngineLine": [
+        "g5d2",
+        "c1d2",
+        "e8h8",
+        "e2f4",
+        "b7b6",
+        "d1e1",
+        "f5d6",
+        "b2b3",
+        "e4f5",
+        "f4e6",
+        "d6e4",
+        "e1e4",
+        "f5e4",
+        "e6f4",
+        "h8h4"
+      ]
+    },
+    {
+      "id": "lichess:48ION",
+      "sourcePuzzleId": "48ION",
+      "sourceGameUrl": "https://lichess.org/rFPKBB1L/black#78",
+      "split": "development",
+      "sourceFen": "6k1/5pp1/2P4p/8/1q3n2/8/5P2/2Q2BK1 b - - 1 39",
+      "precedingMove": "b4b8",
+      "startFen": "1q4k1/5pp1/2P4p/8/5n2/8/5P2/2Q2BK1 w - - 2 40",
+      "bestLine": [
+        "c6c7",
+        "b8c8",
+        "c1f4"
+      ],
+      "sourceThemes": [
+        "advancedPawn",
+        "crushing",
+        "endgame",
+        "interference",
+        "short"
+      ],
+      "judgement": "Improved: c7 blocks Qb8's defence of Nf4, attacks the queen and threatens promotion; actual legal replies determine the material proof."
+    },
+    {
+      "id": "lichess:4RNK5",
+      "sourcePuzzleId": "4RNK5",
+      "sourceGameUrl": "https://lichess.org/x1B4MZEX/black#96",
+      "split": "development",
+      "sourceFen": "8/8/5k1R/p3p2R/8/P6p/KP6/4q3 b - - 1 48",
+      "precedingMove": "f6e7",
+      "startFen": "8/4k3/7R/p3p2R/8/P6p/KP6/4q3 w - - 2 49",
+      "bestLine": [
+        "h6b6",
+        "e1e4",
+        "h5h7",
+        "e4h7",
+        "b6b7",
+        "e7d6",
+        "b7h7"
+      ],
+      "sourceThemes": [
+        "clearance",
+        "crushing",
+        "endgame",
+        "exposedKing",
+        "master",
+        "queenRookEndgame",
+        "quietMove",
+        "sacrifice",
+        "skewer",
+        "veryLong"
+      ],
+      "judgement": "Open false negative: Rb6 prepares Rh7+ and Rb7+ with a queen-winning skewer. The quiet-root boundary hides the combination."
+    },
+    {
+      "id": "lichess:6fO6p",
+      "sourcePuzzleId": "6fO6p",
+      "sourceGameUrl": "https://lichess.org/EeAn5MBT/black#84",
+      "split": "development",
+      "sourceFen": "8/8/4k3/5p1p/5K2/6PP/8/8 b - - 2 42",
+      "precedingMove": "e6f6",
+      "startFen": "8/8/5k2/5p1p/5K2/6PP/8/8 w - - 3 43",
+      "bestLine": [
+        "h3h4",
+        "f6e6",
+        "f4g5",
+        "e6e5",
+        "g5h5",
+        "e5f6",
+        "h5h6",
+        "f5f4",
+        "g3f4"
+      ],
+      "sourceThemes": [
+        "crushing",
+        "endgame",
+        "master",
+        "pawnEndgame",
+        "quietMove",
+        "veryLong",
+        "zugzwang"
+      ],
+      "judgement": "Open scope/proof question: h4 wins the pawn ending, but a single supplied line does not prove zugzwang. Do not invent a forcing label from its final gain."
+    },
+    {
+      "id": "lichess:6mAvx",
+      "sourcePuzzleId": "6mAvx",
+      "sourceGameUrl": "https://lichess.org/ynsDtr2Y#33",
+      "split": "development",
+      "sourceFen": "4k2r/3nbppp/8/4p3/4P3/4Q3/Prq2PPP/RNB1K2R w KQk - 0 17",
+      "precedingMove": "c1b2",
+      "startFen": "4k2r/3nbppp/8/4p3/4P3/4Q3/PBq2PPP/RN2K2R b KQk - 0 17",
+      "bestLine": [
+        "c2b2",
+        "e1g1",
+        "b2a1",
+        "b1c3",
+        "a1b2"
+      ],
+      "sourceThemes": [
+        "advantage",
+        "long",
+        "middlegame",
+        "trappedPiece"
+      ],
+      "judgement": "Open ranking issue: Qxb2 wins the bishop and exposes the trapped Ra1. The trapped rook's causal importance needs stronger proof/ranking than the current bishop headline."
+    },
+    {
+      "id": "lichess:8DHuj",
+      "sourcePuzzleId": "8DHuj",
+      "sourceGameUrl": "https://lichess.org/GSJDd7Yn#45",
+      "split": "development",
+      "sourceFen": "r4rk1/pp3ppp/7q/3Np2P/3n1P2/3P2bN/PPPQ2B1/R4K1R w - - 1 23",
+      "precedingMove": "h3g5",
+      "startFen": "r4rk1/pp3ppp/7q/3Np1NP/3n1P2/3P2b1/PPPQ2B1/R4K1R b - - 2 23",
+      "bestLine": [
+        "g3f4",
+        "d5f4",
+        "h6g5",
+        "d2f2",
+        "g5f4"
+      ],
+      "sourceThemes": [
+        "advantage",
+        "capturingDefender",
+        "long",
+        "middlegame"
+      ],
+      "judgement": "Partially improved: false clearance removed. The actual Bxf4 removal/overload combination remains a false negative.",
+      "observedEngineLine": [
+        "g3f4",
+        "d5f4",
+        "h6g5",
+        "d2f2",
+        "g5f4",
+        "c2c3",
+        "d4e6",
+        "a1e1",
+        "f4g5",
+        "g2e4",
+        "a8e8",
+        "h1h4",
+        "e6f4",
+        "d3d4",
+        "e8e6",
+        "e4c2",
+        "f8e8",
+        "e1e5",
+        "e6e5",
+        "d4e5"
+      ]
+    },
+    {
+      "id": "lichess:8mguL",
+      "sourcePuzzleId": "8mguL",
+      "sourceGameUrl": "https://lichess.org/sZuxhzM1#81",
+      "split": "development",
+      "sourceFen": "8/4kp1p/2p2p2/1bRp4/3N4/2P4P/Pr4PK/8 w - - 5 41",
+      "precedingMove": "d4c6",
+      "startFen": "8/4kp1p/2N2p2/1bRp4/8/2P4P/Pr4PK/8 b - - 0 41",
+      "bestLine": [
+        "e7d6",
+        "c5b5",
+        "b2b5"
+      ],
+      "sourceThemes": [
+        "advantage",
+        "defensiveMove",
+        "endgame",
+        "short",
+        "trappedPiece"
+      ],
+      "judgement": "Provisional: Kd6 traps the rook as expected in the fresh engine line, but the generic trapped-piece acceptance still needs branch-based verification."
+    },
+    {
+      "id": "lichess:9THyd",
+      "sourcePuzzleId": "9THyd",
+      "sourceGameUrl": "https://lichess.org/GBrL8A23/black#34",
+      "split": "development",
+      "sourceFen": "1r1q1rk1/R3nppp/3pb3/1p1Np1b1/4P2P/2P1N3/1P3PP1/3QKB1R b K - 0 17",
+      "precedingMove": "g5e3",
+      "startFen": "1r1q1rk1/R3nppp/3pb3/1p1Np3/4P2P/2P1b3/1P3PP1/3QKB1R w K - 0 18",
+      "bestLine": [
+        "d5e7",
+        "g8h8",
+        "f2e3"
+      ],
+      "sourceThemes": [
+        "advantage",
+        "intermezzo",
+        "middlegame",
+        "short"
+      ],
+      "judgement": "Partially improved: false clearance removed. Nxe7+ before fxe3 needs a factual intermediate-move explanation, not only two loose-piece labels.",
+      "observedEngineLine": [
+        "d5e7",
+        "g8h8",
+        "f2e3",
+        "d8b6",
+        "a7a1",
+        "b8a8",
+        "e1d2",
+        "a8a1",
+        "d1a1",
+        "b6b7",
+        "e7d5",
+        "f7f5",
+        "d5b4",
+        "b7e4",
+        "a1e1",
+        "e4b7",
+        "e3e4",
+        "f5e4",
+        "e1e3",
+        "d6d5",
+        "f1e2",
+        "d5d4",
+        "c3d4",
+        "e5d4",
+        "e3d4"
+      ]
+    }
+  ]
+}
