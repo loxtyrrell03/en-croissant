@@ -15,7 +15,7 @@ const input: LiveTacticalScanInput = {
 class FakeWorker {
     static instances: FakeWorker[] = [];
     onmessage: ((event: { data: unknown }) => void) | null = null;
-    onerror: (() => void) | null = null;
+    onerror: ((event: { message: string }) => void) | null = null;
     onmessageerror: (() => void) | null = null;
     postMessage = vi.fn();
     terminate = vi.fn();
@@ -88,7 +88,7 @@ test.each(["exception", "crash", "deserialize"])(
         const result = classifyLiveTacticsInWorker(input, new AbortController().signal);
         if (kind === "exception")
             latest().onmessage!({ data: { ok: false, error: "proof failed" } });
-        if (kind === "crash") latest().onerror!();
+        if (kind === "crash") latest().onerror!({ message: "" });
         if (kind === "deserialize") latest().onmessageerror!();
         await expect(result).rejects.toThrow(
             kind === "exception" ? "proof failed" : "tactical verification",
@@ -97,6 +97,14 @@ test.each(["exception", "crash", "deserialize"])(
         expect(vi.getTimerCount()).toBe(0);
     },
 );
+
+test("worker startup failures retain the actual exception instead of hiding the cause", async () => {
+    const result = classifyLiveTacticsInWorker(input, new AbortController().signal);
+    latest().onerror!({ message: "Uncaught ReferenceError: document is not defined" });
+    await expect(result).rejects.toThrow("Uncaught ReferenceError: document is not defined");
+    expect(latest().terminate).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
+});
 
 test("a failed post terminates its worker", async () => {
     class BrokenPost extends FakeWorker {

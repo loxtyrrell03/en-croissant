@@ -57,10 +57,12 @@ export function classifyLiveTacticsInWorker(
         );
         signal.addEventListener("abort", abort, { once: true });
         worker.onmessage = (event: MessageEvent<TacticalWorkerReply>) => finish(event.data);
-        worker.onerror = () =>
+        worker.onerror = (event) =>
             finish({
                 ok: false,
-                error: "The tactical verification worker failed. Try scanning again.",
+                error: event.message
+                    ? `The tactical verification worker failed: ${event.message}`
+                    : "The tactical verification worker failed. Try scanning again.",
             });
         worker.onmessageerror = () =>
             finish({ ok: false, error: "The tactical verification result could not be read." });

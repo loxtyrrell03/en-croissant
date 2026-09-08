@@ -1,5 +1,6 @@
 import type { BestMoves, EngineOption } from "@/bindings";
-import { engineSettingsToOptions, type EngineSettings } from "@/utils/engines";
+import type { EngineSettings } from "@/utils/engines";
+import { engineSettingsToOptions } from "@/utils/engineSettingsOptions";
 import {
     classifyPositionTacticalMotifs,
     MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,

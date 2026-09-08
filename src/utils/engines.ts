@@ -3,13 +3,7 @@ import { localDataDir, resolve } from "@tauri-apps/api/path";
 import type { Platform } from "@tauri-apps/plugin-os";
 import useSWR from "swr";
 import { z } from "zod";
-import {
-    type BestMoves,
-    commands,
-    type EngineOption,
-    type EngineOptions,
-    type GoMode,
-} from "@/bindings";
+import { type BestMoves, commands, type EngineOptions, type GoMode } from "@/bindings";
 import { getEnginesDir } from "@/utils/directories";
 import { unwrap } from "./unwrap";
 
@@ -42,17 +36,7 @@ export const engineSettingsSchema = z.array(
 
 export type EngineSettings = z.infer<typeof engineSettingsSchema>;
 
-/** Convert persisted nullable UI settings into concrete UCI setoption pairs. */
-export function engineSettingsToOptions(
-    settings: EngineSettings | null | undefined,
-): EngineOption[] {
-    return (settings ?? [])
-        .filter((setting) => setting.name.trim() && setting.value !== null)
-        .map((setting) => ({
-            name: setting.name,
-            value: String(setting.value),
-        }));
-}
+export { engineSettingsToOptions } from "./engineSettingsOptions";
 
 const localEngineSchema = z.object({
     type: z.literal("local"),
