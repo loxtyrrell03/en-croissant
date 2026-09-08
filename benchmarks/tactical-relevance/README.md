@@ -1166,6 +1166,54 @@ tests skipped), all fifteen fresh-engine tests pass, and shared review-worker
 and production builds pass. The unrelated OTB number/bigint type-checking
 error remains. Runtime deployment, website primitives and Outpost are unchanged.
 
+## Defender removal for promotion (adapter 29)
+
+The frozen mixed sample's MJZcU is no longer an empty scan. Rxe4 removes the
+knight that controls d2, allowing the connected c3/d4 passed pawns to overcome
+the rook after fxe4. This is a promotion combination, not a hanging rook or
+a generic sacrifice badge. The source line ends in c1=Q; a fresh unrestricted
+Stockfish 18 depth-16 MultiPV3 search prefers Rxe4 at +267 cp and promotes the
+d-pawn instead. Premature c2 scores -172 cp: Rd7+ and Rc7 let the rook and
+knight stop the pawns. The before/after mistake audit now teaches the missed
+defender removal when that premature push is supplied. That candidate move
+is a tested counterfactual, not an assertion about the source game's move.
+
+The proof is independent of the supplied cooperative replies. It nominates
+one to three advanced passed pawns only when the captured non-pawn piece
+legally controls their advance. It searches every defensive reply against
+the nominated pawns, surviving capturing piece, king escorts and legal check
+evasions, for at most eight further attacking moves and 131,072 examined
+moves. Its leaves settle local material against immediate legal exchanges
+and mate-in-one resources; they are not a full-game minimax evaluation.
+A representative branch must include the attacker's promotion. The real
+position needs 96,274 examined moves and answers all 21 legal root replies;
+its longer witness includes several rook checks and king evasions before
+promotion. A six-move continuation bound was insufficient for those checks.
+Exhausted proofs abstain. Search order is rank/colour-reflection invariant,
+and a smaller caller budget cannot borrow a cached default-budget success.
+
+The primary card explains Ne4's control of d2, with board arrows e4-d2,
+c3-c2 and d4-d3 alongside the root capture. The promotion remains secondary
+at its real ply, and the timeline ends there; a promotion outside the proof's
+17-ply horizon cannot connect unrelated later play. Same-reply comparisons
+can establish that moving Ne4 prevents this mechanism or that another rook
+move leaves it available. Failed proofs remain unknown, not proof of a
+successful defence. Different-reply causal comparisons remain unimplemented
+for this new mechanism.
+
+Twelve regressions cover the source position, mirrored proof, missing
+partner pawns, counterpromotion, pinned pseudo-defender, budget isolation,
+missed lesson, causal alternatives, board arrows and post-promotion cutoff.
+The selected suite passes 367 tests in 33 files, with two opt-in tests skipped;
+all fifteen fresh-engine tests pass. The mixed 32-position primary audit
+changes only MJZcU, leaving fVRuW, Z5arb, eOCp9 and 4GiqO empty and unresolved.
+All 24 ordinary-game headlines and mistake lessons are unchanged, and the
+long-mate proof coverage remains 29/32. These are development diagnostics,
+not general accuracy. The shared review-worker and production builds pass;
+type checking retains the unrelated OTB number/bigint fixture error. Website
+primitives, Outpost and live runtimes remain unchanged; no end-to-end UI
+latency, deployment or physical board proof is claimed.
+
 ## What remains to establish
 
 These are relevance milestones, not completion of the broader tuning

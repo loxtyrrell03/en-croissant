@@ -144,9 +144,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-28"
+      "motifClassifierVersion": "site-55.adapter-29"
     },
-    "classificationMs": 1.6120999999984633
+    "classificationMs": 19.0625
   },
   {
     "id": "lichess:vztmO",
@@ -279,9 +279,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-28"
+      "motifClassifierVersion": "site-55.adapter-29"
     },
-    "classificationMs": 2.39079999999376
+    "classificationMs": 6.933799999999792
   },
   {
     "id": "lichess:wh6Ac",
@@ -428,9 +428,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-28"
+      "motifClassifierVersion": "site-55.adapter-29"
     },
-    "classificationMs": 1.3706999999994878
+    "classificationMs": 3.930699999999888
   },
   {
     "id": "lichess:fVRuW",
@@ -649,9 +649,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-28"
+      "motifClassifierVersion": "site-55.adapter-29"
     },
-    "classificationMs": 28.874200000005658
+    "classificationMs": 62.5670999999993
   },
   {
     "id": "lichess:JaKHo",
@@ -862,9 +862,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-28"
+      "motifClassifierVersion": "site-55.adapter-29"
     },
-    "classificationMs": 14.603700000006938
+    "classificationMs": 18.955400000000736
   },
   {
     "id": "lichess:ouIHI",
@@ -1069,9 +1069,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-28"
+      "motifClassifierVersion": "site-55.adapter-29"
     },
-    "classificationMs": 3.1895999999978812
+    "classificationMs": 4.669499999999971
   },
   {
     "id": "lichess:CSh8J",
@@ -1281,8 +1281,630 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-28"
+      "motifClassifierVersion": "site-55.adapter-29"
     },
-    "classificationMs": 17.568599999998696
+    "classificationMs": 345.21740000000136
+  },
+  {
+    "id": "lichess:eOCp9",
+    "startFen": "2r1r1k1/R5b1/2b1p1pp/1p3p2/2q1P3/2P1B1P1/1P3QBP/3R2K1 w - f6 0 29",
+    "bestLine": [
+      "f2f4",
+      "g7f8",
+      "f4e5"
+    ],
+    "sourceGameUrl": "https://lichess.org/FODxhu6Q/black#56",
+    "unrestricted": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "f2f4",
+          "g6g5",
+          "a7g7",
+          "g8g7",
+          "f4e5",
+          "g7h7",
+          "e3d4",
+          "e8g8",
+          "d1a1",
+          "c8a8",
+          "a1e1",
+          "c6b7",
+          "e4f5",
+          "b7g2",
+          "f5e6",
+          "a8f8"
+        ],
+        "pvSan": [
+          "Qf4",
+          "g5",
+          "Rxg7+",
+          "Kxg7",
+          "Qe5+",
+          "Kh7",
+          "Bd4",
+          "Rg8",
+          "Ra1",
+          "Ra8",
+          "Re1",
+          "Bb7",
+          "exf5",
+          "Bxg2",
+          "fxe6",
+          "Raf8"
+        ],
+        "cp": 277,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e4f5",
+          "e6f5",
+          "d1d6",
+          "e8e6",
+          "d6e6",
+          "c4e6",
+          "e3d4",
+          "g7f8",
+          "a7a6",
+          "b5b4",
+          "f2d2",
+          "g8h7",
+          "c3b4",
+          "e6c4",
+          "a6c6",
+          "c8c6",
+          "g2c6",
+          "c4c6"
+        ],
+        "pvSan": [
+          "exf5",
+          "exf5",
+          "Rd6",
+          "Re6",
+          "Rxe6",
+          "Qxe6",
+          "Bd4",
+          "Bf8",
+          "Ra6",
+          "b4",
+          "Qd2",
+          "Kh7",
+          "cxb4",
+          "Qc4",
+          "Rxc6",
+          "Rxc6",
+          "Bxc6",
+          "Qxc6"
+        ],
+        "cp": 90,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "f2f1",
+          "g7f8",
+          "e4f5",
+          "e6f5",
+          "f1c4",
+          "b5c4",
+          "e3d4",
+          "c6g2",
+          "g1g2",
+          "g6g5",
+          "g2f3"
+        ],
+        "pvSan": [
+          "Qf1",
+          "Bf8",
+          "exf5",
+          "exf5",
+          "Qxc4+",
+          "bxc4",
+          "Bd4",
+          "Bxg2",
+          "Kxg2",
+          "g5",
+          "Kf3"
+        ],
+        "cp": 54,
+        "mate": null
+      }
+    ],
+    "candidate": {
+      "depth": 16,
+      "multipv": 1,
+      "pvUci": [
+        "f2f4",
+        "g7f8",
+        "f4e5",
+        "c8d8",
+        "e3d4",
+        "d8d4",
+        "c3d4",
+        "e8a8",
+        "a7a8",
+        "c6a8",
+        "d1e1",
+        "f8g7",
+        "e5b8",
+        "g8h7"
+      ],
+      "pvSan": [
+        "Qf4",
+        "Bf8",
+        "Qe5",
+        "Rcd8",
+        "Bd4",
+        "Rxd4",
+        "cxd4",
+        "Ra8",
+        "Rxa8",
+        "Bxa8",
+        "Re1",
+        "Bg7",
+        "Qb8+",
+        "Kh7"
+      ],
+      "cp": 215,
+      "mate": null
+    },
+    "classification": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-29"
+    },
+    "classificationMs": 0.7230999999992491
+  },
+  {
+    "id": "lichess:MJZcU",
+    "startFen": "3R4/5k2/6p1/p7/3pNr2/2p2P1P/P5PK/8 b - - 3 41",
+    "bestLine": [
+      "f4e4",
+      "f3e4",
+      "c3c2",
+      "d8d4",
+      "c2c1q"
+    ],
+    "sourceGameUrl": "https://lichess.org/oHeYQKb9#81",
+    "unrestricted": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "f4e4",
+          "f3e4",
+          "c3c2",
+          "d8c8",
+          "d4d3",
+          "e4e5",
+          "d3d2",
+          "c8c2",
+          "d2d1q",
+          "c2f2",
+          "f7e6",
+          "f2f6",
+          "e6e7",
+          "a2a3",
+          "d1c2",
+          "f6f3",
+          "c2c4",
+          "f3e3",
+          "c4d4",
+          "e3f3",
+          "g6g5",
+          "e5e6",
+          "d4e5",
+          "h2h1",
+          "e7e8"
+        ],
+        "pvSan": [
+          "Rxe4",
+          "fxe4",
+          "c2",
+          "Rc8",
+          "d3",
+          "e5",
+          "d2",
+          "Rxc2",
+          "d1=Q",
+          "Rf2+",
+          "Ke6",
+          "Rf6+",
+          "Ke7",
+          "a3",
+          "Qc2",
+          "Rf3",
+          "Qc4",
+          "Re3",
+          "Qd4",
+          "Rf3",
+          "g5",
+          "e6",
+          "Qe5+",
+          "Kh1",
+          "Ke8"
+        ],
+        "cp": 267,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "c3c2",
+          "d8d7",
+          "f7f8",
+          "d7c7",
+          "f4e4",
+          "c7c2",
+          "d4d3",
+          "c2d2",
+          "e4e2",
+          "d2d3",
+          "e2a2",
+          "d3d7",
+          "a5a4",
+          "d7a7",
+          "a2a1"
+        ],
+        "pvSan": [
+          "c2",
+          "Rd7+",
+          "Kf8",
+          "Rc7",
+          "Rxe4",
+          "Rxc2",
+          "d3",
+          "Rd2",
+          "Re2",
+          "Rxd3",
+          "Rxa2",
+          "Rd7",
+          "a4",
+          "Ra7",
+          "Ra1"
+        ],
+        "cp": -172,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "f4f6",
+          "d8d4",
+          "f6c6",
+          "e4c3",
+          "c6c3",
+          "d4f4",
+          "f7g7",
+          "f4a4",
+          "c3c5",
+          "h3h4"
+        ],
+        "pvSan": [
+          "Rf6",
+          "Rxd4",
+          "Rc6",
+          "Nxc3",
+          "Rxc3",
+          "Rf4+",
+          "Kg7",
+          "Ra4",
+          "Rc5",
+          "h4"
+        ],
+        "cp": -470,
+        "mate": null
+      }
+    ],
+    "candidate": {
+      "depth": 16,
+      "multipv": 1,
+      "pvUci": [
+        "f4e4",
+        "f3e4",
+        "c3c2",
+        "d8c8",
+        "d4d3",
+        "a2a3",
+        "f7e6",
+        "c8c5",
+        "d3d2",
+        "c5c2",
+        "d2d1q",
+        "c2c6",
+        "e6f7",
+        "e4e5",
+        "d1d4"
+      ],
+      "pvSan": [
+        "Rxe4",
+        "fxe4",
+        "c2",
+        "Rc8",
+        "d3",
+        "a3",
+        "Ke6",
+        "Rc5",
+        "d2",
+        "Rxc2",
+        "d1=Q",
+        "Rc6+",
+        "Kf7",
+        "e5",
+        "Qd4"
+      ],
+      "cp": 248,
+      "mate": null
+    },
+    "classification": {
+      "motifs": [
+        {
+          "id": "promotionCombination",
+          "label": "Promotion Combination",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f4e4",
+          "value": 220,
+          "evidence": "Rxe4 removes the knight on e4, which controlled d2. The passed pawns on c3 and d4 can advance. All 21 legal replies permit a verified local material gain or mate, including recaptures and checking defences; one line is Rxe4 fxe4 c2 Rd7+ Ke6 Rc7 d3 a3 d2 Rc6+ Ke5 Rc5+ Kd4 Rd5+ Ke3 Rxd2 c1=Q.",
+          "relevance": "primary"
+        },
+        {
+          "id": "promotion",
+          "label": "Promotion",
+          "confidence": "medium",
+          "evidence": "d1=Q promotes the pawn to a queen.",
+          "source": "available",
+          "ply": 11,
+          "moveUci": "d2d1q",
+          "relevance": "secondary",
+          "value": 520
+        }
+      ],
+      "timeline": [
+        {
+          "id": "promotionCombination",
+          "label": "Promotion Combination",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f4e4",
+          "value": 220,
+          "evidence": "Rxe4 removes the knight on e4, which controlled d2. The passed pawns on c3 and d4 can advance. All 21 legal replies permit a verified local material gain or mate, including recaptures and checking defences; one line is Rxe4 fxe4 c2 Rd7+ Ke6 Rc7 d3 a3 d2 Rc6+ Ke5 Rc5+ Kd4 Rd5+ Ke3 Rxd2 c1=Q.",
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "promotion",
+          "label": "Promotion",
+          "confidence": "medium",
+          "evidence": "d1=Q promotes the pawn to a queen.",
+          "source": "available",
+          "ply": 11,
+          "moveUci": "d2d1q",
+          "relevance": "secondary",
+          "value": 520,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-29"
+    },
+    "classificationMs": 618.2284999999974
+  },
+  {
+    "id": "lichess:Z5arb",
+    "startFen": "6k1/p4pp1/4bb1p/3qn3/8/1PNp4/P2Q1PPP/2B2RK1 b - - 2 23",
+    "bestLine": [
+      "e5f3",
+      "g2f3",
+      "f6c3"
+    ],
+    "sourceGameUrl": "https://lichess.org/PEouuNXC#45",
+    "unrestricted": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e5f3",
+          "g2f3",
+          "f6c3",
+          "d2c3",
+          "d5f3",
+          "c1h6",
+          "f3g4",
+          "g1h1",
+          "e6d5",
+          "f2f3",
+          "d5f3",
+          "f1f3",
+          "g4f3",
+          "h1g1",
+          "g7h6",
+          "c3d2",
+          "g8h7",
+          "d2f2",
+          "f3d1",
+          "g1g2"
+        ],
+        "pvSan": [
+          "Nf3+",
+          "gxf3",
+          "Bxc3",
+          "Qxc3",
+          "Qxf3",
+          "Bxh6",
+          "Qg4+",
+          "Kh1",
+          "Bd5+",
+          "f3",
+          "Bxf3+",
+          "Rxf3",
+          "Qxf3+",
+          "Kg1",
+          "gxh6",
+          "Qd2",
+          "Kh7",
+          "Qf2",
+          "Qd1+",
+          "Kg2"
+        ],
+        "cp": 265,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "d5c6",
+          "f2f3",
+          "e5g4",
+          "c3d1",
+          "f6g5",
+          "d2d3",
+          "c6c5",
+          "g1h1",
+          "g4h2",
+          "h1h2",
+          "g5c1",
+          "d3e4",
+          "c5h5",
+          "h2g1",
+          "h5c5",
+          "f1f2",
+          "c5g5",
+          "f2c2"
+        ],
+        "pvSan": [
+          "Qc6",
+          "f3",
+          "Ng4",
+          "Nd1",
+          "Bg5",
+          "Qxd3",
+          "Qc5+",
+          "Kh1",
+          "Nxh2",
+          "Kxh2",
+          "Bxc1",
+          "Qe4",
+          "Qh5+",
+          "Kg1",
+          "Qc5+",
+          "Rf2",
+          "Qg5",
+          "Rc2"
+        ],
+        "cp": -135,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "d5d4",
+          "c3d1",
+          "d4d6",
+          "d1e3",
+          "e5g6",
+          "e3c4",
+          "e6c4",
+          "b3c4",
+          "g6e5",
+          "d2e3",
+          "d6c6",
+          "c4c5",
+          "c6d5",
+          "c1d2",
+          "d5a2",
+          "d2c3",
+          "a2d5",
+          "c3e5",
+          "f6e5"
+        ],
+        "pvSan": [
+          "Qd4",
+          "Nd1",
+          "Qd6",
+          "Ne3",
+          "Ng6",
+          "Nc4",
+          "Bxc4",
+          "bxc4",
+          "Ne5",
+          "Qe3",
+          "Qc6",
+          "c5",
+          "Qd5",
+          "Bd2",
+          "Qxa2",
+          "Bc3",
+          "Qd5",
+          "Bxe5",
+          "Bxe5"
+        ],
+        "cp": -155,
+        "mate": null
+      }
+    ],
+    "candidate": {
+      "depth": 16,
+      "multipv": 1,
+      "pvUci": [
+        "e5f3",
+        "g2f3",
+        "f6c3",
+        "d2f4",
+        "d3d2",
+        "c1d2",
+        "c3d2",
+        "f4b8",
+        "g8h7",
+        "f1d1",
+        "d5g5",
+        "b8g3",
+        "g5a5",
+        "g1g2",
+        "d2b4",
+        "g3f4",
+        "b4e7",
+        "f4e4",
+        "g7g6"
+      ],
+      "pvSan": [
+        "Nf3+",
+        "gxf3",
+        "Bxc3",
+        "Qf4",
+        "d2",
+        "Bxd2",
+        "Bxd2",
+        "Qb8+",
+        "Kh7",
+        "Rd1",
+        "Qg5+",
+        "Qg3",
+        "Qa5",
+        "Kg2",
+        "Bb4",
+        "Qf4",
+        "Be7",
+        "Qe4+",
+        "g6"
+      ],
+      "cp": 302,
+      "mate": null
+    },
+    "classification": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-29"
+    },
+    "classificationMs": 173.07619999999952
   }
 ]

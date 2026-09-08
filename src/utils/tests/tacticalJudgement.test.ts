@@ -534,7 +534,18 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     sourceGameUrl: string;
                 }>;
             };
-            const selected = ["GIB50", "vztmO", "wh6Ac", "fVRuW", "JaKHo", "ouIHI", "CSh8J"];
+            const selected = [
+                "GIB50",
+                "vztmO",
+                "wh6Ac",
+                "fVRuW",
+                "JaKHo",
+                "ouIHI",
+                "CSh8J",
+                "eOCp9",
+                "MJZcU",
+                "Z5arb",
+            ];
             const report = [];
             for (const id of selected) {
                 const item = fixture.cases.find((item) => item.id === `lichess:${id}`)!;
@@ -1133,6 +1144,14 @@ describe("expert tactical judgement with fresh engine lines", () => {
         "judge actual before/after mistake causes",
         async () => {
             const examples = [
+                {
+                    name: "Pushed too early instead of removing the promotion-path defender (MJZcU)",
+                    fen: "3R4/5k2/6p1/p7/3pNr2/2p2P1P/P5PK/8 b - - 3 41",
+                    played: "c3c2",
+                    source: "missed",
+                    primary: "promotionCombination",
+                    why: "Rxe4 removes the knight controlling d2. After fxe4 the connected passed pawns overcome the rook, including its checking defences. Pushing c2 first allows the rook and knight to stop the pawns. This is a counterfactual candidate move in a real puzzle position, not a claim about the source game's played move.",
+                },
                 {
                     name: "Left the queen behind the discovered checking capture",
                     fen: "4q1k1/p4ppp/8/8/4B3/8/5PPP/4R1K1 b - - 0 1",

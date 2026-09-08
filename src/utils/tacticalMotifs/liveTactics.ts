@@ -9,6 +9,7 @@ import type { TacticalMotifEvidence } from "./types";
 import { tacticalBoardEvidence } from "./causalTactics";
 
 const CORE_TACTICAL_THEME_IDS = new Set([
+    "promotionCombination",
     "forcingAttack",
     "doubleThreat",
     "forkPreparation",
@@ -42,6 +43,7 @@ const CORE_TACTICAL_THEME_IDS = new Set([
 ]);
 
 const THEME_PRIORITY = [
+    "promotionCombination",
     "backRankMate",
     "smotheredMate",
     "anastasiaMate",
@@ -89,6 +91,8 @@ const THEME_PRIORITY = [
 ];
 
 const THEME_DESCRIPTIONS: Record<string, string> = {
+    promotionCombination:
+        "A material concession removes a promotion-path defender and enables a verified passed-pawn combination.",
     forcingAttack:
         "A verified sequence of checks forces material gain or mate; different defences may lead to different motifs.",
     doubleThreat:
@@ -138,7 +142,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 28;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 29;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {

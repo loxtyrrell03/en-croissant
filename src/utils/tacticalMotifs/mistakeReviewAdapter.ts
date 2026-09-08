@@ -103,7 +103,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 28;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 29;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -561,6 +561,7 @@ function toMotifEvidence(
 }
 
 const IMPORTANT_TACTICAL_THEME_IDS = new Set([
+    "promotionCombination",
     "forcingAttack",
     "forkPreparation",
     "doubleThreat",
@@ -793,10 +794,24 @@ export function buildTacticalTimeline(
     sanLine?: string[] | null,
 ) {
     const fullReplay = replayTacticalLine(fen, line);
-    const terminal = fullReplay.findIndex((step) => step.after.isEnd());
+    const promotionEpisode =
+        rootMotifs.some((motif) => motif.id === "promotionCombination" && motif.ply === 1) &&
+        fullReplay
+            .slice(0, 17)
+            .some((step) => step.before.turn === fullReplay[0].before.turn && step.move.promotion);
+    const terminal = fullReplay.findIndex(
+        (step) =>
+            step.after.isEnd() ||
+            (promotionEpisode &&
+                step.before.turn === fullReplay[0].before.turn &&
+                step.move.promotion),
+    );
     // Some engine PVs continue shuffling after a dead-material draw. Those
     // legal but outcome-irrelevant moves must not manufacture new lessons.
-    const replay = terminal < 0 ? fullReplay : fullReplay.slice(0, terminal + 1);
+    const episodeReplay = terminal < 0 ? fullReplay : fullReplay.slice(0, terminal + 1);
+    // The pawn-race proof searches at most eight further attacking moves.
+    // A later promotion cannot join an unrelated engine continuation to it.
+    const replay = promotionEpisode ? episodeReplay.slice(0, 17) : episodeReplay;
     const legalLine = replay.map((step) => step.uci);
     const rawSteps = walkPV(fen, legalLine, fenSide(fen)) as SiteThemeStep[];
     const evidence = new Map<string, TacticalMotifEvidence>();
@@ -806,8 +821,11 @@ export function buildTacticalTimeline(
     }
     let quietPlies = 0;
     let connectedPlies = replay.length;
-    const provedMatingEpisode = rootMotifs.some(
-        (motif) => motif.ply === 1 && motif.label === "Forcing Mate" && motif.value === 10000,
+    const provedForcingEpisode = rootMotifs.some(
+        (motif) =>
+            motif.ply === 1 &&
+            ((motif.label === "Forcing Mate" && motif.value === 10000) ||
+                (motif.id === "promotionCombination" && promotionEpisode)),
     );
     for (let index = 0; index < replay.length; index++) {
         const step = replay[index];
@@ -820,10 +838,10 @@ export function buildTacticalTimeline(
         // A forced king evasion is not a quiet pause. Nor is a locally
         // verified quiet mating preparation. Two genuinely quiet plies mark
         // a relevance boundary, not a claim that later tactics cannot exist.
-        // An all-defences mating proof connects its quiet preparations to
-        // the terminal payoff; the engine PV alone cannot extend this window.
+        // An all-defences mate or pawn-race proof connects its quiet moves
+        // within the proof horizon; a PV alone cannot extend this window.
         quietPlies = tacticalStart || step.before.isCheck() ? 0 : quietPlies + 1;
-        if (quietPlies >= 2 && !provedMatingEpisode) {
+        if (quietPlies >= 2 && !provedForcingEpisode) {
             connectedPlies = index;
             break;
         }

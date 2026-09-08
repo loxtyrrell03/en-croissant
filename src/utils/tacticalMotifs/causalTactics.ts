@@ -15,6 +15,7 @@ const VALUE: Record<Role, number> = {
     king: 20000,
 };
 const MECHANISMS = new Set([
+    "promotionCombination",
     "forcingAttack",
     "doubleThreat",
     "forkPreparation",
@@ -202,6 +203,187 @@ function withTurn(pos: Chess, turn: Color) {
     copy.turn = turn;
     copy.epSquare = undefined;
     return copy;
+}
+
+type PromotionCombinationProof = {
+    gain: number;
+    line: string[];
+    pawns: Square[];
+    controlled: Square[];
+    replyCount: number;
+    examinedMoves: number;
+};
+const PROMOTION_COMBINATION_NODE_LIMIT = 131072;
+const promotionCombinationCache = new Map<string, PromotionCombinationProof | null>();
+
+/** Nominate advanced passed pawns only after a material concession removes
+ * a piece controlling their advance. Every defensive reply is searched;
+ * the supplied PV is not used as a substitute for those replies. */
+export function provePromotionCombination(
+    root: TacticalReplayStep,
+    nodeLimit = PROMOTION_COMBINATION_NODE_LIMIT,
+): PromotionCombinationProof | null {
+    if (
+        !root.capture ||
+        root.move.promotion ||
+        tacticalExchangeGain(root.before, root.move) >= 100 ||
+        !Number.isSafeInteger(nodeLimit) ||
+        nodeLimit <= 0
+    )
+        return null;
+    const side = root.before.turn,
+        enemy = opposite(side),
+        direction = side === "white" ? 8 : -8;
+    const defender = root.before.board.get(root.move.to);
+    if (!defender || defender.role === "pawn" || defender.role === "king") return null;
+    const cacheKey = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    if (nodeLimit === PROMOTION_COMBINATION_NODE_LIMIT && promotionCombinationCache.has(cacheKey))
+        return promotionCombinationCache.get(cacheKey)!;
+    const pawns = [...root.after.board.pieces(side, "pawn")].filter((sq) => {
+        const distance = side === "white" ? 7 - Math.floor(sq / 8) : Math.floor(sq / 8);
+        return (
+            distance >= 1 &&
+            distance <= 3 &&
+            ![...root.after.board.pieces(enemy, "pawn")].some(
+                (other) =>
+                    Math.abs((other % 8) - (sq % 8)) <= 1 &&
+                    (side === "white" ? other > sq : other < sq),
+            )
+        );
+    });
+    if (!pawns.length || pawns.length > 3) return null;
+    const controlled = pawns.flatMap((sq) => {
+        const path: Square[] = [];
+        for (let to = sq + direction; to >= 0 && to < 64; to += direction) {
+            if (root.before.board.has(to)) continue;
+            const probe = withTurn(root.before, enemy);
+            probe.board.take(sq);
+            probe.board.set(to, { color: side, role: "pawn" });
+            if (probe.isLegal({ from: root.move.to, to })) path.push(to);
+        }
+        return path;
+    });
+    if (!controlled.length) return null;
+    type Win = { gain: number; line: string[] };
+    let nodes = nodeLimit;
+    // Keep bounded search order invariant under rank/colour reflection.
+    const orderedMoves = (pos: Chess) => {
+        const moves = legalMoves(pos);
+        return side === "black"
+            ? moves
+            : moves.sort((a, b) => (a.from ^ 56) - (b.from ^ 56) || (a.to ^ 56) - (b.to ^ 56));
+    };
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--nodes < 0) throw new Error("Promotion combination budget exhausted");
+        const next = pos.clone();
+        next.play(move);
+        return next;
+    };
+    const delta = (pos: Chess, move: NormalMove) =>
+        capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - 100 : 0);
+    const safeGain = (pos: Chess, balance: number) => {
+        if (pos.isEnd()) return pos.isCheckmate() ? 10000 : null;
+        if (balance < 100) return null;
+        let loss = 0;
+        for (const reply of orderedMoves(pos)) {
+            const after = visit(pos, reply);
+            if (after.isCheckmate()) return null;
+            if (!delta(pos, reply)) continue;
+            const gain = tacticalExchangeGain(pos, reply);
+            if (gain <= -VALUE.king) return null;
+            loss = Math.max(loss, gain);
+        }
+        return balance - loss >= 100 ? balance - loss : null;
+    };
+    const memo = new Map<string, Win | null>();
+    const attack = (
+        pos: Chess,
+        balance: number,
+        pieces: Square[],
+        remaining: number,
+    ): Win | null => {
+        if (remaining <= 0 || pos.isEnd()) return null;
+        const key = `${makeFen(pos.toSetup())}:${balance}:${pieces}:${remaining}`;
+        if (memo.has(key)) return memo.get(key)!;
+        const candidates = orderedMoves(pos).filter(
+            (move) =>
+                pos.isCheck() ||
+                pieces.includes(move.from) ||
+                pos.board.get(move.from)?.role === "king",
+        );
+        // Try to settle a declined sacrifice before expanding a pawn race.
+        const prepared = candidates.map((move) => ({ move, next: visit(pos, move) }));
+        for (const { move, next } of prepared) {
+            const gain = safeGain(next, balance + delta(pos, move));
+            if (gain !== null) {
+                const result = { gain, line: [makeSan(pos, move)] };
+                memo.set(key, result);
+                return result;
+            }
+        }
+        prepared.sort(
+            (a, b) =>
+                Number(b.move.promotion !== undefined) - Number(a.move.promotion !== undefined) ||
+                Number(pos.board.get(b.move.from)?.role === "pawn") -
+                    Number(pos.board.get(a.move.from)?.role === "pawn"),
+        );
+        for (const { move, next } of prepared) {
+            if (move.promotion && tacticalExchangeGain(pos, move) < 100 && !next.isCheckmate())
+                continue;
+            const tracked = pieces.map((sq) => (sq === move.from ? move.to : sq));
+            const result = defend(next, balance + delta(pos, move), tracked, remaining - 1);
+            if (result) {
+                const proof = { gain: result.gain, line: [makeSan(pos, move), ...result.line] };
+                memo.set(key, proof);
+                return proof;
+            }
+        }
+        memo.set(key, null);
+        return null;
+    };
+    const defend = (
+        pos: Chess,
+        balance: number,
+        pieces: Square[],
+        remaining: number,
+    ): Win | null => {
+        if (pos.isEnd()) return pos.isCheckmate() ? { gain: 10000, line: [] } : null;
+        let minimum = Infinity,
+            example: string[] = [];
+        const replies = orderedMoves(pos).sort((a, b) => delta(pos, b) - delta(pos, a));
+        for (const reply of replies) {
+            const next = visit(pos, reply);
+            const tracked = pieces.filter((sq) => next.board.get(sq)?.color === side);
+            const continuation = attack(next, balance - delta(pos, reply), tracked, remaining);
+            if (!continuation) return null;
+            minimum = Math.min(minimum, continuation.gain);
+            const branch = [makeSan(pos, reply), ...continuation.line];
+            if (branch.length > example.length) example = branch;
+        }
+        return Number.isFinite(minimum) ? { gain: minimum, line: example } : null;
+    };
+    let result: PromotionCombinationProof | null = null;
+    try {
+        const proof = defend(root.after, root.capture, [root.move.to, ...pawns], 8);
+        result =
+            proof && proof.line.some((san, index) => index % 2 === 1 && /=[QRBN]/.test(san))
+                ? {
+                      ...proof,
+                      pawns,
+                      controlled,
+                      replyCount: legalMoves(root.after).length,
+                      examinedMoves: nodeLimit - nodes,
+                  }
+                : null;
+    } catch {
+        // A bounded failure is not proof of a sound sacrifice.
+    }
+    if (nodeLimit === PROMOTION_COMBINATION_NODE_LIMIT) {
+        promotionCombinationCache.set(cacheKey, result);
+        if (promotionCombinationCache.size > 128)
+            promotionCombinationCache.delete(promotionCombinationCache.keys().next().value!);
+    }
+    return result;
 }
 
 type QuietMateProof = {
@@ -2299,6 +2481,7 @@ export function tacticalBoardEvidence(
     if (
         !motif?.ply ||
         ![
+            "promotionCombination",
             "forcingAttack",
             "doubleThreat",
             "forkPreparation",
@@ -2318,6 +2501,24 @@ export function tacticalBoardEvidence(
         return null;
     const step = replayTacticalLine(fen, line.slice(0, motif.ply))[motif.ply - 1];
     if (!step) return null;
+    if (motif.id === "promotionCombination") {
+        const proof = provePromotionCombination(step);
+        return proof
+            ? {
+                  square: makeSquare(step.move.to),
+                  arrows: [
+                      ...proof.pawns.map((from) => ({
+                          from: makeSquare(from),
+                          to: makeSquare(from + (step.before.turn === "white" ? 8 : -8)),
+                      })),
+                      ...proof.controlled.map((to) => ({
+                          from: makeSquare(step.move.to),
+                          to: makeSquare(to),
+                      })),
+                  ],
+              }
+            : null;
+    }
     if (motif.id === "forcingAttack")
         return {
             square: makeSquare(step.move.to),
@@ -3042,6 +3243,7 @@ function causeRank(motif: TacticalMotifEvidence, directGain = 0) {
     // Concrete mechanisms explain why a gain/mate works. Capture, sacrifice,
     // weak-square and final mate tags describe its prerequisites or payoff.
     const mechanismPriority = [
+        "promotionCombination",
         "deflection",
         "capturingDefender",
         "interference",
@@ -3109,9 +3311,15 @@ export function auditTacticalMotifs(
     if (!steps.length) return [];
     const allowConditional = typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= -30;
     const checkingMate = steps.length >= 7 ? proveCheckingMate(steps) : null;
+    const promotionCombination = provePromotionCombination(steps[0]);
+    const promotionPly = steps.findIndex(
+        (step) => step.before.turn === steps[0].before.turn && step.move.promotion,
+    );
     const end = checkingMate
         ? steps.findIndex((step) => step.after.isCheckmate()) + 1
-        : episodeEnd(steps, allowConditional);
+        : promotionCombination && promotionPly >= 0 && promotionPly <= 16
+          ? promotionPly + 1
+          : episodeEnd(steps, allowConditional);
     if (!end) return [];
     const episode = steps.slice(0, end);
     const attacker = steps[0].before.turn;
@@ -3135,6 +3343,19 @@ export function auditTacticalMotifs(
         settled = -VALUE.king;
     }
     const candidates: TacticalMotifEvidence[] = [];
+    if (promotionCombination) {
+        const root = steps[0];
+        candidates.push({
+            id: "promotionCombination",
+            label: "Promotion Combination",
+            source: proposals[0]?.source ?? "available",
+            confidence: "high",
+            ply: 1,
+            moveUci: root.uci,
+            value: promotionCombination.gain,
+            evidence: `${root.san} removes the ${root.before.board.get(root.move.to)!.role} on ${makeSquare(root.move.to)}, which controlled ${promotionCombination.controlled.map(makeSquare).join(" and ")}. ${promotionCombination.pawns.length === 1 ? "The passed pawn" : "The passed pawns"} on ${promotionCombination.pawns.map(makeSquare).join(" and ")} can advance. All ${promotionCombination.replyCount} legal replies permit a verified local material gain or mate, including recaptures and checking defences; one line is ${[root.san, ...promotionCombination.line].join(" ")}.`,
+        });
+    }
     const checkingAttack =
         !mate && !verifiedFork(steps[0]) ? proveCheckingMaterialAttack(steps) : null;
     if (checkingAttack) {
@@ -4193,6 +4414,25 @@ export function compareImmediateTacticalDefence(
         if (!alternative) {
             comparison = "prevented";
             comparisonEvidence = `${bestSan} makes the immediate reply ${step.san} illegal.`;
+        } else if (motif.id === "promotionCombination") {
+            if (!alternative.capture) {
+                comparison = "prevented";
+                comparisonEvidence = `After ${bestSan}, ${alternative.san} no longer captures the promotion-path defender.`;
+            } else {
+                const original = provePromotionCombination(step),
+                    other = provePromotionCombination(alternative);
+                if (
+                    original &&
+                    other &&
+                    other.gain >= original.gain &&
+                    original.pawns.join(",") === other.pawns.join(",") &&
+                    step.before.board.get(step.move.to)?.role ===
+                        alternative.before.board.get(alternative.move.to)?.role
+                ) {
+                    comparison = "persists";
+                    comparisonEvidence = `The same defender-removal and passed-pawn combination remains available after ${bestSan}.`;
+                }
+            }
         } else if (["pin", "skewer", "capturingDefender", "trappedPiece"].includes(motif.id)) {
             const material = compareMaterialCause(actual, better, motif);
             if (material) return { ...motif, ...material };
