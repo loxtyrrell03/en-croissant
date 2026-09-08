@@ -37,11 +37,10 @@ describe("live tactical classifier", () => {
             depth: 18,
         });
 
-        expect(scan.motifs.map((motif) => motif.id)).toContain("anastasiaMate");
+        expect(scan.motifs.map((motif) => motif.id)).toEqual(["attraction"]);
+        expect(scan.variations[0].motifs.map((motif) => motif.id)).toContain("anastasiaMate");
         expect(scan.labels).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({ text: "Anastasia Mate", square: "h3" }),
-            ]),
+            expect.arrayContaining([expect.objectContaining({ text: "Attraction", square: "h6" })]),
         );
         expect(scan.arrows).toEqual([
             expect.objectContaining({ from: "d2", to: "h6", ply: 1 }),
@@ -165,43 +164,37 @@ describe("live tactical classifier", () => {
                     depth: 16,
                     pvUci: ["e5f7", "d7d5", "f7d8"],
                     pvSan: ["Nxf7", "d5", "Nxd8"],
+                    cp: 460,
                 },
                 {
                     multipv: 2,
                     depth: 16,
                     pvUci: ["c4f7", "e8f8", "f7b3"],
                     pvSan: ["Bxf7+", "Kf8", "Bb3"],
+                    cp: 350,
                 },
             ],
         });
 
         expect(scan.variations).toHaveLength(2);
         const fork = scan.variations[0]?.motifs.find((motif) => motif.id === "fork");
-        const weakF7 = scan.variations[1]?.motifs.find(
-            (motif) => motif.id === "attackingF2F7",
-        );
+        const weakF7 = scan.variations[1]?.motifs.find((motif) => motif.id === "attackingF2F7");
         expect(fork?.evidence).toMatch(/Nxf7 forks the queen on d8 and rook on h8/i);
         expect(weakF7?.evidence).toMatch(
             /Bxf7\+ exploits f7, which is attacked twice and defended once, and gives check/i,
         );
         expect(tacticalMotifDescription(fork!)).toBe(fork?.evidence);
         expect(tacticalMotifDescription(weakF7!)).toBe(weakF7?.evidence);
-        expect(scan.motifs.map((motif) => motif.id).slice(0, 2)).toEqual(["fork", "attackingF2F7"]);
+        expect(scan.motifs.map((motif) => motif.id)).toEqual(["fork"]);
         expect(scan.labels).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({ text: "Nxf7 · Fork", square: "f7" }),
-                expect.objectContaining({ text: "Bxf7+ · Weak f7", square: "f7" }),
-            ]),
+            expect.arrayContaining([expect.objectContaining({ text: "Fork", square: "f7" })]),
         );
         expect(scan.arrows).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({ from: "e5", to: "f7" }),
-                expect.objectContaining({ from: "c4", to: "f7" }),
-            ]),
+            expect.arrayContaining([expect.objectContaining({ from: "e5", to: "f7" })]),
         );
     });
 
-    test("keeps a one-ply Nxf7 prefix as a provisional Weak f7 warning", () => {
+    test("proves a one-ply Nxf7 fork by checking legal defences", () => {
         const scan = buildLiveTacticalScan({
             fen: "rnbqk2r/p1ppbppp/1p3n2/4N3/2B5/4P3/PPPP1PPP/RNBQK2R w KQkq - 0 5",
             pvUci: ["e5f7"],
@@ -210,10 +203,8 @@ describe("live tactical classifier", () => {
             depth: 8,
         });
 
-        expect(scan.motifs.map((motif) => motif.id)).toEqual(["attackingF2F7"]);
-        expect(scan.labels).toEqual([
-            expect.objectContaining({ text: "Weak f7", square: "f7" }),
-        ]);
+        expect(scan.motifs.map((motif) => motif.id)).toEqual(["fork"]);
+        expect(scan.labels).toEqual([expect.objectContaining({ text: "Fork", square: "f7" })]);
         expect(scan.arrows).toEqual([expect.objectContaining({ from: "e5", to: "f7" })]);
     });
 

@@ -17,6 +17,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { IconBolt, IconCpu, IconRefresh } from "@tabler/icons-react";
+import { TacticalLineExplanation } from "./TacticalLineExplanation";
 import { makeUci } from "chessops";
 import { useAtomValue } from "jotai";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -207,6 +208,14 @@ function TacticalClassifierPanel({
           depth: line.depth,
           pvUci: line.uciMoves,
           pvSan: line.sanMoves,
+          cp:
+            line.score.value.type === "cp"
+              ? line.score.value.value * (position.fen.split(" ")[1] === "b" ? -1 : 1)
+              : null,
+          mate:
+            line.score.value.type === "mate"
+              ? line.score.value.value * (position.fen.split(" ")[1] === "b" ? -1 : 1)
+              : null,
         })),
       });
       rememberScan(scanCacheKey, scan);
@@ -415,9 +424,8 @@ function TacticalScanResult({
             icon={<IconBolt size="1rem" />}
             title={`${scan.motifs.map((motif) => motif.label).join(" · ")} found`}
           >
-            {sideLabel} has a forcing tactical line
-            {lastMoveSan ? ` after ${lastMoveSan}` : ""}. The matching move arrows and theme labels
-            are shown on the board.
+            {sideLabel}'s main tactical idea{lastMoveSan ? ` after ${lastMoveSan}` : ""}:{" "}
+            {scan.motifs[0]?.evidence}
           </Alert>
         ) : (
           <Center py="xl">
@@ -451,15 +459,17 @@ function TacticalScanResult({
                     <Badge color="blue" variant="light">
                       {rootMove}
                     </Badge>
-                    {variation.motifs.map((motif) => (
+                    {variation.motifs.slice(0, 1).map((motif) => (
                       <Badge key={motif.id} color="orange" variant="filled">
                         {motif.label}
                       </Badge>
                     ))}
                   </Group>
-                  <Badge variant="light">PV {variation.multipv}</Badge>
+                  <Badge variant="light">
+                    {variation.multipv === 1 ? "Main line" : "Alternative"}
+                  </Badge>
                 </Group>
-                {variation.motifs.map((motif) => (
+                {variation.motifs.slice(0, 1).map((motif) => (
                   <Stack key={motif.id} gap={2}>
                     <Text size="sm">{tacticalMotifDescription(motif)}</Text>
                     {motif.moveUci && (
@@ -473,6 +483,7 @@ function TacticalScanResult({
                 <Box>
                   <Code style={{ whiteSpace: "normal", lineHeight: 1.7 }}>{line.join("  ")}</Code>
                 </Box>
+                <TacticalLineExplanation moves={line} motifs={variation.motifs} />
               </Stack>
             </Paper>
           );

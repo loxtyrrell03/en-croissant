@@ -1,6 +1,9 @@
 import type { WebColor, WebEngineLine, WebEngineScore, WebGame } from "./model";
 import { normalizeWebFen } from "./pgn";
-import { classifyMistakeReviewMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
+import {
+    buildMistakeReviewTacticalExplanation,
+    classifyMistakeReviewMotifs,
+} from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 
 export const PHONE_REVIEW_VERSION = 1;
 export const DAILY_REVIEW_LIMIT = 5;
@@ -133,7 +136,7 @@ export function createPhoneReviewCard(
         winProbabilityDrop: before - after,
         reachedDepth: Math.min(best.depth, reply.depth),
     });
-    const motif = motifs.allowedMotifs[0] ?? motifs.missedMotifs[0];
+    const motif = buildMistakeReviewTacticalExplanation(motifs)?.primary;
     const gameKey = reviewGameKey(game);
     return {
         id: `${gameKey}:${index}:${playerKey(player)}`,

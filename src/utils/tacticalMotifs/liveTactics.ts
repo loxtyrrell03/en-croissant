@@ -125,7 +125,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 2;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 3;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {
@@ -157,6 +157,9 @@ export type LiveTacticalVariationInput = {
     depth?: number;
     pvUci: string[];
     pvSan?: string[] | null;
+    /** Scores are normalized to the root side to move, not White. */
+    cp?: number | null;
+    mate?: number | null;
 };
 
 export type LiveTacticalScan = {
@@ -256,6 +259,12 @@ export function selectLiveTacticalMotifs(motifs: TacticalMotifEvidence[]) {
 
     const priority = new Map(THEME_PRIORITY.map((id, index) => [id, index]));
     return [...unique.values()].sort((left, right) => {
+        if (left.relevance || right.relevance) {
+            return (
+                (left.relevance === "primary" ? -1 : right.relevance === "primary" ? 1 : 0) ||
+                (left.ply ?? 100) - (right.ply ?? 100)
+            );
+        }
         const leftPriority = priority.get(left.id) ?? THEME_PRIORITY.length;
         const rightPriority = priority.get(right.id) ?? THEME_PRIORITY.length;
         return leftPriority - rightPriority || left.label.localeCompare(right.label);
@@ -271,10 +280,12 @@ function buildLiveTacticalVariation(
     variation: LiveTacticalVariationInput,
     fallbackMultipv: number,
 ): ClassifiedLiveTacticalVariation {
-    const lineUci = variation.pvUci
-        .map((move) => move.trim().toLowerCase())
-        .filter((move) => VALID_UCI_PATTERN.test(move))
-        .slice(0, 20);
+    const normalized = variation.pvUci.map((move) => move.trim().toLowerCase());
+    const invalidIndex = normalized.findIndex((move) => !VALID_UCI_PATTERN.test(move));
+    const lineUci = normalized.slice(
+        0,
+        Math.min(20, invalidIndex < 0 ? normalized.length : invalidIndex),
+    );
     const classification = classifyPositionTacticalMotifs({
         fen: input.fen,
         pvUci: lineUci,
@@ -372,7 +383,17 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
                       pvSan: input.pvSan,
                   },
               ];
-    const variations = candidateInputs.map((variation, index) =>
+    const best = candidateInputs.find((v) => (v.multipv ?? 1) === 1) ?? candidateInputs[0];
+    const viableInputs = candidateInputs.filter((candidate) => {
+        if (candidate === best) return true;
+        if (best.mate != null && best.mate > 0) return candidate.mate != null && candidate.mate > 0;
+        if (candidate.mate != null) return candidate.mate > 0;
+        if (best.cp == null || candidate.cp == null) return false;
+        // Keep an alternative that preserves the winning outcome (e.g. Bxf7+),
+        // or a close choice. A losing alternative cannot donate tactical tags.
+        return candidate.cp >= best.cp - 80 || (best.cp >= 200 && candidate.cp >= 200);
+    });
+    const variations = viableInputs.map((variation, index) =>
         buildLiveTacticalVariation(input, variation, index + 1),
     );
     const primary =
@@ -383,7 +404,7 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
             { multipv: 1, depth: input.depth, pvUci: input.pvUci, pvSan: input.pvSan },
             1,
         );
-    const motifs = selectLiveTacticalMotifs(variations.flatMap((variation) => variation.motifs));
+    const motifs = primary.motifs.slice(0, 1);
     const publicVariations = variations.map<LiveTacticalVariation>(
         ({ motifClassifierVersion: _version, ...variation }) => variation,
     );
@@ -396,21 +417,22 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
         motifs,
         lineUci: primary.lineUci,
         lineSan: primary.lineSan,
-        arrows: aggregateVariationArrows(variations),
-        labels: aggregateVariationLabels(variations),
+        arrows: aggregateVariationArrows([primary]),
+        labels: aggregateVariationLabels([{ ...primary, labels: primary.labels.slice(0, 1) }]),
         variations: publicVariations,
         motifClassifierVersion: primary.motifClassifierVersion,
     };
 }
 
 export function tacticalMotifDescription(motif: TacticalMotifEvidence) {
+    if (motif.relevance && motif.evidence.trim()) return motif.evidence;
     if (FACT_RICH_THEME_IDS.has(motif.id) && motif.evidence.trim()) return motif.evidence;
     if (THEME_DESCRIPTIONS[motif.id]) return THEME_DESCRIPTIONS[motif.id];
     if (NAMED_MATE_PATTERN.test(motif.id)) {
         return `${motif.label} is the mating pattern found in the forcing line.`;
     }
     if (MATE_DISTANCE_PATTERN.test(motif.id)) {
-        return `${motif.label} is forced in the engine's principal variation.`;
+        return `The analysed continuation ends in ${motif.label.toLowerCase()}.`;
     }
     return motif.evidence;
 }

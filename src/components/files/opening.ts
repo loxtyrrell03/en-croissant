@@ -29,6 +29,8 @@ const tacticalMotifEvidenceSchema = z.object({
     source: z.enum(["allowed", "missed"]),
     ply: z.number().int().positive().nullable(),
     moveUci: z.string().nullable(),
+    relevance: z.enum(["primary", "secondary"]).optional(),
+    value: z.number().optional(),
 });
 
 type Sm2CardFields = {

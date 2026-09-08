@@ -1,3 +1,4 @@
+import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLineExplanation";
 import {
   ActionIcon,
   Alert,
@@ -6457,13 +6458,13 @@ function MistakeReviewGameInfoPanel({
   const revealedMotifs = revealAnswer
     ? [...getMistakeReviewAllowedMotifs(position), ...getMistakeReviewMissedMotifs(position)]
     : [];
-  const visibleMotifs = revealedMotifs.slice(0, 4);
   const tacticalExplanation = revealAnswer
     ? buildMistakeReviewTacticalExplanation({
         allowedMotifs: getMistakeReviewAllowedMotifs(position),
         missedMotifs: getMistakeReviewMissedMotifs(position),
       })
     : null;
+  const visibleMotifs = tacticalExplanation ? [tacticalExplanation.primary] : [];
 
   return (
     <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
@@ -6496,18 +6497,6 @@ function MistakeReviewGameInfoPanel({
                 </Badge>
               </Tooltip>
             ))}
-            {revealedMotifs.length > visibleMotifs.length && (
-              <Tooltip
-                label={revealedMotifs
-                  .slice(visibleMotifs.length)
-                  .map((motif) => motif.label)
-                  .join(", ")}
-              >
-                <Badge size="xs" variant="light" color="gray">
-                  +{revealedMotifs.length - visibleMotifs.length}
-                </Badge>
-              </Tooltip>
-            )}
             {nature && natureLabel && (
               <Tooltip label={`${natureLabel}, ${natureConfidence ?? "unknown"} confidence`}>
                 <Badge size="xs" color={mistakeReviewNatureColor(nature)} variant="light">
@@ -6542,6 +6531,24 @@ function MistakeReviewGameInfoPanel({
           >
             <Text size="xs">{tacticalExplanation.text}</Text>
           </Alert>
+        )}
+        {revealAnswer && revealedMotifs.length > 0 && (
+          <Stack gap={4}>
+            <TacticalLineExplanation
+              title="Opponent's refutation, move by move"
+              moves={
+                mistake.refutationSan?.length
+                  ? mistake.refutationSan
+                  : (mistake.refutationUci ?? [])
+              }
+              motifs={getMistakeReviewAllowedMotifs(position)}
+            />
+            <TacticalLineExplanation
+              title="Better move, move by move"
+              moves={mistake.pvSan?.length ? mistake.pvSan : (mistake.pvUci ?? [])}
+              motifs={getMistakeReviewMissedMotifs(position)}
+            />
+          </Stack>
         )}
         {!expanded && (
           <SimpleGrid cols={3} spacing={6}>

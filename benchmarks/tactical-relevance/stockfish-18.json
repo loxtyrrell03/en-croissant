@@ -1,0 +1,1244 @@
+[
+  {
+    "position": "Initial position",
+    "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    "judgement": "Development; no immediate tactical win.",
+    "expected": [],
+    "classificationMs": 1.9704000000001543,
+    "headline": [],
+    "candidates": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e2e4",
+          "c7c6",
+          "d2d4",
+          "d7d5",
+          "b1c3",
+          "d5e4",
+          "c3e4",
+          "g8f6",
+          "e4g3",
+          "c8g4",
+          "d1d3",
+          "e7e6"
+        ],
+        "pvSan": [
+          "e4",
+          "c6",
+          "d4",
+          "d5",
+          "Nc3",
+          "dxe4",
+          "Nxe4",
+          "Nf6",
+          "Ng3",
+          "Bg4",
+          "Qd3",
+          "e6"
+        ],
+        "cp": 50,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "d2d4",
+          "g8f6",
+          "c2c4",
+          "e7e6",
+          "g1f3",
+          "d7d5",
+          "c1g5",
+          "f8e7",
+          "e2e3",
+          "h7h6",
+          "g5f6",
+          "e7f6",
+          "b1c3",
+          "e8g8",
+          "a1c1",
+          "c7c6",
+          "f1d3",
+          "b8d7",
+          "e1g1",
+          "d8e7",
+          "e3e4",
+          "d5e4"
+        ],
+        "pvSan": [
+          "d4",
+          "Nf6",
+          "c4",
+          "e6",
+          "Nf3",
+          "d5",
+          "Bg5",
+          "Be7",
+          "e3",
+          "h6",
+          "Bxf6",
+          "Bxf6",
+          "Nc3",
+          "O-O",
+          "Rc1",
+          "c6",
+          "Bd3",
+          "Nd7",
+          "O-O",
+          "Qe7",
+          "e4",
+          "dxe4"
+        ],
+        "cp": 37,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "g1f3",
+          "d7d5",
+          "d2d4",
+          "g8f6",
+          "c2c4",
+          "e7e6",
+          "c1g5",
+          "f8e7",
+          "e2e3",
+          "e8g8",
+          "b1c3",
+          "b8d7",
+          "a2a3",
+          "d5c4",
+          "f1c4",
+          "c7c5",
+          "d4c5",
+          "d7c5",
+          "e1g1",
+          "a7a6",
+          "d1c2"
+        ],
+        "pvSan": [
+          "Nf3",
+          "d5",
+          "d4",
+          "Nf6",
+          "c4",
+          "e6",
+          "Bg5",
+          "Be7",
+          "e3",
+          "O-O",
+          "Nc3",
+          "Nbd7",
+          "a3",
+          "dxc4",
+          "Bxc4",
+          "c5",
+          "dxc5",
+          "Nxc5",
+          "O-O",
+          "a6",
+          "Qc2"
+        ],
+        "cp": 27,
+        "mate": null
+      }
+    ],
+    "lines": [
+      {
+        "multipv": 1,
+        "moves": "e4 c6 d4 d5 Nc3 dxe4 Nxe4 Nf6 Ng3 Bg4 Qd3 e6",
+        "motifs": []
+      },
+      {
+        "multipv": 2,
+        "moves": "d4 Nf6 c4 e6 Nf3 d5 Bg5 Be7 e3 h6 Bxf6 Bxf6 Nc3 O-O Rc1 c6 Bd3 Nd7 O-O Qe7",
+        "motifs": []
+      },
+      {
+        "multipv": 3,
+        "moves": "Nf3 d5 d4 Nf6 c4 e6 Bg5 Be7 e3 O-O Nc3 Nbd7 a3 dxc4 Bxc4 c5 dxc5 Nxc5 O-O a6",
+        "motifs": []
+      }
+    ]
+  },
+  {
+    "position": "Quiet Italian",
+    "fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+    "judgement": "Normal development; f7 pressure is not a winning capture.",
+    "expected": [],
+    "classificationMs": 0.7973000000001775,
+    "headline": [],
+    "candidates": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "c2c3",
+          "g8f6",
+          "b2b4",
+          "c5e7",
+          "d2d3",
+          "d7d5",
+          "e4d5",
+          "f6d5",
+          "e1g1",
+          "d5b6",
+          "c4b3",
+          "e8g8",
+          "a2a4"
+        ],
+        "pvSan": [
+          "c3",
+          "Nf6",
+          "b4",
+          "Be7",
+          "d3",
+          "d5",
+          "exd5",
+          "Nxd5",
+          "O-O",
+          "Nb6",
+          "Bb3",
+          "O-O",
+          "a4"
+        ],
+        "cp": 28,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "d2d3",
+          "g8f6",
+          "e1g1",
+          "a7a6",
+          "c2c3",
+          "d7d6",
+          "h2h3",
+          "c5a7",
+          "a2a4",
+          "h7h6",
+          "c1e3",
+          "a7e3",
+          "f2e3",
+          "c6e7",
+          "b1d2",
+          "e8g8",
+          "d1e1"
+        ],
+        "pvSan": [
+          "d3",
+          "Nf6",
+          "O-O",
+          "a6",
+          "c3",
+          "d6",
+          "h3",
+          "Ba7",
+          "a4",
+          "h6",
+          "Be3",
+          "Bxe3",
+          "fxe3",
+          "Ne7",
+          "Nbd2",
+          "O-O",
+          "Qe1"
+        ],
+        "cp": 25,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e1g1",
+          "g8f6",
+          "d2d3",
+          "a7a6",
+          "c2c3",
+          "d7d6",
+          "h2h3",
+          "c5a7",
+          "a2a4",
+          "e8g8",
+          "f1e1",
+          "c8e6",
+          "b1d2",
+          "d8d7",
+          "c4e6",
+          "f7e6",
+          "d2f1",
+          "d7f7",
+          "f1h2"
+        ],
+        "pvSan": [
+          "O-O",
+          "Nf6",
+          "d3",
+          "a6",
+          "c3",
+          "d6",
+          "h3",
+          "Ba7",
+          "a4",
+          "O-O",
+          "Re1",
+          "Be6",
+          "Nbd2",
+          "Qd7",
+          "Bxe6",
+          "fxe6",
+          "Nf1",
+          "Qf7",
+          "N1h2"
+        ],
+        "cp": 23,
+        "mate": null
+      }
+    ],
+    "lines": [
+      {
+        "multipv": 1,
+        "moves": "c3 Nf6 b4 Be7 d3 d5 exd5 Nxd5 O-O Nb6 Bb3 O-O a4",
+        "motifs": []
+      },
+      {
+        "multipv": 2,
+        "moves": "d3 Nf6 O-O a6 c3 d6 h3 Ba7 a4 h6 Be3 Bxe3 fxe3 Ne7 Nbd2 O-O Qe1",
+        "motifs": []
+      },
+      {
+        "multipv": 3,
+        "moves": "O-O Nf6 d3 a6 c3 d6 h3 Ba7 a4 O-O Re1 Be6 Nbd2 Qd7 Bxe6 fxe6 Nf1 Qf7 N1h2",
+        "motifs": []
+      }
+    ]
+  },
+  {
+    "position": "Ruy Lopez pressure",
+    "fen": "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+    "judgement": "The c6 knight's pin is positional pressure, not a won piece.",
+    "expected": [],
+    "classificationMs": 171.1957999999995,
+    "headline": [],
+    "candidates": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "g8f6",
+          "e1g1",
+          "f6e4",
+          "f1e1",
+          "e4d6",
+          "f3e5",
+          "f8e7",
+          "b5f1",
+          "c6e5",
+          "e1e5",
+          "e8g8",
+          "b1c3",
+          "d6e8",
+          "c3d5",
+          "e7d6",
+          "e5e1",
+          "c7c6",
+          "d5e3",
+          "d6c7",
+          "e3f5",
+          "d7d5",
+          "f5e7",
+          "g8h8",
+          "e7c8",
+          "d8c8"
+        ],
+        "pvSan": [
+          "Nf6",
+          "O-O",
+          "Nxe4",
+          "Re1",
+          "Nd6",
+          "Nxe5",
+          "Be7",
+          "Bf1",
+          "Nxe5",
+          "Rxe5",
+          "O-O",
+          "Nc3",
+          "Ne8",
+          "Nd5",
+          "Bd6",
+          "Re1",
+          "c6",
+          "Ne3",
+          "Bc7",
+          "Nf5",
+          "d5",
+          "Ne7+",
+          "Kh8",
+          "Nxc8",
+          "Qxc8"
+        ],
+        "cp": -31,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "a7a6",
+          "b5a4",
+          "g8f6",
+          "e1g1",
+          "f6e4",
+          "d2d4",
+          "b7b5",
+          "a4b3",
+          "d7d5",
+          "d4e5",
+          "c8e6",
+          "c2c3",
+          "f8e7",
+          "c1e3",
+          "c6a5",
+          "b1d2",
+          "a5b3",
+          "a2b3",
+          "c7c5",
+          "d2e4",
+          "d5e4"
+        ],
+        "pvSan": [
+          "a6",
+          "Ba4",
+          "Nf6",
+          "O-O",
+          "Nxe4",
+          "d4",
+          "b5",
+          "Bb3",
+          "d5",
+          "dxe5",
+          "Be6",
+          "c3",
+          "Be7",
+          "Be3",
+          "Na5",
+          "Nbd2",
+          "Nxb3",
+          "axb3",
+          "c5",
+          "Nxe4",
+          "dxe4"
+        ],
+        "cp": -36,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "c6d4",
+          "f3d4",
+          "e5d4",
+          "e1g1",
+          "c7c6",
+          "b5c4",
+          "g8f6",
+          "f1e1",
+          "d7d6",
+          "c2c3",
+          "f8e7",
+          "c4b3",
+          "d8b6",
+          "d2d3",
+          "e8g8",
+          "b1d2"
+        ],
+        "pvSan": [
+          "Nd4",
+          "Nxd4",
+          "exd4",
+          "O-O",
+          "c6",
+          "Bc4",
+          "Nf6",
+          "Re1",
+          "d6",
+          "c3",
+          "Be7",
+          "Bb3",
+          "Qb6",
+          "d3",
+          "O-O",
+          "Nd2"
+        ],
+        "cp": -54,
+        "mate": null
+      }
+    ],
+    "lines": [
+      {
+        "multipv": 1,
+        "moves": "Nf6 O-O Nxe4 Re1 Nd6 Nxe5 Be7 Bf1 Nxe5 Rxe5 O-O Nc3 Ne8 Nd5 Bd6 Re1 c6 Ne3 Bc7 Nf5",
+        "motifs": []
+      },
+      {
+        "multipv": 2,
+        "moves": "a6 Ba4 Nf6 O-O Nxe4 d4 b5 Bb3 d5 dxe5 Be6 c3 Be7 Be3 Na5 Nbd2 Nxb3 axb3 c5 Nxe4",
+        "motifs": []
+      },
+      {
+        "multipv": 3,
+        "moves": "Nd4 Nxd4 exd4 O-O c6 Bc4 Nf6 Re1 d6 c3 Be7 Bb3 Qb6 d3 O-O Nd2",
+        "motifs": []
+      }
+    ]
+  },
+  {
+    "position": "Hanging queen",
+    "fen": "r5k1/5ppp/8/8/Q7/8/5PPP/6K1 b - - 0 1",
+    "judgement": "Rxa4 wins a loose queen immediately; any later mate is secondary.",
+    "expected": [
+      "hangingPiece"
+    ],
+    "classificationMs": 9.068300000000818,
+    "headline": [
+      "hangingPiece@1"
+    ],
+    "candidates": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "a8a4",
+          "g2g4",
+          "a4a8",
+          "g1g2",
+          "g8f8",
+          "g4g5",
+          "f8e7",
+          "g5g6",
+          "f7g6",
+          "g2g1"
+        ],
+        "pvSan": [
+          "Rxa4",
+          "g4",
+          "Ra8",
+          "Kg2",
+          "Kf8",
+          "g5",
+          "Ke7",
+          "g6",
+          "fxg6",
+          "Kg1"
+        ],
+        "cp": 619,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "a8d8",
+          "g2g4",
+          "h7h6",
+          "g1g2",
+          "g8h7",
+          "a4c4",
+          "h7g8",
+          "c4c6",
+          "g7g6",
+          "g2g3",
+          "g8g7",
+          "h2h4"
+        ],
+        "pvSan": [
+          "Rd8",
+          "g4",
+          "h6",
+          "Kg2",
+          "Kh7",
+          "Qc4",
+          "Kg8",
+          "Qc6",
+          "g6",
+          "Kg3",
+          "Kg7",
+          "h4"
+        ],
+        "cp": -337,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "a8b8",
+          "h2h3",
+          "g7g6",
+          "g1h2",
+          "h7h6",
+          "g2g4"
+        ],
+        "pvSan": [
+          "Rb8",
+          "h3",
+          "g6",
+          "Kh2",
+          "h6",
+          "g4"
+        ],
+        "cp": -342,
+        "mate": null
+      }
+    ],
+    "lines": [
+      {
+        "multipv": 1,
+        "moves": "Rxa4 g4 Ra8 Kg2 Kf8 g5 Ke7 g6 fxg6 Kg1",
+        "motifs": [
+          "hangingPiece@1"
+        ]
+      }
+    ]
+  },
+  {
+    "position": "Protected f7 fork",
+    "fen": "rnbqk2r/p1ppbppp/1p3n2/4N3/2B5/4P3/PPPP1PPP/RNBQK2R w KQkq - 0 5",
+    "judgement": "Nxf7 forks queen and rook; Bxf7+ is a sound secondary capture.",
+    "expected": [
+      "fork"
+    ],
+    "classificationMs": 202.4915000000001,
+    "headline": [
+      "fork@1"
+    ],
+    "candidates": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e5f7",
+          "d7d5",
+          "f7d8",
+          "d5c4",
+          "b2b3",
+          "e7d8",
+          "d1f3",
+          "c7c6",
+          "c1a3",
+          "c8g4",
+          "f3f4",
+          "g4e6",
+          "f2f3",
+          "b8d7",
+          "e1g1",
+          "e8f7",
+          "b3c4",
+          "h8e8",
+          "g1h1"
+        ],
+        "pvSan": [
+          "Nxf7",
+          "d5",
+          "Nxd8",
+          "dxc4",
+          "b3",
+          "Bxd8",
+          "Qf3",
+          "c6",
+          "Ba3",
+          "Bg4",
+          "Qf4",
+          "Be6",
+          "f3",
+          "Nbd7",
+          "O-O",
+          "Kf7",
+          "bxc4",
+          "Re8",
+          "Kh1"
+        ],
+        "cp": 459,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "c4f7",
+          "e8f8",
+          "f7b3",
+          "c7c5",
+          "d2d4",
+          "c8b7",
+          "e1g1",
+          "d7d5",
+          "c2c4",
+          "d5c4",
+          "b3c4",
+          "d8c7",
+          "b1c3",
+          "b8c6",
+          "c3d5",
+          "f6d5",
+          "c4d5",
+          "c6e5",
+          "d4e5",
+          "b7d5",
+          "d1d5",
+          "a8d8"
+        ],
+        "pvSan": [
+          "Bxf7+",
+          "Kf8",
+          "Bb3",
+          "c5",
+          "d4",
+          "Bb7",
+          "O-O",
+          "d5",
+          "c4",
+          "dxc4",
+          "Bxc4",
+          "Qc7",
+          "Nc3",
+          "Nc6",
+          "Nd5",
+          "Nxd5",
+          "Bxd5",
+          "Nxe5",
+          "dxe5",
+          "Bxd5",
+          "Qxd5",
+          "Rd8"
+        ],
+        "cp": 350,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e3e4",
+          "e8g8",
+          "e5f7",
+          "f8f7",
+          "c4f7",
+          "g8f7",
+          "e4e5",
+          "d8e8",
+          "e1g1",
+          "f6d5",
+          "d1f3",
+          "f7e6"
+        ],
+        "pvSan": [
+          "e4",
+          "O-O",
+          "Nxf7",
+          "Rxf7",
+          "Bxf7+",
+          "Kxf7",
+          "e5",
+          "Qe8",
+          "O-O",
+          "Nd5",
+          "Qf3+",
+          "Ke6"
+        ],
+        "cp": 193,
+        "mate": null
+      }
+    ],
+    "lines": [
+      {
+        "multipv": 1,
+        "moves": "Nxf7 d5 Nxd8 dxc4 b3 Bxd8 Qf3 c6 Ba3 Bg4 Qf4 Be6 f3 Nbd7 O-O Kf7 bxc4 Re8 Kh1",
+        "motifs": [
+          "fork@1",
+          "attackingF2F7@1"
+        ]
+      },
+      {
+        "multipv": 2,
+        "moves": "Bxf7+ Kf8 Bb3 c5 d4 Bb7 O-O d5 c4 dxc4 Bxc4 Qc7 Nc3 Nc6 Nd5 Nxd5 Bxd5 Nxe5 dxe5 Bxd5",
+        "motifs": [
+          "attackingF2F7@1"
+        ]
+      }
+    ]
+  },
+  {
+    "position": "Back rank mate",
+    "fen": "6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1",
+    "judgement": "Re8#; the back rank is the direct reason.",
+    "expected": [
+      "backRankMate"
+    ],
+    "classificationMs": 2.4997999999995955,
+    "headline": [
+      "backRankMate@1"
+    ],
+    "candidates": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e1e8"
+        ],
+        "pvSan": [
+          "Re8#"
+        ],
+        "cp": null,
+        "mate": 1
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "g1f1",
+          "h7h5",
+          "f1e2",
+          "h5h4",
+          "e1b1",
+          "h4h3",
+          "g2g4",
+          "g8h7",
+          "e2e3",
+          "g7g6",
+          "e3f4",
+          "h7g7"
+        ],
+        "pvSan": [
+          "Kf1",
+          "h5",
+          "Ke2",
+          "h4",
+          "Rb1",
+          "h3",
+          "g4",
+          "Kh7",
+          "Ke3",
+          "g6",
+          "Kf4",
+          "Kg7"
+        ],
+        "cp": 634,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e1c1",
+          "g7g5",
+          "g1f1",
+          "g5g4",
+          "f1e2",
+          "g4g3",
+          "h2g3",
+          "g8g7",
+          "e2d3",
+          "h7h5"
+        ],
+        "pvSan": [
+          "Rc1",
+          "g5",
+          "Kf1",
+          "g4",
+          "Ke2",
+          "g3",
+          "hxg3",
+          "Kg7",
+          "Kd3",
+          "h5"
+        ],
+        "cp": 620,
+        "mate": null
+      }
+    ],
+    "lines": [
+      {
+        "multipv": 1,
+        "moves": "Re8#",
+        "motifs": [
+          "backRankMate@1"
+        ]
+      }
+    ]
+  },
+  {
+    "position": "Deflection combination",
+    "fen": "3r2k1/p4ppp/1p6/2pr2q1/4R3/1P2PQ2/P5PP/3R2K1 w - - 0 23",
+    "judgement": "Rxd5 Qxd5 Re8+ deflects the d8 rook, then Qxd5 wins the queen.",
+    "expected": [
+      "deflection"
+    ],
+    "classificationMs": 22.072900000001027,
+    "headline": [
+      "deflection@3"
+    ],
+    "candidates": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d1d5",
+          "g5d5",
+          "e4e8",
+          "d8e8",
+          "f3d5",
+          "g7g6",
+          "g1f2",
+          "a7a5",
+          "d5b7",
+          "e8e6",
+          "b7b8",
+          "g8g7",
+          "f2e2",
+          "g6g5",
+          "b8b7",
+          "e6d6",
+          "e2f2"
+        ],
+        "pvSan": [
+          "Rxd5",
+          "Qxd5",
+          "Re8+",
+          "Rxe8",
+          "Qxd5",
+          "g6",
+          "Kf2",
+          "a5",
+          "Qb7",
+          "Re6",
+          "Qb8+",
+          "Kg7",
+          "Ke2",
+          "g5",
+          "Qb7",
+          "Rd6",
+          "Kf2"
+        ],
+        "cp": 442,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "d1f1",
+          "d5d7",
+          "b3b4",
+          "c5b4",
+          "e4b4",
+          "g5c5",
+          "b4e4",
+          "h7h6",
+          "a2a4",
+          "d7e7",
+          "h2h4",
+          "e7e4",
+          "f3e4"
+        ],
+        "pvSan": [
+          "Rf1",
+          "R5d7",
+          "b4",
+          "cxb4",
+          "Rxb4",
+          "Qc5",
+          "Re4",
+          "h6",
+          "a4",
+          "Re7",
+          "h4",
+          "Rxe4",
+          "Qxe4"
+        ],
+        "cp": -186,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e4e8",
+          "d8e8",
+          "d1d5",
+          "g5e7",
+          "h2h3",
+          "g7g6",
+          "g1f2",
+          "e7h4",
+          "f2f1"
+        ],
+        "pvSan": [
+          "Re8+",
+          "Rxe8",
+          "Rxd5",
+          "Qe7",
+          "h3",
+          "g6",
+          "Kf2",
+          "Qh4+",
+          "Kf1"
+        ],
+        "cp": -222,
+        "mate": null
+      }
+    ],
+    "lines": [
+      {
+        "multipv": 1,
+        "moves": "Rxd5 Qxd5 Re8+ Rxe8 Qxd5 g6 Kf2 a5 Qb7 Re6 Qb8+ Kg7 Ke2 g5 Qb7 Rd6 Kf2",
+        "motifs": [
+          "deflection@3",
+          "discoveredAttack@3"
+        ]
+      }
+    ]
+  },
+  {
+    "position": "Branch-dependent mating pattern",
+    "fen": "rr6/p3p2k/3pNpp1/1pp5/2q1P3/5R2/P2Q2PP/6K1 w - - 0 27",
+    "judgement": "Qh6+ forces mate, but Kxh6 Rh3# and Kg8 Qg7# have different patterns. Only the selected branch may name Anastasia's mate.",
+    "expected": [
+      "mateIn2"
+    ],
+    "classificationMs": 1.7628999999997177,
+    "headline": [
+      "mateIn2@3"
+    ],
+    "candidates": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d2h6",
+          "h7g8",
+          "h6g7"
+        ],
+        "pvSan": [
+          "Qh6+",
+          "Kg8",
+          "Qg7#"
+        ],
+        "cp": null,
+        "mate": 2
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "f3h3",
+          "h7g8",
+          "e4e5",
+          "c4e6",
+          "d2h6",
+          "g8f7",
+          "h3g3",
+          "f7e8",
+          "e5f6"
+        ],
+        "pvSan": [
+          "Rh3+",
+          "Kg8",
+          "e5",
+          "Qxe6",
+          "Qh6",
+          "Kf7",
+          "Rg3",
+          "Ke8",
+          "exf6"
+        ],
+        "cp": -293,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e6c7",
+          "c4d4",
+          "d2d4",
+          "c5d4",
+          "f3b3",
+          "h7g8",
+          "g1f1",
+          "g8f7",
+          "f1e2",
+          "e7e5",
+          "c7a8",
+          "b8a8",
+          "b3b5",
+          "f7e6"
+        ],
+        "pvSan": [
+          "Nc7",
+          "Qd4+",
+          "Qxd4",
+          "cxd4",
+          "Rb3",
+          "Kg8",
+          "Kf1",
+          "Kf7",
+          "Ke2",
+          "e5",
+          "Nxa8",
+          "Rxa8",
+          "Rxb5",
+          "Ke6"
+        ],
+        "cp": -403,
+        "mate": null
+      }
+    ],
+    "lines": [
+      {
+        "multipv": 1,
+        "moves": "Qh6+ Kg8 Qg7#",
+        "motifs": [
+          "mateIn2@3"
+        ]
+      }
+    ]
+  },
+  {
+    "position": "King and pawn quiet",
+    "fen": "8/5k2/5p2/8/8/5P2/5K2/8 w - - 0 1",
+    "judgement": "Drawn pawn ending; no invented zugzwang or tactical king move.",
+    "expected": [],
+    "classificationMs": 0.6691000000009808,
+    "headline": [],
+    "candidates": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "f3f4",
+          "f6f5",
+          "f2e2",
+          "f7g6",
+          "e2d3",
+          "g6f6",
+          "d3d2",
+          "f6g6",
+          "d2e3",
+          "g6g7",
+          "e3f3",
+          "g7f8"
+        ],
+        "pvSan": [
+          "f4",
+          "f5",
+          "Ke2",
+          "Kg6",
+          "Kd3",
+          "Kf6",
+          "Kd2",
+          "Kg6",
+          "Ke3",
+          "Kg7",
+          "Kf3",
+          "Kf8"
+        ],
+        "cp": 0,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "f2g3",
+          "f6f5",
+          "g3h4",
+          "f7g6",
+          "f3f4",
+          "g6h6",
+          "h4g3",
+          "h6g7",
+          "g3f3",
+          "g7f8",
+          "f3e3"
+        ],
+        "pvSan": [
+          "Kg3",
+          "f5",
+          "Kh4",
+          "Kg6",
+          "f4",
+          "Kh6",
+          "Kg3",
+          "Kg7",
+          "Kf3",
+          "Kf8",
+          "Ke3"
+        ],
+        "cp": 0,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "f2e2",
+          "f7g7",
+          "f3f4",
+          "f6f5",
+          "e2e3",
+          "g7g6",
+          "e3d4",
+          "g6f6",
+          "d4d3",
+          "f6f7",
+          "d3e2",
+          "f7g6"
+        ],
+        "pvSan": [
+          "Ke2",
+          "Kg7",
+          "f4",
+          "f5",
+          "Ke3",
+          "Kg6",
+          "Kd4",
+          "Kf6",
+          "Kd3",
+          "Kf7",
+          "Ke2",
+          "Kg6"
+        ],
+        "cp": 0,
+        "mate": null
+      }
+    ],
+    "lines": [
+      {
+        "multipv": 1,
+        "moves": "f4 f5 Ke2 Kg6 Kd3 Kf6 Kd2 Kg6 Ke3 Kg7 Kf3 Kf8",
+        "motifs": []
+      },
+      {
+        "multipv": 2,
+        "moves": "Kg3 f5 Kh4 Kg6 f4 Kh6 Kg3 Kg7 Kf3 Kf8 Ke3",
+        "motifs": []
+      },
+      {
+        "multipv": 3,
+        "moves": "Ke2 Kg7 f4 f5 Ke3 Kg6 Kd4 Kf6 Kd3 Kf7 Ke2 Kg6",
+        "motifs": []
+      }
+    ]
+  }
+]

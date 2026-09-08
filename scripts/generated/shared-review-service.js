@@ -100,7 +100,7 @@ function getPgnHeader(pgn, name) {
 	return pgn.match(new RegExp(`^\\[${name}\\s+"([^"]*)"\\]`, "m"))?.[1] ?? null;
 }
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/types.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/types.js
 var FILE_NAMES = [
 	"a",
 	"b",
@@ -134,7 +134,7 @@ var CASTLING_SIDES = ["a", "h"];
 var isDrop = (v) => "role" in v;
 var isNormal = (v) => "from" in v;
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/util.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/util.js
 var defined = (v) => v !== void 0;
 var opposite = (color) => color === "white" ? "black" : "white";
 var squareRank = (square) => square >> 3;
@@ -197,7 +197,7 @@ var makeUci = (move) => isDrop(move) ? `${roleToChar(move.role).toUpperCase()}@$
 var kingCastlesTo = (color, side) => color === "white" ? side === "a" ? 2 : 6 : side === "a" ? 58 : 62;
 var rookCastlesTo = (color, side) => color === "white" ? side === "a" ? 3 : 5 : side === "a" ? 59 : 61;
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/squareSet.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/squareSet.js
 var popcnt32 = (n) => {
 	n = n - (n >>> 1 & 1431655765);
 	n = (n & 858993459) + (n >>> 2 & 858993459);
@@ -379,7 +379,7 @@ var SquareSet = class SquareSet {
 	}
 };
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/attacks.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/attacks.js
 /**
 * Compute attacks and rays.
 *
@@ -521,7 +521,7 @@ var ray = (a, b) => {
 */
 var between = (a, b) => ray(a, b).intersect(SquareSet.full().shl64(a).xor(SquareSet.full().shl64(b))).withoutFirst();
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/board.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/board.js
 /**
 * Piece positions on a board.
 *
@@ -635,7 +635,7 @@ var Board = class Board {
 	}
 };
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/setup.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/setup.js
 var MaterialSide = class MaterialSide {
 	constructor() {}
 	static empty() {
@@ -740,7 +740,7 @@ var RemainingChecks = class RemainingChecks {
 	}
 };
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/@badrap+result@0.2.13/node_modules/@badrap/result/dist/index.modern.mjs
+//#region node_modules/.pnpm/@badrap+result@0.2.13/node_modules/@badrap/result/dist/index.modern.mjs
 var r$1 = class {
 	unwrap(r, t) {
 		const e = this._chain((t) => n$2.ok(r ? r(t) : t), (r) => t ? n$2.ok(t(r)) : n$2.err(r));
@@ -796,7 +796,7 @@ var n$2;
 	};
 })(n$2 || (n$2 = {}));
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/chess.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/chess.js
 var IllegalSetup;
 (function(IllegalSetup) {
 	IllegalSetup["Empty"] = "ERR_EMPTY";
@@ -1481,7 +1481,7 @@ var makeFen = (setup, opts) => [
 	...(opts === null || opts === void 0 ? void 0 : opts.epd) ? [] : [Math.max(0, Math.min(setup.halfmoves, 9999)), Math.max(1, Math.min(setup.fullmoves, 9999))]
 ].join(" ");
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/san.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/san.js
 var makeSanWithoutSuffix = (pos, move) => {
 	let san = "";
 	if (isDrop(move)) {
@@ -1581,7 +1581,7 @@ var parseSan = (pos, san) => {
 	};
 };
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/variant.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/variant.js
 var Crazyhouse = class extends Position {
 	constructor() {
 		super("crazyhouse");
@@ -2070,7 +2070,7 @@ var setupPosition = (rules, setup) => {
 	}
 };
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/pgn.js
+//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/pgn.js
 /**
 * Parse, transform and write PGN.
 *
@@ -2606,7 +2606,7 @@ var parseComment = (comment) => {
 	};
 };
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/ts-pattern@5.0.8/node_modules/ts-pattern/dist/index.js
+//#region node_modules/.pnpm/ts-pattern@5.0.8/node_modules/ts-pattern/dist/index.js
 var t = Symbol.for("@ts-pattern/matcher"), e = Symbol.for("@ts-pattern/isVariadic"), n$1 = "@ts-pattern/anonymous-select-key", r = (t) => Boolean(t && "object" == typeof t), i = (e) => e && !!e[t], s = (n, o, c) => {
 	if (i(n)) {
 		const { matched: r, selections: i } = n[t]().match(o);
@@ -9330,9 +9330,300 @@ function detectAllowedThemesDetailed(fenAfterBadMove, refutationPV, opponentSide
 	return detectThemesDetailed(syntheticMistake);
 }
 //#endregion
+//#region src/utils/tacticalMotifs/causalTactics.ts
+var VALUE = {
+	pawn: 100,
+	knight: 320,
+	bishop: 330,
+	rook: 500,
+	queen: 900,
+	king: 2e4
+};
+var MECHANISMS = new Set([
+	"fork",
+	"pin",
+	"skewer",
+	"deflection",
+	"attraction",
+	"interference",
+	"selfInterference",
+	"capturingDefender",
+	"intermezzo",
+	"discoveredAttack",
+	"discoveredCheck",
+	"doubleCheck",
+	"clearance",
+	"xRayAttack"
+]);
+var MATE = /(?:^mate(?:In\d+)?$|Mate$)/;
+/** Legal replay stops at the first invalid move: dropping it would join two
+* unrelated positions and manufacture evidence. */
+function replayTacticalLine(fen, line) {
+	try {
+		const pos = Chess.fromSetup(parseFen$1(fen).unwrap()).unwrap();
+		const attacker = pos.turn;
+		let balance = 0;
+		const steps = [];
+		for (const uci of line) {
+			const move = parseUci(uci);
+			if (!move || !("from" in move) || !pos.isLegal(move)) break;
+			const before = pos.clone();
+			const capture = capturedValue(pos, move);
+			const promotion = move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0;
+			balance += (pos.turn === attacker ? 1 : -1) * (capture + promotion);
+			const san = makeSan(pos, move);
+			pos.play(move);
+			steps.push({
+				before,
+				after: pos.clone(),
+				move,
+				uci,
+				san,
+				capture,
+				balance
+			});
+		}
+		return steps;
+	} catch {
+		return [];
+	}
+}
+function capturedValue(pos, move) {
+	const victim = pos.board.get(move.to);
+	if (victim?.color === opposite(pos.turn)) return VALUE[victim.role];
+	return pos.board.get(move.from)?.role === "pawn" && move.to === pos.epSquare ? VALUE.pawn : 0;
+}
+function legalMoves(pos) {
+	const result = [];
+	for (const [from, dests] of pos.allDests()) for (const to of dests) if (pos.board.get(from)?.role === "pawn" && (to < 8 || to >= 56)) for (const promotion of [
+		"queen",
+		"rook",
+		"bishop",
+		"knight"
+	]) result.push({
+		from,
+		to,
+		promotion
+	});
+	else result.push({
+		from,
+		to
+	});
+	return result;
+}
+/** Legal static exchange. Pinned attackers and illegal king recaptures cannot
+* defend a square. The budget fails conservatively instead of claiming a gain. */
+function exchange(pos, target, budget) {
+	if (--budget.nodes < 0) throw new Error("Exchange proof budget exhausted");
+	let best = 0;
+	for (const from of pos.board[pos.turn]) {
+		const move = {
+			from,
+			to: target
+		};
+		if (pos.board.get(from)?.role === "pawn" && (target < 8 || target >= 56)) move.promotion = "queen";
+		if (!pos.isLegal(move)) continue;
+		const captured = capturedValue(pos, move);
+		if (!captured) continue;
+		const next = pos.clone();
+		next.play(move);
+		best = Math.max(best, captured + (move.promotion ? VALUE[move.promotion] - 100 : 0) - exchange(next, target, budget));
+	}
+	return best;
+}
+function tacticalExchangeGain(pos, move) {
+	if (!pos.isLegal(move)) return -VALUE.king;
+	const next = pos.clone();
+	next.play(move);
+	try {
+		return capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - 100 : 0) - exchange(next, move.to, { nodes: 256 });
+	} catch {
+		return -VALUE.king;
+	}
+}
+function withTurn(pos, turn) {
+	const copy = pos.clone();
+	copy.turn = turn;
+	copy.epSquare = void 0;
+	return copy;
+}
+function winningTargets(pos, from, side) {
+	const probe = withTurn(pos, side);
+	const piece = probe.board.get(from);
+	if (!piece || piece.color !== side) return [];
+	return [...attacks(piece, from, probe.board.occupied).intersect(probe.board[opposite(side)])].filter((to) => {
+		const target = probe.board.get(to);
+		if (target.role === "king") return true;
+		return target.role !== "pawn" && tacticalExchangeGain(probe, {
+			from,
+			to
+		}) >= 100;
+	});
+}
+/** A fork must survive the opponent's choice, including capturing the forker,
+* a checking counterattack, or one move that protects both targets. */
+function verifiedFork(step) {
+	const side = step.before.turn;
+	const targets = winningTargets(step.after, step.move.to, side);
+	if (targets.length < 2) return false;
+	const replies = legalMoves(step.after);
+	if (!replies.length) return false;
+	return replies.every((reply) => {
+		const replyGain = capturedValue(step.after, reply) ? tacticalExchangeGain(step.after, reply) : 0;
+		if (replyGain <= -VALUE.king) return false;
+		if (replyGain <= -100) return true;
+		const next = step.after.clone();
+		next.play(reply);
+		if (next.board.get(step.move.to)?.color !== side || next.isCheck()) return false;
+		return [...targets, reply.to].some((target) => {
+			const victim = next.board.get(target);
+			return victim && victim.color !== side && victim.role !== "king" && step.capture - Math.max(0, replyGain) + tacticalExchangeGain(next, {
+				from: step.move.to,
+				to: target
+			}) >= 100;
+		});
+	});
+}
+function hasConcreteThreat(step) {
+	return winningTargets(step.after, step.move.to, step.before.turn).length > 0;
+}
+function hasTacticalStart(fen, line) {
+	const root = replayTacticalLine(fen, line.slice(0, 1))[0];
+	return Boolean(root && (root.capture || root.move.promotion || root.after.isCheck() || hasConcreteThreat(root)));
+}
+function episodeEnd(steps) {
+	for (let i = 0; i < steps.length; i += 2) {
+		const step = steps[i];
+		if (!step.capture && !step.move.promotion && !step.after.isCheck() && !hasConcreteThreat(step)) return i;
+	}
+	return steps.length;
+}
+function causeRank(motif) {
+	return (MECHANISMS.has(motif.id) ? 0 : MATE.test(motif.id) ? 1 : 2) * 1e3 + (motif.ply ?? 100) * 20 + Math.max(0, [
+		"deflection",
+		"capturingDefender",
+		"interference",
+		"attraction",
+		"fork",
+		"pin",
+		"skewer",
+		"intermezzo",
+		"doubleCheck",
+		"discoveredCheck",
+		"discoveredAttack",
+		"clearance",
+		"xRayAttack"
+	].indexOf(motif.id));
+}
+function auditTacticalMotifs(fen, line, proposals) {
+	const steps = replayTacticalLine(fen, line);
+	if (!steps.length) return [];
+	const end = episodeEnd(steps);
+	if (!end) return [];
+	const episode = steps.slice(0, end);
+	const attacker = steps[0].before.turn;
+	const final = episode.at(-1);
+	if (final.after.isCheckmate() && final.before.turn !== attacker) return [];
+	const mate = final.after.isCheckmate() && final.before.turn === attacker;
+	let settled = final.balance;
+	try {
+		settled -= final.after.turn !== attacker ? exchange(final.after, final.move.to, { nodes: 256 }) : 0;
+	} catch {
+		settled = -VALUE.king;
+	}
+	const candidates = [];
+	if (verifiedFork(steps[0]) && !proposals.some((m) => m.id === "fork" && m.ply === 1)) {
+		const targets = winningTargets(steps[0].after, steps[0].move.to, attacker);
+		proposals = [...proposals, {
+			id: "fork",
+			label: "Fork",
+			source: proposals[0]?.source ?? "available",
+			confidence: "high",
+			ply: 1,
+			moveUci: steps[0].uci,
+			evidence: `${steps[0].san} forks the ${targets.map((sq) => `${steps[0].after.board.get(sq).role} on ${makeSquare(sq)}`).join(" and ")}; no legal reply saves both targets without conceding material.`
+		}];
+	}
+	for (let proposal of proposals) {
+		if (proposal.id === "attraction" && mate) {
+			const anchor = episode.findIndex((s, i) => s.before.turn === attacker && episode[i + 1]?.before.board.get(episode[i + 1].move.from)?.role === "king" && episode[i + 1].move.to === s.move.to);
+			if (anchor >= 0) {
+				const bait = episode[anchor];
+				proposal = {
+					...proposal,
+					ply: anchor + 1,
+					moveUci: bait.uci,
+					evidence: `${bait.san} offers the ${bait.before.board.get(bait.move.from).role} on ${makeSquare(bait.move.to)}. After ${episode[anchor + 1].san}, ${final.san} delivers mate.`
+				};
+			}
+		}
+		if (!proposal.ply || proposal.ply > end) continue;
+		const step = steps[proposal.ply - 1];
+		if (!step || step.before.turn !== attacker || proposal.moveUci !== step.uci) continue;
+		if (proposal.id === "deflection") {
+			const reply = episode[proposal.ply];
+			const defender = reply?.before.board.get(reply.move.from);
+			const payoff = episode.slice(proposal.ply + 1).find((s) => s.before.turn === attacker && s.capture >= 320);
+			const victim = payoff?.before.board.get(payoff.move.to);
+			if (reply && defender && payoff && victim && attacks(defender, reply.move.from, reply.before.board.occupied).has(payoff.move.to) && !attacks(defender, reply.move.to, reply.after.board.occupied).has(payoff.move.to)) proposal = {
+				...proposal,
+				evidence: `In this line, ${step.san} draws the ${defender.role} from ${makeSquare(reply.move.from)} to ${makeSquare(reply.move.to)}, leaving the ${victim.role} on ${makeSquare(payoff.move.to)} without that defender. ${payoff.san} wins it.`
+			};
+		}
+		if (proposal.id === "zugzwang" || proposal.id === "mateThreat" || proposal.id === "backRank") continue;
+		let sound = false;
+		if (MATE.test(proposal.id)) sound = mate;
+		else if (proposal.id === "fork") sound = verifiedFork(step);
+		else if (proposal.id === "attackingF2F7") sound = step.capture > 0 && tacticalExchangeGain(step.before, step.move) >= 100;
+		else if (proposal.id === "hangingPiece") sound = step.capture >= 320 && tacticalExchangeGain(step.before, step.move) >= 100;
+		else if (proposal.id === "attacking_undefended_piece") sound = hasConcreteThreat(step) && settled >= 100;
+		else sound = mate || settled >= 100;
+		if (!sound) continue;
+		candidates.push({
+			...proposal,
+			confidence: proposal.id === "fork" || proposal.id === "hangingPiece" || proposal.id === "attackingF2F7" ? "high" : "medium"
+		});
+	}
+	const root = steps[0];
+	if (root.capture >= 320 && tacticalExchangeGain(root.before, root.move) >= 100 && !candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)) {
+		const victim = root.before.board.get(root.move.to);
+		if (victim) candidates.push({
+			id: "hangingPiece",
+			label: "Hanging Piece",
+			source: proposals[0]?.source ?? "available",
+			confidence: "high",
+			ply: 1,
+			moveUci: root.uci,
+			evidence: `${root.san} wins the loose ${victim.role} on ${makeSquare(root.move.to)}.`
+		});
+	}
+	const specificMate = candidates.find((m) => /Mate$/.test(m.id));
+	const fork = candidates.find((m) => m.id === "fork");
+	const filtered = candidates.filter((m) => {
+		if (specificMate && /^mate(?:In\d+)?$/.test(m.id)) return false;
+		if (fork?.ply === m.ply && [
+			"clearance",
+			"trappedPiece",
+			"attacking_undefended_piece"
+		].includes(m.id)) return false;
+		if (m.id === "sacrifice" && candidates.some((other) => MECHANISMS.has(other.id) && other.ply === m.ply)) return false;
+		return true;
+	}).sort((a, b) => causeRank(a) - causeRank(b));
+	const immediateLoose = filtered.find((m) => m.id === "hangingPiece" && m.ply === 1);
+	if (immediateLoose && !filtered.some((m) => MECHANISMS.has(m.id) && m.ply === 1)) {
+		filtered.splice(filtered.indexOf(immediateLoose), 1);
+		filtered.unshift(immediateLoose);
+	}
+	return filtered.map((motif, index) => ({
+		...motif,
+		relevance: index === 0 ? "primary" : "secondary",
+		value: mate ? 1e4 : motif.id === "hangingPiece" && motif.ply === 1 ? tacticalExchangeGain(root.before, root.move) : Math.max(100, settled)
+	}));
+}
+//#endregion
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 2;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 3;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -9342,7 +9633,13 @@ function cleanUci(value) {
 	return /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(move) ? move : null;
 }
 function cleanUciLine(values) {
-	return (Array.isArray(values) ? values : []).map((value) => cleanUci(value)).filter((value) => Boolean(value));
+	const moves = [];
+	for (const value of Array.isArray(values) ? values : []) {
+		const move = cleanUci(value);
+		if (!move) break;
+		moves.push(move);
+	}
+	return moves;
 }
 function normalizeLine(firstMove, lineInput) {
 	const line = cleanUciLine(lineInput);
@@ -9739,7 +10036,30 @@ function selectImportantTacticalMotifs(motifs, limit = 3) {
 	const hasMateDistance = [...unique.keys()].some((id) => /^mateIn\d+$/.test(id));
 	if (hasNamedMate || hasMateDistance) unique.delete("mate");
 	if (unique.has("backRankMate")) unique.delete("backRank");
-	return [...unique.values()].sort((left, right) => motifImportance(left.id) - motifImportance(right.id) || (left.ply ?? Number.MAX_SAFE_INTEGER) - (right.ply ?? Number.MAX_SAFE_INTEGER) || left.label.localeCompare(right.label)).slice(0, Math.max(0, limit));
+	return [...unique.values()].sort((left, right) => (left.relevance === "primary" ? -1 : right.relevance === "primary" ? 1 : 0) || (left.relevance && right.relevance ? (left.ply ?? 100) - (right.ply ?? 100) : 0) || motifImportance(left.id) - motifImportance(right.id) || (left.ply ?? Number.MAX_SAFE_INTEGER) - (right.ply ?? Number.MAX_SAFE_INTEGER) || left.label.localeCompare(right.label)).slice(0, Math.max(0, limit));
+}
+function buildMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs }) {
+	const allowed = selectImportantTacticalMotifs(allowedMotifs, 1)[0];
+	const missed = selectImportantTacticalMotifs(missedMotifs, 1)[0];
+	if (!allowed && !missed) return null;
+	if (missed && (!allowed || (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))) return {
+		title: `What you missed: ${missed.label}`,
+		text: `The better move had this tactic: ${missed.evidence}`,
+		source: "missed",
+		primary: missed
+	};
+	if (allowed) return {
+		title: "Why the move was tactically bad",
+		text: `Your move allowed this tactic: ${allowed.evidence}`,
+		source: "allowed",
+		primary: allowed
+	};
+	return {
+		title: "What you missed",
+		text: `The better move had this tactic: ${missed?.evidence ?? ""}`,
+		source: "missed",
+		primary: missed
+	};
 }
 function cacheKey(input) {
 	return JSON.stringify([
@@ -9768,7 +10088,7 @@ function classifyMistakeReviewMotifs(input) {
 	const fenAfterPlayedMove = deriveFenAfterMove(fen, playedMoveUci);
 	let missedDetail = null;
 	let allowedDetail = null;
-	if (fen && bestMoveUci && bestLine.length) try {
+	if (fen && bestMoveUci && bestLine.length && hasTacticalStart(fen, bestLine)) try {
 		missedDetail = detectThemesDetailed({
 			fen,
 			side: fenSide(fen),
@@ -9782,7 +10102,7 @@ function classifyMistakeReviewMotifs(input) {
 	} catch {
 		missedDetail = null;
 	}
-	if (fenAfterPlayedMove && playedMoveUci && refutationLine.length) try {
+	if (fenAfterPlayedMove && playedMoveUci && refutationLine.length && hasTacticalStart(fenAfterPlayedMove, refutationLine)) try {
 		allowedDetail = detectAllowedThemesDetailedWithOptions(fenAfterPlayedMove, refutationLine, fenSide(fenAfterPlayedMove), {
 			deltaCp: typeof input.cpLoss === "number" ? input.cpLoss : null,
 			previousFen: fen,
@@ -9795,8 +10115,14 @@ function classifyMistakeReviewMotifs(input) {
 		allowedDetail = null;
 	}
 	const classification = {
-		allowedMotifs: selectImportantTacticalMotifs(toMotifEvidence(allowedDetail, "allowed", input.refutationSan)),
-		missedMotifs: selectImportantTacticalMotifs(toMotifEvidence(missedDetail, "missed", input.pvSan)),
+		allowedMotifs: auditTacticalMotifs(fenAfterPlayedMove ?? "", refutationLine, toMotifEvidence(allowedDetail, "allowed", input.refutationSan)).map((m) => ({
+			...m,
+			source: "allowed"
+		})),
+		missedMotifs: playedMoveUci === bestMoveUci ? [] : auditTacticalMotifs(fen, bestLine, toMotifEvidence(missedDetail, "missed", input.pvSan)).map((m) => ({
+			...m,
+			source: "missed"
+		})),
 		motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION
 	};
 	motifCache.set(key, classification);
@@ -9852,7 +10178,7 @@ function createPhoneReviewCard(game, index, player, best, reply, now = Date.now(
 	const cpBefore = reviewCp(best.score, color), cpAfter = reviewCp(reply.score, color);
 	const before = reviewChance(cpBefore), after = reviewChance(cpAfter);
 	if (!usefulReviewSwing(before, after)) return null;
-	const motifs = classifyMistakeReviewMotifs({
+	const motif = buildMistakeReviewTacticalExplanation(classifyMistakeReviewMotifs({
 		fen: move.fenBefore,
 		bestMoveUci: best.uciMoves[0],
 		bestMoveSan: best.sanMoves[0],
@@ -9865,8 +10191,7 @@ function createPhoneReviewCard(game, index, player, best, reply, now = Date.now(
 		cpLoss: cpBefore - cpAfter,
 		winProbabilityDrop: before - after,
 		reachedDepth: Math.min(best.depth, reply.depth)
-	});
-	const motif = motifs.allowedMotifs[0] ?? motifs.missedMotifs[0];
+	}))?.primary;
 	const gameKey = reviewGameKey(game);
 	return {
 		id: `${gameKey}:${index}:${playerKey(player)}`,
@@ -9951,7 +10276,7 @@ function gradePhoneReview(card, grade, now = Date.now()) {
 	};
 }
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/alea.js
+//#region node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/alea.js
 var require_alea = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	(function(global, module$6, define) {
 		function Alea(seed) {
@@ -10024,7 +10349,7 @@ var require_alea = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	})(exports, typeof module == "object" && module, typeof define == "function" && define);
 }));
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xor128.js
+//#region node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xor128.js
 var require_xor128 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	(function(global, module$5, define) {
 		function XorGen(seed) {
@@ -10082,7 +10407,7 @@ var require_xor128 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	})(exports, typeof module == "object" && module, typeof define == "function" && define);
 }));
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xorwow.js
+//#region node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xorwow.js
 var require_xorwow = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	(function(global, module$4, define) {
 		function XorGen(seed) {
@@ -10145,7 +10470,7 @@ var require_xorwow = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	})(exports, typeof module == "object" && module, typeof define == "function" && define);
 }));
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xorshift7.js
+//#region node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xorshift7.js
 var require_xorshift7 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	(function(global, module$3, define) {
 		function XorGen(seed) {
@@ -10218,7 +10543,7 @@ var require_xorshift7 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	})(exports, typeof module == "object" && module, typeof define == "function" && define);
 }));
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xor4096.js
+//#region node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xor4096.js
 var require_xor4096 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	(function(global, module$2, define) {
 		function XorGen(seed) {
@@ -10311,7 +10636,7 @@ var require_xor4096 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	})(exports, typeof module == "object" && module, typeof define == "function" && define);
 }));
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/tychei.js
+//#region node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/tychei.js
 var require_tychei = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	(function(global, module$1, define) {
 		function XorGen(seed) {
@@ -10375,7 +10700,7 @@ var require_tychei = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	})(exports, typeof module == "object" && module, typeof define == "function" && define);
 }));
 //#endregion
-//#region ../../en-croissant/node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/seedrandom.js
+//#region node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/seedrandom.js
 var require_seedrandom$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	(function(global, pool, math) {
 		var width = 256, chunks = 6, digits = 52, rngname = "random", startdenom = math.pow(width, chunks), significance = math.pow(2, digits), overflow = significance * 2, mask = width - 1, nodecrypto;

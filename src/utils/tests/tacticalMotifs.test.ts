@@ -18,12 +18,12 @@ describe("Mistake Review tactical motif adapter", () => {
 
         expect(result.motifClassifierVersion).toBe(MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION);
         expect(result.missedMotifs.map((motif) => motif.id)).toEqual(
-            expect.arrayContaining(["mateIn2", "anastasiaMate"]),
+            expect.arrayContaining(["attraction", "anastasiaMate"]),
         );
         expect(result.missedMotifs.map((motif) => motif.id)).not.toContain("mate");
         expect(result.missedMotifs.find((motif) => motif.id === "anastasiaMate")).toMatchObject({
             label: "Anastasia Mate",
-            confidence: "high",
+            confidence: "medium",
             source: "missed",
             ply: 3,
             moveUci: "f3h3",
@@ -39,10 +39,7 @@ describe("Mistake Review tactical motif adapter", () => {
             cpLoss: 400,
         });
 
-        expect(result.missedMotifs.map((motif) => motif.id)).toEqual([
-            "fork",
-            "attackingF2F7",
-        ]);
+        expect(result.missedMotifs.map((motif) => motif.id)).toEqual(["fork", "attackingF2F7"]);
         expect(result.missedMotifs[0]).toMatchObject({
             label: "Fork",
             source: "missed",
@@ -105,7 +102,7 @@ describe("Mistake Review tactical motif adapter", () => {
         const deflection = result.missedMotifs.find((motif) => motif.id === "deflection");
         expect(deflection).toMatchObject({
             label: "Deflection",
-            confidence: "high",
+            confidence: "medium",
             source: "missed",
         });
         expect(deflection?.ply).toBeGreaterThan(0);
@@ -124,9 +121,7 @@ describe("Mistake Review tactical motif adapter", () => {
             cpLoss: 130,
         });
 
-        expect(result.allowedMotifs.map((motif) => motif.id)).toContain(
-            "attacking_undefended_piece",
-        );
+        expect(result.allowedMotifs.map((motif) => motif.id)).toContain("fork");
         expect(result.allowedMotifs.every((motif) => motif.source === "allowed")).toBe(true);
         expect(result.missedMotifs.every((motif) => motif.source === "missed")).toBe(true);
     });

@@ -9,6 +9,9 @@ export type TacticalMotifEvidence = {
     source: TacticalMotifSource;
     ply: number | null;
     moveUci: string | null;
+    relevance?: "primary" | "secondary";
+    /** Material payoff in centipawns; 10000 represents a mating continuation. */
+    value?: number;
 };
 
 export type MistakeReviewMotifClassification = {
