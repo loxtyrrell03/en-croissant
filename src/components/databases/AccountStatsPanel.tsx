@@ -185,9 +185,9 @@ export default function AccountStatsPanel() {
         <IconChartBar size="2rem" />
         <Text fw={600}>No online account linked</Text>
         <Text c="dimmed" maw={460} ta="center" size="sm">
-          Link this database to a Lichess or Chess.com account from the database settings, then
-          stats can compare that account with Lichess rating-band benchmarks.
+          Add your online account in Accounts, then link this database from its settings.
         </Text>
+        <Button onClick={() => void navigate({ to: "/accounts" })}>Add account</Button>
       </Stack>
     );
   }
