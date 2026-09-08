@@ -1455,6 +1455,64 @@ g6, Qf1+ after Re2, Bh7+ after Qxd4, Ne5 after Nxd4) remain explicitly unproved.
 Website, Outpost, native ZIP and running services were not deployed/replaced.
 No physical UI verification is claimed.
 
+## Adapter 33: capturable attacker as a causal defence
+
+The opGD7-derived Re2 mistake now has a positive causal witness, rather than
+being left as an uncompared attack. Re2 permits Qf1+; Kc1 keeps the rook on e1,
+so the same Qf1 is not check and Rxf1 captures the queen. The real Bf4+
+countercheck is met by Kb1. Qf1+ remains the primary Forcing Attack, with the
+actual later pin/fork/capture retained at their plies. This resolves one of the
+four unproved comparisons recorded in the preceding milestone.
+
+The general fallback requires a non-capturing, non-promoting reply that is no
+longer check after the better move, plus a legal profitable capture of that
+attacker. It checks every immediate reply, debits captures/promotions anywhere
+on the board, and answers a countercheck with a legal king flight. Every next
+reply after that flight must leave local material gain and give no further
+check. Recapture exchanges are independently bounded. Missing/illegal captures,
+terminal draws, unresolved checking sequences and the 4,096-operation limit
+abstain. No PV is used as proof, and a failed attack search is not prevention.
+The explanation expressly limits this to refuting the named checking sequence,
+not globally proving safety against every future attack. Existing different-reply
+comparisons can still override it when the same loss remains proved elsewhere.
+
+Fifteen dedicated tests cover the real root-only and longer-PV inputs, colour
+reflection, the actual king flight, invalid/exhausted budgets, illegal pinned
+captures, losing recaptures, an off-square queen loss and a legal mate after a
+tempting queen capture. The last controls also explicitly replay their alleged
+refutations: the checkmate control is `...Qa1 Rxa1 Rh1#`, with the capturer unable
+to save its king. This matters because a check with an available interposition
+is not checkmate and must not be used as a false oracle.
+
+Fresh Stockfish 18 depth-16 evidence is in
+`checking-attacker-escape-stockfish-18.json`: after Re2, Qf1+ scores +614 cp for
+Black; the root-restricted Rxf1 after Kc1/Qf1 scores mate in seven for White,
+and Kb1 after Bf4+ scores mate in five. These engine mating scores independently
+support the chosen defence; the local classifier does not claim to prove those
+full mating sequences. The frozen 32-case primary theme/ownership audit remains
+unchanged, while Re2 changes from unproved to prevented in the causal comparison.
+
+Reproduce the new independent engine check in PowerShell (use a local engine):
+
+```powershell
+$env:TACTICAL_JUDGEMENT_ENGINE = '<Stockfish executable>'
+$env:TACTICAL_CHECKING_ESCAPE_REPORT = 'benchmarks/tactical-relevance/checking-attacker-escape-stockfish-18.json'
+node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node -t 'verify the Re2 checking attack'
+```
+
+Adapter/live pipeline 33 invalidates old classifications; the shared review
+service was rebuilt. Production builds, the real development HTTP module-graph
+regression and all 57 rebuilt-production-worker parity cases pass. These are not
+physical UI, website, Outpost or native ZIP delivery claims. The remaining
+unproved real causal comparisons are Nd7 after g6, Bh7+ after Qxd4 and Ne5 after
+Nxd4; longer forcing defence, other quiet preparations and general accuracy
+remain open.
+
+The selected 17-file suite passes 272 tests (two opt-in skips), and both the new
+fresh branch test and existing 32-case fresh before/after causal test pass.
+Targeted lint passes; TypeScript retains only the unrelated OTB number/bigint
+fixture error.
+
 ## What remains to establish
 
 These are relevance milestones, not completion of the broader tuning

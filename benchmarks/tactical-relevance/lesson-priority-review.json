@@ -237,10 +237,10 @@
       "expectedSource": "allowed",
       "primary": "forcingAttack",
       "source": "allowed",
-      "comparison": "unproved",
+      "comparison": "prevented",
       "secondary": null,
       "secondarySource": null,
-      "explanation": "The opponent has this tactic in the analysed position: Qf1+ starts a checking attack that wins material or mates against every legal reply. After Kd2, Bf4+ Re3 Bxe3+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check. The comparison has not established whether the better move prevents or reduces it, so this tactic alone is not a verified explanation of the mistake."
+      "explanation": "Your move allowed this tactic: Qf1+ starts a checking attack that wins material or mates against every legal reply. After Kd2, Bf4+ Re3 Bxe3+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check. After Kc1, Qf1 is not check and Rxf1 captures the attacking queen on f1. Legal immediate replies, recaptures and one countercheck cannot erase the local material gain. This refutes this checking sequence, not every possible later attack."
     },
     {
       "name": "Be7 hangs the bishop while also missing the checking attack",

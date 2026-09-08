@@ -12189,7 +12189,13 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 				comparisonEvidence = `The same defender-removal and passed-pawn combination remains available after ${bestSan}.`;
 			}
 		}
-		else if (motif.id === "forkPreparation") {
+		else if (motif.id === "forcingAttack" && step.after.isCheck()) {
+			const escape = checkingAttackerCaptureEscape(alternative);
+			if (escape) {
+				comparison = "prevented";
+				comparisonEvidence = `After ${bestSan}, ${alternative.san} is not check and ${escape.defence} captures the attacking ${alternative.after.board.get(alternative.move.to).role} on ${makeSquare(alternative.move.to)}. Legal immediate replies, recaptures and one countercheck cannot erase the local material gain. This refutes this checking sequence, not every possible later attack.`;
+			}
+		} else if (motif.id === "forkPreparation") {
 			const original = proveCheckingForkPreparation(step);
 			if (original) {
 				const mapped = [];
@@ -12276,6 +12282,78 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 		} : motif;
 	});
 }
+/** Refute a formerly checking move by capturing its now-exposed attacker.
+* Check every immediate reply; a countercheck needs a legal king flight with
+* no further check or material-erasing capture. Longer counterchecks abstain.
+* This is a bounded local witness, never an inference from a failed attack proof. */
+function checkingAttackerCaptureEscape(root, nodeLimit = 4096) {
+	if (!Number.isFinite(nodeLimit) || nodeLimit <= 0 || root.capture || root.move.promotion || root.after.isCheck() || root.after.isEnd()) return null;
+	const attacker = root.after.board.get(root.move.to);
+	if (!attacker || attacker.color !== root.before.turn || attacker.role === "king") return null;
+	let nodes = nodeLimit;
+	const visit = (pos, move) => {
+		if (--nodes < 0) throw new Error("Checking attacker escape budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const delta = (pos, move) => capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+	const quietGain = (pos, balance) => {
+		if (pos.isEnd()) return null;
+		let minimum = balance;
+		for (const reply of legalMoves(pos)) {
+			const next = visit(pos, reply);
+			if (next.isCheck() || next.isEnd()) return null;
+			minimum = Math.min(minimum, balance - delta(pos, reply));
+		}
+		return minimum >= 100 ? minimum : null;
+	};
+	try {
+		for (const capture of legalMoves(root.after)) {
+			if (capture.to !== root.move.to || !capturedValue(root.after, capture)) continue;
+			const gain = tacticalExchangeGain(root.after, capture);
+			if (gain < 100) continue;
+			const next = visit(root.after, capture);
+			if (next.isEnd()) continue;
+			const balance = delta(root.after, capture);
+			let minimum = gain;
+			let safe = true;
+			for (const reply of legalMoves(next)) {
+				const after = visit(next, reply);
+				const remaining = balance - delta(next, reply);
+				if (remaining < 100 || after.isEnd()) {
+					safe = false;
+					break;
+				}
+				if (!after.isCheck()) {
+					minimum = Math.min(minimum, remaining);
+					continue;
+				}
+				let escaped = null;
+				for (const flight of legalMoves(after)) {
+					if (after.board.get(flight.from)?.role !== "king") continue;
+					const retained = quietGain(visit(after, flight), remaining + delta(after, flight));
+					if (retained !== null) {
+						escaped = retained;
+						break;
+					}
+				}
+				if (escaped === null) {
+					safe = false;
+					break;
+				}
+				minimum = Math.min(minimum, escaped);
+			}
+			if (safe) return {
+				defence: makeSan(root.after, capture),
+				gain: minimum
+			};
+		}
+	} catch {
+		return null;
+	}
+	return null;
+}
 /** A positive legal escape from this *one-move* preparation, not a failed
 * winning proof. King replies cannot be confused with capturable interposing
 * pieces. Any geometric checking fork, target capture or immediate mate makes
@@ -12319,7 +12397,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 32;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 33;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

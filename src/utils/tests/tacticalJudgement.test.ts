@@ -492,6 +492,48 @@ async function analyse(engine: string, fen: string, searchMove?: string) {
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(!engine || !existsSync(engine))(
+        "verify the Re2 checking attack and Kc1 capture defence with fresh searches",
+        async () => {
+            const fen = "7k/1ppQ3p/p2b2p1/3p4/8/2P2q1P/PP6/3KR3 w - - 2 40";
+            const reached = (line: string[]) =>
+                makeFen(replayTacticalLine(fen, line).at(-1)!.after.toSetup());
+            const actual = [...(await analyse(engine, reached(["e1e2"]))).values()].sort(
+                (a, b) => a.multipv - b.multipv,
+            );
+            const alternative = reached(["d1c1", "f3f1"]);
+            const defence = [...(await analyse(engine, alternative, "e1f1")).values()][0];
+            const countercheck = reached(["d1c1", "f3f1", "e1f1", "d6f4"]);
+            const flight = [...(await analyse(engine, countercheck, "c1b1")).values()][0];
+            expect(actual[0].pvUci[0]).toBe("f3f1");
+            expect(actual[0].cp).toBeGreaterThan(400);
+            expect(defence.pvSan[0]).toBe("Rxf1");
+            expect(defence.cp ?? (defence.mate! > 0 ? 10000 : -10000)).toBeGreaterThan(400);
+            expect(flight.pvSan[0]).toBe("Kb1");
+            expect(flight.cp ?? (flight.mate! > 0 ? 10000 : -10000)).toBeGreaterThan(400);
+            const classification = classifyMistakeReviewMotifs({
+                fen,
+                playedMoveUci: "e1e2",
+                bestMoveUci: "d1c1",
+                pvUci: ["d1c1"],
+                refutationUci: actual[0].pvUci,
+            });
+            expect(classification.allowedMotifs[0]).toMatchObject({
+                id: "forcingAttack",
+                comparison: "prevented",
+            });
+            if (process.env.TACTICAL_CHECKING_ESCAPE_REPORT)
+                writeFileSync(
+                    process.env.TACTICAL_CHECKING_ESCAPE_REPORT,
+                    JSON.stringify(
+                        { fen, actual, alternative, defence, countercheck, flight, classification },
+                        null,
+                        2,
+                    ),
+                );
+        },
+        60000,
+    );
     test.skipIf(!engine || !process.env.TACTICAL_ORDINARY_GAME_REPORT)(
         "audit an output-blind longitudinal sample of ordinary games",
         async () => {
@@ -1358,6 +1400,7 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     played: "e1e2",
                     source: "allowed",
                     primary: "forcingAttack",
+                    comparison: "prevented",
                     why: "Qf1+ forces a material win after Kd2, while Kc2 and Re1 allow mating continuations. The pin later in one branch cannot explain every defensive choice.",
                 },
                 {
