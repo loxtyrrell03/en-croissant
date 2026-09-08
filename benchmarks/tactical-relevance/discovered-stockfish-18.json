@@ -1,0 +1,1923 @@
+[
+  {
+    "name": "Checking bishop uncovers a queen attack",
+    "fen": "4q1k1/5ppp/8/8/4B3/8/5PPP/4R1K1 w - - 0 1",
+    "move": "e4h7",
+    "expected": "discoveredAttack",
+    "positionPrimary": "discoveredAttack",
+    "why": "Bxh7+ buys a tempo to expose Re1 against Qe8; even Kxh7 concedes more than the bishop.",
+    "unrestricted": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e4h7",
+          "g8f8",
+          "e1e8",
+          "f8e8",
+          "h7c2",
+          "g7g5",
+          "h2h4",
+          "g5h4",
+          "g1h2",
+          "e8d7",
+          "c2b3",
+          "d7c6",
+          "b3f7"
+        ],
+        "pvSan": [
+          "Bxh7+",
+          "Kf8",
+          "Rxe8+",
+          "Kxe8",
+          "Bc2",
+          "g5",
+          "h4",
+          "gxh4",
+          "Kh2",
+          "Kd7",
+          "Bb3",
+          "Kc6",
+          "Bxf7"
+        ],
+        "cp": 530,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "h2h3",
+          "e8d7",
+          "g2g4",
+          "g7g6",
+          "e1e3",
+          "f7f5",
+          "g4f5",
+          "g6f5",
+          "e3g3",
+          "g8h8",
+          "e4d3",
+          "h7h6",
+          "d3f1"
+        ],
+        "pvSan": [
+          "h3",
+          "Qd7",
+          "g4",
+          "g6",
+          "Re3",
+          "f5",
+          "gxf5",
+          "gxf5",
+          "Rg3+",
+          "Kh8",
+          "Bd3",
+          "h6",
+          "Bf1"
+        ],
+        "cp": 13,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "g2g4",
+          "g7g6",
+          "e1e3",
+          "e8e5",
+          "e4f3",
+          "e5f6",
+          "h2h3",
+          "f6g5",
+          "e3e8",
+          "g8g7",
+          "e8e3"
+        ],
+        "pvSan": [
+          "g4",
+          "g6",
+          "Re3",
+          "Qe5",
+          "Bf3",
+          "Qf6",
+          "h3",
+          "Qg5",
+          "Re8+",
+          "Kg7",
+          "Re3"
+        ],
+        "cp": 3,
+        "mate": null
+      }
+    ],
+    "candidate": {
+      "depth": 16,
+      "multipv": 1,
+      "pvUci": [
+        "e4h7",
+        "g8f8",
+        "e1e8",
+        "f8e8",
+        "h7d3",
+        "e8d7",
+        "h2h4",
+        "d7d6",
+        "h4h5",
+        "d6e5",
+        "g2g3",
+        "e5f6",
+        "g1h2",
+        "f6g5",
+        "d3e2",
+        "g5f6",
+        "g3g4",
+        "f6e5",
+        "h2h3",
+        "e5d4"
+      ],
+      "pvSan": [
+        "Bxh7+",
+        "Kf8",
+        "Rxe8+",
+        "Kxe8",
+        "Bd3",
+        "Kd7",
+        "h4",
+        "Kd6",
+        "h5",
+        "Ke5",
+        "g3",
+        "Kf6",
+        "Kh2",
+        "Kg5",
+        "Be2",
+        "Kf6",
+        "g4",
+        "Ke5",
+        "Kh3",
+        "Kd4"
+      ],
+      "cp": 521,
+      "mate": null
+    },
+    "classification": {
+      "motifs": [
+        {
+          "id": "discoveredAttack",
+          "label": "Discovered Attack",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e4h7",
+          "evidence": "Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+          "value": 500,
+          "relevance": "primary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "discoveredAttack",
+          "label": "Discovered Attack",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e4h7",
+          "evidence": "Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+          "value": 500,
+          "relevance": "primary",
+          "actor": "white"
+        },
+        {
+          "id": "clearance",
+          "label": "Clearance Sacrifice",
+          "confidence": "medium",
+          "evidence": "Clearance Sacrifice appears on Bxh7+ at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "e4h7",
+          "relevance": "secondary",
+          "value": 500,
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Rxe8+ wins the loose queen on e8.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "e1e8",
+          "relevance": "secondary",
+          "value": 400,
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-8"
+    },
+    "classificationMs": 38.69120000000021,
+    "positionHeadline": [
+      {
+        "id": "discoveredAttack",
+        "label": "Discovered Attack",
+        "source": "available",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "e4h7",
+        "evidence": "Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+        "value": 500,
+        "relevance": "primary"
+      }
+    ],
+    "positionCandidates": [
+      {
+        "moves": [
+          "Bxh7+",
+          "Kf8",
+          "Rxe8+",
+          "Kxe8",
+          "Bc2",
+          "g5",
+          "h4",
+          "gxh4",
+          "Kh2",
+          "Kd7",
+          "Bb3",
+          "Kc6",
+          "Bxf7"
+        ],
+        "motifs": [
+          {
+            "id": "discoveredAttack",
+            "label": "Discovered Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e4h7",
+            "evidence": "Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "discoveredAttack",
+            "label": "Discovered Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e4h7",
+            "evidence": "Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "clearance",
+            "label": "Clearance Sacrifice",
+            "confidence": "medium",
+            "evidence": "Clearance Sacrifice appears on Bxh7+ at ply 1 of the current best line.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e4h7",
+            "relevance": "secondary",
+            "value": 500,
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxe8+ wins the loose queen on e8.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e1e8",
+            "relevance": "secondary",
+            "value": 400,
+            "actor": "white"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Quiet version allows Qxe1 mate",
+    "fen": "4q1k1/5ppp/8/8/4B3/8/5PPP/4R1K1 w - - 0 1",
+    "move": "e4f3",
+    "expected": null,
+    "positionPrimary": "discoveredAttack",
+    "why": "Vacating the file without check lets the queen capture the rook with mate; geometry alone is not a tactic.",
+    "unrestricted": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e4h7",
+          "g8f8",
+          "e1e8",
+          "f8e8",
+          "h7c2",
+          "g7g5",
+          "h2h4",
+          "g5h4",
+          "g1h2",
+          "e8d7",
+          "c2b3",
+          "d7c6",
+          "b3f7"
+        ],
+        "pvSan": [
+          "Bxh7+",
+          "Kf8",
+          "Rxe8+",
+          "Kxe8",
+          "Bc2",
+          "g5",
+          "h4",
+          "gxh4",
+          "Kh2",
+          "Kd7",
+          "Bb3",
+          "Kc6",
+          "Bxf7"
+        ],
+        "cp": 530,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "h2h3",
+          "e8d7",
+          "g2g4",
+          "g7g6",
+          "e1e3",
+          "f7f5",
+          "g4f5",
+          "g6f5",
+          "e3g3",
+          "g8h8",
+          "e4d3",
+          "h7h6",
+          "d3f1"
+        ],
+        "pvSan": [
+          "h3",
+          "Qd7",
+          "g4",
+          "g6",
+          "Re3",
+          "f5",
+          "gxf5",
+          "gxf5",
+          "Rg3+",
+          "Kh8",
+          "Bd3",
+          "h6",
+          "Bf1"
+        ],
+        "cp": 13,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "g2g4",
+          "g7g6",
+          "e1e3",
+          "e8e5",
+          "e4f3",
+          "e5f6",
+          "h2h3",
+          "f6g5",
+          "e3e8",
+          "g8g7",
+          "e8e3"
+        ],
+        "pvSan": [
+          "g4",
+          "g6",
+          "Re3",
+          "Qe5",
+          "Bf3",
+          "Qf6",
+          "h3",
+          "Qg5",
+          "Re8+",
+          "Kg7",
+          "Re3"
+        ],
+        "cp": 3,
+        "mate": null
+      }
+    ],
+    "candidate": {
+      "depth": 16,
+      "multipv": 1,
+      "pvUci": [
+        "e4f3",
+        "e8e1"
+      ],
+      "pvSan": [
+        "Bf3",
+        "Qxe1#"
+      ],
+      "cp": null,
+      "mate": -1
+    },
+    "classification": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-8"
+    },
+    "classificationMs": 1.1539000000002488,
+    "positionHeadline": [
+      {
+        "id": "discoveredAttack",
+        "label": "Discovered Attack",
+        "source": "available",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "e4h7",
+        "evidence": "Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+        "value": 500,
+        "relevance": "primary"
+      }
+    ],
+    "positionCandidates": [
+      {
+        "moves": [
+          "Bxh7+",
+          "Kf8",
+          "Rxe8+",
+          "Kxe8",
+          "Bc2",
+          "g5",
+          "h4",
+          "gxh4",
+          "Kh2",
+          "Kd7",
+          "Bb3",
+          "Kc6",
+          "Bxf7"
+        ],
+        "motifs": [
+          {
+            "id": "discoveredAttack",
+            "label": "Discovered Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e4h7",
+            "evidence": "Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "discoveredAttack",
+            "label": "Discovered Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e4h7",
+            "evidence": "Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "clearance",
+            "label": "Clearance Sacrifice",
+            "confidence": "medium",
+            "evidence": "Clearance Sacrifice appears on Bxh7+ at ply 1 of the current best line.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e4h7",
+            "relevance": "secondary",
+            "value": 500,
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxe8+ wins the loose queen on e8.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e1e8",
+            "relevance": "secondary",
+            "value": 400,
+            "actor": "white"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Discovered check wins the queen",
+    "fen": "5q1k/7p/8/4R3/8/8/1B3PPP/6K1 w - - 0 1",
+    "move": "e5f5",
+    "expected": "discoveredCheck",
+    "positionPrimary": "discoveredCheck",
+    "why": "Rf5 uncovers Bb2 against Kh8 and attacks Qf8; king moves and queen interpositions both concede material.",
+    "unrestricted": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e5g5",
+          "f8g7",
+          "b2g7",
+          "h8g8",
+          "g7c3",
+          "g8f7",
+          "g5g7",
+          "f7e6",
+          "h2h4",
+          "h7h6",
+          "g7h7",
+          "e6d5",
+          "f2f3",
+          "d5c4",
+          "c3g7",
+          "c4b5",
+          "h7h6",
+          "b5a5",
+          "h6h5",
+          "a5b4"
+        ],
+        "pvSan": [
+          "Rg5+",
+          "Qg7",
+          "Bxg7+",
+          "Kg8",
+          "Bc3+",
+          "Kf7",
+          "Rg7+",
+          "Ke6",
+          "h4",
+          "h6",
+          "Rh7",
+          "Kd5",
+          "f3",
+          "Kc4",
+          "Bg7",
+          "Kb5",
+          "Rxh6",
+          "Ka5",
+          "Rh5+",
+          "Kb4"
+        ],
+        "cp": 1090,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e5b5",
+          "h8g8",
+          "b5g5",
+          "g8f7",
+          "g5f5",
+          "f7g8",
+          "f5f8",
+          "g8f8",
+          "g2g4",
+          "f8f7",
+          "g1g2",
+          "f7g6",
+          "g2g3",
+          "g6g5",
+          "f2f4",
+          "g5h6",
+          "g3h3",
+          "h6g6",
+          "h3h4",
+          "g6f7",
+          "g4g5",
+          "f7g6"
+        ],
+        "pvSan": [
+          "Rb5+",
+          "Kg8",
+          "Rg5+",
+          "Kf7",
+          "Rf5+",
+          "Kg8",
+          "Rxf8+",
+          "Kxf8",
+          "g4",
+          "Kf7",
+          "Kg2",
+          "Kg6",
+          "Kg3",
+          "Kg5",
+          "f4+",
+          "Kh6",
+          "Kh3",
+          "Kg6",
+          "Kh4",
+          "Kf7",
+          "g5",
+          "Kg6"
+        ],
+        "cp": 671,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e5d5",
+          "h8g8",
+          "d5g5",
+          "g8f7",
+          "g5f5",
+          "f7g8",
+          "f5f8",
+          "g8f8",
+          "g2g4",
+          "f8e7",
+          "g1g2",
+          "e7d6",
+          "g4g5",
+          "d6d5",
+          "g2g3",
+          "d5e4",
+          "g3g4",
+          "e4d3",
+          "f2f4",
+          "d3e3"
+        ],
+        "pvSan": [
+          "Rd5+",
+          "Kg8",
+          "Rg5+",
+          "Kf7",
+          "Rf5+",
+          "Kg8",
+          "Rxf8+",
+          "Kxf8",
+          "g4",
+          "Ke7",
+          "Kg2",
+          "Kd6",
+          "g5",
+          "Kd5",
+          "Kg3",
+          "Ke4",
+          "Kg4",
+          "Kd3",
+          "f4",
+          "Ke3"
+        ],
+        "cp": 671,
+        "mate": null
+      }
+    ],
+    "candidate": {
+      "depth": 16,
+      "multipv": 1,
+      "pvUci": [
+        "e5f5",
+        "h8g8",
+        "f5f8",
+        "g8f8",
+        "h2h4",
+        "f8e7",
+        "g1h2",
+        "e7d6",
+        "h2h3",
+        "d6d5",
+        "h3g4",
+        "d5e6",
+        "g4g5",
+        "e6d5",
+        "g5h6",
+        "d5e4",
+        "h6h7",
+        "e4f5",
+        "g2g3",
+        "f5g4",
+        "h7g6",
+        "g4f3",
+        "h4h5",
+        "f3f2"
+      ],
+      "pvSan": [
+        "Rf5+",
+        "Kg8",
+        "Rxf8+",
+        "Kxf8",
+        "h4",
+        "Ke7",
+        "Kh2",
+        "Kd6",
+        "Kh3",
+        "Kd5",
+        "Kg4",
+        "Ke6",
+        "Kg5",
+        "Kd5",
+        "Kh6",
+        "Ke4",
+        "Kxh7",
+        "Kf5",
+        "g3",
+        "Kg4",
+        "Kg6",
+        "Kf3",
+        "h5",
+        "Kxf2"
+      ],
+      "cp": 667,
+      "mate": null
+    },
+    "classification": {
+      "motifs": [
+        {
+          "id": "discoveredCheck",
+          "label": "Discovered Check",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e5f5",
+          "evidence": "Rf5+ vacates e5, uncovering the bishop on b2 against the king on h8. The rook on f5 also attacks the queen on f8. Every legal answer to the discovered check concedes material. Captures and interpositions are included in this check.",
+          "value": 400,
+          "relevance": "primary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "discoveredCheck",
+          "label": "Discovered Check",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e5f5",
+          "evidence": "Rf5+ vacates e5, uncovering the bishop on b2 against the king on h8. The rook on f5 also attacks the queen on f8. Every legal answer to the discovered check concedes material. Captures and interpositions are included in this check.",
+          "value": 400,
+          "relevance": "primary",
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Rxf8+ wins the loose queen on f8.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "f5f8",
+          "relevance": "secondary",
+          "value": 400,
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-8"
+    },
+    "classificationMs": 15.082600000000639,
+    "positionHeadline": [
+      {
+        "id": "discoveredCheck",
+        "label": "Discovered Check",
+        "source": "available",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "e5g5",
+        "evidence": "Rg5+ vacates e5, uncovering the bishop on b2 against the king on h8. Every legal answer to the discovered check concedes material. Captures and interpositions are included in this check.",
+        "value": 900,
+        "relevance": "primary"
+      }
+    ],
+    "positionCandidates": [
+      {
+        "moves": [
+          "Rg5+",
+          "Qg7",
+          "Bxg7+",
+          "Kg8",
+          "Bc3+",
+          "Kf7",
+          "Rg7+",
+          "Ke6",
+          "h4",
+          "h6",
+          "Rh7",
+          "Kd5",
+          "f3",
+          "Kc4",
+          "Bg7",
+          "Kb5",
+          "Rxh6",
+          "Ka5",
+          "Rh5+",
+          "Kb4"
+        ],
+        "motifs": [
+          {
+            "id": "discoveredCheck",
+            "label": "Discovered Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5g5",
+            "evidence": "Rg5+ vacates e5, uncovering the bishop on b2 against the king on h8. Every legal answer to the discovered check concedes material. Captures and interpositions are included in this check.",
+            "value": 900,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "discoveredCheck",
+            "label": "Discovered Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5g5",
+            "evidence": "Rg5+ vacates e5, uncovering the bishop on b2 against the king on h8. Every legal answer to the discovered check concedes material. Captures and interpositions are included in this check.",
+            "value": 900,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ]
+      },
+      {
+        "moves": [
+          "Rb5+",
+          "Kg8",
+          "Rg5+",
+          "Kf7",
+          "Rf5+",
+          "Kg8",
+          "Rxf8+",
+          "Kxf8",
+          "g4",
+          "Kf7",
+          "Kg2",
+          "Kg6",
+          "Kg3",
+          "Kg5",
+          "f4+",
+          "Kh6",
+          "Kh3",
+          "Kg6",
+          "Kh4",
+          "Kf7"
+        ],
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "Rf5+ lets the rook on f5 skewer the king on f7, exposing the queen on f8.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "g5f5",
+            "relevance": "primary",
+            "value": 400
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "Rf5+ lets the rook on f5 skewer the king on f7, exposing the queen on f8.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "g5f5",
+            "relevance": "primary",
+            "value": 400,
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxf8+ wins the loose queen on f8.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "f5f8",
+            "relevance": "secondary",
+            "value": 400,
+            "actor": "white"
+          }
+        ]
+      },
+      {
+        "moves": [
+          "Rd5+",
+          "Kg8",
+          "Rg5+",
+          "Kf7",
+          "Rf5+",
+          "Kg8",
+          "Rxf8+",
+          "Kxf8",
+          "g4",
+          "Ke7",
+          "Kg2",
+          "Kd6",
+          "g5",
+          "Kd5",
+          "Kg3",
+          "Ke4",
+          "Kg4",
+          "Kd3",
+          "f4",
+          "Ke3"
+        ],
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "Rf5+ lets the rook on f5 skewer the king on f7, exposing the queen on f8.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "g5f5",
+            "relevance": "primary",
+            "value": 400
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "Rf5+ lets the rook on f5 skewer the king on f7, exposing the queen on f8.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "g5f5",
+            "relevance": "primary",
+            "value": 400,
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxf8+ wins the loose queen on f8.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "f5f8",
+            "relevance": "secondary",
+            "value": 400,
+            "actor": "white"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Forced interposition opens the rook-bishop battery",
+    "fen": "5q1k/5p1p/8/4R3/8/8/1B3PPP/6K1 w - - 0 1",
+    "move": "e5f5",
+    "expected": "discoveredCheck",
+    "positionPrimary": "discoveredCheck",
+    "why": "The proposed negative control is actually winning: f6 Rxf6 Qxf6 Bxf6 exchanges rook for queen and pawn. The pawn's forced block is itself a tactical target.",
+    "unrestricted": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e5f5",
+          "f7f6",
+          "f5f6",
+          "f8f6",
+          "b2f6",
+          "h8g8",
+          "g2g4",
+          "g8f7",
+          "f6c3",
+          "f7e6",
+          "g1g2",
+          "e6d5",
+          "c3b2",
+          "d5e6",
+          "f2f4",
+          "e6d5",
+          "b2f6"
+        ],
+        "pvSan": [
+          "Rf5+",
+          "f6",
+          "Rxf6",
+          "Qxf6",
+          "Bxf6+",
+          "Kg8",
+          "g4",
+          "Kf7",
+          "Bc3",
+          "Ke6",
+          "Kg2",
+          "Kd5",
+          "Bb2",
+          "Ke6",
+          "f4",
+          "Kd5",
+          "Bf6"
+        ],
+        "cp": 662,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e5e8",
+          "h8g8",
+          "e8f8",
+          "g8f8",
+          "g2g4",
+          "f8e7",
+          "g1g2",
+          "e7e6",
+          "g2f3",
+          "e6d5",
+          "g4g5",
+          "d5c4",
+          "f3g4",
+          "c4d5",
+          "g4f5",
+          "d5c4"
+        ],
+        "pvSan": [
+          "Re8+",
+          "Kg8",
+          "Rxf8+",
+          "Kxf8",
+          "g4",
+          "Ke7",
+          "Kg2",
+          "Ke6",
+          "Kf3",
+          "Kd5",
+          "g5",
+          "Kc4",
+          "Kg4",
+          "Kd5",
+          "Kf5",
+          "Kc4"
+        ],
+        "cp": 574,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "h2h3",
+          "f7f6",
+          "e5f5",
+          "f8b4",
+          "b2f6",
+          "h8g8",
+          "f5f3",
+          "h7h5",
+          "f6g5",
+          "b4e1",
+          "g1h2",
+          "e1e5",
+          "g5f4",
+          "e5f6",
+          "f4b8",
+          "f6e6",
+          "f3g3",
+          "g8h7",
+          "f2f3"
+        ],
+        "pvSan": [
+          "h3",
+          "f6",
+          "Rf5",
+          "Qb4",
+          "Bxf6+",
+          "Kg8",
+          "Rf3",
+          "h5",
+          "Bg5",
+          "Qe1+",
+          "Kh2",
+          "Qe5+",
+          "Bf4",
+          "Qf6",
+          "Bb8",
+          "Qe6",
+          "Rg3+",
+          "Kh7",
+          "f3"
+        ],
+        "cp": 31,
+        "mate": null
+      }
+    ],
+    "candidate": {
+      "depth": 16,
+      "multipv": 1,
+      "pvUci": [
+        "e5f5",
+        "f7f6",
+        "f5f6",
+        "f8f6",
+        "b2f6",
+        "h8g8",
+        "f6a1",
+        "g8f7",
+        "g2g4",
+        "f7g6",
+        "h2h4",
+        "h7h5",
+        "g1h2",
+        "h5g4",
+        "h2g3",
+        "g6f5"
+      ],
+      "pvSan": [
+        "Rf5+",
+        "f6",
+        "Rxf6",
+        "Qxf6",
+        "Bxf6+",
+        "Kg8",
+        "Ba1",
+        "Kf7",
+        "g4",
+        "Kg6",
+        "h4",
+        "h5",
+        "Kh2",
+        "hxg4",
+        "Kg3",
+        "Kf5"
+      ],
+      "cp": 627,
+      "mate": null
+    },
+    "classification": {
+      "motifs": [
+        {
+          "id": "discoveredCheck",
+          "label": "Discovered Check",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e5f5",
+          "evidence": "Rf5+ vacates e5, uncovering the bishop on b2 against the king on h8. The rook on f5 also attacks the pawn on f7. Every legal answer to the discovered check allows material gain or mate with at most one extra checking move, allowing for legal recaptures. Captures and interpositions are included in this check.",
+          "value": 100,
+          "relevance": "primary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "discoveredCheck",
+          "label": "Discovered Check",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e5f5",
+          "evidence": "Rf5+ vacates e5, uncovering the bishop on b2 against the king on h8. The rook on f5 also attacks the pawn on f7. Every legal answer to the discovered check allows material gain or mate with at most one extra checking move, allowing for legal recaptures. Captures and interpositions are included in this check.",
+          "value": 100,
+          "relevance": "primary",
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-8"
+    },
+    "classificationMs": 10.23279999999977,
+    "positionHeadline": [
+      {
+        "id": "discoveredCheck",
+        "label": "Discovered Check",
+        "source": "available",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "e5f5",
+        "evidence": "Rf5+ vacates e5, uncovering the bishop on b2 against the king on h8. The rook on f5 also attacks the pawn on f7. Every legal answer to the discovered check allows material gain or mate with at most one extra checking move, allowing for legal recaptures. Captures and interpositions are included in this check.",
+        "value": 100,
+        "relevance": "primary"
+      }
+    ],
+    "positionCandidates": [
+      {
+        "moves": [
+          "Rf5+",
+          "f6",
+          "Rxf6",
+          "Qxf6",
+          "Bxf6+",
+          "Kg8",
+          "g4",
+          "Kf7",
+          "Bc3",
+          "Ke6",
+          "Kg2",
+          "Kd5",
+          "Bb2",
+          "Ke6",
+          "f4",
+          "Kd5",
+          "Bf6"
+        ],
+        "motifs": [
+          {
+            "id": "discoveredCheck",
+            "label": "Discovered Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5f5",
+            "evidence": "Rf5+ vacates e5, uncovering the bishop on b2 against the king on h8. The rook on f5 also attacks the pawn on f7. Every legal answer to the discovered check allows material gain or mate with at most one extra checking move, allowing for legal recaptures. Captures and interpositions are included in this check.",
+            "value": 100,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "discoveredCheck",
+            "label": "Discovered Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5f5",
+            "evidence": "Rf5+ vacates e5, uncovering the bishop on b2 against the king on h8. The rook on f5 also attacks the pawn on f7. Every legal answer to the discovered check allows material gain or mate with at most one extra checking move, allowing for legal recaptures. Captures and interpositions are included in this check.",
+            "value": 100,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ]
+      },
+      {
+        "moves": [
+          "Re8+",
+          "Kg8",
+          "Rxf8+",
+          "Kxf8",
+          "g4",
+          "Ke7",
+          "Kg2",
+          "Ke6",
+          "Kf3",
+          "Kd5",
+          "g5",
+          "Kc4",
+          "Kg4",
+          "Kd5",
+          "Kf5",
+          "Kc4"
+        ],
+        "motifs": [
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5e8",
+            "value": 400,
+            "evidence": "Re8+ exploits the queen on f8, pinned to the king on h8 by the rook on e8. No legal reply avoids material loss in the immediate exchange.",
+            "relevance": "primary"
+          },
+          {
+            "id": "discoveredCheck",
+            "label": "Discovered Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5e8",
+            "evidence": "Re8+ vacates e5, uncovering the bishop on b2 against the king on h8. The rook on e8 also attacks the queen on f8. Every legal answer to the discovered check concedes material. Captures and interpositions are included in this check.",
+            "value": 400,
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5e8",
+            "value": 400,
+            "evidence": "Re8+ exploits the queen on f8, pinned to the king on h8 by the rook on e8. No legal reply avoids material loss in the immediate exchange.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "discoveredCheck",
+            "label": "Discovered Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5e8",
+            "evidence": "Re8+ vacates e5, uncovering the bishop on b2 against the king on h8. The rook on e8 also attacks the queen on f8. Every legal answer to the discovered check concedes material. Captures and interpositions are included in this check.",
+            "value": 400,
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxf8+ wins the loose queen on f8.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e8f8",
+            "relevance": "secondary",
+            "value": 400,
+            "actor": "white"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Discovered check without a material target",
+    "fen": "7k/7p/7r/4R3/8/8/1B3PPP/6K1 w - - 0 1",
+    "move": "e5f5",
+    "expected": null,
+    "positionPrimary": "doubleCheck",
+    "why": "Rf5 uncovers check, but neither piece attacks the rook on h6. A check alone is not a winning combination.",
+    "unrestricted": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e5e8"
+        ],
+        "pvSan": [
+          "Re8#"
+        ],
+        "cp": null,
+        "mate": 1
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e5g5",
+          "h6f6",
+          "b2f6"
+        ],
+        "pvSan": [
+          "Rg5+",
+          "Rf6",
+          "Bxf6#"
+        ],
+        "cp": null,
+        "mate": 2
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e5h5",
+          "h8g8",
+          "h5h6",
+          "g8f7",
+          "b2c3",
+          "f7g8",
+          "h2h4",
+          "g8f7",
+          "h6h5",
+          "f7g8",
+          "f2f3",
+          "h7h6",
+          "h5h6"
+        ],
+        "pvSan": [
+          "Rh5+",
+          "Kg8",
+          "Rxh6",
+          "Kf7",
+          "Bc3",
+          "Kg8",
+          "h4",
+          "Kf7",
+          "Rh5",
+          "Kg8",
+          "f3",
+          "h6",
+          "Rxh6"
+        ],
+        "cp": 778,
+        "mate": null
+      }
+    ],
+    "candidate": {
+      "depth": 16,
+      "multipv": 1,
+      "pvUci": [
+        "e5f5",
+        "h8g8",
+        "g2g3",
+        "h6b6",
+        "f5g5",
+        "g8f7",
+        "b2d4",
+        "b6b4",
+        "d4e3",
+        "h7h6",
+        "g5a5",
+        "b4c4",
+        "g1g2",
+        "f7g6",
+        "e3d2",
+        "c4d4",
+        "d2e1",
+        "d4d3",
+        "g2h3",
+        "d3f3"
+      ],
+      "pvSan": [
+        "Rf5+",
+        "Kg8",
+        "g3",
+        "Rb6",
+        "Rg5+",
+        "Kf7",
+        "Bd4",
+        "Rb4",
+        "Be3",
+        "h6",
+        "Ra5",
+        "Rc4",
+        "Kg2",
+        "Kg6",
+        "Bd2",
+        "Rd4",
+        "Be1",
+        "Rd3",
+        "Kh3",
+        "Rf3"
+      ],
+      "cp": 583,
+      "mate": null
+    },
+    "classification": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-8"
+    },
+    "classificationMs": 21.590299999999843,
+    "positionHeadline": [
+      {
+        "id": "doubleCheck",
+        "label": "Double Check",
+        "source": "available",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "e5e8",
+        "evidence": "Re8# vacates e5, uncovering the bishop on b2 against the king on h8. Both pieces give check. There is no legal defence: checkmate.",
+        "value": 10000,
+        "relevance": "primary"
+      }
+    ],
+    "positionCandidates": [
+      {
+        "moves": [
+          "Re8#"
+        ],
+        "motifs": [
+          {
+            "id": "doubleCheck",
+            "label": "Double Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5e8",
+            "evidence": "Re8# vacates e5, uncovering the bishop on b2 against the king on h8. Both pieces give check. There is no legal defence: checkmate.",
+            "value": 10000,
+            "relevance": "primary"
+          },
+          {
+            "id": "pillsburysMate",
+            "label": "Pillsbury's Mate",
+            "confidence": "medium",
+            "evidence": "Pillsbury's Mate appears on Re8# at ply 1 of the current best line.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e5e8",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "doubleCheck",
+            "label": "Double Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5e8",
+            "evidence": "Re8# vacates e5, uncovering the bishop on b2 against the king on h8. Both pieces give check. There is no legal defence: checkmate.",
+            "value": 10000,
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "pillsburysMate",
+            "label": "Pillsbury's Mate",
+            "confidence": "medium",
+            "evidence": "Pillsbury's Mate appears on Re8# at ply 1 of the current best line.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e5e8",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ]
+      },
+      {
+        "moves": [
+          "Rg5+",
+          "Rf6",
+          "Bxf6#"
+        ],
+        "motifs": [
+          {
+            "id": "discoveredCheck",
+            "label": "Discovered Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5g5",
+            "evidence": "Rg5+ vacates e5, uncovering the bishop on b2 against the king on h8. Every legal defence allows the verified short forced mate.",
+            "value": 10000,
+            "relevance": "primary"
+          },
+          {
+            "id": "morphysMate",
+            "label": "Morphy's Mate",
+            "confidence": "medium",
+            "evidence": "Morphy's Mate appears on Bxf6# at ply 3 of the current best line.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "b2f6",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "discoveredCheck",
+            "label": "Discovered Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5g5",
+            "evidence": "Rg5+ vacates e5, uncovering the bishop on b2 against the king on h8. Every legal defence allows the verified short forced mate.",
+            "value": 10000,
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "morphysMate",
+            "label": "Morphy's Mate",
+            "confidence": "medium",
+            "evidence": "Morphy's Mate appears on Bxf6# at ply 3 of the current best line.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "b2f6",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Double check delivers mate",
+    "fen": "3rkr2/5p2/8/8/8/8/4B3/4R1K1 w - - 0 1",
+    "move": "e2b5",
+    "expected": "doubleCheck",
+    "positionPrimary": "doubleCheck",
+    "why": "Bb5 uncovers Re1 and itself checks along b5-e8; no king escape exists.",
+    "unrestricted": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e2b5"
+        ],
+        "pvSan": [
+          "Bb5#"
+        ],
+        "cp": null,
+        "mate": 1
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e2g4"
+        ],
+        "pvSan": [
+          "Bg4#"
+        ],
+        "cp": null,
+        "mate": 1
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e2d1",
+          "e8d7",
+          "d1b3",
+          "d7c6",
+          "e1e7",
+          "f7f6",
+          "g1f2",
+          "d8d4",
+          "e7e1",
+          "f8h8",
+          "e1e6",
+          "d4d6"
+        ],
+        "pvSan": [
+          "Bd1+",
+          "Kd7",
+          "Bb3",
+          "Kc6",
+          "Re7",
+          "f6",
+          "Kf2",
+          "Rd4",
+          "Re1",
+          "Rh8",
+          "Re6+",
+          "Rd6"
+        ],
+        "cp": -234,
+        "mate": null
+      }
+    ],
+    "candidate": {
+      "depth": 16,
+      "multipv": 1,
+      "pvUci": [
+        "e2b5"
+      ],
+      "pvSan": [
+        "Bb5#"
+      ],
+      "cp": null,
+      "mate": 1
+    },
+    "classification": {
+      "motifs": [
+        {
+          "id": "doubleCheck",
+          "label": "Double Check",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e2b5",
+          "evidence": "Bb5# vacates e2, uncovering the rook on e1 against the king on e8. Both pieces give check. There is no legal defence: checkmate.",
+          "value": 10000,
+          "relevance": "primary"
+        },
+        {
+          "id": "epauletteMate",
+          "label": "Epaulette Mate",
+          "confidence": "medium",
+          "evidence": "Epaulette Mate appears on Bb5# at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "e2b5",
+          "relevance": "secondary",
+          "value": 10000
+        },
+        {
+          "id": "pillsburysMate",
+          "label": "Pillsbury's Mate",
+          "confidence": "medium",
+          "evidence": "Pillsbury's Mate appears on Bb5# at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "e2b5",
+          "relevance": "secondary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "doubleCheck",
+          "label": "Double Check",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e2b5",
+          "evidence": "Bb5# vacates e2, uncovering the rook on e1 against the king on e8. Both pieces give check. There is no legal defence: checkmate.",
+          "value": 10000,
+          "relevance": "primary",
+          "actor": "white"
+        },
+        {
+          "id": "epauletteMate",
+          "label": "Epaulette Mate",
+          "confidence": "medium",
+          "evidence": "Epaulette Mate appears on Bb5# at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "e2b5",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "white"
+        },
+        {
+          "id": "pillsburysMate",
+          "label": "Pillsbury's Mate",
+          "confidence": "medium",
+          "evidence": "Pillsbury's Mate appears on Bb5# at ply 1 of the current best line.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "e2b5",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-8"
+    },
+    "classificationMs": 1.3852000000006228,
+    "positionHeadline": [
+      {
+        "id": "doubleCheck",
+        "label": "Double Check",
+        "source": "available",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "e2b5",
+        "evidence": "Bb5# vacates e2, uncovering the rook on e1 against the king on e8. Both pieces give check. There is no legal defence: checkmate.",
+        "value": 10000,
+        "relevance": "primary"
+      }
+    ],
+    "positionCandidates": [
+      {
+        "moves": [
+          "Bb5#"
+        ],
+        "motifs": [
+          {
+            "id": "doubleCheck",
+            "label": "Double Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e2b5",
+            "evidence": "Bb5# vacates e2, uncovering the rook on e1 against the king on e8. Both pieces give check. There is no legal defence: checkmate.",
+            "value": 10000,
+            "relevance": "primary"
+          },
+          {
+            "id": "epauletteMate",
+            "label": "Epaulette Mate",
+            "confidence": "medium",
+            "evidence": "Epaulette Mate appears on Bb5# at ply 1 of the current best line.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e2b5",
+            "relevance": "secondary",
+            "value": 10000
+          },
+          {
+            "id": "pillsburysMate",
+            "label": "Pillsbury's Mate",
+            "confidence": "medium",
+            "evidence": "Pillsbury's Mate appears on Bb5# at ply 1 of the current best line.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e2b5",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "doubleCheck",
+            "label": "Double Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e2b5",
+            "evidence": "Bb5# vacates e2, uncovering the rook on e1 against the king on e8. Both pieces give check. There is no legal defence: checkmate.",
+            "value": 10000,
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "epauletteMate",
+            "label": "Epaulette Mate",
+            "confidence": "medium",
+            "evidence": "Epaulette Mate appears on Bb5# at ply 1 of the current best line.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e2b5",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "pillsburysMate",
+            "label": "Pillsbury's Mate",
+            "confidence": "medium",
+            "evidence": "Pillsbury's Mate appears on Bb5# at ply 1 of the current best line.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e2b5",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ]
+      },
+      {
+        "moves": [
+          "Bg4#"
+        ],
+        "motifs": [
+          {
+            "id": "discoveredCheck",
+            "label": "Discovered Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e2g4",
+            "evidence": "Bg4# vacates e2, uncovering the rook on e1 against the king on e8. There is no legal defence: checkmate.",
+            "value": 10000,
+            "relevance": "primary"
+          },
+          {
+            "id": "epauletteMate",
+            "label": "Epaulette Mate",
+            "confidence": "medium",
+            "evidence": "Epaulette Mate appears on Bg4# at ply 1 of the current best line.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e2g4",
+            "relevance": "secondary",
+            "value": 10000
+          },
+          {
+            "id": "pillsburysMate",
+            "label": "Pillsbury's Mate",
+            "confidence": "medium",
+            "evidence": "Pillsbury's Mate appears on Bg4# at ply 1 of the current best line.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e2g4",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "discoveredCheck",
+            "label": "Discovered Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e2g4",
+            "evidence": "Bg4# vacates e2, uncovering the rook on e1 against the king on e8. There is no legal defence: checkmate.",
+            "value": 10000,
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "epauletteMate",
+            "label": "Epaulette Mate",
+            "confidence": "medium",
+            "evidence": "Epaulette Mate appears on Bg4# at ply 1 of the current best line.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e2g4",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "pillsburysMate",
+            "label": "Pillsbury's Mate",
+            "confidence": "medium",
+            "evidence": "Pillsbury's Mate appears on Bg4# at ply 1 of the current best line.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e2g4",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ]
+      }
+    ]
+  }
+]

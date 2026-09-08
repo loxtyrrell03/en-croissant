@@ -51,7 +51,7 @@ with all three engine candidates and the resulting explanations:
 | Black plays a6 with Kf5 and Qh7 aligned behind Bd3+ | Kf4 | Qxd3 can answer Bd3 once the king no longer blocks the queen |
 | Black plays a6 with Nf6 defending Qd5 | Qxd1+ | White must answer check instead of playing gxf6+ and Rxd5 |
 
-The final position is already materially lost: this judges avoidance of
+The back-rank-mate position is already materially lost: this judges avoidance of
 immediate mate, not a change in the game's theoretical outcome. The initial
 human suggestion dxe4 in the queen position was inferior to Nxe4 because it
 leaves the knight attacked. A separate deterministic test uses dxe4 to verify
@@ -187,6 +187,50 @@ The real engine comparison prefers Kd7 and finds Kxd6; the deterministic Kf8
 case checks a different valid unpinning resource. The two supplied pawn moves
 in the persistent-pin control are not claimed to be the engine's best moves.
 
+## Discovered combinations: actual cause, not an endpoint label
+
+`discovered-stockfish-18.json` adds six candidate judgements. Each records both
+an unrestricted fresh depth-16/MultiPV3 scan (including its displayed primary
+lesson and continuation rows) and a separately searched candidate:
+
+| Candidate | Judged lesson | Important evidence |
+| --- | --- | --- |
+| Bxh7+ uncovers Re1 against Qe8 | Discovered attack | Kf8 allows Rxe8+ Kxe8; Kxh7 also concedes more than the bishop |
+| Bf3 opens the same file without check | No tactic for this move | Qxe1# refutes it; the unrestricted scan must still recommend Bxh7+ |
+| Rf5+ uncovers Bb2 against Kh8 and attacks Qf8 | Discovered check at ply 1 | Rxf8+ is the payoff, not a second discovered check; unrestricted Stockfish prefers Rg5+, the same primary mechanism |
+| Rf5+ with a black pawn on f7 | Discovered check with a forcing continuation | f6 Rxf6 Qxf6 Bxf6 wins queen and pawn for rook; Kg8 instead permits Rg5+ and a losing queen block |
+| Rf5+ with an enemy rook on h6 instead of Qf8 | No material combination for this move | Neither battery piece attacks Rh6; the unrestricted scan correctly prefers the available Re8# double check |
+| Bb5# uncovers Re1 against Ke8 | Double check | The bishop and rook both check; redundant discovered-attack/check labels are removed |
+
+The f7-pawn example was initially proposed as a negative control. Fresh engine
+analysis disproved that judgement: the forced pawn interposition actually opens
+the rook-bishop battery. Verifying only its selected f6 reply would still be
+insufficient, because Kg8 requires a different answer. A bounded AND/OR proof
+checks every legal defence and searches a maximum of one extra checking move
+before the named material capture, with legal exchange settlement. Targets are
+the revealed ray, the moving piece's threats, their rear ray targets, and actual
+checking-line interpositions, not arbitrary loose pieces elsewhere. Defensive
+captures and promotion gains count against the claimed net gain. The extra
+search has a 4,096-node cap and bounded cache; incomplete proof is withheld.
+
+Discovery labels now require an unchanged bishop, rook or queen whose ray was
+actually blocked by the moving piece. Immediate or verified short mate, or a
+proved material continuation, must explain the move. An unrelated profitable
+PV endpoint is no longer enough. The correct label is reconstructed at the
+vacating move: discovered attack, discovered check, or double check, rather than
+three aliases at one ply or a check label transplanted onto the final capture.
+Explanations name the vacated square, battery piece and target; board arrows
+show the uncovered ray and the accompanying attack. An incidental discovery
+does not outrank a capture which already wins as much without the follow-up.
+
+Ten deterministic regressions cover both colours, short engine snapshots,
+primary mistake-review lessons, root/continuation ply consistency, both relevant
+arrows, interposition versus king-escape branches, no-gain checks, a defended
+rook that does not justify losing the bishop, a cooperative losing PV, and an
+exhausted proof budget. This is source and render-data verification, not a
+running-app visual claim. The six scenarios are not six independently sampled
+positions: two intentionally compare different moves in the same position.
+
 Run in PowerShell with the configured Node runtime on PATH:
 
 ```powershell
@@ -195,6 +239,7 @@ $env:TACTICAL_JUDGEMENT_REPORT = 'benchmarks/tactical-relevance/stockfish-18.jso
 $env:TACTICAL_CAUSAL_REPORT = 'benchmarks/tactical-relevance/causal-stockfish-18.json'
 $env:TACTICAL_QUIET_REPORT = 'benchmarks/tactical-relevance/quiet-stockfish-18.json'
 $env:TACTICAL_MATERIAL_REPORT = 'benchmarks/tactical-relevance/material-stockfish-18.json'
+$env:TACTICAL_DISCOVERED_REPORT = 'benchmarks/tactical-relevance/discovered-stockfish-18.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node
 ```
 
@@ -211,7 +256,8 @@ goal. Legal exchange analysis validates local material threats and fork
 defences; it is not a full tactical search. A forcing episode ends when the
 attacking side makes a quiet move without an immediate material threat.
 Verified short mating preparations are now an exception to that cutoff.
-Non-mating quiet preparations, longer mating threats, defensive combinations
+Discovered combinations now have the bounded extra-check proof described above.
+Other non-mating quiet preparations, longer mating threats, defensive combinations
 and long pawn breakthroughs still need stronger branch evidence. Unproven
 zugzwang is withheld because one PV cannot demonstrate its counterfactual.
 

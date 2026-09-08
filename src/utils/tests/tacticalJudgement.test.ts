@@ -138,6 +138,108 @@ async function analyse(engine: string, fen: string, searchMove?: string) {
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
     test.skipIf(!engine || !existsSync(engine))(
+        "judge discovered threats against engine-selected defences",
+        async () => {
+            const examples = [
+                {
+                    name: "Checking bishop uncovers a queen attack",
+                    fen: "4q1k1/5ppp/8/8/4B3/8/5PPP/4R1K1 w - - 0 1",
+                    move: "e4h7",
+                    expected: "discoveredAttack",
+                    positionPrimary: "discoveredAttack",
+                    why: "Bxh7+ buys a tempo to expose Re1 against Qe8; even Kxh7 concedes more than the bishop.",
+                },
+                {
+                    name: "Quiet version allows Qxe1 mate",
+                    fen: "4q1k1/5ppp/8/8/4B3/8/5PPP/4R1K1 w - - 0 1",
+                    move: "e4f3",
+                    expected: null,
+                    positionPrimary: "discoveredAttack",
+                    why: "Vacating the file without check lets the queen capture the rook with mate; geometry alone is not a tactic.",
+                },
+                {
+                    name: "Discovered check wins the queen",
+                    fen: "5q1k/7p/8/4R3/8/8/1B3PPP/6K1 w - - 0 1",
+                    move: "e5f5",
+                    expected: "discoveredCheck",
+                    positionPrimary: "discoveredCheck",
+                    why: "Rf5 uncovers Bb2 against Kh8 and attacks Qf8; king moves and queen interpositions both concede material.",
+                },
+                {
+                    name: "Forced interposition opens the rook-bishop battery",
+                    fen: "5q1k/5p1p/8/4R3/8/8/1B3PPP/6K1 w - - 0 1",
+                    move: "e5f5",
+                    expected: "discoveredCheck",
+                    positionPrimary: "discoveredCheck",
+                    why: "The proposed negative control is actually winning: f6 Rxf6 Qxf6 Bxf6 exchanges rook for queen and pawn. The pawn's forced block is itself a tactical target.",
+                },
+                {
+                    name: "Discovered check without a material target",
+                    fen: "7k/7p/7r/4R3/8/8/1B3PPP/6K1 w - - 0 1",
+                    move: "e5f5",
+                    expected: null,
+                    positionPrimary: "doubleCheck",
+                    why: "Rf5 uncovers check, but neither piece attacks the rook on h6. A check alone is not a winning combination.",
+                },
+                {
+                    name: "Double check delivers mate",
+                    fen: "3rkr2/5p2/8/8/8/8/4B3/4R1K1 w - - 0 1",
+                    move: "e2b5",
+                    expected: "doubleCheck",
+                    positionPrimary: "doubleCheck",
+                    why: "Bb5 uncovers Re1 and itself checks along b5-e8; no king escape exists.",
+                },
+            ];
+            const report = [];
+            for (const item of examples) {
+                const unrestricted = [...(await analyse(engine, item.fen)).values()];
+                const candidate = [...(await analyse(engine, item.fen, item.move)).values()][0];
+                const start = performance.now();
+                const classification = classifyPositionTacticalMotifs({
+                    fen: item.fen,
+                    ...candidate,
+                    rootCp: candidate.cp,
+                });
+                const classificationMs = performance.now() - start;
+                const scan = buildLiveTacticalScan({
+                    fen: item.fen,
+                    ...unrestricted[0],
+                    engineName: "Stockfish",
+                    variations: unrestricted,
+                });
+                report.push({
+                    ...item,
+                    unrestricted,
+                    candidate,
+                    classification,
+                    classificationMs,
+                    positionHeadline: scan.motifs,
+                    positionCandidates: scan.variations.map((v) => ({
+                        moves: v.lineSan,
+                        motifs: v.motifs,
+                        timeline: v.timeline,
+                    })),
+                });
+            }
+            if (process.env.TACTICAL_DISCOVERED_REPORT)
+                writeFileSync(
+                    process.env.TACTICAL_DISCOVERED_REPORT,
+                    JSON.stringify(report, null, 2),
+                );
+            for (const item of report) {
+                expect({
+                    name: item.name,
+                    primary: item.classification.motifs[0]?.id ?? null,
+                }).toEqual({ name: item.name, primary: item.expected });
+                expect({
+                    name: item.name,
+                    headline: item.positionHeadline.map((m) => m.id),
+                }).toEqual({ name: item.name, headline: [item.positionPrimary] });
+            }
+        },
+        180000,
+    );
+    test.skipIf(!engine || !existsSync(engine))(
         "judge material mechanisms against engine defences",
         async () => {
             const examples = [

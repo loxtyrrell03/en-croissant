@@ -255,9 +255,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-7"
+      "motifClassifierVersion": "site-55.adapter-8"
     },
-    "classificationMs": 64.25840000000017
+    "classificationMs": 23.868600000001607
   },
   {
     "name": "Rook captures the pinning attacker's pawn",
@@ -418,9 +418,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-7"
+      "motifClassifierVersion": "site-55.adapter-8"
     },
-    "classificationMs": 16.724600000000464
+    "classificationMs": 12.781199999999444
   },
   {
     "name": "King-queen skewer",
@@ -609,9 +609,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-7"
+      "motifClassifierVersion": "site-55.adapter-8"
     },
-    "classificationMs": 4.305999999999585
+    "classificationMs": 3.1388999999999214
   },
   {
     "name": "Pawn interposes against the skewer",
@@ -842,9 +842,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-7"
+      "motifClassifierVersion": "site-55.adapter-8"
     },
-    "classificationMs": 39.88640000000123
+    "classificationMs": 20.67449999999917
   },
   {
     "name": "Remove the queen's defender with check",
@@ -1073,8 +1073,8 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-7"
+      "motifClassifierVersion": "site-55.adapter-8"
     },
-    "classificationMs": 20.543900000000576
+    "classificationMs": 14.632700000000114
   }
 ]
