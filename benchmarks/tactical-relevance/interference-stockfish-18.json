@@ -183,9 +183,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-27"
+      "motifClassifierVersion": "site-55.adapter-28"
     },
-    "classificationMs": 20.421799999996438,
+    "classificationMs": 20.779999999998836,
     "positionHeadline": [
       {
         "id": "interference",
@@ -451,9 +451,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-27"
+      "motifClassifierVersion": "site-55.adapter-28"
     },
-    "classificationMs": 5.6978000000090105,
+    "classificationMs": 5.649099999995087,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -671,9 +671,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-27"
+      "motifClassifierVersion": "site-55.adapter-28"
     },
-    "classificationMs": 0.6201000000000931,
+    "classificationMs": 0.7534000000014203,
     "positionHeadline": [
       {
         "id": "interference",
@@ -889,9 +889,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-27"
+      "motifClassifierVersion": "site-55.adapter-28"
     },
-    "classificationMs": 0.5016000000032363,
+    "classificationMs": 0.4665999999997439,
     "positionHeadline": [
       {
         "id": "pin",

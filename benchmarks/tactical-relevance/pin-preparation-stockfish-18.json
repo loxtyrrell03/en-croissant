@@ -170,7 +170,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-27"
+      "motifClassifierVersion": "site-55.adapter-28"
     }
   },
   {
@@ -359,18 +359,6 @@
           "actor": "white"
         },
         {
-          "id": "pin",
-          "label": "Pin",
-          "confidence": "medium",
-          "evidence": "Nxe6+ exploits an existing pin. The pawn on f7 cannot capture on e6 because it is pinned to its king on f8.",
-          "source": "available",
-          "ply": 5,
-          "moveUci": "g5e6",
-          "relevance": "secondary",
-          "value": 1000,
-          "actor": "white"
-        },
-        {
           "id": "hangingPiece",
           "label": "Hanging Piece",
           "confidence": "high",
@@ -407,7 +395,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-27"
+      "motifClassifierVersion": "site-55.adapter-28"
     }
   },
   {
@@ -672,7 +660,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-27"
+      "motifClassifierVersion": "site-55.adapter-28"
     }
   },
   {
@@ -830,7 +818,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-27"
+      "motifClassifierVersion": "site-55.adapter-28"
     }
   },
   {
@@ -1065,7 +1053,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-27"
+      "motifClassifierVersion": "site-55.adapter-28"
     }
   }
 ]

@@ -17,6 +17,7 @@ import {
     hasTacticalStart,
     isCompensatedContinuationCapture,
     normalizeMatingPayoffs,
+    normalizeContinuingTactics,
     replayTacticalLine,
 } from "./causalTactics";
 import type {
@@ -102,7 +103,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 27;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 28;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -885,7 +886,10 @@ export function buildTacticalTimeline(
             });
         }
     }
-    return normalizeMatingPayoffs(replay, [...evidence.values()])
+    return normalizeContinuingTactics(
+        replay,
+        normalizeMatingPayoffs(replay, [...evidence.values()]),
+    )
         .filter(
             (motif) =>
                 (motif.ply ?? 0) <= connectedPlies &&

@@ -58,12 +58,19 @@ this attack while Kxf6 removes the checking pawn. The other 23 headlines are
 unchanged. These counts describe the sample, not a precision/recall estimate.
 The 17 quiet roots and seven positive roots are fixed regression judgements.
 
-The fresh f7+ live scan took 743 ms after engine analysis; the subsequent
+The latest f7+ live scan took 708 ms after engine analysis; the subsequent
 review took 44 ms with shared proof caches warm. These are in-process
 diagnostics, not end-to-end desktop latency. Its timeline reaches Qb5# through
 the quiet preparation but no longer describes the irrelevant discovered rook
 attack on that checkmating move. The promotion label states what happened;
 it does not claim promoting to a bishop was uniquely necessary.
+
+Adapter 28 removes the second rook-fork label at ply 11: the same queen has
+kept the same rook on g8 under a profitable attack throughout, so Qd5+ is
+continuing that threat rather than discovering a fresh material opportunity.
+The first fork at ply 7 and checkmate at ply 13 remain. Recreated threats,
+new attackers/targets, captures and promotions remain distinct events. No
+ordinary-game headline changed in this milestone.
 
 ## Root causes of the noise and safeguards
 

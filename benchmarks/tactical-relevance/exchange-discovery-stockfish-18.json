@@ -200,9 +200,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-27"
+      "motifClassifierVersion": "site-55.adapter-28"
     },
-    "classificationMs": 220.34100000000035
+    "classificationMs": 214.18860000000132
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -398,9 +398,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-27"
+      "motifClassifierVersion": "site-55.adapter-28"
     },
-    "classificationMs": 67.36679999999978
+    "classificationMs": 65.98790000000008
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -648,18 +648,6 @@
           "actor": "white"
         },
         {
-          "id": "pin",
-          "label": "Pin",
-          "confidence": "medium",
-          "evidence": "Nf3+ exploits an existing pin. The pawn on g2 cannot capture on f3 because it is pinned to its king on g1.",
-          "source": "available",
-          "ply": 7,
-          "moveUci": "e5f3",
-          "relevance": "secondary",
-          "value": 120,
-          "actor": "black"
-        },
-        {
           "id": "discoveredAttack",
           "label": "Discovered Attack",
           "source": "available",
@@ -720,9 +708,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-27"
+      "motifClassifierVersion": "site-55.adapter-28"
     },
-    "classificationMs": 140.64680000000044
+    "classificationMs": 139.92720000000008
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -918,9 +906,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-27"
+      "motifClassifierVersion": "site-55.adapter-28"
     },
-    "classificationMs": 256.16879999999946
+    "classificationMs": 246.84779999999955
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -1076,9 +1064,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-27"
+      "motifClassifierVersion": "site-55.adapter-28"
     },
-    "classificationMs": 108.89850000000115
+    "classificationMs": 97.6947999999993
   },
   {
     "fen": "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -1254,8 +1242,8 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-27"
+      "motifClassifierVersion": "site-55.adapter-28"
     },
-    "classificationMs": 67.54860000000008
+    "classificationMs": 64.04030000000057
   }
 ]

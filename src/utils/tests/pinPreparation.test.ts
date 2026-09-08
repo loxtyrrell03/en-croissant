@@ -57,8 +57,17 @@ test("the quiet pin and subsequent fork remain at their actual plies", () => {
     );
     expect(result.timeline).toContainEqual(expect.objectContaining({ id: "fork", ply: 5 }));
     const pin = result.timeline!.find((m) => m.id === "pin" && m.ply === 3)!;
-    expect(result.timeline!.find((m) => m.id === "pin" && m.ply === 5)?.evidence).toContain(
-        "Nxe6+ exploits an existing pin",
+    expect(result.timeline!.some((m) => m.id === "pin" && m.ply === 5)).toBe(false);
+    expect(result.timeline!.find((m) => m.id === "fork" && m.ply === 5)?.evidence).toContain(
+        "The pawn on f7 cannot capture on e6 because it is pinned to its king on f8.",
+    );
+    const fork = result.timeline!.find((m) => m.id === "fork" && m.ply === 5)!;
+    expect(tacticalBoardEvidence(fen, line, fork)?.arrows).toEqual(
+        expect.arrayContaining([
+            { from: "e6", to: "d4" },
+            { from: "e6", to: "f8" },
+            { from: "f3", to: "f8" },
+        ]),
     );
     expect(tacticalBoardEvidence(fen, line, pin)).toMatchObject({
         square: "f7",

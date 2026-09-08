@@ -1132,6 +1132,40 @@ the capturing-check priority regression. All report regeneration commands
 above remain applicable. Website primitives, Outpost and running apps are
 unchanged; no deployment or physical UI proof is claimed.
 
+## Continuing threats versus new events (adapter 28)
+
+The secondary-event audit found two precise redundancies, not a reason to
+hide every repeated theme. In `ordinary-2:ply18`, Qf7+ and later Qd5+ describe
+the same queen's uninterrupted profitable attack on Rg8 during the mating
+sequence. The first fork remains at ply 7; its repeated label at ply 11 is
+removed. In `w1lKu`, Qf3 creates the pin at ply 3, then Nxe6+ exploits it to
+fork king and queen at ply 5. The duplicate Pin badge at ply 5 is folded into
+the fork's factual explanation, while the pin's creation stays visible.
+The fork's board evidence includes the Qf3-f8 pin ray as well as both knight
+attacks, so reducing labels does not remove the reason the pawn cannot capture.
+
+This is identity- and position-aware timeline normalization, not theme-ID
+deduplication. The same attacker must retain the same profitable material
+victims through every intervening legal position. A broken threat, a new
+attacker or victim, a capture or promotion keeps a distinct event; primary
+lessons are never removed by this secondary filter. A newly created pin is
+also retained. Legal exchange tests reject an apparent extra bishop target
+defended by a pawn and a checking queen's supposed fork when a rook can take
+the queen. Existing tests still retain the two-knight/two-rook fork sequence.
+Normalization is idempotent and preserves actual plies and input evidence.
+
+Fresh engine reports and the frozen development audits show only those two
+primary-line timeline removals across the 24 ordinary positions, 32 mixed puzzles and 32
+long mates. Their primary labels are unchanged; long-mate proof coverage is
+still 29/32. The ordinary f7+ scan measured 708 ms after engine analysis,
+with subsequent warm-cache review at 44 ms; this is not evidence of a speed
+improvement or real UI latency. Seven new regressions and the updated
+pin-creation/exploitation test cover the changes, including retained board
+arrows. The full selected suite passes 354 tests in 32 files (three opt-in
+tests skipped), all fifteen fresh-engine tests pass, and shared review-worker
+and production builds pass. The unrelated OTB number/bigint type-checking
+error remains. Runtime deployment, website primitives and Outpost are unchanged.
+
 ## What remains to establish
 
 These are relevance milestones, not completion of the broader tuning

@@ -2471,6 +2471,7 @@ export function tacticalBoardEvidence(
     }
     if (motif.id === "fork" && verifiedFork(step)) {
         const promotion = !immediateFork(step) ? provePromotionBackedFork(step) : null;
+        const pin = pinRestrictsCapture(step);
         return {
             square: makeSquare(step.move.to),
             arrows: [
@@ -2478,6 +2479,7 @@ export function tacticalBoardEvidence(
                     from: makeSquare(step.move.to),
                     to: makeSquare(to),
                 })),
+                ...(pin ? [{ from: makeSquare(pin.pinner), to: makeSquare(pin.rear) }] : []),
                 ...(promotion
                     ? [
                           { from: makeSquare(promotion.pawn), to: makeSquare(promotion.promotion) },
@@ -3774,6 +3776,122 @@ function relocatedSquare(
         );
     });
     return destinations.length === 1 ? destinations[0] : undefined;
+}
+
+/** Normalize already-audited timeline evidence. A repeated check is not a
+ * new fork lesson when the same piece has kept
+ * the same material victims under a profitable attack throughout. A capture,
+ * promotion, changed attacker/target or interrupted threat starts a new event.
+ * Keep pin creation, but fold a reused pin into the fork it makes possible. */
+export function normalizeContinuingTactics(
+    steps: TacticalReplayStep[],
+    motifs: TacticalMotifEvidence[],
+) {
+    const ordered = [...motifs].sort((a, b) => (a.ply ?? 0) - (b.ply ?? 0));
+    const keptForks: TacticalMotifEvidence[] = [];
+    const suppressed = new Set<TacticalMotifEvidence>();
+    const replacements = new Map<TacticalMotifEvidence, TacticalMotifEvidence>();
+    const targetCache = new Map<string, Square[]>();
+    const targetsAt = (index: number, from: Square) => {
+        const key = `${index}:${from}`;
+        const piece = steps[index]?.after.board.get(from);
+        if (!piece) return [];
+        if (!targetCache.has(key))
+            targetCache.set(
+                key,
+                winningTargets(steps[index].after, from, piece.color).filter(
+                    (square) => steps[index].after.board.get(square)?.role !== "king",
+                ),
+            );
+        return targetCache.get(key)!;
+    };
+    const continuing = (previous: TacticalMotifEvidence, current: TacticalMotifEvidence) => {
+        const start = (previous.ply ?? 0) - 1,
+            end = (current.ply ?? 0) - 1;
+        if (
+            start < 0 ||
+            !steps[start] ||
+            end <= start ||
+            current.relevance === "primary" ||
+            !steps[end] ||
+            steps[end].capture ||
+            steps[end].move.promotion
+        )
+            return false;
+        const first = steps[start],
+            last = steps[end];
+        if (first.before.turn !== last.before.turn) return false;
+        let attacker: Square | undefined = first.move.to;
+        let victims: (Square | undefined)[] = targetsAt(start, attacker);
+        if (!victims.length) return false;
+        const roles = victims.map((square) => first.after.board.get(square!)!.role);
+        const attackerRole = first.after.board.get(attacker)!.role;
+        for (let index = start + 1; index <= end; index++) {
+            const step = steps[index];
+            attacker = relocatedSquare(step, attacker);
+            victims = victims.map((square) =>
+                square === undefined ? undefined : relocatedSquare(step, square),
+            );
+            if (
+                attacker === undefined ||
+                step.after.board.get(attacker)?.role !== attackerRole ||
+                victims.some(
+                    (square, i) =>
+                        square === undefined || step.after.board.get(square)?.role !== roles[i],
+                )
+            )
+                return false;
+            const targets = targetsAt(index, attacker);
+            if (victims.some((square) => !targets.includes(square!))) return false;
+        }
+        const currentTargets = targetsAt(end, last.move.to);
+        return (
+            attacker === last.move.to &&
+            currentTargets.length === victims.length &&
+            currentTargets.every((square) => victims.includes(square))
+        );
+    };
+    for (const motif of ordered) {
+        if (motif.id !== "fork" || !motif.ply || !steps[motif.ply - 1]) continue;
+        if (keptForks.some((previous) => continuing(previous, motif))) suppressed.add(motif);
+        else keptForks.push(motif);
+    }
+    for (const motif of ordered) {
+        if (motif.id !== "pin" || !motif.ply || motif.relevance === "primary") continue;
+        const step = steps[motif.ply - 1];
+        if (!step) continue;
+        const fork = keptForks.find((candidate) => candidate.ply === motif.ply);
+        if (!fork) continue;
+        const ray = pinRestrictsCapture(step);
+        const previous = rayTactics(step.before, step.before.turn);
+        const existed = (candidate: { pinner: Square; front: Square; rear: Square }) =>
+            previous.some(
+                (old) =>
+                    old.kind === "pin" &&
+                    old.pinner === candidate.pinner &&
+                    old.front === candidate.front &&
+                    old.rear === candidate.rear,
+            );
+        if (
+            !ray ||
+            !existed(ray) ||
+            relevantRayTactics(step).some(
+                (candidate) => candidate.kind === "pin" && !existed(candidate),
+            )
+        )
+            continue;
+        const restriction = `The ${step.after.board.get(ray.front)!.role} on ${makeSquare(ray.front)} cannot capture on ${makeSquare(step.move.to)} because it is pinned to its king on ${makeSquare(ray.rear)}.`;
+        replacements.set(fork, {
+            ...fork,
+            evidence: fork.evidence.includes(restriction)
+                ? fork.evidence
+                : `${fork.evidence} ${restriction}`,
+        });
+        suppressed.add(motif);
+    }
+    return motifs
+        .filter((motif) => !suppressed.has(motif))
+        .map((motif) => replacements.get(motif) ?? motif);
 }
 
 function compareMaterialCause(
