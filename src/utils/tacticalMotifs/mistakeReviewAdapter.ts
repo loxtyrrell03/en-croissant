@@ -11,6 +11,7 @@ import { ChessLite } from "./siteClassifier/analysis.js";
 import { ChessPrimitives } from "./siteClassifier/chess-primitives.js";
 import {
     auditTacticalMotifs,
+    compareBestLineTacticalDefence,
     compareImmediateTacticalDefence,
     hasTacticalStart,
     replayTacticalLine,
@@ -98,7 +99,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 8;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 9;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -914,12 +915,18 @@ export function classifyMistakeReviewMotifs(
         motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
     } satisfies MistakeReviewMotifClassification;
 
-    const allowedMotifs = compareImmediateTacticalDefence(
+    const allowedMotifs = compareBestLineTacticalDefence(
         fen,
-        bestMoveUci,
         playedMoveUci,
-        refutationLine[0],
-        classification.allowedMotifs,
+        refutationLine,
+        bestLine,
+        compareImmediateTacticalDefence(
+            fen,
+            bestMoveUci,
+            playedMoveUci,
+            refutationLine[0],
+            classification.allowedMotifs,
+        ),
     );
     const compared: MistakeReviewMotifClassification = {
         ...classification,

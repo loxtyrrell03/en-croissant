@@ -1364,6 +1364,151 @@ function compareMaterialCause(
     return null;
 }
 
+/** A lesson signature is a locally proved net gain on named enemy pieces,
+ * not the PV endpoint's material total or a matching theme name. */
+function materialLesson(steps: TacticalReplayStep[], motif: TacticalMotifEvidence) {
+    const step = steps[0];
+    if (!step || motif.ply !== 1 || motif.moveUci !== step.uci) return null;
+    let targets: Square[] = [];
+    let gain: number | null = null;
+    if (["hangingPiece", "attackingF2F7"].includes(motif.id) && step.capture) {
+        targets = [step.move.to];
+        gain = tacticalExchangeGain(step.before, step.move);
+    } else if (["pin", "skewer"].includes(motif.id)) {
+        for (const ray of relevantRayTactics(step).filter((r) => r.kind === motif.id)) {
+            const proof = materialThreatProof(
+                step,
+                [ray.front, ray.rear],
+                [ray.pinner, step.move.to],
+            );
+            if (proof.kind !== "proven") continue;
+            targets = [ray.front, ray.rear];
+            gain = proof.gain;
+            break;
+        }
+    } else if (motif.id === "capturingDefender") {
+        const proof = capturedDefenderProof(step, motif.source);
+        if (proof) {
+            targets = [proof.target];
+            gain = proof.gain;
+        }
+    } else if (motif.id === "fork") {
+        targets = winningTargets(step.after, step.move.to, step.before.turn);
+        gain = targets.length >= 2 ? materialThreatGain(step, targets, [step.move.to]) : null;
+    } else if (DISCOVERED_THEMES.has(motif.id)) {
+        const proof = discoveredEvidence(steps, motif.source);
+        if (proof) {
+            targets = proof.targets;
+            gain = proof.motif.value ?? null;
+        }
+    }
+    targets = [...new Set(targets)].filter((sq) => {
+        const victim = step.before.board.get(sq);
+        return victim && victim.color === opposite(step.before.turn) && victim.role !== "king";
+    });
+    return gain !== null && gain >= 100 && gain < 10000 && targets.length
+        ? { targets, gain }
+        : null;
+}
+
+/** The proof's minimum gain can be only a lower bound. Do not dismiss a
+ * larger observed loss on the named targets just because the alternative
+ * proves that smaller amount. Settle the actual target capture, not a later
+ * unrelated capture or the arbitrary end of the engine PV. */
+function observedTargetGain(steps: TacticalReplayStep[], targets: Square[]) {
+    const side = steps[0].before.turn;
+    const remaining = new Set(targets);
+    let gain = 0;
+    for (const step of steps) {
+        if (step.before.turn !== side && remaining.delete(step.move.from))
+            remaining.add(step.move.to);
+        if (step.before.turn !== side || !step.capture || !remaining.has(step.move.to)) continue;
+        const exchangeGain = tacticalExchangeGain(step.before, step.move);
+        if (exchangeGain <= -VALUE.king) return Infinity;
+        gain = Math.max(
+            gain,
+            step.balance -
+                step.capture -
+                (step.move.promotion ? VALUE[step.move.promotion] - VALUE.pawn : 0) +
+                exchangeGain,
+        );
+        remaining.delete(step.move.to);
+        if (!remaining.size) break;
+    }
+    return gain;
+}
+
+/** The better choice may change the opponent's reply without saving the
+ * threatened material. Use its own legal engine continuation, never replay
+ * the actual refutation under a different move. Unknown proofs abstain. */
+export function compareBestLineTacticalDefence(
+    fen: string,
+    playedMove: string | null,
+    actualLine: string[],
+    bestLine: string[],
+    motifs: TacticalMotifEvidence[],
+) {
+    if (!motifs.length || !playedMove || !bestLine[0] || bestLine[0] === playedMove) return motifs;
+    const actual = replayTacticalLine(fen, [playedMove, ...actualLine]);
+    const better = replayTacticalLine(fen, bestLine);
+    if (actual.length < 2 || better.length < 2) return motifs;
+    const attackSteps = replayTacticalLine(
+        makeFen(actual[1].before.toSetup()),
+        actual.slice(1).map((s) => s.uci),
+    );
+    const alternativeSteps = replayTacticalLine(
+        makeFen(better[1].before.toSetup()),
+        better.slice(1).map((s) => s.uci),
+    );
+    const alternatives = auditTacticalMotifs(
+        makeFen(alternativeSteps[0].before.toSetup()),
+        alternativeSteps.map((s) => s.uci),
+        [],
+    )
+        .filter((m) => m.ply === 1)
+        .map((m) => materialLesson(alternativeSteps, m))
+        .filter((proof): proof is NonNullable<typeof proof> => proof !== null);
+    if (!alternatives.length) return motifs;
+    return motifs.map((motif) => {
+        const proof = materialLesson(attackSteps, motif);
+        if (!proof) return motif;
+        const actualGain = Math.max(proof.gain, observedTargetGain(attackSteps, proof.targets));
+        const mapped: Square[] = [];
+        for (const square of proof.targets) {
+            const original = relocatedSquare(actual[0], square, true);
+            const target =
+                original === undefined ? undefined : relocatedSquare(better[0], original);
+            const victim = actual[1].before.board.get(square)!;
+            const alternativeVictim =
+                target === undefined ? undefined : better[1].before.board.get(target);
+            if (
+                target === undefined ||
+                alternativeVictim?.role !== victim.role ||
+                alternativeVictim.color !== victim.color
+            )
+                return motif;
+            mapped.push(target);
+        }
+        const identity = [...mapped].sort((a, b) => a - b).join(",");
+        if (
+            !alternatives.some(
+                (other) =>
+                    other.gain >= actualGain &&
+                    [...other.targets].sort((a, b) => a - b).join(",") === identity,
+            )
+        )
+            return motif;
+        const names = mapped
+            .map((sq) => `the ${better[1].before.board.get(sq)!.role} on ${makeSquare(sq)}`)
+            .join(" and ");
+        return {
+            ...motif,
+            comparison: "persists" as const,
+            comparisonEvidence: `Even after ${better[0].san}, ${better[1].san} still forces at least the same net material gain on ${names}. The better move changes the continuation, not the existence of that material loss.`,
+        };
+    });
+}
+
 /** Compare the same immediate reply after the played and best moves. We only
  * make a causal statement where legality/geometry/exchange provides a witness;
  * replaying the old full PV after a different move would assume bad defence. */
@@ -1397,7 +1542,10 @@ export function compareImmediateTacticalDefence(
         ) {
             comparison = "persists";
             comparisonEvidence = `The same immediate reply still forces mate after ${bestSan}.`;
-        } else if (MATE.test(motif.id) && step.after.isCheckmate()) {
+        } else if (
+            (MATE.test(motif.id) || DISCOVERED_THEMES.has(motif.id)) &&
+            step.after.isCheckmate()
+        ) {
             if (!alternative.after.isCheckmate()) {
                 const escape =
                     legalMoves(alternative.after).find(

@@ -1,5 +1,1023 @@
 [
   {
+    "name": "Left the queen behind the discovered checking capture",
+    "fen": "4q1k1/p4ppp/8/8/4B3/8/5PPP/4R1K1 b - - 0 1",
+    "played": "a7a6",
+    "source": "allowed",
+    "primary": "discoveredAttack",
+    "why": "Bxh7+ opens the e-file against the queen. The comparison should explain how the engine's better defensive move changes that battery or its target.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "g7g6",
+          "g2g3",
+          "a7a5",
+          "e1e3",
+          "e8b5",
+          "e4f3",
+          "a5a4",
+          "g1g2",
+          "g8g7",
+          "h2h3",
+          "b5c4",
+          "e3e4",
+          "c4b3",
+          "e4e3",
+          "b3b5",
+          "f3d1",
+          "b5d5",
+          "d1f3",
+          "d5d6",
+          "e3e8"
+        ],
+        "pvSan": [
+          "g6",
+          "g3",
+          "a5",
+          "Re3",
+          "Qb5",
+          "Bf3",
+          "a4",
+          "Kg2",
+          "Kg7",
+          "h3",
+          "Qc4",
+          "Re4",
+          "Qb3",
+          "Re3",
+          "Qb5",
+          "Bd1",
+          "Qd5+",
+          "Bf3",
+          "Qd6",
+          "Re8"
+        ],
+        "cp": 343,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "g8f8",
+          "e1e3",
+          "e8a4",
+          "g2g3",
+          "g7g6",
+          "e4f3",
+          "a4b5",
+          "g1g2",
+          "a7a5",
+          "f3d1",
+          "b5c5",
+          "d1a4",
+          "f8g7",
+          "h2h3",
+          "c5c4"
+        ],
+        "pvSan": [
+          "Kf8",
+          "Re3",
+          "Qa4",
+          "g3",
+          "g6",
+          "Bf3",
+          "Qb5",
+          "Kg2",
+          "a5",
+          "Bd1",
+          "Qc5",
+          "Ba4",
+          "Kg7",
+          "h3",
+          "Qc4"
+        ],
+        "cp": 317,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e8d7",
+          "e4f3",
+          "g7g6",
+          "e1d1",
+          "d7e8",
+          "g2g3",
+          "a7a5",
+          "d1b1",
+          "e8e7",
+          "b1b8",
+          "g8g7",
+          "b8a8"
+        ],
+        "pvSan": [
+          "Qd7",
+          "Bf3",
+          "g6",
+          "Rd1",
+          "Qe8",
+          "g3",
+          "a5",
+          "Rb1",
+          "Qe7",
+          "Rb8+",
+          "Kg7",
+          "Ra8"
+        ],
+        "cp": 303,
+        "mate": null
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e4h7",
+          "g8f8",
+          "e1e8",
+          "f8e8",
+          "h7c2",
+          "e8d7",
+          "g1f1",
+          "a6a5",
+          "h2h4",
+          "d7d6",
+          "f1e2",
+          "f7f5",
+          "h4h5",
+          "d6c5",
+          "e2d3",
+          "c5d5",
+          "c2b3",
+          "d5e5",
+          "d3e3"
+        ],
+        "pvSan": [
+          "Bxh7+",
+          "Kf8",
+          "Rxe8+",
+          "Kxe8",
+          "Bc2",
+          "Kd7",
+          "Kf1",
+          "a5",
+          "h4",
+          "Kd6",
+          "Ke2",
+          "f5",
+          "h5",
+          "Kc5",
+          "Kd3",
+          "Kd5",
+          "Bb3+",
+          "Ke5",
+          "Ke3"
+        ],
+        "cp": 479,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e1e3",
+          "e8a4",
+          "g2g3",
+          "g7g6",
+          "e4f3",
+          "a4b5",
+          "f3d1",
+          "a6a5",
+          "g1g2",
+          "b5b7",
+          "g2g1"
+        ],
+        "pvSan": [
+          "Re3",
+          "Qa4",
+          "g3",
+          "g6",
+          "Bf3",
+          "Qb5",
+          "Bd1",
+          "a5",
+          "Kg2",
+          "Qb7+",
+          "Kg1"
+        ],
+        "cp": -282,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "g2g3",
+          "g7g6",
+          "e1e3",
+          "e8b5",
+          "h2h4",
+          "a6a5",
+          "e4c2",
+          "b5c6",
+          "c2d1",
+          "c6d7",
+          "d1c2",
+          "a5a4"
+        ],
+        "pvSan": [
+          "g3",
+          "g6",
+          "Re3",
+          "Qb5",
+          "h4",
+          "a5",
+          "Bc2",
+          "Qc6",
+          "Bd1",
+          "Qd7",
+          "Bc2",
+          "a4"
+        ],
+        "cp": -305,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [
+        {
+          "id": "discoveredAttack",
+          "label": "Discovered Attack",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e4h7",
+          "evidence": "Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+          "value": 500,
+          "relevance": "primary",
+          "comparison": "prevented",
+          "comparisonEvidence": "g6 makes the immediate reply Bxh7+ illegal."
+        }
+      ],
+      "missedMotifs": [],
+      "motifClassifierVersion": "site-55.adapter-9",
+      "allowedTimeline": [
+        {
+          "id": "discoveredAttack",
+          "label": "Discovered Attack",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e4h7",
+          "evidence": "Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+          "value": 500,
+          "relevance": "primary",
+          "comparison": "prevented",
+          "comparisonEvidence": "g6 makes the immediate reply Bxh7+ illegal.",
+          "actor": "white"
+        },
+        {
+          "id": "clearance",
+          "label": "Clearance Sacrifice",
+          "confidence": "medium",
+          "evidence": "Clearance Sacrifice appears on Bxh7+ at ply 1 of the opponent refutation.",
+          "source": "allowed",
+          "ply": 1,
+          "moveUci": "e4h7",
+          "relevance": "secondary",
+          "value": 500,
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Rxe8+ wins the loose queen on e8.",
+          "source": "allowed",
+          "ply": 3,
+          "moveUci": "e1e8",
+          "relevance": "secondary",
+          "value": 400,
+          "actor": "white"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "Why the move was tactically bad",
+      "text": "Your move allowed this tactic: Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check. g6 makes the immediate reply Bxh7+ illegal.",
+      "source": "allowed",
+      "primary": {
+        "id": "discoveredAttack",
+        "label": "Discovered Attack",
+        "source": "allowed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "e4h7",
+        "evidence": "Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+        "value": 500,
+        "relevance": "primary",
+        "comparison": "prevented",
+        "comparisonEvidence": "g6 makes the immediate reply Bxh7+ illegal."
+      }
+    },
+    "classificationMs": 9.848199999996723
+  },
+  {
+    "name": "A different reply wins the same queen after the better move",
+    "fen": "5q1k/7p/8/4R3/8/8/1B3PPP/6K1 b - - 0 1",
+    "played": "h7h6",
+    "source": "allowed",
+    "primary": "pin",
+    "comparison": "persists",
+    "why": "h6 permits Re8+ and a pin of Qf8. But even best Kg7 permits Rf5+ and a discovered check winning that same queen for a rook. The queen loss is existing danger, not an explanation of the small score difference.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "h8g7",
+          "e5f5",
+          "g7g8",
+          "f5f8",
+          "g8f8",
+          "g2g4",
+          "f8e7",
+          "g1g2",
+          "e7e6",
+          "g2f3",
+          "e6d5",
+          "f3f4",
+          "d5e6",
+          "f4e4",
+          "e6d6",
+          "f2f4",
+          "d6e7",
+          "e4f5",
+          "e7e8",
+          "h2h4",
+          "e8f7",
+          "f5e4",
+          "f7e8",
+          "f4f5",
+          "e8f7",
+          "f5f6",
+          "f7g6",
+          "g4g5"
+        ],
+        "pvSan": [
+          "Kg7",
+          "Rf5+",
+          "Kg8",
+          "Rxf8+",
+          "Kxf8",
+          "g4",
+          "Ke7",
+          "Kg2",
+          "Ke6",
+          "Kf3",
+          "Kd5",
+          "Kf4",
+          "Ke6",
+          "Ke4",
+          "Kd6",
+          "f4",
+          "Ke7",
+          "Kf5",
+          "Ke8",
+          "h4",
+          "Kf7",
+          "Ke4",
+          "Ke8",
+          "f5",
+          "Kf7",
+          "f6",
+          "Kg6",
+          "g5"
+        ],
+        "cp": -646,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "h8g8",
+          "e5g5",
+          "g8f7",
+          "g5f5",
+          "f7g8",
+          "f5f8",
+          "g8f8",
+          "g2g4",
+          "f8e7",
+          "g1g2",
+          "e7e6",
+          "g2f3",
+          "e6d5",
+          "h2h3",
+          "d5d6",
+          "f3e4",
+          "d6e6",
+          "e4f4"
+        ],
+        "pvSan": [
+          "Kg8",
+          "Rg5+",
+          "Kf7",
+          "Rf5+",
+          "Kg8",
+          "Rxf8+",
+          "Kxf8",
+          "g4",
+          "Ke7",
+          "Kg2",
+          "Ke6",
+          "Kf3",
+          "Kd5",
+          "h3",
+          "Kd6",
+          "Ke4",
+          "Ke6",
+          "Kf4"
+        ],
+        "cp": -651,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "h7h6",
+          "e5e8",
+          "h8g8",
+          "e8f8",
+          "g8f8",
+          "g2g4",
+          "f8e7",
+          "g1g2",
+          "e7d7",
+          "g2f3",
+          "d7c6",
+          "f3e4",
+          "c6d6",
+          "e4f5",
+          "d6c5",
+          "b2e5",
+          "c5c6",
+          "f2f4",
+          "c6b5"
+        ],
+        "pvSan": [
+          "h6",
+          "Re8+",
+          "Kg8",
+          "Rxf8+",
+          "Kxf8",
+          "g4",
+          "Ke7",
+          "Kg2",
+          "Kd7",
+          "Kf3",
+          "Kc6",
+          "Ke4",
+          "Kd6",
+          "Kf5",
+          "Kc5",
+          "Be5",
+          "Kc6",
+          "f4",
+          "Kb5"
+        ],
+        "cp": -687,
+        "mate": null
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e5e8",
+          "h8g8",
+          "e8f8",
+          "g8f8",
+          "h2h3",
+          "f8f7",
+          "g1h2",
+          "f7e6",
+          "h2g3",
+          "e6d5",
+          "g3h4",
+          "d5e4",
+          "h4h5",
+          "e4f5",
+          "b2g7",
+          "f5e4",
+          "h5h6",
+          "e4f5",
+          "h3h4",
+          "f5f4",
+          "h4h5",
+          "f4e4",
+          "g7b2"
+        ],
+        "pvSan": [
+          "Re8+",
+          "Kg8",
+          "Rxf8+",
+          "Kxf8",
+          "h3",
+          "Kf7",
+          "Kh2",
+          "Ke6",
+          "Kg3",
+          "Kd5",
+          "Kh4",
+          "Ke4",
+          "Kh5",
+          "Kf5",
+          "Bg7",
+          "Ke4",
+          "Kxh6",
+          "Kf5",
+          "h4",
+          "Kf4",
+          "h5",
+          "Ke4",
+          "Bb2"
+        ],
+        "cp": 713,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e5f5",
+          "f8g7",
+          "b2g7",
+          "h8g7",
+          "h2h3",
+          "g7h8",
+          "g2g4",
+          "h6h5",
+          "f5h5",
+          "h8g8"
+        ],
+        "pvSan": [
+          "Rf5+",
+          "Qg7",
+          "Bxg7+",
+          "Kxg7",
+          "h3",
+          "Kh8",
+          "g4",
+          "h5",
+          "Rxh5+",
+          "Kg8"
+        ],
+        "cp": 564,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e5e7",
+          "h8g8",
+          "e7g7",
+          "f8g7",
+          "b2g7",
+          "g8g7",
+          "g1f1",
+          "h6h5",
+          "f1e2",
+          "g7f6",
+          "e2e3",
+          "f6e5",
+          "g2g3",
+          "e5d5",
+          "h2h4"
+        ],
+        "pvSan": [
+          "Re7+",
+          "Kg8",
+          "Rg7+",
+          "Qxg7",
+          "Bxg7",
+          "Kxg7",
+          "Kf1",
+          "h5",
+          "Ke2",
+          "Kf6",
+          "Ke3",
+          "Ke5",
+          "g3",
+          "Kd5",
+          "h4"
+        ],
+        "cp": 513,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [
+        {
+          "id": "pin",
+          "label": "Pin",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e5e8",
+          "value": 400,
+          "evidence": "Re8+ exploits the queen on f8, pinned to the king on h8 by the rook on e8. No legal reply avoids material loss in the immediate exchange.",
+          "relevance": "primary",
+          "comparison": "persists",
+          "comparisonEvidence": "Even after Kg7, Rf5+ still forces at least the same net material gain on the queen on f8. The better move changes the continuation, not the existence of that material loss."
+        },
+        {
+          "id": "discoveredCheck",
+          "label": "Discovered Check",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e5e8",
+          "evidence": "Re8+ vacates e5, uncovering the bishop on b2 against the king on h8. The rook on e8 also attacks the queen on f8. Every legal answer to the discovered check concedes material. Captures and interpositions are included in this check.",
+          "value": 400,
+          "relevance": "secondary",
+          "comparison": "persists",
+          "comparisonEvidence": "Even after Kg7, Rf5+ still forces at least the same net material gain on the queen on f8. The better move changes the continuation, not the existence of that material loss."
+        }
+      ],
+      "missedMotifs": [],
+      "motifClassifierVersion": "site-55.adapter-9",
+      "allowedTimeline": [
+        {
+          "id": "pin",
+          "label": "Pin",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e5e8",
+          "value": 400,
+          "evidence": "Re8+ exploits the queen on f8, pinned to the king on h8 by the rook on e8. No legal reply avoids material loss in the immediate exchange.",
+          "relevance": "primary",
+          "comparison": "persists",
+          "comparisonEvidence": "Even after Kg7, Rf5+ still forces at least the same net material gain on the queen on f8. The better move changes the continuation, not the existence of that material loss.",
+          "actor": "white"
+        },
+        {
+          "id": "discoveredCheck",
+          "label": "Discovered Check",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e5e8",
+          "evidence": "Re8+ vacates e5, uncovering the bishop on b2 against the king on h8. The rook on e8 also attacks the queen on f8. Every legal answer to the discovered check concedes material. Captures and interpositions are included in this check.",
+          "value": 400,
+          "relevance": "secondary",
+          "comparison": "persists",
+          "comparisonEvidence": "Even after Kg7, Rf5+ still forces at least the same net material gain on the queen on f8. The better move changes the continuation, not the existence of that material loss.",
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Rxf8+ wins the loose queen on f8.",
+          "source": "allowed",
+          "ply": 3,
+          "moveUci": "e8f8",
+          "relevance": "secondary",
+          "value": 400,
+          "actor": "white"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "Tactical danger in the position",
+      "text": "Re8+ exploits the queen on f8, pinned to the king on h8 by the rook on e8. No legal reply avoids material loss in the immediate exchange. Even after Kg7, Rf5+ still forces at least the same net material gain on the queen on f8. The better move changes the continuation, not the existence of that material loss. This threat alone does not explain the difference between the two moves.",
+      "source": "allowed",
+      "primary": {
+        "id": "pin",
+        "label": "Pin",
+        "source": "allowed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "e5e8",
+        "value": 400,
+        "evidence": "Re8+ exploits the queen on f8, pinned to the king on h8 by the rook on e8. No legal reply avoids material loss in the immediate exchange.",
+        "relevance": "primary",
+        "comparison": "persists",
+        "comparisonEvidence": "Even after Kg7, Rf5+ still forces at least the same net material gain on the queen on f8. The better move changes the continuation, not the existence of that material loss."
+      }
+    },
+    "classificationMs": 11.806899999999587
+  },
+  {
+    "name": "Ignored double-check mate instead of making a king escape",
+    "fen": "3rkr2/5p2/p7/8/8/8/4B3/4R1K1 b - - 0 1",
+    "played": "a6a5",
+    "source": "allowed",
+    "primary": "doubleCheck",
+    "why": "Bb5# checks with both bishop and rook. Moving a back-rank rook may supply an escape; a double-check mechanism must receive the same causal mate comparison as a named mate pattern.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "f8g8",
+          "g1f2",
+          "a6a5",
+          "e2f3",
+          "e8f8",
+          "e1a1",
+          "g8g5",
+          "f2e3",
+          "g5e5",
+          "e3f4",
+          "d8e8",
+          "f3g4"
+        ],
+        "pvSan": [
+          "Rg8+",
+          "Kf2",
+          "a5",
+          "Bf3+",
+          "Kf8",
+          "Ra1",
+          "Rg5",
+          "Ke3",
+          "Re5+",
+          "Kf4",
+          "Rde8",
+          "Bg4"
+        ],
+        "cp": 351,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "f8h8",
+          "e2a6",
+          "e8f8",
+          "e1e3",
+          "d8d6",
+          "a6e2",
+          "d6g6",
+          "g1f2",
+          "h8h2",
+          "f2f1",
+          "g6e6",
+          "e3e6",
+          "f7e6"
+        ],
+        "pvSan": [
+          "Rh8",
+          "Bxa6+",
+          "Kf8",
+          "Re3",
+          "Rd6",
+          "Be2",
+          "Rg6+",
+          "Kf2",
+          "Rh2+",
+          "Kf1",
+          "Re6",
+          "Rxe6",
+          "fxe6"
+        ],
+        "cp": 345,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "d8d6",
+          "e2a6",
+          "e8d8",
+          "e1a1",
+          "d6f6",
+          "a6b7",
+          "f8g8",
+          "b7g2",
+          "d8e7",
+          "a1a7",
+          "e7f8",
+          "a7a8",
+          "f8g7",
+          "a8a7",
+          "g7h6",
+          "a7a3",
+          "g8g5",
+          "a3h3",
+          "h6g7"
+        ],
+        "pvSan": [
+          "Rd6",
+          "Bxa6+",
+          "Kd8",
+          "Ra1",
+          "Rf6",
+          "Bb7",
+          "Rg8+",
+          "Bg2",
+          "Ke7",
+          "Ra7+",
+          "Kf8",
+          "Ra8+",
+          "Kg7",
+          "Ra7",
+          "Kh6",
+          "Ra3",
+          "Rg5",
+          "Rh3+",
+          "Kg7"
+        ],
+        "cp": 342,
+        "mate": null
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e2b5"
+        ],
+        "pvSan": [
+          "Bb5#"
+        ],
+        "cp": null,
+        "mate": 1
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e2g4"
+        ],
+        "pvSan": [
+          "Bg4#"
+        ],
+        "cp": null,
+        "mate": 1
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e2a6",
+          "e8d7",
+          "e1e5",
+          "f8g8",
+          "g1f2",
+          "d8b8",
+          "e5a5",
+          "b8b2",
+          "f2f3",
+          "b2b3",
+          "f3e4",
+          "b3b4",
+          "e4e5"
+        ],
+        "pvSan": [
+          "Ba6+",
+          "Kd7",
+          "Re5",
+          "Rg8+",
+          "Kf2",
+          "Rb8",
+          "Rxa5",
+          "Rb2+",
+          "Kf3",
+          "Rb3+",
+          "Ke4",
+          "Rb4+",
+          "Ke5"
+        ],
+        "cp": -312,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [
+        {
+          "id": "doubleCheck",
+          "label": "Double Check",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e2b5",
+          "evidence": "Bb5# vacates e2, uncovering the rook on e1 against the king on e8. Both pieces give check. There is no legal defence: checkmate.",
+          "value": 10000,
+          "relevance": "primary",
+          "comparison": "prevented",
+          "comparisonEvidence": "Rg8+ makes the immediate reply Bb5# illegal."
+        },
+        {
+          "id": "epauletteMate",
+          "label": "Epaulette Mate",
+          "confidence": "medium",
+          "evidence": "Epaulette Mate appears on Bb5# at ply 1 of the opponent refutation.",
+          "source": "allowed",
+          "ply": 1,
+          "moveUci": "e2b5",
+          "relevance": "secondary",
+          "value": 10000,
+          "comparison": "prevented",
+          "comparisonEvidence": "Rg8+ makes the immediate reply Bb5# illegal."
+        },
+        {
+          "id": "pillsburysMate",
+          "label": "Pillsbury's Mate",
+          "confidence": "medium",
+          "evidence": "Pillsbury's Mate appears on Bb5# at ply 1 of the opponent refutation.",
+          "source": "allowed",
+          "ply": 1,
+          "moveUci": "e2b5",
+          "relevance": "secondary",
+          "value": 10000,
+          "comparison": "prevented",
+          "comparisonEvidence": "Rg8+ makes the immediate reply Bb5# illegal."
+        }
+      ],
+      "missedMotifs": [],
+      "motifClassifierVersion": "site-55.adapter-9",
+      "allowedTimeline": [
+        {
+          "id": "doubleCheck",
+          "label": "Double Check",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e2b5",
+          "evidence": "Bb5# vacates e2, uncovering the rook on e1 against the king on e8. Both pieces give check. There is no legal defence: checkmate.",
+          "value": 10000,
+          "relevance": "primary",
+          "comparison": "prevented",
+          "comparisonEvidence": "Rg8+ makes the immediate reply Bb5# illegal.",
+          "actor": "white"
+        },
+        {
+          "id": "epauletteMate",
+          "label": "Epaulette Mate",
+          "confidence": "medium",
+          "evidence": "Epaulette Mate appears on Bb5# at ply 1 of the opponent refutation.",
+          "source": "allowed",
+          "ply": 1,
+          "moveUci": "e2b5",
+          "relevance": "secondary",
+          "value": 10000,
+          "comparison": "prevented",
+          "comparisonEvidence": "Rg8+ makes the immediate reply Bb5# illegal.",
+          "actor": "white"
+        },
+        {
+          "id": "pillsburysMate",
+          "label": "Pillsbury's Mate",
+          "confidence": "medium",
+          "evidence": "Pillsbury's Mate appears on Bb5# at ply 1 of the opponent refutation.",
+          "source": "allowed",
+          "ply": 1,
+          "moveUci": "e2b5",
+          "relevance": "secondary",
+          "value": 10000,
+          "comparison": "prevented",
+          "comparisonEvidence": "Rg8+ makes the immediate reply Bb5# illegal.",
+          "actor": "white"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "Why the move was tactically bad",
+      "text": "Your move allowed this tactic: Bb5# vacates e2, uncovering the rook on e1 against the king on e8. Both pieces give check. There is no legal defence: checkmate. Rg8+ makes the immediate reply Bb5# illegal.",
+      "source": "allowed",
+      "primary": {
+        "id": "doubleCheck",
+        "label": "Double Check",
+        "source": "allowed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "e2b5",
+        "evidence": "Bb5# vacates e2, uncovering the rook on e1 against the king on e8. Both pieces give check. There is no legal defence: checkmate.",
+        "value": 10000,
+        "relevance": "primary",
+        "comparison": "prevented",
+        "comparisonEvidence": "Rg8+ makes the immediate reply Bb5# illegal."
+      }
+    },
+    "classificationMs": 19.288100000001577
+  },
+  {
     "name": "Failed to unpin the knight",
     "fen": "4k2r/4n2p/8/3P4/8/8/8/4R1K1 b k - 0 1",
     "played": "h7h6",
@@ -251,7 +1269,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-8",
+      "motifClassifierVersion": "site-55.adapter-9",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -299,7 +1317,7 @@
         "comparisonEvidence": "After Kd7, Kxd6 answers d6; a profitable immediate follow-up capture of the knight on e7 is no longer forced."
       }
     },
-    "classificationMs": 20.03689999999915
+    "classificationMs": 11.844199999999546
   },
   {
     "name": "Allowed a king-queen skewer instead of preserving the queen",
@@ -563,7 +1581,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-8",
+      "motifClassifierVersion": "site-55.adapter-9",
       "allowedTimeline": [
         {
           "id": "skewer",
@@ -611,7 +1629,7 @@
         "comparisonEvidence": "After Kf4, Qxd3 answers Bd3; a profitable immediate follow-up capture of the queen on h7 is no longer forced."
       }
     },
-    "classificationMs": 7.15060000000085
+    "classificationMs": 5.589899999999034
   },
   {
     "name": "Allowed checking defender removal and lost the queen",
@@ -907,7 +1925,7 @@
           "value": 500
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-8",
+      "motifClassifierVersion": "site-55.adapter-9",
       "allowedTimeline": [
         {
           "id": "capturingDefender",
@@ -969,7 +1987,7 @@
         "comparisonEvidence": "Qxd1+ makes the immediate reply gxf6+ illegal."
       }
     },
-    "classificationMs": 28.970800000002782
+    "classificationMs": 21.898599999996804
   },
   {
     "name": "Missed quiet mate while leaving the queen attacked",
@@ -1187,7 +2205,7 @@
           "value": 10000
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-8",
+      "motifClassifierVersion": "site-55.adapter-9",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -1271,7 +2289,7 @@
         "value": 10000
       }
     },
-    "classificationMs": 5.9112999999997555
+    "classificationMs": 6.027099999999336
   },
   {
     "name": "b6 permits the f7 fork",
@@ -1594,7 +2612,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-8",
+      "motifClassifierVersion": "site-55.adapter-9",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -1680,7 +2698,7 @@
         "comparisonEvidence": "After O-O, Nxf7 no longer has two profitable fork targets."
       }
     },
-    "classificationMs": 79.21199999999953
+    "classificationMs": 50.400699999998324
   },
   {
     "name": "Missed queen while the knight is already attacked",
@@ -1972,7 +2990,7 @@
           "value": 900
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-8",
+      "motifClassifierVersion": "site-55.adapter-9",
       "missedTimeline": [
         {
           "id": "hangingPiece",
@@ -2004,7 +3022,7 @@
         "value": 900
       }
     },
-    "classificationMs": 16.99789999999848
+    "classificationMs": 12.892499999998108
   },
   {
     "name": "Failed to create a back-rank escape",
@@ -2206,7 +3224,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-8",
+      "motifClassifierVersion": "site-55.adapter-9",
       "allowedTimeline": [
         {
           "id": "backRankMate",
@@ -2242,6 +3260,6 @@
         "comparisonEvidence": "After g5, Kg7 is a legal answer to Re8+; it is no longer mate."
       }
     },
-    "classificationMs": 1.4774000000033993
+    "classificationMs": 1.4831999999987602
   }
 ]

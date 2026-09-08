@@ -423,6 +423,31 @@ describe("expert tactical judgement with fresh engine lines", () => {
         async () => {
             const examples = [
                 {
+                    name: "Left the queen behind the discovered checking capture",
+                    fen: "4q1k1/p4ppp/8/8/4B3/8/5PPP/4R1K1 b - - 0 1",
+                    played: "a7a6",
+                    source: "allowed",
+                    primary: "discoveredAttack",
+                    why: "Bxh7+ opens the e-file against the queen. The comparison should explain how the engine's better defensive move changes that battery or its target.",
+                },
+                {
+                    name: "A different reply wins the same queen after the better move",
+                    fen: "5q1k/7p/8/4R3/8/8/1B3PPP/6K1 b - - 0 1",
+                    played: "h7h6",
+                    source: "allowed",
+                    primary: "pin",
+                    comparison: "persists",
+                    why: "h6 permits Re8+ and a pin of Qf8. But even best Kg7 permits Rf5+ and a discovered check winning that same queen for a rook. The queen loss is existing danger, not an explanation of the small score difference.",
+                },
+                {
+                    name: "Ignored double-check mate instead of making a king escape",
+                    fen: "3rkr2/5p2/p7/8/8/8/4B3/4R1K1 b - - 0 1",
+                    played: "a6a5",
+                    source: "allowed",
+                    primary: "doubleCheck",
+                    why: "Bb5# checks with both bishop and rook. Moving a back-rank rook may supply an escape; a double-check mechanism must receive the same causal mate comparison as a named mate pattern.",
+                },
+                {
                     name: "Failed to unpin the knight",
                     fen: "4k2r/4n2p/8/3P4/8/8/8/4R1K1 b k - 0 1",
                     played: "h7h6",
@@ -523,11 +548,18 @@ describe("expert tactical judgement with fresh engine lines", () => {
                         process.env.TACTICAL_CAUSAL_REPORT,
                         JSON.stringify(report, null, 2),
                     );
-                expect({ primary: explanation?.primary.id, source: explanation?.source }).toEqual({
-                    primary: example.primary,
-                    source: example.source,
+            }
+            for (const item of report) {
+                expect({
+                    primary: item.explanation?.primary.id,
+                    source: item.explanation?.source,
+                }).toEqual({
+                    primary: item.primary,
+                    source: item.source,
                 });
             }
+            for (const item of report.filter((entry) => "comparison" in entry))
+                expect(item.explanation?.primary.comparison).toBe(item.comparison);
         },
         180000,
     );

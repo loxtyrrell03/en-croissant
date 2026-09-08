@@ -38,7 +38,7 @@ replace the main lesson or establish that the entire continuation is forced.
 Routine recaptures, global opening/check tags, and incidental pins that do not
 explain a winning capture are excluded from these rows.
 
-`causal-stockfish-18.json` adds fresh searches before and after seven mistakes,
+`causal-stockfish-18.json` records fresh searches before and after ten choices,
 with all three engine candidates and the resulting explanations:
 
 | Mistake | Engine's better move | Judged causal lesson |
@@ -50,6 +50,9 @@ with all three engine candidates and the resulting explanations:
 | Black plays h6 with Ne7 pinned to Ke8 | Kd7 | Kxd6 then answers d6; h6 instead permits a pin-based drawing resource |
 | Black plays a6 with Kf5 and Qh7 aligned behind Bd3+ | Kf4 | Qxd3 can answer Bd3 once the king no longer blocks the queen |
 | Black plays a6 with Nf6 defending Qd5 | Qxd1+ | White must answer check instead of playing gxf6+ and Rxd5 |
+| Black plays a6 while Be4 obstructs Re1 against Qe8 | g6 | The pawn interposes on the bishop's route to h7, making Bxh7+ illegal |
+| Black plays h6 with the Bb2/Re5 battery facing Qf8/Kh8 | Kg7 | Existing danger: Re8+ wins the queen with a pin, but Rf5+ still wins that same queen after Kg7 |
+| Black plays a5 with Ke8 boxed between Rd8/Rf8 | Rg8+ | White must answer check instead of delivering Bb5# double check |
 
 The back-rank-mate position is already materially lost: this judges avoidance of
 immediate mate, not a change in the game's theoretical outcome. The initial
@@ -230,6 +233,51 @@ rook that does not justify losing the bishop, a cooperative losing PV, and an
 exhausted proof budget. This is source and render-data verification, not a
 running-app visual claim. The six scenarios are not six independently sampled
 positions: two intentionally compare different moves in the same position.
+
+## A different reply can preserve the same tactical loss
+
+Comparing only the identical reply can create a false causal explanation.
+Fresh Stockfish analysis of the Bb2/Re5 versus Qf8/Kh8 position found best
+Kg7 at -646 cp and h6 at -713 cp from Black's perspective. After h6, Re8+
+pins the queen; after Kg7, the same Re8+ can be answered by Qf6. That initially
+made the classifier say the better move prevented the queen loss. But the
+engine's actual reply after Kg7 is **Rf5+**, a discovered check which still
+wins the same queen for a rook. The 67 cp difference is not explained by
+creating that already-forced material loss, and may not meet a review card's
+mistake threshold at all. This is an attribution control, not a new tactical
+blunder example.
+
+The adapter now checks the opponent's first move in the better move's own
+legal engine continuation. Locally proved material signatures match the same
+target pieces across the two choices, including relocated pieces, without
+requiring the same capturing piece, reply or theme. The alternative must prove
+at least the actual net gain, including legal recaptures and any larger observed
+gain at the actual named-target capture. A lower bound alone is not evidence
+that a larger loss is equivalent. Matching raw centipawn evaluations, equal
+piece values on different targets, an illegal line, an incomplete local proof,
+or an unrelated later PV capture cannot establish persistent danger.
+
+When that baseline loss persists, the card says **Tactical danger in the
+position**, retains the real pin/discovered-check lesson and conditional ply
+rows, but does not claim that this loss explains the move's inferiority. The
+same comparison metadata is retained in the headline and saved timeline. A
+double-check mate also now receives the immediate-mate comparison, including a
+concrete king escape after a non-checking defence.
+
+Six deterministic regressions cover different replies/themes winning the same
+queen, different equal-valued queens, a relocated queen taken by another piece,
+less compensation in the actual line, an illegal alternative PV, and the king
+escape from a double-check mate. The first proposed g6 mistake in the simpler
+queen/bishop position was rejected: Stockfish assessed it within about 8 cp of
+best, and the pawn blocks Bxh7's diagonal. Adding an a-pawn and choosing a6
+provided a real blunder, with g6 as the engine's better defensive resource.
+The deliberately supplied queen-relocation comparisons test the comparison
+boundary; they are not labelled as engine-best choices.
+
+These comparisons are bounded material explanations, not complete evaluations
+of positional compensation or proof that all later threats are unchanged.
+An opposing tactic which starts only after another quiet move remains outside
+this first-reply baseline check.
 
 Run in PowerShell with the configured Node runtime on PATH:
 
