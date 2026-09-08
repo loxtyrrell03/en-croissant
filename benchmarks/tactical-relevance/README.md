@@ -1571,6 +1571,33 @@ Outpost or service deployment, physical UI proof or general accuracy is claimed.
 
 ## Desktop timeout-path verification (live pipeline 35; adapter 34 unchanged)
 
+### Separate Nd7 defence investigation (not a shipped causal proof)
+
+Fresh unrestricted depth-16 MultiPV3 searches now identify the material defence
+that the earlier local escape search did not cover. After Bg6/Nd7, Black prefers
+Raxa6 (+485 cp from Black's perspective); after g6/Nd7, the best continuation
+scores -300 cp. `double-threat-defence-stockfish-18.json` retains all three lines.
+Nd7 stops defending Ba6, allowing the rook on a8 to capture it while the rooks
+support each other's recaptures. Keeping g7 allows Nf6+ gxf6; moving that pawn
+loses the answer to the king/queen fork.
+
+The replay controls preserve an important limitation: Raxa6 bxa6 Rxa6 gives
+White a local 70 cp material gain, while Raxa6 Nxb6 Rxb6 gives Black 150 cp.
+The classifier must not call both zero-gain exchanges or equate them with the
+full-position engine evaluations. A candidate general countercapture proof did
+not yet establish every relevant branch while preserving the earlier Qb3
+discovered-attack defence, so it was withheld. No causal label or primary lesson
+changed. The fresh engine diagnostic and two legal-replay tests pass.
+
+```powershell
+$env:TACTICAL_JUDGEMENT_ENGINE = '<Stockfish executable>'
+$env:TACTICAL_DOUBLE_DEFENCE_REPORT = 'benchmarks/tactical-relevance/double-threat-defence-stockfish-18.json'
+node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node -t 'inspect defences to Nd7'
+node node_modules/vitest/vitest.mjs run src/utils/tests/doubleThreatDefence.test.ts --environment node
+```
+
+### Timeout changes and verification
+
 The reported six-second error occurs before theme verification. The panel used
 one deadline for listener registration, cold engine startup and depth search,
 and cancellation could call native cleanup before the process was registered.

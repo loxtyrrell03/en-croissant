@@ -492,6 +492,30 @@ async function analyse(engine: string, fen: string, searchMove?: string) {
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(!engine || !existsSync(engine) || !process.env.TACTICAL_DOUBLE_DEFENCE_REPORT)(
+        "inspect defences to Nd7 before and after moving the g7 pawn",
+        async () => {
+            const fen = "r5k1/5pp1/Br2p3/1PNpPb1q/3P4/4P1Q1/5K1P/6R1 b - - 6 32";
+            const actualFen = makeFen(replayTacticalLine(fen, ["g7g6", "c5d7"])[1].after.toSetup());
+            const betterFen = makeFen(replayTacticalLine(fen, ["f5g6", "c5d7"])[1].after.toSetup());
+            const actual = [...(await analyse(engine, actualFen)).values()].sort(
+                (a, b) => a.multipv - b.multipv,
+            );
+            const better = [...(await analyse(engine, betterFen)).values()].sort(
+                (a, b) => a.multipv - b.multipv,
+            );
+            expect(actual[0].depth).toBe(16);
+            expect(better[0].depth).toBe(16);
+            expect(actual[0].cp).toBeLessThan(-100);
+            expect(better[0].cp).toBeGreaterThan(300);
+            expect(better[0].pvSan[0]).toBe("Raxa6");
+            writeFileSync(
+                process.env.TACTICAL_DOUBLE_DEFENCE_REPORT!,
+                JSON.stringify({ fen, actualFen, betterFen, actual, better }, null, 2),
+            );
+        },
+        60000,
+    );
     test.skipIf(!engine || !existsSync(engine))(
         "verify the quiet queen defence to the overloaded discovery with fresh searches",
         async () => {
