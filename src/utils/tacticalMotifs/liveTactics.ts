@@ -9,6 +9,7 @@ import type { TacticalMotifEvidence } from "./types";
 import { tacticalBoardEvidence } from "./causalTactics";
 
 const CORE_TACTICAL_THEME_IDS = new Set([
+    "tacticalPreparation",
     "fork",
     "pin",
     "skewer",
@@ -85,6 +86,8 @@ const THEME_PRIORITY = [
 ];
 
 const THEME_DESCRIPTIONS: Record<string, string> = {
+    tacticalPreparation:
+        "A quiet move prepares a verified tactical threat; other defences may lead to a different continuation.",
     fork: "One piece attacks two or more important targets at the same time.",
     pin: "A piece cannot move safely because it exposes a more valuable piece or the king.",
     skewer: "The more valuable target is attacked first, exposing another target behind it.",
@@ -126,7 +129,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 15;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 16;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {

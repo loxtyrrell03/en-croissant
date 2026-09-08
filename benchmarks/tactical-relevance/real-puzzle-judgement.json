@@ -105,9 +105,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 224.3146999999999
+    "classificationMs": 215.74720000000025
   },
   {
     "id": "lichess:1GRFo",
@@ -174,9 +174,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 163.19939999999997
+    "classificationMs": 95.33709999999974
   },
   {
     "id": "lichess:2Gc77",
@@ -247,9 +247,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 137.77729999999997
+    "classificationMs": 221.5686999999998
   },
   {
     "id": "lichess:2QybO",
@@ -322,9 +322,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 27.462800000000016
+    "classificationMs": 42.13749999999982
   },
   {
     "id": "lichess:2SvDe",
@@ -408,9 +408,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 9.856600000000071
+    "classificationMs": 26.40480000000025
   },
   {
     "id": "lichess:48ION",
@@ -478,9 +478,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 22.42969999999991
+    "classificationMs": 42.941899999999805
   },
   {
     "id": "lichess:4RNK5",
@@ -511,7 +511,7 @@
       "skewer",
       "veryLong"
     ],
-    "judgement": "Open false negative: Rb6 prepares Rh7+ and Rb7+ with a queen-winning skewer. The quiet-root boundary hides the combination.",
+    "judgement": "Improved with engine context: Rb6 is a Quiet Preparation threatening Rh7+ and mate or a queen-winning skewer. The null-move threat and the actual Qe4 branch are verified separately; Kd7 changes the route, so this is not an all-root-defences proof. Without a sound root evaluation, the source-only classifier still abstains. Sacrifice belongs to Rh7+, skewer to Rb7+, and the later queen capture is not another sacrifice.",
     "san": [
       "Rb6",
       "Qe4",
@@ -523,9 +523,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 0.25510000000008404
+    "classificationMs": 37.92910000000029
   },
   {
     "id": "lichess:6fO6p",
@@ -569,9 +569,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 0.2680000000000291
+    "classificationMs": 0.3411999999998443
   },
   {
     "id": "lichess:6mAvx",
@@ -665,9 +665,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 130.3203000000001
+    "classificationMs": 180.1286
   },
   {
     "id": "lichess:8DHuj",
@@ -722,9 +722,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 77.37169999999992
+    "classificationMs": 77.91579999999976
   },
   {
     "id": "lichess:8mguL",
@@ -780,9 +780,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 17.2829999999999
+    "classificationMs": 17.713000000000648
   },
   {
     "id": "lichess:9THyd",
@@ -876,8 +876,8 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 9.861200000000053
+    "classificationMs": 12.193900000000212
   }
 ]

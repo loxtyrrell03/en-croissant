@@ -177,9 +177,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 46.85240000000158,
+    "classificationMs": 49.34370000000126,
     "positionHeadline": [
       {
         "id": "fork",
@@ -502,9 +502,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 43.168900000000576,
+    "classificationMs": 43.85329999999885,
     "positionHeadline": [
       {
         "id": "interference",
@@ -869,9 +869,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 77.08560000000216,
+    "classificationMs": 78.66589999999997,
     "positionHeadline": [
       {
         "id": "capturingDefender",
@@ -1163,9 +1163,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 34.091700000000856,
+    "classificationMs": 34.465799999998126,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -1475,9 +1475,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 24.244699999999284,
+    "classificationMs": 28.20600000000195,
     "positionHeadline": [
       {
         "id": "hangingPiece",
@@ -1751,9 +1751,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 26.427800000001298,
+    "classificationMs": 29.42280000000028,
     "positionHeadline": [
       {
         "id": "interference",
@@ -1856,7 +1856,7 @@
       "skewer",
       "veryLong"
     ],
-    "judgement": "Open false negative: Rb6 prepares Rh7+ and Rb7+ with a queen-winning skewer. The quiet-root boundary hides the combination.",
+    "judgement": "Improved with engine context: Rb6 is a Quiet Preparation threatening Rh7+ and mate or a queen-winning skewer. The null-move threat and the actual Qe4 branch are verified separately; Kd7 changes the route, so this is not an all-root-defences proof. Without a sound root evaluation, the source-only classifier still abstains. Sacrifice belongs to Rh7+, skewer to Rb7+, and the later queen capture is not another sacrifice.",
     "unrestricted": [
       {
         "depth": 16,
@@ -2020,11 +2020,107 @@
       "mate": null
     },
     "classification": {
-      "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifs": [
+        {
+          "id": "tacticalPreparation",
+          "label": "Quiet Preparation",
+          "source": "available",
+          "confidence": "medium",
+          "ply": 1,
+          "moveUci": "h6b6",
+          "value": 400,
+          "evidence": "Rb6 threatens Rh7+, leading to mate or winning the queen on e1. After Qe4, the short continuation is verified: Rh7+ Qxh7 Rb7+ Kd6 Rxh7. Other replies can avoid this particular route; it is a threat, not a forced reply sequence.",
+          "relevance": "primary"
+        },
+        {
+          "id": "skewer",
+          "label": "Skewer",
+          "confidence": "medium",
+          "evidence": "Rb7+ lets the rook on b7 skewer the king on e7, exposing the queen on h7.",
+          "source": "available",
+          "ply": 5,
+          "moveUci": "b6b7",
+          "relevance": "secondary",
+          "value": 500
+        },
+        {
+          "id": "sacrifice",
+          "label": "Sacrifice",
+          "source": "available",
+          "confidence": "high",
+          "ply": 3,
+          "moveUci": "h5h7",
+          "value": 400,
+          "evidence": "Rh7+ offers the rook. In this verified continuation, Qxh7 is met by Rb7+ Kd6 Rxh7; the sacrifice belongs to this checking move, not the later material capture.",
+          "relevance": "secondary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "tacticalPreparation",
+          "label": "Quiet Preparation",
+          "source": "available",
+          "confidence": "medium",
+          "ply": 1,
+          "moveUci": "h6b6",
+          "value": 400,
+          "evidence": "Rb6 threatens Rh7+, leading to mate or winning the queen on e1. After Qe4, the short continuation is verified: Rh7+ Qxh7 Rb7+ Kd6 Rxh7. Other replies can avoid this particular route; it is a threat, not a forced reply sequence.",
+          "relevance": "primary",
+          "actor": "white"
+        },
+        {
+          "id": "sacrifice",
+          "label": "Sacrifice",
+          "source": "available",
+          "confidence": "high",
+          "ply": 3,
+          "moveUci": "h5h7",
+          "value": 400,
+          "evidence": "Rh7+ offers the rook. In this verified continuation, Qxh7 is met by Rb7+ Kd6 Rxh7; the sacrifice belongs to this checking move, not the later material capture.",
+          "relevance": "secondary",
+          "actor": "white"
+        },
+        {
+          "id": "skewer",
+          "label": "Skewer",
+          "confidence": "medium",
+          "evidence": "Rb7+ lets the rook on b7 skewer the king on e7, exposing the queen on h7.",
+          "source": "available",
+          "ply": 5,
+          "moveUci": "b6b7",
+          "relevance": "secondary",
+          "value": 500,
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Rxh7 wins the loose queen on h7.",
+          "source": "available",
+          "ply": 7,
+          "moveUci": "b7h7",
+          "relevance": "secondary",
+          "value": 900,
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 0.38109999999869615,
-    "positionHeadline": [],
+    "classificationMs": 19.801400000000285,
+    "positionHeadline": [
+      {
+        "id": "tacticalPreparation",
+        "label": "Quiet Preparation",
+        "source": "available",
+        "confidence": "medium",
+        "ply": 1,
+        "moveUci": "h6b6",
+        "value": 400,
+        "evidence": "Rb6 threatens Rh7+, leading to mate or winning the queen on e1. After Qe4, the short continuation is verified: Rh7+ Qxh7 Rb7+ Kd6 Rxh7. Other replies can avoid this particular route; it is a threat, not a forced reply sequence.",
+        "relevance": "primary"
+      }
+    ],
     "positionCandidates": [
       {
         "moves": [
@@ -2049,8 +2145,91 @@
           "Rf7+",
           "Ke2"
         ],
-        "motifs": [],
-        "timeline": []
+        "motifs": [
+          {
+            "id": "tacticalPreparation",
+            "label": "Quiet Preparation",
+            "source": "available",
+            "confidence": "medium",
+            "ply": 1,
+            "moveUci": "h6b6",
+            "value": 400,
+            "evidence": "Rb6 threatens Rh7+, leading to mate or winning the queen on e1. After Qe4, the short continuation is verified: Rh7+ Qxh7 Rb7+ Kd6 Rxh7. Other replies can avoid this particular route; it is a threat, not a forced reply sequence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "sacrifice",
+            "label": "Sacrifice",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "h5h7",
+            "value": 400,
+            "evidence": "Rh7+ offers the rook. In this verified continuation, Qxh7 is met by Rb7+ Kd6 Rxh7; the sacrifice belongs to this checking move, not the later material capture.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "Rb7+ lets the rook on b7 skewer the king on e7, exposing the queen on h7.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "b6b7",
+            "relevance": "secondary",
+            "value": 500
+          }
+        ],
+        "timeline": [
+          {
+            "id": "tacticalPreparation",
+            "label": "Quiet Preparation",
+            "source": "available",
+            "confidence": "medium",
+            "ply": 1,
+            "moveUci": "h6b6",
+            "value": 400,
+            "evidence": "Rb6 threatens Rh7+, leading to mate or winning the queen on e1. After Qe4, the short continuation is verified: Rh7+ Qxh7 Rb7+ Kd6 Rxh7. Other replies can avoid this particular route; it is a threat, not a forced reply sequence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "sacrifice",
+            "label": "Sacrifice",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "h5h7",
+            "value": 400,
+            "evidence": "Rh7+ offers the rook. In this verified continuation, Qxh7 is met by Rb7+ Kd6 Rxh7; the sacrifice belongs to this checking move, not the later material capture.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "Rb7+ lets the rook on b7 skewer the king on e7, exposing the queen on h7.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "b6b7",
+            "relevance": "secondary",
+            "value": 500,
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxh7 wins the loose queen on h7.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "b7h7",
+            "relevance": "secondary",
+            "value": 900,
+            "actor": "white"
+          }
+        ]
       }
     ]
   },
@@ -2299,9 +2478,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 0.47110000000247965,
+    "classificationMs": 0.5154999999977008,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -2595,9 +2774,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 30.231199999998353,
+    "classificationMs": 30.787099999997736,
     "positionHeadline": [
       {
         "id": "trappedPiece",
@@ -2919,9 +3098,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 85.92250000000058,
+    "classificationMs": 51.28689999999915,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -3177,9 +3356,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 25.117000000002008,
+    "classificationMs": 18.85059999999794,
     "positionHeadline": [
       {
         "id": "trappedPiece",
@@ -3550,9 +3729,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-15"
+      "motifClassifierVersion": "site-55.adapter-16"
     },
-    "classificationMs": 30.12290000000212,
+    "classificationMs": 26.076600000000326,
     "positionHeadline": [
       {
         "id": "hangingPiece",

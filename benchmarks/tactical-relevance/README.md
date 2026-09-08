@@ -422,7 +422,7 @@ successful report creation does not mean twelve correct classifications.
 | 9THyd | Spurious clearance removed. Nxe7+ before fxe3 still needs a better timing explanation than two loose-piece labels. |
 | 2Gc77 | Bxd5 now prioritizes defender removal, with the simultaneous Bb7 attack and Rd8 behind Ne7 explaining different defences. |
 | 8DHuj | False clearance removed, but Bxf4's actual removal/overload combination remains missed. |
-| 4RNK5 | Open false negative: quiet Rb6 prepares Rh7+ and a queen-winning Rb7+ skewer. |
+| 4RNK5 | With sound engine context, Quiet Preparation explains Rb6's verified Rh7+ threat and the Qe4 branch. Other defences change the route; it is not a forced skewer against every reply. |
 | 6mAvx | Trapped Ra1 is now primary; Qc3 Bb4 and Qd4 Qxd4 establish why defending the rook fails. |
 | 8mguL | Kd6 now has a branch-based trapped-rook proof; Rxb5 Rxb5 limits the guaranteed gain to the exchange. |
 | 6fO6p | Winning h4 pawn ending: no invented zugzwang, but the classification/proof boundary remains unresolved. |
@@ -525,11 +525,53 @@ A 100-cp pawn gain minus the 10-cp bishop/knight imbalance must not be discarded
 the fallback permits 90 cp, but this alone does not solve Bxf4. These are branch
 checks, not eight independent puzzles or an accuracy estimate.
 
-Current verification: 202 focused tests in 21 files, all nine opt-in engine
+Adapter-15 verification: 202 focused tests in 21 files, all nine opt-in engine
 tests (including the existing real-game audit), targeted formatting/lint,
 shared-review worker and production builds passed. Type checking still reports
 only the existing OTB number/bigint fixture error. No application restart,
 runtime deployment or physical UI verification was performed.
+
+## Quiet preparation without compulsory-PV claims (adapter 16)
+
+Real 4RNK5 now has a useful live/Mistake Review headline: **Quiet Preparation**.
+`Rb6` threatens `Rh7+`, after which the short search proves mate or a queen win.
+After the engine's `Qe4`, it independently verifies `Rh7+ Qxh7 Rb7+` and the
+queen capture. The source-only fixture has no evaluation and intentionally
+still abstains; fresh engine classification now covers the lesson. `Kd7`
+changes the route and is outside this short forcing proof. It would be false
+to call the skewer compulsory against every Black reply.
+
+The bounded search nominates a rook/queen victim from at most seven legal PV
+plies, tracks its actual moves, and uses the PV only to order checking moves.
+It permits at most two attacking checks followed by a recapture-adjusted capture,
+tests every intervening legal defence, accounts for captures/promotions, and
+stops after 16,384 visits. The quiet mover must join the checking combination
+or clear another checking piece's path. If an all-root-defences proof fails,
+both an ignored-threat probe and the actual supplied reply must independently
+pass. This weaker result is medium confidence, explicitly conditional, and
+requires a finite root evaluation of at least -30 cp. It cannot originate
+speculative labels in later unevaluated PV rows. Cache keys include the actual
+defensive reply, nominated victim and checking hints; smaller budgets cannot
+reuse successful larger-budget proofs.
+
+The timeline now places the rook sacrifice on `Rh7+`, the skewer on `Rb7+`,
+and the queen capture on its actual ply. A previous ghost called that profitable
+queen capture a sacrifice: generic sacrifice proposals now also require a real
+local material offer (at least 90 cp exchange loss), and incomplete exchange
+calculations do not qualify. This is a necessary condition, not a complete
+general theory of positional or deferred sacrifices.
+
+Nine new checks cover the real lesson, missing/losing/non-finite engine context,
+an added Nd8 that refutes the skewer with Nxb7, a different king-defence branch,
+budget exhaustion, live arrows and Mistake Review's primary/secondary choice.
+The fresh before/after engine benchmark also compares Rb6 with the missed
+opportunity after Rxh3. These are focused controls, not a general accuracy rate.
+
+Current verification: 211 focused tests in 22 files, all nine opt-in engine
+tests, targeted formatting/lint, shared-review worker and production builds.
+The existing OTB number/bigint fixture error remains. No runtime deployment or
+running-app proof is claimed. Longer quiet combinations, Bxf4's repeated-check
+branches and broader sacrifice/intermediate-move judgement remain open.
 
 Run in PowerShell with the configured Node runtime on PATH:
 

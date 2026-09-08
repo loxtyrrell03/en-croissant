@@ -334,6 +334,7 @@ describe("expert tactical judgement with fresh engine lines", () => {
                 ["8mguL", "trappedPiece"],
                 ["2QybO", "discoveredAttack"],
                 ["2Gc77", "capturingDefender"],
+                ["4RNK5", "tacticalPreparation"],
             ]) {
                 const item = report.find((entry) => entry.id === `lichess:${id}`)!;
                 expect(item.positionHeadline[0]?.id).toBe(primary);
@@ -799,6 +800,14 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     source: "missed",
                     primary: "mateIn3",
                     why: "Ke5 leaves the queen en prise, but the most valuable missed opportunity is the quiet forced mating preparation selected by the engine. Its all-defences proof is stronger evidence than the single PV's final mate tag.",
+                },
+                {
+                    name: "Missed the quiet rook preparation for mate or a queen skewer",
+                    fen: "8/4k3/7R/p3p2R/8/P6p/KP6/4q3 w - - 2 49",
+                    played: "h5h3",
+                    source: "missed",
+                    primary: "tacticalPreparation",
+                    why: "Rb6 threatens Rh7+ and a mating or queen-winning continuation. Black can change the route, so the headline must describe a verified threat rather than a globally forced skewer. Rxh3 misses that stronger preparation.",
                 },
                 {
                     name: "b6 permits the f7 fork",

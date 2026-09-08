@@ -337,6 +337,160 @@ function quietPreparation(steps: TacticalReplayStep[]) {
         : null;
 }
 
+type TacticalPreparationProof = {
+    gain: number;
+    example: string[];
+    target: Square;
+    forced: boolean;
+    threat: string[];
+};
+const tacticalPreparationCache = new Map<string, TacticalPreparationProof | null>();
+
+/** A supplied payoff only nominates the victim and orders checks. Try every
+ * legal defence first. If that proof fails, certify a null-move threat AND
+ * the actual supplied reply separately; this weaker result is root-only,
+ * engine-gated, and must never be described as a globally forced sequence. */
+export function proveQuietTacticalPreparation(
+    steps: TacticalReplayStep[],
+    nodeLimit = 16384,
+): TacticalPreparationProof | null {
+    const root = steps[0];
+    if (
+        !root ||
+        root.capture ||
+        root.move.promotion ||
+        root.before.isCheck() ||
+        root.after.isCheck()
+    )
+        return null;
+    const payoff = steps
+        .slice(2, 7)
+        .find((step) => step.before.turn === root.before.turn && step.capture >= VALUE.rook);
+    if (!payoff) return null;
+    let target = payoff.move.to;
+    for (const step of steps.slice(1, steps.indexOf(payoff)).reverse()) {
+        if (step.before.turn !== root.before.turn && step.move.to === target)
+            target = step.move.from;
+    }
+    const victim = root.after.board.get(target);
+    if (!victim || victim.color === root.before.turn || VALUE[victim.role] < VALUE.rook)
+        return null;
+    // The initiating piece must participate, or clear the path of a different
+    // checking piece. A quiet pawn move cannot borrow an unrelated combination.
+    let mover = root.move.to;
+    let participates = false;
+    for (const step of steps.slice(2, 7)) {
+        if (step.before.turn !== root.before.turn) continue;
+        if (step.move.from === mover) {
+            mover = step.move.to;
+            if (step.after.isCheck()) participates = true;
+        } else if (
+            step.after.isCheck() &&
+            between(step.move.from, step.move.to).has(root.move.from)
+        )
+            participates = true;
+    }
+    if (!participates) return null;
+    const hints = steps
+        .filter((step) => step.before.turn === root.before.turn && step.after.isCheck())
+        .map((step) => step.uci);
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}:${steps[1]?.uci}:${target}:${hints}`;
+    if (nodeLimit === 16384 && tacticalPreparationCache.has(key))
+        return tacticalPreparationCache.get(key)!;
+    let nodes = nodeLimit;
+    type Win = { gain: number; line: string[] };
+    const delta = (pos: Chess, move: NormalMove) =>
+        capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--nodes < 0) throw new Error("Tactical preparation budget exhausted");
+        const next = pos.clone();
+        next.play(move);
+        return next;
+    };
+    const attack = (
+        pos: Chess,
+        square: Square,
+        balance: number,
+        checks: number,
+        requireCheck = false,
+    ): Win | null => {
+        if (pos.isEnd()) return null;
+        const moves = legalMoves(pos);
+        for (const move of moves) {
+            if (requireCheck || move.to !== square || !capturedValue(pos, move)) continue;
+            const next = visit(pos, move);
+            if (next.isEnd() && !next.isCheckmate()) continue;
+            const exchangeGain = tacticalExchangeGain(pos, move);
+            if (exchangeGain <= -VALUE.king) continue;
+            if (balance + exchangeGain >= 90)
+                return { gain: balance + exchangeGain, line: [makeSan(pos, move)] };
+        }
+        if (!checks) return null;
+        moves.sort(
+            (a, b) => Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))),
+        );
+        for (const move of moves) {
+            const next = visit(pos, move);
+            if (!next.isCheck()) continue;
+            if (next.isCheckmate()) return { gain: 10000, line: [makeSan(pos, move)] };
+            const win = defend(next, square, balance + delta(pos, move), checks - 1);
+            if (win) return { gain: win.gain, line: [makeSan(pos, move), ...win.line] };
+        }
+        return null;
+    };
+    const defend = (pos: Chess, square: Square, balance: number, checks: number): Win | null => {
+        const moves = legalMoves(pos);
+        if (!moves.length) return null;
+        let weakest: Win | null = null;
+        for (const move of moves) {
+            const next = visit(pos, move);
+            const win = attack(
+                next,
+                move.from === square ? move.to : square,
+                balance - delta(pos, move),
+                checks,
+            );
+            if (!win) return null;
+            if (!weakest || win.gain < weakest.gain)
+                weakest = { gain: win.gain, line: [makeSan(pos, move), ...win.line] };
+        }
+        return weakest;
+    };
+    let result: TacticalPreparationProof | null = null;
+    try {
+        const win = defend(root.after, target, 0, 2);
+        if (win) result = { gain: win.gain, example: win.line, target, forced: true, threat: [] };
+        else if (steps[1]) {
+            const threat = attack(withTurn(root.after, root.before.turn), target, 0, 2, true);
+            const reply = steps[1];
+            const branch = threat
+                ? attack(
+                      reply.after,
+                      reply.move.from === target ? reply.move.to : target,
+                      -delta(reply.before, reply.move),
+                      2,
+                  )
+                : null;
+            if (threat && branch)
+                result = {
+                    gain: Math.min(threat.gain, branch.gain),
+                    example: [reply.san, ...branch.line],
+                    target,
+                    forced: false,
+                    threat: threat.line,
+                };
+        }
+    } catch {
+        /* Unknown bounded search is not evidence of a tactic. */
+    }
+    if (nodeLimit === 16384) {
+        tacticalPreparationCache.set(key, result);
+        if (tacticalPreparationCache.size > 128)
+            tacticalPreparationCache.delete(tacticalPreparationCache.keys().next().value!);
+    }
+    return result;
+}
+
 function winningTargets(pos: Chess, from: Square, side: Color) {
     const probe = withTurn(pos, side);
     const piece = probe.board.get(from);
@@ -1087,12 +1241,27 @@ export function tacticalBoardEvidence(
             "interference",
             "trappedPiece",
             "capturingDefender",
+            "tacticalPreparation",
             ...DISCOVERED_THEMES,
         ].includes(motif.id)
     )
         return null;
     const step = replayTacticalLine(fen, line.slice(0, motif.ply))[motif.ply - 1];
     if (!step) return null;
+    if (motif.id === "tacticalPreparation") {
+        const suffix = replayTacticalLine(fen, line).slice(motif.ply - 1);
+        const proof = proveQuietTacticalPreparation(suffix);
+        if (!proof) return null;
+        const check = suffix
+            .slice(2)
+            .find((next) => next.before.turn === step.before.turn && next.after.isCheck());
+        return {
+            square: makeSquare(step.move.to),
+            arrows: check
+                ? [{ from: makeSquare(check.move.from), to: makeSquare(check.move.to) }]
+                : [],
+        };
+    }
     if (motif.id === "capturingDefender") {
         const proof = capturedDefenderProof(step, motif.source);
         if (!proof) return null;
@@ -1550,8 +1719,8 @@ function interferenceProof(step: TacticalReplayStep, source: TacticalMotifEviden
     return null;
 }
 
-export function hasTacticalStart(fen: string, line: string[]) {
-    const steps = replayTacticalLine(fen, line.slice(0, 5));
+export function hasTacticalStart(fen: string, line: string[], allowConditional = true) {
+    const steps = replayTacticalLine(fen, line.slice(0, 7));
     const root = steps[0];
     return Boolean(
         root &&
@@ -1560,11 +1729,14 @@ export function hasTacticalStart(fen: string, line: string[]) {
             root.after.isCheck() ||
             hasConcreteThreat(root) ||
             proveQuietMateThreat(root) ||
-            quietPreparation(steps)),
+            quietPreparation(steps) ||
+            (allowConditional
+                ? proveQuietTacticalPreparation(steps)
+                : proveQuietTacticalPreparation(steps)?.forced)),
     );
 }
 
-function episodeEnd(steps: TacticalReplayStep[]) {
+function episodeEnd(steps: TacticalReplayStep[], allowConditional = false) {
     for (let i = 0; i < steps.length; i += 2) {
         const step = steps[i];
         if (
@@ -1573,7 +1745,10 @@ function episodeEnd(steps: TacticalReplayStep[]) {
             !step.after.isCheck() &&
             !hasConcreteThreat(step) &&
             !proveQuietMateThreat(step) &&
-            !quietPreparation(steps.slice(i, i + 5))
+            !quietPreparation(steps.slice(i, i + 5)) &&
+            !(i === 0 && allowConditional
+                ? proveQuietTacticalPreparation(steps.slice(i, i + 7))
+                : proveQuietTacticalPreparation(steps.slice(i, i + 7))?.forced)
         )
             return i;
     }
@@ -1655,7 +1830,8 @@ export function auditTacticalMotifs(
 ) {
     const steps = replayTacticalLine(fen, line);
     if (!steps.length) return [];
-    const end = episodeEnd(steps);
+    const allowConditional = typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= -30;
+    const end = episodeEnd(steps, allowConditional);
     if (!end) return [];
     const episode = steps.slice(0, end);
     const attacker = steps[0].before.turn;
@@ -1709,6 +1885,48 @@ export function auditTacticalMotifs(
     if (defenderEvidence) candidates.push(defenderEvidence);
     const quietMate = proveQuietMateThreat(steps[0]);
     const preparation = !quietMate ? quietPreparation(steps) : null;
+    const tacticalPreparation =
+        !quietMate && !preparation ? proveQuietTacticalPreparation(steps.slice(0, 7)) : null;
+    if (tacticalPreparation && (tacticalPreparation.forced || allowConditional)) {
+        const victim = steps[0].after.board.get(tacticalPreparation.target)!;
+        candidates.push({
+            id: "tacticalPreparation",
+            label: "Quiet Preparation",
+            source: proposals[0]?.source ?? "available",
+            confidence: tacticalPreparation.forced ? "high" : "medium",
+            ply: 1,
+            moveUci: steps[0].uci,
+            value: tacticalPreparation.gain,
+            evidence: tacticalPreparation.forced
+                ? `${steps[0].san} prepares a short forcing combination against the ${victim.role} on ${makeSquare(tacticalPreparation.target)}. Every legal reply allows material gain or mate; for example, ${tacticalPreparation.example.join(" ")}.`
+                : `${steps[0].san} threatens ${tacticalPreparation.threat[0]}, leading to mate or winning the ${victim.role} on ${makeSquare(tacticalPreparation.target)}. After ${tacticalPreparation.example[0]}, the short continuation is verified: ${tacticalPreparation.example.slice(1).join(" ")}. Other replies can avoid this particular route; it is a threat, not a forced reply sequence.`,
+        });
+        const offer = steps[2],
+            acceptance = steps[3];
+        const offerExchange = offer ? tacticalExchangeGain(offer.before, offer.move) : -VALUE.king;
+        if (
+            offer &&
+            acceptance &&
+            offer.after.isCheck() &&
+            acceptance.move.to === offer.move.to &&
+            acceptance.capture > 0 &&
+            tacticalPreparation.example[1] === offer.san &&
+            tacticalPreparation.example[2] === acceptance.san &&
+            offerExchange > -VALUE.king &&
+            offerExchange <= -90
+        ) {
+            candidates.push({
+                id: "sacrifice",
+                label: "Sacrifice",
+                source: proposals[0]?.source ?? "available",
+                confidence: "high",
+                ply: 3,
+                moveUci: offer.uci,
+                value: tacticalPreparation.gain,
+                evidence: `${offer.san} offers the ${offer.after.board.get(offer.move.to)!.role}. In this verified continuation, ${acceptance.san} is met by ${tacticalPreparation.example.slice(3).join(" ")}; the sacrifice belongs to this checking move, not the later material capture.`,
+            });
+        }
+    }
     if (quietMate) {
         candidates.push({
             id: "mateThreat",
@@ -1849,7 +2067,10 @@ export function auditTacticalMotifs(
                 materialThreatGain(step, winningTargets(step.after, step.move.to, attacker), [
                     step.move.to,
                 ]) !== null;
-        else sound = mate || settled >= 100;
+        else if (proposal.id === "sacrifice") {
+            const exchangeGain = tacticalExchangeGain(step.before, step.move);
+            sound = (mate || settled >= 100) && exchangeGain > -VALUE.king && exchangeGain <= -90;
+        } else sound = mate || settled >= 100;
         if (!sound) continue;
         candidates.push({
             ...proposal,
@@ -1903,7 +2124,11 @@ export function auditTacticalMotifs(
             }
             if (
                 m.id === "clearance" &&
-                candidates.some((other) => other.ply === m.ply && DISCOVERED_THEMES.has(other.id))
+                candidates.some(
+                    (other) =>
+                        other.ply === m.ply &&
+                        (DISCOVERED_THEMES.has(other.id) || other.id === "tacticalPreparation"),
+                )
             )
                 return false;
             if (
@@ -1960,7 +2185,11 @@ export function auditTacticalMotifs(
     // The quiet threat explains the preparation; the final mating pattern is
     // its payoff and stays in the continuation rows.
     const quietCause = filtered.find(
-        (m) => (m.id === "mateThreat" || (preparation && m.id === "mateIn3")) && m.ply === 1,
+        (m) =>
+            (m.id === "mateThreat" ||
+                m.id === "tacticalPreparation" ||
+                (preparation && m.id === "mateIn3")) &&
+            m.ply === 1,
     );
     if (quietCause) {
         filtered.splice(filtered.indexOf(quietCause), 1);
