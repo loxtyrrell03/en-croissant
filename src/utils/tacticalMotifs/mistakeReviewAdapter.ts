@@ -102,7 +102,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 26;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 27;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -805,6 +805,9 @@ export function buildTacticalTimeline(
     }
     let quietPlies = 0;
     let connectedPlies = replay.length;
+    const provedMatingEpisode = rootMotifs.some(
+        (motif) => motif.ply === 1 && motif.label === "Forcing Mate" && motif.value === 10000,
+    );
     for (let index = 0; index < replay.length; index++) {
         const step = replay[index];
         const suffix = legalLine.slice(index);
@@ -816,8 +819,10 @@ export function buildTacticalTimeline(
         // A forced king evasion is not a quiet pause. Nor is a locally
         // verified quiet mating preparation. Two genuinely quiet plies mark
         // a relevance boundary, not a claim that later tactics cannot exist.
+        // An all-defences mating proof connects its quiet preparations to
+        // the terminal payoff; the engine PV alone cannot extend this window.
         quietPlies = tacticalStart || step.before.isCheck() ? 0 : quietPlies + 1;
-        if (quietPlies >= 2) {
+        if (quietPlies >= 2 && !provedMatingEpisode) {
             connectedPlies = index;
             break;
         }

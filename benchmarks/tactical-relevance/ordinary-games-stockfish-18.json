@@ -477,11 +477,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "explanation": null,
-    "scanMs": 137.53659999999945,
-    "mistakeMs": 1.4519000000000233
+    "scanMs": 149.69219999999768,
+    "mistakeMs": 1.416799999999057
   },
   {
     "id": "ordinary-1:ply13",
@@ -936,11 +936,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "explanation": null,
-    "scanMs": 41.058899999999994,
-    "mistakeMs": 1.0829000000012456
+    "scanMs": 45.587900000002264,
+    "mistakeMs": 0.9323000000003958
   },
   {
     "id": "ordinary-1:ply18",
@@ -1400,7 +1400,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26",
+      "motifClassifierVersion": "site-55.adapter-27",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -1436,8 +1436,8 @@
         "comparisonEvidence": "After Ng4, Qa6 no longer wins material in the exchange."
       }
     },
-    "scanMs": 152.57350000000224,
-    "mistakeMs": 48.74539999999979
+    "scanMs": 586.7259999999951,
+    "mistakeMs": 185.16709999999875
   },
   {
     "id": "ordinary-1:ply23",
@@ -1789,7 +1789,7 @@
           "value": 10000
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26",
+      "motifClassifierVersion": "site-55.adapter-27",
       "missedTimeline": [
         {
           "id": "hangingPiece",
@@ -1845,8 +1845,8 @@
         "value": 10000
       }
     },
-    "scanMs": 103.20110000000204,
-    "mistakeMs": 67.26459999999861
+    "scanMs": 250.60199999999895,
+    "mistakeMs": 151.81180000000313
   },
   {
     "id": "ordinary-1:ply28",
@@ -2084,7 +2084,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26",
+      "motifClassifierVersion": "site-55.adapter-27",
       "allowedTimeline": [
         {
           "id": "mateIn1",
@@ -2120,8 +2120,8 @@
         "comparisonEvidence": "Even after Qc8, Qxc8# still permits a verified forced mate within 1 moves. The better move does not remove this mating danger."
       }
     },
-    "scanMs": 2.587599999998929,
-    "mistakeMs": 12.875300000006973
+    "scanMs": 3.765000000006694,
+    "mistakeMs": 34.175100000000384
   },
   {
     "id": "ordinary-1:ply33",
@@ -2552,7 +2552,7 @@
           "relevance": "secondary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26",
+      "motifClassifierVersion": "site-55.adapter-27",
       "missedTimeline": [
         {
           "id": "intermezzo",
@@ -2575,6 +2575,18 @@
           "moveUci": "d8c7",
           "evidence": "Bxc7+ vacates d8, uncovering the queen on a8 against the king on e8. The bishop on c7 also attacks the pawn on b6 and the pawn on d6. Every legal answer to the discovered check allows material gain or mate with at most one extra checking move, allowing for legal recaptures. Captures and interpositions are included in this check.",
           "value": 430,
+          "relevance": "secondary",
+          "actor": "white"
+        },
+        {
+          "id": "mateIn4",
+          "label": "Forcing Mate",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 7,
+          "moveUci": "c7b8",
+          "value": 10000,
+          "evidence": "Bxb8+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Bxb8+ Kd8 Bxd6 b5 Qe7+ Kc8 Qc7#. The exact continuation depends on the defence.",
           "relevance": "secondary",
           "actor": "white"
         },
@@ -2632,8 +2644,8 @@
         "relevance": "primary"
       }
     },
-    "scanMs": 28.226500000004307,
-    "mistakeMs": 52.00800000000163
+    "scanMs": 88.5570000000007,
+    "mistakeMs": 1811.071600000003
   },
   {
     "id": "ordinary-1:ply38",
@@ -2999,11 +3011,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "explanation": null,
-    "scanMs": 0.8710999999966589,
-    "mistakeMs": 0.455999999998312
+    "scanMs": 1.2483999999967637,
+    "mistakeMs": 0.45900000000256114
   },
   {
     "id": "ordinary-1:ply43",
@@ -3446,11 +3458,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "explanation": null,
-    "scanMs": 37.2583999999988,
-    "mistakeMs": 44.96560000000318
+    "scanMs": 44.88779999999679,
+    "mistakeMs": 57.28850000000239
   },
   {
     "id": "ordinary-2:ply8",
@@ -3796,11 +3808,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "explanation": null,
-    "scanMs": 77.14960000000428,
-    "mistakeMs": 32.16949999999633
+    "scanMs": 94.86149999999907,
+    "mistakeMs": 40.398300000000745
   },
   {
     "id": "ordinary-2:ply13",
@@ -4115,11 +4127,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "explanation": null,
-    "scanMs": 0.5343999999968219,
-    "mistakeMs": 32.382000000005064
+    "scanMs": 0.4492000000027474,
+    "mistakeMs": 37.08890000000247
   },
   {
     "id": "ordinary-2:ply18",
@@ -4347,21 +4359,21 @@
     "scan": {
       "motifs": [
         {
-          "id": "forkPreparation",
-          "label": "Fork Preparation",
+          "id": "mateIn7",
+          "label": "Forcing Mate",
           "source": "available",
           "confidence": "high",
           "ply": 1,
           "moveUci": "f6f7",
-          "value": 400,
-          "evidence": "f7+ prepares a checking fork. After Ke7, Qe5+ forks the king on e7 and rook on h8. All 1 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+          "value": 10000,
+          "evidence": "f7+ starts a forced mating attack. Every legal defence permits mate within 7 moves; one verified line is f7+ Ke7 fxg8=B g5 Bc4 g4 Qf7+ Kd6 Ne4+ Kc6 Qd5+ Kb6 Qb5#. The exact continuation depends on the defence.",
           "relevance": "primary"
         }
       ],
       "labels": [
         {
-          "id": "forkPreparation",
-          "text": "Fork Preparation",
+          "id": "mateIn7",
+          "text": "Forcing Mate",
           "color": "orange",
           "square": "f7"
         }
@@ -4372,26 +4384,15 @@
           "depth": 16,
           "motifs": [
             {
-              "id": "forkPreparation",
-              "label": "Fork Preparation",
+              "id": "mateIn7",
+              "label": "Forcing Mate",
               "source": "available",
               "confidence": "high",
               "ply": 1,
               "moveUci": "f6f7",
-              "value": 400,
-              "evidence": "f7+ prepares a checking fork. After Ke7, Qe5+ forks the king on e7 and rook on h8. All 1 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+              "value": 10000,
+              "evidence": "f7+ starts a forced mating attack. Every legal defence permits mate within 7 moves; one verified line is f7+ Ke7 fxg8=B g5 Bc4 g4 Qf7+ Kd6 Ne4+ Kc6 Qd5+ Kb6 Qb5#. The exact continuation depends on the defence.",
               "relevance": "primary"
-            },
-            {
-              "id": "attacking_undefended_piece",
-              "label": "Threatening a Piece",
-              "confidence": "medium",
-              "evidence": "Threatening a Piece appears on f7+ at ply 1 of the current best line.",
-              "source": "available",
-              "ply": 1,
-              "moveUci": "f6f7",
-              "relevance": "secondary",
-              "value": 220
             },
             {
               "id": "underPromotion",
@@ -4402,32 +4403,31 @@
               "ply": 3,
               "moveUci": "f7g8b",
               "relevance": "secondary",
-              "value": 220
+              "value": 10000
+            },
+            {
+              "id": "swallowstailMate",
+              "label": "Swallow's Tail Mate",
+              "confidence": "medium",
+              "evidence": "Qb5# is checkmate (Swallow's Tail Mate): the king is in check and there is no legal reply.",
+              "source": "available",
+              "ply": 13,
+              "moveUci": "d5b5",
+              "relevance": "secondary",
+              "value": 10000
             }
           ],
           "timeline": [
             {
-              "id": "forkPreparation",
-              "label": "Fork Preparation",
+              "id": "mateIn7",
+              "label": "Forcing Mate",
               "source": "available",
               "confidence": "high",
               "ply": 1,
               "moveUci": "f6f7",
-              "value": 400,
-              "evidence": "f7+ prepares a checking fork. After Ke7, Qe5+ forks the king on e7 and rook on h8. All 1 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+              "value": 10000,
+              "evidence": "f7+ starts a forced mating attack. Every legal defence permits mate within 7 moves; one verified line is f7+ Ke7 fxg8=B g5 Bc4 g4 Qf7+ Kd6 Ne4+ Kc6 Qd5+ Kb6 Qb5#. The exact continuation depends on the defence.",
               "relevance": "primary",
-              "actor": "white"
-            },
-            {
-              "id": "attacking_undefended_piece",
-              "label": "Threatening a Piece",
-              "confidence": "medium",
-              "evidence": "Threatening a Piece appears on f7+ at ply 1 of the current best line.",
-              "source": "available",
-              "ply": 1,
-              "moveUci": "f6f7",
-              "relevance": "secondary",
-              "value": 220,
               "actor": "white"
             },
             {
@@ -4439,7 +4439,7 @@
               "ply": 3,
               "moveUci": "f7g8b",
               "relevance": "secondary",
-              "value": 220,
+              "value": 10000,
               "actor": "white"
             },
             {
@@ -4452,6 +4452,42 @@
               "evidence": "fxg8=B wins the loose knight on g8.",
               "relevance": "secondary",
               "value": 550,
+              "actor": "white"
+            },
+            {
+              "id": "fork",
+              "label": "Fork",
+              "source": "available",
+              "confidence": "high",
+              "ply": 7,
+              "moveUci": "d5f7",
+              "evidence": "Qf7+ forks the king on e7 and rook on g8; no legal reply saves both targets without conceding material.",
+              "relevance": "secondary",
+              "value": 10000,
+              "actor": "white"
+            },
+            {
+              "id": "fork",
+              "label": "Fork",
+              "source": "available",
+              "confidence": "high",
+              "ply": 11,
+              "moveUci": "f7d5",
+              "evidence": "Qd5+ forks the king on c6 and rook on g8; no legal reply saves both targets without conceding material.",
+              "relevance": "secondary",
+              "value": 10000,
+              "actor": "white"
+            },
+            {
+              "id": "swallowstailMate",
+              "label": "Swallow's Tail Mate",
+              "confidence": "medium",
+              "evidence": "Qb5# is checkmate (Swallow's Tail Mate): the king is in check and there is no legal reply.",
+              "source": "available",
+              "ply": 13,
+              "moveUci": "d5b5",
+              "relevance": "secondary",
+              "value": 10000,
               "actor": "white"
             }
           ],
@@ -4493,23 +4529,41 @@
               "role": "trigger"
             },
             {
+              "from": "e8",
+              "to": "e7",
+              "ply": 2,
+              "role": "reply"
+            },
+            {
               "from": "f7",
-              "to": "e8",
-              "ply": 1,
+              "to": "g8",
+              "ply": 3,
+              "role": "trigger"
+            },
+            {
+              "from": "h8",
+              "to": "g8",
+              "ply": 4,
+              "role": "reply"
+            },
+            {
+              "from": "f1",
+              "to": "c4",
+              "ply": 5,
               "role": "attacker"
+            },
+            {
+              "from": "f8",
+              "to": "g7",
+              "ply": 6,
+              "role": "reply"
             }
           ],
           "labels": [
             {
-              "id": "forkPreparation",
-              "text": "Fork Preparation",
+              "id": "mateIn7",
+              "text": "Forcing Mate",
               "color": "orange",
-              "square": "f7"
-            },
-            {
-              "id": "attacking_undefended_piece",
-              "text": "Threatening a Piece",
-              "color": "#16a085",
               "square": "f7"
             },
             {
@@ -4517,6 +4571,12 @@
               "text": "Under-Promotion",
               "color": "#3498db",
               "square": "g8"
+            },
+            {
+              "id": "swallowstailMate",
+              "text": "Swallow's Tail Mate",
+              "color": "#8e44ad",
+              "square": "b5"
             }
           ]
         }
@@ -4525,30 +4585,28 @@
     "classification": {
       "allowedMotifs": [
         {
-          "id": "forkPreparation",
-          "label": "Fork Preparation",
+          "id": "mateIn7",
+          "label": "Forcing Mate",
           "source": "allowed",
           "confidence": "high",
           "ply": 1,
           "moveUci": "f6f7",
-          "value": 400,
-          "evidence": "f7+ prepares a checking fork. After Ke7, Qe5+ forks the king on e7 and rook on h8. All 1 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+          "value": 10000,
+          "evidence": "f7+ starts a forced mating attack. Every legal defence permits mate within 7 moves; one verified line is f7+ Ke7 fxg8=B g5 Bc4 g4 Qf7+ Kd6 Ne4+ Kc6 Qd5+ Kb6 Qb5#. The exact continuation depends on the defence.",
           "relevance": "primary",
           "comparison": "prevented",
           "comparisonEvidence": "Kxf6 makes the immediate reply f7+ illegal."
         },
         {
-          "id": "attacking_undefended_piece",
-          "label": "Threatening a Piece",
+          "id": "swallowstailMate",
+          "label": "Swallow's Tail Mate",
           "confidence": "medium",
-          "evidence": "Threatening a Piece appears on f6f7 at ply 1 of the opponent refutation.",
+          "evidence": "Qb5# is checkmate (Swallow's Tail Mate): the king is in check and there is no legal reply.",
           "source": "allowed",
-          "ply": 1,
-          "moveUci": "f6f7",
+          "ply": 13,
+          "moveUci": "d5b5",
           "relevance": "secondary",
-          "value": 220,
-          "comparison": "prevented",
-          "comparisonEvidence": "Kxf6 makes the immediate reply f7+ illegal."
+          "value": 10000
         },
         {
           "id": "underPromotion",
@@ -4559,36 +4617,22 @@
           "ply": 3,
           "moveUci": "f7g8b",
           "relevance": "secondary",
-          "value": 220
+          "value": 10000
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26",
+      "motifClassifierVersion": "site-55.adapter-27",
       "allowedTimeline": [
         {
-          "id": "forkPreparation",
-          "label": "Fork Preparation",
+          "id": "mateIn7",
+          "label": "Forcing Mate",
           "source": "allowed",
           "confidence": "high",
           "ply": 1,
           "moveUci": "f6f7",
-          "value": 400,
-          "evidence": "f7+ prepares a checking fork. After Ke7, Qe5+ forks the king on e7 and rook on h8. All 1 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+          "value": 10000,
+          "evidence": "f7+ starts a forced mating attack. Every legal defence permits mate within 7 moves; one verified line is f7+ Ke7 fxg8=B g5 Bc4 g4 Qf7+ Kd6 Ne4+ Kc6 Qd5+ Kb6 Qb5#. The exact continuation depends on the defence.",
           "relevance": "primary",
-          "comparison": "prevented",
-          "comparisonEvidence": "Kxf6 makes the immediate reply f7+ illegal.",
-          "actor": "white"
-        },
-        {
-          "id": "attacking_undefended_piece",
-          "label": "Threatening a Piece",
-          "confidence": "medium",
-          "evidence": "Threatening a Piece appears on f6f7 at ply 1 of the opponent refutation.",
-          "source": "allowed",
-          "ply": 1,
-          "moveUci": "f6f7",
-          "relevance": "secondary",
-          "value": 220,
           "comparison": "prevented",
           "comparisonEvidence": "Kxf6 makes the immediate reply f7+ illegal.",
           "actor": "white"
@@ -4602,7 +4646,7 @@
           "ply": 3,
           "moveUci": "f7g8b",
           "relevance": "secondary",
-          "value": 220,
+          "value": 10000,
           "actor": "white"
         },
         {
@@ -4616,29 +4660,65 @@
           "relevance": "secondary",
           "value": 550,
           "actor": "white"
+        },
+        {
+          "id": "fork",
+          "label": "Fork",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 7,
+          "moveUci": "d5f7",
+          "evidence": "Qf7+ forks the king on e7 and rook on g8; no legal reply saves both targets without conceding material.",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "white"
+        },
+        {
+          "id": "fork",
+          "label": "Fork",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 11,
+          "moveUci": "f7d5",
+          "evidence": "Qd5+ forks the king on c6 and rook on g8; no legal reply saves both targets without conceding material.",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "white"
+        },
+        {
+          "id": "swallowstailMate",
+          "label": "Swallow's Tail Mate",
+          "confidence": "medium",
+          "evidence": "Qb5# is checkmate (Swallow's Tail Mate): the king is in check and there is no legal reply.",
+          "source": "allowed",
+          "ply": 13,
+          "moveUci": "d5b5",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "white"
         }
       ]
     },
     "explanation": {
       "title": "Why the move was tactically bad",
-      "text": "Your move allowed this tactic: f7+ prepares a checking fork. After Ke7, Qe5+ forks the king on e7 and rook on h8. All 1 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position. Kxf6 makes the immediate reply f7+ illegal.",
+      "text": "Your move allowed this tactic: f7+ starts a forced mating attack. Every legal defence permits mate within 7 moves; one verified line is f7+ Ke7 fxg8=B g5 Bc4 g4 Qf7+ Kd6 Ne4+ Kc6 Qd5+ Kb6 Qb5#. The exact continuation depends on the defence. Kxf6 makes the immediate reply f7+ illegal.",
       "source": "allowed",
       "primary": {
-        "id": "forkPreparation",
-        "label": "Fork Preparation",
+        "id": "mateIn7",
+        "label": "Forcing Mate",
         "source": "allowed",
         "confidence": "high",
         "ply": 1,
         "moveUci": "f6f7",
-        "value": 400,
-        "evidence": "f7+ prepares a checking fork. After Ke7, Qe5+ forks the king on e7 and rook on h8. All 1 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+        "value": 10000,
+        "evidence": "f7+ starts a forced mating attack. Every legal defence permits mate within 7 moves; one verified line is f7+ Ke7 fxg8=B g5 Bc4 g4 Qf7+ Kd6 Ne4+ Kc6 Qd5+ Kb6 Qb5#. The exact continuation depends on the defence.",
         "relevance": "primary",
         "comparison": "prevented",
         "comparisonEvidence": "Kxf6 makes the immediate reply f7+ illegal."
       }
     },
-    "scanMs": 39.460800000000745,
-    "mistakeMs": 40.14059999999881
+    "scanMs": 743.4539999999979,
+    "mistakeMs": 43.781899999994494
   },
   {
     "id": "ordinary-2:ply23",
@@ -5044,7 +5124,7 @@
           "value": 820
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26",
+      "motifClassifierVersion": "site-55.adapter-27",
       "missedTimeline": [
         {
           "id": "forkPreparation",
@@ -5148,8 +5228,8 @@
         "relevance": "primary"
       }
     },
-    "scanMs": 135.1093000000037,
-    "mistakeMs": 185.20729999999458
+    "scanMs": 162.0072,
+    "mistakeMs": 215.67380000000412
   },
   {
     "id": "ordinary-2:ply28",
@@ -5479,11 +5559,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "explanation": null,
-    "scanMs": 43.50209999999788,
-    "mistakeMs": 30.670099999995728
+    "scanMs": 53.616000000001804,
+    "mistakeMs": 35.1984999999986
   },
   {
     "id": "ordinary-2:ply33",
@@ -5904,11 +5984,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "explanation": null,
-    "scanMs": 117.79179999999906,
-    "mistakeMs": 29.204200000000128
+    "scanMs": 146.1661000000022,
+    "mistakeMs": 39.174299999998766
   },
   {
     "id": "ordinary-2:ply38",
@@ -6230,11 +6310,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "explanation": null,
-    "scanMs": 27.263599999998405,
-    "mistakeMs": 54.73270000000048
+    "scanMs": 28.852599999998347,
+    "mistakeMs": 58.17949999999837
   },
   {
     "id": "ordinary-2:ply43",
@@ -6587,11 +6667,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "explanation": null,
-    "scanMs": 35.224999999998545,
-    "mistakeMs": 37.136500000000524
+    "scanMs": 34.44120000000112,
+    "mistakeMs": 38.0480000000025
   },
   {
     "id": "ordinary-2:ply48",
@@ -7039,7 +7119,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26",
+      "motifClassifierVersion": "site-55.adapter-27",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -7075,8 +7155,8 @@
         "comparisonEvidence": "After Bc2, Na4 no longer wins material in the exchange."
       }
     },
-    "scanMs": 66.86909999999625,
-    "mistakeMs": 31.702400000001944
+    "scanMs": 74.73000000001048,
+    "mistakeMs": 34.14410000000498
   },
   {
     "id": "ordinary-2:ply53",
@@ -7475,7 +7555,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26",
+      "motifClassifierVersion": "site-55.adapter-27",
       "allowedTimeline": [
         {
           "id": "mateIn3",
@@ -7519,8 +7599,8 @@
         "value": 10000
       }
     },
-    "scanMs": 13.750099999997474,
-    "mistakeMs": 5.82390000000305
+    "scanMs": 14.183599999989383,
+    "mistakeMs": 5.9275999999954365
   },
   {
     "id": "ordinary-2:ply58",
@@ -7760,11 +7840,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "explanation": null,
-    "scanMs": 0.35380000000441214,
-    "mistakeMs": 2.021500000002561
+    "scanMs": 0.3142999999981839,
+    "mistakeMs": 2.073099999994156
   },
   {
     "id": "ordinary-3:ply8",
@@ -8182,11 +8262,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "explanation": null,
-    "scanMs": 1.0322999999989406,
-    "mistakeMs": 0.4320999999981723
+    "scanMs": 1.0167999999976018,
+    "mistakeMs": 0.4165000000066357
   },
   {
     "id": "ordinary-3:ply13",
@@ -8527,11 +8607,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "explanation": null,
-    "scanMs": 47.21949999999924,
-    "mistakeMs": 32.270000000004075
+    "scanMs": 52.525699999998324,
+    "mistakeMs": 34.04439999999886
   },
   {
     "id": "ordinary-3:ply18",
@@ -8975,7 +9055,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26",
+      "motifClassifierVersion": "site-55.adapter-27",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -9011,8 +9091,8 @@
         "comparisonEvidence": "After Nc6, Ng5 no longer wins material in the exchange."
       }
     },
-    "scanMs": 43.33110000000306,
-    "mistakeMs": 20.031899999994494
+    "scanMs": 47.48479999999108,
+    "mistakeMs": 22.6423000000068
   },
   {
     "id": "ordinary-3:ply23",
@@ -9385,7 +9465,7 @@
           "value": 600
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26",
+      "motifClassifierVersion": "site-55.adapter-27",
       "missedTimeline": [
         {
           "id": "fork",
@@ -9429,8 +9509,8 @@
         "value": 600
       }
     },
-    "scanMs": 0.45160000000032596,
-    "mistakeMs": 38.24539999999979
+    "scanMs": 0.4708000000100583,
+    "mistakeMs": 39.837200000009034
   },
   {
     "id": "ordinary-3:ply28",
@@ -9852,7 +9932,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-26",
+      "motifClassifierVersion": "site-55.adapter-27",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -9888,7 +9968,7 @@
         "comparisonEvidence": "The same capture still wins material after fxg5."
       }
     },
-    "scanMs": 21.75460000000021,
-    "mistakeMs": 17.220099999998638
+    "scanMs": 22.38430000000517,
+    "mistakeMs": 18.9884999999922
   }
 ]

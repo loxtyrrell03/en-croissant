@@ -39,7 +39,7 @@
           "ply": 1,
           "moveUci": "f7f1",
           "value": 10000,
-          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "evidence": "Qf1+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
           "relevance": "primary"
         },
         {
@@ -63,7 +63,7 @@
           "ply": 1,
           "moveUci": "f7f1",
           "value": 10000,
-          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "evidence": "Qf1+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
           "relevance": "primary",
           "actor": "black"
         },
@@ -80,7 +80,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "sourceClassification": {
       "motifs": [
@@ -92,7 +92,7 @@
           "ply": 1,
           "moveUci": "f7f1",
           "value": 10000,
-          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "evidence": "Qf1+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
           "relevance": "primary"
         },
         {
@@ -116,7 +116,7 @@
           "ply": 1,
           "moveUci": "f7f1",
           "value": 10000,
-          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "evidence": "Qf1+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
           "relevance": "primary",
           "actor": "black"
         },
@@ -133,9 +133,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
-    "classificationMs": 12.884399999999005
+    "classificationMs": 13.94800000000032
   },
   {
     "fen": "5r2/bpp2q1k/p2pR1p1/3P4/1PP3QP/P7/1B4P1/7K b - - 3 32",
@@ -253,7 +253,7 @@
           "ply": 1,
           "moveUci": "f7f1",
           "value": 10000,
-          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "evidence": "Qf1+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
           "relevance": "primary"
         },
         {
@@ -277,7 +277,7 @@
           "ply": 1,
           "moveUci": "f7f1",
           "value": 10000,
-          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "evidence": "Qf1+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
           "relevance": "primary",
           "actor": "black"
         },
@@ -294,7 +294,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "sourceClassification": {
       "motifs": [
@@ -306,7 +306,7 @@
           "ply": 1,
           "moveUci": "f7f1",
           "value": 10000,
-          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "evidence": "Qf1+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
           "relevance": "primary"
         },
         {
@@ -330,7 +330,7 @@
           "ply": 1,
           "moveUci": "f7f1",
           "value": 10000,
-          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "evidence": "Qf1+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
           "relevance": "primary",
           "actor": "black"
         },
@@ -347,9 +347,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
-    "classificationMs": 8.688099999999395
+    "classificationMs": 10.084799999996903
   },
   {
     "fen": "5r2/bpp2q1k/p2pR1p1/3P4/1PP3QP/P7/1B4P1/2R4K b - - 3 32",
@@ -397,12 +397,12 @@
     ],
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "sourceClassification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
-    "classificationMs": 18.980400000000373
+    "classificationMs": 19.330299999997806
   }
 ]

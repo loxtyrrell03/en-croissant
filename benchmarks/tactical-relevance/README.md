@@ -1055,10 +1055,10 @@ pins/skewers. Verified matching root history now shares the timeline's
 compensated-capture filter, without hiding real mating recaptures or accepting
 mismatched history. Mate-in-one positions omit longer mating alternatives.
 
-The sample now has 17 empty live headlines and six accepted immediate lessons;
-the seventh non-empty result, f7+'s mate in seven, still incorrectly leads with
-a smaller proved material idea. It remains open rather than becoming an
-accepted-label oracle. Quiet development, forced evasions and compensated
+Adapter 26 established 17 empty live headlines and six accepted immediate lessons;
+its seventh non-empty result, f7+'s mate in seven, incorrectly led with
+a smaller proved material idea. The adapter 27 milestone below supplies the
+missing mating proof. Quiet development, forced evasions and compensated
 recaptures have fixed regression judgements, while genuine capture and mate
 controls remain. This is a small developmental noise diagnostic, not general
 accuracy, end-to-end UI latency or deployment proof.
@@ -1080,13 +1080,66 @@ engine tests, targeted format/lint, the shared review worker and production
 build. The earlier frozen 32-puzzle headlines are unchanged. Type checking
 retains only the unrelated OTB number/bigint fixture error.
 
+## Quiet moves inside forcing mates (adapter 27)
+
+The ordinary-game `ordinary-2:ply18` position is now explained as a forced
+mating attack, not its smaller material fork. The independently replayed
+Stockfish line is `f7+ Ke7 fxg8=B Rxg8 Bc4 Bg7 Qf7+ Kd6 Ne4+ Kc6 Qd5+ Kb6 Qb5#`.
+Checking-only search could not certify the non-checking promotion or Bc4;
+the relevance window also stopped before the mate was considered.
+
+The root still must give check and the nominated mate must finish within
+seven attacking moves. Search may now try at most two PV-nominated
+non-checking moves, but enumerates **every legal defence** after each, not
+only the displayed recaptures or bishop reply. It memoizes completed states,
+orders the nominated move by ply, safely excludes impossible checking
+candidates, and has a 65,536 examined-move ceiling. Failure, exhaustion and
+invalid budgets abstain; a warm cache cannot bypass a smaller explicit budget.
+The candidate filter retains discovered checks, en passant, castling and all
+promotion roles. This bounded search remains incomplete, not a replacement
+for the engine.
+
+Only a successful proof connects the quiet preparation to the terminal
+timeline event. Its verified mate outranks lesser material side effects,
+including a loose rook captured with check. A checkmating move no longer
+claims an irrelevant fork, skewer, trapped/loose piece or discovered material
+attack just because there are zero legal replies. Actual checkmate and
+concrete checking mechanisms remain separate. The promotion description is
+factual: the displayed recapture erases the promoted role, but that alone
+does not prove all promotion choices equivalent against other defences.
+
+The same general change recovers two previously unproved development mates:
+`3kPn3` (`Qh4+`, then quiet `g3`) and `IyijS` (`Rc6+`, then quiet `Rch6`).
+The frozen long-mate diagnostic moves from 27/32 to 29/32 proved roots.
+`8FLlO` and `hajE5` remain unproved; `eimKB` exceeds the seven-move bound.
+These are development coverage counts, not held-out accuracy. All 32 earlier
+mixed-puzzle primary labels and the other 23 ordinary-game headlines are
+unchanged. The ordinary sample retains 17 empty headlines and now has seven
+accepted positive lessons.
+
+Fresh depth-16/MultiPV3 before/after searches confirm the real Ke8 mistake:
+Mistake Review leads with the mating attack and explains that Kxf6 would
+remove the checking pawn. The recorded full f7+ scan takes 743 ms after engine
+analysis; its subsequent review takes 44 ms with proof caches warm. These are
+test-harness timings, not end-to-end desktop measurements. The fifteen fresh
+engine tests, focused regressions, shared review-worker build and production
+build pass. Type checking retains the unrelated OTB number/bigint fixture error.
+
+`mixedMate.test.ts` retains the real position, quiet-reply and root-capture
+counterexamples, terminal-label and budget checks, and the actual mistake's
+explanation. `checkingMate.test.ts` retains the two recovered real mates and
+the capturing-check priority regression. All report regeneration commands
+above remain applicable. Website primitives, Outpost and running apps are
+unchanged; no deployment or physical UI proof is claimed.
+
 ## What remains to establish
 
 These are relevance milestones, not completion of the broader tuning
 goal. Legal exchange analysis validates local material threats and fork
 defences; it is not a full tactical search. A forcing episode ends when the
 attacking side makes a quiet move without an immediate material threat.
-Verified short mating preparations are now an exception to that cutoff.
+Verified mating preparations and bounded checking attacks containing
+PV-nominated quiet moves are now exceptions to that cutoff.
 Discovered combinations now have the bounded extra-check proof described above.
 Other non-mating quiet preparations, longer mating threats, defensive combinations
 and long pawn breakthroughs still need stronger branch evidence. Unproven

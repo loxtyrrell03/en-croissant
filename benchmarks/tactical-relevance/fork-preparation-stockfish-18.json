@@ -117,7 +117,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     }
   },
   {
@@ -155,7 +155,7 @@
     ],
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     }
   },
   {
@@ -299,7 +299,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     }
   },
   {
@@ -405,7 +405,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "doubleThreatProof": {
       "gain": 180,
@@ -817,7 +817,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "doubleThreatProof": {
       "gain": 180,
@@ -1151,7 +1151,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "checkingAttackProof": {
       "gain": 170,
@@ -1356,7 +1356,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "checkingAttackProof": {
       "gain": 170,
@@ -1555,7 +1555,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
     "checkingAttackProof": {
       "gain": 170,

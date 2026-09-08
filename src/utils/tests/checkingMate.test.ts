@@ -19,6 +19,22 @@ const developmentExample = (id: string) => {
     return cases.find((example) => example.id === `lichess:${id}`)!;
 };
 
+test.each([
+    ["3kPn3", 5],
+    ["IyijS", 4],
+] as const)("a real checking attack with quiet preparation remains connected: %s", (id, moves) => {
+    const item = developmentExample(id);
+    const steps = replayTacticalLine(item.startFen, item.bestLine);
+    expect(
+        steps.some((step) => step.before.turn === steps[0].before.turn && !step.after.isCheck()),
+    ).toBe(true);
+    const result = classifyPositionTacticalMotifs({ fen: item.startFen, pvUci: item.bestLine });
+    expect(result.motifs[0]).toMatchObject({ id: `mateIn${moves}`, ply: 1 });
+    expect(
+        result.timeline?.some((motif) => motif.ply === steps.length && /mate/i.test(motif.id)),
+    ).toBe(true);
+});
+
 test.each(["O3OKR", "nUdHj"])(
     "live display retains a verified mate beyond five moves: %s",
     (id) => {
@@ -135,6 +151,17 @@ test("a real seven-ply mating attack remains recognizable", () => {
         relevance: "secondary",
     });
     expect(payoff?.[0].evidence).toContain("Bf2#");
+});
+
+test("capturing a loose rook with check cannot displace the independently proved mate", () => {
+    const position = fen.replace("7K", "5R1K");
+    const steps = replayTacticalLine(position, pvUci);
+    expect(steps[0].san).toBe("Qxf1+");
+    expect(proveCheckingMate(steps)).toMatchObject({ maxMoves: 4 });
+    expect(classifyPositionTacticalMotifs({ fen: position, pvUci }).motifs[0]).toMatchObject({
+        id: "mateIn4",
+        ply: 1,
+    });
 });
 
 test("a seven-ply cooperative mate cannot hide a queen-capturing defence", () => {

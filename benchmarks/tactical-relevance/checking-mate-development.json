@@ -2,7 +2,7 @@
   "selection": "Every development row whose complete legal line has at least seven plies, starts with check and ends with the attacker's checkmate. No theme/rating/classifier-output selection; no holdout classification. Proof absence remains unresolved, not a correct negative.",
   "sourceSha256": "c80356923da60cce5b48b37046a878290f36997862f921b944015a3cf69ccc88",
   "count": 32,
-  "proved": 27,
+  "proved": 29,
   "cases": [
     {
       "id": "lichess:3kPn3",
@@ -30,12 +30,75 @@
         "Kf1",
         "Qh1#"
       ],
-      "proof": null,
-      "result": {
-        "motifs": [],
-        "motifClassifierVersion": "site-55.adapter-26"
+      "proof": {
+        "maxMoves": 5,
+        "replyCount": 1,
+        "example": [
+          "Qh4+",
+          "Kg1",
+          "g3",
+          "Nf3",
+          "exf3",
+          "Re1",
+          "Qh2+",
+          "Kf1",
+          "Qh1#"
+        ]
       },
-      "classificationMs": 71.77349999999933
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d8h4",
+            "value": 10000,
+            "evidence": "Qh4+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Qh4+ Kg1 g3 Nf3 exf3 Re1 Qh2+ Kf1 Qh1#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qh1# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "h2h1",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d8h4",
+            "value": 10000,
+            "evidence": "Qh4+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Qh4+ Kg1 g3 Nf3 exf3 Re1 Qh2+ Kf1 Qh1#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qh1# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "h2h1",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-27"
+      },
+      "classificationMs": 161.51300000000083
     },
     {
       "id": "lichess:3mWuW",
@@ -82,7 +145,7 @@
             "ply": 1,
             "moveUci": "e6g6",
             "value": 10000,
-            "evidence": "Rg6+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Rg6+ Kh3 Rg3+ Kh2 Nxf3+ gxf3 Rxh4#. The exact continuation depends on the defence.",
+            "evidence": "Rg6+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Rg6+ Kh3 Rg3+ Kh2 Nxf3+ gxf3 Rxh4#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -106,7 +169,7 @@
             "ply": 1,
             "moveUci": "e6g6",
             "value": 10000,
-            "evidence": "Rg6+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Rg6+ Kh3 Rg3+ Kh2 Nxf3+ gxf3 Rxh4#. The exact continuation depends on the defence.",
+            "evidence": "Rg6+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Rg6+ Kh3 Rg3+ Kh2 Nxf3+ gxf3 Rxh4#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "black"
           },
@@ -135,9 +198,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 27.14259999999922
+      "classificationMs": 26.706599999999526
     },
     {
       "id": "lichess:41frD",
@@ -184,7 +247,7 @@
             "ply": 1,
             "moveUci": "d6c5",
             "value": 10000,
-            "evidence": "Bc5+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bc5+ Kh1 Qxh2+ Kxh2 Rh6+ Bh4 Rxh4#. The exact continuation depends on the defence.",
+            "evidence": "Bc5+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Bc5+ Kh1 Qxh2+ Kxh2 Rh6+ Bh4 Rxh4#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -219,7 +282,7 @@
             "ply": 1,
             "moveUci": "d6c5",
             "value": 10000,
-            "evidence": "Bc5+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bc5+ Kh1 Qxh2+ Kxh2 Rh6+ Bh4 Rxh4#. The exact continuation depends on the defence.",
+            "evidence": "Bc5+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Bc5+ Kh1 Qxh2+ Kxh2 Rh6+ Bh4 Rxh4#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "black"
           },
@@ -248,9 +311,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 14.609800000000178
+      "classificationMs": 16.20629999999983
     },
     {
       "id": "lichess:4Osgg",
@@ -297,7 +360,7 @@
             "ply": 1,
             "moveUci": "f7f1",
             "value": 10000,
-            "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+            "evidence": "Qf1+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -321,7 +384,7 @@
             "ply": 1,
             "moveUci": "f7f1",
             "value": 10000,
-            "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+            "evidence": "Qf1+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "black"
           },
@@ -338,9 +401,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 17.40389999999934
+      "classificationMs": 18.072900000001027
     },
     {
       "id": "lichess:7Aje1",
@@ -387,7 +450,7 @@
             "ply": 1,
             "moveUci": "h5g3",
             "value": 10000,
-            "evidence": "Ng3+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Ng3+ Kh2 Nf1+ Rxf1 Rxh3+ Kxh3 Qh4#. The exact continuation depends on the defence.",
+            "evidence": "Ng3+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Ng3+ Kh2 Nf1+ Rxf1 Rxh3+ Kxh3 Qh4#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -422,7 +485,7 @@
             "ply": 1,
             "moveUci": "h5g3",
             "value": 10000,
-            "evidence": "Ng3+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Ng3+ Kh2 Nf1+ Rxf1 Rxh3+ Kxh3 Qh4#. The exact continuation depends on the defence.",
+            "evidence": "Ng3+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Ng3+ Kh2 Nf1+ Rxf1 Rxh3+ Kxh3 Qh4#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "black"
           },
@@ -451,9 +514,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 29.815199999999095
+      "classificationMs": 34.612199999999575
     },
     {
       "id": "lichess:7tbEy",
@@ -500,7 +563,7 @@
             "ply": 1,
             "moveUci": "d4f2",
             "value": 10000,
-            "evidence": "Qxf2+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qxf2+ Rxf2 Rd1+ Qe1 Rxe1+ Rf1 Rexf1#. The exact continuation depends on the defence.",
+            "evidence": "Qxf2+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qxf2+ Rxf2 Rd1+ Qe1 Rxe1+ Rf1 Rexf1#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -535,7 +598,7 @@
             "ply": 1,
             "moveUci": "d4f2",
             "value": 10000,
-            "evidence": "Qxf2+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qxf2+ Rxf2 Rd1+ Qe1 Rxe1+ Rf1 Rexf1#. The exact continuation depends on the defence.",
+            "evidence": "Qxf2+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qxf2+ Rxf2 Rd1+ Qe1 Rxe1+ Rf1 Rexf1#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "black"
           },
@@ -576,9 +639,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 37.76850000000013
+      "classificationMs": 54.18260000000009
     },
     {
       "id": "lichess:8FLlO",
@@ -609,9 +672,9 @@
       "proof": null,
       "result": {
         "motifs": [],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 68.02050000000054
+      "classificationMs": 92.21169999999984
     },
     {
       "id": "lichess:AtnrF",
@@ -658,7 +721,7 @@
             "ply": 1,
             "moveUci": "e7h4",
             "value": 10000,
-            "evidence": "Qh4+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qh4+ Kg1 Qh1+ Kxh1 Ng3+ Kg1 Rh1#. The exact continuation depends on the defence.",
+            "evidence": "Qh4+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qh4+ Kg1 Qh1+ Kxh1 Ng3+ Kg1 Rh1#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -704,7 +767,7 @@
             "ply": 1,
             "moveUci": "e7h4",
             "value": 10000,
-            "evidence": "Qh4+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qh4+ Kg1 Qh1+ Kxh1 Ng3+ Kg1 Rh1#. The exact continuation depends on the defence.",
+            "evidence": "Qh4+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qh4+ Kg1 Qh1+ Kxh1 Ng3+ Kg1 Rh1#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "black"
           },
@@ -757,9 +820,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 17.11789999999928
+      "classificationMs": 17.74539999999979
     },
     {
       "id": "lichess:IyijS",
@@ -783,12 +846,85 @@
         "a1=Q",
         "R4h5#"
       ],
-      "proof": null,
-      "result": {
-        "motifs": [],
-        "motifClassifierVersion": "site-55.adapter-26"
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 1,
+        "example": [
+          "Rc6+",
+          "Kh5",
+          "Rh4+",
+          "Kg5",
+          "Rch6",
+          "a1=Q",
+          "R4h5#"
+        ]
       },
-      "classificationMs": 21.042999999999665
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c2c6",
+            "value": 10000,
+            "evidence": "Rc6+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Rc6+ Kh5 Rh4+ Kg5 Rch6 a1=Q R4h5#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "blindSwineMate",
+            "label": "Blind Swine Mate",
+            "confidence": "medium",
+            "evidence": "R4h5# is checkmate (Blind Swine Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h4h5",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c2c6",
+            "value": 10000,
+            "evidence": "Rc6+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Rc6+ Kh5 Rh4+ Kg5 Rch6 a1=Q R4h5#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 5,
+            "moveUci": "c6h6",
+            "evidence": "Rch6 threatens R4h5#. All 24 legal Black replies allow mate on the next move; for example, a1=Q R4h5#.",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "blindSwineMate",
+            "label": "Blind Swine Mate",
+            "confidence": "medium",
+            "evidence": "R4h5# is checkmate (Blind Swine Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h4h5",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-27"
+      },
+      "classificationMs": 33.27990000000136
     },
     {
       "id": "lichess:Jn9KP",
@@ -835,7 +971,7 @@
             "ply": 1,
             "moveUci": "a8g2",
             "value": 10000,
-            "evidence": "Bg2+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bg2+ Kg3 Bd5+ Kh3 Be6+ Qg4+ Bxg4#. The exact continuation depends on the defence.",
+            "evidence": "Bg2+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Bg2+ Kg3 Bd5+ Kh3 Be6+ Qg4+ Bxg4#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -870,7 +1006,7 @@
             "ply": 1,
             "moveUci": "a8g2",
             "value": 10000,
-            "evidence": "Bg2+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bg2+ Kg3 Bd5+ Kh3 Be6+ Qg4+ Bxg4#. The exact continuation depends on the defence.",
+            "evidence": "Bg2+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Bg2+ Kg3 Bd5+ Kh3 Be6+ Qg4+ Bxg4#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "black"
           },
@@ -899,9 +1035,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 26.920900000000984
+      "classificationMs": 27.804300000001604
     },
     {
       "id": "lichess:LDIy1",
@@ -959,7 +1095,7 @@
             "ply": 1,
             "moveUci": "h8h2",
             "value": 10000,
-            "evidence": "Rxh2+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Rxh2+ Kxh2 Rh8+ Rh7 Rxh7+ Bh4 Rxh4#. The exact continuation depends on the defence.",
+            "evidence": "Rxh2+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Rxh2+ Kxh2 Rh8+ Rh7 Rxh7+ Bh4 Rxh4#. The exact continuation depends on the defence.",
             "relevance": "secondary"
           },
           {
@@ -995,7 +1131,7 @@
             "ply": 1,
             "moveUci": "h8h2",
             "value": 10000,
-            "evidence": "Rxh2+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Rxh2+ Kxh2 Rh8+ Rh7 Rxh7+ Bh4 Rxh4#. The exact continuation depends on the defence.",
+            "evidence": "Rxh2+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Rxh2+ Kxh2 Rh8+ Rh7 Rxh7+ Bh4 Rxh4#. The exact continuation depends on the defence.",
             "relevance": "secondary",
             "actor": "black"
           },
@@ -1024,9 +1160,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 25.241799999999785
+      "classificationMs": 32.31550000000061
     },
     {
       "id": "lichess:LDnWZ",
@@ -1073,7 +1209,7 @@
             "ply": 1,
             "moveUci": "g5g3",
             "value": 10000,
-            "evidence": "Qxg3+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qxg3+ Kf1 Qg2+ Ke1 Nf3+ Kd1 Qd2#. The exact continuation depends on the defence.",
+            "evidence": "Qxg3+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qxg3+ Kf1 Qg2+ Ke1 Nf3+ Kd1 Qd2#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -1108,7 +1244,7 @@
             "ply": 1,
             "moveUci": "g5g3",
             "value": 10000,
-            "evidence": "Qxg3+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qxg3+ Kf1 Qg2+ Ke1 Nf3+ Kd1 Qd2#. The exact continuation depends on the defence.",
+            "evidence": "Qxg3+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qxg3+ Kf1 Qg2+ Ke1 Nf3+ Kd1 Qd2#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "black"
           },
@@ -1137,9 +1273,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 10.358399999999165
+      "classificationMs": 10.02139999999963
     },
     {
       "id": "lichess:NOVGX",
@@ -1186,7 +1322,7 @@
             "ply": 1,
             "moveUci": "h4h6",
             "value": 10000,
-            "evidence": "Qxh6+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qxh6+ gxh6 g7+ Kh7 gxf8=N+ Kh8 Rg8#. The exact continuation depends on the defence.",
+            "evidence": "Qxh6+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qxh6+ gxh6 g7+ Kh7 gxf8=N+ Kh8 Rg8#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -1221,7 +1357,7 @@
             "ply": 1,
             "moveUci": "h4h6",
             "value": 10000,
-            "evidence": "Qxh6+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qxh6+ gxh6 g7+ Kh7 gxf8=N+ Kh8 Rg8#. The exact continuation depends on the defence.",
+            "evidence": "Qxh6+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Qxh6+ gxh6 g7+ Kh7 gxf8=N+ Kh8 Rg8#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "white"
           },
@@ -1286,9 +1422,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 35.139100000000326
+      "classificationMs": 46.79600000000028
     },
     {
       "id": "lichess:NrHkx",
@@ -1335,7 +1471,7 @@
             "ply": 1,
             "moveUci": "c5e3",
             "value": 10000,
-            "evidence": "Be3+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Be3+ fxe3 Rc5+ Bc4 Rxc4+ Kb1 Bd3#. The exact continuation depends on the defence.",
+            "evidence": "Be3+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Be3+ fxe3 Rc5+ Bc4 Rxc4+ Kb1 Bd3#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -1370,7 +1506,7 @@
             "ply": 1,
             "moveUci": "c5e3",
             "value": 10000,
-            "evidence": "Be3+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Be3+ fxe3 Rc5+ Bc4 Rxc4+ Kb1 Bd3#. The exact continuation depends on the defence.",
+            "evidence": "Be3+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Be3+ fxe3 Rc5+ Bc4 Rxc4+ Kb1 Bd3#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "black"
           },
@@ -1399,9 +1535,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 12.204799999999523
+      "classificationMs": 19.10319999999956
     },
     {
       "id": "lichess:NtXK7",
@@ -1454,7 +1590,7 @@
             "ply": 1,
             "moveUci": "h4h6",
             "value": 10000,
-            "evidence": "Rxh6+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rxh6+ Kg8 Rh8+ Kxh8 Qh4+ Rh5 Qxh5+ Qxh5 Rxf8#. The exact continuation depends on the defence.",
+            "evidence": "Rxh6+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Rxh6+ Kg8 Rh8+ Kxh8 Qh4+ Rh5 Qxh5+ Qxh5 Rxf8#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -1500,7 +1636,7 @@
             "ply": 1,
             "moveUci": "h4h6",
             "value": 10000,
-            "evidence": "Rxh6+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rxh6+ Kg8 Rh8+ Kxh8 Qh4+ Rh5 Qxh5+ Qxh5 Rxf8#. The exact continuation depends on the defence.",
+            "evidence": "Rxh6+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Rxh6+ Kg8 Rh8+ Kxh8 Qh4+ Rh5 Qxh5+ Qxh5 Rxf8#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "white"
           },
@@ -1541,9 +1677,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 36.340799999999945
+      "classificationMs": 35.76389999999992
     },
     {
       "id": "lichess:O3OKR",
@@ -1602,7 +1738,7 @@
             "ply": 1,
             "moveUci": "g4h6",
             "value": 10000,
-            "evidence": "Nh6+ starts a forced checking attack. Every legal defence permits mate within 6 moves; one verified line is Nh6+ Kf8 Qh8+ Ke7 Qg7+ Ke6 Qf7+ Ke5 Ng4+ Kd4 Qc4#. The exact continuation depends on the defence.",
+            "evidence": "Nh6+ starts a forced mating attack. Every legal defence permits mate within 6 moves; one verified line is Nh6+ Kf8 Qh8+ Ke7 Qg7+ Ke6 Qf7+ Ke5 Ng4+ Kd4 Qc4#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -1626,7 +1762,7 @@
             "ply": 1,
             "moveUci": "g4h6",
             "value": 10000,
-            "evidence": "Nh6+ starts a forced checking attack. Every legal defence permits mate within 6 moves; one verified line is Nh6+ Kf8 Qh8+ Ke7 Qg7+ Ke6 Qf7+ Ke5 Ng4+ Kd4 Qc4#. The exact continuation depends on the defence.",
+            "evidence": "Nh6+ starts a forced mating attack. Every legal defence permits mate within 6 moves; one verified line is Nh6+ Kf8 Qh8+ Ke7 Qg7+ Ke6 Qf7+ Ke5 Ng4+ Kd4 Qc4#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "white"
           },
@@ -1655,9 +1791,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 8.685999999999694
+      "classificationMs": 10.99040000000059
     },
     {
       "id": "lichess:OezHt",
@@ -1704,7 +1840,7 @@
             "ply": 1,
             "moveUci": "c6c8",
             "value": 10000,
-            "evidence": "Rc8+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Rc8+ Kd7 Bg4+ f5 gxf6+ Bf5 Bxf5#. The exact continuation depends on the defence.",
+            "evidence": "Rc8+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Rc8+ Kd7 Bg4+ f5 gxf6+ Bf5 Bxf5#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -1739,7 +1875,7 @@
             "ply": 1,
             "moveUci": "c6c8",
             "value": 10000,
-            "evidence": "Rc8+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Rc8+ Kd7 Bg4+ f5 gxf6+ Bf5 Bxf5#. The exact continuation depends on the defence.",
+            "evidence": "Rc8+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Rc8+ Kd7 Bg4+ f5 gxf6+ Bf5 Bxf5#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "white"
           },
@@ -1768,9 +1904,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 6.345400000000154
+      "classificationMs": 4.9671999999991385
     },
     {
       "id": "lichess:PDoyY",
@@ -1817,7 +1953,7 @@
             "ply": 1,
             "moveUci": "e4h7",
             "value": 10000,
-            "evidence": "Bxh7+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bxh7+ Kh8 Nf7+ Rxf7 Ra8+ Rf8 Rxf8#. The exact continuation depends on the defence.",
+            "evidence": "Bxh7+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Bxh7+ Kh8 Nf7+ Rxf7 Ra8+ Rf8 Rxf8#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -1852,7 +1988,7 @@
             "ply": 1,
             "moveUci": "e4h7",
             "value": 10000,
-            "evidence": "Bxh7+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bxh7+ Kh8 Nf7+ Rxf7 Ra8+ Rf8 Rxf8#. The exact continuation depends on the defence.",
+            "evidence": "Bxh7+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Bxh7+ Kh8 Nf7+ Rxf7 Ra8+ Rf8 Rxf8#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "white"
           },
@@ -1881,9 +2017,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 23.168400000000474
+      "classificationMs": 29.709399999999732
     },
     {
       "id": "lichess:bBtM1",
@@ -1936,7 +2072,7 @@
             "ply": 1,
             "moveUci": "e1e6",
             "value": 10000,
-            "evidence": "R1e6+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is R1e6+ Kg5 Rxg7+ Kh5 g4+ fxg4 hxg4+ Kh4 Rxh6#. The exact continuation depends on the defence.",
+            "evidence": "R1e6+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is R1e6+ Kg5 Rxg7+ Kh5 g4+ fxg4 hxg4+ Kh4 Rxh6#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -1960,7 +2096,7 @@
             "ply": 1,
             "moveUci": "e1e6",
             "value": 10000,
-            "evidence": "R1e6+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is R1e6+ Kg5 Rxg7+ Kh5 g4+ fxg4 hxg4+ Kh4 Rxh6#. The exact continuation depends on the defence.",
+            "evidence": "R1e6+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is R1e6+ Kg5 Rxg7+ Kh5 g4+ fxg4 hxg4+ Kh4 Rxh6#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "white"
           },
@@ -2001,9 +2137,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 6.178299999999581
+      "classificationMs": 7.274100000000544
     },
     {
       "id": "lichess:eQa3B",
@@ -2067,7 +2203,7 @@
             "ply": 1,
             "moveUci": "h8h1",
             "value": 10000,
-            "evidence": "Rh1+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rh1+ Kxh1 Rh8+ Kg1 Rh1+ Kxh1 Qh8+ Kg1 Qh2#. The exact continuation depends on the defence.",
+            "evidence": "Rh1+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Rh1+ Kxh1 Rh8+ Kg1 Rh1+ Kxh1 Qh8+ Kg1 Qh2#. The exact continuation depends on the defence.",
             "relevance": "secondary"
           },
           {
@@ -2103,7 +2239,7 @@
             "ply": 1,
             "moveUci": "h8h1",
             "value": 10000,
-            "evidence": "Rh1+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rh1+ Kxh1 Rh8+ Kg1 Rh1+ Kxh1 Qh8+ Kg1 Qh2#. The exact continuation depends on the defence.",
+            "evidence": "Rh1+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Rh1+ Kxh1 Rh8+ Kg1 Rh1+ Kxh1 Qh8+ Kg1 Qh2#. The exact continuation depends on the defence.",
             "relevance": "secondary",
             "actor": "black"
           },
@@ -2144,9 +2280,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 21.179900000001
+      "classificationMs": 29.10269999999946
     },
     {
       "id": "lichess:eimKB",
@@ -2226,7 +2362,7 @@
             "ply": 5,
             "moveUci": "d4f5",
             "value": 10000,
-            "evidence": "Nf5+ starts a forced checking attack. Every legal defence permits mate within 7 moves; one verified line is Nf5+ Ke4 d5+ cxd5 exd5+ Kxd5 Nfe7+ Kc4 Be6+ Kb5 a6+ Ka4 b5#. The exact continuation depends on the defence.",
+            "evidence": "Nf5+ starts a forced mating attack. Every legal defence permits mate within 7 moves; one verified line is Nf5+ Ke4 d5+ cxd5 exd5+ Kxd5 Nfe7+ Kc4 Be6+ Kb5 a6+ Ka4 b5#. The exact continuation depends on the defence.",
             "relevance": "secondary",
             "actor": "black"
           },
@@ -2243,9 +2379,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 74.44410000000062
+      "classificationMs": 49.79179999999906
     },
     {
       "id": "lichess:g2XPR",
@@ -2298,7 +2434,7 @@
             "ply": 1,
             "moveUci": "g2g6",
             "value": 10000,
-            "evidence": "Rxg6+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rxg6+ Kf7 Rg7+ Bxg7 Rxg7+ Ke8 Qh5+ Rf7 Qxf7#. The exact continuation depends on the defence.",
+            "evidence": "Rxg6+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Rxg6+ Kf7 Rg7+ Bxg7 Rxg7+ Ke8 Qh5+ Rf7 Qxf7#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -2322,7 +2458,7 @@
             "ply": 1,
             "moveUci": "g2g6",
             "value": 10000,
-            "evidence": "Rxg6+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rxg6+ Kf7 Rg7+ Bxg7 Rxg7+ Ke8 Qh5+ Rf7 Qxf7#. The exact continuation depends on the defence.",
+            "evidence": "Rxg6+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Rxg6+ Kf7 Rg7+ Bxg7 Rxg7+ Ke8 Qh5+ Rf7 Qxf7#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "white"
           },
@@ -2363,9 +2499,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 42.37410000000091
+      "classificationMs": 40.776599999999235
     },
     {
       "id": "lichess:gJxgk",
@@ -2418,7 +2554,7 @@
             "ply": 1,
             "moveUci": "b2f2",
             "value": 10000,
-            "evidence": "Qxf2+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Qxf2+ Rxf2 Rd1+ Rf1 Bxc5+ Nd4 Bxd4+ Be3 Bxe3#. The exact continuation depends on the defence.",
+            "evidence": "Qxf2+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Qxf2+ Rxf2 Rd1+ Rf1 Bxc5+ Nd4 Bxd4+ Be3 Bxe3#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -2453,7 +2589,7 @@
             "ply": 1,
             "moveUci": "b2f2",
             "value": 10000,
-            "evidence": "Qxf2+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Qxf2+ Rxf2 Rd1+ Rf1 Bxc5+ Nd4 Bxd4+ Be3 Bxe3#. The exact continuation depends on the defence.",
+            "evidence": "Qxf2+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Qxf2+ Rxf2 Rd1+ Rf1 Bxc5+ Nd4 Bxd4+ Be3 Bxe3#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "black"
           },
@@ -2482,9 +2618,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 51.042199999999866
+      "classificationMs": 56.49990000000071
     },
     {
       "id": "lichess:hajE5",
@@ -2523,9 +2659,9 @@
       "proof": null,
       "result": {
         "motifs": [],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 118.65990000000056
+      "classificationMs": 84.13119999999981
     },
     {
       "id": "lichess:kCdp5",
@@ -2578,7 +2714,7 @@
             "ply": 1,
             "moveUci": "g7g8",
             "value": 10000,
-            "evidence": "Rg8+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rg8+ Rxg8 Rxg8+ Kxg8 Qg2+ Kf7 Qg7+ Ke6 Qe7#. The exact continuation depends on the defence.",
+            "evidence": "Rg8+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Rg8+ Rxg8 Rxg8+ Kxg8 Qg2+ Kf7 Qg7+ Ke6 Qe7#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -2613,7 +2749,7 @@
             "ply": 1,
             "moveUci": "g7g8",
             "value": 10000,
-            "evidence": "Rg8+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rg8+ Rxg8 Rxg8+ Kxg8 Qg2+ Kf7 Qg7+ Ke6 Qe7#. The exact continuation depends on the defence.",
+            "evidence": "Rg8+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Rg8+ Rxg8 Rxg8+ Kxg8 Qg2+ Kf7 Qg7+ Ke6 Qe7#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "white"
           },
@@ -2642,9 +2778,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 26.0640999999996
+      "classificationMs": 28.28440000000046
     },
     {
       "id": "lichess:n48BE",
@@ -2697,7 +2833,7 @@
             "ply": 1,
             "moveUci": "g6f8",
             "value": 10000,
-            "evidence": "Nf8+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Nf8+ Kg8 Qh7+ Kxf8 Qh8+ Ke7 Qxg7+ Rf7 Qxf7#. The exact continuation depends on the defence.",
+            "evidence": "Nf8+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Nf8+ Kg8 Qh7+ Kxf8 Qh8+ Ke7 Qxg7+ Rf7 Qxf7#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -2721,7 +2857,7 @@
             "ply": 1,
             "moveUci": "g6f8",
             "value": 10000,
-            "evidence": "Nf8+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Nf8+ Kg8 Qh7+ Kxf8 Qh8+ Ke7 Qxg7+ Rf7 Qxf7#. The exact continuation depends on the defence.",
+            "evidence": "Nf8+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Nf8+ Kg8 Qh7+ Kxf8 Qh8+ Ke7 Qxg7+ Rf7 Qxf7#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "white"
           },
@@ -2762,9 +2898,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 9.680900000001202
+      "classificationMs": 8.89850000000115
     },
     {
       "id": "lichess:nUdHj",
@@ -2823,7 +2959,7 @@
             "ply": 1,
             "moveUci": "f1f7",
             "value": 10000,
-            "evidence": "Rxf7+ starts a forced checking attack. Every legal defence permits mate within 6 moves; one verified line is Rxf7+ Kc6 Qf6+ Kc5 Qd6+ Kb5 Rxb7+ Ka5 Qb6+ Ka4 Qxa6#. The exact continuation depends on the defence.",
+            "evidence": "Rxf7+ starts a forced mating attack. Every legal defence permits mate within 6 moves; one verified line is Rxf7+ Kc6 Qf6+ Kc5 Qd6+ Kb5 Rxb7+ Ka5 Qb6+ Ka4 Qxa6#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -2847,7 +2983,7 @@
             "ply": 1,
             "moveUci": "f1f7",
             "value": 10000,
-            "evidence": "Rxf7+ starts a forced checking attack. Every legal defence permits mate within 6 moves; one verified line is Rxf7+ Kc6 Qf6+ Kc5 Qd6+ Kb5 Rxb7+ Ka5 Qb6+ Ka4 Qxa6#. The exact continuation depends on the defence.",
+            "evidence": "Rxf7+ starts a forced mating attack. Every legal defence permits mate within 6 moves; one verified line is Rxf7+ Kc6 Qf6+ Kc5 Qd6+ Kb5 Rxb7+ Ka5 Qb6+ Ka4 Qxa6#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "white"
           },
@@ -2876,9 +3012,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 10.847099999999045
+      "classificationMs": 8.316399999999703
     },
     {
       "id": "lichess:qUCRQ",
@@ -2931,7 +3067,7 @@
             "ply": 1,
             "moveUci": "c1c8",
             "value": 10000,
-            "evidence": "Rc8+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rc8+ Bf8 Rxf8+ Kg7 Ne8+ Kh6 Bg5+ Kh5 Nf6#. The exact continuation depends on the defence.",
+            "evidence": "Rc8+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Rc8+ Bf8 Rxf8+ Kg7 Ne8+ Kh6 Bg5+ Kh5 Nf6#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -2955,7 +3091,7 @@
             "ply": 1,
             "moveUci": "c1c8",
             "value": 10000,
-            "evidence": "Rc8+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rc8+ Bf8 Rxf8+ Kg7 Ne8+ Kh6 Bg5+ Kh5 Nf6#. The exact continuation depends on the defence.",
+            "evidence": "Rc8+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Rc8+ Bf8 Rxf8+ Kg7 Ne8+ Kh6 Bg5+ Kh5 Nf6#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "white"
           },
@@ -2972,9 +3108,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 7.289899999999761
+      "classificationMs": 6.765999999999622
     },
     {
       "id": "lichess:r7fZD",
@@ -3032,7 +3168,7 @@
             "ply": 1,
             "moveUci": "g4g2",
             "value": 10000,
-            "evidence": "Rxg2+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Rxg2+ Kxg2 Rg6+ Qg4 Qxg4+ Kf1 Qd1#. The exact continuation depends on the defence.",
+            "evidence": "Rxg2+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Rxg2+ Kxg2 Rg6+ Qg4 Qxg4+ Kf1 Qd1#. The exact continuation depends on the defence.",
             "relevance": "secondary"
           },
           {
@@ -3068,7 +3204,7 @@
             "ply": 1,
             "moveUci": "g4g2",
             "value": 10000,
-            "evidence": "Rxg2+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Rxg2+ Kxg2 Rg6+ Qg4 Qxg4+ Kf1 Qd1#. The exact continuation depends on the defence.",
+            "evidence": "Rxg2+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Rxg2+ Kxg2 Rg6+ Qg4 Qxg4+ Kf1 Qd1#. The exact continuation depends on the defence.",
             "relevance": "secondary",
             "actor": "black"
           },
@@ -3097,9 +3233,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 22.29729999999836
+      "classificationMs": 20.516200000000026
     },
     {
       "id": "lichess:wVsJa",
@@ -3157,7 +3293,7 @@
             "ply": 1,
             "moveUci": "h6g7",
             "value": 10000,
-            "evidence": "Bxg7+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bxg7+ Kxg7 Nf5+ Kh8 Qh6+ Nh7 Qg7#. The exact continuation depends on the defence.",
+            "evidence": "Bxg7+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Bxg7+ Kxg7 Nf5+ Kh8 Qh6+ Nh7 Qg7#. The exact continuation depends on the defence.",
             "relevance": "secondary"
           },
           {
@@ -3193,7 +3329,7 @@
             "ply": 1,
             "moveUci": "h6g7",
             "value": 10000,
-            "evidence": "Bxg7+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bxg7+ Kxg7 Nf5+ Kh8 Qh6+ Nh7 Qg7#. The exact continuation depends on the defence.",
+            "evidence": "Bxg7+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Bxg7+ Kxg7 Nf5+ Kh8 Qh6+ Nh7 Qg7#. The exact continuation depends on the defence.",
             "relevance": "secondary",
             "actor": "white"
           },
@@ -3210,9 +3346,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 22.837000000001353
+      "classificationMs": 20.597200000000157
     },
     {
       "id": "lichess:xyVJC",
@@ -3259,7 +3395,7 @@
             "ply": 1,
             "moveUci": "a6d3",
             "value": 10000,
-            "evidence": "Bd3+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bd3+ Ka1 Rxa2+ Kxa2 Qa5+ Ba3 Qxa3#. The exact continuation depends on the defence.",
+            "evidence": "Bd3+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Bd3+ Ka1 Rxa2+ Kxa2 Qa5+ Ba3 Qxa3#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -3305,7 +3441,7 @@
             "ply": 1,
             "moveUci": "a6d3",
             "value": 10000,
-            "evidence": "Bd3+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bd3+ Ka1 Rxa2+ Kxa2 Qa5+ Ba3 Qxa3#. The exact continuation depends on the defence.",
+            "evidence": "Bd3+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Bd3+ Ka1 Rxa2+ Kxa2 Qa5+ Ba3 Qxa3#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "black"
           },
@@ -3346,9 +3482,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 18.512899999999718
+      "classificationMs": 14.957500000000437
     },
     {
       "id": "lichess:yLDJO",
@@ -3401,7 +3537,7 @@
             "ply": 1,
             "moveUci": "g6g2",
             "value": 10000,
-            "evidence": "Rxg2+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rxg2+ Kh1 Rg1+ Kxg1 Rg8+ Ng5 Rxg5+ Qg4 Rxg4#. The exact continuation depends on the defence.",
+            "evidence": "Rxg2+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Rxg2+ Kh1 Rg1+ Kxg1 Rg8+ Ng5 Rxg5+ Qg4 Rxg4#. The exact continuation depends on the defence.",
             "relevance": "primary"
           },
           {
@@ -3447,7 +3583,7 @@
             "ply": 1,
             "moveUci": "g6g2",
             "value": 10000,
-            "evidence": "Rxg2+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rxg2+ Kh1 Rg1+ Kxg1 Rg8+ Ng5 Rxg5+ Qg4 Rxg4#. The exact continuation depends on the defence.",
+            "evidence": "Rxg2+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Rxg2+ Kh1 Rg1+ Kxg1 Rg8+ Ng5 Rxg5+ Qg4 Rxg4#. The exact continuation depends on the defence.",
             "relevance": "primary",
             "actor": "black"
           },
@@ -3488,9 +3624,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-26"
+        "motifClassifierVersion": "site-55.adapter-27"
       },
-      "classificationMs": 15.13720000000103
+      "classificationMs": 16.488499999999476
     }
   ]
 }

@@ -365,15 +365,17 @@ function quietPreparation(steps: TacticalReplayStep[]) {
 
 type CheckingMateProof = { maxMoves: number; replyCount: number; example: string[] };
 const checkingMateCache = new Map<string, CheckingMateProof | null>();
-const CHECKING_MATE_NODE_LIMIT = 32768;
+const CHECKING_MATE_NODE_LIMIT = 65536;
 
 /** A long PV ending in mate is only a nomination. All legal defences must
- * lose against a bounded checking attack; PV moves order choices, never
- * restrict the defender. Unknown and exhausted searches do not certify mate. */
+ * lose. Besides checks, at most two PV-nominated quiet attacking moves may
+ * be tried; each opens the full legal defensive tree. Unknown/exhausted
+ * searches cannot certify the supplied line. */
 export function proveCheckingMate(
     steps: TacticalReplayStep[],
     nodeLimit = CHECKING_MATE_NODE_LIMIT,
 ): CheckingMateProof | null {
+    if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
     const root = steps[0];
     const terminal = steps.findIndex((step) => step.after.isEnd());
     if (
@@ -390,7 +392,14 @@ export function proveCheckingMate(
         .slice(0, terminal + 1)
         .filter((s) => s.before.turn === root.before.turn)
         .map((s) => s.uci);
-    const key = `${makeFen(root.after.toSetup())}:${maxMoves}:${hints}`;
+    const quietHints = new Set(
+        steps
+            .slice(0, terminal + 1)
+            .filter((s) => s.before.turn === root.before.turn && !s.after.isCheck())
+            .map((s) => s.uci),
+    );
+    const quietLimit = Math.min(2, quietHints.size);
+    const key = `${makeFen(root.after.toSetup())}:${maxMoves}:${hints}:${[...quietHints]}`;
     if (nodeLimit === CHECKING_MATE_NODE_LIMIT && checkingMateCache.has(key))
         return checkingMateCache.get(key)!;
     let nodes = nodeLimit;
@@ -400,30 +409,73 @@ export function proveCheckingMate(
         next.play(move);
         return next;
     };
-    const attack = (pos: Chess, remaining: number): string[] | null => {
-        if (remaining <= 0 || pos.isEnd()) return null;
+    const attackMemo = new Map<string, string[] | null>();
+    const defendMemo = new Map<string, string[] | null>();
+    const attack = (pos: Chess, remaining: number, quiet: number): string[] | null => {
+        if (remaining <= 0 || pos.isInsufficientMaterial()) return null;
+        const cacheKey = `${makeFen(pos.toSetup())}:${remaining}:${quiet}`;
+        if (attackMemo.has(cacheKey)) return attackMemo.get(cacheKey)!;
         const moves = legalMoves(pos);
+        const expected = hints[maxMoves - remaining];
+        const king = pos.board.kingOf(opposite(pos.turn))!;
+        // A legal move can check directly or uncover a friendly slider.
+        // Retain all ray-unblocking moves (even blocked/wrong-role rays),
+        // en passant and castling: this is only a safe candidate filter.
+        const discoveryRays = [
+            ...pos.board[pos.turn].intersect(
+                pos.board.queen.union(pos.board.rook).union(pos.board.bishop),
+            ),
+        ].map((square) => between(king, square));
         moves.sort(
-            (a, b) => Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))),
+            (a, b) =>
+                Number(makeUci(b) === expected) - Number(makeUci(a) === expected) ||
+                Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))),
         );
         for (const move of moves) {
+            const piece = pos.board.get(move.from)!;
+            if (
+                !quietHints.has(makeUci(move)) &&
+                move.to !== pos.epSquare &&
+                !(piece.role === "king" && pos.board[pos.turn].has(move.to)) &&
+                !discoveryRays.some((ray) => ray.has(move.from)) &&
+                !attacks(
+                    { color: pos.turn, role: move.promotion ?? piece.role },
+                    move.to,
+                    pos.board.occupied.without(move.from).with(move.to),
+                ).has(king)
+            )
+                continue;
             const next = visit(pos, move);
-            if (next.isCheckmate()) return [makeSan(pos, move)];
-            if (!next.isCheck() || remaining === 1) continue;
-            const continuation = defend(next, remaining - 1);
-            if (continuation) return [makeSan(pos, move), ...continuation];
+            const isQuiet = !next.isCheck();
+            if (isQuiet && (!quiet || !quietHints.has(makeUci(move)))) continue;
+            const continuation = defend(next, remaining - 1, quiet - Number(isQuiet));
+            if (continuation) {
+                const line = [makeSan(pos, move), ...continuation];
+                attackMemo.set(cacheKey, line);
+                return line;
+            }
         }
+        attackMemo.set(cacheKey, null);
         return null;
     };
-    const defend = (pos: Chess, remaining: number): string[] | null => {
-        if (pos.isEnd()) return null;
+    const defend = (pos: Chess, remaining: number, quiet: number): string[] | null => {
+        if (pos.isInsufficientMaterial()) return null;
+        const cacheKey = `${makeFen(pos.toSetup())}:${remaining}:${quiet}`;
+        if (defendMemo.has(cacheKey)) return defendMemo.get(cacheKey)!;
+        const replies = legalMoves(pos);
+        if (!replies.length) return pos.isCheck() ? [] : null;
+        if (remaining <= 0) return null;
         let longest: string[] | null = null;
-        for (const reply of legalMoves(pos)) {
-            const continuation = attack(visit(pos, reply), remaining);
-            if (!continuation) return null;
+        for (const reply of replies) {
+            const continuation = attack(visit(pos, reply), remaining, quiet);
+            if (!continuation) {
+                defendMemo.set(cacheKey, null);
+                return null;
+            }
             const line = [makeSan(pos, reply), ...continuation];
             if (!longest || line.length > longest.length) longest = line;
         }
+        defendMemo.set(cacheKey, longest);
         return longest;
     };
     let proof: CheckingMateProof | null = null;
@@ -431,7 +483,7 @@ export function proveCheckingMate(
         if (root.after.isCheckmate() && nodeLimit > 0)
             proof = { maxMoves: 1, replyCount: 0, example: [root.san] };
         else {
-            const continuation = defend(root.after, maxMoves - 1);
+            const continuation = defend(root.after, maxMoves - 1, quietLimit);
             if (continuation)
                 proof = {
                     maxMoves,
@@ -492,6 +544,21 @@ export function normalizeMatingPayoffs(
     }
     const emitted = new Set<number>();
     return motifs.flatMap((motif) => {
+        // No material can be won after checkmate. A vacuous "every reply"
+        // proof must not turn an irrelevant rook attack into another lesson.
+        if (
+            motif.ply &&
+            steps[motif.ply - 1]?.after.isCheckmate() &&
+            [
+                "fork",
+                "discoveredAttack",
+                "hangingPiece",
+                "attacking_undefended_piece",
+                "skewer",
+                "trappedPiece",
+            ].includes(motif.id)
+        )
+            return [];
         if (!motif.ply || !groups.get(motif.ply)?.includes(motif)) return [motif];
         if (emitted.has(motif.ply)) return [];
         emitted.add(motif.ply);
@@ -3039,13 +3106,15 @@ export function auditTacticalMotifs(
     const steps = replayTacticalLine(fen, line);
     if (!steps.length) return [];
     const allowConditional = typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= -30;
-    const end = episodeEnd(steps, allowConditional);
+    const checkingMate = steps.length >= 7 ? proveCheckingMate(steps) : null;
+    const end = checkingMate
+        ? steps.findIndex((step) => step.after.isCheckmate()) + 1
+        : episodeEnd(steps, allowConditional);
     if (!end) return [];
     const episode = steps.slice(0, end);
     const attacker = steps[0].before.turn;
     const final = episode.at(-1)!;
     if (final.after.isCheckmate() && final.before.turn !== attacker) return [];
-    const checkingMate = episode.length >= 7 ? proveCheckingMate(episode) : null;
     const mate =
         final.after.isCheckmate() &&
         final.before.turn === attacker &&
@@ -3141,7 +3210,7 @@ export function auditTacticalMotifs(
             ply: 1,
             moveUci: steps[0].uci,
             value: 10000,
-            evidence: `${steps[0].san} starts a forced checking attack. Every legal defence permits mate within ${checkingMate.maxMoves} moves; one verified line is ${checkingMate.example.join(" ")}. The exact continuation depends on the defence.`,
+            evidence: `${steps[0].san} starts a forced mating attack. Every legal defence permits mate within ${checkingMate.maxMoves} moves; one verified line is ${checkingMate.example.join(" ")}. The exact continuation depends on the defence.`,
         });
     const clearance = proveForcingClearance(steps);
     if (clearance)
@@ -3585,6 +3654,7 @@ export function auditTacticalMotifs(
                 ["clearance", "trappedPiece", "attacking_undefended_piece"].includes(m.id)
             )
                 return false;
+            if (m.id === "attacking_undefended_piece" && checkingMate && m.ply === 1) return false;
             if (
                 m.id === "attacking_undefended_piece" &&
                 candidates.some(
@@ -3635,6 +3705,7 @@ export function auditTacticalMotifs(
     const immediateLoose = filtered.find((m) => m.id === "hangingPiece" && m.ply === 1);
     if (
         immediateLoose &&
+        !checkingMate &&
         !filtered.some(
             (m) => m.ply === 1 && (MECHANISMS.has(m.id) || trapIsMainCause(m, directGain)),
         )

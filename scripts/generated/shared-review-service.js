@@ -9619,17 +9619,21 @@ function quietPreparation(steps) {
 	return root && !root.capture && !root.move.promotion && !root.after.isCheck() ? proveMateWithinThree(steps) : null;
 }
 var checkingMateCache = /* @__PURE__ */ new Map();
-var CHECKING_MATE_NODE_LIMIT = 32768;
+var CHECKING_MATE_NODE_LIMIT = 65536;
 /** A long PV ending in mate is only a nomination. All legal defences must
-* lose against a bounded checking attack; PV moves order choices, never
-* restrict the defender. Unknown and exhausted searches do not certify mate. */
+* lose. Besides checks, at most two PV-nominated quiet attacking moves may
+* be tried; each opens the full legal defensive tree. Unknown/exhausted
+* searches cannot certify the supplied line. */
 function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
 	const root = steps[0];
 	const terminal = steps.findIndex((step) => step.after.isEnd());
 	if (!root || !root.after.isCheck() || terminal < 0 || terminal > 12 || !steps[terminal].after.isCheckmate() || steps[terminal].before.turn !== root.before.turn) return null;
 	const maxMoves = terminal / 2 + 1;
 	const hints = steps.slice(0, terminal + 1).filter((s) => s.before.turn === root.before.turn).map((s) => s.uci);
-	const key = `${makeFen(root.after.toSetup())}:${maxMoves}:${hints}`;
+	const quietHints = new Set(steps.slice(0, terminal + 1).filter((s) => s.before.turn === root.before.turn && !s.after.isCheck()).map((s) => s.uci));
+	const quietLimit = Math.min(2, quietHints.size);
+	const key = `${makeFen(root.after.toSetup())}:${maxMoves}:${hints}:${[...quietHints]}`;
 	if (nodeLimit === CHECKING_MATE_NODE_LIMIT && checkingMateCache.has(key)) return checkingMateCache.get(key);
 	let nodes = nodeLimit;
 	const visit = (pos, move) => {
@@ -9638,28 +9642,54 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT) {
 		next.play(move);
 		return next;
 	};
-	const attack = (pos, remaining) => {
-		if (remaining <= 0 || pos.isEnd()) return null;
+	const attackMemo = /* @__PURE__ */ new Map();
+	const defendMemo = /* @__PURE__ */ new Map();
+	const attack = (pos, remaining, quiet) => {
+		if (remaining <= 0 || pos.isInsufficientMaterial()) return null;
+		const cacheKey = `${makeFen(pos.toSetup())}:${remaining}:${quiet}`;
+		if (attackMemo.has(cacheKey)) return attackMemo.get(cacheKey);
 		const moves = legalMoves(pos);
-		moves.sort((a, b) => Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))));
+		const expected = hints[maxMoves - remaining];
+		const king = pos.board.kingOf(opposite(pos.turn));
+		const discoveryRays = [...pos.board[pos.turn].intersect(pos.board.queen.union(pos.board.rook).union(pos.board.bishop))].map((square) => between(king, square));
+		moves.sort((a, b) => Number(makeUci(b) === expected) - Number(makeUci(a) === expected) || Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))));
 		for (const move of moves) {
+			const piece = pos.board.get(move.from);
+			if (!quietHints.has(makeUci(move)) && move.to !== pos.epSquare && !(piece.role === "king" && pos.board[pos.turn].has(move.to)) && !discoveryRays.some((ray) => ray.has(move.from)) && !attacks({
+				color: pos.turn,
+				role: move.promotion ?? piece.role
+			}, move.to, pos.board.occupied.without(move.from).with(move.to)).has(king)) continue;
 			const next = visit(pos, move);
-			if (next.isCheckmate()) return [makeSan(pos, move)];
-			if (!next.isCheck() || remaining === 1) continue;
-			const continuation = defend(next, remaining - 1);
-			if (continuation) return [makeSan(pos, move), ...continuation];
+			const isQuiet = !next.isCheck();
+			if (isQuiet && (!quiet || !quietHints.has(makeUci(move)))) continue;
+			const continuation = defend(next, remaining - 1, quiet - Number(isQuiet));
+			if (continuation) {
+				const line = [makeSan(pos, move), ...continuation];
+				attackMemo.set(cacheKey, line);
+				return line;
+			}
 		}
+		attackMemo.set(cacheKey, null);
 		return null;
 	};
-	const defend = (pos, remaining) => {
-		if (pos.isEnd()) return null;
+	const defend = (pos, remaining, quiet) => {
+		if (pos.isInsufficientMaterial()) return null;
+		const cacheKey = `${makeFen(pos.toSetup())}:${remaining}:${quiet}`;
+		if (defendMemo.has(cacheKey)) return defendMemo.get(cacheKey);
+		const replies = legalMoves(pos);
+		if (!replies.length) return pos.isCheck() ? [] : null;
+		if (remaining <= 0) return null;
 		let longest = null;
-		for (const reply of legalMoves(pos)) {
-			const continuation = attack(visit(pos, reply), remaining);
-			if (!continuation) return null;
+		for (const reply of replies) {
+			const continuation = attack(visit(pos, reply), remaining, quiet);
+			if (!continuation) {
+				defendMemo.set(cacheKey, null);
+				return null;
+			}
 			const line = [makeSan(pos, reply), ...continuation];
 			if (!longest || line.length > longest.length) longest = line;
 		}
+		defendMemo.set(cacheKey, longest);
 		return longest;
 	};
 	let proof = null;
@@ -9670,7 +9700,7 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT) {
 			example: [root.san]
 		};
 		else {
-			const continuation = defend(root.after, maxMoves - 1);
+			const continuation = defend(root.after, maxMoves - 1, quietLimit);
 			if (continuation) proof = {
 				maxMoves,
 				replyCount: legalMoves(root.after).length,
@@ -9714,6 +9744,14 @@ function normalizeMatingPayoffs(steps, motifs) {
 	}
 	const emitted = /* @__PURE__ */ new Set();
 	return motifs.flatMap((motif) => {
+		if (motif.ply && steps[motif.ply - 1]?.after.isCheckmate() && [
+			"fork",
+			"discoveredAttack",
+			"hangingPiece",
+			"attacking_undefended_piece",
+			"skewer",
+			"trappedPiece"
+		].includes(motif.id)) return [];
 		if (!motif.ply || !groups.get(motif.ply)?.includes(motif)) return [motif];
 		if (emitted.has(motif.ply)) return [];
 		emitted.add(motif.ply);
@@ -11300,13 +11338,13 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 	const steps = replayTacticalLine(fen, line);
 	if (!steps.length) return [];
 	const allowConditional = typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= -30;
-	const end = episodeEnd(steps, allowConditional);
+	const checkingMate = steps.length >= 7 ? proveCheckingMate(steps) : null;
+	const end = checkingMate ? steps.findIndex((step) => step.after.isCheckmate()) + 1 : episodeEnd(steps, allowConditional);
 	if (!end) return [];
 	const episode = steps.slice(0, end);
 	const attacker = steps[0].before.turn;
 	const final = episode.at(-1);
 	if (final.after.isCheckmate() && final.before.turn !== attacker) return [];
-	const checkingMate = episode.length >= 7 ? proveCheckingMate(episode) : null;
 	const mate = final.after.isCheckmate() && final.before.turn === attacker && (episode.length !== 3 || Boolean(proveMateNextTurn(steps[0]))) && (episode.length !== 5 || Boolean(proveMateWithinThree(steps))) && (episode.length < 7 || Boolean(checkingMate));
 	let settled = final.balance;
 	try {
@@ -11372,7 +11410,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		ply: 1,
 		moveUci: steps[0].uci,
 		value: 1e4,
-		evidence: `${steps[0].san} starts a forced checking attack. Every legal defence permits mate within ${checkingMate.maxMoves} moves; one verified line is ${checkingMate.example.join(" ")}. The exact continuation depends on the defence.`
+		evidence: `${steps[0].san} starts a forced mating attack. Every legal defence permits mate within ${checkingMate.maxMoves} moves; one verified line is ${checkingMate.example.join(" ")}. The exact continuation depends on the defence.`
 	});
 	const clearance = proveForcingClearance(steps);
 	if (clearance) candidates.push({
@@ -11659,6 +11697,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			"trappedPiece",
 			"attacking_undefended_piece"
 		].includes(m.id)) return false;
+		if (m.id === "attacking_undefended_piece" && checkingMate && m.ply === 1) return false;
 		if (m.id === "attacking_undefended_piece" && candidates.some((other) => other.ply === m.ply && ["pin", "skewer"].includes(other.id))) return false;
 		if (m.id === "hangingPiece" && candidates.some((other) => other.ply === m.ply && ["capturingDefender", "intermezzo"].includes(other.id))) return false;
 		if (m.id === "sacrifice" && candidates.some((other) => MECHANISMS.has(other.id) && other.ply === m.ply)) return false;
@@ -11670,7 +11709,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		return matingPriority(a) - matingPriority(b) || rootMatingPriority(a) - rootMatingPriority(b) || causeRank(a, directGain) - causeRank(b, directGain);
 	});
 	const immediateLoose = filtered.find((m) => m.id === "hangingPiece" && m.ply === 1);
-	if (immediateLoose && !filtered.some((m) => m.ply === 1 && (MECHANISMS.has(m.id) || trapIsMainCause(m, directGain)))) {
+	if (immediateLoose && !checkingMate && !filtered.some((m) => m.ply === 1 && (MECHANISMS.has(m.id) || trapIsMainCause(m, directGain)))) {
 		filtered.splice(filtered.indexOf(immediateLoose), 1);
 		filtered.unshift(immediateLoose);
 	}
@@ -11967,7 +12006,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 26;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 27;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -12437,12 +12476,13 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 	}
 	let quietPlies = 0;
 	let connectedPlies = replay.length;
+	const provedMatingEpisode = rootMotifs.some((motif) => motif.ply === 1 && motif.label === "Forcing Mate" && motif.value === 1e4);
 	for (let index = 0; index < replay.length; index++) {
 		const step = replay[index];
 		const suffix = legalLine.slice(index);
 		const tacticalStart = hasTacticalStart(rawSteps[index]?.fenBefore ?? "", suffix, index === 0 && rootMotifs.some((motif) => motif.id === "tacticalPreparation"));
 		quietPlies = tacticalStart || step.before.isCheck() ? 0 : quietPlies + 1;
-		if (quietPlies >= 2) {
+		if (quietPlies >= 2 && !provedMatingEpisode) {
 			connectedPlies = index;
 			break;
 		}

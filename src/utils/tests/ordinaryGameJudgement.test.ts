@@ -144,7 +144,7 @@ test("a mating recapture keeps its checkmate lesson", () => {
 });
 
 // These judgements were made after the output-blind sample was frozen. The
-// unproved f7+ mate is deliberately not turned into a material-label oracle.
+// f7+ mate now has an independent all-defences proof, not a material-label oracle.
 function frozenScan(id: string) {
     const rows = JSON.parse(
         readFileSync("benchmarks/tactical-relevance/ordinary-games-stockfish-18.json", "utf8"),
@@ -189,6 +189,7 @@ test.each([
     ["ordinary-1:ply18", "hangingPiece"],
     ["ordinary-1:ply28", "mateIn1"],
     ["ordinary-2:ply48", "hangingPiece"],
+    ["ordinary-2:ply18", "mateIn7"],
     ["ordinary-2:ply53", "mateIn3"],
     ["ordinary-3:ply18", "hangingPiece"],
     ["ordinary-3:ply28", "hangingPiece"],

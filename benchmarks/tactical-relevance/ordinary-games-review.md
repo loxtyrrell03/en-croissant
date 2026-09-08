@@ -34,7 +34,7 @@ In particular, a quiet reply can follow an opponent's tactical mistake.
 | ordinary-1:ply43 | Quiet: hxg6 takes a pawn, not a significant loose-piece tactic. |
 | ordinary-2:ply8 | Quiet: e5 gains a development tempo against Nf6; the later queen/knight exchanges are speculative continuations. |
 | ordinary-2:ply13 | Quiet: Ne7 answers the pawn check; no separate tactical win for Black. |
-| ordinary-2:ply18 | **Unresolved primary lesson:** f7+ forces mate in seven in fresh engine analysis, involving a promotion and quiet Bc4. The local classifier instead proves a smaller checking-fork preparation. That material proof is real but is not the best explanation of the move's value. Do not accept it as solved. |
+| ordinary-2:ply18 | **Corrected priority (adapter 27):** f7+ has an all-defences mate-in-seven proof, including promotion and quiet Bc4. Forcing Mate replaces the smaller checking-fork preparation as the headline and the explanation of Ke8's damage. |
 | ordinary-2:ply23 | Quiet live root: Qxe7 recaptures the pawn after it took a bishop. White's missed f7+ has a verified material idea, but how much its promotion choice matters remains a separate question. |
 | ordinary-2:ply28 | Quiet: Bxd5 is a pawn capture, not a substantial tactical lesson. |
 | ordinary-2:ply33 | Quiet: Bd7 blocks the check; later events do not establish a root tactic. |
@@ -50,11 +50,20 @@ In particular, a quiet reply can follow an opponent's tactical mistake.
 | ordinary-3:ply28 | Bxf7+ wins queen for bishop, a net material gain. This queen danger already existed, so it must not be blamed on the equivalent fxg5 choice. |
 
 The corrected report has 17 empty live headlines and seven non-empty ones.
-Six of those seven have accepted immediate lessons above; the f7+ mating
-priority remains explicitly unresolved. These counts describe the sample,
-not a precision/recall estimate. The 17 quiet roots and six accepted positive
-roots are frozen regression judgements; the unresolved result is not made
-into an expected-label assertion.
+All seven now have accepted immediate lessons: adapter 27 independently
+proves f7+'s mating attack against every legal defence, including replies to
+the non-checking promotion and Bc4. It leads with Forcing Mate, not the smaller
+checking-fork preparation. Fresh before/after searches confirm Ke8 permits
+this attack while Kxf6 removes the checking pawn. The other 23 headlines are
+unchanged. These counts describe the sample, not a precision/recall estimate.
+The 17 quiet roots and seven positive roots are fixed regression judgements.
+
+The fresh f7+ live scan took 743 ms after engine analysis; the subsequent
+review took 44 ms with shared proof caches warm. These are in-process
+diagnostics, not end-to-end desktop latency. Its timeline reaches Qb5# through
+the quiet preparation but no longer describes the irrelevant discovered rook
+attack on that checkmating move. The promotion label states what happened;
+it does not claim promoting to a bishop was uniquely necessary.
 
 ## Root causes of the noise and safeguards
 

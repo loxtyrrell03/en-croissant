@@ -1239,6 +1239,14 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     why: "Black should deal with f7; the quiet b6 move permits a protected queen-rook fork.",
                 },
                 {
+                    name: "The real Ke8 mistake allows a mating attack with quiet preparation",
+                    fen: "rnbq1bnr/pppp1k1p/5Pp1/3Q4/8/2N5/PP3PPP/R1B1KBNR b KQ - 1 9",
+                    played: "f7e8",
+                    source: "allowed",
+                    primary: "mateIn7",
+                    why: "f7+ starts a forced mating attack, including promotion and Bc4 development. The smaller checking-fork preparation is not the main consequence of Ke8; Kxf6 removes the checking pawn.",
+                },
+                {
                     name: "The real Rc5 mistake permits a checking fork preparation",
                     fen: "8/7R/5kp1/4Rp2/5n2/7P/1r6/5K2 w - - 0 45",
                     played: "e5c5",

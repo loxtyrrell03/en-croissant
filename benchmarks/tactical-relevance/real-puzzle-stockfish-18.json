@@ -177,9 +177,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
-    "classificationMs": 38.59230000000389,
+    "classificationMs": 55.678799999994226,
     "positionHeadline": [
       {
         "id": "fork",
@@ -502,9 +502,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
-    "classificationMs": 44.1875,
+    "classificationMs": 64.20729999999458,
     "positionHeadline": [
       {
         "id": "interference",
@@ -869,9 +869,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
-    "classificationMs": 81.07880000000296,
+    "classificationMs": 84.05319999999483,
     "positionHeadline": [
       {
         "id": "capturingDefender",
@@ -1163,9 +1163,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
-    "classificationMs": 34.315400000006775,
+    "classificationMs": 39.49920000000566,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -1475,9 +1475,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
-    "classificationMs": 26.083900000012363,
+    "classificationMs": 55.60869999999704,
     "positionHeadline": [
       {
         "id": "intermezzo",
@@ -1751,9 +1751,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
-    "classificationMs": 32.0167999999976,
+    "classificationMs": 34.58890000000247,
     "positionHeadline": [
       {
         "id": "interference",
@@ -2117,9 +2117,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
-    "classificationMs": 22.89779999999155,
+    "classificationMs": 26.17380000000412,
     "positionHeadline": [
       {
         "id": "tacticalPreparation",
@@ -2502,9 +2502,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
-    "classificationMs": 0.4790999999968335,
+    "classificationMs": 0.5690000000031432,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -2798,9 +2798,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
-    "classificationMs": 29.844100000002072,
+    "classificationMs": 33.858500000002095,
     "positionHeadline": [
       {
         "id": "trappedPiece",
@@ -3122,9 +3122,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
-    "classificationMs": 49.806400000001304,
+    "classificationMs": 50.92210000001069,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -3380,9 +3380,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
-    "classificationMs": 19.932600000000093,
+    "classificationMs": 21.85349999999744,
     "positionHeadline": [
       {
         "id": "trappedPiece",
@@ -3753,9 +3753,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-26"
+      "motifClassifierVersion": "site-55.adapter-27"
     },
-    "classificationMs": 26.914399999994203,
+    "classificationMs": 28.34299999999348,
     "positionHeadline": [
       {
         "id": "intermezzo",
