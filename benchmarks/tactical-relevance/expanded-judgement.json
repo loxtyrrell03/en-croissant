@@ -15,7 +15,7 @@
           "id": "anastasiaMate",
           "label": "Anastasia Mate",
           "confidence": "medium",
-          "evidence": "Anastasia Mate appears on b6h6 at ply 1 of the current best line.",
+          "evidence": "Rh6# is checkmate (Anastasia Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "b6h6",
@@ -28,30 +28,18 @@
           "id": "anastasiaMate",
           "label": "Anastasia Mate",
           "confidence": "medium",
-          "evidence": "Anastasia Mate appears on b6h6 at ply 1 of the current best line.",
+          "evidence": "Rh6# is checkmate (Anastasia Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "b6h6",
           "relevance": "primary",
           "value": 10000,
           "actor": "white"
-        },
-        {
-          "id": "mateIn1",
-          "label": "Checkmate",
-          "source": "available",
-          "confidence": "high",
-          "ply": 1,
-          "moveUci": "b6h6",
-          "value": 10000,
-          "evidence": "Rh6# is checkmate: the king is in check and there is no legal reply.",
-          "relevance": "secondary",
-          "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 2.767399999999725
+    "classificationMs": 1.605399999999463
   },
   {
     "id": "lichess:007c6",
@@ -69,7 +57,7 @@
           "id": "bodenMate",
           "label": "Boden Mate",
           "confidence": "medium",
-          "evidence": "Boden Mate appears on c4a6 at ply 1 of the current best line.",
+          "evidence": "Ba6# is checkmate (Boden Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "c4a6",
@@ -82,30 +70,18 @@
           "id": "bodenMate",
           "label": "Boden Mate",
           "confidence": "medium",
-          "evidence": "Boden Mate appears on c4a6 at ply 1 of the current best line.",
+          "evidence": "Ba6# is checkmate (Boden Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "c4a6",
           "relevance": "primary",
           "value": 10000,
           "actor": "white"
-        },
-        {
-          "id": "mateIn1",
-          "label": "Checkmate",
-          "source": "available",
-          "confidence": "high",
-          "ply": 1,
-          "moveUci": "c4a6",
-          "value": 10000,
-          "evidence": "Ba6# is checkmate: the king is in check and there is no legal reply.",
-          "relevance": "secondary",
-          "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 6.9439000000002125
+    "classificationMs": 6.51260000000002
   },
   {
     "id": "lichess:fVRuW",
@@ -135,9 +111,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 16.28179999999975
+    "classificationMs": 25.463699999999335
   },
   {
     "id": "lichess:K56tk",
@@ -155,7 +131,7 @@
           "id": "dovetailMate",
           "label": "Dovetail Mate",
           "confidence": "medium",
-          "evidence": "Dovetail Mate appears on g5g6 at ply 1 of the current best line.",
+          "evidence": "Qg6# is checkmate (Dovetail Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "g5g6",
@@ -168,30 +144,18 @@
           "id": "dovetailMate",
           "label": "Dovetail Mate",
           "confidence": "medium",
-          "evidence": "Dovetail Mate appears on g5g6 at ply 1 of the current best line.",
+          "evidence": "Qg6# is checkmate (Dovetail Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "g5g6",
           "relevance": "primary",
           "value": 10000,
           "actor": "white"
-        },
-        {
-          "id": "mateIn1",
-          "label": "Checkmate",
-          "source": "available",
-          "confidence": "high",
-          "ply": 1,
-          "moveUci": "g5g6",
-          "value": 10000,
-          "evidence": "Qg6# is checkmate: the king is in check and there is no legal reply.",
-          "relevance": "secondary",
-          "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 5.758499999999913
+    "classificationMs": 5.49330000000009
   },
   {
     "id": "lichess:NKnZo",
@@ -209,7 +173,7 @@
           "id": "killBoxMate",
           "label": "Kill Box Mate",
           "confidence": "medium",
-          "evidence": "Kill Box Mate appears on h2h8 at ply 1 of the current best line.",
+          "evidence": "Rh8# is checkmate (Kill Box Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "h2h8",
@@ -222,30 +186,18 @@
           "id": "killBoxMate",
           "label": "Kill Box Mate",
           "confidence": "medium",
-          "evidence": "Kill Box Mate appears on h2h8 at ply 1 of the current best line.",
+          "evidence": "Rh8# is checkmate (Kill Box Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "h2h8",
           "relevance": "primary",
           "value": 10000,
           "actor": "white"
-        },
-        {
-          "id": "mateIn1",
-          "label": "Checkmate",
-          "source": "available",
-          "confidence": "high",
-          "ply": 1,
-          "moveUci": "h2h8",
-          "value": 10000,
-          "evidence": "Rh8# is checkmate: the king is in check and there is no legal reply.",
-          "relevance": "secondary",
-          "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 10.686999999999898
+    "classificationMs": 6.632900000000518
   },
   {
     "id": "lichess:5hjz7",
@@ -263,7 +215,7 @@
           "id": "bodenMate",
           "label": "Boden Mate",
           "confidence": "medium",
-          "evidence": "Boden Mate appears on a1c3 at ply 1 of the current best line.",
+          "evidence": "Bc3# is checkmate (Boden Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "a1c3",
@@ -276,30 +228,18 @@
           "id": "bodenMate",
           "label": "Boden Mate",
           "confidence": "medium",
-          "evidence": "Boden Mate appears on a1c3 at ply 1 of the current best line.",
+          "evidence": "Bc3# is checkmate (Boden Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "a1c3",
           "relevance": "primary",
           "value": 10000,
           "actor": "black"
-        },
-        {
-          "id": "mateIn1",
-          "label": "Checkmate",
-          "source": "available",
-          "confidence": "high",
-          "ply": 1,
-          "moveUci": "a1c3",
-          "value": 10000,
-          "evidence": "Bc3# is checkmate: the king is in check and there is no legal reply.",
-          "relevance": "secondary",
-          "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 7.605500000000575
+    "classificationMs": 5.214399999999841
   },
   {
     "id": "lichess:GIB50",
@@ -339,9 +279,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 4.725400000000263
+    "classificationMs": 7.14850000000024
   },
   {
     "id": "lichess:REAdh",
@@ -359,7 +299,7 @@
           "id": "hookMate",
           "label": "Hook Mate",
           "confidence": "medium",
-          "evidence": "Hook Mate appears on h6e6 at ply 1 of the current best line.",
+          "evidence": "Re6# is checkmate (Hook Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "h6e6",
@@ -372,30 +312,18 @@
           "id": "hookMate",
           "label": "Hook Mate",
           "confidence": "medium",
-          "evidence": "Hook Mate appears on h6e6 at ply 1 of the current best line.",
+          "evidence": "Re6# is checkmate (Hook Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "h6e6",
           "relevance": "primary",
           "value": 10000,
           "actor": "white"
-        },
-        {
-          "id": "mateIn1",
-          "label": "Checkmate",
-          "source": "available",
-          "confidence": "high",
-          "ply": 1,
-          "moveUci": "h6e6",
-          "value": 10000,
-          "evidence": "Re6# is checkmate: the king is in check and there is no legal reply.",
-          "relevance": "secondary",
-          "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 2.9833999999991647
+    "classificationMs": 7.201700000000528
   },
   {
     "id": "lichess:NGZzo",
@@ -413,9 +341,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 113.13829999999962
+    "classificationMs": 152.29849999999988
   },
   {
     "id": "lichess:4Osgg",
@@ -442,21 +370,21 @@
     "result": {
       "motifs": [
         {
-          "id": "balestraMate",
-          "label": "Balestra Mate",
-          "confidence": "medium",
-          "evidence": "Balestra Mate appears on a7f2 at ply 7 of the current best line.",
+          "id": "mateIn4",
+          "label": "Forcing Mate",
           "source": "available",
-          "ply": 7,
-          "moveUci": "a7f2",
-          "relevance": "primary",
-          "value": 10000
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f7f1",
+          "value": 10000,
+          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "relevance": "primary"
         },
         {
-          "id": "morphysMate",
-          "label": "Morphy's Mate",
-          "confidence": "medium",
-          "evidence": "Morphy's Mate appears on a7f2 at ply 7 of the current best line.",
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Bf2# is checkmate: the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 7,
           "moveUci": "a7f2",
@@ -466,45 +394,33 @@
       ],
       "timeline": [
         {
-          "id": "balestraMate",
-          "label": "Balestra Mate",
-          "confidence": "medium",
-          "evidence": "Balestra Mate appears on a7f2 at ply 7 of the current best line.",
+          "id": "mateIn4",
+          "label": "Forcing Mate",
           "source": "available",
-          "ply": 7,
-          "moveUci": "a7f2",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f7f1",
+          "value": 10000,
+          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
           "relevance": "primary",
-          "value": 10000,
-          "actor": "black"
-        },
-        {
-          "id": "morphysMate",
-          "label": "Morphy's Mate",
-          "confidence": "medium",
-          "evidence": "Morphy's Mate appears on a7f2 at ply 7 of the current best line.",
-          "source": "available",
-          "ply": 7,
-          "moveUci": "a7f2",
-          "relevance": "secondary",
-          "value": 10000,
           "actor": "black"
         },
         {
           "id": "mateIn1",
           "label": "Checkmate",
-          "source": "available",
           "confidence": "high",
+          "evidence": "Bf2# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
           "ply": 7,
           "moveUci": "a7f2",
-          "value": 10000,
-          "evidence": "Bf2# is checkmate: the king is in check and there is no legal reply.",
           "relevance": "secondary",
+          "value": 10000,
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 27.78940000000057
+    "classificationMs": 43.886999999999716
   },
   {
     "id": "lichess:UCiYo",
@@ -560,9 +476,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 19.846700000000055
+    "classificationMs": 17.33930000000055
   },
   {
     "id": "lichess:CSh8J",
@@ -629,9 +545,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 17.4384
+    "classificationMs": 8.807099999999991
   },
   {
     "id": "lichess:opGD7",
@@ -649,9 +565,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 4.91609999999946
+    "classificationMs": 4.492699999999786
   },
   {
     "id": "lichess:fJrhT",
@@ -711,9 +627,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 32.09549999999945
+    "classificationMs": 48.48289999999997
   },
   {
     "id": "lichess:MJZcU",
@@ -735,9 +651,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 14.260800000000017
+    "classificationMs": 11.926699999999983
   },
   {
     "id": "lichess:0RleZ",
@@ -755,7 +671,7 @@
           "id": "hookMate",
           "label": "Hook Mate",
           "confidence": "medium",
-          "evidence": "Hook Mate appears on a7e7 at ply 1 of the current best line.",
+          "evidence": "Re7# is checkmate (Hook Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "a7e7",
@@ -768,30 +684,18 @@
           "id": "hookMate",
           "label": "Hook Mate",
           "confidence": "medium",
-          "evidence": "Hook Mate appears on a7e7 at ply 1 of the current best line.",
+          "evidence": "Re7# is checkmate (Hook Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "a7e7",
           "relevance": "primary",
           "value": 10000,
           "actor": "white"
-        },
-        {
-          "id": "mateIn1",
-          "label": "Checkmate",
-          "source": "available",
-          "confidence": "high",
-          "ply": 1,
-          "moveUci": "a7e7",
-          "value": 10000,
-          "evidence": "Re7# is checkmate: the king is in check and there is no legal reply.",
-          "relevance": "secondary",
-          "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 1.7986000000000786
+    "classificationMs": 5.236499999999978
   },
   {
     "id": "lichess:Z5arb",
@@ -809,9 +713,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 6.99159999999938
+    "classificationMs": 36.23210000000017
   },
   {
     "id": "lichess:iUj3e",
@@ -867,9 +771,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 51.630199999999604
+    "classificationMs": 56.14689999999973
   },
   {
     "id": "lichess:Kvpvi",
@@ -891,7 +795,7 @@
           "id": "bodenMate",
           "label": "Boden Mate",
           "confidence": "medium",
-          "evidence": "Boden Mate appears on b4c3 at ply 3 of the current best line.",
+          "evidence": "Bxc3# is checkmate (Boden Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 3,
           "moveUci": "b4c3",
@@ -904,30 +808,18 @@
           "id": "bodenMate",
           "label": "Boden Mate",
           "confidence": "medium",
-          "evidence": "Boden Mate appears on b4c3 at ply 3 of the current best line.",
+          "evidence": "Bxc3# is checkmate (Boden Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 3,
           "moveUci": "b4c3",
           "relevance": "primary",
           "value": 10000,
           "actor": "black"
-        },
-        {
-          "id": "mateIn1",
-          "label": "Checkmate",
-          "source": "available",
-          "confidence": "high",
-          "ply": 3,
-          "moveUci": "b4c3",
-          "value": 10000,
-          "evidence": "Bxc3# is checkmate: the king is in check and there is no legal reply.",
-          "relevance": "secondary",
-          "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 17.64559999999983
+    "classificationMs": 15.868000000000393
   },
   {
     "id": "lichess:hz3ed",
@@ -945,7 +837,7 @@
           "id": "triangleMate",
           "label": "Triangle Mate",
           "confidence": "medium",
-          "evidence": "Triangle Mate appears on g5e3 at ply 1 of the current best line.",
+          "evidence": "Qe3# is checkmate (Triangle Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "g5e3",
@@ -958,30 +850,18 @@
           "id": "triangleMate",
           "label": "Triangle Mate",
           "confidence": "medium",
-          "evidence": "Triangle Mate appears on g5e3 at ply 1 of the current best line.",
+          "evidence": "Qe3# is checkmate (Triangle Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "g5e3",
           "relevance": "primary",
           "value": 10000,
           "actor": "black"
-        },
-        {
-          "id": "mateIn1",
-          "label": "Checkmate",
-          "source": "available",
-          "confidence": "high",
-          "ply": 1,
-          "moveUci": "g5e3",
-          "value": 10000,
-          "evidence": "Qe3# is checkmate: the king is in check and there is no legal reply.",
-          "relevance": "secondary",
-          "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 5.513699999999517
+    "classificationMs": 4.639100000000326
   },
   {
     "id": "lichess:o8K8i",
@@ -1011,7 +891,7 @@
           "id": "enPassant",
           "label": "En Passant",
           "confidence": "medium",
-          "evidence": "En Passant appears on e5f6 at ply 1 of the current best line.",
+          "evidence": "exf6 captures the pawn on f5 en passant, moving from e5 to f6.",
           "source": "available",
           "ply": 1,
           "moveUci": "e5f6",
@@ -1024,7 +904,7 @@
           "id": "enPassant",
           "label": "En Passant",
           "confidence": "medium",
-          "evidence": "En Passant appears on e5f6 at ply 1 of the current best line.",
+          "evidence": "exf6 captures the pawn on f5 en passant, moving from e5 to f6.",
           "source": "available",
           "ply": 1,
           "moveUci": "e5f6",
@@ -1033,9 +913,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 41.86799999999948
+    "classificationMs": 46.54039999999986
   },
   {
     "id": "lichess:w1lKu",
@@ -1146,9 +1026,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 173.72399999999925
+    "classificationMs": 187.2560999999996
   },
   {
     "id": "lichess:rqXvZ",
@@ -1196,9 +1076,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 90.73329999999987
+    "classificationMs": 120.03310000000056
   },
   {
     "id": "lichess:ouIHI",
@@ -1231,7 +1111,7 @@
           "id": "operaMate",
           "label": "Opera Mate",
           "confidence": "medium",
-          "evidence": "Opera Mate appears on a4a1 at ply 3 of the current best line.",
+          "evidence": "Ra1# is checkmate (Opera Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 3,
           "moveUci": "a4a1",
@@ -1279,30 +1159,18 @@
           "id": "operaMate",
           "label": "Opera Mate",
           "confidence": "medium",
-          "evidence": "Opera Mate appears on a4a1 at ply 3 of the current best line.",
+          "evidence": "Ra1# is checkmate (Opera Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 3,
           "moveUci": "a4a1",
           "relevance": "secondary",
           "value": 10000,
-          "actor": "black"
-        },
-        {
-          "id": "mateIn1",
-          "label": "Checkmate",
-          "source": "available",
-          "confidence": "high",
-          "ply": 3,
-          "moveUci": "a4a1",
-          "value": 10000,
-          "evidence": "Ra1# is checkmate: the king is in check and there is no legal reply.",
-          "relevance": "secondary",
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 4.9099999999998545
+    "classificationMs": 3.5900000000001455
   },
   {
     "id": "lichess:eOCp9",
@@ -1320,9 +1188,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 0.5335000000004584
+    "classificationMs": 0.5069999999996071
   },
   {
     "id": "lichess:erSYy",
@@ -1401,9 +1269,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 4.769199999999728
+    "classificationMs": 2.391599999999926
   },
   {
     "id": "lichess:vztmO",
@@ -1443,9 +1311,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 3.913100000000668
+    "classificationMs": 7.823100000000522
   },
   {
     "id": "lichess:G8wdr",
@@ -1505,9 +1373,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 225.0585999999994
+    "classificationMs": 231.92249999999967
   },
   {
     "id": "lichess:4GiqO",
@@ -1525,9 +1393,9 @@
     ],
     "result": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 0.22749999999996362
+    "classificationMs": 0.3797999999997046
   },
   {
     "id": "lichess:wh6Ac",
@@ -1567,9 +1435,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 1.8209999999999127
+    "classificationMs": 2.099500000000262
   },
   {
     "id": "lichess:NOaM1",
@@ -1625,9 +1493,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 7.516900000000533
+    "classificationMs": 9.49200000000019
   },
   {
     "id": "lichess:JaKHo",
@@ -1683,8 +1551,8 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 7.854199999999764
+    "classificationMs": 13.455400000000736
   }
 ]

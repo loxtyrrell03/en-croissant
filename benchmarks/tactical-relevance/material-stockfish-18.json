@@ -223,9 +223,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 24.117299999998068
+    "classificationMs": 23.466500000009546
   },
   {
     "name": "King escape declines the deflection bait",
@@ -412,9 +412,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 14.025200000003679
+    "classificationMs": 13.047299999991083
   },
   {
     "name": "The alleged deflected defender was already pinned",
@@ -543,7 +543,7 @@
           "id": "backRankMate",
           "label": "Back Rank Mate",
           "confidence": "medium",
-          "evidence": "Back Rank Mate appears on Rxe8# at ply 3 of the current best line.",
+          "evidence": "Rxe8# is checkmate (Back Rank Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 3,
           "moveUci": "a8e8",
@@ -590,7 +590,7 @@
           "id": "backRankMate",
           "label": "Back Rank Mate",
           "confidence": "medium",
-          "evidence": "Back Rank Mate appears on Rxe8# at ply 3 of the current best line.",
+          "evidence": "Rxe8# is checkmate (Back Rank Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 3,
           "moveUci": "a8e8",
@@ -609,23 +609,11 @@
           "relevance": "secondary",
           "value": 10000,
           "actor": "white"
-        },
-        {
-          "id": "mateIn1",
-          "label": "Checkmate",
-          "source": "available",
-          "confidence": "high",
-          "ply": 3,
-          "moveUci": "a8e8",
-          "value": 10000,
-          "evidence": "Rxe8# is checkmate: the king is in check and there is no legal reply.",
-          "relevance": "secondary",
-          "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 5.709099999992759
+    "classificationMs": 6.23080000000482
   },
   {
     "name": "Exploit an absolute pin",
@@ -883,9 +871,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 11.920299999997951
+    "classificationMs": 11.73049999999057
   },
   {
     "name": "Rook captures the pinning attacker's pawn",
@@ -1046,9 +1034,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 11.400599999993574
+    "classificationMs": 12.14670000001206
   },
   {
     "name": "King-queen skewer",
@@ -1237,9 +1225,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 3.3457000000053085
+    "classificationMs": 3.5847000000067055
   },
   {
     "name": "Pawn interposes against the skewer",
@@ -1470,9 +1458,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 17.312000000005355
+    "classificationMs": 18.726399999999558
   },
   {
     "name": "Remove the queen's defender with check",
@@ -1689,8 +1677,8 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 9.186699999991106
+    "classificationMs": 10.470400000005611
   }
 ]

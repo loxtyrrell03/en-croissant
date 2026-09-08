@@ -9605,6 +9605,108 @@ function quietPreparation(steps) {
 	const root = steps[0];
 	return root && !root.capture && !root.move.promotion && !root.after.isCheck() ? proveMateWithinThree(steps) : null;
 }
+var checkingMateCache = /* @__PURE__ */ new Map();
+var CHECKING_MATE_NODE_LIMIT = 32768;
+/** A long PV ending in mate is only a nomination. All legal defences must
+* lose against a bounded checking attack; PV moves order choices, never
+* restrict the defender. Unknown and exhausted searches do not certify mate. */
+function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT) {
+	const root = steps[0];
+	const terminal = steps.findIndex((step) => step.after.isEnd());
+	if (!root || !root.after.isCheck() || terminal < 0 || terminal > 12 || !steps[terminal].after.isCheckmate() || steps[terminal].before.turn !== root.before.turn) return null;
+	const maxMoves = terminal / 2 + 1;
+	const hints = steps.slice(0, terminal + 1).filter((s) => s.before.turn === root.before.turn).map((s) => s.uci);
+	const key = `${makeFen(root.after.toSetup())}:${maxMoves}:${hints}`;
+	if (nodeLimit === CHECKING_MATE_NODE_LIMIT && checkingMateCache.has(key)) return checkingMateCache.get(key);
+	let nodes = nodeLimit;
+	const visit = (pos, move) => {
+		if (--nodes < 0) throw new Error("Checking mate budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const attack = (pos, remaining) => {
+		if (remaining <= 0 || pos.isEnd()) return null;
+		const moves = legalMoves(pos);
+		moves.sort((a, b) => Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))));
+		for (const move of moves) {
+			const next = visit(pos, move);
+			if (next.isCheckmate()) return [makeSan(pos, move)];
+			if (!next.isCheck() || remaining === 1) continue;
+			const continuation = defend(next, remaining - 1);
+			if (continuation) return [makeSan(pos, move), ...continuation];
+		}
+		return null;
+	};
+	const defend = (pos, remaining) => {
+		if (pos.isEnd()) return null;
+		let longest = null;
+		for (const reply of legalMoves(pos)) {
+			const continuation = attack(visit(pos, reply), remaining);
+			if (!continuation) return null;
+			const line = [makeSan(pos, reply), ...continuation];
+			if (!longest || line.length > longest.length) longest = line;
+		}
+		return longest;
+	};
+	let proof = null;
+	try {
+		if (root.after.isCheckmate() && nodeLimit > 0) proof = {
+			maxMoves: 1,
+			replyCount: 0,
+			example: [root.san]
+		};
+		else {
+			const continuation = defend(root.after, maxMoves - 1);
+			if (continuation) proof = {
+				maxMoves,
+				replyCount: legalMoves(root.after).length,
+				example: [root.san, ...continuation]
+			};
+		}
+	} catch {}
+	if (nodeLimit === CHECKING_MATE_NODE_LIMIT) {
+		checkingMateCache.set(key, proof);
+		if (checkingMateCache.size > 128) checkingMateCache.delete(checkingMateCache.keys().next().value);
+	}
+	return proof;
+}
+/** One terminal event is one lesson. Conflicting legacy pattern names are
+* not independent tactics; use factual Checkmate until taxonomy is resolved.
+* A root mating preparation is not the terminal event and remains separate. */
+function normalizeMatingPayoffs(steps, motifs) {
+	const groups = /* @__PURE__ */ new Map();
+	for (const motif of motifs) {
+		if (!MATE.test(motif.id) || !motif.ply || !steps[motif.ply - 1]?.after.isCheckmate()) continue;
+		const group = groups.get(motif.ply) ?? [];
+		group.push(motif);
+		groups.set(motif.ply, group);
+	}
+	const selected = /* @__PURE__ */ new Map();
+	for (const [ply, group] of groups) {
+		const named = [...new Map(group.filter((m) => /Mate$/.test(m.id)).map((m) => [m.id, m])).values()];
+		const motif = named.length === 1 ? named[0] : group.find((m) => m.relevance === "primary") ?? group[0];
+		const specific = named.length === 1;
+		const genericId = named.length > 1 ? "mateIn1" : group.find((m) => /^mateIn\d+$/.test(m.id))?.id ?? "mateIn1";
+		selected.set(ply, {
+			...motif,
+			...!specific ? {
+				id: genericId,
+				label: "Checkmate",
+				confidence: "high"
+			} : {},
+			...group.some((m) => m.relevance === "primary") ? { relevance: "primary" } : {},
+			evidence: `${steps[ply - 1].san} is checkmate${specific ? ` (${motif.label})` : ""}: the king is in check and there is no legal reply.`
+		});
+	}
+	const emitted = /* @__PURE__ */ new Set();
+	return motifs.flatMap((motif) => {
+		if (!motif.ply || !groups.get(motif.ply)?.includes(motif)) return [motif];
+		if (emitted.has(motif.ply)) return [];
+		emitted.add(motif.ply);
+		return [selected.get(motif.ply)];
+	});
+}
 var tacticalPreparationCache = /* @__PURE__ */ new Map();
 /** A supplied payoff only nominates the victim and orders checks. Try every
 * legal defence first. If that proof fails, certify a null-move threat AND
@@ -10855,7 +10957,8 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 	const attacker = steps[0].before.turn;
 	const final = episode.at(-1);
 	if (final.after.isCheckmate() && final.before.turn !== attacker) return [];
-	const mate = final.after.isCheckmate() && final.before.turn === attacker && (episode.length !== 3 || Boolean(proveMateNextTurn(steps[0]))) && (episode.length !== 5 || Boolean(proveMateWithinThree(steps)));
+	const checkingMate = episode.length >= 7 ? proveCheckingMate(episode) : null;
+	const mate = final.after.isCheckmate() && final.before.turn === attacker && (episode.length !== 3 || Boolean(proveMateNextTurn(steps[0]))) && (episode.length !== 5 || Boolean(proveMateWithinThree(steps))) && (episode.length < 7 || Boolean(checkingMate));
 	let settled = final.balance;
 	try {
 		settled -= final.after.turn !== attacker ? exchange(final.after, final.move.to, { nodes: 256 }) : 0;
@@ -10863,6 +10966,16 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		settled = -VALUE.king;
 	}
 	const candidates = [];
+	if (checkingMate) candidates.push({
+		id: `mateIn${checkingMate.maxMoves}`,
+		label: "Forcing Mate",
+		source: proposals[0]?.source ?? "available",
+		confidence: "high",
+		ply: 1,
+		moveUci: steps[0].uci,
+		value: 1e4,
+		evidence: `${steps[0].san} starts a forced checking attack. Every legal defence permits mate within ${checkingMate.maxMoves} moves; one verified line is ${checkingMate.example.join(" ")}. The exact continuation depends on the defence.`
+	});
 	const clearance = proveForcingClearance(steps);
 	if (clearance) candidates.push({
 		id: "clearance",
@@ -10970,6 +11083,26 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		}];
 	}
 	for (let proposal of proposals) {
+		if (MATE.test(proposal.id)) {
+			if (!mate) continue;
+			proposal = {
+				...proposal,
+				ply: episode.length,
+				moveUci: final.uci
+			};
+		}
+		if (proposal.id === "enPassant") {
+			const index = episode.findIndex((s) => s.before.turn === attacker && s.before.board.get(s.move.from)?.role === "pawn" && s.move.to === s.before.epSquare && !s.before.board.get(s.move.to) && s.capture === VALUE.pawn);
+			if (index < 0) continue;
+			const capture = episode[index];
+			const victim = capture.move.to + (attacker === "white" ? -8 : 8);
+			proposal = {
+				...proposal,
+				ply: index + 1,
+				moveUci: capture.uci,
+				evidence: `${capture.san} captures the pawn on ${makeSquare(victim)} en passant, moving from ${makeSquare(capture.move.from)} to ${makeSquare(capture.move.to)}.`
+			};
+		}
 		if (DISCOVERED_THEMES.has(proposal.id) || [
 			"deflection",
 			"interference",
@@ -10991,8 +11124,10 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		if (proposal.ply === 1 && rayEvidence.some((m) => m.id === proposal.id)) continue;
 		if (preparation && proposal.id === "mateIn3") continue;
 		if (!MECHANISMS.has(proposal.id) && !CONCRETE_THEMES.has(proposal.id) && !MATE.test(proposal.id)) continue;
-		if (proposal.id === "attraction" && mate) {
+		if (proposal.id === "attraction") {
+			if (!mate) continue;
 			const anchor = episode.findIndex((s, i) => s.before.turn === attacker && episode[i + 1]?.before.board.get(episode[i + 1].move.from)?.role === "king" && episode[i + 1].move.to === s.move.to);
+			if (anchor < 0) continue;
 			if (anchor >= 0) {
 				const bait = episode[anchor];
 				proposal = {
@@ -11091,9 +11226,10 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		value: 1e4,
 		evidence: `${root.san} is checkmate: the king is in check and there is no legal reply.`
 	});
-	const specificMate = candidates.find((m) => /Mate$/.test(m.id));
+	const normalizedCandidates = normalizeMatingPayoffs(steps, candidates);
+	const specificMate = normalizedCandidates.find((m) => /Mate$/.test(m.id));
 	const fork = candidates.find((m) => m.id === "fork");
-	const filtered = candidates.filter((m) => {
+	const filtered = normalizedCandidates.filter((m) => {
 		if (m.id === "promotion" && candidates.some((other) => other.id === "underPromotion" && other.ply === m.ply)) return false;
 		if (m.ply && steps[m.ply - 1]?.after.isCheckmate() && [
 			"hangingPiece",
@@ -11119,7 +11255,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			if (trap && relevantRayTactics(step).some((ray) => ray.kind === "pin" && ray.front === trap.target)) return false;
 		}
 		if (m.id === "clearance" && candidates.some((other) => other.ply === m.ply && (DISCOVERED_THEMES.has(other.id) || other.id === "tacticalPreparation"))) return false;
-		if (specificMate && /^mate(?:In\d+)?$/.test(m.id) && !(preparation && m.id === "mateIn3" && m.ply === 1)) return false;
+		if (specificMate && /^mate(?:In\d+)?$/.test(m.id) && !(checkingMate && m.ply === 1) && !(preparation && m.id === "mateIn3" && m.ply === 1)) return false;
 		if (fork?.ply === m.ply && [
 			"clearance",
 			"trappedPiece",
@@ -11131,7 +11267,8 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		return true;
 	}).sort((a, b) => {
 		const matingPriority = (m) => mate && (m.value === 1e4 || MATE.test(m.id)) ? 0 : 1;
-		return matingPriority(a) - matingPriority(b) || causeRank(a, directGain) - causeRank(b, directGain);
+		const rootMatingPriority = (m) => checkingMate && m.ply === 1 && (m.value === 1e4 || MATE.test(m.id)) ? 0 : 1;
+		return matingPriority(a) - matingPriority(b) || rootMatingPriority(a) - rootMatingPriority(b) || causeRank(a, directGain) - causeRank(b, directGain);
 	});
 	const immediateLoose = filtered.find((m) => m.id === "hangingPiece" && m.ply === 1);
 	if (immediateLoose && !filtered.some((m) => m.ply === 1 && (MECHANISMS.has(m.id) || trapIsMainCause(m, directGain)))) {
@@ -11304,7 +11441,7 @@ function observedTargetGain(steps, targets) {
 	return gain;
 }
 /** The better choice may change the opponent's reply without saving the
-* threatened material. Use its own legal engine continuation, never replay
+* threatened material or avoiding a certified mate. Use its own legal engine continuation, never replay
 * the actual refutation under a different move. Unknown proofs abstain. */
 function compareBestLineTacticalDefence(fen, playedMove, actualLine, bestLine, motifs) {
 	if (!motifs.length || !playedMove || !bestLine[0] || bestLine[0] === playedMove) return motifs;
@@ -11313,9 +11450,16 @@ function compareBestLineTacticalDefence(fen, playedMove, actualLine, bestLine, m
 	if (actual.length < 2 || better.length < 2) return motifs;
 	const attackSteps = replayTacticalLine(makeFen(actual[1].before.toSetup()), actual.slice(1).map((s) => s.uci));
 	const alternativeSteps = replayTacticalLine(makeFen(better[1].before.toSetup()), better.slice(1).map((s) => s.uci));
-	const alternatives = auditTacticalMotifs(makeFen(alternativeSteps[0].before.toSetup()), alternativeSteps.map((s) => s.uci), []).filter((m) => m.ply === 1).map((m) => materialLesson(alternativeSteps, m)).filter((proof) => proof !== null);
-	if (!alternatives.length) return motifs;
+	const alternativeMotifs = auditTacticalMotifs(makeFen(alternativeSteps[0].before.toSetup()), alternativeSteps.map((s) => s.uci), []).filter((m) => m.ply === 1);
+	const alternativeMate = alternativeMotifs.find((m) => /^mateIn\d+$/.test(m.id) && m.value === 1e4);
+	const alternatives = alternativeMotifs.map((m) => materialLesson(alternativeSteps, m)).filter((proof) => proof !== null);
+	if (!alternatives.length && !alternativeMate) return motifs;
 	return motifs.map((motif) => {
+		if (alternativeMate && motif.ply === 1 && /^mateIn\d+$/.test(motif.id) && motif.value === 1e4 && Number(alternativeMate.id.slice(6)) <= Number(motif.id.slice(6))) return {
+			...motif,
+			comparison: "persists",
+			comparisonEvidence: `Even after ${better[0].san}, ${better[1].san} still permits a verified forced mate within ${Number(alternativeMate.id.slice(6))} moves. The better move does not remove this mating danger.`
+		};
 		const proof = materialLesson(attackSteps, motif);
 		if (!proof) return motif;
 		const actualGain = Math.max(proof.gain, observedTargetGain(attackSteps, proof.targets));
@@ -11412,7 +11556,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 21;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 22;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -11899,6 +12043,7 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 		};
 		const candidates = auditTacticalMotifs(rawSteps[index]?.fenBefore ?? "", suffix, toMotifEvidence(detail, source, sanLine?.slice(index)));
 		for (const motif of candidates.filter((m) => m.ply === 1)) {
+			if (motif.label === "Forcing Mate" && [...evidence.values()].some((previous) => previous.actor === step.before.turn && (previous.ply ?? Infinity) < index + 1 && /^mateIn\d+$/.test(previous.id) && previous.value === 1e4 && !replay[(previous.ply ?? 0) - 1]?.after.isCheckmate())) continue;
 			if (motif.id === "hangingPiece" && index > 0 && step.move.to === replay[index - 1].move.to) continue;
 			const key = `${index + 1}:${motif.id}`;
 			if (evidence.has(key)) continue;
@@ -11911,7 +12056,7 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 			});
 		}
 	}
-	return [...evidence.values()].filter((motif) => (motif.ply ?? 0) <= connectedPlies && !(motif.id === "hangingPiece" && isCompensatedContinuationCapture(replay, (motif.ply ?? 0) - 1))).filter((motif) => motif.id !== "mate" || ![...evidence.values()].some((other) => other.ply === motif.ply && (/Mate$/.test(other.id) || /^mateIn\d+$/.test(other.id)))).sort((a, b) => (a.ply ?? 0) - (b.ply ?? 0));
+	return normalizeMatingPayoffs(replay, [...evidence.values()]).filter((motif) => (motif.ply ?? 0) <= connectedPlies && !(motif.id === "hangingPiece" && isCompensatedContinuationCapture(replay, (motif.ply ?? 0) - 1))).filter((motif) => motif.id !== "mate" || ![...evidence.values()].some((other) => other.ply === motif.ply && (/Mate$/.test(other.id) || /^mateIn\d+$/.test(other.id)))).sort((a, b) => (a.ply ?? 0) - (b.ply ?? 0));
 }
 function cacheKey(input) {
 	return JSON.stringify([

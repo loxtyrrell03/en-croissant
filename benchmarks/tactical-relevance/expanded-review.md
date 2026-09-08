@@ -53,7 +53,7 @@ every possible defensive continuation. “Open” is not a successful empty resu
 | GIB50 | Fixed wrong primary: Rxd8# ends the game. Winning the rook is not the principal lesson. |
 | REAdh | Core sound: Re6# is knight-supported, and the knight is pawn-supported; the hook relationship is present. |
 | NGZzo | Open quiet-move miss. Nd7 attacks Rb6, but why a satisfactory rook escape is unavailable needs branch-level work. Do not assume a fork merely from the knight move. |
-| 4Osgg | The source line ends in Bf2# after a checking queen drive. Balestra and Morphy labels overlap; choose/adjudicate a single useful pattern rather than count both as two tactics. Still open. |
+| 4Osgg | Fixed in adapter 22: the root lesson is Qf1+'s certified checking mate within four moves, not two overlapping final-pattern names. After Qg1+, both Kh3 and Kg3 are covered; Kg3 leads to Bf2+ Kh3 Qh1#, whereas the source ends Bf2#. One factual Checkmate payoff is retained at ply 7, with naming ambiguity withheld. A White Rc1 control keeps the cooperative source mate legal but permits Rxf1; the former unproved mating claim is rejected and fresh Stockfish finds Black losing. Exact named-pattern taxonomy remains unadjudicated. |
 | UCiYo | Core immediate lesson is Kxc5 winning the bishop. The subsequent two-sided promotion race is separate and not certified by this material label. |
 | CSh8J | Fixed in adapter 19: Nd5+ is the primary Fork, with a verified 320 cp local minimum. Nb6 also guards c8, so Nxd5 permits c8=Q; king moves instead lose the knight. Every legal reply is checked on these targets or this same pawn, including promotion recaptures. Promotion remains the actual ply-3 payoff. A truncated one-move input and the alternative king-move line retain the same root explanation. Fresh before/after searches verify Kxg3 misses this fork and Kf6 allows it; Nc8 avoids the immediate fork. |
 | opGD7 | Open: Qf1+ Kd2 Bf4+ stops before the payoff. The checks appear to displace the king's defence of Re2, but this needs a complete legal branch audit. |
@@ -82,6 +82,9 @@ every possible defensive continuation. “Open” is not a successful empty resu
 Prioritize the unresolved en-passant attack and other long combinations. CSh8J's
 promotion-backed fork now has a local all-replies proof, not a full ending solve.
 Audit named-mate overlap separately from legal checkmate.
+The adapter-22 checking-mate family audit adds 32 development positions (27
+bounded proofs, five unresolved), with terminal anchors and repeated mate-count
+noise corrected; its coverage is not an overall accuracy estimate.
 Retain the unresolved en-passant attack and endgame cases; do not turn them into
 empty-result acceptance assertions. These findings expand the original tuning
 goal rather than replace it with crash-free report generation.

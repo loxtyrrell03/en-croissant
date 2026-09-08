@@ -202,9 +202,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 7.378199999999197,
+    "classificationMs": 8.445200000001932,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -406,9 +406,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 0.5457000000023982,
+    "classificationMs": 0.6339000000007218,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -742,9 +742,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 8.136600000005274,
+    "classificationMs": 8.449700000004668,
     "positionHeadline": [
       {
         "id": "discoveredCheck",
@@ -1151,9 +1151,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 11.769399999997404,
+    "classificationMs": 10.995799999996962,
     "positionHeadline": [
       {
         "id": "discoveredCheck",
@@ -1425,9 +1425,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 18.82430000000022,
+    "classificationMs": 18.137799999996787,
     "positionHeadline": [
       {
         "id": "doubleCheck",
@@ -1462,7 +1462,7 @@
             "id": "pillsburysMate",
             "label": "Pillsbury's Mate",
             "confidence": "medium",
-            "evidence": "Pillsbury's Mate appears on Re8# at ply 1 of the current best line.",
+            "evidence": "Re8# is checkmate (Pillsbury's Mate): the king is in check and there is no legal reply.",
             "source": "available",
             "ply": 1,
             "moveUci": "e5e8",
@@ -1487,24 +1487,12 @@
             "id": "pillsburysMate",
             "label": "Pillsbury's Mate",
             "confidence": "medium",
-            "evidence": "Pillsbury's Mate appears on Re8# at ply 1 of the current best line.",
+            "evidence": "Re8# is checkmate (Pillsbury's Mate): the king is in check and there is no legal reply.",
             "source": "available",
             "ply": 1,
             "moveUci": "e5e8",
             "relevance": "secondary",
             "value": 10000,
-            "actor": "white"
-          },
-          {
-            "id": "mateIn1",
-            "label": "Checkmate",
-            "source": "available",
-            "confidence": "high",
-            "ply": 1,
-            "moveUci": "e5e8",
-            "value": 10000,
-            "evidence": "Re8# is checkmate: the king is in check and there is no legal reply.",
-            "relevance": "secondary",
             "actor": "white"
           }
         ]
@@ -1531,7 +1519,7 @@
             "id": "morphysMate",
             "label": "Morphy's Mate",
             "confidence": "medium",
-            "evidence": "Morphy's Mate appears on Bxf6# at ply 3 of the current best line.",
+            "evidence": "Bxf6# is checkmate (Morphy's Mate): the king is in check and there is no legal reply.",
             "source": "available",
             "ply": 3,
             "moveUci": "b2f6",
@@ -1556,24 +1544,12 @@
             "id": "morphysMate",
             "label": "Morphy's Mate",
             "confidence": "medium",
-            "evidence": "Morphy's Mate appears on Bxf6# at ply 3 of the current best line.",
+            "evidence": "Bxf6# is checkmate (Morphy's Mate): the king is in check and there is no legal reply.",
             "source": "available",
             "ply": 3,
             "moveUci": "b2f6",
             "relevance": "secondary",
             "value": 10000,
-            "actor": "white"
-          },
-          {
-            "id": "mateIn1",
-            "label": "Checkmate",
-            "source": "available",
-            "confidence": "high",
-            "ply": 3,
-            "moveUci": "b2f6",
-            "value": 10000,
-            "evidence": "Bxf6# is checkmate: the king is in check and there is no legal reply.",
-            "relevance": "secondary",
             "actor": "white"
           }
         ]
@@ -1673,21 +1649,10 @@
           "relevance": "primary"
         },
         {
-          "id": "epauletteMate",
-          "label": "Epaulette Mate",
-          "confidence": "medium",
-          "evidence": "Epaulette Mate appears on Bb5# at ply 1 of the current best line.",
-          "source": "available",
-          "ply": 1,
-          "moveUci": "e2b5",
-          "relevance": "secondary",
-          "value": 10000
-        },
-        {
-          "id": "pillsburysMate",
-          "label": "Pillsbury's Mate",
-          "confidence": "medium",
-          "evidence": "Pillsbury's Mate appears on Bb5# at ply 1 of the current best line.",
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Bb5# is checkmate: the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 1,
           "moveUci": "e2b5",
@@ -1709,45 +1674,21 @@
           "actor": "white"
         },
         {
-          "id": "epauletteMate",
-          "label": "Epaulette Mate",
-          "confidence": "medium",
-          "evidence": "Epaulette Mate appears on Bb5# at ply 1 of the current best line.",
-          "source": "available",
-          "ply": 1,
-          "moveUci": "e2b5",
-          "relevance": "secondary",
-          "value": 10000,
-          "actor": "white"
-        },
-        {
-          "id": "pillsburysMate",
-          "label": "Pillsbury's Mate",
-          "confidence": "medium",
-          "evidence": "Pillsbury's Mate appears on Bb5# at ply 1 of the current best line.",
-          "source": "available",
-          "ply": 1,
-          "moveUci": "e2b5",
-          "relevance": "secondary",
-          "value": 10000,
-          "actor": "white"
-        },
-        {
           "id": "mateIn1",
           "label": "Checkmate",
-          "source": "available",
           "confidence": "high",
+          "evidence": "Bb5# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
           "ply": 1,
           "moveUci": "e2b5",
-          "value": 10000,
-          "evidence": "Bb5# is checkmate: the king is in check and there is no legal reply.",
           "relevance": "secondary",
+          "value": 10000,
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 1.2972999999910826,
+    "classificationMs": 1.0983999999953085,
     "positionHeadline": [
       {
         "id": "doubleCheck",
@@ -1779,21 +1720,10 @@
             "relevance": "primary"
           },
           {
-            "id": "epauletteMate",
-            "label": "Epaulette Mate",
-            "confidence": "medium",
-            "evidence": "Epaulette Mate appears on Bb5# at ply 1 of the current best line.",
-            "source": "available",
-            "ply": 1,
-            "moveUci": "e2b5",
-            "relevance": "secondary",
-            "value": 10000
-          },
-          {
-            "id": "pillsburysMate",
-            "label": "Pillsbury's Mate",
-            "confidence": "medium",
-            "evidence": "Pillsbury's Mate appears on Bb5# at ply 1 of the current best line.",
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Bb5# is checkmate: the king is in check and there is no legal reply.",
             "source": "available",
             "ply": 1,
             "moveUci": "e2b5",
@@ -1815,39 +1745,15 @@
             "actor": "white"
           },
           {
-            "id": "epauletteMate",
-            "label": "Epaulette Mate",
-            "confidence": "medium",
-            "evidence": "Epaulette Mate appears on Bb5# at ply 1 of the current best line.",
-            "source": "available",
-            "ply": 1,
-            "moveUci": "e2b5",
-            "relevance": "secondary",
-            "value": 10000,
-            "actor": "white"
-          },
-          {
-            "id": "pillsburysMate",
-            "label": "Pillsbury's Mate",
-            "confidence": "medium",
-            "evidence": "Pillsbury's Mate appears on Bb5# at ply 1 of the current best line.",
-            "source": "available",
-            "ply": 1,
-            "moveUci": "e2b5",
-            "relevance": "secondary",
-            "value": 10000,
-            "actor": "white"
-          },
-          {
             "id": "mateIn1",
             "label": "Checkmate",
-            "source": "available",
             "confidence": "high",
+            "evidence": "Bb5# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
             "ply": 1,
             "moveUci": "e2b5",
-            "value": 10000,
-            "evidence": "Bb5# is checkmate: the king is in check and there is no legal reply.",
             "relevance": "secondary",
+            "value": 10000,
             "actor": "white"
           }
         ]
@@ -1869,21 +1775,10 @@
             "relevance": "primary"
           },
           {
-            "id": "epauletteMate",
-            "label": "Epaulette Mate",
-            "confidence": "medium",
-            "evidence": "Epaulette Mate appears on Bg4# at ply 1 of the current best line.",
-            "source": "available",
-            "ply": 1,
-            "moveUci": "e2g4",
-            "relevance": "secondary",
-            "value": 10000
-          },
-          {
-            "id": "pillsburysMate",
-            "label": "Pillsbury's Mate",
-            "confidence": "medium",
-            "evidence": "Pillsbury's Mate appears on Bg4# at ply 1 of the current best line.",
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Bg4# is checkmate: the king is in check and there is no legal reply.",
             "source": "available",
             "ply": 1,
             "moveUci": "e2g4",
@@ -1905,39 +1800,15 @@
             "actor": "white"
           },
           {
-            "id": "epauletteMate",
-            "label": "Epaulette Mate",
-            "confidence": "medium",
-            "evidence": "Epaulette Mate appears on Bg4# at ply 1 of the current best line.",
-            "source": "available",
-            "ply": 1,
-            "moveUci": "e2g4",
-            "relevance": "secondary",
-            "value": 10000,
-            "actor": "white"
-          },
-          {
-            "id": "pillsburysMate",
-            "label": "Pillsbury's Mate",
-            "confidence": "medium",
-            "evidence": "Pillsbury's Mate appears on Bg4# at ply 1 of the current best line.",
-            "source": "available",
-            "ply": 1,
-            "moveUci": "e2g4",
-            "relevance": "secondary",
-            "value": 10000,
-            "actor": "white"
-          },
-          {
             "id": "mateIn1",
             "label": "Checkmate",
-            "source": "available",
             "confidence": "high",
+            "evidence": "Bg4# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
             "ply": 1,
             "moveUci": "e2g4",
-            "value": 10000,
-            "evidence": "Bg4# is checkmate: the king is in check and there is no legal reply.",
             "relevance": "secondary",
+            "value": 10000,
             "actor": "white"
           }
         ]

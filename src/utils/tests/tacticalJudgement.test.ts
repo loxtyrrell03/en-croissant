@@ -212,6 +212,61 @@ test.skipIf(!process.env.TACTICAL_JUDGEMENT_ENGINE || !process.env.TACTICAL_PIN_
     180000,
 );
 
+test.skipIf(!process.env.TACTICAL_JUDGEMENT_ENGINE || !process.env.TACTICAL_CHECKING_MATE_REPORT)(
+    "check a real mating drive against its omitted replies and a queen-capturing control",
+    async () => {
+        const fen = "5r2/bpp2q1k/p2pR1p1/3P4/1PP3QP/P7/1B4P1/7K b - - 3 32";
+        const source = ["f7f1", "h1h2", "f1g1", "h2h3", "g1h1", "h3g3", "a7f2"];
+        const inputs = [
+            { fen, prefix: [] as string[], root: "f7f1" },
+            { fen, prefix: ["f7f1", "h1h2", "f1g1", "h2g3"], root: undefined },
+            { fen: fen.replace("7K", "2R4K"), prefix: [] as string[], root: "f7f1" },
+        ];
+        const report = [];
+        for (const item of inputs) {
+            const pos = Chess.fromSetup(parseFen(item.fen).unwrap()).unwrap();
+            for (const uci of item.prefix) {
+                const move = parseUci(uci)!;
+                expect(pos.isLegal(move)).toBe(true);
+                pos.play(move);
+            }
+            const lines = [
+                ...(
+                    await analyse(
+                        process.env.TACTICAL_JUDGEMENT_ENGINE!,
+                        makeFen(pos.toSetup()),
+                        item.root,
+                    )
+                ).values(),
+            ];
+            const started = performance.now();
+            const classification = classifyPositionTacticalMotifs({
+                fen: item.fen,
+                pvUci: [...item.prefix, ...lines[0].pvUci],
+            });
+            const sourceClassification = classifyPositionTacticalMotifs({
+                fen: item.fen,
+                pvUci: source,
+            });
+            report.push({
+                ...item,
+                lines,
+                classification,
+                sourceClassification,
+                classificationMs: performance.now() - started,
+            });
+        }
+        writeFileSync(process.env.TACTICAL_CHECKING_MATE_REPORT!, JSON.stringify(report, null, 2));
+        expect(report[0].lines[0].mate).toBe(4);
+        expect(report[0].classification.motifs[0]).toMatchObject({ id: "mateIn4", ply: 1 });
+        expect(report[1].classification.motifs[0]).toMatchObject({ id: "mateIn4", ply: 1 });
+        // The omitted Rxf1 defence actually reverses the mating attack.
+        expect(report[2].lines[0].mate).toBeLessThan(0);
+        expect(report[2].sourceClassification.motifs.filter((m) => /mate/i.test(m.id))).toEqual([]);
+    },
+    180000,
+);
+
 async function analyse(engine: string, fen: string, searchMove?: string) {
     const child = spawn(engine, [], { windowsHide: true, stdio: "pipe" });
     const lines = new Map<

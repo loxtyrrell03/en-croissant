@@ -15,6 +15,7 @@ import {
     compareImmediateTacticalDefence,
     hasTacticalStart,
     isCompensatedContinuationCapture,
+    normalizeMatingPayoffs,
     replayTacticalLine,
 } from "./causalTactics";
 import type {
@@ -100,7 +101,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 21;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 22;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -819,6 +820,21 @@ export function buildTacticalTimeline(
             toMotifEvidence(detail, source, sanLine?.slice(index)),
         );
         for (const motif of candidates.filter((m) => m.ply === 1)) {
+            // Recounting the same side's already-proved checking mate after
+            // each reply is progress, not another tactical theme. Keep the
+            // actual mating payoff and any new concrete mechanisms below.
+            if (
+                motif.label === "Forcing Mate" &&
+                [...evidence.values()].some(
+                    (previous) =>
+                        previous.actor === step.before.turn &&
+                        (previous.ply ?? Infinity) < index + 1 &&
+                        /^mateIn\d+$/.test(previous.id) &&
+                        previous.value === 10000 &&
+                        !replay[(previous.ply ?? 0) - 1]?.after.isCheckmate(),
+                )
+            )
+                continue;
             if (
                 motif.id === "hangingPiece" &&
                 index > 0 &&
@@ -836,7 +852,7 @@ export function buildTacticalTimeline(
             });
         }
     }
-    return [...evidence.values()]
+    return normalizeMatingPayoffs(replay, [...evidence.values()])
         .filter(
             (motif) =>
                 (motif.ply ?? 0) <= connectedPlies &&

@@ -1,0 +1,3639 @@
+{
+  "selection": "Every development row whose complete legal line has at least seven plies, starts with check and ends with the attacker's checkmate. No theme/rating/classifier-output selection; no holdout classification. Proof absence remains unresolved, not a correct negative.",
+  "sourceSha256": "c80356923da60cce5b48b37046a878290f36997862f921b944015a3cf69ccc88",
+  "count": 32,
+  "proved": 27,
+  "cases": [
+    {
+      "id": "lichess:3kPn3",
+      "startFen": "r1bq1rk1/pp1n3p/2p1p3/5p2/2PPp1p1/2N1P3/PP1BB1PK/2RQNR2 b - - 0 14",
+      "bestLine": [
+        "d8h4",
+        "h2g1",
+        "g4g3",
+        "e1f3",
+        "e4f3",
+        "f1f3",
+        "h4h2",
+        "g1f1",
+        "h2h1"
+      ],
+      "sourceGameUrl": "https://lichess.org/fva0lLZe#27",
+      "san": [
+        "Qh4+",
+        "Kg1",
+        "g3",
+        "Nf3",
+        "exf3",
+        "Rxf3",
+        "Qh2+",
+        "Kf1",
+        "Qh1#"
+      ],
+      "proof": null,
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 24.5390000000001
+    },
+    {
+      "id": "lichess:3mWuW",
+      "startFen": "7r/6k1/p3r3/1pQ1p3/3nPpKR/5P2/PP4P1/3R4 b - - 0 29",
+      "bestLine": [
+        "e6g6",
+        "g4h3",
+        "g6g3",
+        "h3h2",
+        "d4f3",
+        "g2f3",
+        "h8h4"
+      ],
+      "sourceGameUrl": "https://lichess.org/puYvqadF#57",
+      "san": [
+        "Rg6+",
+        "Kh3",
+        "Rg3+",
+        "Kh2",
+        "Nxf3+",
+        "gxf3",
+        "Rxh4#"
+      ],
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 1,
+        "example": [
+          "Rg6+",
+          "Kh3",
+          "Rg3+",
+          "Kh2",
+          "Nxf3+",
+          "gxf3",
+          "Rxh4#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e6g6",
+            "value": 10000,
+            "evidence": "Rg6+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Rg6+ Kh3 Rg3+ Kh2 Nxf3+ gxf3 Rxh4#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxh4# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h8h4",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e6g6",
+            "value": 10000,
+            "evidence": "Rg6+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Rg6+ Kh3 Rg3+ Kh2 Nxf3+ gxf3 Rxh4#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 5,
+            "moveUci": "d4f3",
+            "value": 280,
+            "evidence": "Nxf3+ exploits the rook on h4, pinned to the king on h2 by the rook on h8. No legal reply avoids material loss in the immediate exchange.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxh4# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h8h4",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 10.816800000000057
+    },
+    {
+      "id": "lichess:41frD",
+      "startFen": "r5k1/pnp3pp/1p1b2r1/3Pp3/4Pp2/P1N2P1q/1PP1Q1PP/R3BRK1 b - - 2 18",
+      "bestLine": [
+        "d6c5",
+        "g1h1",
+        "h3h2",
+        "h1h2",
+        "g6h6",
+        "e1h4",
+        "h6h4"
+      ],
+      "sourceGameUrl": "https://lichess.org/NJ3Eb11y#35",
+      "san": [
+        "Bc5+",
+        "Kh1",
+        "Qxh2+",
+        "Kxh2",
+        "Rh6+",
+        "Bh4",
+        "Rxh4#"
+      ],
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 5,
+        "example": [
+          "Bc5+",
+          "Kh1",
+          "Qxh2+",
+          "Kxh2",
+          "Rh6+",
+          "Bh4",
+          "Rxh4#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d6c5",
+            "value": 10000,
+            "evidence": "Bc5+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bc5+ Kh1 Qxh2+ Kxh2 Rh6+ Bh4 Rxh4#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Qxh2+ offers the queen on h2. After Kxh2, Rxh4# delivers mate.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h3h2",
+            "value": 10000,
+            "relevance": "secondary"
+          },
+          {
+            "id": "pillsburysMate",
+            "label": "Pillsbury's Mate",
+            "confidence": "medium",
+            "evidence": "Rxh4# is checkmate (Pillsbury's Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h6h4",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d6c5",
+            "value": 10000,
+            "evidence": "Bc5+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bc5+ Kh1 Qxh2+ Kxh2 Rh6+ Bh4 Rxh4#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Qxh2+ offers the queen on h2. After Kxh2, Rxh4# delivers mate.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h3h2",
+            "value": 10000,
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "pillsburysMate",
+            "label": "Pillsbury's Mate",
+            "confidence": "medium",
+            "evidence": "Rxh4# is checkmate (Pillsbury's Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h6h4",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 4.590399999999931
+    },
+    {
+      "id": "lichess:4Osgg",
+      "startFen": "5r2/bpp2q1k/p2pR1p1/3P4/1PP3QP/P7/1B4P1/7K b - - 3 32",
+      "bestLine": [
+        "f7f1",
+        "h1h2",
+        "f1g1",
+        "h2h3",
+        "g1h1",
+        "h3g3",
+        "a7f2"
+      ],
+      "sourceGameUrl": "https://lichess.org/pEUmwLlr#63",
+      "san": [
+        "Qf1+",
+        "Kh2",
+        "Qg1+",
+        "Kh3",
+        "Qh1+",
+        "Kg3",
+        "Bf2#"
+      ],
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 1,
+        "example": [
+          "Qf1+",
+          "Kh2",
+          "Qg1+",
+          "Kg3",
+          "Bf2+",
+          "Kh3",
+          "Qh1#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7f1",
+            "value": 10000,
+            "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Bf2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "a7f2",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7f1",
+            "value": 10000,
+            "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Bf2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "a7f2",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 7.284899999999993
+    },
+    {
+      "id": "lichess:7Aje1",
+      "startFen": "1k5r/1p2b3/3p4/1QpPp2n/4P3/2P2P1B/P4qP1/1R2R2K b - - 6 26",
+      "bestLine": [
+        "h5g3",
+        "h1h2",
+        "g3f1",
+        "e1f1",
+        "h8h3",
+        "h2h3",
+        "f2h4"
+      ],
+      "sourceGameUrl": "https://lichess.org/pdbeBjyx#51",
+      "san": [
+        "Ng3+",
+        "Kh2",
+        "Nf1+",
+        "Rxf1",
+        "Rxh3+",
+        "Kxh3",
+        "Qh4#"
+      ],
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 1,
+        "example": [
+          "Ng3+",
+          "Kh2",
+          "Nf1+",
+          "Rxf1",
+          "Rxh3+",
+          "Kxh3",
+          "Qh4#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h5g3",
+            "value": 10000,
+            "evidence": "Ng3+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Ng3+ Kh2 Nf1+ Rxf1 Rxh3+ Kxh3 Qh4#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rxh3+ offers the rook on h3. After Kxh3, Qh4# delivers mate.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h8h3",
+            "value": 10000,
+            "relevance": "secondary"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qh4# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "f2h4",
+            "relevance": "secondary",
+            "value": 10000
+          },
+          {
+            "id": "pin",
+            "label": "Pin",
+            "confidence": "medium",
+            "evidence": "Pin appears on f2h4 at ply 7 of the current best line.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "f2h4",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h5g3",
+            "value": 10000,
+            "evidence": "Ng3+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Ng3+ Kh2 Nf1+ Rxf1 Rxh3+ Kxh3 Qh4#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rxh3+ offers the rook on h3. After Kxh3, Qh4# delivers mate.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h8h3",
+            "value": 10000,
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qh4# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "f2h4",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "pin",
+            "label": "Pin",
+            "confidence": "medium",
+            "evidence": "Pin appears on f2h4 at ply 7 of the current best line.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "f2h4",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 13.270099999999957
+    },
+    {
+      "id": "lichess:7tbEy",
+      "startFen": "3r1r1k/R3Q1p1/1p5p/8/3q4/P7/2P2PPP/5RK1 b - - 4 27",
+      "bestLine": [
+        "d4f2",
+        "f1f2",
+        "d8d1",
+        "e7e1",
+        "d1e1",
+        "f2f1",
+        "e1f1"
+      ],
+      "sourceGameUrl": "https://lichess.org/4tqsjUtF#53",
+      "san": [
+        "Qxf2+",
+        "Rxf2",
+        "Rd1+",
+        "Qe1",
+        "Rxe1+",
+        "Rf1",
+        "Rexf1#"
+      ],
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 2,
+        "example": [
+          "Qxf2+",
+          "Rxf2",
+          "Rd1+",
+          "Qe1",
+          "Rxe1+",
+          "Rf1",
+          "Rexf1#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d4f2",
+            "value": 10000,
+            "evidence": "Qxf2+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qxf2+ Rxf2 Rd1+ Qe1 Rxe1+ Rf1 Rexf1#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rexf1# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "e1f1",
+            "relevance": "secondary",
+            "value": 10000
+          },
+          {
+            "id": "clearance",
+            "label": "Clearance",
+            "confidence": "medium",
+            "evidence": "Qxf2+ vacates d4 for Rd1+ by another piece in this continuation.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f2",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d4f2",
+            "value": 10000,
+            "evidence": "Qxf2+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qxf2+ Rxf2 Rd1+ Qe1 Rxe1+ Rf1 Rexf1#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "clearance",
+            "label": "Clearance",
+            "confidence": "medium",
+            "evidence": "Qxf2+ vacates d4 for Rd1+ by another piece in this continuation.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f2",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 5,
+            "moveUci": "d1e1",
+            "value": 1400,
+            "evidence": "Rxe1+ takes the queen with check before Rxf2. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxf2 first allows Qxd1, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rexf1# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "e1f1",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 15.896600000000035
+    },
+    {
+      "id": "lichess:8FLlO",
+      "startFen": "8/Q7/3q2pP/8/2p2pPk/2P2P2/7K/8 b - - 2 43",
+      "bestLine": [
+        "d6d2",
+        "h2h1",
+        "h4h3",
+        "a7g1",
+        "d2e2",
+        "g4g5",
+        "e2f3",
+        "g1g2",
+        "f3g2"
+      ],
+      "sourceGameUrl": "https://lichess.org/izfXsnC0#85",
+      "san": [
+        "Qd2+",
+        "Kh1",
+        "Kh3",
+        "Qg1",
+        "Qe2",
+        "g5",
+        "Qxf3+",
+        "Qg2+",
+        "Qxg2#"
+      ],
+      "proof": null,
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 36.50159999999994
+    },
+    {
+      "id": "lichess:AtnrF",
+      "startFen": "6k1/2p1qN1p/p6r/3Q3n/1P1PP1p1/P7/5PPK/R1B2R2 b - - 0 24",
+      "bestLine": [
+        "e7h4",
+        "h2g1",
+        "h4h1",
+        "g1h1",
+        "h5g3",
+        "h1g1",
+        "h6h1"
+      ],
+      "sourceGameUrl": "https://lichess.org/WWrFvxBQ#47",
+      "san": [
+        "Qh4+",
+        "Kg1",
+        "Qh1+",
+        "Kxh1",
+        "Ng3+",
+        "Kg1",
+        "Rh1#"
+      ],
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 1,
+        "example": [
+          "Qh4+",
+          "Kg1",
+          "Qh1+",
+          "Kxh1",
+          "Ng3+",
+          "Kg1",
+          "Rh1#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e7h4",
+            "value": 10000,
+            "evidence": "Qh4+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qh4+ Kg1 Qh1+ Kxh1 Ng3+ Kg1 Rh1#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Qh1+ offers the queen on h1. After Kxh1, Rh1# delivers mate.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h4h1",
+            "value": 10000,
+            "relevance": "secondary"
+          },
+          {
+            "id": "doubleCheck",
+            "label": "Double Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 5,
+            "moveUci": "h5g3",
+            "evidence": "Ng3+ vacates h5, uncovering the rook on h6 against the king on h1. The knight on g3 also attacks the rook on f1 and the pawn on e4. Both pieces give check. Every legal defence allows the verified short forced mate.",
+            "value": 10000,
+            "relevance": "secondary"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rh1# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h6h1",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e7h4",
+            "value": 10000,
+            "evidence": "Qh4+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qh4+ Kg1 Qh1+ Kxh1 Ng3+ Kg1 Rh1#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Qh1+ offers the queen on h1. After Kxh1, Rh1# delivers mate.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h4h1",
+            "value": 10000,
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "h4h1 lets the queen on h1 skewer the king on g1, exposing the rook on f1.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h4h1",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "doubleCheck",
+            "label": "Double Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 5,
+            "moveUci": "h5g3",
+            "evidence": "Ng3+ vacates h5, uncovering the rook on h6 against the king on h1. The knight on g3 also attacks the rook on f1 and the pawn on e4. Both pieces give check. Every legal defence allows the verified short forced mate.",
+            "value": 10000,
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "source": "available",
+            "confidence": "high",
+            "ply": 5,
+            "moveUci": "h5g3",
+            "evidence": "Ng3+ forks the rook on f1 and king on h1; no legal reply saves both targets without conceding material.",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rh1# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h6h1",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 8.613100000000031
+    },
+    {
+      "id": "lichess:IyijS",
+      "startFen": "7r/7p/7k/1r6/6R1/5PK1/p1R5/8 w - - 26 54",
+      "bestLine": [
+        "c2c6",
+        "h6h5",
+        "g4h4",
+        "h5g5",
+        "c6h6",
+        "a2a1q",
+        "h4h5"
+      ],
+      "sourceGameUrl": "https://lichess.org/UAAXpF7B/black#106",
+      "san": [
+        "Rc6+",
+        "Kh5",
+        "Rh4+",
+        "Kg5",
+        "Rch6",
+        "a1=Q",
+        "R4h5#"
+      ],
+      "proof": null,
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 10.93610000000001
+    },
+    {
+      "id": "lichess:Jn9KP",
+      "startFen": "b7/2R4p/5P2/7k/5Q2/7K/5P1P/6r1 b - - 10 47",
+      "bestLine": [
+        "a8g2",
+        "h3g3",
+        "g2d5",
+        "g3h3",
+        "d5e6",
+        "f4f5",
+        "e6f5"
+      ],
+      "sourceGameUrl": "https://lichess.org/xuFT6vq3#93",
+      "san": [
+        "Bg2+",
+        "Kg3",
+        "Bd5+",
+        "Kh3",
+        "Be6+",
+        "Qf5+",
+        "Bxf5#"
+      ],
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 1,
+        "example": [
+          "Bg2+",
+          "Kg3",
+          "Bd5+",
+          "Kh3",
+          "Be6+",
+          "Qg4+",
+          "Bxg4#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "a8g2",
+            "value": 10000,
+            "evidence": "Bg2+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bg2+ Kg3 Bd5+ Kh3 Be6+ Qg4+ Bxg4#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "discoveredCheck",
+            "label": "Discovered Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "g2d5",
+            "evidence": "Bd5+ vacates g2, uncovering the rook on g1 against the king on g3. Every legal defence allows the verified short forced mate.",
+            "value": 10000,
+            "relevance": "secondary"
+          },
+          {
+            "id": "morphysMate",
+            "label": "Morphy's Mate",
+            "confidence": "medium",
+            "evidence": "Bxf5# is checkmate (Morphy's Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "e6f5",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "a8g2",
+            "value": 10000,
+            "evidence": "Bg2+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bg2+ Kg3 Bd5+ Kh3 Be6+ Qg4+ Bxg4#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "discoveredCheck",
+            "label": "Discovered Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "g2d5",
+            "evidence": "Bd5+ vacates g2, uncovering the rook on g1 against the king on g3. Every legal defence allows the verified short forced mate.",
+            "value": 10000,
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "morphysMate",
+            "label": "Morphy's Mate",
+            "confidence": "medium",
+            "evidence": "Bxf5# is checkmate (Morphy's Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "e6f5",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 10.849100000000021
+    },
+    {
+      "id": "lichess:LDIy1",
+      "startFen": "r6r/ppR5/6k1/6B1/5P2/8/P1P1n1PP/5R1K b - - 2 22",
+      "bestLine": [
+        "h8h2",
+        "h1h2",
+        "a8h8",
+        "c7h7",
+        "h8h7",
+        "g5h4",
+        "h7h4"
+      ],
+      "sourceGameUrl": "https://lichess.org/E29eVNxr#43",
+      "san": [
+        "Rxh2+",
+        "Kxh2",
+        "Rh8+",
+        "Rh7",
+        "Rxh7+",
+        "Bh4",
+        "Rxh4#"
+      ],
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 1,
+        "example": [
+          "Rxh2+",
+          "Kxh2",
+          "Rh8+",
+          "Rh7",
+          "Rxh7+",
+          "Bh4",
+          "Rxh4#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rxh2+ offers the rook on h2. After Kxh2, Rxh4# delivers mate.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "h8h2",
+            "value": 10000,
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h8h2",
+            "value": 10000,
+            "evidence": "Rxh2+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Rxh2+ Kxh2 Rh8+ Rh7 Rxh7+ Bh4 Rxh4#. The exact continuation depends on the defence.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "anastasiaMate",
+            "label": "Anastasia Mate",
+            "confidence": "medium",
+            "evidence": "Rxh4# is checkmate (Anastasia Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h7h4",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rxh2+ offers the rook on h2. After Kxh2, Rxh4# delivers mate.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "h8h2",
+            "value": 10000,
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h8h2",
+            "value": 10000,
+            "evidence": "Rxh2+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Rxh2+ Kxh2 Rh8+ Rh7 Rxh7+ Bh4 Rxh4#. The exact continuation depends on the defence.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "clearance",
+            "label": "Clearance",
+            "confidence": "medium",
+            "evidence": "Rxh2+ vacates h8 for Rh8+ by another piece in this continuation.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "h8h2",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "anastasiaMate",
+            "label": "Anastasia Mate",
+            "confidence": "medium",
+            "evidence": "Rxh4# is checkmate (Anastasia Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h7h4",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 10.916100000000029
+    },
+    {
+      "id": "lichess:LDnWZ",
+      "startFen": "5R2/1p3Bpk/1Q5p/1P2p1q1/7n/6P1/1B6/6K1 b - - 0 34",
+      "bestLine": [
+        "g5g3",
+        "g1f1",
+        "g3g2",
+        "f1e1",
+        "h4f3",
+        "e1d1",
+        "g2d2"
+      ],
+      "sourceGameUrl": "https://lichess.org/NkEy0NrH#67",
+      "san": [
+        "Qxg3+",
+        "Kf1",
+        "Qg2+",
+        "Ke1",
+        "Nf3+",
+        "Kd1",
+        "Qd2#"
+      ],
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 2,
+        "example": [
+          "Qxg3+",
+          "Kf1",
+          "Qg2+",
+          "Ke1",
+          "Nf3+",
+          "Kd1",
+          "Qd2#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g5g3",
+            "value": 10000,
+            "evidence": "Qxg3+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qxg3+ Kf1 Qg2+ Ke1 Nf3+ Kd1 Qd2#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qd2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "g2d2",
+            "relevance": "secondary",
+            "value": 10000
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "g3g2 forks the king on f1 and bishop on b2. The knight on h4 protects g2, so the king cannot capture the queen.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g3g2",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g5g3",
+            "value": 10000,
+            "evidence": "Qxg3+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qxg3+ Kf1 Qg2+ Ke1 Nf3+ Kd1 Qd2#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "g3g2 forks the king on f1 and bishop on b2. The knight on h4 protects g2, so the king cannot capture the queen.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g3g2",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qd2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "g2d2",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 5.610400000000027
+    },
+    {
+      "id": "lichess:NOVGX",
+      "startFen": "5r1k/3bN1p1/4p1Pp/3p4/p1pPpP1Q/2b1Pq1P/PrB3RK/8 w - - 2 36",
+      "bestLine": [
+        "h4h6",
+        "g7h6",
+        "g6g7",
+        "h8h7",
+        "g7f8n",
+        "h7h8",
+        "g2g8"
+      ],
+      "sourceGameUrl": "https://lichess.org/1plwqVL4/black#70",
+      "san": [
+        "Qxh6+",
+        "gxh6",
+        "g7+",
+        "Kh7",
+        "gxf8=N+",
+        "Kh8",
+        "Rg8#"
+      ],
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 1,
+        "example": [
+          "Qxh6+",
+          "gxh6",
+          "g7+",
+          "Kh7",
+          "gxf8=N+",
+          "Kh8",
+          "Rg8#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h4h6",
+            "value": 10000,
+            "evidence": "Qxh6+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qxh6+ gxh6 g7+ Kh7 gxf8=N+ Kh8 Rg8#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rg8# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "g2g8",
+            "relevance": "secondary",
+            "value": 10000
+          },
+          {
+            "id": "underPromotion",
+            "label": "Under-Promotion",
+            "confidence": "medium",
+            "evidence": "gxf8=N+ promotes the pawn to a knight.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "g7f8n",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h4h6",
+            "value": 10000,
+            "evidence": "Qxh6+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qxh6+ gxh6 g7+ Kh7 gxf8=N+ Kh8 Rg8#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "attacking_undefended_piece",
+            "label": "Threatening a Piece",
+            "confidence": "medium",
+            "evidence": "Threatening a Piece appears on g6g7 at ply 1 of the current best line.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g6g7",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "underPromotion",
+            "label": "Under-Promotion",
+            "confidence": "medium",
+            "evidence": "gxf8=N+ promotes the pawn to a knight.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "g7f8n",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "g7f8n forks the king on h7 and bishop on d7.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "g7f8n",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "g7f8n wins the loose rook on f8.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "g7f8n",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rg8# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "g2g8",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 24.731200000000058
+    },
+    {
+      "id": "lichess:NrHkx",
+      "startFen": "8/8/2k1B3/2b4r/p7/Pp4B1/1P2bPP1/R1K1R3 b - - 3 34",
+      "bestLine": [
+        "c5e3",
+        "f2e3",
+        "h5c5",
+        "e6c4",
+        "c5c4",
+        "c1b1",
+        "e2d3"
+      ],
+      "sourceGameUrl": "https://lichess.org/m6XYFzNi#67",
+      "san": [
+        "Be3+",
+        "fxe3",
+        "Rc5+",
+        "Bc4",
+        "Rxc4+",
+        "Kb1",
+        "Bd3#"
+      ],
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 2,
+        "example": [
+          "Be3+",
+          "fxe3",
+          "Rc5+",
+          "Bc4",
+          "Rxc4+",
+          "Kb1",
+          "Bd3#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c5e3",
+            "value": 10000,
+            "evidence": "Be3+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Be3+ fxe3 Rc5+ Bc4 Rxc4+ Kb1 Bd3#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "morphysMate",
+            "label": "Morphy's Mate",
+            "confidence": "medium",
+            "evidence": "Bd3# is checkmate (Morphy's Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "e2d3",
+            "relevance": "secondary",
+            "value": 10000
+          },
+          {
+            "id": "clearance",
+            "label": "Clearance",
+            "confidence": "medium",
+            "evidence": "Be3+ vacates c5 for Rc5+ by another piece in this continuation.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "c5e3",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c5e3",
+            "value": 10000,
+            "evidence": "Be3+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Be3+ fxe3 Rc5+ Bc4 Rxc4+ Kb1 Bd3#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "clearance",
+            "label": "Clearance",
+            "confidence": "medium",
+            "evidence": "Be3+ vacates c5 for Rc5+ by another piece in this continuation.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "c5e3",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "morphysMate",
+            "label": "Morphy's Mate",
+            "confidence": "medium",
+            "evidence": "Bd3# is checkmate (Morphy's Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "e2d3",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 9.080000000000041
+    },
+    {
+      "id": "lichess:NtXK7",
+      "startFen": "5r1k/p5p1/6Pp/2pq1r2/3p1Q1R/4pR1P/8/7K w - - 0 45",
+      "bestLine": [
+        "h4h6",
+        "h8g8",
+        "h6h8",
+        "g8h8",
+        "f4h4",
+        "f5h5",
+        "h4h5",
+        "d5h5",
+        "f3f8"
+      ],
+      "sourceGameUrl": "https://lichess.org/lqiMtKKO/black#88",
+      "san": [
+        "Rxh6+",
+        "Kg8",
+        "Rh8+",
+        "Kxh8",
+        "Qh4+",
+        "Rh5",
+        "Qxh5+",
+        "Qxh5",
+        "Rxf8#"
+      ],
+      "proof": {
+        "maxMoves": 5,
+        "replyCount": 2,
+        "example": [
+          "Rxh6+",
+          "Kg8",
+          "Rh8+",
+          "Kxh8",
+          "Qh4+",
+          "Rh5",
+          "Qxh5+",
+          "Qxh5",
+          "Rxf8#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h4h6",
+            "value": 10000,
+            "evidence": "Rxh6+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rxh6+ Kg8 Rh8+ Kxh8 Qh4+ Rh5 Qxh5+ Qxh5 Rxf8#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rh8+ offers the rook on h8. After Kxh8, Rxf8# delivers mate.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h6h8",
+            "value": 10000,
+            "relevance": "secondary"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxf8# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "f3f8",
+            "relevance": "secondary",
+            "value": 10000
+          },
+          {
+            "id": "sacrifice",
+            "label": "Sacrifice",
+            "confidence": "medium",
+            "evidence": "Sacrifice appears on h4h5 at ply 7 of the current best line.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h4h5",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h4h6",
+            "value": 10000,
+            "evidence": "Rxh6+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rxh6+ Kg8 Rh8+ Kxh8 Qh4+ Rh5 Qxh5+ Qxh5 Rxf8#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rh8+ offers the rook on h8. After Kxh8, Rxf8# delivers mate.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h6h8",
+            "value": 10000,
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "h6h8 lets the rook on h8 skewer the king on g8, exposing the rook on f8.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h6h8",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "sacrifice",
+            "label": "Sacrifice",
+            "confidence": "medium",
+            "evidence": "Sacrifice appears on h4h5 at ply 7 of the current best line.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h4h5",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxf8# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "f3f8",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 16.618099999999913
+    },
+    {
+      "id": "lichess:O3OKR",
+      "startFen": "3rr1k1/p6p/1p1q2p1/2p5/6N1/1PQP1KPP/P2p4/8 w - - 0 40",
+      "bestLine": [
+        "g4h6",
+        "g8f8",
+        "c3h8",
+        "f8e7",
+        "h8g7",
+        "e7e6",
+        "g7f7",
+        "e6e5",
+        "h6g4",
+        "e5d4",
+        "f7c4"
+      ],
+      "sourceGameUrl": "https://lichess.org/aV2A8QXf/black#78",
+      "san": [
+        "Nh6+",
+        "Kf8",
+        "Qh8+",
+        "Ke7",
+        "Qg7+",
+        "Ke6",
+        "Qf7+",
+        "Ke5",
+        "Ng4+",
+        "Kd4",
+        "Qc4#"
+      ],
+      "proof": {
+        "maxMoves": 6,
+        "replyCount": 1,
+        "example": [
+          "Nh6+",
+          "Kf8",
+          "Qh8+",
+          "Ke7",
+          "Qg7+",
+          "Ke6",
+          "Qf7+",
+          "Ke5",
+          "Ng4+",
+          "Kd4",
+          "Qc4#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn6",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g4h6",
+            "value": 10000,
+            "evidence": "Nh6+ starts a forced checking attack. Every legal defence permits mate within 6 moves; one verified line is Nh6+ Kf8 Qh8+ Ke7 Qg7+ Ke6 Qf7+ Ke5 Ng4+ Kd4 Qc4#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qc4# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 11,
+            "moveUci": "f7c4",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn6",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g4h6",
+            "value": 10000,
+            "evidence": "Nh6+ starts a forced checking attack. Every legal defence permits mate within 6 moves; one verified line is Nh6+ Kf8 Qh8+ Ke7 Qg7+ Ke6 Qf7+ Ke5 Ng4+ Kd4 Qc4#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "c3h8 lets the queen on h8 skewer the king on f8, exposing the rook on e8.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "c3h8",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 5,
+            "moveUci": "h8g7",
+            "value": 100,
+            "evidence": "Qg7+ skewers the king on e7 and the pawn on a7. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qc4# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 11,
+            "moveUci": "f7c4",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 9.509300000000053
+    },
+    {
+      "id": "lichess:OezHt",
+      "startFen": "4k3/5ppp/2R5/2Bpb1PP/8/2rb1B2/5PK1/8 w - - 1 35",
+      "bestLine": [
+        "c6c8",
+        "e8d7",
+        "f3g4",
+        "f7f5",
+        "g5f6",
+        "d3f5",
+        "g4f5"
+      ],
+      "sourceGameUrl": "https://lichess.org/wFNlpQnz/black#68",
+      "san": [
+        "Rc8+",
+        "Kd7",
+        "Bg4+",
+        "f5",
+        "gxf6+",
+        "Bf5",
+        "Bxf5#"
+      ],
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 1,
+        "example": [
+          "Rc8+",
+          "Kd7",
+          "Bg4+",
+          "f5",
+          "gxf6+",
+          "Bf5",
+          "Bxf5#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c6c8",
+            "value": 10000,
+            "evidence": "Rc8+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Rc8+ Kd7 Bg4+ f5 gxf6+ Bf5 Bxf5#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Bxf5# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "g4f5",
+            "relevance": "secondary",
+            "value": 10000
+          },
+          {
+            "id": "enPassant",
+            "label": "En Passant",
+            "confidence": "medium",
+            "evidence": "gxf6+ captures the pawn on f5 en passant, moving from g5 to f6.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "g5f6",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c6c8",
+            "value": 10000,
+            "evidence": "Rc8+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Rc8+ Kd7 Bg4+ f5 gxf6+ Bf5 Bxf5#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "enPassant",
+            "label": "En Passant",
+            "confidence": "medium",
+            "evidence": "gxf6+ captures the pawn on f5 en passant, moving from g5 to f6.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "g5f6",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Bxf5# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "g4f5",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 3.29849999999999
+    },
+    {
+      "id": "lichess:PDoyY",
+      "startFen": "5rk1/R2p2pp/2pNp3/3n4/1n1PB3/1Pq3Pb/5P1P/1Q4K1 w - - 1 23",
+      "bestLine": [
+        "e4h7",
+        "g8h8",
+        "d6f7",
+        "f8f7",
+        "a7a8",
+        "f7f8",
+        "a8f8"
+      ],
+      "sourceGameUrl": "https://lichess.org/31B9VRnS/black#44",
+      "san": [
+        "Bxh7+",
+        "Kh8",
+        "Nf7+",
+        "Rxf7",
+        "Ra8+",
+        "Rf8",
+        "Rxf8#"
+      ],
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 1,
+        "example": [
+          "Bxh7+",
+          "Kh8",
+          "Nf7+",
+          "Rxf7",
+          "Ra8+",
+          "Rf8",
+          "Rxf8#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e4h7",
+            "value": 10000,
+            "evidence": "Bxh7+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bxh7+ Kh8 Nf7+ Rxf7 Ra8+ Rf8 Rxf8#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "pillsburysMate",
+            "label": "Pillsbury's Mate",
+            "confidence": "medium",
+            "evidence": "Rxf8# is checkmate (Pillsbury's Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "a8f8",
+            "relevance": "secondary",
+            "value": 10000
+          },
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e4h7",
+            "value": 200,
+            "evidence": "Bxh7+ takes the pawn with check before Rxd7. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxd7 first allows h5, preventing an immediate profitable capture of that pawn. The move order matters, not just the two captures.",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e4h7",
+            "value": 10000,
+            "evidence": "Bxh7+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bxh7+ Kh8 Nf7+ Rxf7 Ra8+ Rf8 Rxf8#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e4h7",
+            "value": 200,
+            "evidence": "Bxh7+ takes the pawn with check before Rxd7. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxd7 first allows h5, preventing an immediate profitable capture of that pawn. The move order matters, not just the two captures.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "pillsburysMate",
+            "label": "Pillsbury's Mate",
+            "confidence": "medium",
+            "evidence": "Rxf8# is checkmate (Pillsbury's Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "a8f8",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 14.702599999999961
+    },
+    {
+      "id": "lichess:bBtM1",
+      "startFen": "8/p3R1p1/1pp2k1p/5p2/8/2P4P/Pr1r1PP1/4RK2 w - - 4 34",
+      "bestLine": [
+        "e1e6",
+        "f6g5",
+        "e7g7",
+        "g5h5",
+        "g2g4",
+        "f5g4",
+        "h3g4",
+        "h5h4",
+        "e6h6"
+      ],
+      "sourceGameUrl": "https://lichess.org/5TC0C2PP/black#66",
+      "san": [
+        "R1e6+",
+        "Kg5",
+        "Rxg7+",
+        "Kh5",
+        "g4+",
+        "fxg4",
+        "hxg4+",
+        "Kh4",
+        "Rxh6#"
+      ],
+      "proof": {
+        "maxMoves": 5,
+        "replyCount": 1,
+        "example": [
+          "R1e6+",
+          "Kg5",
+          "Rxg7+",
+          "Kh5",
+          "g4+",
+          "fxg4",
+          "hxg4+",
+          "Kh4",
+          "Rxh6#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1e6",
+            "value": 10000,
+            "evidence": "R1e6+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is R1e6+ Kg5 Rxg7+ Kh5 g4+ fxg4 hxg4+ Kh4 Rxh6#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxh6# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "e6h6",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1e6",
+            "value": 10000,
+            "evidence": "R1e6+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is R1e6+ Kg5 Rxg7+ Kh5 g4+ fxg4 hxg4+ Kh4 Rxh6#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "e7g7",
+            "value": 200,
+            "evidence": "Rxg7+ takes the pawn with check before Rxc6. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxc6 first allows g6, preventing an immediate profitable capture of that pawn. The move order matters, not just the two captures.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 7,
+            "moveUci": "h3g4",
+            "value": 200,
+            "evidence": "hxg4+ takes the pawn with check before Rxc6. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxc6 first allows gxh3, preventing an immediate profitable capture of that pawn. The move order matters, not just the two captures.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxh6# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "e6h6",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 5.4944000000000415
+    },
+    {
+      "id": "lichess:eQa3B",
+      "startFen": "1kq1r2r/1p3p2/p2b4/B1ppN3/3P1P2/1P2P1p1/P5P1/2R1QRK1 b - - 1 28",
+      "bestLine": [
+        "h8h1",
+        "g1h1",
+        "e8h8",
+        "h1g1",
+        "h8h1",
+        "g1h1",
+        "c8h8",
+        "h1g1",
+        "h8h2"
+      ],
+      "sourceGameUrl": "https://lichess.org/tjadbVcy#55",
+      "san": [
+        "Rh1+",
+        "Kxh1",
+        "Rh8+",
+        "Kg1",
+        "Rh1+",
+        "Kxh1",
+        "Qh8+",
+        "Kg1",
+        "Qh2#"
+      ],
+      "proof": {
+        "maxMoves": 5,
+        "replyCount": 1,
+        "example": [
+          "Rh1+",
+          "Kxh1",
+          "Rh8+",
+          "Kg1",
+          "Rh1+",
+          "Kxh1",
+          "Qh8+",
+          "Kg1",
+          "Qh2#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rh1+ offers the rook on h1. After Kxh1, Qh2# delivers mate.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "h8h1",
+            "value": 10000,
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h8h1",
+            "value": 10000,
+            "evidence": "Rh1+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rh1+ Kxh1 Rh8+ Kg1 Rh1+ Kxh1 Qh8+ Kg1 Qh2#. The exact continuation depends on the defence.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qh2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "h8h2",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rh1+ offers the rook on h1. After Kxh1, Qh2# delivers mate.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "h8h1",
+            "value": 10000,
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h8h1",
+            "value": 10000,
+            "evidence": "Rh1+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rh1+ Kxh1 Rh8+ Kg1 Rh1+ Kxh1 Qh8+ Kg1 Qh2#. The exact continuation depends on the defence.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "h8h1 lets the rook on h1 skewer the king on g1, exposing the rook on f1.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "h8h1",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "clearance",
+            "label": "Clearance",
+            "confidence": "medium",
+            "evidence": "Rh1+ vacates h8 for Rh8+ by another piece in this continuation.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "h8h1",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "h8h1 lets the rook on h1 skewer the king on g1, exposing the rook on f1.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h8h1",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "clearance",
+            "label": "Clearance",
+            "confidence": "medium",
+            "evidence": "Rh1+ vacates h8 for Qh8+ by another piece in this continuation.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h8h1",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qh2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "h8h2",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 12.68909999999994
+    },
+    {
+      "id": "lichess:eimKB",
+      "startFen": "r1b1k2r/pppp1p2/2n1p2p/8/1bPP1Bp1/3N4/PP1n1PPP/R2QKB1R b KQkq - 0 12",
+      "bestLine": [
+        "d2f3",
+        "e1e2",
+        "f3d4",
+        "e2e3",
+        "d4f5",
+        "e3e4",
+        "d7d5",
+        "c4d5",
+        "e6d5",
+        "e4d5",
+        "f5e7",
+        "d5c4",
+        "c8e6",
+        "c4b5",
+        "a7a6",
+        "b5a4",
+        "b7b5"
+      ],
+      "sourceGameUrl": "https://lichess.org/G3Mo3zZE#23",
+      "san": [
+        "Nf3+",
+        "Ke2",
+        "Nfxd4+",
+        "Ke3",
+        "Nf5+",
+        "Ke4",
+        "d5+",
+        "cxd5",
+        "exd5+",
+        "Kxd5",
+        "Nfe7+",
+        "Kc4",
+        "Be6+",
+        "Kb5",
+        "a6+",
+        "Ka4",
+        "b5#"
+      ],
+      "proof": null,
+      "result": {
+        "motifs": [
+          {
+            "id": "doubleCheck",
+            "label": "Double Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d2f3",
+            "evidence": "Nf3+ vacates d2, uncovering the bishop on b4 against the king on e1. The knight on f3 also attacks the pawn on h2 and the pawn on d4. Both pieces give check. Every legal answer to the discovered check concedes material. Captures and interpositions are included in this check.",
+            "value": 100,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "doubleCheck",
+            "label": "Double Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d2f3",
+            "evidence": "Nf3+ vacates d2, uncovering the bishop on b4 against the king on e1. The knight on f3 also attacks the pawn on h2 and the pawn on d4. Both pieces give check. Every legal answer to the discovered check concedes material. Captures and interpositions are included in this check.",
+            "value": 100,
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "mateIn7",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 5,
+            "moveUci": "d4f5",
+            "value": 10000,
+            "evidence": "Nf5+ starts a forced checking attack. Every legal defence permits mate within 7 moves; one verified line is Nf5+ Ke4 d5+ cxd5 exd5+ Kxd5 Nfe7+ Kc4 Be6+ Kb5 a6+ Ka4 b5#. The exact continuation depends on the defence.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 17,
+            "moveUci": "b7b5",
+            "value": 10000,
+            "evidence": "b5# is checkmate: the king is in check and there is no legal reply.",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 42.87670000000003
+    },
+    {
+      "id": "lichess:g2XPR",
+      "startFen": "3r1rk1/7p/p2p1bpQ/2nn4/3B4/P4P2/4qPRP/6RK w - - 0 36",
+      "bestLine": [
+        "g2g6",
+        "g8f7",
+        "g6g7",
+        "f6g7",
+        "g1g7",
+        "f7e8",
+        "h6h5",
+        "f8f7",
+        "h5f7"
+      ],
+      "sourceGameUrl": "https://lichess.org/QKXN6oPz/black#70",
+      "san": [
+        "Rxg6+",
+        "Kf7",
+        "Rg7+",
+        "Bxg7",
+        "Rxg7+",
+        "Ke8",
+        "Qh5+",
+        "Rf7",
+        "Qxf7#"
+      ],
+      "proof": {
+        "maxMoves": 5,
+        "replyCount": 4,
+        "example": [
+          "Rxg6+",
+          "Kf7",
+          "Rg7+",
+          "Bxg7",
+          "Rxg7+",
+          "Ke8",
+          "Qh5+",
+          "Rf7",
+          "Qxf7#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g2g6",
+            "value": 10000,
+            "evidence": "Rxg6+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rxg6+ Kf7 Rg7+ Bxg7 Rxg7+ Ke8 Qh5+ Rf7 Qxf7#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qxf7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "h5f7",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g2g6",
+            "value": 10000,
+            "evidence": "Rxg6+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rxg6+ Kf7 Rg7+ Bxg7 Rxg7+ Ke8 Qh5+ Rf7 Qxf7#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "clearance",
+            "label": "Clearance",
+            "confidence": "medium",
+            "evidence": "Rg7+ vacates g6 for Rxg7+ by another piece in this continuation.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g6g7",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "h6h5 forks the king on e8 and knight on d5. The line continues with h5f7, winning the rook.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h6h5",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "pin",
+            "label": "Pin",
+            "confidence": "medium",
+            "evidence": "Pin appears on h6h5 at ply 1 of the current best line.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h6h5",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qxf7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "h5f7",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 23.939100000000053
+    },
+    {
+      "id": "lichess:gJxgk",
+      "startFen": "Qn1r1bk1/p1N4p/1p2p1p1/2P1Pp2/5Bn1/5N1P/Pq3PP1/5RKR b - - 0 18",
+      "bestLine": [
+        "b2f2",
+        "f1f2",
+        "d8d1",
+        "f3e1",
+        "d1e1",
+        "f2f1",
+        "f8c5",
+        "f4e3",
+        "c5e3"
+      ],
+      "sourceGameUrl": "https://lichess.org/LKIYSXe4#35",
+      "san": [
+        "Qxf2+",
+        "Rxf2",
+        "Rd1+",
+        "Ne1",
+        "Rxe1+",
+        "Rf1",
+        "Bxc5+",
+        "Be3",
+        "Bxe3#"
+      ],
+      "proof": {
+        "maxMoves": 5,
+        "replyCount": 1,
+        "example": [
+          "Qxf2+",
+          "Rxf2",
+          "Rd1+",
+          "Rf1",
+          "Bxc5+",
+          "Nd4",
+          "Bxd4+",
+          "Be3",
+          "Bxe3#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b2f2",
+            "value": 10000,
+            "evidence": "Qxf2+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Qxf2+ Rxf2 Rd1+ Rf1 Bxc5+ Nd4 Bxd4+ Be3 Bxe3#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "morphysMate",
+            "label": "Morphy's Mate",
+            "confidence": "medium",
+            "evidence": "Bxe3# is checkmate (Morphy's Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "c5e3",
+            "relevance": "secondary",
+            "value": 10000
+          },
+          {
+            "id": "sacrifice",
+            "label": "Sacrifice",
+            "confidence": "medium",
+            "evidence": "Sacrifice appears on b2f2 at ply 1 of the current best line.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "b2f2",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b2f2",
+            "value": 10000,
+            "evidence": "Qxf2+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Qxf2+ Rxf2 Rd1+ Rf1 Bxc5+ Nd4 Bxd4+ Be3 Bxe3#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "sacrifice",
+            "label": "Sacrifice",
+            "confidence": "medium",
+            "evidence": "Sacrifice appears on b2f2 at ply 1 of the current best line.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "b2f2",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "d8d1 lets the rook on d1 skewer the king on g1, exposing the rook on h1.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "d8d1",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "d1e1 lets the rook on e1 skewer the king on g1, exposing the rook on h1.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "d1e1",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "morphysMate",
+            "label": "Morphy's Mate",
+            "confidence": "medium",
+            "evidence": "Bxe3# is checkmate (Morphy's Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "c5e3",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 31.827699999999936
+    },
+    {
+      "id": "lichess:hajE5",
+      "startFen": "8/4r1kp/pPp5/6pn/N1BP1r1q/7Q/1P4K1/3R1R2 b - - 1 32",
+      "bestLine": [
+        "h4h3",
+        "g2h3",
+        "e7e3",
+        "h3h2",
+        "f4h4",
+        "h2g1",
+        "e3g3",
+        "g1f2",
+        "h4h2",
+        "f2e1",
+        "g3e3",
+        "c4e2",
+        "e3e2"
+      ],
+      "sourceGameUrl": "https://lichess.org/m7aM6Y40#63",
+      "san": [
+        "Qxh3+",
+        "Kxh3",
+        "Re3+",
+        "Kh2",
+        "Rh4+",
+        "Kg1",
+        "Rg3+",
+        "Kf2",
+        "Rh2+",
+        "Ke1",
+        "Re3+",
+        "Be2",
+        "Rexe2#"
+      ],
+      "proof": null,
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 75.36400000000003
+    },
+    {
+      "id": "lichess:kCdp5",
+      "startFen": "5r1k/6Rp/3p1P2/pp2p3/2r1P2P/3qP3/1Q6/K5R1 w - - 2 30",
+      "bestLine": [
+        "g7g8",
+        "f8g8",
+        "g1g8",
+        "h8g8",
+        "b2g2",
+        "g8f7",
+        "g2g7",
+        "f7e6",
+        "g7e7"
+      ],
+      "sourceGameUrl": "https://lichess.org/hGOMBDY0/black#58",
+      "san": [
+        "Rg8+",
+        "Rxg8",
+        "Rxg8+",
+        "Kxg8",
+        "Qg2+",
+        "Kf7",
+        "Qg7+",
+        "Ke6",
+        "Qe7#"
+      ],
+      "proof": {
+        "maxMoves": 5,
+        "replyCount": 1,
+        "example": [
+          "Rg8+",
+          "Rxg8",
+          "Rxg8+",
+          "Kxg8",
+          "Qg2+",
+          "Kf7",
+          "Qg7+",
+          "Ke6",
+          "Qe7#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g7g8",
+            "value": 10000,
+            "evidence": "Rg8+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rg8+ Rxg8 Rxg8+ Kxg8 Qg2+ Kf7 Qg7+ Ke6 Qe7#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rxg8+ offers the rook on g8. After Kxg8, Qe7# delivers mate.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g1g8",
+            "value": 10000,
+            "relevance": "secondary"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qe7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "g7e7",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g7g8",
+            "value": 10000,
+            "evidence": "Rg8+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rg8+ Rxg8 Rxg8+ Kxg8 Qg2+ Kf7 Qg7+ Ke6 Qe7#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rxg8+ offers the rook on g8. After Kxg8, Qe7# delivers mate.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g1g8",
+            "value": 10000,
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qe7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "g7e7",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 14.4525000000001
+    },
+    {
+      "id": "lichess:n48BE",
+      "startFen": "r2q4/p5pk/1pnbprNp/2pp3B/8/P1PQ4/5PPP/R4RK1 w - - 3 22",
+      "bestLine": [
+        "g6f8",
+        "h7g8",
+        "d3h7",
+        "g8f8",
+        "h7h8",
+        "f8e7",
+        "h8g7",
+        "f6f7",
+        "g7f7"
+      ],
+      "sourceGameUrl": "https://lichess.org/dSAOWmhe/black#42",
+      "san": [
+        "Nf8+",
+        "Kg8",
+        "Qh7+",
+        "Kxf8",
+        "Qh8+",
+        "Ke7",
+        "Qxg7+",
+        "Rf7",
+        "Qxf7#"
+      ],
+      "proof": {
+        "maxMoves": 5,
+        "replyCount": 2,
+        "example": [
+          "Nf8+",
+          "Kg8",
+          "Qh7+",
+          "Kxf8",
+          "Qh8+",
+          "Ke7",
+          "Qxg7+",
+          "Rf7",
+          "Qxf7#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g6f8",
+            "value": 10000,
+            "evidence": "Nf8+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Nf8+ Kg8 Qh7+ Kxf8 Qh8+ Ke7 Qxg7+ Rf7 Qxf7#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "swallowstailMate",
+            "label": "Swallow's Tail Mate",
+            "confidence": "medium",
+            "evidence": "Qxf7# is checkmate (Swallow's Tail Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "g7f7",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g6f8",
+            "value": 10000,
+            "evidence": "Nf8+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Nf8+ Kg8 Qh7+ Kxf8 Qh8+ Ke7 Qxg7+ Rf7 Qxf7#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "source": "available",
+            "confidence": "high",
+            "ply": 4,
+            "moveUci": "g8f8",
+            "evidence": "Kxf8 wins the loose knight on f8.",
+            "relevance": "secondary",
+            "value": 320,
+            "actor": "black"
+          },
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 5,
+            "moveUci": "h7h8",
+            "value": 100,
+            "evidence": "Qh8+ exploits the pawn on g7, pinned to the rook on f6 by the queen on h8. No legal reply avoids material loss in the immediate exchange.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "confidence": "medium",
+            "evidence": "h7h8 lets the queen on h8 skewer the king on f8, exposing the queen on d8.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h7h8",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "swallowstailMate",
+            "label": "Swallow's Tail Mate",
+            "confidence": "medium",
+            "evidence": "Qxf7# is checkmate (Swallow's Tail Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "g7f7",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 6.14409999999998
+    },
+    {
+      "id": "lichess:nUdHj",
+      "startFen": "2r5/1p1k1p2/p5pp/3pP2N/2r4Q/2P5/q5PP/5R1K w - - 2 32",
+      "bestLine": [
+        "f1f7",
+        "d7c6",
+        "h4f6",
+        "c6c5",
+        "f6d6",
+        "c5b5",
+        "f7b7",
+        "b5a5",
+        "d6b6",
+        "a5a4",
+        "b6a6"
+      ],
+      "sourceGameUrl": "https://lichess.org/A0A2dlDF/black#62",
+      "san": [
+        "Rxf7+",
+        "Kc6",
+        "Qf6+",
+        "Kc5",
+        "Qd6+",
+        "Kb5",
+        "Rxb7+",
+        "Ka5",
+        "Qb6+",
+        "Ka4",
+        "Qxa6#"
+      ],
+      "proof": {
+        "maxMoves": 6,
+        "replyCount": 3,
+        "example": [
+          "Rxf7+",
+          "Kc6",
+          "Qf6+",
+          "Kc5",
+          "Qd6+",
+          "Kb5",
+          "Rxb7+",
+          "Ka5",
+          "Qb6+",
+          "Ka4",
+          "Qxa6#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn6",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f1f7",
+            "value": 10000,
+            "evidence": "Rxf7+ starts a forced checking attack. Every legal defence permits mate within 6 moves; one verified line is Rxf7+ Kc6 Qf6+ Kc5 Qd6+ Kb5 Rxb7+ Ka5 Qb6+ Ka4 Qxa6#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qxa6# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 11,
+            "moveUci": "b6a6",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn6",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f1f7",
+            "value": 10000,
+            "evidence": "Rxf7+ starts a forced checking attack. Every legal defence permits mate within 6 moves; one verified line is Rxf7+ Kc6 Qf6+ Kc5 Qd6+ Kb5 Rxb7+ Ka5 Qb6+ Ka4 Qxa6#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 7,
+            "moveUci": "f7b7",
+            "value": 200,
+            "evidence": "Rxb7+ takes the pawn with check before Qxg6. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Qxg6 first allows b6, preventing an immediate profitable capture of that pawn. The move order matters, not just the two captures.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qxa6# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 11,
+            "moveUci": "b6a6",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 6.068499999999858
+    },
+    {
+      "id": "lichess:qUCRQ",
+      "startFen": "6k1/1p2B1bp/p2N2p1/8/5P2/4n1P1/5r1r/2R3K1 w - - 0 35",
+      "bestLine": [
+        "c1c8",
+        "g7f8",
+        "c8f8",
+        "g8g7",
+        "d6e8",
+        "g7h6",
+        "e7g5",
+        "h6h5",
+        "e8f6"
+      ],
+      "sourceGameUrl": "https://lichess.org/BQIrG1B3/black#68",
+      "san": [
+        "Rc8+",
+        "Bf8",
+        "Rxf8+",
+        "Kg7",
+        "Ne8+",
+        "Kh6",
+        "Bg5+",
+        "Kh5",
+        "Nf6#"
+      ],
+      "proof": {
+        "maxMoves": 5,
+        "replyCount": 1,
+        "example": [
+          "Rc8+",
+          "Bf8",
+          "Rxf8+",
+          "Kg7",
+          "Ne8+",
+          "Kh6",
+          "Bg5+",
+          "Kh5",
+          "Nf6#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c1c8",
+            "value": 10000,
+            "evidence": "Rc8+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rc8+ Bf8 Rxf8+ Kg7 Ne8+ Kh6 Bg5+ Kh5 Nf6#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Nf6# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "e8f6",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c1c8",
+            "value": 10000,
+            "evidence": "Rc8+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rc8+ Bf8 Rxf8+ Kg7 Ne8+ Kh6 Bg5+ Kh5 Nf6#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "mateIn5",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Nf6# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "e8f6",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 5.296299999999974
+    },
+    {
+      "id": "lichess:r7fZD",
+      "startFen": "R1R5/5pk1/5r1p/3p4/3N2rq/4P3/PP2QPP1/6K1 b - - 1 32",
+      "bestLine": [
+        "g4g2",
+        "g1g2",
+        "f6g6",
+        "e2g4",
+        "h4g4",
+        "g2f1",
+        "g4d1"
+      ],
+      "sourceGameUrl": "https://lichess.org/7Wimia5I#63",
+      "san": [
+        "Rxg2+",
+        "Kxg2",
+        "Rg6+",
+        "Qg4",
+        "Qxg4+",
+        "Kf1",
+        "Qd1#"
+      ],
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 2,
+        "example": [
+          "Rxg2+",
+          "Kxg2",
+          "Rg6+",
+          "Qg4",
+          "Qxg4+",
+          "Kf1",
+          "Qd1#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rxg2+ offers the rook on g2. After Kxg2, Qd1# delivers mate.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "g4g2",
+            "value": 10000,
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g4g2",
+            "value": 10000,
+            "evidence": "Rxg2+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Rxg2+ Kxg2 Rg6+ Qg4 Qxg4+ Kf1 Qd1#. The exact continuation depends on the defence.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qd1# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "g4d1",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rxg2+ offers the rook on g2. After Kxg2, Qd1# delivers mate.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "g4g2",
+            "value": 10000,
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g4g2",
+            "value": 10000,
+            "evidence": "Rxg2+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Rxg2+ Kxg2 Rg6+ Qg4 Qxg4+ Kf1 Qd1#. The exact continuation depends on the defence.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "source": "available",
+            "confidence": "high",
+            "ply": 5,
+            "moveUci": "h4g4",
+            "evidence": "Qxg4+ forks the king on g2 and knight on d4 and rook on c8; no legal reply saves both targets without conceding material.",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qd1# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "g4d1",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 14.432999999999993
+    },
+    {
+      "id": "lichess:wVsJa",
+      "startFen": "r4r1k/1bq1b1p1/p2pBn1B/1p2n3/4P3/P2p2N1/1PPQ1PPP/R3R1K1 w - - 0 18",
+      "bestLine": [
+        "h6g7",
+        "h8g7",
+        "g3f5",
+        "g7h8",
+        "d2h6",
+        "f6h7",
+        "h6g7"
+      ],
+      "sourceGameUrl": "https://lichess.org/loCtb5SI/black#34",
+      "san": [
+        "Bxg7+",
+        "Kxg7",
+        "Nf5+",
+        "Kh8",
+        "Qh6+",
+        "Nh7",
+        "Qg7#"
+      ],
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 2,
+        "example": [
+          "Bxg7+",
+          "Kxg7",
+          "Nf5+",
+          "Kh8",
+          "Qh6+",
+          "Nh7",
+          "Qg7#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Bxg7+ offers the bishop on g7. After Kxg7, Qg7# delivers mate.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "h6g7",
+            "value": 10000,
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h6g7",
+            "value": 10000,
+            "evidence": "Bxg7+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bxg7+ Kxg7 Nf5+ Kh8 Qh6+ Nh7 Qg7#. The exact continuation depends on the defence.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qg7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h6g7",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Bxg7+ offers the bishop on g7. After Kxg7, Qg7# delivers mate.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "h6g7",
+            "value": 10000,
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h6g7",
+            "value": 10000,
+            "evidence": "Bxg7+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bxg7+ Kxg7 Nf5+ Kh8 Qh6+ Nh7 Qg7#. The exact continuation depends on the defence.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qg7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h6g7",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "pin",
+            "label": "Pin",
+            "confidence": "medium",
+            "evidence": "h6g7 lets the queen on g7 pin the bishop on e7 to the queen on c7.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "h6g7",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 14.786299999999983
+    },
+    {
+      "id": "lichess:xyVJC",
+      "startFen": "r7/1k6/bp2QpN1/2qpp1p1/1p6/1P2P2P/PB1P1PP1/1K1R3R b - - 6 22",
+      "bestLine": [
+        "a6d3",
+        "b1a1",
+        "a8a2",
+        "a1a2",
+        "c5a5",
+        "b2a3",
+        "a5a3"
+      ],
+      "sourceGameUrl": "https://lichess.org/goU45R1y#43",
+      "san": [
+        "Bd3+",
+        "Ka1",
+        "Rxa2+",
+        "Kxa2",
+        "Qa5+",
+        "Ba3",
+        "Qxa3#"
+      ],
+      "proof": {
+        "maxMoves": 4,
+        "replyCount": 1,
+        "example": [
+          "Bd3+",
+          "Ka1",
+          "Rxa2+",
+          "Kxa2",
+          "Qa5+",
+          "Ba3",
+          "Qxa3#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "a6d3",
+            "value": 10000,
+            "evidence": "Bd3+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bd3+ Ka1 Rxa2+ Kxa2 Qa5+ Ba3 Qxa3#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rxa2+ offers the rook on a2. After Kxa2, Qxa3# delivers mate.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "a8a2",
+            "value": 10000,
+            "relevance": "secondary"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qxa3# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "a5a3",
+            "relevance": "secondary",
+            "value": 10000
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "a6d3 forks the king on b1 and knight on g6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "a6d3",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "a6d3",
+            "value": 10000,
+            "evidence": "Bd3+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Bd3+ Ka1 Rxa2+ Kxa2 Qa5+ Ba3 Qxa3#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "a6d3 forks the king on b1 and knight on g6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "a6d3",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rxa2+ offers the rook on a2. After Kxa2, Qxa3# delivers mate.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "a8a2",
+            "value": 10000,
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "mateIn4",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qxa3# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "a5a3",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 11.472899999999981
+    },
+    {
+      "id": "lichess:yLDJO",
+      "startFen": "k6r/pbpQ1p1N/1b4rp/8/3P4/2P5/PP3PPP/RN3RK1 b - - 2 17",
+      "bestLine": [
+        "g6g2",
+        "g1h1",
+        "g2g1",
+        "h1g1",
+        "h8g8",
+        "h7g5",
+        "g8g5",
+        "d7g4",
+        "g5g4"
+      ],
+      "sourceGameUrl": "https://lichess.org/DB4UjIGq#33",
+      "san": [
+        "Rxg2+",
+        "Kh1",
+        "Rg1+",
+        "Kxg1",
+        "Rg8+",
+        "Ng5",
+        "Rxg5+",
+        "Qg4",
+        "Rxg4#"
+      ],
+      "proof": {
+        "maxMoves": 5,
+        "replyCount": 1,
+        "example": [
+          "Rxg2+",
+          "Kh1",
+          "Rg1+",
+          "Kxg1",
+          "Rg8+",
+          "Ng5",
+          "Rxg5+",
+          "Qg4",
+          "Rxg4#"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g6g2",
+            "value": 10000,
+            "evidence": "Rxg2+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rxg2+ Kh1 Rg1+ Kxg1 Rg8+ Ng5 Rxg5+ Qg4 Rxg4#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rg1+ offers the rook on g1. After Kxg1, Rxg4# delivers mate.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g2g1",
+            "value": 10000,
+            "relevance": "secondary"
+          },
+          {
+            "id": "pillsburysMate",
+            "label": "Pillsbury's Mate",
+            "confidence": "medium",
+            "evidence": "Rxg4# is checkmate (Pillsbury's Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "g5g4",
+            "relevance": "secondary",
+            "value": 10000
+          },
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g6g2",
+            "value": 420,
+            "evidence": "Rxg2+ takes the pawn with check before Rxh7. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh7 first allows g3, preventing an immediate profitable capture of that pawn. The move order matters, not just the two captures.",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn5",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g6g2",
+            "value": 10000,
+            "evidence": "Rxg2+ starts a forced checking attack. Every legal defence permits mate within 5 moves; one verified line is Rxg2+ Kh1 Rg1+ Kxg1 Rg8+ Ng5 Rxg5+ Qg4 Rxg4#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g6g2",
+            "value": 420,
+            "evidence": "Rxg2+ takes the pawn with check before Rxh7. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh7 first allows g3, preventing an immediate profitable capture of that pawn. The move order matters, not just the two captures.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "attraction",
+            "label": "Attraction",
+            "confidence": "medium",
+            "evidence": "Rg1+ offers the rook on g1. After Kxg1, Rxg4# delivers mate.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g2g1",
+            "value": 10000,
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "pillsburysMate",
+            "label": "Pillsbury's Mate",
+            "confidence": "medium",
+            "evidence": "Rxg4# is checkmate (Pillsbury's Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 9,
+            "moveUci": "g5g4",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-22"
+      },
+      "classificationMs": 10.100599999999986
+    }
+  ]
+}

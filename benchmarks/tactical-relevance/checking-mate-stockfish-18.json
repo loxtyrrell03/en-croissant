@@ -1,0 +1,408 @@
+[
+  {
+    "fen": "5r2/bpp2q1k/p2pR1p1/3P4/1PP3QP/P7/1B4P1/7K b - - 3 32",
+    "prefix": [],
+    "root": "f7f1",
+    "lines": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "f7f1",
+          "h1h2",
+          "f1g1",
+          "h2h3",
+          "g1h1",
+          "h3g3",
+          "a7f2"
+        ],
+        "pvSan": [
+          "Qf1+",
+          "Kh2",
+          "Qg1+",
+          "Kh3",
+          "Qh1+",
+          "Kg3",
+          "Bf2#"
+        ],
+        "cp": null,
+        "mate": 4
+      }
+    ],
+    "classification": {
+      "motifs": [
+        {
+          "id": "mateIn4",
+          "label": "Forcing Mate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f7f1",
+          "value": 10000,
+          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "relevance": "primary"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Bf2# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 7,
+          "moveUci": "a7f2",
+          "relevance": "secondary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "mateIn4",
+          "label": "Forcing Mate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f7f1",
+          "value": 10000,
+          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Bf2# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 7,
+          "moveUci": "a7f2",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-22"
+    },
+    "sourceClassification": {
+      "motifs": [
+        {
+          "id": "mateIn4",
+          "label": "Forcing Mate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f7f1",
+          "value": 10000,
+          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "relevance": "primary"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Bf2# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 7,
+          "moveUci": "a7f2",
+          "relevance": "secondary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "mateIn4",
+          "label": "Forcing Mate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f7f1",
+          "value": 10000,
+          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Bf2# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 7,
+          "moveUci": "a7f2",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-22"
+    },
+    "classificationMs": 13.911800000001676
+  },
+  {
+    "fen": "5r2/bpp2q1k/p2pR1p1/3P4/1PP3QP/P7/1B4P1/7K b - - 3 32",
+    "prefix": [
+      "f7f1",
+      "h1h2",
+      "f1g1",
+      "h2g3"
+    ],
+    "lines": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "a7f2",
+          "g3h3",
+          "g1h1"
+        ],
+        "pvSan": [
+          "Bf2+",
+          "Kh3",
+          "Qh1#"
+        ],
+        "cp": null,
+        "mate": 2
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "g1f2",
+          "g3h3",
+          "f2f7",
+          "b2f6",
+          "f7f6",
+          "e6f6",
+          "f8f6",
+          "g4d7",
+          "h7g8",
+          "d7c7",
+          "a7d4",
+          "c7c8",
+          "f6f8",
+          "c8e6",
+          "g8g7"
+        ],
+        "pvSan": [
+          "Qf2+",
+          "Kh3",
+          "Qf7",
+          "Bf6",
+          "Qxf6",
+          "Rxf6",
+          "Rxf6",
+          "Qd7+",
+          "Kg8",
+          "Qxc7",
+          "Bd4",
+          "Qc8+",
+          "Rf8",
+          "Qe6+",
+          "Kg7"
+        ],
+        "cp": -424,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "f8f3",
+          "g4f3",
+          "g1f2",
+          "f3f2",
+          "a7f2",
+          "g3f2",
+          "b7b5",
+          "f2e3",
+          "g6g5",
+          "h4g5",
+          "h7g8",
+          "g5g6",
+          "g8f8",
+          "e6f6",
+          "f8g7"
+        ],
+        "pvSan": [
+          "Rf3+",
+          "Qxf3",
+          "Qf2+",
+          "Qxf2",
+          "Bxf2+",
+          "Kxf2",
+          "b5",
+          "Ke3",
+          "g5",
+          "hxg5",
+          "Kg8",
+          "g6",
+          "Kf8",
+          "Rf6+",
+          "Kg7"
+        ],
+        "cp": -875,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "motifs": [
+        {
+          "id": "mateIn4",
+          "label": "Forcing Mate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f7f1",
+          "value": 10000,
+          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "relevance": "primary"
+        },
+        {
+          "id": "mateIn4",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Qh1# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 7,
+          "moveUci": "g1h1",
+          "relevance": "secondary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "mateIn4",
+          "label": "Forcing Mate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f7f1",
+          "value": 10000,
+          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "mateIn4",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Qh1# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 7,
+          "moveUci": "g1h1",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-22"
+    },
+    "sourceClassification": {
+      "motifs": [
+        {
+          "id": "mateIn4",
+          "label": "Forcing Mate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f7f1",
+          "value": 10000,
+          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "relevance": "primary"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Bf2# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 7,
+          "moveUci": "a7f2",
+          "relevance": "secondary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "mateIn4",
+          "label": "Forcing Mate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "f7f1",
+          "value": 10000,
+          "evidence": "Qf1+ starts a forced checking attack. Every legal defence permits mate within 4 moves; one verified line is Qf1+ Kh2 Qg1+ Kg3 Bf2+ Kh3 Qh1#. The exact continuation depends on the defence.",
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Bf2# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 7,
+          "moveUci": "a7f2",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-22"
+    },
+    "classificationMs": 8.501100000001315
+  },
+  {
+    "fen": "5r2/bpp2q1k/p2pR1p1/3P4/1PP3QP/P7/1B4P1/2R4K b - - 3 32",
+    "prefix": [],
+    "root": "f7f1",
+    "lines": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "f7f1",
+          "c1f1",
+          "f8f1",
+          "h1h2",
+          "a7g1",
+          "h2h3",
+          "f1f6",
+          "b2f6",
+          "g1e3",
+          "e6e3",
+          "h7h6",
+          "e3e7",
+          "a6a5",
+          "f6g5"
+        ],
+        "pvSan": [
+          "Qf1+",
+          "Rxf1",
+          "Rxf1+",
+          "Kh2",
+          "Bg1+",
+          "Kh3",
+          "Rf6",
+          "Bxf6",
+          "Be3",
+          "Rxe3",
+          "Kh6",
+          "Re7",
+          "a5",
+          "Bg5#"
+        ],
+        "cp": null,
+        "mate": -7
+      }
+    ],
+    "classification": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-22"
+    },
+    "sourceClassification": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-22"
+    },
+    "classificationMs": 20.509500000000116
+  }
+]

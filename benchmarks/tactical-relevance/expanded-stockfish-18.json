@@ -144,9 +144,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 3.38470000000234
+    "classificationMs": 1.674699999999575
   },
   {
     "id": "lichess:vztmO",
@@ -279,9 +279,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 2.8051999999988766
+    "classificationMs": 2.5729000000028464
   },
   {
     "id": "lichess:wh6Ac",
@@ -428,9 +428,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 1.6009000000012747
+    "classificationMs": 1.5503000000026077
   },
   {
     "id": "lichess:fVRuW",
@@ -649,9 +649,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 29.96389999999883
+    "classificationMs": 29.69720000000234
   },
   {
     "id": "lichess:JaKHo",
@@ -862,9 +862,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 14.022600000000239
+    "classificationMs": 14.955299999997806
   },
   {
     "id": "lichess:ouIHI",
@@ -1012,7 +1012,7 @@
           "id": "operaMate",
           "label": "Opera Mate",
           "confidence": "medium",
-          "evidence": "Opera Mate appears on Ra1# at ply 3 of the current best line.",
+          "evidence": "Ra1# is checkmate (Opera Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 3,
           "moveUci": "a4a1",
@@ -1060,30 +1060,18 @@
           "id": "operaMate",
           "label": "Opera Mate",
           "confidence": "medium",
-          "evidence": "Opera Mate appears on Ra1# at ply 3 of the current best line.",
+          "evidence": "Ra1# is checkmate (Opera Mate): the king is in check and there is no legal reply.",
           "source": "available",
           "ply": 3,
           "moveUci": "a4a1",
           "relevance": "secondary",
           "value": 10000,
-          "actor": "black"
-        },
-        {
-          "id": "mateIn1",
-          "label": "Checkmate",
-          "source": "available",
-          "confidence": "high",
-          "ply": 3,
-          "moveUci": "a4a1",
-          "value": 10000,
-          "evidence": "Ra1# is checkmate: the king is in check and there is no legal reply.",
-          "relevance": "secondary",
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 2.726200000000972
+    "classificationMs": 3.839400000000751
   },
   {
     "id": "lichess:CSh8J",
@@ -1293,8 +1281,8 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-21"
+      "motifClassifierVersion": "site-55.adapter-22"
     },
-    "classificationMs": 19.17320000000109
+    "classificationMs": 19.968799999998737
   }
 ]

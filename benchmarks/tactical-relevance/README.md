@@ -788,6 +788,66 @@ build and the 8,851-module production build. Type checking retains only the
 unrelated OTB number/bigint fixture error. These checks do not establish running-app
 latency or deployed UI behaviour.
 
+## Long mating claims and payoff noise (adapter 22)
+
+The previous mate gate checked alternative defences for three- and five-ply
+lines, but accepted longer lines merely because their endpoint was checkmate.
+That is not evidence of a forced attack. Real 4Osgg supplied a reproducible
+counterexample: add a White rook on c1, retain the legal seven-ply source mate,
+and the old result still claimed Black's mating pattern. White can instead
+play Rxf1. Fresh Stockfish analysis finds Black losing to mate after that reply.
+
+Long mating claims now require an all-defences checking proof: the supplied
+line only nominates a horizon and orders attacking moves. Every legal defence
+must have a checking answer leading to mate, within at most seven attacking
+moves and 32,768 total visits. Budget exhaustion, drawn leaves, attacks needing
+unproved quiet moves and longer horizons remain unknown. Short mating proofs
+and quiet-preparation proofs retain their existing independent bounds.
+
+In real 4Osgg, Qf1+ now leads with **Forcing Mate**, with one factual checkmate
+payoff at ply 7. After Qg1+, both Kh3 and Kg3 are legal: the latter permits
+Bf2+ Kh3 Qh1#, not the source's Bf2# ending. The root certificate covers both.
+`checking-mate-stockfish-18.json` records these fresh searches and the losing
+rook-control search. A before/better-line comparison also recognizes an
+existing certified mate after both choices; it does not blame one pawn move
+for creating that danger. The alternative must prove an equal or shorter
+mating bound, so a move which only delays mate is not silently equated.
+
+Terminal mate tags are anchored to the actual checkmate, not a legacy early
+check/capture. Multiple names for that one event are consolidated: a single
+named pattern survives with factual SAN/checkmate evidence; conflicting names
+fall back to Checkmate pending taxonomy adjudication. Repeated mate countdowns
+for the same already-certified attack are suppressed, while concrete secondary
+mechanisms remain. A root mating sacrifice can still outrank generic Forcing
+Mate; a later conditional attraction cannot. Unproved material-attraction
+proposals are withheld rather than borrowing a cooperative endpoint. En-passant
+evidence likewise anchors to the actual pawn capture and names the removed
+pawn, fixing OezHt's former attribution to the final bishop move.
+
+`checking-mate-development.json` broadens the audit to **all 32 development
+rows** whose complete legal line starts with check, has at least seven plies
+and ends with the attacker's mate. Selection ignores tags, rating and classifier
+output; no holdout positions are classified. The bounded proof certifies 27,
+all with a root-ply primary lesson. The five remaining rows are open, not true
+negatives: 3kPn3, 8FLlO and IyijS have quiet moves in their supplied attacks;
+eimKB exceeds the horizon; hajE5 fits the horizon but is not certified by this
+bounded search. These counts measure proof coverage within a selected mating
+family, not tactical accuracy or complete motif correctness.
+
+Within the separate frozen 32-position mixed expansion, only 4Osgg changes
+headline; terminal consolidation reduces timeline entries from 51 to 40.
+That reduction is not an accuracy metric. Four additional real positions
+explicitly check early payoff anchors/root ranking, alongside the en-passant
+case, both-colour controls, omitted king defence, budget and causal tests.
+Broader long-combination coverage, material attraction, named-pattern taxonomy,
+ordinary-game noise and actual running-app behaviour remain unresolved.
+
+Adapter-22 verification passed 261 selected regressions in 26 files, the
+opt-in 32-position corpus audit, all thirteen fresh Stockfish tests, targeted
+formatting/lint, the shared-review worker and the 8,851-module production
+build. Type checking retains only the unrelated OTB number/bigint fixture
+error. No runtime restart, hosting deployment or GUI verification was performed.
+
 Run in PowerShell with the configured Node runtime on PATH:
 
 ```powershell
@@ -804,11 +864,14 @@ $env:TACTICAL_DEFENDER_REPORT = 'benchmarks/tactical-relevance/defender-stockfis
 $env:TACTICAL_EXPANSION_ENGINE_REPORT = 'benchmarks/tactical-relevance/expanded-stockfish-18.json'
 $env:TACTICAL_EXCHANGE_DISCOVERY_REPORT = 'benchmarks/tactical-relevance/exchange-discovery-stockfish-18.json'
 $env:TACTICAL_PIN_PREPARATION_REPORT = 'benchmarks/tactical-relevance/pin-preparation-stockfish-18.json'
+$env:TACTICAL_CHECKING_MATE_REPORT = 'benchmarks/tactical-relevance/checking-mate-stockfish-18.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node
 $env:TACTICAL_REAL_PUZZLE_REPORT = 'benchmarks/tactical-relevance/real-puzzle-judgement.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/realPuzzleJudgement.test.ts --environment node
 $env:TACTICAL_EXPANSION_REPORT = 'benchmarks/tactical-relevance/expanded-judgement.json'
 node node_modules/vitest/vitest.mjs run src/utils/tests/expandedTacticalJudgement.test.ts --environment node
+$env:TACTICAL_CHECKING_MATE_SOURCE = 'absolute path to chessmistaketrainer/benchmarks/tactical-classifier/lichess-2026-08-02-fixture-v1.jsonl'
+node node_modules/vitest/vitest.mjs run src/utils/tests/checkingMate.test.ts --environment node
 ```
 
 The engine test is opt-in and starts no engine during normal unit tests.
