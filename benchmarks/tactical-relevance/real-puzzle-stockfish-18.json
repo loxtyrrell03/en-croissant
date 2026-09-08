@@ -177,9 +177,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-16"
+      "motifClassifierVersion": "site-55.adapter-17"
     },
-    "classificationMs": 49.34370000000126,
+    "classificationMs": 63.597600000000966,
     "positionHeadline": [
       {
         "id": "fork",
@@ -502,9 +502,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-16"
+      "motifClassifierVersion": "site-55.adapter-17"
     },
-    "classificationMs": 43.85329999999885,
+    "classificationMs": 49.90400000000227,
     "positionHeadline": [
       {
         "id": "interference",
@@ -869,9 +869,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-16"
+      "motifClassifierVersion": "site-55.adapter-17"
     },
-    "classificationMs": 78.66589999999997,
+    "classificationMs": 88.7476999999999,
     "positionHeadline": [
       {
         "id": "capturingDefender",
@@ -1163,9 +1163,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-16"
+      "motifClassifierVersion": "site-55.adapter-17"
     },
-    "classificationMs": 34.465799999998126,
+    "classificationMs": 39.32640000000174,
     "positionHeadline": [
       {
         "id": "discoveredAttack",
@@ -1261,7 +1261,7 @@
       "middlegame",
       "short"
     ],
-    "judgement": "Partially improved: false clearance removed. Bxd2+ before Rxh8 is an in-between capture; primary timing explanation still needs improvement.",
+    "judgement": "Improved: Bxd2+ is the primary Intermediate Check before Rxh8. The proof checks every legal check response and identifies a legal queen escape if Rxh8 is played first; the combined minimum is 1070 cp rather than either standalone capture.",
     "observedEngineLine": [
       "g5d2",
       "c1d2",
@@ -1438,28 +1438,28 @@
     "classification": {
       "motifs": [
         {
-          "id": "hangingPiece",
-          "label": "Hanging Piece",
+          "id": "intermezzo",
+          "label": "Intermediate Check",
           "source": "available",
           "confidence": "high",
           "ply": 1,
           "moveUci": "g5d2",
-          "evidence": "Bxd2+ wins the loose queen on d2.",
-          "relevance": "primary",
-          "value": 570
+          "value": 1070,
+          "evidence": "Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures.",
+          "relevance": "primary"
         }
       ],
       "timeline": [
         {
-          "id": "hangingPiece",
-          "label": "Hanging Piece",
+          "id": "intermezzo",
+          "label": "Intermediate Check",
           "source": "available",
           "confidence": "high",
           "ply": 1,
           "moveUci": "g5d2",
-          "evidence": "Bxd2+ wins the loose queen on d2.",
+          "value": 1070,
+          "evidence": "Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures.",
           "relevance": "primary",
-          "value": 570,
           "actor": "black"
         },
         {
@@ -1475,20 +1475,20 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-16"
+      "motifClassifierVersion": "site-55.adapter-17"
     },
-    "classificationMs": 28.20600000000195,
+    "classificationMs": 33.097099999999045,
     "positionHeadline": [
       {
-        "id": "hangingPiece",
-        "label": "Hanging Piece",
+        "id": "intermezzo",
+        "label": "Intermediate Check",
         "source": "available",
         "confidence": "high",
         "ply": 1,
         "moveUci": "g5d2",
-        "evidence": "Bxd2+ wins the loose queen on d2.",
-        "relevance": "primary",
-        "value": 570
+        "value": 1070,
+        "evidence": "Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures.",
+        "relevance": "primary"
       }
     ],
     "positionCandidates": [
@@ -1516,28 +1516,28 @@
         ],
         "motifs": [
           {
-            "id": "hangingPiece",
-            "label": "Hanging Piece",
+            "id": "intermezzo",
+            "label": "Intermediate Check",
             "source": "available",
             "confidence": "high",
             "ply": 1,
             "moveUci": "g5d2",
-            "evidence": "Bxd2+ wins the loose queen on d2.",
-            "relevance": "primary",
-            "value": 570
+            "value": 1070,
+            "evidence": "Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures.",
+            "relevance": "primary"
           }
         ],
         "timeline": [
           {
-            "id": "hangingPiece",
-            "label": "Hanging Piece",
+            "id": "intermezzo",
+            "label": "Intermediate Check",
             "source": "available",
             "confidence": "high",
             "ply": 1,
             "moveUci": "g5d2",
-            "evidence": "Bxd2+ wins the loose queen on d2.",
+            "value": 1070,
+            "evidence": "Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures.",
             "relevance": "primary",
-            "value": 570,
             "actor": "black"
           },
           {
@@ -1751,9 +1751,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-16"
+      "motifClassifierVersion": "site-55.adapter-17"
     },
-    "classificationMs": 29.42280000000028,
+    "classificationMs": 30.880600000000413,
     "positionHeadline": [
       {
         "id": "interference",
@@ -2105,9 +2105,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-16"
+      "motifClassifierVersion": "site-55.adapter-17"
     },
-    "classificationMs": 19.801400000000285,
+    "classificationMs": 19.910799999997835,
     "positionHeadline": [
       {
         "id": "tacticalPreparation",
@@ -2478,9 +2478,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-16"
+      "motifClassifierVersion": "site-55.adapter-17"
     },
-    "classificationMs": 0.5154999999977008,
+    "classificationMs": 0.52639999999883,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -2774,9 +2774,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-16"
+      "motifClassifierVersion": "site-55.adapter-17"
     },
-    "classificationMs": 30.787099999997736,
+    "classificationMs": 31.360399999997753,
     "positionHeadline": [
       {
         "id": "trappedPiece",
@@ -3098,9 +3098,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-16"
+      "motifClassifierVersion": "site-55.adapter-17"
     },
-    "classificationMs": 51.28689999999915,
+    "classificationMs": 49.26720000000205,
     "positionHeadline": [],
     "positionCandidates": [
       {
@@ -3356,9 +3356,9 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-16"
+      "motifClassifierVersion": "site-55.adapter-17"
     },
-    "classificationMs": 18.85059999999794,
+    "classificationMs": 21.1053000000029,
     "positionHeadline": [
       {
         "id": "trappedPiece",
@@ -3445,7 +3445,7 @@
       "middlegame",
       "short"
     ],
-    "judgement": "Partially improved: false clearance removed. Nxe7+ before fxe3 needs a factual intermediate-move explanation, not only two loose-piece labels.",
+    "judgement": "Improved: Nxe7+ is the primary Intermediate Check before fxe3, with a 650 cp combined minimum. Qxe7 is answered by Rxe7, so the cause does not depend on a cooperative king reply. Removing the supporting Ra7 or eliminating the move-order difference withholds this proof.",
     "observedEngineLine": [
       "d5e7",
       "g8h8",
@@ -3692,28 +3692,28 @@
     "classification": {
       "motifs": [
         {
-          "id": "hangingPiece",
-          "label": "Hanging Piece",
+          "id": "intermezzo",
+          "label": "Intermediate Check",
           "source": "available",
           "confidence": "high",
           "ply": 1,
           "moveUci": "d5e7",
-          "evidence": "Nxe7+ wins the loose knight on e7.",
-          "relevance": "primary",
-          "value": 320
+          "value": 650,
+          "evidence": "Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures.",
+          "relevance": "primary"
         }
       ],
       "timeline": [
         {
-          "id": "hangingPiece",
-          "label": "Hanging Piece",
+          "id": "intermezzo",
+          "label": "Intermediate Check",
           "source": "available",
           "confidence": "high",
           "ply": 1,
           "moveUci": "d5e7",
-          "evidence": "Nxe7+ wins the loose knight on e7.",
+          "value": 650,
+          "evidence": "Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures.",
           "relevance": "primary",
-          "value": 320,
           "actor": "white"
         },
         {
@@ -3729,20 +3729,20 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-16"
+      "motifClassifierVersion": "site-55.adapter-17"
     },
-    "classificationMs": 26.076600000000326,
+    "classificationMs": 27.710699999995995,
     "positionHeadline": [
       {
-        "id": "hangingPiece",
-        "label": "Hanging Piece",
+        "id": "intermezzo",
+        "label": "Intermediate Check",
         "source": "available",
         "confidence": "high",
         "ply": 1,
         "moveUci": "d5e7",
-        "evidence": "Nxe7+ wins the loose knight on e7.",
-        "relevance": "primary",
-        "value": 320
+        "value": 650,
+        "evidence": "Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures.",
+        "relevance": "primary"
       }
     ],
     "positionCandidates": [
@@ -3771,28 +3771,28 @@
         ],
         "motifs": [
           {
-            "id": "hangingPiece",
-            "label": "Hanging Piece",
+            "id": "intermezzo",
+            "label": "Intermediate Check",
             "source": "available",
             "confidence": "high",
             "ply": 1,
             "moveUci": "d5e7",
-            "evidence": "Nxe7+ wins the loose knight on e7.",
-            "relevance": "primary",
-            "value": 320
+            "value": 650,
+            "evidence": "Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures.",
+            "relevance": "primary"
           }
         ],
         "timeline": [
           {
-            "id": "hangingPiece",
-            "label": "Hanging Piece",
+            "id": "intermezzo",
+            "label": "Intermediate Check",
             "source": "available",
             "confidence": "high",
             "ply": 1,
             "moveUci": "d5e7",
-            "evidence": "Nxe7+ wins the loose knight on e7.",
+            "value": 650,
+            "evidence": "Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures.",
             "relevance": "primary",
-            "value": 320,
             "actor": "white"
           },
           {

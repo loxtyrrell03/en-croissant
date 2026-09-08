@@ -116,7 +116,7 @@
         "middlegame",
         "short"
       ],
-      "judgement": "Partially improved: false clearance removed. Bxd2+ before Rxh8 is an in-between capture; primary timing explanation still needs improvement.",
+      "judgement": "Improved: Bxd2+ is the primary Intermediate Check before Rxh8. The proof checks every legal check response and identifies a legal queen escape if Rxh8 is played first; the combined minimum is 1070 cp rather than either standalone capture.",
       "observedEngineLine": [
         "g5d2",
         "c1d2",
@@ -327,7 +327,7 @@
         "middlegame",
         "short"
       ],
-      "judgement": "Partially improved: false clearance removed. Nxe7+ before fxe3 needs a factual intermediate-move explanation, not only two loose-piece labels.",
+      "judgement": "Improved: Nxe7+ is the primary Intermediate Check before fxe3, with a 650 cp combined minimum. Qxe7 is answered by Rxe7, so the cause does not depend on a cooperative king reply. Removing the supporting Ra7 or eliminating the move-order difference withholds this proof.",
       "observedEngineLine": [
         "d5e7",
         "g8h8",

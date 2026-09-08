@@ -1242,12 +1242,24 @@ export function tacticalBoardEvidence(
             "trappedPiece",
             "capturingDefender",
             "tacticalPreparation",
+            "intermezzo",
             ...DISCOVERED_THEMES,
         ].includes(motif.id)
     )
         return null;
     const step = replayTacticalLine(fen, line.slice(0, motif.ply))[motif.ply - 1];
     if (!step) return null;
+    if (motif.id === "intermezzo") {
+        const proof = intermediateCaptureProof(step);
+        return proof
+            ? {
+                  square: makeSquare(step.move.to),
+                  arrows: [
+                      { from: makeSquare(proof.deferred.from), to: makeSquare(proof.deferred.to) },
+                  ],
+              }
+            : null;
+    }
     if (motif.id === "tacticalPreparation") {
         const suffix = replayTacticalLine(fen, line).slice(motif.ply - 1);
         const proof = proveQuietTacticalPreparation(suffix);
@@ -1576,6 +1588,82 @@ function capturedDefenderEvidence(
     return capturedDefenderProof(step, source)?.motif ?? null;
 }
 
+/** A checking capture is an in-between move only when ordering matters:
+ * both captures are legal now, every check response preserves extra material,
+ * and taking the other target first gives a concrete escape for this victim. */
+export function intermediateCaptureProof(step: TacticalReplayStep, nodeLimit = 512) {
+    let remaining = nodeLimit;
+    if (!step.capture || !step.after.isCheck() || step.move.promotion) return null;
+    const victim = step.before.board.get(step.move.to);
+    if (!victim || victim.role === "king") return null;
+    const rootGain = tacticalExchangeGain(step.before, step.move);
+    if (rootGain <= -VALUE.king) return null;
+    let best: {
+        gain: number;
+        extra: number;
+        deferred: NormalMove;
+        escape: NormalMove;
+        evidence: string;
+    } | null = null;
+    for (const deferred of legalMoves(step.before)) {
+        if (--remaining < 0) return null;
+        if (
+            deferred.from === step.move.from ||
+            deferred.to === step.move.to ||
+            !capturedValue(step.before, deferred) ||
+            deferred.promotion
+        )
+            continue;
+        const deferredGain = tacticalExchangeGain(step.before, deferred);
+        if (deferredGain <= -VALUE.king) continue;
+        // If the checking piece is taken, its capturer is a related payoff
+        // too (e.g. Qxe7 Rxe7), not an arbitrary loose piece elsewhere.
+        const gain = materialThreatProof(
+            step,
+            [deferred.to],
+            [deferred.from, step.move.to],
+            [step.move.to],
+        );
+        if (gain.kind !== "proven") continue;
+        const extra = gain.gain - Math.max(rootGain, deferredGain);
+        if (extra < 90 || (best && extra <= best.extra)) continue;
+        const reversed = step.before.clone();
+        reversed.play(deferred);
+        let escape: NormalMove | undefined;
+        for (const reply of legalMoves(reversed)) {
+            if (--remaining < 0) return null;
+            if (reply.from !== step.move.to && reply.to !== step.move.from) continue;
+            const next = reversed.clone();
+            next.play(reply);
+            const target = reply.from === step.move.to ? reply.to : step.move.to;
+            let saved = true;
+            for (const take of legalMoves(next).filter(
+                (move) => move.to === target && capturedValue(next, move),
+            )) {
+                if (--remaining < 0) return null;
+                const laterGain = tacticalExchangeGain(next, take);
+                if (laterGain <= -VALUE.king || laterGain >= 90) {
+                    saved = false;
+                    break;
+                }
+            }
+            if (saved) {
+                escape = reply;
+                break;
+            }
+        }
+        if (!escape) continue;
+        best = {
+            gain: gain.gain,
+            extra,
+            deferred,
+            escape,
+            evidence: `${step.san} takes the ${victim.role} with check before ${makeSan(step.before, deferred)}. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing ${makeSan(step.before, deferred)} first allows ${makeSan(reversed, escape)}, preventing an immediate profitable capture of that ${victim.role}. The move order matters, not just the two captures.`,
+        };
+    }
+    return best;
+}
+
 /** A capturing deflection needs a defender whose departure actually weakens
  * the named target. Restoring that defender is only a protection probe, not
  * a claimed legal variation. The real root is then checked against every
@@ -1855,6 +1943,20 @@ export function auditTacticalMotifs(
     }
     const candidates: TacticalMotifEvidence[] = [];
     for (let index = 0; index < episode.length; index += 2) {
+        // Later positions are classified separately by the conditional
+        // timeline; they cannot rescue an unproved initiating move here.
+        const intermediate = index === 0 ? intermediateCaptureProof(episode[index]) : null;
+        if (intermediate)
+            candidates.push({
+                id: "intermezzo",
+                label: "Intermediate Check",
+                source: proposals[0]?.source ?? "available",
+                confidence: "high",
+                ply: index + 1,
+                moveUci: episode[index].uci,
+                value: intermediate.gain,
+                evidence: intermediate.evidence,
+            });
         const discovery = discoveredEvidence(
             episode.slice(index),
             proposals[0]?.source ?? "available",
@@ -1971,7 +2073,7 @@ export function auditTacticalMotifs(
         // proved continuation, not inherited PV-level anchors or gain totals.
         if (
             DISCOVERED_THEMES.has(proposal.id) ||
-            ["deflection", "interference", "trappedPiece"].includes(proposal.id)
+            ["deflection", "interference", "trappedPiece", "intermezzo"].includes(proposal.id)
         )
             continue;
         if (proposal.id === "promotion" || proposal.id === "underPromotion") {
@@ -2108,6 +2210,22 @@ export function auditTacticalMotifs(
     const filtered = candidates
         .filter((m) => {
             if (
+                m.id === "intermezzo" &&
+                m.ply &&
+                candidates.some((other) => other.id === "capturingDefender" && other.ply === m.ply)
+            ) {
+                const step = steps[m.ply - 1];
+                const order = intermediateCaptureProof(step);
+                const removal = capturedDefenderProof(step, m.source);
+                if (
+                    order &&
+                    removal &&
+                    order.deferred.to === removal.target &&
+                    order.gain <= removal.gain
+                )
+                    return false;
+            }
+            if (
                 m.id === "trappedPiece" &&
                 m.ply &&
                 candidates.some((other) => other.id === "pin" && other.ply === m.ply)
@@ -2151,7 +2269,11 @@ export function auditTacticalMotifs(
                 return false;
             if (
                 m.id === "hangingPiece" &&
-                candidates.some((other) => other.ply === m.ply && other.id === "capturingDefender")
+                candidates.some(
+                    (other) =>
+                        other.ply === m.ply &&
+                        ["capturingDefender", "intermezzo"].includes(other.id),
+                )
             )
                 return false;
             if (

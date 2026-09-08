@@ -265,7 +265,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-16",
+      "motifClassifierVersion": "site-55.adapter-17",
       "allowedTimeline": [
         {
           "id": "discoveredAttack",
@@ -313,7 +313,7 @@
         "comparisonEvidence": "g6 makes the immediate reply Bxh7+ illegal."
       }
     },
-    "classificationMs": 12.436100000006263
+    "classificationMs": 13.711899999994785
   },
   {
     "name": "A different reply wins the same queen after the better move",
@@ -643,7 +643,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-16",
+      "motifClassifierVersion": "site-55.adapter-17",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -705,7 +705,7 @@
         "comparisonEvidence": "Even after Kg7, Rf5+ still forces at least the same net material gain on the queen on f8. The better move changes the continuation, not the existence of that material loss."
       }
     },
-    "classificationMs": 13.056499999991502
+    "classificationMs": 12.461300000009942
   },
   {
     "name": "Ignored double-check mate instead of making a king escape",
@@ -939,7 +939,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-16",
+      "motifClassifierVersion": "site-55.adapter-17",
       "allowedTimeline": [
         {
           "id": "doubleCheck",
@@ -1003,7 +1003,7 @@
         "comparisonEvidence": "Rg8+ makes the immediate reply Bb5# illegal."
       }
     },
-    "classificationMs": 18.471300000004703
+    "classificationMs": 17.649499999999534
   },
   {
     "name": "Failed to unpin the knight",
@@ -1257,7 +1257,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-16",
+      "motifClassifierVersion": "site-55.adapter-17",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -1305,7 +1305,7 @@
         "comparisonEvidence": "After Kd7, Kxd6 answers d6; a profitable immediate follow-up capture of the knight on e7 is no longer forced."
       }
     },
-    "classificationMs": 17.89659999999276
+    "classificationMs": 20.301299999991897
   },
   {
     "name": "Allowed a king-queen skewer instead of preserving the queen",
@@ -1569,7 +1569,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-16",
+      "motifClassifierVersion": "site-55.adapter-17",
       "allowedTimeline": [
         {
           "id": "skewer",
@@ -1617,7 +1617,7 @@
         "comparisonEvidence": "After Kf4, Qxd3 answers Bd3; a profitable immediate follow-up capture of the queen on h7 is no longer forced."
       }
     },
-    "classificationMs": 5.729500000001281
+    "classificationMs": 6.115900000004331
   },
   {
     "name": "Allowed checking defender removal and lost the queen",
@@ -1913,7 +1913,7 @@
           "value": 500
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-16",
+      "motifClassifierVersion": "site-55.adapter-17",
       "allowedTimeline": [
         {
           "id": "capturingDefender",
@@ -1975,7 +1975,7 @@
         "comparisonEvidence": "Qxd1+ makes the immediate reply gxf6+ illegal."
       }
     },
-    "classificationMs": 20.110100000005332
+    "classificationMs": 21.7783000000054
   },
   {
     "name": "Missed quiet mate while leaving the queen attacked",
@@ -2193,7 +2193,7 @@
           "value": 10000
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-16",
+      "motifClassifierVersion": "site-55.adapter-17",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -2277,7 +2277,7 @@
         "value": 10000
       }
     },
-    "classificationMs": 6.9913999999989755
+    "classificationMs": 7.3607000000047265
   },
   {
     "name": "Missed the quiet rook preparation for mate or a queen skewer",
@@ -2583,7 +2583,7 @@
           "relevance": "secondary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-16",
+      "motifClassifierVersion": "site-55.adapter-17",
       "missedTimeline": [
         {
           "id": "tacticalPreparation",
@@ -2651,7 +2651,1473 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 9.226399999999558
+    "classificationMs": 9.064100000003236
+  },
+  {
+    "name": "Recaptured the rook before taking the queen with check",
+    "fen": "2k1r2R/ppp5/4p3/5nb1/3Pb3/2P5/PP1QNP2/2KR4 b - - 0 24",
+    "played": "e8h8",
+    "source": "missed",
+    "primary": "intermezzo",
+    "why": "Bxd2+ wins the queen with tempo and retains Rxh8. Recapturing the rook first lets the queen escape or take the bishop; move order explains the missed extra gain.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "g5d2",
+          "c1d2",
+          "e8h8",
+          "e2f4",
+          "h8e8",
+          "b2b3",
+          "f5d6",
+          "c3c4",
+          "e6e5",
+          "d4e5",
+          "e8e5",
+          "d1e1",
+          "e5e8",
+          "c4c5",
+          "d6f5",
+          "d2c3",
+          "e4c6",
+          "e1e8",
+          "c6e8"
+        ],
+        "pvSan": [
+          "Bxd2+",
+          "Kxd2",
+          "Rxh8",
+          "Nf4",
+          "Re8",
+          "b3",
+          "Nd6",
+          "c4",
+          "e5",
+          "dxe5",
+          "Rxe5",
+          "Re1",
+          "Re8",
+          "c5",
+          "Nf5",
+          "Kc3",
+          "Bc6",
+          "Rxe8+",
+          "Bxe8"
+        ],
+        "cp": 390,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e8h8",
+          "d2g5",
+          "b7b5",
+          "d1g1",
+          "e6e5",
+          "d4e5",
+          "c8b7",
+          "e5e6",
+          "h8h4",
+          "e6e7"
+        ],
+        "pvSan": [
+          "Rxh8",
+          "Qxg5",
+          "b5",
+          "Rg1",
+          "e5",
+          "dxe5",
+          "Kb7",
+          "e6",
+          "Rh4",
+          "e7"
+        ],
+        "cp": -515,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e8d8",
+          "d2g5",
+          "d8h8",
+          "g5f6",
+          "h8e8",
+          "d1g1",
+          "e4d3",
+          "e2f4",
+          "d3c4",
+          "b2b4",
+          "c4a2",
+          "f4h3",
+          "b7b6"
+        ],
+        "pvSan": [
+          "Rd8",
+          "Qxg5",
+          "Rxh8",
+          "Qf6",
+          "Re8",
+          "Rg1",
+          "Bd3",
+          "Nf4",
+          "Bc4",
+          "b4",
+          "Bxa2",
+          "Nh3",
+          "b6"
+        ],
+        "cp": -588,
+        "mate": null
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d2g5",
+          "b7b5",
+          "g5f6",
+          "h8h6",
+          "f6e5",
+          "f5d6",
+          "d1g1",
+          "a7a6",
+          "b2b3",
+          "e4f5",
+          "d4d5",
+          "h6h3",
+          "d5e6",
+          "h3d3"
+        ],
+        "pvSan": [
+          "Qxg5",
+          "b5",
+          "Qf6",
+          "Rh6",
+          "Qe5",
+          "Nd6",
+          "Rg1",
+          "a6",
+          "b3",
+          "Bf5",
+          "d5",
+          "Rh3",
+          "dxe6",
+          "Rd3"
+        ],
+        "cp": 517,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "f2f4",
+          "g5h4",
+          "d1f1",
+          "b7b6",
+          "e2g1",
+          "c8b7",
+          "c1d1",
+          "h4g3",
+          "d2e2",
+          "e4d5"
+        ],
+        "pvSan": [
+          "f4",
+          "Bh4",
+          "Rf1",
+          "b6",
+          "Ng1",
+          "Kb7",
+          "Kd1",
+          "Bg3",
+          "Qe2",
+          "Bd5"
+        ],
+        "cp": 184,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e2f4",
+          "h8h4",
+          "f4e6",
+          "g5d2",
+          "c1d2",
+          "e4d5",
+          "e6c5",
+          "h4h2",
+          "d1g1",
+          "h2f2",
+          "d2e1",
+          "f2g2",
+          "g1g2",
+          "d5g2",
+          "b2b3",
+          "b7b6"
+        ],
+        "pvSan": [
+          "Nf4",
+          "Rh4",
+          "Nxe6",
+          "Bxd2+",
+          "Kxd2",
+          "Bd5",
+          "Nc5",
+          "Rh2",
+          "Rg1",
+          "Rxf2+",
+          "Ke1",
+          "Rg2",
+          "Rxg2",
+          "Bxg2",
+          "b3",
+          "b6"
+        ],
+        "cp": -344,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxg5 wins the loose bishop on g5.",
+          "source": "allowed",
+          "ply": 1,
+          "moveUci": "d2g5",
+          "relevance": "primary",
+          "value": 330,
+          "comparison": "persists",
+          "comparisonEvidence": "Even after Bxd2+, Kxd2 still forces at least the same net material gain on the bishop on d2. The better move changes the continuation, not the existence of that material loss."
+        }
+      ],
+      "missedMotifs": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Check",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "g5d2",
+          "value": 1070,
+          "evidence": "Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures.",
+          "relevance": "primary"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-17",
+      "allowedTimeline": [
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxg5 wins the loose bishop on g5.",
+          "source": "allowed",
+          "ply": 1,
+          "moveUci": "d2g5",
+          "relevance": "primary",
+          "value": 330,
+          "comparison": "persists",
+          "comparisonEvidence": "Even after Bxd2+, Kxd2 still forces at least the same net material gain on the bishop on d2. The better move changes the continuation, not the existence of that material loss.",
+          "actor": "white"
+        }
+      ],
+      "missedTimeline": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Check",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "g5d2",
+          "value": 1070,
+          "evidence": "Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures.",
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Rxh8 wins the loose rook on h8.",
+          "source": "missed",
+          "ply": 3,
+          "moveUci": "e8h8",
+          "relevance": "secondary",
+          "value": 500,
+          "actor": "black"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "What you missed: Intermediate Check",
+      "text": "The better move had this tactic: Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures.",
+      "source": "missed",
+      "primary": {
+        "id": "intermezzo",
+        "label": "Intermediate Check",
+        "source": "missed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "g5d2",
+        "value": 1070,
+        "evidence": "Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures.",
+        "relevance": "primary"
+      }
+    },
+    "classificationMs": 77.20309999999881
+  },
+  {
+    "name": "Recaptured the bishop before taking the knight with check",
+    "fen": "1r1q1rk1/R3nppp/3pb3/1p1Np3/4P2P/2P1b3/1P3PP1/3QKB1R w K - 0 18",
+    "played": "f2e3",
+    "source": "missed",
+    "primary": "intermezzo",
+    "why": "Nxe7+ wins an extra knight before fxe3. Qxe7 is met by Rxe7, so recapturing the checker does not refute the lesson.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d5e7",
+          "g8h8",
+          "f2e3",
+          "d8b6",
+          "a7a1",
+          "b8a8",
+          "e1d2",
+          "a8a1",
+          "d1a1",
+          "b6b7",
+          "e7d5",
+          "f7f5",
+          "d5b4",
+          "b7e4",
+          "a1e1",
+          "e4b7",
+          "e3e4",
+          "f5e4",
+          "e1e3",
+          "d6d5",
+          "f1e2",
+          "d5d4",
+          "c3d4",
+          "e5d4",
+          "e3d4"
+        ],
+        "pvSan": [
+          "Nxe7+",
+          "Kh8",
+          "fxe3",
+          "Qb6",
+          "Ra1",
+          "Ra8",
+          "Kd2",
+          "Rxa1",
+          "Qxa1",
+          "Qb7",
+          "Nd5",
+          "f5",
+          "Nb4",
+          "Qxe4",
+          "Qe1",
+          "Qb7",
+          "e4",
+          "fxe4",
+          "Qe3",
+          "d5",
+          "Be2",
+          "d4",
+          "cxd4",
+          "exd4",
+          "Qxd4"
+        ],
+        "cp": 176,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "d5e3",
+          "d6d5",
+          "e4d5",
+          "e7d5",
+          "e3d5",
+          "e6d5",
+          "h1h3",
+          "b8a8",
+          "a7a8",
+          "d8a8",
+          "h3g3",
+          "d5c4",
+          "f1c4",
+          "b5c4",
+          "d1e2",
+          "a8a1",
+          "e2d1",
+          "a1b2"
+        ],
+        "pvSan": [
+          "Nxe3",
+          "d5",
+          "exd5",
+          "Nxd5",
+          "Nxd5",
+          "Bxd5",
+          "Rh3",
+          "Ra8",
+          "Rxa8",
+          "Qxa8",
+          "Rg3",
+          "Bc4",
+          "Bxc4",
+          "bxc4",
+          "Qe2",
+          "Qa1+",
+          "Qd1",
+          "Qxb2"
+        ],
+        "cp": -47,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "f2e3",
+          "e7d5",
+          "e4d5",
+          "d8b6",
+          "a7a1",
+          "b6e3",
+          "d1e2",
+          "e3e2",
+          "f1e2",
+          "e6d5",
+          "e1f2",
+          "d5c4",
+          "a1a5",
+          "g7g6",
+          "b2b4",
+          "c4e2",
+          "f2e2",
+          "f8d8",
+          "h1a1"
+        ],
+        "pvSan": [
+          "fxe3",
+          "Nxd5",
+          "exd5",
+          "Qb6",
+          "Ra1",
+          "Qxe3+",
+          "Qe2",
+          "Qxe2+",
+          "Bxe2",
+          "Bxd5",
+          "Kf2",
+          "Bc4",
+          "Ra5",
+          "g6",
+          "b4",
+          "Bxe2",
+          "Kxe2",
+          "Rfd8",
+          "Rha1"
+        ],
+        "cp": -243,
+        "mate": null
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e7d5",
+          "e4d5",
+          "d8b6",
+          "a7a1",
+          "b6e3",
+          "d1e2",
+          "e3e2",
+          "f1e2",
+          "e6d5",
+          "e1f2",
+          "f8d8",
+          "h4h5",
+          "g7g6",
+          "h5h6",
+          "d5e4"
+        ],
+        "pvSan": [
+          "Nxd5",
+          "exd5",
+          "Qb6",
+          "Ra1",
+          "Qxe3+",
+          "Qe2",
+          "Qxe2+",
+          "Bxe2",
+          "Bxd5",
+          "Kf2",
+          "Rfd8",
+          "h5",
+          "g6",
+          "h6",
+          "Be4"
+        ],
+        "cp": 249,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e6d5",
+          "e4d5",
+          "e7f5",
+          "d1f3",
+          "d8b6",
+          "a7d7",
+          "f5e3",
+          "f1d3",
+          "e3c4",
+          "h1f1",
+          "e5e4",
+          "f3e4",
+          "f8e8",
+          "d7e7",
+          "e8e7",
+          "e4e7",
+          "c4e5",
+          "e1e2"
+        ],
+        "pvSan": [
+          "Bxd5",
+          "exd5",
+          "Nf5",
+          "Qf3",
+          "Qb6",
+          "Rd7",
+          "Nxe3",
+          "Bd3",
+          "Nc4",
+          "Rf1",
+          "e4",
+          "Qxe4",
+          "Rfe8",
+          "Re7",
+          "Rxe7",
+          "Qxe7",
+          "Ne5",
+          "Ke2"
+        ],
+        "cp": 219,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e7g6",
+          "d5c7",
+          "b5b4",
+          "c3c4",
+          "b8c8",
+          "c7d5",
+          "e6d5",
+          "d1d5",
+          "g6h4"
+        ],
+        "pvSan": [
+          "Ng6",
+          "Nc7",
+          "b4",
+          "c4",
+          "Rc8",
+          "Nd5",
+          "Bxd5",
+          "Qxd5",
+          "Nxh4"
+        ],
+        "cp": 99,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [],
+      "missedMotifs": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Check",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d5e7",
+          "value": 650,
+          "evidence": "Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures.",
+          "relevance": "primary"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-17",
+      "missedTimeline": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Check",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d5e7",
+          "value": 650,
+          "evidence": "Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures.",
+          "relevance": "primary",
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "fxe3 wins the loose bishop on e3.",
+          "source": "missed",
+          "ply": 3,
+          "moveUci": "f2e3",
+          "relevance": "secondary",
+          "value": 330,
+          "actor": "white"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "What you missed: Intermediate Check",
+      "text": "The better move had this tactic: Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures.",
+      "source": "missed",
+      "primary": {
+        "id": "intermezzo",
+        "label": "Intermediate Check",
+        "source": "missed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "d5e7",
+        "value": 650,
+        "evidence": "Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures.",
+        "relevance": "primary"
+      }
+    },
+    "classificationMs": 62.65890000000945
+  },
+  {
+    "name": "Allowed a checking queen capture before the rook recapture",
+    "fen": "2k1r2r/ppp5/4p3/5nb1/3Pb3/2P5/PP1QNP1R/2KR4 w - - 0 24",
+    "played": "h2h8",
+    "source": "allowed",
+    "primary": "intermezzo",
+    "why": "Rxh8 assumes an immediate rook recapture, but Black inserts Bxd2+ and then recaptures. The checking move order is the main tactical cause of this mistake.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d2g5",
+          "h8h2",
+          "e2g3",
+          "f5g3",
+          "g5g3",
+          "h2g2",
+          "g3f4",
+          "e4d5",
+          "b2b3",
+          "b7b5",
+          "d1d3",
+          "e8g8",
+          "d3h3",
+          "g8g4",
+          "f4f8",
+          "c8b7",
+          "c3c4",
+          "b5c4",
+          "b3c4",
+          "g4d4"
+        ],
+        "pvSan": [
+          "Qxg5",
+          "Rxh2",
+          "Ng3",
+          "Nxg3",
+          "Qxg3",
+          "Rg2",
+          "Qf4",
+          "Bd5",
+          "b3",
+          "b5",
+          "Rd3",
+          "Reg8",
+          "Rh3",
+          "R8g4",
+          "Qf8+",
+          "Kb7",
+          "c4",
+          "bxc4",
+          "bxc4",
+          "Rxd4"
+        ],
+        "cp": 191,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "f2f4",
+          "h8h2",
+          "f4g5",
+          "e8h8",
+          "g5g6",
+          "h2f2",
+          "g6g7",
+          "f5g7",
+          "d2e3",
+          "h8h2",
+          "e3e4",
+          "f2e2",
+          "e4d3",
+          "e2b2",
+          "d1f1",
+          "g7f5",
+          "f1f5",
+          "h2c2",
+          "c1d1",
+          "c2d2",
+          "d1c1",
+          "b2c2",
+          "c1b1",
+          "d2d3",
+          "f5f8",
+          "c8d7",
+          "b1c2",
+          "d3e3",
+          "c2b3",
+          "d7c6",
+          "f8h8",
+          "e3e2",
+          "h8f8"
+        ],
+        "pvSan": [
+          "f4",
+          "Rxh2",
+          "fxg5",
+          "Reh8",
+          "g6",
+          "Rf2",
+          "g7",
+          "Nxg7",
+          "Qe3",
+          "Rhh2",
+          "Qxe4",
+          "Rxe2",
+          "Qd3",
+          "Rxb2",
+          "Rf1",
+          "Nf5",
+          "Rxf5",
+          "Rhc2+",
+          "Kd1",
+          "Rd2+",
+          "Kc1",
+          "Rbc2+",
+          "Kb1",
+          "Rxd3",
+          "Rf8+",
+          "Kd7",
+          "Kxc2",
+          "Re3",
+          "Kb3",
+          "Kc6",
+          "Rh8",
+          "Re2",
+          "Rf8"
+        ],
+        "cp": -4,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "h2h8",
+          "g5d2",
+          "c1d2",
+          "e8h8",
+          "e2f4",
+          "h8e8",
+          "f4g6",
+          "f5d6",
+          "g6e5",
+          "b7b5",
+          "b2b3",
+          "e8f8",
+          "d2e3",
+          "f8h8",
+          "c3c4",
+          "b5c4",
+          "b3c4"
+        ],
+        "pvSan": [
+          "Rxh8",
+          "Bxd2+",
+          "Kxd2",
+          "Rxh8",
+          "Nf4",
+          "Re8",
+          "Ng6",
+          "Nd6",
+          "Ne5",
+          "b5",
+          "b3",
+          "Rf8",
+          "Ke3",
+          "Rh8",
+          "c4",
+          "bxc4",
+          "bxc4"
+        ],
+        "cp": -391,
+        "mate": null
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "g5d2",
+          "c1d2",
+          "e8h8",
+          "e2f4",
+          "h8e8",
+          "b2b3",
+          "f5d6",
+          "c3c4",
+          "e6e5",
+          "d4e5",
+          "e8e5",
+          "d1e1",
+          "e5e8",
+          "c4c5",
+          "d6f5",
+          "d2c3",
+          "e4c6",
+          "e1e8",
+          "c6e8"
+        ],
+        "pvSan": [
+          "Bxd2+",
+          "Kxd2",
+          "Rxh8",
+          "Nf4",
+          "Re8",
+          "b3",
+          "Nd6",
+          "c4",
+          "e5",
+          "dxe5",
+          "Rxe5",
+          "Re1",
+          "Re8",
+          "c5",
+          "Nf5",
+          "Kc3",
+          "Bc6",
+          "Rxe8+",
+          "Bxe8"
+        ],
+        "cp": 390,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e8h8",
+          "d2g5",
+          "b7b5",
+          "d1g1",
+          "e6e5",
+          "d4e5",
+          "c8b7",
+          "e5e6",
+          "h8h4",
+          "e6e7"
+        ],
+        "pvSan": [
+          "Rxh8",
+          "Qxg5",
+          "b5",
+          "Rg1",
+          "e5",
+          "dxe5",
+          "Kb7",
+          "e6",
+          "Rh4",
+          "e7"
+        ],
+        "cp": -515,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e8d8",
+          "d2g5",
+          "d8h8",
+          "g5f6",
+          "h8e8",
+          "d1g1",
+          "e4d3",
+          "e2f4",
+          "d3c4",
+          "b2b4",
+          "c4a2",
+          "f4h3",
+          "b7b6"
+        ],
+        "pvSan": [
+          "Rd8",
+          "Qxg5",
+          "Rxh8",
+          "Qf6",
+          "Re8",
+          "Rg1",
+          "Bd3",
+          "Nf4",
+          "Bc4",
+          "b4",
+          "Bxa2",
+          "Nh3",
+          "b6"
+        ],
+        "cp": -588,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Check",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "g5d2",
+          "value": 1070,
+          "evidence": "Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures.",
+          "relevance": "primary",
+          "comparison": "prevented",
+          "comparisonEvidence": "Qxg5 makes the immediate reply Bxd2+ illegal."
+        }
+      ],
+      "missedMotifs": [
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d2g5",
+          "evidence": "Qxg5 wins the loose bishop on g5.",
+          "relevance": "primary",
+          "value": 330
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-17",
+      "allowedTimeline": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Check",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "g5d2",
+          "value": 1070,
+          "evidence": "Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures.",
+          "relevance": "primary",
+          "comparison": "prevented",
+          "comparisonEvidence": "Qxg5 makes the immediate reply Bxd2+ illegal.",
+          "actor": "black"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Rxh8 wins the loose rook on h8.",
+          "source": "allowed",
+          "ply": 3,
+          "moveUci": "e8h8",
+          "relevance": "secondary",
+          "value": 500,
+          "actor": "black"
+        }
+      ],
+      "missedTimeline": [
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d2g5",
+          "evidence": "Qxg5 wins the loose bishop on g5.",
+          "relevance": "primary",
+          "value": 330,
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Rxh2 wins the loose rook on h2.",
+          "source": "missed",
+          "ply": 2,
+          "moveUci": "h8h2",
+          "relevance": "secondary",
+          "value": 500,
+          "actor": "black"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "Why the move was tactically bad",
+      "text": "Your move allowed this tactic: Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures. Qxg5 makes the immediate reply Bxd2+ illegal.",
+      "source": "allowed",
+      "primary": {
+        "id": "intermezzo",
+        "label": "Intermediate Check",
+        "source": "allowed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "g5d2",
+        "value": 1070,
+        "evidence": "Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures.",
+        "relevance": "primary",
+        "comparison": "prevented",
+        "comparisonEvidence": "Qxg5 makes the immediate reply Bxd2+ illegal."
+      }
+    },
+    "classificationMs": 81.39560000000347
+  },
+  {
+    "name": "Allowed an intermediate knight capture before the bishop recapture",
+    "fen": "1r1q1rk1/R3nppp/3pb3/1p1Np1b1/4P2P/2P1N3/1P3PP1/3QKB1R b K - 0 17",
+    "played": "g5e3",
+    "source": "allowed",
+    "primary": "intermezzo",
+    "why": "Bxe3 invites fxe3, but White can insert Nxe7+ first. The checking capture and retained bishop capture explain the tactical damage.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e7d5",
+          "e3d5",
+          "e6d5",
+          "h4g5",
+          "d8b6",
+          "a7e7",
+          "d5e4",
+          "f1d3",
+          "b6c6",
+          "d1e2",
+          "e4d3",
+          "e2d3",
+          "g7g6",
+          "e1g1",
+          "b8a8",
+          "f1d1",
+          "f8d8",
+          "d3d5",
+          "c6d5",
+          "d1d5",
+          "g8f8",
+          "e7c7",
+          "b5b4",
+          "c3c4"
+        ],
+        "pvSan": [
+          "Nxd5",
+          "Nxd5",
+          "Bxd5",
+          "hxg5",
+          "Qb6",
+          "Re7",
+          "Bxe4",
+          "Bd3",
+          "Qc6",
+          "Qe2",
+          "Bxd3",
+          "Qxd3",
+          "g6",
+          "O-O",
+          "Ra8",
+          "Rd1",
+          "Rfd8",
+          "Qd5",
+          "Qxd5",
+          "Rxd5",
+          "Kf8",
+          "Rc7",
+          "b4",
+          "c4"
+        ],
+        "cp": 32,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e6d5",
+          "h4g5",
+          "d5e4",
+          "f1d3",
+          "e4d3",
+          "d1d3",
+          "e7g6",
+          "d3f5",
+          "b8a8",
+          "f5h3",
+          "h7h6",
+          "a7a8",
+          "d8a8",
+          "g2g3",
+          "a8a1",
+          "e3d1",
+          "a1c1",
+          "g5h6",
+          "c1h6",
+          "h3h6",
+          "g7h6",
+          "d1e3",
+          "f8a8",
+          "e1g1",
+          "a8a2",
+          "f1d1"
+        ],
+        "pvSan": [
+          "Bxd5",
+          "hxg5",
+          "Bxe4",
+          "Bd3",
+          "Bxd3",
+          "Qxd3",
+          "Ng6",
+          "Qf5",
+          "Ra8",
+          "Qh3",
+          "h6",
+          "Rxa8",
+          "Qxa8",
+          "g3",
+          "Qa1+",
+          "Nd1",
+          "Qc1",
+          "gxh6",
+          "Qxh6",
+          "Qxh6",
+          "gxh6",
+          "Ne3",
+          "Ra8",
+          "O-O",
+          "Ra2",
+          "Rd1"
+        ],
+        "cp": 4,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "g5f6",
+          "d5f6",
+          "g7f6",
+          "f1d3",
+          "b5b4",
+          "e1g1",
+          "b4c3",
+          "b2c3",
+          "b8a8",
+          "a7a8",
+          "d8a8",
+          "d1f3",
+          "g8g7",
+          "h4h5",
+          "h7h6",
+          "d3c4",
+          "a8c6",
+          "c4e6",
+          "f7e6"
+        ],
+        "pvSan": [
+          "Bf6",
+          "Nxf6+",
+          "gxf6",
+          "Bd3",
+          "b4",
+          "O-O",
+          "bxc3",
+          "bxc3",
+          "Ra8",
+          "Rxa8",
+          "Qxa8",
+          "Qf3",
+          "Kg7",
+          "h5",
+          "h6",
+          "Bc4",
+          "Qc6",
+          "Bxe6",
+          "fxe6"
+        ],
+        "cp": -87,
+        "mate": null
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d5e7",
+          "g8h8",
+          "f2e3",
+          "d8b6",
+          "a7a1",
+          "b8a8",
+          "e1d2",
+          "a8a1",
+          "d1a1",
+          "b6b7",
+          "e7d5",
+          "f7f5",
+          "d5b4",
+          "b7e4",
+          "a1e1",
+          "e4b7",
+          "e3e4",
+          "f5e4",
+          "e1e3",
+          "d6d5",
+          "f1e2",
+          "d5d4",
+          "c3d4",
+          "e5d4",
+          "e3d4"
+        ],
+        "pvSan": [
+          "Nxe7+",
+          "Kh8",
+          "fxe3",
+          "Qb6",
+          "Ra1",
+          "Ra8",
+          "Kd2",
+          "Rxa1",
+          "Qxa1",
+          "Qb7",
+          "Nd5",
+          "f5",
+          "Nb4",
+          "Qxe4",
+          "Qe1",
+          "Qb7",
+          "e4",
+          "fxe4",
+          "Qe3",
+          "d5",
+          "Be2",
+          "d4",
+          "cxd4",
+          "exd4",
+          "Qxd4"
+        ],
+        "cp": 176,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "d5e3",
+          "d6d5",
+          "e4d5",
+          "e7d5",
+          "e3d5",
+          "e6d5",
+          "h1h3",
+          "b8a8",
+          "a7a8",
+          "d8a8",
+          "h3g3",
+          "d5c4",
+          "f1c4",
+          "b5c4",
+          "d1e2",
+          "a8a1",
+          "e2d1",
+          "a1b2"
+        ],
+        "pvSan": [
+          "Nxe3",
+          "d5",
+          "exd5",
+          "Nxd5",
+          "Nxd5",
+          "Bxd5",
+          "Rh3",
+          "Ra8",
+          "Rxa8",
+          "Qxa8",
+          "Rg3",
+          "Bc4",
+          "Bxc4",
+          "bxc4",
+          "Qe2",
+          "Qa1+",
+          "Qd1",
+          "Qxb2"
+        ],
+        "cp": -47,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "f2e3",
+          "e7d5",
+          "e4d5",
+          "d8b6",
+          "a7a1",
+          "b6e3",
+          "d1e2",
+          "e3e2",
+          "f1e2",
+          "e6d5",
+          "e1f2",
+          "d5c4",
+          "a1a5",
+          "g7g6",
+          "b2b4",
+          "c4e2",
+          "f2e2",
+          "f8d8",
+          "h1a1"
+        ],
+        "pvSan": [
+          "fxe3",
+          "Nxd5",
+          "exd5",
+          "Qb6",
+          "Ra1",
+          "Qxe3+",
+          "Qe2",
+          "Qxe2+",
+          "Bxe2",
+          "Bxd5",
+          "Kf2",
+          "Bc4",
+          "Ra5",
+          "g6",
+          "b4",
+          "Bxe2",
+          "Kxe2",
+          "Rfd8",
+          "Rha1"
+        ],
+        "cp": -243,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Check",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d5e7",
+          "value": 650,
+          "evidence": "Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures.",
+          "relevance": "primary",
+          "comparison": "prevented",
+          "comparisonEvidence": "Nxd5 makes the immediate reply Nxe7+ illegal."
+        }
+      ],
+      "missedMotifs": [],
+      "motifClassifierVersion": "site-55.adapter-17",
+      "allowedTimeline": [
+        {
+          "id": "intermezzo",
+          "label": "Intermediate Check",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d5e7",
+          "value": 650,
+          "evidence": "Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures.",
+          "relevance": "primary",
+          "comparison": "prevented",
+          "comparisonEvidence": "Nxd5 makes the immediate reply Nxe7+ illegal.",
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "fxe3 wins the loose bishop on e3.",
+          "source": "allowed",
+          "ply": 3,
+          "moveUci": "f2e3",
+          "relevance": "secondary",
+          "value": 330,
+          "actor": "white"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "Why the move was tactically bad",
+      "text": "Your move allowed this tactic: Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures. Nxd5 makes the immediate reply Nxe7+ illegal.",
+      "source": "allowed",
+      "primary": {
+        "id": "intermezzo",
+        "label": "Intermediate Check",
+        "source": "allowed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "d5e7",
+        "value": 650,
+        "evidence": "Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures.",
+        "relevance": "primary",
+        "comparison": "prevented",
+        "comparisonEvidence": "Nxd5 makes the immediate reply Nxe7+ illegal."
+      }
+    },
+    "classificationMs": 98.38169999999809
   },
   {
     "name": "b6 permits the f7 fork",
@@ -2974,7 +4440,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-16",
+      "motifClassifierVersion": "site-55.adapter-17",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -3048,7 +4514,7 @@
         "comparisonEvidence": "After O-O, Nxf7 no longer has two profitable fork targets."
       }
     },
-    "classificationMs": 74.86089999999967
+    "classificationMs": 67.75669999999809
   },
   {
     "name": "Missed queen while the knight is already attacked",
@@ -3340,7 +4806,7 @@
           "value": 900
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-16",
+      "motifClassifierVersion": "site-55.adapter-17",
       "missedTimeline": [
         {
           "id": "hangingPiece",
@@ -3372,7 +4838,7 @@
         "value": 900
       }
     },
-    "classificationMs": 20.889100000000326
+    "classificationMs": 15.03190000000177
   },
   {
     "name": "Failed to create a back-rank escape",
@@ -3574,7 +5040,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-16",
+      "motifClassifierVersion": "site-55.adapter-17",
       "allowedTimeline": [
         {
           "id": "backRankMate",
@@ -3610,6 +5076,6 @@
         "comparisonEvidence": "After g5, Kg7 is a legal answer to Re8+; it is no longer mate."
       }
     },
-    "classificationMs": 1.6633999999903608
+    "classificationMs": 1.8104999999923166
   }
 ]

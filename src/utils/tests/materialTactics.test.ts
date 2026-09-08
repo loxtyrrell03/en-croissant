@@ -63,6 +63,9 @@ describe("judged material tactics", () => {
         expect(primary?.evidence).toContain(
             "knight on f6 that defended the queen on d5, with check",
         );
+        expect(
+            classifyPositionTacticalMotifs({ fen, pvUci }).motifs.map((m) => m.id),
+        ).not.toContain("intermezzo");
     });
     test("an already pinned piece was not a legal defender of the queen", () => {
         const fen = "8/6k1/5n2/3qB1P1/8/8/8/3R2K1 w - - 0 1";

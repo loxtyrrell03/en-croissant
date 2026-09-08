@@ -418,8 +418,8 @@ successful report creation does not mean twelve correct classifications.
 | 1GRFo | Bb4 interference recovered: the bishop blocks Qa3-Nc5 and attacks the queen. Capturing the blocker loses the queen. |
 | 48ION | c7 interference recovered: Qb8-Nf4 is interrupted, the queen is attacked and the pawn threatens promotion. |
 | 2QybO | Genuine Nxe6+ d-file line opening retained; unlike the incidental pawn ray, it contributes to the combination. |
-| 2SvDe | Spurious clearance removed. The Bxd2+ / Rxh8 intermediate-capture explanation still needs improvement. |
-| 9THyd | Spurious clearance removed. Nxe7+ before fxe3 still needs a better timing explanation than two loose-piece labels. |
+| 2SvDe | Intermediate Check explains Bxd2+ before Rxh8, with a legal queen escape if the captures are reversed. |
+| 9THyd | Intermediate Check explains Nxe7+ before fxe3. Qxe7 Rxe7 is included, so the lesson does not depend on a cooperative king reply. |
 | 2Gc77 | Bxd5 now prioritizes defender removal, with the simultaneous Bb7 attack and Rd8 behind Ne7 explaining different defences. |
 | 8DHuj | False clearance removed, but Bxf4's actual removal/overload combination remains missed. |
 | 4RNK5 | With sound engine context, Quiet Preparation explains Rb6's verified Rh7+ threat and the Qe4 branch. Other defences change the route; it is not a forced skewer against every reply. |
@@ -567,11 +567,54 @@ budget exhaustion, live arrows and Mistake Review's primary/secondary choice.
 The fresh before/after engine benchmark also compares Rb6 with the missed
 opportunity after Rxh3. These are focused controls, not a general accuracy rate.
 
-Current verification: 211 focused tests in 22 files, all nine opt-in engine
+Adapter-16 verification: 211 focused tests in 22 files, all nine opt-in engine
 tests, targeted formatting/lint, shared-review worker and production builds.
 The existing OTB number/bigint fixture error remains. No runtime deployment or
 running-app proof is claimed. Longer quiet combinations, Bxf4's repeated-check
 branches and broader sacrifice/intermediate-move judgement remain open.
+
+## Intermediate checks that genuinely improve the move order (adapter 17)
+
+Two real-game misses now prioritize **Intermediate Check** rather than a loose
+piece label. In 2SvDe, `Bxd2+` comes before `Rxh8`; the combined local minimum
+is 1,070 cp. In 9THyd, `Nxe7+` comes before `fxe3`, preserving a 650 cp minimum.
+`Qxe7 Rxe7` is a related alternative payoff, so the second lesson remains the
+same even when the defender captures the checking knight instead of moving
+the king. The deferred capture is nominated from legal moves in the position,
+not from the particular engine reply shown in the PV.
+
+The classifier requires both captures to be legal initially, checks every
+legal answer to the checking capture, and requires at least 90 cp beyond the
+better standalone capture after legal exchanges. It then reverses the capture
+order and finds an actual move that saves the first victim from immediate
+profitable capture by **any** friendly piece, or removes its attacker. This
+is a concrete immediate move-order comparison, not a complete engine evaluation
+of every reversed continuation. Candidate/escape visits cap at 512; individual
+exchange proofs retain their existing budgets, and incomplete work abstains.
+
+Raw PV `intermezzo` tags no longer pass on terminal material alone. The main
+lesson is reconstructed only at the evaluated root; later intermediate checks
+are assessed separately on the conditional timeline. This matters: two existing
+pin-refutation controls initially exposed ghost headlines from a later checking
+capture after an unproved `d6`. Those later positions can be tactical without
+making the original move sound. Same-ply hanging-piece duplication is removed,
+and board arrows show the capture being deferred. When removing a defender
+already explains the same target and gain, a redundant Intermediate Check badge
+is suppressed; the specific defender-removal mechanism remains primary.
+
+Seven new tests cover both real positions, the alternative queen recapture,
+an absent supporting rook, no check, no move-order advantage and an exhausted
+budget. Four fresh before/after Stockfish scenarios test both directions:
+missing each intermediate check and allowing it through the preceding real-game
+mistake. All four choose the intended primary/source. The twelve-game diagnostic
+and all existing engine reports were refreshed without selecting holdout data.
+
+Current verification: 220 focused tests in 23 files, all nine opt-in engine
+tests, targeted formatting/lint, shared-review worker and production builds.
+The unrelated OTB number/bigint fixture error remains. No runtime deployment or
+running-app proof is claimed. Non-capturing/delayed intermediate moves, arbitrary
+reversed continuations, Bxf4's longer branches and broader tactical judgement
+remain unfinished work; these checks are not a general accuracy estimate.
 
 Run in PowerShell with the configured Node runtime on PATH:
 

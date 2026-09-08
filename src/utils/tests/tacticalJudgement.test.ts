@@ -335,6 +335,8 @@ describe("expert tactical judgement with fresh engine lines", () => {
                 ["2QybO", "discoveredAttack"],
                 ["2Gc77", "capturingDefender"],
                 ["4RNK5", "tacticalPreparation"],
+                ["2SvDe", "intermezzo"],
+                ["9THyd", "intermezzo"],
             ]) {
                 const item = report.find((entry) => entry.id === `lichess:${id}`)!;
                 expect(item.positionHeadline[0]?.id).toBe(primary);
@@ -808,6 +810,38 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     source: "missed",
                     primary: "tacticalPreparation",
                     why: "Rb6 threatens Rh7+ and a mating or queen-winning continuation. Black can change the route, so the headline must describe a verified threat rather than a globally forced skewer. Rxh3 misses that stronger preparation.",
+                },
+                {
+                    name: "Recaptured the rook before taking the queen with check",
+                    fen: "2k1r2R/ppp5/4p3/5nb1/3Pb3/2P5/PP1QNP2/2KR4 b - - 0 24",
+                    played: "e8h8",
+                    source: "missed",
+                    primary: "intermezzo",
+                    why: "Bxd2+ wins the queen with tempo and retains Rxh8. Recapturing the rook first lets the queen escape or take the bishop; move order explains the missed extra gain.",
+                },
+                {
+                    name: "Recaptured the bishop before taking the knight with check",
+                    fen: "1r1q1rk1/R3nppp/3pb3/1p1Np3/4P2P/2P1b3/1P3PP1/3QKB1R w K - 0 18",
+                    played: "f2e3",
+                    source: "missed",
+                    primary: "intermezzo",
+                    why: "Nxe7+ wins an extra knight before fxe3. Qxe7 is met by Rxe7, so recapturing the checker does not refute the lesson.",
+                },
+                {
+                    name: "Allowed a checking queen capture before the rook recapture",
+                    fen: "2k1r2r/ppp5/4p3/5nb1/3Pb3/2P5/PP1QNP1R/2KR4 w - - 0 24",
+                    played: "h2h8",
+                    source: "allowed",
+                    primary: "intermezzo",
+                    why: "Rxh8 assumes an immediate rook recapture, but Black inserts Bxd2+ and then recaptures. The checking move order is the main tactical cause of this mistake.",
+                },
+                {
+                    name: "Allowed an intermediate knight capture before the bishop recapture",
+                    fen: "1r1q1rk1/R3nppp/3pb3/1p1Np1b1/4P2P/2P1N3/1P3PP1/3QKB1R b K - 0 17",
+                    played: "g5e3",
+                    source: "allowed",
+                    primary: "intermezzo",
+                    why: "Bxe3 invites fxe3, but White can insert Nxe7+ first. The checking capture and retained bishop capture explain the tactical damage.",
                 },
                 {
                     name: "b6 permits the f7 fork",
