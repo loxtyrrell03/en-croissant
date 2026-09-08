@@ -1224,6 +1224,37 @@ export function proveForcingClearance(
     return result;
 }
 
+/** Retain only the supplied branch of a proved clearance, through its actual
+ * profitable target capture. A different preparation or extra quiet attacking
+ * move cannot borrow the proof to extend an arbitrary engine continuation. */
+export function forcingClearanceEpisodeLength(steps: TacticalReplayStep[]): number | null {
+    const proof = proveForcingClearance(steps);
+    if (!proof || steps.length < 5) return null;
+    const branch = proof.branches.find((candidate) => candidate.reply === steps[1].san);
+    if (
+        !branch ||
+        steps[2].move.from !== branch.from ||
+        steps[2].move.to !== branch.to ||
+        steps[2].capture ||
+        steps[2].after.isCheck()
+    )
+        return null;
+    let target = proof.target;
+    let checks = 0;
+    for (let index = 1; index < Math.min(13, steps.length); index++) {
+        const step = steps[index];
+        if (step.before.turn !== steps[0].before.turn) {
+            if (step.move.from === target) target = step.move.to;
+            continue;
+        }
+        if (index === 2) continue;
+        if (step.move.to === target && step.capture >= VALUE.rook)
+            return step.balance >= 90 ? index + 1 : null;
+        if (!step.after.isCheck() || ++checks > 4) return null;
+    }
+    return null;
+}
+
 function winningTargets(pos: Chess, from: Square, side: Color) {
     const probe = withTurn(pos, side);
     const piece = probe.board.get(from);
@@ -2460,6 +2491,30 @@ function rayMaterialEvidence(
         const pinner = step.after.board.get(ray.pinner)!;
         const front = step.after.board.get(ray.front)!;
         const rear = step.after.board.get(ray.rear)!;
+        if (ray.kind === "pin") {
+            const existing = rayTactics(step.before, step.before.turn).some(
+                (old) =>
+                    old.kind === "pin" &&
+                    old.pinner === ray.pinner &&
+                    old.front === ray.front &&
+                    old.rear === ray.rear,
+            );
+            const forkTargets = winningTargets(step.after, step.move.to, step.before.turn);
+            // A smaller attack on a different, already pinned victim is not
+            // another lesson when this move independently wins more by a fork.
+            // Keep newly created pins, shared victims and pins protecting the
+            // forker from the front piece's recapture.
+            if (
+                existing &&
+                forkTargets.length >= 2 &&
+                !forkTargets.includes(ray.front) &&
+                !forkTargets.includes(ray.rear) &&
+                !attacks(front, ray.front, step.after.board.occupied).has(step.move.to)
+            ) {
+                const forkGain = materialThreatGain(step, forkTargets, [step.move.to]);
+                if (forkGain !== null && forkGain > gain) continue;
+            }
+        }
         motifs.push({
             id: ray.kind,
             label: ray.kind === "pin" ? "Pin" : "Skewer",
@@ -3321,11 +3376,14 @@ export function auditTacticalMotifs(
     const promotionPly = steps.findIndex(
         (step) => step.before.turn === steps[0].before.turn && step.move.promotion,
     );
+    const clearanceEnd = forcingClearanceEpisodeLength(steps);
     const end = checkingMate
         ? steps.findIndex((step) => step.after.isCheckmate()) + 1
-        : promotionCombination && promotionPly >= 0 && promotionPly <= 16
-          ? promotionPly + 1
-          : episodeEnd(steps, allowConditional);
+        : clearanceEnd !== null
+          ? clearanceEnd
+          : promotionCombination && promotionPly >= 0 && promotionPly <= 16
+            ? promotionPly + 1
+            : episodeEnd(steps, allowConditional);
     if (!end) return [];
     const episode = steps.slice(0, end);
     const attacker = steps[0].before.turn;
@@ -4477,6 +4535,12 @@ export function compareImmediateTacticalDefence(
                 comparison = "prevented";
                 comparisonEvidence = `After ${bestSan}, ${alternative.san} is not check and ${escape.defence} captures the attacking ${alternative.after.board.get(alternative.move.to)!.role} on ${makeSquare(alternative.move.to)}. Legal immediate replies, recaptures and one countercheck cannot erase the local material gain. This refutes this checking sequence, not every possible later attack.`;
             }
+        } else if (motif.id === "clearance" && !step.capture && step.after.isCheck()) {
+            const escape = clearanceKingDefence(alternative);
+            if (escape) {
+                comparison = "prevented";
+                comparisonEvidence = `${alternative.after.isCheck() ? `After ${bestSan}, ${escape.defence} answers ${alternative.san}.` : `After ${bestSan}, ${alternative.san} is not check, so ${escape.defence} lets the king escape before the cleared slider routes are used.`} Each of the ${escape.routes.length} newly opened routes has a legal defence against the immediate captures and checking continuation. This prevents this forcing clearance, not every possible later quiet combination.`;
+            }
         } else if (motif.id === "doubleThreat" && proveQuietDoubleThreat(step)) {
             const escape = counterCaptureMaterialDefence(alternative);
             if (escape) {
@@ -4662,6 +4726,113 @@ export function quietMaterialDefence(root: TacticalReplayStep, nodeLimit = 8192)
             const next = visit(root.after, move);
             if (next.isCheck() || next.isEnd()) continue;
             if (safe(next, 0, 2)) return makeSan(root.after, move);
+        }
+    } catch {
+        return null;
+    }
+    return null;
+}
+
+/** A formerly checking clearance may be answered by a king escape before the
+ * newly opened slider routes are used. Verify each such route independently. */
+export function clearanceKingDefence(
+    root: TacticalReplayStep,
+    nodeLimit = 32768,
+): { defence: string; routes: { preparation: string; reply: string }[] } | null {
+    if (
+        !Number.isFinite(nodeLimit) ||
+        nodeLimit <= 0 ||
+        root.capture ||
+        root.move.promotion ||
+        root.before.isCheck() ||
+        root.after.isEnd()
+    )
+        return null;
+    let nodes = nodeLimit;
+    const attackMemo = new Map<string, boolean>();
+    const defenceMemo = new Map<string, string | null>();
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--nodes < 0) throw new Error("Clearance defence budget exhausted");
+        const next = pos.clone();
+        next.play(move);
+        return next;
+    };
+    const delta = (pos: Chess, move: NormalMove) =>
+        capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+    const safeAttack = (pos: Chess, balance: number, checks: number): boolean => {
+        if (pos.isEnd() || balance >= 90) return false;
+        const key = `${makeFen(pos.toSetup())}:${balance}:${checks}`;
+        if (attackMemo.has(key)) return attackMemo.get(key)!;
+        for (const move of legalMoves(pos)) {
+            const next = visit(pos, move);
+            if (next.isCheckmate()) {
+                attackMemo.set(key, false);
+                return false;
+            }
+            if (delta(pos, move)) {
+                const gain = tacticalExchangeGain(pos, move);
+                if (gain <= -VALUE.king || balance + gain >= 90) {
+                    attackMemo.set(key, false);
+                    return false;
+                }
+            }
+            if (!next.isCheck()) continue;
+            // A surviving check at the frontier is inconclusive, never an
+            // inferred escape merely because the search stopped looking.
+            if (!checks || !safeDefence(next, balance + delta(pos, move), checks - 1)) {
+                attackMemo.set(key, false);
+                return false;
+            }
+        }
+        attackMemo.set(key, true);
+        return true;
+    };
+    const safeDefence = (pos: Chess, balance: number, checks: number): string | null => {
+        const key = `${makeFen(pos.toSetup())}:${balance}:${checks}`;
+        if (defenceMemo.has(key)) return defenceMemo.get(key)!;
+        for (const reply of legalMoves(pos)) {
+            const next = visit(pos, reply);
+            if (next.isCheck() || next.isEnd()) continue;
+            if (safeAttack(next, balance - delta(pos, reply), checks)) {
+                const san = makeSan(pos, reply);
+                defenceMemo.set(key, san);
+                return san;
+            }
+        }
+        defenceMemo.set(key, null);
+        return null;
+    };
+    try {
+        for (const flight of legalMoves(root.after)) {
+            if (
+                root.after.board.get(flight.from)?.role !== "king" ||
+                capturedValue(root.after, flight)
+            )
+                continue;
+            const next = visit(root.after, flight);
+            if (next.isCheck() || !safeAttack(next, 0, 4)) continue;
+            const candidates = legalMoves(next).filter((move) => {
+                const piece = next.board.get(move.from)!;
+                return (
+                    move.from !== root.move.to &&
+                    ["bishop", "rook", "queen"].includes(piece.role) &&
+                    root.before.board.get(move.from)?.role === piece.role &&
+                    (move.to === root.move.from ||
+                        between(move.from, move.to).has(root.move.from)) &&
+                    !root.before.isLegal(move) &&
+                    !capturedValue(next, move)
+                );
+            });
+            if (!candidates.length) continue;
+            const routes: { preparation: string; reply: string }[] = [];
+            for (const move of candidates) {
+                const after = visit(next, move);
+                const reply = safeDefence(after, 0, 4);
+                if (!reply) break;
+                routes.push({ preparation: makeSan(next, move), reply });
+            }
+            if (routes.length === candidates.length)
+                return { defence: makeSan(root.after, flight), routes };
         }
     } catch {
         return null;

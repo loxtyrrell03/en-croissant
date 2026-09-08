@@ -303,10 +303,10 @@
       "expectedSource": "allowed",
       "primary": "clearance",
       "source": "allowed",
-      "comparison": "unproved",
+      "comparison": "prevented",
       "secondary": null,
       "secondarySource": null,
-      "explanation": "The opponent has this tactic in the analysed position: Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory. The comparison has not established whether the better move prevents or reduces it, so this tactic alone is not a verified explanation of the mistake."
+      "explanation": "Your move allowed this tactic: Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory. After Kf8, Bh7 is not check, so Ke7 lets the king escape before the cleared slider routes are used. Each of the 5 newly opened routes has a legal defence against the immediate captures and checking continuation. This prevents this forcing clearance, not every possible later quiet combination."
     },
     {
       "name": "Developing the bishop misses the overloaded-queen discovery",

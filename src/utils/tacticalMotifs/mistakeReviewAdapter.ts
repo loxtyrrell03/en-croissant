@@ -15,6 +15,7 @@ import {
     compareBestLineTacticalDefence,
     compareImmediateTacticalDefence,
     filterCompensatedRootCaptures,
+    forcingClearanceEpisodeLength,
     hasTacticalStart,
     isCompensatedContinuationCapture,
     normalizeMatingPayoffs,
@@ -104,7 +105,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 35;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 36;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -871,7 +872,14 @@ export function buildTacticalTimeline(
     const episodeReplay = terminal < 0 ? fullReplay : fullReplay.slice(0, terminal + 1);
     // The pawn-race proof searches at most eight further attacking moves.
     // A later promotion cannot join an unrelated engine continuation to it.
-    const replay = promotionEpisode ? episodeReplay.slice(0, 17) : episodeReplay;
+    const clearanceEpisode =
+        rootMotifs[0]?.id === "clearance" ? forcingClearanceEpisodeLength(episodeReplay) : null;
+    const replay =
+        clearanceEpisode !== null
+            ? episodeReplay.slice(0, clearanceEpisode)
+            : promotionEpisode
+              ? episodeReplay.slice(0, 17)
+              : episodeReplay;
     const legalLine = replay.map((step) => step.uci);
     const rawSteps = walkPV(fen, legalLine, fenSide(fen)) as SiteThemeStep[];
     const evidence = new Map<string, TacticalMotifEvidence>();
@@ -881,12 +889,14 @@ export function buildTacticalTimeline(
     }
     let quietPlies = 0;
     let connectedPlies = replay.length;
-    const provedForcingEpisode = rootMotifs.some(
-        (motif) =>
-            motif.ply === 1 &&
-            ((motif.label === "Forcing Mate" && motif.value === 10000) ||
-                (motif.id === "promotionCombination" && promotionEpisode)),
-    );
+    const provedForcingEpisode =
+        clearanceEpisode !== null ||
+        rootMotifs.some(
+            (motif) =>
+                motif.ply === 1 &&
+                ((motif.label === "Forcing Mate" && motif.value === 10000) ||
+                    (motif.id === "promotionCombination" && promotionEpisode)),
+        );
     for (let index = 0; index < replay.length; index++) {
         const step = replay[index];
         const suffix = legalLine.slice(index);

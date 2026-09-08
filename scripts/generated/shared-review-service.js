@@ -10207,6 +10207,28 @@ function proveForcingClearance(steps, nodeLimit = 32768) {
 	}
 	return result;
 }
+/** Retain only the supplied branch of a proved clearance, through its actual
+* profitable target capture. A different preparation or extra quiet attacking
+* move cannot borrow the proof to extend an arbitrary engine continuation. */
+function forcingClearanceEpisodeLength(steps) {
+	const proof = proveForcingClearance(steps);
+	if (!proof || steps.length < 5) return null;
+	const branch = proof.branches.find((candidate) => candidate.reply === steps[1].san);
+	if (!branch || steps[2].move.from !== branch.from || steps[2].move.to !== branch.to || steps[2].capture || steps[2].after.isCheck()) return null;
+	let target = proof.target;
+	let checks = 0;
+	for (let index = 1; index < Math.min(13, steps.length); index++) {
+		const step = steps[index];
+		if (step.before.turn !== steps[0].before.turn) {
+			if (step.move.from === target) target = step.move.to;
+			continue;
+		}
+		if (index === 2) continue;
+		if (step.move.to === target && step.capture >= VALUE.rook) return step.balance >= 90 ? index + 1 : null;
+		if (!step.after.isCheck() || ++checks > 4) return null;
+	}
+	return null;
+}
 function winningTargets(pos, from, side) {
 	const probe = withTurn(pos, side);
 	const piece = probe.board.get(from);
@@ -11097,6 +11119,14 @@ function rayMaterialEvidence(step, source, allowCheckingReplies = false) {
 		const pinner = step.after.board.get(ray.pinner);
 		const front = step.after.board.get(ray.front);
 		const rear = step.after.board.get(ray.rear);
+		if (ray.kind === "pin") {
+			const existing = rayTactics(step.before, step.before.turn).some((old) => old.kind === "pin" && old.pinner === ray.pinner && old.front === ray.front && old.rear === ray.rear);
+			const forkTargets = winningTargets(step.after, step.move.to, step.before.turn);
+			if (existing && forkTargets.length >= 2 && !forkTargets.includes(ray.front) && !forkTargets.includes(ray.rear) && !attacks(front, ray.front, step.after.board.occupied).has(step.move.to)) {
+				const forkGain = materialThreatGain(step, forkTargets, [step.move.to]);
+				if (forkGain !== null && forkGain > gain) continue;
+			}
+		}
 		motifs.push({
 			id: ray.kind,
 			label: ray.kind === "pin" ? "Pin" : "Skewer",
@@ -11486,7 +11516,8 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 	const checkingMate = steps.length >= 3 ? proveCheckingMate(steps) : null;
 	const promotionCombination = provePromotionCombination(steps[0]);
 	const promotionPly = steps.findIndex((step) => step.before.turn === steps[0].before.turn && step.move.promotion);
-	const end = checkingMate ? steps.findIndex((step) => step.after.isCheckmate()) + 1 : promotionCombination && promotionPly >= 0 && promotionPly <= 16 ? promotionPly + 1 : episodeEnd(steps, allowConditional);
+	const clearanceEnd = forcingClearanceEpisodeLength(steps);
+	const end = checkingMate ? steps.findIndex((step) => step.after.isCheckmate()) + 1 : clearanceEnd !== null ? clearanceEnd : promotionCombination && promotionPly >= 0 && promotionPly <= 16 ? promotionPly + 1 : episodeEnd(steps, allowConditional);
 	if (!end) return [];
 	const episode = steps.slice(0, end);
 	const attacker = steps[0].before.turn;
@@ -12201,6 +12232,12 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 				comparison = "prevented";
 				comparisonEvidence = `After ${bestSan}, ${alternative.san} is not check and ${escape.defence} captures the attacking ${alternative.after.board.get(alternative.move.to).role} on ${makeSquare(alternative.move.to)}. Legal immediate replies, recaptures and one countercheck cannot erase the local material gain. This refutes this checking sequence, not every possible later attack.`;
 			}
+		} else if (motif.id === "clearance" && !step.capture && step.after.isCheck()) {
+			const escape = clearanceKingDefence(alternative);
+			if (escape) {
+				comparison = "prevented";
+				comparisonEvidence = `${alternative.after.isCheck() ? `After ${bestSan}, ${escape.defence} answers ${alternative.san}.` : `After ${bestSan}, ${alternative.san} is not check, so ${escape.defence} lets the king escape before the cleared slider routes are used.`} Each of the ${escape.routes.length} newly opened routes has a legal defence against the immediate captures and checking continuation. This prevents this forcing clearance, not every possible later quiet combination.`;
+			}
 		} else if (motif.id === "doubleThreat" && proveQuietDoubleThreat(step)) {
 			const escape = counterCaptureMaterialDefence(alternative);
 			if (escape) {
@@ -12356,6 +12393,94 @@ function quietMaterialDefence(root, nodeLimit = 8192) {
 			const next = visit(root.after, move);
 			if (next.isCheck() || next.isEnd()) continue;
 			if (safe(next, 0, 2)) return makeSan(root.after, move);
+		}
+	} catch {
+		return null;
+	}
+	return null;
+}
+/** A formerly checking clearance may be answered by a king escape before the
+* newly opened slider routes are used. Verify each such route independently. */
+function clearanceKingDefence(root, nodeLimit = 32768) {
+	if (!Number.isFinite(nodeLimit) || nodeLimit <= 0 || root.capture || root.move.promotion || root.before.isCheck() || root.after.isEnd()) return null;
+	let nodes = nodeLimit;
+	const attackMemo = /* @__PURE__ */ new Map();
+	const defenceMemo = /* @__PURE__ */ new Map();
+	const visit = (pos, move) => {
+		if (--nodes < 0) throw new Error("Clearance defence budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const delta = (pos, move) => capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+	const safeAttack = (pos, balance, checks) => {
+		if (pos.isEnd() || balance >= 90) return false;
+		const key = `${makeFen(pos.toSetup())}:${balance}:${checks}`;
+		if (attackMemo.has(key)) return attackMemo.get(key);
+		for (const move of legalMoves(pos)) {
+			const next = visit(pos, move);
+			if (next.isCheckmate()) {
+				attackMemo.set(key, false);
+				return false;
+			}
+			if (delta(pos, move)) {
+				const gain = tacticalExchangeGain(pos, move);
+				if (gain <= -VALUE.king || balance + gain >= 90) {
+					attackMemo.set(key, false);
+					return false;
+				}
+			}
+			if (!next.isCheck()) continue;
+			if (!checks || !safeDefence(next, balance + delta(pos, move), checks - 1)) {
+				attackMemo.set(key, false);
+				return false;
+			}
+		}
+		attackMemo.set(key, true);
+		return true;
+	};
+	const safeDefence = (pos, balance, checks) => {
+		const key = `${makeFen(pos.toSetup())}:${balance}:${checks}`;
+		if (defenceMemo.has(key)) return defenceMemo.get(key);
+		for (const reply of legalMoves(pos)) {
+			const next = visit(pos, reply);
+			if (next.isCheck() || next.isEnd()) continue;
+			if (safeAttack(next, balance - delta(pos, reply), checks)) {
+				const san = makeSan(pos, reply);
+				defenceMemo.set(key, san);
+				return san;
+			}
+		}
+		defenceMemo.set(key, null);
+		return null;
+	};
+	try {
+		for (const flight of legalMoves(root.after)) {
+			if (root.after.board.get(flight.from)?.role !== "king" || capturedValue(root.after, flight)) continue;
+			const next = visit(root.after, flight);
+			if (next.isCheck() || !safeAttack(next, 0, 4)) continue;
+			const candidates = legalMoves(next).filter((move) => {
+				const piece = next.board.get(move.from);
+				return move.from !== root.move.to && [
+					"bishop",
+					"rook",
+					"queen"
+				].includes(piece.role) && root.before.board.get(move.from)?.role === piece.role && (move.to === root.move.from || between(move.from, move.to).has(root.move.from)) && !root.before.isLegal(move) && !capturedValue(next, move);
+			});
+			if (!candidates.length) continue;
+			const routes = [];
+			for (const move of candidates) {
+				const reply = safeDefence(visit(next, move), 0, 4);
+				if (!reply) break;
+				routes.push({
+					preparation: makeSan(next, move),
+					reply
+				});
+			}
+			if (routes.length === candidates.length) return {
+				defence: makeSan(root.after, flight),
+				routes
+			};
 		}
 	} catch {
 		return null;
@@ -12565,7 +12690,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 35;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 36;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -13043,7 +13168,8 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 	const promotionEpisode = rootMotifs.some((motif) => motif.id === "promotionCombination" && motif.ply === 1) && fullReplay.slice(0, 17).some((step) => step.before.turn === fullReplay[0].before.turn && step.move.promotion);
 	const terminal = fullReplay.findIndex((step) => step.after.isEnd() || promotionEpisode && step.before.turn === fullReplay[0].before.turn && step.move.promotion);
 	const episodeReplay = terminal < 0 ? fullReplay : fullReplay.slice(0, terminal + 1);
-	const replay = promotionEpisode ? episodeReplay.slice(0, 17) : episodeReplay;
+	const clearanceEpisode = rootMotifs[0]?.id === "clearance" ? forcingClearanceEpisodeLength(episodeReplay) : null;
+	const replay = clearanceEpisode !== null ? episodeReplay.slice(0, clearanceEpisode) : promotionEpisode ? episodeReplay.slice(0, 17) : episodeReplay;
 	const legalLine = replay.map((step) => step.uci);
 	const rawSteps = walkPV(fen, legalLine, fenSide(fen));
 	const evidence = /* @__PURE__ */ new Map();
@@ -13056,7 +13182,7 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 	}
 	let quietPlies = 0;
 	let connectedPlies = replay.length;
-	const provedForcingEpisode = rootMotifs.some((motif) => motif.ply === 1 && (motif.label === "Forcing Mate" && motif.value === 1e4 || motif.id === "promotionCombination" && promotionEpisode));
+	const provedForcingEpisode = clearanceEpisode !== null || rootMotifs.some((motif) => motif.ply === 1 && (motif.label === "Forcing Mate" && motif.value === 1e4 || motif.id === "promotionCombination" && promotionEpisode));
 	for (let index = 0; index < replay.length; index++) {
 		const step = replay[index];
 		const suffix = legalLine.slice(index);

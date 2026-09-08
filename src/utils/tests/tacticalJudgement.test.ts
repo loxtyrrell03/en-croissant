@@ -3,11 +3,12 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
 import { Chess } from "chessops/chess";
 import { makeFen, parseFen } from "chessops/fen";
-import { makeSan } from "chessops/san";
-import { parseUci } from "chessops/util";
+import { makeSan, parseSan } from "chessops/san";
+import { makeUci, parseUci } from "chessops/util";
 import { buildLiveTacticalScan } from "@/utils/tacticalMotifs/liveTactics";
 import {
     counterCaptureMaterialDefence,
+    clearanceKingDefence,
     proveCheckingMaterialAttack,
     proveQuietDoubleThreat,
     replayTacticalLine,
@@ -493,6 +494,76 @@ async function analyse(engine: string, fen: string, searchMove?: string) {
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(!engine || !existsSync(engine) || !process.env.TACTICAL_CLEARANCE_CAUSE_REPORT)(
+        "inspect Bh7 clearance after the queen capture versus the king defence",
+        async () => {
+            const fen = "2rr2k1/1p3pp1/1q2p3/p2pP1N1/1n1P4/1Q1B4/1P3P1P/5RK1 b - - 0 21";
+            const actualFen = makeFen(replayTacticalLine(fen, ["b6d4", "d3h7"])[1].after.toSetup());
+            const betterFen = makeFen(replayTacticalLine(fen, ["g8f8", "d3h7"])[1].after.toSetup());
+            const actual = [...(await analyse(engine, actualFen)).values()].sort(
+                (a, b) => a.multipv - b.multipv,
+            );
+            const better = [...(await analyse(engine, betterFen)).values()].sort(
+                (a, b) => a.multipv - b.multipv,
+            );
+            expect(actual[0].depth).toBe(16);
+            expect(better[0].depth).toBe(16);
+            const witness = clearanceKingDefence(replayTacticalLine(fen, ["g8f8", "d3h7"])[1]);
+            expect(actual[0].cp).toBeLessThan(-100);
+            expect(better[0].cp).toBeGreaterThan(100);
+            expect(witness?.defence).toBe("Ke7");
+            const otherDefenceFen = makeFen(
+                replayTacticalLine(fen, ["d8d7", "d3h7"])[1].after.toSetup(),
+            );
+            const otherDefence = [...(await analyse(engine, otherDefenceFen)).values()].sort(
+                (a, b) => a.multipv - b.multipv,
+            );
+            const routeChecks = [];
+            const root = replayTacticalLine(fen, ["g8f8", "d3h7"])[1];
+            for (const route of witness!.routes) {
+                const position = root.after.clone();
+                position.play(parseSan(position, witness!.defence)!);
+                position.play(parseSan(position, route.preparation)!);
+                const reply = makeUci(parseSan(position, route.reply)!);
+                const search = [
+                    ...(await analyse(engine, makeFen(position.toSetup()), reply)).values(),
+                ][0];
+                expect(search.cp).toBeGreaterThan(100);
+                routeChecks.push({ ...route, fen: makeFen(position.toSetup()), search });
+            }
+            const classification = classifyMistakeReviewMotifs({
+                fen,
+                bestMoveUci: "g8f8",
+                playedMoveUci: "b6d4",
+                pvUci: ["g8f8"],
+                refutationUci: ["d3h7", ...actual[0].pvUci],
+            });
+            expect(classification.allowedMotifs[0]).toMatchObject({
+                id: "clearance",
+                comparison: "prevented",
+            });
+            writeFileSync(
+                process.env.TACTICAL_CLEARANCE_CAUSE_REPORT!,
+                JSON.stringify(
+                    {
+                        fen,
+                        actualFen,
+                        betterFen,
+                        actual,
+                        better,
+                        witness,
+                        routeChecks,
+                        otherDefenceFen,
+                        otherDefence,
+                        classification,
+                    },
+                    null,
+                    2,
+                ),
+            );
+        },
+        60000,
+    );
     test.skipIf(!engine || !existsSync(engine) || !process.env.TACTICAL_DOUBLE_DEFENCE_REPORT)(
         "inspect defences to Nd7 before and after moving the g7 pawn",
         async () => {
@@ -1547,6 +1618,7 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     played: "b6d4",
                     source: "allowed",
                     primary: "clearance",
+                    comparison: "prevented",
                     why: "Taking on d4 places the queen on the future fork square and allows Bh7+ followed by the cleared queen route. The two king replies have different forcing continuations.",
                 },
                 {

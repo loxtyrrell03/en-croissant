@@ -1,5 +1,61 @@
 # Tactical relevance judgement, 2026-09-08
 
+## Adapter 36: checking clearance, causal king defence and bounded payoffs
+
+The real Qxd4/Bh7+ case now has a constructive comparison, rather than an
+accusation based only on the opponent's post-move PV. Before the mistake:
+`2rr2k1/1p3pp1/1q2p3/p2pP1N1/1n1P4/1Q1B4/1P3P1P/5RK1 b - - 0 21`.
+Qxd4 permits Bh7+, clearing d3 for Qf3 after Kf8 or Qh3 after Kh8.
+Choosing Kf8 first makes Bh7 non-checking and allows Ke7 before those queen
+routes are used. A separate bounded defence search checks every newly opened
+non-capturing slider route, every immediate attacking capture and up to four
+checks, requiring actual legal defensive replies. A surviving check at the
+frontier, unknown exchange, exhausted 32,768-move budget, captured root or
+missing slider route cannot certify prevention. Longer quiet preparations
+remain outside this local comparison. No failed attacking proof is treated
+as a successful defence.
+
+`clearance-cause-stockfish-18.json` records eight fresh depth-16 searches with
+Stockfish 18, MultiPV3, Threads1/Hash32. The actual position after Qxd4/Bh7+
+scores -596 cp for Black; after Kf8/Bh7 it scores +243 with Ke7. The helper's
+five concrete routes/replies after Ke7 were also searched with restricted
+roots: Qd3/Na2 +199, Qe3/Na2 +183, Qf3/f5 +169, Qg3/Na2 +185 and Qh3/Na2
++213 cp, all from Black's perspective. Those are safe witnesses, not claims
+of optimal replies. Rd7 also has a legal Kf8 defence to Bh7+; f5 instead makes
+Bh7 illegal by blocking the bishop's route. The all-defences clearance proof's
+100 cp lower bound is not the engine's full-position evaluation or a claim
+that every reply loses the entire queen.
+
+Chess review of the actual line exposed two presentation errors. A proved
+clearance may include a quiet queen preparation and quiet defence, so the
+ordinary two-quiet-ply cutoff hid its later fork. Its actual proved branch now
+extends the episode only through its first profitable nominated-target capture,
+within the existing four-check/13-ply limit. Both root evidence and timeline
+use that boundary: Bxf7+ can no longer borrow Qxf5 from play after Nxd4 already
+won the queen. In the fresh line the useful events are Bh7+ clearance (ply 1),
+Qh3 preparation (3), Qh7+ fork preparation (9), Nxe6+ fork (11), and Nxd4 (13).
+A smaller attack on an already-pinned g7 pawn is omitted at Nxe6+: an independent
+fork wins more against different victims. New pins, shared victims and pins
+protecting the forker from the pinned piece's recapture remain eligible.
+
+Twenty new regressions cover the causal branches, legally replayed colour
+reflection, missing participants, protected f7 capture, budgets, truncation
+invariance, delayed/unproved queen preparations and subordinate-pin noise.
+The 24-file selection passes 386 tests (two opt-in skips); all 32 fresh
+before/after judgements and the eight-search clearance diagnostic pass. The
+frozen 32-case lesson report changes only Bh7+'s comparison, and all 57 built
+worker main labels remain unchanged. Cold worker parity passes all 57 cases
+(104 ms median, 424 ms p95, 724 ms maximum here; excludes engine/WebView/UI).
+Targeted lint, shared review-worker and 8,854-module production builds pass;
+TypeScript retains the unrelated OTB number/bigint fixture error. Development
+HTTP worker tests also pass. This is development evidence, not general tactical
+accuracy, arbitrary-combination proof or physical UI verification. No native
+package, website, Outpost or running service was deployed/restarted.
+
+Reproduce the engine diagnostic by setting `TACTICAL_JUDGEMENT_ENGINE` to a
+local UCI engine and `TACTICAL_CLEARANCE_CAUSE_REPORT` to a report path, then
+running `node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.ts --environment node -t "inspect Bh7 clearance"`.
+
 This evaluates the lesson shown for a position, rather than agreement with a
 puzzle's complete tag set. The initial nine positions and expected lessons were chosen before
 the first relevance filter; subsequent cases document iterative judgement below. Stockfish 18 searched each position afresh at depth

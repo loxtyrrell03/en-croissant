@@ -89,7 +89,7 @@ test("real frozen engine replies identify the same primary cause and keep later 
     expect(result.allowedTimeline).toContainEqual(expect.objectContaining({ id: "fork", ply: 3 }));
 });
 
-test("a real verified attack without causal proof stays visible without a false accusation", () => {
+test("a verified real attack without a comparison line stays visible without a false accusation", () => {
     const rows = JSON.parse(
         readFileSync("benchmarks/tactical-relevance/causal-stockfish-18.json", "utf8"),
     );
@@ -100,8 +100,10 @@ test("a real verified attack without causal proof stays visible without a false 
     const result = classifyMistakeReviewMotifs({
         fen: row.fen,
         playedMoveUci: row.played,
-        bestMoveUci: row.before[0].pvUci[0],
-        pvUci: row.before[0].pvUci,
+        // The after-move engine line is known, but no better-move comparison
+        // was supplied. A verified threat alone cannot prove causation.
+        bestMoveUci: null,
+        pvUci: [],
         refutationUci: row.after[0].pvUci,
     });
     const explanation = buildMistakeReviewTacticalExplanation(result)!;
