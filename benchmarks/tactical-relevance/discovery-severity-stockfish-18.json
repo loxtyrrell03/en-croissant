@@ -1,0 +1,468 @@
+{
+  "fen": "Q2b1rk1/p1p2ppp/1p1p4/3N4/7P/5NPB/PPP1P3/2KR4 w - - 1 20",
+  "searches": [
+    {
+      "played": "Nd4",
+      "afterFen": "Q2b1rk1/p1p2ppp/1p1p4/3N4/3N3P/6PB/PPP1P3/2KR4 b - - 2 20",
+      "unrestricted": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d8g5",
+            "h4g5",
+            "f8a8",
+            "d5c7",
+            "a8b8",
+            "d4c6",
+            "b8b7",
+            "d1d6",
+            "h7h6",
+            "c7d5",
+            "h6g5",
+            "d6d8",
+            "g8h7",
+            "h3f5",
+            "g7g6",
+            "f5d3",
+            "h7g7",
+            "c1d2",
+            "g5g4",
+            "c2c3",
+            "b7d7",
+            "d8d7"
+          ],
+          "pvSan": [
+            "Bg5+",
+            "hxg5",
+            "Rxa8",
+            "Nxc7",
+            "Rb8",
+            "Nc6",
+            "Rb7",
+            "Rxd6",
+            "h6",
+            "Nd5",
+            "hxg5",
+            "Rd8+",
+            "Kh7",
+            "Bf5+",
+            "g6",
+            "Bd3",
+            "Kg7",
+            "Kd2",
+            "g4",
+            "c3",
+            "Rd7",
+            "Rxd7"
+          ],
+          "cp": -890,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "c7c5",
+            "d4c6",
+            "d8g5",
+            "h4g5",
+            "f8a8",
+            "d5c7",
+            "a8f8",
+            "d1d6",
+            "g7g6",
+            "c6e5",
+            "b6b5",
+            "e5c6",
+            "g8g7",
+            "d6d7",
+            "b5b4",
+            "c7e6",
+            "g7g8",
+            "e6f8",
+            "g8f8"
+          ],
+          "pvSan": [
+            "c5",
+            "Nc6",
+            "Bg5+",
+            "hxg5",
+            "Rxa8",
+            "Nc7",
+            "Rf8",
+            "Rxd6",
+            "g6",
+            "Ne5",
+            "b5",
+            "Nc6",
+            "Kg7",
+            "Rd7",
+            "b4",
+            "Ne6+",
+            "Kg8",
+            "Nxf8",
+            "Kxf8"
+          ],
+          "cp": -903,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "f8e8",
+            "d5c7",
+            "e8f8",
+            "a8d8",
+            "f8d8",
+            "d4c6",
+            "d8f8",
+            "d1d6",
+            "g7g6",
+            "c2c3"
+          ],
+          "pvSan": [
+            "Re8",
+            "Nxc7",
+            "Rf8",
+            "Qxd8",
+            "Rxd8",
+            "Nc6",
+            "Rf8",
+            "Rxd6",
+            "g6",
+            "c3"
+          ],
+          "cp": -919,
+          "mate": null
+        }
+      ],
+      "checkingDiscovery": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d8g5",
+          "h4g5",
+          "f8a8",
+          "d5c7",
+          "a8f8",
+          "a2a4",
+          "d6d5",
+          "c1d2",
+          "h7h6",
+          "g5h6",
+          "g7g6",
+          "c2c3",
+          "g8h7",
+          "d2c2",
+          "h7h6",
+          "d1f1",
+          "h6g7",
+          "c7e6",
+          "g7g8",
+          "e6f8",
+          "g8f8"
+        ],
+        "pvSan": [
+          "Bg5+",
+          "hxg5",
+          "Rxa8",
+          "Nxc7",
+          "Rf8",
+          "a4",
+          "d5",
+          "Kd2",
+          "h6",
+          "gxh6",
+          "g6",
+          "c3",
+          "Kh7",
+          "Kc2",
+          "Kxh6",
+          "Rf1",
+          "Kg7",
+          "Nce6+",
+          "Kg8",
+          "Nxf8",
+          "Kxf8"
+        ],
+        "cp": -867,
+        "mate": null
+      },
+      "classification": {
+        "motifs": [
+          {
+            "id": "discoveredAttack",
+            "label": "Discovered Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d8g5",
+            "evidence": "Bg5+ vacates d8, uncovering the rook on f8 against the queen on a8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+            "value": 570,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "discoveredAttack",
+            "label": "Discovered Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d8g5",
+            "evidence": "Bg5+ vacates d8, uncovering the rook on f8 against the queen on a8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+            "value": 570,
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxa8 wins the loose queen on a8.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f8a8",
+            "relevance": "secondary",
+            "value": 900,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-38"
+      }
+    },
+    {
+      "played": "Ng5",
+      "afterFen": "Q2b1rk1/p1p2ppp/1p1p4/3N2N1/7P/6PB/PPP1P3/2KR4 b - - 2 20",
+      "unrestricted": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d8g5",
+            "h4g5",
+            "f8a8",
+            "d5c7",
+            "a8d8",
+            "e2e4",
+            "h7h6",
+            "g5h6",
+            "g7h6",
+            "c1d2",
+            "g8f8",
+            "d2d3",
+            "h6h5"
+          ],
+          "pvSan": [
+            "Bxg5+",
+            "hxg5",
+            "Rxa8",
+            "Nxc7",
+            "Rd8",
+            "e4",
+            "h6",
+            "gxh6",
+            "gxh6",
+            "Kd2",
+            "Kf8",
+            "Kd3",
+            "h5"
+          ],
+          "cp": -749,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "c7c6",
+            "g5f7",
+            "c6d5",
+            "f7d8",
+            "h7h6",
+            "c2c3",
+            "g8h7",
+            "a8a7"
+          ],
+          "pvSan": [
+            "c6",
+            "Nxf7",
+            "cxd5",
+            "Nxd8",
+            "h6",
+            "c3",
+            "Kh7",
+            "Qxa7"
+          ],
+          "cp": -891,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "h7h6",
+            "g5f7",
+            "g8f7",
+            "d1f1",
+            "d8f6",
+            "a8a7",
+            "f7g8",
+            "d5f6",
+            "g8h8",
+            "c2c3",
+            "f8f6"
+          ],
+          "pvSan": [
+            "h6",
+            "Nxf7",
+            "Kxf7",
+            "Rf1+",
+            "Bf6",
+            "Qxa7",
+            "Kg8",
+            "Nxf6+",
+            "Kh8",
+            "c3",
+            "Rxf6"
+          ],
+          "cp": -901,
+          "mate": null
+        }
+      ],
+      "checkingDiscovery": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d8g5",
+          "h4g5",
+          "f8a8",
+          "d5c7",
+          "a8d8",
+          "e2e4",
+          "g7g6",
+          "e4e5",
+          "d6d5",
+          "c2c3",
+          "h7h5",
+          "e5e6",
+          "f7e6",
+          "h3e6",
+          "g8g7",
+          "e6d5"
+        ],
+        "pvSan": [
+          "Bxg5+",
+          "hxg5",
+          "Rxa8",
+          "Nxc7",
+          "Rd8",
+          "e4",
+          "g6",
+          "e5",
+          "d5",
+          "c3",
+          "h5",
+          "e6",
+          "fxe6",
+          "Bxe6+",
+          "Kg7",
+          "Bxd5"
+        ],
+        "cp": -746,
+        "mate": null
+      },
+      "classification": {
+        "motifs": [
+          {
+            "id": "discoveredAttack",
+            "label": "Discovered Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d8g5",
+            "evidence": "Bxg5+ vacates d8, uncovering the rook on f8 against the queen on a8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+            "value": 890,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "discoveredAttack",
+            "label": "Discovered Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d8g5",
+            "evidence": "Bxg5+ vacates d8, uncovering the rook on f8 against the queen on a8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+            "value": 890,
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxa8 wins the loose queen on a8.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f8a8",
+            "relevance": "secondary",
+            "value": 900,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-38"
+      }
+    }
+  ],
+  "comparison": {
+    "allowedMotifs": [
+      {
+        "id": "discoveredAttack",
+        "label": "Discovered Attack",
+        "source": "allowed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "d8g5",
+        "evidence": "Bxg5+ vacates d8, uncovering the rook on f8 against the queen on a8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+        "value": 890,
+        "relevance": "primary",
+        "comparison": "reduced",
+        "comparisonEvidence": "After Nd4, Bg5+ still uncovers the same material attack with check, but hxg5 limits its immediate exchange gain to 5.7 pawns rather than 8.9 after Ng5. Initial captures and legal recaptures are included. This compares the local checking-discovery exchange, not the full position's evaluation."
+      }
+    ],
+    "missedMotifs": [],
+    "motifClassifierVersion": "site-55.adapter-38",
+    "allowedTimeline": [
+      {
+        "id": "discoveredAttack",
+        "label": "Discovered Attack",
+        "source": "allowed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "d8g5",
+        "evidence": "Bxg5+ vacates d8, uncovering the rook on f8 against the queen on a8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+        "value": 890,
+        "relevance": "primary",
+        "comparison": "reduced",
+        "comparisonEvidence": "After Nd4, Bg5+ still uncovers the same material attack with check, but hxg5 limits its immediate exchange gain to 5.7 pawns rather than 8.9 after Ng5. Initial captures and legal recaptures are included. This compares the local checking-discovery exchange, not the full position's evaluation.",
+        "actor": "black"
+      },
+      {
+        "id": "hangingPiece",
+        "label": "Hanging Piece",
+        "confidence": "high",
+        "evidence": "f8a8 wins the loose queen on a8.",
+        "source": "allowed",
+        "ply": 3,
+        "moveUci": "f8a8",
+        "relevance": "secondary",
+        "value": 900,
+        "actor": "black"
+      }
+    ]
+  }
+}

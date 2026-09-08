@@ -494,6 +494,55 @@ async function analyse(engine: string, fen: string, searchMove?: string) {
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(!engine || !process.env.TACTICAL_DISCOVERY_SEVERITY_REPORT)(
+        "inspect the existing checking discovery made costlier by Ng5",
+        async () => {
+            const fen = "Q2b1rk1/p1p2ppp/1p1p4/3N4/7P/5NPB/PPP1P3/2KR4 w - - 1 20";
+            const report = [];
+            for (const played of ["f3d4", "f3g5"]) {
+                const position = replayTacticalLine(fen, [played])[0];
+                const afterFen = makeFen(position.after.toSetup());
+                const unrestricted = [...(await analyse(engine, afterFen)).values()];
+                const checkingDiscovery = [
+                    ...(await analyse(engine, afterFen, "d8g5")).values(),
+                ][0];
+                expect(checkingDiscovery.depth).toBe(16);
+                expect(checkingDiscovery.pvUci[0]).toBe("d8g5");
+                const classification = classifyPositionTacticalMotifs({
+                    fen: afterFen,
+                    pvUci: checkingDiscovery.pvUci,
+                    pvSan: checkingDiscovery.pvSan,
+                });
+                expect(classification.motifs[0]).toMatchObject({
+                    id: "discoveredAttack",
+                    value: played === "f3d4" ? 570 : 890,
+                });
+                report.push({
+                    played: position.san,
+                    afterFen,
+                    unrestricted,
+                    checkingDiscovery,
+                    classification,
+                });
+            }
+            expect(report[1].checkingDiscovery.cp!).toBeGreaterThan(
+                report[0].checkingDiscovery.cp!,
+            );
+            const comparison = classifyMistakeReviewMotifs({
+                fen,
+                bestMoveUci: "f3d4",
+                playedMoveUci: "f3g5",
+                pvUci: ["f3d4", ...report[0].unrestricted[0].pvUci],
+                refutationUci: report[1].checkingDiscovery.pvUci,
+            });
+            expect(comparison.allowedMotifs[0].comparison).toBe("reduced");
+            writeFileSync(
+                process.env.TACTICAL_DISCOVERY_SEVERITY_REPORT!,
+                JSON.stringify({ fen, searches: report, comparison }, null, 2),
+            );
+        },
+        60000,
+    );
     test.skipIf(!engine || !existsSync(engine) || !process.env.TACTICAL_CLEARANCE_CAUSE_REPORT)(
         "inspect Bh7 clearance after the queen capture versus the king defence",
         async () => {

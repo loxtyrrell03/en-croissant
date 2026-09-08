@@ -1,5 +1,23 @@
 # Tactical relevance judgement, 2026-09-08
 
+## Adapter 38: costlier existing checking discoveries
+
+The adjacent audit's Ng5 case now distinguishes an existing discovery from
+making it more expensive. Both Nd4/Bg5+ and Ng5/Bxg5+ uncover the same rook
+against the queen; completed all-defence immediate exchanges establish 570
+versus 890 cp. Review says **More costly**, with the legal hxg5 defence, not
+that Ng5 created a new attack. Identical participants, complete exchange
+leaves and non-capturing user choices are required; lower bounds do not prove
+severity. Four fresh engine searches confirm the direction but a different
+full-position difference (121 cp), which is kept separate from local material.
+See [the adjacent review](ordinary-adjacent-review.md) and
+`discovery-severity-stockfish-18.json` for proof scope and reproduction.
+Nine new regressions pass within 403 selected tests (two opt-in skips), along
+with all 32 fresh before/after judgements, 81 built-worker parity cases,
+development HTTP worker execution, targeted lint and both production builds
+(8,860 app modules). The earlier 32-case lesson report is unchanged; the known
+OTB fixture type error remains. No physical UI or deployment claim is made.
+
 ## Adapter 37: adjacent ordinary-game audit and profitable recaptures
 
 The [adjacent audit](ordinary-adjacent-review.md) documents all 24 newly sampled

@@ -12209,6 +12209,30 @@ function compareBestLineTacticalDefence(fen, playedMove, actualLine, bestLine, m
 		};
 	});
 }
+/** A severity comparison needs completed immediate exchange leaves, not
+* merely a lower bound from an extended discovered-attack proof. Include
+* every original target and slider; equal values on different victims do
+* not certify the same danger. User-move captures are excluded by the caller. */
+function checkingDiscoveryExchange(step) {
+	if (!step.after.isCheck() || step.move.promotion || step.before.isCheck()) return null;
+	const discovery = discoveredEvidence([step], "available");
+	if (!discovery || discovery.motif.id !== "discoveredAttack") return null;
+	const capturers = [...new Set([...discovery.rays.map((ray) => ray.from), step.move.to])];
+	const proof = materialThreatProof(step, discovery.targets, capturers);
+	if (proof.kind !== "proven" || !proof.complete || proof.gain >= 1e4) return null;
+	const participant = (square) => {
+		const piece = step.after.board.get(square);
+		return `${square}:${piece.color}:${piece.role}`;
+	};
+	return {
+		proof,
+		identity: JSON.stringify([
+			discovery.rays.map((ray) => `${participant(ray.from)}>${participant(ray.target)}`).sort(),
+			discovery.targets.map(participant).sort(),
+			participant(step.move.to)
+		])
+	};
+}
 /** Compare the same immediate reply after the played and best moves. We only
 * make a causal statement where legality/geometry/exchange provides a witness;
 * replaying the old full PV after a different move would assume bad defence. */
@@ -12232,6 +12256,16 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 		if (!alternative) {
 			comparison = "prevented";
 			comparisonEvidence = `${bestSan} makes the immediate reply ${step.san} illegal.`;
+		} else if (motif.id === "discoveredAttack" && step.after.isCheck() && alternative.after.isCheck() && !actual[0].capture && !better[0].capture) {
+			const original = checkingDiscoveryExchange(step);
+			const other = checkingDiscoveryExchange(alternative);
+			if (original && other && original.identity === other.identity) if (other.proof.gain >= original.proof.gain) {
+				comparison = "persists";
+				comparisonEvidence = `After ${bestSan}, ${alternative.san} still uncovers the same material attack with check and at least the same verified immediate exchange gain.`;
+			} else {
+				comparison = "reduced";
+				comparisonEvidence = `After ${bestSan}, ${alternative.san} still uncovers the same material attack with check, but ${other.proof.defence} limits its immediate exchange gain to ${(other.proof.gain / 100).toFixed(1)} pawns rather than ${(original.proof.gain / 100).toFixed(1)} after ${actual[0].san}. Initial captures and legal recaptures are included. This compares the local checking-discovery exchange, not the full position's evaluation.`;
+			}
 		} else if (motif.id === "discoveredAttack" && !step.capture && !step.after.isCheck() && revealedRays(step).length > 0 && revealedRays(alternative).length === 0) {
 			const defence = quietMaterialDefence(alternative);
 			if (defence) {
@@ -12712,7 +12746,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 37;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 38;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

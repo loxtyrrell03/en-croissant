@@ -1,4 +1,4 @@
-# Adjacent ordinary-game audit (adapter 37)
+# Adjacent ordinary-game audit (adapter 38)
 
 Selection was fixed before inspecting output: use the same three complete
 frozen game mainlines, but reached plies 9, 14, 19, ... through 59, skipping
@@ -28,7 +28,7 @@ open cases below must not become successful empty-result assertions.
 | ordinary-1:ply24 | Qxc6+ forces mate in three. It outranks the loose knight and rook captures; Nxf2 allowed it, whereas b5 blocks the queen's route. |
 | ordinary-1:ply29 | Black's Nd3+ is a defensive continuation. The actual missed lesson is White's Qxd8# instead of Bxd8. |
 | ordinary-1:ply34 | Qc6+ continues the attack with a large material lead. The current short line does not establish an additional named root mechanism. |
-| ordinary-1:ply39 | Bxg5+ uncovers Rf8 against Qa8 while checking Kc1; Rxa8 is a real payoff. Ng5 worsens the position, but the local comparison against Nd4 remains unproved, so review stays neutral about causation. |
+| ordinary-1:ply39 | Bxg5+ uncovers Rf8 against Qa8 while checking Kc1; Rxa8 is a real payoff. Adapter 38 verifies that Ng5 makes this existing attack more costly: Nd4 still permits Bg5+, but hxg5 limits the local exchange to 570 cp instead of 890. This is not a newly created discovery. |
 | ordinary-1:ply44 | Rf1 is ordinary continuation; the earlier pawn capture is not a tactical combination. |
 | ordinary-2:ply9 | Ng8 answers the pawn attack after best-move e5; no tactical headline. |
 | ordinary-2:ply14 | Qh5+ starts a verified forcing attack. Its actual queen-for-bishop recapture was wrongly hidden; fixed below. The later Qxb7 rook trap is conditional, not the root mechanism. The comparison against Ne7 remains unproved. |
@@ -71,6 +71,43 @@ label or primary-line timeline changes in this 24-position sample; the previous
 remain unknown. These are development findings, not general accuracy claims.
 
 ## Reproduction
+
+### Adapter 38: existing checking discovery made more costly
+
+Before Ng5: `Q2b1rk1/p1p2ppp/1p1p4/3N4/7P/5NPB/PPP1P3/2KR4 w - - 1 20`.
+Both Nd4 and Ng5 permit the same bishop move uncovering Rf8 against Qa8.
+Ng5 additionally offers the knight: `Bxg5+ hxg5 Rxa8` gains 890 cp locally,
+whereas `Bg5+ hxg5 Rxa8` after Nd4 gains 570. Review now says **More costly**,
+retains the discovered-attack lesson and names the actual legal limiting reply.
+
+The comparison requires identical revealed rays, targets and attacking mover,
+and completed immediate exchange leaves against every legal defence on both
+sides of the comparison. Extended lower bounds, promotions, changed victims,
+user-move captures and unresolved exchanges cannot certify reduced severity.
+Equal or larger alternative gains remain existing danger. Quiet-discovery
+defences and other causal mechanisms are unchanged.
+
+`discovery-severity-stockfish-18.json` contains four fresh depth-16 searches.
+Unrestricted Stockfish chooses Bg5+ after Nd4 (-890 cp for Black) and Bxg5+
+after Ng5 (-749). Root-restricted scores are -867 and -746 respectively.
+The full-position difference of 121 cp is not the local exchange difference
+of 320 cp; White remains ahead in both positions. The frozen audit's older
+Nd4/Re8 PV is retained as provenance, not asserted to remain the best reply.
+
+Nine new regressions cover the real exchange, legal reflection, unchanged
+severity, removal of the recapturing pawn, missing/changed queen, best-move
+non-accusation and root-only/full-line agreement. The 403-test selection,
+all 32 fresh before/after judgements, four new engine searches, 81 built-worker
+parity cases, development HTTP worker execution and both production builds
+pass. The earlier 32-case lesson report is unchanged. TypeScript retains only
+the unrelated OTB number/bigint fixture error. This is bounded development
+evidence, not general accuracy or physical UI proof.
+
+Reproduce with `TACTICAL_JUDGEMENT_ENGINE` and
+`TACTICAL_DISCOVERY_SEVERITY_REPORT`, selecting `inspect the existing checking
+discovery` in `tacticalJudgement.test.ts` with `--environment node`.
+
+### Original audit and current replay
 
 To intentionally create a separate fresh engine audit, set
 `TACTICAL_JUDGEMENT_ENGINE` and `TACTICAL_ORDINARY_ADJACENT_REPORT` to a new report
