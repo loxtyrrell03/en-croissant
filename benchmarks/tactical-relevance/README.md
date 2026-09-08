@@ -1,5 +1,20 @@
 # Tactical relevance judgement, 2026-09-08
 
+## Adapter 37: adjacent ordinary-game audit and profitable recaptures
+
+The [adjacent audit](ordinary-adjacent-review.md) documents all 24 newly sampled
+positions, 48 fresh depth-16 searches, the missing Qxd5+ queen-for-bishop payoff,
+and remaining long/quiet-attack misses. The fixed stride is disjoint from the
+earlier sample but uses the same three games, so it is not an independent
+holdout or a general accuracy estimate. Winning recaptures now retain their
+net local material value and trade context; routine compensated exchanges stay
+suppressed. The original engine/output audit remains frozen and current replay
+results are separate. Verification: 393 selected tests (three opt-in skips),
+81 cold built-worker parity cases, development HTTP worker execution, targeted
+lint, shared review-worker and 8,859-module production builds. The unrelated
+OTB number/bigint fixture type error remains. No physical UI or deployment
+claim is made.
+
 ## Adapter 36: checking clearance, causal king defence and bounded payoffs
 
 The real Qxd4/Bh7+ case now has a constructive comparison, rather than an

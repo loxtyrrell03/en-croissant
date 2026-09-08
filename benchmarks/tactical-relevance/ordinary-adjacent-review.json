@@ -1,0 +1,379 @@
+[
+  {
+    "id": "ordinary-1:ply9",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-1:ply14",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-1:ply19",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-1:ply24",
+    "result": {
+      "motifs": [
+        {
+          "id": "mateIn3",
+          "label": "Forcing Mate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "a4c6",
+          "value": 10000,
+          "evidence": "Qxc6+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxc6+ Qd7 Qxa8+ Qc8 Qxc8#. The exact continuation depends on the defence.",
+          "relevance": "primary"
+        },
+        {
+          "id": "mateIn3",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Qxc8# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 5,
+          "moveUci": "a8c8",
+          "relevance": "secondary",
+          "value": 10000
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxc6+ wins the loose knight on c6.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "a4c6",
+          "relevance": "secondary",
+          "value": 320
+        }
+      ],
+      "timeline": [
+        {
+          "id": "mateIn3",
+          "label": "Forcing Mate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "a4c6",
+          "value": 10000,
+          "evidence": "Qxc6+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxc6+ Qd7 Qxa8+ Qc8 Qxc8#. The exact continuation depends on the defence.",
+          "relevance": "primary",
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxc6+ wins the loose knight on c6.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "a4c6",
+          "relevance": "secondary",
+          "value": 320,
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxa8+ wins the loose rook on a8.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "c6a8",
+          "relevance": "secondary",
+          "value": 500,
+          "actor": "white"
+        },
+        {
+          "id": "mateIn3",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Qxc8# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 5,
+          "moveUci": "a8c8",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-1:ply29",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-1:ply34",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-1:ply39",
+    "result": {
+      "motifs": [
+        {
+          "id": "discoveredAttack",
+          "label": "Discovered Attack",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d8g5",
+          "evidence": "Bxg5+ vacates d8, uncovering the rook on f8 against the queen on a8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+          "value": 890,
+          "relevance": "primary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "discoveredAttack",
+          "label": "Discovered Attack",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "d8g5",
+          "evidence": "Bxg5+ vacates d8, uncovering the rook on f8 against the queen on a8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check.",
+          "value": 890,
+          "relevance": "primary",
+          "actor": "black"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Rxa8 wins the loose queen on a8.",
+          "source": "available",
+          "ply": 3,
+          "moveUci": "f8a8",
+          "relevance": "secondary",
+          "value": 900,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-1:ply44",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-2:ply9",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-2:ply14",
+    "result": {
+      "motifs": [
+        {
+          "id": "forcingAttack",
+          "label": "Forcing Attack",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e2h5",
+          "value": 100,
+          "evidence": "Qh5+ starts a checking attack that wins material or mates against every legal reply. After g6, Bc4+ d5 Qxd5+ Ke8 Qxd8+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+          "relevance": "primary"
+        },
+        {
+          "id": "trappedPiece",
+          "label": "Trapped Rook",
+          "source": "available",
+          "confidence": "high",
+          "ply": 9,
+          "moveUci": "d5b7",
+          "value": 430,
+          "evidence": "Qxb7 attacks the rook on a8. It has no safe move, including captures. Defending it also concedes material: Bd5 is answered by Nxd5. Every legal defence loses material through the trapped piece or its defender. This wins additional material beyond the initial capture.",
+          "relevance": "secondary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "forcingAttack",
+          "label": "Forcing Attack",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e2h5",
+          "value": 100,
+          "evidence": "Qh5+ starts a checking attack that wins material or mates against every legal reply. After g6, Bc4+ d5 Qxd5+ Ke8 Qxd8+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+          "relevance": "primary",
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Winning Recapture",
+          "confidence": "high",
+          "evidence": "Qxd5+ wins the queen on d5 in exchange for the bishop just captured there. The settled local exchange gains 5.7 pawns of material; this is the payoff, not a newly hanging piece.",
+          "source": "available",
+          "ply": 7,
+          "moveUci": "h5d5",
+          "relevance": "secondary",
+          "value": 570,
+          "actor": "white"
+        },
+        {
+          "id": "trappedPiece",
+          "label": "Trapped Rook",
+          "source": "available",
+          "confidence": "high",
+          "ply": 9,
+          "moveUci": "d5b7",
+          "value": 430,
+          "evidence": "Qxb7 attacks the rook on a8. It has no safe move, including captures. Defending it also concedes material: Bd5 is answered by Nxd5. Every legal defence loses material through the trapped piece or its defender. This wins additional material beyond the initial capture.",
+          "relevance": "secondary",
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-2:ply19",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-2:ply24",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-2:ply29",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-2:ply34",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-2:ply39",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-2:ply44",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-2:ply49",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-2:ply54",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-2:ply59",
+    "result": {
+      "motifs": [
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Rxg2# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "e2g2",
+          "relevance": "primary",
+          "value": 10000
+        }
+      ],
+      "timeline": [
+        {
+          "id": "mateIn1",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Rxg2# is checkmate: the king is in check and there is no legal reply.",
+          "source": "available",
+          "ply": 1,
+          "moveUci": "e2g2",
+          "relevance": "primary",
+          "value": 10000,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-3:ply9",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-3:ply14",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-3:ply19",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-3:ply24",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  },
+  {
+    "id": "ordinary-3:ply29",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-37"
+    }
+  }
+]

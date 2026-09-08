@@ -701,7 +701,13 @@ describe("expert tactical judgement with fresh engine lines", () => {
         },
         60000,
     );
-    test.skipIf(!engine || !process.env.TACTICAL_ORDINARY_GAME_REPORT)(
+    test.skipIf(
+        !engine ||
+            !(
+                process.env.TACTICAL_ORDINARY_GAME_REPORT ||
+                process.env.TACTICAL_ORDINARY_ADJACENT_REPORT
+            ),
+    )(
         "audit an output-blind longitudinal sample of ordinary games",
         async () => {
             const fixture = JSON.parse(
@@ -719,7 +725,10 @@ describe("expert tactical judgement with fresh engine lines", () => {
             for (const game of fixture.games) {
                 const steps = replayTacticalLine(game.startFen, game.moves);
                 expect(steps).toHaveLength(game.moves.length);
-                for (let index = 7; index < Math.min(60, steps.length); index += 5) {
+                // A second fixed, disjoint sample is nominated before looking
+                // at its output; never replace or reselect the original rows.
+                const firstIndex = process.env.TACTICAL_ORDINARY_ADJACENT_REPORT ? 8 : 7;
+                for (let index = firstIndex; index < Math.min(60, steps.length); index += 5) {
                     const step = steps[index];
                     if (step.after.isEnd()) continue;
                     const beforeFen = makeFen(step.before.toSetup()),
@@ -777,7 +786,8 @@ describe("expert tactical judgement with fresh engine lines", () => {
             // Keep the previously complete fixture available to regression
             // readers until the replacement audit has fully finished.
             writeFileSync(
-                process.env.TACTICAL_ORDINARY_GAME_REPORT!,
+                (process.env.TACTICAL_ORDINARY_ADJACENT_REPORT ??
+                    process.env.TACTICAL_ORDINARY_GAME_REPORT)!,
                 JSON.stringify(report, null, 2),
             );
         },

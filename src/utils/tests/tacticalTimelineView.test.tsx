@@ -71,3 +71,24 @@ test("renders the actual counterfork under Black's reply, with continuation deta
   expect(reply.textContent).toContain("Fork");
   expect(container.querySelector('[data-tactical-ply="4"]')?.textContent).toContain("Nxa1");
 });
+
+test("renders a profitable recapture as the material payoff, not a hanging-piece accusation", () => {
+  const fen = "rnbq1bnr/pppp1kpp/5P2/8/8/2N5/PP2QPPP/R1B1KBNR w KQ - 1 8";
+  const line = ["e2h5", "g7g6", "f1c4", "d7d5", "c4d5", "d8d5", "h5d5"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const html = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((step) => step.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  const container = document.createElement("div");
+  container.innerHTML = html;
+  const payoff = container.querySelector('[data-tactical-ply="7"]')!;
+  expect(payoff.textContent).toContain("Qxd5+");
+  expect(payoff.textContent).toContain("Winning Recapture");
+  expect(payoff.textContent).toContain("bishop");
+  expect(payoff.textContent).not.toContain("Hanging Piece");
+});

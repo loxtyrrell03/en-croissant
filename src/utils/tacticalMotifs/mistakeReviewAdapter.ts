@@ -18,6 +18,7 @@ import {
     forcingClearanceEpisodeLength,
     hasTacticalStart,
     isCompensatedContinuationCapture,
+    winningRecaptureEvidence,
     normalizeMatingPayoffs,
     normalizeContinuingTactics,
     replayTacticalLine,
@@ -105,7 +106,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 36;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 37;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -885,7 +886,11 @@ export function buildTacticalTimeline(
     const evidence = new Map<string, TacticalMotifEvidence>();
     for (const motif of rootMotifs) {
         const step = replay[(motif.ply ?? 0) - 1];
-        if (step) evidence.set(`${motif.ply}:${motif.id}`, { ...motif, actor: step.before.turn });
+        const contextual = step
+            ? winningRecaptureEvidence(replay, (motif.ply ?? 0) - 1, motif)
+            : null;
+        if (step && contextual)
+            evidence.set(`${motif.ply}:${motif.id}`, { ...contextual, actor: step.before.turn });
     }
     let quietPlies = 0;
     let connectedPlies = replay.length;
@@ -960,13 +965,16 @@ export function buildTacticalTimeline(
             if (
                 motif.id === "hangingPiece" &&
                 index > 0 &&
-                step.move.to === replay[index - 1].move.to
+                step.move.to === replay[index - 1].move.to &&
+                (!replay[index - 1].capture || replay[index - 1].move.promotion)
             )
                 continue;
             const key = `${index + 1}:${motif.id}`;
             if (evidence.has(key)) continue;
+            const contextual = winningRecaptureEvidence(replay, index, motif);
+            if (!contextual) continue;
             evidence.set(key, {
-                ...motif,
+                ...contextual,
                 source,
                 ply: index + 1,
                 actor: step.before.turn,

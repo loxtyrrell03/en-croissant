@@ -70,6 +70,14 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             played: string;
             after: LiveTacticalVariationInput[];
         }[];
+        ordinary.push(
+            ...JSON.parse(
+                readFileSync(
+                    "benchmarks/tactical-relevance/ordinary-adjacent-stockfish-18.json",
+                    "utf8",
+                ),
+            ),
+        );
         const expanded = JSON.parse(
             readFileSync("benchmarks/tactical-relevance/expanded-development.json", "utf8"),
         ).cases as {
@@ -131,7 +139,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(57);
+        expect(report).toHaveLength(81);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

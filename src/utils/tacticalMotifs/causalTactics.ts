@@ -123,6 +123,38 @@ export function isCompensatedContinuationCapture(steps: TacticalReplayStep[], in
     return false;
 }
 
+/** A profitable recapture is an exchange payoff, not a newly hung piece.
+ * Subtract the immediately preceding loss from the settled local capture;
+ * do not borrow earlier gains, future PV play or promotion bookkeeping. */
+export function winningRecaptureEvidence(
+    steps: TacticalReplayStep[],
+    index: number,
+    motif: TacticalMotifEvidence,
+): TacticalMotifEvidence | null {
+    const step = steps[index],
+        previous = steps[index - 1];
+    if (
+        motif.id !== "hangingPiece" ||
+        !step?.capture ||
+        !previous?.capture ||
+        previous.move.to !== step.move.to ||
+        previous.move.promotion ||
+        step.move.promotion
+    )
+        return motif;
+    const gain = tacticalExchangeGain(step.before, step.move);
+    if (gain <= -VALUE.king || gain - previous.capture < 100) return null;
+    const victim = step.before.board.get(step.move.to);
+    const traded = previous.before.board.get(previous.move.to);
+    if (!victim || !traded) return motif;
+    return {
+        ...motif,
+        label: "Winning Recapture",
+        value: gain - previous.capture,
+        evidence: `${step.san} wins the ${victim.role} on ${makeSquare(step.move.to)} in exchange for the ${traded.role} just captured there. The settled local exchange gains ${(gain - previous.capture) / 100} pawns of material; this is the payoff, not a newly hanging piece.`,
+    };
+}
+
 /** Apply the same exchange context at a newly viewed root as inside a PV.
  * Only trusted, replay-matching history can turn a loose-piece label into
  * an ordinary recapture; other real mechanisms and mating payoffs remain. */
@@ -139,11 +171,15 @@ export function filterCompensatedRootCaptures(
     if (
         !root ||
         history.length !== 2 ||
-        makeFen(history[0].after.toSetup()) !== makeFen(root.before.toSetup()) ||
-        !isCompensatedContinuationCapture(history, 1)
+        makeFen(history[0].after.toSetup()) !== makeFen(root.before.toSetup())
     )
         return motifs;
-    return motifs.filter((motif) => motif.id !== "hangingPiece" || motif.ply !== 1);
+    if (isCompensatedContinuationCapture(history, 1))
+        return motifs.filter((motif) => motif.id !== "hangingPiece" || motif.ply !== 1);
+    return motifs.flatMap((motif) => {
+        const contextual = motif.ply === 1 ? winningRecaptureEvidence(history, 1, motif) : motif;
+        return contextual ? [contextual] : [];
+    });
 }
 
 function legalMoves(pos: Chess): NormalMove[] {

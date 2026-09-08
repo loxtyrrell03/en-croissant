@@ -9432,6 +9432,24 @@ function isCompensatedContinuationCapture(steps, index) {
 	}
 	return false;
 }
+/** A profitable recapture is an exchange payoff, not a newly hung piece.
+* Subtract the immediately preceding loss from the settled local capture;
+* do not borrow earlier gains, future PV play or promotion bookkeeping. */
+function winningRecaptureEvidence(steps, index, motif) {
+	const step = steps[index], previous = steps[index - 1];
+	if (motif.id !== "hangingPiece" || !step?.capture || !previous?.capture || previous.move.to !== step.move.to || previous.move.promotion || step.move.promotion) return motif;
+	const gain = tacticalExchangeGain(step.before, step.move);
+	if (gain <= -VALUE.king || gain - previous.capture < 100) return null;
+	const victim = step.before.board.get(step.move.to);
+	const traded = previous.before.board.get(previous.move.to);
+	if (!victim || !traded) return motif;
+	return {
+		...motif,
+		label: "Winning Recapture",
+		value: gain - previous.capture,
+		evidence: `${step.san} wins the ${victim.role} on ${makeSquare(step.move.to)} in exchange for the ${traded.role} just captured there. The settled local exchange gains ${(gain - previous.capture) / 100} pawns of material; this is the payoff, not a newly hanging piece.`
+	};
+}
 /** Apply the same exchange context at a newly viewed root as inside a PV.
 * Only trusted, replay-matching history can turn a loose-piece label into
 * an ordinary recapture; other real mechanisms and mating payoffs remain. */
@@ -9439,8 +9457,12 @@ function filterCompensatedRootCaptures(fen, line, motifs, previousFen, previousM
 	if (!previousFen || !previousMove || !line.length) return motifs;
 	const history = replayTacticalLine(previousFen, [previousMove, line[0]]);
 	const root = replayTacticalLine(fen, [line[0]])[0];
-	if (!root || history.length !== 2 || makeFen(history[0].after.toSetup()) !== makeFen(root.before.toSetup()) || !isCompensatedContinuationCapture(history, 1)) return motifs;
-	return motifs.filter((motif) => motif.id !== "hangingPiece" || motif.ply !== 1);
+	if (!root || history.length !== 2 || makeFen(history[0].after.toSetup()) !== makeFen(root.before.toSetup())) return motifs;
+	if (isCompensatedContinuationCapture(history, 1)) return motifs.filter((motif) => motif.id !== "hangingPiece" || motif.ply !== 1);
+	return motifs.flatMap((motif) => {
+		const contextual = motif.ply === 1 ? winningRecaptureEvidence(history, 1, motif) : motif;
+		return contextual ? [contextual] : [];
+	});
 }
 function legalMoves(pos) {
 	const result = [];
@@ -12690,7 +12712,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 36;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 37;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -13175,8 +13197,9 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 	const evidence = /* @__PURE__ */ new Map();
 	for (const motif of rootMotifs) {
 		const step = replay[(motif.ply ?? 0) - 1];
-		if (step) evidence.set(`${motif.ply}:${motif.id}`, {
-			...motif,
+		const contextual = step ? winningRecaptureEvidence(replay, (motif.ply ?? 0) - 1, motif) : null;
+		if (step && contextual) evidence.set(`${motif.ply}:${motif.id}`, {
+			...contextual,
 			actor: step.before.turn
 		});
 	}
@@ -13205,11 +13228,13 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 		for (const motif of candidates.filter((m) => m.ply === 1)) {
 			if (motif.id === "forcingAttack" && [...evidence.values()].some((previous) => previous.id === "forcingAttack" && previous.actor === step.before.turn && (previous.ply ?? Infinity) < index + 1)) continue;
 			if (motif.label === "Forcing Mate" && [...evidence.values()].some((previous) => previous.actor === step.before.turn && (previous.ply ?? Infinity) < index + 1 && /^mateIn\d+$/.test(previous.id) && previous.value === 1e4 && !replay[(previous.ply ?? 0) - 1]?.after.isCheckmate())) continue;
-			if (motif.id === "hangingPiece" && index > 0 && step.move.to === replay[index - 1].move.to) continue;
+			if (motif.id === "hangingPiece" && index > 0 && step.move.to === replay[index - 1].move.to && (!replay[index - 1].capture || replay[index - 1].move.promotion)) continue;
 			const key = `${index + 1}:${motif.id}`;
 			if (evidence.has(key)) continue;
+			const contextual = winningRecaptureEvidence(replay, index, motif);
+			if (!contextual) continue;
 			evidence.set(key, {
-				...motif,
+				...contextual,
 				source,
 				ply: index + 1,
 				actor: step.before.turn,
