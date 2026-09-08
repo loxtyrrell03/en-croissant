@@ -1,35 +1,64 @@
 import assert from "node:assert/strict";
+import { writeFileSync } from "node:fs";
 import { Worker } from "node:worker_threads";
 import test from "node:test";
+import {
+  classifyLiveTacticsInWorker,
+  TACTICAL_CLASSIFICATION_TIMEOUT_MS,
+  TACTICAL_WORKER_STARTUP_TIMEOUT_MS,
+} from "../../src/utils/tacticalMotifs/liveTacticsWorker.ts";
 
 // Point only at a local Vite dev server. This does not automate or restart the app.
 // node --experimental-vm-modules --test scripts/tests/tactical-dev-worker.test.mjs
 const origin = process.env.TACTICAL_DEV_SERVER;
-function runWorker(input) {
+async function runWorker(input) {
   const start = performance.now();
-  const worker = new Worker(new URL("./helpers/tactical-dev-worker.mjs", import.meta.url), {
-    workerData: { origin, input },
-  });
-  return new Promise((resolve, reject) => {
-    let modules;
-    const timer = setTimeout(
-      () => finish(new Error("Development worker deadline exceeded")),
-      15000,
-    );
-    function finish(error, result) {
-      clearTimeout(timer);
-      void worker.terminate();
-      if (error) reject(error);
-      else resolve(result);
+  let bridge;
+  const original = globalThis.Worker;
+  // Execute the application's actual ownership/deadline controller, replacing
+  // only the browser transport with Node's thread and HTTP-module adapter.
+  globalThis.Worker = class {
+    constructor(url, options) {
+      assert.ok(url.pathname.endsWith("/liveTactics.worker.ts"));
+      assert.equal(options.type, "module");
+      bridge = this;
+      this.modules = [];
+      this.startedAt = null;
+      this.thread = new Worker(new URL("./helpers/tactical-dev-worker.mjs", import.meta.url), {
+        workerData: { origin },
+      });
+      this.thread.on("error", (error) => this.onerror?.({ message: error.message }));
+      this.thread.on("message", (message) => {
+        if (message.failure) this.onerror?.({ message: message.failure });
+        else if (message.modules) this.modules = message.modules;
+        else {
+          if (message.type === "started") this.startedAt = performance.now();
+          this.onmessage?.({ data: message });
+        }
+      });
     }
-    worker.on("error", (error) => finish(error));
-    worker.on("message", (message) => {
-      if (message.failure) finish(new Error(message.failure));
-      if (message.modules) modules = message.modules;
-      if (message.reply)
-        finish(null, { ...message.reply, modules, elapsedMs: performance.now() - start });
-    });
-  });
+    postMessage(data) {
+      this.thread.postMessage(data);
+    }
+    terminate() {
+      this.terminated = true;
+      void this.thread.terminate();
+    }
+  };
+  try {
+    const scan = await classifyLiveTacticsInWorker(input, new AbortController().signal);
+    const finished = performance.now();
+    assert.equal(bridge.terminated, true);
+    assert.notEqual(bridge.startedAt, null);
+    return {
+      scan,
+      modules: bridge.modules,
+      startupMs: bridge.startedAt - start,
+      classificationMs: finished - bridge.startedAt,
+    };
+  } finally {
+    globalThis.Worker = original;
+  }
 }
 
 test(
@@ -53,10 +82,11 @@ test(
         ],
       },
     ];
+    const report = [];
     for (const item of cases) {
       const result = await runWorker({ ...item, engineName: "Worker regression", depth: 16 });
-      assert.equal(result.ok, true, result.error);
-      assert.ok(result.elapsedMs < 3000, `application deadline exceeded: ${result.elapsedMs} ms`);
+      assert.ok(result.startupMs < TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
+      assert.ok(result.classificationMs < TACTICAL_CLASSIFICATION_TIMEOUT_MS);
       assert.ok(result.modules.length > 2, "must evaluate transitive development imports");
       assert.deepEqual(
         result.modules.filter((url) =>
@@ -71,8 +101,30 @@ test(
         assert.ok(result.scan.variations[1].motifs.some((motif) => motif.id === "attackingF2F7"));
       }
       t.diagnostic(
-        `${item.name}: ${result.modules.length} modules, ${Math.round(result.elapsedMs)} ms`,
+        `${item.name}: ${result.modules.length} modules; startup ${Math.round(result.startupMs)} ms; classification/transfer ${Math.round(result.classificationMs)} ms`,
       );
+      report.push({
+        name: item.name,
+        startupMs: result.startupMs,
+        classificationMs: result.classificationMs,
+        modules: result.modules.length,
+        primary: result.scan.motifs.map((motif) => motif.id),
+      });
     }
+    if (process.env.TACTICAL_DEV_WORKER_REPORT)
+      writeFileSync(
+        process.env.TACTICAL_DEV_WORKER_REPORT,
+        JSON.stringify(
+          {
+            scope:
+              "Actual application worker controller with an isolated Vite HTTP graph and Node thread/VM transport. This is not a WebView/CSP or physical UI test.",
+            startupDeadlineMs: TACTICAL_WORKER_STARTUP_TIMEOUT_MS,
+            classificationDeadlineMs: TACTICAL_CLASSIFICATION_TIMEOUT_MS,
+            cases: report,
+          },
+          null,
+          2,
+        ),
+      );
   },
 );

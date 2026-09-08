@@ -1,5 +1,39 @@
 # Tactical relevance judgement, 2026-09-08
 
+## Live pipeline 41: cold worker startup is not proof computation
+
+The isolated development HTTP check reproduced a false timeout: Vite loading
+and transforming the worker graph took 6-15 seconds before the classifier ran.
+The desktop had charged that startup against its three-second computation
+deadline. The worker now announces when it begins processing the input. Its
+owner allows at most 20 seconds to start, then keeps the existing three-second
+proof deadline. Repeated start messages cannot extend it; cancellation ends
+either phase and late messages cannot change the board/cache. Missing startup,
+crashes, malformed messages and success without the handshake remain failures,
+never empty successful scans or UI-thread fallback.
+
+The panel says **Loading tactical verifier** before **Verifying tactical themes**;
+the native engine is already released during both. Eleven added lifecycle/UI
+regressions pass within 423 selected tests (two opt-in skips). The actual
+application controller is now exercised by both HTTP and production-worker
+tests, with only browser transport adapted to Node. Force-cold isolated Vite
+checks took 5,705/9,286 ms to start and 7/117 ms to classify/transfer the Reti/f7
+cases; both pass the actual controller. All 82 cold production cases match
+source: total median 83 ms/p95 292 ms/max 657 ms; startup max 46 ms, computation
+max 626 ms. See `dev-worker-latency.json` and `worker-latency.json`. This removes
+a false failure; it is not a claim to have accelerated cold development imports.
+
+Reproduce without an active app using
+`node scripts/tests/run-tactical-dev-worker.mjs`. It owns an HTTP-only Vite
+instance on an OS-selected port, a separate dependency cache and closes that
+server in `finally`; it never launches/restarts the desktop. Set
+`TACTICAL_DEV_COLD=1` to force its dependency re-optimization and
+`TACTICAL_DEV_WORKER_REPORT` to record timings. Production build (8,860 modules)
+and targeted lint pass; TypeScript retains the unrelated OTB fixture error.
+Classifier adapter 39 and chess decisions are unchanged. No native package,
+phone service or website was deployed, and no WebView/CSP/physical UI proof is
+claimed. The broader quiet/long-combination limits remain documented below.
+
 ## Adapter 39: joint discoveries versus subordinate traps
 
 The reached position after the adjacent sample's `Bb3 Kh8` exposed a wrong
@@ -23,7 +57,7 @@ now also includes this reached position (82 cases, 80 ms median/266 ms p95/
 shared review-worker and 8,860-module production builds pass. TypeScript retains
 the unrelated OTB fixture error. An isolated cold development HTTP test exposed
 6-15 second import/transform startup, which exceeds the current three-second
-worker deadline; production parity does not resolve that lifecycle issue.
+worker deadline; the pipeline-41 milestone above repairs that lifecycle issue.
 No app restart/deployment or physical UI verification is claimed.
 
 ## Adapter 38: costlier existing checking discoveries

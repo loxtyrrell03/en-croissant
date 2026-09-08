@@ -3,6 +3,7 @@ import { buildLiveTacticalScan, type LiveTacticalScanInput } from "../tacticalMo
 import {
     classifyLiveTacticsInWorker,
     TACTICAL_CLASSIFICATION_TIMEOUT_MS,
+    TACTICAL_WORKER_STARTUP_TIMEOUT_MS,
 } from "../tacticalMotifs/liveTacticsWorker";
 
 const input: LiveTacticalScanInput = {
@@ -38,6 +39,7 @@ test("worker success preserves the actual f7 fork and stops the worker and timer
     const result = classifyLiveTacticsInWorker(input, new AbortController().signal);
     const scan = buildLiveTacticalScan(input);
     expect(latest().postMessage).toHaveBeenCalledWith(input);
+    latest().onmessage!({ data: { type: "started" } });
     latest().onmessage!({ data: { ok: true, scan } });
     expect(await result).toEqual(scan);
     expect(scan.motifs[0].id).toBe("fork");
@@ -48,6 +50,7 @@ test("worker success preserves the actual f7 fork and stops the worker and timer
 test("a hung proof is terminated at the deadline and is not an empty successful scan", async () => {
     const result = classifyLiveTacticsInWorker(input, new AbortController().signal);
     const rejected = result.catch((error) => error);
+    latest().onmessage!({ data: { type: "started" } });
     await vi.advanceTimersByTimeAsync(TACTICAL_CLASSIFICATION_TIMEOUT_MS - 1);
     expect(latest().terminate).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(1);
@@ -56,6 +59,76 @@ test("a hung proof is terminated at the deadline and is not an empty successful 
     });
     expect(latest().terminate).toHaveBeenCalledTimes(1);
 });
+
+test("cold imports do not consume the computation deadline", async () => {
+    const started = vi.fn();
+    const result = classifyLiveTacticsInWorker(input, new AbortController().signal, started);
+    await vi.advanceTimersByTimeAsync(16_000);
+    expect(latest().terminate).not.toHaveBeenCalled();
+    expect(started).not.toHaveBeenCalled();
+    latest().onmessage!({ data: { type: "started" } });
+    await vi.advanceTimersByTimeAsync(TACTICAL_CLASSIFICATION_TIMEOUT_MS - 1);
+    latest().onmessage!({ data: { ok: true, scan: buildLiveTacticalScan(input) } });
+    expect((await result).motifs[0].id).toBe("fork");
+    expect(started).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
+});
+
+test("silent worker startup still has a bounded deadline", async () => {
+    const result = classifyLiveTacticsInWorker(input, new AbortController().signal).catch(
+        (error) => error,
+    );
+    await vi.advanceTimersByTimeAsync(TACTICAL_WORKER_STARTUP_TIMEOUT_MS - 1);
+    expect(latest().terminate).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(await result).toMatchObject({
+        message: expect.stringContaining("did not start within 20 seconds"),
+    });
+    expect(latest().terminate).toHaveBeenCalledTimes(1);
+});
+
+test("repeated start messages cannot keep a hung proof alive", async () => {
+    const callback = vi.fn();
+    const result = classifyLiveTacticsInWorker(input, new AbortController().signal, callback).catch(
+        (error) => error,
+    );
+    latest().onmessage!({ data: { type: "started" } });
+    await vi.advanceTimersByTimeAsync(TACTICAL_CLASSIFICATION_TIMEOUT_MS - 1);
+    latest().onmessage!({ data: { type: "started" } });
+    await vi.advanceTimersByTimeAsync(1);
+    expect(await result).toMatchObject({ message: expect.stringContaining("exceeded 3 seconds") });
+    expect(callback).toHaveBeenCalledTimes(1);
+});
+
+test("a cancelled cold start cannot resurrect its timer or progress callback", async () => {
+    const controller = new AbortController();
+    const callback = vi.fn();
+    const result = classifyLiveTacticsInWorker(input, controller.signal, callback).catch(
+        (error) => error,
+    );
+    const queued = latest().onmessage!;
+    controller.abort();
+    queued({ data: { type: "started" } });
+    expect(await result).toMatchObject({ name: "AbortError" });
+    expect(callback).not.toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(0);
+});
+
+test("success without the startup handshake is rejected", async () => {
+    const result = classifyLiveTacticsInWorker(input, new AbortController().signal);
+    latest().onmessage!({ data: { ok: true, scan: buildLiveTacticalScan(input) } });
+    await expect(result).rejects.toThrow("before starting verification");
+});
+
+test.each([null, 3, "invalid", {}])(
+    "malformed worker message %j fails without a spinner",
+    async (data) => {
+        const result = classifyLiveTacticsInWorker(input, new AbortController().signal);
+        latest().onmessage!({ data });
+        await expect(result).rejects.toThrow("could not be read");
+        expect(vi.getTimerCount()).toBe(0);
+    },
+);
 
 test("position changes cancel CPU work and ignore even an already queued old result", async () => {
     const controller = new AbortController();

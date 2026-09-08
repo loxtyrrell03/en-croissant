@@ -1,0 +1,23 @@
+{
+  "scope": "Actual application worker controller with an isolated Vite HTTP graph and Node thread/VM transport. This is not a WebView/CSP or physical UI test.",
+  "startupDeadlineMs": 20000,
+  "classificationDeadlineMs": 3000,
+  "cases": [
+    {
+      "name": "reported Reti position",
+      "startupMs": 5704.9482,
+      "classificationMs": 7.346400000000358,
+      "modules": 18,
+      "primary": []
+    },
+    {
+      "name": "f7 fork and checking bishop alternative",
+      "startupMs": 9286.319599999999,
+      "classificationMs": 117.23070000000007,
+      "modules": 18,
+      "primary": [
+        "fork"
+      ]
+    }
+  ]
+}

@@ -83,10 +83,11 @@ beforeEach(() => {
     ],
   ]);
   mocks.classify.mockImplementation(
-    () =>
+    (_input, _signal, onStarted) =>
       new Promise<LiveTacticalScan>((resolve, reject) => {
         succeed = resolve;
         fail = reject;
+        onStarted?.();
       }),
   );
   container = document.createElement("div");
@@ -394,6 +395,41 @@ test("engine completion releases native work while verification remains cancella
   expect(container.textContent).toContain("Verified result");
   expect(onScanChange).toHaveBeenLastCalledWith(scan);
   expect(mocks.killEngine).toHaveBeenCalledTimes(1);
+});
+
+test("cold verifier loading is shown separately after the native engine is released", async () => {
+  let started!: () => void;
+  mocks.classify.mockImplementation((_input, _signal, callback) => {
+    started = callback;
+    return new Promise<LiveTacticalScan>((resolve, reject) => {
+      succeed = resolve;
+      fail = reject;
+    });
+  });
+  await start();
+  expect(container.textContent).toContain("Loading tactical verifier");
+  expect(container.textContent).not.toContain("Verifying tactical themes");
+  expect(mocks.killEngine).toHaveBeenCalledTimes(1);
+  expect(
+    container.querySelector<HTMLButtonElement>('button[aria-label="Scan this position again"]')!
+      .disabled,
+  ).toBe(true);
+  await act(async () => started());
+  expect(container.textContent).toContain("Verifying tactical themes");
+  expect(container.textContent).not.toContain("Loading tactical verifier");
+  await act(async () => succeed(buildLiveTacticalScan(mocks.classify.mock.calls[0][0])));
+  expect(container.textContent).toContain("Verified result");
+});
+
+test("a queued worker-start callback after navigation cannot replace the new panel state", async () => {
+  await start();
+  const started = mocks.classify.mock.calls[0][2];
+  await act(async () => root.render(null));
+  await act(async () => started());
+  expect(container.textContent).toBe("");
+  expect(onScanChange).not.toHaveBeenCalledWith(
+    expect.objectContaining({ motifs: expect.anything() }),
+  );
 });
 
 test("a classifier failure exits loading and permits retry instead of settling too early", async () => {

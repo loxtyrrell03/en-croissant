@@ -21,10 +21,11 @@ const context = createContext({
   Response,
   structuredClone,
   location: new URL(workerData.origin),
-  postMessage: (data) => parentPort.postMessage({ reply: data }),
+  postMessage: (data) => parentPort.postMessage(data),
 });
 context.self = context;
 const modules = new Map();
+const input = new Promise((resolve) => parentPort.once("message", resolve));
 async function load(url) {
   if (!modules.has(url)) {
     modules.set(
@@ -55,7 +56,7 @@ try {
   await root.link((specifier, importer) => load(new URL(specifier, importer.identifier).href));
   await root.evaluate();
   parentPort.postMessage({ modules: [...modules.keys()] });
-  context.onmessage({ data: structuredClone(workerData.input) });
+  context.onmessage({ data: structuredClone(await input) });
 } catch (error) {
   parentPort.postMessage({ failure: error.stack ?? String(error) });
 }

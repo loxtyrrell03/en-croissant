@@ -1,61 +1,80 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { Worker } from "node:worker_threads";
+import { Worker as NodeWorker } from "node:worker_threads";
 import { Chess } from "chessops/chess";
 import { parseFen } from "chessops/fen";
 import { parseSan } from "chessops/san";
 import { makeUci } from "chessops/util";
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import {
     buildLiveTacticalScan,
-    type LiveTacticalScan,
     type LiveTacticalScanInput,
     type LiveTacticalVariationInput,
 } from "../tacticalMotifs/liveTactics";
 import {
     TACTICAL_CLASSIFICATION_TIMEOUT_MS,
-    type TacticalWorkerReply,
+    TACTICAL_WORKER_STARTUP_TIMEOUT_MS,
+    classifyLiveTacticsInWorker,
+    type TacticalWorkerMessage,
 } from "../tacticalMotifs/liveTacticsWorker";
 
 /** Execute the actual Vite artifact with only a browser message bridge. No DOM,
  * Tauri, localStorage or source transpiler is supplied to the worker. */
-function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
+async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
     const start = performance.now();
-    const worker = new Worker(
-        `
+    const bridges: BrowserWorker[] = [];
+    class BrowserWorker {
+        startedAt: number | null = null;
+        termination?: Promise<number>;
+        onmessage: ((event: { data: TacticalWorkerMessage }) => void) | null = null;
+        onerror: ((event: { message: string }) => void) | null = null;
+        onmessageerror: (() => void) | null = null;
+        thread = new NodeWorker(
+            `
     const { parentPort } = require('node:worker_threads');
     globalThis.self = globalThis;
     globalThis.postMessage = data => parentPort.postMessage(data);
     import(${JSON.stringify(pathToFileURL(resolve(path)).href)}).then(() => {
       parentPort.on('message', data => globalThis.onmessage({ data }));
-      parentPort.postMessage({ ready: true });
     });
   `,
-        { eval: true },
-    );
-    return new Promise<{ scan: LiveTacticalScan; elapsedMs: number }>((accept, reject) => {
-        let settled = false;
-        const finish = async (reply: TacticalWorkerReply) => {
-            if (settled) return;
-            settled = true;
-            clearTimeout(timer);
-            const elapsedMs = performance.now() - start;
-            await worker.terminate();
-            if (reply.ok) accept({ scan: reply.scan, elapsedMs });
-            else reject(new Error(reply.error));
+            { eval: true },
+        );
+        constructor(url: URL, options: WorkerOptions) {
+            bridges.push(this);
+            expect(url.pathname).toMatch(/liveTactics\.worker\.ts$/);
+            expect(options.type).toBe("module");
+            this.thread.on("error", (error) => this.onerror?.({ message: error.message }));
+            this.thread.on("message", (data: TacticalWorkerMessage) => {
+                if ("type" in data && data.type === "started") this.startedAt = performance.now();
+                this.onmessage?.({ data });
+            });
+        }
+        postMessage(data: LiveTacticalScanInput) {
+            this.thread.postMessage(data);
+        }
+        terminate() {
+            this.termination = this.thread.terminate();
+        }
+    }
+    vi.stubGlobal("Worker", BrowserWorker);
+    try {
+        const scan = await classifyLiveTacticsInWorker(input, new AbortController().signal);
+        const bridge = bridges[0];
+        const end = performance.now();
+        expect(bridge.startedAt).not.toBeNull();
+        expect(bridge.termination).toBeDefined();
+        await bridge.termination;
+        return {
+            scan,
+            elapsedMs: end - start,
+            startupMs: bridge.startedAt! - start,
+            classificationMs: end - bridge.startedAt!,
         };
-        const timer = setTimeout(() => {
-            void finish({ ok: false, error: "Built worker deadline exceeded" });
-        }, TACTICAL_CLASSIFICATION_TIMEOUT_MS);
-        worker.on("error", (error) => {
-            void finish({ ok: false, error: error.message });
-        });
-        worker.on("message", (reply: TacticalWorkerReply | { ready: true }) => {
-            if ("ready" in reply) worker.postMessage(input);
-            else void finish(reply);
-        });
-    });
+    } finally {
+        vi.unstubAllGlobals();
+    }
 }
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
@@ -141,9 +160,13 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, item.input);
             const expected = buildLiveTacticalScan(item.input);
             expect({ id: item.id, scan: result.scan }).toEqual({ id: item.id, scan: expected });
+            expect(result.startupMs).toBeLessThan(TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
+            expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
             report.push({
                 id: item.id,
                 elapsedMs: result.elapsedMs,
+                startupMs: result.startupMs,
+                classificationMs: result.classificationMs,
                 primary: result.scan.motifs.map((m) => m.id),
                 matchesSource: true,
             });
@@ -154,8 +177,9 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 process.env.TACTICAL_WORKER_REPORT,
                 JSON.stringify(
                     {
-                        scope: "Cold production JS worker import, classification and structured result transfer on this Node host; excludes engine search and does not prove WebView or physical UI latency.",
+                        scope: "Actual application worker controller with cold production JS worker import, classification and structured transfer on this Node host. Separate startup and computation deadlines; excludes engine search and does not prove WebView or physical UI latency.",
                         deadlineMs: TACTICAL_CLASSIFICATION_TIMEOUT_MS,
+                        startupDeadlineMs: TACTICAL_WORKER_STARTUP_TIMEOUT_MS,
                         cases: report,
                     },
                     null,

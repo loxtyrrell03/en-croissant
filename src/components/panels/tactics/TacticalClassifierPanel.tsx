@@ -52,6 +52,7 @@ type TacticalPanelState =
   | { status: "idle"; progress: number; scan: null; error: null }
   | { status: "scanning"; progress: number; scan: null; error: null }
   | { status: "classifying"; progress: number; scan: null; error: null }
+  | { status: "startingVerifier"; progress: number; scan: null; error: null }
   | { status: "finished"; progress: number; scan: null; error: null }
   | { status: "complete"; progress: number; scan: LiveTacticalScan; error: null }
   | { status: "error"; progress: number; scan: null; error: string };
@@ -240,7 +241,7 @@ function TacticalClassifierPanel({
       clearScanTimeout();
       disposeListener();
       releaseEngine();
-      setState({ status: "classifying", progress: 99, scan: null, error: null });
+      setState({ status: "startingVerifier", progress: 99, scan: null, error: null });
       void classifyLiveTacticsInWorker(
         {
           fen: position.fen,
@@ -266,6 +267,10 @@ function TacticalClassifierPanel({
           })),
         },
         classificationController.signal,
+        () => {
+          if (isCurrentRequest())
+            setState({ status: "classifying", progress: 99, scan: null, error: null });
+        },
       )
         .then((scan) => {
           if (!isCurrentRequest()) return;
@@ -452,7 +457,10 @@ function TacticalClassifierPanel({
             variant="default"
             size="lg"
             disabled={
-              !selectedEngine || state.status === "scanning" || state.status === "classifying"
+              !selectedEngine ||
+              state.status === "scanning" ||
+              state.status === "classifying" ||
+              state.status === "startingVerifier"
             }
             onClick={() => {
               tacticalScanCache.delete(scanCacheKey);
@@ -466,11 +474,17 @@ function TacticalClassifierPanel({
 
       <Progress
         value={
-          state.status === "scanning" || state.status === "classifying"
+          state.status === "scanning" ||
+          state.status === "classifying" ||
+          state.status === "startingVerifier"
             ? Math.min(99, state.progress)
             : state.progress
         }
-        animated={state.status === "scanning" || state.status === "classifying"}
+        animated={
+          state.status === "scanning" ||
+          state.status === "classifying" ||
+          state.status === "startingVerifier"
+        }
         size="xs"
       />
 
@@ -487,19 +501,25 @@ function TacticalClassifierPanel({
         <Alert color="red" title="Tactical scan failed">
           {state.error}
         </Alert>
-      ) : state.status === "scanning" || state.status === "classifying" ? (
+      ) : state.status === "scanning" ||
+        state.status === "classifying" ||
+        state.status === "startingVerifier" ? (
         <Center flex={1}>
           <Stack align="center" gap="xs" ta="center">
             <Loader size="sm" />
             <Text fw={700}>
-              {state.status === "classifying"
-                ? "Verifying tactical themes…"
-                : "Scanning the forcing line…"}
+              {state.status === "startingVerifier"
+                ? "Loading tactical verifier…"
+                : state.status === "classifying"
+                  ? "Verifying tactical themes…"
+                  : "Scanning the forcing line…"}
             </Text>
             <Text size="sm" c="dimmed" maw={360}>
-              {state.status === "classifying"
-                ? "Checking legal defences and choosing the main lesson."
-                : `Checking the position${position.lastMoveSan ? ` after ${position.lastMoveSan}` : ""} with ${selectedEngine?.name}.`}
+              {state.status === "startingVerifier"
+                ? "Preparing the background verifier. The engine search has finished."
+                : state.status === "classifying"
+                  ? "Checking legal defences and choosing the main lesson."
+                  : `Checking the position${position.lastMoveSan ? ` after ${position.lastMoveSan}` : ""} with ${selectedEngine?.name}.`}
             </Text>
           </Stack>
         </Center>

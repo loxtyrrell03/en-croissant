@@ -4,13 +4,17 @@ export type TacticalWorkerReply =
     | { ok: true; scan: LiveTacticalScan }
     | { ok: false; error: string };
 
+export type TacticalWorkerMessage = TacticalWorkerReply | { type: "started" };
+
 export const TACTICAL_CLASSIFICATION_TIMEOUT_MS = 3_000;
+export const TACTICAL_WORKER_STARTUP_TIMEOUT_MS = 20_000;
 
 /** Own one worker per scan: cancellation must stop CPU work, not merely hide
  * its result. Never fall back to the UI thread if workers are unavailable. */
 export function classifyLiveTacticsInWorker(
     input: LiveTacticalScanInput,
     signal: AbortSignal,
+    onStarted?: () => void,
 ): Promise<LiveTacticalScan> {
     return new Promise((resolve, reject) => {
         if (signal.aborted) {
@@ -27,6 +31,7 @@ export function classifyLiveTacticsInWorker(
             return;
         }
         let settled = false;
+        let started = false;
         const finish = (reply: TacticalWorkerReply) => {
             if (settled) return;
             cleanup();
@@ -47,16 +52,46 @@ export function classifyLiveTacticsInWorker(
             cleanup();
             reject(new DOMException("Tactical scan cancelled", "AbortError"));
         };
-        const timer = setTimeout(
+        let timer = setTimeout(
             () =>
                 finish({
                     ok: false,
-                    error: "Tactical verification exceeded 3 seconds. No result was accepted; try scanning again.",
+                    error: "The tactical verifier did not start within 20 seconds. No result was accepted; try scanning again.",
                 }),
-            TACTICAL_CLASSIFICATION_TIMEOUT_MS,
+            TACTICAL_WORKER_STARTUP_TIMEOUT_MS,
         );
         signal.addEventListener("abort", abort, { once: true });
-        worker.onmessage = (event: MessageEvent<TacticalWorkerReply>) => finish(event.data);
+        worker.onmessage = (event: MessageEvent<TacticalWorkerMessage>) => {
+            if (settled) return;
+            if (!event.data || typeof event.data !== "object") {
+                finish({ ok: false, error: "The tactical verification result could not be read." });
+                return;
+            }
+            if ("type" in event.data && event.data.type === "started") {
+                if (started) return;
+                started = true;
+                clearTimeout(timer);
+                timer = setTimeout(
+                    () =>
+                        finish({
+                            ok: false,
+                            error: "Tactical verification exceeded 3 seconds. No result was accepted; try scanning again.",
+                        }),
+                    TACTICAL_CLASSIFICATION_TIMEOUT_MS,
+                );
+                onStarted?.();
+                return;
+            }
+            if ("ok" in event.data) {
+                if (event.data.ok && !started) {
+                    finish({
+                        ok: false,
+                        error: "The tactical verifier returned a result before starting verification.",
+                    });
+                } else finish(event.data);
+            } else
+                finish({ ok: false, error: "The tactical verification result could not be read." });
+        };
         worker.onerror = (event) =>
             finish({
                 ok: false,
