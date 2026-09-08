@@ -470,6 +470,25 @@ export function tacticalMotifDescription(motif: TacticalMotifEvidence) {
     return motif.evidence;
 }
 
+/** Preview one already-classified root without rescanning, changing the game,
+ * mutating the cached result, or combining arrows from different choices. */
+export function previewLiveTacticalVariation(
+    scan: LiveTacticalScan,
+    multipv: number,
+): LiveTacticalScan {
+    const variation = scan.variations.find((candidate) => candidate.multipv === multipv);
+    if (!variation) return scan;
+    return {
+        ...scan,
+        depth: variation.depth,
+        motifs: variation.motifs.slice(0, 1),
+        lineUci: variation.lineUci,
+        lineSan: variation.lineSan,
+        arrows: variation.arrows,
+        labels: variation.labels.slice(0, 1),
+    };
+}
+
 export function buildTacticalEngineOptions(
     settings: EngineSettings | null | undefined,
     multipv = LIVE_TACTICAL_SCAN_MULTIPV,

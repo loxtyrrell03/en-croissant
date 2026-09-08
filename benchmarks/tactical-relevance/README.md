@@ -1258,6 +1258,27 @@ before/after explanations above and the updated short rook-battery mate
 expectation. Whole-project type checking still reports only the unrelated
 `otbGameImport.test.ts` number/bigint fixture mismatch.
 
+## Candidate presentation and board preview
+
+The desktop result view now offers Show on board per tactical candidate.
+For the original screenshot, Nxf7 shows the fork's queen/rook targets and
+Bxf7+ independently shows weak-f7 evidence. Selection reuses the classified
+variation without a new engine search or a game move; overlays never merge
+the two choices. Restore main line and scan-change reset keep the overlay
+and selected control consistent. The projection does not mutate the cache.
+
+An unclassified principal line with a classified alternative now has a
+Tactical alternatives heading instead of a contradictory global empty result.
+True abstention says No tactical theme verified and does not rule out deeper
+tactics. Conditional engine moves remain inside the existing collapsed
+per-ply details rather than also appearing as a long always-visible PV.
+Five new DOM/projection tests exercise selection, restoration, reset, real
+f7 candidate evidence, non-mutation and the two abstention states. The selected
+suite passes 403 tests in 35 files, with three opt-in tests skipped. This does
+not change classifier version 30 or its benchmark chess decisions. It is
+desktop presentation proof, not a running-app/physical-board check; the phone
+review and Outpost surfaces are intentionally untouched in this milestone.
+
 ## What remains to establish
 
 These are relevance milestones, not completion of the broader tuning

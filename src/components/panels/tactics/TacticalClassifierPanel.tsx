@@ -2,22 +2,17 @@ import {
   ActionIcon,
   Alert,
   Badge,
-  Box,
   Center,
-  Code,
   Group,
   Loader,
-  Paper,
   Progress,
-  ScrollArea,
   Select,
   Stack,
   Text,
-  ThemeIcon,
   Tooltip,
 } from "@mantine/core";
-import { IconBolt, IconCpu, IconRefresh } from "@tabler/icons-react";
-import { TacticalLineExplanation } from "./TacticalLineExplanation";
+import { IconCpu, IconRefresh } from "@tabler/icons-react";
+import { TacticalScanResult } from "./TacticalScanResult";
 import { makeUci } from "chessops";
 import { useAtomValue } from "jotai";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -36,7 +31,6 @@ import {
   isLiveTacticalScanTerminal,
   LIVE_TACTICAL_SCAN_MULTIPV,
   selectLiveTacticalScanLines,
-  tacticalMotifDescription,
   type LiveTacticalScan,
 } from "@/utils/tacticalMotifs/liveTactics";
 
@@ -398,120 +392,13 @@ function TacticalClassifierPanel({
           </Stack>
         </Center>
       ) : state.status === "complete" ? (
-        <TacticalScanResult scan={state.scan} lastMoveSan={position.lastMoveSan} />
+        <TacticalScanResult
+          scan={state.scan}
+          lastMoveSan={position.lastMoveSan}
+          onPreviewChange={onScanChange}
+        />
       ) : null}
     </Stack>
-  );
-}
-
-function TacticalScanResult({
-  scan,
-  lastMoveSan,
-}: {
-  scan: LiveTacticalScan;
-  lastMoveSan: string | null;
-}) {
-  const sideLabel = scan.side === "white" ? "White" : "Black";
-  const tacticalVariations = scan.variations.filter((variation) => variation.motifs.length > 0);
-  const principalLine = scan.lineSan.length > 0 ? scan.lineSan : scan.lineUci;
-
-  return (
-    <ScrollArea flex={1} offsetScrollbars>
-      <Stack gap="sm" aria-live="polite">
-        {scan.motifs.length > 0 ? (
-          <Alert
-            color="orange"
-            icon={<IconBolt size="1rem" />}
-            title={`${scan.motifs.map((motif) => motif.label).join(" · ")} found`}
-          >
-            {sideLabel}'s main tactical idea{lastMoveSan ? ` after ${lastMoveSan}` : ""}:{" "}
-            {scan.motifs[0]?.evidence}
-          </Alert>
-        ) : (
-          <Center py="xl">
-            <Stack align="center" gap="xs" ta="center">
-              <ThemeIcon size="xl" radius="xl" variant="light" color="gray">
-                <IconBolt size="1.25rem" />
-              </ThemeIcon>
-              <Text fw={700}>No forcing tactical theme found</Text>
-              <Text size="sm" c="dimmed" maw={390}>
-                The classifier found no specific fork, pin, interference, mating pattern, or related
-                motif in the engine's candidate lines from this position.
-              </Text>
-            </Stack>
-          </Center>
-        )}
-
-        {tacticalVariations.map((variation) => {
-          const line = variation.lineSan.length > 0 ? variation.lineSan : variation.lineUci;
-          const rootMove = line[0] ?? `PV ${variation.multipv}`;
-
-          return (
-            <Paper
-              key={`${variation.multipv}:${variation.lineUci[0] ?? "line"}`}
-              withBorder
-              p="sm"
-              radius="md"
-            >
-              <Stack gap={6}>
-                <Group justify="space-between" gap="xs">
-                  <Group gap={6}>
-                    <Badge color="blue" variant="light">
-                      {rootMove}
-                    </Badge>
-                    {variation.motifs.slice(0, 1).map((motif) => (
-                      <Badge key={motif.id} color="orange" variant="filled">
-                        {motif.label}
-                      </Badge>
-                    ))}
-                  </Group>
-                  <Badge variant="light">
-                    {variation.multipv === 1 ? "Main line" : "Alternative"}
-                  </Badge>
-                </Group>
-                {variation.motifs.slice(0, 1).map((motif) => (
-                  <Stack key={motif.id} gap={2}>
-                    <Text size="sm">{tacticalMotifDescription(motif)}</Text>
-                    {motif.moveUci && (
-                      <Text size="xs" c="dimmed">
-                        Triggering move: <Code>{motif.moveUci}</Code> · {motif.confidence}{" "}
-                        confidence
-                      </Text>
-                    )}
-                  </Stack>
-                ))}
-                <Box>
-                  <Code style={{ whiteSpace: "normal", lineHeight: 1.7 }}>{line.join("  ")}</Code>
-                </Box>
-                <TacticalLineExplanation moves={line} motifs={variation.timeline} />
-              </Stack>
-            </Paper>
-          );
-        })}
-
-        {tacticalVariations.length === 0 && principalLine.length > 0 && (
-          <Paper withBorder p="sm" radius="md">
-            <Stack gap={6}>
-              <Text fw={700} size="sm">
-                Engine line
-              </Text>
-              <Box>
-                <Code style={{ whiteSpace: "normal", lineHeight: 1.7 }}>
-                  {principalLine.join("  ")}
-                </Code>
-              </Box>
-            </Stack>
-          </Paper>
-        )}
-
-        <Paper withBorder p="sm" radius="md">
-          <Text size="xs" c="dimmed">
-            {scan.engineName} · depth {scan.depth} · {scan.variations.length} candidate
-            {scan.variations.length === 1 ? "" : "s"} · classifier {scan.motifClassifierVersion}
-          </Text>
-        </Paper>
-      </Stack>
-    </ScrollArea>
   );
 }
 
