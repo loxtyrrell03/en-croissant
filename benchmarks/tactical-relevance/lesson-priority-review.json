@@ -226,10 +226,10 @@
       "expectedSource": "allowed",
       "primary": "doubleThreat",
       "source": "allowed",
-      "comparison": "unproved",
+      "comparison": "prevented",
       "secondary": null,
       "secondarySource": null,
-      "explanation": "The opponent has this tactic in the analysed position: Nd7 attacks the rook on b6 and threatens Nf6+, a checking fork of the queen on h5 and king on g8. After Kg7, Nxb6 wins material; after Rc6, Nf6+ uses the fork instead. All 35 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played. The comparison has not established whether the better move prevents or reduces it, so this tactic alone is not a verified explanation of the mistake."
+      "explanation": "Your move allowed this tactic: Nd7 attacks the rook on b6 and threatens Nf6+, a checking fork of the queen on h5 and king on g8. After Kg7, Nxb6 wins material; after Rc6, Nf6+ uses the fork instead. All 35 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played. After Bg6, Rbxa6 answers Nd7 with a countercapture. Including that captured material and legal recaptures, the immediate threats cannot force a pawn's worth of material gain. The immediate checks have concrete answers: Nf6+ gxf6. This prevents this local winning double threat, not every possible later combination or positional loss."
     },
     {
       "name": "The real Re2 mistake allows a forcing checking attack",

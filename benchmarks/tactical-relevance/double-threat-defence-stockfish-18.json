@@ -277,5 +277,100 @@
       "cp": 235,
       "mate": null
     }
-  ]
+  ],
+  "witness": {
+    "defence": "Rbxa6",
+    "defenceUci": "b6a6",
+    "checkingDefences": [
+      "Nf6+ gxf6"
+    ]
+  },
+  "verifiedDefence": {
+    "depth": 16,
+    "multipv": 1,
+    "pvUci": [
+      "b6a6",
+      "b5a6",
+      "a8a6",
+      "g1c1",
+      "a6a8",
+      "h2h3",
+      "g8h8",
+      "g3g4",
+      "h5h6",
+      "g4g3",
+      "g6e4",
+      "f2g1",
+      "h8h7",
+      "h3h4",
+      "h6h5",
+      "d7c5",
+      "e4f5",
+      "c5b7"
+    ],
+    "pvSan": [
+      "Rbxa6",
+      "bxa6",
+      "Rxa6",
+      "Rc1",
+      "Ra8",
+      "h3",
+      "Kh8",
+      "Qg4",
+      "Qh6",
+      "Qg3",
+      "Be4",
+      "Kg1",
+      "Kh7",
+      "h4",
+      "Qh5",
+      "Nc5",
+      "Bf5",
+      "Nb7"
+    ],
+    "cp": 115,
+    "mate": null
+  },
+  "sameCaptureAfterMistake": {
+    "depth": 16,
+    "multipv": 1,
+    "pvUci": [
+      "b6a6",
+      "d7f6",
+      "g8f8",
+      "f6h5",
+      "a6a2",
+      "f2f3",
+      "g6h5",
+      "g3g7",
+      "f8e8",
+      "f3f4",
+      "f5d3",
+      "f4g5",
+      "a2a1",
+      "g1a1",
+      "a8a1",
+      "g7h8"
+    ],
+    "pvSan": [
+      "Rbxa6",
+      "Nf6+",
+      "Kf8",
+      "Nxh5",
+      "Ra2+",
+      "Kf3",
+      "gxh5",
+      "Qg7+",
+      "Ke8",
+      "Kf4",
+      "Bd3",
+      "Kg5",
+      "Ra1",
+      "Rxa1",
+      "Rxa1",
+      "Qh8+"
+    ],
+    "cp": -315,
+    "mate": null
+  }
 }

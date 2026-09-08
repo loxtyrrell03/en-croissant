@@ -4477,6 +4477,12 @@ export function compareImmediateTacticalDefence(
                 comparison = "prevented";
                 comparisonEvidence = `After ${bestSan}, ${alternative.san} is not check and ${escape.defence} captures the attacking ${alternative.after.board.get(alternative.move.to)!.role} on ${makeSquare(alternative.move.to)}. Legal immediate replies, recaptures and one countercheck cannot erase the local material gain. This refutes this checking sequence, not every possible later attack.`;
             }
+        } else if (motif.id === "doubleThreat" && proveQuietDoubleThreat(step)) {
+            const escape = counterCaptureMaterialDefence(alternative);
+            if (escape) {
+                comparison = "prevented";
+                comparisonEvidence = `After ${bestSan}, ${escape.defence} answers ${alternative.san} with a countercapture. Including that captured material and legal recaptures, the immediate threats cannot force a pawn's worth of material gain.${escape.checkingDefences.length ? ` The immediate checks have concrete answers: ${escape.checkingDefences.join("; ")}.` : ""} This prevents this local winning double threat, not every possible later combination or positional loss.`;
+            }
         } else if (motif.id === "forkPreparation") {
             const original = proveCheckingForkPreparation(step);
             if (original) {
@@ -4656,6 +4662,110 @@ export function quietMaterialDefence(root: TacticalReplayStep, nodeLimit = 8192)
             const next = visit(root.after, move);
             if (next.isCheck() || next.isEnd()) continue;
             if (safe(next, 0, 2)) return makeSan(root.after, move);
+        }
+    } catch {
+        return null;
+    }
+    return null;
+}
+
+/** Positive local defence starting with a countercapture. Enumerate all immediate
+ * captures through two legal recapture rounds, then use bounded exchange leaves.
+ * Non-capturing checks require a real non-checking reply whose every recovery
+ * capture stays below the material threshold. Carry the original compensation
+ * through those leaves; named fork victims alone miss captures of the forker's
+ * captor. Quiet preparations and longer checks are outside this local witness. */
+export function counterCaptureMaterialDefence(
+    root: TacticalReplayStep,
+    nodeLimit = 8192,
+): { defence: string; defenceUci: string; checkingDefences: string[] } | null {
+    if (
+        !Number.isFinite(nodeLimit) ||
+        nodeLimit <= 0 ||
+        root.capture ||
+        root.move.promotion ||
+        root.after.isCheck() ||
+        root.after.isEnd()
+    )
+        return null;
+    let nodes = nodeLimit;
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--nodes < 0) throw new Error("Countercapture defence budget exhausted");
+        const next = pos.clone();
+        next.play(move);
+        return next;
+    };
+    const delta = (pos: Chess, move: NormalMove) =>
+        capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+    const safe = (pos: Chess, balance: number, rounds: number): string[] | null => {
+        if (pos.isEnd() || balance >= 100) return null;
+        const witnesses: string[] = [];
+        for (const move of legalMoves(pos)) {
+            const next = visit(pos, move);
+            if (next.isEnd()) return null;
+            const capture = delta(pos, move);
+            if (!capture && !next.isCheck()) continue;
+            if (!capture) {
+                let answer: string | null = null;
+                for (const reply of legalMoves(next)) {
+                    const after = visit(next, reply);
+                    const remaining = balance - delta(next, reply);
+                    if (after.isCheck() || after.isEnd() || remaining >= 100) continue;
+                    let resolved = true;
+                    for (const recovery of legalMoves(after)) {
+                        const leaf = visit(after, recovery);
+                        if (leaf.isEnd()) {
+                            resolved = false;
+                            break;
+                        }
+                        if (!delta(after, recovery)) continue;
+                        const gain = tacticalExchangeGain(after, recovery);
+                        if (gain <= -VALUE.king || remaining + gain >= 100) {
+                            resolved = false;
+                            break;
+                        }
+                    }
+                    if (resolved) {
+                        answer = makeSan(next, reply);
+                        break;
+                    }
+                }
+                if (!answer) return null;
+                if (rounds === 2) witnesses.push(`${makeSan(pos, move)} ${answer}`);
+                continue;
+            }
+            if (!rounds) {
+                const gain = tacticalExchangeGain(pos, move);
+                if (gain <= -VALUE.king || balance + gain >= 100) return null;
+                continue;
+            }
+            let answered = false;
+            for (const reply of legalMoves(next)) {
+                if (reply.to !== move.to || !capturedValue(next, reply)) continue;
+                const after = visit(next, reply);
+                if (after.isCheck()) continue;
+                const branch = safe(after, balance + capture - delta(next, reply), rounds - 1);
+                if (branch) {
+                    answered = true;
+                    break;
+                }
+            }
+            if (!answered) return null;
+        }
+        return [...new Set(witnesses)];
+    };
+    try {
+        for (const defence of legalMoves(root.after)) {
+            if (!capturedValue(root.after, defence) || defence.promotion) continue;
+            const next = visit(root.after, defence);
+            if (next.isCheck() || next.isEnd()) continue;
+            const checkingDefences = safe(next, -delta(root.after, defence), 2);
+            if (checkingDefences)
+                return {
+                    defence: makeSan(root.after, defence),
+                    defenceUci: makeUci(defence),
+                    checkingDefences,
+                };
         }
     } catch {
         return null;

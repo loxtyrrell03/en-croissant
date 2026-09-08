@@ -1569,9 +1569,7 @@ loading and all 57 rebuilt-production-worker parity cases. TypeScript retains
 only the unrelated OTB number/bigint fixture error. No native ZIP, website,
 Outpost or service deployment, physical UI proof or general accuracy is claimed.
 
-## Desktop timeout-path verification (live pipeline 35; adapter 34 unchanged)
-
-### Separate Nd7 defence investigation (not a shipped causal proof)
+## Countercapture defence comparison (adapter 35; live pipeline 36)
 
 Fresh unrestricted depth-16 MultiPV3 searches now identify the material defence
 that the earlier local escape search did not cover. After Bg6/Nd7, Black prefers
@@ -1583,11 +1581,43 @@ loses the answer to the king/queen fork.
 
 The replay controls preserve an important limitation: Raxa6 bxa6 Rxa6 gives
 White a local 70 cp material gain, while Raxa6 Nxb6 Rxb6 gives Black 150 cp.
-The classifier must not call both zero-gain exchanges or equate them with the
-full-position engine evaluations. A candidate general countercapture proof did
-not yet establish every relevant branch while preserving the earlier Qb3
-discovered-attack defence, so it was withheld. No causal label or primary lesson
-changed. The fresh engine diagnostic and two legal-replay tests pass.
+These are not zero-gain exchanges or the full-position engine evaluations.
+
+The independent countercapture-defence search now retains the initial captured
+material through two legal recapture rounds. Non-capturing checks need an actual
+non-checking answer whose every recovery capture remains below the combined
+100 cp material threshold. This includes recapturing the checking piece's captor,
+not just taking named fork victims. A check that no longer forks anything does
+not magically erase the attacker's earlier queen/rook sacrifices. The existing
+quiet-defence search and its Qb3 discovered-attack witness are unchanged.
+
+The new search has an 8,192-operation budget plus separately bounded exchange
+leaves. Invalid/exhausted budgets, unsupported recaptures, checking defensive
+replies and unresolved exchange leaves abstain. Terminal states are conservative;
+quiet preparations and arbitrary longer checking combinations are outside this
+local witness. It does not infer prevention from failure to prove the alternative
+attack, and independently verified different-reply persistence still applies.
+
+The displayed witness is Rbxa6, which the local search finds first, not a claim
+that it is the strongest defence. Fresh root-restricted searches score Rbxa6 at
++115 cp after Bg6 and -315 cp after g6; unrestricted analysis prefers Raxa6 at
++485 cp after Bg6. The report now explains the material compensation and Nf6+
+gxf6 defence. The actual fork remains at ply 3 rather than becoming another root
+headline. Only Nd7's causal comparison/text changes in the frozen 32-case audit;
+all primary and secondary selections remain unchanged. The unproved-cause
+regression now uses the still-unresolved Bh7+ clearance after Qxd4, preserving
+neutral wording rather than deleting that safety check.
+
+Seventeen new regressions cover the real comparison, colour reflection,
+root-only inputs, budgets, capture credit, missing supporters/targets, pinned
+pseudo-defenders, a different valid countercapture when the bishop is removed,
+non-fork checks after sacrifices and retained later-ply evidence. All 343 selected
+tests pass (two opt-in skips), as do all 32 fresh before/after judgements and the
+four-search defence diagnostic. Targeted lint, the shared-review worker and
+8,854-module production build pass; the development HTTP worker and all 57
+production-worker parity cases pass. TypeScript retains the unrelated OTB
+number/bigint fixture error. This is development evidence, not general tactical
+accuracy, native deployment or physical UI proof.
 
 ```powershell
 $env:TACTICAL_JUDGEMENT_ENGINE = '<Stockfish executable>'
@@ -1596,7 +1626,7 @@ node node_modules/vitest/vitest.mjs run src/utils/tests/tacticalJudgement.test.t
 node node_modules/vitest/vitest.mjs run src/utils/tests/doubleThreatDefence.test.ts --environment node
 ```
 
-### Timeout changes and verification
+## Desktop timeout-path verification (live pipeline 35; adapter 34 unchanged)
 
 The reported six-second error occurs before theme verification. The panel used
 one deadline for listener registration, cold engine startup and depth search,

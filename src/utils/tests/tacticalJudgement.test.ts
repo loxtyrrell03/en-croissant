@@ -7,6 +7,7 @@ import { makeSan } from "chessops/san";
 import { parseUci } from "chessops/util";
 import { buildLiveTacticalScan } from "@/utils/tacticalMotifs/liveTactics";
 import {
+    counterCaptureMaterialDefence,
     proveCheckingMaterialAttack,
     proveQuietDoubleThreat,
     replayTacticalLine,
@@ -509,9 +510,34 @@ describe("expert tactical judgement with fresh engine lines", () => {
             expect(actual[0].cp).toBeLessThan(-100);
             expect(better[0].cp).toBeGreaterThan(300);
             expect(better[0].pvSan[0]).toBe("Raxa6");
+            const witness = counterCaptureMaterialDefence(
+                replayTacticalLine(fen, ["f5g6", "c5d7"])[1],
+            )!;
+            expect(witness).not.toBeNull();
+            const verifiedDefence = [
+                ...(await analyse(engine, betterFen, witness.defenceUci)).values(),
+            ][0];
+            const sameCaptureAfterMistake = [
+                ...(await analyse(engine, actualFen, witness.defenceUci)).values(),
+            ][0];
+            expect(verifiedDefence.cp).toBeGreaterThan(100);
+            expect(sameCaptureAfterMistake.cp).toBeLessThan(-100);
             writeFileSync(
                 process.env.TACTICAL_DOUBLE_DEFENCE_REPORT!,
-                JSON.stringify({ fen, actualFen, betterFen, actual, better }, null, 2),
+                JSON.stringify(
+                    {
+                        fen,
+                        actualFen,
+                        betterFen,
+                        actual,
+                        better,
+                        witness,
+                        verifiedDefence,
+                        sameCaptureAfterMistake,
+                    },
+                    null,
+                    2,
+                ),
             );
         },
         60000,
@@ -1462,6 +1488,7 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     played: "g7g6",
                     source: "allowed",
                     primary: "doubleThreat",
+                    comparison: "prevented",
                     why: "Nd7 attacks Rb6 and threatens Nf6+ against king and queen. Different defences allow different material wins; the root move is not itself a fork.",
                 },
                 {

@@ -94,7 +94,8 @@ test("a real verified attack without causal proof stays visible without a false 
         readFileSync("benchmarks/tactical-relevance/causal-stockfish-18.json", "utf8"),
     );
     const row = rows.find(
-        (item: { name: string }) => item.name === "The real g6 mistake permits Nd7's double threat",
+        (item: { name: string }) =>
+            item.name === "The real Qxd4 mistake allows the checking clearance",
     );
     const result = classifyMistakeReviewMotifs({
         fen: row.fen,
@@ -104,7 +105,7 @@ test("a real verified attack without causal proof stays visible without a false 
         refutationUci: row.after[0].pvUci,
     });
     const explanation = buildMistakeReviewTacticalExplanation(result)!;
-    expect(explanation.primary).toMatchObject({ id: "doubleThreat", ply: 1 });
+    expect(explanation.primary).toMatchObject({ id: "clearance", ply: 1 });
     expect(explanation.primary.comparison).toBeUndefined();
     expect(explanation.title).toBe("Tactic after the move");
     expect(explanation.text).toContain(
