@@ -143,6 +143,111 @@ test("a higher-depth empty snapshot cannot erase a usable fallback", async () =>
   expect(mocks.classify.mock.calls[0][0].depth).toBe(10);
 });
 
+test("an engine request error retains a previously usable partial result", async () => {
+  let rejectEngine!: (error: Error) => void;
+  mocks.getBestMoves.mockImplementation(
+    () =>
+      new Promise((_, reject) => {
+        rejectEngine = reject;
+      }),
+  );
+  await start();
+  await act(async () => {
+    emit(10);
+    rejectEngine(new Error("Engine connection ended"));
+  });
+  expect(mocks.classify).toHaveBeenCalledTimes(1);
+  expect(mocks.classify.mock.calls[0][0].depth).toBe(10);
+  await act(async () => succeed(buildLiveTacticalScan(mocks.classify.mock.calls[0][0])));
+  expect(container.textContent).toContain("Time-limited scan at depth 10");
+  expect(container.textContent).not.toContain("Tactical scan failed");
+});
+
+test("a rejected stop still allows its final snapshot to arrive during the grace period", async () => {
+  mocks.getBestMoves.mockImplementation(() => new Promise(() => {}));
+  mocks.stopEngine.mockRejectedValue(new Error("Stop transport closed"));
+  await start();
+  await act(async () => {
+    emit(2);
+    await vi.advanceTimersByTimeAsync(6000);
+  });
+  expect(container.textContent).not.toContain("Tactical scan failed");
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(300);
+    emit(10, 100);
+    await vi.advanceTimersByTimeAsync(300);
+  });
+  expect(mocks.classify).toHaveBeenCalledTimes(1);
+  expect(mocks.classify.mock.calls[0][0].depth).toBe(10);
+});
+
+test("a failed engine with only shallow analysis remains an error, not a false empty result", async () => {
+  let rejectEngine!: (error: Error) => void;
+  mocks.getBestMoves.mockImplementation(
+    () =>
+      new Promise((_, reject) => {
+        rejectEngine = reject;
+      }),
+  );
+  await start();
+  await act(async () => {
+    emit(2);
+    rejectEngine(new Error("Engine connection ended"));
+  });
+  expect(mocks.classify).not.toHaveBeenCalled();
+  expect(container.textContent).toContain("Engine connection ended");
+});
+
+test("a rejected stop without a usable final snapshot remains bounded", async () => {
+  mocks.getBestMoves.mockImplementation(() => new Promise(() => {}));
+  mocks.stopEngine.mockRejectedValue(new Error("Stop transport closed"));
+  await start();
+  await act(async () => {
+    emit(2);
+    await vi.advanceTimersByTimeAsync(6600);
+  });
+  expect(container.textContent).toContain("Tactical scan failed");
+  expect(mocks.classify).not.toHaveBeenCalled();
+  expect(mocks.killEngine).toHaveBeenCalledTimes(1);
+});
+
+test("a request rejection during stopping cannot discard a queued final result", async () => {
+  let rejectEngine!: (error: Error) => void;
+  mocks.getBestMoves.mockImplementation(
+    () =>
+      new Promise((_, reject) => {
+        rejectEngine = reject;
+      }),
+  );
+  await start();
+  await act(async () => {
+    emit(2);
+    await vi.advanceTimersByTimeAsync(6000);
+    rejectEngine(new Error("Search stopped"));
+  });
+  expect(dispose).not.toHaveBeenCalled();
+  await act(async () => emit(10, 100));
+  expect(mocks.classify).toHaveBeenCalledTimes(1);
+  expect(dispose).toHaveBeenCalledTimes(1);
+});
+
+test("cancelled scans cannot recover an old snapshot after an engine error", async () => {
+  let rejectEngine!: (error: Error) => void;
+  mocks.getBestMoves.mockImplementation(
+    () =>
+      new Promise((_, reject) => {
+        rejectEngine = reject;
+      }),
+  );
+  await start();
+  await act(async () => emit(10));
+  await act(async () => root.render(null));
+  onScanChange.mockClear();
+  await act(async () => rejectEngine(new Error("Cancelled engine")));
+  expect(mocks.classify).not.toHaveBeenCalled();
+  expect(onScanChange).not.toHaveBeenCalled();
+});
+
 test("stop flushes an unthrottled usable snapshot before declaring a timeout", async () => {
   let rejectStop!: (error: Error) => void;
   mocks.stopEngine.mockImplementation(

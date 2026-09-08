@@ -292,6 +292,17 @@ function TacticalClassifierPanel({
       cleanupEngine();
     };
 
+    const handleEngineFailure = (caught: unknown) => {
+      if (!isCurrentRequest() || classifying) return;
+      // Transport/process failure cannot invalidate an already delivered
+      // snapshot. Keep the same minimum depth and legal worker verification
+      // as the normal time-limited path; never turn worker failures into success.
+      if (finishScan(latestLines, TACTICAL_SCAN_FALLBACK_MIN_DEPTH)) return;
+      // A final event can be queued after a rejected stop/request. The existing
+      // grace timer owns completion while stopping, including the error case.
+      if (!stopping) failScan(caught);
+    };
+
     const receiveLines = (lines: BestMoves[], progress: number) => {
       if (!isCurrentRequest() || classifying) return;
       if (!engineResponded && lines.some((line) => line.uciMoves.length > 0)) {
@@ -329,9 +340,7 @@ function TacticalClassifierPanel({
         // `stop` flushes the unthrottled final snapshot. Do not discard a
         // completed depth merely because its intermediate event was throttled.
         scanTimeout = window.setTimeout(handleScanTimeout, TACTICAL_STOP_GRACE_MS);
-        void stopEngine(engine, requestTab).catch((error) => {
-          if (!classifying) failScan(error);
-        });
+        void stopEngine(engine, requestTab).catch(handleEngineFailure);
         return;
       }
       failScan(
@@ -386,11 +395,7 @@ function TacticalClassifierPanel({
             .then((result) => {
               if (result) receiveLines(result[1], result[0]);
             })
-            .catch((error) => {
-              // Releasing the native engine after a complete snapshot can reject
-              // its outstanding request. It cannot invalidate worker verification.
-              if (!classifying) failScan(error);
-            })
+            .catch(handleEngineFailure)
             .finally(() => {
               engineCommandEnded = true;
               if (!isCurrentRequest()) disposeListener();
