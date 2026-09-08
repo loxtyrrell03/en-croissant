@@ -1341,7 +1341,8 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     played: "e5c5",
                     source: "allowed",
                     primary: "forkPreparation",
-                    why: "Rb1+ forces Kf2 into Nd3+'s fork or wins the interposing rook after Rc1. Re1 would instead be a protected block when the rook stays on e5.",
+                    comparison: "prevented",
+                    why: "Rb1+ forces Kf2 into Nd3+'s fork or wins the interposing rook after Rc1. Ra5 keeps the rook out of the checking fork after Kf2; the comparison must name that legal defence.",
                 },
                 {
                     name: "The real g6 mistake permits Nd7's double threat",

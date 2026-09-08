@@ -1279,6 +1279,41 @@ not change classifier version 30 or its benchmark chess decisions. It is
 desktop presentation proof, not a running-app/physical-board check; the phone
 review and Outpost surfaces are intentionally untouched in this milestone.
 
+## Proved tactics versus proved causes (adapter 32)
+
+An audit of the real causal benchmark found five root tactics whose explanations
+said the move caused them without a successful comparison against the better
+choice. A verified tactic is not automatically a verified cause. Uncompared
+root tactics now remain visible under Tactic after the move, with an explicit
+statement that the better move's effect has not been established. Their motifs
+and per-ply evidence are not deleted to create the appearance of better accuracy.
+
+The real Rc5 case now has positive causal evidence. Ra5 keeps the same rook out
+of the fork after Rb1+ Kf2, whereas Rc5 permits Nd3+'s king/rook fork. The bounded
+comparison tracks target identity through both user choices, finds a legal king
+reply, and examines every immediate attacking move. A checking fork, capture of
+the named target or immediate mate makes the branch inconclusive. It does not
+infer safety from a failed winning search; invalid/exhausted budgets, missing
+targets and already-capturing roots cannot prove prevention. This certifies the
+absence of this immediate preparation, not every possible longer attack. The
+actual Nd3+ still appears at ply 3, not as a premature root-board fork.
+
+Fresh depth-16 before/after searches confirm the Ra5 drawing defence and the
+Rc5 rook loss. The causal benchmark now asserts `comparison: prevented` for
+this real case. Four other verified motifs still lack a proved causal contrast:
+Nd7 after g6, Qf1+ after Re2, Bh7+ after Qxd4, and Ne5 after Nxd4. Their new neutral
+wording is an honest limitation, not a claim those moves were good or those
+tactics unimportant. See `causal-stockfish-18.json`.
+
+Eleven new tests cover source-independent root inputs, legal escapes, retained
+forks, alternate target captures, invalid budgets, missing targets and the real
+engine reports. The selected suite passes 434 tests (three opt-in skips), all
+sixteen fresh-engine tests pass, and the shared review-worker and application
+builds pass. Primary headlines remain unchanged in all 24 ordinary samples,
+32 mixed puzzles and twelve earlier puzzles; long-mate coverage remains 29/32.
+These source/build improvements do not establish exhaustive accuracy or a
+running-app deployment, and website/Outpost delivery remains open.
+
 ## Fork severity and causal explanation (adapter 31)
 
 The former immediate comparison treated the same two profitable fork targets
@@ -1341,7 +1376,7 @@ verification; stale engine responses and cancelled worker results are ignored.
 Thirteen tests cover success, abort before/after worker creation, queued stale
 results, deadline termination, thrown classifier errors, worker crashes,
 structured-transfer failures, unavailable workers, retry, native release and
-panel unmount. The selected suite passes 416 tests with four opt-in skips.
+panel unmount. The initial worker milestone passed 416 selected tests with four opt-in skips.
 The production build includes the standalone worker (8,853 application modules).
 Type checking retains only the unrelated OTB number/bigint fixture error.
 
@@ -1350,7 +1385,7 @@ Node worker per position with only a browser-message bridge, no DOM or Tauri.
 All 57 cases (the screenshot's two candidate roots, 24 frozen ordinary-game
 positions and 32 frozen mixed-puzzle positions) match source scan objects exactly.
 `worker-latency.json` records cold worker import, classification and structured
-result transfer on adapter 31: median 75 ms, nearest-rank p95 273 ms, maximum 615 ms. Every case
+result transfer on adapter 32: median 57 ms, nearest-rank p95 244 ms, maximum 543 ms. Every case
 is below the actual three-second deadline. This is host-local execution/parity
 evidence, not WebView scheduling, native-engine search or physical UI proof.
 The worker preserves classifier decisions, including its known false negatives.

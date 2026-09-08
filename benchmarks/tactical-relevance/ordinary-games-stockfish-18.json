@@ -477,11 +477,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31"
+      "motifClassifierVersion": "site-55.adapter-32"
     },
     "explanation": null,
-    "scanMs": 134.34879999999976,
-    "mistakeMs": 0.7334999999948195
+    "scanMs": 141.01499999999942,
+    "mistakeMs": 0.7980999999999767
   },
   {
     "id": "ordinary-1:ply13",
@@ -936,11 +936,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31"
+      "motifClassifierVersion": "site-55.adapter-32"
     },
     "explanation": null,
-    "scanMs": 40.74569999999949,
-    "mistakeMs": 0.37670000000071013
+    "scanMs": 44.42319999999745,
+    "mistakeMs": 0.42220000000088476
   },
   {
     "id": "ordinary-1:ply18",
@@ -1400,7 +1400,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31",
+      "motifClassifierVersion": "site-55.adapter-32",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -1436,8 +1436,8 @@
         "comparisonEvidence": "After Ng4, Qa6 no longer wins material in the exchange."
       }
     },
-    "scanMs": 159.4452999999994,
-    "mistakeMs": 51.5711999999985
+    "scanMs": 185.5222999999969,
+    "mistakeMs": 57.141600000002654
   },
   {
     "id": "ordinary-1:ply23",
@@ -1800,7 +1800,7 @@
           "value": 320
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-31",
+      "motifClassifierVersion": "site-55.adapter-32",
       "missedTimeline": [
         {
           "id": "mateIn3",
@@ -1868,8 +1868,8 @@
         "relevance": "primary"
       }
     },
-    "scanMs": 116.1047999999937,
-    "mistakeMs": 69.59399999999732
+    "scanMs": 120.9288000000015,
+    "mistakeMs": 73.42450000000099
   },
   {
     "id": "ordinary-1:ply28",
@@ -2107,7 +2107,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31",
+      "motifClassifierVersion": "site-55.adapter-32",
       "allowedTimeline": [
         {
           "id": "mateIn1",
@@ -2143,8 +2143,8 @@
         "comparisonEvidence": "Even after Qc8, Qxc8# still permits a verified forced mate within 1 moves. The better move does not remove this mating danger."
       }
     },
-    "scanMs": 3.3932000000058906,
-    "mistakeMs": 19.804199999998673
+    "scanMs": 2.656199999997625,
+    "mistakeMs": 13.974300000001676
   },
   {
     "id": "ordinary-1:ply33",
@@ -2575,7 +2575,7 @@
           "relevance": "secondary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-31",
+      "motifClassifierVersion": "site-55.adapter-32",
       "missedTimeline": [
         {
           "id": "intermezzo",
@@ -2667,8 +2667,8 @@
         "relevance": "primary"
       }
     },
-    "scanMs": 26.928200000002107,
-    "mistakeMs": 914.6532000000007
+    "scanMs": 30.11739999999554,
+    "mistakeMs": 868.8735000000015
   },
   {
     "id": "ordinary-1:ply38",
@@ -3034,11 +3034,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31"
+      "motifClassifierVersion": "site-55.adapter-32"
     },
     "explanation": null,
-    "scanMs": 0.8751999999949476,
-    "mistakeMs": 0.30689999999594875
+    "scanMs": 0.816899999997986,
+    "mistakeMs": 0.27369999999791617
   },
   {
     "id": "ordinary-1:ply43",
@@ -3481,11 +3481,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31"
+      "motifClassifierVersion": "site-55.adapter-32"
     },
     "explanation": null,
-    "scanMs": 37.19580000000133,
-    "mistakeMs": 43.151599999997416
+    "scanMs": 44.48709999999846,
+    "mistakeMs": 50.57519999999931
   },
   {
     "id": "ordinary-2:ply8",
@@ -3831,11 +3831,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31"
+      "motifClassifierVersion": "site-55.adapter-32"
     },
     "explanation": null,
-    "scanMs": 77.27620000000024,
-    "mistakeMs": 32.89170000000013
+    "scanMs": 92.53810000000522,
+    "mistakeMs": 38.32630000000063
   },
   {
     "id": "ordinary-2:ply13",
@@ -4150,11 +4150,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31"
+      "motifClassifierVersion": "site-55.adapter-32"
     },
     "explanation": null,
-    "scanMs": 0.5506999999997788,
-    "mistakeMs": 0.30679999999847496
+    "scanMs": 0.450700000001234,
+    "mistakeMs": 0.31850000000122236
   },
   {
     "id": "ordinary-2:ply18",
@@ -4632,7 +4632,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31",
+      "motifClassifierVersion": "site-55.adapter-32",
       "allowedTimeline": [
         {
           "id": "mateIn7",
@@ -4716,8 +4716,8 @@
         "comparisonEvidence": "Kxf6 makes the immediate reply f7+ illegal."
       }
     },
-    "scanMs": 708.5555000000022,
-    "mistakeMs": 40.324000000000524
+    "scanMs": 634.2142999999996,
+    "mistakeMs": 41.80310000000463
   },
   {
     "id": "ordinary-2:ply23",
@@ -5123,7 +5123,7 @@
           "value": 820
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-31",
+      "motifClassifierVersion": "site-55.adapter-32",
       "missedTimeline": [
         {
           "id": "forkPreparation",
@@ -5227,8 +5227,8 @@
         "relevance": "primary"
       }
     },
-    "scanMs": 140.02999999999884,
-    "mistakeMs": 189.34210000000166
+    "scanMs": 183.7155999999959,
+    "mistakeMs": 227.9097000000038
   },
   {
     "id": "ordinary-2:ply28",
@@ -5558,11 +5558,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31"
+      "motifClassifierVersion": "site-55.adapter-32"
     },
     "explanation": null,
-    "scanMs": 39.29410000000644,
-    "mistakeMs": 17.536999999996624
+    "scanMs": 44.87289999999484,
+    "mistakeMs": 18.918000000005122
   },
   {
     "id": "ordinary-2:ply33",
@@ -5983,11 +5983,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31"
+      "motifClassifierVersion": "site-55.adapter-32"
     },
     "explanation": null,
-    "scanMs": 115.74820000000182,
-    "mistakeMs": 29.465400000000955
+    "scanMs": 138.13720000000467,
+    "mistakeMs": 33.07940000000235
   },
   {
     "id": "ordinary-2:ply38",
@@ -6309,11 +6309,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31"
+      "motifClassifierVersion": "site-55.adapter-32"
     },
     "explanation": null,
-    "scanMs": 26.874100000000908,
-    "mistakeMs": 45.118099999999686
+    "scanMs": 31.176299999999173,
+    "mistakeMs": 49.42639999999665
   },
   {
     "id": "ordinary-2:ply43",
@@ -6666,11 +6666,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31"
+      "motifClassifierVersion": "site-55.adapter-32"
     },
     "explanation": null,
-    "scanMs": 34.94130000000587,
-    "mistakeMs": 37.06680000000051
+    "scanMs": 41.17489999999816,
+    "mistakeMs": 42.107499999998254
   },
   {
     "id": "ordinary-2:ply48",
@@ -7118,7 +7118,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31",
+      "motifClassifierVersion": "site-55.adapter-32",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -7154,8 +7154,8 @@
         "comparisonEvidence": "After Bc2, Na4 no longer wins material in the exchange."
       }
     },
-    "scanMs": 66.66820000000007,
-    "mistakeMs": 34.05770000000484
+    "scanMs": 69.78549999999814,
+    "mistakeMs": 33.13840000000346
   },
   {
     "id": "ordinary-2:ply53",
@@ -7558,7 +7558,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31",
+      "motifClassifierVersion": "site-55.adapter-32",
       "allowedTimeline": [
         {
           "id": "mateIn3",
@@ -7608,8 +7608,8 @@
         "comparisonEvidence": "Kf1 is also the analysed best move. The same position and tactical danger remain after either choice."
       }
     },
-    "scanMs": 15.706999999994878,
-    "mistakeMs": 5.076500000002852
+    "scanMs": 13.63350000000355,
+    "mistakeMs": 4.403299999998126
   },
   {
     "id": "ordinary-2:ply58",
@@ -7849,11 +7849,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31"
+      "motifClassifierVersion": "site-55.adapter-32"
     },
     "explanation": null,
-    "scanMs": 0.4798999999911757,
-    "mistakeMs": 0.3171999999904074
+    "scanMs": 0.2860000000000582,
+    "mistakeMs": 0.19840000000112923
   },
   {
     "id": "ordinary-3:ply8",
@@ -8271,11 +8271,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31"
+      "motifClassifierVersion": "site-55.adapter-32"
     },
     "explanation": null,
-    "scanMs": 1.2932000000000698,
-    "mistakeMs": 0.3172000000049593
+    "scanMs": 1.0181999999913387,
+    "mistakeMs": 0.2577000000019325
   },
   {
     "id": "ordinary-3:ply13",
@@ -8616,11 +8616,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31"
+      "motifClassifierVersion": "site-55.adapter-32"
     },
     "explanation": null,
-    "scanMs": 49.70530000000144,
-    "mistakeMs": 32.5792999999976
+    "scanMs": 64.68769999999495,
+    "mistakeMs": 45.692599999994854
   },
   {
     "id": "ordinary-3:ply18",
@@ -9064,7 +9064,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31",
+      "motifClassifierVersion": "site-55.adapter-32",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -9100,8 +9100,8 @@
         "comparisonEvidence": "After Nc6, Ng5 no longer wins material in the exchange."
       }
     },
-    "scanMs": 45.51359999999113,
-    "mistakeMs": 19.374800000005052
+    "scanMs": 51.61840000000666,
+    "mistakeMs": 22.41679999999178
   },
   {
     "id": "ordinary-3:ply23",
@@ -9474,7 +9474,7 @@
           "value": 600
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-31",
+      "motifClassifierVersion": "site-55.adapter-32",
       "missedTimeline": [
         {
           "id": "fork",
@@ -9518,8 +9518,8 @@
         "value": 600
       }
     },
-    "scanMs": 0.47299999999813735,
-    "mistakeMs": 39.164400000008754
+    "scanMs": 0.38910000000032596,
+    "mistakeMs": 38.98619999999937
   },
   {
     "id": "ordinary-3:ply28",
@@ -9941,7 +9941,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-31",
+      "motifClassifierVersion": "site-55.adapter-32",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -9977,7 +9977,7 @@
         "comparisonEvidence": "fxg5 is also the analysed best move. The same position and tactical danger remain after either choice."
       }
     },
-    "scanMs": 23.070999999996275,
-    "mistakeMs": 10.645900000003166
+    "scanMs": 23.71819999998843,
+    "mistakeMs": 11.033699999999953
   }
 ]

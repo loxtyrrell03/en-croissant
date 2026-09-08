@@ -633,7 +633,7 @@
       }
     ],
     "missedMotifs": [],
-    "motifClassifierVersion": "site-55.adapter-31",
+    "motifClassifierVersion": "site-55.adapter-32",
     "allowedTimeline": [
       {
         "id": "fork",

@@ -12189,7 +12189,26 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 				comparisonEvidence = `The same defender-removal and passed-pawn combination remains available after ${bestSan}.`;
 			}
 		}
-		else if ([
+		else if (motif.id === "forkPreparation") {
+			const original = proveCheckingForkPreparation(step);
+			if (original) {
+				const mapped = [];
+				for (const square of original.targets) {
+					const source = relocatedSquare(actual[0], square, true);
+					const target = source === void 0 ? void 0 : relocatedSquare(better[0], source);
+					const victim = step.after.board.get(square);
+					if (target === void 0 || !victim || alternative.after.board.get(target)?.role !== victim.role || alternative.after.board.get(target)?.color !== victim.color) break;
+					mapped.push(target);
+				}
+				if (mapped.length === original.targets.length) {
+					const defence = checkingForkPreparationEscape(alternative, mapped);
+					if (defence) {
+						comparison = "prevented";
+						comparisonEvidence = `After ${bestSan}, ${defence} answers ${alternative.san} without permitting a checking fork or capture of ${mapped.map((sq) => `the ${alternative.after.board.get(sq).role} on ${makeSquare(sq)}`).join(" or ")} on the next move. This prevents this immediate preparation, not every possible later attack.`;
+					}
+				}
+			}
+		} else if ([
 			"pin",
 			"skewer",
 			"capturingDefender",
@@ -12257,11 +12276,50 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 		} : motif;
 	});
 }
+/** A positive legal escape from this *one-move* preparation, not a failed
+* winning proof. King replies cannot be confused with capturable interposing
+* pieces. Any geometric checking fork, target capture or immediate mate makes
+* the branch inconclusive; we do not assume an unverified tactic is harmless. */
+function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
+	if (!Number.isFinite(nodeLimit) || nodeLimit <= 0 || !targets.length || root.capture || root.move.promotion || !root.after.isCheck() || targets.some((sq) => root.after.board.get(sq)?.color !== root.after.turn || root.after.board.get(sq)?.role === "king")) return null;
+	let nodes = nodeLimit;
+	for (const reply of legalMoves(root.after)) {
+		if (root.after.board.get(reply.from)?.role !== "king") continue;
+		if (--nodes < 0) return null;
+		const next = root.after.clone();
+		next.play(reply);
+		if (next.isEnd()) continue;
+		let safe = true;
+		for (const answer of legalMoves(next)) {
+			if (--nodes < 0) return null;
+			if (targets.includes(answer.to) && capturedValue(next, answer)) {
+				safe = false;
+				break;
+			}
+			const after = next.clone();
+			after.play(answer);
+			if (after.isCheckmate()) {
+				safe = false;
+				break;
+			}
+			const piece = after.board.get(answer.to);
+			const king = after.board.kingOf(after.turn);
+			if (!piece || king === void 0 || !after.isCheck()) continue;
+			const attacked = attacks(piece, answer.to, after.board.occupied).intersect(after.board[after.turn]);
+			if (attacked.has(king) && [...attacked].some((sq) => !["pawn", "king"].includes(after.board.get(sq).role))) {
+				safe = false;
+				break;
+			}
+		}
+		if (safe) return makeSan(root.after, reply);
+	}
+	return null;
+}
 //#endregion
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 31;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 32;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -12692,6 +12750,12 @@ function buildMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs }) 
 		if (conditionalMaterial(allowed)) return {
 			title: "Tactic in the continuation",
 			text: `In the displayed continuation, ${allowed.evidence} This later tactic depends on the preceding replies; it is not an immediate refutation.`,
+			source: "allowed",
+			primary: allowed
+		};
+		if (!allowed.comparison) return {
+			title: "Tactic after the move",
+			text: `The opponent has this tactic in the analysed position: ${allowed.evidence} The comparison has not established whether the better move prevents or reduces it, so this tactic alone is not a verified explanation of the mistake.`,
 			source: "allowed",
 			primary: allowed
 		};

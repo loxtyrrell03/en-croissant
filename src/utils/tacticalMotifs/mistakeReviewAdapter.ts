@@ -104,7 +104,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 31;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 32;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -713,6 +713,14 @@ export function buildMistakeReviewTacticalExplanation({
             return {
                 title: "Tactic in the continuation",
                 text: `In the displayed continuation, ${allowed.evidence} This later tactic depends on the preceding replies; it is not an immediate refutation.`,
+                source: "allowed",
+                primary: allowed,
+            };
+        }
+        if (!allowed.comparison) {
+            return {
+                title: "Tactic after the move",
+                text: `The opponent has this tactic in the analysed position: ${allowed.evidence} The comparison has not established whether the better move prevents or reduces it, so this tactic alone is not a verified explanation of the mistake.`,
                 source: "allowed",
                 primary: allowed,
             };

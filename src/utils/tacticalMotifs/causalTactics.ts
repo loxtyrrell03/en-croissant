@@ -4459,6 +4459,32 @@ export function compareImmediateTacticalDefence(
                     comparisonEvidence = `The same defender-removal and passed-pawn combination remains available after ${bestSan}.`;
                 }
             }
+        } else if (motif.id === "forkPreparation") {
+            const original = proveCheckingForkPreparation(step);
+            if (original) {
+                const mapped: Square[] = [];
+                for (const square of original.targets) {
+                    const source = relocatedSquare(actual[0], square, true);
+                    const target =
+                        source === undefined ? undefined : relocatedSquare(better[0], source);
+                    const victim = step.after.board.get(square);
+                    if (
+                        target === undefined ||
+                        !victim ||
+                        alternative.after.board.get(target)?.role !== victim.role ||
+                        alternative.after.board.get(target)?.color !== victim.color
+                    )
+                        break;
+                    mapped.push(target);
+                }
+                if (mapped.length === original.targets.length) {
+                    const defence = checkingForkPreparationEscape(alternative, mapped);
+                    if (defence) {
+                        comparison = "prevented";
+                        comparisonEvidence = `After ${bestSan}, ${defence} answers ${alternative.san} without permitting a checking fork or capture of ${mapped.map((sq) => `the ${alternative.after.board.get(sq)!.role} on ${makeSquare(sq)}`).join(" or ")} on the next move. This prevents this immediate preparation, not every possible later attack.`;
+                    }
+                }
+            }
         } else if (["pin", "skewer", "capturingDefender", "trappedPiece"].includes(motif.id)) {
             const material = compareMaterialCause(actual, better, motif);
             if (material) return { ...motif, ...material };
@@ -4534,4 +4560,66 @@ export function compareImmediateTacticalDefence(
         }
         return comparison ? { ...motif, comparison, comparisonEvidence } : motif;
     });
+}
+
+/** A positive legal escape from this *one-move* preparation, not a failed
+ * winning proof. King replies cannot be confused with capturable interposing
+ * pieces. Any geometric checking fork, target capture or immediate mate makes
+ * the branch inconclusive; we do not assume an unverified tactic is harmless. */
+export function checkingForkPreparationEscape(
+    root: TacticalReplayStep,
+    targets: Square[],
+    nodeLimit = 4096,
+): string | null {
+    if (
+        !Number.isFinite(nodeLimit) ||
+        nodeLimit <= 0 ||
+        !targets.length ||
+        root.capture ||
+        root.move.promotion ||
+        !root.after.isCheck() ||
+        targets.some(
+            (sq) =>
+                root.after.board.get(sq)?.color !== root.after.turn ||
+                root.after.board.get(sq)?.role === "king",
+        )
+    )
+        return null;
+    let nodes = nodeLimit;
+    for (const reply of legalMoves(root.after)) {
+        if (root.after.board.get(reply.from)?.role !== "king") continue;
+        if (--nodes < 0) return null;
+        const next = root.after.clone();
+        next.play(reply);
+        if (next.isEnd()) continue;
+        let safe = true;
+        for (const answer of legalMoves(next)) {
+            if (--nodes < 0) return null;
+            if (targets.includes(answer.to) && capturedValue(next, answer)) {
+                safe = false;
+                break;
+            }
+            const after = next.clone();
+            after.play(answer);
+            if (after.isCheckmate()) {
+                safe = false;
+                break;
+            }
+            const piece = after.board.get(answer.to);
+            const king = after.board.kingOf(after.turn);
+            if (!piece || king === undefined || !after.isCheck()) continue;
+            const attacked = attacks(piece, answer.to, after.board.occupied).intersect(
+                after.board[after.turn],
+            );
+            if (
+                attacked.has(king) &&
+                [...attacked].some((sq) => !["pawn", "king"].includes(after.board.get(sq)!.role))
+            ) {
+                safe = false;
+                break;
+            }
+        }
+        if (safe) return makeSan(root.after, reply);
+    }
+    return null;
 }
