@@ -2588,6 +2588,205 @@ function pinRestrictsCapture(step: TacticalReplayStep) {
     });
 }
 
+/** A profitable capture can exploit an existing pin without attacking the
+ * pinned piece next. Require the forbidden recapture to erase that profit.
+ * Removing the pinner is only a local recapture counterfactual: abstain when
+ * that removal could change support on the exchange square or own-king rays. */
+export function provePinnedCapture(step: TacticalReplayStep, nodeLimit = 4096) {
+    if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
+    const victim = step.before.board.get(step.move.to);
+    if (!step.capture || step.move.promotion || !victim || victim.color === step.before.turn)
+        return null;
+    const immediate = tacticalExchangeGain(step.before, step.move);
+    const ray = pinRestrictsCapture(step);
+    if (!ray) return null;
+    const pinner = step.after.board.get(ray.pinner)!;
+    const aligned = (square: Square, diagonalOnly = false) => {
+        const file = Math.abs((ray.pinner % 8) - (square % 8));
+        const rank = Math.abs(Math.floor(ray.pinner / 8) - Math.floor(square / 8));
+        return file === rank || (!diagonalOnly && (!file || !rank));
+    };
+    const ownKing = step.after.board.kingOf(step.before.turn);
+    if (ownKing === undefined) return null;
+    // A shared rank alone is harmless. Reject only a real enemy sliding ray
+    // through the pinner, including rays currently blocked by other pieces.
+    for (const from of step.after.board[step.after.turn]) {
+        if (!between(ownKing, from).has(ray.pinner)) continue;
+        const piece = step.after.board.get(from)!;
+        const file = Math.abs((ownKing % 8) - (from % 8));
+        const rank = Math.abs(Math.floor(ownKing / 8) - Math.floor(from / 8));
+        if (
+            piece.role === "queen" ||
+            (piece.role === "rook" && (!file || !rank)) ||
+            (piece.role === "bishop" && file === rank)
+        )
+            return null;
+    }
+    const file = Math.abs((ray.pinner % 8) - (step.move.to % 8));
+    const rank = Math.abs(Math.floor(ray.pinner / 8) - Math.floor(step.move.to / 8));
+    if (
+        (pinner.role === "queen" && aligned(step.move.to)) ||
+        (pinner.role === "bishop" && aligned(step.move.to, true)) ||
+        (pinner.role === "rook" && (!file || !rank))
+    )
+        return null;
+    const unpinned = step.after.clone();
+    unpinned.board.take(ray.pinner);
+    const recapture = { from: ray.front, to: step.move.to };
+    const replyGain = tacticalExchangeGain(unpinned, recapture);
+    if (replyGain < step.capture) return null;
+    const combination =
+        immediate < 100 ? pinnedCaptureCombination(step, ray.front, nodeLimit) : null;
+    const gain = combination?.gain ?? immediate;
+    if (gain < 100) return null;
+    return { gain, ray, victim: victim.role, compensation: combination?.compensation };
+}
+
+/** Capturing a piece defended by a pinned pawn may also invite a different
+ * recapturer. Only that recapturer and material it actually guards belong to
+ * the combination. Verify every reply against a bounded related capture or
+ * safe flight, subtracting all immediate capture liabilities at the leaf. */
+type PinnedCaptureCombination = {
+    gain: number;
+    compensation?: { reply: string; answer: string; victim?: Role; target?: Square };
+};
+const pinnedCaptureCombinationCache = new Map<string, PinnedCaptureCombination | null>();
+function pinnedCaptureCombination(
+    step: TacticalReplayStep,
+    pinned: Square,
+    nodeLimit: number,
+): PinnedCaptureCombination | null {
+    const key = `${makeFen(step.before.toSetup())}:${step.uci}:${pinned}`;
+    if (nodeLimit === 4096 && pinnedCaptureCombinationCache.has(key))
+        return pinnedCaptureCombinationCache.get(key)!;
+    const proof = computePinnedCaptureCombination(step, pinned, nodeLimit);
+    if (nodeLimit === 4096) {
+        pinnedCaptureCombinationCache.set(key, proof);
+        if (pinnedCaptureCombinationCache.size > 128)
+            pinnedCaptureCombinationCache.delete(
+                pinnedCaptureCombinationCache.keys().next().value!,
+            );
+    }
+    return proof;
+}
+function computePinnedCaptureCombination(
+    step: TacticalReplayStep,
+    pinned: Square,
+    nodeLimit: number,
+): PinnedCaptureCombination | null {
+    const side = step.before.turn;
+    const enemy = opposite(side);
+    const targets = new Set<Square>([pinned]);
+    for (const from of step.after.board[enemy]) {
+        const piece = step.after.board.get(from)!;
+        if (!attacks(piece, from, step.after.board.occupied).has(step.move.to)) continue;
+        targets.add(from);
+        for (const target of attacks(piece, from, step.before.board.occupied).intersect(
+            step.before.board[enemy],
+        )) {
+            if (
+                step.after.board.get(target)?.color !== enemy ||
+                step.after.board.get(target)?.role === "king"
+            )
+                continue;
+            if (
+                [...step.after.board[side]].some((attacker) =>
+                    attacks(
+                        step.after.board.get(attacker)!,
+                        attacker,
+                        step.after.board.occupied,
+                    ).has(target),
+                )
+            )
+                targets.add(target);
+        }
+    }
+    let nodes = nodeLimit;
+    let minimum = Infinity;
+    let compensation: PinnedCaptureCombination["compensation"];
+    for (const reply of legalMoves(step.after)) {
+        if (--nodes < 0) return null;
+        const next = step.after.clone();
+        next.play(reply);
+        const balance =
+            step.capture -
+            capturedValue(step.after, reply) -
+            (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0);
+        const mapped = new Set(
+            [...targets].map((target) => (target === reply.from ? reply.to : target)),
+        );
+        let best = -VALUE.king;
+        let answer: string | undefined;
+        let payoff: { victim?: Role; target?: Square } = {};
+        for (const move of legalMoves(next)) {
+            const capture = capturedValue(next, move);
+            const relatedCapture = capture > 0 && mapped.has(move.to);
+            const flight =
+                !capture &&
+                !move.promotion &&
+                (move.from === step.move.to ||
+                    (next.isCheck() && next.board.get(move.from)?.role === "king"));
+            if (!relatedCapture && !flight) continue;
+            if (--nodes < 0) return null;
+            const material =
+                balance +
+                capturedValue(next, move) +
+                (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+            if (material < 100) continue;
+            const after = next.clone();
+            after.play(move);
+            if (after.isEnd()) continue;
+            let loss = 0;
+            let resolved = true;
+            for (const capture of legalMoves(after)) {
+                if (--nodes < 0) return null;
+                const threat = after.clone();
+                threat.play(capture);
+                if (threat.isCheckmate()) {
+                    resolved = false;
+                    break;
+                }
+                if (!capturedValue(after, capture) && !capture.promotion) continue;
+                const gain = tacticalExchangeGain(after, capture);
+                if (gain <= -VALUE.king) {
+                    resolved = false;
+                    break;
+                }
+                loss = Math.max(loss, gain);
+            }
+            if (!resolved) continue;
+            const gain = material - loss;
+            if (gain > best) {
+                best = gain;
+                answer = makeSan(next, move);
+                payoff = capture ? { victim: next.board.get(move.to)?.role, target: move.to } : {};
+            }
+            if (best >= 100) break;
+        }
+        if (best < 100) return null;
+        minimum = Math.min(minimum, best);
+        if (reply.to === step.move.to && answer)
+            compensation = { reply: makeSan(step.after, reply), answer, ...payoff };
+    }
+    return Number.isFinite(minimum) ? { gain: minimum, compensation } : null;
+}
+
+function pinnedCaptureEvidence(step: TacticalReplayStep, source: TacticalMotifEvidence["source"]) {
+    const proof = provePinnedCapture(step);
+    if (!proof) return null;
+    const { ray } = proof;
+    return {
+        id: "pin",
+        label: "Pin",
+        source,
+        confidence: "high",
+        ply: 1,
+        moveUci: step.uci,
+        value: proof.gain,
+        evidence: `${step.san} wins the ${proof.victim} on ${makeSquare(step.move.to)} by exploiting a pin. The ${step.after.board.get(ray.front)!.role} on ${makeSquare(ray.front)} cannot recapture on ${makeSquare(step.move.to)} because it would expose the king on ${makeSquare(ray.rear)} to the ${step.after.board.get(ray.pinner)!.role} on ${makeSquare(ray.pinner)}.${proof.compensation ? ` One alternative, ${proof.compensation.reply}, permits ${proof.compensation.answer}${proof.compensation.victim && proof.compensation.target !== undefined ? `, taking the ${proof.compensation.victim} on ${makeSquare(proof.compensation.target)}` : ""}.` : ""}`,
+    } satisfies TacticalMotifEvidence;
+}
+
 function rayMaterialEvidence(
     step: TacticalReplayStep,
     source: TacticalMotifEvidence["source"],
@@ -2596,7 +2795,7 @@ function rayMaterialEvidence(
     if (
         step.capture >= 320 &&
         tacticalExchangeGain(step.before, step.move) >= 100 &&
-        !pinnedRecapturer(step)
+        !provePinnedCapture(step)
     )
         return [];
     const motifs: TacticalMotifEvidence[] = [];
@@ -3666,6 +3865,8 @@ export function auditTacticalMotifs(
         typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= -30,
     );
     candidates.push(...rayEvidence);
+    const pinnedCapture = pinnedCaptureEvidence(steps[0], proposals[0]?.source ?? "available");
+    if (pinnedCapture) candidates.push(pinnedCapture);
     const defenderEvidence = capturedDefenderEvidence(
         steps[0],
         proposals[0]?.source ?? "available",
@@ -3892,7 +4093,8 @@ export function auditTacticalMotifs(
         else if (proposal.id === "pin")
             sound =
                 (mate && Boolean(pinRestrictsCapture(step))) ||
-                (pinnedRecapturer(step) && settled >= 100) ||
+                Boolean(provePinnedCapture(step)) ||
+                (!step.capture && pinnedRecapturer(step) && settled >= 100) ||
                 rayMaterialEvidence(step, proposal.source).some((m) => m.id === "pin");
         else if (proposal.id === "capturingDefender")
             sound = Boolean(capturedDefenderEvidence(step, proposal.source));
@@ -3926,6 +4128,9 @@ export function auditTacticalMotifs(
             }
         }
         if (proposal.id === "pin" || proposal.id === "fork") {
+            const capture =
+                proposal.id === "pin" ? pinnedCaptureEvidence(step, proposal.source) : null;
+            if (capture) proposal = { ...proposal, ...capture, ply: proposal.ply };
             const ray = pinRestrictsCapture(step);
             if (ray) {
                 const existed = rayTactics(step.before, step.before.turn).some(

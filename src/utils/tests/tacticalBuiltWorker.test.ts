@@ -106,6 +106,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:queen-capture-over-incidental-pin",
+                input: {
+                    fen: "8/4R1pk/5q2/8/8/8/1B6/6K1 w - - 0 1",
+                    pvUci: ["b2f6"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:knight-exchange-for-pawn",
                 input: {
                     fen: "3qk2r/8/8/4N3/2BP4/8/PPP2PPP/R4RK1 w k - 0 1",
@@ -189,7 +198,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(84);
+        expect(report).toHaveLength(85);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
@@ -209,19 +218,24 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
 );
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_PGN_SAMPLE)(
-    "the private fork and mating defence survive the built worker boundary",
+    "the private fork and pinned capture survive the built worker boundary",
     async () => {
         const sample = JSON.parse(readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"));
-        const row = sample.cases.find((item: { id: string }) => item.id === "private-easy:145");
-        const input = {
-            fen: row.fen,
-            pvUci: row.sourceUci,
-            engineName: "Private course source",
-            depth: 16,
-        };
-        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
-        expect(result.scan).toEqual(buildLiveTacticalScan(input));
-        expect(result.scan.motifs[0]).toMatchObject({ id: "fork", value: 80 });
-        expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+        for (const [id, theme, value] of [
+            ["private-easy:145", "fork", 80],
+            ["private-easy:68", "pin", 100],
+        ] as const) {
+            const row = sample.cases.find((item: { id: string }) => item.id === id);
+            const input = {
+                fen: row.fen,
+                pvUci: row.sourceUci,
+                engineName: "Private course source",
+                depth: 16,
+            };
+            const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+            expect(result.scan).toEqual(buildLiveTacticalScan(input));
+            expect(result.scan.motifs[0]).toMatchObject({ id: theme, value });
+            expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+        }
     },
 );

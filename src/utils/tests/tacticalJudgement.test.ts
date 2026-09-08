@@ -497,6 +497,93 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_PIN_ENGINE_REPORT,
+    )(
+        "validate the private pinned capture and its compensating rook branch",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_PIN_ENGINE_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find((item: { id: string }) => item.id === "private-easy:68");
+            const { parseSquare } = await import("chessops/util");
+            const relocated = Chess.fromSetup(parseFen(row.fen).unwrap()).unwrap();
+            relocated.board.take(parseSquare("h7")!);
+            relocated.board.set(parseSquare("h8")!, { color: "black", role: "king" });
+            const inputs = [
+                { fen: row.fen, moves: [], root: undefined, label: "Original position" },
+                { fen: row.fen, moves: ["e7d7"], root: undefined, label: "Missed opportunity" },
+                {
+                    fen: row.fen,
+                    moves: ["c3f6", "d6f6"],
+                    root: "e7d7",
+                    label: "Compensating capture",
+                },
+                {
+                    fen: row.fen,
+                    moves: ["c3f6", "d7e7"],
+                    root: "f6e7",
+                    label: "Rook-exchange defence",
+                },
+                {
+                    fen: makeFen(relocated.toSetup()),
+                    moves: ["c3f6"],
+                    root: "g7f6",
+                    label: "Constructed king relocation restores recapture",
+                },
+            ];
+            const searches = [];
+            for (const input of inputs) {
+                const steps = replayTacticalLine(input.fen, input.moves);
+                expect(steps).toHaveLength(input.moves.length);
+                const fen = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : input.fen;
+                const lines = [...(await analyse(engine, fen, input.root)).values()];
+                expect(lines[0].depth).toBe(16);
+                searches.push({ ...input, fen, lines });
+            }
+            const before = searches[0].lines[0],
+                after = searches[1].lines[0];
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                playedMoveUci: "e7d7",
+                bestMoveUci: before.pvUci[0],
+                pvUci: before.pvUci,
+                refutationUci: after.pvUci,
+                cpBefore: before.cp,
+                cpAfter: after.cp === null ? null : -after.cp,
+                cpLoss: before.cp === null || after.cp === null ? null : before.cp + after.cp,
+            });
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        sourceSha256: sample.sourceSha256,
+                        searches,
+                        review,
+                        explanation: buildMistakeReviewTacticalExplanation(review),
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+            expect(before.pvUci[0]).toBe("c3f6");
+            expect(searches[2].lines[0].cp).toBeGreaterThan(0);
+            expect(searches[4].lines[0].cp).toBeGreaterThanOrEqual(0);
+            expect(review.missedMotifs[0]).toMatchObject({ id: "pin", value: 100 });
+            expect(buildMistakeReviewTacticalExplanation(review)?.primary.id).toBe("pin");
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_FORK_ENGINE_REPORT,
     )(
         "validate the private fork, missed opportunity and mating defence with fresh searches",
