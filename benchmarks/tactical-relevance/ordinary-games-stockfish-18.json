@@ -477,11 +477,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "explanation": null,
-    "scanMs": 153.4925000000003,
-    "mistakeMs": 1.3480999999992491
+    "scanMs": 155.8035000000018,
+    "mistakeMs": 1.2929000000003725
   },
   {
     "id": "ordinary-1:ply13",
@@ -936,11 +936,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "explanation": null,
-    "scanMs": 43.991399999998976,
-    "mistakeMs": 1.1154999999998836
+    "scanMs": 48.713700000000244,
+    "mistakeMs": 0.38889999999810243
   },
   {
     "id": "ordinary-1:ply18",
@@ -1400,7 +1400,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -1436,8 +1436,8 @@
         "comparisonEvidence": "After Ng4, Qa6 no longer wins material in the exchange."
       }
     },
-    "scanMs": 159.15279999999984,
-    "mistakeMs": 49.90599999999904
+    "scanMs": 194.62389999999868,
+    "mistakeMs": 58.988400000002
   },
   {
     "id": "ordinary-1:ply23",
@@ -1767,15 +1767,15 @@
       "allowedMotifs": [],
       "missedMotifs": [
         {
-          "id": "hangingPiece",
-          "label": "Hanging Piece",
-          "confidence": "high",
-          "evidence": "a4c6 wins the loose knight on c6.",
+          "id": "mateIn3",
+          "label": "Forcing Mate",
           "source": "missed",
+          "confidence": "high",
           "ply": 1,
           "moveUci": "a4c6",
-          "relevance": "primary",
-          "value": 10000
+          "value": 10000,
+          "evidence": "Qxc6+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxc6+ Qd7 Qxa8+ Qc8 Qxc8#. The exact continuation depends on the defence.",
+          "relevance": "primary"
         },
         {
           "id": "mateIn3",
@@ -1787,10 +1787,7 @@
           "moveUci": "a8c8",
           "relevance": "secondary",
           "value": 10000
-        }
-      ],
-      "motifClassifierVersion": "site-55.adapter-29",
-      "missedTimeline": [
+        },
         {
           "id": "hangingPiece",
           "label": "Hanging Piece",
@@ -1799,8 +1796,34 @@
           "source": "missed",
           "ply": 1,
           "moveUci": "a4c6",
-          "relevance": "primary",
+          "relevance": "secondary",
+          "value": 320
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-30",
+      "missedTimeline": [
+        {
+          "id": "mateIn3",
+          "label": "Forcing Mate",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "a4c6",
           "value": 10000,
+          "evidence": "Qxc6+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxc6+ Qd7 Qxa8+ Qc8 Qxc8#. The exact continuation depends on the defence.",
+          "relevance": "primary",
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "a4c6 wins the loose knight on c6.",
+          "source": "missed",
+          "ply": 1,
+          "moveUci": "a4c6",
+          "relevance": "secondary",
+          "value": 320,
           "actor": "white"
         },
         {
@@ -1812,7 +1835,7 @@
           "ply": 3,
           "moveUci": "c6a8",
           "relevance": "secondary",
-          "value": 10000,
+          "value": 500,
           "actor": "white"
         },
         {
@@ -1830,23 +1853,23 @@
       ]
     },
     "explanation": {
-      "title": "What you missed: Hanging Piece",
-      "text": "The better move had this tactic: a4c6 wins the loose knight on c6.",
+      "title": "What you missed: Forcing Mate",
+      "text": "The better move had this tactic: Qxc6+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxc6+ Qd7 Qxa8+ Qc8 Qxc8#. The exact continuation depends on the defence.",
       "source": "missed",
       "primary": {
-        "id": "hangingPiece",
-        "label": "Hanging Piece",
-        "confidence": "high",
-        "evidence": "a4c6 wins the loose knight on c6.",
+        "id": "mateIn3",
+        "label": "Forcing Mate",
         "source": "missed",
+        "confidence": "high",
         "ply": 1,
         "moveUci": "a4c6",
-        "relevance": "primary",
-        "value": 10000
+        "value": 10000,
+        "evidence": "Qxc6+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxc6+ Qd7 Qxa8+ Qc8 Qxc8#. The exact continuation depends on the defence.",
+        "relevance": "primary"
       }
     },
-    "scanMs": 107.00839999999516,
-    "mistakeMs": 63.44930000000022
+    "scanMs": 109.97370000000228,
+    "mistakeMs": 68.44279999999708
   },
   {
     "id": "ordinary-1:ply28",
@@ -2084,7 +2107,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "mateIn1",
@@ -2120,8 +2143,8 @@
         "comparisonEvidence": "Even after Qc8, Qxc8# still permits a verified forced mate within 1 moves. The better move does not remove this mating danger."
       }
     },
-    "scanMs": 2.9422000000049593,
-    "mistakeMs": 13.865499999999884
+    "scanMs": 3.078300000001036,
+    "mistakeMs": 13.87960000000021
   },
   {
     "id": "ordinary-1:ply33",
@@ -2552,7 +2575,7 @@
           "relevance": "secondary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "missedTimeline": [
         {
           "id": "intermezzo",
@@ -2644,8 +2667,8 @@
         "relevance": "primary"
       }
     },
-    "scanMs": 27.711699999999837,
-    "mistakeMs": 913.9544999999998
+    "scanMs": 31.7071999999971,
+    "mistakeMs": 979.1575000000012
   },
   {
     "id": "ordinary-1:ply38",
@@ -3011,11 +3034,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "explanation": null,
-    "scanMs": 0.943200000001525,
-    "mistakeMs": 0.4868999999962398
+    "scanMs": 0.9627000000036787,
+    "mistakeMs": 0.2724999999991269
   },
   {
     "id": "ordinary-1:ply43",
@@ -3458,11 +3481,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "explanation": null,
-    "scanMs": 38.95930000000226,
-    "mistakeMs": 50.236400000001595
+    "scanMs": 62.564299999998184,
+    "mistakeMs": 53.91860000000452
   },
   {
     "id": "ordinary-2:ply8",
@@ -3808,11 +3831,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "explanation": null,
-    "scanMs": 80.86220000000321,
-    "mistakeMs": 32.51050000000396
+    "scanMs": 87.79359999999724,
+    "mistakeMs": 34.80819999999949
   },
   {
     "id": "ordinary-2:ply13",
@@ -4127,11 +4150,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "explanation": null,
-    "scanMs": 0.6313000000009197,
-    "mistakeMs": 32.84019999999873
+    "scanMs": 0.5268999999971129,
+    "mistakeMs": 0.3554999999978463
   },
   {
     "id": "ordinary-2:ply18",
@@ -4609,7 +4632,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "mateIn7",
@@ -4693,8 +4716,8 @@
         "comparisonEvidence": "Kxf6 makes the immediate reply f7+ illegal."
       }
     },
-    "scanMs": 712.5587000000014,
-    "mistakeMs": 40.467100000001665
+    "scanMs": 721.3128999999972,
+    "mistakeMs": 39.12199999999575
   },
   {
     "id": "ordinary-2:ply23",
@@ -5100,7 +5123,7 @@
           "value": 820
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "missedTimeline": [
         {
           "id": "forkPreparation",
@@ -5204,8 +5227,8 @@
         "relevance": "primary"
       }
     },
-    "scanMs": 135.81850000000122,
-    "mistakeMs": 184.94550000000163
+    "scanMs": 138.0544000000009,
+    "mistakeMs": 189.4786000000022
   },
   {
     "id": "ordinary-2:ply28",
@@ -5535,11 +5558,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "explanation": null,
-    "scanMs": 41.30200000000332,
-    "mistakeMs": 31.40429999999469
+    "scanMs": 40.47590000000491,
+    "mistakeMs": 16.973599999997532
   },
   {
     "id": "ordinary-2:ply33",
@@ -5960,11 +5983,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "explanation": null,
-    "scanMs": 118.16299999999319,
-    "mistakeMs": 29.898499999995693
+    "scanMs": 116.9545999999973,
+    "mistakeMs": 30.034200000001874
   },
   {
     "id": "ordinary-2:ply38",
@@ -6286,11 +6309,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "explanation": null,
-    "scanMs": 29.526499999999942,
-    "mistakeMs": 57.57990000000427
+    "scanMs": 28.610799999994924,
+    "mistakeMs": 45.52130000000034
   },
   {
     "id": "ordinary-2:ply43",
@@ -6643,11 +6666,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "explanation": null,
-    "scanMs": 33.99510000000009,
-    "mistakeMs": 36.51260000000184
+    "scanMs": 33.90600000000268,
+    "mistakeMs": 37.069400000000314
   },
   {
     "id": "ordinary-2:ply48",
@@ -7095,7 +7118,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -7131,8 +7154,8 @@
         "comparisonEvidence": "After Bc2, Na4 no longer wins material in the exchange."
       }
     },
-    "scanMs": 67.82200000000012,
-    "mistakeMs": 34.74109999999928
+    "scanMs": 67.95150000000285,
+    "mistakeMs": 33.488400000002
   },
   {
     "id": "ordinary-2:ply53",
@@ -7516,7 +7539,9 @@
           "moveUci": "c6d4",
           "evidence": "Ncd4 is a quiet mating preparation. All 16 legal White replies allow forced mate within two more moves; for example, Rb1 Ne3+ Kg1 Rxg2#.",
           "relevance": "primary",
-          "value": 10000
+          "value": 10000,
+          "comparison": "persists",
+          "comparisonEvidence": "Kf1 is also the analysed best move. The same position and tactical danger remain after either choice."
         },
         {
           "id": "cornerMate",
@@ -7527,11 +7552,13 @@
           "ply": 5,
           "moveUci": "d4f3",
           "relevance": "secondary",
-          "value": 10000
+          "value": 10000,
+          "comparison": "persists",
+          "comparisonEvidence": "Kf1 is also the analysed best move. The same position and tactical danger remain after either choice."
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "mateIn3",
@@ -7543,6 +7570,8 @@
           "evidence": "Ncd4 is a quiet mating preparation. All 16 legal White replies allow forced mate within two more moves; for example, Rb1 Ne3+ Kg1 Rxg2#.",
           "relevance": "primary",
           "value": 10000,
+          "comparison": "persists",
+          "comparisonEvidence": "Kf1 is also the analysed best move. The same position and tactical danger remain after either choice.",
           "actor": "black"
         },
         {
@@ -7555,13 +7584,15 @@
           "moveUci": "d4f3",
           "relevance": "secondary",
           "value": 10000,
+          "comparison": "persists",
+          "comparisonEvidence": "Kf1 is also the analysed best move. The same position and tactical danger remain after either choice.",
           "actor": "black"
         }
       ]
     },
     "explanation": {
-      "title": "Why the move was tactically bad",
-      "text": "Your move allowed this tactic: Ncd4 is a quiet mating preparation. All 16 legal White replies allow forced mate within two more moves; for example, Rb1 Ne3+ Kg1 Rxg2#.",
+      "title": "Tactical danger in the position",
+      "text": "Ncd4 is a quiet mating preparation. All 16 legal White replies allow forced mate within two more moves; for example, Rb1 Ne3+ Kg1 Rxg2#. Kf1 is also the analysed best move. The same position and tactical danger remain after either choice. This threat alone does not explain the difference between the two moves.",
       "source": "allowed",
       "primary": {
         "id": "mateIn3",
@@ -7572,11 +7603,13 @@
         "moveUci": "c6d4",
         "evidence": "Ncd4 is a quiet mating preparation. All 16 legal White replies allow forced mate within two more moves; for example, Rb1 Ne3+ Kg1 Rxg2#.",
         "relevance": "primary",
-        "value": 10000
+        "value": 10000,
+        "comparison": "persists",
+        "comparisonEvidence": "Kf1 is also the analysed best move. The same position and tactical danger remain after either choice."
       }
     },
-    "scanMs": 14.324100000005274,
-    "mistakeMs": 5.6163999999989755
+    "scanMs": 15.128499999991618,
+    "mistakeMs": 5.540999999997439
   },
   {
     "id": "ordinary-2:ply58",
@@ -7816,11 +7849,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "explanation": null,
-    "scanMs": 0.33329999999841675,
-    "mistakeMs": 2.264499999997497
+    "scanMs": 0.327900000003865,
+    "mistakeMs": 0.22740000000339933
   },
   {
     "id": "ordinary-3:ply8",
@@ -8238,11 +8271,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "explanation": null,
-    "scanMs": 1.2960999999995693,
-    "mistakeMs": 0.4870999999984633
+    "scanMs": 1.0261000000027707,
+    "mistakeMs": 0.27850000000034925
   },
   {
     "id": "ordinary-3:ply13",
@@ -8583,11 +8616,11 @@
     "classification": {
       "allowedMotifs": [],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "explanation": null,
-    "scanMs": 47.68420000000333,
-    "mistakeMs": 30.798000000002503
+    "scanMs": 47.90589999999793,
+    "mistakeMs": 31.824700000011944
   },
   {
     "id": "ordinary-3:ply18",
@@ -9031,7 +9064,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -9067,8 +9100,8 @@
         "comparisonEvidence": "After Nc6, Ng5 no longer wins material in the exchange."
       }
     },
-    "scanMs": 41.605200000005425,
-    "mistakeMs": 17.9288000000015
+    "scanMs": 41.76350000000093,
+    "mistakeMs": 18.244100000010803
   },
   {
     "id": "ordinary-3:ply23",
@@ -9441,7 +9474,7 @@
           "value": 600
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "missedTimeline": [
         {
           "id": "fork",
@@ -9485,8 +9518,8 @@
         "value": 600
       }
     },
-    "scanMs": 0.5728999999992084,
-    "mistakeMs": 41.706200000000536
+    "scanMs": 0.4536999999982072,
+    "mistakeMs": 38.60579999999027
   },
   {
     "id": "ordinary-3:ply28",
@@ -9904,11 +9937,11 @@
           "relevance": "primary",
           "value": 570,
           "comparison": "persists",
-          "comparisonEvidence": "The same capture still wins material after fxg5."
+          "comparisonEvidence": "fxg5 is also the analysed best move. The same position and tactical danger remain after either choice."
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -9921,14 +9954,14 @@
           "relevance": "primary",
           "value": 570,
           "comparison": "persists",
-          "comparisonEvidence": "The same capture still wins material after fxg5.",
+          "comparisonEvidence": "fxg5 is also the analysed best move. The same position and tactical danger remain after either choice.",
           "actor": "white"
         }
       ]
     },
     "explanation": {
       "title": "Tactical danger in the position",
-      "text": "Bxf7+ wins the loose queen on f7. The same capture still wins material after fxg5. This threat alone does not explain the difference between the two moves.",
+      "text": "Bxf7+ wins the loose queen on f7. fxg5 is also the analysed best move. The same position and tactical danger remain after either choice. This threat alone does not explain the difference between the two moves.",
       "source": "allowed",
       "primary": {
         "id": "hangingPiece",
@@ -9941,10 +9974,10 @@
         "relevance": "primary",
         "value": 570,
         "comparison": "persists",
-        "comparisonEvidence": "The same capture still wins material after fxg5."
+        "comparisonEvidence": "fxg5 is also the analysed best move. The same position and tactical danger remain after either choice."
       }
     },
-    "scanMs": 22.04670000000624,
-    "mistakeMs": 17.41160000000673
+    "scanMs": 21.851399999999558,
+    "mistakeMs": 10.99090000000433
   }
 ]

@@ -1,3 +1,4 @@
+import { makeFen } from "chessops/fen";
 import {
     THEME_COLORS,
     THEME_DETECTOR_VERSION,
@@ -103,7 +104,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 29;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 30;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -147,14 +148,11 @@ function deriveFenAfterMove(fen?: string | null, moveInput?: string | null) {
     const move = cleanUci(moveInput);
     if (!fen || !move) return null;
 
-    try {
-        const chess = ChessLite();
-        chess.loadFEN(fen);
-        const played = chess.moveUci(move);
-        return played?.ok ? chess.fen() : null;
-    } catch {
-        return null;
-    }
+    // Use the same legal replay as the evidence audit. In particular, both
+    // standard king-destination and king-to-rook castling UCI reach the same
+    // position; a second parser must not turn one into a missed move.
+    const step = replayTacticalLine(fen, [move])[0];
+    return step ? makeFen(step.after.toSetup()) : null;
 }
 
 function normalizeThemeIds(value: unknown) {
@@ -957,11 +955,20 @@ export function classifyMistakeReviewMotifs(
     const bestLine = normalizeLine(bestMoveUci, input.pvUci);
     const refutationLine = cleanUciLine(input.refutationUci);
     const fenAfterPlayedMove = deriveFenAfterMove(fen, playedMoveUci);
+    const playedTheBestMove = Boolean(
+        fenAfterPlayedMove && fenAfterPlayedMove === deriveFenAfterMove(fen, bestMoveUci),
+    );
 
     let missedDetail: SiteThemeDetail | null = null;
     let allowedDetail: SiteThemeDetail | null = null;
 
-    if (fen && bestMoveUci && bestLine.length && hasTacticalStart(fen, bestLine)) {
+    if (
+        !playedTheBestMove &&
+        fen &&
+        bestMoveUci &&
+        bestLine.length &&
+        hasTacticalStart(fen, bestLine)
+    ) {
         try {
             missedDetail = detectThemesDetailed({
                 fen,
@@ -1018,17 +1025,16 @@ export function classifyMistakeReviewMotifs(
             fen,
             playedMoveUci,
         ).map((m) => ({ ...m, source: "allowed" as const })),
-        missedMotifs:
-            playedMoveUci === bestMoveUci
-                ? []
-                : auditTacticalMotifs(
-                      fen,
-                      bestLine,
-                      toMotifEvidence(missedDetail, "missed", input.pvSan),
-                      typeof input.cpBefore === "number"
-                          ? input.cpBefore * (fenSide(fen) === "w" ? 1 : -1)
-                          : undefined,
-                  ).map((m) => ({ ...m, source: "missed" as const })),
+        missedMotifs: playedTheBestMove
+            ? []
+            : auditTacticalMotifs(
+                  fen,
+                  bestLine,
+                  toMotifEvidence(missedDetail, "missed", input.pvSan),
+                  typeof input.cpBefore === "number"
+                      ? input.cpBefore * (fenSide(fen) === "w" ? 1 : -1)
+                      : undefined,
+              ).map((m) => ({ ...m, source: "missed" as const })),
         motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
     } satisfies MistakeReviewMotifClassification;
 

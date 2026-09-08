@@ -9756,7 +9756,7 @@ function quietPreparation(steps) {
 }
 var checkingMateCache = /* @__PURE__ */ new Map();
 var CHECKING_MATE_NODE_LIMIT = 65536;
-/** A long PV ending in mate is only a nomination. All legal defences must
+/** A PV ending in mate is only a nomination. All legal defences must
 * lose. Besides checks, at most two PV-nominated quiet attacking moves may
 * be tried; each opens the full legal defensive tree. Unknown/exhausted
 * searches cannot certify the supplied line. */
@@ -11475,7 +11475,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 	const steps = replayTacticalLine(fen, line);
 	if (!steps.length) return [];
 	const allowConditional = typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= -30;
-	const checkingMate = steps.length >= 7 ? proveCheckingMate(steps) : null;
+	const checkingMate = steps.length >= 3 ? proveCheckingMate(steps) : null;
 	const promotionCombination = provePromotionCombination(steps[0]);
 	const promotionPly = steps.findIndex((step) => step.before.turn === steps[0].before.turn && step.move.promotion);
 	const end = checkingMate ? steps.findIndex((step) => step.after.isCheckmate()) + 1 : promotionCombination && promotionPly >= 0 && promotionPly <= 16 ? promotionPly + 1 : episodeEnd(steps, allowConditional);
@@ -11854,6 +11854,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		if (m.id === "hangingPiece" && candidates.some((other) => other.ply === m.ply && ["capturingDefender", "intermezzo"].includes(other.id))) return false;
 		if (m.id === "sacrifice" && candidates.some((other) => MECHANISMS.has(other.id) && other.ply === m.ply)) return false;
 		if (m.id === "forcingAttack" && candidates.some((other) => other.ply === m.ply && other.id !== "forcingAttack" && MECHANISMS.has(other.id))) return false;
+		if (m.label === "Forcing Mate" && candidates.some((other) => other.ply === m.ply && MECHANISMS.has(other.id) && other.value === 1e4)) return false;
 		return true;
 	}).sort((a, b) => {
 		const matingPriority = (m) => mate && (m.value === 1e4 || MATE.test(m.id)) ? 0 : 1;
@@ -11878,7 +11879,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			evidence: `${steps[motif.ply - 1].san} is checkmate: the king is in check and there is no legal reply.`
 		} : {},
 		relevance: index === 0 ? "primary" : "secondary",
-		value: motif.value ?? (mate || motif.id === "mateThreat" && quietMate ? 1e4 : motif.id === "hangingPiece" && motif.ply === 1 ? tacticalExchangeGain(root.before, root.move) : Math.max(100, settled))
+		value: motif.value ?? (motif.id === "hangingPiece" && motif.ply ? tacticalExchangeGain(steps[motif.ply - 1].before, steps[motif.ply - 1].move) : mate || motif.id === "mateThreat" && quietMate ? 1e4 : Math.max(100, settled))
 	}));
 }
 /** Track the same piece across a choice, including castling's rook and king.
@@ -12155,6 +12156,11 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 	const actual = replayTacticalLine(fen, [playedMove, reply]);
 	const better = replayTacticalLine(fen, [bestMove, reply]);
 	if (actual.length < 2 || !better.length) return motifs;
+	if (makeFen(actual[0].after.toSetup()) === makeFen(better[0].after.toSetup())) return motifs.map((motif) => ({
+		...motif,
+		comparison: "persists",
+		comparisonEvidence: `${better[0].san} is also the analysed best move. The same position and tactical danger remain after either choice.`
+	}));
 	const step = actual[1];
 	const alternative = better[1];
 	const bestSan = better[0].san;
@@ -12231,7 +12237,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 29;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 30;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -12260,13 +12266,8 @@ function fenSide(fen) {
 function deriveFenAfterMove(fen, moveInput) {
 	const move = cleanUci(moveInput);
 	if (!fen || !move) return null;
-	try {
-		const chess = ChessLite();
-		chess.loadFEN(fen);
-		return chess.moveUci(move)?.ok ? chess.fen() : null;
-	} catch {
-		return null;
-	}
+	const step = replayTacticalLine(fen, [move])[0];
+	return step ? makeFen(step.after.toSetup()) : null;
 }
 function normalizeThemeIds(value) {
 	const labels = THEME_LABELS;
@@ -12766,9 +12767,10 @@ function classifyMistakeReviewMotifs(input) {
 	const bestLine = normalizeLine(bestMoveUci, input.pvUci);
 	const refutationLine = cleanUciLine(input.refutationUci);
 	const fenAfterPlayedMove = deriveFenAfterMove(fen, playedMoveUci);
+	const playedTheBestMove = Boolean(fenAfterPlayedMove && fenAfterPlayedMove === deriveFenAfterMove(fen, bestMoveUci));
 	let missedDetail = null;
 	let allowedDetail = null;
-	if (fen && bestMoveUci && bestLine.length && hasTacticalStart(fen, bestLine)) try {
+	if (!playedTheBestMove && fen && bestMoveUci && bestLine.length && hasTacticalStart(fen, bestLine)) try {
 		missedDetail = detectThemesDetailed({
 			fen,
 			side: fenSide(fen),
@@ -12799,7 +12801,7 @@ function classifyMistakeReviewMotifs(input) {
 			...m,
 			source: "allowed"
 		})),
-		missedMotifs: playedMoveUci === bestMoveUci ? [] : auditTacticalMotifs(fen, bestLine, toMotifEvidence(missedDetail, "missed", input.pvSan), typeof input.cpBefore === "number" ? input.cpBefore * (fenSide(fen) === "w" ? 1 : -1) : void 0).map((m) => ({
+		missedMotifs: playedTheBestMove ? [] : auditTacticalMotifs(fen, bestLine, toMotifEvidence(missedDetail, "missed", input.pvSan), typeof input.cpBefore === "number" ? input.cpBefore * (fenSide(fen) === "w" ? 1 : -1) : void 0).map((m) => ({
 			...m,
 			source: "missed"
 		})),

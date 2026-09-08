@@ -53,7 +53,10 @@ describe("deflection requires a real defender and a forcing consequence", () => 
             fen: pinned,
             pvUci: ["e4e8", "d8e8", "a8e8"],
         });
-        expect(result.motifs[0]?.id).toBe("backRankMate");
+        expect(result.motifs[0]).toMatchObject({ id: "mateIn2", ply: 1, label: "Forcing Mate" });
+        expect(result.timeline).toContainEqual(
+            expect.objectContaining({ id: "backRankMate", ply: 3 }),
+        );
         const discovery = result.motifs.find((m) => m.id === "discoveredAttack");
         expect(discovery?.value).toBeLessThan(10000);
         expect(discovery?.relevance).toBe("secondary");

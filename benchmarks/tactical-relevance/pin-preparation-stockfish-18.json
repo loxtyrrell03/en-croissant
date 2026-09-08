@@ -170,7 +170,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     }
   },
   {
@@ -395,7 +395,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     }
   },
   {
@@ -660,7 +660,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     }
   },
   {
@@ -818,7 +818,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     }
   },
   {
@@ -1053,7 +1053,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     }
   }
 ]

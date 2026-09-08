@@ -117,7 +117,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     }
   },
   {
@@ -155,7 +155,7 @@
     ],
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     }
   },
   {
@@ -299,7 +299,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     }
   },
   {
@@ -405,7 +405,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "doubleThreatProof": {
       "gain": 180,
@@ -817,7 +817,7 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "doubleThreatProof": {
       "gain": 180,
@@ -1151,7 +1151,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "checkingAttackProof": {
       "gain": 170,
@@ -1332,6 +1332,18 @@
           "actor": "black"
         },
         {
+          "id": "mateIn3",
+          "label": "Forcing Mate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 3,
+          "moveUci": "f1e2",
+          "value": 10000,
+          "evidence": "Qxe2+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxe2+ Kc1 Bf4+ Kb1 Qd1#. The exact continuation depends on the defence.",
+          "relevance": "secondary",
+          "actor": "black"
+        },
+        {
           "id": "hangingPiece",
           "label": "Hanging Piece",
           "confidence": "high",
@@ -1340,7 +1352,7 @@
           "ply": 3,
           "moveUci": "f1e2",
           "relevance": "secondary",
-          "value": 10000,
+          "value": 500,
           "actor": "black"
         },
         {
@@ -1356,7 +1368,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "checkingAttackProof": {
       "gain": 170,
@@ -1543,6 +1555,18 @@
           "actor": "black"
         },
         {
+          "id": "mateIn3",
+          "label": "Forcing Mate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 3,
+          "moveUci": "f1d3",
+          "value": 10000,
+          "evidence": "Qd3+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qd3+ Kc1 Bf4+ Re3 Bxe3#. The exact continuation depends on the defence.",
+          "relevance": "secondary",
+          "actor": "black"
+        },
+        {
           "id": "mateIn1",
           "label": "Checkmate",
           "source": "available",
@@ -1555,7 +1579,7 @@
           "actor": "black"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
     "checkingAttackProof": {
       "gain": 170,

@@ -96,9 +96,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 41.458300000000236
+      "classificationMs": 45.38929999999891
     },
     {
       "id": "lichess:3mWuW",
@@ -198,9 +198,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 37.441100000000006
+      "classificationMs": 28.74959999999919
     },
     {
       "id": "lichess:41frD",
@@ -311,9 +311,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 10.070599999999104
+      "classificationMs": 8.747699999999895
     },
     {
       "id": "lichess:4Osgg",
@@ -401,9 +401,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 26.800100000000384
+      "classificationMs": 21.560300000001007
     },
     {
       "id": "lichess:7Aje1",
@@ -514,9 +514,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 39.14680000000044
+      "classificationMs": 35.87200000000121
     },
     {
       "id": "lichess:7tbEy",
@@ -639,9 +639,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 48.4968000000008
+      "classificationMs": 42.49159999999938
     },
     {
       "id": "lichess:8FLlO",
@@ -672,9 +672,9 @@
       "proof": null,
       "result": {
         "motifs": [],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 113.04290000000037
+      "classificationMs": 83.43899999999849
     },
     {
       "id": "lichess:AtnrF",
@@ -820,9 +820,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 25.052600000000893
+      "classificationMs": 17.666199999999662
     },
     {
       "id": "lichess:IyijS",
@@ -922,9 +922,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 17.477499999999054
+      "classificationMs": 9.004499999999098
     },
     {
       "id": "lichess:Jn9KP",
@@ -1035,9 +1035,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 31.969100000000253
+      "classificationMs": 13.723500000000058
     },
     {
       "id": "lichess:LDIy1",
@@ -1086,17 +1086,6 @@
             "moveUci": "h8h2",
             "value": 10000,
             "relevance": "primary"
-          },
-          {
-            "id": "mateIn4",
-            "label": "Forcing Mate",
-            "source": "available",
-            "confidence": "high",
-            "ply": 1,
-            "moveUci": "h8h2",
-            "value": 10000,
-            "evidence": "Rxh2+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Rxh2+ Kxh2 Rh8+ Rh7 Rxh7+ Bh4 Rxh4#. The exact continuation depends on the defence.",
-            "relevance": "secondary"
           },
           {
             "id": "anastasiaMate",
@@ -1160,9 +1149,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 28.596799999999348
+      "classificationMs": 18.020000000000437
     },
     {
       "id": "lichess:LDnWZ",
@@ -1273,9 +1262,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 12.297200000000885
+      "classificationMs": 15.128499999998894
     },
     {
       "id": "lichess:NOVGX",
@@ -1362,18 +1351,6 @@
             "actor": "white"
           },
           {
-            "id": "attacking_undefended_piece",
-            "label": "Threatening a Piece",
-            "confidence": "medium",
-            "evidence": "Threatening a Piece appears on g6g7 at ply 1 of the current best line.",
-            "source": "available",
-            "ply": 3,
-            "moveUci": "g6g7",
-            "relevance": "secondary",
-            "value": 10000,
-            "actor": "white"
-          },
-          {
             "id": "underPromotion",
             "label": "Under-Promotion",
             "confidence": "medium",
@@ -1406,7 +1383,7 @@
             "ply": 5,
             "moveUci": "g7f8n",
             "relevance": "secondary",
-            "value": 10000,
+            "value": 720,
             "actor": "white"
           },
           {
@@ -1422,9 +1399,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 61.663800000000265
+      "classificationMs": 43.19709999999759
     },
     {
       "id": "lichess:NrHkx",
@@ -1535,9 +1512,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 22.323099999999613
+      "classificationMs": 19.667300000000978
     },
     {
       "id": "lichess:NtXK7",
@@ -1677,9 +1654,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 31.14929999999913
+      "classificationMs": 76.56759999999849
     },
     {
       "id": "lichess:O3OKR",
@@ -1791,9 +1768,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 12.84820000000036
+      "classificationMs": 13.190400000003137
     },
     {
       "id": "lichess:OezHt",
@@ -1904,9 +1881,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 4.46480000000156
+      "classificationMs": 11.906200000001263
     },
     {
       "id": "lichess:PDoyY",
@@ -2017,9 +1994,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 41.848299999999654
+      "classificationMs": 25.518299999999726
     },
     {
       "id": "lichess:bBtM1",
@@ -2137,9 +2114,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 9.363299999999072
+      "classificationMs": 8.709599999998318
     },
     {
       "id": "lichess:eQa3B",
@@ -2194,17 +2171,6 @@
             "moveUci": "h8h1",
             "value": 10000,
             "relevance": "primary"
-          },
-          {
-            "id": "mateIn5",
-            "label": "Forcing Mate",
-            "source": "available",
-            "confidence": "high",
-            "ply": 1,
-            "moveUci": "h8h1",
-            "value": 10000,
-            "evidence": "Rh1+ starts a forced mating attack. Every legal defence permits mate within 5 moves; one verified line is Rh1+ Kxh1 Rh8+ Kg1 Rh1+ Kxh1 Qh8+ Kg1 Qh2#. The exact continuation depends on the defence.",
-            "relevance": "secondary"
           },
           {
             "id": "mateIn5",
@@ -2280,9 +2246,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 20.732900000000882
+      "classificationMs": 20.417100000002392
     },
     {
       "id": "lichess:eimKB",
@@ -2379,9 +2345,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 48.50380000000041
+      "classificationMs": 69.22779999999693
     },
     {
       "id": "lichess:g2XPR",
@@ -2499,9 +2465,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 39.37149999999929
+      "classificationMs": 41.61949999999706
     },
     {
       "id": "lichess:gJxgk",
@@ -2618,9 +2584,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 54.75200000000041
+      "classificationMs": 77.11990000000151
     },
     {
       "id": "lichess:hajE5",
@@ -2659,9 +2625,9 @@
       "proof": null,
       "result": {
         "motifs": [],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 86.54629999999997
+      "classificationMs": 95.94159999999829
     },
     {
       "id": "lichess:kCdp5",
@@ -2778,9 +2744,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 31.628700000001118
+      "classificationMs": 41.46850000000268
     },
     {
       "id": "lichess:n48BE",
@@ -2898,9 +2864,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 7.964699999998629
+      "classificationMs": 12.332399999999325
     },
     {
       "id": "lichess:nUdHj",
@@ -3012,9 +2978,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 11.627000000000407
+      "classificationMs": 17.23240000000078
     },
     {
       "id": "lichess:qUCRQ",
@@ -3108,9 +3074,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 6.2136999999984255
+      "classificationMs": 11.055299999999988
     },
     {
       "id": "lichess:r7fZD",
@@ -3159,17 +3125,6 @@
             "moveUci": "g4g2",
             "value": 10000,
             "relevance": "primary"
-          },
-          {
-            "id": "mateIn4",
-            "label": "Forcing Mate",
-            "source": "available",
-            "confidence": "high",
-            "ply": 1,
-            "moveUci": "g4g2",
-            "value": 10000,
-            "evidence": "Rxg2+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Rxg2+ Kxg2 Rg6+ Qg4 Qxg4+ Kf1 Qd1#. The exact continuation depends on the defence.",
-            "relevance": "secondary"
           },
           {
             "id": "mateIn4",
@@ -3233,9 +3188,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 23.26929999999993
+      "classificationMs": 31.89390000000276
     },
     {
       "id": "lichess:wVsJa",
@@ -3287,17 +3242,6 @@
           },
           {
             "id": "mateIn4",
-            "label": "Forcing Mate",
-            "source": "available",
-            "confidence": "high",
-            "ply": 1,
-            "moveUci": "h6g7",
-            "value": 10000,
-            "evidence": "Bxg7+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Bxg7+ Kxg7 Nf5+ Kh8 Qh6+ Nh7 Qg7#. The exact continuation depends on the defence.",
-            "relevance": "secondary"
-          },
-          {
-            "id": "mateIn4",
             "label": "Checkmate",
             "confidence": "high",
             "evidence": "Qg7# is checkmate: the king is in check and there is no legal reply.",
@@ -3346,9 +3290,9 @@
             "actor": "white"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 41.92360000000008
+      "classificationMs": 31.033400000000256
     },
     {
       "id": "lichess:xyVJC",
@@ -3482,9 +3426,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 19.225099999999657
+      "classificationMs": 23.08729999999923
     },
     {
       "id": "lichess:yLDJO",
@@ -3624,9 +3568,9 @@
             "actor": "black"
           }
         ],
-        "motifClassifierVersion": "site-55.adapter-29"
+        "motifClassifierVersion": "site-55.adapter-30"
       },
-      "classificationMs": 12.851700000001074
+      "classificationMs": 17.85179999999673
     }
   ]
 }

@@ -549,7 +549,7 @@ type CheckingMateProof = { maxMoves: number; replyCount: number; example: string
 const checkingMateCache = new Map<string, CheckingMateProof | null>();
 const CHECKING_MATE_NODE_LIMIT = 65536;
 
-/** A long PV ending in mate is only a nomination. All legal defences must
+/** A PV ending in mate is only a nomination. All legal defences must
  * lose. Besides checks, at most two PV-nominated quiet attacking moves may
  * be tried; each opens the full legal defensive tree. Unknown/exhausted
  * searches cannot certify the supplied line. */
@@ -3310,7 +3310,7 @@ export function auditTacticalMotifs(
     const steps = replayTacticalLine(fen, line);
     if (!steps.length) return [];
     const allowConditional = typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= -30;
-    const checkingMate = steps.length >= 7 ? proveCheckingMate(steps) : null;
+    const checkingMate = steps.length >= 3 ? proveCheckingMate(steps) : null;
     const promotionCombination = provePromotionCombination(steps[0]);
     const promotionPly = steps.findIndex(
         (step) => step.before.turn === steps[0].before.turn && step.move.promotion,
@@ -3909,6 +3909,16 @@ export function auditTacticalMotifs(
                 )
             )
                 return false;
+            // An independently proved mating mechanism already explains the
+            // root. Keep its named payoff, not another generic root badge.
+            if (
+                m.label === "Forcing Mate" &&
+                candidates.some(
+                    (other) =>
+                        other.ply === m.ply && MECHANISMS.has(other.id) && other.value === 10000,
+                )
+            )
+                return false;
             return true;
         })
         .sort((a, b) => {
@@ -3965,10 +3975,10 @@ export function auditTacticalMotifs(
         relevance: index === 0 ? ("primary" as const) : ("secondary" as const),
         value:
             motif.value ??
-            (mate || (motif.id === "mateThreat" && quietMate)
-                ? 10000
-                : motif.id === "hangingPiece" && motif.ply === 1
-                  ? tacticalExchangeGain(root.before, root.move)
+            (motif.id === "hangingPiece" && motif.ply
+                ? tacticalExchangeGain(steps[motif.ply - 1].before, steps[motif.ply - 1].move)
+                : mate || (motif.id === "mateThreat" && quietMate)
+                  ? 10000
                   : Math.max(100, settled)),
     }));
 }
@@ -4404,6 +4414,16 @@ export function compareImmediateTacticalDefence(
     const actual = replayTacticalLine(fen, [playedMove, reply]);
     const better = replayTacticalLine(fen, [bestMove, reply]);
     if (actual.length < 2 || !better.length) return motifs;
+    // Compare legal reached positions, not scores or just move strings.
+    // Identical choices cannot have caused a difference, even when the two
+    // engine searches return different mating branches or score estimates.
+    if (makeFen(actual[0].after.toSetup()) === makeFen(better[0].after.toSetup())) {
+        return motifs.map((motif) => ({
+            ...motif,
+            comparison: "persists" as const,
+            comparisonEvidence: `${better[0].san} is also the analysed best move. The same position and tactical danger remain after either choice.`,
+        }));
+    }
     const step = actual[1];
     const alternative = better[1];
     const bestSan = better[0].san;

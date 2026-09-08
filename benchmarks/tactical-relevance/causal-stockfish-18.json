@@ -1,5 +1,587 @@
 [
   {
+    "name": "The real Kf1 best defence does not cause the existing mate",
+    "fen": "4r3/pp3k1p/2n3p1/5n2/N4P2/8/PP2rKPP/R6R w - - 1 27",
+    "played": "f2f1",
+    "source": "allowed",
+    "primary": "mateIn3",
+    "comparison": "persists",
+    "why": "The engine's best move is the played Kf1. Its before and after searches choose different mating replies, but both reach the same position. Retain Ncd4's forced mate as existing danger, not an accusation against the best defence.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "f2f1",
+          "c6d4",
+          "a4c3",
+          "f5e3",
+          "f1g1",
+          "e2g2"
+        ],
+        "pvSan": [
+          "Kf1",
+          "Ncd4",
+          "Nc3",
+          "Ne3+",
+          "Kg1",
+          "Rxg2#"
+        ],
+        "cp": null,
+        "mate": -3
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "f2g1",
+          "f5e3",
+          "a4c3",
+          "e2g2"
+        ],
+        "pvSan": [
+          "Kg1",
+          "Ne3",
+          "Nc3",
+          "Rxg2#"
+        ],
+        "cp": null,
+        "mate": -2
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "f2f3",
+          "e8e3",
+          "f3g4",
+          "e2g2"
+        ],
+        "pvSan": [
+          "Kf3",
+          "R8e3+",
+          "Kg4",
+          "Rxg2#"
+        ],
+        "cp": null,
+        "mate": -2
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "c6d4",
+          "g2g3",
+          "f5e3",
+          "f1g1",
+          "d4f3"
+        ],
+        "pvSan": [
+          "Ncd4",
+          "g3",
+          "Ne3+",
+          "Kg1",
+          "Nf3#"
+        ],
+        "cp": null,
+        "mate": 3
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e2c2",
+          "a1e1",
+          "e8e1",
+          "f1e1",
+          "c2c1",
+          "e1f2",
+          "c1h1",
+          "a4c5",
+          "h1c1",
+          "b2b4",
+          "c1c2",
+          "f2f3",
+          "b7b6",
+          "c5b3",
+          "f5d4",
+          "b3d4",
+          "c6d4",
+          "f3e3",
+          "c2g2",
+          "e3d3",
+          "f7e7",
+          "d3d4"
+        ],
+        "pvSan": [
+          "Rc2",
+          "Re1",
+          "Rxe1+",
+          "Kxe1",
+          "Rc1+",
+          "Kf2",
+          "Rxh1",
+          "Nc5",
+          "Rc1",
+          "b4",
+          "Rc2+",
+          "Kf3",
+          "b6",
+          "Nb3",
+          "Nfd4+",
+          "Nxd4",
+          "Nxd4+",
+          "Ke3",
+          "Rxg2",
+          "Kd3",
+          "Ke7",
+          "Kxd4"
+        ],
+        "cp": 724,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "e2d2",
+          "a1e1",
+          "f5e3",
+          "e1e3",
+          "e8e3",
+          "h2h4",
+          "e3e4",
+          "a4c5",
+          "e4f4",
+          "f1e1",
+          "d2b2",
+          "g2g3"
+        ],
+        "pvSan": [
+          "Rd2",
+          "Re1",
+          "Ne3+",
+          "Rxe3",
+          "Rxe3",
+          "h4",
+          "Re4",
+          "Nc5",
+          "Rxf4+",
+          "Ke1",
+          "Rxb2",
+          "g3"
+        ],
+        "cp": 619,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [
+        {
+          "id": "mateIn3",
+          "label": "Mating Preparation",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c6d4",
+          "evidence": "Ncd4 is a quiet mating preparation. All 16 legal White replies allow forced mate within two more moves; for example, Rb1 Ne3+ Kg1 Rxg2#.",
+          "relevance": "primary",
+          "value": 10000,
+          "comparison": "persists",
+          "comparisonEvidence": "Kf1 is also the analysed best move. The same position and tactical danger remain after either choice."
+        },
+        {
+          "id": "cornerMate",
+          "label": "Corner Mate",
+          "confidence": "medium",
+          "evidence": "Nf3# is checkmate (Corner Mate): the king is in check and there is no legal reply.",
+          "source": "allowed",
+          "ply": 5,
+          "moveUci": "d4f3",
+          "relevance": "secondary",
+          "value": 10000,
+          "comparison": "persists",
+          "comparisonEvidence": "Kf1 is also the analysed best move. The same position and tactical danger remain after either choice."
+        }
+      ],
+      "missedMotifs": [],
+      "motifClassifierVersion": "site-55.adapter-30",
+      "allowedTimeline": [
+        {
+          "id": "mateIn3",
+          "label": "Mating Preparation",
+          "source": "allowed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "c6d4",
+          "evidence": "Ncd4 is a quiet mating preparation. All 16 legal White replies allow forced mate within two more moves; for example, Rb1 Ne3+ Kg1 Rxg2#.",
+          "relevance": "primary",
+          "value": 10000,
+          "comparison": "persists",
+          "comparisonEvidence": "Kf1 is also the analysed best move. The same position and tactical danger remain after either choice.",
+          "actor": "black"
+        },
+        {
+          "id": "cornerMate",
+          "label": "Corner Mate",
+          "confidence": "medium",
+          "evidence": "Nf3# is checkmate (Corner Mate): the king is in check and there is no legal reply.",
+          "source": "allowed",
+          "ply": 5,
+          "moveUci": "d4f3",
+          "relevance": "secondary",
+          "value": 10000,
+          "comparison": "persists",
+          "comparisonEvidence": "Kf1 is also the analysed best move. The same position and tactical danger remain after either choice.",
+          "actor": "black"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "Tactical danger in the position",
+      "text": "Ncd4 is a quiet mating preparation. All 16 legal White replies allow forced mate within two more moves; for example, Rb1 Ne3+ Kg1 Rxg2#. Kf1 is also the analysed best move. The same position and tactical danger remain after either choice. This threat alone does not explain the difference between the two moves.",
+      "source": "allowed",
+      "primary": {
+        "id": "mateIn3",
+        "label": "Mating Preparation",
+        "source": "allowed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "c6d4",
+        "evidence": "Ncd4 is a quiet mating preparation. All 16 legal White replies allow forced mate within two more moves; for example, Rb1 Ne3+ Kg1 Rxg2#.",
+        "relevance": "primary",
+        "value": 10000,
+        "comparison": "persists",
+        "comparisonEvidence": "Kf1 is also the analysed best move. The same position and tactical danger remain after either choice."
+      }
+    },
+    "classificationMs": 5.817200000019511
+  },
+  {
+    "name": "The real Bh3 mistake misses Qxc6+'s mate, not just the knight",
+    "fen": "r1q1kb1r/p1p2ppp/1pnpp3/6B1/Q2P2nP/2N2NP1/PPP1PP2/2KR1B1R w kq - 3 12",
+    "played": "f1h3",
+    "source": "missed",
+    "primary": "mateIn3",
+    "why": "Qxc6+ starts a verified forced mate in three. The loose knight is a smaller immediate gain, not the primary missed outcome and not a capture worth the mate score.",
+    "before": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "a4c6",
+          "c8d7",
+          "c6a8",
+          "d7c8",
+          "a8c8"
+        ],
+        "pvSan": [
+          "Qxc6+",
+          "Qd7",
+          "Qxa8+",
+          "Qc8",
+          "Qxc8#"
+        ],
+        "cp": null,
+        "mate": 3
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "e2e4",
+          "f8e7",
+          "a4c6",
+          "e8d8",
+          "g5e3",
+          "a7a5",
+          "c1d2",
+          "e7f6",
+          "c6a4",
+          "c7c5",
+          "f1d3"
+        ],
+        "pvSan": [
+          "e4",
+          "Be7",
+          "Qxc6+",
+          "Kd8",
+          "Be3",
+          "a5",
+          "Kd2",
+          "Bf6",
+          "Qa4",
+          "c5",
+          "Bd3"
+        ],
+        "cp": 696,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "f3h2",
+          "b6b5",
+          "a4b5",
+          "c8d7",
+          "f1g2",
+          "d6d5",
+          "h2g4",
+          "h7h6",
+          "g5f4",
+          "a8b8",
+          "b5a4",
+          "b8b4",
+          "a4a3"
+        ],
+        "pvSan": [
+          "Nh2",
+          "b5",
+          "Qxb5",
+          "Qd7",
+          "Bg2",
+          "d5",
+          "Nxg4",
+          "h6",
+          "Bf4",
+          "Rb8",
+          "Qa4",
+          "Rb4",
+          "Qa3"
+        ],
+        "cp": 653,
+        "mate": null
+      }
+    ],
+    "after": [
+      {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "b6b5",
+          "a4b5",
+          "c8d7",
+          "d4d5",
+          "a8b8",
+          "d5c6",
+          "d7c8",
+          "b5a5",
+          "g4f2",
+          "c3b5",
+          "b8b6",
+          "f3d4",
+          "c8b8",
+          "e2e3",
+          "f8e7"
+        ],
+        "pvSan": [
+          "b5",
+          "Qxb5",
+          "Qd7",
+          "d5",
+          "Rb8",
+          "dxc6",
+          "Qc8",
+          "Qa5",
+          "Nxf2",
+          "Nb5",
+          "Rb6",
+          "Nfd4",
+          "Qb8",
+          "e3",
+          "Be7"
+        ],
+        "cp": -608,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 2,
+        "pvUci": [
+          "c8d7",
+          "h3g4",
+          "d6d5",
+          "g4h3",
+          "f7f5",
+          "a2a3",
+          "a7a6",
+          "f3e5",
+          "c6e5",
+          "d4e5",
+          "d7a4",
+          "c3a4"
+        ],
+        "pvSan": [
+          "Qd7",
+          "Bxg4",
+          "d5",
+          "Bh3",
+          "f5",
+          "a3",
+          "a6",
+          "Ne5",
+          "Nxe5",
+          "dxe5",
+          "Qxa4",
+          "Nxa4"
+        ],
+        "cp": -647,
+        "mate": null
+      },
+      {
+        "depth": 16,
+        "multipv": 3,
+        "pvUci": [
+          "c8b7",
+          "h3g4",
+          "h7h6",
+          "d4d5",
+          "h6g5",
+          "d5c6",
+          "b7b8",
+          "f3g5",
+          "d6d5",
+          "g4f3",
+          "a7a5",
+          "a2a3",
+          "d5d4",
+          "d1d4",
+          "b6b5",
+          "a4b5"
+        ],
+        "pvSan": [
+          "Qb7",
+          "Bxg4",
+          "h6",
+          "d5",
+          "hxg5",
+          "dxc6",
+          "Qb8",
+          "Nxg5",
+          "d5",
+          "Bf3",
+          "a5",
+          "a3",
+          "d4",
+          "Rxd4",
+          "b5",
+          "Qxb5"
+        ],
+        "cp": -722,
+        "mate": null
+      }
+    ],
+    "classification": {
+      "allowedMotifs": [],
+      "missedMotifs": [
+        {
+          "id": "mateIn3",
+          "label": "Forcing Mate",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "a4c6",
+          "value": 10000,
+          "evidence": "Qxc6+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxc6+ Qd7 Qxa8+ Qc8 Qxc8#. The exact continuation depends on the defence.",
+          "relevance": "primary"
+        },
+        {
+          "id": "mateIn3",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Qxc8# is checkmate: the king is in check and there is no legal reply.",
+          "source": "missed",
+          "ply": 5,
+          "moveUci": "a8c8",
+          "relevance": "secondary",
+          "value": 10000
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxc6+ wins the loose knight on c6.",
+          "source": "missed",
+          "ply": 1,
+          "moveUci": "a4c6",
+          "relevance": "secondary",
+          "value": 320
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-30",
+      "missedTimeline": [
+        {
+          "id": "mateIn3",
+          "label": "Forcing Mate",
+          "source": "missed",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "a4c6",
+          "value": 10000,
+          "evidence": "Qxc6+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxc6+ Qd7 Qxa8+ Qc8 Qxc8#. The exact continuation depends on the defence.",
+          "relevance": "primary",
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxc6+ wins the loose knight on c6.",
+          "source": "missed",
+          "ply": 1,
+          "moveUci": "a4c6",
+          "relevance": "secondary",
+          "value": 320,
+          "actor": "white"
+        },
+        {
+          "id": "hangingPiece",
+          "label": "Hanging Piece",
+          "confidence": "high",
+          "evidence": "Qxa8+ wins the loose rook on a8.",
+          "source": "missed",
+          "ply": 3,
+          "moveUci": "c6a8",
+          "relevance": "secondary",
+          "value": 500,
+          "actor": "white"
+        },
+        {
+          "id": "mateIn3",
+          "label": "Checkmate",
+          "confidence": "high",
+          "evidence": "Qxc8# is checkmate: the king is in check and there is no legal reply.",
+          "source": "missed",
+          "ply": 5,
+          "moveUci": "a8c8",
+          "relevance": "secondary",
+          "value": 10000,
+          "actor": "white"
+        }
+      ]
+    },
+    "explanation": {
+      "title": "What you missed: Forcing Mate",
+      "text": "The better move had this tactic: Qxc6+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxc6+ Qd7 Qxa8+ Qc8 Qxc8#. The exact continuation depends on the defence.",
+      "source": "missed",
+      "primary": {
+        "id": "mateIn3",
+        "label": "Forcing Mate",
+        "source": "missed",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "a4c6",
+        "value": 10000,
+        "evidence": "Qxc6+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxc6+ Qd7 Qxa8+ Qc8 Qxc8#. The exact continuation depends on the defence.",
+        "relevance": "primary"
+      }
+    },
+    "classificationMs": 56.39220000000205
+  },
+  {
     "name": "Pushed too early instead of removing the promotion-path defender (MJZcU)",
     "fen": "3R4/5k2/6p1/p7/3pNr2/2p2P1P/P5PK/8 b - - 3 41",
     "played": "c3c2",
@@ -314,7 +896,7 @@
           "value": 520
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "missedTimeline": [
         {
           "id": "promotionCombination",
@@ -358,7 +940,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 136.46669999999722
+    "classificationMs": 34.75130000000354
   },
   {
     "name": "Left the queen behind the discovered checking capture",
@@ -626,7 +1208,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "discoveredAttack",
@@ -674,7 +1256,7 @@
         "comparisonEvidence": "g6 makes the immediate reply Bxh7+ illegal."
       }
     },
-    "classificationMs": 15.823500000002241
+    "classificationMs": 10.213199999998324
   },
   {
     "name": "A different reply wins the same queen after the better move",
@@ -1004,7 +1586,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -1066,7 +1648,7 @@
         "comparisonEvidence": "Even after Kg7, Rf5+ still forces at least the same net material gain on the queen on f8. The better move changes the continuation, not the existence of that material loss."
       }
     },
-    "classificationMs": 17.550600000002305
+    "classificationMs": 14.329200000007404
   },
   {
     "name": "Ignored double-check mate instead of making a king escape",
@@ -1287,7 +1869,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "doubleCheck",
@@ -1337,7 +1919,7 @@
         "comparisonEvidence": "Rg8+ makes the immediate reply Bb5# illegal."
       }
     },
-    "classificationMs": 18.75630000000092
+    "classificationMs": 20.416199999977835
   },
   {
     "name": "Failed to unpin the knight",
@@ -1591,7 +2173,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "pin",
@@ -1639,7 +2221,7 @@
         "comparisonEvidence": "After Kd7, Kxd6 answers d6; a profitable immediate follow-up capture of the knight on e7 is no longer forced."
       }
     },
-    "classificationMs": 36.79690000000119
+    "classificationMs": 22.764200000005076
   },
   {
     "name": "Allowed a king-queen skewer instead of preserving the queen",
@@ -1903,7 +2485,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "skewer",
@@ -1951,7 +2533,7 @@
         "comparisonEvidence": "After Kf4, Qxd3 answers Bd3; a profitable immediate follow-up capture of the queen on h7 is no longer forced."
       }
     },
-    "classificationMs": 8.454700000002049
+    "classificationMs": 5.977000000013504
   },
   {
     "name": "Allowed checking defender removal and lost the queen",
@@ -2247,7 +2829,7 @@
           "value": 500
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "capturingDefender",
@@ -2309,7 +2891,7 @@
         "comparisonEvidence": "Qxd1+ makes the immediate reply gxf6+ illegal."
       }
     },
-    "classificationMs": 28.55240000000049
+    "classificationMs": 27.127800000016578
   },
   {
     "name": "Missed quiet mate while leaving the queen attacked",
@@ -2516,7 +3098,7 @@
           "value": 10000
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -2588,7 +3170,7 @@
         "value": 10000
       }
     },
-    "classificationMs": 15.17109999999957
+    "classificationMs": 6.9434000000183005
   },
   {
     "name": "Missed the quiet rook preparation for mate or a queen skewer",
@@ -2894,7 +3476,7 @@
           "relevance": "secondary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "missedTimeline": [
         {
           "id": "tacticalPreparation",
@@ -2974,7 +3556,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 39.285799999997835
+    "classificationMs": 11.090700000000652
   },
   {
     "name": "Recaptured the rook before taking the queen with check",
@@ -3240,7 +3822,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -3300,7 +3882,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 118.46480000000156
+    "classificationMs": 87.05119999998715
   },
   {
     "name": "Recaptured the bishop before taking the knight with check",
@@ -3596,7 +4178,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "missedTimeline": [
         {
           "id": "intermezzo",
@@ -3640,7 +4222,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 163.0109999999986
+    "classificationMs": 71.81810000000405
   },
   {
     "name": "Allowed a checking queen capture before the rook recapture",
@@ -3966,7 +4548,7 @@
           "value": 330
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "intermezzo",
@@ -4040,7 +4622,7 @@
         "comparisonEvidence": "Qxg5 makes the immediate reply Bxd2+ illegal."
       }
     },
-    "classificationMs": 77.03459999999905
+    "classificationMs": 96.54200000001583
   },
   {
     "name": "Allowed an intermediate knight capture before the bishop recapture",
@@ -4392,7 +4974,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "intermezzo",
@@ -4440,7 +5022,7 @@
         "comparisonEvidence": "Nxd5 makes the immediate reply Nxe7+ illegal."
       }
     },
-    "classificationMs": 92.25540000000183
+    "classificationMs": 124.3521999999939
   },
   {
     "name": "b6 permits the f7 fork",
@@ -4763,7 +5345,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -4837,7 +5419,7 @@
         "comparisonEvidence": "After O-O, Nxf7 no longer has two profitable fork targets."
       }
     },
-    "classificationMs": 115.30919999999605
+    "classificationMs": 84.68170000001555
   },
   {
     "name": "The real Ke8 mistake allows a mating attack with quiet preparation",
@@ -5081,7 +5663,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "mateIn7",
@@ -5165,7 +5747,7 @@
         "comparisonEvidence": "Kxf6 makes the immediate reply f7+ illegal."
       }
     },
-    "classificationMs": 751.7410000000018
+    "classificationMs": 41.7100999999966
   },
   {
     "name": "The real Rc5 mistake permits a checking fork preparation",
@@ -5386,7 +5968,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "forkPreparation",
@@ -5442,7 +6024,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 17.07499999999709
+    "classificationMs": 13.143599999981234
   },
   {
     "name": "The real g6 mistake permits Nd7's double threat",
@@ -5690,7 +6272,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "doubleThreat",
@@ -5734,7 +6316,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 96.27410000000236
+    "classificationMs": 59.956199999985984
   },
   {
     "name": "The real Re2 mistake allows a forcing checking attack",
@@ -6041,7 +6623,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "forcingAttack",
@@ -6109,7 +6691,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 33.14340000000084
+    "classificationMs": 30.321300000010524
   },
   {
     "name": "Be7 hangs the bishop while also missing the checking attack",
@@ -6381,7 +6963,7 @@
           "value": 400
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "hangingPiece",
@@ -6467,7 +7049,7 @@
         "comparisonEvidence": "Qf1+ makes the immediate reply Qxe7 illegal."
       }
     },
-    "classificationMs": 55.991900000000896
+    "classificationMs": 68.06200000000536
   },
   {
     "name": "An irrelevant pawn move misses the forcing checking attack",
@@ -6758,7 +7340,7 @@
           "value": 400
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "missedTimeline": [
         {
           "id": "forcingAttack",
@@ -6826,7 +7408,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 39.82179999999789
+    "classificationMs": 71.31509999997797
   },
   {
     "name": "A quiet king move misses Nd7's double threat",
@@ -7058,7 +7640,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "missedTimeline": [
         {
           "id": "doubleThreat",
@@ -7102,7 +7684,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 52.959600000001956
+    "classificationMs": 50.033199999976205
   },
   {
     "name": "Playing Nd3 too early misses the checking preparation",
@@ -7327,7 +7909,7 @@
           "value": 500
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "missedTimeline": [
         {
           "id": "forkPreparation",
@@ -7383,7 +7965,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 31.984000000004016
+    "classificationMs": 32.53340000001481
   },
   {
     "name": "Retreating the bishop misses the checking clearance",
@@ -7673,7 +8255,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "missedTimeline": [
         {
           "id": "clearance",
@@ -7705,7 +8287,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 105.51540000000386
+    "classificationMs": 45.699099999998
   },
   {
     "name": "The real Qxd4 mistake allows the checking clearance",
@@ -8039,7 +8621,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "clearance",
@@ -8071,7 +8653,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 35.04439999999886
+    "classificationMs": 35.13320000001113
   },
   {
     "name": "Developing the bishop misses the overloaded-queen discovery",
@@ -8417,7 +8999,7 @@
           "relevance": "primary"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -8523,7 +9105,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 379.2430999999997
+    "classificationMs": 230.47409999999218
   },
   {
     "name": "The real Nxd4 mistake allows the overloaded-queen discovery",
@@ -8823,7 +9405,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "discoveredAttack",
@@ -8891,7 +9473,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 93.20579999999609
+    "classificationMs": 98.90100000001257
   },
   {
     "name": "Taking a pawn misses the promotion-backed knight fork",
@@ -9154,7 +9736,7 @@
           "value": 480
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "missedTimeline": [
         {
           "id": "fork",
@@ -9198,7 +9780,7 @@
         "relevance": "primary"
       }
     },
-    "classificationMs": 15.322799999994459
+    "classificationMs": 16.278699999995297
   },
   {
     "name": "Moving onto f6 allows the promotion-backed fork",
@@ -9461,7 +10043,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "fork",
@@ -9509,7 +10091,7 @@
         "comparisonEvidence": "After Nc8, Nd5 no longer has two profitable fork targets."
       }
     },
-    "classificationMs": 18.303899999998976
+    "classificationMs": 22.482400000008056
   },
   {
     "name": "Missed queen while the knight is already attacked",
@@ -9815,7 +10397,7 @@
           "value": 900
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "forkPreparation",
@@ -9875,7 +10457,7 @@
         "value": 900
       }
     },
-    "classificationMs": 18.527000000001863
+    "classificationMs": 18.781500000011874
   },
   {
     "name": "Failed to create a back-rank escape",
@@ -10077,7 +10659,7 @@
         }
       ],
       "missedMotifs": [],
-      "motifClassifierVersion": "site-55.adapter-29",
+      "motifClassifierVersion": "site-55.adapter-30",
       "allowedTimeline": [
         {
           "id": "backRankMate",
@@ -10113,6 +10695,6 @@
         "comparisonEvidence": "After g5, Kg7 is a legal answer to Re8+; it is no longer mate."
       }
     },
-    "classificationMs": 2.176999999996042
+    "classificationMs": 3.0166000000026543
   }
 ]

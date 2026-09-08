@@ -953,7 +953,7 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     name: "The alleged deflected defender was already pinned",
                     fen: "R2r2k1/p4ppp/1p6/2pq4/4R3/1P2PQ2/P5PP/6K1 w - - 0 24",
                     move: "e4e8",
-                    expected: "backRankMate",
+                    expected: "mateIn2",
                 },
                 {
                     name: "Exploit an absolute pin",
@@ -1144,6 +1144,23 @@ describe("expert tactical judgement with fresh engine lines", () => {
         "judge actual before/after mistake causes",
         async () => {
             const examples = [
+                {
+                    name: "The real Kf1 best defence does not cause the existing mate",
+                    fen: "4r3/pp3k1p/2n3p1/5n2/N4P2/8/PP2rKPP/R6R w - - 1 27",
+                    played: "f2f1",
+                    source: "allowed",
+                    primary: "mateIn3",
+                    comparison: "persists",
+                    why: "The engine's best move is the played Kf1. Its before and after searches choose different mating replies, but both reach the same position. Retain Ncd4's forced mate as existing danger, not an accusation against the best defence.",
+                },
+                {
+                    name: "The real Bh3 mistake misses Qxc6+'s mate, not just the knight",
+                    fen: "r1q1kb1r/p1p2ppp/1pnpp3/6B1/Q2P2nP/2N2NP1/PPP1PP2/2KR1B1R w kq - 3 12",
+                    played: "f1h3",
+                    source: "missed",
+                    primary: "mateIn3",
+                    why: "Qxc6+ starts a verified forced mate in three. The loose knight is a smaller immediate gain, not the primary missed outcome and not a capture worth the mate score.",
+                },
                 {
                     name: "Pushed too early instead of removing the promotion-path defender (MJZcU)",
                     fen: "3R4/5k2/6p1/p7/3pNr2/2p2P1P/P5PK/8 b - - 3 41",

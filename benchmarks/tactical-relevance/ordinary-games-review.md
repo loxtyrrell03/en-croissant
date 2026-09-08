@@ -27,7 +27,7 @@ In particular, a quiet reply can follow an opponent's tactical mistake.
 | ordinary-1:ply8 | Quiet: e4 develops the centre; no justified material combination. |
 | ordinary-1:ply13 | Quiet: c6 is a defensive/development choice after castling. |
 | ordinary-1:ply18 | Qxa6 wins the bishop just placed on a6; Hanging Piece is concrete. |
-| ordinary-1:ply23 | Quiet live root for Black. The preceding Bh3 missed a strong queen capture/mating continuation; its deeper mating priority still deserves work. |
+| ordinary-1:ply23 | Quiet live root for Black. Adapter 30 corrects the preceding Bh3 lesson: Qxc6+ has an independently verified mate-in-three proof and leads with Forcing Mate. The loose knight is a smaller gain, not the primary missed outcome or a capture worth the mate score. |
 | ordinary-1:ply28 | Qxd8# is the immediate lesson. Mate already existed before Qd8, so it is existing danger, not newly caused by that choice. Slower mating alternatives and their incidental bishop skewer are noise. |
 | ordinary-1:ply33 | Quiet live root for Black. White missed a stronger checking continuation; its long mating outcome is not yet the main local lesson. |
 | ordinary-1:ply38 | Quiet: Nd4 improves the knight; a large material advantage does not itself create a tactical theme. |
@@ -41,7 +41,7 @@ In particular, a quiet reply can follow an opponent's tactical mistake.
 | ordinary-2:ply38 | Quiet: b3 is a forced defensive response. |
 | ordinary-2:ply43 | Quiet: Kf7 answers the check. |
 | ordinary-2:ply48 | Nxa4 wins the loose bishop; keep the immediate capture lesson. |
-| ordinary-2:ply53 | Verified mate in three is the useful root lesson; the final named mating pattern remains a payoff. Existing-danger comparison prevents blaming an equivalent already-losing move. |
+| ordinary-2:ply53 | Verified mate in three is the useful root lesson; the final named mating pattern remains a payoff. Adapter 30 corrects the review's false accusation: played Kf1 is exactly the engine's best defence, so the mating attack is existing danger, not damage caused by this choice. The previous prose overstated the earlier comparison's coverage. |
 | ordinary-2:ply58 | Quiet for White, which is answering an opponent's forced mate. |
 | ordinary-3:ply8 | Quiet: ordinary e4 development. |
 | ordinary-3:ply13 | **Corrected noise:** Bxf6 recaptures a bishop that just took a knight. The 320/330 exchange is compensated; neither live Tactics nor Mistake Review should call that bishop hung. |

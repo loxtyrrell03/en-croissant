@@ -223,9 +223,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
-    "classificationMs": 23.65780000000086
+    "classificationMs": 22.921200000011595
   },
   {
     "name": "King escape declines the deflection bait",
@@ -412,15 +412,15 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
-    "classificationMs": 14.334399999992456
+    "classificationMs": 14.29299999999057
   },
   {
     "name": "The alleged deflected defender was already pinned",
     "fen": "R2r2k1/p4ppp/1p6/2pq4/4R3/1P2PQ2/P5PP/6K1 w - - 0 24",
     "move": "e4e8",
-    "expected": "backRankMate",
+    "expected": "mateIn2",
     "unrestricted": [
       {
         "depth": 16,
@@ -540,6 +540,17 @@
     "classification": {
       "motifs": [
         {
+          "id": "mateIn2",
+          "label": "Forcing Mate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e4e8",
+          "value": 10000,
+          "evidence": "Re8+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Re8+ Rxe8 Rxe8#. The exact continuation depends on the defence.",
+          "relevance": "primary"
+        },
+        {
           "id": "backRankMate",
           "label": "Back Rank Mate",
           "confidence": "medium",
@@ -547,7 +558,7 @@
           "source": "available",
           "ply": 3,
           "moveUci": "a8e8",
-          "relevance": "primary",
+          "relevance": "secondary",
           "value": 10000
         },
         {
@@ -575,6 +586,18 @@
       ],
       "timeline": [
         {
+          "id": "mateIn2",
+          "label": "Forcing Mate",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e4e8",
+          "value": 10000,
+          "evidence": "Re8+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Re8+ Rxe8 Rxe8#. The exact continuation depends on the defence.",
+          "relevance": "primary",
+          "actor": "white"
+        },
+        {
           "id": "discoveredAttack",
           "label": "Discovered Attack",
           "source": "available",
@@ -594,7 +617,7 @@
           "source": "available",
           "ply": 3,
           "moveUci": "a8e8",
-          "relevance": "primary",
+          "relevance": "secondary",
           "value": 10000,
           "actor": "white"
         },
@@ -611,9 +634,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
-    "classificationMs": 6.750499999994645
+    "classificationMs": 14.288699999990058
   },
   {
     "name": "Exploit an absolute pin",
@@ -871,9 +894,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
-    "classificationMs": 12.233300000007148
+    "classificationMs": 17.58729999998468
   },
   {
     "name": "Rook captures the pinning attacker's pawn",
@@ -1034,9 +1057,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
-    "classificationMs": 12.239800000010291
+    "classificationMs": 14.345200000010664
   },
   {
     "name": "King-queen skewer",
@@ -1225,9 +1248,9 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
-    "classificationMs": 3.549700000003213
+    "classificationMs": 3.8162000000011176
   },
   {
     "name": "Pawn interposes against the skewer",
@@ -1458,9 +1481,9 @@
     },
     "classification": {
       "motifs": [],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
-    "classificationMs": 19.14979999999923
+    "classificationMs": 20.017500000016298
   },
   {
     "name": "Remove the queen's defender with check",
@@ -1677,8 +1700,8 @@
           "actor": "white"
         }
       ],
-      "motifClassifierVersion": "site-55.adapter-29"
+      "motifClassifierVersion": "site-55.adapter-30"
     },
-    "classificationMs": 10.40549999999348
+    "classificationMs": 10.55580000000191
   }
 ]

@@ -1214,6 +1214,50 @@ type checking retains the unrelated OTB number/bigint fixture error. Website
 primitives, Outpost and live runtimes remain unchanged; no end-to-end UI
 latency, deployment or physical board proof is claimed.
 
+## Choice causation and short mating priority (adapter 30)
+
+An audit of the frozen ordinary-game explanations found two concrete errors.
+At ordinary-2:ply53, the played Kf1 is exactly Stockfish's best defence, yet
+the report said the move was tactically bad because Ncd4 forces mate in three.
+The before and after searches happen to show different mating branches;
+that cannot make identical positions causally different. The warning and
+per-ply mating payoff remain, but the explanation now calls this existing
+tactical danger. This rule uses legal reached positions, not equal scores:
+the different Kg1 accelerates mate and must not be excused merely because
+both mate scores were represented by the same numeric sentinel.
+
+The adapter now derives both reached positions with the same chessops replay
+used by its evidence audit. Both legal castling encodings also reach the same
+position; a constructed O-O# example exposed the previous parser mismatch
+as a false missed-mate claim. Equivalent moves skip unnecessary missed-theme
+analysis. All 24 frozen positions pass a counterfactual check in which the
+engine's own first move is selected and its own continuation supplied.
+
+At ordinary-1:ply23, Qxc6+ forces mate in three, but the primary missed lesson
+was Hanging Piece, and that knight capture inherited the later mate's value.
+The existing all-defences checking-mate proof now also nominates short
+two/three-move lines. Their initiating check receives the mating lesson;
+named patterns remain at their actual terminal plies, and loose-piece
+captures retain their immediate exchange values. A legal Nb4xc6 counterexample
+rejects a cooperative mate line even though its selected replies still mate.
+If an independently proved root mechanism already explains mate, it retains
+priority without a redundant generic Forcing Mate badge (ouIHI's discovered
+attack/Opera mate regression).
+
+Thirty-two new tests and the updated rook-battery expectation pass within
+399 selected tests in 34 files; two opt-in tests are skipped. The frozen
+mixed sample changes only Kvpvi's primary anchor to mate in two at Bb4+,
+retaining Boden's mate at Bxc3#. Long-mate proof coverage remains 29/32.
+The ordinary live headlines remain unchanged; review corrects the Qxc6+
+priority and Kf1 accusation above. Shared review-worker and production builds
+pass. These remain development diagnostics, not general accuracy or physical
+UI proof. No website primitive, Outpost or running-app deployment is included.
+
+All fifteen refreshed Stockfish tests also pass, including the two real-game
+before/after explanations above and the updated short rook-battery mate
+expectation. Whole-project type checking still reports only the unrelated
+`otbGameImport.test.ts` number/bigint fixture mismatch.
+
 ## What remains to establish
 
 These are relevance milestones, not completion of the broader tuning

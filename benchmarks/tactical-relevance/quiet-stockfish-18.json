@@ -177,6 +177,18 @@
             "actor": "white"
           },
           {
+            "id": "mateIn2",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g6g8",
+            "value": 10000,
+            "evidence": "Rg8+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Rg8+ Kxg8 Qe8#. The exact continuation depends on the defence.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
             "id": "clearance",
             "label": "Clearance",
             "confidence": "medium",
@@ -203,7 +215,7 @@
         ]
       }
     ],
-    "classificationMs": 11.107400000008056
+    "classificationMs": 12.00030000001425
   },
   {
     "fen": "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",
@@ -415,7 +427,7 @@
         ]
       }
     ],
-    "classificationMs": 21.32640000000538
+    "classificationMs": 20.650500000017928
   },
   {
     "fen": "7k/7p/5Kp1/7Q/8/8/8/8 w - - 0 1",
