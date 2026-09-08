@@ -494,6 +494,36 @@ async function analyse(engine: string, fen: string, searchMove?: string) {
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(!engine || !process.env.TACTICAL_DISCOVERY_PRIORITY_REPORT)(
+        "inspect the protected bishop and joint discovered attack against queen and rook",
+        async () => {
+            const fen = "rn3rk1/ppp1pq1p/3pNp2/5p2/2BP4/2N1P3/PPP2PPP/2KR3R w - - 4 13";
+            const after = makeFen(replayTacticalLine(fen, ["c4b3", "g8h8"])[1].after.toSetup());
+            const searches = [];
+            for (const [position, root] of [
+                [fen, "c4b3"],
+                [fen, "e6c7"],
+                [after, ""],
+                [after, "e6c7"],
+                [after, "e6f8"],
+            ]) {
+                const lines = [...(await analyse(engine, position, root || undefined)).values()];
+                expect(lines[0].depth).toBe(16);
+                searches.push({ fen: position, root, lines });
+            }
+            const result = classifyPositionTacticalMotifs({
+                fen: after,
+                pvUci: searches[3].lines[0].pvUci,
+            });
+            expect(result.motifs[0]).toMatchObject({ id: "discoveredAttack", value: 600 });
+            expect(searches[3].lines[0].cp!).toBeGreaterThan(searches[4].lines[0].cp!);
+            writeFileSync(
+                process.env.TACTICAL_DISCOVERY_PRIORITY_REPORT!,
+                JSON.stringify({ searches, result }, null, 2),
+            );
+        },
+        60000,
+    );
     test.skipIf(!engine || !process.env.TACTICAL_DISCOVERY_SEVERITY_REPORT)(
         "inspect the existing checking discovery made costlier by Ng5",
         async () => {

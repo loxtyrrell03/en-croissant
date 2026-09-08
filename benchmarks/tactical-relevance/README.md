@@ -1,5 +1,31 @@
 # Tactical relevance judgement, 2026-09-08
 
+## Adapter 39: joint discoveries versus subordinate traps
+
+The reached position after the adjacent sample's `Bb3 Kh8` exposed a wrong
+primary lesson: Nxc7's verified 600 cp immediate discovered attack on Qf7/Ra8
+was secondary to a 270 cp trapped-rook consequence. A strictly larger,
+independently verified discovery now subsumes a trap only on the same actual
+target at the same ply. Equal gains and unrelated targets retain their lessons.
+The explanation names both the revealed bishop/queen ray and the knight/rook
+attack, and the board shows both. Incidental pawn pressure is not appended.
+Missed-opportunity review uses the same primary, not a separate taxonomy rank.
+
+Five fresh depth-16 searches in `discovery-priority-stockfish-18.json` distinguish
+Bb3 (+135 cp) from premature Nxc7 (-372 cp); after Bb3/Kh8, Nxc7 is the unrestricted
+best move (+175), and restricted Nxc7 (+149) beats Nxf8 (+3). Those full-position
+scores are not the local proof values. The losing premature move is rejected
+as a live alternative. Bb3's own quiet preparation remains unproved by the
+classifier and is not counted as a solved headline. The original 81 worker
+main labels and 32-case mistake-priority report are unchanged; worker parity
+now also includes this reached position (82 cases, 80 ms median/266 ms p95/
+687 ms maximum, excluding engine/UI). Nine new regressions, targeted lint,
+shared review-worker and 8,860-module production builds pass. TypeScript retains
+the unrelated OTB fixture error. An isolated cold development HTTP test exposed
+6-15 second import/transform startup, which exceeds the current three-second
+worker deadline; production parity does not resolve that lifecycle issue.
+No app restart/deployment or physical UI verification is claimed.
+
 ## Adapter 38: costlier existing checking discoveries
 
 The adjacent audit's Ng5 case now distinguishes an existing discovery from

@@ -1,4 +1,4 @@
-# Adjacent ordinary-game audit (adapter 38)
+# Adjacent ordinary-game audit (adapter 39)
 
 Selection was fixed before inspecting output: use the same three complete
 frozen game mainlines, but reached plies 9, 14, 19, ... through 59, skipping
@@ -44,7 +44,7 @@ open cases below must not become successful empty-result assertions.
 | ordinary-3:ply9 | d5 is central development after Bg5; no immediate material tactic demonstrated. |
 | ordinary-3:ply14 | e4 is ordinary development after the compensated bishop/knight exchange. |
 | ordinary-3:ply19 | Nd7 develops after best-move Nxg5 already won a bishop. |
-| ordinary-3:ply24 | **Open:** Bb3 protects the bishop while retaining the diagonal towards Qf7/Kg8 and supports the later Nc7/rook gain. Quiet defensive alternatives and the pinned-queen mechanism are not yet proved by this classifier. The engine's Kh8/Nxc7/Qg7/Nxa8 branch is not itself an all-defences proof. |
+| ordinary-3:ply24 | **Open root:** Bb3 protects the bishop while retaining the diagonal towards Qf7/Kg8 and supports the later Nc7/rook gain. Quiet defensive alternatives are not yet proved. Adapter 39 fixes the reached Nxc7 position: its larger joint discovered attack on queen/rook leads over the smaller trapped-rook consequence, with both arrows. Fresh engine checks reject immediate Nxc7 before protecting the bishop. The Kh8/Nxc7 branch does not itself prove Bb3 against every defence. |
 | ordinary-3:ply29 | Kxf7 recaptures the bishop after Bxf7+ won the queen; it is not a newly hung bishop. |
 
 ## Fix: profitable recaptures versus exchange noise
@@ -108,6 +108,13 @@ Reproduce with `TACTICAL_JUDGEMENT_ENGINE` and
 discovery` in `tacticalJudgement.test.ts` with `--environment node`.
 
 ### Original audit and current replay
+
+The adapter-39 follow-up is recorded in `discovery-priority-stockfish-18.json`.
+Set `TACTICAL_DISCOVERY_PRIORITY_REPORT` and select `inspect the protected bishop`
+in `tacticalJudgement.test.ts` for the five fresh restricted/unrestricted searches.
+Production worker coverage now includes the reached protected-discovery position
+as an 82nd case. Its 600 cp immediate local proof does not account for arbitrary
+later quiet manoeuvres; the full Stockfish continuation/evaluation is separate.
 
 To intentionally create a separate fresh engine audit, set
 `TACTICAL_JUDGEMENT_ENGINE` and `TACTICAL_ORDINARY_ADJACENT_REPORT` to a new report

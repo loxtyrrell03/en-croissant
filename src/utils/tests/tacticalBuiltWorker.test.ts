@@ -87,6 +87,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "ordinary-3:protected-discovery-payoff",
+                input: {
+                    fen: "rn3r1k/ppp1pq1p/3pNp2/5p2/3P4/1BN1P3/PPP2PPP/2KR3R w - - 6 14",
+                    pvUci: ["e6c7", "f7g7", "c7a8"],
+                    engineName: "Stockfish 18 audited continuation",
+                    depth: 16,
+                },
+            },
+            {
                 id: "screenshot:f7-alternatives",
                 input: {
                     fen: "rnbqk2r/p1ppbppp/1p3n2/4N3/2B5/4P3/PPPP1PPP/RNBQK2R w KQkq - 0 5",
@@ -139,7 +148,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(81);
+        expect(report).toHaveLength(82);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

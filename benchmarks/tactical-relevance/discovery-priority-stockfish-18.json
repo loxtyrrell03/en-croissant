@@ -1,0 +1,389 @@
+{
+  "searches": [
+    {
+      "fen": "rn3rk1/ppp1pq1p/3pNp2/5p2/2BP4/2N1P3/PPP2PPP/2KR3R w - - 4 13",
+      "root": "c4b3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c4b3",
+            "g8h8",
+            "e6c7",
+            "f7g7",
+            "c7a8",
+            "b8a6",
+            "g2g4",
+            "f8a8",
+            "h2h3",
+            "g7g5",
+            "c3d5",
+            "e7e6",
+            "d5f4",
+            "e6e5"
+          ],
+          "pvSan": [
+            "Bb3",
+            "Kh8",
+            "Nxc7",
+            "Qg7",
+            "Nxa8",
+            "Na6",
+            "g4",
+            "Rxa8",
+            "h3",
+            "Qg5",
+            "Nd5",
+            "e6",
+            "Nf4",
+            "e5"
+          ],
+          "cp": 135,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "fen": "rn3rk1/ppp1pq1p/3pNp2/5p2/2BP4/2N1P3/PPP2PPP/2KR3R w - - 4 13",
+      "root": "e6c7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e6c7",
+            "f7c4",
+            "c7a8",
+            "b8d7",
+            "g2g4",
+            "f8a8",
+            "g4f5",
+            "g8f7",
+            "e3e4",
+            "d6d5",
+            "c1b1",
+            "d7b6",
+            "h1g1",
+            "d5e4",
+            "d4d5",
+            "a8g8",
+            "g1g8",
+            "f7g8"
+          ],
+          "pvSan": [
+            "Nxc7",
+            "Qxc4",
+            "Nxa8",
+            "Nd7",
+            "g4",
+            "Rxa8",
+            "gxf5",
+            "Kf7",
+            "e4",
+            "d5",
+            "Kb1",
+            "Nb6",
+            "Rhg1",
+            "dxe4",
+            "d5",
+            "Rg8",
+            "Rxg8",
+            "Kxg8"
+          ],
+          "cp": -372,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "fen": "rn3r1k/ppp1pq1p/3pNp2/5p2/3P4/1BN1P3/PPP2PPP/2KR3R w - - 6 14",
+      "root": "",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e6c7",
+            "f7g7",
+            "c7a8",
+            "b8a6",
+            "g2g4",
+            "f5f4",
+            "e3f4",
+            "f8a8",
+            "c1b1",
+            "a6c7",
+            "h2h3",
+            "b7b5"
+          ],
+          "pvSan": [
+            "Nxc7",
+            "Qg7",
+            "Nxa8",
+            "Na6",
+            "g4",
+            "f4",
+            "exf4",
+            "Rxa8",
+            "Kb1",
+            "Nc7",
+            "h3",
+            "b5"
+          ],
+          "cp": 175,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "g2g4",
+            "c7c6",
+            "e6f8",
+            "f7f8",
+            "g4f5",
+            "f8h6",
+            "c1b1",
+            "b8a6",
+            "e3e4",
+            "a8d8",
+            "h1g1",
+            "h6h4",
+            "a2a3"
+          ],
+          "pvSan": [
+            "g4",
+            "c6",
+            "Nxf8",
+            "Qxf8",
+            "gxf5",
+            "Qh6",
+            "Kb1",
+            "Na6",
+            "e4",
+            "Rd8",
+            "Rhg1",
+            "Qh4",
+            "a3"
+          ],
+          "cp": 99,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "c3b5",
+            "b8a6",
+            "e6c7",
+            "f7h5",
+            "c7a8",
+            "f8a8",
+            "a2a4",
+            "a6b4",
+            "d1d2",
+            "b4c6",
+            "b3e6",
+            "c6d8",
+            "e6d5",
+            "d8c6"
+          ],
+          "pvSan": [
+            "Nb5",
+            "Na6",
+            "Nexc7",
+            "Qh5",
+            "Nxa8",
+            "Rxa8",
+            "a4",
+            "Nb4",
+            "Rd2",
+            "Nc6",
+            "Be6",
+            "Nd8",
+            "Bd5",
+            "Nc6"
+          ],
+          "cp": 47,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "fen": "rn3r1k/ppp1pq1p/3pNp2/5p2/3P4/1BN1P3/PPP2PPP/2KR3R w - - 6 14",
+      "root": "e6c7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e6c7",
+            "f7g7",
+            "c7e6",
+            "g7h6",
+            "e6f8",
+            "h6f8",
+            "b3e6",
+            "b8a6",
+            "c3d5",
+            "f8d8",
+            "g2g4",
+            "f5f4",
+            "d5f4",
+            "a6c7",
+            "e6f5",
+            "e7e5",
+            "f4h5",
+            "c7e8"
+          ],
+          "pvSan": [
+            "Nxc7",
+            "Qg7",
+            "Ne6",
+            "Qh6",
+            "Nxf8",
+            "Qxf8",
+            "Be6",
+            "Na6",
+            "Nd5",
+            "Qd8",
+            "g4",
+            "f4",
+            "Nxf4",
+            "Nc7",
+            "Bf5",
+            "e5",
+            "Nh5",
+            "Ne8"
+          ],
+          "cp": 149,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "fen": "rn3r1k/ppp1pq1p/3pNp2/5p2/3P4/1BN1P3/PPP2PPP/2KR3R w - - 6 14",
+      "root": "e6f8",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e6f8",
+            "f7f8",
+            "b3e6",
+            "c7c6",
+            "e6f5",
+            "f8f7",
+            "e3e4",
+            "e7e6",
+            "f5h3",
+            "d6d5",
+            "h1e1",
+            "b8d7",
+            "e1e3",
+            "d7b6",
+            "e4d5",
+            "e6d5",
+            "h3f5",
+            "f7h5",
+            "g2g4",
+            "h5h4",
+            "b2b3"
+          ],
+          "pvSan": [
+            "Nxf8",
+            "Qxf8",
+            "Be6",
+            "c6",
+            "Bxf5",
+            "Qf7",
+            "e4",
+            "e6",
+            "Bh3",
+            "d5",
+            "Rhe1",
+            "Nd7",
+            "Re3",
+            "Nb6",
+            "exd5",
+            "exd5",
+            "Bf5",
+            "Qh5",
+            "g4",
+            "Qh4",
+            "b3"
+          ],
+          "cp": 3,
+          "mate": null
+        }
+      ]
+    }
+  ],
+  "result": {
+    "motifs": [
+      {
+        "id": "discoveredAttack",
+        "label": "Discovered Attack",
+        "source": "available",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "e6c7",
+        "evidence": "Nxc7 vacates e6, uncovering the bishop on b3 against the queen on f7. The knight on c7 also attacks the rook on a8. Every legal reply concedes material. Captures and interpositions are included in this check.",
+        "value": 600,
+        "relevance": "primary"
+      },
+      {
+        "id": "fork",
+        "label": "Fork",
+        "confidence": "high",
+        "evidence": "c7e6 forks the queen on g7 and rook on f8. The line continues with e6f8, winning the rook.",
+        "source": "available",
+        "ply": 3,
+        "moveUci": "c7e6",
+        "relevance": "secondary",
+        "value": 280
+      }
+    ],
+    "timeline": [
+      {
+        "id": "discoveredAttack",
+        "label": "Discovered Attack",
+        "source": "available",
+        "confidence": "high",
+        "ply": 1,
+        "moveUci": "e6c7",
+        "evidence": "Nxc7 vacates e6, uncovering the bishop on b3 against the queen on f7. The knight on c7 also attacks the rook on a8. Every legal reply concedes material. Captures and interpositions are included in this check.",
+        "value": 600,
+        "relevance": "primary",
+        "actor": "white"
+      },
+      {
+        "id": "fork",
+        "label": "Fork",
+        "confidence": "high",
+        "evidence": "c7e6 forks the queen on g7 and rook on f8. The line continues with e6f8, winning the rook.",
+        "source": "available",
+        "ply": 3,
+        "moveUci": "c7e6",
+        "relevance": "secondary",
+        "value": 280,
+        "actor": "white"
+      },
+      {
+        "id": "hangingPiece",
+        "label": "Hanging Piece",
+        "confidence": "high",
+        "evidence": "e6f8 wins the loose rook on f8.",
+        "source": "available",
+        "ply": 5,
+        "moveUci": "e6f8",
+        "relevance": "secondary",
+        "value": 180,
+        "actor": "white"
+      }
+    ],
+    "motifClassifierVersion": "site-55.adapter-39"
+  }
+}

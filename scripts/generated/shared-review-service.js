@@ -10925,7 +10925,9 @@ function discoveredEvidence(steps, source) {
 	const victim = step.after.board.get(ray.target);
 	const action = `${step.san} vacates ${makeSquare(step.move.from)}, uncovering the ${slider.role} on ${makeSquare(ray.from)} against the ${victim.role} on ${makeSquare(ray.target)}.`;
 	const moverTargets = targets.filter((to) => !rays.some((r) => r.target === to) && step.after.board.get(to)?.role !== "king");
-	const accompaniment = (kingRay || exchange) && moverTargets.length ? ` The ${moved.role} on ${makeSquare(step.move.to)} also attacks ${moverTargets.map((to) => `the ${step.after.board.get(to).role} on ${makeSquare(to)}`).join(" and ")}.` : !kingRay && step.after.isCheck() ? ` The moving ${moved.role} gives check, so the opponent cannot simply ignore the exposed attack.` : "";
+	const profitableTargets = !kingRay && !exchange ? winningTargets(step.after, step.move.to, step.before.turn) : null;
+	const supportingTargets = profitableTargets ? moverTargets.filter((to) => profitableTargets.includes(to)) : moverTargets;
+	const accompaniment = (!kingRay && step.after.isCheck() ? ` The moving ${moved.role} gives check, so the opponent cannot simply ignore the exposed attack.` : "") + (supportingTargets.length ? ` The ${moved.role} on ${makeSquare(step.move.to)} also attacks ${supportingTargets.map((to) => `the ${step.after.board.get(to).role} on ${makeSquare(to)}`).join(" and ")}.` : "");
 	const consequence = mate ? step.after.isCheckmate() ? "There is no legal defence: checkmate." : "Every legal defence allows the verified short forced mate." : exchange ? `The shared defence cannot save all these targets: after ${exchange.example[0]}, ${exchange.example[1]} removes the defender. Every legal reply permits a local material gain, including the defender exchange and up to two checking counterattacks; recaptures and exposed attacking pieces are included.` : `Every legal ${kingRay ? "answer to the discovered check" : "reply"} ${proof?.kind === "proven" ? "concedes material" : "allows material gain or mate with at most one extra checking move, allowing for legal recaptures"}. Captures and interpositions are included in this check.`;
 	return {
 		motif: {
@@ -11903,6 +11905,15 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			const trap = trappedPieceProof(step, m.source);
 			if (trap && relevantRayTactics(step).some((ray) => ray.kind === "pin" && ray.front === trap.target)) return false;
 		}
+		if (m.id === "trappedPiece" && m.ply) {
+			const discovery = candidates.find((other) => DISCOVERED_THEMES.has(other.id) && other.ply === m.ply && other.confidence === "high" && (other.value ?? 0) > (m.value ?? Infinity));
+			if (discovery) {
+				const step = steps[m.ply - 1];
+				const trap = trappedPieceProof(step, m.source);
+				const proof = discoveredEvidence(steps.slice(m.ply - 1), discovery.source);
+				if (trap && proof?.targets.includes(trap.target)) return false;
+			}
+		}
 		if (m.id === "clearance" && candidates.some((other) => other.ply === m.ply && (DISCOVERED_THEMES.has(other.id) || other.id === "tacticalPreparation"))) return false;
 		if (specificMate && /^mate(?:In\d+)?$/.test(m.id) && !(checkingMate && m.ply === 1) && !(preparation && m.id === "mateIn3" && m.ply === 1)) return false;
 		if (fork?.ply === m.ply && [
@@ -12746,7 +12757,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 38;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 39;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

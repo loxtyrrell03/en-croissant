@@ -2235,12 +2235,20 @@ function discoveredEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
     const moverTargets = targets.filter(
         (to) => !rays.some((r) => r.target === to) && step.after.board.get(to)?.role !== "king",
     );
+    // For a non-checking material discovery, explain meaningful joint
+    // targets rather than append incidental pawn pressure to every check.
+    const profitableTargets =
+        !kingRay && !exchange ? winningTargets(step.after, step.move.to, step.before.turn) : null;
+    const supportingTargets = profitableTargets
+        ? moverTargets.filter((to) => profitableTargets.includes(to))
+        : moverTargets;
     const accompaniment =
-        (kingRay || exchange) && moverTargets.length
-            ? ` The ${moved.role} on ${makeSquare(step.move.to)} also attacks ${moverTargets.map((to) => `the ${step.after.board.get(to)!.role} on ${makeSquare(to)}`).join(" and ")}.`
-            : !kingRay && step.after.isCheck()
-              ? ` The moving ${moved.role} gives check, so the opponent cannot simply ignore the exposed attack.`
-              : "";
+        (!kingRay && step.after.isCheck()
+            ? ` The moving ${moved.role} gives check, so the opponent cannot simply ignore the exposed attack.`
+            : "") +
+        (supportingTargets.length
+            ? ` The ${moved.role} on ${makeSquare(step.move.to)} also attacks ${supportingTargets.map((to) => `the ${step.after.board.get(to)!.role} on ${makeSquare(to)}`).join(" and ")}.`
+            : "");
     const consequence = mate
         ? step.after.isCheckmate()
             ? "There is no legal defence: checkmate."
@@ -3955,6 +3963,25 @@ export function auditTacticalMotifs(
                     )
                 )
                     return false;
+            }
+            // A stronger jointly verified discovery subsumes a smaller trap
+            // on one of its actual targets. Do not let the taxonomy's rank
+            // replace the complete two-piece attack with its lesser payoff.
+            // Equal gains and unrelated victims retain their separate lesson.
+            if (m.id === "trappedPiece" && m.ply) {
+                const discovery = candidates.find(
+                    (other) =>
+                        DISCOVERED_THEMES.has(other.id) &&
+                        other.ply === m.ply &&
+                        other.confidence === "high" &&
+                        (other.value ?? 0) > (m.value ?? Infinity),
+                );
+                if (discovery) {
+                    const step = steps[m.ply - 1];
+                    const trap = trappedPieceProof(step, m.source);
+                    const proof = discoveredEvidence(steps.slice(m.ply - 1), discovery.source);
+                    if (trap && proof?.targets.includes(trap.target)) return false;
+                }
             }
             if (
                 m.id === "clearance" &&
