@@ -106,6 +106,24 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:knight-exchange-for-pawn",
+                input: {
+                    fen: "3qk2r/8/8/4N3/2BP4/8/PPP2PPP/R4RK1 w k - 0 1",
+                    pvUci: ["e5f7"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
+                id: "constructed:bishop-exchange-for-pawn",
+                input: {
+                    fen: "4k2r/8/8/6B1/6N1/2q4P/PPP2P2/R4RK1 w k - 0 1",
+                    pvUci: ["g5f6"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "ordinary-3:protected-discovery-payoff",
                 input: {
                     fen: "rn3r1k/ppp1pq1p/3pNp2/5p2/3P4/1BN1P3/PPP2PPP/2KR3R w - - 6 14",
@@ -171,7 +189,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(82);
+        expect(report).toHaveLength(84);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
@@ -188,4 +206,22 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             );
     },
     120000,
+);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_PGN_SAMPLE)(
+    "the private fork and mating defence survive the built worker boundary",
+    async () => {
+        const sample = JSON.parse(readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"));
+        const row = sample.cases.find((item: { id: string }) => item.id === "private-easy:145");
+        const input = {
+            fen: row.fen,
+            pvUci: row.sourceUci,
+            engineName: "Private course source",
+            depth: 16,
+        };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs[0]).toMatchObject({ id: "fork", value: 80 });
+        expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+    },
 );

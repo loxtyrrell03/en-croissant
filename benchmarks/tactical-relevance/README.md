@@ -1844,3 +1844,11 @@ and local audit are not an exhaustive search for every possible combination.
 The desktop and phone card builder share the new adapter. The website's
 vendored v55 primitive detector is unchanged. These are source/build changes;
 no running app or hosting deployment is asserted by this report.
+
+## Adapter 40: private easy-course audit and exchange-for-pawn fork
+
+See [private-course-review.md](private-course-review.md) for the output-blind 24-of-222 easy-exercise sample, independent judgements, privacy restrictions and unresolved failures. Source PGNs, complete sampled positions and detailed engine reports must remain outside this repository.
+
+The first implementation slice recovers a genuine fork missed by both the generic 100 cp gate and an immediate-only defensive probe. A complete major-piece fork proof can now retain an exchange-for-pawn gain and independently verify a checking mate after a defender captures the forker. This is bounded to non-capturing minor-piece forks, complete exchange leaves and at most four checking attacking moves under a shared 4,096-move mating budget. Other motif thresholds/horizons are unchanged. Countercaptures, actual mating escapes, missing support, smaller-budget cache isolation, colour reflection, missed opportunities, existing danger, board arrows and conditional later mate are tested.
+
+One private headline is recovered; ten of the 24 remain empty, with other priority/preparation questions explicitly open. The old 82 worker headlines and 32-case lesson report remain unchanged. The 436-test selection, fresh private five-search diagnostic, 24-position engine replay, 84-case built-worker audit plus private worker case, isolated HTTP worker and production/shared worker builds pass. This is source/build evidence, not native deployment, physical UI verification or completion of the broader goal.

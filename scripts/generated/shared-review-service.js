@@ -10274,7 +10274,7 @@ function winningTargets(pos, from, side) {
 /** A fork must survive the opponent's choice, including capturing the forker,
 * a checking counterattack, or one move that protects both targets. */
 function verifiedFork(step) {
-	return immediateFork(step) || provePromotionBackedFork(step) !== null;
+	return immediateFork(step) || proveExchangeForPawnFork(step) !== null || provePromotionBackedFork(step) !== null;
 }
 function checkingForkSearch(side, budget) {
 	const visit = (pos, move) => {
@@ -10514,6 +10514,28 @@ function immediateFork(step) {
 			}) >= 100;
 		});
 	});
+}
+/** A minor-piece fork of major pieces can win an exchange for a pawn while
+* falling below the generic one-pawn gate. Require the actual heavy victims
+* and complete all-defence exchange leaves; near-equal minor trades do not
+* qualify. This is a local material certificate, not a position evaluation. */
+function proveExchangeForPawnFork(step, nodeLimit = 4096) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
+	const role = step.after.board.get(step.move.to)?.role;
+	if (step.capture || step.move.promotion || role !== "knight" && role !== "bishop") return null;
+	const targets = winningTargets(step.after, step.move.to, step.before.turn);
+	if (targets.length < 2) return null;
+	const material = targets.filter((target) => step.after.board.get(target)?.role !== "king");
+	if (!material.length || material.some((target) => VALUE[step.after.board.get(target).role] < VALUE.rook)) return null;
+	const proof = materialThreatProof(step, targets, [step.move.to], [], true, void 0, {
+		minimumGain: VALUE.rook - VALUE[role] - VALUE.pawn,
+		mateAnswerMoves: 4,
+		mateNodeLimit: nodeLimit
+	});
+	return proof.kind === "proven" && proof.complete ? {
+		...proof,
+		targets
+	} : null;
 }
 var promotionForkCache = /* @__PURE__ */ new Map();
 /** An attacked defender can take the forker yet abandon a promotion square.
@@ -10990,15 +11012,16 @@ function materialThreatGain(step, targets, capturers) {
 	const proof = materialThreatProof(step, targets, capturers);
 	return proof.kind === "proven" ? proof.gain : null;
 }
-function materialThreatProof(step, targets, capturers, interpositions = [], allowMateAnswer = false, promotionFrom) {
-	const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}`;
+function materialThreatProof(step, targets, capturers, interpositions = [], allowMateAnswer = false, promotionFrom, options = {}) {
+	const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}`;
 	if (materialProofCache.has(key)) return materialProofCache.get(key);
-	const proof = computeMaterialThreatGain(step, targets, capturers, interpositions, allowMateAnswer, promotionFrom);
+	const proof = computeMaterialThreatGain(step, targets, capturers, interpositions, allowMateAnswer, promotionFrom, options);
 	materialProofCache.set(key, proof);
 	if (materialProofCache.size > 256) materialProofCache.delete(materialProofCache.keys().next().value);
 	return proof;
 }
-function computeMaterialThreatGain(step, targets, capturers, interpositions, allowMateAnswer, promotionFrom) {
+function computeMaterialThreatGain(step, targets, capturers, interpositions, allowMateAnswer, promotionFrom, options = {}) {
+	const { minimumGain = 100, mateAnswerMoves = 1, mateNodeLimit = 4096 } = options;
 	const replies = legalMoves(step.after);
 	if (!replies.length) return { kind: "unknown" };
 	let minimum = Infinity;
@@ -11006,7 +11029,37 @@ function computeMaterialThreatGain(step, targets, capturers, interpositions, all
 	let complete = true;
 	let limitingDefence = "";
 	const checks = [];
-	let mateNodes = 4096;
+	let mateNodes = mateNodeLimit;
+	const matingDefences = [];
+	const checkingMateAnswer = (position, remaining) => {
+		for (const move of legalMoves(position)) {
+			if (--mateNodes < 0) return null;
+			const answer = position.clone();
+			answer.play(move);
+			if (answer.isCheckmate()) return [makeSan(position, move)];
+			if (remaining <= 1 || !answer.isCheck()) continue;
+			const evasions = legalMoves(answer);
+			let example = null;
+			let allMated = evasions.length > 0;
+			for (const evasion of evasions) {
+				if (--mateNodes < 0) return null;
+				const escaped = answer.clone();
+				escaped.play(evasion);
+				const mate = checkingMateAnswer(escaped, remaining - 1);
+				if (!mate) {
+					allMated = false;
+					break;
+				}
+				example ??= [
+					makeSan(position, move),
+					makeSan(answer, evasion),
+					...mate
+				];
+			}
+			if (allMated && example) return example;
+		}
+		return null;
+	};
 	for (const reply of replies) {
 		const next = step.after.clone();
 		next.play(reply);
@@ -11044,7 +11097,7 @@ function computeMaterialThreatGain(step, targets, capturers, interpositions, all
 				}
 			}
 		}
-		if (best < 100 && promotionFrom !== void 0 && next.board.get(promotionFrom)?.color === step.before.turn && next.board.get(promotionFrom)?.role === "pawn") {
+		if (best < minimumGain && promotionFrom !== void 0 && next.board.get(promotionFrom)?.color === step.before.turn && next.board.get(promotionFrom)?.role === "pawn") {
 			const to = promotionFrom + (step.before.turn === "white" ? 8 : -8);
 			if (to >= 0 && to < 64 && (to < 8 || to >= 56)) for (const promotion of [
 				"queen",
@@ -11069,17 +11122,19 @@ function computeMaterialThreatGain(step, targets, capturers, interpositions, all
 				best = Math.max(best, step.capture - capturedValue(step.after, reply) - (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0) + gain);
 			}
 		}
-		if (best < 100 && allowMateAnswer) for (const move of legalMoves(next)) {
-			if (--mateNodes < 0) return { kind: "unknown" };
-			const answer = next.clone();
-			answer.play(move);
-			if (answer.isCheckmate()) {
+		if (best < minimumGain && allowMateAnswer) {
+			const mate = checkingMateAnswer(next, mateAnswerMoves);
+			if (mateNodes < 0) return { kind: "unknown" };
+			if (mate) {
 				best = 1e4;
-				break;
+				matingDefences.push({
+					defence: makeSan(step.after, reply),
+					mate: mate.join(" ")
+				});
 			}
 		}
 		if (unknown) complete = false;
-		if (best < 100) {
+		if (best < minimumGain) {
 			if (unknown) {
 				incomplete = true;
 				continue;
@@ -11108,7 +11163,8 @@ function computeMaterialThreatGain(step, targets, capturers, interpositions, all
 		kind: "proven",
 		gain: minimum,
 		complete,
-		defence: limitingDefence
+		defence: limitingDefence,
+		...matingDefences.length ? { matingDefences } : {}
 	};
 }
 function relevantRayTactics(step) {
@@ -11810,8 +11866,14 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		if (MATE.test(proposal.id)) sound = mate;
 		else if (proposal.id === "fork") {
 			sound = verifiedFork(step);
+			const exchange = sound && !immediateFork(step) ? proveExchangeForPawnFork(step) : null;
 			const promotion = sound && !immediateFork(step) ? provePromotionBackedFork(step) : null;
-			if (promotion) proposal = {
+			if (exchange) proposal = {
+				...proposal,
+				value: exchange.gain,
+				evidence: `${step.san} forks the ${exchange.targets.map((sq) => `${step.after.board.get(sq).role} on ${makeSquare(sq)}`).join(" and ")}; every legal defence concedes material${exchange.matingDefences?.length ? " or mate" : ""}.${exchange.matingDefences?.slice(0, 2).map((line) => ` ${line.defence} instead permits a forced mate; for example, ${line.mate}.`).join("") ?? ""}`
+			};
+			else if (promotion) proposal = {
 				...proposal,
 				value: promotion.gain,
 				evidence: promotion.evidence
@@ -12136,6 +12198,7 @@ function materialLesson(steps, motif) {
 	} else if (motif.id === "fork") {
 		targets = winningTargets(step.after, step.move.to, step.before.turn);
 		gain = targets.length >= 2 ? materialThreatGain(step, targets, [step.move.to]) : null;
+		if (gain === null) gain = proveExchangeForPawnFork(step)?.gain ?? null;
 		if (gain === null) gain = provePromotionBackedFork(step)?.gain ?? null;
 	} else if (motif.id === "trappedPiece") {
 		const proof = trappedPieceProof(step, motif.source);
@@ -12154,7 +12217,7 @@ function materialLesson(steps, motif) {
 		const victim = step.before.board.get(sq);
 		return victim && victim.color === opposite(step.before.turn) && victim.role !== "king";
 	});
-	return gain !== null && gain >= 100 && gain < 1e4 && targets.length ? {
+	return gain !== null && gain >= (motif.id === "fork" ? 70 : 100) && gain < 1e4 && targets.length ? {
 		targets,
 		gain
 	} : null;
@@ -12370,8 +12433,8 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 			} else {
 				const actualTargets = winningTargets(step.after, step.move.to, step.before.turn);
 				if (targets.join(",") === actualTargets.join(",")) {
-					const original = materialThreatProof(step, actualTargets, [step.move.to]);
-					const other = materialThreatProof(alternative, targets, [alternative.move.to]);
+					const original = proveExchangeForPawnFork(step) ?? materialThreatProof(step, actualTargets, [step.move.to]);
+					const other = proveExchangeForPawnFork(alternative) ?? materialThreatProof(alternative, targets, [alternative.move.to]);
 					if (original.kind === "proven" && other.kind === "proven") {
 						if (other.gain >= original.gain) {
 							comparison = "persists";
@@ -12757,7 +12820,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 39;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 40;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

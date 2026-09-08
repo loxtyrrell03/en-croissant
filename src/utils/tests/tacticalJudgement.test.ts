@@ -497,6 +497,73 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_FORK_ENGINE_REPORT,
+    )(
+        "validate the private fork, missed opportunity and mating defence with fresh searches",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_FORK_ENGINE_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find((item: { id: string }) => item.id === "private-easy:145");
+            const positions = [
+                [],
+                ["g7g8"],
+                ["f4d3", "d1d3"],
+                ["f4d3", "b4b6"],
+                ["f4d3", "d1d3", "e5a1", "b4b1"],
+            ];
+            const searches = [];
+            for (const moves of positions) {
+                const steps = replayTacticalLine(row.fen, moves);
+                expect(steps).toHaveLength(moves.length);
+                const fen = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : row.fen;
+                const lines = [...(await analyse(engine, fen)).values()];
+                expect(lines[0].depth).toBe(16);
+                searches.push({ moves, fen, lines });
+            }
+            const before = searches[0].lines[0];
+            const after = searches[1].lines[0];
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                playedMoveUci: "g7g8",
+                bestMoveUci: before.pvUci[0],
+                pvUci: before.pvUci,
+                refutationUci: after.pvUci,
+                cpBefore: before.cp === null ? null : -before.cp,
+                cpAfter: after.cp,
+                cpLoss: before.cp === null || after.cp === null ? null : before.cp + after.cp,
+            });
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        sourceSha256: sample.sourceSha256,
+                        searches,
+                        review,
+                        explanation: buildMistakeReviewTacticalExplanation(review),
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+            expect(before.pvUci[0]).toBe("f4d3");
+            expect(searches[2].lines[0].mate).toBeGreaterThan(0);
+            expect(searches[4].lines[0].mate).toBeGreaterThan(0);
+            expect(review.missedMotifs[0]).toMatchObject({ id: "fork", value: 80 });
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_PGN_REPORT,
     )(
         "audit a privately supplied fixed PGN sample without publishing its contents",
