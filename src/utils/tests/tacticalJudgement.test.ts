@@ -14,6 +14,7 @@ import {
     proveDefenderCombination,
     proveCombinedDefenderRemoval,
     proveCaptureForkPreparation,
+    capturePreparationAcceptanceDefence,
     replayTacticalLine,
     tacticalExchangeGain,
 } from "@/utils/tacticalMotifs/causalTactics";
@@ -502,6 +503,54 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(!engine || !process.env.TACTICAL_ACCEPTANCE_DEFENCE_REPORT)(
+        "validate the constructive capture-preparation defence against fresh engine searches",
+        async () => {
+            const before = "4k3/7r/8/8/6pN/4r1P1/6PK/5R2 w - - 0 1";
+            const root = replayTacticalLine(before, ["f1f4", "h7h4"])[1];
+            const proof = capturePreparationAcceptanceDefence(root)!;
+            expect(proof).not.toBeNull();
+            const searches = [];
+            for (const move of ["f1f2", "f1f4"]) {
+                const lines = [...(await analyse(engine, before, move)).values()];
+                searches.push({ kind: "choice", move, fen: before, lines });
+            }
+            const prefixes = [["f1f2", "h7h4", "g3h4"], ["f1f4", "h7h4", "g3h4"], ["f1f2"]];
+            for (const branch of proof.checkingDefences) {
+                const pos = root.after.clone();
+                const moves = ["f1f4", "h7h4"];
+                for (const san of [proof.defence, ...branch.split(" ")]) {
+                    const action = parseSan(pos, san)!;
+                    expect(pos.isLegal(action)).toBe(true);
+                    moves.push(makeUci(action));
+                    pos.play(action);
+                }
+                prefixes.push(moves);
+            }
+            for (const prefix of prefixes) {
+                const steps = replayTacticalLine(before, prefix);
+                expect(steps).toHaveLength(prefix.length);
+                const fen = makeFen(steps.at(-1)!.after.toSetup());
+                const lines = [...(await analyse(engine, fen)).values()];
+                searches.push({ kind: "reached", move: prefix.join(" "), fen, lines });
+            }
+            writeFileSync(
+                process.env.TACTICAL_ACCEPTANCE_DEFENCE_REPORT!,
+                JSON.stringify(
+                    {
+                        scope: "Constructed causal comparison and every displayed legal acceptance/checking witness, depth 16. Engine scores are full-position evaluations, not material proof values.",
+                        proof,
+                        searches,
+                    },
+                    null,
+                    2,
+                ),
+            );
+            expect(searches[1].lines[0].cp! - searches[0].lines[0].cp!).toBeGreaterThan(100);
+            expect(searches[2].lines[0].cp! - searches[3].lines[0].cp!).toBeGreaterThan(100);
+        },
+        120000,
+    );
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_THIRD_SAMPLE ||

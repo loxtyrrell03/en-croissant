@@ -6,6 +6,85 @@ import { join, resolve, sep } from "node:path";
 import { SharedReviewService, engineLine } from "../generated/shared-review-service.js";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("built review service publishes and reloads the constructive fork-preparation cause", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-shared-review-acceptance-"));
+  const evidence = JSON.parse(
+    await readFile(
+      new URL(
+        "../../benchmarks/tactical-relevance/capture-acceptance-stockfish-18.json",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
+  const before = evidence.searches.find((s) => s.kind === "choice" && s.move === "f1f4");
+  const after = evidence.searches.find((s) => s.kind === "reached" && s.move === "f1f2");
+  assert.ok(before && after);
+  const options = {
+    root,
+    documentsRoot: join(root, "documents"),
+    engineConfigPath: join(root, "engine.json"),
+    lookup: async (fen) => {
+      const row = [before, after].find((r) => r.fen === fen);
+      assert.ok(row, `Unexpected position: ${fen}`);
+      const line = row.lines[0];
+      return {
+        depth: line.depth,
+        pvs: [{ cp: line.cp * (fen.split(" ")[1] === "b" ? -1 : 1), moves: line.pvUci.join(" ") }],
+      };
+    },
+    fetchGames: async () => [],
+  };
+  let service;
+  try {
+    await writeFile(
+      join(root, "config.json"),
+      JSON.stringify({ accounts: { chesscom: "Tester" } }),
+    );
+    const game = `[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.09"]\n[SetUp "1"]\n[FEN "${before.fen}"]\n[Result "0-1"]\n\n1. Rf2 Rxh4+ 0-1`;
+    await writeFile(
+      join(root, "games.json"),
+      JSON.stringify({
+        games: [
+          {
+            source: "chesscom",
+            pgn: game,
+            end: 1788912000,
+            url: "https://example.test/game/capture-acceptance",
+          },
+        ],
+      }),
+    );
+    service = new SharedReviewService(options);
+    await service.initialize(false);
+    await service.run();
+    assert.equal(service.snapshot().error, null);
+    assert.equal(service.snapshot().cards.length, 1);
+    const deck = await service.deck();
+    const card = service.snapshot().cards[0];
+    const preparation = card.refutationTimeline.find((m) => m.id === "forkPreparation");
+    assert.equal(preparation.comparison, "prevented");
+    assert.match(preparation.comparisonEvidence, /After Rf4, gxh4/);
+    assert.match(card.explanation, /After Rf4, gxh4/);
+    // The shared deck publishes this text as reason; desktop motif metadata
+    // is populated lazily on reveal rather than stored by this producer.
+    assert.equal(deck.positions[0].reason, card.explanation);
+    service.close();
+    service = new SharedReviewService(options);
+    await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].refutationTimeline, card.refutationTimeline);
+    assert.equal((await service.deck()).positions[0].reason, card.explanation);
+  } finally {
+    service?.close();
+    const target = resolve(root);
+    assert.ok(
+      target.startsWith(resolve(tmpdir()) + sep) && target.includes("en-shared-review-acceptance-"),
+    );
+    await rm(target, { recursive: true, force: true });
+  }
+});
+
 test("archived games become shared cards without rewriting analysis; progress survives retries and restarts", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-"));
   let service;

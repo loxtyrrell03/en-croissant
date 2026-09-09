@@ -9,6 +9,23 @@ import { positionSchema } from "@/components/files/opening";
 
 const fen = "3qk2r/p1ppppb1/8/4N3/2B5/8/5PPP/6RK b k - 0 1";
 
+test("saved review retains the constructive acceptance comparison and actual-ply fork", () => {
+    const result = classifyMistakeReviewMotifs({
+        fen: "4k3/7r/8/8/6pN/4r1P1/6PK/5R2 w - - 0 1",
+        playedMoveUci: "f1f2",
+        bestMoveUci: "f1f4",
+        pvUci: ["f1f4"],
+        refutationUci: ["h7h4", "g3h4", "g4g3", "h2g1", "g3f2", "g1f2"],
+    });
+    const restored = positionSchema.shape.mistakeReview.parse(JSON.parse(JSON.stringify(result)));
+    expect(restored?.allowedMotifs?.[0]).toMatchObject({
+        id: "forkPreparation",
+        comparison: "prevented",
+    });
+    expect(restored?.allowedMotifs?.[0].comparisonEvidence).toContain("After Rf4, gxh4");
+    expect(restored?.allowedTimeline?.some((m) => m.id === "fork" && m.ply === 3)).toBe(true);
+});
+
 test("keeping a fork's victims does not mean keeping the same material loss", () => {
     const result = classifyMistakeReviewMotifs({
         fen,

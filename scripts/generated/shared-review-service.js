@@ -14490,6 +14490,13 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 				comparisonEvidence = `After ${bestSan}, ${escape.defence} answers ${alternative.san} with a countercapture. Including that captured material and legal recaptures, the immediate threats cannot force a pawn's worth of material gain.${escape.checkingDefences.length ? ` The immediate checks have concrete answers: ${escape.checkingDefences.join("; ")}.` : ""} This prevents this local winning double threat, not every possible later combination or positional loss.`;
 			}
 		} else if (motif.id === "forkPreparation") {
+			const capture = proveCaptureForkPreparation(step);
+			const acceptance = capture && capturePreparationAcceptanceDefence(alternative);
+			if (acceptance) {
+				const relevantCheck = acceptance.checkingDefences.find((line) => capture?.branches.some((branch) => line.startsWith(`${branch.answer} `))) ?? acceptance.checkingDefences[0];
+				comparison = "prevented";
+				comparisonEvidence = `After ${bestSan}, ${acceptance.defence} answers ${alternative.san} by accepting the offer. Including the initial capture and legal recaptures, immediate captures and up to two further checks cannot force a net material gain for the attacker.${relevantCheck ? ` One checked defence is ${relevantCheck}.` : ""} This refutes this local fork preparation, not every possible later quiet combination.`;
+			}
 			const original = proveCheckingForkPreparation(step);
 			if (original) {
 				const mapped = [];
@@ -14820,6 +14827,75 @@ function counterCaptureMaterialDefence(root, nodeLimit = 8192) {
 	}
 	return null;
 }
+/** Accept a capture offer and positively retain its material cost. This is
+* separate from a failed attacking proof: every immediate capture/check is
+* enumerated, checking lines get up to two real non-counterchecking replies,
+* and material-erasing captures require an actual safe same-square recapture.
+* No null move, borrowed SEE recapture, or supplied PV proves the defence. */
+function capturePreparationAcceptanceDefence(root, nodeLimit = 8192) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !root.capture || root.move.promotion || root.after.isEnd()) return null;
+	let nodes = nodeLimit;
+	const visit = (pos, move) => {
+		if (--nodes < 0) throw new Error("Capture acceptance defence budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const safe = (pos, balance, checks, recaptures) => {
+		if (pos.isEnd() || pos.isCheck() || balance > 0) return null;
+		const witnesses = [];
+		for (const move of legalMoves(pos)) {
+			const next = visit(pos, move);
+			if (move.promotion || next.isEnd()) return null;
+			const earned = capturedValue(pos, move);
+			if (!earned && !next.isCheck()) {
+				if ([...attacks(next.board.get(move.to), move.to, next.board.occupied).intersect(next.board[next.turn])].filter((square) => !["king", "pawn"].includes(next.board.get(square).role)).length >= 2) return null;
+				continue;
+			}
+			if (next.isCheck()) {
+				if (!checks) return null;
+				let answers = null;
+				for (const reply of legalMoves(next)) {
+					if (reply.promotion) continue;
+					const continuation = safe(visit(next, reply), balance + earned - capturedValue(next, reply), checks - 1, recaptures);
+					if (continuation) {
+						const stem = `${makeSan(pos, move)} ${makeSan(next, reply)}`;
+						answers = continuation.length ? continuation.map((tail) => `${stem} ${tail}`) : [stem];
+						break;
+					}
+				}
+				if (answers === null) return null;
+				witnesses.push(...answers);
+				continue;
+			}
+			if (balance + earned <= 0) continue;
+			if (!recaptures) return null;
+			let answered = false;
+			for (const reply of legalMoves(next)) {
+				if (reply.to !== move.to || reply.promotion || !capturedValue(next, reply)) continue;
+				if (safe(visit(next, reply), balance + earned - capturedValue(next, reply), checks, recaptures - 1)) {
+					answered = true;
+					break;
+				}
+			}
+			if (!answered) return null;
+		}
+		return [...new Set(witnesses)];
+	};
+	try {
+		for (const defence of legalMoves(root.after)) {
+			if (defence.to !== root.move.to || defence.promotion || !capturedValue(root.after, defence)) continue;
+			const checkingDefences = safe(visit(root.after, defence), root.capture - capturedValue(root.after, defence), 2, 2);
+			if (checkingDefences) return {
+				defence: makeSan(root.after, defence),
+				checkingDefences
+			};
+		}
+	} catch {
+		return null;
+	}
+	return null;
+}
 /** Refute a formerly checking move by capturing its now-exposed attacker.
 * Check every immediate reply; a countercheck needs a legal king flight with
 * no further check or material-erasing capture. Longer counterchecks abstain.
@@ -14935,7 +15011,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 63;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 64;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
