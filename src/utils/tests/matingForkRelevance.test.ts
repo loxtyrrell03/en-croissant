@@ -87,7 +87,7 @@ test.skipIf(!process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE)(
         const row = sample.cases.find((r: { eligibleIndex: number }) => r.eligibleIndex === 211);
         const result = classifyPositionTacticalMotifs({ fen: row.fen, pvUci: row.sourceUci });
         expect(result.motifs[0]?.id).toBe("mateIn3");
-        expect(result.timeline?.some((m) => m.id === "fork")).toBe(false);
+        expect(result.timeline?.filter((m) => m.id === "fork")).toEqual([]);
         expect(result.timeline).toContainEqual(expect.objectContaining({ id: "mateIn1", ply: 5 }));
     },
 );

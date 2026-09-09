@@ -166,6 +166,7 @@ export function winningRecaptureEvidence(
     });
     if (
         allowsImmediateMate ||
+        proveMateBackedFork(previous) ||
         proveRecaptureBackedFork(previous) ||
         proveCaptureForkPreparation(previous) ||
         proveCaptureDeflection(previous) ||
@@ -1437,7 +1438,8 @@ function verifiedFork(step: TacticalReplayStep) {
         immediateFork(step) ||
         proveRecaptureBackedFork(step) !== null ||
         proveExchangeForPawnFork(step) !== null ||
-        provePromotionBackedFork(step) !== null
+        provePromotionBackedFork(step) !== null ||
+        proveMateBackedFork(step) !== null
     );
 }
 
@@ -2296,6 +2298,38 @@ function immediateFork(step: TacticalReplayStep) {
     });
 }
 
+/** A material fork may be protected by a forced mating reply rather than by
+ * an ordinary recapture. Only a complete all-defence certificate can use it. */
+export function proveMateBackedFork(step: TacticalReplayStep, nodeLimit = 4096) {
+    if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || step.move.promotion) return null;
+    const targets = winningTargets(step.after, step.move.to, step.before.turn);
+    if (targets.length < 2) return null;
+    const capturesForker = new Set(
+        legalMoves(step.after)
+            .filter((reply) => reply.to === step.move.to && capturedValue(step.after, reply))
+            .map((reply) => makeSan(step.after, reply)),
+    );
+    if (!capturesForker.size) return null;
+    const proof = materialThreatProof(step, targets, [step.move.to], [], true, undefined, {
+        minimumGain: 100,
+        mateAnswerMoves: 4,
+        mateNodeLimit: nodeLimit,
+        allPiecesAtLeaf: true,
+    });
+    return proof.kind === "proven" &&
+        proof.complete &&
+        proof.gain < 10000 &&
+        proof.matingDefences?.some((branch) => capturesForker.has(branch.defence))
+        ? {
+              ...proof,
+              targets,
+              matingDefences: proof.matingDefences.filter((branch) =>
+                  capturesForker.has(branch.defence),
+              ),
+          }
+        : null;
+}
+
 /** A minor-piece fork of major pieces can win an exchange for a pawn while
  * falling below the generic one-pawn gate. Require the actual heavy victims
  * and complete all-defence exchange leaves; near-equal minor trades do not
@@ -3013,6 +3047,7 @@ type MaterialProofOptions = {
     minimumGain?: number;
     mateAnswerMoves?: 1 | 4;
     mateNodeLimit?: number;
+    allPiecesAtLeaf?: boolean;
 };
 function materialThreatGain(step: TacticalReplayStep, targets: Square[], capturers: Square[]) {
     const proof = materialThreatProof(step, targets, capturers);
@@ -3028,7 +3063,7 @@ function materialThreatProof(
     promotionFrom?: Square,
     options: MaterialProofOptions = {},
 ) {
-    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}`;
+    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}`;
     if (materialProofCache.has(key)) return materialProofCache.get(key)!;
     const proof = computeMaterialThreatGain(
         step,
@@ -3065,12 +3100,17 @@ function computeMaterialThreatGain(
     let mateNodes = mateNodeLimit;
     const matingDefences: { defence: string; mate: string }[] = [];
     const checkingMateAnswer = (position: Chess, remaining: number): string[] | null => {
+        const checks: { move: NormalMove; answer: Chess }[] = [];
         for (const move of legalMoves(position)) {
             if (--mateNodes < 0) return null;
             const answer = position.clone();
             answer.play(move);
             if (answer.isCheckmate()) return [makeSan(position, move)];
-            if (remaining <= 1 || !answer.isCheck()) continue;
+            if (remaining > 1 && answer.isCheck()) checks.push({ move, answer });
+        }
+        // Finish an available mate before exploring optional extra checking
+        // sacrifices. Such detours can be sound yet teach the wrong mechanism.
+        for (const { move, answer } of checks) {
             const evasions = legalMoves(answer);
             let example: string[] | null = null;
             let allMated = evasions.length > 0;
@@ -3120,7 +3160,56 @@ function computeMaterialThreatGain(
                 for (const promotion of promotions) {
                     const move: NormalMove = { from, to: target, promotion };
                     if (!next.isLegal(move)) continue;
-                    const exchangeGain = tacticalExchangeGain(next, move);
+                    let exchangeGain = tacticalExchangeGain(next, move);
+                    if (options.allPiecesAtLeaf) {
+                        const budget = { nodes: mateNodes };
+                        try {
+                            const leaf = next.clone();
+                            leaf.play(move);
+                            if (leaf.isCheckmate()) {
+                                // Winning the target by mate is a mating
+                                // branch, not independent material evidence
+                                // for a fork inside an all-mating combination.
+                                best = 10000;
+                                matingDefences.push({
+                                    defence: makeSan(step.after, reply),
+                                    mate: makeSan(next, move),
+                                });
+                                continue;
+                            }
+                            if (leaf.isEnd() && !leaf.isCheckmate()) continue;
+                            let unsafe = false;
+                            for (const resource of legalMoves(leaf)) {
+                                if (--budget.nodes < 0)
+                                    throw new Error("Fork leaf budget exhausted");
+                                const after = leaf.clone();
+                                after.play(resource);
+                                if (resource.promotion || after.isCheckmate()) {
+                                    unsafe = true;
+                                    break;
+                                }
+                            }
+                            if (unsafe) {
+                                mateNodes = budget.nodes;
+                                continue;
+                            }
+                            const gain = participantCaptureGain(
+                                next,
+                                move,
+                                [...next.board[step.before.turn], move.to],
+                                budget,
+                            );
+                            if (gain === null) {
+                                unknown = true;
+                                mateNodes = budget.nodes;
+                                continue;
+                            }
+                            exchangeGain = gain;
+                        } catch {
+                            return { kind: "unknown" };
+                        }
+                        mateNodes = budget.nodes;
+                    }
                     if (exchangeGain <= -VALUE.king) {
                         unknown = true;
                         continue;
@@ -5721,10 +5810,21 @@ export function auditTacticalMotifs(
         if (MATE.test(proposal.id)) sound = mate;
         else if (proposal.id === "fork") {
             sound = verifiedFork(step);
+            const mating = sound && !immediateFork(step) ? proveMateBackedFork(step) : null;
+            // This proof borrows a mating continuation to rescue the fork.
+            // If the initiating move already has an independent all-defence
+            // mate certificate, that is not another material-fork lesson.
+            if (mating && proposal.ply === 1 && checkingMate) continue;
             const exchange = sound && !immediateFork(step) ? proveExchangeForPawnFork(step) : null;
             const promotion = sound && !immediateFork(step) ? provePromotionBackedFork(step) : null;
             const recapture = sound && !immediateFork(step) ? proveRecaptureBackedFork(step) : null;
-            if (exchange)
+            if (mating) {
+                proposal = {
+                    ...proposal,
+                    value: mating.gain,
+                    evidence: `${step.san} forks the ${mating.targets.map((sq) => `${step.after.board.get(sq)!.role} on ${makeSquare(sq)}`).join(" and ")}. Capturing the forking piece does not escape: ${mating.matingDefences.map((branch) => `${branch.defence} permits a forced mate (${branch.mate})`).join("; ")}. Other defences concede a verified local material gain on the fork targets or mate; legal recaptures and immediate off-square losses are included. The mating continuation is conditional, not a forced mate from this position.`,
+                };
+            } else if (exchange)
                 proposal = {
                     ...proposal,
                     value: exchange.gain,

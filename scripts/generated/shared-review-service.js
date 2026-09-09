@@ -9445,7 +9445,7 @@ function winningRecaptureEvidence(steps, index, motif) {
 		const next = step.after.clone();
 		next.play(move);
 		return next.isCheckmate();
-	}) || proveRecaptureBackedFork(previous) || proveCaptureForkPreparation(previous) || proveCaptureDeflection(previous) || proveDiscoveryAttraction(previous) || provePinnedCapture(previous) || capturedDefenderProof(previous, motif.source)) return null;
+	}) || proveMateBackedFork(previous) || proveRecaptureBackedFork(previous) || proveCaptureForkPreparation(previous) || proveCaptureDeflection(previous) || proveDiscoveryAttraction(previous) || provePinnedCapture(previous) || capturedDefenderProof(previous, motif.source)) return null;
 	const victim = step.before.board.get(step.move.to);
 	const traded = previous.before.board.get(previous.move.to);
 	if (!victim || !traded) return motif;
@@ -10355,7 +10355,7 @@ function winningTargets(pos, from, side) {
 /** A fork must survive the opponent's choice, including capturing the forker,
 * a checking counterattack, or one move that protects both targets. */
 function verifiedFork(step) {
-	return immediateFork(step) || proveRecaptureBackedFork(step) !== null || proveExchangeForPawnFork(step) !== null || provePromotionBackedFork(step) !== null;
+	return immediateFork(step) || proveRecaptureBackedFork(step) !== null || proveExchangeForPawnFork(step) !== null || provePromotionBackedFork(step) !== null || proveMateBackedFork(step) !== null;
 }
 var recaptureBackedForkCache = /* @__PURE__ */ new Map();
 /** Taking a forker can permit a checking recapture by its supporter. Verify
@@ -10942,6 +10942,26 @@ function immediateFork(step) {
 		});
 	});
 }
+/** A material fork may be protected by a forced mating reply rather than by
+* an ordinary recapture. Only a complete all-defence certificate can use it. */
+function proveMateBackedFork(step, nodeLimit = 4096) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || step.move.promotion) return null;
+	const targets = winningTargets(step.after, step.move.to, step.before.turn);
+	if (targets.length < 2) return null;
+	const capturesForker = new Set(legalMoves(step.after).filter((reply) => reply.to === step.move.to && capturedValue(step.after, reply)).map((reply) => makeSan(step.after, reply)));
+	if (!capturesForker.size) return null;
+	const proof = materialThreatProof(step, targets, [step.move.to], [], true, void 0, {
+		minimumGain: 100,
+		mateAnswerMoves: 4,
+		mateNodeLimit: nodeLimit,
+		allPiecesAtLeaf: true
+	});
+	return proof.kind === "proven" && proof.complete && proof.gain < 1e4 && proof.matingDefences?.some((branch) => capturesForker.has(branch.defence)) ? {
+		...proof,
+		targets,
+		matingDefences: proof.matingDefences.filter((branch) => capturesForker.has(branch.defence))
+	} : null;
+}
 /** A minor-piece fork of major pieces can win an exchange for a pawn while
 * falling below the generic one-pawn gate. Require the actual heavy victims
 * and complete all-defence exchange leaves; near-equal minor trades do not
@@ -11441,7 +11461,7 @@ function materialThreatGain(step, targets, capturers) {
 	return proof.kind === "proven" ? proof.gain : null;
 }
 function materialThreatProof(step, targets, capturers, interpositions = [], allowMateAnswer = false, promotionFrom, options = {}) {
-	const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}`;
+	const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}`;
 	if (materialProofCache.has(key)) return materialProofCache.get(key);
 	const proof = computeMaterialThreatGain(step, targets, capturers, interpositions, allowMateAnswer, promotionFrom, options);
 	materialProofCache.set(key, proof);
@@ -11460,12 +11480,18 @@ function computeMaterialThreatGain(step, targets, capturers, interpositions, all
 	let mateNodes = mateNodeLimit;
 	const matingDefences = [];
 	const checkingMateAnswer = (position, remaining) => {
+		const checks = [];
 		for (const move of legalMoves(position)) {
 			if (--mateNodes < 0) return null;
 			const answer = position.clone();
 			answer.play(move);
 			if (answer.isCheckmate()) return [makeSan(position, move)];
-			if (remaining <= 1 || !answer.isCheck()) continue;
+			if (remaining > 1 && answer.isCheck()) checks.push({
+				move,
+				answer
+			});
+		}
+		for (const { move, answer } of checks) {
 			const evasions = legalMoves(answer);
 			let example = null;
 			let allMated = evasions.length > 0;
@@ -11516,7 +11542,47 @@ function computeMaterialThreatGain(step, targets, capturers, interpositions, all
 						promotion
 					};
 					if (!next.isLegal(move)) continue;
-					const exchangeGain = tacticalExchangeGain(next, move);
+					let exchangeGain = tacticalExchangeGain(next, move);
+					if (options.allPiecesAtLeaf) {
+						const budget = { nodes: mateNodes };
+						try {
+							const leaf = next.clone();
+							leaf.play(move);
+							if (leaf.isCheckmate()) {
+								best = 1e4;
+								matingDefences.push({
+									defence: makeSan(step.after, reply),
+									mate: makeSan(next, move)
+								});
+								continue;
+							}
+							if (leaf.isEnd() && !leaf.isCheckmate()) continue;
+							let unsafe = false;
+							for (const resource of legalMoves(leaf)) {
+								if (--budget.nodes < 0) throw new Error("Fork leaf budget exhausted");
+								const after = leaf.clone();
+								after.play(resource);
+								if (resource.promotion || after.isCheckmate()) {
+									unsafe = true;
+									break;
+								}
+							}
+							if (unsafe) {
+								mateNodes = budget.nodes;
+								continue;
+							}
+							const gain = participantCaptureGain(next, move, [...next.board[step.before.turn], move.to], budget);
+							if (gain === null) {
+								unknown = true;
+								mateNodes = budget.nodes;
+								continue;
+							}
+							exchangeGain = gain;
+						} catch {
+							return { kind: "unknown" };
+						}
+						mateNodes = budget.nodes;
+					}
 					if (exchangeGain <= -VALUE.king) {
 						unknown = true;
 						continue;
@@ -13098,10 +13164,17 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		if (MATE.test(proposal.id)) sound = mate;
 		else if (proposal.id === "fork") {
 			sound = verifiedFork(step);
+			const mating = sound && !immediateFork(step) ? proveMateBackedFork(step) : null;
+			if (mating && proposal.ply === 1 && checkingMate) continue;
 			const exchange = sound && !immediateFork(step) ? proveExchangeForPawnFork(step) : null;
 			const promotion = sound && !immediateFork(step) ? provePromotionBackedFork(step) : null;
 			const recapture = sound && !immediateFork(step) ? proveRecaptureBackedFork(step) : null;
-			if (exchange) proposal = {
+			if (mating) proposal = {
+				...proposal,
+				value: mating.gain,
+				evidence: `${step.san} forks the ${mating.targets.map((sq) => `${step.after.board.get(sq).role} on ${makeSquare(sq)}`).join(" and ")}. Capturing the forking piece does not escape: ${mating.matingDefences.map((branch) => `${branch.defence} permits a forced mate (${branch.mate})`).join("; ")}. Other defences concede a verified local material gain on the fork targets or mate; legal recaptures and immediate off-square losses are included. The mating continuation is conditional, not a forced mate from this position.`
+			};
+			else if (exchange) proposal = {
 				...proposal,
 				value: exchange.gain,
 				evidence: `${step.san} forks the ${exchange.targets.map((sq) => `${step.after.board.get(sq).role} on ${makeSquare(sq)}`).join(" and ")}; every legal defence concedes material${exchange.matingDefences?.length ? " or mate" : ""}.${exchange.matingDefences?.slice(0, 2).map((line) => ` ${line.defence} instead permits a forced mate; for example, ${line.mate}.`).join("") ?? ""}`
@@ -14107,7 +14180,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 53;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 54;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

@@ -107,6 +107,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:mate-backed-fork",
+                input: {
+                    fen: "3qkb1r/5p1b/4p1pp/4N3/2B5/6N1/4QPPP/6K1 w k - 0 1",
+                    pvUci: ["e5f7"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:perpetual-check",
                 input: {
                     fen: "r6k/5Q1p/6p1/8/q7/8/8/5R1K w - - 0 1",
@@ -322,7 +331,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(98);
+        expect(report).toHaveLength(99);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

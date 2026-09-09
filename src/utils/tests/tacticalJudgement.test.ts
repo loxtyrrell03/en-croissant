@@ -501,6 +501,131 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_MATE_FORK_REPORT,
+    )(
+        "audit private mate-backed fork and unresolved preparation defences",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const { proveMateBackedFork } = await import("../tacticalMotifs/causalTactics");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_MATE_FORK_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find((r: { eligibleIndex: number }) => r.eligibleIndex === 67);
+            const root = replayTacticalLine(row.fen, row.sourceUci)[0];
+            const checking = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 107,
+            );
+            const offer = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 182,
+            );
+            const proof = proveMateBackedFork(root)!;
+            const rook = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 134,
+            );
+            expect(proof.gain).toBe(500);
+            const inputs = [
+                { label: "Fork root", fen: row.fen, move: row.sourceUci[0] },
+                {
+                    label: "King accepts",
+                    fen: makeFen(
+                        replayTacticalLine(row.fen, row.sourceUci.slice(0, 2))[1].after.toSetup(),
+                    ),
+                    move: "e2e6",
+                },
+                { label: "Queen decline", fen: makeFen(root.after.toSetup()), move: "d8e7" },
+                { label: "Queen blunder", fen: row.fen, move: "e2h5" },
+                {
+                    label: "After queen blunder",
+                    fen: makeFen(replayTacticalLine(row.fen, ["e2h5"])[0].after.toSetup()),
+                    move: undefined,
+                },
+                {
+                    label: "Unresolved checking defence",
+                    fen: makeFen(
+                        replayTacticalLine(checking.fen, [
+                            checking.sourceUci[0],
+                            "d6b4",
+                        ])[1].after.toSetup(),
+                    ),
+                    move: undefined,
+                },
+                {
+                    label: "Rook offer accepted",
+                    fen: makeFen(
+                        replayTacticalLine(
+                            offer.fen,
+                            offer.sourceUci.slice(0, 2),
+                        )[1].after.toSetup(),
+                    ),
+                    move: "g6e6",
+                },
+                {
+                    label: "Fork payoff pawn countercapture",
+                    fen: makeFen(
+                        replayTacticalLine(offer.fen, [
+                            ...offer.sourceUci,
+                            "c7a5",
+                        ])[5].after.toSetup(),
+                    ),
+                    move: undefined,
+                },
+                { label: "Rook fork root", fen: rook.fen, move: rook.sourceUci[0] },
+                {
+                    label: "Rook fork accepted",
+                    fen: makeFen(
+                        replayTacticalLine(rook.fen, rook.sourceUci.slice(0, 2))[1].after.toSetup(),
+                    ),
+                    move: rook.sourceUci[2],
+                },
+            ];
+            const searches = [];
+            for (const input of inputs) {
+                const lines = [...(await analyse(engine, input.fen, input.move)).values()];
+                expect(lines[0].depth).toBe(16);
+                searches.push({ ...input, lines });
+            }
+            expect(searches[0].lines[0].cp).toBeGreaterThan(200);
+            expect(searches[1].lines[0].mate).toBeGreaterThan(0);
+            expect(searches[2].lines[0].cp).toBeLessThan(-200);
+            expect(["g6h5", "f6h5"]).toContain(searches[4].lines[0].pvUci[0]);
+            expect(searches[8].lines[0].cp).toBeGreaterThan(200);
+            expect(searches[9].lines[0].mate).toBeGreaterThan(0);
+            const before = searches[0].lines[0],
+                after = searches[4].lines[0];
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                playedMoveUci: "e2h5",
+                bestMoveUci: row.sourceUci[0],
+                pvUci: before.pvUci,
+                refutationUci: after.pvUci,
+                cpBefore: before.cp!,
+                cpAfter: -after.cp!,
+                cpLoss: before.cp! + after.cp!,
+            });
+            const explanation = buildMistakeReviewTacticalExplanation(review);
+            expect(explanation?.primary.id).toBe("hangingPiece");
+            expect(explanation?.secondary?.id).toBe("fork");
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    { sourceSha256: sample.sourceSha256, proof, searches, review, explanation },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_SEARCH_STABILITY_REPORT,
     )(
         "audit deeper source search and reached drawing resources",
