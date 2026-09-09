@@ -107,6 +107,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:pawn-square-clearance-fork",
+                input: {
+                    fen: "4k3/7r/8/8/6pN/4r1P1/5RPK/8 b - - 0 1",
+                    pvUci: ["h7h4", "g3h4", "g4g3", "h2g1", "g3f2", "g1f2"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:immediate-alternative-after-cycle",
                 input: {
                     fen: "6k1/2r2Npp/2q1P3/3n4/8/6Q1/5PPP/3R1RK1 w - - 0 1",
@@ -420,7 +429,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(108);
+        expect(report).toHaveLength(109);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

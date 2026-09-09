@@ -6,6 +6,28 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("pawn-square clearance is explained at the offer and the fork at its actual move", () => {
+  const fen = "4k3/7r/8/8/6pN/4r1P1/5RPK/8 b - - 0 1";
+  const line = ["h7h4", "g3h4", "g4g3", "h2g1", "g3f2", "g1f2"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  const root = container.querySelector('[data-tactical-ply="1"]')!;
+  expect(root.textContent).toContain("Fork Preparation");
+  expect(root.textContent).toContain("draw the pawn off g3");
+  expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).not.toContain(
+    "Winning Recapture",
+  );
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Fork");
+});
+
 test("the two-defender combination explains the offer without a false winning recapture", () => {
   const fen = "6k1/2r2ppp/2q5/3n4/8/6Q1/5PPP/3R1RK1 w - - 0 1";
   const line = ["d1d5", "c6d5", "g3c7"];

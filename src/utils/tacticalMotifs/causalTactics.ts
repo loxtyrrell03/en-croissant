@@ -2169,6 +2169,7 @@ type CaptureForkPreparationProof = Omit<ForkPreparationProof, "branches"> & {
     branches: (ForkPreparationProof["branches"][number] & {
         receiver: Role;
         removedDefender?: { square: Square; premature: string; defence: string };
+        clearedForkSquare?: Square;
         exchange?: { given: "rook"; received: [Role, Role] };
     })[];
     declined: { reply: string; answer: string }[];
@@ -2354,6 +2355,19 @@ export function proveCaptureForkPreparation(
                     // concrete earlier defence: the same defender could take
                     // the premature forker before the offered exchange.
                     let removedDefender: CaptureForkPreparationProof["branches"][number]["removedDefender"];
+                    // A recapturing piece can vacate the square needed for a
+                    // pawn's checking fork. This is clearance, not a fork of
+                    // the recapturer: the straight pawn advance was blocked
+                    // on the original board and is legal only after it moves.
+                    const clearedForkSquare =
+                        answer.to === reply.from &&
+                        next.board.get(answer.from)?.role === "pawn" &&
+                        answer.from % 8 === answer.to % 8 &&
+                        !capturedValue(next, answer) &&
+                        root.before.board.get(answer.to)?.color === enemy &&
+                        !root.before.isLegal(answer)
+                            ? answer.to
+                            : undefined;
                     if (
                         receiver !== "king" &&
                         answer.to === root.move.to &&
@@ -2394,7 +2408,7 @@ export function proveCaptureForkPreparation(
                         next,
                         answer,
                         [...next.board[side], answer.to],
-                        receiver === "king" || removedDefender
+                        receiver === "king" || removedDefender || clearedForkSquare !== undefined
                             ? []
                             : [...next.board[enemy]].filter((sq) => sq !== root.move.to),
                         minimumGain - balance,
@@ -2416,6 +2430,7 @@ export function proveCaptureForkPreparation(
                               }
                             : {}),
                         ...(removedDefender ? { removedDefender } : {}),
+                        ...(clearedForkSquare !== undefined ? { clearedForkSquare } : {}),
                     });
                     for (const victim of result.victims) targets.add(victim);
                     forkers.add(answer.from);
@@ -6654,7 +6669,9 @@ export function auditTacticalMotifs(
         const removed = fork.removedDefender;
         const introduction = removed
             ? `${root.san} offers the ${root.before.board.get(root.move.from)!.role} to draw the defending ${fork.receiver} off ${makeSquare(removed.square)}. After ${fork.reply}, ${fork.answer} removes it and forks the ${fork.targets.join(" and ")}. Playing ${removed.premature} first lets that defender capture the forking piece with ${removed.defence}.`
-            : `${root.san} captures the ${root.before.board.get(root.move.to)!.role} and offers the ${root.before.board.get(root.move.from)!.role} to attract the ${fork.receiver} onto ${makeSquare(root.move.to)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.${fork.exchange ? ` This wins ${fork.exchange.received[0] === fork.exchange.received[1] ? `two ${fork.exchange.received[0]}s` : `a ${fork.exchange.received.join(" and a ")}`} for the rook; after legal countercaptures, the verified local net gain is at least ${capturePreparation.gain / 100} pawns, not a full-position evaluation.` : ""}`;
+            : fork.clearedForkSquare !== undefined
+              ? `${root.san} captures the ${root.before.board.get(root.move.to)!.role} and offers the ${root.before.board.get(root.move.from)!.role} to draw the ${fork.receiver} off ${makeSquare(fork.clearedForkSquare)}, clearing that square for the pawn fork. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.`
+              : `${root.san} captures the ${root.before.board.get(root.move.to)!.role} and offers the ${root.before.board.get(root.move.from)!.role} to attract the ${fork.receiver} onto ${makeSquare(root.move.to)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.${fork.exchange ? ` This wins ${fork.exchange.received[0] === fork.exchange.received[1] ? `two ${fork.exchange.received[0]}s` : `a ${fork.exchange.received.join(" and a ")}`} for the rook; after legal countercaptures, the verified local net gain is at least ${capturePreparation.gain / 100} pawns, not a full-position evaluation.` : ""}`;
         const otherCapture = capturePreparation.otherCaptures?.[0];
         candidates.push({
             id: "forkPreparation",

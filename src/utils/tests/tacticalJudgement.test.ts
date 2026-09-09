@@ -13,6 +13,7 @@ import {
     proveQuietDoubleThreat,
     proveDefenderCombination,
     proveCombinedDefenderRemoval,
+    proveCaptureForkPreparation,
     replayTacticalLine,
     tacticalExchangeGain,
 } from "@/utils/tacticalMotifs/causalTactics";
@@ -501,6 +502,88 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_THIRD_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_PAWN_CLEARANCE_REPORT,
+    )(
+        "validate pawn-square clearance and its declined sacrifice",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_PAWN_CLEARANCE_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_THIRD_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find((r: { eligibleIndex: number }) => r.eligibleIndex === 31);
+            const root = replayTacticalLine(row.fen, row.sourceUci)[0];
+            const proof = proveCaptureForkPreparation(root)!;
+            expect(proof).toMatchObject({ gain: 220 });
+            const witnesses = [...proof.branches, ...proof.declined].map((branch) => {
+                const pos = root.after.clone();
+                const moves = [root.uci];
+                for (const san of [branch.reply, branch.answer]) {
+                    const move = parseSan(pos, san)!;
+                    expect(pos.isLegal(move)).toBe(true);
+                    moves.push(makeUci(move));
+                    pos.play(move);
+                }
+                return moves;
+            });
+            const searches = [];
+            for (const prefix of [
+                [],
+                [root.uci],
+                row.sourceUci.slice(0, 2),
+                ...witnesses,
+                ["e8d8"],
+            ]) {
+                const steps = replayTacticalLine(row.fen, prefix);
+                expect(steps).toHaveLength(prefix.length);
+                const fen = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : row.fen;
+                const lines = [
+                    ...(await analyse(engine, fen, prefix.length ? undefined : root.uci)).values(),
+                ];
+                searches.push({ prefix, fen, lines });
+            }
+            const constructed = [];
+            for (const fen of [
+                "4k3/7r/8/8/6pN/4r1P1/5RPK/8 b - - 0 1",
+                "4k3/7r/8/8/6pN/6P1/5RPK/8 b - - 0 1",
+            ]) {
+                const lines = [...(await analyse(engine, fen, "h7h4")).values()];
+                constructed.push({ fen, lines });
+            }
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        scope: "Private real root, acceptance and all nominated root witnesses plus constructed protection controls; depth-16 engine scores are not local material bounds.",
+                        proof,
+                        searches,
+                        constructed,
+                    },
+                    null,
+                    2,
+                ),
+            );
+            for (const search of searches.slice(0, -1)) {
+                const cp = search.lines[0].cp;
+                expect(cp).not.toBeNull();
+                expect(cp! * (search.fen.split(" ")[1] === "b" ? 1 : -1)).toBeGreaterThan(100);
+            }
+            expect(constructed[0].lines[0].cp!).toBeGreaterThan(100);
+            expect(constructed[1].lines[0].cp!).toBeLessThan(-100);
+            // This is a constructed alternative, not a historical game move.
+            // Check whether the missed-opportunity review has real engine loss.
+            expect(searches[0].lines[0].cp! + searches.at(-1)!.lines[0].cp!).toBeGreaterThan(100);
+        },
+        120000,
+    );
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_THIRD_SAMPLE ||
