@@ -1,5 +1,11 @@
 # Tactical relevance judgement, 2026-09-08
 
+## Adapter 56: a mating capture is not another generic material lesson
+
+An independently proved forced mating attack suppresses a same-ply Hanging Piece label, while preserving specific mechanisms and the terminal mate. An unverified mate tag, root-only input or a real king escape cannot hide the material lesson. The real rook-fork continuation loses its redundant bishop-capture tag; all 48 sample main labels and the other 47 source timelines are unchanged.
+
+Verification passes 678 selected tests, both fresh 24-position replays, ten focused engine searches, 138 actual-controller parity inputs, isolated cold HTTP loading and production/shared-review builds. The 32-case priority report and previous 100 public worker main labels are unchanged. See [the private-course audit](private-course-review.md) for proof limits and remaining coverage/runtime gaps. No app/package/service was restarted or deployed; physical WebView verification remains separate.
+
 ## Adapter 55: two minor pieces for a rook
 
 A verified rook-offer/checking-fork preparation now survives a legal pawn countercapture without pretending the resulting local gain is a full pawn. The exception uses the exact two-minor/rook exchange, keeps all legal defence checks and rejects larger erasing countercaptures. Root wording/arrows, later-ply fork evidence and missed-opportunity review share the certificate; accepting the proved offer no longer gets a contradictory Hanging Piece label.

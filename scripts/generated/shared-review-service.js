@@ -13331,6 +13331,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			"attacking_undefended_piece"
 		].includes(m.id)) return false;
 		if (m.id === "attacking_undefended_piece" && checkingMate && m.ply === 1) return false;
+		if (m.id === "hangingPiece" && checkingMate && m.ply === 1) return false;
 		if (m.id === "attacking_undefended_piece" && candidates.some((other) => other.ply === m.ply && ["pin", "skewer"].includes(other.id))) return false;
 		if (m.id === "hangingPiece" && candidates.some((other) => other.ply === m.ply && ["capturingDefender", "intermezzo"].includes(other.id))) return false;
 		if (m.id === "sacrifice" && candidates.some((other) => MECHANISMS.has(other.id) && other.ply === m.ply)) return false;
@@ -14186,7 +14187,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 55;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 56;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

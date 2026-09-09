@@ -686,6 +686,14 @@ describe("expert tactical judgement with fresh engine lines", () => {
             expect(["g6h5", "f6h5"]).toContain(searches[4].lines[0].pvUci[0]);
             expect(searches[8].lines[0].cp).toBeGreaterThan(200);
             expect(searches[9].lines[0].mate).toBeGreaterThan(0);
+            const matingCapture = classifyPositionTacticalMotifs({
+                fen: searches[9].fen,
+                pvUci: searches[9].lines[0].pvUci,
+            });
+            expect(matingCapture.motifs[0]?.id).toMatch(/^mateIn/);
+            expect(
+                matingCapture.timeline?.some((m) => m.ply === 1 && m.id === "hangingPiece"),
+            ).toBe(false);
             const before = searches[0].lines[0],
                 after = searches[4].lines[0];
             const review = classifyMistakeReviewMotifs({

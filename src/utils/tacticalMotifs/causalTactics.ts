@@ -6110,6 +6110,12 @@ export function auditTacticalMotifs(
             )
                 return false;
             if (m.id === "attacking_undefended_piece" && checkingMate && m.ply === 1) return false;
+            // A capture starting an independently proved forced mate is not
+            // also a generic material-win lesson. This applies only at the
+            // current root: later material gains and specific mechanisms
+            // (removing a defender, interference, etc.) remain distinct.
+            // A mate tag or cooperating PV without this proof cannot hide it.
+            if (m.id === "hangingPiece" && checkingMate && m.ply === 1) return false;
             if (
                 m.id === "attacking_undefended_piece" &&
                 candidates.some(

@@ -107,6 +107,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:mating-capture",
+                input: {
+                    fen: "4b2k/7p/5q2/8/8/6R1/8/4R1K1 w - - 0 1",
+                    pvUci: ["e1e8", "f6f8", "e8f8"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:two-minors-for-rook",
                 input: {
                     fen: "2k5/1pq5/6Q1/P1n5/8/Rb6/5PPP/6K1 w - - 0 1",
@@ -340,7 +349,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(100);
+        expect(report).toHaveLength(101);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

@@ -1,6 +1,18 @@
 # Private easy-course development audit
 
-## Current refinement: adapter 55 / live pipeline 57
+## Current refinement: adapter 56 / live pipeline 58
+
+A capture beginning an independently proved forced mating attack no longer receives an additional generic Hanging Piece lesson at that same ply. The existing all-legal-defences mating certificate is required: a supplied mate tag, a root-only input without proof, or a failed mating continuation cannot suppress a real material gain. This does not remove specific mechanisms such as capturing a defender, new later tactics, or the actual checkmate payoff. No new search or larger budget is introduced.
+
+The disjoint rook-fork example previously showed Fork / Forcing Mate + Hanging Piece / Checkmate. It now shows Fork / Forcing Mate / Checkmate. Direct classification of the reached mating capture agrees with the original-position timeline. All 48 sampled main labels and the other 47 source timelines are unchanged, as are the 32-case lesson priorities and previous 100 public worker main labels. Existing empty counts remain four/five original and twelve/eleven disjoint live/source; this is noise reduction, not new puzzle coverage or an accuracy estimate.
+
+Eight new regressions pass within 678 selected tests in 46 files (two opt-in skips). Controls retain the capture with a legal king escape, absent continuation or unverified mate proposal, and cover colour reflection, board-primary selection, missed-mate review, real reached/root agreement and the terminal payoff. Both fresh 24-position replays and the ten-search mate-fork diagnostic pass; fresh Stockfish again confirms mate in two after accepting the real rook fork. Targeted lint, shared-review and 8,862-module production builds pass; the unrelated OTB number/bigint fixture type error remains.
+
+Actual-controller parity covers 101 public plus twelve original private, 24 disjoint and one reached perpetual inputs (138 total). Public total median/p95/max is 66/187/499 ms, startup max 36 ms and computation/transfer max 476 ms, excluding native engine/UI. Isolated force-cold HTTP startup/classification is 3,658/6 ms for Reti and 1,507/109 ms for f7. These successful audits do not erase the earlier intermittent startup failure or establish physical WebView reliability. No app, native package or service was restarted/deployed. Broader quiet/rare themes and coverage gaps remain open.
+
+Private evidence: `woodpecker-mating-capture-adapter56-verified.json`, `woodpecker-easy-adapter56-verified.json`, `woodpecker-easy-disjoint-adapter56-verified.json`, and `adapter56-cold-http-worker.json`. The existing `audit private mate-backed fork` selector now also checks the reached mating capture against fresh engine output; use a **new private** `TACTICAL_PRIVATE_MATE_FORK_REPORT`. Course inputs and full reports stay outside Git.
+
+## Adapter 55 / live pipeline 57
 
 The rook-offer example now leads with Fork Preparation, not a fork borrowed from its later continuation. The acceptance exchanges a rook for two minor pieces. Its verified local net is only 50 cp because a legal off-square pawn capture reduces the 150 cp exchange. The former uniform 100 cp gate hid the root mechanism. The exception is derived from the exact captured/receiving minor-piece values minus the rook and one pawn (40/50/60 cp), requires the actual receiver to be recovered in a checking fork, and retains all legal acceptance/decline checks. Other trades, declined offers, proof budgets and off-square liabilities are unchanged. Missing forking support, a pawn instead of the first minor, or a larger erasing countercapture cannot borrow this proof. The evidence names the piece exchange and labels its positive local lower bound separately from full-position evaluation.
 
