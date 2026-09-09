@@ -516,6 +516,113 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_MATING_OVERLAP_REPORT ||
+            !process.env.TACTICAL_PRIVATE_SKEWER_REPORT,
+    )(
+        "inspect the actual blocked checking skewer with fresh engine replies",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_SKEWER_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const source = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_MATING_OVERLAP_REPORT!, "utf8"),
+            );
+            const row = source.searches.find(
+                (s: { id: string }) => s.id === "real-missed-alternative",
+            );
+            const root = replayTacticalLine(row.fen, ["d2c1", "g8g1"])[1];
+            const proof = proveCheckingMaterialAttack([root])!;
+            expect(proof).toMatchObject({ gain: 500 });
+            const prefixes = [
+                ["d2c1"],
+                ["d2c1", "g8g1"],
+                ["d2c1", "g8g1", "d3f1"],
+                ["d2c1", "g8g1", "d3f1", "g1f1"],
+                ["d2c1", "g8g1", "d3f1", "g1f1", "e3f1"],
+                ["d2c1", "g8g1", "e3d1", "g1d1", "c1d1"],
+                ["h6f6"],
+            ];
+            for (const branch of proof.branches) {
+                const pos = root.after.clone();
+                const prefix = ["d2c1", "g8g1"];
+                for (const san of [branch.reply, ...branch.line]) {
+                    const move = parseSan(pos, san)!;
+                    expect(pos.isLegal(move)).toBe(true);
+                    prefix.push(makeUci(move));
+                    pos.play(move);
+                }
+                if (pos.isEnd()) prefix.pop();
+                if (!prefixes.some((p) => p.join(" ") === prefix.join(" "))) prefixes.push(prefix);
+            }
+            const searches = [];
+            for (const prefix of prefixes) {
+                const steps = replayTacticalLine(row.fen, prefix);
+                expect(steps).toHaveLength(prefix.length);
+                const fen = makeFen(steps.at(-1)!.after.toSetup());
+                const lines = [...(await analyse(engine, fen)).values()];
+                searches.push({ prefix, fen, lines });
+            }
+            const constructed = "4r1rk/4q2p/8/8/8/3BN3/1PP5/R1K5 b - - 0 1";
+            const controls = [];
+            for (const fen of [constructed, "6rk/7p/8/8/8/3BN3/1PP5/R1K5 b - - 0 1"]) {
+                const lines = [...(await analyse(engine, fen, "g8g1")).values()];
+                controls.push({ fen, lines });
+            }
+            const before = constructed.replace("1PP5", "PPP5").replace(" b ", " w ");
+            for (const move of ["a2a3", "a2a4"]) {
+                const step = replayTacticalLine(before, [move])[0];
+                const fen = makeFen(step.after.toSetup());
+                const lines = [...(await analyse(engine, fen, "g8g1")).values()];
+                controls.push({ fen, lines });
+            }
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                bestMoveUci: "h6f6",
+                playedMoveUci: "d2c1",
+                pvUci: ["h6f6"],
+                refutationUci: row.lines[0].pvUci.slice(1),
+            });
+            const explanation = buildMistakeReviewTacticalExplanation(review);
+            expect(explanation).toMatchObject({
+                source: "allowed",
+                primary: { id: "skewer" },
+                secondary: { id: "deflection" },
+            });
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        scope: "Private checking-skewer all-defence witnesses, actual recapture mates, better move and constructed controls; local proof amounts differ from full engine evaluations.",
+                        proof,
+                        searches,
+                        controls,
+                        review,
+                        explanation,
+                    },
+                    null,
+                    2,
+                ),
+            );
+            for (const search of searches) {
+                const line = search.lines[0];
+                const blackScore =
+                    (line.cp ?? Math.sign(line.mate!) * 100000) *
+                    (search.fen.split(" ")[1] === "b" ? 1 : -1);
+                expect(blackScore * (search.prefix[0] === "h6f6" ? -1 : 1)).toBeGreaterThan(0);
+            }
+            expect(controls[0].lines[0].cp! > 0 || controls[0].lines[0].mate! > 0).toBe(true);
+            expect(controls[1].lines[0].cp! < 0 || controls[1].lines[0].mate! < 0).toBe(true);
+            for (const control of controls.slice(2))
+                expect(control.lines[0].cp! > 0 || control.lines[0].mate! > 0).toBe(true);
+        },
+        120000,
+    );
     test.each(["d2c2", "d2f2", "invalid"])(
         "illegal restricted move %s fails before starting an engine",
         async (move) => {

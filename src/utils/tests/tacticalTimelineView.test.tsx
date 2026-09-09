@@ -6,6 +6,26 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("a defended block does not hide the initial skewer or move the mate to the root", () => {
+  const fen = "4r1rk/4q2p/8/8/8/3BN3/1PP5/R1K5 b - - 0 1";
+  const line = ["g8g1", "d3f1", "g1f1", "e3f1", "e7e1"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  const root = container.querySelector('[data-tactical-ply="1"]')!;
+  expect(root.textContent).toContain("Skewer");
+  expect(root.textContent).toContain("Bf1 Rxf1+ Kd2 Rxa1");
+  expect(root.textContent).toContain("not a forced-mate claim");
+  expect(container.querySelector('[data-tactical-ply="5"]')?.textContent).toContain("Checkmate");
+});
+
 test("a shared mating route has one explanation rather than a third mechanism badge", () => {
   const fen = "4r1rk/4q2p/5n1Q/8/3n4/3B3R/3K4/8 w - - 0 1";
   const line = ["h6f6", "e7f6", "h3h7"];

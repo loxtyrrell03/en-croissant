@@ -10267,11 +10267,18 @@ var checkingAttackCache = /* @__PURE__ */ new Map();
 * branch is independently checked; a branch may end in mate instead. */
 function proveCheckingMaterialAttack(steps, nodeLimit = 16384) {
 	const root = steps[0];
-	if (!root || root.capture || root.before.isCheck() || !root.after.isCheck() || root.after.isEnd()) return null;
+	if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture || root.before.isCheck() || !root.after.isCheck() || root.after.isEnd()) return null;
 	const side = root.before.turn;
 	const checker = root.after.board.get(root.move.to);
 	if (!checker || checker.color !== side || !attacks(checker, root.move.to, root.after.board.occupied).has(root.after.board.kingOf(opposite(side)))) return null;
 	const payoffIndex = steps.findIndex((step, i) => i >= 4 && step.before.turn === side && step.capture >= VALUE.knight);
+	const skewerRay = relevantRayTactics(root).find((ray) => ray.kind === "skewer" && ray.pinner === root.move.to && root.after.board.get(ray.front)?.role === "king");
+	const orderedMoves = (pos) => {
+		const list = legalMoves(pos);
+		if (!checkingSkewer) return list;
+		const flip = side === "black" ? 0 : 56;
+		return list.sort((a, b) => (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip));
+	};
 	let target;
 	if (payoffIndex >= 4 && payoffIndex <= 8 && !steps.slice(0, payoffIndex).some((step) => step.before.turn === side && !step.after.isCheck())) {
 		target = steps[payoffIndex].move.to;
@@ -10284,10 +10291,11 @@ function proveCheckingMaterialAttack(steps, nodeLimit = 16384) {
 			"bishop",
 			"rook",
 			"queen"
-		].includes(root.after.board.get(sq).role)).sort((a, b) => VALUE[root.after.board.get(b).role] - VALUE[root.after.board.get(a).role])[0];
+		].includes(root.after.board.get(sq).role)).sort((a, b) => VALUE[root.after.board.get(b).role] - VALUE[root.after.board.get(a).role])[0] ?? skewerRay?.rear;
 	}
 	if (target === void 0) return null;
 	if (root.after.board.get(target)?.color !== opposite(side)) return null;
+	const checkingSkewer = target === skewerRay?.rear ? skewerRay : void 0;
 	const hints = steps.slice(0, payoffIndex < 0 ? 9 : payoffIndex).filter((step) => step.before.turn === side).map((step) => step.uci);
 	const key = `${makeFen(root.before.toSetup())}:${root.uci}:${target}:${hints}`;
 	if (nodeLimit === 16384 && checkingAttackCache.has(key)) return checkingAttackCache.get(key);
@@ -10301,9 +10309,19 @@ function proveCheckingMaterialAttack(steps, nodeLimit = 16384) {
 	const delta = (pos, move) => capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
 	const attack = (pos, square, balance, checks, pieces) => {
 		if (pos.isEnd()) return null;
-		const moves = legalMoves(pos).sort((a, b) => Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))));
+		const moves = orderedMoves(pos).sort((a, b) => Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))));
 		for (const move of moves) {
 			if (move.to !== square || !capturedValue(pos, move)) continue;
+			if (checkingSkewer) {
+				const leaf = visit(pos, move);
+				if (leaf.isEnd()) continue;
+				let safe = true;
+				for (const resource of orderedMoves(leaf)) if (resource.promotion || visit(leaf, resource).isCheckmate()) {
+					safe = false;
+					break;
+				}
+				if (!safe) continue;
+			}
 			const gain = participantCaptureGain(pos, move, [...pieces, move.to], budget);
 			if (gain !== null && balance + gain >= 100) return {
 				gain: balance + gain,
@@ -10329,7 +10347,7 @@ function proveCheckingMaterialAttack(steps, nodeLimit = 16384) {
 	const defend = (pos, square, balance, checks, pieces) => {
 		if (pos.isEnd()) return null;
 		let minimum = null;
-		for (const move of legalMoves(pos)) {
+		for (const move of orderedMoves(pos)) {
 			const win = attack(visit(pos, move), move.from === square ? move.to : square, balance - delta(pos, move), checks, pieces.filter((sq) => sq !== move.to));
 			if (!win) return null;
 			if (!minimum || win.gain < minimum.gain) minimum = {
@@ -10342,8 +10360,8 @@ function proveCheckingMaterialAttack(steps, nodeLimit = 16384) {
 	let proof = null;
 	try {
 		const branches = [];
-		for (const reply of legalMoves(root.after)) {
-			const win = attack(visit(root.after, reply), reply.from === target ? reply.to : target, -delta(root.after, reply), 3, reply.to === root.move.to ? [] : [root.move.to]);
+		for (const reply of orderedMoves(root.after)) {
+			const win = attack(visit(root.after, reply), reply.from === target ? reply.to : target, -delta(root.after, reply), 3, checkingSkewer ? [...root.after.board[side]].filter((sq) => sq !== reply.to) : reply.to === root.move.to ? [] : [root.move.to]);
 			if (!win) throw new Error("Unproved checking attack reply");
 			branches.push({
 				reply: makeSan(root.after, reply),
@@ -11772,6 +11790,34 @@ function discoveredEvidence(steps, source) {
 		targets
 	};
 }
+function rayMaterialProof(step, ray) {
+	const blocks = ray.kind === "skewer" && step.after.board.get(ray.front)?.role === "king" ? [...between(ray.pinner, ray.front)] : [];
+	let proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to]);
+	if (proof.kind === "proven") return proof;
+	if (blocks.length) proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to], blocks, false, void 0, { allPiecesAtLeaf: true });
+	if (proof.kind === "proven" && blocks.length) return {
+		...proof,
+		blockingProof: true
+	};
+	if (proof.kind !== "proven" && blocks.length) {
+		const continuation = proveCheckingMaterialAttack([step]);
+		if (continuation?.target === ray.rear) {
+			const branch = continuation.branches.find((b) => {
+				const reply = parseSan(step.after, b.reply);
+				return reply && "from" in reply && blocks.includes(reply.to);
+			}) ?? continuation.branches[0];
+			const limiting = continuation.branches.reduce((a, b) => a.gain <= b.gain ? a : b);
+			return {
+				kind: "proven",
+				complete: true,
+				gain: continuation.gain,
+				defence: limiting.reply,
+				checkingLine: [branch.reply, ...branch.line]
+			};
+		}
+	}
+	return proof;
+}
 function rayTactics(pos, side) {
 	const rays = [];
 	for (const pinner of pos.board[side]) {
@@ -12288,7 +12334,7 @@ function rayMaterialEvidence(step, source, allowCheckingReplies = false) {
 	if (step.capture >= 320 && tacticalExchangeGain(step.before, step.move) >= 100 && !provePinnedCapture(step)) return [];
 	const motifs = [];
 	for (const ray of relevantRayTactics(step)) {
-		const proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to]);
+		const proof = rayMaterialProof(step, ray);
 		const reinforcement = proof.kind !== "proven" && ray.kind === "pin" ? proveReinforcedPin(step) : null;
 		const extended = reinforcement?.ray.front === ray.front && reinforcement.ray.pinner === ray.pinner ? reinforcement : null;
 		if (proof.kind !== "proven" && !(allowCheckingReplies && proof.kind === "forcing") && !extended) continue;
@@ -12312,7 +12358,7 @@ function rayMaterialEvidence(step, source, allowCheckingReplies = false) {
 			ply: 1,
 			moveUci: step.uci,
 			value: gain,
-			evidence: ray.kind === "pin" ? extended ? `${step.san} adds an attack on the ${front.role} on ${makeSquare(ray.front)}, pinned to its king on ${makeSquare(ray.rear)} by the ${pinner.role} on ${makeSquare(ray.pinner)}. Every legal reply permits material recovery in the checked short exchanges, including checking counterattacks; one line is ${extended.line.join(" ")}.` : `${step.san} exploits the ${front.role} on ${makeSquare(ray.front)}, pinned to the ${rear.role} on ${makeSquare(ray.rear)} by the ${pinner.role} on ${makeSquare(ray.pinner)}. ${proof.kind === "proven" ? "No legal reply avoids material loss in the immediate exchange." : "Every non-checking reply allows material loss. Checking replies remain, so the capture is a threat, not a guaranteed immediate win."}` : `${step.san} skewers the ${front.role} on ${makeSquare(ray.front)} and the ${rear.role} on ${makeSquare(ray.rear)}. ${proof.kind === "proven" ? "No legal reply saves the rear target without conceding material." : "Every non-checking reply concedes material, but checking defences still need to be met."}`
+			evidence: ray.kind === "pin" ? extended ? `${step.san} adds an attack on the ${front.role} on ${makeSquare(ray.front)}, pinned to its king on ${makeSquare(ray.rear)} by the ${pinner.role} on ${makeSquare(ray.pinner)}. Every legal reply permits material recovery in the checked short exchanges, including checking counterattacks; one line is ${extended.line.join(" ")}.` : `${step.san} exploits the ${front.role} on ${makeSquare(ray.front)}, pinned to the ${rear.role} on ${makeSquare(ray.rear)} by the ${pinner.role} on ${makeSquare(ray.pinner)}. ${proof.kind === "proven" ? "No legal reply avoids material loss in the immediate exchange." : "Every non-checking reply allows material loss. Checking replies remain, so the capture is a threat, not a guaranteed immediate win."}` : `${step.san} skewers the ${front.role} on ${makeSquare(ray.front)} and the ${rear.role} on ${makeSquare(ray.rear)}. ${"checkingLine" in proof && proof.checkingLine ? `Blocking the check also allows a verified continuation: ${proof.checkingLine.join(" ")}. Every legal defence concedes material or mate; this is not a forced-mate claim.` : proof.kind === "proven" ? "No legal reply saves the rear target without conceding material." : "Every non-checking reply concedes material, but checking defences still need to be met."}`
 		});
 	}
 	return motifs;
@@ -14109,20 +14155,21 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		evidence: `${root.san} is checkmate: the king is in check and there is no legal reply.`
 	});
 	const normalizedCandidates = normalizeMatingPayoffs(steps, candidates);
-	let incidentalMatingFork = false;
-	if (checkingMate && candidates.some((m) => m.id === "fork" && m.ply === 1)) {
-		const victims = winningTargets(root.after, root.move.to, attacker).filter((sq) => root.after.board.get(sq)?.role !== "king");
+	const incidentalMatingMechanisms = /* @__PURE__ */ new Set();
+	for (const kind of ["fork", "skewer"]) {
+		if (!checkingMate || !candidates.some((m) => m.id === kind && m.ply === 1)) continue;
+		const victims = kind === "fork" ? winningTargets(root.after, root.move.to, attacker).filter((sq) => root.after.board.get(sq)?.role !== "king") : relevantRayTactics(root).filter((ray) => ray.kind === "skewer" && root.after.board.get(ray.front)?.role === "king").map((ray) => ray.rear);
 		if (victims.length) {
 			const probe = root.before.clone();
 			for (const square of victims) probe.board.take(square);
 			const replay = replayTacticalLine(makeFen(probe.toSetup()), steps.map((s) => s.uci));
-			incidentalMatingFork = replay.length === steps.length && Boolean(proveCheckingMate(replay, 4096));
+			if (replay.length === steps.length && proveCheckingMate(replay, 4096)) incidentalMatingMechanisms.add(kind);
 		}
 	}
 	const specificMate = normalizedCandidates.find((m) => /Mate$/.test(m.id));
 	const fork = candidates.find((m) => m.id === "fork");
 	const filtered = normalizedCandidates.filter((m) => {
-		if (incidentalMatingFork && m.id === "fork" && m.ply === 1) return false;
+		if (incidentalMatingMechanisms.has(m.id) && m.ply === 1) return false;
 		if (m.id === "promotion" && candidates.some((other) => other.id === "underPromotion" && other.ply === m.ply)) return false;
 		if (m.ply && steps[m.ply - 1]?.after.isCheckmate() && [
 			"hangingPiece",
@@ -14301,8 +14348,24 @@ function compareMaterialCause(actual, better, motif) {
 	let targets = [], capturers = [], gain = null;
 	let conditional = false;
 	if (motif.id === "pin" || motif.id === "skewer") for (const ray of relevantRayTactics(step).filter((r) => r.kind === motif.id)) {
-		const proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to]);
+		const proof = rayMaterialProof(step, ray);
 		if (proof.kind !== "proven" && proof.kind !== "forcing") continue;
+		if ("checkingLine" in proof || "blockingProof" in proof) {
+			const sameRay = relevantRayTactics(alternative).find((other) => other.kind === ray.kind && other.pinner === ray.pinner && other.front === ray.front && other.rear === ray.rear && [
+				ray.pinner,
+				ray.front,
+				ray.rear
+			].every((square) => {
+				const piece = step.after.board.get(square);
+				const otherPiece = alternative.after.board.get(square);
+				return piece?.role === otherPiece?.role && piece?.color === otherPiece?.color;
+			}));
+			const otherProof = sameRay ? rayMaterialProof(alternative, sameRay) : null;
+			return otherProof?.kind === "proven" && otherProof.gain >= proof.gain ? {
+				comparison: "persists",
+				comparisonEvidence: `After ${better[0].san}, the same ${alternative.san} skewer still has a verified continuation against every legal defence, including blocks.`
+			} : null;
+		}
 		targets = [ray.front, ray.rear];
 		capturers = [ray.pinner, step.move.to];
 		gain = proof.gain;
@@ -14371,7 +14434,7 @@ function materialLesson(steps, motif) {
 		targets = [step.move.to];
 		gain = tacticalExchangeGain(step.before, step.move);
 	} else if (["pin", "skewer"].includes(motif.id)) for (const ray of relevantRayTactics(step).filter((r) => r.kind === motif.id)) {
-		const proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to]);
+		const proof = rayMaterialProof(step, ray);
 		if (proof.kind !== "proven") continue;
 		targets = [ray.front, ray.rear];
 		gain = proof.gain;
@@ -15096,7 +15159,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 66;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 67;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

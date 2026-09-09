@@ -107,6 +107,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:checking-skewer-with-defended-block",
+                input: {
+                    fen: "4r1rk/4q2p/8/8/8/3BN3/1PP5/R1K5 b - - 0 1",
+                    pvUci: ["g8g1", "d3f1", "g1f1", "e3f1", "e7e1"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:shared-mating-route",
                 input: {
                     fen: "4r1rk/4q2p/5n1Q/8/3n4/3B3R/3K4/8 w - - 0 1",
@@ -447,7 +456,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(111);
+        expect(report).toHaveLength(112);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
@@ -465,6 +474,27 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
     },
     120000,
 );
+
+test.skipIf(
+    !process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_MATING_OVERLAP_REPORT,
+)("the real reached checking skewer survives the built worker boundary", async () => {
+    const report = JSON.parse(
+        readFileSync(process.env.TACTICAL_PRIVATE_MATING_OVERLAP_REPORT!, "utf8"),
+    );
+    const row = report.searches.find((s: { id: string }) => s.id === "real-missed-alternative");
+    const steps = replayTacticalLine(row.fen, row.lines[0].pvUci);
+    const input = {
+        fen: makeFen(steps[0].after.toSetup()),
+        pvUci: row.lines[0].pvUci.slice(1),
+        engineName: "Stockfish 18",
+        depth: 16,
+    };
+    const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+    expect(result.scan).toEqual(buildLiveTacticalScan(input));
+    expect(result.scan.motifs[0]).toMatchObject({ id: "skewer", value: 500 });
+    expect(result.startupMs).toBeLessThan(TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
+    expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+});
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_THIRD_REPORT)(
     "the third disjoint sample retains full source and live timelines through the worker",
