@@ -497,6 +497,108 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_BRANCH_PREPARATION_REPORT,
+    )(
+        "inspect private preparation with different recapture mechanisms",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_BRANCH_PREPARATION_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 193,
+            );
+            const { proveCaptureDeflection } = await import("../tacticalMotifs/causalTactics");
+            const proof = proveCaptureDeflection(replayTacticalLine(row.fen, row.sourceUci)[0])!;
+            expect(proof?.gain).toBe(100);
+            const witnesses = [
+                ...proof.accepted,
+                proof.declined.reduce((a, b) => (a.gain <= b.gain ? a : b)),
+            ].map((branch) => {
+                const pos = replayTacticalLine(row.fen, [row.sourceUci[0]])[0].after.clone();
+                const reply = parseSan(pos, branch.reply)!;
+                expect(reply).toBeDefined();
+                pos.play(reply);
+                const answer = parseSan(pos, branch.answer)!;
+                expect(answer).toBeDefined();
+                return {
+                    label: `Exact local witness: ${branch.reply} ${branch.answer}`,
+                    moves: [row.sourceUci[0], makeUci(reply)],
+                    root: makeUci(answer),
+                };
+            });
+            const searches = [];
+            for (const input of [
+                { label: "Original", moves: [] as string[], root: undefined as string | undefined },
+                { label: "Rook acceptance, reinforce pin", moves: ["g4e3", "f3e3"], root: "f8e8" },
+                ...witnesses,
+                { label: "Missed preparation", moves: ["g4f6"], root: undefined },
+            ]) {
+                const steps = replayTacticalLine(row.fen, input.moves);
+                expect(steps).toHaveLength(input.moves.length);
+                const fen = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : row.fen;
+                const lines = [...(await analyse(engine, fen, input.root)).values()];
+                expect(lines[0].depth).toBe(16);
+                searches.push({
+                    ...input,
+                    fen,
+                    lines,
+                    classification: classifyPositionTacticalMotifs({
+                        fen,
+                        pvUci: lines[0].pvUci,
+                        pvSan: lines[0].pvSan,
+                    }),
+                });
+            }
+            const before = searches[0].lines[0],
+                after = searches.at(-1)!.lines[0];
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                bestMoveUci: before.pvUci[0],
+                playedMoveUci: "g4f6",
+                pvUci: before.pvUci,
+                pvSan: before.pvSan,
+                refutationUci: after.pvUci,
+                refutationSan: after.pvSan,
+                cpBefore: before.cp === null ? null : -before.cp,
+                cpAfter: after.cp,
+                cpLoss: before.cp === null || after.cp === null ? null : before.cp + after.cp,
+            });
+            const explanation = buildMistakeReviewTacticalExplanation(review);
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        id: row.id,
+                        sourceSha256: sample.sourceSha256,
+                        proof,
+                        searches,
+                        review,
+                        explanation,
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+            expect(searches[0].lines[0].pvUci[0]).toBe(row.sourceUci[0]);
+            for (const search of searches.slice(1, -1))
+                expect(
+                    search.lines[0].cp ?? Math.sign(search.lines[0].mate ?? 0) * 10000,
+                ).toBeGreaterThan(0);
+            expect(explanation).toMatchObject({ source: "missed", primary: { id: "deflection" } });
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_DEFENDER_FORK_REPORT,
     )(
         "validate private defender-removing fork preparation and both move orders",

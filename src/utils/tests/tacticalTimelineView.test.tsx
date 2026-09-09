@@ -1,9 +1,39 @@
 import { MantineProvider } from "@mantine/core";
+import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { expect, test } from "vitest";
 import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLineExplanation";
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
+
+test.skipIf(!process.env.TACTICAL_PRIVATE_PGN_SAMPLE)(
+  "renders mixed recaptures conditionally without labelling sacrifice acceptance a win",
+  () => {
+    const row = JSON.parse(
+      readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"),
+    ).cases.find((r: { eligibleIndex: number }) => r.eligibleIndex === 193);
+    for (const line of [row.sourceUci, ["g4e3", "c1e3", "e1a1"]]) {
+      const result = classifyPositionTacticalMotifs({ fen: row.fen, pvUci: line });
+      const container = document.createElement("div");
+      container.innerHTML = renderToStaticMarkup(
+        <MantineProvider>
+          <TacticalLineExplanation
+            moves={replayTacticalLine(row.fen, line).map((s) => s.san)}
+            motifs={result.timeline ?? []}
+          />
+        </MantineProvider>,
+      );
+      const root = container.querySelector('[data-tactical-ply="1"]')!;
+      expect(root.textContent).toContain("Deflection");
+      expect(root.textContent).toContain("If Bxe3, Qxa1");
+      expect(root.textContent).toContain("different recapture, Rxe3");
+      expect(root.textContent).toContain("not every defence");
+      expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).not.toContain(
+        "Winning Recapture",
+      );
+    }
+  },
+);
 
 test("defender-removing preparation explains both move orders without a premature fork badge", () => {
   const fen = "8/5pkp/6p1/2p5/2Rp4/3Q4/1q4PP/6BK w - - 0 1";

@@ -1,6 +1,22 @@
 # Private easy-course development audit
 
-## Current refinement: adapter 47 / live pipeline 49
+## Current refinement: adapter 48 / live pipeline 50
+
+A previously empty knight sacrifice has different recapture mechanisms. The bishop's acceptance opens the queen's line to a rook; the rook's acceptance enters an absolute pin which a quiet rook move reinforces; the queen's acceptance permits a direct material recovery. `proveCaptureDeflection` verifies every receiver separately and every declined offer. At least one acceptance must actually open a profitable sliding capture through the receiver's vacated square. A geometric pin or one cooperative continuation alone cannot certify the root. Already profitable ordinary exchanges do not borrow this label.
+
+The pin branch enumerates every legal reply to the reinforcing move, with one checking-counterattack evasion round. Named-target captures use settled legal exchanges, all friendly off-square capture liabilities, and immediate mate/promotion guards. Declined offers need a related move by the offered piece or capture of a checking counterattacker. The shared 16,384-move budget and separately bounded exchange leaves abstain on exhaustion. King receivers, promotions, terminal states and arbitrary quiet follow-ups remain unsupported. The result is a short material proof, not a full-position search or a claim that the displayed witness is strongest.
+
+The root now leads with Deflection in source, engine and missed-opportunity views. Its text explicitly distinguishes the conditional pin branch from the queen-ray branch; board arrows show the offer and potential blocker acceptance, not a future queen capture or compulsory pin. Proven sacrifice acceptance cannot become a Winning Recapture badge. This does not yet add an independently classified pin badge at the source line's later quiet reinforcement, nor a general before/better opponent-causation proof for this mechanism.
+
+Only this exercise's main label changes in the fixed 24-position replay. Six source/five live outputs remain empty; nonempty does not mean correct. The 32-case lesson-priority report and all previous 92 public worker main labels are unchanged. This reused development sample is not a holdout or general accuracy estimate. Full positions, source annotations and detailed reports remain outside Git.
+
+Seven fresh depth-16 searches confirm the original move (+451 cp for Black), the source pin reinforcement (+459), the exact bishop/queen/rook acceptance witnesses (+458/+457/+464), and the tested declined-offer witness (+58). The missed knight retreat leaves White +5 cp. Those full-position scores are not the root's 100 cp local bound; the declined-offer witness is a legal material-preserving choice, not necessarily the strongest continuation. Local acceptance bounds are 280/350/180 cp respectively.
+
+Sixteen new regressions cover mixed receivers, source/root-only/engine-line agreement, board arrows, missed opportunities, reflection, bounded caches, missing support/victim, another blocker, still-guarded capture squares, and rendered conditional wording. All 563 selected tests in 38 files pass (two opt-in skips), as do the final private replay, seven-search diagnostic, targeted lint and shared review-worker/8,862-module production builds. Actual-controller parity covers 93 public plus ten private cases; public cold-worker total median/p95/max is 72/211/754 ms, startup max 102 ms and computation/transfer max 712 ms, excluding engine/UI. Isolated HTTP startup/classification is 3,704/5 ms for Reti and 81/105 ms for f7. Type checking retains the unrelated OTB number/bigint fixture error. No app/package/service was restarted or deployed; no physical WebView proof is claimed.
+
+Reproduce the branch diagnostic with a new private `TACTICAL_PRIVATE_BRANCH_PREPARATION_REPORT` and selector `inspect private preparation` in `tacticalJudgement.test.ts`. Current private files are `woodpecker-easy-adapter48-final.json` and `woodpecker-branch-preparation-adapter48-final.json`; earlier reports remain unchanged.
+
+## Adapter 47 / live pipeline 49
 
 A quiet rook sacrifice was still empty because the checking bishop captures the receiving pawn rather than forking that pawn as a material target. The preparation proof now accepts this defender-removal route only when the same pawn could legally capture the premature forker before the offered exchange, without conceding a pawn in the bounded exchange check. The earlier defensive witness includes off-square capture liabilities and immediate mate/promotion checks; a geometric recapture that allows mate is not a refutation. At least one separate checking-fork branch must still be proved against every legal defence.
 

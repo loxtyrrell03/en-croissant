@@ -9444,7 +9444,7 @@ function winningRecaptureEvidence(steps, index, motif) {
 		const next = step.after.clone();
 		next.play(move);
 		return next.isCheckmate();
-	}) || proveRecaptureBackedFork(previous) || proveCaptureForkPreparation(previous) || provePinnedCapture(previous) || capturedDefenderProof(previous, motif.source)) return null;
+	}) || proveRecaptureBackedFork(previous) || proveCaptureForkPreparation(previous) || proveCaptureDeflection(previous) || provePinnedCapture(previous) || capturedDefenderProof(previous, motif.source)) return null;
 	const victim = step.before.board.get(step.move.to);
 	const traded = previous.before.board.get(previous.move.to);
 	if (!victim || !traded) return motif;
@@ -11929,10 +11929,174 @@ function intermediateCaptureProof(step, nodeLimit = 512) {
 	}
 	return best;
 }
-/** A capturing deflection needs a defender whose departure actually weakens
-* the named target. Restoring that defender is only a protection probe, not
-* a claimed legal variation. The real root is then checked against every
-* legal reply, including declining the bait and immediate mating answers. */
+var captureDeflectionCache = /* @__PURE__ */ new Map();
+/** Different receivers need not lose by the same mechanism. A receiver can
+* vacate a blocking square or enter an absolute pin; a quiet reinforcement
+* of that pin is checked against every reply. Other branches must retain the
+* captured material through the offered piece or an answer to check. */
+function proveCaptureDeflection(root, nodeLimit = 16384, onFailure) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !root.capture || root.move.promotion || root.after.isCheck() || root.after.isEnd() || !root.before.board.get(root.move.to) || tacticalExchangeGain(root.before, root.move) >= 90) return null;
+	const side = root.before.turn, enemy = opposite(side);
+	const replies = legalMoves(root.after);
+	const receivers = replies.filter((move) => move.to === root.move.to && capturedValue(root.after, move));
+	if (!receivers.length || receivers.some((move) => move.promotion || root.after.board.get(move.from)?.role === "king")) return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (!onFailure && nodeLimit === 16384 && captureDeflectionCache.has(key)) return captureDeflectionCache.get(key);
+	const budget = { nodes: nodeLimit };
+	const visit = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("Capture deflection budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const settled = (pos, move) => {
+		if (move.promotion) return null;
+		const next = visit(pos, move);
+		if (next.isEnd()) return null;
+		for (const resource of legalMoves(next)) if (resource.promotion || visit(next, resource).isCheckmate()) return null;
+		return participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+	};
+	const pinWin = (pos, target, pieces, balance, evasion) => {
+		if (pos.isEnd()) return null;
+		for (const move of legalMoves(pos)) {
+			if (move.to !== target || !pieces.includes(move.from) || !capturedValue(pos, move)) continue;
+			const gain = settled(pos, move);
+			if (gain !== null && balance + gain >= 90) return balance + gain;
+		}
+		if (!evasion || !pos.isCheck()) return null;
+		for (const move of legalMoves(pos)) {
+			if (move.promotion) continue;
+			if (pos.ctx().checkers.has(move.to) && capturedValue(pos, move)) {
+				const gain = settled(pos, move);
+				if (gain !== null && balance + gain >= 90) return balance + gain;
+			}
+			const gain = pinDefend(visit(pos, move), target, pieces.map((sq) => sq === move.from ? move.to : sq), balance + capturedValue(pos, move), evasion - 1);
+			if (gain !== null) return gain;
+		}
+		return null;
+	};
+	const pinDefend = (pos, target, pieces, balance, evasion) => {
+		if (pos.isEnd()) return null;
+		let minimum = Infinity;
+		for (const reply of legalMoves(pos)) {
+			if (reply.promotion) return null;
+			const gain = pinWin(visit(pos, reply), reply.from === target ? reply.to : target, pieces.filter((sq) => sq !== reply.to), balance - capturedValue(pos, reply), evasion);
+			if (gain === null) return null;
+			minimum = Math.min(minimum, gain);
+		}
+		return Number.isFinite(minimum) ? minimum : null;
+	};
+	let proof = null;
+	try {
+		const accepted = [], declined = [];
+		let minimum = root.capture;
+		for (const reply of receivers) {
+			const next = visit(root.after, reply);
+			if (next.isEnd()) throw new Error("Terminal acceptance");
+			const balance = root.capture - capturedValue(root.after, reply);
+			let branch;
+			for (const move of legalMoves(next)) {
+				const piece = next.board.get(move.from);
+				if (!capturedValue(next, move) || ![
+					"bishop",
+					"rook",
+					"queen"
+				].includes(piece.role) || !between(move.from, move.to).has(reply.from)) continue;
+				const gain = settled(next, move);
+				if (gain !== null && balance + gain >= 90) {
+					branch = {
+						reply: makeSan(root.after, reply),
+						answer: makeSan(next, move),
+						gain: balance + gain,
+						mode: "ray",
+						receiver: reply.from,
+						from: move.from,
+						target: move.to
+					};
+					break;
+				}
+			}
+			if (!branch) for (const move of legalMoves(next)) {
+				if (move.to !== reply.to || !capturedValue(next, move)) continue;
+				const gain = settled(next, move);
+				if (gain !== null && balance + gain >= 90) {
+					branch = {
+						reply: makeSan(root.after, reply),
+						answer: makeSan(next, move),
+						gain: balance + gain,
+						mode: "capture",
+						receiver: reply.from,
+						from: move.from,
+						target: move.to
+					};
+					break;
+				}
+			}
+			if (!branch) {
+				const ray = rayTactics(next, side).find((ray) => ray.kind === "pin" && ray.front === reply.to && next.board.get(ray.rear)?.role === "king" && withTurn(next, enemy).ctx().blockers.has(ray.front));
+				if (ray) for (const move of legalMoves(next)) {
+					if (capturedValue(next, move) || move.promotion) continue;
+					const piece = next.board.get(move.from);
+					if (attacks(piece, move.from, next.board.occupied).has(reply.to)) continue;
+					const after = visit(next, move);
+					if (after.isCheck() || !attacks(piece, move.to, after.board.occupied).has(reply.to)) continue;
+					const gain = pinDefend(after, reply.to, [ray.pinner, move.to], balance, 1);
+					if (gain !== null && gain >= 90) {
+						branch = {
+							reply: makeSan(root.after, reply),
+							answer: makeSan(next, move),
+							gain,
+							mode: "pin",
+							receiver: reply.from,
+							from: move.from,
+							target: reply.to,
+							pinner: ray.pinner
+						};
+						break;
+					}
+				}
+			}
+			if (!branch) throw new Error(`Unproved acceptance: ${makeSan(root.after, reply)}`);
+			minimum = Math.min(minimum, branch.gain);
+			accepted.push(branch);
+		}
+		if (!accepted.some((branch) => branch.mode === "ray")) throw new Error("No blocking defender deflected");
+		for (const reply of replies) {
+			if (receivers.includes(reply)) continue;
+			if (reply.promotion) throw new Error("Promoting defence");
+			const next = visit(root.after, reply);
+			if (next.isEnd()) throw new Error("Terminal decline");
+			const balance = root.capture - capturedValue(root.after, reply);
+			let branch;
+			for (const move of legalMoves(next)) {
+				if (move.from !== root.move.to && !(next.isCheck() && next.ctx().checkers.has(move.to) && capturedValue(next, move))) continue;
+				const gain = settled(next, move);
+				if (gain === null || balance + gain < 90) continue;
+				branch = {
+					reply: makeSan(root.after, reply),
+					answer: makeSan(next, move),
+					gain: balance + gain
+				};
+				break;
+			}
+			if (!branch) throw new Error(`Unproved decline: ${makeSan(root.after, reply)}`);
+			minimum = Math.min(minimum, branch.gain);
+			declined.push(branch);
+		}
+		proof = {
+			gain: minimum,
+			accepted,
+			declined
+		};
+	} catch (error) {
+		onFailure?.(error instanceof Error ? error.message : "Unproved capture deflection");
+	}
+	if (!onFailure && nodeLimit === 16384) {
+		captureDeflectionCache.set(key, proof);
+		if (captureDeflectionCache.size > 128) captureDeflectionCache.delete(captureDeflectionCache.keys().next().value);
+	}
+	return proof;
+}
 function deflectionEvidence(steps, source) {
 	const [bait, reply, payoff] = steps;
 	const mating = bait && proveMatingDeflection(bait);
@@ -11948,6 +12112,21 @@ function deflectionEvidence(steps, source) {
 			moveUci: bait.uci,
 			value: mating.gain,
 			evidence: `${bait.san} offers the ${bait.after.board.get(bait.move.to).role} to deflect the ${defender.role} from ${makeSquare(branch.defender)}. Accepting with ${branch.reply} allows ${branch.mate}: ${branch.mode === "block" ? `the ${defender.role} no longer blocks the mating line from ${makeSquare(branch.target)} to ${makeSquare(bait.after.board.kingOf(opposite(bait.before.turn)))}` : `the defender no longer guards ${makeSquare(branch.target)}`}. ${mating.declined.length ? `Declining can avoid mate, but every legal decline has a related reply retaining extra material in the checked short exchanges (for example, ${mating.declined[0].reply} ${mating.declined[0].answer}). This is not a forced-mate claim.` : "Every legal reply accepts the offer and allows immediate mate."}`
+		};
+	}
+	const capture = bait && proveCaptureDeflection(bait);
+	if (capture) {
+		const branch = capture.accepted.find((branch) => branch.mode === "ray");
+		const pin = capture.accepted.find((branch) => branch.mode === "pin");
+		return {
+			id: "deflection",
+			label: "Deflection",
+			source,
+			confidence: "high",
+			ply: 1,
+			moveUci: bait.uci,
+			value: capture.gain,
+			evidence: `${bait.san} offers the ${bait.after.board.get(bait.move.to).role} to deflect the ${bait.after.board.get(branch.receiver).role} from ${makeSquare(branch.receiver)}. If ${branch.reply}, ${branch.answer} exploits the opened line to the ${bait.after.board.get(branch.target).role} on ${makeSquare(branch.target)}.${pin ? ` A different recapture, ${pin.reply}, puts the ${bait.after.board.get(pin.receiver).role} in a pin to its king; ${pin.answer} adds an attack on it. That pin belongs to this branch, not every defence.` : ""} All legal recaptures and declined offers retain extra material in the checked short exchanges; the continuation depends on the defence.`
 		};
 	}
 	if (!bait || !reply || !payoff || !reply.capture || reply.move.to !== bait.move.to || reply.move.promotion || payoff.capture < 320 || payoff.before.turn !== bait.before.turn) return null;
@@ -13473,7 +13652,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 47;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 48;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
