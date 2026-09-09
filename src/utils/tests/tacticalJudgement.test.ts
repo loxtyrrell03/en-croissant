@@ -519,6 +519,111 @@ describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
     test.skipIf(
         !engine ||
+            !process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE ||
+            !process.env.TACTICAL_CAPTURED_FORK_DEFENDER_REPORT,
+    )(
+        "validate captured fork defenders with fresh root and all-defence witness searches",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_CAPTURED_FORK_DEFENDER_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find((r: { eligibleIndex: number }) => r.eligibleIndex === 89);
+            const root = replayTacticalLine(row.fen, row.sourceUci)[0];
+            const proof = proveCaptureForkPreparation(root)!;
+            expect(proof).not.toBeNull();
+            const searches = [];
+            for (const branch of [
+                ...proof.branches,
+                ...proof.declined,
+                ...(proof.otherCaptures ?? []),
+            ]) {
+                const pos = root.after.clone();
+                const prefix = [root.uci];
+                for (const san of [branch.reply, branch.answer]) {
+                    const move = parseSan(pos, san)!;
+                    expect(pos.isLegal(move)).toBe(true);
+                    prefix.push(makeUci(move));
+                    pos.play(move);
+                }
+                const fen = makeFen(pos.toSetup());
+                searches.push({
+                    branch,
+                    prefix,
+                    fen,
+                    lines: [...(await analyse(engine, fen)).values()],
+                });
+            }
+            const roots = [];
+            const premature = makeUci(
+                parseSan(root.before, proof.branches[0].removedDefender!.premature)!,
+            );
+            for (const restrict of [root.uci, premature])
+                roots.push({
+                    restrict,
+                    lines: [...(await analyse(engine, row.fen, restrict)).values()],
+                });
+            const unresolved = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 38,
+            );
+            const unresolvedSteps = replayTacticalLine(unresolved.fen, [
+                unresolved.sourceUci[0],
+                "g3g4",
+            ]);
+            expect(unresolvedSteps).toHaveLength(2);
+            const unresolvedFen = makeFen(unresolvedSteps[1].after.toSetup());
+            const diagnostic = {
+                eligibleIndex: 38,
+                fen: unresolvedFen,
+                lines: [...(await analyse(engine, unresolvedFen)).values()],
+            };
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                bestMoveUci: root.uci,
+                playedMoveUci: premature,
+                pvUci: row.sourceUci,
+                refutationUci: roots[1].lines[0].pvUci.slice(1),
+            });
+            const explanation = buildMistakeReviewTacticalExplanation(review);
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        scope: "Private defender-removal preparation; selected root-defence witnesses, not exhaustive global tactical accuracy. Local values are not full engine scores.",
+                        proof,
+                        searches,
+                        roots,
+                        diagnostic,
+                        review,
+                        explanation,
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+            expect(review.missedMotifs[0]).toMatchObject({ id: "forkPreparation", ply: 1 });
+            for (const search of searches) {
+                const line = search.lines[0];
+                const score =
+                    (line.cp ?? Math.sign(line.mate!) * 100000) *
+                    (search.fen.split(" ")[1] === "b" ? 1 : -1);
+                expect({ prefix: search.prefix, winning: score > 0 }).toMatchObject({
+                    winning: true,
+                });
+            }
+            expect(roots[0].lines[0].cp!).toBeGreaterThan(roots[1].lines[0].cp!);
+        },
+        180000,
+    );
+    test.skipIf(
+        !engine ||
             !process.env.TACTICAL_PRIVATE_THIRD_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_CAPTURE_DISCOVERY_REPORT,
     )(

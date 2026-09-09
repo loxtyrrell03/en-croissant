@@ -107,6 +107,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:captured-fork-defender",
+                input: {
+                    fen: "3r2k1/p5pp/8/7q/8/3N4/2P3PP/R3K3 b - - 0 1",
+                    pvUci: ["d8d3", "c2d3", "h5e5", "e1d2", "e5a1"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:future-promotion-not-root-cause",
                 input: {
                     fen: "6k1/p6r/1P6/8/8/8/8/6KR w - - 0 1",
@@ -474,7 +483,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(114);
+        expect(report).toHaveLength(115);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

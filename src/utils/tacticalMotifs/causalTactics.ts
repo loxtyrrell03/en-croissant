@@ -2523,14 +2523,38 @@ function proveCaptureCheckPreparation(
                         !root.before.isLegal(answer)
                             ? answer.to
                             : undefined;
-                    if (
+                    const defenderSquare =
                         receiver !== "king" &&
                         answer.to === root.move.to &&
                         capturedValue(next, answer)
-                    ) {
+                            ? reply.from
+                            : // The first capture can itself remove the defender
+                              // of a checking fork of two OTHER pieces. Do not
+                              // alter the established recapturer-target route.
+                              !discoveryChecks &&
+                                receiver !== "king" &&
+                                answer.to !== root.move.to &&
+                                !attacks(
+                                    next.board.get(answer.from)!,
+                                    answer.to,
+                                    next.board.occupied.without(answer.from).with(answer.to),
+                                ).has(root.move.to) &&
+                                attacks(
+                                    next.board.get(answer.from)!,
+                                    answer.to,
+                                    next.board.occupied.without(answer.from).with(answer.to),
+                                ).has(king) &&
+                                attacks(
+                                    root.before.board.get(root.move.to)!,
+                                    root.move.to,
+                                    root.before.board.occupied.without(answer.from).with(answer.to),
+                                ).has(answer.to)
+                              ? root.move.to
+                              : undefined;
+                    if (defenderSquare !== undefined) {
                         if (!root.before.isLegal(answer)) continue;
                         const premature = visit(root.before, answer);
-                        const defence = { from: reply.from, to: answer.to };
+                        const defence = { from: defenderSquare, to: answer.to };
                         if (!premature.isLegal(defence) || !capturedValue(premature, defence))
                             continue;
                         const defended = visit(premature, defence);
@@ -2552,7 +2576,7 @@ function proveCaptureCheckPreparation(
                         if (gain === null || capturedValue(root.before, answer) - gain >= 100)
                             continue;
                         removedDefender = {
-                            square: reply.from,
+                            square: defenderSquare,
                             premature: makeSan(root.before, answer),
                             defence: makeSan(premature, defence),
                         };
@@ -2709,6 +2733,20 @@ function proveCaptureCheckPreparation(
                         loss = Math.max(loss, gain);
                     }
                     if (material - loss < 100) continue;
+                    // For a captured-defender preparation, a different
+                    // piece's capture cannot subsidise abandoning the offer:
+                    // the offer and its supporter may BOTH fall on separate
+                    // squares. The older one-exchange maximum does not prove
+                    // that sequence safe. Require retention of the original
+                    // gain here; a safe escape by the offer remains eligible.
+                    if (
+                        answer.from !== root.move.to &&
+                        branches.some(
+                            (branch) => branch.removedDefender?.square === root.move.to,
+                        ) &&
+                        balance - loss < 100
+                    )
+                        continue;
                     minimum = Math.min(minimum, material - loss);
                     declined.push({
                         reply: makeSan(root.after, reply),
@@ -6985,7 +7023,7 @@ export function auditTacticalMotifs(
         const declined = capturePreparation.declined[0];
         const removed = fork.removedDefender;
         const introduction = removed
-            ? `${root.san} offers the ${root.before.board.get(root.move.from)!.role} to draw the defending ${fork.receiver} off ${makeSquare(removed.square)}. After ${fork.reply}, ${fork.answer} removes it and forks the ${fork.targets.join(" and ")}. Playing ${removed.premature} first lets that defender capture the forking piece with ${removed.defence}.`
+            ? `${removed.square === root.move.to ? `${root.san} captures the defending ${root.before.board.get(removed.square)!.role} on ${makeSquare(removed.square)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice.` : `${root.san} offers the ${root.before.board.get(root.move.from)!.role} to draw the defending ${fork.receiver} off ${makeSquare(removed.square)}. After ${fork.reply}, ${fork.answer} removes it and forks the ${fork.targets.join(" and ")}.`} Playing ${removed.premature} first lets that defender capture the forking piece with ${removed.defence}.`
             : fork.clearedForkSquare !== undefined
               ? `${root.san} captures the ${root.before.board.get(root.move.to)!.role} and offers the ${root.before.board.get(root.move.from)!.role} to draw the ${fork.receiver} off ${makeSquare(fork.clearedForkSquare)}, clearing that square for the pawn fork. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.`
               : `${root.san} captures the ${root.before.board.get(root.move.to)!.role} and offers the ${root.before.board.get(root.move.from)!.role} to attract the ${fork.receiver} onto ${makeSquare(root.move.to)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.${fork.exchange ? ` This wins ${fork.exchange.received[0] === fork.exchange.received[1] ? `two ${fork.exchange.received[0]}s` : `a ${fork.exchange.received.join(" and a ")}`} for the rook; after legal countercaptures, the verified local net gain is at least ${capturePreparation.gain / 100} pawns, not a full-position evaluation.` : ""}`;
