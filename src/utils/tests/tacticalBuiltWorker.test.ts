@@ -107,6 +107,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:discovery-backed-fork",
+                input: {
+                    fen: "3r1nk1/2q3p1/2nppb1p/8/2P1PPQ1/2N5/1B4PP/5R1K w - - 0 1",
+                    pvUci: ["c3d5", "e6d5", "b2f6"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:mating-capture",
                 input: {
                     fen: "4b2k/7p/5q2/8/8/6R1/8/4R1K1 w - - 0 1",
@@ -349,7 +358,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(101);
+        expect(report).toHaveLength(102);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

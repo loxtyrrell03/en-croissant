@@ -501,6 +501,97 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_FORK_DISCOVERY_REPORT,
+    )(
+        "inspect private fork acceptance and discovery support",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_FORK_DISCOVERY_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 155,
+            );
+            const searches = [];
+            for (const input of [
+                { label: "Original", moves: [] as string[], root: undefined as string | undefined },
+                { label: "Pawn captures forker", moves: ["c3d5", "e6d5"], root: undefined },
+                { label: "Discovered bishop capture", moves: ["c3d5", "e6d5"], root: "b2f6" },
+                { label: "Pawn recapture", moves: ["c3d5", "e6d5"], root: "c4d5" },
+                {
+                    label: "Queen attacked, connected rook capture",
+                    moves: ["c3d5", "e6d5", "b2f6", "h6h5"],
+                    root: "f6d8",
+                },
+                {
+                    label: "Queen countercapture recovered",
+                    moves: ["c3d5", "e6d5", "b2f6", "h6h5", "f6d8", "h5g4"],
+                    root: "d8c7",
+                },
+                {
+                    label: "Preserve the pin against queen pressure",
+                    moves: ["c3d5", "e6d5", "b2f6", "c7d7"],
+                    root: "g4g3",
+                },
+                {
+                    label: "Recover the original receiver",
+                    moves: ["c3d5", "e6d5", "b2f6", "c6e7"],
+                    root: "e4d5",
+                },
+                { label: "Missed fork", moves: ["c4c5"], root: undefined },
+            ]) {
+                const steps = replayTacticalLine(row.fen, input.moves);
+                expect(steps).toHaveLength(input.moves.length);
+                const fen = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : row.fen;
+                const lines = [...(await analyse(engine, fen, input.root)).values()];
+                expect(lines[0].depth).toBe(16);
+                searches.push({ ...input, fen, lines });
+            }
+            const { proveDiscoveryBackedFork } = await import("../tacticalMotifs/causalTactics");
+            const proof = proveDiscoveryBackedFork(replayTacticalLine(row.fen, row.sourceUci)[0]);
+            const before = searches[0].lines[0],
+                after = searches.at(-1)!.lines[0];
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                playedMoveUci: "c4c5",
+                bestMoveUci: before.pvUci[0],
+                pvUci: before.pvUci,
+                refutationUci: after.pvUci,
+                cpBefore: before.cp,
+                cpAfter: after.cp === null ? null : -after.cp,
+                cpLoss: before.cp === null || after.cp === null ? null : before.cp + after.cp,
+            });
+            const explanation = buildMistakeReviewTacticalExplanation(review);
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    { sourceSha256: sample.sourceSha256, proof, searches, review, explanation },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+            expect(searches[0].lines[0].pvUci[0]).toBe(row.sourceUci[0]);
+            expect(proof?.gain).toBe(80);
+            expect(searches[3].lines[0].cp).toBeLessThan(-100);
+            for (const index of [0, 1, 2, 4, 5, 6, 7])
+                expect(searches[index].lines[0].cp).toBeGreaterThan(100);
+            expect(explanation).toMatchObject({
+                source: "missed",
+                primary: { id: "fork", value: 80 },
+            });
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_TWO_MINORS_REPORT,
     )(
         "validate private two-minor preparation and missed opportunity",

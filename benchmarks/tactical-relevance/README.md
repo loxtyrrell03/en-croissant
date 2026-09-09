@@ -1,5 +1,11 @@
 # Tactical relevance judgement, 2026-09-08
 
+## Adapter 57: a fork protected by a discovered attack
+
+A newly opened slider can now protect a knight fork when capturing the knight permits a verified second material attack. The bounded proof includes related countercaptures, recovery of the actual receiver, interpositions, pin-preserving supporter escapes and exposed pieces. The recovered real example explains both Fork and its supporting pin; missed-opportunity review shares it, and the defender's bishop capture is correctly described as compensation rather than a new mistake.
+
+One previously empty disjoint example is recovered. The other 47 sample main labels/source timelines, 32-case priorities and prior 101 public worker main labels are unchanged. Verification includes 701 selected tests, both fresh 24-position replays, nine focused searches, 139 actual-controller parity inputs, cold HTTP loading and production/shared-review builds. See [the private-course audit](private-course-review.md) for proof boundaries, actual local versus engine scores and remaining gaps. No app/package/service was restarted or deployed; physical WebView verification remains separate.
+
 ## Adapter 56: a mating capture is not another generic material lesson
 
 An independently proved forced mating attack suppresses a same-ply Hanging Piece label, while preserving specific mechanisms and the terminal mate. An unverified mate tag, root-only input or a real king escape cannot hide the material lesson. The real rook-fork continuation loses its redundant bishop-capture tag; all 48 sample main labels and the other 47 source timelines are unchanged.

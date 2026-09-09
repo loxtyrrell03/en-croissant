@@ -9437,6 +9437,27 @@ function isCompensatedContinuationCapture(steps, index) {
 * do not borrow earlier gains, future PV play or promotion bookkeeping. */
 function winningRecaptureEvidence(steps, index, motif) {
 	const step = steps[index], previous = steps[index - 1];
+	if (motif.id === "hangingPiece" && step?.capture && previous) {
+		const fork = proveDiscoveryBackedFork(previous);
+		if (fork) {
+			if (step.move.to === previous.move.to) return null;
+			if (fork.targets.includes(step.move.from)) {
+				const target = fork.targets.find((sq) => sq !== step.move.from && step.after.board.get(sq)?.color === step.before.turn && tacticalExchangeGain(step.after, {
+					from: previous.move.to,
+					to: sq
+				}) - step.capture >= 70);
+				const victim = step.before.board.get(step.move.to);
+				if (target !== void 0 && victim) return {
+					...motif,
+					label: "Countercapture",
+					evidence: `${step.san} captures the ${victim.role} on ${makeSquare(step.move.to)} as compensation, but ${makeSan(step.after, {
+						from: previous.move.to,
+						to: target
+					})} still wins the other fork target (${step.after.board.get(target).role} on ${makeSquare(target)}). This does not refute the verified fork.`
+				};
+			}
+		}
+	}
 	if (motif.id === "hangingPiece" && step?.capture && previous?.capture && proveMatingDeflection(previous)?.declined.some((branch) => branch.reply === step.san)) return null;
 	if (motif.id !== "hangingPiece" || !step?.capture || !previous?.capture || previous.move.to !== step.move.to || previous.move.promotion || step.move.promotion) return motif;
 	const gain = tacticalExchangeGain(step.before, step.move);
@@ -10355,7 +10376,211 @@ function winningTargets(pos, from, side) {
 /** A fork must survive the opponent's choice, including capturing the forker,
 * a checking counterattack, or one move that protects both targets. */
 function verifiedFork(step) {
-	return immediateFork(step) || proveRecaptureBackedFork(step) !== null || proveExchangeForPawnFork(step) !== null || provePromotionBackedFork(step) !== null || proveMateBackedFork(step) !== null;
+	return immediateFork(step) || proveRecaptureBackedFork(step) !== null || proveExchangeForPawnFork(step) !== null || provePromotionBackedFork(step) !== null || proveMateBackedFork(step) !== null || proveDiscoveryBackedFork(step) !== null;
+}
+var discoveryBackedForkCache = /* @__PURE__ */ new Map();
+var DISCOVERY_BACKED_FORK_BUDGET = 32768;
+/** A forker may vacate a battery: capturing it permits the revealed slider
+* to take the SAME fork victim and create a second material attack. A quiet
+* escape by a threatened pinning supporter may preserve that attack; every
+* reply still needs a concrete capture of its nominated targets. */
+function proveDiscoveryBackedFork(root, nodeLimit = DISCOVERY_BACKED_FORK_BUDGET, onFailure) {
+	if (root.move.promotion || root.after.isEnd() || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
+	const side = root.before.turn;
+	const offered = root.before.board.get(root.move.from).role;
+	const exchangeFloor = ["knight", "bishop"].includes(offered) ? VALUE.rook - VALUE[offered] - VALUE.pawn : 100;
+	const targets = winningTargets(root.after, root.move.to, side);
+	const rays = revealedRays(root).filter((ray) => targets.includes(ray.target));
+	if (targets.length < 2 || !rays.length) return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (!onFailure && nodeLimit === DISCOVERY_BACKED_FORK_BUDGET && discoveryBackedForkCache.has(key)) return discoveryBackedForkCache.get(key);
+	const budget = { nodes: nodeLimit };
+	const visit = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("Discovery-backed fork budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const settled = (pos, move, requiredGain) => {
+		if (move.promotion) return null;
+		const next = visit(pos, move);
+		if (next.isEnd()) return null;
+		for (const reply of legalMoves(next)) if (reply.promotion || visit(next, reply).isCheckmate()) return null;
+		const direct = participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+		if (requiredGain === void 0 || direct === null || direct >= requiredGain || !capturedValue(pos, move)) return direct;
+		const defenders = legalMoves(next).filter((m) => m.to === move.to && capturedValue(next, m)).map((m) => m.from);
+		if (!defenders.length) return direct;
+		let minimum = Infinity;
+		for (const response of legalMoves(next)) {
+			if (response.promotion) return null;
+			const leaf = visit(next, response);
+			if (leaf.isEnd()) return null;
+			const retained = capturedValue(pos, move) - capturedValue(next, response);
+			const mapped = defenders.map((sq) => sq === response.from ? response.to : sq);
+			let best = -Infinity;
+			const attackers = withTurn(leaf, opposite(side));
+			const threatened = new Set(legalMoves(attackers).filter((m) => capturedValue(attackers, m) > 0).map((m) => m.to));
+			const answers = legalMoves(leaf).sort((a, b) => Number(capturedValue(leaf, b) > 0) - Number(capturedValue(leaf, a) > 0) || Number(threatened.has(b.from)) * VALUE[leaf.board.get(b.from).role] - Number(threatened.has(a.from)) * VALUE[leaf.board.get(a.from).role]);
+			for (const answer of answers) {
+				if (answer.promotion) continue;
+				if (capturedValue(leaf, answer) && !(answer.from === move.to && mapped.includes(answer.to) || capturedValue(next, response) && answer.to === response.to)) continue;
+				const upper = participantCaptureGain(leaf, answer, [...leaf.board[side], answer.to], budget);
+				if (upper === null || retained + upper < requiredGain) continue;
+				const gain = settled(leaf, answer);
+				if (gain !== null) best = Math.max(best, retained + gain);
+				if (best >= requiredGain) break;
+			}
+			if (best < requiredGain) return direct;
+			minimum = Math.min(minimum, best);
+		}
+		return Number.isFinite(minimum) ? minimum : direct;
+	};
+	const captureTarget = (pos, from, victims, balance, receiver) => {
+		const moves = legalMoves(pos).filter((move) => (move.from === from || move.to === receiver) && victims.includes(move.to) && capturedValue(pos, move));
+		for (const recovery of [false, true]) for (const move of moves) {
+			const gain = settled(pos, move, recovery ? exchangeFloor - balance : void 0);
+			if (gain !== null && (balance + gain >= 100 || VALUE[pos.board.get(move.to).role] >= VALUE.rook && balance + gain >= exchangeFloor)) return balance + gain;
+		}
+		return -Infinity;
+	};
+	let result = null;
+	try {
+		let minimum = Infinity;
+		const branches = [];
+		for (const reply of legalMoves(root.after)) {
+			const pos = visit(root.after, reply);
+			if (pos.isEnd() || reply.promotion) throw new Error("Terminal or promotion defence");
+			const balance = root.capture - capturedValue(root.after, reply);
+			const victims = targets.map((sq) => sq === reply.from ? reply.to : sq);
+			let best = captureTarget(pos, root.move.to, victims, balance);
+			if (best < exchangeFloor && reply.to === root.move.to && capturedValue(root.after, reply)) for (const ray of rays) {
+				const target = ray.target === reply.from ? reply.to : ray.target;
+				const capture = {
+					from: ray.from,
+					to: target
+				};
+				if (!pos.isLegal(capture) || !capturedValue(pos, capture)) continue;
+				const after = visit(pos, capture);
+				if (after.isEnd() || after.isCheck()) continue;
+				const piece = after.board.get(capture.to);
+				const followTargets = [...attacks(piece, capture.to, after.board.occupied).intersect(after.board[opposite(side)])].filter((sq) => after.board.get(sq)?.role !== "king");
+				if (followTargets.length < 2) continue;
+				if (after.board.get(reply.to)?.color === opposite(side) && !followTargets.includes(reply.to)) followTargets.push(reply.to);
+				const pins = rayTactics(after, side).filter((pin) => pin.kind === "pin" && after.board.get(pin.rear)?.role === "king" && followTargets.includes(pin.front));
+				let gain = Infinity;
+				const followups = [];
+				for (const defence of legalMoves(after)) {
+					if (defence.promotion) {
+						gain = -Infinity;
+						break;
+					}
+					const next = visit(after, defence);
+					if (next.isEnd()) {
+						gain = -Infinity;
+						break;
+					}
+					const subtotal = balance + capturedValue(pos, capture) - capturedValue(after, defence);
+					const tracked = followTargets.map((sq) => sq === defence.from ? defence.to : sq);
+					if (followTargets.some((sq) => sq !== reply.to && between(capture.to, sq).has(defence.to))) tracked.push(defence.to);
+					const receiver = defence.from === reply.to ? defence.to : reply.to;
+					let earned = captureTarget(next, capture.to, tracked, subtotal, receiver);
+					if (earned < exchangeFloor && !next.isCheck()) for (const pin of pins) {
+						if (next.board.get(pin.pinner)?.color !== side) continue;
+						const opponent = withTurn(next, opposite(side));
+						if (!legalMoves(opponent).some((m) => m.to === pin.pinner && tacticalExchangeGain(opponent, m) >= 100)) continue;
+						if (opponent.isLegal({
+							from: defence.to,
+							to: pin.pinner
+						})) {
+							for (const answer of legalMoves(next)) {
+								if (answer.to !== defence.to || !capturedValue(next, answer)) continue;
+								const local = settled(next, answer);
+								if (local !== null && subtotal + local >= 100) {
+									earned = subtotal + local;
+									followups.push(`${makeSan(after, defence)} ${makeSan(next, answer)}`);
+									break;
+								}
+							}
+							if (earned >= exchangeFloor) break;
+						}
+						for (const escape of legalMoves(next)) {
+							if (escape.from !== pin.pinner || escape.promotion || capturedValue(next, escape)) continue;
+							const saved = visit(next, escape);
+							if (saved.isEnd() || saved.isCheck() || !rayTactics(saved, side).some((p) => p.kind === "pin" && p.pinner === escape.to && p.front === pin.front && p.rear === pin.rear)) continue;
+							let held = Infinity;
+							for (const answer of legalMoves(saved)) {
+								if (answer.promotion) {
+									held = -Infinity;
+									break;
+								}
+								const leaf = visit(saved, answer);
+								if (leaf.isEnd()) {
+									held = -Infinity;
+									break;
+								}
+								const relocated = tracked.map((sq) => sq === answer.from ? answer.to : sq);
+								if (tracked.some((sq) => sq !== receiver && between(capture.to, sq).has(answer.to))) relocated.push(answer.to);
+								const local = captureTarget(leaf, capture.to, relocated, subtotal - capturedValue(saved, answer), answer.from === receiver ? answer.to : receiver);
+								held = Math.min(held, local);
+								if (held < exchangeFloor) {
+									onFailure?.(`Escape ${makeSan(after, defence)} ${makeSan(next, escape)} fails ${makeSan(saved, answer)}`);
+									break;
+								}
+							}
+							if (held >= exchangeFloor) {
+								earned = held;
+								followups.push(`${makeSan(after, defence)} ${makeSan(next, escape)}`);
+								break;
+							}
+						}
+						if (earned >= exchangeFloor) break;
+					}
+					gain = Math.min(gain, earned);
+					if (gain < exchangeFloor) {
+						onFailure?.(`Follow-up defence ${makeSan(after, defence)}`);
+						break;
+					}
+				}
+				if (gain >= exchangeFloor && Number.isFinite(gain)) {
+					best = gain;
+					const pin = pinRestrictsCapture({
+						before: pos,
+						after,
+						move: capture,
+						uci: makeUci(capture),
+						san: makeSan(pos, capture),
+						capture: capturedValue(pos, capture),
+						balance: 0
+					});
+					branches.push({
+						reply: makeSan(root.after, reply),
+						capture: makeSan(pos, capture),
+						slider: piece.role,
+						followups,
+						...pin ? {
+							pin,
+							pinEvidence: `The ${after.board.get(pin.pinner).role} on ${makeSquare(pin.pinner)} pins the ${after.board.get(pin.front).role} on ${makeSquare(pin.front)} to the king on ${makeSquare(pin.rear)}, preventing it from capturing the ${piece.role} on ${makeSquare(capture.to)}.`
+						} : {}
+					});
+					break;
+				}
+			}
+			if (best < exchangeFloor) throw new Error(`Unproved root defence ${makeSan(root.after, reply)}`);
+			minimum = Math.min(minimum, best);
+		}
+		if (branches.length && Number.isFinite(minimum)) result = {
+			gain: minimum,
+			targets,
+			branches
+		};
+	} catch (error) {
+		onFailure?.(error instanceof Error ? error.message : String(error));
+	}
+	if (nodeLimit === DISCOVERY_BACKED_FORK_BUDGET) {
+		discoveryBackedForkCache.set(key, result);
+		if (discoveryBackedForkCache.size > 128) discoveryBackedForkCache.delete(discoveryBackedForkCache.keys().next().value);
+	}
+	return result;
 }
 var recaptureBackedForkCache = /* @__PURE__ */ new Map();
 /** Taking a forker can permit a checking recapture by its supporter. Verify
@@ -13175,12 +13400,20 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			const exchange = sound && !immediateFork(step) ? proveExchangeForPawnFork(step) : null;
 			const promotion = sound && !immediateFork(step) ? provePromotionBackedFork(step) : null;
 			const recapture = sound && !immediateFork(step) ? proveRecaptureBackedFork(step) : null;
+			const discovery = sound && !immediateFork(step) ? proveDiscoveryBackedFork(step) : null;
 			if (mating) proposal = {
 				...proposal,
 				value: mating.gain,
 				evidence: `${step.san} forks the ${mating.targets.map((sq) => `${step.after.board.get(sq).role} on ${makeSquare(sq)}`).join(" and ")}. Capturing the forking piece does not escape: ${mating.matingDefences.map((branch) => `${branch.defence} permits a forced mate (${branch.mate})`).join("; ")}. Other defences concede a verified local material gain on the fork targets or mate; legal recaptures and immediate off-square losses are included. The mating continuation is conditional, not a forced mate from this position.`
 			};
-			else if (exchange) proposal = {
+			else if (discovery) {
+				const branch = discovery.branches[0];
+				proposal = {
+					...proposal,
+					value: discovery.gain,
+					evidence: `${step.san} forks the ${discovery.targets.map((sq) => `${step.after.board.get(sq).role} on ${makeSquare(sq)}`).join(" and ")}. Capturing the forker with ${branch.reply} instead permits ${branch.capture} through the newly opened ${branch.slider} line, followed by another material attack.${branch.pinEvidence ? ` ${branch.pinEvidence}` : ""} Every legal defence has a verified local continuation, including connected countercaptures and exposed attacking pieces.${branch.followups.length ? ` For example, ${branch.followups[0]} preserves the pin while meeting a counterattack.` : ""} The local material bound is at least ${discovery.gain / 100} pawns, not a full-position evaluation.`
+				};
+			} else if (exchange) proposal = {
 				...proposal,
 				value: exchange.gain,
 				evidence: `${step.san} forks the ${exchange.targets.map((sq) => `${step.after.board.get(sq).role} on ${makeSquare(sq)}`).join(" and ")}; every legal defence concedes material${exchange.matingDefences?.length ? " or mate" : ""}.${exchange.matingDefences?.slice(0, 2).map((line) => ` ${line.defence} instead permits a forced mate; for example, ${line.mate}.`).join("") ?? ""}`
@@ -14187,7 +14420,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 56;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 57;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
