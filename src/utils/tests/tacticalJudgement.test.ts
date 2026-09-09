@@ -500,6 +500,86 @@ describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
     test.skipIf(
         !engine ||
+            !process.env.TACTICAL_PRIVATE_THIRD_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_MATING_REPLY_REPORT,
+    )(
+        "validate the fresh sample mating acceptance and legal defensive controls",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_MATING_REPLY_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_THIRD_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find((r: { eligibleIndex: number }) => r.eligibleIndex === 50);
+            const constructed = "5r1k/7p/4B3/4NpP1/8/3Q3R/8/6K1 w - - 0 1";
+            const inputs = [
+                { label: "Real mating root", fen: row.fen, moves: [] as string[] },
+                {
+                    label: "Real accepted rook",
+                    fen: row.fen,
+                    moves: row.sourceUci.slice(0, 2) as string[],
+                },
+                { label: "Constructed accepted rook", fen: constructed, moves: ["h3h7", "h8h7"] },
+                {
+                    label: "Checker can be captured",
+                    fen: constructed.replace("4NpP1", "4NbP1"),
+                    moves: ["h3h7", "h8h7"],
+                },
+                { label: "Real missed mate", fen: row.fen, moves: ["g1f1"] },
+            ];
+            const searches = [];
+            for (const input of inputs) {
+                const steps = replayTacticalLine(input.fen, input.moves);
+                expect(steps).toHaveLength(input.moves.length);
+                const position = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : input.fen;
+                const lines = [...(await analyse(engine, position)).values()];
+                expect(lines[0].depth).toBe(16);
+                searches.push({ ...input, reachedFen: position, lines });
+            }
+            expect(searches[0].lines[0].mate).toBe(3);
+            expect(searches[1].lines[0]).toMatchObject({ mate: 2 });
+            expect(searches[2].lines[0]).toMatchObject({ mate: 2 });
+            expect(searches[3].lines[0].mate).not.toBe(2);
+            const before = searches[0].lines[0],
+                after = searches[4].lines[0];
+            const score = (line: typeof before) => line.cp ?? Math.sign(line.mate ?? 0) * 10000;
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                playedMoveUci: "g1f1",
+                bestMoveUci: before.pvUci[0],
+                pvUci: before.pvUci,
+                refutationUci: after.pvUci,
+                cpBefore: score(before),
+                cpAfter: -score(after),
+                cpLoss: score(before) + score(after),
+            });
+            expect(review.missedTimeline?.some((m) => m.ply === 2 && m.id === "hangingPiece")).toBe(
+                false,
+            );
+            expect(review.missedMotifs.some((m) => m.ply === 1 && m.value === 10000)).toBe(true);
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        searches,
+                        review,
+                        explanation: buildMistakeReviewTacticalExplanation(review),
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
             !process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_COMPOUND_LESSON_REPORT,
     )(

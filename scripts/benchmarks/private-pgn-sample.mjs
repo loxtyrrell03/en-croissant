@@ -69,17 +69,21 @@ export function preparePrivatePgnSample(source, count = 24, excludedSample = nul
   const positionKey = (fen) => fen.split(" ").slice(0, 4).join(" ");
   const excluded = new Set();
   if (excludedSample !== null) {
-    if (excludedSample?.sourceSha256 !== sourceSha256 || !Array.isArray(excludedSample.cases))
-      throw new Error("Excluded sample must belong to this exact PGN source");
-    for (const row of excludedSample.cases) {
-      if (
-        !Number.isInteger(row.eligibleIndex) ||
-        row.eligibleIndex < 1 ||
-        row.eligibleIndex > positions.length ||
-        row.fen !== positions[row.eligibleIndex - 1].fen
-      )
-        throw new Error("Excluded sample position does not match its source index");
-      excluded.add(positionKey(row.fen));
+    const priors = Array.isArray(excludedSample) ? excludedSample : [excludedSample];
+    if (!priors.length) throw new Error("At least one excluded sample is required");
+    for (const prior of priors) {
+      if (prior?.sourceSha256 !== sourceSha256 || !Array.isArray(prior.cases))
+        throw new Error("Excluded sample must belong to this exact PGN source");
+      for (const row of prior.cases) {
+        if (
+          !Number.isInteger(row.eligibleIndex) ||
+          row.eligibleIndex < 1 ||
+          row.eligibleIndex > positions.length ||
+          row.fen !== positions[row.eligibleIndex - 1].fen
+        )
+          throw new Error("Excluded sample position does not match its source index");
+        excluded.add(positionKey(row.fen));
+      }
     }
   }
   const candidates = positions
@@ -114,15 +118,15 @@ export function preparePrivatePgnSample(source, count = 24, excludedSample = nul
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  const [input, output, size, prior] = process.argv.slice(2);
+  const [input, output, size, ...priors] = process.argv.slice(2);
   if (!input || !output)
     throw new Error(
-      "Usage: node scripts/benchmarks/private-pgn-sample.mjs INPUT_PGN PRIVATE_OUTPUT_JSON [COUNT] [PRIOR_SAMPLE_JSON]",
+      "Usage: node scripts/benchmarks/private-pgn-sample.mjs INPUT_PGN PRIVATE_OUTPUT_JSON [COUNT] [PRIOR_SAMPLE_JSON ...]",
     );
   const report = preparePrivatePgnSample(
     readFileSync(input, "utf8"),
     size ? Number(size) : 24,
-    prior ? JSON.parse(readFileSync(prior, "utf8")) : null,
+    priors.length ? priors.map((prior) => JSON.parse(readFileSync(prior, "utf8"))) : null,
   );
   const target = privateReportPath(output);
   mkdirSync(dirname(target), { recursive: true });

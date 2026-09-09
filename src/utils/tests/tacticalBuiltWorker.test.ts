@@ -107,6 +107,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:mating-king-acceptance",
+                input: {
+                    fen: "5r1k/7p/4B3/4NpP1/8/3Q3R/8/6K1 w - - 0 1",
+                    pvUci: ["h3h7", "h8h7", "d3h3", "h7g7", "h3h6"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:discovery-backed-fork",
                 input: {
                     fen: "3r1nk1/2q3p1/2nppb1p/8/2P1PPQ1/2N5/1B4PP/5R1K w - - 0 1",
@@ -358,7 +367,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(102);
+        expect(report).toHaveLength(103);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
@@ -373,6 +382,40 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                     2,
                 ),
             );
+    },
+    120000,
+);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_THIRD_REPORT)(
+    "the third disjoint sample retains full source and live timelines through the worker",
+    async () => {
+        const report = JSON.parse(readFileSync(process.env.TACTICAL_PRIVATE_THIRD_REPORT!, "utf8"));
+        expect(report.cases).toHaveLength(24);
+        for (const row of report.cases) {
+            for (const input of [
+                {
+                    fen: row.fen,
+                    pvUci: row.engineLines[0].pvUci,
+                    variations: row.engineLines,
+                    engineName: "Stockfish 18",
+                    depth: 16,
+                },
+                {
+                    fen: row.fen,
+                    pvUci: row.sourceUci,
+                    engineName: "Private source continuation",
+                    depth: 16,
+                },
+            ]) {
+                const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+                expect({ id: row.id, scan: result.scan }).toEqual({
+                    id: row.id,
+                    scan: buildLiveTacticalScan(input),
+                });
+                expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+                expect(result.startupMs).toBeLessThan(TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
+            }
+        }
     },
     120000,
 );

@@ -90,6 +90,33 @@ test("the same position at another PGN index is excluded as well", () => {
   );
 });
 
+test("a third sample excludes the union of earlier samples without duplicate counting", () => {
+  const first = preparePrivatePgnSample(uniqueGames, 2);
+  const second = preparePrivatePgnSample(uniqueGames, 2, first);
+  const third = preparePrivatePgnSample(uniqueGames, 2, [first, second, first]);
+  assert.equal(third.excludedPositions, 4);
+  assert.deepEqual(
+    third.cases.map((row) => row.eligibleIndex),
+    [3, 6],
+  );
+  assert.deepEqual(
+    third,
+    preparePrivatePgnSample(uniqueGames, 2, {
+      ...first,
+      cases: [...first.cases, ...second.cases],
+    }),
+  );
+});
+
+test("every supplied prior must match, and an empty list cannot imply an unseen sample", () => {
+  const first = preparePrivatePgnSample(uniqueGames, 2);
+  assert.throws(() => preparePrivatePgnSample(uniqueGames, 2, []), /At least one/);
+  assert.throws(
+    () => preparePrivatePgnSample(uniqueGames, 2, [first, { ...first, sourceSha256: "wrong" }]),
+    /exact PGN/,
+  );
+});
+
 test("source mismatch, malformed exclusions and an exhausted pool fail explicitly", () => {
   const prior = preparePrivatePgnSample(uniqueGames, 2);
   assert.throws(() => preparePrivatePgnSample(uniqueGames + "\n", 2, prior), /exact PGN/);

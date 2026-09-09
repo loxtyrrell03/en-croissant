@@ -6,6 +6,29 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("king attraction shows the complete mate and no false winning acceptance badge", () => {
+  const fen = "5r1k/7p/4B3/4NpP1/8/3Q3R/8/6K1 w - - 0 1";
+  const line = ["h3h7", "h8h7", "d3h3", "h7g7", "h3h6"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain(
+    "Kxh7 Qh3+ Kg7 Qh6#",
+  );
+  const acceptance = container.querySelector('[data-tactical-ply="2"]')!;
+  expect(acceptance.textContent).toContain("Kxh7");
+  expect(acceptance.textContent).not.toContain("Winning Recapture");
+  expect(acceptance.textContent).not.toContain("Hanging Piece");
+  expect(container.querySelector('[data-tactical-ply="5"]')?.textContent).toContain("Checkmate");
+});
+
 test("a mate-protected fork leads with its actual targets and keeps mate conditional", () => {
   const fen = "3qkb1r/5p1b/4p1pp/4N3/2B5/6N1/4QPPP/6K1 w k - 0 1";
   const line = ["e5f7", "e8f7", "e2e6", "f7g7", "e6f7"];

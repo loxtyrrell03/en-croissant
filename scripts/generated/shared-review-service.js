@@ -9462,11 +9462,7 @@ function winningRecaptureEvidence(steps, index, motif) {
 	if (motif.id !== "hangingPiece" || !step?.capture || !previous?.capture || previous.move.to !== step.move.to || previous.move.promotion || step.move.promotion) return motif;
 	const gain = tacticalExchangeGain(step.before, step.move);
 	if (gain <= -VALUE.king || gain - previous.capture < 100) return null;
-	if (legalMoves(step.after).some((move) => {
-		const next = step.after.clone();
-		next.play(move);
-		return next.isCheckmate();
-	}) || proveMateBackedFork(previous) || proveRecaptureBackedFork(previous) || proveCaptureForkPreparation(previous) || proveCaptureDeflection(previous) || proveDiscoveryAttraction(previous) || provePinnedCapture(previous) || capturedDefenderProof(previous, motif.source)) return null;
+	if (proveMatingCaptureReply(step) || proveMateBackedFork(previous) || proveRecaptureBackedFork(previous) || proveCaptureForkPreparation(previous) || proveCaptureDeflection(previous) || proveDiscoveryAttraction(previous) || provePinnedCapture(previous) || capturedDefenderProof(previous, motif.source)) return null;
 	const victim = step.before.board.get(step.move.to);
 	const traded = previous.before.board.get(previous.move.to);
 	if (!victim || !traded) return motif;
@@ -9508,6 +9504,62 @@ function legalMoves(pos) {
 		to
 	});
 	return result;
+}
+var matingCaptureReplyCache = /* @__PURE__ */ new Map();
+/** A material recapture cannot be called a win when its actual reached board
+* permits forced mate in at most two checking moves. No supplied continuation
+* or sacrifice tag is needed. Every legal defence is included, and incomplete
+* searches abstain. This does not prove the preceding offer against declines. */
+function proveMatingCaptureReply(step, nodeLimit = 4096) {
+	if (!step.capture || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
+	const key = makeFen(step.after.toSetup());
+	if (nodeLimit === 4096 && matingCaptureReplyCache.has(key)) return matingCaptureReplyCache.get(key);
+	let nodes = nodeLimit;
+	const visit = (position, move) => {
+		if (--nodes < 0) throw new Error("Mating capture reply budget exhausted");
+		const next = position.clone();
+		next.play(move);
+		return next;
+	};
+	const attack = (position, remaining) => {
+		if (position.isEnd()) return null;
+		const checks = [];
+		for (const move of legalMoves(position)) {
+			const next = visit(position, move);
+			if (next.isCheckmate()) return [makeSan(position, move)];
+			if (remaining > 1 && next.isCheck()) checks.push({
+				move,
+				next
+			});
+		}
+		for (const { move, next } of checks) {
+			let witness = null;
+			let complete = true;
+			for (const reply of legalMoves(next)) {
+				const continuation = attack(visit(next, reply), remaining - 1);
+				if (!continuation) {
+					complete = false;
+					break;
+				}
+				witness ??= [
+					makeSan(position, move),
+					makeSan(next, reply),
+					...continuation
+				];
+			}
+			if (complete && witness) return witness;
+		}
+		return null;
+	};
+	let proof = null;
+	try {
+		proof = attack(step.after, 2);
+	} catch {}
+	if (nodeLimit === 4096) {
+		matingCaptureReplyCache.set(key, proof);
+		if (matingCaptureReplyCache.size > 128) matingCaptureReplyCache.delete(matingCaptureReplyCache.keys().next().value);
+	}
+	return proof;
 }
 var perpetualCheckCache = /* @__PURE__ */ new Map();
 /** A repeated-looking PV is not proof. Search checking moves only, with all
@@ -13374,7 +13426,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 					ply: anchor + 1,
 					moveUci: bait.uci,
 					value: 1e4,
-					evidence: `${bait.san} offers the ${bait.before.board.get(bait.move.from).role} on ${makeSquare(bait.move.to)}. After ${episode[anchor + 1].san}, ${final.san} delivers mate.`
+					evidence: `${bait.san} offers the ${bait.before.board.get(bait.move.from).role} on ${makeSquare(bait.move.to)}. Accepting with ${episode[anchor + 1].san} permits the mating continuation ${episode.slice(anchor + 1).map((step) => step.san).join(" ")}.`
 				};
 			}
 		}
@@ -14425,7 +14477,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 58;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 59;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

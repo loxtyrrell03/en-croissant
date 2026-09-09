@@ -182,13 +182,8 @@ export function winningRecaptureEvidence(
     // may remove the gain label; neither a sacrifice tag nor a PV endpoint
     // is evidence. The move remains visible in the continuation without a
     // misleading hanging-piece / winning-recapture badge.
-    const allowsImmediateMate = legalMoves(step.after).some((move) => {
-        const next = step.after.clone();
-        next.play(move);
-        return next.isCheckmate();
-    });
     if (
-        allowsImmediateMate ||
+        proveMatingCaptureReply(step) ||
         proveMateBackedFork(previous) ||
         proveRecaptureBackedFork(previous) ||
         proveCaptureForkPreparation(previous) ||
@@ -247,6 +242,65 @@ function legalMoves(pos: Chess): NormalMove[] {
         }
     }
     return result;
+}
+
+const matingCaptureReplyCache = new Map<string, string[] | null>();
+
+/** A material recapture cannot be called a win when its actual reached board
+ * permits forced mate in at most two checking moves. No supplied continuation
+ * or sacrifice tag is needed. Every legal defence is included, and incomplete
+ * searches abstain. This does not prove the preceding offer against declines. */
+export function proveMatingCaptureReply(
+    step: TacticalReplayStep,
+    nodeLimit = 4096,
+): string[] | null {
+    if (!step.capture || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
+    const key = makeFen(step.after.toSetup());
+    if (nodeLimit === 4096 && matingCaptureReplyCache.has(key))
+        return matingCaptureReplyCache.get(key)!;
+    let nodes = nodeLimit;
+    const visit = (position: Chess, move: NormalMove) => {
+        if (--nodes < 0) throw new Error("Mating capture reply budget exhausted");
+        const next = position.clone();
+        next.play(move);
+        return next;
+    };
+    const attack = (position: Chess, remaining: number): string[] | null => {
+        if (position.isEnd()) return null;
+        const checks: { move: NormalMove; next: Chess }[] = [];
+        // Finish an immediate mate before considering an unnecessary sacrifice.
+        for (const move of legalMoves(position)) {
+            const next = visit(position, move);
+            if (next.isCheckmate()) return [makeSan(position, move)];
+            if (remaining > 1 && next.isCheck()) checks.push({ move, next });
+        }
+        for (const { move, next } of checks) {
+            let witness: string[] | null = null;
+            let complete = true;
+            for (const reply of legalMoves(next)) {
+                const continuation = attack(visit(next, reply), remaining - 1);
+                if (!continuation) {
+                    complete = false;
+                    break;
+                }
+                witness ??= [makeSan(position, move), makeSan(next, reply), ...continuation];
+            }
+            if (complete && witness) return witness;
+        }
+        return null;
+    };
+    let proof: string[] | null = null;
+    try {
+        proof = attack(step.after, 2);
+    } catch {
+        // A budget failure cannot erase a material lesson.
+    }
+    if (nodeLimit === 4096) {
+        matingCaptureReplyCache.set(key, proof);
+        if (matingCaptureReplyCache.size > 128)
+            matingCaptureReplyCache.delete(matingCaptureReplyCache.keys().next().value!);
+    }
+    return proof;
 }
 
 type PerpetualCheckProof = { line: string[]; cycle: string[]; replyCount: number };
@@ -6199,7 +6253,10 @@ export function auditTacticalMotifs(
                     ply: anchor + 1,
                     moveUci: bait.uci,
                     value: 10000,
-                    evidence: `${bait.san} offers the ${bait.before.board.get(bait.move.from)!.role} on ${makeSquare(bait.move.to)}. After ${episode[anchor + 1].san}, ${final.san} delivers mate.`,
+                    evidence: `${bait.san} offers the ${bait.before.board.get(bait.move.from)!.role} on ${makeSquare(bait.move.to)}. Accepting with ${episode[anchor + 1].san} permits the mating continuation ${episode
+                        .slice(anchor + 1)
+                        .map((step) => step.san)
+                        .join(" ")}.`,
                 };
             }
         }
