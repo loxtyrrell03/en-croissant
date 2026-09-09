@@ -107,6 +107,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:capture-to-discovered-check",
+                input: {
+                    fen: "6r1/1p6/6k1/4R3/4Nr2/8/7P/6K1 b - - 0 1",
+                    pvUci: ["f4e4", "e5e4", "g6f5", "g1f2", "f5e4"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:checking-skewer-with-defended-block",
                 input: {
                     fen: "4r1rk/4q2p/8/8/8/3BN3/1PP5/R1K5 b - - 0 1",
@@ -456,7 +465,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(112);
+        expect(report).toHaveLength(113);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

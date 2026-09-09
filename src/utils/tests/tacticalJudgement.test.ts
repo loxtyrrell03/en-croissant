@@ -14,6 +14,7 @@ import {
     proveDefenderCombination,
     proveCombinedDefenderRemoval,
     proveCaptureForkPreparation,
+    proveCaptureDiscoveryPreparation,
     capturePreparationAcceptanceDefence,
     replayTacticalLine,
     tacticalExchangeGain,
@@ -516,6 +517,104 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_THIRD_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_CAPTURE_DISCOVERY_REPORT,
+    )(
+        "validate the capture preparing a discovered check against every selected defence",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_CAPTURE_DISCOVERY_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const row = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_THIRD_SAMPLE!, "utf8"),
+            ).cases.find((r: { eligibleIndex: number }) => r.eligibleIndex === 69);
+            const root = replayTacticalLine(row.fen, row.sourceUci)[0];
+            const proof = proveCaptureDiscoveryPreparation(root)!;
+            expect(proof).not.toBeNull();
+            const searches = [];
+            for (const branch of [
+                ...proof.branches,
+                ...proof.declined,
+                ...(proof.otherCaptures ?? []),
+            ]) {
+                const pos = root.after.clone();
+                const prefix = [root.uci];
+                for (const san of [branch.reply, branch.answer]) {
+                    const move = parseSan(pos, san)!;
+                    expect(pos.isLegal(move)).toBe(true);
+                    prefix.push(makeUci(move));
+                    pos.play(move);
+                }
+                const fen = makeFen(pos.toSetup());
+                searches.push({
+                    branch,
+                    prefix,
+                    fen,
+                    lines: [...(await analyse(engine, fen)).values()],
+                });
+            }
+            const roots = [];
+            for (const restrict of [root.uci, "f4h4"])
+                roots.push({
+                    restrict,
+                    fen: row.fen,
+                    lines: [...(await analyse(engine, row.fen, restrict)).values()],
+                });
+            const controls = [];
+            for (const [fen, restrict] of [
+                ["6r1/1p6/6k1/4R3/4Nr2/8/7P/6K1 b - - 0 1", "f4e4"],
+                ["6rk/1p6/6b1/4R3/8/8/4Nr1P/6K1 b - - 0 1", "f2e2"],
+            ])
+                controls.push({
+                    fen,
+                    restrict,
+                    lines: [...(await analyse(engine, fen, restrict)).values()],
+                });
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                bestMoveUci: root.uci,
+                playedMoveUci: "f4h4",
+                pvUci: row.sourceUci,
+                refutationUci: roots[1].lines[0].pvUci.slice(1),
+            });
+            const explanation = buildMistakeReviewTacticalExplanation(review);
+            expect(explanation).toMatchObject({ source: "missed", primary: { id: "attraction" } });
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        scope: "Private reached discovered-check preparation and every selected root-defence witness; full engine scores are not local material bounds.",
+                        proof,
+                        searches,
+                        roots,
+                        controls,
+                        review,
+                        explanation,
+                    },
+                    null,
+                    2,
+                ),
+            );
+            for (const search of searches) {
+                const line = search.lines[0];
+                const score =
+                    (line.cp ?? Math.sign(line.mate!) * 100000) *
+                    (search.fen.split(" ")[1] === "b" ? 1 : -1);
+                expect({ prefix: search.prefix, score }).toMatchObject({
+                    score: expect.any(Number),
+                });
+                expect(score).toBeGreaterThan(0);
+            }
+            expect(controls[0].lines[0].cp! > 0 || controls[0].lines[0].mate! > 0).toBe(true);
+        },
+        120000,
+    );
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_MATING_OVERLAP_REPORT ||

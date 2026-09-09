@@ -229,6 +229,7 @@ export function winningRecaptureEvidence(
         proveMateBackedFork(previous) ||
         proveRecaptureBackedFork(previous) ||
         proveCaptureForkPreparation(previous) ||
+        proveCaptureDiscoveryPreparation(previous) ||
         proveCaptureDeflection(previous) ||
         proveDiscoveryAttraction(previous) ||
         provePinnedCapture(previous) ||
@@ -2169,7 +2170,12 @@ export function proveRecaptureBackedFork(
     return result;
 }
 
-function checkingForkSearch(side: Color, budget: { nodes: number }, strictLeaves = false) {
+function checkingForkSearch(
+    side: Color,
+    budget: { nodes: number },
+    strictLeaves = false,
+    discoveryChecks = false,
+) {
     const visit = (pos: Chess, move: NormalMove) => {
         if (--budget.nodes < 0) throw new Error("Fork preparation budget exhausted");
         const next = pos.clone();
@@ -2192,7 +2198,17 @@ function checkingForkSearch(side: Color, budget: { nodes: number }, strictLeaves
         const targets = [
             ...attacks(piece, move.to, after.board.occupied).intersect(after.board[opposite(side)]),
         ];
-        if (!after.isCheck() || !targets.some((sq) => after.board.get(sq)?.role === "king"))
+        let discovery: { slider: Square; king: Square } | undefined;
+        if (discoveryChecks) {
+            if (!after.isCheck() || targets.some((sq) => after.board.get(sq)?.role === "king"))
+                return null;
+            const step = replayTacticalLine(makeFen(pos.toSetup()), [makeUci(move)])[0];
+            const ray =
+                step && revealedRays(step).find((r) => after.board.get(r.target)?.role === "king");
+            if (!ray) return null;
+            discovery = { slider: ray.from, king: ray.target };
+            targets.push(ray.target);
+        } else if (!after.isCheck() || !targets.some((sq) => after.board.get(sq)?.role === "king"))
             return null;
         const victims = targets.filter(
             (sq) => !excluded.includes(sq) && !["king", "pawn"].includes(after.board.get(sq)!.role),
@@ -2259,6 +2275,7 @@ function checkingForkSearch(side: Color, budget: { nodes: number }, strictLeaves
             ? {
                   gain: minimum,
                   victims: strictLeaves ? [...payoffVictims] : victims,
+                  ...(discovery ? { discovery } : {}),
                   targets: targets
                       .filter(
                           (sq) =>
@@ -2280,11 +2297,13 @@ type ForkPreparationProof = {
 const forkPreparationCache = new Map<string, ForkPreparationProof | null>();
 
 type CaptureForkPreparationProof = Omit<ForkPreparationProof, "branches"> & {
-    branches: (ForkPreparationProof["branches"][number] & {
+    branches: (Omit<ForkPreparationProof["branches"][number], "kind"> & {
+        kind: "fork" | "block" | "discovery";
         receiver: Role;
         removedDefender?: { square: Square; premature: string; defence: string };
         clearedForkSquare?: Square;
         exchange?: { given: "rook"; received: [Role, Role] };
+        discovery?: { slider: Square; king: Square };
     })[];
     declined: {
         reply: string;
@@ -2369,6 +2388,23 @@ export function proveCaptureForkPreparation(
     nodeLimit = root.after.isCheck() ? 4096 : 8192,
     onFailure?: (reason: string) => void,
 ): CaptureForkPreparationProof | null {
+    return proveCaptureCheckPreparation(root, nodeLimit, onFailure);
+}
+
+export function proveCaptureDiscoveryPreparation(
+    root: TacticalReplayStep,
+    nodeLimit = root.after.isCheck() ? 4096 : 8192,
+    onFailure?: (reason: string) => void,
+): CaptureForkPreparationProof | null {
+    return proveCaptureCheckPreparation(root, nodeLimit, onFailure, true);
+}
+
+function proveCaptureCheckPreparation(
+    root: TacticalReplayStep,
+    nodeLimit: number,
+    onFailure?: (reason: string) => void,
+    discoveryChecks = false,
+): CaptureForkPreparationProof | null {
     if (
         !root.capture ||
         !root.before.board.get(root.move.to) ||
@@ -2390,12 +2426,12 @@ export function proveCaptureForkPreparation(
             !attacks(offered, root.move.to, root.after.board.occupied).has(king))
     )
         return null;
-    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}:${discoveryChecks}`;
     const defaultBudget = root.after.isCheck() ? 4096 : 8192;
     if (!onFailure && nodeLimit === defaultBudget && captureForkPreparationCache.has(key))
         return captureForkPreparationCache.get(key)!;
     const budget = { nodes: nodeLimit };
-    const { visit, delta, fork } = checkingForkSearch(side, budget, true);
+    const { visit, delta, fork } = checkingForkSearch(side, budget, true, discoveryChecks);
     let proof: CaptureForkPreparationProof | null = null;
     try {
         const branches: CaptureForkPreparationProof["branches"] = [];
@@ -2527,7 +2563,10 @@ export function proveCaptureForkPreparation(
                         next,
                         answer,
                         [...next.board[side], answer.to],
-                        receiver === "king" || removedDefender || clearedForkSquare !== undefined
+                        !discoveryChecks &&
+                            (receiver === "king" ||
+                                removedDefender ||
+                                clearedForkSquare !== undefined)
                             ? []
                             : [...next.board[enemy]].filter((sq) => sq !== root.move.to),
                         minimumGain - balance,
@@ -2537,9 +2576,10 @@ export function proveCaptureForkPreparation(
                     branches.push({
                         reply: makeSan(root.after, reply),
                         answer: makeSan(next, answer),
-                        kind: "fork",
+                        kind: result.discovery ? "discovery" : "fork",
                         targets: result.targets,
                         receiver,
+                        ...(result.discovery ? { discovery: result.discovery } : {}),
                         ...(twoMinors
                             ? {
                                   exchange: {
@@ -2651,7 +2691,7 @@ export function proveCaptureForkPreparation(
                                     leaf,
                                     follow,
                                     [...leaf.board[side], follow.to],
-                                    leaf.board.get(defence.to)?.role === "king"
+                                    !discoveryChecks && leaf.board.get(defence.to)?.role === "king"
                                         ? []
                                         : [...leaf.board[enemy]].filter((sq) => sq !== defence.to),
                                     100 - material + delta(after, defence),
@@ -4748,6 +4788,17 @@ export function tacticalBoardEvidence(
                     from: makeSquare(branch.receiver),
                     to: makeSquare(branch.target),
                 })),
+            };
+        const checking = proveCaptureDiscoveryPreparation(step);
+        if (checking)
+            return {
+                square: makeSquare(step.move.to),
+                arrows: checking.branches.flatMap((branch) => {
+                    const reply = parseSan(step.after, branch.reply);
+                    return reply && "from" in reply
+                        ? [{ from: makeSquare(reply.from), to: makeSquare(step.move.to) }]
+                        : [];
+                }),
             };
     }
     if (DISCOVERED_THEMES.has(motif.id)) {
@@ -6949,6 +7000,25 @@ export function auditTacticalMotifs(
             value: capturePreparation.gain,
             verifiedCombination: true,
             evidence: `${introduction}${otherCapture ? ` Taking with ${otherCapture.reply} instead allows ${otherCapture.answer}, retaining material without needing that fork.` : ""}${declined ? ` Declining with ${declined.reply} instead permits ${declined.answer}${declined.countercaptured ? `, capturing the attacking ${declined.countercaptured} while retaining a material gain.` : ", retaining a material gain."}` : ""} Every legal reply has a verified local continuation, including recaptures and immediate countercaptures. The fork is a continuation, not an attack on this board.`,
+        });
+    }
+    const discoveryPreparation =
+        !mate && !capturePreparation ? proveCaptureDiscoveryPreparation(steps[0]) : null;
+    if (discoveryPreparation) {
+        const root = steps[0],
+            branch = discoveryPreparation.branches[0];
+        const ray = branch.discovery!;
+        const declined = discoveryPreparation.declined[0];
+        candidates.push({
+            id: "attraction",
+            label: "Attraction",
+            source: proposals[0]?.source ?? "available",
+            confidence: "high",
+            ply: 1,
+            moveUci: root.uci,
+            value: discoveryPreparation.gain,
+            verifiedCombination: true,
+            evidence: `${root.san} offers the ${root.before.board.get(root.move.from)!.role} to draw the ${branch.receiver} onto ${makeSquare(root.move.to)}. After ${branch.reply}, ${branch.answer} uncovers check from the ${root.after.board.get(ray.slider)!.role} on ${makeSquare(ray.slider)} while attacking that recapturer. The discovered check recovers the sacrifice with a net material gain.${declined ? ` Declining with ${declined.reply} instead permits ${declined.answer}, retaining a material gain.` : ""} Every legal reply has a verified local continuation, including recaptures and immediate countercaptures. The discovered check belongs to the continuation, not this board.`,
         });
     }
     if (checkingMate)

@@ -6,6 +6,28 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("a drawn recapturer is explained before the king's actual discovered check", () => {
+  const fen = "6r1/1p6/6k1/4R3/4Nr2/8/7P/6K1 b - - 0 1";
+  const line = ["f4e4", "e5e4", "g6f5", "g1f2", "f5e4"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Attraction");
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain(
+    "not this board",
+  );
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain(
+    "Discovered Check",
+  );
+});
+
 test("a defended block does not hide the initial skewer or move the mate to the root", () => {
   const fen = "4r1rk/4q2p/8/8/8/3BN3/1PP5/R1K5 b - - 0 1";
   const line = ["g8g1", "d3f1", "g1f1", "e3f1", "e7e1"];
