@@ -497,6 +497,97 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_DEFENDER_FORK_REPORT,
+    )(
+        "validate private defender-removing fork preparation and both move orders",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const { proveCaptureForkPreparation } = await import("../tacticalMotifs/causalTactics");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_DEFENDER_FORK_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find((r: { eligibleIndex: number }) => r.eligibleIndex === 49);
+            const proof = proveCaptureForkPreparation(
+                replayTacticalLine(row.fen, row.sourceUci)[0],
+            );
+            expect(proof).toMatchObject({ gain: 100 });
+            const searches = [];
+            for (const input of [
+                { label: "Original", moves: [] as string[], root: undefined as string | undefined },
+                { label: "Premature checking fork", moves: ["g2d5"], root: undefined },
+                { label: "Pawn acceptance, prepared fork", moves: ["c5d5", "c6d5"], root: "g2d5" },
+                {
+                    label: "Queen acceptance, simple material recovery",
+                    moves: ["c5d5", "b3d5"],
+                    root: "g2d5",
+                },
+                { label: "Declined offer, rook escape", moves: ["c5d5", "d7e6"], root: "d5d6" },
+                {
+                    label: "Checking counterattack, capture the checker",
+                    moves: ["c5d5", "b3b1"],
+                    root: "a1b1",
+                },
+            ]) {
+                const steps = replayTacticalLine(row.fen, input.moves);
+                expect(steps).toHaveLength(input.moves.length);
+                const fen = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : row.fen;
+                const lines = [...(await analyse(engine, fen, input.root)).values()];
+                expect(lines[0].depth).toBe(16);
+                searches.push({ ...input, fen, lines });
+            }
+            const before = searches[0].lines[0],
+                after = searches[1].lines[0];
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                bestMoveUci: before.pvUci[0],
+                playedMoveUci: "g2d5",
+                pvUci: before.pvUci,
+                pvSan: before.pvSan,
+                refutationUci: after.pvUci,
+                refutationSan: after.pvSan,
+                cpBefore: before.cp,
+                cpAfter: after.cp === null ? null : -after.cp,
+                cpLoss: before.cp === null || after.cp === null ? null : before.cp + after.cp,
+            });
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        sourceSha256: sample.sourceSha256,
+                        id: row.id,
+                        proof,
+                        searches,
+                        review,
+                        explanation: buildMistakeReviewTacticalExplanation(review),
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+            expect(before.pvUci[0]).toBe(row.sourceUci[0]);
+            expect(after.pvUci[0]).toBe("c6d5");
+            for (const search of searches.slice(2))
+                expect(
+                    search.lines[0].cp ?? Math.sign(search.lines[0].mate ?? 0) * 10000,
+                ).toBeGreaterThan(0);
+            expect(review.missedMotifs[0]?.id).toBe("forkPreparation");
+            expect(buildMistakeReviewTacticalExplanation(review)).toMatchObject({
+                source: "missed",
+                primary: { id: "forkPreparation" },
+            });
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_RECAPTURE_FORK_REPORT,
     )(
         "validate private fork and its checking recapture rather than incidental pawn pressure",

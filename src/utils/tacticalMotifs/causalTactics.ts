@@ -1609,8 +1609,12 @@ type ForkPreparationProof = {
 const forkPreparationCache = new Map<string, ForkPreparationProof | null>();
 
 type CaptureForkPreparationProof = Omit<ForkPreparationProof, "branches"> & {
-    branches: (ForkPreparationProof["branches"][number] & { receiver: Role })[];
+    branches: (ForkPreparationProof["branches"][number] & {
+        receiver: Role;
+        removedDefender?: { square: Square; premature: string; defence: string };
+    })[];
     declined: { reply: string; answer: string }[];
+    otherCaptures?: { reply: string; answer: string; gain: number }[];
 };
 const captureForkPreparationCache = new Map<string, CaptureForkPreparationProof | null>();
 
@@ -1692,7 +1696,7 @@ export function proveCaptureForkPreparation(
         !root.before.board.get(root.move.to) ||
         root.move.promotion ||
         root.after.isEnd() ||
-        !Number.isInteger(nodeLimit) ||
+        !Number.isSafeInteger(nodeLimit) ||
         nodeLimit <= 0 ||
         tacticalExchangeGain(root.before, root.move) >= 100
     )
@@ -1718,6 +1722,7 @@ export function proveCaptureForkPreparation(
     try {
         const branches: CaptureForkPreparationProof["branches"] = [];
         const declined: CaptureForkPreparationProof["declined"] = [];
+        const otherCaptures: NonNullable<CaptureForkPreparationProof["otherCaptures"]> = [];
         const targets = new Set<Square>();
         const forkers = new Set<Square>();
         let minimum = Infinity;
@@ -1738,15 +1743,91 @@ export function proveCaptureForkPreparation(
                     offered.role === "bishop" && receiver === "knight"
                         ? VALUE.pawn - (VALUE.bishop - VALUE.knight)
                         : VALUE.pawn;
+                // A more valuable receiver may simply lose the exchange.
+                // This is an alternative defence, not evidence of a fork;
+                // at least one separate verified fork branch is still required.
+                let captureAlternative:
+                    | NonNullable<CaptureForkPreparationProof["otherCaptures"]>[number]
+                    | null = null;
+                for (const answer of legalMoves(next)) {
+                    if (
+                        answer.to !== root.move.to ||
+                        answer.promotion ||
+                        !capturedValue(next, answer)
+                    )
+                        continue;
+                    const leaf = visit(next, answer);
+                    if (leaf.isEnd()) continue;
+                    let safe = true;
+                    for (const resource of legalMoves(leaf)) {
+                        if (resource.promotion || visit(leaf, resource).isCheckmate()) {
+                            safe = false;
+                            break;
+                        }
+                    }
+                    if (!safe) continue;
+                    const gain = participantCaptureGain(
+                        next,
+                        answer,
+                        [...next.board[side], answer.to],
+                        budget,
+                    );
+                    if (gain === null || balance + gain < minimumGain) continue;
+                    captureAlternative = {
+                        reply: makeSan(root.after, reply),
+                        answer: makeSan(next, answer),
+                        gain: balance + gain,
+                    };
+                    break;
+                }
                 for (const answer of legalMoves(next)) {
                     if (answer.promotion) continue;
+                    // Sometimes the checking forker CAPTURES the recapturer
+                    // instead of attacking it as a second target. Require a
+                    // concrete earlier defence: the same defender could take
+                    // the premature forker before the offered exchange.
+                    let removedDefender: CaptureForkPreparationProof["branches"][number]["removedDefender"];
+                    if (
+                        receiver !== "king" &&
+                        answer.to === root.move.to &&
+                        capturedValue(next, answer)
+                    ) {
+                        if (!root.before.isLegal(answer)) continue;
+                        const premature = visit(root.before, answer);
+                        const defence = { from: reply.from, to: answer.to };
+                        if (!premature.isLegal(defence) || !capturedValue(premature, defence))
+                            continue;
+                        const defended = visit(premature, defence);
+                        if (defended.isEnd()) continue;
+                        let safe = true;
+                        for (const resource of legalMoves(defended)) {
+                            if (resource.promotion || visit(defended, resource).isCheckmate()) {
+                                safe = false;
+                                break;
+                            }
+                        }
+                        if (!safe) continue;
+                        const gain = participantCaptureGain(
+                            premature,
+                            defence,
+                            [...premature.board[enemy], defence.to],
+                            budget,
+                        );
+                        if (gain === null || capturedValue(root.before, answer) - gain >= 100)
+                            continue;
+                        removedDefender = {
+                            square: reply.from,
+                            premature: makeSan(root.before, answer),
+                            defence: makeSan(premature, defence),
+                        };
+                    }
                     // Include every remaining friendly piece, not only the
                     // forker: an off-square countercapture can erase the gain.
                     const result = fork(
                         next,
                         answer,
                         [...next.board[side], answer.to],
-                        receiver === "king"
+                        receiver === "king" || removedDefender
                             ? []
                             : [...next.board[enemy]].filter((sq) => sq !== root.move.to),
                         minimumGain - balance,
@@ -1759,12 +1840,18 @@ export function proveCaptureForkPreparation(
                         kind: "fork",
                         targets: result.targets,
                         receiver,
+                        ...(removedDefender ? { removedDefender } : {}),
                     });
                     for (const victim of result.victims) targets.add(victim);
                     forkers.add(answer.from);
                     minimum = Math.min(minimum, balance + result.gain);
                     won = true;
                     break;
+                }
+                if (!won && captureAlternative) {
+                    otherCaptures.push(captureAlternative);
+                    minimum = Math.min(minimum, captureAlternative.gain);
+                    won = true;
                 }
             } else {
                 // Declining cannot be waved away as compulsory acceptance.
@@ -1776,6 +1863,7 @@ export function proveCaptureForkPreparation(
                         answer.promotion ||
                         (answer.from !== root.move.to &&
                             !forkers.has(answer.from) &&
+                            !(next.ctx().checkers.has(answer.to) && capturedValue(next, answer)) &&
                             !(next.isCheck() && next.board.get(answer.from)?.role === "king"))
                     )
                         continue;
@@ -1822,7 +1910,13 @@ export function proveCaptureForkPreparation(
                 );
         }
         if (branches.length && Number.isFinite(minimum))
-            proof = { gain: minimum, targets: [...targets], branches, declined };
+            proof = {
+                gain: minimum,
+                targets: [...targets],
+                branches,
+                declined,
+                ...(otherCaptures.length ? { otherCaptures } : {}),
+            };
     } catch (error) {
         // Exhaustion and unsupported branches abstain, never borrow a PV.
         onFailure?.(error instanceof Error ? error.message : "Unproved capture preparation");
@@ -4435,6 +4529,11 @@ export function auditTacticalMotifs(
         const root = steps[0];
         const fork = capturePreparation.branches[0];
         const declined = capturePreparation.declined[0];
+        const removed = fork.removedDefender;
+        const introduction = removed
+            ? `${root.san} offers the ${root.before.board.get(root.move.from)!.role} to draw the defending ${fork.receiver} off ${makeSquare(removed.square)}. After ${fork.reply}, ${fork.answer} removes it and forks the ${fork.targets.join(" and ")}. Playing ${removed.premature} first lets that defender capture the forking piece with ${removed.defence}.`
+            : `${root.san} captures the ${root.before.board.get(root.move.to)!.role} and offers the ${root.before.board.get(root.move.from)!.role} to attract the ${fork.receiver} onto ${makeSquare(root.move.to)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.`;
+        const otherCapture = capturePreparation.otherCaptures?.[0];
         candidates.push({
             id: "forkPreparation",
             label: "Fork Preparation",
@@ -4443,7 +4542,7 @@ export function auditTacticalMotifs(
             ply: 1,
             moveUci: root.uci,
             value: capturePreparation.gain,
-            evidence: `${root.san} captures the ${root.before.board.get(root.move.to)!.role} and offers the ${root.before.board.get(root.move.from)!.role} to attract the ${fork.receiver} onto ${makeSquare(root.move.to)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.${declined ? ` Declining with ${declined.reply} instead permits ${declined.answer}, retaining a material gain.` : ""} Every legal reply has a verified local continuation, including recaptures and immediate countercaptures. The fork belongs to the following move, not this position.`,
+            evidence: `${introduction}${otherCapture ? ` Taking with ${otherCapture.reply} instead allows ${otherCapture.answer}, retaining material without needing that fork.` : ""}${declined ? ` Declining with ${declined.reply} instead permits ${declined.answer}, retaining a material gain.` : ""} Every legal reply has a verified local continuation, including recaptures and immediate countercaptures. The fork belongs to the following move, not this position.`,
         });
     }
     if (checkingMate)

@@ -167,6 +167,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 },
             },
             {
+                id: "constructed:defender-removing-fork-preparation",
+                input: {
+                    fen: "8/5pkp/6p1/2p5/2Rp4/3Q4/1q4PP/6BK w - - 0 1",
+                    pvUci: ["c4d4", "c5d4", "g1d4"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:queen-capture-over-incidental-pin",
                 input: {
                     fen: "8/4R1pk/5q2/8/8/8/1B6/6K1 w - - 0 1",
@@ -259,7 +268,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(91);
+        expect(report).toHaveLength(92);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
@@ -291,6 +300,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_
             ["private-easy:173", "forkPreparation", 100],
             ["private-easy:10", "deflection", 320],
             ["private-easy:212", "fork", 180],
+            ["private-easy:49", "forkPreparation", 100],
         ] as const) {
             const row = sample.cases.find((item: { id: string }) => item.id === id);
             const input = {

@@ -1,5 +1,11 @@
 # Tactical relevance judgement, 2026-09-08
 
+## Adapter 47: remove the defender before playing the fork
+
+A checking fork can now finish a capture-based preparation by taking the defender that accepted the offer. An explicit earlier legal defence must explain why the fork cannot simply be played first. Direct material recovery against a different receiver and capture of a checking counterattacker are checked separately; they do not have to imitate the fork branch. The recovered real rook sacrifice leads with Fork Preparation, with move-order evidence, a correctly timed later fork, root-only arrows and a missed-opportunity lesson.
+
+The 547-test selection, six fresh depth-16 searches, private 24-position replay and 92 public/nine private actual-controller cases pass. The other 23 private main labels, old 91 public worker labels and 32-case priority report are unchanged. Six live and seven source sample results remain empty; this is not broad accuracy or physical WebView proof. See [the private-course audit](private-course-review.md) for scope, scores and reproduction. No app/package/service was restarted or deployed.
+
 ## Adapter 46: the fork, not incidental pawn pressure
 
 A forker's checking recapture now has a bounded all-defence material proof, including interpositions and exposed attacking pieces. The real private example leads with its queen/rook Fork rather than a discovered bishop attack on a pawn; its acceptance loses a contradictory Winning Recapture badge and the later checking fork remains at the correct ply. Missed-opportunity review and root arrows use the same proof. Near-equal bounded pawn-ray results are omitted as secondary noise, without claiming a precise marginal value.

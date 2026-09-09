@@ -5,6 +5,30 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("defender-removing preparation explains both move orders without a premature fork badge", () => {
+  const fen = "8/5pkp/6p1/2p5/2Rp4/3Q4/1q4PP/6BK w - - 0 1";
+  const line = ["c4d4", "c5d4", "g1d4"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  const root = container.querySelector('[data-tactical-ply="1"]')!;
+  expect(root.textContent).toContain("Fork Preparation");
+  expect(root.textContent).toContain("draw the defending pawn off c5");
+  expect(root.textContent).toContain("Playing Bxd4+ first");
+  expect(root.textContent).toContain("Taking with Qxd4");
+  expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).not.toContain(
+    "Winning Recapture",
+  );
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Fork");
+});
+
 test("the fork's checking recapture is conditional and the sacrifice acceptance is not a win", () => {
   const fen = "3r2qk/6pr/5p1P/8/4N3/2B5/5PPP/5RK1 w - - 0 1";
   const line = ["e4f6", "g7f6", "c3f6", "h7g7", "f6g7"];
