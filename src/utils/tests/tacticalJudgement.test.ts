@@ -501,6 +501,83 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_COMPOUND_LESSON_REPORT,
+    )(
+        "validate private compound opportunities beside a causal queen loss",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_COMPOUND_LESSON_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE!, "utf8"),
+            );
+            const cases = [];
+            for (const choice of [
+                { index: 155, played: "g4g6", secondary: "fork", value: 80 },
+                { index: 182, played: "g6e6", secondary: "forkPreparation", value: 50 },
+            ]) {
+                const row = sample.cases.find(
+                    (r: { eligibleIndex: number }) => r.eligibleIndex === choice.index,
+                );
+                const steps = replayTacticalLine(row.fen, [choice.played]);
+                expect(steps).toHaveLength(1);
+                const before = [...(await analyse(engine, row.fen)).values()];
+                const after = [
+                    ...(await analyse(engine, makeFen(steps[0].after.toSetup()))).values(),
+                ];
+                const review = classifyMistakeReviewMotifs({
+                    fen: row.fen,
+                    playedMoveUci: choice.played,
+                    bestMoveUci: before[0].pvUci[0],
+                    pvUci: before[0].pvUci,
+                    refutationUci: after[0].pvUci,
+                    cpBefore: before[0].cp,
+                    cpAfter: after[0].cp === null ? null : -after[0].cp,
+                    cpLoss:
+                        before[0].cp === null || after[0].cp === null
+                            ? null
+                            : before[0].cp + after[0].cp,
+                });
+                const explanation = buildMistakeReviewTacticalExplanation(review);
+                cases.push({
+                    id: row.id,
+                    fen: row.fen,
+                    ...choice,
+                    before,
+                    after,
+                    review,
+                    explanation,
+                });
+                expect(before[0].depth).toBe(16);
+                expect(after[0].depth).toBe(16);
+                expect(before[0].pvUci[0]).toBe(row.sourceUci[0]);
+                expect(explanation?.primary).toMatchObject({
+                    id: "hangingPiece",
+                    source: "allowed",
+                    comparison: "prevented",
+                });
+                expect(explanation?.secondary).toMatchObject({
+                    id: choice.secondary,
+                    source: "missed",
+                    value: choice.value,
+                    verifiedCombination: true,
+                });
+            }
+            writeFileSync(
+                output,
+                JSON.stringify({ sourceSha256: sample.sourceSha256, cases }, null, 2),
+                { flag: "wx" },
+            );
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_FORK_DISCOVERY_REPORT,
     )(
         "inspect private fork acceptance and discovery support",

@@ -1,5 +1,11 @@
 # Tactical relevance judgement, 2026-09-08
 
+## Adapter 58: retain a significant missed combination beside a larger loss
+
+Proof-backed compound forks and preparations with a positive sub-pawn local bound can now accompany a larger causal mistake as the single secondary lesson. Only classifier-issued proof metadata enables this; small incidental gains, weak/later evidence and uncompared opponent danger remain excluded. Values are unchanged, and saved reviews preserve the optional marker without inventing it for legacy records.
+
+Two constructed queen mistakes from real course roots retain their missed fork/preparation while leading with the queen loss. Verification passes 717 selected tests, four fresh before/after searches, both 24-position replays, all 139 actual-controller worker inputs, isolated cold HTTP loading and production/shared-review builds. The 32-case priority benchmark and all course/worker main labels are unchanged. See [the private-course audit](private-course-review.md) for scope and remaining gaps. No app/package/service was restarted or deployed; physical WebView verification remains separate.
+
 ## Adapter 57: a fork protected by a discovered attack
 
 A newly opened slider can now protect a knight fork when capturing the knight permits a verified second material attack. The bounded proof includes related countercaptures, recovery of the actual receiver, interpositions, pin-preserving supporter escapes and exposed pieces. The recovered real example explains both Fork and its supporting pin; missed-opportunity review shares it, and the defender's bishop capture is correctly described as compensation rather than a new mistake.

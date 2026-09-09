@@ -13183,6 +13183,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			ply: 1,
 			moveUci: root.uci,
 			value: capturePreparation.gain,
+			verifiedCombination: true,
 			evidence: `${introduction}${otherCapture ? ` Taking with ${otherCapture.reply} instead allows ${otherCapture.answer}, retaining material without needing that fork.` : ""}${declined ? ` Declining with ${declined.reply} instead permits ${declined.answer}, retaining a material gain.` : ""} Every legal reply has a verified local continuation, including recaptures and immediate countercaptures. The fork belongs to the following move, not this position.`
 		});
 	}
@@ -13319,6 +13320,8 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		}];
 	}
 	for (let proposal of proposals) {
+		proposal = { ...proposal };
+		delete proposal.verifiedCombination;
 		if (MATE.test(proposal.id)) {
 			if (!mate) continue;
 			proposal = {
@@ -13411,11 +13414,13 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 				proposal = {
 					...proposal,
 					value: discovery.gain,
+					verifiedCombination: true,
 					evidence: `${step.san} forks the ${discovery.targets.map((sq) => `${step.after.board.get(sq).role} on ${makeSquare(sq)}`).join(" and ")}. Capturing the forker with ${branch.reply} instead permits ${branch.capture} through the newly opened ${branch.slider} line, followed by another material attack.${branch.pinEvidence ? ` ${branch.pinEvidence}` : ""} Every legal defence has a verified local continuation, including connected countercaptures and exposed attacking pieces.${branch.followups.length ? ` For example, ${branch.followups[0]} preserves the pin while meeting a counterattack.` : ""} The local material bound is at least ${discovery.gain / 100} pawns, not a full-position evaluation.`
 				};
 			} else if (exchange) proposal = {
 				...proposal,
 				value: exchange.gain,
+				verifiedCombination: true,
 				evidence: `${step.san} forks the ${exchange.targets.map((sq) => `${step.after.board.get(sq).role} on ${makeSquare(sq)}`).join(" and ")}; every legal defence concedes material${exchange.matingDefences?.length ? " or mate" : ""}.${exchange.matingDefences?.slice(0, 2).map((line) => ` ${line.defence} instead permits a forced mate; for example, ${line.mate}.`).join("") ?? ""}`
 			};
 			else if (promotion) proposal = {
@@ -14420,7 +14425,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 57;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 58;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -14838,7 +14843,7 @@ function selectImportantTacticalMotifs(motifs, limit = 3) {
 	return [...unique.values()].sort((left, right) => (left.relevance === "primary" ? -1 : right.relevance === "primary" ? 1 : 0) || (left.relevance && right.relevance ? (left.ply ?? 100) - (right.ply ?? 100) : 0) || motifImportance(left.id) - motifImportance(right.id) || (left.ply ?? Number.MAX_SAFE_INTEGER) - (right.ply ?? Number.MAX_SAFE_INTEGER) || left.label.localeCompare(right.label)).slice(0, Math.max(0, limit));
 }
 function isImmediateLesson(motif) {
-	return Boolean(motif && motif.ply === 1 && motif.confidence !== "low" && ((motif.value ?? 0) >= 100 || motif.id === "perpetualCheck"));
+	return Boolean(motif && motif.ply === 1 && motif.confidence !== "low" && ((motif.value ?? 0) >= 100 || motif.id === "perpetualCheck" || motif.verifiedCombination === true && motif.confidence === "high" && (motif.value ?? 0) > 0 && ["fork", "forkPreparation"].includes(motif.id)));
 }
 function buildMistakeReviewTacticalExplanation(input) {
 	const explanation = chooseMistakeReviewTacticalExplanation(input);

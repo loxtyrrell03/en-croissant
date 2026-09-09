@@ -106,7 +106,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 57;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 58;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -688,7 +688,12 @@ function isImmediateLesson(motif: TacticalMotifEvidence | undefined) {
         motif &&
         motif.ply === 1 &&
         motif.confidence !== "low" &&
-        ((motif.value ?? 0) >= 100 || motif.id === "perpetualCheck"),
+        ((motif.value ?? 0) >= 100 ||
+            motif.id === "perpetualCheck" ||
+            (motif.verifiedCombination === true &&
+                motif.confidence === "high" &&
+                (motif.value ?? 0) > 0 &&
+                ["fork", "forkPreparation"].includes(motif.id))),
     );
 }
 

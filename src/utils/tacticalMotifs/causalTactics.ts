@@ -5946,6 +5946,7 @@ export function auditTacticalMotifs(
             ply: 1,
             moveUci: root.uci,
             value: capturePreparation.gain,
+            verifiedCombination: true,
             evidence: `${introduction}${otherCapture ? ` Taking with ${otherCapture.reply} instead allows ${otherCapture.answer}, retaining material without needing that fork.` : ""}${declined ? ` Declining with ${declined.reply} instead permits ${declined.answer}, retaining a material gain.` : ""} Every legal reply has a verified local continuation, including recaptures and immediate countercaptures. The fork belongs to the following move, not this position.`,
         });
     }
@@ -6118,6 +6119,10 @@ export function auditTacticalMotifs(
         ];
     }
     for (let proposal of proposals) {
+        // Only the certificates below may issue this ranking metadata.
+        // A supplied PV label must not smuggle in a proof assertion.
+        proposal = { ...proposal };
+        delete proposal.verifiedCombination;
         // Legacy PV-level mate tags sometimes point at an earlier check or
         // capture. The pattern is a terminal payoff, not that earlier move.
         // A separate all-defences certificate owns the root attack label.
@@ -6250,12 +6255,14 @@ export function auditTacticalMotifs(
                 proposal = {
                     ...proposal,
                     value: discovery.gain,
+                    verifiedCombination: true,
                     evidence: `${step.san} forks the ${discovery.targets.map((sq) => `${step.after.board.get(sq)!.role} on ${makeSquare(sq)}`).join(" and ")}. Capturing the forker with ${branch.reply} instead permits ${branch.capture} through the newly opened ${branch.slider} line, followed by another material attack.${branch.pinEvidence ? ` ${branch.pinEvidence}` : ""} Every legal defence has a verified local continuation, including connected countercaptures and exposed attacking pieces.${branch.followups.length ? ` For example, ${branch.followups[0]} preserves the pin while meeting a counterattack.` : ""} The local material bound is at least ${discovery.gain / 100} pawns, not a full-position evaluation.`,
                 };
             } else if (exchange)
                 proposal = {
                     ...proposal,
                     value: exchange.gain,
+                    verifiedCombination: true,
                     evidence: `${step.san} forks the ${exchange.targets.map((sq) => `${step.after.board.get(sq)!.role} on ${makeSquare(sq)}`).join(" and ")}; every legal defence concedes material${exchange.matingDefences?.length ? " or mate" : ""}.${
                         exchange.matingDefences
                             ?.slice(0, 2)
