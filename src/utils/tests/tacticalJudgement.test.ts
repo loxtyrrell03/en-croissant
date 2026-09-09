@@ -501,6 +501,72 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_THIRD_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_ROOK_DEFLECTION_REPORT,
+    )(
+        "inspect the fresh checking rook deflection and its declining king reply",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_ROOK_DEFLECTION_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_THIRD_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 200,
+            );
+            const searches = [];
+            for (const moves of [
+                [],
+                row.sourceUci.slice(0, 2),
+                [row.sourceUci[0], "g1f2"],
+                [row.sourceUci[0], "g1f2", "d7d5", "d1d5"],
+                ["d7d5"],
+            ] as string[][]) {
+                const steps = replayTacticalLine(row.fen, moves);
+                expect(steps).toHaveLength(moves.length);
+                const fen = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : row.fen;
+                const lines = [...(await analyse(engine, fen)).values()];
+                expect(lines[0].depth).toBe(16);
+                searches.push({ fen, moves, lines });
+            }
+            const before = searches[0].lines[0],
+                after = searches[4].lines[0];
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                playedMoveUci: "d7d5",
+                bestMoveUci: before.pvUci[0],
+                pvUci: before.pvUci,
+                refutationUci: after.pvUci,
+                cpBefore: -before.cp!,
+                cpAfter: after.cp!,
+                cpLoss: before.cp! + after.cp!,
+            });
+            const explanation = buildMistakeReviewTacticalExplanation(review);
+            expect(before.pvUci[0]).toBe("e8e1");
+            expect(searches[1].lines[0].pvUci[0]).toBe("d7d5");
+            expect(searches[2].lines[0].pvUci[0]).toBe("d7d5");
+            expect(searches[3].lines[0].pvUci[0]).toBe("e1a1");
+            expect(explanation?.primary).toMatchObject({
+                id: "deflection",
+                source: "missed",
+                ply: 1,
+            });
+            expect(review.missedTimeline?.some((m) => m.ply === 2 && m.id === "hangingPiece")).toBe(
+                false,
+            );
+            writeFileSync(output, JSON.stringify({ searches, review, explanation }, null, 2), {
+                flag: "wx",
+            });
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_THIRD_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_MATING_REPLY_REPORT,
     )(
         "validate the fresh sample mating acceptance and legal defensive controls",

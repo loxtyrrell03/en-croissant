@@ -6,6 +6,29 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("deflection explains both defences without a false acceptance or early payoff arrow", () => {
+  const fen = "4r1k1/3q1pbp/6p1/3Q4/8/5P2/P5PP/R2R2K1 b - - 0 1";
+  const line = ["e8e1", "d1e1", "d7d5"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain(
+    "Kf2 Qxd5 Rxd5 Rxa1",
+  );
+  expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).toContain("Rxe1");
+  expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).not.toContain(
+    "Hanging Piece",
+  );
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("queen on d5");
+});
+
 test("king attraction shows the complete mate and no false winning acceptance badge", () => {
   const fen = "5r1k/7p/4B3/4NpP1/8/3Q3R/8/6K1 w - - 0 1";
   const line = ["h3h7", "h8h7", "d3h3", "h7g7", "h3h6"];

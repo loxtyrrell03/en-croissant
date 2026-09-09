@@ -107,6 +107,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:exchange-deflection",
+                input: {
+                    fen: "4r1k1/3q1pbp/6p1/3Q4/8/5P2/P5PP/R2R2K1 b - - 0 1",
+                    pvUci: ["e8e1", "d1e1", "d7d5"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:mating-king-acceptance",
                 input: {
                     fen: "5r1k/7p/4B3/4NpP1/8/3Q3R/8/6K1 w - - 0 1",
@@ -367,7 +376,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(103);
+        expect(report).toHaveLength(104);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

@@ -9437,6 +9437,7 @@ function isCompensatedContinuationCapture(steps, index) {
 * do not borrow earlier gains, future PV play or promotion bookkeeping. */
 function winningRecaptureEvidence(steps, index, motif) {
 	const step = steps[index], previous = steps[index - 1];
+	if (motif.id === "hangingPiece" && step?.capture && previous && step.move.to === previous.move.to && proveExchangeDeflection(previous)) return null;
 	if (motif.id === "hangingPiece" && step?.capture && previous) {
 		const fork = proveDiscoveryBackedFork(previous);
 		if (fork) {
@@ -12751,11 +12752,173 @@ function proveCaptureDeflection(root, nodeLimit = 16384, onFailure) {
 	}
 	return proof;
 }
+var exchangeDeflectionCache = /* @__PURE__ */ new Map();
+/** A checking slider overloads a defender which also blocks its route to a
+* second victim. Accepting the offer abandons the first target; declining may
+* allow an exchange of that target which draws the same defender off the ray.
+* All replies are checked. Only these two connected captures earn new credit;
+* quiet leaf moves may preserve material already won, never invent a payoff. */
+function proveExchangeDeflection(root, nodeLimit = 8192, onFailure) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.move.promotion || !root.after.isCheck() || root.after.isEnd()) return null;
+	const piece = root.after.board.get(root.move.to);
+	if (![
+		"bishop",
+		"rook",
+		"queen"
+	].includes(piece.role)) return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (!onFailure && nodeLimit === 8192 && exchangeDeflectionCache.has(key)) return exchangeDeflectionCache.get(key);
+	const side = root.before.turn, enemy = opposite(side);
+	const budget = { nodes: nodeLimit };
+	const visit = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("Exchange deflection budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const settled = (pos, move) => {
+		if (move.promotion) return null;
+		const next = visit(pos, move);
+		if (next.isEnd()) return null;
+		for (const reply of legalMoves(next)) if (reply.promotion || visit(next, reply).isCheckmate()) return null;
+		return participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+	};
+	let proof = null;
+	try {
+		const replies = legalMoves(root.after);
+		for (const acceptance of replies) {
+			if (acceptance.to !== root.move.to || acceptance.promotion || !capturedValue(root.after, acceptance)) continue;
+			const defender = root.after.board.get(acceptance.from);
+			if (defender.role === "king") continue;
+			const secondaries = [...attacks(piece, root.move.to, root.after.board.occupied.without(acceptance.from)).intersect(root.after.board[enemy])].filter((sq) => between(root.move.to, sq).has(acceptance.from) && !["king", "pawn"].includes(root.after.board.get(sq).role));
+			if (!secondaries.length) continue;
+			const targets = [...attacks(defender, acceptance.from, root.after.board.occupied).intersect(root.after.board[enemy])].filter((sq) => !["king", "pawn"].includes(root.after.board.get(sq).role));
+			for (const target of targets) for (const secondary of secondaries) {
+				if (target === secondary) continue;
+				const accepted = visit(root.after, acceptance);
+				if (accepted.isEnd() || attacks(defender, acceptance.to, accepted.board.occupied).has(target)) continue;
+				for (const capture of legalMoves(accepted)) {
+					if (capture.to !== target || capture.promotion || !capturedValue(accepted, capture)) continue;
+					const defendedGain = tacticalExchangeGain(root.before, capture);
+					const acceptedGain = settled(accepted, capture);
+					const initial = root.capture - capturedValue(root.after, acceptance);
+					if (defendedGain <= -VALUE.king || defendedGain >= 100 || acceptedGain === null || initial + acceptedGain < 100 || acceptedGain - defendedGain < 100) continue;
+					let minimum = Infinity;
+					let recovery = null;
+					let all = true;
+					for (const reply of replies) {
+						const pos = visit(root.after, reply);
+						if (pos.isEnd() || reply.promotion) {
+							all = false;
+							break;
+						}
+						const mappedTarget = reply.from === target ? reply.to : target;
+						const mappedSecondary = reply.from === secondary ? reply.to : secondary;
+						const main = {
+							from: capture.from,
+							to: mappedTarget
+						};
+						const balance = root.capture - capturedValue(root.after, reply);
+						if (!pos.isLegal(main) || !capturedValue(pos, main)) {
+							all = false;
+							break;
+						}
+						const direct = settled(pos, main);
+						if (direct !== null && balance + direct >= 100) {
+							minimum = Math.min(minimum, balance + direct);
+							continue;
+						}
+						const after = visit(pos, main);
+						if (after.isEnd()) {
+							all = false;
+							break;
+						}
+						let branch = Infinity;
+						for (const response of legalMoves(after)) {
+							const leaf = visit(after, response);
+							if (leaf.isEnd() || response.promotion) {
+								all = false;
+								break;
+							}
+							const retained = balance + capturedValue(pos, main) - capturedValue(after, response);
+							const second = response.from === mappedSecondary ? response.to : mappedSecondary;
+							let best = -Infinity;
+							const take = {
+								from: root.move.to,
+								to: second
+							};
+							if (response.from === acceptance.from && response.to === main.to && capturedValue(after, response) && leaf.isLegal(take) && capturedValue(leaf, take)) {
+								const gain = settled(leaf, take);
+								if (gain !== null && retained + gain >= 100) {
+									best = retained + gain;
+									recovery = [
+										makeSan(root.after, reply),
+										makeSan(pos, main),
+										makeSan(after, response),
+										makeSan(leaf, take)
+									];
+								}
+							}
+							if (best < 100 && retained >= 100) for (const save of legalMoves(leaf)) {
+								if (save.promotion || capturedValue(leaf, save)) continue;
+								const gain = settled(leaf, save);
+								if (gain !== null && retained + gain >= 100) {
+									best = retained + gain;
+									break;
+								}
+							}
+							if (best < 100) {
+								onFailure?.(`Unproved ${makeSan(root.after, reply)} ${makeSan(pos, main)} ${makeSan(after, response)} retained ${retained}`);
+								all = false;
+								break;
+							}
+							branch = Math.min(branch, best);
+						}
+						if (!all) break;
+						minimum = Math.min(minimum, branch);
+					}
+					if (all && recovery && Number.isFinite(minimum)) {
+						proof = {
+							gain: minimum,
+							defender: acceptance.from,
+							target,
+							secondary,
+							capturer: capture.from,
+							acceptance: [makeSan(root.after, acceptance), makeSan(accepted, capture)],
+							recovery
+						};
+						break;
+					}
+				}
+				if (proof) break;
+			}
+			if (proof) break;
+		}
+	} catch (error) {
+		onFailure?.(error instanceof Error ? error.message : "Unproved exchange deflection");
+	}
+	if (!onFailure && nodeLimit === 8192) {
+		exchangeDeflectionCache.set(key, proof);
+		if (exchangeDeflectionCache.size > 128) exchangeDeflectionCache.delete(exchangeDeflectionCache.keys().next().value);
+	}
+	return proof;
+}
 /** Select a verified acceptance mechanism. The legacy guarded-target route
 * uses a restoration probe; the blocking-defender route proves the newly
 * opened legal capture and permits different receivers to lose differently. */
 function deflectionEvidence(steps, source) {
 	const [bait, reply, payoff] = steps;
+	const exchange = bait && proveExchangeDeflection(bait);
+	if (exchange) return {
+		id: "deflection",
+		label: "Deflection",
+		source,
+		confidence: "high",
+		ply: 1,
+		moveUci: bait.uci,
+		value: exchange.gain,
+		evidence: `${bait.san} overloads the ${bait.after.board.get(exchange.defender).role} on ${makeSquare(exchange.defender)}. Accepting the offer abandons the ${bait.after.board.get(exchange.target).role} on ${makeSquare(exchange.target)}: ${exchange.acceptance.join(" ")}. Declining does not save both targets: ${exchange.recovery.join(" ")} draws the same defender away and wins the ${bait.after.board.get(exchange.secondary).role} on ${makeSquare(exchange.secondary)}. Every legal reply retains a verified local material gain, including exchange costs and immediate countercaptures. The continuation depends on the defence.`
+	};
 	const mating = bait && proveMatingDeflection(bait);
 	if (mating) {
 		const branch = mating.mating[0];
@@ -14477,7 +14640,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 59;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 60;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
