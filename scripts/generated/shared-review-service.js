@@ -9488,6 +9488,82 @@ function legalMoves(pos) {
 	});
 	return result;
 }
+var perpetualCheckCache = /* @__PURE__ */ new Map();
+/** A repeated-looking PV is not proof. Search checking moves only, with all
+* legal defences, and close a branch only on the same board, turn, castling
+* rights and legal en-passant state along that branch. Such a strategy can
+* repeat until a draw is claimable; it does not mean a draw has already occurred.
+* Mate may replace a draw in another defence, but at least one cycle is required. */
+function provePerpetualCheck(steps, nodeLimit = 4096) {
+	const root = steps[0];
+	if (!root || !root.after.isCheck() || root.after.isEnd() || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
+	const hints = steps.filter((s) => s.before.turn === root.before.turn && s.after.isCheck()).map((s) => s.uci);
+	hints.push(makeUci({
+		from: root.move.to,
+		to: root.move.from
+	}));
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}:${hints}`;
+	if (nodeLimit === 4096 && perpetualCheckCache.has(key)) return perpetualCheckCache.get(key);
+	let nodes = nodeLimit;
+	const visit = (pos, move) => {
+		if (--nodes < 0) throw new Error("Perpetual check budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const positionKey = (pos) => makeFen(pos.toSetup()).split(" ").slice(0, 4).join(" ");
+	const path = /* @__PURE__ */ new Map();
+	const defend = (pos, remaining, line) => {
+		if (pos.isCheckmate()) return {
+			line,
+			cycle: []
+		};
+		if (pos.isEnd() || !pos.isCheck()) return null;
+		const position = positionKey(pos), previous = path.get(position);
+		if (previous !== void 0) return {
+			line,
+			cycle: line.slice(previous)
+		};
+		if (!remaining) return null;
+		path.set(position, line.length);
+		try {
+			let example = null;
+			for (const reply of legalMoves(pos)) {
+				const proof = attack(visit(pos, reply), remaining, [...line, makeSan(pos, reply)]);
+				if (!proof) return null;
+				if (!example || !example.cycle.length && proof.cycle.length) example = proof;
+			}
+			return example;
+		} finally {
+			path.delete(position);
+		}
+	};
+	const attack = (pos, remaining, line) => {
+		if (pos.isEnd()) return null;
+		const relative = (square) => root.before.turn === "white" ? square : square ^ 56;
+		const moves = legalMoves(pos).sort((a, b) => Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))) || relative(a.from) - relative(b.from) || relative(a.to) - relative(b.to));
+		for (const move of moves) {
+			const next = visit(pos, move);
+			if (!next.isCheck()) continue;
+			const proof = defend(next, remaining - 1, [...line, makeSan(pos, move)]);
+			if (proof) return proof;
+		}
+		return null;
+	};
+	let result = null;
+	try {
+		const proof = defend(root.after, 5, [root.san]);
+		if (proof?.cycle.length) result = {
+			...proof,
+			replyCount: legalMoves(root.after).length
+		};
+	} catch {}
+	if (nodeLimit === 4096) {
+		perpetualCheckCache.set(key, result);
+		if (perpetualCheckCache.size > 128) perpetualCheckCache.delete(perpetualCheckCache.keys().next().value);
+	}
+	return result;
+}
 /** Legal static exchange. Pinned attackers and illegal king recaptures cannot
 * defend a square. The budget fails conservatively instead of claiming a gain. */
 function exchange(pos, target, budget) {
@@ -13197,6 +13273,25 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		filtered.splice(filtered.indexOf(quietCause), 1);
 		filtered.unshift(quietCause);
 	}
+	const rootMaterial = [...steps[0].after.board.occupied].reduce((sum, square) => {
+		const piece = steps[0].after.board.get(square);
+		return sum + (piece.color === attacker ? 1 : -1) * VALUE[piece.role];
+	}, 0);
+	const onlyDrawingCapture = typeof rootCp === "number" && Math.abs(rootCp) <= 50 && filtered.every((motif) => motif.id === "hangingPiece" && motif.ply === 1);
+	const perpetual = (!filtered.length || onlyDrawingCapture) && rootMaterial <= -100 && !(typeof rootCp === "number" && rootCp > 100) ? provePerpetualCheck(steps) : null;
+	if (perpetual) {
+		if (onlyDrawingCapture) filtered.splice(0);
+		filtered.push({
+			id: "perpetualCheck",
+			label: "Perpetual Check",
+			source: proposals[0]?.source ?? "available",
+			confidence: "high",
+			ply: 1,
+			moveUci: steps[0].uci,
+			value: 0,
+			evidence: `${steps[0].san} can force at least a draw through repeated checks. Every legal defence was checked; one verified continuation is ${perpetual.line.join(" ")}. The cycle ${perpetual.cycle.join(" ")} returns to the same position and can be repeated until a draw is claimable. This is an available drawing resource, not a draw already claimed or a material win.`
+		});
+	}
 	return filtered.map((motif, index) => ({
 		...motif,
 		.../^mate(?:In\d+)?$/.test(motif.id) && motif.ply && steps[motif.ply - 1]?.after.isCheckmate() ? {
@@ -14012,7 +14107,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 52;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 53;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -14343,6 +14438,7 @@ function toMotifEvidence(detailInput, source, sanLineInput) {
 	});
 }
 var IMPORTANT_TACTICAL_THEME_IDS = new Set([
+	"perpetualCheck",
 	"promotionCombination",
 	"forcingAttack",
 	"forkPreparation",
@@ -14375,6 +14471,7 @@ var IMPORTANT_TACTICAL_THEME_IDS = new Set([
 	"attackingF2F7"
 ]);
 var MOTIF_IMPORTANCE = {
+	perpetualCheck: 39,
 	backRankMate: 1,
 	doubleCheck: 5,
 	fork: 10,
@@ -14428,7 +14525,7 @@ function selectImportantTacticalMotifs(motifs, limit = 3) {
 	return [...unique.values()].sort((left, right) => (left.relevance === "primary" ? -1 : right.relevance === "primary" ? 1 : 0) || (left.relevance && right.relevance ? (left.ply ?? 100) - (right.ply ?? 100) : 0) || motifImportance(left.id) - motifImportance(right.id) || (left.ply ?? Number.MAX_SAFE_INTEGER) - (right.ply ?? Number.MAX_SAFE_INTEGER) || left.label.localeCompare(right.label)).slice(0, Math.max(0, limit));
 }
 function isImmediateLesson(motif) {
-	return Boolean(motif && motif.ply === 1 && motif.confidence !== "low" && (motif.value ?? 0) >= 100);
+	return Boolean(motif && motif.ply === 1 && motif.confidence !== "low" && ((motif.value ?? 0) >= 100 || motif.id === "perpetualCheck"));
 }
 function buildMistakeReviewTacticalExplanation(input) {
 	const explanation = chooseMistakeReviewTacticalExplanation(input);
@@ -14526,6 +14623,7 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 		};
 		const candidates = auditTacticalMotifs(rawSteps[index]?.fenBefore ?? "", suffix, toMotifEvidence(detail, source, sanLine?.slice(index)));
 		for (const motif of candidates.filter((m) => m.ply === 1)) {
+			if (motif.id === "perpetualCheck" && [...evidence.values()].some((previous) => previous.id === "perpetualCheck" && previous.actor === step.before.turn && (previous.ply ?? Infinity) < index + 1 && replay.slice(previous.ply, index + 1).every((entry) => entry.before.turn !== step.before.turn || entry.after.isCheck()))) continue;
 			if (motif.id === "forcingAttack" && [...evidence.values()].some((previous) => previous.id === "forcingAttack" && previous.actor === step.before.turn && (previous.ply ?? Infinity) < index + 1)) continue;
 			if (motif.label === "Forcing Mate" && [...evidence.values()].some((previous) => previous.actor === step.before.turn && (previous.ply ?? Infinity) < index + 1 && /^mateIn\d+$/.test(previous.id) && previous.value === 1e4 && !replay[(previous.ply ?? 0) - 1]?.after.isCheckmate())) continue;
 			if (motif.id === "hangingPiece" && index > 0 && step.move.to === replay[index - 1].move.to && (!replay[index - 1].capture || replay[index - 1].move.promotion)) continue;

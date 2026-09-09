@@ -106,7 +106,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 52;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 53;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -561,6 +561,7 @@ function toMotifEvidence(
 }
 
 const IMPORTANT_TACTICAL_THEME_IDS = new Set([
+    "perpetualCheck",
     "promotionCombination",
     "forcingAttack",
     "forkPreparation",
@@ -594,6 +595,7 @@ const IMPORTANT_TACTICAL_THEME_IDS = new Set([
 ]);
 
 const MOTIF_IMPORTANCE: Record<string, number> = {
+    perpetualCheck: 39,
     backRankMate: 1,
     doubleCheck: 5,
     fork: 10,
@@ -683,7 +685,10 @@ export function tacticalMotifPerspective(motif: TacticalMotifEvidence) {
 
 function isImmediateLesson(motif: TacticalMotifEvidence | undefined) {
     return Boolean(
-        motif && motif.ply === 1 && motif.confidence !== "low" && (motif.value ?? 0) >= 100,
+        motif &&
+        motif.ply === 1 &&
+        motif.confidence !== "low" &&
+        ((motif.value ?? 0) >= 100 || motif.id === "perpetualCheck"),
     );
 }
 
@@ -937,6 +942,22 @@ export function buildTacticalTimeline(
             toMotifEvidence(detail, source, sanLine?.slice(index)),
         );
         for (const motif of candidates.filter((m) => m.ply === 1)) {
+            if (
+                motif.id === "perpetualCheck" &&
+                [...evidence.values()].some(
+                    (previous) =>
+                        previous.id === "perpetualCheck" &&
+                        previous.actor === step.before.turn &&
+                        (previous.ply ?? Infinity) < index + 1 &&
+                        replay
+                            .slice(previous.ply!, index + 1)
+                            .every(
+                                (entry) =>
+                                    entry.before.turn !== step.before.turn || entry.after.isCheck(),
+                            ),
+                )
+            )
+                continue;
             if (
                 motif.id === "forcingAttack" &&
                 [...evidence.values()].some(

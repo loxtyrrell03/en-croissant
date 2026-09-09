@@ -10,6 +10,7 @@ import type { TacticalMotifEvidence } from "./types";
 import { tacticalBoardEvidence } from "./causalTactics";
 
 const CORE_TACTICAL_THEME_IDS = new Set([
+    "perpetualCheck",
     "promotionCombination",
     "forcingAttack",
     "doubleThreat",
@@ -92,6 +93,8 @@ const THEME_PRIORITY = [
 ];
 
 const THEME_DESCRIPTIONS: Record<string, string> = {
+    perpetualCheck:
+        "Repeated checks can force a claimable draw; the defender's legal alternatives are included.",
     promotionCombination:
         "A material concession removes a promotion-path defender and enables a verified passed-pawn combination.",
     forcingAttack:
@@ -143,7 +146,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 54;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 55;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {

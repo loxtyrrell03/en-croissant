@@ -225,6 +225,97 @@ function legalMoves(pos: Chess): NormalMove[] {
     return result;
 }
 
+type PerpetualCheckProof = { line: string[]; cycle: string[]; replyCount: number };
+const perpetualCheckCache = new Map<string, PerpetualCheckProof | null>();
+
+/** A repeated-looking PV is not proof. Search checking moves only, with all
+ * legal defences, and close a branch only on the same board, turn, castling
+ * rights and legal en-passant state along that branch. Such a strategy can
+ * repeat until a draw is claimable; it does not mean a draw has already occurred.
+ * Mate may replace a draw in another defence, but at least one cycle is required. */
+export function provePerpetualCheck(
+    steps: TacticalReplayStep[],
+    nodeLimit = 4096,
+): PerpetualCheckProof | null {
+    const root = steps[0];
+    if (
+        !root ||
+        !root.after.isCheck() ||
+        root.after.isEnd() ||
+        !Number.isSafeInteger(nodeLimit) ||
+        nodeLimit <= 0
+    )
+        return null;
+    const hints = steps
+        .filter((s) => s.before.turn === root.before.turn && s.after.isCheck())
+        .map((s) => s.uci);
+    // Returning the checker to its previous square is a useful nomination,
+    // never a proof: legal king captures and every other evasion still count.
+    hints.push(makeUci({ from: root.move.to, to: root.move.from }));
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}:${hints}`;
+    if (nodeLimit === 4096 && perpetualCheckCache.has(key)) return perpetualCheckCache.get(key)!;
+    let nodes = nodeLimit;
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--nodes < 0) throw new Error("Perpetual check budget exhausted");
+        const next = pos.clone();
+        next.play(move);
+        return next;
+    };
+    const positionKey = (pos: Chess) => makeFen(pos.toSetup()).split(" ").slice(0, 4).join(" ");
+    type Proof = { line: string[]; cycle: string[] };
+    const path = new Map<string, number>();
+    const defend = (pos: Chess, remaining: number, line: string[]): Proof | null => {
+        if (pos.isCheckmate()) return { line, cycle: [] };
+        if (pos.isEnd() || !pos.isCheck()) return null;
+        const position = positionKey(pos),
+            previous = path.get(position);
+        if (previous !== undefined) return { line, cycle: line.slice(previous) };
+        if (!remaining) return null;
+        path.set(position, line.length);
+        try {
+            let example: Proof | null = null;
+            for (const reply of legalMoves(pos)) {
+                const proof = attack(visit(pos, reply), remaining, [...line, makeSan(pos, reply)]);
+                if (!proof) return null;
+                if (!example || (!example.cycle.length && proof.cycle.length)) example = proof;
+            }
+            return example;
+        } finally {
+            path.delete(position);
+        }
+    };
+    const attack = (pos: Chess, remaining: number, line: string[]): Proof | null => {
+        if (pos.isEnd()) return null;
+        const relative = (square: Square) => (root.before.turn === "white" ? square : square ^ 56);
+        const moves = legalMoves(pos).sort(
+            (a, b) =>
+                Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))) ||
+                relative(a.from) - relative(b.from) ||
+                relative(a.to) - relative(b.to),
+        );
+        for (const move of moves) {
+            const next = visit(pos, move);
+            if (!next.isCheck()) continue;
+            const proof = defend(next, remaining - 1, [...line, makeSan(pos, move)]);
+            if (proof) return proof;
+        }
+        return null;
+    };
+    let result: PerpetualCheckProof | null = null;
+    try {
+        const proof = defend(root.after, 5, [root.san]);
+        if (proof?.cycle.length) result = { ...proof, replyCount: legalMoves(root.after).length };
+    } catch {
+        /* Unknown/exhausted branches cannot establish a drawing resource. */
+    }
+    if (nodeLimit === 4096) {
+        perpetualCheckCache.set(key, result);
+        if (perpetualCheckCache.size > 128)
+            perpetualCheckCache.delete(perpetualCheckCache.keys().next().value!);
+    }
+    return result;
+}
+
 /** Legal static exchange. Pinned attackers and illegal king recaptures cannot
  * defend a square. The budget fails conservatively instead of claiming a gain. */
 function exchange(pos: Chess, target: Square, budget: { nodes: number }): number {
@@ -3430,6 +3521,7 @@ export function tacticalBoardEvidence(
     if (
         !motif?.ply ||
         ![
+            "perpetualCheck",
             "promotionCombination",
             "forcingAttack",
             "doubleThreat",
@@ -3451,6 +3543,17 @@ export function tacticalBoardEvidence(
         return null;
     const step = replayTacticalLine(fen, line.slice(0, motif.ply))[motif.ply - 1];
     if (!step) return null;
+    if (motif.id === "perpetualCheck") {
+        const king = step.after.board.kingOf(opposite(step.before.turn))!;
+        return {
+            square: makeSquare(step.move.to),
+            arrows: [...step.after.board[step.before.turn]]
+                .filter((from) =>
+                    attacks(step.after.board.get(from)!, from, step.after.board.occupied).has(king),
+                )
+                .map((from) => ({ from: makeSquare(from), to: makeSquare(king) })),
+        };
+    }
     if (motif.id === "promotionCombination") {
         const proof = provePromotionCombination(step);
         return proof
@@ -5970,8 +6073,36 @@ export function auditTacticalMotifs(
         filtered.splice(filtered.indexOf(quietCause), 1);
         filtered.unshift(quietCause);
     }
-    // A sound exchange at the start of a combination is not a loose piece if
-    // its gain depends on a later mechanism (the defender can recapture).
+    // Do not displace an independently verified winning mechanism with a draw.
+    // A lone capture in an engine-equal position with material still missing
+    // may instead be the entry to a perpetual. A draw is not a material gain.
+    const rootMaterial = [...steps[0].after.board.occupied].reduce((sum, square) => {
+        const piece = steps[0].after.board.get(square)!;
+        return sum + (piece.color === attacker ? 1 : -1) * VALUE[piece.role];
+    }, 0);
+    const onlyDrawingCapture =
+        typeof rootCp === "number" &&
+        Math.abs(rootCp) <= 50 &&
+        filtered.every((motif) => motif.id === "hangingPiece" && motif.ply === 1);
+    const perpetual =
+        (!filtered.length || onlyDrawingCapture) &&
+        rootMaterial <= -100 &&
+        !(typeof rootCp === "number" && rootCp > 100)
+            ? provePerpetualCheck(steps)
+            : null;
+    if (perpetual) {
+        if (onlyDrawingCapture) filtered.splice(0);
+        filtered.push({
+            id: "perpetualCheck",
+            label: "Perpetual Check",
+            source: proposals[0]?.source ?? "available",
+            confidence: "high",
+            ply: 1,
+            moveUci: steps[0].uci,
+            value: 0,
+            evidence: `${steps[0].san} can force at least a draw through repeated checks. Every legal defence was checked; one verified continuation is ${perpetual.line.join(" ")}. The cycle ${perpetual.cycle.join(" ")} returns to the same position and can be repeated until a draw is claimable. This is an available drawing resource, not a draw already claimed or a material win.`,
+        });
+    }
     return filtered.map((motif, index) => ({
         ...motif,
         ...(/^mate(?:In\d+)?$/.test(motif.id) &&

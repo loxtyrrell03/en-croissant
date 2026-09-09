@@ -420,9 +420,11 @@ test.skipIf(!process.env.TACTICAL_JUDGEMENT_ENGINE || !process.env.TACTICAL_FORK
     180000,
 );
 
-async function analyse(engine: string, fen: string, searchMove?: string, depth = 16) {
+async function analyse(engine: string, fen: string, searchMove?: string, depth = 16, multipv = 3) {
     if (!Number.isInteger(depth) || depth < 1 || depth > 24)
         throw new Error("Invalid judgement depth");
+    if (!Number.isInteger(multipv) || multipv < 1 || multipv > 3)
+        throw new Error("Invalid MultiPV");
     const child = spawn(engine, [], { windowsHide: true, stdio: "pipe" });
     const lines = new Map<
         number,
@@ -452,7 +454,7 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
             for (const row of rows) {
                 if (row === "uciok")
                     child.stdin.write(
-                        "setoption name Threads value 1\nsetoption name Hash value 32\nsetoption name MultiPV value 3\nisready\n",
+                        `setoption name Threads value 1\nsetoption name Hash value 32\nsetoption name MultiPV value ${multipv}\nisready\n`,
                     );
                 if (row === "readyok")
                     child.stdin.write(
@@ -496,6 +498,91 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_SEARCH_STABILITY_REPORT,
+    )(
+        "audit deeper source search and reached drawing resources",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_SEARCH_STABILITY_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 144,
+            );
+            const steps = replayTacticalLine(row.fen, row.sourceUci);
+            const draw = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 11,
+            );
+            const drawingSteps = replayTacticalLine(draw.fen, draw.sourceUci);
+            const searches = [];
+            for (const input of [
+                {
+                    label: "Source root restricted deeper",
+                    fen: row.fen,
+                    move: row.sourceUci[0],
+                    depth: 24,
+                    multipv: 1,
+                },
+                {
+                    label: "Quiet continuation unrestricted deeper",
+                    fen: makeFen(steps[1].after.toSetup()),
+                    move: undefined,
+                    depth: 24,
+                    multipv: 3,
+                },
+                {
+                    label: "Drawing recapture reached",
+                    fen: makeFen(drawingSteps[4].before.toSetup()),
+                    move: drawingSteps[4].uci,
+                    depth: 16,
+                    multipv: 3,
+                },
+                {
+                    label: "Constructed drawing check",
+                    fen: "r6k/5Q1p/6p1/8/q7/8/8/5R1K w - - 0 1",
+                    move: "f7f6",
+                    depth: 16,
+                    multipv: 3,
+                },
+                {
+                    label: "Constructed missed draw",
+                    fen: "r6k/5Q1p/6p1/8/q7/8/7K/5R2 b - - 1 1",
+                    move: undefined,
+                    depth: 16,
+                    multipv: 3,
+                },
+            ]) {
+                const lines = [
+                    ...(
+                        await analyse(engine, input.fen, input.move, input.depth, input.multipv)
+                    ).values(),
+                ];
+                expect(lines[0].depth).toBe(input.depth);
+                searches.push({ ...input, lines });
+            }
+            expect(searches[0].lines[0].pvUci.slice(0, 3)).toEqual(row.sourceUci);
+            expect(searches[0].lines[0].cp).toBeGreaterThan(500);
+            expect(searches[1].lines[0].pvUci[0]).toBe(row.sourceUci[2]);
+            expect(searches[1].lines[0].cp).toBeGreaterThan(500);
+            expect(searches[2].lines[0].cp).toBe(0);
+            expect(searches[3].lines[0].cp).toBe(0);
+            writeFileSync(
+                output,
+                JSON.stringify({ sourceSha256: sample.sourceSha256, searches }, null, 2),
+                { flag: "wx" },
+            );
+        },
+        120000,
+    );
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE ||

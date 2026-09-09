@@ -107,6 +107,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:perpetual-check",
+                input: {
+                    fen: "r6k/5Q1p/6p1/8/q7/8/8/5R1K w - - 0 1",
+                    pvUci: ["f7f6", "h8g8", "f6f7", "g8h8", "f7f6"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:reinforced-pin",
                 input: {
                     fen: "1r5k/6pp/8/3b4/8/2Q2R2/8/7K b - - 0 1",
@@ -313,7 +322,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(97);
+        expect(report).toHaveLength(98);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
@@ -388,6 +397,23 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_
             expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
             expect(result.startupMs).toBeLessThan(TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
         }
+        // The quiet sacrifice is still unproved. Verify the independently
+        // reached drawing check instead of counting the source root recovered.
+        const draw = report.cases.find(
+            (row: { eligibleIndex: number }) => row.eligibleIndex === 11,
+        );
+        const steps = replayTacticalLine(draw.fen, draw.sourceUci);
+        const input = {
+            fen: makeFen(steps[4].before.toSetup()),
+            pvUci: [steps[4].uci],
+            variations: [{ pvUci: [steps[4].uci], cp: 0 }],
+            engineName: "Stockfish 18",
+            depth: 16,
+        };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs[0]).toMatchObject({ id: "perpetualCheck", value: 0 });
+        expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
     },
     120000,
 );

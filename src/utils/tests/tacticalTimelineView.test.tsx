@@ -6,6 +6,28 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("a perpetual is one drawing lesson, not a new tactic on every repeated check", () => {
+  const fen = "r6k/5Q1p/6p1/8/q7/8/8/5R1K w - - 0 1";
+  const line = ["f7f6", "h8g8", "f6f7", "g8h8", "f7f6"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain(
+    "Perpetual Check",
+  );
+  expect(container.textContent).toContain("not a draw already claimed");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).not.toContain(
+    "Perpetual Check",
+  );
+});
+
 test("the forced mate renders without advertising the unrelated attacked knight", () => {
   const fen = "1n5k/7p/5q2/8/8/6R1/8/4R1K1 w - - 0 1";
   const line = ["e1e8", "f6f8", "e8f8"];

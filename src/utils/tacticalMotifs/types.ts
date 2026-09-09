@@ -10,7 +10,8 @@ export type TacticalMotifEvidence = {
     ply: number | null;
     moveUci: string | null;
     relevance?: "primary" | "secondary";
-    /** Material payoff in centipawns; 10000 represents a mating continuation. */
+    /** Material payoff in centipawns; 10000 represents mate. A proved
+     * perpetual uses zero: a drawing resource is not a material gain. */
     value?: number;
     actor?: "white" | "black";
     comparison?: "prevented" | "persists" | "reduced";
