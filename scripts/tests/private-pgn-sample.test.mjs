@@ -56,3 +56,51 @@ test("private reports cannot be written inside the checkout", () => {
     resolve(tmpdir(), "private-tactics-report.json"),
   );
 });
+
+const uniqueGames = Array.from({ length: 8 }, (_, i) =>
+  game(i + 1).replace(fen, fen.replace("7k/8/", `7k/${i || ""}p${7 - i || ""}/`)),
+).join("");
+
+test("a disjoint sample preserves original source indices and excludes prior positions", () => {
+  const prior = preparePrivatePgnSample(uniqueGames, 3);
+  assert.deepEqual(
+    prior.cases.map((r) => r.eligibleIndex),
+    [1, 4, 8],
+  );
+  const next = preparePrivatePgnSample(uniqueGames, 3, prior);
+  assert.equal(next.excludedPositions, 3);
+  assert.equal(next.remainingPositions, 5);
+  assert.deepEqual(
+    next.cases.map((r) => r.eligibleIndex),
+    [2, 5, 7],
+  );
+  assert.deepEqual(next, preparePrivatePgnSample(uniqueGames, 3, prior));
+});
+
+test("the same position at another PGN index is excluded as well", () => {
+  const first = uniqueGames.slice(0, uniqueGames.indexOf("[Event", 1));
+  const source = uniqueGames + first;
+  const prior = preparePrivatePgnSample(source, 1);
+  const next = preparePrivatePgnSample(source, 20, prior);
+  assert.equal(next.excludedPositions, 2);
+  assert.equal(next.cases.length, 7);
+  assert.equal(
+    next.cases.some((r) => r.fen === prior.cases[0].fen),
+    false,
+  );
+});
+
+test("source mismatch, malformed exclusions and an exhausted pool fail explicitly", () => {
+  const prior = preparePrivatePgnSample(uniqueGames, 2);
+  assert.throws(() => preparePrivatePgnSample(uniqueGames + "\n", 2, prior), /exact PGN/);
+  for (const cases of [
+    [{ ...prior.cases[0], eligibleIndex: 0 }],
+    [{ ...prior.cases[0], fen: "wrong" }],
+    null,
+  ])
+    assert.throws(() => preparePrivatePgnSample(uniqueGames, 2, { ...prior, cases }));
+  assert.throws(
+    () => preparePrivatePgnSample(uniqueGames, 1, preparePrivatePgnSample(uniqueGames, 8)),
+    /No unseen/,
+  );
+});

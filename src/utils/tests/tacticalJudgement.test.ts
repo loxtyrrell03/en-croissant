@@ -420,7 +420,9 @@ test.skipIf(!process.env.TACTICAL_JUDGEMENT_ENGINE || !process.env.TACTICAL_FORK
     180000,
 );
 
-async function analyse(engine: string, fen: string, searchMove?: string) {
+async function analyse(engine: string, fen: string, searchMove?: string, depth = 16) {
+    if (!Number.isInteger(depth) || depth < 1 || depth > 24)
+        throw new Error("Invalid judgement depth");
     const child = spawn(engine, [], { windowsHide: true, stdio: "pipe" });
     const lines = new Map<
         number,
@@ -454,7 +456,7 @@ async function analyse(engine: string, fen: string, searchMove?: string) {
                     );
                 if (row === "readyok")
                     child.stdin.write(
-                        `position fen ${fen}\ngo depth 16${searchMove ? ` searchmoves ${searchMove}` : ""}\n`,
+                        `position fen ${fen}\ngo depth ${depth}${searchMove ? ` searchmoves ${searchMove}` : ""}\n`,
                     );
                 const match = row.match(
                     /info depth (\d+).* multipv (\d+).* score (cp|mate) (-?\d+).* pv (.+)/,
@@ -494,6 +496,100 @@ async function analyse(engine: string, fen: string, searchMove?: string) {
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_DISJOINT_BRANCH_REPORT,
+    )(
+        "audit disjoint perpetual check and incomplete source continuation",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_DISJOINT_BRANCH_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested)),
+                path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE!, "utf8"),
+            );
+            const draw = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 11,
+            );
+            const root = replayTacticalLine(draw.fen, draw.sourceUci).at(-1)!.after;
+            const cycle = replayTacticalLine(makeFen(root.toSetup()), [
+                "h8g8",
+                "f6f7",
+                "g8h8",
+                "f7f6",
+            ]);
+            expect(cycle).toHaveLength(4);
+            const key = (fen: string) => fen.split(" ").slice(0, 4).join(" ");
+            expect(key(makeFen(cycle.at(-1)!.after.toSetup()))).toBe(key(makeFen(root.toSetup())));
+            const defences = [cycle[0].before, cycle[2].before].map((pos) =>
+                [...pos.allDests()].flatMap(([from, dests]) =>
+                    [...dests].map((to) => makeSan(pos, { from, to })),
+                ),
+            );
+            expect(defences).toEqual([["Kg8"], ["Kh8"]]);
+            const other = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 144,
+            );
+            const reached = replayTacticalLine(other.fen, other.sourceUci.slice(0, 2)).at(
+                -1,
+            )!.after;
+            const searches = [];
+            for (const input of [
+                {
+                    label: "Perpetual reached",
+                    fen: makeFen(root.toSetup()),
+                    root: undefined,
+                    depth: 16,
+                },
+                {
+                    label: "Source quiet followup",
+                    fen: makeFen(reached.toSetup()),
+                    root: other.sourceUci[2],
+                    depth: 16,
+                },
+                {
+                    label: "Source checking move deeper",
+                    fen: other.fen,
+                    root: other.sourceUci[0],
+                    depth: 20,
+                },
+                {
+                    label: "Every check defence deeper",
+                    fen: makeFen(
+                        replayTacticalLine(other.fen, [other.sourceUci[0]])[0].after.toSetup(),
+                    ),
+                    root: undefined,
+                    depth: 20,
+                },
+            ]) {
+                const lines = [
+                    ...(await analyse(engine, input.fen, input.root, input.depth)).values(),
+                ];
+                expect(lines[0].depth).toBe(input.depth);
+                searches.push({ ...input, lines });
+            }
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        sourceSha256: sample.sourceSha256,
+                        cycle: cycle.map((s) => s.san),
+                        defences,
+                        searches,
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+        },
+        120000,
+    );
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||

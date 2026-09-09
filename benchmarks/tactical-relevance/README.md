@@ -1,5 +1,11 @@
 # Tactical relevance judgement, 2026-09-08
 
+## Adapter 52: disjoint audit and irrelevant forks in forced mates
+
+A new fixed 24-position easy-course sample excludes the original sample by actual position key, not just PGN index. Preliminary chess judgements were recorded before classifier output. It exposes 13 empty live results (including a saving perpetual check), later-payoff headlines without their preparation, and a subordinate knight-fork lesson inside a forced mate. This is evidence of remaining coverage gaps, not an accuracy score or a claim that all nonempty results are correct.
+
+Fork noise is now omitted only when an independent bounded mate proof survives removing every non-king fork victim and legally replaying the same continuation. Actual mating payoffs use mateIn1 IDs rather than stale whole-line distances; root bounds and named patterns remain separate. Both 24-position sets retain their main labels, while the identified mating timelines improve. The 609-test selection, nine sampler tests, fresh analyses, builds and 97 public/36 private built-worker cases pass. One HTTP startup audit timed out before an isolated retry passed; cold-development stability remains open. See [the private-course audit](private-course-review.md) for scope and limitations. No app/package/service was restarted or deployed.
+
 ## Adapter 51: quiet mating deflection with a material defence
 
 The next recovered exercise depends on a queen abandoning its mate guard, not the tempting knight fork (which fresh Stockfish rejects). Nonchecking capture offers now qualify when every acceptance permits an independently verified mate and every decline retains material or gives mate. A declined offer can include a bounded checking exchange followed by an already opened capture. The root explains both choices; a defensive countercapture loses its misleading Hanging Piece badge only with replay-matching, independently proved context.

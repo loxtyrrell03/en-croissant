@@ -775,14 +775,10 @@ export function normalizeMatingPayoffs(
                 ? named[0]
                 : (group.find((m) => m.relevance === "primary") ?? group[0]);
         const specific = named.length === 1;
-        const genericId =
-            named.length > 1
-                ? "mateIn1"
-                : (group.find((m) => /^mateIn\d+$/.test(m.id))?.id ?? "mateIn1");
         selected.set(ply, {
             ...motif,
             ...(!specific
-                ? { id: genericId, label: "Checkmate", confidence: "high" as const }
+                ? { id: "mateIn1", label: "Checkmate", confidence: "high" as const }
                 : {}),
             ...(group.some((m) => m.relevance === "primary")
                 ? { relevance: "primary" as const }
@@ -5767,10 +5763,32 @@ export function auditTacticalMotifs(
         });
     }
     const normalizedCandidates = normalizeMatingPayoffs(steps, candidates);
+    // A fork in a proved mate must not turn an irrelevant attacked piece into a
+    // second lesson. Only suppress it when the SAME legal mating continuation
+    // has an all-defence proof after removing every non-king fork victim.
+    // This board probe is not a playable variation. Exhaustion or a capture
+    // of a removed victim leaves the fork intact; a mating PV alone is not proof.
+    let incidentalMatingFork = false;
+    if (checkingMate && candidates.some((m) => m.id === "fork" && m.ply === 1)) {
+        const victims = winningTargets(root.after, root.move.to, attacker).filter(
+            (sq) => root.after.board.get(sq)?.role !== "king",
+        );
+        if (victims.length) {
+            const probe = root.before.clone();
+            for (const square of victims) probe.board.take(square);
+            const replay = replayTacticalLine(
+                makeFen(probe.toSetup()),
+                steps.map((s) => s.uci),
+            );
+            incidentalMatingFork =
+                replay.length === steps.length && Boolean(proveCheckingMate(replay, 4096));
+        }
+    }
     const specificMate = normalizedCandidates.find((m) => /Mate$/.test(m.id));
     const fork = candidates.find((m) => m.id === "fork");
     const filtered = normalizedCandidates
         .filter((m) => {
+            if (incidentalMatingFork && m.id === "fork" && m.ply === 1) return false;
             if (
                 m.id === "promotion" &&
                 candidates.some((other) => other.id === "underPromotion" && other.ply === m.ply)

@@ -221,6 +221,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 },
             },
             {
+                id: "constructed:mate-independent-of-fork-victim",
+                input: {
+                    fen: "1n5k/7p/5q2/8/8/6R1/8/4R1K1 w - - 0 1",
+                    pvUci: ["e1e8", "f6f8", "e8f8"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:knight-exchange-for-pawn",
                 input: {
                     fen: "3qk2r/8/8/4N3/2BP4/8/PPP2PPP/R4RK1 w k - 0 1",
@@ -304,7 +313,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(96);
+        expect(report).toHaveLength(97);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
@@ -354,4 +363,31 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_
             expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
         }
     },
+);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_DISJOINT_REPORT)(
+    "the disjoint fresh-engine sample survives the built worker boundary",
+    async () => {
+        const report = JSON.parse(
+            readFileSync(process.env.TACTICAL_PRIVATE_DISJOINT_REPORT!, "utf8"),
+        );
+        expect(report.cases).toHaveLength(24);
+        for (const row of report.cases) {
+            const input = {
+                fen: row.fen,
+                pvUci: row.engineLines[0].pvUci,
+                variations: row.engineLines,
+                engineName: "Stockfish 18",
+                depth: 16,
+            };
+            const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+            expect({ id: row.id, scan: result.scan }).toEqual({
+                id: row.id,
+                scan: buildLiveTacticalScan(input),
+            });
+            expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+            expect(result.startupMs).toBeLessThan(TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
+        }
+    },
+    120000,
 );

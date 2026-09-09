@@ -9894,11 +9894,10 @@ function normalizeMatingPayoffs(steps, motifs) {
 		const named = [...new Map(group.filter((m) => /Mate$/.test(m.id)).map((m) => [m.id, m])).values()];
 		const motif = named.length === 1 ? named[0] : group.find((m) => m.relevance === "primary") ?? group[0];
 		const specific = named.length === 1;
-		const genericId = named.length > 1 ? "mateIn1" : group.find((m) => /^mateIn\d+$/.test(m.id))?.id ?? "mateIn1";
 		selected.set(ply, {
 			...motif,
 			...!specific ? {
-				id: genericId,
+				id: "mateIn1",
 				label: "Checkmate",
 				confidence: "high"
 			} : {},
@@ -13122,9 +13121,20 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		evidence: `${root.san} is checkmate: the king is in check and there is no legal reply.`
 	});
 	const normalizedCandidates = normalizeMatingPayoffs(steps, candidates);
+	let incidentalMatingFork = false;
+	if (checkingMate && candidates.some((m) => m.id === "fork" && m.ply === 1)) {
+		const victims = winningTargets(root.after, root.move.to, attacker).filter((sq) => root.after.board.get(sq)?.role !== "king");
+		if (victims.length) {
+			const probe = root.before.clone();
+			for (const square of victims) probe.board.take(square);
+			const replay = replayTacticalLine(makeFen(probe.toSetup()), steps.map((s) => s.uci));
+			incidentalMatingFork = replay.length === steps.length && Boolean(proveCheckingMate(replay, 4096));
+		}
+	}
 	const specificMate = normalizedCandidates.find((m) => /Mate$/.test(m.id));
 	const fork = candidates.find((m) => m.id === "fork");
 	const filtered = normalizedCandidates.filter((m) => {
+		if (incidentalMatingFork && m.id === "fork" && m.ply === 1) return false;
 		if (m.id === "promotion" && candidates.some((other) => other.id === "underPromotion" && other.ply === m.ply)) return false;
 		if (m.ply && steps[m.ply - 1]?.after.isCheckmate() && [
 			"hangingPiece",
@@ -14002,7 +14012,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 51;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 52;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

@@ -6,6 +6,24 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("the forced mate renders without advertising the unrelated attacked knight", () => {
+  const fen = "1n5k/7p/5q2/8/8/6R1/8/4R1K1 w - - 0 1";
+  const line = ["e1e8", "f6f8", "e8f8"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  expect(container.textContent).not.toContain("Fork");
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Forcing Mate");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Checkmate");
+});
+
 test("a declined mating offer does not label its compensated knight capture a new win", () => {
   const fen = "4r2k/5rp1/6qp/3PB3/4Q2n/3R4/6PP/4R1K1 b - - 0 1";
   const line = ["e8e5", "e4h4", "e5e1", "h4e1", "g6d3"];

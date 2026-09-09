@@ -14,12 +14,12 @@ const ordinary = JSON.parse(
 const fen: string = ordinary.fen;
 const line: string[] = ordinary.after[0].pvUci;
 
-test("the queen's same ongoing rook threat is not a fresh fork on every check", () => {
+test("the proved mating attack does not advertise its independently irrelevant rook fork", () => {
     const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
     expect(result.motifs[0].id).toBe("mateIn7");
     expect(
         result.timeline?.filter((motif) => motif.id === "fork").map((motif) => motif.ply),
-    ).toEqual([7]);
+    ).toEqual([]);
     expect(result.timeline?.some((motif) => motif.ply === 13 && /mate/i.test(motif.id))).toBe(true);
 });
 
@@ -36,7 +36,7 @@ test("a renewed rook threat after interruption is a new fork", () => {
     ).toEqual([1, 5]);
 });
 
-test("adding a new profitable victim creates a new fork even while the old rook stays attacked", () => {
+test("a new victim used by the mating line retains its fork after the irrelevant old one is removed", () => {
     const position = makeFen(replayTacticalLine(fen, line)[6].before.toSetup()).replace(
         "3Q4",
         "n2Q4",
@@ -45,23 +45,26 @@ test("adding a new profitable victim creates a new fork even while the old rook 
     expect(replayTacticalLine(position, continuation)).toHaveLength(7);
     const result = classifyPositionTacticalMotifs({ fen: position, pvUci: continuation });
     const forks = result.timeline?.filter((motif) => motif.id === "fork");
-    expect(forks?.map((motif) => motif.ply)).toEqual([1, 5]);
-    expect(forks?.[1].evidence).toContain("knight on a5");
+    expect(forks?.map((motif) => motif.ply)).toEqual([5]);
+    expect(forks?.[0].evidence).toContain("knight on a5");
 });
 
 test.each([
-    ["3Q3b", "a bishop on h5 defended by the g6 pawn"],
-    ["r2Q4", "a rook on a5 that can capture the checking queen on d5"],
-])("geometrical extra targets are not additional fork lessons: %s (%s)", (rank) => {
-    const position = makeFen(replayTacticalLine(fen, line)[6].before.toSetup()).replace(
-        "3Q4",
-        rank,
-    );
-    const result = classifyPositionTacticalMotifs({ fen: position, pvUci: line.slice(6) });
-    expect(
-        result.timeline?.filter((motif) => motif.id === "fork").map((motif) => motif.ply),
-    ).toEqual([1]);
-});
+    ["3Q3b", "a bishop on h5 defended by the g6 pawn", []],
+    ["r2Q4", "a rook on a5 that can capture the checking queen on d5", [1]],
+] as const)(
+    "geometrical extra targets are not additional fork lessons: %s (%s)",
+    (rank, _description, expected) => {
+        const position = makeFen(replayTacticalLine(fen, line)[6].before.toSetup()).replace(
+            "3Q4",
+            rank,
+        );
+        const result = classifyPositionTacticalMotifs({ fen: position, pvUci: line.slice(6) });
+        expect(
+            result.timeline?.filter((motif) => motif.id === "fork").map((motif) => motif.ply),
+        ).toEqual(expected);
+    },
+);
 
 test("normalization is idempotent and keeps evidence on actual moves", () => {
     const steps = replayTacticalLine(fen, line);
