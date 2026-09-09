@@ -497,6 +497,92 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_MATING_DEFLECTION_REPORT,
+    )(
+        "validate private mating deflection acceptance and material decline",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const { proveMatingDeflection } = await import("../tacticalMotifs/causalTactics");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_MATING_DEFLECTION_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find((r: { eligibleIndex: number }) => r.eligibleIndex === 10);
+            const proof = proveMatingDeflection(replayTacticalLine(row.fen, row.sourceUci)[0]);
+            expect(proof).toMatchObject({ gain: 320 });
+            const searches = [];
+            for (const input of [
+                { label: "Original", moves: [] as string[], root: undefined as string | undefined },
+                {
+                    label: "Accepted offer, exact mate",
+                    moves: row.sourceUci.slice(0, 2),
+                    root: row.sourceUci[2],
+                },
+                {
+                    label: "Declined offer, exact bishop capture",
+                    moves: ["e7f6", "h5g6"],
+                    root: "d3g6",
+                },
+                {
+                    label: "After queen exchange, save the bishop",
+                    moves: ["e7f6", "h5g6", "d3g6", "g7f6"],
+                    root: "g6f7",
+                },
+                { label: "Missed opportunity", moves: ["g1f1"], root: undefined },
+            ]) {
+                const steps = replayTacticalLine(row.fen, input.moves);
+                expect(steps).toHaveLength(input.moves.length);
+                const fen = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : row.fen;
+                const lines = [...(await analyse(engine, fen, input.root)).values()];
+                expect(lines[0].depth).toBe(16);
+                searches.push({ ...input, fen, lines });
+            }
+            const before = searches[0].lines[0],
+                after = searches.at(-1)!.lines[0];
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                bestMoveUci: before.pvUci[0],
+                playedMoveUci: "g1f1",
+                pvUci: before.pvUci,
+                pvSan: before.pvSan,
+                refutationUci: after.pvUci,
+                refutationSan: after.pvSan,
+                cpBefore: before.cp,
+                cpAfter: after.cp === null ? null : -after.cp,
+                cpLoss: before.cp === null || after.cp === null ? null : before.cp + after.cp,
+            });
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        sourceSha256: sample.sourceSha256,
+                        id: row.id,
+                        proof,
+                        searches,
+                        review,
+                        explanation: buildMistakeReviewTacticalExplanation(review),
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+            expect(before.pvUci[0]).toBe(row.sourceUci[0]);
+            expect(searches[1].lines[0].mate).toBe(1);
+            for (const search of searches.slice(2, 4))
+                expect(search.lines[0].cp!).toBeGreaterThan(0);
+            expect(review.missedMotifs[0]?.id).toBe("deflection");
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_QUIET_FORK_ENGINE_REPORT,
     )(
         "validate private quiet capture preparations and countercapture recoveries",

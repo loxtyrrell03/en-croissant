@@ -1,5 +1,19 @@
 # Private easy-course development audit
 
+## Current refinement: adapter 45 / live pipeline 47
+
+A checking capture can now explain a mating deflection even when the engine declines the offered piece. Every legal acceptance must allow an independently replayed immediate mate. Restoring the receiver to its old square must refute that mate by restoring a legal capture of the mating piece or blocking its mating ray; this is a geometry probe, not a fabricated legal variation. Every declined offer needs a related material-preserving reply: move the offered piece or capture the checking interposition. Legal exchanges, immediate off-square captures, mate and promotion resources are checked under an 8,192-move budget, with separate bounded exchange leaves. Exhaustion abstains. The reported material value is capped by the root capture and is not a full-position evaluation.
+
+The recovered private exercise offers a queen to a pawn blocking a bishop's mating diagonal. Accepting mates; interposing the queen instead concedes material. It now leads with Deflection at the root in both source and fresh engine lines. The other 23 live main selections are unchanged. Eight source results and seven live main results remain empty in the frozen 24-position development sample; nonempty does not mean correct. A separate quiet queen offer still has an unproved declined branch. This checking-only proof does not claim that case, longer mates, arbitrary quiet/checking compensation or general before/better opponent causation.
+
+Five fresh depth-16 searches independently confirm the best capture (+715 cp for White), accepted mate in one, exact declined-offer capture (+658), the bishop-saving move after the queen exchange (+702), and a tested missed king move (+546 cp for Black). These full-position scores are not the 320 cp local proof bound. In that mistake, review appropriately leads with the opponent's newly allowed king/bishop fork and keeps the missed deflection as the secondary lesson. The root board draws the offer and potential acceptance, not a mate on a board where the offer was declined. The rendered continuation preserves this conditional wording.
+
+Sixteen new regressions cover blocking and guarding deflections, every receiver, a king flight, a pinned mating bishop, an added defensive rook, removed mating support, colour reflection, custom/exhausted budgets, root/continuation agreement, arrows and missed opportunities. All 520 selected tests in 35 files pass (two opt-in skips), as do the private 24-position fresh replay, five-search diagnostic, targeted lint and shared review-worker/8,862-module production builds. The 32-case lesson report and previous 89 public worker main labels are unchanged. Actual-controller parity passes 90 public plus seven private cases; public cold-worker total median/p95/max is 68/197/532 ms, startup max 30 ms and computation/transfer max 510 ms, excluding engine/UI. Isolated HTTP startup/classification is 4,115/5 ms for Reti and 80/104 ms for f7. Type checking retains only the unrelated OTB number/bigint fixture error. No app, package or service was restarted/deployed; no physical WebView proof is claimed.
+
+Reproduce the private branch check with the sample path and a **new** private `TACTICAL_PRIVATE_MATING_DEFLECTION_REPORT`, selecting `private mating deflection` in `tacticalJudgement.test.ts`. Full course data, engine reports and individual judgements remain outside Git.
+
+## Original audit and subsequent milestones
+
 Date: 2026-09-08. Classifier: `site-55.adapter-39`; live pipeline: 41.
 
 The user supplied locally downloaded Woodpecker Method PGNs. The easy section contains 242 parsed PGN records, of which 222 have a FEN and a nonempty, completely legal solution mainline. No eligible mainline was rejected. The source text SHA-256 is `e10dfda1d0463c1d91d375a04d891021dce997663c913a634a53804c5091b5e4`.
@@ -16,7 +30,7 @@ This is a development sample of easy exercises, not a holdout, a random sample o
 
 ## Findings
 
-- Eleven of the 24 live main headlines were empty. Thirteen were nonempty, but this is **not thirteen correct classifications**.
+- Ten of the 24 live main headlines were empty (eleven source-line results were empty). Fourteen live results were nonempty, but this is **not fourteen correct classifications**. The source/live count correction is recorded under adapter 42 below.
 - Several nonempty results name a later fork/discovered attack without explaining the root attraction or preparation. A generic Sacrifice headline also obscures a subsequent checking-fork mechanism.
 - Some source mating continuations can be avoided by conceding material. The correct lesson must cover that alternative; attaching a forced-mate label solely from the course solution would be wrong.
 - Direct attraction, some forcing mates, clearance, removing a defender and discovered attacks are already found in parts of this sample. Each requires a position-level judgement rather than agreement with course terminology.

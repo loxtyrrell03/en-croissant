@@ -149,6 +149,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 },
             },
             {
+                id: "constructed:mating-deflection-declined",
+                input: {
+                    fen: "8/3Q4/6pp/5n1k/2B1N1pq/8/3B4/6K1 w - - 0 1",
+                    pvUci: ["d7f5", "h4g5", "d2g5"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:queen-capture-over-incidental-pin",
                 input: {
                     fen: "8/4R1pk/5q2/8/8/8/1B6/6K1 w - - 0 1",
@@ -241,7 +250,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(89);
+        expect(report).toHaveLength(90);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
@@ -271,6 +280,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_
             ["private-easy:97", "forkPreparation", 280],
             ["private-easy:87", "forkPreparation", 90],
             ["private-easy:173", "forkPreparation", 100],
+            ["private-easy:10", "deflection", 320],
         ] as const) {
             const row = sample.cases.find((item: { id: string }) => item.id === id);
             const input = {

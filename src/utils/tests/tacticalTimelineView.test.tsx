@@ -5,6 +5,27 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("a declined mating deflection keeps its conditional explanation at the offer", () => {
+  const fen = "8/3Q4/6pp/5n1k/2B1N1pq/8/3B4/6K1 w - - 0 1";
+  const line = ["d7f5", "h4g5", "d2g5"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  const offer = container.querySelector('[data-tactical-ply="1"]')!;
+  expect(offer.textContent).toContain("Deflection");
+  expect(offer.textContent).toContain("Accepting with gxf5 allows Bf7#");
+  expect(offer.textContent).toContain("not a forced-mate claim");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Bxg5");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).not.toContain("Bf7#");
+});
+
 test("keeps the sacrifice acceptance visible without a misleading material-win badge", () => {
   const fen = "8/8/6k1/5qpr/4N3/8/8/K6Q w - - 0 1";
   const line = ["h1h5", "g6h5", "e4g3"];

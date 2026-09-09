@@ -1,5 +1,11 @@
 # Tactical relevance judgement, 2026-09-08
 
+## Adapter 45: mating deflection with a material-concession defence
+
+Checking captures now receive independently proved Deflection evidence when accepting removes a mating-square guard or mating-ray blocker, while every declined offer preserves a related local material gain. The explanation explicitly distinguishes the accepted mate from the material defence; board arrows and missed-opportunity review share it. One additional private easy exercise is recovered, with the other 23 live headlines unchanged; seven live and eight source results remain empty. Quiet offers and longer combinations remain outside this proof.
+
+The 520-test selection, five fresh depth-16 branch searches, private 24-position replay, production/shared worker builds and 90 public plus seven private actual-controller cases pass. These checks do not establish general accuracy or physical WebView behaviour. See [the private-course audit](private-course-review.md) for limits and reproduction; course content and detailed reports must stay outside Git. No app/package/service was restarted or deployed.
+
 ## Live pipeline 41: cold worker startup is not proof computation
 
 The isolated development HTTP check reproduced a false timeout: Vite loading
