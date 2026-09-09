@@ -11,7 +11,10 @@ import {
     clearanceKingDefence,
     proveCheckingMaterialAttack,
     proveQuietDoubleThreat,
+    proveDefenderCombination,
+    proveCombinedDefenderRemoval,
     replayTacticalLine,
+    tacticalExchangeGain,
 } from "@/utils/tacticalMotifs/causalTactics";
 import {
     buildMistakeReviewTacticalExplanation,
@@ -498,6 +501,144 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_THIRD_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_TWO_GUARD_REPORT,
+    )(
+        "inspect the two-guard exchange combination and defensive resources",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_TWO_GUARD_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_THIRD_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 172,
+            );
+            const step = replayTacticalLine(row.fen, row.sourceUci)[0];
+            const target = parseUci(row.sourceUci[2])!;
+            if (!("from" in target)) throw new Error("Expected normal target capture");
+            const beforeGain = tacticalExchangeGain(step.before, target);
+            const probe = step.after.clone();
+            probe.turn = step.before.turn;
+            const afterGain = tacticalExchangeGain(probe, target);
+            const local = proveDefenderCombination(step, [target.to], [target.from, step.move.to]);
+            const proof = proveCombinedDefenderRemoval(step)!;
+            expect(proof).not.toBeNull();
+            const chosen = proof.declined;
+            const witnesses = chosen.map((branch) => {
+                const pos = step.after.clone();
+                const moves = [step.uci];
+                for (const san of [branch.reply, branch.answer]) {
+                    const move = parseSan(pos, san)!;
+                    expect(move).toBeDefined();
+                    expect(pos.isLegal(move)).toBe(true);
+                    moves.push(makeUci(move));
+                    pos.play(move);
+                }
+                return moves;
+            });
+            const searches = [];
+            for (const prefix of [
+                [],
+                [row.sourceUci[0]],
+                row.sourceUci.slice(0, 2),
+                [row.sourceUci[2]],
+                ...witnesses,
+            ]) {
+                const steps = replayTacticalLine(row.fen, prefix);
+                expect(steps).toHaveLength(prefix.length);
+                const fen = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : row.fen;
+                const lines = [
+                    ...(
+                        await analyse(engine, fen, prefix.length ? undefined : row.sourceUci[0])
+                    ).values(),
+                ];
+                searches.push({ prefix, fen, lines });
+            }
+            const replies = [...step.after.allDests()].flatMap(([from, dests]) =>
+                [...dests].map((to) => ({ from, to })),
+            );
+            const exchanges = replies.map((reply) => {
+                const next = step.after.clone();
+                next.play(reply);
+                const capture = { ...target, to: reply.from === target.to ? reply.to : target.to };
+                return {
+                    reply: makeSan(step.after, reply),
+                    uci: makeUci(reply),
+                    checking: next.isCheck(),
+                    targetGain: next.isLegal(capture) ? tacticalExchangeGain(next, capture) : null,
+                };
+            });
+            expect(searches[0].lines[0].cp!).toBeGreaterThan(100);
+            expect(searches[1].lines[0].cp!).toBeLessThan(-100);
+            expect(searches[2].lines[0].cp!).toBeGreaterThan(100);
+            expect(searches[3].lines[0].cp!).toBeGreaterThan(100);
+            for (const search of searches.slice(4))
+                expect({
+                    prefix: search.prefix,
+                    winning:
+                        search.lines[0].mate != null
+                            ? search.lines[0].mate < 0
+                            : search.lines[0].cp! < -100,
+                }).toMatchObject({ winning: true });
+            const constructed = [];
+            const constructedFen = "6k1/2r2ppp/2q5/3n4/8/6Q1/5PPP/3R1RK1 w - - 0 1";
+            for (const prefix of [
+                [],
+                ["g3c7"],
+                ["d1d5", "c6c1", "f1c1"],
+                ["d1d5", "c6c1", "d5d1"],
+            ]) {
+                const steps = replayTacticalLine(constructedFen, prefix);
+                expect(steps).toHaveLength(prefix.length);
+                const fen = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : constructedFen;
+                const lines = [
+                    ...(await analyse(engine, fen, prefix.length ? undefined : "d1d5")).values(),
+                ];
+                constructed.push({ prefix, fen, lines });
+            }
+            expect(constructed[0].lines[0].cp!).toBeGreaterThan(100);
+            // The simplified position has drawing compensation after the
+            // premature capture; the missed winning opportunity is the loss.
+            expect(constructed[0].lines[0].cp! + constructed[1].lines[0].cp!).toBeGreaterThan(200);
+            expect(constructed[2].lines[0].mate).toBeGreaterThan(0);
+            expect(constructed[3].lines[0].cp!).toBeLessThan(-100);
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                bestMoveUci: row.sourceUci[0],
+                playedMoveUci: row.sourceUci[2],
+                pvUci: row.sourceUci,
+                refutationUci: searches[3].lines[0].pvUci,
+            });
+            expect(review.missedMotifs[0]?.id).toBe("capturingDefender");
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        beforeGain,
+                        afterGain,
+                        local,
+                        proof,
+                        searches,
+                        exchanges,
+                        constructed,
+                        review,
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+        },
+        120000,
+    );
     test.skipIf(!engine || !process.env.TACTICAL_PIN_ENTRY_REPORT)(
         "verify connected pin entry against queen escape and knight capture",
         async () => {

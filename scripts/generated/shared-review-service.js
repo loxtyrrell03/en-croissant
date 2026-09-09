@@ -9437,8 +9437,15 @@ function isCompensatedContinuationCapture(steps, index) {
 * do not borrow earlier gains, future PV play or promotion bookkeeping. */
 function winningRecaptureEvidence(steps, index, motif) {
 	const step = steps[index], previous = steps[index - 1];
-	if (motif.id === "hangingPiece" && step?.capture && previous && step.move.to === previous.move.to && proveExchangeDeflection(previous)) return null;
+	if (motif.id === "hangingPiece" && step?.capture && previous && step.move.to === previous.move.to && (proveExchangeDeflection(previous) || proveCombinedDefenderRemoval(previous))) return null;
 	if (motif.id === "hangingPiece" && step?.capture && previous) {
+		const branch = proveCombinedDefenderRemoval(previous)?.declined.find((b) => b.reply === step.san);
+		const victim = step.before.board.get(step.move.to);
+		if (branch && victim) return {
+			...motif,
+			label: "Countercapture",
+			evidence: `${step.san} takes the ${victim.role} on ${makeSquare(step.move.to)} as compensation, but ${branch.answer} preserves a material gain for the player who removed the defender. This does not refute the verified combination.`
+		};
 		const fork = proveDiscoveryBackedFork(previous);
 		if (fork) {
 			if (step.move.to === previous.move.to) return null;
@@ -12253,6 +12260,154 @@ function pinnedRecapturer(step) {
 		});
 	});
 }
+var combinedRemovalCache = /* @__PURE__ */ new Map();
+/** Capture one real guard and offer the capturing piece to a second guard of
+* the same target. Neither single-guard exchange probe need improve: the
+* accepted combination removes both. Declines must retain earned material or
+* win a connected target, never borrow arbitrary future PV captures. */
+function proveCombinedDefenderRemoval(root, nodeLimit = 8192, onFailure) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !root.capture || root.move.promotion || root.after.isEnd() || root.before.isCheck()) return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (!onFailure && nodeLimit === 8192 && combinedRemovalCache.has(key)) return combinedRemovalCache.get(key);
+	const side = root.before.turn, removed = root.before.board.get(root.move.to);
+	if (!removed || removed.color === side || removed.role === "king") return null;
+	const directGain = tacticalExchangeGain(root.before, root.move);
+	if (directGain <= -VALUE.king) return null;
+	const budget = { nodes: nodeLimit };
+	const visit = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("Combined removal budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const settled = (pos, move) => {
+		if (move.promotion) return null;
+		const leaf = visit(pos, move);
+		if (leaf.isEnd()) return null;
+		for (const resource of legalMoves(leaf)) {
+			const next = visit(leaf, resource);
+			if (resource.promotion || next.isCheckmate()) return null;
+			if (capturedValue(leaf, resource) > 0 && next.isCheck()) {
+				let answered = false;
+				for (const response of legalMoves(next)) {
+					if (response.to !== resource.to || response.promotion) continue;
+					const recovered = visit(next, response);
+					if (recovered.isEnd()) continue;
+					if (legalMoves(recovered).some((m) => {
+						const after = visit(recovered, m);
+						return m.promotion || after.isCheckmate() || capturedValue(recovered, m) > 0 && after.isCheck();
+					})) continue;
+					const gain = participantCaptureGain(next, response, [...next.board[side], response.to], budget);
+					if (gain !== null && gain >= capturedValue(leaf, resource)) {
+						answered = true;
+						break;
+					}
+				}
+				if (!answered) return null;
+			}
+		}
+		return participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+	};
+	let proof = null;
+	try {
+		const candidates = [];
+		for (const target of attacks(removed, root.move.to, root.before.board.occupied)) {
+			const victim = root.before.board.get(target);
+			if (!victim || victim.color === side || ![
+				"knight",
+				"bishop",
+				"rook",
+				"queen"
+			].includes(victim.role)) continue;
+			for (const capture of legalMoves(root.before).filter((m) => m.to === target && m.from !== root.move.from && !m.promotion)) {
+				const premature = visit(root.before, capture);
+				const oldGain = tacticalExchangeGain(root.before, capture);
+				if (!premature.isLegal({
+					from: root.move.to,
+					to: target
+				}) || oldGain <= -VALUE.king || oldGain >= 100) continue;
+				const singlyRemoved = withTurn(root.after, side);
+				if (!singlyRemoved.isLegal(capture)) continue;
+				const singleGain = tacticalExchangeGain(singlyRemoved, capture);
+				if (singleGain <= -VALUE.king || singleGain >= 100) continue;
+				const stillGuarded = visit(singlyRemoved, capture);
+				for (const reply of legalMoves(root.after)) {
+					if (reply.to !== root.move.to || reply.promotion || !capturedValue(root.after, reply)) continue;
+					const receiver = root.after.board.get(reply.from);
+					if (receiver.role === "king" || !attacks(receiver, reply.from, root.after.board.occupied).has(target) || !stillGuarded.isLegal({
+						from: reply.from,
+						to: target
+					})) continue;
+					const accepted = visit(root.after, reply);
+					if (attacks(receiver, reply.to, accepted.board.occupied).has(target) || !accepted.isLegal(capture)) continue;
+					const gain = settled(accepted, capture);
+					if (gain === null || root.capture - capturedValue(root.after, reply) + gain < 100) continue;
+					candidates.push({
+						target,
+						receiver: reply.from,
+						capturer: capture.from,
+						acceptance: [makeSan(root.after, reply), makeSan(accepted, capture)]
+					});
+				}
+			}
+		}
+		for (const candidate of candidates) {
+			let minimum = Infinity, complete = true;
+			const declined = [];
+			for (const reply of legalMoves(root.after)) {
+				if (reply.promotion) {
+					complete = false;
+					break;
+				}
+				const next = visit(root.after, reply);
+				if (next.isEnd()) {
+					complete = false;
+					break;
+				}
+				const balance = root.capture - capturedValue(root.after, reply);
+				const target = reply.from === candidate.target ? reply.to : candidate.target;
+				const receiver = reply.from === candidate.receiver ? reply.to : candidate.receiver;
+				let best = -Infinity, answer = "";
+				for (const move of legalMoves(next)) {
+					const takes = capturedValue(next, move);
+					if (!(takes && (move.to === target && [candidate.capturer, root.move.to].includes(move.from) || move.to === receiver || capturedValue(root.after, reply) > 0 && move.to === reply.to)) && (takes || balance < 100 || move.from !== root.move.to)) continue;
+					const gain = settled(next, move);
+					if (gain !== null && balance + gain > best) {
+						best = balance + gain;
+						answer = makeSan(next, move);
+					}
+					if (best >= 100) break;
+				}
+				if (best < 100) {
+					onFailure?.(`Unproved reply ${makeSan(root.after, reply)}`);
+					complete = false;
+					break;
+				}
+				minimum = Math.min(minimum, best);
+				if (reply.from !== candidate.receiver || reply.to !== root.move.to) declined.push({
+					reply: makeSan(root.after, reply),
+					answer,
+					gain: best
+				});
+			}
+			if (complete && declined.length && Number.isFinite(minimum) && directGain < minimum) {
+				proof = {
+					...candidate,
+					gain: minimum,
+					declined
+				};
+				break;
+			}
+		}
+	} catch (error) {
+		onFailure?.(error instanceof Error ? error.message : String(error));
+	}
+	if (!onFailure && nodeLimit === 8192) {
+		combinedRemovalCache.set(key, proof);
+		if (combinedRemovalCache.size > 128) combinedRemovalCache.delete(combinedRemovalCache.keys().next().value);
+	}
+	return proof;
+}
 function capturedDefenderProof(step, source) {
 	const defender = step.before.board.get(step.move.to);
 	if (!defender || defender.color === step.before.turn || defender.role === "king") return null;
@@ -12305,6 +12460,29 @@ function capturedDefenderProof(step, source) {
 				moveUci: step.uci,
 				value: gain,
 				evidence: `${step.san} removes the ${defender.role} on ${makeSquare(step.move.to)} that defended the ${victim.role} on ${makeSquare(target)}${step.after.isCheck() ? ", with check" : ""}. ${directGain !== null ? "Every legal reply allows a profitable capture of that target." : `${additionalTargets.length ? `It also attacks ${additionalTargets.map((to) => `the ${step.after.board.get(to).role} on ${makeSquare(to)}`).join(" and ")}. ` : ""}${relatedRays.length ? `Moving the defended piece exposes ${relatedRays.map((ray) => `the ${step.after.board.get(ray.rear).role} on ${makeSquare(ray.rear)}`).join(" and ")}. ` : ""}The short combination wins material against every legal reply, including a checking counterattack; captures and exposed attacking pieces are accounted for.`}`
+			}
+		};
+	}
+	const combined = proveCombinedDefenderRemoval(step);
+	if (combined) {
+		const victim = step.before.board.get(combined.target);
+		const receiver = step.before.board.get(combined.receiver);
+		const declined = combined.declined.reduce((a, b) => a.gain <= b.gain ? a : b);
+		return {
+			target: combined.target,
+			targets: [combined.target, combined.receiver],
+			capturers: [combined.capturer],
+			gain: combined.gain,
+			extended: true,
+			motif: {
+				id: "capturingDefender",
+				label: "Removing the Defenders",
+				source,
+				confidence: "high",
+				ply: 1,
+				moveUci: step.uci,
+				value: combined.gain,
+				evidence: `${step.san} removes the ${defender.role} on ${makeSquare(step.move.to)} and offers the ${step.before.board.get(step.move.from).role} to draw the ${receiver.role} off ${makeSquare(combined.receiver)}. Both guarded the ${victim.role} on ${makeSquare(combined.target)}. After ${combined.acceptance.join(" ")}, neither still guards that target and it is won. Declining with ${declined.reply} can be met by ${declined.answer}, retaining material instead. Every legal reply is checked, including captures of other pieces; accepting the offer is not a free gain for the defender.`
 			}
 		};
 	}
@@ -13757,6 +13935,14 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			sound = (mate || settled >= 100) && exchangeGain > -VALUE.king && exchangeGain <= -90;
 		} else sound = mate || settled >= 100;
 		if (!sound) continue;
+		if (proposal.id === "capturingDefender") {
+			const verified = capturedDefenderEvidence(step, proposal.source);
+			if (verified) proposal = {
+				...proposal,
+				...verified,
+				ply: proposal.ply
+			};
+		}
 		if (!mate && supportedPin?.kind === "proven" && supportedPin.complete) proposal = {
 			...proposal,
 			value: supportedPin.gain
@@ -13808,7 +13994,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		};
 		candidates.push({
 			...proposal,
-			confidence: proposal.id === "fork" || proposal.id === "hangingPiece" || proposal.id === "attackingF2F7" ? "high" : "medium"
+			confidence: proposal.id === "fork" || proposal.id === "capturingDefender" || proposal.id === "hangingPiece" || proposal.id === "attackingF2F7" ? "high" : "medium"
 		});
 	}
 	const root = steps[0];
@@ -14747,7 +14933,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 61;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 62;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

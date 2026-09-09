@@ -6,6 +6,31 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("the two-defender combination explains the offer without a false winning recapture", () => {
+  const fen = "6k1/2r2ppp/2q5/3n4/8/6Q1/5PPP/3R1RK1 w - - 0 1";
+  const line = ["d1d5", "c6d5", "g3c7"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain(
+    "Removing the Defenders",
+  );
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain(
+    "Both guarded the rook on c7",
+  );
+  expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).not.toContain(
+    "Winning Recapture",
+  );
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Qxc7");
+});
+
 test("the pin entry explains its connected continuation without a premature fork badge", () => {
   const fen = "2r2rk1/pp4pp/1n3p2/3p4/3qp1N1/6Q1/P1P3PP/1N2R2K w - - 4 21";
   const result = classifyPositionTacticalMotifs({ fen, pvUci: ["g4h6"] });

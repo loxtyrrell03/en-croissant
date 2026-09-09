@@ -107,6 +107,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:combined-defender-removal",
+                input: {
+                    fen: "6k1/2r2ppp/2q5/3n4/8/6Q1/5PPP/3R1RK1 w - - 0 1",
+                    pvUci: ["d1d5", "c6d5", "g3c7"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "regression:connected-pin-entry",
                 input: {
                     fen: "2r2rk1/pp4pp/1n3p2/3p4/3qp1N1/6Q1/P1P3PP/1N2R2K w - - 4 21",
@@ -394,7 +403,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(106);
+        expect(report).toHaveLength(107);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
