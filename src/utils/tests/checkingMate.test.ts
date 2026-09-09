@@ -66,7 +66,8 @@ test.each(["41frD", "bBtM1", "n48BE", "nUdHj"])(
 test("a real en-passant mechanism belongs to the pawn capture, not the final bishop mate", () => {
     const item = developmentExample("OezHt");
     const result = classifyPositionTacticalMotifs({ fen: item.startFen, pvUci: item.bestLine });
-    expect(result.motifs.find((m) => m.id === "enPassant")).toMatchObject({
+    expect(result.motifs.some((m) => m.id === "enPassant")).toBe(false);
+    expect(result.timeline?.find((m) => m.id === "enPassant")).toMatchObject({
         ply: 5,
         moveUci: "g5f6",
     });

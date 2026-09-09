@@ -6,6 +6,28 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("a promotion is described at its actual ply without replacing the initiating pin", () => {
+  const fen = "4k3/4n3/8/3P4/2B5/8/8/4R1K1 w - - 0 1";
+  const line = ["d5d6", "e8d7", "d6e7", "d7e8", "c4b5", "e8f7", "e7e8q"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  expect(result.motifs[0]).toMatchObject({ id: "pin", ply: 1 });
+  expect(result.motifs.some((m) => m.id === "promotion")).toBe(false);
+  expect(result.timeline?.find((m) => m.id === "promotion")?.value).toBeUndefined();
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Pin");
+  expect(container.querySelector('[data-tactical-ply="7"]')?.textContent).toContain(
+    "promotes the pawn to a queen",
+  );
+});
+
 test("a drawn recapturer is explained before the king's actual discovered check", () => {
   const fen = "6r1/1p6/6k1/4R3/4Nr2/8/7P/6K1 b - - 0 1";
   const line = ["f4e4", "e5e4", "g6f5", "g1f2", "f5e4"];

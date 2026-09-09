@@ -13987,7 +13987,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		}
 		if (proposal.id === "enPassant") {
 			const index = episode.findIndex((s) => s.before.turn === attacker && s.before.board.get(s.move.from)?.role === "pawn" && s.move.to === s.before.epSquare && !s.before.board.get(s.move.to) && s.capture === VALUE.pawn);
-			if (index < 0) continue;
+			if (index !== 0) continue;
 			const capture = episode[index];
 			const victim = capture.move.to + (attacker === "white" ? -8 : 8);
 			proposal = {
@@ -14005,7 +14005,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		].includes(proposal.id)) continue;
 		if (proposal.id === "promotion" || proposal.id === "underPromotion") {
 			const index = episode.findIndex((s) => s.before.turn === attacker && s.move.promotion && (proposal.id !== "underPromotion" || s.move.promotion !== "queen"));
-			if (index < 0) continue;
+			if (index !== 0) continue;
 			const promotion = episode[index];
 			proposal = {
 				...proposal,
@@ -15195,7 +15195,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 68;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 69;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -15701,6 +15701,24 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 			break;
 		}
 		if (!tacticalStart) continue;
+		const promotion = step.move.promotion;
+		const enPassant = step.before.board.get(step.move.from)?.role === "pawn" && step.move.to === step.before.epSquare && !step.before.board.get(step.move.to) && step.capture === 100;
+		if (promotion || enPassant) {
+			const id = promotion ? promotion === "queen" ? "promotion" : "underPromotion" : "enPassant";
+			const victim = step.move.to + (step.before.turn === "white" ? -8 : 8);
+			const key = `${index + 1}:${id}`;
+			if (!evidence.has(key)) evidence.set(key, {
+				id,
+				label: tacticalMotifLabel(id),
+				source,
+				confidence: "high",
+				ply: index + 1,
+				moveUci: step.uci,
+				actor: step.before.turn,
+				relevance: "secondary",
+				evidence: promotion ? `${step.san} promotes the pawn to a ${promotion}.` : `${step.san} captures the pawn on ${makeSquare(victim)} en passant, moving from ${makeSquare(step.move.from)} to ${makeSquare(step.move.to)}.`
+			});
+		}
 		const side = step.before.turn === "white" ? "w" : "b";
 		const themes = detectStepThemes(rawSteps[index], side, { steps: rawSteps });
 		const detail = {

@@ -7210,7 +7210,10 @@ export function auditTacticalMotifs(
                     !s.before.board.get(s.move.to) &&
                     s.capture === VALUE.pawn,
             );
-            if (index < 0) continue;
+            // Special-move labels describe this move, not a causal proof of
+            // a preceding sequence. Per-ply timeline classification will
+            // recover the actual en-passant capture in its own position.
+            if (index !== 0) continue;
             const capture = episode[index];
             const victim = capture.move.to + (attacker === "white" ? -8 : 8);
             proposal = {
@@ -7234,7 +7237,10 @@ export function auditTacticalMotifs(
                     s.move.promotion &&
                     (proposal.id !== "underPromotion" || s.move.promotion !== "queen"),
             );
-            if (index < 0) continue;
+            // A future promotion needs its own root preparation certificate;
+            // the PV endpoint alone cannot headline an earlier move. The
+            // independent per-ply classifier still names the actual promotion.
+            if (index !== 0) continue;
             const promotion = episode[index];
             proposal = {
                 ...proposal,

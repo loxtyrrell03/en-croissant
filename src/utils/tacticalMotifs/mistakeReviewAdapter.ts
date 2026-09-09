@@ -1,4 +1,6 @@
 import { makeFen } from "chessops/fen";
+import { makeSquare } from "chessops/util";
+import type { Square } from "chessops/types";
 import {
     THEME_COLORS,
     THEME_DETECTOR_VERSION,
@@ -106,7 +108,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 68;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 69;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -931,6 +933,39 @@ export function buildTacticalTimeline(
             break;
         }
         if (!tacticalStart) continue;
+        // These are observed legal actions, not certificates explaining the
+        // root move. Record them at their actual ply even when a promoted
+        // piece is subsequently sacrificed; do not invent a material value
+        // or claim that underpromotion was necessary.
+        const promotion = step.move.promotion;
+        const enPassant =
+            step.before.board.get(step.move.from)?.role === "pawn" &&
+            step.move.to === step.before.epSquare &&
+            !step.before.board.get(step.move.to) &&
+            step.capture === 100;
+        if (promotion || enPassant) {
+            const id = promotion
+                ? promotion === "queen"
+                    ? "promotion"
+                    : "underPromotion"
+                : "enPassant";
+            const victim = step.move.to + (step.before.turn === "white" ? -8 : 8);
+            const key = `${index + 1}:${id}`;
+            if (!evidence.has(key))
+                evidence.set(key, {
+                    id,
+                    label: tacticalMotifLabel(id),
+                    source,
+                    confidence: "high",
+                    ply: index + 1,
+                    moveUci: step.uci,
+                    actor: step.before.turn,
+                    relevance: "secondary",
+                    evidence: promotion
+                        ? `${step.san} promotes the pawn to a ${promotion}.`
+                        : `${step.san} captures the pawn on ${makeSquare(victim as Square)} en passant, moving from ${makeSquare(step.move.from)} to ${makeSquare(step.move.to)}.`,
+                });
+        }
         const side = step.before.turn === "white" ? "w" : "b";
         const themes = detectStepThemes(rawSteps[index], side, { steps: rawSteps });
         const detail: SiteThemeDetail = {

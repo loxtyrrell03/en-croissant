@@ -107,6 +107,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:future-promotion-not-root-cause",
+                input: {
+                    fen: "6k1/p6r/1P6/8/8/8/8/6KR w - - 0 1",
+                    pvUci: ["h1h7", "g8h7", "b6a7", "h7g6", "a7a8q"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:capture-to-discovered-check",
                 input: {
                     fen: "6r1/1p6/6k1/4R3/4Nr2/8/7P/6K1 b - - 0 1",
@@ -465,7 +474,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(113);
+        expect(report).toHaveLength(114);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
@@ -505,39 +514,46 @@ test.skipIf(
     expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
 });
 
-test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_THIRD_REPORT)(
-    "the third disjoint sample retains full source and live timelines through the worker",
-    async () => {
-        const report = JSON.parse(readFileSync(process.env.TACTICAL_PRIVATE_THIRD_REPORT!, "utf8"));
-        expect(report.cases).toHaveLength(24);
-        for (const row of report.cases) {
-            for (const input of [
-                {
-                    fen: row.fen,
-                    pvUci: row.engineLines[0].pvUci,
-                    variations: row.engineLines,
-                    engineName: "Stockfish 18",
-                    depth: 16,
-                },
-                {
-                    fen: row.fen,
-                    pvUci: row.sourceUci,
-                    engineName: "Private source continuation",
-                    depth: 16,
-                },
-            ]) {
-                const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
-                expect({ id: row.id, scan: result.scan }).toEqual({
-                    id: row.id,
-                    scan: buildLiveTacticalScan(input),
-                });
-                expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
-                expect(result.startupMs).toBeLessThan(TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
+for (const { name, path } of [
+    { name: "third", path: process.env.TACTICAL_PRIVATE_THIRD_REPORT },
+    { name: "fourth", path: process.env.TACTICAL_PRIVATE_FOURTH_REPORT },
+]) {
+    test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !path)(
+        `the ${name} disjoint sample retains full source and live timelines through the worker`,
+        async () => {
+            const report = JSON.parse(readFileSync(path!, "utf8"));
+            expect(report.cases).toHaveLength(24);
+            for (const row of report.cases) {
+                for (const input of [
+                    {
+                        fen: row.fen,
+                        pvUci: row.engineLines[0].pvUci,
+                        variations: row.engineLines,
+                        engineName: "Stockfish 18",
+                        depth: 16,
+                    },
+                    {
+                        fen: row.fen,
+                        pvUci: row.sourceUci,
+                        engineName: "Private source continuation",
+                        depth: 16,
+                    },
+                ]) {
+                    const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+                    expect({ id: row.id, scan: result.scan }).toEqual({
+                        id: row.id,
+                        scan: buildLiveTacticalScan(input),
+                    });
+                    expect(result.classificationMs).toBeLessThan(
+                        TACTICAL_CLASSIFICATION_TIMEOUT_MS,
+                    );
+                    expect(result.startupMs).toBeLessThan(TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
+                }
             }
-        }
-    },
-    120000,
-);
+        },
+        120000,
+    );
+}
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_PGN_SAMPLE)(
     "the private recovered themes survive the built worker boundary",
