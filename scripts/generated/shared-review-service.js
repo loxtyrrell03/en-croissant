@@ -9437,6 +9437,7 @@ function isCompensatedContinuationCapture(steps, index) {
 * do not borrow earlier gains, future PV play or promotion bookkeeping. */
 function winningRecaptureEvidence(steps, index, motif) {
 	const step = steps[index], previous = steps[index - 1];
+	if (motif.id === "hangingPiece" && step?.capture && previous?.capture && proveMatingDeflection(previous)?.declined.some((branch) => branch.reply === step.san)) return null;
 	if (motif.id !== "hangingPiece" || !step?.capture || !previous?.capture || previous.move.to !== step.move.to || previous.move.promotion || step.move.promotion) return motif;
 	const gain = tacticalExchangeGain(step.before, step.move);
 	if (gain <= -VALUE.king || gain - previous.capture < 100) return null;
@@ -12335,6 +12336,7 @@ function deflectionEvidence(steps, source) {
 	if (mating) {
 		const branch = mating.mating[0];
 		const defender = bait.after.board.get(branch.defender);
+		const decline = mating.declined.find((branch) => branch.continuation?.length) ?? mating.declined[0];
 		return {
 			id: "deflection",
 			label: "Deflection",
@@ -12343,7 +12345,7 @@ function deflectionEvidence(steps, source) {
 			ply: 1,
 			moveUci: bait.uci,
 			value: mating.gain,
-			evidence: `${bait.san} offers the ${bait.after.board.get(bait.move.to).role} to deflect the ${defender.role} from ${makeSquare(branch.defender)}. Accepting with ${branch.reply} allows ${branch.mate}: ${branch.mode === "block" ? `the ${defender.role} no longer blocks the mating line from ${makeSquare(branch.target)} to ${makeSquare(bait.after.board.kingOf(opposite(bait.before.turn)))}` : `the defender no longer guards ${makeSquare(branch.target)}`}. ${mating.declined.length ? `Declining can avoid mate, but every legal decline has a related reply retaining extra material in the checked short exchanges (for example, ${mating.declined[0].reply} ${mating.declined[0].answer}). This is not a forced-mate claim.` : "Every legal reply accepts the offer and allows immediate mate."}`
+			evidence: `${bait.san} offers the ${bait.after.board.get(bait.move.to).role} to deflect the ${defender.role} from ${makeSquare(branch.defender)}. Accepting with ${branch.reply} allows ${branch.mate}: ${branch.mode === "block" ? `the ${defender.role} no longer blocks the mating line from ${makeSquare(branch.target)} to ${makeSquare(bait.after.board.kingOf(opposite(bait.before.turn)))}` : `the defender no longer guards ${makeSquare(branch.target)}`}. ${decline ? `Declining can avoid this mate, but every legal decline has a checked material win or immediate mate. ${decline.continuation ? `After ${decline.reply}, ${decline.answer} forces an answer to check before the material recovery; ${decline.continuation.join(" ")} is one checked continuation.` : `For example, ${decline.reply} ${decline.answer}.`} This is not a forced-mate claim.` : "Every legal reply accepts the offer and allows immediate mate."}`
 		};
 	}
 	const capture = bait && proveCaptureDeflection(bait);
@@ -12385,13 +12387,70 @@ function deflectionEvidence(steps, source) {
 		evidence: `${bait.san} draws the ${defender.role} from ${makeSquare(reply.move.from)} to ${makeSquare(reply.move.to)}, removing its protection of the ${victim.role} on ${makeSquare(payoff.move.to)}. In this line, ${reply.san} ${payoff.san} wins that target. Every legal defence concedes material or immediate mate.`
 	};
 }
+/** A checking exchange can preserve an already opened capture after an offer
+* is declined. Every check response must still allow the nominated capture;
+* the PV does not provide the defence list and this is not a move-order claim. */
+function checkingExchangeRecovery(pos, move, payoffs, balance, budget) {
+	if (move.promotion || !capturedValue(pos, move) || !payoffs.length) return null;
+	const side = pos.turn;
+	const moves = (p) => legalMoves(p).sort((a, b) => {
+		const flip = side === "black" ? 0 : 56;
+		return (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip);
+	});
+	const visit = (p, m) => {
+		if (--budget.nodes < 0) throw new Error("Checking exchange budget exhausted");
+		const next = p.clone();
+		next.play(m);
+		return next;
+	};
+	const after = visit(pos, move);
+	if (!after.ctx().checkers.has(move.to) || after.isEnd()) return null;
+	let minimum = Infinity, continuation = [];
+	for (const reply of moves(after)) {
+		if (reply.promotion) return null;
+		const next = visit(after, reply);
+		if (next.isEnd()) return null;
+		let best = -Infinity, answer = "";
+		for (const payoff of payoffs) {
+			const capture = {
+				from: payoff.from,
+				to: reply.from === payoff.to ? reply.to : payoff.to
+			};
+			if (!next.isLegal(capture) || !capturedValue(next, capture)) continue;
+			const leaf = visit(next, capture);
+			if (leaf.isEnd()) continue;
+			let safe = true;
+			for (const resource of moves(leaf)) if (resource.promotion || visit(leaf, resource).isCheckmate()) {
+				safe = false;
+				break;
+			}
+			if (!safe) continue;
+			const gain = participantCaptureGain(next, capture, [...next.board[side], capture.to], budget);
+			if (gain === null) continue;
+			const recovered = balance + capturedValue(pos, move) - capturedValue(after, reply) + gain;
+			if (recovered > best) {
+				best = recovered;
+				answer = makeSan(next, capture);
+			}
+		}
+		if (best < 100) return null;
+		if (best < minimum) {
+			minimum = best;
+			continuation = [makeSan(after, reply), answer];
+		}
+	}
+	return Number.isFinite(minimum) ? {
+		gain: minimum,
+		continuation
+	} : null;
+}
 var matingDeflectionCache = /* @__PURE__ */ new Map();
-/** A checking normal capture can offer its mover to a mating-square defender or a
+/** A normal capture can offer its mover to a mating-square defender or a
 * blocker of the mating ray. Every acceptance must allow immediate mate,
 * and every declined offer must retain material through a related move.
 * Restoring the receiver is a causal geometry probe, never a legal PV. */
 function proveMatingDeflection(root, nodeLimit = 8192, onFailure) {
-	if (!root.capture || !root.after.isCheck() || !root.before.board.get(root.move.to) || root.move.promotion || root.after.isEnd() || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || tacticalExchangeGain(root.before, root.move) >= 100) return null;
+	if (!root.capture || !root.before.board.get(root.move.to) || root.move.promotion || root.after.isEnd() || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || tacticalExchangeGain(root.before, root.move) >= 100) return null;
 	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
 	if (!onFailure && nodeLimit === 8192 && matingDeflectionCache.has(key)) return matingDeflectionCache.get(key);
 	const budget = { nodes: nodeLimit };
@@ -12403,18 +12462,24 @@ function proveMatingDeflection(root, nodeLimit = 8192, onFailure) {
 	};
 	const side = root.before.turn, enemy = opposite(side);
 	const king = root.after.board.kingOf(enemy);
+	const moves = (pos) => {
+		const list = legalMoves(pos);
+		if (root.after.isCheck()) return list;
+		const flip = side === "black" ? 0 : 56;
+		return list.sort((a, b) => (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip));
+	};
 	let proof = null;
 	try {
 		const mating = [], declined = [];
 		let minimum = 1e4;
-		for (const reply of legalMoves(root.after)) {
+		for (const reply of moves(root.after)) {
 			const next = visit(root.after, reply);
 			if (next.isEnd() || reply.promotion) throw new Error("Terminal or promoting defence");
 			if (reply.to === root.move.to && capturedValue(root.after, reply)) {
 				const defender = root.after.board.get(reply.from);
 				if (defender.role === "king") throw new Error("King attraction is not defender deflection");
 				let found = false;
-				for (const mate of legalMoves(next)) {
+				for (const mate of moves(next)) {
 					if (mate.promotion || !visit(next, mate).isCheckmate()) continue;
 					const restored = next.clone();
 					restored.board.take(reply.to);
@@ -12447,13 +12512,21 @@ function proveMatingDeflection(root, nodeLimit = 8192, onFailure) {
 			}
 			const balance = root.capture - capturedValue(root.after, reply);
 			let best = null;
-			for (const answer of legalMoves(next)) {
+			for (const answer of moves(next)) {
 				const takesBlock = root.after.isCheck() && between(root.move.to, king).has(reply.to) && answer.to === reply.to && capturedValue(next, answer) > 0;
 				if (answer.promotion || answer.from !== root.move.to && !takesBlock) continue;
 				const leaf = visit(next, answer);
+				if (leaf.isCheckmate()) {
+					best = {
+						reply: makeSan(root.after, reply),
+						answer: makeSan(next, answer),
+						gain: 1e4
+					};
+					break;
+				}
 				if (leaf.isEnd()) continue;
 				let safe = true;
-				for (const resource of legalMoves(leaf)) if (resource.promotion || visit(leaf, resource).isCheckmate()) {
+				for (const resource of moves(leaf)) if (resource.promotion || visit(leaf, resource).isCheckmate()) {
 					safe = false;
 					break;
 				}
@@ -12466,6 +12539,27 @@ function proveMatingDeflection(root, nodeLimit = 8192, onFailure) {
 					gain: balance + gain
 				};
 				if (best.gain >= root.capture) break;
+			}
+			if (!best && !root.after.isCheck() && root.after.isLegal({
+				from: reply.from,
+				to: root.move.to
+			})) {
+				const payoffs = moves(next).filter((move) => capturedValue(next, move) && (move.to === reply.to || [
+					"bishop",
+					"rook",
+					"queen"
+				].includes(next.board.get(move.from).role) && between(move.from, move.to).has(reply.from)));
+				for (const answer of moves(next)) {
+					if (answer.from !== root.move.to) continue;
+					const recovery = checkingExchangeRecovery(next, answer, payoffs, balance, budget);
+					if (!recovery) continue;
+					best = {
+						reply: makeSan(root.after, reply),
+						answer: makeSan(next, answer),
+						...recovery
+					};
+					break;
+				}
 			}
 			if (!best) throw new Error(`Unproved declined offer: ${makeSan(root.after, reply)}`);
 			minimum = Math.min(minimum, best.gain, root.capture);
@@ -13908,7 +14002,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 50;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 51;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

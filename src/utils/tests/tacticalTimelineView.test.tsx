@@ -6,6 +6,30 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("a declined mating offer does not label its compensated knight capture a new win", () => {
+  const fen = "4r2k/5rp1/6qp/3PB3/4Q2n/3R4/6PP/4R1K1 b - - 0 1";
+  const line = ["e8e5", "e4h4", "e5e1", "h4e1", "g6d3"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  const root = container.querySelector('[data-tactical-ply="1"]')!;
+  expect(root.textContent).toContain("Accepting with Qxe5 allows Qxg2#");
+  expect(root.textContent).toContain("After Qxh4, Rxe1+");
+  expect(root.textContent).toContain("not a forced-mate claim");
+  expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).toContain("Qxh4");
+  expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).not.toContain(
+    "Hanging Piece",
+  );
+  expect(container.querySelector('[data-tactical-ply="5"]')?.textContent).toContain("Qxd3");
+});
+
 test("attraction explains move order while the discovery remains at its actual ply", () => {
   const fen = "6k1/8/1qp5/5b2/Q1P1n3/2N5/1P3PP1/6K1 w - - 0 1";
   const line = ["c3e4", "f5e4", "c4c5", "b6c5", "a4e4"];

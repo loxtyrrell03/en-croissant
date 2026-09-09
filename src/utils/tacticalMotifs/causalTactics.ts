@@ -133,6 +133,16 @@ export function winningRecaptureEvidence(
 ): TacticalMotifEvidence | null {
     const step = steps[index],
         previous = steps[index - 1];
+    // Taking another piece to decline a proved mating offer is compensation,
+    // not a separate win. The offer's all-defence proof must include this exact
+    // legal reply; absent or mismatched history cannot hide a loose piece.
+    if (
+        motif.id === "hangingPiece" &&
+        step?.capture &&
+        previous?.capture &&
+        proveMatingDeflection(previous)?.declined.some((branch) => branch.reply === step.san)
+    )
+        return null;
     if (
         motif.id !== "hangingPiece" ||
         !step?.capture ||
@@ -4642,6 +4652,8 @@ function deflectionEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
     if (mating) {
         const branch = mating.mating[0];
         const defender = bait.after.board.get(branch.defender)!;
+        const decline =
+            mating.declined.find((branch) => branch.continuation?.length) ?? mating.declined[0];
         return {
             id: "deflection",
             label: "Deflection",
@@ -4650,7 +4662,7 @@ function deflectionEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
             ply: 1,
             moveUci: bait.uci,
             value: mating.gain,
-            evidence: `${bait.san} offers the ${bait.after.board.get(bait.move.to)!.role} to deflect the ${defender.role} from ${makeSquare(branch.defender)}. Accepting with ${branch.reply} allows ${branch.mate}: ${branch.mode === "block" ? `the ${defender.role} no longer blocks the mating line from ${makeSquare(branch.target)} to ${makeSquare(bait.after.board.kingOf(opposite(bait.before.turn))!)}` : `the defender no longer guards ${makeSquare(branch.target)}`}. ${mating.declined.length ? `Declining can avoid mate, but every legal decline has a related reply retaining extra material in the checked short exchanges (for example, ${mating.declined[0].reply} ${mating.declined[0].answer}). This is not a forced-mate claim.` : "Every legal reply accepts the offer and allows immediate mate."}`,
+            evidence: `${bait.san} offers the ${bait.after.board.get(bait.move.to)!.role} to deflect the ${defender.role} from ${makeSquare(branch.defender)}. Accepting with ${branch.reply} allows ${branch.mate}: ${branch.mode === "block" ? `the ${defender.role} no longer blocks the mating line from ${makeSquare(branch.target)} to ${makeSquare(bait.after.board.kingOf(opposite(bait.before.turn))!)}` : `the defender no longer guards ${makeSquare(branch.target)}`}. ${decline ? `Declining can avoid this mate, but every legal decline has a checked material win or immediate mate. ${decline.continuation ? `After ${decline.reply}, ${decline.answer} forces an answer to check before the material recovery; ${decline.continuation.join(" ")} is one checked continuation.` : `For example, ${decline.reply} ${decline.answer}.`} This is not a forced-mate claim.` : "Every legal reply accepts the offer and allows immediate mate."}`,
         } satisfies TacticalMotifEvidence;
     }
     const capture = bait && proveCaptureDeflection(bait);
@@ -4726,6 +4738,77 @@ function deflectionEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
     return motif;
 }
 
+/** A checking exchange can preserve an already opened capture after an offer
+ * is declined. Every check response must still allow the nominated capture;
+ * the PV does not provide the defence list and this is not a move-order claim. */
+function checkingExchangeRecovery(
+    pos: Chess,
+    move: NormalMove,
+    payoffs: NormalMove[],
+    balance: number,
+    budget: ProofBudget,
+): { gain: number; continuation: string[] } | null {
+    if (move.promotion || !capturedValue(pos, move) || !payoffs.length) return null;
+    const side = pos.turn;
+    const moves = (p: Chess) =>
+        legalMoves(p).sort((a, b) => {
+            const flip = side === "black" ? 0 : 56;
+            return (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip);
+        });
+    const visit = (p: Chess, m: NormalMove) => {
+        if (--budget.nodes < 0) throw new Error("Checking exchange budget exhausted");
+        const next = p.clone();
+        next.play(m);
+        return next;
+    };
+    const after = visit(pos, move);
+    if (!after.ctx().checkers.has(move.to) || after.isEnd()) return null;
+    let minimum = Infinity,
+        continuation: string[] = [];
+    for (const reply of moves(after)) {
+        if (reply.promotion) return null;
+        const next = visit(after, reply);
+        if (next.isEnd()) return null;
+        let best = -Infinity,
+            answer = "";
+        for (const payoff of payoffs) {
+            const capture = {
+                from: payoff.from,
+                to: reply.from === payoff.to ? reply.to : payoff.to,
+            };
+            if (!next.isLegal(capture) || !capturedValue(next, capture)) continue;
+            const leaf = visit(next, capture);
+            if (leaf.isEnd()) continue;
+            let safe = true;
+            for (const resource of moves(leaf))
+                if (resource.promotion || visit(leaf, resource).isCheckmate()) {
+                    safe = false;
+                    break;
+                }
+            if (!safe) continue;
+            const gain = participantCaptureGain(
+                next,
+                capture,
+                [...next.board[side], capture.to],
+                budget,
+            );
+            if (gain === null) continue;
+            const recovered =
+                balance + capturedValue(pos, move) - capturedValue(after, reply) + gain;
+            if (recovered > best) {
+                best = recovered;
+                answer = makeSan(next, capture);
+            }
+        }
+        if (best < 100) return null;
+        if (best < minimum) {
+            minimum = best;
+            continuation = [makeSan(after, reply), answer];
+        }
+    }
+    return Number.isFinite(minimum) ? { gain: minimum, continuation } : null;
+}
+
 type MatingDeflectionProof = {
     gain: number;
     mating: {
@@ -4735,11 +4818,11 @@ type MatingDeflectionProof = {
         target: Square;
         mode: "guard" | "block";
     }[];
-    declined: { reply: string; answer: string; gain: number }[];
+    declined: { reply: string; answer: string; gain: number; continuation?: string[] }[];
 };
 const matingDeflectionCache = new Map<string, MatingDeflectionProof | null>();
 
-/** A checking normal capture can offer its mover to a mating-square defender or a
+/** A normal capture can offer its mover to a mating-square defender or a
  * blocker of the mating ray. Every acceptance must allow immediate mate,
  * and every declined offer must retain material through a related move.
  * Restoring the receiver is a causal geometry probe, never a legal PV. */
@@ -4750,7 +4833,6 @@ export function proveMatingDeflection(
 ): MatingDeflectionProof | null {
     if (
         !root.capture ||
-        !root.after.isCheck() ||
         !root.before.board.get(root.move.to) ||
         root.move.promotion ||
         root.after.isEnd() ||
@@ -4772,12 +4854,22 @@ export function proveMatingDeflection(
     const side = root.before.turn,
         enemy = opposite(side);
     const king = root.after.board.kingOf(enemy)!;
+    // Quiet offers have more defences than checks. Keep their bounded traversal
+    // identical under colour reflection without changing older checking proofs.
+    const moves = (pos: Chess) => {
+        const list = legalMoves(pos);
+        if (root.after.isCheck()) return list;
+        const flip = side === "black" ? 0 : 56;
+        return list.sort(
+            (a, b) => (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip),
+        );
+    };
     let proof: MatingDeflectionProof | null = null;
     try {
         const mating: MatingDeflectionProof["mating"] = [],
             declined: MatingDeflectionProof["declined"] = [];
         let minimum = 10000;
-        for (const reply of legalMoves(root.after)) {
+        for (const reply of moves(root.after)) {
             const next = visit(root.after, reply);
             if (next.isEnd() || reply.promotion) throw new Error("Terminal or promoting defence");
             if (reply.to === root.move.to && capturedValue(root.after, reply)) {
@@ -4785,7 +4877,7 @@ export function proveMatingDeflection(
                 if (defender.role === "king")
                     throw new Error("King attraction is not defender deflection");
                 let found = false;
-                for (const mate of legalMoves(next)) {
+                for (const mate of moves(next)) {
                     if (mate.promotion || !visit(next, mate).isCheckmate()) continue;
                     const restored = next.clone();
                     restored.board.take(reply.to);
@@ -4813,8 +4905,8 @@ export function proveMatingDeflection(
                 continue;
             }
             const balance = root.capture - capturedValue(root.after, reply);
-            let best: { reply: string; answer: string; gain: number } | null = null;
-            for (const answer of legalMoves(next)) {
+            let best: MatingDeflectionProof["declined"][number] | null = null;
+            for (const answer of moves(next)) {
                 const takesBlock =
                     root.after.isCheck() &&
                     between(root.move.to, king).has(reply.to) &&
@@ -4822,9 +4914,17 @@ export function proveMatingDeflection(
                     capturedValue(next, answer) > 0;
                 if (answer.promotion || (answer.from !== root.move.to && !takesBlock)) continue;
                 const leaf = visit(next, answer);
+                if (leaf.isCheckmate()) {
+                    best = {
+                        reply: makeSan(root.after, reply),
+                        answer: makeSan(next, answer),
+                        gain: 10000,
+                    };
+                    break;
+                }
                 if (leaf.isEnd()) continue;
                 let safe = true;
-                for (const resource of legalMoves(leaf)) {
+                for (const resource of moves(leaf)) {
                     if (resource.promotion || visit(leaf, resource).isCheckmate()) {
                         safe = false;
                         break;
@@ -4845,6 +4945,41 @@ export function proveMatingDeflection(
                         gain: balance + gain,
                     };
                 if (best.gain >= root.capture) break;
+            }
+            if (
+                !best &&
+                !root.after.isCheck() &&
+                root.after.isLegal({ from: reply.from, to: root.move.to })
+            ) {
+                // The declining receiver may vacate a second defensive line.
+                // Nominate only legal sliding captures through that exact square
+                // or a capture of the declining receiver itself.
+                const payoffs = moves(next).filter(
+                    (move) =>
+                        capturedValue(next, move) &&
+                        (move.to === reply.to ||
+                            (["bishop", "rook", "queen"].includes(
+                                next.board.get(move.from)!.role,
+                            ) &&
+                                between(move.from, move.to).has(reply.from))),
+                );
+                for (const answer of moves(next)) {
+                    if (answer.from !== root.move.to) continue;
+                    const recovery = checkingExchangeRecovery(
+                        next,
+                        answer,
+                        payoffs,
+                        balance,
+                        budget,
+                    );
+                    if (!recovery) continue;
+                    best = {
+                        reply: makeSan(root.after, reply),
+                        answer: makeSan(next, answer),
+                        ...recovery,
+                    };
+                    break;
+                }
             }
             if (!best) throw new Error(`Unproved declined offer: ${makeSan(root.after, reply)}`);
             minimum = Math.min(minimum, best.gain, root.capture);

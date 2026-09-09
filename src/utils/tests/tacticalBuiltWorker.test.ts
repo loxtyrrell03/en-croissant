@@ -212,6 +212,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 },
             },
             {
+                id: "constructed:quiet-mating-deflection-exchange",
+                input: {
+                    fen: "4r2k/5rp1/6qp/3PB3/4Q2n/3R4/6PP/4R1K1 b - - 0 1",
+                    pvUci: ["e8e5", "e4h4", "e5e1", "h4e1", "g6d3"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:knight-exchange-for-pawn",
                 input: {
                     fen: "3qk2r/8/8/4N3/2BP4/8/PPP2PPP/R4RK1 w k - 0 1",
@@ -295,7 +304,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(95);
+        expect(report).toHaveLength(96);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
@@ -330,6 +339,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_
             ["private-easy:49", "forkPreparation", 100],
             ["private-easy:193", "deflection", 100],
             ["private-easy:58", "attraction", 100],
+            ["private-easy:202", "deflection", 330],
         ] as const) {
             const row = sample.cases.find((item: { id: string }) => item.id === id);
             const input = {

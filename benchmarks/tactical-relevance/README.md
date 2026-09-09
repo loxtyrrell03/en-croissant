@@ -1,5 +1,11 @@
 # Tactical relevance judgement, 2026-09-08
 
+## Adapter 51: quiet mating deflection with a material defence
+
+The next recovered exercise depends on a queen abandoning its mate guard, not the tempting knight fork (which fresh Stockfish rejects). Nonchecking capture offers now qualify when every acceptance permits an independently verified mate and every decline retains material or gives mate. A declined offer can include a bounded checking exchange followed by an already opened capture. The root explains both choices; a defensive countercapture loses its misleading Hanging Piece badge only with replay-matching, independently proved context.
+
+The fixed private sample improves from five to four empty live outputs, with all other 23 main labels unchanged. The 602-test selection, eight fresh branch searches, final 24-position replay, 96 public/12 private built-worker cases, HTTP execution and production/shared-review builds pass. The prior 95 public worker labels and 32-case lesson report are unchanged. See [the private-course audit](private-course-review.md) for scores, proof limits and reproduction. No app/package/service was restarted or deployed; broader accuracy and physical WebView verification remain open.
+
 ## Adapter 50: exchange before the discovered attack
 
 A capture can now explain Attraction when its receiver is vulnerable to a later quiet discovery, but the original captured piece could have taken the preparing piece had that discovery been played first. The proof checks every accepting and declining defence, the discovery's replies and a positive earlier material defence within a shared budget. Root arrows show the possible acceptance; the discovery remains at its actual later ply. Missed-opportunity review shares the explanation.

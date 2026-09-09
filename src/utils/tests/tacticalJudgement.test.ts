@@ -497,6 +497,130 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_EXCHANGE_ORDER_REPORT,
+    )(
+        "inspect private offered capture and intermediate exchange order",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const {
+                proveCaptureForkPreparation,
+                proveCaptureDeflection,
+                proveMatingDeflection,
+                intermediateCaptureProof,
+                tacticalExchangeGain,
+            } = await import("../tacticalMotifs/causalTactics");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_EXCHANGE_ORDER_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested)),
+                path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 202,
+            );
+            const steps = replayTacticalLine(row.fen, row.sourceUci),
+                failures: string[] = [];
+            const rootProof = proveCaptureForkPreparation(steps[0], 8192, (r) => failures.push(r));
+            const deflection = proveCaptureDeflection(steps[0], 16384, (r) => failures.push(r));
+            const mating = proveMatingDeflection(steps[0], 8192, (r) => failures.push(r));
+            const intermediate = intermediateCaptureProof(steps[2]);
+            const searches = [];
+            for (const input of [
+                { label: "Original", moves: [] as string[], root: undefined as string | undefined },
+                { label: "Accepting the rook", moves: [row.sourceUci[0], "e4e5"], root: "h4f3" },
+                {
+                    label: "Acceptance unrestricted",
+                    moves: [row.sourceUci[0], "e4e5"],
+                    root: undefined,
+                },
+                {
+                    label: "Intermediate rook capture",
+                    moves: row.sourceUci.slice(0, 2),
+                    root: row.sourceUci[2],
+                },
+                {
+                    label: "Taking the other rook first",
+                    moves: row.sourceUci.slice(0, 2),
+                    root: "g6d3",
+                },
+                {
+                    label: "Deferred queen capture",
+                    moves: row.sourceUci.slice(0, 4),
+                    root: row.sourceUci[4],
+                },
+                { label: "Skipped offer", moves: ["e8d8"], root: undefined },
+                {
+                    label: "Declining by taking the queen",
+                    moves: [row.sourceUci[0], "e4g6"],
+                    root: "e5e1",
+                },
+            ]) {
+                const replay = replayTacticalLine(row.fen, input.moves);
+                expect(replay).toHaveLength(input.moves.length);
+                const fen = replay.length ? makeFen(replay.at(-1)!.after.toSetup()) : row.fen;
+                const lines = [...(await analyse(engine, fen, input.root)).values()];
+                expect(lines[0].depth).toBe(16);
+                searches.push({ ...input, fen, lines });
+            }
+            const before = searches[0].lines[0],
+                after = searches.find((s) => s.label === "Skipped offer")!.lines[0];
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                bestMoveUci: before.pvUci[0],
+                playedMoveUci: "e8d8",
+                pvUci: before.pvUci,
+                pvSan: before.pvSan,
+                refutationUci: after.pvUci,
+                refutationSan: after.pvSan,
+                cpBefore: before.cp === null ? null : -before.cp,
+                cpAfter: after.cp,
+                cpLoss: before.cp === null || after.cp === null ? null : before.cp + after.cp,
+            });
+            const explanation = buildMistakeReviewTacticalExplanation(review);
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        id: row.id,
+                        rootProof,
+                        deflection,
+                        mating,
+                        failures,
+                        intermediate,
+                        review,
+                        explanation,
+                        steps: steps.map((s) => ({
+                            san: s.san,
+                            balance: s.balance,
+                            see: tacticalExchangeGain(s.before, s.move),
+                        })),
+                        searches,
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+            expect(searches[0].lines[0].pvUci[0]).toBe(row.sourceUci[0]);
+            expect(mating).toMatchObject({ gain: 330 });
+            expect(rootProof).toBeNull();
+            expect(before.cp! + after.cp!).toBeGreaterThan(100);
+            expect(explanation?.primary).toMatchObject({ id: "deflection", source: "missed" });
+            expect(
+                searches.find((s) => s.label === "Accepting the rook")!.lines[0].cp,
+            ).toBeLessThan(0);
+            expect(searches.find((s) => s.label === "Acceptance unrestricted")!.lines[0].mate).toBe(
+                1,
+            );
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_DISCOVERY_ATTRACTION_REPORT,
     )(
         "validate private attraction move order and discovery payoff",
