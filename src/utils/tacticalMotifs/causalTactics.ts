@@ -1349,7 +1349,14 @@ function checkingForkSearch(side: Color, budget: { nodes: number }, strictLeaves
     };
     const delta = (pos: Chess, move: NormalMove) =>
         capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
-    const fork = (pos: Chess, move: NormalMove, pieces: Square[], excluded: Square[] = []) => {
+    const fork = (
+        pos: Chess,
+        move: NormalMove,
+        pieces: Square[],
+        excluded: Square[] = [],
+        minimumGain = 100,
+        recovery = false,
+    ) => {
         const after = visit(pos, move);
         const piece = after.board.get(move.to);
         if (!piece || piece.color !== side) return null;
@@ -1391,7 +1398,18 @@ function checkingForkSearch(side: Color, budget: { nodes: number }, strictLeaves
                     }
                     if (unresolved) continue;
                 }
-                const gain = participantCaptureGain(next, capture, pieces, budget);
+                let gain = participantCaptureGain(next, capture, pieces, budget);
+                if (
+                    recovery &&
+                    gain !== null &&
+                    delta(pos, move) - delta(after, reply) + gain < minimumGain
+                )
+                    gain = checkingCaptureRecoveryGain(
+                        next,
+                        capture,
+                        budget,
+                        minimumGain - delta(pos, move) + delta(after, reply),
+                    );
                 if (gain !== null) {
                     const value = delta(pos, move) - delta(after, reply) + gain;
                     if (value > best) {
@@ -1404,7 +1422,7 @@ function checkingForkSearch(side: Color, budget: { nodes: number }, strictLeaves
                     }
                 }
             }
-            if (best < 100) return null;
+            if (best < minimumGain) return null;
             if (bestVictim !== undefined) payoffVictims.add(bestVictim);
             minimum = Math.min(minimum, best);
         }
@@ -1432,24 +1450,89 @@ type ForkPreparationProof = {
 };
 const forkPreparationCache = new Map<string, ForkPreparationProof | null>();
 
-type CaptureForkPreparationProof = ForkPreparationProof & {
+type CaptureForkPreparationProof = Omit<ForkPreparationProof, "branches"> & {
+    branches: (ForkPreparationProof["branches"][number] & { receiver: Role })[];
     declined: { reply: string; answer: string }[];
 };
 const captureForkPreparationCache = new Map<string, CaptureForkPreparationProof | null>();
 
-/** A checking capture may offer the queen to attract the king onto a fork.
+/** Settle one off-square countercapture after the fork's target is taken.
+ * A legal recapture or a checking capture by the forker may restore material;
+ * unrelated captures and arbitrary quiet continuations cannot rescue it.
+ * Every opponent reply is inspected, then recovery leaves use bounded legal
+ * exchange plus off-square liability and immediate-mate/promotion checks. */
+function checkingCaptureRecoveryGain(
+    pos: Chess,
+    move: NormalMove,
+    budget: { nodes: number },
+    requiredGain: number,
+): number | null {
+    const side = pos.turn;
+    const visit = (board: Chess, action: NormalMove) => {
+        if (--budget.nodes < 0) throw new Error("Checking capture recovery budget exhausted");
+        const next = board.clone();
+        next.play(action);
+        return next;
+    };
+    const after = visit(pos, move);
+    if (after.isEnd()) return null;
+    const earned = capturedValue(pos, move);
+    let minimum = Infinity;
+    for (const resource of legalMoves(after)) {
+        const next = visit(after, resource);
+        if (next.isEnd() || resource.promotion) return null;
+        const capture = capturedValue(after, resource);
+        if (!capture) {
+            minimum = Math.min(minimum, earned);
+            continue;
+        }
+        const loss = tacticalExchangeGain(after, resource);
+        if (loss <= -VALUE.king) return null;
+        let best = earned - Math.max(0, loss);
+        if (best < requiredGain) {
+            for (const answer of legalMoves(next)) {
+                if (!capturedValue(next, answer) || answer.promotion) continue;
+                const leaf = visit(next, answer);
+                if (answer.to !== resource.to && !(answer.from === move.to && leaf.isCheck()))
+                    continue;
+                if (leaf.isEnd()) continue;
+                let safe = true;
+                for (const response of legalMoves(leaf)) {
+                    if (response.promotion || visit(leaf, response).isCheckmate()) {
+                        safe = false;
+                        break;
+                    }
+                }
+                if (!safe) continue;
+                const gain = participantCaptureGain(
+                    next,
+                    answer,
+                    [...next.board[side], answer.to],
+                    budget,
+                );
+                if (gain !== null) best = Math.max(best, earned - capture + gain);
+                if (best >= requiredGain) break;
+            }
+        }
+        if (best < requiredGain) return null;
+        minimum = Math.min(minimum, best);
+    }
+    return Number.isFinite(minimum) ? minimum : null;
+}
+
+/** A capture may offer a piece to attract its recapturer onto a checking fork.
  * Acceptance must recover the sacrifice against every fork defence. Declining
  * must leave a concrete safe continuation retaining the captured material.
  * This local proof does not search arbitrary quiet combinations. */
 export function proveCaptureForkPreparation(
     root: TacticalReplayStep,
-    nodeLimit = 4096,
+    nodeLimit = root.after.isCheck() ? 4096 : 8192,
+    onFailure?: (reason: string) => void,
 ): CaptureForkPreparationProof | null {
     if (
         !root.capture ||
         !root.before.board.get(root.move.to) ||
         root.move.promotion ||
-        !root.after.isCheck() ||
         root.after.isEnd() ||
         !Number.isInteger(nodeLimit) ||
         nodeLimit <= 0 ||
@@ -1463,56 +1546,91 @@ export function proveCaptureForkPreparation(
     if (
         !offered ||
         king === undefined ||
-        !attacks(offered, root.move.to, root.after.board.occupied).has(king)
+        (root.after.isCheck() &&
+            !attacks(offered, root.move.to, root.after.board.occupied).has(king))
     )
         return null;
     const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
-    if (nodeLimit === 4096 && captureForkPreparationCache.has(key))
+    const defaultBudget = root.after.isCheck() ? 4096 : 8192;
+    if (!onFailure && nodeLimit === defaultBudget && captureForkPreparationCache.has(key))
         return captureForkPreparationCache.get(key)!;
     const budget = { nodes: nodeLimit };
     const { visit, delta, fork } = checkingForkSearch(side, budget, true);
     let proof: CaptureForkPreparationProof | null = null;
     try {
-        const branches: ForkPreparationProof["branches"] = [];
+        const branches: CaptureForkPreparationProof["branches"] = [];
         const declined: CaptureForkPreparationProof["declined"] = [];
         const targets = new Set<Square>();
+        const forkers = new Set<Square>();
         let minimum = Infinity;
-        for (const reply of legalMoves(root.after)) {
+        const replies = legalMoves(root.after).sort(
+            (a, b) => Number(b.to === root.move.to) - Number(a.to === root.move.to),
+        );
+        for (const reply of replies) {
             const next = visit(root.after, reply);
             if (next.isEnd()) throw new Error("Terminal defence");
             const balance = root.capture - delta(root.after, reply);
             let won = false;
-            if (reply.from === king && reply.to === root.move.to) {
+            if (reply.to === root.move.to && capturedValue(root.after, reply)) {
+                const receiver = root.after.board.get(reply.from)!.role;
+                // A bishop traded for a knight may win a pawn less their
+                // ten-centipawn piece-value difference. No other branch or
+                // motif gets a reduced threshold.
+                const minimumGain =
+                    offered.role === "bishop" && receiver === "knight"
+                        ? VALUE.pawn - (VALUE.bishop - VALUE.knight)
+                        : VALUE.pawn;
                 for (const answer of legalMoves(next)) {
                     if (answer.promotion) continue;
                     // Include every remaining friendly piece, not only the
                     // forker: an off-square countercapture can erase the gain.
-                    const result = fork(next, answer, [...next.board[side], answer.to]);
-                    if (!result || balance + result.gain < 100) continue;
+                    const result = fork(
+                        next,
+                        answer,
+                        [...next.board[side], answer.to],
+                        receiver === "king"
+                            ? []
+                            : [...next.board[enemy]].filter((sq) => sq !== root.move.to),
+                        minimumGain - balance,
+                        !root.after.isCheck(),
+                    );
+                    if (!result || balance + result.gain < minimumGain) continue;
                     branches.push({
                         reply: makeSan(root.after, reply),
                         answer: makeSan(next, answer),
                         kind: "fork",
                         targets: result.targets,
+                        receiver,
                     });
                     for (const victim of result.victims) targets.add(victim);
+                    forkers.add(answer.from);
                     minimum = Math.min(minimum, balance + result.gain);
                     won = true;
                     break;
                 }
             } else {
                 // Declining cannot be waved away as compulsory acceptance.
-                // Only save the offered piece, capture the checking blocker,
-                // or make a necessary king evasion; no unrelated quiet move.
+                // Save the offer, let its verified forker support it while
+                // escaping a counterattack, or make a necessary king evasion.
+                // No unrelated quiet move can lend this preparation a win.
                 for (const answer of legalMoves(next)) {
                     if (
                         answer.promotion ||
                         (answer.from !== root.move.to &&
+                            !forkers.has(answer.from) &&
                             !(next.isCheck() && next.board.get(answer.from)?.role === "king"))
                     )
                         continue;
                     const after = visit(next, answer);
                     if (after.isEnd()) continue;
+                    if (
+                        forkers.has(answer.from) &&
+                        answer.from !== root.move.to &&
+                        !attacks(after.board.get(answer.to)!, answer.to, after.board.occupied).has(
+                            root.move.to,
+                        )
+                    )
+                        continue;
                     const material = balance + delta(next, answer);
                     if (material < 100) continue;
                     let loss = 0;
@@ -1540,14 +1658,18 @@ export function proveCaptureForkPreparation(
                     break;
                 }
             }
-            if (!won) throw new Error("Unproved defence to the offered capture");
+            if (!won)
+                throw new Error(
+                    `Unproved defence to the offered capture: ${makeSan(root.after, reply)}`,
+                );
         }
         if (branches.length && Number.isFinite(minimum))
             proof = { gain: minimum, targets: [...targets], branches, declined };
-    } catch {
+    } catch (error) {
         // Exhaustion and unsupported branches abstain, never borrow a PV.
+        onFailure?.(error instanceof Error ? error.message : "Unproved capture preparation");
     }
-    if (nodeLimit === 4096) {
+    if (nodeLimit === defaultBudget) {
         captureForkPreparationCache.set(key, proof);
         if (captureForkPreparationCache.size > 128)
             captureForkPreparationCache.delete(captureForkPreparationCache.keys().next().value!);
@@ -3092,12 +3214,14 @@ export function tacticalBoardEvidence(
     )
         return {
             square: makeSquare(step.move.to),
-            arrows: [
-                {
-                    from: makeSquare(step.move.to),
-                    to: makeSquare(step.after.board.kingOf(opposite(step.before.turn))!),
-                },
-            ],
+            arrows: step.after.isCheck()
+                ? [
+                      {
+                          from: makeSquare(step.move.to),
+                          to: makeSquare(step.after.board.kingOf(opposite(step.before.turn))!),
+                      },
+                  ]
+                : [],
         };
     if (motif.id === "clearance") {
         const suffix = replayTacticalLine(fen, line).slice(motif.ply - 1);
@@ -3988,7 +4112,7 @@ export function auditTacticalMotifs(
             ply: 1,
             moveUci: root.uci,
             value: capturePreparation.gain,
-            evidence: `${root.san} captures the ${root.before.board.get(root.move.to)!.role} and offers the ${root.before.board.get(root.move.from)!.role} to attract the king onto ${makeSquare(root.move.to)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.${declined ? ` Declining with ${declined.reply} instead permits ${declined.answer}, retaining a material gain.` : ""} Every legal reply has a verified local continuation, including recaptures and immediate countercaptures. The fork occurs on the next move only if the king accepts.`,
+            evidence: `${root.san} captures the ${root.before.board.get(root.move.to)!.role} and offers the ${root.before.board.get(root.move.from)!.role} to attract the ${fork.receiver} onto ${makeSquare(root.move.to)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.${declined ? ` Declining with ${declined.reply} instead permits ${declined.answer}, retaining a material gain.` : ""} Every legal reply has a verified local continuation, including recaptures and immediate countercaptures. The fork belongs to the following move, not this position.`,
         });
     }
     if (checkingMate)

@@ -497,6 +497,122 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_QUIET_FORK_ENGINE_REPORT,
+    )(
+        "validate private quiet capture preparations and countercapture recoveries",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const { proveCaptureForkPreparation } = await import("../tacticalMotifs/causalTactics");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_QUIET_FORK_ENGINE_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"),
+            );
+            const report = [];
+            for (const index of [87, 173]) {
+                const row = sample.cases.find(
+                    (r: { eligibleIndex: number }) => r.eligibleIndex === index,
+                );
+                const root = replayTacticalLine(row.fen, row.sourceUci)[0];
+                const proof = proveCaptureForkPreparation(root)!;
+                expect(proof).not.toBeNull();
+                const decline = proof.declined.find(
+                    (d) => d.reply === (index === 87 ? "Qg3+" : "g5"),
+                )!;
+                expect(decline).toBeDefined();
+                const defensiveMove = parseSan(root.after, decline.reply)!;
+                const next = root.after.clone();
+                next.play(defensiveMove);
+                const acceptance = root.after.clone();
+                acceptance.play(parseSan(root.after, proof.branches[0].reply)!);
+                const proofAnswer = makeUci(parseSan(acceptance, proof.branches[0].answer)!);
+                const inputs = [
+                    {
+                        label: "Original",
+                        moves: [] as string[],
+                        root: undefined as string | undefined,
+                    },
+                    { label: "Premature fork", moves: [row.sourceUci[2]], root: undefined },
+                    {
+                        label: "Accepted offer",
+                        moves: row.sourceUci.slice(0, 2),
+                        root: row.sourceUci[2],
+                    },
+                    ...(proofAnswer !== row.sourceUci[2]
+                        ? [
+                              {
+                                  label: "Accepted offer, exact proof witness",
+                                  moves: row.sourceUci.slice(0, 2),
+                                  root: proofAnswer,
+                              },
+                          ]
+                        : []),
+                    {
+                        label: `Declined: ${decline.reply}, exact witness ${decline.answer}`,
+                        moves: [root.uci, makeUci(defensiveMove)],
+                        root: makeUci(parseSan(next, decline.answer)!),
+                    },
+                    ...(index === 173
+                        ? [
+                              {
+                                  label: "Checking recovery after off-square countercapture",
+                                  moves: [...row.sourceUci.slice(0, 3), "f7g6", "c7c6", "f6b2"],
+                                  root: "c6e6",
+                              },
+                          ]
+                        : []),
+                ];
+                const searches = [];
+                for (const input of inputs) {
+                    const steps = replayTacticalLine(row.fen, input.moves);
+                    expect(steps).toHaveLength(input.moves.length);
+                    const fen = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : row.fen;
+                    const lines = [...(await analyse(engine, fen, input.root)).values()];
+                    expect(lines[0].depth).toBe(16);
+                    searches.push({ ...input, fen, lines });
+                }
+                const before = searches[0].lines[0],
+                    after = searches[1].lines[0];
+                const review = classifyMistakeReviewMotifs({
+                    fen: row.fen,
+                    playedMoveUci: row.sourceUci[2],
+                    bestMoveUci: before.pvUci[0],
+                    pvUci: before.pvUci,
+                    refutationUci: after.pvUci,
+                    cpBefore: before.cp,
+                    cpAfter: after.cp === null ? null : -after.cp,
+                    cpLoss: before.cp === null || after.cp === null ? null : before.cp + after.cp,
+                });
+                report.push({
+                    id: row.id,
+                    proof,
+                    searches,
+                    review,
+                    explanation: buildMistakeReviewTacticalExplanation(review),
+                });
+            }
+            writeFileSync(
+                output,
+                JSON.stringify({ sourceSha256: sample.sourceSha256, cases: report }, null, 2),
+                { flag: "wx" },
+            );
+            for (const item of report) {
+                expect(item.review.missedMotifs[0]?.id).toBe("forkPreparation");
+                for (const search of item.searches.slice(2))
+                    expect(
+                        search.lines[0].cp ?? Math.sign(search.lines[0].mate ?? 0) * 10000,
+                    ).toBeGreaterThan(0);
+            }
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_ACCEPTANCE_ENGINE_REPORT,
     )(
         "validate compensation after private sacrifice acceptances",
