@@ -1,5 +1,11 @@
 # Tactical relevance judgement, 2026-09-08
 
+## Adapter 50: exchange before the discovered attack
+
+A capture can now explain Attraction when its receiver is vulnerable to a later quiet discovery, but the original captured piece could have taken the preparing piece had that discovery been played first. The proof checks every accepting and declining defence, the discovery's replies and a positive earlier material defence within a shared budget. Root arrows show the possible acceptance; the discovery remains at its actual later ply. Missed-opportunity review shares the explanation.
+
+Only one main label changes in the reused private 24-position sample; the earlier 94 public worker labels and 32-case lesson report are unchanged. Five live/six source outputs remain empty. Verification includes 589 selected tests, seven fresh depth-16 branch searches, 95 public/11 private built-worker parity cases, isolated HTTP loading, and production/shared-review builds. See [the private-course audit](private-course-review.md) for limitations and reproduction. No native app/package/service was restarted or deployed; this is not physical WebView or general accuracy proof.
+
 ## Adapter 47: remove the defender before playing the fork
 
 A checking fork can now finish a capture-based preparation by taking the defender that accepted the offer. An explicit earlier legal defence must explain why the fork cannot simply be played first. Direct material recovery against a different receiver and capture of a checking counterattacker are checked separately; they do not have to imitate the fork branch. The recovered real rook sacrifice leads with Fork Preparation, with move-order evidence, a correctly timed later fork, root-only arrows and a missed-opportunity lesson.

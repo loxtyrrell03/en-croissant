@@ -6,6 +6,31 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("attraction explains move order while the discovery remains at its actual ply", () => {
+  const fen = "6k1/8/1qp5/5b2/Q1P1n3/2N5/1P3PP1/6K1 w - - 0 1";
+  const line = ["c3e4", "f5e4", "c4c5", "b6c5", "a4e4"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  const root = container.querySelector('[data-tactical-ply="1"]')!;
+  expect(root.textContent).toContain("Attraction");
+  expect(root.textContent).toContain("invites Bxe4");
+  expect(root.textContent).toContain("Playing c5 first instead permits Nxc5");
+  expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).not.toContain(
+    "Winning Recapture",
+  );
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain(
+    "Discovered Attack",
+  );
+});
+
 test.skipIf(!process.env.TACTICAL_PRIVATE_PGN_SAMPLE)(
   "renders mixed recaptures conditionally without labelling sacrifice acceptance a win",
   () => {

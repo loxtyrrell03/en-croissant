@@ -497,6 +497,111 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_DISCOVERY_ATTRACTION_REPORT,
+    )(
+        "validate private attraction move order and discovery payoff",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const { proveDiscoveryAttraction } = await import("../tacticalMotifs/causalTactics");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_DISCOVERY_ATTRACTION_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested)),
+                path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find((r: { eligibleIndex: number }) => r.eligibleIndex === 58);
+            const root = replayTacticalLine(row.fen, row.sourceUci)[0],
+                proof = proveDiscoveryAttraction(root)!;
+            expect(proof?.gain).toBe(100);
+            const witness = (branch: { reply: string; answer: string }) => {
+                const pos = root.after.clone(),
+                    reply = parseSan(pos, branch.reply)!;
+                expect(reply).toBeDefined();
+                pos.play(reply);
+                const answer = parseSan(pos, branch.answer)!;
+                expect(answer).toBeDefined();
+                return {
+                    label: `Exact decline: ${branch.reply} ${branch.answer}`,
+                    moves: [root.uci, makeUci(reply)],
+                    root: makeUci(answer),
+                };
+            };
+            const searches = [];
+            const acceptance = proof.accepted[0];
+            const acceptedPosition = root.after.clone();
+            const acceptanceMoves = [root.uci];
+            for (const san of [acceptance.reply, acceptance.preparation, ...acceptance.line]) {
+                const move = parseSan(acceptedPosition, san)!;
+                expect(move).toBeDefined();
+                acceptanceMoves.push(makeUci(move));
+                acceptedPosition.play(move);
+            }
+            for (const input of [
+                { label: "Original", moves: [] as string[], root: undefined as string | undefined },
+                { label: "Premature discovery", moves: ["c4c5"], root: "e4c5" },
+                { label: "Prepared discovery", moves: ["c3e4", "f5e4"], root: "c4c5" },
+                { label: "Discovery payoff", moves: row.sourceUci.slice(0, 4), root: "a4e4" },
+                witness(proof.declined.find((branch) => branch.reply === "Qe3")!),
+                witness(proof.declined.reduce((a, b) => (a.gain <= b.gain ? a : b))),
+                {
+                    label: `Limiting discovery: ${acceptance.line.join(" ")}`,
+                    moves: acceptanceMoves.slice(0, -1),
+                    root: acceptanceMoves.at(-1),
+                },
+            ]) {
+                const steps = replayTacticalLine(row.fen, input.moves);
+                expect(steps).toHaveLength(input.moves.length);
+                const fen = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : row.fen;
+                const lines = [...(await analyse(engine, fen, input.root)).values()];
+                expect(lines[0].depth).toBe(16);
+                searches.push({ ...input, fen, lines });
+            }
+            const before = searches[0].lines[0],
+                after = searches[1].lines[0];
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                bestMoveUci: before.pvUci[0],
+                playedMoveUci: "c4c5",
+                pvUci: before.pvUci,
+                pvSan: before.pvSan,
+                refutationUci: after.pvUci,
+                refutationSan: after.pvSan,
+                cpBefore: before.cp,
+                cpAfter: after.cp === null ? null : -after.cp,
+                cpLoss: before.cp === null || after.cp === null ? null : before.cp + after.cp,
+            });
+            const explanation = buildMistakeReviewTacticalExplanation(review);
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        id: row.id,
+                        sourceSha256: sample.sourceSha256,
+                        proof,
+                        searches,
+                        review,
+                        explanation,
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+            expect(before.pvUci[0]).toBe(root.uci);
+            for (const search of searches)
+                expect(
+                    search.lines[0].cp ?? Math.sign(search.lines[0].mate ?? 0) * 10000,
+                ).toBeGreaterThan(0);
+            expect(review.missedMotifs[0]?.id).toBe("attraction");
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_PIN_REINFORCEMENT_REPORT,
     )(
         "validate private pin reinforcements and their exact limiting lines",

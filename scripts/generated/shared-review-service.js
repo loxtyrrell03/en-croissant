@@ -9444,7 +9444,7 @@ function winningRecaptureEvidence(steps, index, motif) {
 		const next = step.after.clone();
 		next.play(move);
 		return next.isCheckmate();
-	}) || proveRecaptureBackedFork(previous) || proveCaptureForkPreparation(previous) || proveCaptureDeflection(previous) || provePinnedCapture(previous) || capturedDefenderProof(previous, motif.source)) return null;
+	}) || proveRecaptureBackedFork(previous) || proveCaptureForkPreparation(previous) || proveCaptureDeflection(previous) || proveDiscoveryAttraction(previous) || provePinnedCapture(previous) || capturedDefenderProof(previous, motif.source)) return null;
 	const victim = step.before.board.get(step.move.to);
 	const traded = previous.before.board.get(previous.move.to);
 	if (!victim || !traded) return motif;
@@ -11931,6 +11931,166 @@ function intermediateCaptureProof(step, nodeLimit = 512) {
 	}
 	return best;
 }
+var discoveryAttractionCache = /* @__PURE__ */ new Map();
+/** An exchange replaces a mobile victim with a receiver vulnerable to a
+* quiet discovery. Prove every root defence and every reply to that discovery.
+* Earlier, the original victim must have a concrete capture of the preparing
+* piece which defeats the immediate material threats. No PV is a defence list. */
+function proveDiscoveryAttraction(root, nodeLimit = 16384, onFailure) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !root.capture || root.move.promotion || root.after.isCheck() || root.after.isEnd() || !root.before.board.get(root.move.to) || tacticalExchangeGain(root.before, root.move) >= 90) return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (!onFailure && nodeLimit === 16384 && discoveryAttractionCache.has(key)) return discoveryAttractionCache.get(key);
+	const side = root.before.turn, budget = { nodes: nodeLimit };
+	const moves = (pos) => legalMoves(pos).sort((a, b) => {
+		const flip = pos.turn === "white" ? 0 : 56;
+		return VALUE[pos.board.get(a.from).role] - VALUE[pos.board.get(b.from).role] || (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip);
+	});
+	const visit = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("Discovery attraction budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const settled = (pos, move) => {
+		if (move.promotion) return null;
+		const next = visit(pos, move);
+		if (next.isEnd()) return null;
+		for (const resource of moves(next)) if (resource.promotion || visit(next, resource).isCheckmate()) return null;
+		return participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+	};
+	const discoveryWin = (step, balance) => {
+		const rays = revealedRays(step);
+		const capturers = [...new Set([step.move.to, ...rays.map((ray) => ray.from)])];
+		const targets = [...new Set([...rays.map((ray) => ray.target), ...attacks(step.after.board.get(step.move.to), step.move.to, step.after.board.occupied).intersect(step.after.board[opposite(side)])])];
+		let minimum = Infinity;
+		let line = [];
+		for (const reply of moves(step.after)) {
+			if (reply.promotion) return null;
+			const next = visit(step.after, reply);
+			if (next.isEnd()) return null;
+			const mapped = targets.map((sq) => sq === reply.from ? reply.to : sq);
+			const takesAttacker = capturers.includes(reply.to) && capturedValue(step.after, reply) > 0;
+			if (takesAttacker) mapped.push(reply.to);
+			let best = -Infinity;
+			let answer = "";
+			for (const move of moves(next)) {
+				if (!capturedValue(next, move) || !mapped.includes(move.to) || !capturers.includes(move.from) && !(takesAttacker && move.to === reply.to)) continue;
+				const gain = settled(next, move);
+				const recovered = gain === null ? -Infinity : balance - capturedValue(step.after, reply) + gain;
+				if (recovered > best) {
+					best = recovered;
+					answer = makeSan(next, move);
+				}
+			}
+			if (best < 90) return null;
+			if (best < minimum) {
+				minimum = best;
+				line = [makeSan(step.after, reply), answer];
+			}
+		}
+		return Number.isFinite(minimum) ? {
+			gain: minimum,
+			line
+		} : null;
+	};
+	const priorDefence = (preparation) => {
+		if (!root.before.isLegal(preparation)) return null;
+		const offered = visit(root.before, preparation);
+		if (offered.isCheck() || offered.isEnd()) return null;
+		const capture = {
+			from: root.move.to,
+			to: preparation.to
+		};
+		if (!offered.isLegal(capture) || !capturedValue(offered, capture)) return null;
+		const defended = visit(offered, capture);
+		if (defended.isEnd() || defended.isCheck()) return null;
+		for (const move of moves(defended)) {
+			if (move.promotion || visit(defended, move).isCheckmate()) return null;
+			if (!capturedValue(defended, move)) continue;
+			const gain = tacticalExchangeGain(defended, move);
+			if (gain <= -VALUE.king || gain - capturedValue(offered, capture) >= 90) return null;
+		}
+		return makeSan(offered, capture);
+	};
+	let proof = null;
+	try {
+		const replies = moves(root.after), receivers = replies.filter((move) => move.to === root.move.to && capturedValue(root.after, move));
+		if (!receivers.length) throw new Error("No receiving piece");
+		const accepted = [], declined = [];
+		let minimum = root.capture;
+		for (const reply of receivers) {
+			if (reply.promotion || root.after.board.get(reply.from)?.role === "king") throw new Error("Unsupported receiver");
+			const pos = visit(root.after, reply);
+			if (pos.isEnd()) throw new Error("Terminal acceptance");
+			const balance = root.capture - capturedValue(root.after, reply);
+			let branch = null;
+			for (const move of moves(pos)) {
+				if (capturedValue(pos, move) || move.promotion) continue;
+				const after = visit(pos, move);
+				if (after.isCheck() || after.isEnd()) continue;
+				const step = replayTacticalLine(makeFen(pos.toSetup()), [makeUci(move)])[0];
+				const ray = step && revealedRays(step).find((ray) => ray.target === reply.to);
+				if (!ray) continue;
+				const defence = priorDefence(move);
+				if (!defence) continue;
+				const win = discoveryWin(step, balance);
+				if (win === null) continue;
+				branch = {
+					reply: makeSan(root.after, reply),
+					preparation: step.san,
+					receiver: reply.from,
+					slider: ray.from,
+					blocker: move.from,
+					target: ray.target,
+					priorDefence: defence,
+					...win
+				};
+				break;
+			}
+			if (!branch) throw new Error(`Unproved acceptance: ${makeSan(root.after, reply)}`);
+			accepted.push(branch);
+			minimum = Math.min(minimum, branch.gain);
+		}
+		for (const reply of replies) {
+			if (receivers.includes(reply)) continue;
+			if (reply.promotion) throw new Error("Promoting decline");
+			const next = visit(root.after, reply);
+			if (next.isEnd()) throw new Error("Terminal decline");
+			let gain = null;
+			let answer = "";
+			for (const move of moves(next)) {
+				if (move.from !== root.move.to && !(move.to === reply.to && capturedValue(next, move)) && !(next.isCheck() && next.ctx().checkers.has(move.to) && capturedValue(next, move))) continue;
+				const settledGain = settled(next, move);
+				if (settledGain === null) continue;
+				const retained = root.capture - capturedValue(root.after, reply) + settledGain;
+				if (retained >= 90) {
+					gain = retained;
+					answer = makeSan(next, move);
+					break;
+				}
+			}
+			if (gain === null) throw new Error(`Unproved decline: ${makeSan(root.after, reply)}`);
+			minimum = Math.min(minimum, gain);
+			declined.push({
+				reply: makeSan(root.after, reply),
+				answer,
+				gain
+			});
+		}
+		proof = {
+			gain: minimum,
+			accepted,
+			declined
+		};
+	} catch (error) {
+		onFailure?.(error instanceof Error ? error.message : "Unproved discovery attraction");
+	}
+	if (!onFailure && nodeLimit === 16384) {
+		discoveryAttractionCache.set(key, proof);
+		if (discoveryAttractionCache.size > 128) discoveryAttractionCache.delete(discoveryAttractionCache.keys().next().value);
+	}
+	return proof;
+}
 var captureDeflectionCache = /* @__PURE__ */ new Map();
 /** Enumerate defences to a quiet attack on a pinned victim, retaining actual
 * replies as witnesses. One checking counterattack may be answered. Leaves
@@ -12603,6 +12763,20 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			...deflection,
 			ply: index + 1
 		});
+		const attraction = proveDiscoveryAttraction(episode[index]);
+		if (attraction) {
+			const root = episode[index], branch = attraction.accepted[0];
+			candidates.push({
+				id: "attraction",
+				label: "Attraction",
+				source: proposals[0]?.source ?? "available",
+				confidence: "high",
+				ply: index + 1,
+				moveUci: root.uci,
+				value: attraction.gain,
+				evidence: `${root.san} invites ${branch.reply}, drawing the ${root.after.board.get(branch.receiver).role} from ${makeSquare(branch.receiver)} onto ${makeSquare(branch.target)}. Then ${branch.preparation} uncovers the ${root.after.board.get(branch.slider).role}'s attack on that piece. Playing ${branch.preparation} first instead permits ${branch.priorDefence}: the original ${root.before.board.get(root.move.to).role} captures the preparing piece, limiting any immediate material gain to less than a pawn. Every legal acceptance and declined offer has a checked short material recovery; the discovery belongs to the later move, not the initial exchange.`
+			});
+		}
 		const interference = interferenceProof(episode[index], proposals[0]?.source ?? "available");
 		if (interference) candidates.push({
 			...interference.motif,
@@ -13734,7 +13908,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 49;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 50;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
