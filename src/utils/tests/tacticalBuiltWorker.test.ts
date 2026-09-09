@@ -107,6 +107,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:countercapture-and-delayed-fork",
+                input: {
+                    fen: "8/4r1p1/p2k4/1bN5/5K2/5P2/6P1/1R6 w - - 0 1",
+                    pvUci: ["c5a6", "g7g5", "f4g3", "b5a6", "b1b6", "d6d7", "b6a6"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:pawn-square-clearance-fork",
                 input: {
                     fen: "4k3/7r/8/8/6pN/4r1P1/5RPK/8 b - - 0 1",
@@ -429,7 +438,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(109);
+        expect(report).toHaveLength(110);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

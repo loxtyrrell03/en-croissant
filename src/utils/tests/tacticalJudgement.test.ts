@@ -503,6 +503,136 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_THIRD_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_FORK_COUNTERCAPTURE_REPORT,
+    )(
+        "validate real fork-preparation countercaptures and delayed acceptance",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_FORK_COUNTERCAPTURE_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_THIRD_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 124,
+            );
+            const step = replayTacticalLine(row.fen, row.sourceUci)[0];
+            const proof = proveCaptureForkPreparation(step)!;
+            expect(proof).not.toBeNull();
+            const prefixes: string[][] = [[], [step.uci], row.sourceUci.slice(0, 2)];
+            for (const branch of proof.declined) {
+                const pos = step.after.clone();
+                const moves = [step.uci];
+                for (const san of [branch.reply, branch.answer]) {
+                    const move = parseSan(pos, san)!;
+                    expect(pos.isLegal(move)).toBe(true);
+                    moves.push(makeUci(move));
+                    pos.play(move);
+                }
+                prefixes.push(moves);
+                for (const delayed of branch.delayedForks ?? []) {
+                    const fork = pos.clone();
+                    const continuation = [...moves];
+                    for (const san of [delayed.acceptance, delayed.fork]) {
+                        const move = parseSan(fork, san)!;
+                        expect(fork.isLegal(move)).toBe(true);
+                        continuation.push(makeUci(move));
+                        fork.play(move);
+                    }
+                    prefixes.push(continuation);
+                }
+            }
+            const searches = [];
+            for (const prefix of prefixes) {
+                const steps = replayTacticalLine(row.fen, prefix);
+                expect(steps).toHaveLength(prefix.length);
+                const fen = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : row.fen;
+                const lines = [
+                    ...(await analyse(engine, fen, prefix.length ? undefined : step.uci)).values(),
+                ];
+                searches.push({ prefix, fen, lines });
+            }
+            const missedAlternative = [...(await analyse(engine, row.fen, "g2g4")).values()];
+            const unsafePrefix = [step.uci, "b5e2", "b1a1"];
+            const unsafeSteps = replayTacticalLine(row.fen, unsafePrefix);
+            expect(unsafeSteps).toHaveLength(3);
+            const unsafeFen = makeFen(unsafeSteps.at(-1)!.after.toSetup());
+            const unsafeSupportingRook = [...(await analyse(engine, unsafeFen)).values()];
+            const changedWitnesses = [];
+            if (process.env.TACTICAL_PRIVATE_PGN_SAMPLE) {
+                const original = JSON.parse(
+                    readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE, "utf8"),
+                );
+                const prior = original.cases.find(
+                    (r: { eligibleIndex: number }) => r.eligibleIndex === 87,
+                );
+                const root = replayTacticalLine(prior.fen, prior.sourceUci)[0];
+                const branch = proveCaptureForkPreparation(root)!.declined.find(
+                    (b) => b.reply === "Nb3",
+                )!;
+                for (const answer of ["Qh3", branch.answer]) {
+                    const pos = root.after.clone();
+                    for (const san of [branch.reply, answer]) {
+                        const action = parseSan(pos, san)!;
+                        pos.play(action);
+                    }
+                    const fen = makeFen(pos.toSetup());
+                    const lines = [...(await analyse(engine, fen)).values()];
+                    changedWitnesses.push({ answer, fen, lines });
+                }
+            }
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        scope: "Private source position, acceptance, every selected declined witness and delayed acceptance, plus missed-opportunity and unsafe-support controls; depth-16 scores are not the local proof bound.",
+                        proof,
+                        searches,
+                        missedAlternative,
+                        unsafeSupportingRook: {
+                            fen: unsafeFen,
+                            prefix: unsafePrefix,
+                            lines: unsafeSupportingRook,
+                        },
+                        changedWitnesses,
+                    },
+                    null,
+                    2,
+                ),
+            );
+            for (const search of searches) {
+                const line = search.lines[0];
+                const sign = search.fen.split(" ")[1] === "w" ? 1 : -1;
+                expect(line.cp !== null ? line.cp * sign : line.mate! * sign).toBeGreaterThan(0);
+            }
+            expect(searches[0].lines[0].cp! - missedAlternative[0].cp!).toBeGreaterThan(100);
+            expect(unsafeSupportingRook[0].cp).toBeGreaterThan(100); // Black wins after the unsafe Ra1.
+            const changed = changedWitnesses.at(-1);
+            if (
+                changed &&
+                (changed.lines[0].cp ?? changed.lines[0].mate!) *
+                    (changed.fen.split(" ")[1] === "w" ? 1 : -1) <=
+                    0
+            )
+                throw new Error("Changed decline witness lost its engine advantage");
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                pvUci: row.sourceUci,
+                playedMoveUci: "g2g4",
+                bestMoveUci: step.uci,
+                refutationUci: [],
+            });
+            expect(review.missedMotifs[0]).toMatchObject({ id: "forkPreparation", ply: 1 });
+        },
+        120000,
+    );
     test.skipIf(!engine || !process.env.TACTICAL_ACCEPTANCE_DEFENCE_REPORT)(
         "validate the constructive capture-preparation defence against fresh engine searches",
         async () => {

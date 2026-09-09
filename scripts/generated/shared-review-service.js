@@ -9437,6 +9437,18 @@ function isCompensatedContinuationCapture(steps, index) {
 * do not borrow earlier gains, future PV play or promotion bookkeeping. */
 function winningRecaptureEvidence(steps, index, motif) {
 	const step = steps[index], previous = steps[index - 1];
+	if (motif.id === "hangingPiece" && step?.capture && index >= 3) {
+		const offer = steps[index - 3];
+		const check = steps[index - 2];
+		const context = [
+			offer,
+			check,
+			previous,
+			step
+		];
+		const replay = replayTacticalLine(makeFen(offer.before.toSetup()), context.map((entry) => entry.uci));
+		if (step.move.to === offer.move.to && replay.length === context.length && context.every((entry, i) => replay[i].san === entry.san && makeUci(entry.move) === entry.uci && makeFen(replay[i].before.toSetup()) === makeFen(entry.before.toSetup()) && makeFen(replay[i].after.toSetup()) === makeFen(entry.after.toSetup())) && provesDelayedForkAcceptance(offer, check, previous, step)) return null;
+	}
 	if (motif.id === "hangingPiece" && step?.capture && previous && step.move.to === previous.move.to && (proveExchangeDeflection(previous) || proveCombinedDefenderRemoval(previous))) return null;
 	if (motif.id === "hangingPiece" && step?.capture && previous) {
 		const branch = proveCombinedDefenderRemoval(previous)?.declined.find((b) => b.reply === step.san);
@@ -9480,6 +9492,33 @@ function winningRecaptureEvidence(steps, index, motif) {
 		value: gain - previous.capture,
 		evidence: `${step.san} wins the ${victim.role} on ${makeSquare(step.move.to)} in exchange for the ${traded.role} just captured there. The settled local exchange gains ${(gain - previous.capture) / 100} pawns of material; this is the payoff, not a newly hanging piece.`
 	};
+}
+/** The displayed king evasion need not be the first witness selected at the
+* root. Re-prove its actual accepted continuation, with all piece liabilities,
+* rather than suppressing only a move-order-dependent selected witness. */
+function provesDelayedForkAcceptance(offer, check, evasion, acceptance) {
+	if (check.capture || !check.after.isCheck() || evasion.capture || evasion.before.board.get(evasion.move.from)?.role !== "king" || acceptance.move.promotion || acceptance.after.isEnd()) return false;
+	const proof = proveCaptureForkPreparation(offer);
+	if (!proof?.declined.some((branch) => branch.reply === check.san)) return false;
+	const forkers = /* @__PURE__ */ new Set();
+	for (const branch of proof.branches) {
+		const pos = offer.after.clone();
+		const take = parseSan(pos, branch.reply);
+		if (!take) continue;
+		pos.play(take);
+		const follow = parseSan(pos, branch.answer);
+		if (follow && "from" in follow) forkers.add(follow.from);
+	}
+	const side = offer.before.turn;
+	const enemy = opposite(side);
+	const { fork } = checkingForkSearch(side, { nodes: 8192 }, true);
+	try {
+		for (const move of legalMoves(acceptance.after)) {
+			if (!forkers.has(move.from) || move.promotion) continue;
+			if (fork(acceptance.after, move, [...acceptance.after.board[side], move.to], acceptance.after.board.get(acceptance.move.to)?.role === "king" ? [] : [...acceptance.after.board[enemy]].filter((sq) => sq !== acceptance.move.to), 100 - offer.capture + acceptance.capture, !offer.after.isCheck())) return true;
+		}
+	} catch {}
+	return false;
 }
 /** Apply the same exchange context at a newly viewed root as inside a PV.
 * Only trusted, replay-matching history can turn a loose-piece label into
@@ -10996,19 +11035,37 @@ function proveCaptureForkPreparation(root, nodeLimit = root.after.isCheck() ? 40
 				if (answer.promotion || answer.from !== root.move.to && !forkers.has(answer.from) && !(next.ctx().checkers.has(answer.to) && capturedValue(next, answer)) && !(next.isCheck() && next.board.get(answer.from)?.role === "king")) continue;
 				const after = visit(next, answer);
 				if (after.isEnd()) continue;
-				if (forkers.has(answer.from) && answer.from !== root.move.to && !attacks(after.board.get(answer.to), answer.to, after.board.occupied).has(root.move.to)) continue;
+				const countercaptured = forkers.has(answer.from) && capturedValue(next, answer) && (attacks(next.board.get(answer.to), answer.to, next.board.occupied).has(root.move.to) || answer.to === reply.to && attacks(next.board.get(answer.to), answer.to, next.board.occupied).has(answer.from)) ? next.board.get(answer.to).role : void 0;
+				if (forkers.has(answer.from) && answer.from !== root.move.to && !countercaptured && !attacks(after.board.get(answer.to), answer.to, after.board.occupied).has(root.move.to)) continue;
 				const material = balance + delta(next, answer);
 				if (material < 100) continue;
 				let loss = 0;
+				const delayedForks = [];
 				for (const defence of legalMoves(after)) {
-					if (visit(after, defence).isCheckmate()) {
+					const leaf = visit(after, defence);
+					if (leaf.isCheckmate()) {
+						loss = VALUE.king;
+						break;
+					}
+					if (forkers.has(answer.from) && answer.from !== root.move.to && rayTactics(leaf, enemy).some((ray) => ray.front === root.move.to && ray.rear === answer.to)) {
 						loss = VALUE.king;
 						break;
 					}
 					if (!capturedValue(after, defence) && !defence.promotion) continue;
-					const gain = tacticalExchangeGain(after, defence);
+					let gain = tacticalExchangeGain(after, defence);
 					if (gain <= -VALUE.king) {
 						loss = VALUE.king;
+						break;
+					}
+					if (material - gain < 100 && next.isCheck() && next.board.get(answer.from)?.role === "king" && !capturedValue(next, answer) && defence.to === root.move.to && capturedValue(after, defence) && !defence.promotion && !leaf.isEnd()) for (const follow of legalMoves(leaf)) {
+						if (!forkers.has(follow.from) || follow.promotion) continue;
+						const result = fork(leaf, follow, [...leaf.board[side], follow.to], leaf.board.get(defence.to)?.role === "king" ? [] : [...leaf.board[enemy]].filter((sq) => sq !== defence.to), 100 - material + delta(after, defence), !root.after.isCheck());
+						if (!result) continue;
+						gain = delta(after, defence) - result.gain;
+						delayedForks.push({
+							acceptance: makeSan(after, defence),
+							fork: makeSan(leaf, follow)
+						});
 						break;
 					}
 					loss = Math.max(loss, gain);
@@ -11017,7 +11074,9 @@ function proveCaptureForkPreparation(root, nodeLimit = root.after.isCheck() ? 40
 				minimum = Math.min(minimum, material - loss);
 				declined.push({
 					reply: makeSan(root.after, reply),
-					answer: makeSan(next, answer)
+					answer: makeSan(next, answer),
+					...countercaptured ? { countercaptured } : {},
+					...delayedForks.length ? { delayedForks } : {}
 				});
 				won = true;
 				break;
@@ -13672,7 +13731,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			moveUci: root.uci,
 			value: capturePreparation.gain,
 			verifiedCombination: true,
-			evidence: `${introduction}${otherCapture ? ` Taking with ${otherCapture.reply} instead allows ${otherCapture.answer}, retaining material without needing that fork.` : ""}${declined ? ` Declining with ${declined.reply} instead permits ${declined.answer}, retaining a material gain.` : ""} Every legal reply has a verified local continuation, including recaptures and immediate countercaptures. The fork belongs to the following move, not this position.`
+			evidence: `${introduction}${otherCapture ? ` Taking with ${otherCapture.reply} instead allows ${otherCapture.answer}, retaining material without needing that fork.` : ""}${declined ? ` Declining with ${declined.reply} instead permits ${declined.answer}${declined.countercaptured ? `, capturing the attacking ${declined.countercaptured} while retaining a material gain.` : ", retaining a material gain."}` : ""} Every legal reply has a verified local continuation, including recaptures and immediate countercaptures. The fork is a continuation, not an attack on this board.`
 		});
 	}
 	if (checkingMate) candidates.push({
@@ -15011,7 +15070,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 64;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 65;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

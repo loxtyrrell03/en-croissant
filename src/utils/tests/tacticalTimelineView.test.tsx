@@ -6,6 +6,31 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("a delaying check keeps the sacrifice and eventual fork on their actual moves", () => {
+  const fen = "8/4r1p1/p2k4/1bN5/5K2/5P2/6P1/1R6 w - - 0 1";
+  const line = ["c5a6", "g7g5", "f4g3", "b5a6", "b1b6", "d6d7", "b6a6"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain(
+    "Fork Preparation",
+  );
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain(
+    "not an attack on this board",
+  );
+  expect(container.querySelector('[data-tactical-ply="4"]')?.textContent).not.toContain(
+    "Hanging Piece",
+  );
+  expect(container.querySelector('[data-tactical-ply="5"]')?.textContent).toContain("Fork");
+});
+
 test("pawn-square clearance is explained at the offer and the fork at its actual move", () => {
   const fen = "4k3/7r/8/8/6pN/4r1P1/5RPK/8 b - - 0 1";
   const line = ["h7h4", "g3h4", "g4g3", "h2g1", "g3f2", "g1f2"];
