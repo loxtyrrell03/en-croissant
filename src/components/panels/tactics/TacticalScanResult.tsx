@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import { TacticalLineExplanation } from "./TacticalLineExplanation";
 import {
   previewLiveTacticalVariation,
+  liveTacticalMotifLabel,
   tacticalMotifDescription,
   type LiveTacticalScan,
 } from "@/utils/tacticalMotifs/liveTactics";
@@ -31,6 +32,7 @@ export function TacticalScanResult({
   onPreviewChange?: (preview: LiveTacticalScan) => void;
 }) {
   const sideLabel = scan.side === "white" ? "White" : "Black";
+  const laterTheme = (scan.motifs[0]?.ply ?? 1) > 1;
   const tacticalVariations = scan.variations
     .filter((variation) => variation.motifs.length > 0)
     .sort(
@@ -59,12 +61,24 @@ export function TacticalScanResult({
           <Alert
             color="orange"
             icon={<IconBolt size="1rem" />}
-            title={`${scan.motifs.map((motif) => motif.label).join(" · ")} found`}
+            title={
+              laterTheme
+                ? `${scan.motifs[0].label} in the continuation`
+                : `${scan.motifs.map((motif) => motif.label).join(" · ")} found`
+            }
           >
-            {scan.preferredMultipv
-              ? `${sideLabel}'s immediate tactical option`
-              : `${sideLabel}'s main tactical idea`}
+            {laterTheme
+              ? "In the displayed continuation"
+              : scan.preferredMultipv
+                ? `${sideLabel}'s immediate tactical option`
+                : `${sideLabel}'s main tactical idea`}
             {lastMoveSan ? ` after ${lastMoveSan}` : ""}: {scan.motifs[0]?.evidence}
+            {laterTheme && (
+              <Text size="sm" mt="xs">
+                This theme occurs after the replies shown. The scan has not verified it as the
+                tactical explanation of the first move.
+              </Text>
+            )}
             {scan.preferredMultipv && (
               <Text size="sm" mt="xs">
                 The engine's first line repeats this position before reaching the same tactic.
@@ -123,7 +137,7 @@ export function TacticalScanResult({
                     </Badge>
                     {variation.motifs.slice(0, 1).map((motif) => (
                       <Badge key={motif.id} color="orange" variant="filled">
-                        {motif.label}
+                        {liveTacticalMotifLabel(motif)}
                       </Badge>
                     ))}
                   </Group>
@@ -147,8 +161,13 @@ export function TacticalScanResult({
                     <Text size="sm">{tacticalMotifDescription(motif)}</Text>
                     {motif.moveUci && (
                       <Text size="xs" c="dimmed">
-                        Triggering move: <Code>{motif.moveUci}</Code> · {motif.confidence}{" "}
-                        confidence
+                        {(motif.ply ?? 1) > 1 ? "Continuation move" : "Triggering move"}:{" "}
+                        <Code>{motif.moveUci}</Code> · {motif.confidence} confidence
+                      </Text>
+                    )}
+                    {(motif.ply ?? 1) > 1 && (
+                      <Text size="xs" c="dimmed">
+                        Depends on the replies shown.
                       </Text>
                     )}
                   </Stack>

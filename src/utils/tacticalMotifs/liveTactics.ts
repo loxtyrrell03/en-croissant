@@ -147,7 +147,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 74;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 75;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {
@@ -301,6 +301,10 @@ type ClassifiedLiveTacticalVariation = LiveTacticalVariation & {
     motifClassifierVersion: string;
 };
 
+export function liveTacticalMotifLabel(motif: TacticalMotifEvidence) {
+    return (motif.ply ?? 1) > 1 ? `Later: ${motif.label}` : motif.label;
+}
+
 function buildLiveTacticalVariation(
     input: LiveTacticalScanInput,
     variation: LiveTacticalVariationInput,
@@ -346,7 +350,7 @@ function buildLiveTacticalVariation(
         }
     const labels = motifs.slice(0, 3).map<LiveTacticalBoardLabel>((motif, index) => ({
         id: motif.id,
-        text: motif.label,
+        text: liveTacticalMotifLabel(motif),
         color: tacticalMotifColor(motif.id),
         square:
             (index === 0 ? geometry?.square : null) ??

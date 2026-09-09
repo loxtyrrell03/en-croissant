@@ -73,7 +73,7 @@ describe("live tactical classifier", () => {
         expect(scan.arrows).toEqual([]);
     });
 
-    test("identifies a fork and anchors the Fork label to its landing square", () => {
+    test("identifies a later fork and qualifies its board label at the landing square", () => {
         const scan = buildLiveTacticalScan({
             fen: "r1bqrnk1/1p3ppp/p2p1n2/b1pP4/P3PB2/2NB1N1P/1PQ2PP1/R2R2K1 b - - 6 14",
             pvUci: ["a5c3", "b2c3", "c5c4", "d3c4", "e8e4", "d1d4", "e4d4"],
@@ -85,7 +85,9 @@ describe("live tactical classifier", () => {
 
         expect(scan.motifs.map((motif) => motif.id)).toContain("fork");
         expect(scan.labels).toEqual(
-            expect.arrayContaining([expect.objectContaining({ text: "Fork", square: "e4" })]),
+            expect.arrayContaining([
+                expect.objectContaining({ text: "Later: Fork", square: "e4" }),
+            ]),
         );
         expect(scan.arrows[4]).toMatchObject({ from: "e8", to: "e4", role: "trigger" });
     });

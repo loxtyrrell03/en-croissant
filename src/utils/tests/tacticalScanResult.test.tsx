@@ -29,6 +29,37 @@ const markup = (value: LiveTacticalScan) =>
     </MantineProvider>,
   );
 
+const laterScan = buildLiveTacticalScan({
+  fen: "2k4r/1p3p2/2p3q1/P1Q3p1/3R4/8/6B1/6K1 w - - 0 1",
+  pvUci: ["g2h3", "c8b8", "c5e5", "g6d6", "e5h8"],
+  pvSan: ["Bh3+", "Kb8", "Qe5+", "Qd6", "Qxh8+"],
+  engineName: "Constructed",
+  depth: 16,
+});
+test("a later fork is not presented as a verified root explanation", () => {
+  expect(laterScan.motifs[0]).toMatchObject({ id: "fork", ply: 3 });
+  const element = document.createElement("div");
+  element.innerHTML = markup(laterScan);
+  expect(element.textContent).toContain("Fork in the continuation");
+  expect(element.textContent).not.toContain("Fork found");
+  expect(element.textContent).not.toContain("White's main tactical idea");
+  expect(element.textContent).toContain(
+    "not verified it as the tactical explanation of the first move",
+  );
+  expect(element.textContent).toContain("Continuation move");
+  expect(element.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Fork");
+  expect(element.querySelectorAll("details[open]")).toHaveLength(0);
+});
+test("later board annotations survive candidate projection without changing its position", () => {
+  expect(laterScan.labels[0].text).toBe("Later: Fork");
+  const before = JSON.stringify(laterScan);
+  const projected = previewLiveTacticalVariation(laterScan, 1);
+  expect(projected.labels[0].text).toBe("Later: Fork");
+  expect(projected.fen).toBe(laterScan.fen);
+  expect(JSON.stringify(laterScan)).toBe(before);
+  expect(scan.labels[0].text).toBe("Fork");
+});
+
 const cycleScan = buildLiveTacticalScan({
   fen: "6k1/2r2Npp/2q1P3/3n4/8/6Q1/5PPP/3R1RK1 w - - 0 1",
   pvUci: ["f7h6", "g8h8", "h6f7", "h8g8", "d1d5", "c6d5", "g3c7"],

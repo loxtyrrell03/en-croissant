@@ -520,6 +520,75 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE ||
+            !process.env.TACTICAL_MIXED_CHECK_REPORT,
+    )(
+        "audit the unresolved mixed-outcome bishop check against every legal root reply",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_MIXED_CHECK_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const row = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE!, "utf8"),
+            ).cases.find((r: { eligibleIndex: number }) => r.eligibleIndex === 184);
+            const root = replayTacticalLine(row.fen, row.sourceUci)[0];
+            const roots = [...(await analyse(engine, row.fen, root.uci)).values()];
+            const branches = [];
+            for (const [from, destinations] of root.after.allDests())
+                for (const to of destinations) {
+                    const reply = { from, to };
+                    expect(root.after.isLegal(reply)).toBe(true);
+                    const next = root.after.clone();
+                    next.play(reply);
+                    const fen = makeFen(next.toSetup());
+                    const lines = [...(await analyse(engine, fen)).values()];
+                    branches.push({
+                        reply: makeSan(root.after, reply),
+                        replyUci: makeUci(reply),
+                        fen,
+                        lines,
+                        classification: classifyPositionTacticalMotifs({
+                            fen: row.fen,
+                            pvUci: [root.uci, makeUci(reply), ...lines[0].pvUci],
+                        }),
+                    });
+                }
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        scope: "Unresolved development case, not a classifier pass. Every legal immediate defence receives a fresh depth-16 search; engine PVs are not all-defence theme proofs. Root relevance must explain heterogeneous material and mating outcomes, not borrow one future fork.",
+                        eligibleIndex: 184,
+                        fen: row.fen,
+                        root: root.uci,
+                        roots,
+                        sourceClassification: classifyPositionTacticalMotifs({
+                            fen: row.fen,
+                            pvUci: row.sourceUci,
+                        }),
+                        branches,
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+            expect(branches.length).toBeGreaterThan(0);
+            for (const branch of branches) {
+                const value = branch.lines[0].cp ?? Math.sign(branch.lines[0].mate!) * 100000;
+                expect({ reply: branch.reply, winning: value > 0 }).toMatchObject({
+                    winning: true,
+                });
+            }
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE ||
             !process.env.TACTICAL_DECLINED_CAPTURE_REPORT,
     )(
         "inspect declined defender-removal resources with fresh engine lines",
