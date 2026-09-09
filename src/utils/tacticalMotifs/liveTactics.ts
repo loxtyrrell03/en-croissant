@@ -7,7 +7,8 @@ import {
     tacticalMotifColor,
 } from "./mistakeReviewAdapter";
 import type { TacticalMotifEvidence } from "./types";
-import { tacticalBoardEvidence } from "./causalTactics";
+import { replayTacticalLine, tacticalBoardEvidence } from "./causalTactics";
+import { makeFen } from "chessops/fen";
 
 const CORE_TACTICAL_THEME_IDS = new Set([
     "perpetualCheck",
@@ -146,7 +147,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 64;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 65;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {
@@ -196,6 +197,9 @@ export type LiveTacticalScan = {
     labels: LiveTacticalBoardLabel[];
     variations: LiveTacticalVariation[];
     motifClassifierVersion: string;
+    /** A separately analysed immediate alternative to a closed root cycle.
+     * Engine ranks/lines remain intact; this only selects the initial preview. */
+    preferredMultipv?: number;
 };
 
 export type LiveTacticalScanInput = {
@@ -433,7 +437,7 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
     const variations = viableInputs.map((variation, index) =>
         buildLiveTacticalVariation(input, variation, index + 1),
     );
-    const primary =
+    const enginePrimary =
         variations.find((variation) => variation.multipv === 1) ??
         variations[0] ??
         buildLiveTacticalVariation(
@@ -441,6 +445,13 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
             { multipv: 1, depth: input.depth, pvUci: input.pvUci, pvSan: input.pvSan },
             1,
         );
+    const immediate = immediateAlternativeAfterCycle(
+        input.fen,
+        enginePrimary,
+        variations,
+        viableInputs,
+    );
+    const primary = immediate ?? enginePrimary;
     const motifs = primary.motifs.slice(0, 1);
     const publicVariations = variations.map<LiveTacticalVariation>(
         ({ motifClassifierVersion: _version, ...variation }) => variation,
@@ -458,7 +469,60 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
         labels: aggregateVariationLabels([{ ...primary, labels: primary.labels.slice(0, 1) }]),
         variations: publicVariations,
         motifClassifierVersion: primary.motifClassifierVersion,
+        ...(immediate ? { preferredMultipv: immediate.multipv } : {}),
     };
+}
+
+/** Choose an existing, close-scored engine candidate, not a synthetic line
+ * with a borrowed score. Both tactical certificates must name the same move
+ * and theme, and the main line must restore the board, turn, castling rights
+ * and en-passant state. Move counters are not tactical identity. */
+function immediateAlternativeAfterCycle(
+    fen: string,
+    principal: ClassifiedLiveTacticalVariation,
+    variations: ClassifiedLiveTacticalVariation[],
+    inputs: LiveTacticalVariationInput[],
+) {
+    const motif = principal.motifs[0];
+    const ply = motif?.ply ?? 0;
+    if (ply < 3 || ply > principal.lineUci.length || !motif.moveUci) return null;
+    const firstInput = inputs.find((v, i) => (v.multipv ?? i + 1) === principal.multipv);
+    if (
+        !firstInput ||
+        firstInput.mate != null ||
+        !Number.isFinite(firstInput.cp) ||
+        firstInput.cp! < 100
+    )
+        return null;
+    const prefix = principal.lineUci.slice(0, ply - 1);
+    const steps = replayTacticalLine(fen, prefix);
+    if (
+        steps.length !== prefix.length ||
+        steps.some(
+            (s) =>
+                s.capture || s.move.promotion || s.before.board.get(s.move.from)?.role === "pawn",
+        )
+    )
+        return null;
+    const key = (position: (typeof steps)[number]["before"]) =>
+        makeFen(position.toSetup()).split(" ").slice(0, 4).join(" ");
+    if (key(steps[0].before) !== key(steps.at(-1)!.after)) return null;
+    return (
+        variations.find((candidate) => {
+            if (candidate === principal || candidate.lineUci[0] !== motif.moveUci) return false;
+            const score = inputs.find((v, i) => (v.multipv ?? i + 1) === candidate.multipv);
+            const immediate = candidate.motifs[0];
+            return (
+                score?.mate == null &&
+                Number.isFinite(score?.cp) &&
+                score!.cp! >= 100 &&
+                score!.cp! >= firstInput.cp! - 80 &&
+                immediate?.ply === 1 &&
+                immediate.moveUci === motif.moveUci &&
+                immediate.id === motif.id
+            );
+        }) ?? null
+    );
 }
 
 export function tacticalMotifDescription(motif: TacticalMotifEvidence) {

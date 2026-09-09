@@ -107,6 +107,23 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:immediate-alternative-after-cycle",
+                input: {
+                    fen: "6k1/2r2Npp/2q1P3/3n4/8/6Q1/5PPP/3R1RK1 w - - 0 1",
+                    pvUci: ["f7h6", "g8h8", "h6f7", "h8g8", "d1d5", "c6d5", "g3c7"],
+                    variations: [
+                        {
+                            multipv: 1,
+                            cp: 420,
+                            pvUci: ["f7h6", "g8h8", "h6f7", "h8g8", "d1d5", "c6d5", "g3c7"],
+                        },
+                        { multipv: 2, cp: 413, pvUci: ["d1d5", "c6d5", "g3c7"] },
+                    ],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:combined-defender-removal",
                 input: {
                     fen: "6k1/2r2ppp/2q5/3n4/8/6Q1/5PPP/3R1RK1 w - - 0 1",
@@ -403,7 +420,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(107);
+        expect(report).toHaveLength(108);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

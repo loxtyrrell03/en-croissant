@@ -29,6 +29,35 @@ const markup = (value: LiveTacticalScan) =>
     </MantineProvider>,
   );
 
+const cycleScan = buildLiveTacticalScan({
+  fen: "6k1/2r2Npp/2q1P3/3n4/8/6Q1/5PPP/3R1RK1 w - - 0 1",
+  pvUci: ["f7h6", "g8h8", "h6f7", "h8g8", "d1d5", "c6d5", "g3c7"],
+  depth: 16,
+  engineName: "Constructed",
+  variations: [
+    {
+      multipv: 1,
+      pvUci: ["f7h6", "g8h8", "h6f7", "h8g8", "d1d5", "c6d5", "g3c7"],
+      pvSan: ["Nh6+", "Kh8", "Nf7+", "Kg8", "Rxd5", "Qxd5", "Qxc7"],
+      cp: 420,
+    },
+    { multipv: 2, pvUci: ["d1d5", "c6d5", "g3c7"], pvSan: ["Rxd5", "Qxd5", "Qxc7"], cp: 413 },
+  ],
+});
+
+test("the preferred immediate option is first without relabelling engine ranks", () => {
+  const element = document.createElement("div");
+  element.innerHTML = markup(cycleScan);
+  expect(element.textContent).toContain("White's immediate tactical option");
+  expect(element.textContent).toContain("separately analysed immediate alternative");
+  const cards = [...element.querySelectorAll("[data-tactical-candidate]")];
+  expect(cards.map((c) => c.getAttribute("data-tactical-candidate"))).toEqual(["2", "1"]);
+  expect(cards[0].textContent).toContain("Alternative");
+  expect(cards[1].textContent).toContain("Main line");
+  expect(cards[1].textContent).toContain("Nh6+");
+  expect(element.querySelectorAll("details[open]")).toHaveLength(0);
+});
+
 test("a candidate preview uses only that root's evidence and leaves the cached scan unchanged", () => {
   const original = JSON.stringify(scan);
   const alternative = previewLiveTacticalVariation(scan, 2);
@@ -144,6 +173,30 @@ test("Show on board switches one candidate at a time and resets for a new scan",
   await act(async () => button().click());
   await render({ ...scan });
   expect(button().getAttribute("aria-pressed")).toBe("false");
+  await render(scan);
+  expect(button().getAttribute("aria-pressed")).toBe("false");
+  await render(cycleScan);
+  const immediate = () =>
+    container.querySelector<HTMLButtonElement>('[aria-label="Show Rxd5 on board"]')!;
+  const engineFirst = () =>
+    container.querySelector<HTMLButtonElement>('[aria-label="Show Nh6+ on board"]')!;
+  expect(immediate().getAttribute("aria-pressed")).toBe("true");
+  expect(engineFirst().getAttribute("aria-pressed")).toBe("false");
+  await act(async () => engineFirst().click());
+  expect(onPreviewChange.mock.lastCall?.[0].lineUci[0]).toBe("f7h6");
+  const restoreImmediate = [...container.querySelectorAll("button")].find(
+    (n) => n.textContent === "Restore immediate option",
+  )!;
+  await act(async () => restoreImmediate.click());
+  expect(onPreviewChange.mock.lastCall?.[0].lineUci[0]).toBe("d1d5");
+  expect(
+    onPreviewChange.mock.lastCall?.[0].arrows.some(
+      (a: { from: string; to: string }) => a.from === "f7" && a.to === "h6",
+    ),
+  ).toBe(false);
+  await act(async () => engineFirst().click());
+  await render({ ...cycleScan });
+  expect(immediate().getAttribute("aria-pressed")).toBe("true");
   await render(scan);
   expect(button().getAttribute("aria-pressed")).toBe("false");
 });

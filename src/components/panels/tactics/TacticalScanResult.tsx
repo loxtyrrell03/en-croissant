@@ -31,10 +31,17 @@ export function TacticalScanResult({
   onPreviewChange?: (preview: LiveTacticalScan) => void;
 }) {
   const sideLabel = scan.side === "white" ? "White" : "Black";
-  const tacticalVariations = scan.variations.filter((variation) => variation.motifs.length > 0);
+  const tacticalVariations = scan.variations
+    .filter((variation) => variation.motifs.length > 0)
+    .sort(
+      (a, b) =>
+        Number(b.multipv === scan.preferredMultipv) - Number(a.multipv === scan.preferredMultipv),
+    );
   const principalLine = scan.lineSan.length > 0 ? scan.lineSan : scan.lineUci;
   const principal =
-    scan.variations.find((variation) => variation.multipv === 1) ?? scan.variations[0];
+    scan.variations.find((variation) => variation.multipv === scan.preferredMultipv) ??
+    scan.variations.find((variation) => variation.multipv === 1) ??
+    scan.variations[0];
   const [selection, setSelection] = useState<{ scan: LiveTacticalScan; multipv: number } | null>(
     null,
   );
@@ -54,8 +61,16 @@ export function TacticalScanResult({
             icon={<IconBolt size="1rem" />}
             title={`${scan.motifs.map((motif) => motif.label).join(" · ")} found`}
           >
-            {sideLabel}'s main tactical idea{lastMoveSan ? ` after ${lastMoveSan}` : ""}:{" "}
-            {scan.motifs[0]?.evidence}
+            {scan.preferredMultipv
+              ? `${sideLabel}'s immediate tactical option`
+              : `${sideLabel}'s main tactical idea`}
+            {lastMoveSan ? ` after ${lastMoveSan}` : ""}: {scan.motifs[0]?.evidence}
+            {scan.preferredMultipv && (
+              <Text size="sm" mt="xs">
+                The engine's first line repeats this position before reaching the same tactic.
+                Showing its separately analysed immediate alternative.
+              </Text>
+            )}
           </Alert>
         ) : tacticalVariations.length > 0 ? (
           <Alert color="blue" icon={<IconBolt size="1rem" />} title="Tactical alternatives">
@@ -80,10 +95,10 @@ export function TacticalScanResult({
         {onPreviewChange && selected !== principal?.multipv && principal && (
           <Group justify="space-between">
             <Text size="xs" c="dimmed">
-              Board arrows show the selected alternative, not a played move.
+              Board arrows show the selected engine line, not a played move.
             </Text>
             <Button size="compact-xs" variant="subtle" onClick={() => preview(principal.multipv)}>
-              Restore main line
+              {scan.preferredMultipv ? "Restore immediate option" : "Restore main line"}
             </Button>
           </Group>
         )}
