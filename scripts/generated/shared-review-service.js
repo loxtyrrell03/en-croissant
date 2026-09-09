@@ -11734,6 +11734,12 @@ function discoveredEvidence(steps, source) {
 	const exchange = !mate && directGain === null ? proveExchangeDiscovery(step) : null;
 	const gain = directGain ?? exchange?.gain ?? null;
 	if (!mate && gain === null) return null;
+	if (!kingRay && gain !== null) {
+		const fork = proveMateBackedFork(step);
+		const deflection = fork && fork.gain >= gain ? proveMatingDeflection(step) : null;
+		const covered = deflection ? matingDeflectionRays(step, deflection) : [];
+		if (covered.length && rays.every((ray) => covered.some((other) => other.from === ray.from && other.target === ray.target))) return null;
+	}
 	if (!kingRay && gain !== null && verifiedFork(step)) {
 		const independentGain = materialThreatGain(step, winningTargets(step.after, step.move.to, step.before.turn), [step.move.to]) ?? proveRecaptureBackedFork(step)?.gain ?? null;
 		if (independentGain !== null && independentGain >= gain) return null;
@@ -13256,6 +13262,7 @@ function deflectionEvidence(steps, source) {
 		const branch = mating.mating[0];
 		const defender = bait.after.board.get(branch.defender);
 		const decline = mating.declined.find((branch) => branch.continuation?.length) ?? mating.declined[0];
+		const opening = matingDeflectionRays(bait, mating).map((ray) => ` The move also opens the ${bait.after.board.get(ray.from).role}'s line from ${makeSquare(ray.from)} to ${makeSquare(ray.target)} for ${ray.mate}.`).join("");
 		return {
 			id: "deflection",
 			label: "Deflection",
@@ -13264,7 +13271,7 @@ function deflectionEvidence(steps, source) {
 			ply: 1,
 			moveUci: bait.uci,
 			value: mating.gain,
-			evidence: `${bait.san} offers the ${bait.after.board.get(bait.move.to).role} to deflect the ${defender.role} from ${makeSquare(branch.defender)}. Accepting with ${branch.reply} allows ${branch.mate}: ${branch.mode === "block" ? `the ${defender.role} no longer blocks the mating line from ${makeSquare(branch.target)} to ${makeSquare(bait.after.board.kingOf(opposite(bait.before.turn)))}` : `the defender no longer guards ${makeSquare(branch.target)}`}. ${decline ? `Declining can avoid this mate, but every legal decline has a checked material win or immediate mate. ${decline.continuation ? `After ${decline.reply}, ${decline.answer} forces an answer to check before the material recovery; ${decline.continuation.join(" ")} is one checked continuation.` : `For example, ${decline.reply} ${decline.answer}.`} This is not a forced-mate claim.` : "Every legal reply accepts the offer and allows immediate mate."}`
+			evidence: `${bait.san} offers the ${bait.after.board.get(bait.move.to).role} to deflect the ${defender.role} from ${makeSquare(branch.defender)}. Accepting with ${branch.reply} allows ${branch.mate}: ${branch.mode === "block" ? `the ${defender.role} no longer blocks the mating line from ${makeSquare(branch.target)} to ${makeSquare(bait.after.board.kingOf(opposite(bait.before.turn)))}` : `the defender no longer guards ${makeSquare(branch.target)}`}.${opening} ${decline ? `Declining can avoid this mate, but every legal decline has a checked material win or immediate mate. ${decline.continuation ? `After ${decline.reply}, ${decline.answer} forces an answer to check before the material recovery; ${decline.continuation.join(" ")} is one checked continuation.` : `For example, ${decline.reply} ${decline.answer}.`} This is not a forced-mate claim.` : "Every legal reply accepts the offer and allows immediate mate."}`
 		};
 	}
 	const capture = bait && proveCaptureDeflection(bait);
@@ -13364,6 +13371,25 @@ function checkingExchangeRecovery(pos, move, payoffs, balance, budget) {
 	} : null;
 }
 var matingDeflectionCache = /* @__PURE__ */ new Map();
+/** Only a genuinely newly uncovered slider that plays the certified mate
+* belongs to this explanation. A similar square or a later PV ray does not. */
+function matingDeflectionRays(root, proof) {
+	return revealedRays(root).flatMap((ray) => {
+		for (const branch of proof.mating) {
+			if (branch.target !== ray.target) continue;
+			const pos = root.after.clone();
+			const reply = parseSan(pos, branch.reply);
+			if (!reply) continue;
+			pos.play(reply);
+			const mate = parseSan(pos, branch.mate);
+			if (mate && "from" in mate && mate.from === ray.from && mate.to === ray.target) return [{
+				...ray,
+				mate: branch.mate
+			}];
+		}
+		return [];
+	});
+}
 /** A normal capture can offer its mover to a mating-square defender or a
 * blocker of the mating ray. Every acceptance must allow immediate mate,
 * and every declined offer must retain material through a related move.
@@ -15070,7 +15096,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 65;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 66;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

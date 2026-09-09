@@ -107,6 +107,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:shared-mating-route",
+                input: {
+                    fen: "4r1rk/4q2p/5n1Q/8/3n4/3B3R/3K4/8 w - - 0 1",
+                    pvUci: ["h6f6", "e7f6", "h3h7"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:countercapture-and-delayed-fork",
                 input: {
                     fen: "8/4r1p1/p2k4/1bN5/5K2/5P2/6P1/1R6 w - - 0 1",
@@ -438,7 +447,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(110);
+        expect(report).toHaveLength(111);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

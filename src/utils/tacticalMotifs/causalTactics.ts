@@ -3549,6 +3549,23 @@ function discoveredEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
     const exchange = !mate && directGain === null ? proveExchangeDiscovery(step) : null;
     const gain = directGain ?? exchange?.gain ?? null;
     if (!mate && gain === null) return null;
+    // A mating deflection can already explain this exact opened mating
+    // route, while a separately certified fork explains the material decline.
+    // Do not count their shared route as a third independent lesson. Keep
+    // discoveries with another ray, a checking battery, a larger gain, or
+    // incomplete material/mating certificates.
+    if (!kingRay && gain !== null) {
+        const fork = proveMateBackedFork(step);
+        const deflection = fork && fork.gain >= gain ? proveMatingDeflection(step) : null;
+        const covered = deflection ? matingDeflectionRays(step, deflection) : [];
+        if (
+            covered.length &&
+            rays.every((ray) =>
+                covered.some((other) => other.from === ray.from && other.target === ray.target),
+            )
+        )
+            return null;
+    }
     // A pawn ray uncovered incidentally by a winning knight fork does not
     // explain that fork's payoff. Non-king discoveries need a contribution
     // beyond what the moving piece already forces on its own targets.
@@ -6145,6 +6162,12 @@ function deflectionEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
         const defender = bait.after.board.get(branch.defender)!;
         const decline =
             mating.declined.find((branch) => branch.continuation?.length) ?? mating.declined[0];
+        const opening = matingDeflectionRays(bait, mating)
+            .map(
+                (ray) =>
+                    ` The move also opens the ${bait.after.board.get(ray.from)!.role}'s line from ${makeSquare(ray.from)} to ${makeSquare(ray.target)} for ${ray.mate}.`,
+            )
+            .join("");
         return {
             id: "deflection",
             label: "Deflection",
@@ -6153,7 +6176,7 @@ function deflectionEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
             ply: 1,
             moveUci: bait.uci,
             value: mating.gain,
-            evidence: `${bait.san} offers the ${bait.after.board.get(bait.move.to)!.role} to deflect the ${defender.role} from ${makeSquare(branch.defender)}. Accepting with ${branch.reply} allows ${branch.mate}: ${branch.mode === "block" ? `the ${defender.role} no longer blocks the mating line from ${makeSquare(branch.target)} to ${makeSquare(bait.after.board.kingOf(opposite(bait.before.turn))!)}` : `the defender no longer guards ${makeSquare(branch.target)}`}. ${decline ? `Declining can avoid this mate, but every legal decline has a checked material win or immediate mate. ${decline.continuation ? `After ${decline.reply}, ${decline.answer} forces an answer to check before the material recovery; ${decline.continuation.join(" ")} is one checked continuation.` : `For example, ${decline.reply} ${decline.answer}.`} This is not a forced-mate claim.` : "Every legal reply accepts the offer and allows immediate mate."}`,
+            evidence: `${bait.san} offers the ${bait.after.board.get(bait.move.to)!.role} to deflect the ${defender.role} from ${makeSquare(branch.defender)}. Accepting with ${branch.reply} allows ${branch.mate}: ${branch.mode === "block" ? `the ${defender.role} no longer blocks the mating line from ${makeSquare(branch.target)} to ${makeSquare(bait.after.board.kingOf(opposite(bait.before.turn))!)}` : `the defender no longer guards ${makeSquare(branch.target)}`}.${opening} ${decline ? `Declining can avoid this mate, but every legal decline has a checked material win or immediate mate. ${decline.continuation ? `After ${decline.reply}, ${decline.answer} forces an answer to check before the material recovery; ${decline.continuation.join(" ")} is one checked continuation.` : `For example, ${decline.reply} ${decline.answer}.`} This is not a forced-mate claim.` : "Every legal reply accepts the offer and allows immediate mate."}`,
         } satisfies TacticalMotifEvidence;
     }
     const capture = bait && proveCaptureDeflection(bait);
@@ -6312,6 +6335,24 @@ type MatingDeflectionProof = {
     declined: { reply: string; answer: string; gain: number; continuation?: string[] }[];
 };
 const matingDeflectionCache = new Map<string, MatingDeflectionProof | null>();
+
+/** Only a genuinely newly uncovered slider that plays the certified mate
+ * belongs to this explanation. A similar square or a later PV ray does not. */
+function matingDeflectionRays(root: TacticalReplayStep, proof: MatingDeflectionProof) {
+    return revealedRays(root).flatMap((ray) => {
+        for (const branch of proof.mating) {
+            if (branch.target !== ray.target) continue;
+            const pos = root.after.clone();
+            const reply = parseSan(pos, branch.reply);
+            if (!reply) continue;
+            pos.play(reply);
+            const mate = parseSan(pos, branch.mate);
+            if (mate && "from" in mate && mate.from === ray.from && mate.to === ray.target)
+                return [{ ...ray, mate: branch.mate }];
+        }
+        return [];
+    });
+}
 
 /** A normal capture can offer its mover to a mating-square defender or a
  * blocker of the mating ray. Every acceptance must allow immediate mate,

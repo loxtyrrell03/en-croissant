@@ -425,23 +425,30 @@ test.skipIf(!process.env.TACTICAL_JUDGEMENT_ENGINE || !process.env.TACTICAL_FORK
     180000,
 );
 
+type JudgementEngineLine = {
+    multipv: number;
+    depth: number;
+    pvUci: string[];
+    pvSan: string[];
+    cp: number | null;
+    mate: number | null;
+};
+
 async function analyse(engine: string, fen: string, searchMove?: string, depth = 16, multipv = 3) {
     if (!Number.isInteger(depth) || depth < 1 || depth > 24)
         throw new Error("Invalid judgement depth");
     if (!Number.isInteger(multipv) || multipv < 1 || multipv > 3)
         throw new Error("Invalid MultiPV");
+    // Stockfish may ignore an illegal searchmoves entry and silently return
+    // its unrestricted best move. Never certify that as the requested control.
+    const position = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
+    if (searchMove) {
+        const move = parseUci(searchMove);
+        if (!move || !position.isLegal(move))
+            throw new Error(`Illegal restricted move: ${searchMove}`);
+    }
     const child = spawn(engine, [], { windowsHide: true, stdio: "pipe" });
-    const lines = new Map<
-        number,
-        {
-            multipv: number;
-            depth: number;
-            pvUci: string[];
-            pvSan: string[];
-            cp: number | null;
-            mate: number | null;
-        }
-    >();
+    const lines = new Map<number, JudgementEngineLine>();
     return new Promise<typeof lines>((resolve, reject) => {
         const timer = setTimeout(() => {
             child.kill();
@@ -470,6 +477,12 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
                 );
                 if (match) {
                     const pvUci = match[5].trim().split(/\s+/);
+                    if (searchMove && pvUci[0] !== searchMove) {
+                        clearTimeout(timer);
+                        child.kill();
+                        reject(new Error(`Engine ignored restricted move: ${searchMove}`));
+                        return;
+                    }
                     const pos = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
                     const pvSan = pvUci.map((uci) => {
                         const move = parseUci(uci)!;
@@ -503,6 +516,151 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.each(["d2c2", "d2f2", "invalid"])(
+        "illegal restricted move %s fails before starting an engine",
+        async (move) => {
+            const fen = "4r1rk/4q2p/5n1Q/8/3n4/3B3R/3K4/8 w - - 0 1";
+            await expect(analyse("must-not-launch", fen, move)).rejects.toThrow(
+                "Illegal restricted move",
+            );
+        },
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_THIRD_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_MATING_OVERLAP_REPORT,
+    )(
+        "validate shared mating-route overlap against fresh engine searches",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_MATING_OVERLAP_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_THIRD_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 181,
+            );
+            const constructed = "4r1rk/4q2p/5n1Q/8/3n4/3B3R/3K4/8 w - - 0 1";
+            const extra = "5rkr/3q2pp/4n1Q1/8/2n1B3/2B3R1/8/1K6 w - - 0 1";
+            const cases = [
+                { id: "real-root", fen: row.fen, restrict: "h6f6", prefix: [] as string[] },
+                { id: "real-acceptance", fen: row.fen, prefix: ["h6f6", "e7f6"] },
+                { id: "real-rook-decline", fen: row.fen, prefix: ["h6f6", "g8g7", "f6d4"] },
+                {
+                    id: "real-missed-alternative",
+                    fen: row.fen,
+                    restrict: "d2c1",
+                    prefix: [] as string[],
+                },
+                {
+                    id: "constructed-root",
+                    fen: constructed,
+                    restrict: "h6f6",
+                    prefix: [] as string[],
+                },
+                {
+                    id: "constructed-missed-alternative",
+                    fen: constructed,
+                    restrict: "d2c1",
+                    prefix: [] as string[],
+                },
+                { id: "constructed-acceptance", fen: constructed, prefix: ["h6f6", "e7f6"] },
+                {
+                    id: "constructed-rook-decline",
+                    fen: constructed,
+                    prefix: ["h6f6", "g8g7", "f6d4"],
+                },
+                {
+                    id: "weaker-local-fork",
+                    fen: constructed.replace("4r1rk", "6rk"),
+                    restrict: "h6f6",
+                    prefix: [] as string[],
+                },
+                { id: "extra-discovery-ray", fen: extra, restrict: "g6e6", prefix: [] as string[] },
+                {
+                    id: "no-mate-support",
+                    fen: constructed.replace("3B3R", "7R"),
+                    restrict: "h6f6",
+                    prefix: [] as string[],
+                },
+            ];
+            const searches: {
+                id: string;
+                fen: string;
+                prefix: string[];
+                restrict?: string;
+                lines: JudgementEngineLine[];
+            }[] = [];
+            for (const input of cases) {
+                const steps = replayTacticalLine(input.fen, input.prefix);
+                expect(steps).toHaveLength(input.prefix.length);
+                const fen = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : input.fen;
+                const lines = [...(await analyse(engine, fen, input.restrict)).values()];
+                searches.push({ ...input, fen, lines });
+            }
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                pvUci: searches.find((s) => s.id === "real-root")!.lines[0].pvUci,
+                bestMoveUci: "h6f6",
+                playedMoveUci: "d2c1",
+                refutationUci: searches
+                    .find((s) => s.id === "real-missed-alternative")!
+                    .lines[0].pvUci.slice(1),
+            });
+            expect(review.missedMotifs[0]?.id).toBe("deflection");
+            expect(
+                review.missedMotifs.some((m) => m.id === "discoveredAttack" && m.ply === 1),
+            ).toBe(false);
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        scope: "Private real position and independently constructed mechanism controls; fresh depth-16 scores are not local proof values or general accuracy.",
+                        searches,
+                        review,
+                        explanation: buildMistakeReviewTacticalExplanation(review),
+                    },
+                    null,
+                    2,
+                ),
+            );
+            for (const id of [
+                "real-root",
+                "real-rook-decline",
+                "weaker-local-fork",
+                "extra-discovery-ray",
+            ]) {
+                const result = searches.find((s) => s.id === id)!;
+                expect(
+                    (result.lines[0].cp ?? result.lines[0].mate!) *
+                        (result.fen.split(" ")[1] === "w" ? 1 : -1),
+                ).toBeGreaterThan(0);
+            }
+            for (const id of ["real-acceptance", "constructed-acceptance"])
+                expect(searches.find((s) => s.id === id)!.lines[0].mate).toBe(1);
+            expect(
+                searches[0].lines[0].cp! -
+                    searches.find((s) => s.id === "real-missed-alternative")!.lines[0].cp!,
+            ).toBeGreaterThan(100);
+            // The stripped-down board starts 910 cp down in material; gaining
+            // two knights does not make its full evaluation positive. Compare
+            // the tactical resource with a missed alternative, not with zero.
+            const score = (id: string) => {
+                const result = searches.find((s) => s.id === id)!.lines[0];
+                return result.cp ?? Math.sign(result.mate!) * 100000;
+            };
+            expect(
+                score("constructed-root") - score("constructed-missed-alternative"),
+            ).toBeGreaterThan(100);
+            expect(score("no-mate-support")).toBeLessThan(0);
+        },
+        120000,
+    );
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_THIRD_SAMPLE ||

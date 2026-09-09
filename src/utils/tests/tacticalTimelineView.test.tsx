@@ -6,6 +6,27 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("a shared mating route has one explanation rather than a third mechanism badge", () => {
+  const fen = "4r1rk/4q2p/5n1Q/8/3n4/3B3R/3K4/8 w - - 0 1";
+  const line = ["h6f6", "e7f6", "h3h7"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  const root = container.querySelector('[data-tactical-ply="1"]')!;
+  expect(root.textContent).toContain("Deflection");
+  expect(root.textContent).toContain("Fork");
+  expect(root.textContent).toContain("opens the rook's line from h3 to h7");
+  expect(root.textContent).not.toContain("Discovered Attack");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Checkmate");
+});
+
 test("a delaying check keeps the sacrifice and eventual fork on their actual moves", () => {
   const fen = "8/4r1p1/p2k4/1bN5/5K2/5P2/6P1/1R6 w - - 0 1";
   const line = ["c5a6", "g7g5", "f4g3", "b5a6", "b1b6", "d6d7", "b6a6"];
