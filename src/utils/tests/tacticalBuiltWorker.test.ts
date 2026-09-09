@@ -107,6 +107,24 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "regression:connected-pin-entry",
+                input: {
+                    fen: "2r2rk1/pp4pp/1n3p2/3p4/3qp1N1/6Q1/P1P3PP/1N2R2K w - - 4 21",
+                    pvUci: ["g4h6"],
+                    engineName: "Regression",
+                    depth: 16,
+                },
+            },
+            {
+                id: "constructed:incidental-pin-check-cycle",
+                input: {
+                    fen: "6k1/5Npp/8/8/8/2r3Q1/8/6K1 w - - 0 1",
+                    pvUci: ["f7h6", "g8h8", "h6f7", "h8g8", "g3c3", "g7g6"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:exchange-deflection",
                 input: {
                     fen: "4r1k1/3q1pbp/6p1/3Q4/8/5P2/P5PP/R2R2K1 b - - 0 1",
@@ -376,7 +394,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(104);
+        expect(report).toHaveLength(106);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

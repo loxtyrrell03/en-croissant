@@ -6,6 +6,39 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("the pin entry explains its connected continuation without a premature fork badge", () => {
+  const fen = "2r2rk1/pp4pp/1n3p2/3p4/3qp1N1/6Q1/P1P3PP/1N2R2K w - - 4 21";
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: ["g4h6"] });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation moves={["Nh6+"]} motifs={result.timeline ?? []} />
+    </MantineProvider>,
+  );
+  const root = container.querySelector('[data-tactical-ply="1"]')!;
+  expect(root.textContent).toContain("Pin");
+  expect(root.textContent).toContain("Nf5 attacks the queen on d4");
+  expect(root.textContent).toContain("Qxg7#");
+  expect(root.textContent).not.toContain("Fork");
+});
+
+test("an unverified repetition does not render a later gift as its pin lesson", () => {
+  const fen = "6k1/5Npp/8/8/8/2r3Q1/8/6K1 w - - 0 1";
+  const line = ["f7h6", "g8h8", "h6f7", "h8g8", "g3c3", "g7g6"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  expect(container.textContent).not.toContain("Pin");
+  expect(container.querySelector('[data-tactical-ply="5"]')).toBeNull();
+});
+
 test("deflection explains both defences without a false acceptance or early payoff arrow", () => {
   const fen = "4r1k1/3q1pbp/6p1/3Q4/8/5P2/P5PP/R2R2K1 b - - 0 1";
   const line = ["e8e1", "d1e1", "d7d5"];

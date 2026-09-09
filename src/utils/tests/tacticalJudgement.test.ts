@@ -498,6 +498,85 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(!engine || !process.env.TACTICAL_PIN_ENTRY_REPORT)(
+        "verify connected pin entry against queen escape and knight capture",
+        async () => {
+            const fen = "2r2rk1/pp4pp/1n3p2/3p4/3qp1N1/6Q1/P1P3PP/1N2R2K w - - 4 21";
+            const searches = [];
+            for (const [position, moves] of [
+                [fen, []],
+                [fen, ["g4h6", "g8h8", "h6f5"]],
+                [fen, ["g4h6", "g8h8", "h6f5", "d4c5"]],
+                [fen.replace("3p4", "3p3r"), ["g4h6", "g8h8", "h6f5", "h5f5"]],
+            ] as [string, string[]][]) {
+                const steps = replayTacticalLine(position, moves);
+                expect(steps).toHaveLength(moves.length);
+                const reached = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : position;
+                const lines = [...(await analyse(engine, reached)).values()];
+                searches.push({ fen: reached, moves, lines });
+            }
+            expect(searches[0].lines[0].pvUci[0]).toBe("g4h6");
+            expect(searches[0].lines[0].cp!).toBeGreaterThan(300);
+            expect(searches[2].lines[0].mate).toBe(1);
+            expect(searches[2].lines[0].pvUci[0]).toBe("g3g7");
+            const result = classifyPositionTacticalMotifs({ fen, pvUci: ["g4h6"] });
+            expect(result.motifs[0]?.id).toBe("pin");
+            writeFileSync(
+                process.env.TACTICAL_PIN_ENTRY_REPORT!,
+                JSON.stringify({ searches, result }, null, 2),
+                { flag: "wx" },
+            );
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_THIRD_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_PIN_RELEVANCE_REPORT,
+    )(
+        "inspect repeated checks versus the immediate real combination",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_PIN_RELEVANCE_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_THIRD_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 172,
+            );
+            const cycle = ["f7h6", "g8h8", "h6f7", "h8g8"];
+            const steps = replayTacticalLine(row.fen, cycle);
+            expect(steps).toHaveLength(4);
+            const returned = makeFen(steps[3].after.toSetup());
+            expect(returned.split(" ").slice(0, 4)).toEqual(row.fen.split(" ").slice(0, 4));
+            const searches = [];
+            for (const [fen, root] of [
+                [row.fen, undefined],
+                [row.fen, "f7h6"],
+                [row.fen, "d1d5"],
+                [returned, "d1d5"],
+            ] as const) {
+                const lines = [...(await analyse(engine, fen, root)).values()];
+                expect(lines[0].depth).toBe(16);
+                const result = classifyPositionTacticalMotifs({
+                    fen,
+                    pvUci: lines[0].pvUci,
+                    rootCp: lines[0].cp,
+                });
+                expect(result.motifs.some((m) => m.id === "pin" && m.ply === 1)).toBe(false);
+                searches.push({ fen, root, lines, result });
+            }
+            expect(searches[2].lines[0].cp!).toBeGreaterThan(100);
+            expect(searches[3].lines[0].cp!).toBeGreaterThan(100);
+            writeFileSync(output, JSON.stringify({ cycle, searches }, null, 2), { flag: "wx" });
+        },
+        120000,
+    );
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_THIRD_SAMPLE ||

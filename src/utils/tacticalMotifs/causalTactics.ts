@@ -3765,6 +3765,165 @@ function computeMaterialThreatGain(
           };
 }
 
+type PinEntryProof = {
+    gain: number;
+    branches: {
+        reply: string;
+        preparation: string;
+        target: Square;
+        targetRole: Role;
+        mate: string;
+    }[];
+};
+const pinEntryCache = new Map<string, PinEntryProof | null>();
+
+/** The pin protects a checking entry, then that same piece attacks material
+ * while enabling its pinner's mate. Every reply at both stages is checked;
+ * neither a later PV gift nor a cycle can certify this connection. */
+export function provePinEntry(root: TacticalReplayStep, nodeLimit = 8192): PinEntryProof | null {
+    if (
+        !Number.isSafeInteger(nodeLimit) ||
+        nodeLimit <= 0 ||
+        root.capture ||
+        root.move.promotion ||
+        root.before.isCheck() ||
+        !root.after.isCheck() ||
+        root.after.isEnd()
+    )
+        return null;
+    const ray = pinRestrictsCapture(root);
+    if (!ray || ray.pinner === root.move.to) return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    if (nodeLimit === 8192 && pinEntryCache.has(key)) return pinEntryCache.get(key)!;
+    const side = root.before.turn;
+    const budget = { nodes: nodeLimit };
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--budget.nodes < 0) throw new Error("Pin entry budget exhausted");
+        const next = pos.clone();
+        next.play(move);
+        return next;
+    };
+    let proof: PinEntryProof | null = null;
+    try {
+        const branches: PinEntryProof["branches"] = [];
+        let minimum = Infinity;
+        for (const reply of legalMoves(root.after)) {
+            if (reply.promotion || capturedValue(root.after, reply))
+                throw new Error("Unsupported entry capture");
+            const next = visit(root.after, reply);
+            if (next.isEnd()) throw new Error("Terminal entry reply");
+            let found = false;
+            for (const preparation of legalMoves(next).filter((m) => m.from === root.move.to)) {
+                if (preparation.promotion || capturedValue(next, preparation)) continue;
+                const prepared = visit(next, preparation);
+                if (prepared.isCheck() || prepared.isEnd()) continue;
+                const mover = prepared.board.get(preparation.to)!;
+                const targets = winningTargets(prepared, preparation.to, side).filter(
+                    (sq) =>
+                        VALUE[prepared.board.get(sq)!.role] >= VALUE.rook &&
+                        !attacks(
+                            next.board.get(preparation.from)!,
+                            preparation.from,
+                            next.board.occupied,
+                        ).has(sq),
+                );
+                if (!targets.length) continue;
+                const probe = withTurn(prepared, side);
+                const mates = legalMoves(probe).filter(
+                    (m) =>
+                        m.from === ray.pinner &&
+                        attacks(mover, preparation.to, prepared.board.occupied).has(m.to) &&
+                        visit(probe, m).isCheckmate() &&
+                        (!next.isLegal(m) || !visit(next, m).isCheckmate()),
+                );
+                if (!mates.length) continue;
+                let gain = Infinity,
+                    sawMaterial = false,
+                    sawMate = false,
+                    complete = true;
+                for (const defence of legalMoves(prepared)) {
+                    if (defence.promotion) {
+                        complete = false;
+                        break;
+                    }
+                    const answer = visit(prepared, defence);
+                    if (answer.isEnd()) {
+                        complete = false;
+                        break;
+                    }
+                    if (
+                        mates.some(
+                            (m) =>
+                                answer.board.get(m.from)?.color === side &&
+                                answer.isLegal(m) &&
+                                visit(answer, m).isCheckmate(),
+                        )
+                    ) {
+                        sawMate = true;
+                        continue;
+                    }
+                    let best = -Infinity;
+                    for (const capture of legalMoves(answer)) {
+                        if (
+                            capture.promotion ||
+                            !capturedValue(answer, capture) ||
+                            !targets.some(
+                                (sq) => capture.to === (defence.from === sq ? defence.to : sq),
+                            ) ||
+                            (capture.from !== preparation.to &&
+                                !answer.isCheck() &&
+                                defence.to !== preparation.to)
+                        )
+                            continue;
+                        const leaf = visit(answer, capture);
+                        if (leaf.isEnd()) continue;
+                        if (
+                            legalMoves(leaf).some(
+                                (m) => m.promotion || visit(leaf, m).isCheckmate(),
+                            )
+                        )
+                            continue;
+                        const settled = participantCaptureGain(
+                            answer,
+                            capture,
+                            [...answer.board[side], capture.to],
+                            budget,
+                        );
+                        if (settled !== null)
+                            best = Math.max(best, settled - capturedValue(prepared, defence));
+                    }
+                    if (best < 100) {
+                        complete = false;
+                        break;
+                    }
+                    gain = Math.min(gain, best);
+                    sawMaterial = true;
+                }
+                if (!complete || !sawMaterial || !sawMate || !Number.isFinite(gain)) continue;
+                minimum = Math.min(minimum, gain);
+                branches.push({
+                    reply: makeSan(root.after, reply),
+                    preparation: makeSan(next, preparation),
+                    target: targets[0],
+                    targetRole: prepared.board.get(targets[0])!.role,
+                    mate: makeSan(probe, mates[0]),
+                });
+                found = true;
+                break;
+            }
+            if (!found) throw new Error("Unproved pin entry reply");
+        }
+        if (branches.length && Number.isFinite(minimum)) proof = { gain: minimum, branches };
+    } catch {
+        /* Unknown branches and exhausted work abstain. */
+    }
+    if (nodeLimit === 8192) {
+        pinEntryCache.set(key, proof);
+        if (pinEntryCache.size > 128) pinEntryCache.delete(pinEntryCache.keys().next().value!);
+    }
+    return proof;
+}
+
 function relevantRayTactics(step: TacticalReplayStep) {
     const before = rayTactics(step.before, step.before.turn);
     const moved = step.after.board.get(step.move.to)!;
@@ -6543,6 +6702,21 @@ export function auditTacticalMotifs(
             proposal.id === "backRank"
         )
             continue;
+        // An illegal recapture merely makes this move safe. A later PV gain
+        // cannot establish that exploiting the pin achieves anything now.
+        const supportedPin =
+            proposal.id === "pin" && !step.capture && pinnedRecapturer(step)
+                ? materialThreatProof(
+                      step,
+                      winningTargets(step.after, step.move.to, attacker),
+                      [step.move.to],
+                      [],
+                      false,
+                      undefined,
+                      { allPiecesAtLeaf: true },
+                  )
+                : null;
+        const pinEntry = proposal.id === "pin" ? provePinEntry(step) : null;
         let sound = false;
         if (MATE.test(proposal.id)) sound = mate;
         else if (proposal.id === "fork") {
@@ -6601,7 +6775,8 @@ export function auditTacticalMotifs(
             sound =
                 (mate && Boolean(pinRestrictsCapture(step))) ||
                 Boolean(provePinnedCapture(step)) ||
-                (!step.capture && pinnedRecapturer(step) && settled >= 100) ||
+                Boolean(pinEntry) ||
+                (supportedPin?.kind === "proven" && supportedPin.complete) ||
                 rayMaterialEvidence(step, proposal.source).some((m) => m.id === "pin");
         else if (proposal.id === "capturingDefender")
             sound = Boolean(capturedDefenderEvidence(step, proposal.source));
@@ -6619,6 +6794,9 @@ export function auditTacticalMotifs(
             sound = (mate || settled >= 100) && exchangeGain > -VALUE.king && exchangeGain <= -90;
         } else sound = mate || settled >= 100;
         if (!sound) continue;
+        if (!mate && supportedPin?.kind === "proven" && supportedPin.complete)
+            proposal = { ...proposal, value: supportedPin.gain };
+        if (pinEntry) proposal = { ...proposal, value: pinEntry.gain };
         // A later reinforcement may originate in the legacy PV proposals.
         // Keep its independently verified explanation, not a generic sentence
         // about the pinned piece being unable to capture the arriving attacker.
@@ -6668,6 +6846,12 @@ export function auditTacticalMotifs(
                             : `${proposal.evidence} ${restriction}`,
                 };
             }
+        }
+        if (pinEntry) {
+            proposal = {
+                ...proposal,
+                evidence: `${proposal.evidence} ${pinEntry.branches.map((branch) => `After ${branch.reply}, ${branch.preparation} attacks the ${branch.targetRole} on ${makeSquare(branch.target)} and enables ${branch.mate}.`).join(" ")} Every legal reply then concedes verified material or that mate; the later attack is a continuation, not a fork on this move.`,
+            };
         }
         candidates.push({
             ...proposal,

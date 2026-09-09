@@ -11945,6 +11945,99 @@ function computeMaterialThreatGain(step, targets, capturers, interpositions, all
 		...matingDefences.length ? { matingDefences } : {}
 	};
 }
+var pinEntryCache = /* @__PURE__ */ new Map();
+/** The pin protects a checking entry, then that same piece attacks material
+* while enabling its pinner's mate. Every reply at both stages is checked;
+* neither a later PV gift nor a cycle can certify this connection. */
+function provePinEntry(root, nodeLimit = 8192) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture || root.move.promotion || root.before.isCheck() || !root.after.isCheck() || root.after.isEnd()) return null;
+	const ray = pinRestrictsCapture(root);
+	if (!ray || ray.pinner === root.move.to) return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (nodeLimit === 8192 && pinEntryCache.has(key)) return pinEntryCache.get(key);
+	const side = root.before.turn;
+	const budget = { nodes: nodeLimit };
+	const visit = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("Pin entry budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	let proof = null;
+	try {
+		const branches = [];
+		let minimum = Infinity;
+		for (const reply of legalMoves(root.after)) {
+			if (reply.promotion || capturedValue(root.after, reply)) throw new Error("Unsupported entry capture");
+			const next = visit(root.after, reply);
+			if (next.isEnd()) throw new Error("Terminal entry reply");
+			let found = false;
+			for (const preparation of legalMoves(next).filter((m) => m.from === root.move.to)) {
+				if (preparation.promotion || capturedValue(next, preparation)) continue;
+				const prepared = visit(next, preparation);
+				if (prepared.isCheck() || prepared.isEnd()) continue;
+				const mover = prepared.board.get(preparation.to);
+				const targets = winningTargets(prepared, preparation.to, side).filter((sq) => VALUE[prepared.board.get(sq).role] >= VALUE.rook && !attacks(next.board.get(preparation.from), preparation.from, next.board.occupied).has(sq));
+				if (!targets.length) continue;
+				const probe = withTurn(prepared, side);
+				const mates = legalMoves(probe).filter((m) => m.from === ray.pinner && attacks(mover, preparation.to, prepared.board.occupied).has(m.to) && visit(probe, m).isCheckmate() && (!next.isLegal(m) || !visit(next, m).isCheckmate()));
+				if (!mates.length) continue;
+				let gain = Infinity, sawMaterial = false, sawMate = false, complete = true;
+				for (const defence of legalMoves(prepared)) {
+					if (defence.promotion) {
+						complete = false;
+						break;
+					}
+					const answer = visit(prepared, defence);
+					if (answer.isEnd()) {
+						complete = false;
+						break;
+					}
+					if (mates.some((m) => answer.board.get(m.from)?.color === side && answer.isLegal(m) && visit(answer, m).isCheckmate())) {
+						sawMate = true;
+						continue;
+					}
+					let best = -Infinity;
+					for (const capture of legalMoves(answer)) {
+						if (capture.promotion || !capturedValue(answer, capture) || !targets.some((sq) => capture.to === (defence.from === sq ? defence.to : sq)) || capture.from !== preparation.to && !answer.isCheck() && defence.to !== preparation.to) continue;
+						const leaf = visit(answer, capture);
+						if (leaf.isEnd()) continue;
+						if (legalMoves(leaf).some((m) => m.promotion || visit(leaf, m).isCheckmate())) continue;
+						const settled = participantCaptureGain(answer, capture, [...answer.board[side], capture.to], budget);
+						if (settled !== null) best = Math.max(best, settled - capturedValue(prepared, defence));
+					}
+					if (best < 100) {
+						complete = false;
+						break;
+					}
+					gain = Math.min(gain, best);
+					sawMaterial = true;
+				}
+				if (!complete || !sawMaterial || !sawMate || !Number.isFinite(gain)) continue;
+				minimum = Math.min(minimum, gain);
+				branches.push({
+					reply: makeSan(root.after, reply),
+					preparation: makeSan(next, preparation),
+					target: targets[0],
+					targetRole: prepared.board.get(targets[0]).role,
+					mate: makeSan(probe, mates[0])
+				});
+				found = true;
+				break;
+			}
+			if (!found) throw new Error("Unproved pin entry reply");
+		}
+		if (branches.length && Number.isFinite(minimum)) proof = {
+			gain: minimum,
+			branches
+		};
+	} catch {}
+	if (nodeLimit === 8192) {
+		pinEntryCache.set(key, proof);
+		if (pinEntryCache.size > 128) pinEntryCache.delete(pinEntryCache.keys().next().value);
+	}
+	return proof;
+}
 function relevantRayTactics(step) {
 	const before = rayTactics(step.before, step.before.turn);
 	const moved = step.after.board.get(step.move.to);
@@ -13609,6 +13702,8 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			if (!pinnedRecapturer(step)) continue;
 		}
 		if (proposal.id === "zugzwang" || proposal.id === "mateThreat" || proposal.id === "backRank") continue;
+		const supportedPin = proposal.id === "pin" && !step.capture && pinnedRecapturer(step) ? materialThreatProof(step, winningTargets(step.after, step.move.to, attacker), [step.move.to], [], false, void 0, { allPiecesAtLeaf: true }) : null;
+		const pinEntry = proposal.id === "pin" ? provePinEntry(step) : null;
 		let sound = false;
 		if (MATE.test(proposal.id)) sound = mate;
 		else if (proposal.id === "fork") {
@@ -13652,7 +13747,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 				};
 			}
 		} else if (proposal.id === "skewer") sound = rayMaterialEvidence(step, proposal.source).some((m) => m.id === "skewer");
-		else if (proposal.id === "pin") sound = mate && Boolean(pinRestrictsCapture(step)) || Boolean(provePinnedCapture(step)) || !step.capture && pinnedRecapturer(step) && settled >= 100 || rayMaterialEvidence(step, proposal.source).some((m) => m.id === "pin");
+		else if (proposal.id === "pin") sound = mate && Boolean(pinRestrictsCapture(step)) || Boolean(provePinnedCapture(step)) || Boolean(pinEntry) || supportedPin?.kind === "proven" && supportedPin.complete || rayMaterialEvidence(step, proposal.source).some((m) => m.id === "pin");
 		else if (proposal.id === "capturingDefender") sound = Boolean(capturedDefenderEvidence(step, proposal.source));
 		else if (proposal.id === "attackingF2F7") sound = step.capture > 0 && tacticalExchangeGain(step.before, step.move) >= 100;
 		else if (proposal.id === "hangingPiece") sound = step.capture >= 320 && tacticalExchangeGain(step.before, step.move) >= 100;
@@ -13662,6 +13757,14 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			sound = (mate || settled >= 100) && exchangeGain > -VALUE.king && exchangeGain <= -90;
 		} else sound = mate || settled >= 100;
 		if (!sound) continue;
+		if (!mate && supportedPin?.kind === "proven" && supportedPin.complete) proposal = {
+			...proposal,
+			value: supportedPin.gain
+		};
+		if (pinEntry) proposal = {
+			...proposal,
+			value: pinEntry.gain
+		};
 		if (proposal.id === "pin" && proveReinforcedPin(step)) {
 			const reinforced = rayMaterialEvidence(step, proposal.source).find((m) => m.id === "pin");
 			if (reinforced) {
@@ -13699,6 +13802,10 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 				};
 			}
 		}
+		if (pinEntry) proposal = {
+			...proposal,
+			evidence: `${proposal.evidence} ${pinEntry.branches.map((branch) => `After ${branch.reply}, ${branch.preparation} attacks the ${branch.targetRole} on ${makeSquare(branch.target)} and enables ${branch.mate}.`).join(" ")} Every legal reply then concedes verified material or that mate; the later attack is a continuation, not a fork on this move.`
+		};
 		candidates.push({
 			...proposal,
 			confidence: proposal.id === "fork" || proposal.id === "hangingPiece" || proposal.id === "attackingF2F7" ? "high" : "medium"
@@ -14640,7 +14747,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 60;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 61;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
