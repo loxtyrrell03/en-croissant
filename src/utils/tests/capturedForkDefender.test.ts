@@ -30,7 +30,7 @@ function privateRow(eligibleIndex: number) {
     return sample.cases.find((r: { eligibleIndex: number }) => r.eligibleIndex === eligibleIndex);
 }
 test.skipIf(!process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE)(
-    "an unproved declining defence still prevents the real rook preparation certificate",
+    "the real rook preparation handles declined forks, countercaptures and counterchecks",
     () => {
         const row = privateRow(38);
         const errors: string[] = [];
@@ -39,10 +39,19 @@ test.skipIf(!process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE)(
             8192,
             (r) => errors.push(r),
         );
-        expect({ proof, errors }).toEqual({
-            proof: null,
-            errors: ["Unproved defence to the offered capture: g4"],
-        });
+        expect({ proof, errors }).toMatchObject({ proof: { gain: 220 }, errors: [] });
+        expect(proof!.declined).toEqual(
+            expect.arrayContaining([
+                { reply: "g4", answer: "Qe5+" },
+                { reply: "Qxf6", answer: "gxf6" },
+                { reply: "Qe8+", answer: "Nxe8" },
+                {
+                    reply: "Qa8+",
+                    answer: "Kh7",
+                    delayedForks: [{ acceptance: "cxd3", fork: "Qe5+" }],
+                },
+            ]),
+        );
     },
 );
 test.skipIf(!process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE)(

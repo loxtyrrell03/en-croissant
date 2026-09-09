@@ -2214,6 +2214,10 @@ function checkingForkSearch(
             (sq) => !excluded.includes(sq) && !["king", "pawn"].includes(after.board.get(sq)!.role),
         );
         if (!victims.length || after.isEnd()) return null;
+        const blockingSquares =
+            !discoveryChecks && strictLeaves && ["bishop", "rook", "queen"].includes(piece.role)
+                ? between(move.to, after.board.kingOf(opposite(side))!)
+                : undefined;
         let minimum = Infinity;
         const payoffVictims = new Set<Square>();
         for (const reply of legalMoves(after)) {
@@ -2223,13 +2227,20 @@ function checkingForkSearch(
             const named = capturedForker
                 ? [move.to]
                 : victims.map((sq) => (reply.from === sq ? reply.to : sq));
+            // Interposing a valuable piece can concede the fork's material
+            // gain instead of moving its victims. The checker or an ally
+            // may capture this real blocking square; normal liability and
+            // every legal recapture still have to meet the same gain floor.
+            if (blockingSquares?.has(reply.to)) named.push(reply.to);
             let best = -Infinity;
             let bestVictim: Square | undefined;
             for (const capture of legalMoves(next)) {
                 if (
                     !named.includes(capture.to) ||
                     !capturedValue(next, capture) ||
-                    (!capturedForker && capture.from !== move.to)
+                    (!capturedForker &&
+                        capture.from !== move.to &&
+                        !blockingSquares?.has(capture.to))
                 )
                     continue;
                 if (strictLeaves) {
@@ -2439,6 +2450,7 @@ function proveCaptureCheckPreparation(
         const otherCaptures: NonNullable<CaptureForkPreparationProof["otherCaptures"]> = [];
         const targets = new Set<Square>();
         const forkers = new Set<Square>();
+        const preparedForks = new Set<string>();
         let minimum = Infinity;
         const replies = legalMoves(root.after).sort(
             (a, b) => Number(b.to === root.move.to) - Number(a.to === root.move.to),
@@ -2617,6 +2629,8 @@ function proveCaptureCheckPreparation(
                     });
                     for (const victim of result.victims) targets.add(victim);
                     forkers.add(answer.from);
+                    if (removedDefender?.square === root.move.to)
+                        preparedForks.add(makeUci(answer));
                     minimum = Math.min(minimum, balance + result.gain);
                     won = true;
                     break;
@@ -2627,15 +2641,46 @@ function proveCaptureCheckPreparation(
                     won = true;
                 }
             } else {
+                // Declining can permit the SAME prepared checking fork. Use
+                // the reached board and mapped victims, never a borrowed PV.
+                if (!discoveryChecks && preparedForks.size) {
+                    const mapped = [...targets].map((sq) => (sq === reply.from ? reply.to : sq));
+                    for (const answer of legalMoves(next)) {
+                        if (!preparedForks.has(makeUci(answer)) || answer.promotion) continue;
+                        const result = fork(
+                            next,
+                            answer,
+                            [...next.board[side], answer.to],
+                            [...next.board[enemy]].filter((sq) => !mapped.includes(sq)),
+                            100 - balance,
+                            !root.after.isCheck(),
+                        );
+                        if (!result || balance + result.gain < 100) continue;
+                        declined.push({
+                            reply: makeSan(root.after, reply),
+                            answer: makeSan(next, answer),
+                        });
+                        minimum = Math.min(minimum, balance + result.gain);
+                        won = true;
+                        break;
+                    }
+                }
                 // Declining cannot be waved away as compulsory acceptance.
                 // Save the offer, let its verified forker support it while
                 // escaping a counterattack, or make a necessary king evasion.
                 // No unrelated quiet move can lend this preparation a win.
                 for (const answer of legalMoves(next)) {
+                    if (won) break;
+                    const directCountercapture =
+                        preparedForks.size > 0 &&
+                        capturedValue(next, answer) > 0 &&
+                        ((capturedValue(root.after, reply) > 0 && answer.to === reply.to) ||
+                            next.ctx().checkers.has(answer.to));
                     if (
                         answer.promotion ||
                         (answer.from !== root.move.to &&
                             !forkers.has(answer.from) &&
+                            !directCountercapture &&
                             !(next.ctx().checkers.has(answer.to) && capturedValue(next, answer)) &&
                             !(next.isCheck() && next.board.get(answer.from)?.role === "king"))
                     )
@@ -2690,6 +2735,28 @@ function proveCaptureCheckPreparation(
                             break;
                         }
                         if (!capturedValue(after, defence) && !defence.promotion) continue;
+                        // A direct countercapture can compensate the offer,
+                        // but not if its own capturing piece then falls too.
+                        // Reject that unsettled two-square loss rather than
+                        // combining independent single-exchange maxima.
+                        if (directCountercapture && defence.to !== answer.to) {
+                            const probe = withTurn(leaf, enemy);
+                            let exposed = false;
+                            for (const resource of legalMoves(probe)) {
+                                if (resource.to !== answer.to || !capturedValue(probe, resource))
+                                    continue;
+                                visit(probe, resource);
+                                const liability = tacticalExchangeGain(probe, resource);
+                                if (liability > 0 || liability <= -VALUE.king) {
+                                    exposed = true;
+                                    break;
+                                }
+                            }
+                            if (exposed) {
+                                loss = VALUE.king;
+                                break;
+                            }
+                        }
                         let gain = tacticalExchangeGain(after, defence);
                         if (gain <= -VALUE.king) {
                             loss = VALUE.king;
@@ -2711,13 +2778,24 @@ function proveCaptureCheckPreparation(
                         ) {
                             for (const follow of legalMoves(leaf)) {
                                 if (!forkers.has(follow.from) || follow.promotion) continue;
+                                const mapped = [...targets].map((sq) => {
+                                    const afterReply = sq === reply.from ? reply.to : sq;
+                                    return afterReply === defence.from ? defence.to : afterReply;
+                                });
                                 const result = fork(
                                     leaf,
                                     follow,
                                     [...leaf.board[side], follow.to],
-                                    !discoveryChecks && leaf.board.get(defence.to)?.role === "king"
-                                        ? []
-                                        : [...leaf.board[enemy]].filter((sq) => sq !== defence.to),
+                                    !discoveryChecks && preparedForks.has(makeUci(follow))
+                                        ? [...leaf.board[enemy]].filter(
+                                              (sq) => !mapped.includes(sq),
+                                          )
+                                        : !discoveryChecks &&
+                                            leaf.board.get(defence.to)?.role === "king"
+                                          ? []
+                                          : [...leaf.board[enemy]].filter(
+                                                (sq) => sq !== defence.to,
+                                            ),
                                     100 - material + delta(after, defence),
                                     !root.after.isCheck(),
                                 );
@@ -2741,6 +2819,7 @@ function proveCaptureCheckPreparation(
                     // gain here; a safe escape by the offer remains eligible.
                     if (
                         answer.from !== root.move.to &&
+                        !directCountercapture &&
                         branches.some(
                             (branch) => branch.removedDefender?.square === root.move.to,
                         ) &&

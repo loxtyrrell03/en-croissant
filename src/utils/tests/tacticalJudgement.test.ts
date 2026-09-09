@@ -520,6 +520,73 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE ||
+            !process.env.TACTICAL_DECLINED_CAPTURE_REPORT,
+    )(
+        "inspect declined defender-removal resources with fresh engine lines",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_DECLINED_CAPTURE_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const row = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE!, "utf8"),
+            ).cases.find((r: { eligibleIndex: number }) => r.eligibleIndex === 38);
+            const searches = [];
+            for (const reply of ["g3g4", "c6f6"]) {
+                const steps = replayTacticalLine(row.fen, [row.sourceUci[0], reply]);
+                expect(steps).toHaveLength(2);
+                const fen = makeFen(steps[1].after.toSetup());
+                searches.push({ reply, fen, lines: [...(await analyse(engine, fen)).values()] });
+            }
+            const constructed = "3r2k1/p4pp1/2Q2n1p/7q/8/3N4/2P2PPP/R3K3 b - - 0 1";
+            const reached = replayTacticalLine(constructed, [
+                "d8d3",
+                "c6a8",
+                "g8h7",
+                "c2d3",
+                "h5e5",
+                "a8e4",
+            ]);
+            expect(reached).toHaveLength(6);
+            const controls = [];
+            for (const [fen, restrict] of [
+                [constructed, "d8d3"],
+                [constructed, "h5e5"],
+                [makeFen(reached[5].after.toSetup()), "f6e4"],
+                [makeFen(reached[5].after.toSetup()), "e5e4"],
+            ]) {
+                controls.push({
+                    fen,
+                    restrict,
+                    lines: [...(await analyse(engine, fen, restrict)).values()],
+                });
+            }
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        scope: "Diagnostic only; no classifier success inferred from positive engine evaluations.",
+                        searches,
+                        controls,
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+            expect(controls[0].lines[0].cp!).toBeGreaterThan(0);
+            expect(controls[1].lines[0].cp!).toBeLessThan(0);
+            expect(controls[2].lines[0].cp!).toBeGreaterThan(0);
+            expect(controls[3].lines[0].cp!).toBeLessThan(0);
+        },
+        60000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE ||
             !process.env.TACTICAL_CAPTURED_FORK_DEFENDER_REPORT,
     )(
         "validate captured fork defenders with fresh root and all-defence witness searches",
@@ -534,7 +601,11 @@ describe("expert tactical judgement with fresh engine lines", () => {
             const sample = JSON.parse(
                 readFileSync(process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE!, "utf8"),
             );
-            const row = sample.cases.find((r: { eligibleIndex: number }) => r.eligibleIndex === 89);
+            const eligibleIndex = Number(process.env.TACTICAL_CAPTURED_FORK_DEFENDER_INDEX ?? 89);
+            expect([38, 89]).toContain(eligibleIndex);
+            const row = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === eligibleIndex,
+            );
             const root = replayTacticalLine(row.fen, row.sourceUci)[0];
             const proof = proveCaptureForkPreparation(root)!;
             expect(proof).not.toBeNull();

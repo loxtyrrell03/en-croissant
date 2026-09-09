@@ -10855,6 +10855,11 @@ function checkingForkSearch(side, budget, strictLeaves = false, discoveryChecks 
 		} else if (!after.isCheck() || !targets.some((sq) => after.board.get(sq)?.role === "king")) return null;
 		const victims = targets.filter((sq) => !excluded.includes(sq) && !["king", "pawn"].includes(after.board.get(sq).role));
 		if (!victims.length || after.isEnd()) return null;
+		const blockingSquares = !discoveryChecks && strictLeaves && [
+			"bishop",
+			"rook",
+			"queen"
+		].includes(piece.role) ? between(move.to, after.board.kingOf(opposite(side))) : void 0;
 		let minimum = Infinity;
 		const payoffVictims = /* @__PURE__ */ new Set();
 		for (const reply of legalMoves(after)) {
@@ -10862,10 +10867,11 @@ function checkingForkSearch(side, budget, strictLeaves = false, discoveryChecks 
 			if (next.isEnd()) return null;
 			const capturedForker = reply.to === move.to && capturedValue(after, reply) > 0;
 			const named = capturedForker ? [move.to] : victims.map((sq) => reply.from === sq ? reply.to : sq);
+			if (blockingSquares?.has(reply.to)) named.push(reply.to);
 			let best = -Infinity;
 			let bestVictim;
 			for (const capture of legalMoves(next)) {
-				if (!named.includes(capture.to) || !capturedValue(next, capture) || !capturedForker && capture.from !== move.to) continue;
+				if (!named.includes(capture.to) || !capturedValue(next, capture) || !capturedForker && capture.from !== move.to && !blockingSquares?.has(capture.to)) continue;
 				if (strictLeaves) {
 					const leaf = visit(next, capture);
 					let unresolved = false;
@@ -10981,6 +10987,7 @@ function proveCaptureCheckPreparation(root, nodeLimit, onFailure, discoveryCheck
 		const otherCaptures = [];
 		const targets = /* @__PURE__ */ new Set();
 		const forkers = /* @__PURE__ */ new Set();
+		const preparedForks = /* @__PURE__ */ new Set();
 		let minimum = Infinity;
 		const replies = legalMoves(root.after).sort((a, b) => Number(b.to === root.move.to) - Number(a.to === root.move.to));
 		for (const reply of replies) {
@@ -11060,6 +11067,7 @@ function proveCaptureCheckPreparation(root, nodeLimit, onFailure, discoveryCheck
 					});
 					for (const victim of result.victims) targets.add(victim);
 					forkers.add(answer.from);
+					if (removedDefender?.square === root.move.to) preparedForks.add(makeUci(answer));
 					minimum = Math.min(minimum, balance + result.gain);
 					won = true;
 					break;
@@ -11069,56 +11077,96 @@ function proveCaptureCheckPreparation(root, nodeLimit, onFailure, discoveryCheck
 					minimum = Math.min(minimum, captureAlternative.gain);
 					won = true;
 				}
-			} else for (const answer of legalMoves(next)) {
-				if (answer.promotion || answer.from !== root.move.to && !forkers.has(answer.from) && !(next.ctx().checkers.has(answer.to) && capturedValue(next, answer)) && !(next.isCheck() && next.board.get(answer.from)?.role === "king")) continue;
-				const after = visit(next, answer);
-				if (after.isEnd()) continue;
-				const countercaptured = forkers.has(answer.from) && capturedValue(next, answer) && (attacks(next.board.get(answer.to), answer.to, next.board.occupied).has(root.move.to) || answer.to === reply.to && attacks(next.board.get(answer.to), answer.to, next.board.occupied).has(answer.from)) ? next.board.get(answer.to).role : void 0;
-				if (forkers.has(answer.from) && answer.from !== root.move.to && !countercaptured && !attacks(after.board.get(answer.to), answer.to, after.board.occupied).has(root.move.to)) continue;
-				const material = balance + delta(next, answer);
-				if (material < 100) continue;
-				let loss = 0;
-				const delayedForks = [];
-				for (const defence of legalMoves(after)) {
-					const leaf = visit(after, defence);
-					if (leaf.isCheckmate()) {
-						loss = VALUE.king;
-						break;
-					}
-					if (forkers.has(answer.from) && answer.from !== root.move.to && rayTactics(leaf, enemy).some((ray) => ray.front === root.move.to && ray.rear === answer.to)) {
-						loss = VALUE.king;
-						break;
-					}
-					if (!capturedValue(after, defence) && !defence.promotion) continue;
-					let gain = tacticalExchangeGain(after, defence);
-					if (gain <= -VALUE.king) {
-						loss = VALUE.king;
-						break;
-					}
-					if (material - gain < 100 && next.isCheck() && next.board.get(answer.from)?.role === "king" && !capturedValue(next, answer) && defence.to === root.move.to && capturedValue(after, defence) && !defence.promotion && !leaf.isEnd()) for (const follow of legalMoves(leaf)) {
-						if (!forkers.has(follow.from) || follow.promotion) continue;
-						const result = fork(leaf, follow, [...leaf.board[side], follow.to], !discoveryChecks && leaf.board.get(defence.to)?.role === "king" ? [] : [...leaf.board[enemy]].filter((sq) => sq !== defence.to), 100 - material + delta(after, defence), !root.after.isCheck());
-						if (!result) continue;
-						gain = delta(after, defence) - result.gain;
-						delayedForks.push({
-							acceptance: makeSan(after, defence),
-							fork: makeSan(leaf, follow)
+			} else {
+				if (!discoveryChecks && preparedForks.size) {
+					const mapped = [...targets].map((sq) => sq === reply.from ? reply.to : sq);
+					for (const answer of legalMoves(next)) {
+						if (!preparedForks.has(makeUci(answer)) || answer.promotion) continue;
+						const result = fork(next, answer, [...next.board[side], answer.to], [...next.board[enemy]].filter((sq) => !mapped.includes(sq)), 100 - balance, !root.after.isCheck());
+						if (!result || balance + result.gain < 100) continue;
+						declined.push({
+							reply: makeSan(root.after, reply),
+							answer: makeSan(next, answer)
 						});
+						minimum = Math.min(minimum, balance + result.gain);
+						won = true;
 						break;
 					}
-					loss = Math.max(loss, gain);
 				}
-				if (material - loss < 100) continue;
-				if (answer.from !== root.move.to && branches.some((branch) => branch.removedDefender?.square === root.move.to) && balance - loss < 100) continue;
-				minimum = Math.min(minimum, material - loss);
-				declined.push({
-					reply: makeSan(root.after, reply),
-					answer: makeSan(next, answer),
-					...countercaptured ? { countercaptured } : {},
-					...delayedForks.length ? { delayedForks } : {}
-				});
-				won = true;
-				break;
+				for (const answer of legalMoves(next)) {
+					if (won) break;
+					const directCountercapture = preparedForks.size > 0 && capturedValue(next, answer) > 0 && (capturedValue(root.after, reply) > 0 && answer.to === reply.to || next.ctx().checkers.has(answer.to));
+					if (answer.promotion || answer.from !== root.move.to && !forkers.has(answer.from) && !directCountercapture && !(next.ctx().checkers.has(answer.to) && capturedValue(next, answer)) && !(next.isCheck() && next.board.get(answer.from)?.role === "king")) continue;
+					const after = visit(next, answer);
+					if (after.isEnd()) continue;
+					const countercaptured = forkers.has(answer.from) && capturedValue(next, answer) && (attacks(next.board.get(answer.to), answer.to, next.board.occupied).has(root.move.to) || answer.to === reply.to && attacks(next.board.get(answer.to), answer.to, next.board.occupied).has(answer.from)) ? next.board.get(answer.to).role : void 0;
+					if (forkers.has(answer.from) && answer.from !== root.move.to && !countercaptured && !attacks(after.board.get(answer.to), answer.to, after.board.occupied).has(root.move.to)) continue;
+					const material = balance + delta(next, answer);
+					if (material < 100) continue;
+					let loss = 0;
+					const delayedForks = [];
+					for (const defence of legalMoves(after)) {
+						const leaf = visit(after, defence);
+						if (leaf.isCheckmate()) {
+							loss = VALUE.king;
+							break;
+						}
+						if (forkers.has(answer.from) && answer.from !== root.move.to && rayTactics(leaf, enemy).some((ray) => ray.front === root.move.to && ray.rear === answer.to)) {
+							loss = VALUE.king;
+							break;
+						}
+						if (!capturedValue(after, defence) && !defence.promotion) continue;
+						if (directCountercapture && defence.to !== answer.to) {
+							const probe = withTurn(leaf, enemy);
+							let exposed = false;
+							for (const resource of legalMoves(probe)) {
+								if (resource.to !== answer.to || !capturedValue(probe, resource)) continue;
+								visit(probe, resource);
+								const liability = tacticalExchangeGain(probe, resource);
+								if (liability > 0 || liability <= -VALUE.king) {
+									exposed = true;
+									break;
+								}
+							}
+							if (exposed) {
+								loss = VALUE.king;
+								break;
+							}
+						}
+						let gain = tacticalExchangeGain(after, defence);
+						if (gain <= -VALUE.king) {
+							loss = VALUE.king;
+							break;
+						}
+						if (material - gain < 100 && next.isCheck() && next.board.get(answer.from)?.role === "king" && !capturedValue(next, answer) && defence.to === root.move.to && capturedValue(after, defence) && !defence.promotion && !leaf.isEnd()) for (const follow of legalMoves(leaf)) {
+							if (!forkers.has(follow.from) || follow.promotion) continue;
+							const mapped = [...targets].map((sq) => {
+								const afterReply = sq === reply.from ? reply.to : sq;
+								return afterReply === defence.from ? defence.to : afterReply;
+							});
+							const result = fork(leaf, follow, [...leaf.board[side], follow.to], !discoveryChecks && preparedForks.has(makeUci(follow)) ? [...leaf.board[enemy]].filter((sq) => !mapped.includes(sq)) : !discoveryChecks && leaf.board.get(defence.to)?.role === "king" ? [] : [...leaf.board[enemy]].filter((sq) => sq !== defence.to), 100 - material + delta(after, defence), !root.after.isCheck());
+							if (!result) continue;
+							gain = delta(after, defence) - result.gain;
+							delayedForks.push({
+								acceptance: makeSan(after, defence),
+								fork: makeSan(leaf, follow)
+							});
+							break;
+						}
+						loss = Math.max(loss, gain);
+					}
+					if (material - loss < 100) continue;
+					if (answer.from !== root.move.to && !directCountercapture && branches.some((branch) => branch.removedDefender?.square === root.move.to) && balance - loss < 100) continue;
+					minimum = Math.min(minimum, material - loss);
+					declined.push({
+						reply: makeSan(root.after, reply),
+						answer: makeSan(next, answer),
+						...countercaptured ? { countercaptured } : {},
+						...delayedForks.length ? { delayedForks } : {}
+					});
+					won = true;
+					break;
+				}
 			}
 			if (!won) throw new Error(`Unproved defence to the offered capture: ${makeSan(root.after, reply)}`);
 		}
@@ -15197,7 +15245,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 70;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 71;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
