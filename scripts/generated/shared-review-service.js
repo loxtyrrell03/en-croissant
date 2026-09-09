@@ -10630,7 +10630,9 @@ function proveCaptureForkPreparation(root, nodeLimit = root.after.isCheck() ? 40
 			let won = false;
 			if (reply.to === root.move.to && capturedValue(root.after, reply)) {
 				const receiver = root.after.board.get(reply.from).role;
-				const minimumGain = offered.role === "bishop" && receiver === "knight" ? VALUE.pawn - (VALUE.bishop - VALUE.knight) : VALUE.pawn;
+				const captured = root.before.board.get(root.move.to).role;
+				const twoMinors = offered.role === "rook" && ["knight", "bishop"].includes(captured) && ["knight", "bishop"].includes(receiver);
+				const minimumGain = twoMinors ? VALUE[captured] + VALUE[receiver] - VALUE.rook - VALUE.pawn : offered.role === "bishop" && receiver === "knight" ? VALUE.pawn - (VALUE.bishop - VALUE.knight) : VALUE.pawn;
 				let captureAlternative = null;
 				for (const answer of legalMoves(next)) {
 					if (answer.to !== root.move.to || answer.promotion || !capturedValue(next, answer)) continue;
@@ -10686,6 +10688,10 @@ function proveCaptureForkPreparation(root, nodeLimit = root.after.isCheck() ? 40
 						kind: "fork",
 						targets: result.targets,
 						receiver,
+						...twoMinors ? { exchange: {
+							given: "rook",
+							received: [captured, receiver]
+						} } : {},
 						...removedDefender ? { removedDefender } : {}
 					});
 					for (const victim of result.victims) targets.add(victim);
@@ -12942,7 +12948,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		const fork = capturePreparation.branches[0];
 		const declined = capturePreparation.declined[0];
 		const removed = fork.removedDefender;
-		const introduction = removed ? `${root.san} offers the ${root.before.board.get(root.move.from).role} to draw the defending ${fork.receiver} off ${makeSquare(removed.square)}. After ${fork.reply}, ${fork.answer} removes it and forks the ${fork.targets.join(" and ")}. Playing ${removed.premature} first lets that defender capture the forking piece with ${removed.defence}.` : `${root.san} captures the ${root.before.board.get(root.move.to).role} and offers the ${root.before.board.get(root.move.from).role} to attract the ${fork.receiver} onto ${makeSquare(root.move.to)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.`;
+		const introduction = removed ? `${root.san} offers the ${root.before.board.get(root.move.from).role} to draw the defending ${fork.receiver} off ${makeSquare(removed.square)}. After ${fork.reply}, ${fork.answer} removes it and forks the ${fork.targets.join(" and ")}. Playing ${removed.premature} first lets that defender capture the forking piece with ${removed.defence}.` : `${root.san} captures the ${root.before.board.get(root.move.to).role} and offers the ${root.before.board.get(root.move.from).role} to attract the ${fork.receiver} onto ${makeSquare(root.move.to)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.${fork.exchange ? ` This wins ${fork.exchange.received[0] === fork.exchange.received[1] ? `two ${fork.exchange.received[0]}s` : `a ${fork.exchange.received.join(" and a ")}`} for the rook; after legal countercaptures, the verified local net gain is at least ${capturePreparation.gain / 100} pawns, not a full-position evaluation.` : ""}`;
 		const otherCapture = capturePreparation.otherCaptures?.[0];
 		candidates.push({
 			id: "forkPreparation",
@@ -14180,7 +14186,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 54;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 55;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

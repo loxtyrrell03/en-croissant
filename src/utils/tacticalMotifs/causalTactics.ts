@@ -1713,6 +1713,7 @@ type CaptureForkPreparationProof = Omit<ForkPreparationProof, "branches"> & {
     branches: (ForkPreparationProof["branches"][number] & {
         receiver: Role;
         removedDefender?: { square: Square; premature: string; defence: string };
+        exchange?: { given: "rook"; received: [Role, Role] };
     })[];
     declined: { reply: string; answer: string }[];
     otherCaptures?: { reply: string; answer: string; gain: number }[];
@@ -1837,13 +1838,22 @@ export function proveCaptureForkPreparation(
             let won = false;
             if (reply.to === root.move.to && capturedValue(root.after, reply)) {
                 const receiver = root.after.board.get(reply.from)!.role;
-                // A bishop traded for a knight may win a pawn less their
-                // ten-centipawn piece-value difference. No other branch or
-                // motif gets a reduced threshold.
-                const minimumGain =
-                    offered.role === "bishop" && receiver === "knight"
-                        ? VALUE.pawn - (VALUE.bishop - VALUE.knight)
-                        : VALUE.pawn;
+                const captured = root.before.board.get(root.move.to)!.role;
+                const twoMinors =
+                    offered.role === "rook" &&
+                    ["knight", "bishop"].includes(captured) &&
+                    ["knight", "bishop"].includes(receiver);
+                // Preserve the actual residual of these specific exchanges.
+                // Ordinary trades and declined offers retain the pawn floor.
+                const minimumGain = twoMinors
+                    ? // Two minors for a rook is a substantive exchange,
+                      // even if the defender recovers one pawn elsewhere.
+                      // Retain the actual positive residual gain; this does
+                      // not relax ordinary pawn/trade or declined branches.
+                      VALUE[captured] + VALUE[receiver] - VALUE.rook - VALUE.pawn
+                    : offered.role === "bishop" && receiver === "knight"
+                      ? VALUE.pawn - (VALUE.bishop - VALUE.knight)
+                      : VALUE.pawn;
                 // A more valuable receiver may simply lose the exchange.
                 // This is an alternative defence, not evidence of a fork;
                 // at least one separate verified fork branch is still required.
@@ -1941,6 +1951,14 @@ export function proveCaptureForkPreparation(
                         kind: "fork",
                         targets: result.targets,
                         receiver,
+                        ...(twoMinors
+                            ? {
+                                  exchange: {
+                                      given: "rook" as const,
+                                      received: [captured, receiver] as [Role, Role],
+                                  },
+                              }
+                            : {}),
                         ...(removedDefender ? { removedDefender } : {}),
                     });
                     for (const victim of result.victims) targets.add(victim);
@@ -5516,7 +5534,7 @@ export function auditTacticalMotifs(
         const removed = fork.removedDefender;
         const introduction = removed
             ? `${root.san} offers the ${root.before.board.get(root.move.from)!.role} to draw the defending ${fork.receiver} off ${makeSquare(removed.square)}. After ${fork.reply}, ${fork.answer} removes it and forks the ${fork.targets.join(" and ")}. Playing ${removed.premature} first lets that defender capture the forking piece with ${removed.defence}.`
-            : `${root.san} captures the ${root.before.board.get(root.move.to)!.role} and offers the ${root.before.board.get(root.move.from)!.role} to attract the ${fork.receiver} onto ${makeSquare(root.move.to)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.`;
+            : `${root.san} captures the ${root.before.board.get(root.move.to)!.role} and offers the ${root.before.board.get(root.move.from)!.role} to attract the ${fork.receiver} onto ${makeSquare(root.move.to)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.${fork.exchange ? ` This wins ${fork.exchange.received[0] === fork.exchange.received[1] ? `two ${fork.exchange.received[0]}s` : `a ${fork.exchange.received.join(" and a ")}`} for the rook; after legal countercaptures, the verified local net gain is at least ${capturePreparation.gain / 100} pawns, not a full-position evaluation.` : ""}`;
         const otherCapture = capturePreparation.otherCaptures?.[0];
         candidates.push({
             id: "forkPreparation",

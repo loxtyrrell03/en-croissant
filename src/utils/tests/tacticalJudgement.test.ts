@@ -501,6 +501,96 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_TWO_MINORS_REPORT,
+    )(
+        "validate private two-minor preparation and missed opportunity",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const { proveCaptureForkPreparation } = await import("../tacticalMotifs/causalTactics");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_TWO_MINORS_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 182,
+            );
+            const proof = proveCaptureForkPreparation(
+                replayTacticalLine(row.fen, row.sourceUci)[0],
+            );
+            expect(proof?.gain).toBe(50);
+            const searches = [];
+            for (const input of [
+                { label: "Original", moves: [] as string[], root: undefined as string | undefined },
+                {
+                    label: "Accepted, prepared fork",
+                    moves: row.sourceUci.slice(0, 2),
+                    root: "g6e6",
+                },
+                {
+                    label: "King defence, recover knight",
+                    moves: [...row.sourceUci.slice(0, 3), "c8b8"],
+                    root: "e6b3",
+                },
+                {
+                    label: "Queen defence, recover knight",
+                    moves: [...row.sourceUci.slice(0, 3), "c7d7"],
+                    root: "e6b3",
+                },
+                {
+                    label: "Rook defence, recover knight",
+                    moves: [...row.sourceUci.slice(0, 3), "d8d7"],
+                    root: "e6b3",
+                },
+                { label: "Missed preparation", moves: ["c3e4"], root: undefined },
+            ]) {
+                const steps = replayTacticalLine(row.fen, input.moves);
+                expect(steps).toHaveLength(input.moves.length);
+                const fen = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : row.fen;
+                const lines = [...(await analyse(engine, fen, input.root)).values()];
+                expect(lines[0].depth).toBe(16);
+                searches.push({ ...input, fen, lines });
+            }
+            const before = searches[0].lines[0],
+                after = searches.at(-1)!.lines[0];
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                playedMoveUci: "c3e4",
+                bestMoveUci: before.pvUci[0],
+                pvUci: before.pvUci,
+                refutationUci: after.pvUci,
+                cpBefore: before.cp,
+                cpAfter: after.cp === null ? null : -after.cp,
+                cpLoss: before.cp === null || after.cp === null ? null : before.cp + after.cp,
+            });
+            const explanation = buildMistakeReviewTacticalExplanation(review);
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    { sourceSha256: sample.sourceSha256, proof, searches, review, explanation },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+            expect(before.pvUci[0]).toBe(row.sourceUci[0]);
+            for (const search of searches.slice(0, -1))
+                expect(search.lines[0].cp).toBeGreaterThan(100);
+            expect(before.cp! + after.cp!).toBeGreaterThan(100);
+            expect(explanation).toMatchObject({
+                source: "missed",
+                primary: { id: "forkPreparation", value: 50 },
+            });
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_MATE_FORK_REPORT,
     )(
         "audit private mate-backed fork and unresolved preparation defences",

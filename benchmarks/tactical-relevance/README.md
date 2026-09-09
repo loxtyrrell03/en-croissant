@@ -1,5 +1,11 @@
 # Tactical relevance judgement, 2026-09-08
 
+## Adapter 55: two minor pieces for a rook
+
+A verified rook-offer/checking-fork preparation now survives a legal pawn countercapture without pretending the resulting local gain is a full pawn. The exception uses the exact two-minor/rook exchange, keeps all legal defence checks and rejects larger erasing countercaptures. Root wording/arrows, later-ply fork evidence and missed-opportunity review share the certificate; accepting the proved offer no longer gets a contradictory Hanging Piece label.
+
+One disjoint sample headline becomes the root preparation; the other 47 sampled main labels and source timelines, previous 99 public worker labels and 32-case priority report are unchanged. Empty counts do not improve. Verification includes 670 selected tests, both fresh 24-position replays, six focused engine searches, 137 actual-controller parity inputs, isolated cold HTTP loading and production/shared-review builds. See [the private-course audit](private-course-review.md) for local/full-evaluation distinctions, reproduction and remaining gaps. No app/package/service was restarted or deployed; physical WebView reliability and broader coverage remain unverified.
+
 ## Adapter 52: disjoint audit and irrelevant forks in forced mates
 
 A new fixed 24-position easy-course sample excludes the original sample by actual position key, not just PGN index. Preliminary chess judgements were recorded before classifier output. It exposes 13 empty live results (including a saving perpetual check), later-payoff headlines without their preparation, and a subordinate knight-fork lesson inside a forced mate. This is evidence of remaining coverage gaps, not an accuracy score or a claim that all nonempty results are correct.

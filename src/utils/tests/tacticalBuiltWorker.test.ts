@@ -107,6 +107,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:two-minors-for-rook",
+                input: {
+                    fen: "2k5/1pq5/6Q1/P1n5/8/Rb6/5PPP/6K1 w - - 0 1",
+                    pvUci: ["a3b3", "c5b3", "g6e6", "c8b8", "e6b3"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:mate-backed-fork",
                 input: {
                     fen: "3qkb1r/5p1b/4p1pp/4N3/2B5/6N1/4QPPP/6K1 w k - 0 1",
@@ -331,7 +340,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(99);
+        expect(report).toHaveLength(100);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
