@@ -158,6 +158,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 },
             },
             {
+                id: "constructed:fork-backed-by-checking-recapture",
+                input: {
+                    fen: "3r2qk/6pr/5p1P/8/4N3/2B5/5PPP/5RK1 w - - 0 1",
+                    pvUci: ["e4f6", "g7f6", "c3f6", "h7g7", "f6g7"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:queen-capture-over-incidental-pin",
                 input: {
                     fen: "8/4R1pk/5q2/8/8/8/1B6/6K1 w - - 0 1",
@@ -250,7 +259,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(90);
+        expect(report).toHaveLength(91);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
@@ -281,6 +290,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_
             ["private-easy:87", "forkPreparation", 90],
             ["private-easy:173", "forkPreparation", 100],
             ["private-easy:10", "deflection", 320],
+            ["private-easy:212", "fork", 180],
         ] as const) {
             const row = sample.cases.find((item: { id: string }) => item.id === id);
             const input = {

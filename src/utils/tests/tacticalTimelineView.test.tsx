@@ -5,6 +5,29 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("the fork's checking recapture is conditional and the sacrifice acceptance is not a win", () => {
+  const fen = "3r2qk/6pr/5p1P/8/4N3/2B5/5PPP/5RK1 w - - 0 1";
+  const line = ["e4f6", "g7f6", "c3f6", "h7g7", "f6g7"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, line).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain(
+    "Taking the forker with gxf6 instead allows Bxf6+",
+  );
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("conditional");
+  expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).not.toContain(
+    "Winning Recapture",
+  );
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Bxf6+");
+});
+
 test("a declined mating deflection keeps its conditional explanation at the offer", () => {
   const fen = "8/3Q4/6pp/5n1k/2B1N1pq/8/3B4/6K1 w - - 0 1";
   const line = ["d7f5", "h4g5", "d2g5"];

@@ -497,6 +497,120 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_RECAPTURE_FORK_REPORT,
+    )(
+        "validate private fork and its checking recapture rather than incidental pawn pressure",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const { proveRecaptureBackedFork } = await import("../tacticalMotifs/causalTactics");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_RECAPTURE_FORK_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 212,
+            );
+            const root = replayTacticalLine(row.fen, row.sourceUci)[0];
+            const proof = proveRecaptureBackedFork(root)!;
+            expect(proof).toMatchObject({ gain: 180 });
+            const limit = root.after.clone();
+            const reply = parseSan(limit, proof.limitingDefence.reply)!;
+            limit.play(reply);
+            const withoutRay = root.before.clone();
+            withoutRay.board.set(50, { color: "black", role: "pawn" }); // c7: block the queen without opening a bishop ray.
+            const withoutRayFen = makeFen(withoutRay.toSetup());
+            expect(
+                proveRecaptureBackedFork(replayTacticalLine(withoutRayFen, [root.uci])[0]),
+            ).toMatchObject({ gain: 180 });
+            const inputs = [
+                {
+                    label: "Original",
+                    fen: row.fen,
+                    moves: [] as string[],
+                    root: undefined as string | undefined,
+                },
+                {
+                    label: "Accepted knight, checking recapture",
+                    fen: row.fen,
+                    moves: row.sourceUci.slice(0, 2),
+                    root: row.sourceUci[2],
+                },
+                {
+                    label: "Interposed queen",
+                    fen: row.fen,
+                    moves: [...row.sourceUci, "g1g2"],
+                    root: "f3g2",
+                },
+                {
+                    label: "Limiting local defence and exact witness",
+                    fen: row.fen,
+                    moves: [root.uci, makeUci(reply)],
+                    root: makeUci(parseSan(limit, proof.limitingDefence.answer)!),
+                },
+                {
+                    label: "No incidental bishop ray",
+                    fen: withoutRayFen,
+                    moves: [],
+                    root: root.uci,
+                },
+                { label: "Missed fork", fen: row.fen, moves: ["c8d8"], root: undefined },
+            ];
+            const searches = [];
+            for (const input of inputs) {
+                const steps = replayTacticalLine(input.fen, input.moves);
+                expect(steps).toHaveLength(input.moves.length);
+                const fen = steps.length ? makeFen(steps.at(-1)!.after.toSetup()) : input.fen;
+                const lines = [...(await analyse(engine, fen, input.root)).values()];
+                expect(lines[0].depth).toBe(16);
+                searches.push({ ...input, fen, lines });
+            }
+            const before = searches[0].lines[0],
+                after = searches.at(-1)!.lines[0];
+            const review = classifyMistakeReviewMotifs({
+                fen: row.fen,
+                bestMoveUci: before.pvUci[0],
+                playedMoveUci: "c8d8",
+                pvUci: before.pvUci,
+                pvSan: before.pvSan,
+                refutationUci: after.pvUci,
+                refutationSan: after.pvSan,
+                cpBefore: before.cp === null ? null : -before.cp,
+                cpAfter: after.cp,
+                cpLoss: before.cp === null || after.cp === null ? null : before.cp + after.cp,
+            });
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        sourceSha256: sample.sourceSha256,
+                        id: row.id,
+                        proof,
+                        searches,
+                        review,
+                        explanation: buildMistakeReviewTacticalExplanation(review),
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+            expect(before.pvUci[0]).toBe(root.uci);
+            for (const search of searches.slice(1, 4))
+                expect(
+                    search.lines[0].cp ?? Math.sign(search.lines[0].mate ?? 0) * 10000,
+                ).toBeGreaterThan(0);
+            expect(review.missedMotifs[0]?.id).toBe("fork");
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_MATING_DEFLECTION_REPORT,
     )(
         "validate private mating deflection acceptance and material decline",

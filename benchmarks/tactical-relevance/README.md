@@ -1,5 +1,11 @@
 # Tactical relevance judgement, 2026-09-08
 
+## Adapter 46: the fork, not incidental pawn pressure
+
+A forker's checking recapture now has a bounded all-defence material proof, including interpositions and exposed attacking pieces. The real private example leads with its queen/rook Fork rather than a discovered bishop attack on a pawn; its acceptance loses a contradictory Winning Recapture badge and the later checking fork remains at the correct ply. Missed-opportunity review and root arrows use the same proof. Near-equal bounded pawn-ray results are omitted as secondary noise, without claiming a precise marginal value.
+
+The 533-test selection, six fresh depth-16 searches, private 24-position replay and 91 public/eight private actual-controller cases pass. The other 23 private main labels, old 90 public worker labels and 32-case lesson report are unchanged. This improves relevance, not the seven remaining empty live sample results or general tactical coverage. See [the private-course audit](private-course-review.md) for proof boundaries, scores and reproduction. No app/package/service was restarted or deployed; physical WebView verification remains separate.
+
 ## Adapter 45: mating deflection with a material-concession defence
 
 Checking captures now receive independently proved Deflection evidence when accepting removes a mating-square guard or mating-ray blocker, while every declined offer preserves a related local material gain. The explanation explicitly distinguishes the accepted mate from the material defence; board arrows and missed-opportunity review share it. One additional private easy exercise is recovered, with the other 23 live headlines unchanged; seven live and eight source results remain empty. Quiet offers and longer combinations remain outside this proof.

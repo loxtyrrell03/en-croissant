@@ -156,6 +156,7 @@ export function winningRecaptureEvidence(
     });
     if (
         allowsImmediateMate ||
+        proveRecaptureBackedFork(previous) ||
         proveCaptureForkPreparation(previous) ||
         provePinnedCapture(previous) ||
         capturedDefenderProof(previous, motif.source)
@@ -1335,9 +1336,166 @@ function winningTargets(pos: Chess, from: Square, side: Color) {
 function verifiedFork(step: TacticalReplayStep) {
     return (
         immediateFork(step) ||
+        proveRecaptureBackedFork(step) !== null ||
         proveExchangeForPawnFork(step) !== null ||
         provePromotionBackedFork(step) !== null
     );
+}
+
+type RecaptureBackedForkProof = {
+    gain: number;
+    targets: Square[];
+    limitingDefence: { reply: string; answer: string };
+    recaptures: { reply: string; answer: string; continuation: string[] }[];
+};
+const recaptureBackedForkCache = new Map<string, RecaptureBackedForkProof | null>();
+
+/** Taking a forker can permit a checking recapture by its supporter. Verify
+ * all root replies and all replies to that check. Only the recapturing piece's
+ * real targets and checking interpositions may repay the original sacrifice;
+ * an unrelated attack elsewhere cannot justify a Fork headline. */
+export function proveRecaptureBackedFork(
+    root: TacticalReplayStep,
+    nodeLimit = 8192,
+    onFailure?: (reason: string) => void,
+): RecaptureBackedForkProof | null {
+    if (
+        root.move.promotion ||
+        root.after.isEnd() ||
+        !Number.isSafeInteger(nodeLimit) ||
+        nodeLimit <= 0
+    )
+        return null;
+    const side = root.before.turn;
+    const targets = winningTargets(root.after, root.move.to, side);
+    if (targets.length < 2) return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    if (!onFailure && nodeLimit === 8192 && recaptureBackedForkCache.has(key))
+        return recaptureBackedForkCache.get(key)!;
+    const budget = { nodes: nodeLimit };
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--budget.nodes < 0) throw new Error("Checking recapture budget exhausted");
+        const next = pos.clone();
+        next.play(move);
+        return next;
+    };
+    const settled = (pos: Chess, move: NormalMove) => {
+        if (move.promotion) return null;
+        const next = visit(pos, move);
+        if (next.isEnd() && !next.isCheckmate()) return null;
+        for (const resource of legalMoves(next))
+            if (resource.promotion || visit(next, resource).isCheckmate()) return null;
+        return participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+    };
+    const checkingRecapture = (pos: Chess, move: NormalMove, minimumGain: number) => {
+        const after = visit(pos, move);
+        if (after.isCheckmate()) return { gain: 10000, continuation: [] as string[] };
+        if (!after.ctx().checkers.has(move.to) || after.isEnd()) return null;
+        const piece = after.board.get(move.to)!;
+        const victims = [
+            ...attacks(piece, move.to, after.board.occupied).intersect(after.board[opposite(side)]),
+        ].filter((to) => !["king", "pawn"].includes(after.board.get(to)!.role));
+        if (!victims.length) return null;
+        const king = after.board.kingOf(opposite(side))!;
+        const blocks = between(move.to, king);
+        let minimum = Infinity,
+            continuation: string[] = [];
+        for (const reply of legalMoves(after)) {
+            if (reply.promotion) return null;
+            const next = visit(after, reply);
+            if (next.isEnd()) return null;
+            const takesChecker = reply.to === move.to && capturedValue(after, reply) > 0;
+            const named = takesChecker
+                ? [move.to]
+                : victims.map((sq) => (sq === reply.from ? reply.to : sq));
+            if (blocks.has(reply.to)) named.push(reply.to);
+            let best = -Infinity,
+                answer = "";
+            for (const capture of legalMoves(next)) {
+                if (
+                    !named.includes(capture.to) ||
+                    !capturedValue(next, capture) ||
+                    (!takesChecker && capture.from !== move.to)
+                )
+                    continue;
+                const gain = settled(next, capture);
+                if (gain === null) continue;
+                const value = capturedValue(pos, move) - capturedValue(after, reply) + gain;
+                if (value > best) {
+                    best = value;
+                    answer = makeSan(next, capture);
+                }
+            }
+            if (best < minimumGain) return null;
+            if (best < minimum) {
+                minimum = best;
+                continuation = [makeSan(after, reply), answer];
+            }
+        }
+        return Number.isFinite(minimum) ? { gain: minimum, continuation } : null;
+    };
+    let result: RecaptureBackedForkProof | null = null;
+    try {
+        let minimum = Infinity;
+        let limitingDefence = { reply: "", answer: "" };
+        const recaptures: RecaptureBackedForkProof["recaptures"] = [];
+        for (const reply of legalMoves(root.after)) {
+            if (reply.promotion) throw new Error("Promoting defence");
+            const next = visit(root.after, reply);
+            if (next.isEnd()) throw new Error("Terminal defence");
+            const balance = root.capture - capturedValue(root.after, reply);
+            const takesForker = reply.to === root.move.to && capturedValue(root.after, reply) > 0;
+            const named = takesForker
+                ? [root.move.to]
+                : targets.map((sq) => (sq === reply.from ? reply.to : sq));
+            let best = -Infinity;
+            let answer = "";
+            for (const move of legalMoves(next)) {
+                if (
+                    !named.includes(move.to) ||
+                    !capturedValue(next, move) ||
+                    (!takesForker && move.from !== root.move.to)
+                )
+                    continue;
+                const gain = settled(next, move);
+                if (gain !== null && balance + gain > best) {
+                    best = balance + gain;
+                    answer = makeSan(next, move);
+                }
+            }
+            if (best < 100 && takesForker) {
+                for (const move of legalMoves(next)) {
+                    if (move.to !== root.move.to || move.promotion || !capturedValue(next, move))
+                        continue;
+                    const proof = checkingRecapture(next, move, 100 - balance);
+                    if (!proof) continue;
+                    best = balance + proof.gain;
+                    answer = makeSan(next, move);
+                    recaptures.push({
+                        reply: makeSan(root.after, reply),
+                        answer: makeSan(next, move),
+                        continuation: proof.continuation,
+                    });
+                    break;
+                }
+            }
+            if (best < 100) throw new Error(`Unproved fork defence: ${makeSan(root.after, reply)}`);
+            if (best < minimum) {
+                minimum = best;
+                limitingDefence = { reply: makeSan(root.after, reply), answer };
+            }
+        }
+        if (recaptures.length && Number.isFinite(minimum))
+            result = { gain: minimum, targets, recaptures, limitingDefence };
+    } catch (error) {
+        onFailure?.(error instanceof Error ? error.message : "Unproved checking recapture");
+    }
+    if (nodeLimit === 8192) {
+        recaptureBackedForkCache.set(key, result);
+        if (recaptureBackedForkCache.size > 128)
+            recaptureBackedForkCache.delete(recaptureBackedForkCache.keys().next().value!);
+    }
+    return result;
 }
 
 function checkingForkSearch(side: Color, budget: { nodes: number }, strictLeaves = false) {
@@ -2529,12 +2687,23 @@ function discoveredEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
     // explain that fork's payoff. Non-king discoveries need a contribution
     // beyond what the moving piece already forces on its own targets.
     if (!kingRay && gain !== null && verifiedFork(step)) {
-        const independentGain = materialThreatGain(
-            step,
-            winningTargets(step.after, step.move.to, step.before.turn),
-            [step.move.to],
-        );
+        const independentGain =
+            materialThreatGain(step, winningTargets(step.after, step.move.to, step.before.turn), [
+                step.move.to,
+            ]) ??
+            proveRecaptureBackedFork(step)?.gain ??
+            null;
         if (independentGain !== null && independentGain >= gain) return null;
+        // A tiny difference between two bounded searches is not evidence of
+        // an extra pawn-winning lesson. Keep the independently proved fork
+        // and omit secondary pawn pressure unless its joint bound is at least
+        // a pawn larger. King/material-piece rays retain the stricter rule.
+        if (
+            independentGain !== null &&
+            gain < independentGain + VALUE.pawn &&
+            rays.every((ray) => step.after.board.get(ray.target)?.role === "pawn")
+        )
+            return null;
     }
     // Do not promote incidental line-opening above a free piece that this
     // move already wins without needing a follow-up threat.
@@ -4545,6 +4714,7 @@ export function auditTacticalMotifs(
             sound = verifiedFork(step);
             const exchange = sound && !immediateFork(step) ? proveExchangeForPawnFork(step) : null;
             const promotion = sound && !immediateFork(step) ? provePromotionBackedFork(step) : null;
+            const recapture = sound && !immediateFork(step) ? proveRecaptureBackedFork(step) : null;
             if (exchange)
                 proposal = {
                     ...proposal,
@@ -4561,6 +4731,14 @@ export function auditTacticalMotifs(
                 };
             else if (promotion)
                 proposal = { ...proposal, value: promotion.gain, evidence: promotion.evidence };
+            else if (recapture) {
+                const branch = recapture.recaptures[0];
+                proposal = {
+                    ...proposal,
+                    value: recapture.gain,
+                    evidence: `${step.san} forks the ${recapture.targets.map((sq) => `${step.after.board.get(sq)!.role} on ${makeSquare(sq)}`).join(" and ")}. Taking the forker with ${branch.reply} instead allows ${branch.answer}${branch.continuation.length ? `, with the verified continuation ${branch.continuation.join(" ")}` : " and immediate mate"}. Every legal defence concedes material or mate; the checking recapture, interpositions and legal exchanges are checked. The follow-up check is conditional, not already on this board.`,
+                };
+            }
         } else if (proposal.id === "skewer")
             sound = rayMaterialEvidence(step, proposal.source).some((m) => m.id === "skewer");
         else if (proposal.id === "pin")
