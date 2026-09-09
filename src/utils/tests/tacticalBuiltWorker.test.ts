@@ -107,6 +107,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:reinforced-pin",
+                input: {
+                    fen: "1r5k/6pp/8/3b4/8/2Q2R2/8/7K b - - 0 1",
+                    pvUci: ["b8f8"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:blocking-defender-deflection",
                 input: {
                     fen: "3q3k/8/8/3B4/7n/5P2/3R4/7K b - - 0 1",
@@ -277,7 +286,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(93);
+        expect(report).toHaveLength(94);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

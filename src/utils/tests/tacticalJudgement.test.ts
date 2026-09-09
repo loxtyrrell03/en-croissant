@@ -497,6 +497,140 @@ describe("expert tactical judgement with fresh engine lines", () => {
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
+            !process.env.TACTICAL_PRIVATE_PIN_REINFORCEMENT_REPORT,
+    )(
+        "validate private pin reinforcements and their exact limiting lines",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const { proveReinforcedPin } = await import("../tacticalMotifs/causalTactics");
+            const requested = resolve(process.env.TACTICAL_PRIVATE_PIN_REINFORCEMENT_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const sample = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"),
+            );
+            const row = sample.cases.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 193,
+            );
+            const searches = [];
+            for (const root of ["c8e8", "f8e8"]) {
+                const steps = replayTacticalLine(row.fen, ["g4e3", "f3e3", root]);
+                expect(steps).toHaveLength(3);
+                const step = steps[2],
+                    proof = proveReinforcedPin(step)!;
+                expect(proof?.gain).toBeGreaterThanOrEqual(400);
+                const pos = step.after.clone();
+                for (const san of proof.line.slice(0, -1)) {
+                    const move = parseSan(pos, san)!;
+                    expect(move).toBeDefined();
+                    pos.play(move);
+                }
+                const last = parseSan(pos, proof.line.at(-1)!)!;
+                expect(last).toBeDefined();
+                for (const input of [
+                    {
+                        label: `Pin reinforcement ${step.san}`,
+                        fen: makeFen(step.before.toSetup()),
+                        root,
+                    },
+                    {
+                        label: `Exact witness after ${step.san}: ${proof.line.join(" ")}`,
+                        fen: makeFen(pos.toSetup()),
+                        root: makeUci(last),
+                    },
+                ]) {
+                    const lines = [...(await analyse(engine, input.fen, input.root)).values()];
+                    expect(lines[0].depth).toBe(16);
+                    searches.push({ ...input, lines, proof });
+                }
+            }
+            const missedStep = replayTacticalLine(row.fen, ["g4e3", "f3e3", "f8d8"])[2];
+            expect(missedStep).toBeDefined();
+            const beforeFen = makeFen(missedStep.before.toSetup()),
+                afterFen = makeFen(missedStep.after.toSetup());
+            const before = [...(await analyse(engine, beforeFen)).values()][0];
+            const after = [...(await analyse(engine, afterFen)).values()][0];
+            const review = classifyMistakeReviewMotifs({
+                fen: beforeFen,
+                bestMoveUci: before.pvUci[0],
+                playedMoveUci: missedStep.uci,
+                pvUci: before.pvUci,
+                pvSan: before.pvSan,
+                refutationUci: after.pvUci,
+                refutationSan: after.pvSan,
+                cpBefore: before.cp === null ? null : -before.cp,
+                cpAfter: after.cp,
+                cpLoss: before.cp === null || after.cp === null ? null : before.cp + after.cp,
+            });
+            const missedMove = {
+                beforeFen,
+                afterFen,
+                before,
+                after,
+                review,
+                explanation: buildMistakeReviewTacticalExplanation(review),
+            };
+            const errorStep = replayTacticalLine(row.fen, ["g4e3", "f3e3", "e1e2"])[2];
+            expect(errorStep).toBeDefined();
+            const errorFen = makeFen(errorStep.after.toSetup());
+            const errorAfter = [...(await analyse(engine, errorFen)).values()][0];
+            const errorReview = classifyMistakeReviewMotifs({
+                fen: beforeFen,
+                bestMoveUci: before.pvUci[0],
+                playedMoveUci: errorStep.uci,
+                pvUci: before.pvUci,
+                pvSan: before.pvSan,
+                refutationUci: errorAfter.pvUci,
+                refutationSan: errorAfter.pvSan,
+                cpBefore: before.cp === null ? null : -before.cp,
+                cpAfter: errorAfter.cp,
+                cpLoss:
+                    before.cp === null || errorAfter.cp === null ? null : before.cp + errorAfter.cp,
+            });
+            const queenError = {
+                fen: errorFen,
+                after: errorAfter,
+                review: errorReview,
+                explanation: buildMistakeReviewTacticalExplanation(errorReview),
+            };
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        id: row.id,
+                        sourceSha256: sample.sourceSha256,
+                        searches,
+                        soundAlternative: missedMove,
+                        queenError,
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+            for (const search of searches)
+                expect(
+                    search.lines[0].cp ?? Math.sign(search.lines[0].mate ?? 0) * 10000,
+                ).toBeGreaterThan(0);
+            // The unrestricted engine prefers a fork, and the alternative
+            // rook move is still sound. A raw nominated theme is not evidence
+            // that the move is a mistake; the review caller must check loss.
+            expect((before.cp ?? 0) + (after.cp ?? 0)).toBeLessThanOrEqual(0);
+            expect(before.pvUci[0]).toBe("c5d4");
+            expect((before.cp ?? 0) + (errorAfter.cp ?? 0)).toBeGreaterThan(100);
+            expect(queenError.explanation).toMatchObject({
+                source: "allowed",
+                primary: { id: "hangingPiece" },
+            });
+        },
+        120000,
+    );
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_BRANCH_PREPARATION_REPORT,
     )(
         "inspect private preparation with different recapture mechanisms",

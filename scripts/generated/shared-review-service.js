@@ -11696,8 +11696,10 @@ function rayMaterialEvidence(step, source, allowCheckingReplies = false) {
 	const motifs = [];
 	for (const ray of relevantRayTactics(step)) {
 		const proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to]);
-		if (proof.kind !== "proven" && !(allowCheckingReplies && proof.kind === "forcing")) continue;
-		const gain = proof.gain;
+		const reinforcement = proof.kind !== "proven" && ray.kind === "pin" ? proveReinforcedPin(step) : null;
+		const extended = reinforcement?.ray.front === ray.front && reinforcement.ray.pinner === ray.pinner ? reinforcement : null;
+		if (proof.kind !== "proven" && !(allowCheckingReplies && proof.kind === "forcing") && !extended) continue;
+		const gain = extended?.gain ?? ("gain" in proof ? proof.gain : 0);
 		const pinner = step.after.board.get(ray.pinner);
 		const front = step.after.board.get(ray.front);
 		const rear = step.after.board.get(ray.rear);
@@ -11713,11 +11715,11 @@ function rayMaterialEvidence(step, source, allowCheckingReplies = false) {
 			id: ray.kind,
 			label: ray.kind === "pin" ? "Pin" : "Skewer",
 			source,
-			confidence: proof.kind === "proven" ? "high" : "medium",
+			confidence: extended || proof.kind === "proven" ? "high" : "medium",
 			ply: 1,
 			moveUci: step.uci,
 			value: gain,
-			evidence: ray.kind === "pin" ? `${step.san} exploits the ${front.role} on ${makeSquare(ray.front)}, pinned to the ${rear.role} on ${makeSquare(ray.rear)} by the ${pinner.role} on ${makeSquare(ray.pinner)}. ${proof.kind === "proven" ? "No legal reply avoids material loss in the immediate exchange." : "Every non-checking reply allows material loss. Checking replies remain, so the capture is a threat, not a guaranteed immediate win."}` : `${step.san} skewers the ${front.role} on ${makeSquare(ray.front)} and the ${rear.role} on ${makeSquare(ray.rear)}. ${proof.kind === "proven" ? "No legal reply saves the rear target without conceding material." : "Every non-checking reply concedes material, but checking defences still need to be met."}`
+			evidence: ray.kind === "pin" ? extended ? `${step.san} adds an attack on the ${front.role} on ${makeSquare(ray.front)}, pinned to its king on ${makeSquare(ray.rear)} by the ${pinner.role} on ${makeSquare(ray.pinner)}. Every legal reply permits material recovery in the checked short exchanges, including checking counterattacks; one line is ${extended.line.join(" ")}.` : `${step.san} exploits the ${front.role} on ${makeSquare(ray.front)}, pinned to the ${rear.role} on ${makeSquare(ray.rear)} by the ${pinner.role} on ${makeSquare(ray.pinner)}. ${proof.kind === "proven" ? "No legal reply avoids material loss in the immediate exchange." : "Every non-checking reply allows material loss. Checking replies remain, so the capture is a threat, not a guaranteed immediate win."}` : `${step.san} skewers the ${front.role} on ${makeSquare(ray.front)} and the ${rear.role} on ${makeSquare(ray.rear)}. ${proof.kind === "proven" ? "No legal reply saves the rear target without conceding material." : "Every non-checking reply concedes material, but checking defences still need to be met."}`
 		});
 	}
 	return motifs;
@@ -11930,6 +11932,103 @@ function intermediateCaptureProof(step, nodeLimit = 512) {
 	return best;
 }
 var captureDeflectionCache = /* @__PURE__ */ new Map();
+/** Enumerate defences to a quiet attack on a pinned victim, retaining actual
+* replies as witnesses. One checking counterattack may be answered. Leaves
+* include same-square exchanges, all off-square captures and immediate mate. */
+function pinPressureAfterMove(position, target, pieces, balance, budget) {
+	const side = opposite(position.turn);
+	const moves = (pos) => legalMoves(pos).sort((a, b) => {
+		const flip = pos.turn === "white" ? 0 : 56;
+		return VALUE[pos.board.get(a.from).role] - VALUE[pos.board.get(b.from).role] || (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip);
+	});
+	const visit = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("Pin pressure budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const settled = (pos, move) => {
+		if (move.promotion) return null;
+		const next = visit(pos, move);
+		if (next.isEnd()) return null;
+		for (const resource of moves(next)) if (resource.promotion || visit(next, resource).isCheckmate()) return null;
+		return participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+	};
+	const attack = (pos, square, participants, accumulated, evasion) => {
+		if (pos.isEnd()) return null;
+		for (const move of moves(pos)) {
+			if (move.to !== square || !participants.includes(move.from) || !capturedValue(pos, move)) continue;
+			const gain = settled(pos, move);
+			if (gain !== null && accumulated + gain >= 90) return {
+				gain: accumulated + gain,
+				line: [makeSan(pos, move)]
+			};
+		}
+		if (!evasion || !pos.isCheck()) return null;
+		for (const move of moves(pos)) {
+			if (move.promotion) continue;
+			if (pos.ctx().checkers.has(move.to) && capturedValue(pos, move)) {
+				const gain = settled(pos, move);
+				if (gain !== null && accumulated + gain >= 90) return {
+					gain: accumulated + gain,
+					line: [makeSan(pos, move)]
+				};
+			}
+			const win = defend(visit(pos, move), square, participants.map((sq) => sq === move.from ? move.to : sq), accumulated + capturedValue(pos, move), evasion - 1);
+			if (win) return {
+				gain: win.gain,
+				line: [makeSan(pos, move), ...win.line]
+			};
+		}
+		return null;
+	};
+	const defend = (pos, square, participants, accumulated, evasion) => {
+		if (pos.isEnd()) return null;
+		let minimum = null;
+		for (const reply of moves(pos)) {
+			if (reply.promotion) return null;
+			const win = attack(visit(pos, reply), reply.from === square ? reply.to : square, participants.filter((sq) => sq !== reply.to), accumulated - capturedValue(pos, reply), evasion);
+			if (!win) return null;
+			if (!minimum || win.gain < minimum.gain) minimum = {
+				gain: win.gain,
+				line: [makeSan(pos, reply), ...win.line]
+			};
+		}
+		return minimum;
+	};
+	return defend(position, target, pieces, balance, 1);
+}
+var reinforcedPinCache = /* @__PURE__ */ new Map();
+/** A new attacker exploiting an existing absolute pin. Quiet positional
+* pressure is insufficient: all replies must concede material in the bounded
+* search. The root pinner must remain in place and the mover must add attack. */
+function proveReinforcedPin(root, nodeLimit = 8192) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture || root.move.promotion || root.before.isCheck() || root.after.isCheck() || root.after.isEnd()) return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (nodeLimit === 8192 && reinforcedPinCache.has(key)) return reinforcedPinCache.get(key);
+	const mover = root.after.board.get(root.move.to);
+	const before = rayTactics(root.before, root.before.turn);
+	const candidates = rayTactics(root.after, root.before.turn).filter((ray) => ray.kind === "pin" && ray.pinner !== root.move.to && root.after.board.get(ray.rear)?.role === "king" && root.after.ctx().blockers.has(ray.front) && before.some((old) => old.kind === "pin" && old.pinner === ray.pinner && old.front === ray.front && old.rear === ray.rear) && attacks(mover, root.move.to, root.after.board.occupied).has(ray.front) && !attacks(mover, root.move.from, root.before.board.occupied).has(ray.front));
+	let proof = null;
+	const budget = { nodes: nodeLimit };
+	try {
+		for (const ray of candidates) {
+			const win = pinPressureAfterMove(root.after, ray.front, [ray.pinner, root.move.to], 0, budget);
+			if (win) {
+				proof = {
+					...win,
+					ray
+				};
+				break;
+			}
+		}
+	} catch {}
+	if (nodeLimit === 8192) {
+		reinforcedPinCache.set(key, proof);
+		if (reinforcedPinCache.size > 128) reinforcedPinCache.delete(reinforcedPinCache.keys().next().value);
+	}
+	return proof;
+}
 /** Different receivers need not lose by the same mechanism. A receiver can
 * vacate a blocking square or enter an absolute pin; a quiet reinforcement
 * of that pin is checked against every reply. Other branches must retain the
@@ -11955,36 +12054,6 @@ function proveCaptureDeflection(root, nodeLimit = 16384, onFailure) {
 		if (next.isEnd()) return null;
 		for (const resource of legalMoves(next)) if (resource.promotion || visit(next, resource).isCheckmate()) return null;
 		return participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
-	};
-	const pinWin = (pos, target, pieces, balance, evasion) => {
-		if (pos.isEnd()) return null;
-		for (const move of legalMoves(pos)) {
-			if (move.to !== target || !pieces.includes(move.from) || !capturedValue(pos, move)) continue;
-			const gain = settled(pos, move);
-			if (gain !== null && balance + gain >= 90) return balance + gain;
-		}
-		if (!evasion || !pos.isCheck()) return null;
-		for (const move of legalMoves(pos)) {
-			if (move.promotion) continue;
-			if (pos.ctx().checkers.has(move.to) && capturedValue(pos, move)) {
-				const gain = settled(pos, move);
-				if (gain !== null && balance + gain >= 90) return balance + gain;
-			}
-			const gain = pinDefend(visit(pos, move), target, pieces.map((sq) => sq === move.from ? move.to : sq), balance + capturedValue(pos, move), evasion - 1);
-			if (gain !== null) return gain;
-		}
-		return null;
-	};
-	const pinDefend = (pos, target, pieces, balance, evasion) => {
-		if (pos.isEnd()) return null;
-		let minimum = Infinity;
-		for (const reply of legalMoves(pos)) {
-			if (reply.promotion) return null;
-			const gain = pinWin(visit(pos, reply), reply.from === target ? reply.to : target, pieces.filter((sq) => sq !== reply.to), balance - capturedValue(pos, reply), evasion);
-			if (gain === null) return null;
-			minimum = Math.min(minimum, gain);
-		}
-		return Number.isFinite(minimum) ? minimum : null;
 	};
 	let proof = null;
 	try {
@@ -12040,7 +12109,7 @@ function proveCaptureDeflection(root, nodeLimit = 16384, onFailure) {
 					if (attacks(piece, move.from, next.board.occupied).has(reply.to)) continue;
 					const after = visit(next, move);
 					if (after.isCheck() || !attacks(piece, move.to, after.board.occupied).has(reply.to)) continue;
-					const gain = pinDefend(after, reply.to, [ray.pinner, move.to], balance, 1);
+					const gain = pinPressureAfterMove(after, reply.to, [ray.pinner, move.to], balance, budget)?.gain ?? null;
 					if (gain !== null && gain >= 90) {
 						branch = {
 							reply: makeSan(root.after, reply),
@@ -12097,6 +12166,9 @@ function proveCaptureDeflection(root, nodeLimit = 16384, onFailure) {
 	}
 	return proof;
 }
+/** Select a verified acceptance mechanism. The legacy guarded-target route
+* uses a restoration probe; the blocking-defender route proves the newly
+* opened legal capture and permits different receivers to lose differently. */
 function deflectionEvidence(steps, source) {
 	const [bait, reply, payoff] = steps;
 	const mating = bait && proveMatingDeflection(bait);
@@ -12330,12 +12402,12 @@ function interferenceProof(step, source) {
 function hasTacticalStart(fen, line, allowConditional = true) {
 	const steps = replayTacticalLine(fen, line.slice(0, 11));
 	const root = steps[0];
-	return Boolean(root && (root.capture || root.move.promotion || root.after.isCheck() || hasConcreteThreat(root) || proveQuietMateThreat(root) || quietPreparation(steps) || (allowConditional ? proveQuietTacticalPreparation(steps) : proveQuietTacticalPreparation(steps)?.forced)));
+	return Boolean(root && (root.capture || root.move.promotion || root.after.isCheck() || hasConcreteThreat(root) || proveReinforcedPin(root) || proveQuietMateThreat(root) || quietPreparation(steps) || (allowConditional ? proveQuietTacticalPreparation(steps) : proveQuietTacticalPreparation(steps)?.forced)));
 }
 function episodeEnd(steps, allowConditional = false) {
 	for (let i = 0; i < steps.length; i += 2) {
 		const step = steps[i];
-		if (!step.capture && !step.move.promotion && !step.after.isCheck() && !hasConcreteThreat(step) && !proveQuietMateThreat(step) && !quietPreparation(steps.slice(i, i + 5)) && !(i === 0 && allowConditional ? proveQuietTacticalPreparation(steps.slice(i, i + 11)) : proveQuietTacticalPreparation(steps.slice(i, i + 11))?.forced)) return i;
+		if (!step.capture && !step.move.promotion && !step.after.isCheck() && !hasConcreteThreat(step) && !proveReinforcedPin(step) && !proveQuietMateThreat(step) && !quietPreparation(steps.slice(i, i + 5)) && !(i === 0 && allowConditional ? proveQuietTacticalPreparation(steps.slice(i, i + 11)) : proveQuietTacticalPreparation(steps.slice(i, i + 11))?.forced)) return i;
 	}
 	return steps.length;
 }
@@ -12715,6 +12787,16 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			sound = (mate || settled >= 100) && exchangeGain > -VALUE.king && exchangeGain <= -90;
 		} else sound = mate || settled >= 100;
 		if (!sound) continue;
+		if (proposal.id === "pin" && proveReinforcedPin(step)) {
+			const reinforced = rayMaterialEvidence(step, proposal.source).find((m) => m.id === "pin");
+			if (reinforced) {
+				candidates.push({
+					...reinforced,
+					ply: proposal.ply
+				});
+				continue;
+			}
+		}
 		if (proposal.id === "pin") {
 			const ray = relevantRayTactics(step).find((ray) => ray.kind === "pin");
 			if (ray) {
@@ -13652,7 +13734,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 48;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 49;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

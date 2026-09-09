@@ -31,6 +31,9 @@ test.skipIf(!process.env.TACTICAL_PRIVATE_PGN_SAMPLE)(
       expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).not.toContain(
         "Winning Recapture",
       );
+      const third = container.querySelector('[data-tactical-ply="3"]')?.textContent ?? "";
+      expect(third.includes("Pin")).toBe(line[1] === "f3e3");
+      expect(third.includes("adds an attack on the rook on e3")).toBe(line[1] === "f3e3");
     }
   },
 );

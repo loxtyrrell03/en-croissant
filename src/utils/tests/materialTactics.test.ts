@@ -14,6 +14,7 @@ describe("judged material tactics", () => {
         expect(board.arrows).toEqual([
             expect.objectContaining({ from: "d5", to: "d6" }),
             expect.objectContaining({ from: "e1", to: "e8" }),
+            expect.objectContaining({ from: "d6", to: "e7" }),
         ]);
     });
     test("a rook can capture the pawn that appears to exploit the pin", () => {
