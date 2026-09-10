@@ -1490,6 +1490,214 @@ export function proveCheckingMaterialAttack(
     return proof;
 }
 
+type MixedCheckingAttackProof = {
+    gain: number;
+    branches: { reply: string; line: string[]; gain: number }[];
+    decisions: { fen: string; move: string }[];
+};
+const mixedCheckingAttackCache = new Map<string, MixedCheckingAttackProof | null>();
+
+/** A checking offer may have different material victims in different replies.
+ * No supplied PV nominates a victim or supplies a leaf evaluation. This local
+ * proof is deliberately separate from the single-target causal comparison. */
+export function proveMixedCheckingAttack(
+    root: TacticalReplayStep,
+    nodeLimit = 32768,
+): MixedCheckingAttackProof | null {
+    if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    if (nodeLimit === 32768 && mixedCheckingAttackCache.has(key))
+        return mixedCheckingAttackCache.get(key)!;
+    const proof = computeMixedCheckingAttack(root, nodeLimit);
+    if (nodeLimit === 32768) {
+        mixedCheckingAttackCache.set(key, proof);
+        if (mixedCheckingAttackCache.size > 128)
+            mixedCheckingAttackCache.delete(mixedCheckingAttackCache.keys().next().value!);
+    }
+    return proof;
+}
+
+function computeMixedCheckingAttack(
+    root: TacticalReplayStep,
+    nodeLimit: number,
+): MixedCheckingAttackProof | null {
+    if (
+        !root ||
+        !Number.isSafeInteger(nodeLimit) ||
+        nodeLimit <= 0 ||
+        root.capture ||
+        root.move.promotion ||
+        root.before.isCheck() ||
+        !root.after.isCheck() ||
+        root.after.isEnd()
+    )
+        return null;
+    const side = root.before.turn;
+    if (!root.after.ctx().checkers.has(root.move.to)) return null;
+    const replies = legalMoves(root.after);
+    if (!replies.some((move) => move.to === root.move.to && capturedValue(root.after, move)))
+        return null;
+    const budget = { nodes: nodeLimit };
+    const ordered = (pos: Chess) => {
+        const flip = side === "white" ? 0 : 56;
+        return legalMoves(pos).sort(
+            (a, b) =>
+                capturedValue(pos, b) - capturedValue(pos, a) ||
+                (a.from ^ flip) - (b.from ^ flip) ||
+                (a.to ^ flip) - (b.to ^ flip),
+        );
+    };
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--budget.nodes < 0) throw new Error("Mixed checking attack budget exhausted");
+        const next = pos.clone();
+        next.play(move);
+        return next;
+    };
+    type Win = { gain: number; line: string[]; decisions: MixedCheckingAttackProof["decisions"] };
+    const decision = (pos: Chess, move: NormalMove) => ({
+        fen: makeFen(pos.toSetup()),
+        move: makeUci(move),
+    });
+    // A material leaf cannot stop just before a forcing counterattack. A
+    // countercheck needs a concrete answer retaining the gain and leaving no
+    // further immediate check/promotion. Unknown longer king hunts abstain.
+    const answerCountercheck = (
+        pos: Chess,
+        balance: number,
+    ): { gain: number; decision: { fen: string; move: string } } | null => {
+        for (const answer of ordered(pos)) {
+            if (answer.promotion) continue;
+            const next = visit(pos, answer);
+            if (next.isCheckmate()) return { gain: 10000, decision: decision(pos, answer) };
+            if (next.isEnd()) continue;
+            let safe = true;
+            for (const response of ordered(next)) {
+                if (response.promotion || visit(next, response).isCheck()) {
+                    safe = false;
+                    break;
+                }
+            }
+            if (!safe) continue;
+            const gain = participantCaptureGain(
+                pos,
+                answer,
+                [...pos.board[side], answer.to],
+                budget,
+            );
+            if (gain !== null && balance + gain >= 300)
+                return { gain: balance + gain, decision: decision(pos, answer) };
+        }
+        return null;
+    };
+    const attack = (pos: Chess, balance: number, checks: number): Win | null => {
+        if (pos.isEnd()) return null;
+        const moves = ordered(pos);
+        // Prefer an available mate over longer optional sacrifices.
+        for (const move of moves) {
+            if (move.promotion) continue;
+            if (visit(pos, move).isCheckmate())
+                return {
+                    gain: 10000,
+                    line: [makeSan(pos, move)],
+                    decisions: [decision(pos, move)],
+                };
+        }
+        for (const move of moves) {
+            if (move.promotion || !capturedValue(pos, move)) continue;
+            const next = visit(pos, move);
+            if (next.isEnd()) continue;
+            let gain = participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+            if (gain === null || balance + gain < 300) continue;
+            const countercheckAnswers: MixedCheckingAttackProof["decisions"] = [];
+            let safe = true;
+            for (const resource of ordered(next)) {
+                const reply = visit(next, resource);
+                if (resource.promotion || reply.isCheckmate()) {
+                    safe = false;
+                    break;
+                }
+                if (reply.isCheck()) {
+                    const retained = answerCountercheck(
+                        reply,
+                        balance + capturedValue(pos, move) - capturedValue(next, resource),
+                    );
+                    if (retained === null) {
+                        safe = false;
+                        break;
+                    }
+                    gain = Math.min(gain, retained.gain - balance);
+                    countercheckAnswers.push(retained.decision);
+                }
+            }
+            if (!safe) continue;
+            if (gain !== null && balance + gain >= 300)
+                return {
+                    gain: balance + gain,
+                    line: [makeSan(pos, move)],
+                    decisions: [decision(pos, move), ...countercheckAnswers],
+                };
+        }
+        if (!checks) return null;
+        for (const move of moves) {
+            if (move.promotion) continue;
+            const next = visit(pos, move);
+            if (!next.isCheck()) continue;
+            const win = defend(next, balance + capturedValue(pos, move), checks - 1);
+            if (win)
+                return {
+                    gain: win.gain,
+                    line: [makeSan(pos, move), ...win.line],
+                    decisions: [decision(pos, move), ...win.decisions],
+                };
+        }
+        return null;
+    };
+    const defend = (pos: Chess, balance: number, checks: number): Win | null => {
+        if (pos.isEnd()) return null;
+        let minimum: Win | null = null;
+        const decisions: MixedCheckingAttackProof["decisions"] = [];
+        for (const move of ordered(pos)) {
+            if (move.promotion) return null;
+            const win = attack(visit(pos, move), balance - capturedValue(pos, move), checks);
+            if (!win) return null;
+            decisions.push(...win.decisions);
+            if (!minimum || win.gain < minimum.gain)
+                minimum = { gain: win.gain, line: [makeSan(pos, move), ...win.line], decisions };
+        }
+        return minimum;
+    };
+    try {
+        const branches: MixedCheckingAttackProof["branches"] = [];
+        const decisions: MixedCheckingAttackProof["decisions"] = [];
+        for (const reply of ordered(root.after)) {
+            if (reply.promotion) return null;
+            const win = attack(visit(root.after, reply), -capturedValue(root.after, reply), 5);
+            if (!win) return null;
+            decisions.push(...win.decisions);
+            branches.push({ reply: makeSan(root.after, reply), gain: win.gain, line: win.line });
+        }
+        const gain = Math.min(...branches.map((b) => b.gain));
+        if (gain >= 10000 || !branches.some((b) => b.gain === 10000)) return null;
+        // An already available equally valuable capture is not explained by
+        // adding an unnecessary check first.
+        if (
+            ordered(root.before).some(
+                (move) =>
+                    capturedValue(root.before, move) &&
+                    tacticalExchangeGain(root.before, move) >= gain,
+            )
+        )
+            return null;
+        return {
+            gain,
+            branches,
+            decisions: [...new Map(decisions.map((d) => [`${d.fen}:${d.move}`, d])).values()],
+        };
+    } catch {
+        return null;
+    }
+}
+
 type ForcingClearanceProof = {
     gain: number;
     target: Square;
@@ -7028,12 +7236,17 @@ export function auditTacticalMotifs(
     }
     const checkingAttack =
         !mate && !verifiedFork(steps[0]) ? proveCheckingMaterialAttack(steps) : null;
-    if (checkingAttack) {
+    const mixedCheckingAttack =
+        !mate && !checkingAttack && !verifiedFork(steps[0])
+            ? proveMixedCheckingAttack(steps[0])
+            : null;
+    const forcingAttack = checkingAttack ?? mixedCheckingAttack;
+    if (forcingAttack) {
         const material =
-            checkingAttack.branches.find(
+            forcingAttack.branches.find(
                 (branch) => branch.gain < 10000 && branch.reply === steps[1]?.san,
-            ) ?? checkingAttack.branches.find((branch) => branch.gain < 10000)!;
-        const mateBranch = checkingAttack.branches.find((branch) => branch.gain === 10000);
+            ) ?? forcingAttack.branches.find((branch) => branch.gain < 10000)!;
+        const mateBranch = forcingAttack.branches.find((branch) => branch.gain === 10000);
         candidates.push({
             id: "forcingAttack",
             label: "Forcing Attack",
@@ -7041,8 +7254,8 @@ export function auditTacticalMotifs(
             confidence: "high",
             ply: 1,
             moveUci: steps[0].uci,
-            value: checkingAttack.gain,
-            evidence: `${steps[0].san} starts a checking attack that wins material or mates against every legal reply. After ${material.reply}, ${material.line.join(" ")} wins material.${mateBranch ? ` Instead, ${mateBranch.reply} allows ${mateBranch.line.join(" ")}, forcing mate.` : ""} The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.`,
+            value: forcingAttack.gain,
+            evidence: `${steps[0].san} ${mixedCheckingAttack ? `offers the ${steps[0].before.board.get(steps[0].move.from)!.role} with check` : "starts a checking attack"} that wins material or mates against every legal reply. After ${material.reply}, ${material.line.join(" ")} wins material.${mateBranch ? ` Instead, ${mateBranch.reply} allows ${mateBranch.line.join(" ")}, forcing mate.` : ""} The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.`,
         });
     }
     const doubleThreat = !mate && !verifiedFork(steps[0]) ? proveQuietDoubleThreat(steps[0]) : null;
@@ -8451,7 +8664,11 @@ export function compareImmediateTacticalDefence(
                     comparisonEvidence = `The same defender-removal and passed-pawn combination remains available after ${bestSan}.`;
                 }
             }
-        } else if (motif.id === "forcingAttack" && step.after.isCheck()) {
+        } else if (
+            motif.id === "forcingAttack" &&
+            step.after.isCheck() &&
+            !proveMixedCheckingAttack(step)
+        ) {
             const escape = checkingAttackerCaptureEscape(alternative);
             if (escape) {
                 comparison = "prevented";

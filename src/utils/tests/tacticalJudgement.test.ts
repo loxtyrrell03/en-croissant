@@ -10,6 +10,7 @@ import {
     counterCaptureMaterialDefence,
     clearanceKingDefence,
     proveCheckingMaterialAttack,
+    proveMixedCheckingAttack,
     proveQuietDoubleThreat,
     proveDefenderCombination,
     proveCombinedDefenderRemoval,
@@ -517,6 +518,92 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_MIXED_CANDIDATE_REPORT ||
+            !process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE,
+    )(
+        "audit constructed and real mixed checking attack candidates",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_MIXED_CANDIDATE_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const samples = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE!, "utf8"),
+            ).cases;
+            const real = samples.find((r: { eligibleIndex: number }) => r.eligibleIndex === 184);
+            const queenOffer = samples.find(
+                (r: { eligibleIndex: number }) => r.eligibleIndex === 127,
+            );
+            const report = [];
+            for (const item of [
+                { name: "constructed", fen: "2k4r/1p3p2/2p3q1/P1Q3p1/3R4/8/6B1/6K1 w - - 0 1" },
+                {
+                    name: "constructed positive",
+                    fen: "2k4r/pp3p2/1np3q1/2Q3p1/P2R4/4P1P1/5PB1/6K1 w - - 0 1",
+                },
+                { name: "private real", fen: real.fen },
+                { name: "private queen offer", fen: queenOffer.fen, root: queenOffer.sourceUci[0] },
+            ]) {
+                const rootMove = "root" in item ? item.root : "g2h3";
+                const step = replayTacticalLine(item.fen, [rootMove])[0];
+                const branches = [];
+                for (const [from, destinations] of step.after.allDests())
+                    for (const to of destinations) {
+                        const reply = { from, to },
+                            next = step.after.clone();
+                        next.play(reply);
+                        const fen = makeFen(next.toSetup());
+                        branches.push({
+                            reply: makeSan(step.after, reply),
+                            fen,
+                            lines: [...(await analyse(engine, fen)).values()],
+                        });
+                    }
+                const proof = proveMixedCheckingAttack(step);
+                const decisions = [];
+                for (const decision of proof?.decisions ?? [])
+                    decisions.push({
+                        ...decision,
+                        lines: [...(await analyse(engine, decision.fen, decision.move)).values()],
+                    });
+                report.push({
+                    ...item,
+                    proof,
+                    decisions,
+                    root: [...(await analyse(engine, item.fen, rootMove)).values()],
+                    branches,
+                });
+            }
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        scope: "Development audit of four fixed cases, not general accuracy. Every chosen attacking decision and countercheck answer receives a fresh depth-16 root-restricted search; these known winning positions must retain positive scores. Reports are written before assertions so failed witnesses remain inspectable.",
+                        cases: report,
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+            for (const item of report)
+                for (const choice of item.decisions) {
+                    const best = choice.lines[0];
+                    const score = best.cp ?? Math.sign(best.mate ?? 0) * 100000;
+                    expect({
+                        name: item.name,
+                        move: choice.move,
+                        winning: score > 0,
+                    }).toMatchObject({ winning: true });
+                }
+        },
+        120000,
+    );
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE ||

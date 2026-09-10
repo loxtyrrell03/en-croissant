@@ -10381,6 +10381,163 @@ function proveCheckingMaterialAttack(steps, nodeLimit = 16384) {
 	}
 	return proof;
 }
+var mixedCheckingAttackCache = /* @__PURE__ */ new Map();
+/** A checking offer may have different material victims in different replies.
+* No supplied PV nominates a victim or supplies a leaf evaluation. This local
+* proof is deliberately separate from the single-target causal comparison. */
+function proveMixedCheckingAttack(root, nodeLimit = 32768) {
+	if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (nodeLimit === 32768 && mixedCheckingAttackCache.has(key)) return mixedCheckingAttackCache.get(key);
+	const proof = computeMixedCheckingAttack(root, nodeLimit);
+	if (nodeLimit === 32768) {
+		mixedCheckingAttackCache.set(key, proof);
+		if (mixedCheckingAttackCache.size > 128) mixedCheckingAttackCache.delete(mixedCheckingAttackCache.keys().next().value);
+	}
+	return proof;
+}
+function computeMixedCheckingAttack(root, nodeLimit) {
+	if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture || root.move.promotion || root.before.isCheck() || !root.after.isCheck() || root.after.isEnd()) return null;
+	const side = root.before.turn;
+	if (!root.after.ctx().checkers.has(root.move.to)) return null;
+	if (!legalMoves(root.after).some((move) => move.to === root.move.to && capturedValue(root.after, move))) return null;
+	const budget = { nodes: nodeLimit };
+	const ordered = (pos) => {
+		const flip = side === "white" ? 0 : 56;
+		return legalMoves(pos).sort((a, b) => capturedValue(pos, b) - capturedValue(pos, a) || (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip));
+	};
+	const visit = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("Mixed checking attack budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const decision = (pos, move) => ({
+		fen: makeFen(pos.toSetup()),
+		move: makeUci(move)
+	});
+	const answerCountercheck = (pos, balance) => {
+		for (const answer of ordered(pos)) {
+			if (answer.promotion) continue;
+			const next = visit(pos, answer);
+			if (next.isCheckmate()) return {
+				gain: 1e4,
+				decision: decision(pos, answer)
+			};
+			if (next.isEnd()) continue;
+			let safe = true;
+			for (const response of ordered(next)) if (response.promotion || visit(next, response).isCheck()) {
+				safe = false;
+				break;
+			}
+			if (!safe) continue;
+			const gain = participantCaptureGain(pos, answer, [...pos.board[side], answer.to], budget);
+			if (gain !== null && balance + gain >= 300) return {
+				gain: balance + gain,
+				decision: decision(pos, answer)
+			};
+		}
+		return null;
+	};
+	const attack = (pos, balance, checks) => {
+		if (pos.isEnd()) return null;
+		const moves = ordered(pos);
+		for (const move of moves) {
+			if (move.promotion) continue;
+			if (visit(pos, move).isCheckmate()) return {
+				gain: 1e4,
+				line: [makeSan(pos, move)],
+				decisions: [decision(pos, move)]
+			};
+		}
+		for (const move of moves) {
+			if (move.promotion || !capturedValue(pos, move)) continue;
+			const next = visit(pos, move);
+			if (next.isEnd()) continue;
+			let gain = participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+			if (gain === null || balance + gain < 300) continue;
+			const countercheckAnswers = [];
+			let safe = true;
+			for (const resource of ordered(next)) {
+				const reply = visit(next, resource);
+				if (resource.promotion || reply.isCheckmate()) {
+					safe = false;
+					break;
+				}
+				if (reply.isCheck()) {
+					const retained = answerCountercheck(reply, balance + capturedValue(pos, move) - capturedValue(next, resource));
+					if (retained === null) {
+						safe = false;
+						break;
+					}
+					gain = Math.min(gain, retained.gain - balance);
+					countercheckAnswers.push(retained.decision);
+				}
+			}
+			if (!safe) continue;
+			if (gain !== null && balance + gain >= 300) return {
+				gain: balance + gain,
+				line: [makeSan(pos, move)],
+				decisions: [decision(pos, move), ...countercheckAnswers]
+			};
+		}
+		if (!checks) return null;
+		for (const move of moves) {
+			if (move.promotion) continue;
+			const next = visit(pos, move);
+			if (!next.isCheck()) continue;
+			const win = defend(next, balance + capturedValue(pos, move), checks - 1);
+			if (win) return {
+				gain: win.gain,
+				line: [makeSan(pos, move), ...win.line],
+				decisions: [decision(pos, move), ...win.decisions]
+			};
+		}
+		return null;
+	};
+	const defend = (pos, balance, checks) => {
+		if (pos.isEnd()) return null;
+		let minimum = null;
+		const decisions = [];
+		for (const move of ordered(pos)) {
+			if (move.promotion) return null;
+			const win = attack(visit(pos, move), balance - capturedValue(pos, move), checks);
+			if (!win) return null;
+			decisions.push(...win.decisions);
+			if (!minimum || win.gain < minimum.gain) minimum = {
+				gain: win.gain,
+				line: [makeSan(pos, move), ...win.line],
+				decisions
+			};
+		}
+		return minimum;
+	};
+	try {
+		const branches = [];
+		const decisions = [];
+		for (const reply of ordered(root.after)) {
+			if (reply.promotion) return null;
+			const win = attack(visit(root.after, reply), -capturedValue(root.after, reply), 5);
+			if (!win) return null;
+			decisions.push(...win.decisions);
+			branches.push({
+				reply: makeSan(root.after, reply),
+				gain: win.gain,
+				line: win.line
+			});
+		}
+		const gain = Math.min(...branches.map((b) => b.gain));
+		if (gain >= 1e4 || !branches.some((b) => b.gain === 1e4)) return null;
+		if (ordered(root.before).some((move) => capturedValue(root.before, move) && tacticalExchangeGain(root.before, move) >= gain)) return null;
+		return {
+			gain,
+			branches,
+			decisions: [...new Map(decisions.map((d) => [`${d.fen}:${d.move}`, d])).values()]
+		};
+	} catch {
+		return null;
+	}
+}
 var forcingClearanceCache = /* @__PURE__ */ new Map();
 /** Checking clearance may prepare different quiet slider moves against
 * different king replies. Verify each branch, not just the supplied line. */
@@ -13807,9 +13964,11 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		});
 	}
 	const checkingAttack = !mate && !verifiedFork(steps[0]) ? proveCheckingMaterialAttack(steps) : null;
-	if (checkingAttack) {
-		const material = checkingAttack.branches.find((branch) => branch.gain < 1e4 && branch.reply === steps[1]?.san) ?? checkingAttack.branches.find((branch) => branch.gain < 1e4);
-		const mateBranch = checkingAttack.branches.find((branch) => branch.gain === 1e4);
+	const mixedCheckingAttack = !mate && !checkingAttack && !verifiedFork(steps[0]) ? proveMixedCheckingAttack(steps[0]) : null;
+	const forcingAttack = checkingAttack ?? mixedCheckingAttack;
+	if (forcingAttack) {
+		const material = forcingAttack.branches.find((branch) => branch.gain < 1e4 && branch.reply === steps[1]?.san) ?? forcingAttack.branches.find((branch) => branch.gain < 1e4);
+		const mateBranch = forcingAttack.branches.find((branch) => branch.gain === 1e4);
 		candidates.push({
 			id: "forcingAttack",
 			label: "Forcing Attack",
@@ -13817,8 +13976,8 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			confidence: "high",
 			ply: 1,
 			moveUci: steps[0].uci,
-			value: checkingAttack.gain,
-			evidence: `${steps[0].san} starts a checking attack that wins material or mates against every legal reply. After ${material.reply}, ${material.line.join(" ")} wins material.${mateBranch ? ` Instead, ${mateBranch.reply} allows ${mateBranch.line.join(" ")}, forcing mate.` : ""} The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.`
+			value: forcingAttack.gain,
+			evidence: `${steps[0].san} ${mixedCheckingAttack ? `offers the ${steps[0].before.board.get(steps[0].move.from).role} with check` : "starts a checking attack"} that wins material or mates against every legal reply. After ${material.reply}, ${material.line.join(" ")} wins material.${mateBranch ? ` Instead, ${mateBranch.reply} allows ${mateBranch.line.join(" ")}, forcing mate.` : ""} The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.`
 		});
 	}
 	const doubleThreat = !mate && !verifiedFork(steps[0]) ? proveQuietDoubleThreat(steps[0]) : null;
@@ -14705,7 +14864,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 				comparisonEvidence = `The same defender-removal and passed-pawn combination remains available after ${bestSan}.`;
 			}
 		}
-		else if (motif.id === "forcingAttack" && step.after.isCheck()) {
+		else if (motif.id === "forcingAttack" && step.after.isCheck() && !proveMixedCheckingAttack(step)) {
 			const escape = checkingAttackerCaptureEscape(alternative);
 			if (escape) {
 				comparison = "prevented";
@@ -15245,7 +15404,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 72;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 73;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

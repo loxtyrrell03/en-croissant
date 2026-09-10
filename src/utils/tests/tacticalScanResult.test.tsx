@@ -36,6 +36,22 @@ const laterScan = buildLiveTacticalScan({
   engineName: "Constructed",
   depth: 16,
 });
+test("a verified mixed checking offer explains the root and leaves its fork in the timeline", () => {
+  const mixed = buildLiveTacticalScan({
+    fen: "2k4r/pp3p2/1np3q1/2Q3p1/P2R4/4P1P1/5PB1/6K1 w - - 0 1",
+    pvUci: ["g2h3", "c8b8", "c5e5", "g6d6", "e5h8"],
+    depth: 16,
+    engineName: "Constructed",
+  });
+  const element = document.createElement("div");
+  element.innerHTML = markup(mixed);
+  expect(mixed.motifs[0]).toMatchObject({ id: "forcingAttack", ply: 1 });
+  expect(element.textContent).toContain("offers the bishop with check");
+  expect(element.textContent).toContain("Rxh3");
+  expect(element.textContent).not.toContain("Fork in the continuation");
+  expect(element.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Fork");
+  expect(element.querySelectorAll("details[open]")).toHaveLength(0);
+});
 test("a later fork is not presented as a verified root explanation", () => {
   expect(laterScan.motifs[0]).toMatchObject({ id: "fork", ply: 3 });
   const element = document.createElement("div");
