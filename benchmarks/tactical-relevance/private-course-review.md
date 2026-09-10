@@ -1,6 +1,12 @@
 # Private easy-course development audit
 
-## Current live presentation: pipeline 75 (classifier adapter 71 unchanged)
+## Current review presentation: adapter 72 / live pipeline 76
+
+Mistake Review now applies the same scope qualification to later missed material motifs: Continuation idea and Tactic in the better line replace an unproved What you missed claim. The motif retains best-line ownership and its actual-ply timeline. Immediate missed opportunities and independently established opponent causes remain explicit; root selection and the existing verified-mating-consequence handling are unchanged. This is an explanation correction, not a claim that the unresolved bishop-check mechanism below has been solved.
+
+Six new regressions passed in the previous 1,014-test selection. On resumption, 82 focused continuation/priority tests, 43 review/practice tests, 251 actual-controller worker inputs and three built-service tests pass; all 117 public primary IDs are unchanged. Public worker total median/p95/max is 73/227/535 ms, startup max 86 ms and computation max 508 ms, excluding engine/UI. Targeted lint passes; shared-review and production builds passed before resumption. The first new isolated cold HTTP audit timed out at the unchanged 20-second startup deadline. A fresh run passed with startup/computation 4,545/7 ms for Reti and 8,227/113 ms for f7, recorded privately in `adapter72-cold-http-worker-retry.json`. The failed run remains contrary evidence: intermittent cold startup is not fixed by a subsequent pass. The unrelated OTB type error and native/narrow-layout/physical UI verification remain open. No app/package/service was restarted or deployed.
+
+## Live presentation: pipeline 75 (classifier adapter 71 unchanged)
 
 Later motifs no longer receive an unqualified current-position headline or board label. A leading theme at ply greater than one is titled, for example, Fork in the continuation; board and candidate labels say Later: Fork. The visible explanation states that it depends on the shown replies and has not been verified as the first move's tactical explanation. Actual immediate themes retain their original wording. Candidate previews preserve the qualifier, original FEN and cached scan; later per-ply details remain collapsed until opened. This qualifies scope, not tactical accuracy: no classifier decision or proof was changed.
 

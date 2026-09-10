@@ -15245,7 +15245,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 71;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 72;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -15662,6 +15662,9 @@ function selectImportantTacticalMotifs(motifs, limit = 3) {
 	if (unique.has("backRankMate")) unique.delete("backRank");
 	return [...unique.values()].sort((left, right) => (left.relevance === "primary" ? -1 : right.relevance === "primary" ? 1 : 0) || (left.relevance && right.relevance ? (left.ply ?? 100) - (right.ply ?? 100) : 0) || motifImportance(left.id) - motifImportance(right.id) || (left.ply ?? Number.MAX_SAFE_INTEGER) - (right.ply ?? Number.MAX_SAFE_INTEGER) || left.label.localeCompare(right.label)).slice(0, Math.max(0, limit));
 }
+function isConditionalMaterial(motif) {
+	return Boolean(motif && (motif.ply ?? 0) > 1 && !MATE_MOTIF_PATTERN.test(motif.id));
+}
 function isImmediateLesson(motif) {
 	return Boolean(motif && motif.ply === 1 && motif.confidence !== "low" && ((motif.value ?? 0) >= 100 || motif.id === "perpetualCheck" || motif.verifiedCombination === true && motif.confidence === "high" && (motif.value ?? 0) > 0 && ["fork", "forkPreparation"].includes(motif.id)));
 }
@@ -15683,16 +15686,23 @@ function chooseMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs })
 	const allowed = selectImportantTacticalMotifs(allowedMotifs, 1)[0];
 	const missed = selectImportantTacticalMotifs(missedMotifs, 1)[0];
 	if (!allowed && !missed) return null;
-	const conditionalMaterial = (motif) => Boolean(motif && (motif.ply ?? 0) > 1 && !MATE_MOTIF_PATTERN.test(motif.id));
-	const allowedRootOverConditional = allowed?.ply === 1 && conditionalMaterial(missed);
-	if (missed && !allowedRootOverConditional && (!allowed || !allowed.comparison && isImmediateLesson(missed) || allowed.comparison === "persists" || missed.ply === 1 && conditionalMaterial(allowed) || (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))) return {
-		title: `What you missed: ${missed.label}`,
-		text: `The better move had this tactic: ${missed.evidence}`,
-		source: "missed",
-		primary: missed
-	};
+	const allowedRootOverConditional = allowed?.ply === 1 && isConditionalMaterial(missed);
+	if (missed && !allowedRootOverConditional && (!allowed || !allowed.comparison && isImmediateLesson(missed) || allowed.comparison === "persists" || missed.ply === 1 && isConditionalMaterial(allowed) || (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))) {
+		if (isConditionalMaterial(missed)) return {
+			title: "Tactic in the better line",
+			text: `In the displayed continuation after the better move, ${missed.evidence} This later idea depends on the replies shown; it is not a verified explanation of what the first move missed.`,
+			source: "missed",
+			primary: missed
+		};
+		return {
+			title: `What you missed: ${missed.label}`,
+			text: `The better move had this tactic: ${missed.evidence}`,
+			source: "missed",
+			primary: missed
+		};
+	}
 	if (allowed) {
-		if (conditionalMaterial(allowed)) return {
+		if (isConditionalMaterial(allowed)) return {
 			title: "Tactic in the continuation",
 			text: `In the displayed continuation, ${allowed.evidence} This later tactic depends on the preceding replies; it is not an immediate refutation.`,
 			source: "allowed",

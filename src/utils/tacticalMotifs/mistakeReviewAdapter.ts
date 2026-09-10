@@ -108,7 +108,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 71;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 72;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -676,9 +676,14 @@ export type MistakeReviewTacticalExplanation = {
     secondary?: TacticalMotifEvidence;
 };
 
+function isConditionalMaterial(motif: TacticalMotifEvidence | undefined) {
+    return Boolean(motif && (motif.ply ?? 0) > 1 && !MATE_MOTIF_PATTERN.test(motif.id));
+}
+
 /** A post-move tactic is not automatically a newly caused one. */
 export function tacticalMotifPerspective(motif: TacticalMotifEvidence) {
-    if (motif.source === "missed") return "Missed opportunity";
+    if (motif.source === "missed")
+        return isConditionalMaterial(motif) ? "Continuation idea" : "Missed opportunity";
     if (motif.source === "available") return "Available tactic";
     if (motif.comparison === "persists") return "Existing danger";
     if (motif.comparison === "reduced") return "More costly";
@@ -743,11 +748,9 @@ function chooseMistakeReviewTacticalExplanation({
     const allowed = selectImportantTacticalMotifs(allowedMotifs, 1)[0];
     const missed = selectImportantTacticalMotifs(missedMotifs, 1)[0];
     if (!allowed && !missed) return null;
-    const conditionalMaterial = (motif: TacticalMotifEvidence | undefined) =>
-        Boolean(motif && (motif.ply ?? 0) > 1 && !MATE_MOTIF_PATTERN.test(motif.id));
     // A proved root lesson must not lose to a motif that only appears after
     // several conditional PV replies. Preserve verified mating consequences.
-    const allowedRootOverConditional = allowed?.ply === 1 && conditionalMaterial(missed);
+    const allowedRootOverConditional = allowed?.ply === 1 && isConditionalMaterial(missed);
 
     if (
         missed &&
@@ -755,9 +758,17 @@ function chooseMistakeReviewTacticalExplanation({
         (!allowed ||
             (!allowed.comparison && isImmediateLesson(missed)) ||
             allowed.comparison === "persists" ||
-            (missed.ply === 1 && conditionalMaterial(allowed)) ||
+            (missed.ply === 1 && isConditionalMaterial(allowed)) ||
             (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))
     ) {
+        if (isConditionalMaterial(missed)) {
+            return {
+                title: "Tactic in the better line",
+                text: `In the displayed continuation after the better move, ${missed.evidence} This later idea depends on the replies shown; it is not a verified explanation of what the first move missed.`,
+                source: "missed",
+                primary: missed,
+            };
+        }
         return {
             title: `What you missed: ${missed.label}`,
             text: `The better move had this tactic: ${missed.evidence}`,
@@ -766,7 +777,7 @@ function chooseMistakeReviewTacticalExplanation({
         };
     }
     if (allowed) {
-        if (conditionalMaterial(allowed)) {
+        if (isConditionalMaterial(allowed)) {
             return {
                 title: "Tactic in the continuation",
                 text: `In the displayed continuation, ${allowed.evidence} This later tactic depends on the preceding replies; it is not an immediate refutation.`,
