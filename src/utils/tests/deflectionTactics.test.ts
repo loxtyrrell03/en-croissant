@@ -45,7 +45,9 @@ describe("deflection requires a real defender and a forcing consequence", () => 
         expect(replayTacticalLine(pinned, line)).toHaveLength(3);
         const result = classifyPositionTacticalMotifs({ fen: pinned, pvUci: line });
         expect(result.motifs.map((m) => m.id)).not.toContain("deflection");
-        expect(result.motifs[0]?.id).toBe("discoveredAttack");
+        // The rook battery forces Rxe8 Raxe8#. Taking the queen in the
+        // supplied PV forgoes that mate; its discovery is not the root lesson.
+        expect(result.motifs[0]).toMatchObject({ id: "mateIn2", label: "Forcing Mate", ply: 1 });
     });
 
     test("an incidental queen attack cannot borrow the value of the rook battery's mate", () => {
@@ -57,8 +59,6 @@ describe("deflection requires a real defender and a forcing consequence", () => 
         expect(result.timeline).toContainEqual(
             expect.objectContaining({ id: "backRankMate", ply: 3 }),
         );
-        const discovery = result.motifs.find((m) => m.id === "discoveredAttack");
-        expect(discovery?.value).toBeLessThan(10000);
-        expect(discovery?.relevance).toBe("secondary");
+        expect(result.motifs.map((m) => m.id)).not.toContain("discoveredAttack");
     });
 });

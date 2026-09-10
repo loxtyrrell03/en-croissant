@@ -36,6 +36,22 @@ const laterScan = buildLiveTacticalScan({
   engineName: "Constructed",
   depth: 16,
 });
+test("a root mate proof does not relabel the supplied material continuation as checkmate", () => {
+  const value = buildLiveTacticalScan({
+    fen: "R2r2k1/p4ppp/1p6/2pq4/4R3/1P2PQ2/P5PP/6K1 w - - 0 24",
+    pvUci: ["e4e8", "d8e8", "f3d5"],
+    depth: 16,
+    engineName: "Constructed",
+  });
+  const element = document.createElement("div");
+  element.innerHTML = markup(value);
+  expect(value.motifs[0]).toMatchObject({ id: "mateIn2", ply: 1 });
+  expect(element.textContent).toContain("Every legal defence permits mate within 2 moves");
+  expect(element.querySelector('[data-tactical-ply="3"]')?.textContent ?? "").not.toContain(
+    "Checkmate",
+  );
+  expect(value.labels[0].text).toBe("Forcing Mate");
+});
 test("a verified mixed checking offer explains the root and leaves its fork in the timeline", () => {
   const mixed = buildLiveTacticalScan({
     fen: "2k4r/pp3p2/1np3q1/2Q3p1/P2R4/4P1P1/5PB1/6K1 w - - 0 1",

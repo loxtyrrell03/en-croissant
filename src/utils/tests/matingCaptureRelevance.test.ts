@@ -9,6 +9,7 @@ import {
 import {
     auditTacticalMotifs,
     proveCheckingMate,
+    proveShortCheckingMate,
     replayTacticalLine,
 } from "../tacticalMotifs/causalTactics";
 import { buildLiveTacticalScan } from "../tacticalMotifs/liveTactics";
@@ -38,8 +39,10 @@ test("without the mating proof, the genuine capture remains a material lesson", 
 });
 
 test("an unverified mate proposal cannot erase the material lesson", () => {
+    const position = fen.replace("6R1", "8");
+    expect(proveShortCheckingMate(replayTacticalLine(position, [line[0]])[0])).toBeNull();
     const result = auditTacticalMotifs(
-        fen,
+        position,
         [line[0]],
         [
             {
@@ -57,13 +60,12 @@ test("an unverified mate proposal cannot erase the material lesson", () => {
     expect(result.some((m) => m.id === "hangingPiece" && m.ply === 1)).toBe(true);
 });
 
-test("a root-only input does not pretend the bounded mating continuation was verified", () => {
+test("a root-only input independently proves the short mate instead of borrowing a tag", () => {
     expect(proveCheckingMate(replayTacticalLine(fen, [line[0]]))).toBeNull();
-    expect(
-        classifyPositionTacticalMotifs({ fen, pvUci: [line[0]] }).motifs.some(
-            (m) => m.id === "hangingPiece",
-        ),
-    ).toBe(true);
+    expect(proveShortCheckingMate(replayTacticalLine(fen, [line[0]])[0])?.maxMoves).toBe(2);
+    const result = classifyPositionTacticalMotifs({ fen, pvUci: [line[0]] });
+    expect(result.motifs[0]).toMatchObject({ id: "mateIn2", ply: 1, label: "Forcing Mate" });
+    expect(result.motifs.some((m) => m.id === "hangingPiece")).toBe(false);
 });
 
 test("the board keeps the mating attack as its primary explanation", () => {

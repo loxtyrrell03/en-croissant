@@ -880,6 +880,85 @@ type CheckingMateProof = { maxMoves: number; replyCount: number; example: string
 const checkingMateCache = new Map<string, CheckingMateProof | null>();
 const CHECKING_MATE_NODE_LIMIT = 65536;
 
+const shortCheckingMateCache = new Map<string, CheckingMateProof | null>();
+
+/** Root mate-in-two/three does not depend on a PV ending in mate. Search
+ * only legal checks, shortest distance first, and all defensive replies.
+ * Quiet/longer mates still need the existing separately nominated proof. */
+export function proveShortCheckingMate(
+    root: TacticalReplayStep,
+    nodeLimit = 4096,
+): CheckingMateProof | null {
+    if (
+        !root ||
+        !Number.isSafeInteger(nodeLimit) ||
+        nodeLimit <= 0 ||
+        !root.after.isCheck() ||
+        root.after.isEnd()
+    )
+        return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    if (nodeLimit === 4096 && shortCheckingMateCache.has(key))
+        return shortCheckingMateCache.get(key)!;
+    let nodes = nodeLimit;
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--nodes < 0) throw new Error("Short root mate budget exhausted");
+        const next = pos.clone();
+        next.play(move);
+        return next;
+    };
+    const moves = (pos: Chess) => {
+        const flip = root.before.turn === "white" ? 0 : 56;
+        return legalMoves(pos).sort(
+            (a, b) => (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip),
+        );
+    };
+    const attack = (pos: Chess, remaining: number): string[] | null => {
+        if (!remaining || pos.isEnd()) return null;
+        for (const move of moves(pos)) {
+            const next = visit(pos, move);
+            if (!next.isCheck()) continue;
+            const win = defend(next, remaining - 1);
+            if (win) return [makeSan(pos, move), ...win];
+        }
+        return null;
+    };
+    const defend = (pos: Chess, remaining: number): string[] | null => {
+        if (pos.isCheckmate()) return [];
+        if (!remaining || pos.isEnd()) return null;
+        let longest: string[] | null = null;
+        for (const reply of moves(pos)) {
+            const win = attack(visit(pos, reply), remaining);
+            if (!win) return null;
+            const line = [makeSan(pos, reply), ...win];
+            if (!longest || line.length > longest.length) longest = line;
+        }
+        return longest;
+    };
+    let proof: CheckingMateProof | null = null;
+    try {
+        for (const remaining of [1, 2]) {
+            const win = defend(root.after, remaining);
+            if (win) {
+                proof = {
+                    maxMoves: remaining + 1,
+                    replyCount: moves(root.after).length,
+                    example: [root.san, ...win],
+                };
+                break;
+            }
+        }
+    } catch {
+        /* Exhaustion is unknown, never forced mate. */
+    }
+    if (nodeLimit === 4096) {
+        shortCheckingMateCache.set(key, proof);
+        if (shortCheckingMateCache.size > 256)
+            shortCheckingMateCache.delete(shortCheckingMateCache.keys().next().value!);
+    }
+    return proof;
+}
+
 /** A PV ending in mate is only a nomination. All legal defences must
  * lose. Besides checks, at most two PV-nominated quiet attacking moves may
  * be tried; each opens the full legal defensive tree. Unknown/exhausted
@@ -7185,24 +7264,26 @@ export function auditTacticalMotifs(
     const steps = replayTacticalLine(fen, line);
     if (!steps.length) return [];
     const allowConditional = typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= -30;
-    const checkingMate = steps.length >= 3 ? proveCheckingMate(steps) : null;
+    const checkingMate =
+        proveShortCheckingMate(steps[0]) ?? (steps.length >= 3 ? proveCheckingMate(steps) : null);
     const promotionCombination = provePromotionCombination(steps[0]);
     const promotionPly = steps.findIndex(
         (step) => step.before.turn === steps[0].before.turn && step.move.promotion,
     );
     const clearanceEnd = forcingClearanceEpisodeLength(steps);
-    const end = checkingMate
-        ? steps.findIndex((step) => step.after.isCheckmate()) + 1
-        : clearanceEnd !== null
-          ? clearanceEnd
-          : promotionCombination && promotionPly >= 0 && promotionPly <= 16
-            ? promotionPly + 1
-            : episodeEnd(steps, allowConditional);
+    const end =
+        checkingMate && steps.some((step) => step.after.isCheckmate())
+            ? steps.findIndex((step) => step.after.isCheckmate()) + 1
+            : clearanceEnd !== null
+              ? clearanceEnd
+              : promotionCombination && promotionPly >= 0 && promotionPly <= 16
+                ? promotionPly + 1
+                : episodeEnd(steps, allowConditional);
     if (!end) return [];
     const episode = steps.slice(0, end);
     const attacker = steps[0].before.turn;
     const final = episode.at(-1)!;
-    if (final.after.isCheckmate() && final.before.turn !== attacker) return [];
+    if (final.after.isCheckmate() && final.before.turn !== attacker && !checkingMate) return [];
     const mate =
         final.after.isCheckmate() &&
         final.before.turn === attacker &&

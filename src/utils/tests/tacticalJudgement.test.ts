@@ -11,6 +11,7 @@ import {
     clearanceKingDefence,
     proveCheckingMaterialAttack,
     proveMixedCheckingAttack,
+    proveShortCheckingMate,
     proveQuietDoubleThreat,
     proveDefenderCombination,
     proveCombinedDefenderRemoval,
@@ -518,6 +519,93 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(
+        !engine ||
+            !process.env.TACTICAL_SHORT_ROOT_MATE_REPORT ||
+            !process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE,
+    )(
+        "audit PV-independent short root mating lessons",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_SHORT_ROOT_MATE_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const real = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE!, "utf8"),
+            ).cases.find((r: { eligibleIndex: number }) => r.eligibleIndex === 127);
+            const report = [];
+            for (const item of [
+                {
+                    name: "constructed battery",
+                    fen: "R2r2k1/p4ppp/1p6/2pq4/4R3/1P2PQ2/P5PP/6K1 w - - 0 24",
+                    move: "e4e8",
+                    mate: 2,
+                },
+                {
+                    name: "constructed queen offer",
+                    fen: "8/5r1k/4Npp1/8/3n4/4QP2/PP2q1P1/1KR5 w - - 0 1",
+                    move: "e3h6",
+                    mate: 3,
+                },
+                {
+                    name: "constructed mating capture",
+                    fen: "4b2k/7p/5q2/8/8/6R1/8/4R1K1 w - - 0 1",
+                    move: "e1e8",
+                    mate: 2,
+                },
+                { name: "private queen offer", fen: real.fen, move: real.sourceUci[0], mate: 3 },
+                {
+                    name: "queen block control",
+                    fen: "8/5r1k/4Npp1/8/3n4/4Q3/PP2q1P1/1KR5 w - - 0 1",
+                    move: "e3h6",
+                    mate: null,
+                },
+            ]) {
+                const root = replayTacticalLine(item.fen, [item.move])[0];
+                const proof = proveShortCheckingMate(root);
+                const branches = [];
+                for (const [from, destinations] of root.after.allDests())
+                    for (const to of destinations) {
+                        const reply = { from, to },
+                            next = root.after.clone();
+                        next.play(reply);
+                        const fen = makeFen(next.toSetup());
+                        branches.push({
+                            reply: makeSan(root.after, reply),
+                            fen,
+                            lines: [...(await analyse(engine, fen)).values()],
+                        });
+                    }
+                report.push({
+                    ...item,
+                    proof,
+                    root: [...(await analyse(engine, item.fen, item.move)).values()],
+                    branches,
+                });
+            }
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        scope: "Five fixed development positions, not a general accuracy estimate. Root-restricted and every legal root reply receive fresh depth-16 searches; the queen-block control is an unproved short mate, not a claim of global safety.",
+                        cases: report,
+                    },
+                    null,
+                    2,
+                ),
+                { flag: "wx" },
+            );
+            for (const item of report) expect(item.proof?.maxMoves ?? null).toBe(item.mate);
+            for (const item of report.filter((r) => r.mate !== null)) {
+                expect(item.root[0].mate).toBe(item.mate);
+                for (const branch of item.branches) expect(branch.lines[0].mate).toBeGreaterThan(0);
+            }
+        },
+        120000,
+    );
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_MIXED_CANDIDATE_REPORT ||

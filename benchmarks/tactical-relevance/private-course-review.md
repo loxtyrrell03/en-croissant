@@ -1,6 +1,16 @@
 # Private easy-course development audit
 
-## Current classifier: adapter 73 / live pipeline 77
+## Current classifier: adapter 74 / live pipeline 78
+
+Short root mates are now independently proved even when the supplied line stops early or chooses material instead. `proveShortCheckingMate` checks every legal defensive reply, searching attacking checks for mate in two then three under a shared 4,096-visit budget. Unknown/exhausted branches abstain; longer and quiet combinations retain their existing restrictions. The independent proof does not turn a non-mating supplied continuation into terminal Checkmate. Immediate mate patterns retain their existing handling.
+
+This corrects the rook-battery priority gap documented below: Re8+ Rxe8 Raxe8# is the main lesson, not an incidental discovery from the alternative Qxd5 line. A constructed queen offer must be labelled mate in three even though accepting it permits mate in two. Removing its supporting pawn allows a queen interposition and correctly invalidates the short proof. Thirteen fresh depth-16 root/reply searches validate the battery, queen offer, mating capture, private queen-offer root and missing-pawn control; authoritative private evidence is `short-root-mate-adapter74.json`.
+
+All four fresh `*-adapter74-audit.json` reports cover the same 96 reused development positions, not an independent accuracy sample. Two previously empty source roots gain independently proved mates; all 96 live primary IDs remain unchanged. Two other continuations gain a mate at its actual ply. The remaining 92 full source/live results are unchanged ignoring versions, as are 32 frozen lesson priorities and 118 prior public worker primary IDs.
+
+The expanded 85-file selection passes 1,197 tests with 67 conditional skips, including 18 new root-proof and one rendered regression. All 254 actual-controller worker inputs pass, including 120 public cases: total median/p95/max 71/208/549 ms, startup max 38 ms and computation/transfer max 521 ms, excluding engine/UI. Cold isolated HTTP startup/computation is 4,016/7 ms for Reti and 1,787/119 ms for f7 (`adapter74-cold-http-worker.json`). Targeted lint, shared-review/8,862-module builds and three service tests pass. The unrelated OTB number/bigint type error and earlier intermittent cold-start failure remain open. No app/package/service was restarted/deployed; native/narrow-layout/physical UI proof and broader quiet/rare/causal coverage remain incomplete.
+
+## Adapter 73 / live pipeline 77
 
 The fourth sample's bishop check now has a root Forcing Attack explanation rather than no result or a borrowed later fork. Capturing the checking bishop permits a rook-deflection mating continuation; pawn/knight/queen blocks and king flights have different material or mating consequences. `proveMixedCheckingAttack` derives these branches from the actual board without PV-nominated targets. The original single-target attack proof remains preferred where available. Actual-ply forks remain in the timeline, root arrows show only the checking move/ray, and Mistake Review retains the immediate missed attack. The new heterogeneous certificate is not reused as a single-target causal comparison.
 
