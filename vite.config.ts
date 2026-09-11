@@ -6,6 +6,7 @@ import babel from "@rolldown/plugin-babel";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import { defineConfig } from "vite";
 import { configDefaults } from "vitest/config";
+import { tacticalWorkerDevelopmentPlugin } from "./scripts/vite-tactical-worker.mjs";
 
 const isDebug = !!process.env.TAURI_ENV_DEBUG;
 const host = process.env.TAURI_DEV_HOST;
@@ -15,6 +16,7 @@ const usesHomePhoneServer = process.env.VITE_EN_CROISSANT_HOME_BUILD === "1";
 export default defineConfig({
     publicDir: usesHomePhoneServer ? false : "public",
     plugins: [
+        tacticalWorkerDevelopmentPlugin(),
         tanstackRouter({
             target: "react",
         }),

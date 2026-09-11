@@ -23,6 +23,7 @@ async function runWorker(input) {
       assert.equal(options.type, "module");
       bridge = this;
       this.modules = [];
+      this.loadProgress = null;
       this.startedAt = null;
       this.thread = new Worker(new URL("./helpers/tactical-dev-worker.mjs", import.meta.url), {
         workerData: { origin },
@@ -30,6 +31,7 @@ async function runWorker(input) {
       this.thread.on("error", (error) => this.onerror?.({ message: error.message }));
       this.thread.on("message", (message) => {
         if (message.failure) this.onerror?.({ message: message.failure });
+        else if (message.loadProgress) this.loadProgress = message.loadProgress;
         else if (message.modules) this.modules = message.modules;
         else {
           if (message.type === "started") this.startedAt = performance.now();
@@ -55,14 +57,30 @@ async function runWorker(input) {
       modules: bridge.modules,
       startupMs: bridge.startedAt - start,
       classificationMs: finished - bridge.startedAt,
+      loadProgress: bridge.loadProgress,
     };
+  } catch (error) {
+    if (process.env.TACTICAL_DEV_WORKER_REPORT)
+      writeFileSync(
+        process.env.TACTICAL_DEV_WORKER_REPORT,
+        JSON.stringify(
+          {
+            error: error.message,
+            elapsedMs: performance.now() - start,
+            loadProgress: bridge?.loadProgress,
+          },
+          null,
+          2,
+        ),
+      );
+    throw error;
   } finally {
     globalThis.Worker = original;
   }
 }
 
 test(
-  "unbundled development worker loads and classifies without UI dependencies",
+  "bundled development worker loads and classifies without UI dependencies",
   { skip: !origin },
   async (t) => {
     assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(new URL(origin).hostname));
@@ -87,7 +105,7 @@ test(
       const result = await runWorker({ ...item, engineName: "Worker regression", depth: 16 });
       assert.ok(result.startupMs < TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
       assert.ok(result.classificationMs < TACTICAL_CLASSIFICATION_TIMEOUT_MS);
-      assert.ok(result.modules.length > 2, "must evaluate transitive development imports");
+      assert.equal(result.modules.length, 1, "development must serve a self-contained verifier");
       assert.deepEqual(
         result.modules.filter((url) =>
           /engines\.ts|unwrap\.tsx|tauri|react|mantine|@vite\/client/.test(url),
@@ -109,6 +127,7 @@ test(
         classificationMs: result.classificationMs,
         modules: result.modules.length,
         primary: result.scan.motifs.map((motif) => motif.id),
+        loadProgress: result.loadProgress,
       });
     }
     if (process.env.TACTICAL_DEV_WORKER_REPORT)
@@ -120,6 +139,7 @@ test(
               "Actual application worker controller with an isolated Vite HTTP graph and Node thread/VM transport. This is not a WebView/CSP or physical UI test.",
             startupDeadlineMs: TACTICAL_WORKER_STARTUP_TIMEOUT_MS,
             classificationDeadlineMs: TACTICAL_CLASSIFICATION_TIMEOUT_MS,
+            serverStartupMs: Number(process.env.TACTICAL_DEV_SERVER_STARTUP_MS) || null,
             cases: report,
           },
           null,

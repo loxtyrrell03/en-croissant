@@ -13,6 +13,7 @@ await new Promise((resolve, reject) => {
 });
 const port = probe.address().port;
 await new Promise((resolve, reject) => probe.close((error) => (error ? reject(error) : resolve())));
+const startedAt = performance.now();
 const server = await createServer({
   cacheDir: "node_modules/.vite-tactical-worker-test",
   optimizeDeps: {
@@ -32,7 +33,11 @@ try {
       {
         stdio: "inherit",
         windowsHide: true,
-        env: { ...process.env, TACTICAL_DEV_SERVER: `http://127.0.0.1:${address.port}` },
+        env: {
+          ...process.env,
+          TACTICAL_DEV_SERVER: `http://127.0.0.1:${address.port}`,
+          TACTICAL_DEV_SERVER_STARTUP_MS: String(performance.now() - startedAt),
+        },
       },
     );
     child.once("error", reject);

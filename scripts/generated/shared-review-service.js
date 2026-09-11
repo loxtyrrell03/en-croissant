@@ -15927,8 +15927,9 @@ function chooseMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs })
 }
 /** Without a certified root lesson, a capture in a speculative line may be
 * acceptance of an offer rather than a separate material mistake. Keep its
-* SAN move, but do not add a generic gain badge; independently checked forks,
-* pins, mates and other mechanisms remain available at their actual ply. */
+* SAN move, but do not add a generic gain badge before a checked mechanism
+* for that side. Independently checked forks, pins and mates remain at their
+* actual ply, as do their subsequent capture payoffs. */
 function selectContinuationLessons(timeline, rootMotifs) {
 	if (rootMotifs.some((motif) => motif.ply === 1)) return timeline;
 	return timeline.filter((motif) => motif.id !== "hangingPiece" || timeline.some((prior) => prior.id !== "hangingPiece" && prior.actor === motif.actor && prior.ply !== null && motif.ply !== null && prior.ply <= motif.ply));

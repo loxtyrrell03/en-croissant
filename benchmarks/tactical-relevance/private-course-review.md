@@ -1,6 +1,14 @@
 # Private easy-course development audit
 
-## Current classifier: adapter 75 / live pipeline 79
+## Current delivery: adapter 75 / live pipeline 80
+
+The development verifier now loads as one self-contained, in-memory module instead of an 18-module HTTP graph. A dev-only Vite plugin prebuilds it during server startup; production bundling and all engine/classification/startup deadlines are unchanged. Every request checks the actual dependency file receipt, while edits during a build invalidate that build. Rapid concurrent edits, syntax errors, removed dependencies and recovery from an initially broken source are exercised against an actual isolated HTTP server. Build failures return errors, never a stale successful bundle. The loader also records pending/completed fetch timings on failure.
+
+Three final forced-cold runs (`bundled-worker-final-{1,2,3}.json`, private) pass with first worker startup 958-1,258 ms, subsequent startup 63-98 ms and classification/transfer at most 118 ms. Separate development-server startup, including prebuilding, takes 1,703-2,852 ms. This replaces repeated dependency discovery rather than raising a timeout. Earlier experiments still matter: the first unprewarmed bundled run took 13 seconds, and watcher initial discovery initially discarded a valid prebuild. Both informed the final implementation. These controlled successes are not native WebView/CSP or physical-app proof, and do not establish that every historical startup timeout had the same cause.
+
+Classifier adapter 75 is unchanged: the same 96 reviewed course positions and the previously recorded 11 independent engine searches remain the accuracy evidence, not a new accuracy claim. The 1,207-test selection, both new development cache/recovery scenarios, 257 actual-controller production-worker inputs, three service tests and shared-review/8,862-module builds pass. All 123 public primary IDs and 32 frozen priorities are unchanged. Public worker median/p95/max is 67/195/448 ms, startup max 27 ms and computation/transfer max 425 ms, excluding engine/UI. Targeted lint has no errors (the existing Vite triple-slash warning remains); type checking retains the unrelated OTB number/bigint fixture error. No app/package/service was restarted or deployed; applying the development-server plugin requires the next normal server start. Broader quiet/rare/causal coverage and native UI verification remain open.
+
+## Classifier adapter 75 / live pipeline 79
 
 Legacy Sacrifice and Clearance proposals can no longer use the supplied PV's eventual material balance as their certificate. Generic sacrifice descriptions require an independently proved mate from that offer's actual position; separately certified material preparations remain intact. Clearance comes from its dedicated all-defence proof. The same offered material can otherwise be accepted differently, declined with a countercheck, or recovered only through cooperation. This is an admission-rule correction, not a claim that every withdrawn real combination is unsound.
 
