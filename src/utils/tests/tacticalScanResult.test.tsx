@@ -36,6 +36,22 @@ const laterScan = buildLiveTacticalScan({
   engineName: "Constructed",
   depth: 16,
 });
+test("an unresolved root exposes later themes only as collapsed continuation details", () => {
+  const value = buildLiveTacticalScan({
+    fen: "5r1k/6pp/8/8/4n3/5NPQ/4Bq1P/4R2K b - - 0 1",
+    pvUci: ["f2e1", "f3e1", "e4f2", "h1g2", "f2h3", "e1f3", "f8f3", "e2f3", "h3g5"],
+    depth: 16,
+    engineName: "Constructed",
+  });
+  const element = document.createElement("div");
+  element.innerHTML = markup(value);
+  expect(value.motifs).toEqual([]);
+  expect(element.textContent).toContain("Continuation only");
+  expect(element.textContent).toContain("No first-move tactic was verified");
+  expect(element.textContent).not.toContain("Sacrifice found");
+  expect(element.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Fork");
+  expect(element.querySelectorAll("details[open]")).toHaveLength(0);
+});
 test("a root mate proof does not relabel the supplied material continuation as checkmate", () => {
   const value = buildLiveTacticalScan({
     fen: "R2r2k1/p4ppp/1p6/2pq4/4R3/1P2PQ2/P5PP/6K1 w - - 0 24",

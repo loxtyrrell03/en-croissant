@@ -188,6 +188,33 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 },
             },
             {
+                id: "constructed:cooperative-bishop-offer",
+                input: {
+                    fen: "5rk1/5q1p/8/8/8/3B1N2/8/6K1 w - - 0 1",
+                    pvUci: ["d3h7", "g8h7", "f3g5", "h7h8", "g5f7", "f8f7"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
+                id: "constructed:unproved-clearance-offer",
+                input: {
+                    fen: "6k1/q7/8/8/8/r1P1R3/5B2/6K1 b - - 0 1",
+                    pvUci: ["a3c3", "e3c3", "a7a1", "g1h2", "a1c3"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
+                id: "constructed:unresolved-root-retains-later-fork",
+                input: {
+                    fen: "5r1k/6pp/8/8/4n3/5NPQ/4Bq1P/4R2K b - - 0 1",
+                    pvUci: ["f2e1", "f3e1", "e4f2", "h1g2", "f2h3", "e1f3", "f8f3", "e2f3", "h3g5"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:shared-mating-route",
                 input: {
                     fen: "4r1rk/4q2p/5n1Q/8/3n4/3B3R/3K4/8 w - - 0 1",
@@ -528,7 +555,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(120);
+        expect(report).toHaveLength(123);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

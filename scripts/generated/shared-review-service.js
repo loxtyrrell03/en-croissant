@@ -13939,7 +13939,7 @@ function hasTacticalStart(fen, line, allowConditional = true) {
 function episodeEnd(steps, allowConditional = false) {
 	for (let i = 0; i < steps.length; i += 2) {
 		const step = steps[i];
-		if (!step.capture && !step.move.promotion && !step.after.isCheck() && !hasConcreteThreat(step) && !proveReinforcedPin(step) && !proveQuietMateThreat(step) && !quietPreparation(steps.slice(i, i + 5)) && !(i === 0 && allowConditional ? proveQuietTacticalPreparation(steps.slice(i, i + 11)) : proveQuietTacticalPreparation(steps.slice(i, i + 11))?.forced)) return i;
+		if (!step.capture && !step.move.promotion && !step.before.isCheck() && !step.after.isCheck() && !hasConcreteThreat(step) && !proveReinforcedPin(step) && !proveQuietMateThreat(step) && !quietPreparation(steps.slice(i, i + 5)) && !(i === 0 && allowConditional ? proveQuietTacticalPreparation(steps.slice(i, i + 11)) : proveQuietTacticalPreparation(steps.slice(i, i + 11))?.forced)) return i;
 	}
 	return steps.length;
 }
@@ -13967,27 +13967,6 @@ function causeRank(motif, directGain = 0) {
 		"xRayAttack",
 		"forcingAttack"
 	].indexOf(motif.id));
-}
-/** A later detector tag must not be anchored to an arbitrary first move.
-* Clearance needs a DIFFERENT friendly piece to use the vacated square in
-* this connected episode for a check, sound capture or concrete threat. */
-function hasClearanceFollowup(steps, index) {
-	const root = steps[index];
-	let mover = root.move.to;
-	for (const next of steps.slice(index + 1)) {
-		if (next.before.turn !== root.before.turn) continue;
-		if (next.move.from === mover) {
-			mover = next.move.to;
-			continue;
-		}
-		const piece = next.before.board.get(next.move.from);
-		if ((next.move.to === root.move.from || [
-			"rook",
-			"bishop",
-			"queen"
-		].includes(piece.role) && between(next.move.from, next.move.to).has(root.move.from)) && (next.after.isCheck() || next.capture > 0 && tacticalExchangeGain(next.before, next.move) >= 100 || hasConcreteThreat(next))) return next;
-	}
-	return null;
 }
 function auditTacticalMotifs(fen, line, proposals, rootCp) {
 	const steps = replayTacticalLine(fen, line);
@@ -14271,7 +14250,8 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 			"deflection",
 			"interference",
 			"trappedPiece",
-			"intermezzo"
+			"intermezzo",
+			"clearance"
 		].includes(proposal.id)) continue;
 		if (proposal.id === "promotion" || proposal.id === "underPromotion") {
 			const index = episode.findIndex((s) => s.before.turn === attacker && s.move.promotion && (proposal.id !== "underPromotion" || s.move.promotion !== "queen"));
@@ -14306,15 +14286,6 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		if (!proposal.ply || proposal.ply > end) continue;
 		const step = steps[proposal.ply - 1];
 		if (!step || step.before.turn !== attacker || proposal.moveUci !== step.uci) continue;
-		if (proposal.id === "clearance") {
-			const followup = hasClearanceFollowup(episode, proposal.ply - 1);
-			if (!followup) continue;
-			proposal = {
-				...proposal,
-				label: "Clearance",
-				evidence: `${step.san} vacates ${makeSquare(step.move.from)} for ${followup.san} by another piece in this continuation.`
-			};
-		}
 		if (proposal.id === "pin" && step.capture >= 320 && tacticalExchangeGain(step.before, step.move) >= 100) {
 			if (!pinnedRecapturer(step)) continue;
 		}
@@ -14371,7 +14342,13 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		else if (proposal.id === "attacking_undefended_piece") sound = materialThreatGain(step, winningTargets(step.after, step.move.to, attacker), [step.move.to]) !== null;
 		else if (proposal.id === "sacrifice") {
 			const exchangeGain = tacticalExchangeGain(step.before, step.move);
-			sound = (mate || settled >= 100) && exchangeGain > -VALUE.king && exchangeGain <= -90;
+			const localMate = proposal.ply === 1 ? checkingMate || quietMate || preparation : proveShortCheckingMate(step) || proveCheckingMate(episode.slice(proposal.ply - 1)) || proveQuietMateThreat(step) || quietPreparation(episode.slice(proposal.ply - 1));
+			sound = Boolean(localMate) && exchangeGain > -VALUE.king && exchangeGain <= -90;
+			if (sound) proposal = {
+				...proposal,
+				value: 1e4,
+				evidence: `${step.san} offers the ${step.after.board.get(step.move.to).role} on ${makeSquare(step.move.to)} as part of an independently verified forced mating attack.`
+			};
 		} else sound = mate || settled >= 100;
 		if (!sound) continue;
 		if (proposal.id === "capturingDefender") {
@@ -15465,7 +15442,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 74;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 75;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -15948,16 +15925,27 @@ function chooseMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs })
 		primary: missed
 	};
 }
+/** Without a certified root lesson, a capture in a speculative line may be
+* acceptance of an offer rather than a separate material mistake. Keep its
+* SAN move, but do not add a generic gain badge; independently checked forks,
+* pins, mates and other mechanisms remain available at their actual ply. */
+function selectContinuationLessons(timeline, rootMotifs) {
+	if (rootMotifs.some((motif) => motif.ply === 1)) return timeline;
+	return timeline.filter((motif) => motif.id !== "hangingPiece" || timeline.some((prior) => prior.id !== "hangingPiece" && prior.actor === motif.actor && prior.ply !== null && motif.ply !== null && prior.ply <= motif.ply));
+}
 /** Each row is assessed in its own legal position. Root causes stay separate
 * so later repetitions and opponent counterplay cannot replace the lesson. */
 function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 	const fullReplay = replayTacticalLine(fen, line);
 	const promotionEpisode = rootMotifs.some((motif) => motif.id === "promotionCombination" && motif.ply === 1) && fullReplay.slice(0, 17).some((step) => step.before.turn === fullReplay[0].before.turn && step.move.promotion);
 	const terminal = fullReplay.findIndex((step) => step.after.isEnd() || promotionEpisode && step.before.turn === fullReplay[0].before.turn && step.move.promotion);
-	const episodeReplay = terminal < 0 ? fullReplay : fullReplay.slice(0, terminal + 1);
+	const terminalReplay = terminal < 0 ? fullReplay : fullReplay.slice(0, terminal + 1);
+	const episodeReplay = rootMotifs.length ? terminalReplay : terminalReplay.slice(0, episodeEnd(terminalReplay));
 	const clearanceEpisode = rootMotifs[0]?.id === "clearance" ? forcingClearanceEpisodeLength(episodeReplay) : null;
 	const replay = clearanceEpisode !== null ? episodeReplay.slice(0, clearanceEpisode) : promotionEpisode ? episodeReplay.slice(0, 17) : episodeReplay;
 	const legalLine = replay.map((step) => step.uci);
+	const positionKey = (fen) => fen.split(" ").slice(0, 4).join(" ");
+	const unprovedPositions = new Set([positionKey(fen)]);
 	const rawSteps = walkPV(fen, legalLine, fenSide(fen));
 	const evidence = /* @__PURE__ */ new Map();
 	for (const motif of rootMotifs) {
@@ -15973,6 +15961,14 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 	const provedForcingEpisode = clearanceEpisode !== null || rootMotifs.some((motif) => motif.ply === 1 && (motif.label === "Forcing Mate" && motif.value === 1e4 || motif.id === "promotionCombination" && promotionEpisode));
 	for (let index = 0; index < replay.length; index++) {
 		const step = replay[index];
+		if (!rootMotifs.length) {
+			const key = positionKey(makeFen(step.after.toSetup()));
+			if (unprovedPositions.has(key)) {
+				connectedPlies = index + 1;
+				break;
+			}
+			unprovedPositions.add(key);
+		}
 		const suffix = legalLine.slice(index);
 		const tacticalStart = hasTacticalStart(rawSteps[index]?.fenBefore ?? "", suffix, index === 0 && rootMotifs.some((motif) => motif.id === "tacticalPreparation"));
 		quietPlies = tacticalStart || step.before.isCheck() ? 0 : quietPlies + 1;
@@ -16097,8 +16093,8 @@ function classifyMistakeReviewMotifs(input) {
 	const compared = {
 		...classification,
 		allowedMotifs,
-		...classification.allowedMotifs.length ? { allowedTimeline: filterCompensatedRootCaptures(fenAfterPlayedMove ?? "", refutationLine, buildTacticalTimeline(fenAfterPlayedMove ?? "", refutationLine, "allowed", allowedMotifs, input.refutationSan), fen, playedMoveUci) } : {},
-		...classification.missedMotifs.length ? { missedTimeline: buildTacticalTimeline(fen, bestLine, "missed", classification.missedMotifs, input.pvSan) } : {}
+		...refutationLine.length && fenAfterPlayedMove ? { allowedTimeline: selectContinuationLessons(filterCompensatedRootCaptures(fenAfterPlayedMove ?? "", refutationLine, buildTacticalTimeline(fenAfterPlayedMove ?? "", refutationLine, "allowed", allowedMotifs, input.refutationSan), fen, playedMoveUci), allowedMotifs) } : {},
+		...!playedTheBestMove && bestLine.length ? { missedTimeline: selectContinuationLessons(buildTacticalTimeline(fen, bestLine, "missed", classification.missedMotifs, input.pvSan), classification.missedMotifs) } : {}
 	};
 	motifCache.set(key, compared);
 	if (motifCache.size > MOTIF_CACHE_LIMIT) {

@@ -7164,12 +7164,13 @@ export function hasTacticalStart(fen: string, line: string[], allowConditional =
     );
 }
 
-function episodeEnd(steps: TacticalReplayStep[], allowConditional = false) {
+export function episodeEnd(steps: TacticalReplayStep[], allowConditional = false) {
     for (let i = 0; i < steps.length; i += 2) {
         const step = steps[i];
         if (
             !step.capture &&
             !step.move.promotion &&
+            !step.before.isCheck() &&
             !step.after.isCheck() &&
             !hasConcreteThreat(step) &&
             !proveReinforcedPin(step) &&
@@ -7225,34 +7226,6 @@ function causeRank(motif: TacticalMotifEvidence, directGain = 0) {
     return (
         family * 1000 + (motif.ply ?? 100) * 20 + Math.max(0, mechanismPriority.indexOf(motif.id))
     );
-}
-
-/** A later detector tag must not be anchored to an arbitrary first move.
- * Clearance needs a DIFFERENT friendly piece to use the vacated square in
- * this connected episode for a check, sound capture or concrete threat. */
-function hasClearanceFollowup(steps: TacticalReplayStep[], index: number) {
-    const root = steps[index];
-    let mover = root.move.to;
-    for (const next of steps.slice(index + 1)) {
-        if (next.before.turn !== root.before.turn) continue;
-        if (next.move.from === mover) {
-            mover = next.move.to;
-            continue;
-        }
-        const piece = next.before.board.get(next.move.from)!;
-        const usesSquare =
-            next.move.to === root.move.from ||
-            (["rook", "bishop", "queen"].includes(piece.role) &&
-                between(next.move.from, next.move.to).has(root.move.from));
-        if (
-            usesSquare &&
-            (next.after.isCheck() ||
-                (next.capture > 0 && tacticalExchangeGain(next.before, next.move) >= 100) ||
-                hasConcreteThreat(next))
-        )
-            return next;
-    }
-    return null;
 }
 
 export function auditTacticalMotifs(
@@ -7638,7 +7611,9 @@ export function auditTacticalMotifs(
         // proved continuation, not inherited PV-level anchors or gain totals.
         if (
             DISCOVERED_THEMES.has(proposal.id) ||
-            ["deflection", "interference", "trappedPiece", "intermezzo"].includes(proposal.id)
+            ["deflection", "interference", "trappedPiece", "intermezzo", "clearance"].includes(
+                proposal.id,
+            )
         )
             continue;
         if (proposal.id === "promotion" || proposal.id === "underPromotion") {
@@ -7697,15 +7672,6 @@ export function auditTacticalMotifs(
         if (!proposal.ply || proposal.ply > end) continue;
         const step = steps[proposal.ply - 1];
         if (!step || step.before.turn !== attacker || proposal.moveUci !== step.uci) continue;
-        if (proposal.id === "clearance") {
-            const followup = hasClearanceFollowup(episode, proposal.ply - 1);
-            if (!followup) continue;
-            proposal = {
-                ...proposal,
-                label: "Clearance",
-                evidence: `${step.san} vacates ${makeSquare(step.move.from)} for ${followup.san} by another piece in this continuation.`,
-            };
-        }
         // Capturing a free queen can incidentally pin a distant pawn. Only call
         // that capture a pin tactic when a pinned recapturer explains its gain.
         if (
@@ -7811,7 +7777,25 @@ export function auditTacticalMotifs(
                 ]) !== null;
         else if (proposal.id === "sacrifice") {
             const exchangeGain = tacticalExchangeGain(step.before, step.move);
-            sound = (mate || settled >= 100) && exchangeGain > -VALUE.king && exchangeGain <= -90;
+            // Material recovered in one cooperative PV does not establish
+            // compensation for an offer. Specific material preparations are
+            // supplied by their own certificates above. A generic sacrifice
+            // is retained only at an independently verified mating root;
+            // later offers are checked in their own timeline position.
+            const localMate =
+                proposal.ply === 1
+                    ? checkingMate || quietMate || preparation
+                    : proveShortCheckingMate(step) ||
+                      proveCheckingMate(episode.slice(proposal.ply - 1)) ||
+                      proveQuietMateThreat(step) ||
+                      quietPreparation(episode.slice(proposal.ply - 1));
+            sound = Boolean(localMate) && exchangeGain > -VALUE.king && exchangeGain <= -90;
+            if (sound)
+                proposal = {
+                    ...proposal,
+                    value: 10000,
+                    evidence: `${step.san} offers the ${step.after.board.get(step.move.to)!.role} on ${makeSquare(step.move.to)} as part of an independently verified forced mating attack.`,
+                };
         } else sound = mate || settled >= 100;
         if (!sound) continue;
         if (proposal.id === "capturingDefender") {

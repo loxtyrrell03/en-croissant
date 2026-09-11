@@ -34,7 +34,7 @@ export function TacticalScanResult({
   const sideLabel = scan.side === "white" ? "White" : "Black";
   const laterTheme = (scan.motifs[0]?.ply ?? 1) > 1;
   const tacticalVariations = scan.variations
-    .filter((variation) => variation.motifs.length > 0)
+    .filter((variation) => variation.motifs.length > 0 || variation.timeline.length > 0)
     .sort(
       (a, b) =>
         Number(b.multipv === scan.preferredMultipv) - Number(a.multipv === scan.preferredMultipv),
@@ -86,7 +86,7 @@ export function TacticalScanResult({
               </Text>
             )}
           </Alert>
-        ) : tacticalVariations.length > 0 ? (
+        ) : tacticalVariations.some((variation) => variation.motifs.length > 0) ? (
           <Alert color="blue" icon={<IconBolt size="1rem" />} title="Tactical alternatives">
             No theme was verified in the engine's main line. The alternatives below have identified
             tactical ideas; their continuations are separate choices.
@@ -140,11 +140,16 @@ export function TacticalScanResult({
                         {liveTacticalMotifLabel(motif)}
                       </Badge>
                     ))}
+                    {variation.motifs.length === 0 && (
+                      <Badge color="gray" variant="light">
+                        Continuation only
+                      </Badge>
+                    )}
                   </Group>
                   <Badge variant="light">
                     {variation.multipv === 1 ? "Main line" : "Alternative"}
                   </Badge>
-                  {onPreviewChange && (
+                  {onPreviewChange && variation.motifs.length > 0 && (
                     <Button
                       size="compact-xs"
                       variant={selected === variation.multipv ? "filled" : "light"}
@@ -156,6 +161,12 @@ export function TacticalScanResult({
                     </Button>
                   )}
                 </Group>
+                {variation.motifs.length === 0 && (
+                  <Text size="sm" c="dimmed">
+                    No first-move tactic was verified. The later themes below depend on the replies
+                    shown.
+                  </Text>
+                )}
                 {variation.motifs.slice(0, 1).map((motif) => (
                   <Stack key={motif.id} gap={2}>
                     <Text size="sm">{tacticalMotifDescription(motif)}</Text>

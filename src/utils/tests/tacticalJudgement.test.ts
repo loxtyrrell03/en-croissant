@@ -519,6 +519,95 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(!engine || !process.env.TACTICAL_OFFER_RELEVANCE_REPORT)(
+        "audit cooperative offers against concrete alternative defences",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_OFFER_RELEVANCE_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const report = [];
+            for (const item of [
+                {
+                    name: "Constructed bishop offer; queen capture avoids the king fork",
+                    fen: "5rk1/5q1p/8/8/8/3B1N2/8/6K1 w - - 0 1",
+                    pv: ["d3h7", "g8h7", "f3g5", "h7h8", "g5f7", "f8f7"],
+                    branches: [
+                        ["d3h7", "f7h7"],
+                        ["d3h7", "g8h7"],
+                        ["d3h7", "g8h7", "f3g5", "h7h8"],
+                    ],
+                },
+                {
+                    name: "Constructed clearance; declining via Re8+ neutralizes the claimed win",
+                    fen: "6k1/q7/8/8/8/r1P1R3/5B2/6K1 b - - 0 1",
+                    pv: ["a3c3", "e3c3", "a7a1", "g1h2", "a1c3"],
+                    branches: [
+                        ["a3c3", "e3e8"],
+                        ["a3c3", "e3c3", "a7a1", "f2e1"],
+                        ["a3c3", "e3c3", "a7a1", "g1h2"],
+                    ],
+                },
+                {
+                    name: "Constructed genuine mating offer; both king replies still mate",
+                    fen: "8/5r1k/4Npp1/8/3n4/4QP2/PP2q1P1/1KR5 w - - 0 1",
+                    pv: ["e3h6", "h7h6", "c1h1"],
+                    branches: [
+                        ["e3h6", "h7h6"],
+                        ["e3h6", "h7g8"],
+                    ],
+                },
+            ]) {
+                const searches = [];
+                for (const prefix of [[item.pv[0]], ...item.branches]) {
+                    const prior = replayTacticalLine(item.fen, prefix);
+                    expect(prior).toHaveLength(prefix.length);
+                    const restricted = prior.at(-1)!;
+                    const lines = [
+                        ...(
+                            await analyse(
+                                engine,
+                                makeFen(restricted.before.toSetup()),
+                                restricted.uci,
+                                16,
+                                1,
+                            )
+                        ).values(),
+                    ];
+                    searches.push({ prefix, side: restricted.before.turn, lines });
+                }
+                report.push({
+                    ...item,
+                    searches,
+                    result: classifyPositionTacticalMotifs({ fen: item.fen, pvUci: item.pv }),
+                });
+            }
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        scope: "Constructed development counterexamples and positive control. Full-position engine scores are not local exchange gains or an accuracy percentage.",
+                        report,
+                    },
+                    null,
+                    2,
+                ),
+            );
+            expect(report[0].result.motifs.some((m) => m.id === "sacrifice" && m.ply === 1)).toBe(
+                false,
+            );
+            expect(report[1].result.motifs.some((m) => m.id === "clearance" && m.ply === 1)).toBe(
+                false,
+            );
+            expect(Math.abs(report[1].searches[0].lines[0].cp ?? Infinity)).toBeLessThan(50);
+            expect(report[2].result.motifs[0]).toMatchObject({ id: "mateIn3", ply: 1 });
+            expect(report[2].searches[0].lines[0].mate).toBe(3);
+        },
+        180000,
+    );
     test.skipIf(
         !engine ||
             !process.env.TACTICAL_SHORT_ROOT_MATE_REPORT ||

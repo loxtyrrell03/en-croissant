@@ -14,6 +14,7 @@ import { ChessLite } from "./siteClassifier/analysis.js";
 import { ChessPrimitives } from "./siteClassifier/chess-primitives.js";
 import {
     auditTacticalMotifs,
+    episodeEnd,
     compareBestLineTacticalDefence,
     compareImmediateTacticalDefence,
     filterCompensatedRootCaptures,
@@ -108,7 +109,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 74;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 75;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -852,21 +853,48 @@ export function classifyPositionTacticalMotifs(
         input.previousFen,
         cleanUci(input.previousMoveUci),
     );
+    // A missing root certificate must not erase independently checked later
+    // events. The timeline retains its quiet/terminal relevance boundaries;
+    // none of its rows are promoted into a root lesson here.
+    const timeline = selectContinuationLessons(
+        filterCompensatedRootCaptures(
+            fen,
+            bestLine,
+            buildTacticalTimeline(fen, bestLine, "available", motifs, input.pvSan),
+            input.previousFen,
+            cleanUci(input.previousMoveUci),
+        ),
+        motifs,
+    );
     return {
         motifs,
-        ...(motifs.length
-            ? {
-                  timeline: filterCompensatedRootCaptures(
-                      fen,
-                      bestLine,
-                      buildTacticalTimeline(fen, bestLine, "available", motifs, input.pvSan),
-                      input.previousFen,
-                      cleanUci(input.previousMoveUci),
-                  ),
-              }
-            : {}),
+        ...(motifs.length || timeline.length ? { timeline } : {}),
         motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
     };
+}
+
+/** Without a certified root lesson, a capture in a speculative line may be
+ * acceptance of an offer rather than a separate material mistake. Keep its
+ * SAN move, but do not add a generic gain badge before a checked mechanism
+ * for that side. Independently checked forks, pins and mates remain at their
+ * actual ply, as do their subsequent capture payoffs. */
+function selectContinuationLessons(
+    timeline: TacticalMotifEvidence[],
+    rootMotifs: TacticalMotifEvidence[],
+) {
+    if (rootMotifs.some((motif) => motif.ply === 1)) return timeline;
+    return timeline.filter(
+        (motif) =>
+            motif.id !== "hangingPiece" ||
+            timeline.some(
+                (prior) =>
+                    prior.id !== "hangingPiece" &&
+                    prior.actor === motif.actor &&
+                    prior.ply !== null &&
+                    motif.ply !== null &&
+                    prior.ply <= motif.ply,
+            ),
+    );
 }
 
 /** Each row is assessed in its own legal position. Root causes stay separate
@@ -893,7 +921,10 @@ export function buildTacticalTimeline(
     );
     // Some engine PVs continue shuffling after a dead-material draw. Those
     // legal but outcome-irrelevant moves must not manufacture new lessons.
-    const episodeReplay = terminal < 0 ? fullReplay : fullReplay.slice(0, terminal + 1);
+    const terminalReplay = terminal < 0 ? fullReplay : fullReplay.slice(0, terminal + 1);
+    const episodeReplay = rootMotifs.length
+        ? terminalReplay
+        : terminalReplay.slice(0, episodeEnd(terminalReplay));
     // The pawn-race proof searches at most eight further attacking moves.
     // A later promotion cannot join an unrelated engine continuation to it.
     const clearanceEpisode =
@@ -905,6 +936,8 @@ export function buildTacticalTimeline(
               ? episodeReplay.slice(0, 17)
               : episodeReplay;
     const legalLine = replay.map((step) => step.uci);
+    const positionKey = (fen: string) => fen.split(" ").slice(0, 4).join(" ");
+    const unprovedPositions = new Set([positionKey(fen)]);
     const rawSteps = walkPV(fen, legalLine, fenSide(fen)) as SiteThemeStep[];
     const evidence = new Map<string, TacticalMotifEvidence>();
     for (const motif of rootMotifs) {
@@ -927,6 +960,17 @@ export function buildTacticalTimeline(
         );
     for (let index = 0; index < replay.length; index++) {
         const step = replay[index];
+        if (!rootMotifs.length) {
+            const key = positionKey(makeFen(step.after.toSetup()));
+            // A reversible cycle without a root certificate does not connect
+            // a subsequent gift to the opening check. Independently proved
+            // perpetuals and other root lessons keep their existing handling.
+            if (unprovedPositions.has(key)) {
+                connectedPlies = index + 1;
+                break;
+            }
+            unprovedPositions.add(key);
+        }
         const suffix = legalLine.slice(index);
         const tacticalStart = hasTacticalStart(
             rawSteps[index]?.fenBefore ?? "",
@@ -1206,31 +1250,37 @@ export function classifyMistakeReviewMotifs(
     const compared: MistakeReviewMotifClassification = {
         ...classification,
         allowedMotifs,
-        ...(classification.allowedMotifs.length
+        ...(refutationLine.length && fenAfterPlayedMove
             ? {
-                  allowedTimeline: filterCompensatedRootCaptures(
-                      fenAfterPlayedMove ?? "",
-                      refutationLine,
-                      buildTacticalTimeline(
+                  allowedTimeline: selectContinuationLessons(
+                      filterCompensatedRootCaptures(
                           fenAfterPlayedMove ?? "",
                           refutationLine,
-                          "allowed",
-                          allowedMotifs,
-                          input.refutationSan,
+                          buildTacticalTimeline(
+                              fenAfterPlayedMove ?? "",
+                              refutationLine,
+                              "allowed",
+                              allowedMotifs,
+                              input.refutationSan,
+                          ),
+                          fen,
+                          playedMoveUci,
                       ),
-                      fen,
-                      playedMoveUci,
+                      allowedMotifs,
                   ),
               }
             : {}),
-        ...(classification.missedMotifs.length
+        ...(!playedTheBestMove && bestLine.length
             ? {
-                  missedTimeline: buildTacticalTimeline(
-                      fen,
-                      bestLine,
-                      "missed",
+                  missedTimeline: selectContinuationLessons(
+                      buildTacticalTimeline(
+                          fen,
+                          bestLine,
+                          "missed",
+                          classification.missedMotifs,
+                          input.pvSan,
+                      ),
                       classification.missedMotifs,
-                      input.pvSan,
                   ),
               }
             : {}),
