@@ -2,6 +2,8 @@
 
 Current development evidence, corpus sizes, proof limits and runtime status are maintained in [the private-course audit](private-course-review.md). The entries below preserve earlier milestones, not the current test totals or a general accuracy score.
 
+The [rare-theme real-game review](rare-theme-review.md) separately records human judgements, contrary controls and open interference, zugzwang, deflection, trapped-piece and clearance cases from a fixed 20-position Lichess sample.
+
 ## Adapter 58: retain a significant missed combination beside a larger loss
 
 Proof-backed compound forks and preparations with a positive sub-pawn local bound can now accompany a larger causal mistake as the single secondary lesson. Only classifier-issued proof metadata enables this; small incidental gains, weak/later evidence and uncompared opponent danger remain excluded. Values are unchanged, and saved reviews preserve the optional marker without inventing it for legacy records.

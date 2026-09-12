@@ -6,6 +6,32 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("the defensive interference is rendered at the king move, not as a Black tactical win", () => {
+  const fixture = JSON.parse(
+    readFileSync("benchmarks/tactical-relevance/rare-theme-development.json", "utf8"),
+  );
+  const row = fixture.cases.find((r: { id: string }) => r.id === "lichess:zYjb5");
+  const result = classifyPositionTacticalMotifs({ fen: row.startFen, pvUci: row.bestLine });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(row.startFen, row.bestLine).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  expect(container.querySelector("details")?.hasAttribute("open")).toBe(false);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain(
+    "Forced Interference",
+  );
+  const evasion = container.querySelector('[data-tactical-ply="2"]')?.textContent;
+  expect(evasion).toContain("Kd3");
+  expect(evasion).toContain("Self-Interference");
+  expect(evasion).toContain("not a tactic won by Black");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Qxd7+");
+});
+
 test("a promotion is described at its actual ply without replacing the initiating pin", () => {
   const fen = "4k3/4n3/8/3P4/2B5/8/8/4R1K1 w - - 0 1";
   const line = ["d5d6", "e8d7", "d6e7", "d7e8", "c4b5", "e8f7", "e7e8q"];
@@ -26,6 +52,31 @@ test("a promotion is described at its actual ply without replacing the initiatin
   expect(container.querySelector('[data-tactical-ply="7"]')?.textContent).toContain(
     "promotes the pawn to a queen",
   );
+});
+
+test("the rook's mating deflection stays secondary at ply three", () => {
+  const fixture = JSON.parse(
+    readFileSync("benchmarks/tactical-relevance/rare-theme-development.json", "utf8"),
+  );
+  const row = fixture.cases.find((r: { id: string }) => r.id === "lichess:om0GQ");
+  const result = classifyPositionTacticalMotifs({ fen: row.startFen, pvUci: row.bestLine });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(row.startFen, row.bestLine).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).not.toContain(
+    "Mating Deflection",
+  );
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain(
+    "Mating Deflection",
+  );
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Rg7+");
+  expect(container.querySelector('[data-tactical-ply="5"]')?.textContent).toContain("Rxh6#");
 });
 
 test("a drawn recapturer is explained before the king's actual discovered check", () => {

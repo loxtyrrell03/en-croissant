@@ -25,6 +25,8 @@ import {
     normalizeMatingPayoffs,
     normalizeContinuingTactics,
     replayTacticalLine,
+    selfInterferenceEvidence,
+    matingKingDeflectionEvidence,
 } from "./causalTactics";
 import type {
     MistakeReviewMotifClassification,
@@ -109,7 +111,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 80;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 81;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -988,6 +990,27 @@ export function buildTacticalTimeline(
             connectedPlies = index;
             break;
         }
+        // A checked defender's quiet evasion can explain why material is
+        // conceded. It is an observed secondary mechanism, never a new
+        // offensive root lesson for the side making that blocking move.
+        if (index > 0) {
+            const selfInterference = selfInterferenceEvidence(step, source);
+            if (selfInterference)
+                evidence.set(`${index + 1}:selfInterference`, {
+                    ...selfInterference,
+                    ply: index + 1,
+                    actor: step.before.turn,
+                    relevance: "secondary",
+                });
+        }
+        const matingDeflection = matingKingDeflectionEvidence(step, source);
+        if (matingDeflection && !evidence.has(`${index + 1}:deflection`))
+            evidence.set(`${index + 1}:deflection`, {
+                ...matingDeflection,
+                ply: index + 1,
+                actor: step.before.turn,
+                relevance: "secondary",
+            });
         if (!tacticalStart) continue;
         // These are observed legal actions, not certificates explaining the
         // root move. Record them at their actual ply even when a promoted

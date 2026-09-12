@@ -1,6 +1,18 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 80 / live pipeline 85
+## Current classifier: adapter 81 / live pipeline 86
+
+The new [rare-theme real-game review](rare-theme-review.md) fixes a forced self-interference explanation and adds actual-ply mating king deflection while retaining the forced mate as primary. Both use independently checked legal defences under 4,096-visit caps; incomplete proofs abstain. A check which merely protects the mating piece cannot masquerade as king deflection. Root/secondary ownership, missed-opportunity review, board geometry and rendered continuation copy are covered.
+
+The fixed 20-position CC0 Lichess development sample covers interference, zugzwang, deflection, trapped pieces and clearance; four cases appeared in earlier artifacts. Initial human judgements precede classifier output, and 53 fresh depth-16 Stockfish searches check source/best play and contrary controls. One primary and one other secondary result change; eighteen full source results remain unchanged. The review explicitly records real quiet/zugzwang gaps and a misleading restricted pass probe; empty or unchanged classifications are not correctness claims.
+
+Seven private exact-input replays cover 180 Woodpecker positions, including the 21-position positional quarter sample. All full source/live results and 32 frozen mistake priorities remain unchanged. These are reclassifications of stored engine lines, not 180 fresh engine searches. Authoritative private receipts are adapter81-exact-replay-shipped.json and rare-theme-adapter81-certified.json; the public rare-theme-stockfish-18.json contains only CC0/constructed inputs. The positional compensating-exchange false positive remains unresolved.
+
+Verification: 1,331 selected tests pass with 75 conditional skips (the final full selection plus two separately rerun opt-in audits); all 506 actual-controller production-worker inputs pass, including 135 existing public inputs and 20 rare-theme source inputs. Final artifact is liveTactics.worker-D341bbkR.js. The 135-input timing report has total median/p95/max 83/259/582 ms, startup max 40 ms and classification/transfer max 551 ms, excluding engine/UI. The extra 20 rare inputs pass parity/deadline checks but are not included in those percentiles. Targeted lint, shared-review and 8,865-module app builds, three built-service tests and two dev-cache/recovery scenarios pass. Whole-project type checking retains the unrelated OTB number/bigint fixture error.
+
+Final isolated cold HTTP first/next startup is 7,015/77 ms and classification/transfer is 6/129 ms; earlier runs measured 4,100/68 and 8,803/84 ms startup. The final receipt is adapter81-overlay-guard-cold-http-worker.json. Deadlines are unchanged. This does not certify native WebView reliability. No app, native package or service was restarted/deployed. Broader quiet/rare/causal coverage remains incomplete and paid data stays private.
+
+## Classifier adapter 80 / live pipeline 85
 
 A previously unexplained rook capture now teaches the move order: draw the guarding rook onto a pawn-fork target before advancing the pawn. Playing the pawn first instead permits that guard to capture it. The root is Fork Preparation, the actual pawn fork stays at ply 3, and the later intermediate discovered check stays at ply 5. Missed-opportunity review retains the same immediate preparation lesson. Root arrows show the defender being drawn onto the capture square, not a pawn fork which has not happened yet.
 

@@ -5485,6 +5485,7 @@ export function tacticalBoardEvidence(
             "deflection",
             "attraction",
             "interference",
+            "selfInterference",
             "trappedPiece",
             "capturingDefender",
             "tacticalPreparation",
@@ -5667,7 +5668,22 @@ export function tacticalBoardEvidence(
     }
     if (motif.id === "interference") {
         const proof = interferenceProof(step, motif.source);
-        if (!proof) return null;
+        if (!proof) {
+            const forced = proveForcedSelfInterference(step)?.branches[0];
+            if (!forced) return null;
+            const evasion = parseUci(forced.replyUci) as NormalMove;
+            return {
+                square: makeSquare(step.move.to),
+                arrows: [
+                    { from: makeSquare(evasion.from), to: makeSquare(evasion.to) },
+                    { from: makeSquare(forced.proof.defender), to: makeSquare(evasion.to) },
+                    {
+                        from: makeSquare(forced.proof.capturer),
+                        to: makeSquare(forced.proof.target),
+                    },
+                ],
+            };
+        }
         return {
             square: makeSquare(step.move.to),
             arrows: [
@@ -5679,7 +5695,34 @@ export function tacticalBoardEvidence(
             ],
         };
     }
+    if (motif.id === "selfInterference") {
+        const proof = proveSelfInterference(step);
+        return proof
+            ? {
+                  square: makeSquare(proof.blocker),
+                  arrows: [
+                      { from: makeSquare(proof.defender), to: makeSquare(proof.blocker) },
+                      { from: makeSquare(proof.capturer), to: makeSquare(proof.target) },
+                  ],
+              }
+            : null;
+    }
     if (motif.id === "deflection") {
+        const kingDeflection =
+            motif.label === "Mating Deflection" && proveMatingKingDeflection(step);
+        if (kingDeflection) {
+            const reply = parseUci(kingDeflection.branches[0].replyUci) as NormalMove;
+            return {
+                square: makeSquare(step.move.to),
+                arrows: [
+                    { from: makeSquare(kingDeflection.king), to: makeSquare(reply.to) },
+                    {
+                        from: makeSquare(kingDeflection.capturer),
+                        to: makeSquare(kingDeflection.target),
+                    },
+                ],
+            };
+        }
         const exchange = proveExchangeDeflection(step);
         if (exchange)
             return {
@@ -7872,6 +7915,293 @@ function interferenceProof(step: TacticalReplayStep, source: TacticalMotifEviden
     return null;
 }
 
+type SelfInterferenceProof = {
+    defender: Square;
+    target: Square;
+    capturer: Square;
+    blocker: Square;
+    gain: number;
+    captureUci: string;
+    captureSan: string;
+};
+
+/** A defending move can cut its OWN guard's ray. Require a legal recapture
+ * by that exact guard before the move, and a newly profitable capture after
+ * it. The pre-move turn swap only tests protection, never a playable line.
+ * Actual capture leaves debit all friendly-piece liabilities and reject
+ * immediate mate/promotion refutations. A PV or a supplied tag grants no proof. */
+export function proveSelfInterference(
+    step: TacticalReplayStep,
+    nodeLimit = 4096,
+    sharedBudget?: { nodes: number },
+): SelfInterferenceProof | null {
+    if (
+        !Number.isSafeInteger(nodeLimit) ||
+        nodeLimit <= 0 ||
+        step.move.promotion ||
+        step.after.isEnd()
+    )
+        return null;
+    const side = step.before.turn;
+    const budget = sharedBudget ?? { nodes: nodeLimit };
+    const beforeProbe = withTurn(step.before, opposite(side));
+    try {
+        for (const defender of step.before.board[side]) {
+            const guard = step.before.board.get(defender)!;
+            if (defender === step.move.from || !["bishop", "rook", "queen"].includes(guard.role))
+                continue;
+            for (const target of attacks(guard, defender, step.before.board.occupied).intersect(
+                step.before.board[side],
+            )) {
+                const victim = step.after.board.get(target);
+                if (
+                    !victim ||
+                    victim.color !== side ||
+                    VALUE[victim.role] < 320 ||
+                    victim.role === "king" ||
+                    target === step.move.to ||
+                    !between(defender, target).has(step.move.to)
+                )
+                    continue;
+                if (attacks(guard, defender, step.after.board.occupied).has(target)) continue;
+                for (const capturer of step.after.board[opposite(side)]) {
+                    const capture = { from: capturer, to: target };
+                    if (!step.after.isLegal(capture) || !beforeProbe.isLegal(capture)) continue;
+                    if (--budget.nodes < 0) return null;
+                    const oldCapture = beforeProbe.clone();
+                    oldCapture.play(capture);
+                    if (!oldCapture.isLegal({ from: defender, to: target })) continue;
+                    const oldGain = tacticalExchangeGain(beforeProbe, capture);
+                    if (oldGain <= -VALUE.king || oldGain >= 100) continue;
+                    const gain = participantCaptureGain(
+                        step.after,
+                        capture,
+                        [...step.after.board[opposite(side)], target],
+                        budget,
+                    );
+                    if (
+                        gain === null ||
+                        gain - step.capture < 100 ||
+                        !noImmediateTerminalRefutation(step.after, capture, budget)
+                    )
+                        continue;
+                    const leaf = step.after.clone();
+                    leaf.play(capture);
+                    // This certificate describes material, not a mate whose
+                    // target happens to be occupied by a valuable piece.
+                    if (leaf.isEnd()) continue;
+                    return {
+                        defender,
+                        target,
+                        capturer,
+                        blocker: step.move.to,
+                        gain: gain - step.capture,
+                        captureUci: makeUci(capture),
+                        captureSan: makeSan(step.after, capture),
+                    };
+                }
+            }
+        }
+    } catch {
+        // An incomplete local exchange cannot establish a new loss.
+    }
+    return null;
+}
+
+type ForcedInterferenceProof = {
+    gain: number;
+    branches: { reply: string; replyUci: string; proof: SelfInterferenceProof }[];
+};
+const forcedInterferenceCache = new Map<string, ForcedInterferenceProof | null>();
+
+/** Promote the mechanism to a root lesson only when EVERY legal check
+ * evasion cuts the same real guard-target connection and loses material.
+ * Otherwise a verified occurrence may still be shown at its actual ply. */
+export function proveForcedSelfInterference(
+    root: TacticalReplayStep,
+    nodeLimit = 4096,
+): ForcedInterferenceProof | null {
+    if (
+        !Number.isSafeInteger(nodeLimit) ||
+        nodeLimit <= 0 ||
+        !root.after.isCheck() ||
+        root.after.isEnd() ||
+        root.move.promotion
+    )
+        return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    if (nodeLimit === 4096 && forcedInterferenceCache.has(key))
+        return forcedInterferenceCache.get(key)!;
+    const budget = { nodes: nodeLimit };
+    const branches: ForcedInterferenceProof["branches"] = [];
+    const replies = legalMoves(root.after);
+    for (const reply of replies) {
+        if (--budget.nodes < 0) break;
+        const after = root.after.clone();
+        after.play(reply);
+        const step = {
+            before: root.after,
+            after,
+            move: reply,
+            uci: makeUci(reply),
+            san: makeSan(root.after, reply),
+            capture: capturedValue(root.after, reply),
+            balance: 0,
+        };
+        const proof = proveSelfInterference(step, nodeLimit, budget);
+        if (
+            !proof ||
+            (branches.length &&
+                (branches[0].proof.defender !== proof.defender ||
+                    branches[0].proof.target !== proof.target))
+        )
+            break;
+        branches.push({ reply: step.san, replyUci: step.uci, proof });
+    }
+    const proof =
+        replies.length && branches.length === replies.length
+            ? { gain: root.capture + Math.min(...branches.map((b) => b.proof.gain)), branches }
+            : null;
+    if (nodeLimit === 4096) {
+        forcedInterferenceCache.set(key, proof);
+        if (forcedInterferenceCache.size > 128)
+            forcedInterferenceCache.delete(forcedInterferenceCache.keys().next().value!);
+    }
+    return proof;
+}
+
+export function selfInterferenceEvidence(
+    step: TacticalReplayStep,
+    source: TacticalMotifEvidence["source"],
+): TacticalMotifEvidence | null {
+    const proof = proveSelfInterference(step);
+    if (!proof) return null;
+    const side = step.before.turn === "white" ? "White" : "Black";
+    return {
+        id: "selfInterference",
+        label: "Self-Interference",
+        source,
+        confidence: "high",
+        ply: 1,
+        moveUci: step.uci,
+        value: proof.gain,
+        evidence: `${step.san} blocks ${side}'s ${step.before.board.get(proof.defender)!.role} on ${makeSquare(proof.defender)} from defending the ${step.after.board.get(proof.target)!.role} on ${makeSquare(proof.target)}. ${proof.captureSan} now wins material; the guard could legally recapture before this blocking move. This explains the concession, not a tactic won by ${side}.`,
+    };
+}
+
+type MatingKingDeflectionProof = {
+    king: Square;
+    target: Square;
+    capturer: Square;
+    branches: { reply: string; replyUci: string; mate: string; mateUci: string }[];
+};
+const matingKingDeflectionCache = new Map<string, MatingKingDeflectionProof | null>();
+
+/** The checking move draws the king away from a guarded mating square.
+ * Every legal reply must move that king and allow a legal mating capture
+ * on the same square. Before the check, the exact premature capture must
+ * allow Kx(capturer). This is a complete mate-in-two mechanism, not a
+ * sacrifice/PV tag; other defences or an exhausted budget abstain. */
+export function proveMatingKingDeflection(
+    root: TacticalReplayStep,
+    nodeLimit = 4096,
+): MatingKingDeflectionProof | null {
+    if (
+        !Number.isSafeInteger(nodeLimit) ||
+        nodeLimit <= 0 ||
+        root.move.promotion ||
+        !root.after.isCheck() ||
+        root.after.isEnd()
+    )
+        return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    if (nodeLimit === 4096 && matingKingDeflectionCache.has(key))
+        return matingKingDeflectionCache.get(key)!;
+    const king = root.after.board.kingOf(root.after.turn)!;
+    const replies = legalMoves(root.after);
+    let nodes = nodeLimit;
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--nodes < 0) throw new Error("Mating king deflection budget exhausted");
+        const next = pos.clone();
+        next.play(move);
+        return next;
+    };
+    let proof: MatingKingDeflectionProof | null = null;
+    try {
+        if (replies.length && replies.every((reply) => reply.from === king)) {
+            for (const target of attacks(
+                { color: root.after.turn, role: "king" },
+                king,
+                root.after.board.occupied,
+            ).intersect(root.after.board[root.after.turn])) {
+                if (target === root.move.to || !root.before.board.get(target)) continue;
+                for (const capturer of root.before.board[root.before.turn]) {
+                    if (capturer === root.move.from) continue;
+                    const capture = { from: capturer, to: target };
+                    if (!root.before.isLegal(capture)) continue;
+                    const premature = visit(root.before, capture);
+                    if (!premature.isLegal({ from: king, to: target })) continue;
+                    const branches: MatingKingDeflectionProof["branches"] = [];
+                    for (const reply of replies) {
+                        const next = visit(root.after, reply);
+                        // A king still adjacent to the square has not been
+                        // drawn away from it. A newly protected mating piece
+                        // alone is a different mechanism.
+                        if (
+                            attacks(
+                                { color: root.after.turn, role: "king" },
+                                reply.to,
+                                next.board.occupied,
+                            ).has(target) ||
+                            !next.isLegal(capture) ||
+                            !visit(next, capture).isCheckmate()
+                        )
+                            break;
+                        branches.push({
+                            reply: makeSan(root.after, reply),
+                            replyUci: makeUci(reply),
+                            mate: makeSan(next, capture),
+                            mateUci: makeUci(capture),
+                        });
+                    }
+                    if (branches.length === replies.length) {
+                        proof = { king, target, capturer, branches };
+                        break;
+                    }
+                }
+                if (proof) break;
+            }
+        }
+    } catch {
+        // The tag is withheld unless every real defence was covered.
+    }
+    if (nodeLimit === 4096) {
+        matingKingDeflectionCache.set(key, proof);
+        if (matingKingDeflectionCache.size > 128)
+            matingKingDeflectionCache.delete(matingKingDeflectionCache.keys().next().value!);
+    }
+    return proof;
+}
+
+export function matingKingDeflectionEvidence(
+    step: TacticalReplayStep,
+    source: TacticalMotifEvidence["source"],
+): TacticalMotifEvidence | null {
+    const proof = proveMatingKingDeflection(step);
+    if (!proof) return null;
+    const branch = proof.branches[0];
+    return {
+        id: "deflection",
+        label: "Mating Deflection",
+        source,
+        confidence: "high",
+        ply: 1,
+        moveUci: step.uci,
+        value: 10000,
+        evidence: `${step.san} draws the king away from defending ${makeSquare(proof.target)}. After ${branch.reply}, ${branch.mate} is checkmate. Capturing on ${makeSquare(proof.target)} first would allow the king to take that piece. Every legal reply allows this mating capture; this is the mechanism at this move, not a separate material win.`,
+    };
+}
+
 export function hasTacticalStart(fen: string, line: string[], allowConditional = true) {
     const steps = replayTacticalLine(fen, line.slice(0, 11));
     const root = steps[0];
@@ -8201,6 +8531,21 @@ export function auditTacticalMotifs(
         }
         const interference = interferenceProof(episode[index], proposals[0]?.source ?? "available");
         if (interference) candidates.push({ ...interference.motif, ply: index + 1 });
+        const forcedInterference = !interference && proveForcedSelfInterference(episode[index]);
+        if (forcedInterference) {
+            const branch = forcedInterference.branches[0],
+                root = episode[index];
+            candidates.push({
+                id: "interference",
+                label: "Forced Interference",
+                source: proposals[0]?.source ?? "available",
+                confidence: "high",
+                ply: index + 1,
+                moveUci: root.uci,
+                value: forcedInterference.gain,
+                evidence: `${root.san} forces the defender to block its own ${root.after.board.get(branch.proof.defender)!.role}'s protection of the ${root.after.board.get(branch.proof.target)!.role} on ${makeSquare(branch.proof.target)}. After ${branch.reply}, ${branch.proof.captureSan} wins material. Every legal check evasion cuts this same defensive connection; the blocking move belongs to the next ply.`,
+            });
+        }
         const trapped = trappedPieceProof(episode[index], proposals[0]?.source ?? "available");
         if (trapped) candidates.push({ ...trapped.motif, ply: index + 1 });
     }

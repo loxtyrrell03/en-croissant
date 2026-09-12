@@ -1,0 +1,431 @@
+{
+  "scope": "Fixed theme-stratified real-game development sample, not an accuracy test. Provisional human judgements were written before running this sample through adapter 80. Source tags are nominations, not expected answers. Four cases occur in earlier local benchmark artifacts (CSh8J, NGZzo, NrHkx, 4RNK5); they are not new coverage.",
+  "source": "chessmistaketrainer/benchmarks/tactical-classifier/lichess-2026-08-02-fixture-v1.jsonl",
+  "license": "CC0-1.0",
+  "selection": "First four development rows per requested theme after SHA-256 ordering of rare-theme-review-2026-09-12:<id>, excluding already selected source games; themes in order interference, zugzwang, deflection, trappedPiece, clearance.",
+  "cases": [
+    {
+      "theme": "interference",
+      "id": "lichess:zYjb5",
+      "sourceGameUrl": "https://lichess.org/xYoaQcxz/black#130",
+      "sourceThemes": [
+        "crushing",
+        "endgame",
+        "interference",
+        "short"
+      ],
+      "startFen": "8/3r4/5Q2/p6P/2k5/2P5/P3pBPK/3q4 w - - 9 66",
+      "bestLine": [
+        "f6c6",
+        "c4d3",
+        "c6d7"
+      ],
+      "initialJudgement": "Qc6+ drives the king onto the d-file, cutting its queen's defence of the rook. Inspect forced king self-interference at ply 2 and the rook payoff at ply 3; do not call Qxd7 the blocking move."
+    },
+    {
+      "theme": "interference",
+      "id": "lichess:dkEzJ",
+      "sourceGameUrl": "https://lichess.org/Li8zzqp9#55",
+      "sourceThemes": [
+        "advantage",
+        "interference",
+        "middlegame",
+        "short"
+      ],
+      "startFen": "5rk1/2q2p2/5bnp/R2Pp1p1/2p1P3/N4NP1/3Q1P1P/5BK1 b - - 3 28",
+      "bestLine": [
+        "c4c3",
+        "d2e3",
+        "c7a5"
+      ],
+      "initialJudgement": "The c3 pawn blocks Qd2's protection of Ra5 and attacks the queen. Interference should explain the initiating move if every legal defence loses material."
+    },
+    {
+      "theme": "interference",
+      "id": "lichess:UiHeK",
+      "sourceGameUrl": "https://lichess.org/sWtiFRMg#45",
+      "sourceThemes": [
+        "crushing",
+        "deflection",
+        "interference",
+        "long",
+        "middlegame",
+        "skewer"
+      ],
+      "startFen": "r3k3/ppq2p1p/4p3/3pN2r/5P2/1P3BK1/PQ5P/R2R1b2 b q - 0 23",
+      "bestLine": [
+        "h5h3",
+        "g3f2",
+        "h3h2",
+        "f2f1",
+        "h2b2"
+      ],
+      "initialJudgement": "Rh3+ drives the king toward a checking rook skewer on the second rank. Separate the move-order preparation from the actual Rh2+ skewer; source interference/deflection tags need a concrete ray."
+    },
+    {
+      "theme": "interference",
+      "id": "lichess:w8wvY",
+      "sourceGameUrl": "https://lichess.org/Sstuiwms/black#98",
+      "sourceThemes": [
+        "advantage",
+        "endgame",
+        "interference",
+        "rookEndgame",
+        "short"
+      ],
+      "startFen": "6R1/5k2/8/5r1p/5p1K/5P2/6P1/8 w - - 10 50",
+      "bestLine": [
+        "g8g5",
+        "f5f6",
+        "h4h5"
+      ],
+      "initialJudgement": "Rg5 cuts the rook's defence of h5 while attacking the rook. The point is winning a pawn, but exchanging rooks must also be checked; not automatically a forced rook win."
+    },
+    {
+      "theme": "zugzwang",
+      "id": "lichess:IKbcw",
+      "sourceGameUrl": "https://lichess.org/EGwnSMl7/black#168",
+      "sourceThemes": [
+        "crushing",
+        "endgame",
+        "master",
+        "short",
+        "zugzwang"
+      ],
+      "startFen": "8/8/8/3p4/1BpP4/K1n5/3k4/8 w - - 0 85",
+      "bestLine": [
+        "a3b2",
+        "d2d3",
+        "b4c3"
+      ],
+      "initialJudgement": "Kb2 attacks the absolutely pinned knight and protects Bxc3. The knight could be won even if Black passed after Kb2, so the supplied zugzwang tag is not the main mechanism."
+    },
+    {
+      "theme": "zugzwang",
+      "id": "lichess:gnlcF",
+      "sourceGameUrl": "https://lichess.org/cc7qidXs/black#88",
+      "sourceThemes": [
+        "crushing",
+        "endgame",
+        "long",
+        "quietMove",
+        "rookEndgame",
+        "zugzwang"
+      ],
+      "startFen": "8/8/6pK/7p/4k1rP/3R2P1/8/8 w - - 5 45",
+      "bestLine": [
+        "d3a3",
+        "e4f5",
+        "h6g7",
+        "g4b4",
+        "a3a5"
+      ],
+      "initialJudgement": "Ra3 is a waiting/rook repositioning move in an ending with restricted Black pieces. Genuine zugzwang needs all moves versus a valid pass comparison; a later checking skewer alone cannot explain the first move."
+    },
+    {
+      "theme": "zugzwang",
+      "id": "lichess:e9KxD",
+      "sourceGameUrl": "https://lichess.org/QHKYXMwZ#105",
+      "sourceThemes": [
+        "crushing",
+        "defensiveMove",
+        "endgame",
+        "rookEndgame",
+        "veryLong",
+        "zugzwang"
+      ],
+      "startFen": "8/8/3pk3/2p1r1p1/1pP1R1Pp/1P2K2P/1P6/8 b - - 1 53",
+      "bestLine": [
+        "e6f6",
+        "e3f3",
+        "e5e4",
+        "f3e4",
+        "f6e6",
+        "e4e3",
+        "e6e5"
+      ],
+      "initialJudgement": "Kf6 preserves an available rook exchange and pawn-ending move order. The source later reaches a king-and-pawn zugzwang; distinguish root preparation from the actual losing obligation to move."
+    },
+    {
+      "theme": "zugzwang",
+      "id": "lichess:QSKdo",
+      "sourceGameUrl": "https://lichess.org/EtPuafTc#75",
+      "sourceThemes": [
+        "crushing",
+        "endgame",
+        "long",
+        "master",
+        "pawnEndgame",
+        "zugzwang"
+      ],
+      "startFen": "8/8/2k1p3/p1p1Pp1p/P4P1P/1P1K4/8/8 b - - 9 38",
+      "bestLine": [
+        "c6d5",
+        "d3c3",
+        "d5e4",
+        "c3c4",
+        "e4f4"
+      ],
+      "initialJudgement": "Kd5 takes opposition and reaches kingside pawns. Inspect whether the decisive move really forces a concession or simply threatens penetration; pawn-ending technique must not invent a material tactic."
+    },
+    {
+      "theme": "deflection",
+      "id": "lichess:CSh8J",
+      "sourceGameUrl": "https://lichess.org/seP4J8Tb/black#128",
+      "sourceThemes": [
+        "advancedPawn",
+        "crushing",
+        "deflection",
+        "endgame",
+        "knightEndgame",
+        "promotion",
+        "short"
+      ],
+      "startFen": "8/2P5/1n3k2/p7/P7/4NKp1/8/8 w - - 5 65",
+      "bestLine": [
+        "e3d5",
+        "b6d5",
+        "c7c8q"
+      ],
+      "initialJudgement": "Nd5+ deflects the knight guarding c8, enabling promotion. Declining the knight offer must be checked; the move-order lesson should outrank a later generic promotion badge."
+    },
+    {
+      "theme": "deflection",
+      "id": "lichess:ZVq1J",
+      "sourceGameUrl": "https://lichess.org/zdiMuOOP#71",
+      "sourceThemes": [
+        "advantage",
+        "deflection",
+        "discoveredAttack",
+        "discoveredCheck",
+        "endgame",
+        "fork",
+        "long",
+        "sacrifice"
+      ],
+      "startFen": "8/p1pR1pk1/1p2r1n1/8/2PQ4/4PKPP/r7/8 b - - 1 36",
+      "bestLine": [
+        "g6e5",
+        "f3e4",
+        "a2d2",
+        "d4d2",
+        "e5c4"
+      ],
+      "initialJudgement": "Ne5+ opens a rook attack on the queen; a later rook offer deflects the queen before Nxc4. Separate immediate discovered check/double attack from later deflection and captures."
+    },
+    {
+      "theme": "deflection",
+      "id": "lichess:nBrWE",
+      "sourceGameUrl": "https://lichess.org/KufbTWxS#69",
+      "sourceThemes": [
+        "crushing",
+        "deflection",
+        "endgame",
+        "exposedKing",
+        "long"
+      ],
+      "startFen": "8/pp4k1/3P2p1/8/2PbB2p/6qP/PP6/5Q1K b - - 0 35",
+      "bestLine": [
+        "d4e5",
+        "f1g2",
+        "g3e1",
+        "g2g1",
+        "e1e4"
+      ],
+      "initialJudgement": "Be5 centralizes the bishop and threatens mating checks. Queen deflection belongs to the actual forced queen reply, if necessary for the outcome; verify all alternatives."
+    },
+    {
+      "theme": "deflection",
+      "id": "lichess:om0GQ",
+      "sourceGameUrl": "https://lichess.org/nFq8R2sJ/black#56",
+      "sourceThemes": [
+        "deflection",
+        "exposedKing",
+        "long",
+        "mate",
+        "mateIn3",
+        "middlegame"
+      ],
+      "startFen": "r2q1rn1/p4p1k/1p2pP2/2p1R2p/3p1P2/P2P1N1P/1PP4K/6R1 w - - 0 29",
+      "bestLine": [
+        "e5h5",
+        "g8h6",
+        "g1g7",
+        "h7h8",
+        "h5h6"
+      ],
+      "initialJudgement": "Rxh5+ begins a forced mating attack. The later Rg7+ checking rook offer deflects the king; mate should lead and the mechanism remain secondary at its own ply."
+    },
+    {
+      "theme": "trappedPiece",
+      "id": "lichess:dLG91",
+      "sourceGameUrl": "https://lichess.org/IuJas3xq/black#58",
+      "sourceThemes": [
+        "crushing",
+        "middlegame",
+        "short",
+        "trappedPiece"
+      ],
+      "startFen": "2r3k1/5rpp/q2p3b/3Pp3/1RP2p2/2Q4P/3B1PP1/2R3K1 w - - 4 30",
+      "bestLine": [
+        "c1a1",
+        "a6a1",
+        "c3a1"
+      ],
+      "initialJudgement": "Ra1 attacks a queen with restricted escapes; Qxa1 Qxa1 trades queen for rook. A genuine trapped-queen proof must test quiet queen squares as well as the supplied capture."
+    },
+    {
+      "theme": "trappedPiece",
+      "id": "lichess:snAK4",
+      "sourceGameUrl": "https://lichess.org/a4MxY0Mo#43",
+      "sourceThemes": [
+        "crushing",
+        "middlegame",
+        "pin",
+        "trappedPiece",
+        "veryLong"
+      ],
+      "startFen": "8/2pqnkpp/2b2p2/8/1P1P4/2P1R2P/1Q3PP1/rNB3K1 b - - 2 22",
+      "bestLine": [
+        "d7d5",
+        "f2f3",
+        "a1a2",
+        "c3c4",
+        "a2b2",
+        "c4d5",
+        "b2b1"
+      ],
+      "initialJudgement": "Qd5 pressures a pinned defence before Ra2 attacks the queen. Check whether trapping is immediate, prepared or conditional; do not borrow the final rook captures as root profit."
+    },
+    {
+      "theme": "trappedPiece",
+      "id": "lichess:NGZzo",
+      "sourceGameUrl": "https://lichess.org/7lzGil6H/black#64",
+      "sourceThemes": [
+        "advantage",
+        "master",
+        "middlegame",
+        "short",
+        "trappedPiece"
+      ],
+      "startFen": "r5k1/5p2/Br2p1p1/1PNpPb1q/3P4/4P1Q1/5K1P/6R1 w - - 0 33",
+      "bestLine": [
+        "c5d7",
+        "g8g7",
+        "d7b6"
+      ],
+      "initialJudgement": "Nd7 attacks Rb6 with Ba6 controlling its escape file. The rook's legal checking/countercapture resources decide whether Trapped Piece is justified."
+    },
+    {
+      "theme": "trappedPiece",
+      "id": "lichess:GDK87",
+      "sourceGameUrl": "https://lichess.org/5NPtEpQL#37",
+      "sourceThemes": [
+        "crushing",
+        "middlegame",
+        "short",
+        "trappedPiece"
+      ],
+      "startFen": "5krr/pp1B1p2/2p5/3p4/3P1q2/2P2P2/PPQ2P1b/RN3K1R b - - 0 19",
+      "bestLine": [
+        "f4f3",
+        "b1d2",
+        "f3h1"
+      ],
+      "initialJudgement": "Qxf3 threatens the rook on h1, whose escape squares are restricted. The pawn capture and actual rook trap should not become many unrelated badges."
+    },
+    {
+      "theme": "clearance",
+      "id": "lichess:tA2XR",
+      "sourceGameUrl": "https://lichess.org/heingGcp/black#64",
+      "sourceThemes": [
+        "advantage",
+        "clearance",
+        "discoveredCheck",
+        "doubleCheck",
+        "middlegame",
+        "pin",
+        "short"
+      ],
+      "startFen": "4r1k1/6p1/7p/ppnNq1P1/4r3/1QP1P3/PP6/2K2N1R w - - 3 33",
+      "bestLine": [
+        "d5f6",
+        "g8h8",
+        "b3f7"
+      ],
+      "initialJudgement": "Nf6+ is double check from knight and queen, with later queen entry. The double check is immediate; pin/clearance tags need to explain distinct necessary relationships."
+    },
+    {
+      "theme": "clearance",
+      "id": "lichess:NrHkx",
+      "sourceGameUrl": "https://lichess.org/m6XYFzNi#67",
+      "sourceThemes": [
+        "clearance",
+        "mate",
+        "mateIn4",
+        "middlegame",
+        "sacrifice",
+        "veryLong"
+      ],
+      "startFen": "8/8/2k1B3/2b4r/p7/Pp4B1/1P2bPP1/R1K1R3 b - - 3 34",
+      "bestLine": [
+        "c5e3",
+        "f2e3",
+        "h5c5",
+        "e6c4",
+        "c5c4",
+        "c1b1",
+        "e2d3"
+      ],
+      "initialJudgement": "Be3+ vacates c5 for a rook's checking invasion. Verify the mating move order and retain clearance at the bishop move, not at the later rook mate."
+    },
+    {
+      "theme": "clearance",
+      "id": "lichess:4Ds65",
+      "sourceGameUrl": "https://lichess.org/ZQ6hOt0H#41",
+      "sourceThemes": [
+        "clearance",
+        "crushing",
+        "defensiveMove",
+        "endgame",
+        "pin",
+        "short"
+      ],
+      "startFen": "r1b3k1/p4p1p/6pP/1p1p4/4rP2/6P1/PPP1B3/R3K2R b KQ - 0 21",
+      "bestLine": [
+        "c8g4",
+        "h1h2",
+        "a8e8"
+      ],
+      "initialJudgement": "Bg4 develops with tempo against the king/bishop on the e-file and clears c8 for Ra8-e8. This is a pin/preparation, not a verified free bishop based only on the source's passive rook reply."
+    },
+    {
+      "theme": "clearance",
+      "id": "lichess:4RNK5",
+      "sourceGameUrl": "https://lichess.org/x1B4MZEX/black#96",
+      "sourceThemes": [
+        "clearance",
+        "crushing",
+        "endgame",
+        "exposedKing",
+        "master",
+        "queenRookEndgame",
+        "quietMove",
+        "sacrifice",
+        "skewer",
+        "veryLong"
+      ],
+      "startFen": "8/4k3/7R/p3p2R/8/P6p/KP6/4q3 w - - 2 49",
+      "bestLine": [
+        "h6b6",
+        "e1e4",
+        "h5h7",
+        "e4h7",
+        "b6b7",
+        "e7d6",
+        "b7h7"
+      ],
+      "initialJudgement": "Rb6 prepares a checking skewer after a rook offer; the source line is not proof that the opponent must accept. Retain explicit preparation/conditional boundaries."
+    }
+  ]
+}

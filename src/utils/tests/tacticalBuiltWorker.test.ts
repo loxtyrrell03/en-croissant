@@ -719,6 +719,11 @@ for (const { name, path, count } of [
         path: process.env.TACTICAL_PRIVATE_POSITIONAL_MIDDLE_REPORT,
         count: 21,
     },
+    {
+        name: "positional-quarter",
+        path: process.env.TACTICAL_PRIVATE_POSITIONAL_QUARTER_REPORT,
+        count: 21,
+    },
 ]) {
     test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !path)(
         `the ${name} disjoint sample retains full source and live timelines through the worker`,
@@ -756,6 +761,44 @@ for (const { name, path, count } of [
         120000,
     );
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
+    "rare real-game themes and secondary interference survive the production worker",
+    async () => {
+        const fixture = JSON.parse(
+            readFileSync("benchmarks/tactical-relevance/rare-theme-development.json", "utf8"),
+        );
+        const observed: { id: string; primary: string | undefined; secondary: boolean }[] = [];
+        for (const row of fixture.cases) {
+            const input = {
+                fen: row.startFen,
+                pvUci: row.bestLine,
+                engineName: "Real-game source",
+                depth: 16,
+            };
+            const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+            expect({ id: row.id, scan: result.scan }).toEqual({
+                id: row.id,
+                scan: buildLiveTacticalScan(input),
+            });
+            expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+            expect(result.startupMs).toBeLessThan(TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
+            observed.push({
+                id: row.id,
+                primary: result.scan.motifs[0]?.id,
+                secondary: result.scan.variations[0].timeline.some(
+                    (m) => m.id === "selfInterference" && m.ply === 2,
+                ),
+            });
+        }
+        expect(observed.find((row) => row.id === "lichess:zYjb5")).toEqual({
+            id: "lichess:zYjb5",
+            primary: "interference",
+            secondary: true,
+        });
+    },
+    120000,
+);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_PGN_SAMPLE)(
     "the private recovered themes survive the built worker boundary",
