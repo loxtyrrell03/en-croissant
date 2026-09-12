@@ -2028,7 +2028,7 @@ function BoardWorkspace({
               tabs cannot abort an active PC search. */}
           <EngineUnderBoardPanel
             analysisRequestId={onlineAnalysisRequestId}
-            compact={panelMode !== "engine"}
+            compact={panelMode !== "engine" && panelMode !== "moves"}
             currentFen={currentFen}
             upcomingFens={upcomingEngineFens}
             onAnalysisLinesChange={handleEngineAnalysisLinesChange}
