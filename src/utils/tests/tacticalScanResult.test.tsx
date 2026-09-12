@@ -117,6 +117,25 @@ test("a verified square-clearing capture leads with the preparation, not its lat
   );
   expect(element.querySelectorAll("details[open]")).toHaveLength(0);
 });
+test("a quiet pawn fork preparation keeps its move-order lesson and actual-ply fork separate", () => {
+  const value = buildLiveTacticalScan({
+    fen: "5bk1/5ppp/8/8/3pr3/8/2RRN3/7K b - - 0 1",
+    pvUci: ["e4e2", "d2e2", "d4d3"],
+    depth: 16,
+    engineName: "Constructed",
+  });
+  const element = document.createElement("div");
+  element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Fork Preparation found");
+  expect(element.textContent).toContain("Playing d3 first instead allows Rxd3");
+  expect(element.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Fork");
+  expect(element.querySelector('[data-tactical-ply="2"]')?.textContent ?? "").not.toContain(
+    "Hanging",
+  );
+  expect(value.arrows.map((a) => a.from + a.to)).toContain("d2e2");
+  expect(value.arrows.map((a) => a.from + a.to)).not.toContain("d3c2");
+});
+
 test("a root mate proof does not relabel the supplied material continuation as checkmate", () => {
   const value = buildLiveTacticalScan({
     fen: "R2r2k1/p4ppp/1p6/2pq4/4R3/1P2PQ2/P5PP/6K1 w - - 0 24",

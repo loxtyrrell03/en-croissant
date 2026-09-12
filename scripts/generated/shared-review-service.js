@@ -10727,7 +10727,7 @@ function winningTargets(pos, from, side) {
 /** A fork must survive the opponent's choice, including capturing the forker,
 * a checking counterattack, or one move that protects both targets. */
 function verifiedFork(step) {
-	return immediateFork(step) || proveRecaptureBackedFork(step) !== null || proveExchangeForPawnFork(step) !== null || provePromotionBackedFork(step) !== null || proveMateBackedFork(step) !== null || proveDiscoveryBackedFork(step) !== null;
+	return immediateFork(step) || proveRecaptureBackedFork(step) !== null || proveExchangeForPawnFork(step) !== null || provePromotionBackedFork(step) !== null || proveMateBackedFork(step) !== null || proveDiscoveryBackedFork(step) !== null || proveQuietPawnFork(step) !== null;
 }
 var discoveryBackedForkCache = /* @__PURE__ */ new Map();
 var DISCOVERY_BACKED_FORK_BUDGET = 32768;
@@ -11142,6 +11142,136 @@ function checkingForkSearch(side, budget, strictLeaves = false, discoveryChecks 
 		fork
 	};
 }
+var quietPawnForkCache = /* @__PURE__ */ new Map();
+/** An advanced pawn's quiet double attack can need a checking capture or
+* promotion to recover a countercaptured piece. Search every legal defence;
+* attacking continuations stay with those targets, that pawn, checks and
+* real check evasions. Quiet retention cannot invent earned material. */
+function proveQuietPawnFork(root, nodeLimit = 16384, minimumGain = 100, onFailure, onLeaf, sharedBudget) {
+	const piece = root.after.board.get(root.move.to);
+	const side = root.before.turn;
+	const enemy = opposite(side);
+	const distance = side === "white" ? 7 - Math.floor(root.move.to / 8) : Math.floor(root.move.to / 8);
+	if (!piece || piece.role !== "pawn" || root.capture || root.move.promotion || root.after.isCheck() || distance < 1 || distance > 3 || root.after.isEnd() || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !Number.isSafeInteger(minimumGain) || minimumGain <= 0) return null;
+	const targets = [...attacks(piece, root.move.to, root.after.board.occupied).intersect(root.after.board[enemy])].filter((to) => !["king", "pawn"].includes(root.after.board.get(to).role));
+	if (targets.length !== 2) return null;
+	const cacheKey = `${makeFen(root.before.toSetup())}:${root.uci}:${minimumGain}`;
+	const cacheable = !sharedBudget && !onFailure && !onLeaf && nodeLimit === 16384;
+	if (cacheable && quietPawnForkCache.has(cacheKey)) return quietPawnForkCache.get(cacheKey);
+	const budget = sharedBudget ?? { nodes: nodeLimit };
+	const initialNodes = budget.nodes;
+	const visit = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("Quiet pawn fork budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const delta = (pos, move) => capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+	const memo = /* @__PURE__ */ new Map();
+	const attack = (pos, balance, victims, pawn, remaining) => {
+		if (!remaining || pos.isEnd()) return null;
+		const key = `${makeFen(pos.toSetup())}:${balance}:${victims}:${pawn}:${remaining}`;
+		if (memo.has(key)) return memo.get(key);
+		const candidates = recoveryMoves(pos, side).filter((move) => (remaining < 5 || pos.isCheck() || capturedValue(pos, move) && victims.includes(move.to)) && (pos.isCheck() || move.from === pawn || capturedValue(pos, move) && victims.includes(move.to) || mayGiveCheck(pos, move) || balance >= minimumGain && !capturedValue(pos, move) && !move.promotion));
+		candidates.sort((a, b) => delta(pos, b) - delta(pos, a) || Number(b.from === pawn) - Number(a.from === pawn));
+		const prepared = candidates.map((move) => ({
+			move,
+			next: visit(pos, move)
+		}));
+		for (const { move, next } of prepared) {
+			if (next.isCheckmate()) return {
+				gain: 1e4,
+				line: [makeSan(pos, move)]
+			};
+			if (next.isEnd() || balance + delta(pos, move) < minimumGain) continue;
+			const gain = participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+			if (gain === null || balance + gain < minimumGain || !noImmediateTerminalRefutation(pos, move, budget)) continue;
+			onLeaf?.({
+				fen: makeFen(pos.toSetup()),
+				moveUci: makeUci(move),
+				balance,
+				gain: balance + gain,
+				quiet: !capturedValue(pos, move) && !move.promotion
+			});
+			const result = {
+				gain: balance + gain,
+				line: [makeSan(pos, move)]
+			};
+			memo.set(key, result);
+			return result;
+		}
+		for (const { move, next } of prepared) {
+			if (next.isEnd() || !pos.isCheck() && move.from !== pawn && !next.isCheck() && !(capturedValue(pos, move) && victims.includes(move.to))) continue;
+			const result = defend(next, balance + delta(pos, move), victims.filter((to) => to !== move.to), pawn === move.from ? move.to : pawn, remaining - 1);
+			if (result) {
+				const proof = {
+					gain: result.gain,
+					line: [makeSan(pos, move), ...result.line]
+				};
+				memo.set(key, proof);
+				return proof;
+			}
+		}
+		memo.set(key, null);
+		return null;
+	};
+	const defend = (pos, balance, victims, pawn, remaining) => {
+		if (pos.isEnd()) return pos.isCheckmate() ? {
+			gain: 1e4,
+			line: []
+		} : null;
+		let minimum = Infinity, example = [];
+		const replies = recoveryMoves(pos, side).sort((a, b) => delta(pos, b) - delta(pos, a));
+		for (const reply of replies) {
+			const next = visit(pos, reply);
+			if (reply.promotion || next.isEnd()) return null;
+			const named = victims.map((to) => to === reply.from ? reply.to : to);
+			if (capturedValue(pos, reply)) named.push(reply.to);
+			const result = attack(next, balance - delta(pos, reply), [...new Set(named)], reply.to === pawn ? null : pawn, remaining);
+			if (!result) return null;
+			minimum = Math.min(minimum, result.gain);
+			const line = [makeSan(pos, reply), ...result.line];
+			if (line.length > example.length) example = line;
+		}
+		return Number.isFinite(minimum) ? {
+			gain: minimum,
+			line: example
+		} : null;
+	};
+	let proof = null;
+	try {
+		const branches = [];
+		let minimum = Infinity;
+		for (const reply of recoveryMoves(root.after, side).sort((a, b) => delta(root.after, b) - delta(root.after, a))) {
+			const next = visit(root.after, reply);
+			if (reply.promotion || next.isEnd()) throw new Error("Terminal or promoting fork defence");
+			const named = targets.map((to) => to === reply.from ? reply.to : to);
+			if (capturedValue(root.after, reply)) named.push(reply.to);
+			const result = attack(next, -delta(root.after, reply), [...new Set(named)], reply.to === root.move.to ? null : root.move.to, 5);
+			if (!result) throw new Error(`Unproved quiet fork defence ${makeSan(root.after, reply)}`);
+			minimum = Math.min(minimum, result.gain);
+			branches.push({
+				reply: makeSan(root.after, reply),
+				answer: result.line[0],
+				line: result.line,
+				gain: result.gain
+			});
+		}
+		if (Number.isFinite(minimum)) proof = {
+			gain: minimum,
+			targets,
+			branches,
+			examinedMoves: initialNodes - budget.nodes
+		};
+	} catch (error) {
+		onFailure?.(error instanceof Error ? error.message : String(error));
+	}
+	if (cacheable) {
+		quietPawnForkCache.set(cacheKey, proof);
+		if (quietPawnForkCache.size > 128) quietPawnForkCache.delete(quietPawnForkCache.keys().next().value);
+	}
+	return proof;
+}
 var forkPreparationCache = /* @__PURE__ */ new Map();
 var captureForkPreparationCache = /* @__PURE__ */ new Map();
 /** Settle one off-square countercapture after the fork's target is taken.
@@ -11192,28 +11322,53 @@ function checkingCaptureRecoveryGain(pos, move, budget, requiredGain) {
 	}
 	return Number.isFinite(minimum) ? minimum : null;
 }
-/** A capture may offer a piece to attract its recapturer onto a checking fork.
+/** A capture can attract its recapturer onto a checking fork, or draw away
+* the guard which could capture a premature quiet pawn fork.
 * Acceptance must recover the sacrifice against every fork defence. Declining
 * must leave a concrete safe continuation retaining the captured material.
 * This local proof does not search arbitrary quiet combinations. */
 function proveCaptureForkPreparation(root, nodeLimit = root.after.isCheck() ? 4096 : 8192, onFailure) {
-	return proveCaptureCheckPreparation(root, nodeLimit, onFailure);
+	const failures = onFailure ? [] : void 0;
+	const checking = proveCaptureCheckPreparation(root, nodeLimit, failures ? (reason) => failures.push(reason) : void 0);
+	if (checking) return checking;
+	if (!root.after.isCheck() && root.capture && !root.move.promotion && legalMoves(root.after).some((reply) => {
+		if (reply.to !== root.move.to || !capturedValue(root.after, reply)) return false;
+		const next = root.after.clone();
+		next.play(reply);
+		return legalMoves(next).some((move) => next.board.get(move.from)?.role === "pawn" && !move.promotion && !capturedValue(next, move) && attacks({
+			color: root.before.turn,
+			role: "pawn"
+		}, move.to, next.board.occupied).has(root.move.to));
+	})) return proveCaptureCheckPreparation(root, nodeLimit, onFailure, false, true);
+	for (const failure of failures ?? []) onFailure?.(failure);
+	return null;
 }
 function proveCaptureDiscoveryPreparation(root, nodeLimit = root.after.isCheck() ? 4096 : 8192, onFailure) {
 	return proveCaptureCheckPreparation(root, nodeLimit, onFailure, true);
 }
-function proveCaptureCheckPreparation(root, nodeLimit, onFailure, discoveryChecks = false) {
+function proveCaptureCheckPreparation(root, nodeLimit, onFailure, discoveryChecks = false, quietPawnForks = false) {
 	if (!root.capture || !root.before.board.get(root.move.to) || root.move.promotion || root.after.isEnd() || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || tacticalExchangeGain(root.before, root.move) >= 100) return null;
 	const side = root.before.turn;
 	const enemy = opposite(side);
 	const offered = root.after.board.get(root.move.to);
 	const king = root.after.board.kingOf(enemy);
 	if (!offered || king === void 0 || root.after.isCheck() && !attacks(offered, root.move.to, root.after.board.occupied).has(king)) return null;
-	const key = `${makeFen(root.before.toSetup())}:${root.uci}:${discoveryChecks}`;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}:${discoveryChecks}:${quietPawnForks}`;
 	const defaultBudget = root.after.isCheck() ? 4096 : 8192;
 	if (!onFailure && nodeLimit === defaultBudget && captureForkPreparationCache.has(key)) return captureForkPreparationCache.get(key);
 	const budget = { nodes: nodeLimit };
-	const { visit, delta, fork } = checkingForkSearch(side, budget, true, discoveryChecks);
+	const checking = checkingForkSearch(side, budget, true, discoveryChecks);
+	const { visit, delta } = checking;
+	const fork = quietPawnForks ? (pos, move, _pieces, _excluded, minimumGain = 100) => {
+		const step = replayTacticalLine(makeFen(pos.toSetup()), [makeUci(move)])[0];
+		const result = step && proveQuietPawnFork(step, 16384, Math.max(100, minimumGain), void 0, void 0, budget);
+		if (budget.nodes < 0) throw new Error("Quiet fork preparation budget exhausted");
+		return result ? {
+			gain: result.gain,
+			victims: result.targets,
+			targets: result.targets.map((to) => `${step.after.board.get(to).role} on ${makeSquare(to)}`)
+		} : null;
+	} : checking.fork;
 	let proof = null;
 	try {
 		const branches = [];
@@ -11256,6 +11411,26 @@ function proveCaptureCheckPreparation(root, nodeLimit, onFailure, discoveryCheck
 				}
 				for (const answer of legalMoves(next)) {
 					if (answer.promotion) continue;
+					let quietForkGuard;
+					if (quietPawnForks) {
+						if (next.board.get(answer.from)?.role !== "pawn" || capturedValue(next, answer) || !attacks({
+							role: "pawn",
+							color: side
+						}, answer.to, next.board.occupied).has(root.move.to) || !root.before.isLegal(answer)) continue;
+						const premature = visit(root.before, answer);
+						const defence = {
+							from: reply.from,
+							to: answer.to
+						};
+						if (!premature.isLegal(defence) || !capturedValue(premature, defence)) continue;
+						const gain = participantCaptureGain(premature, defence, [...premature.board[enemy], defence.to], budget);
+						if (gain === null || gain < 0 || !noImmediateTerminalRefutation(premature, defence, budget)) continue;
+						quietForkGuard = {
+							square: reply.from,
+							premature: makeSan(root.before, answer),
+							defence: makeSan(premature, defence)
+						};
+					}
 					let removedDefender;
 					const clearedForkSquare = answer.to === reply.from && next.board.get(answer.from)?.role === "pawn" && answer.from % 8 === answer.to % 8 && !capturedValue(next, answer) && root.before.board.get(answer.to)?.color === enemy && !root.before.isLegal(answer) ? answer.to : void 0;
 					const vacatedForkSquare = !discoveryChecks && answer.to === root.move.from && !root.before.isLegal(answer) && next.isLegal(answer) ? answer.to : void 0;
@@ -11292,6 +11467,7 @@ function proveCaptureCheckPreparation(root, nodeLimit, onFailure, discoveryCheck
 						kind: result.discovery ? "discovery" : "fork",
 						targets: result.targets,
 						receiver,
+						...quietForkGuard ? { quietForkGuard } : {},
 						...result.discovery ? { discovery: result.discovery } : {},
 						...twoMinors ? { exchange: {
 							given: "rook",
@@ -11303,7 +11479,7 @@ function proveCaptureCheckPreparation(root, nodeLimit, onFailure, discoveryCheck
 					});
 					for (const victim of result.victims) targets.add(victim);
 					forkers.add(answer.from);
-					if (removedDefender?.square === root.move.to || vacatedForkSquare !== void 0) preparedForks.add(makeUci(answer));
+					if (quietForkGuard || removedDefender?.square === root.move.to || vacatedForkSquare !== void 0) preparedForks.add(makeUci(answer));
 					minimum = Math.min(minimum, balance + result.gain);
 					won = true;
 					break;
@@ -11334,6 +11510,16 @@ function proveCaptureCheckPreparation(root, nodeLimit, onFailure, discoveryCheck
 					const directCountercapture = preparedForks.size > 0 && capturedValue(next, answer) > 0 && (capturedValue(root.after, reply) > 0 && answer.to === reply.to || next.ctx().checkers.has(answer.to));
 					if (answer.promotion || answer.from !== root.move.to && !forkers.has(answer.from) && !directCountercapture && !(next.ctx().checkers.has(answer.to) && capturedValue(next, answer)) && !(next.isCheck() && next.board.get(answer.from)?.role === "king")) continue;
 					const after = visit(next, answer);
+					if (after.isCheckmate()) {
+						minimum = Math.min(minimum, 1e4);
+						declined.push({
+							reply: makeSan(root.after, reply),
+							answer: makeSan(next, answer),
+							mate: true
+						});
+						won = true;
+						break;
+					}
 					if (after.isEnd()) continue;
 					const countercaptured = forkers.has(answer.from) && capturedValue(next, answer) && (attacks(next.board.get(answer.to), answer.to, next.board.occupied).has(root.move.to) || answer.to === reply.to && attacks(next.board.get(answer.to), answer.to, next.board.occupied).has(answer.from)) ? next.board.get(answer.to).role : void 0;
 					if (forkers.has(answer.from) && answer.from !== root.move.to && !countercaptured && !attacks(after.board.get(answer.to), answer.to, after.board.occupied).has(root.move.to)) continue;
@@ -14249,7 +14435,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		const fork = capturePreparation.branches[0];
 		const declined = capturePreparation.declined[0];
 		const removed = fork.removedDefender;
-		const introduction = removed ? `${removed.square === root.move.to ? `${root.san} captures the defending ${root.before.board.get(removed.square).role} on ${makeSquare(removed.square)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice.` : `${root.san} offers the ${root.before.board.get(root.move.from).role} to draw the defending ${fork.receiver} off ${makeSquare(removed.square)}. After ${fork.reply}, ${fork.answer} removes it and forks the ${fork.targets.join(" and ")}.`} Playing ${removed.premature} first lets that defender capture the forking piece with ${removed.defence}.` : fork.vacatedForkSquare !== void 0 ? `${root.san} captures the ${root.before.board.get(root.move.to).role} while clearing ${makeSquare(fork.vacatedForkSquare)} for a checking fork. The offered ${root.before.board.get(root.move.from).role} occupied that square, so the fork could not be played first. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.` : fork.clearedForkSquare !== void 0 ? `${root.san} captures the ${root.before.board.get(root.move.to).role} and offers the ${root.before.board.get(root.move.from).role} to draw the ${fork.receiver} off ${makeSquare(fork.clearedForkSquare)}, clearing that square for the pawn fork. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.` : `${root.san} captures the ${root.before.board.get(root.move.to).role} and offers the ${root.before.board.get(root.move.from).role} to attract the ${fork.receiver} onto ${makeSquare(root.move.to)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.${fork.exchange ? ` This wins ${fork.exchange.received[0] === fork.exchange.received[1] ? `two ${fork.exchange.received[0]}s` : `a ${fork.exchange.received.join(" and a ")}`} for the rook; after legal countercaptures, the verified local net gain is at least ${capturePreparation.gain / 100} pawns, not a full-position evaluation.` : ""}`;
+		const introduction = fork.quietForkGuard ? `${root.san} captures the ${root.before.board.get(root.move.to).role} and offers the ${root.before.board.get(root.move.from).role}, drawing the ${fork.receiver} off ${makeSquare(fork.quietForkGuard.square)} onto ${makeSquare(root.move.to)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}. Playing ${fork.quietForkGuard.premature} first instead allows ${fork.quietForkGuard.defence}, capturing the pawn. The prepared fork recovers the sacrifice, including checking counterattacks and this pawn's possible promotion.` : removed ? `${removed.square === root.move.to ? `${root.san} captures the defending ${root.before.board.get(removed.square).role} on ${makeSquare(removed.square)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice.` : `${root.san} offers the ${root.before.board.get(root.move.from).role} to draw the defending ${fork.receiver} off ${makeSquare(removed.square)}. After ${fork.reply}, ${fork.answer} removes it and forks the ${fork.targets.join(" and ")}.`} Playing ${removed.premature} first lets that defender capture the forking piece with ${removed.defence}.` : fork.vacatedForkSquare !== void 0 ? `${root.san} captures the ${root.before.board.get(root.move.to).role} while clearing ${makeSquare(fork.vacatedForkSquare)} for a checking fork. The offered ${root.before.board.get(root.move.from).role} occupied that square, so the fork could not be played first. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.` : fork.clearedForkSquare !== void 0 ? `${root.san} captures the ${root.before.board.get(root.move.to).role} and offers the ${root.before.board.get(root.move.from).role} to draw the ${fork.receiver} off ${makeSquare(fork.clearedForkSquare)}, clearing that square for the pawn fork. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.` : `${root.san} captures the ${root.before.board.get(root.move.to).role} and offers the ${root.before.board.get(root.move.from).role} to attract the ${fork.receiver} onto ${makeSquare(root.move.to)}. After ${fork.reply}, ${fork.answer} forks the ${fork.targets.join(" and ")}, recovering the sacrifice with a net material gain.${fork.exchange ? ` This wins ${fork.exchange.received[0] === fork.exchange.received[1] ? `two ${fork.exchange.received[0]}s` : `a ${fork.exchange.received.join(" and a ")}`} for the rook; after legal countercaptures, the verified local net gain is at least ${capturePreparation.gain / 100} pawns, not a full-position evaluation.` : ""}`;
 		const otherCapture = capturePreparation.otherCaptures?.[0];
 		candidates.push({
 			id: "forkPreparation",
@@ -14260,7 +14446,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 			moveUci: root.uci,
 			value: capturePreparation.gain,
 			verifiedCombination: true,
-			evidence: `${introduction}${otherCapture ? ` Taking with ${otherCapture.reply} instead allows ${otherCapture.answer}, retaining material without needing that fork.` : ""}${declined ? ` Declining with ${declined.reply} instead permits ${declined.answer}${declined.countercaptured ? `, capturing the attacking ${declined.countercaptured} while retaining a material gain.` : ", retaining a material gain."}` : ""} Every legal reply has a verified local continuation, including recaptures and immediate countercaptures. The fork is a continuation, not an attack on this board.`
+			evidence: `${introduction}${otherCapture ? ` Taking with ${otherCapture.reply} instead allows ${otherCapture.answer}, retaining material without needing that fork.` : ""}${declined ? ` Declining with ${declined.reply} instead permits ${declined.answer}${declined.mate ? ", checkmate." : declined.countercaptured ? `, capturing the attacking ${declined.countercaptured} while retaining a material gain.` : ", retaining a material gain."}` : ""} Every legal reply has a verified local continuation, including recaptures and immediate countercaptures. The fork is a continuation, not an attack on this board.`
 		});
 	}
 	const discoveryPreparation = !mate && !capturePreparation ? proveCaptureDiscoveryPreparation(steps[0]) : null;
@@ -14277,7 +14463,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 			moveUci: root.uci,
 			value: discoveryPreparation.gain,
 			verifiedCombination: true,
-			evidence: `${root.san} offers the ${root.before.board.get(root.move.from).role} to draw the ${branch.receiver} onto ${makeSquare(root.move.to)}. After ${branch.reply}, ${branch.answer} uncovers check from the ${root.after.board.get(ray.slider).role} on ${makeSquare(ray.slider)} while attacking that recapturer. The discovered check recovers the sacrifice with a net material gain.${declined ? ` Declining with ${declined.reply} instead permits ${declined.answer}, retaining a material gain.` : ""} Every legal reply has a verified local continuation, including recaptures and immediate countercaptures. The discovered check belongs to the continuation, not this board.`
+			evidence: `${root.san} offers the ${root.before.board.get(root.move.from).role} to draw the ${branch.receiver} onto ${makeSquare(root.move.to)}. After ${branch.reply}, ${branch.answer} uncovers check from the ${root.after.board.get(ray.slider).role} on ${makeSquare(ray.slider)} while attacking that recapturer. The discovered check recovers the sacrifice with a net material gain.${declined ? ` Declining with ${declined.reply} instead permits ${declined.answer}${declined.mate ? ", checkmate." : ", retaining a material gain."}` : ""} Every legal reply has a verified local continuation, including recaptures and immediate countercaptures. The discovered check belongs to the continuation, not this board.`
 		});
 	}
 	if (checkingMate) candidates.push({
@@ -14491,6 +14677,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 			const promotion = sound && !immediateFork(step) ? provePromotionBackedFork(step) : null;
 			const recapture = sound && !immediateFork(step) ? proveRecaptureBackedFork(step) : null;
 			const discovery = sound && !immediateFork(step) ? proveDiscoveryBackedFork(step) : null;
+			const pawn = sound && !immediateFork(step) ? proveQuietPawnFork(step) : null;
 			if (mating) proposal = {
 				...proposal,
 				value: mating.gain,
@@ -14521,6 +14708,14 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 					...proposal,
 					value: recapture.gain,
 					evidence: `${step.san} forks the ${recapture.targets.map((sq) => `${step.after.board.get(sq).role} on ${makeSquare(sq)}`).join(" and ")}. Taking the forker with ${branch.reply} instead allows ${branch.answer}${branch.continuation.length ? `, with the verified continuation ${branch.continuation.join(" ")}` : " and immediate mate"}. Every legal defence concedes material or mate; the checking recapture, interpositions and legal exchanges are checked. The follow-up check is conditional, not already on this board.`
+				};
+			} else if (pawn) {
+				const branch = pawn.branches.find((candidate) => candidate.line.length > 1) ?? pawn.branches[0];
+				proposal = {
+					...proposal,
+					value: pawn.gain,
+					verifiedCombination: true,
+					evidence: `${step.san} forks the ${pawn.targets.map((to) => `${step.after.board.get(to).role} on ${makeSquare(to)}`).join(" and ")}. The pawn's connected continuation recovers material against every legal defence, including captures of the pawn and checking counterattacks. For example, ${branch.reply} ${branch.line.join(" ")}. This is a fork now; any later check or promotion belongs to its actual move.`
 				};
 			}
 		} else if (proposal.id === "skewer") sound = rayMaterialEvidence(step, proposal.source).some((m) => m.id === "skewer");
@@ -15115,7 +15310,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 			}
 		} else if (motif.id === "forkPreparation") {
 			const capture = proveCaptureForkPreparation(step);
-			const acceptance = capture && capturePreparationAcceptanceDefence(alternative);
+			const acceptance = capture && !capture.branches.some((branch) => branch.quietForkGuard) && capturePreparationAcceptanceDefence(alternative);
 			if (acceptance) {
 				const relevantCheck = acceptance.checkingDefences.find((line) => capture?.branches.some((branch) => line.startsWith(`${branch.answer} `))) ?? acceptance.checkingDefences[0];
 				comparison = "prevented";
@@ -15172,6 +15367,15 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 				comparisonEvidence = `The same capture still wins material after ${bestSan}.`;
 			}
 		} else if (motif.id === "fork") {
+			const quietPawn = !immediateFork(step) && proveQuietPawnFork(step);
+			if (quietPawn) {
+				const other = proveQuietPawnFork(alternative);
+				return other && other.targets.join(",") === quietPawn.targets.join(",") && other.gain >= quietPawn.gain ? {
+					...motif,
+					comparison: "persists",
+					comparisonEvidence: `The same pawn fork remains available after ${bestSan}, with at least the same verified local material gain.`
+				} : motif;
+			}
 			const targets = winningTargets(alternative.after, alternative.move.to, alternative.before.turn);
 			if (targets.length < 2) {
 				comparison = "prevented";
@@ -15655,7 +15859,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 79;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 80;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

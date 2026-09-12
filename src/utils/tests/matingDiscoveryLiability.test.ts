@@ -103,7 +103,9 @@ test.skipIf(!process.env.TACTICAL_PRIVATE_THIRD_SAMPLE)(
         const sample = JSON.parse(readFileSync(process.env.TACTICAL_PRIVATE_THIRD_SAMPLE!, "utf8"));
         const row = sample.cases.find((r: { id: string }) => r.id === "private-easy:105");
         const result = classifyPositionTacticalMotifs({ fen: row.fen, pvUci: row.sourceUci });
-        expect(result.motifs).toEqual([]);
+        // The root preparation is now proved independently. The later
+        // intermediate discovery still remains one lesson, not two badges.
+        expect(result.motifs[0]).toMatchObject({ id: "forkPreparation", ply: 1 });
         expect(result.timeline?.filter((m) => m.ply === 5).map((m) => m.id)).toEqual([
             "intermezzo",
         ]);

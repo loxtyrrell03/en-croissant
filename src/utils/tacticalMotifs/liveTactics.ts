@@ -147,7 +147,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 84;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 85;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {

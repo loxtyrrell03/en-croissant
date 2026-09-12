@@ -433,6 +433,26 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             },
             ...[
                 {
+                    id: "constructed:quiet-pawn-fork-preparation",
+                    fen: "5bk1/5ppp/8/8/3pr3/8/2RRN3/7K b - - 0 1",
+                    pvUci: ["e4e2", "d2e2", "d4d3"],
+                },
+                {
+                    id: "constructed:quiet-pawn-fork-checking-escape",
+                    fen: "6k1/5ppp/8/8/3pr3/8/2RRN3/7K b - - 0 1",
+                    pvUci: ["e4e2", "d2e2", "d4d3"],
+                },
+                {
+                    id: "constructed:quiet-pawn-fork-extra-defender",
+                    fen: "5bk1/5ppp/6B1/8/3pr3/8/2RRN3/7K b - - 0 1",
+                    pvUci: ["e4e2", "d2e2", "d4d3"],
+                },
+            ].map(({ id, ...input }) => ({
+                id,
+                input: { ...input, engineName: "Constructed", depth: 16 },
+            })),
+            ...[
+                {
                     id: "constructed:accepted-fork-sacrifice",
                     fen: "8/8/6k1/5qpr/4N3/8/8/K6Q w - - 0 1",
                     offer: "h1h5",
@@ -649,7 +669,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(132);
+        expect(report).toHaveLength(135);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
