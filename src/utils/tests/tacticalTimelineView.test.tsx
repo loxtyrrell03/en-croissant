@@ -6,6 +6,34 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("king interference stays primary while the exchange and pawn payoff have separate plies", () => {
+  const fen = "6R1/5k2/8/5r1p/5p1K/5P2/6P1/8 w - - 10 50";
+  const pvUci = ["g8g5", "f5g5", "h4g5", "h5h4", "g5f4"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, pvUci).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  expect(container.querySelector("details")?.hasAttribute("open")).toBe(false);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain(
+    "making the king's capture safe",
+  );
+  for (const ply of [2, 3]) {
+    expect(container.querySelector(`[data-tactical-ply="${ply}"]`)?.textContent).not.toMatch(
+      /Hanging Piece|Winning Recapture|Interference Payoff/,
+    );
+  }
+  expect(container.querySelector('[data-tactical-ply="5"]')?.textContent).toContain(
+    "Interference Payoff",
+  );
+  expect(container.querySelector('[data-tactical-ply="5"]')?.textContent).toContain("Kxf4");
+});
+
 test("the defensive interference is rendered at the king move, not as a Black tactical win", () => {
   const fixture = JSON.parse(
     readFileSync("benchmarks/tactical-relevance/rare-theme-development.json", "utf8"),

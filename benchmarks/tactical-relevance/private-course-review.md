@@ -1,6 +1,16 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 81 / live pipeline 86
+## Current classifier: adapter 82 / live pipeline 87
+
+The [rare-theme follow-up](rare-theme-review.md) recovers king-safe interference in the real Rg5 rook ending, including both directions of rook exchange and the pawn won at its actual ply. The proof covers every legal defence under 4,096 visits and at most two further attacking replies; only the same guard's targets and concrete exchange/retention can fund the gain. Pawn captures on other or unsafe branches receive no borrowed payoff. Missed-opportunity text and root board arrows share the certificate. This extends interference to king legality and pawn targets without lowering the existing general material thresholds.
+
+Forty fresh depth-16 searches are retained in [the public engine receipt](king-interference-stockfish-18.json), including all 28 selected real branch/leaf answers and a failed initial bishop-ending evaluation expectation. The constructed bishop interference wins a pawn but remains approximately drawn against the best defence: a local material gain is not a winning game evaluation. The real root is +401/+337 cp White, separate from its 100 cp local material bound. Nineteen other full rare-sample results, all 180 exact-input private source/live results and 32 frozen priorities remain unchanged. Authoritative private outputs are adapter82-exact-replay-certified.json and rare-theme-adapter82-certified.json. The positional compensating-exchange false positive and genuine zugzwang/quiet/rare gaps remain open.
+
+Verification: 1,352 selected tests pass with 75 conditional skips, including 20 new source regressions and one rendered continuation regression. All 509 actual-controller production-worker inputs pass in eleven tests, including the rare sample and three new exchange/diagonal-guard/liability inputs. The [138-input public timing receipt](built-worker-adapter82.json) has median/p95/max 80/214/546 ms, startup max 30 ms and classification/transfer max 522 ms; it excludes engine/UI and the additional rare/private parity inputs. All 135 previous public worker headlines remain unchanged. The final artifact is liveTactics.worker-DfhpUe7U.js. Shared-review (39 modules), app (8,866 modules), three built-service tests and two dev-cache/recovery scenarios pass. Targeted lint is clean; whole-project type checking still reports the unrelated OTB number/bigint fixture error.
+
+The isolated cold HTTP first/next startup is 8,478/69 ms and classification/transfer is 8/130 ms; server startup is separately 16,330 ms. See private adapter82-cold-http-worker.json. The 20-second startup and 3-second classification deadlines are unchanged. This is not native WebView or physical UI verification. No app, native package or service was restarted/deployed, and paid inputs stay private.
+
+## Classifier adapter 81 / live pipeline 86
 
 The new [rare-theme real-game review](rare-theme-review.md) fixes a forced self-interference explanation and adds actual-ply mating king deflection while retaining the forced mate as primary. Both use independently checked legal defences under 4,096-visit caps; incomplete proofs abstain. A check which merely protects the mating piece cannot masquerade as king deflection. Root/secondary ownership, missed-opportunity review, board geometry and rendered continuation copy are covered.
 

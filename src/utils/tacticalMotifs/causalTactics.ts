@@ -7828,6 +7828,247 @@ export function proveMatingDeflection(
     return proof;
 }
 
+type KingInterferenceBranch = {
+    replyUci: string;
+    replySan: string;
+    answerUci: string;
+    answerSan: string;
+    gain: number;
+    continuation?: KingInterferenceBranch[];
+};
+
+type KingInterferenceProof = {
+    defender: Square;
+    target: Square;
+    capturer: Square;
+    gain: number;
+    branches: KingInterferenceBranch[];
+};
+
+const kingInterferenceCache = new Map<string, KingInterferenceProof | null>();
+
+/** A king cannot capture a guarded pawn at all: an illegal SEE sentinel is
+ * not an exchange loss. Positively establish that this exact guard makes the
+ * capture illegal, then cover every real reply. Exchanging guard and blocker
+ * in either direction may recover another target originally
+ * defended by the SAME guard. Only that connected exchange gets one extra
+ * capture round; unrelated gains and cooperative PVs cannot fund the offer. */
+export function proveKingCaptureInterference(
+    step: TacticalReplayStep,
+    nodeLimit = 4096,
+    onFailure?: (reason: string) => void,
+): KingInterferenceProof | null {
+    if (
+        !Number.isSafeInteger(nodeLimit) ||
+        nodeLimit <= 0 ||
+        step.move.promotion ||
+        step.before.board.get(step.move.to) ||
+        step.before.board.get(step.move.from)?.role === "king" ||
+        step.after.isEnd()
+    )
+        return null;
+    const key = `${makeFen(step.before.toSetup())}:${step.uci}`;
+    if (!onFailure && nodeLimit === 4096 && kingInterferenceCache.has(key))
+        return kingInterferenceCache.get(key)!;
+    const side = step.before.turn,
+        enemy = opposite(side),
+        king = step.after.board.kingOf(side),
+        budget = { nodes: nodeLimit };
+    if (king === undefined) return null;
+    const probe = withTurn(step.after, side);
+    const unblocked = probe.clone();
+    unblocked.board.take(step.move.to);
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--budget.nodes < 0) throw new Error("King interference proof exhausted");
+        const next = pos.clone();
+        next.play(move);
+        return next;
+    };
+    const mapTargets = (targets: Square[], move: NormalMove) =>
+        targets.map((square) => (square === move.from ? move.to : square));
+    let proof: KingInterferenceProof | null = null;
+    try {
+        for (const defender of step.before.board[enemy]) {
+            const guard = step.before.board.get(defender)!;
+            if (!["rook", "bishop", "queen"].includes(guard.role)) continue;
+            const guarded = [
+                ...attacks(guard, defender, step.before.board.occupied).intersect(
+                    step.before.board[enemy],
+                ),
+            ].filter((square) => step.before.board.get(square)!.role !== "king");
+            for (const target of guarded) {
+                const capture = { from: king, to: target };
+                if (
+                    !between(defender, target).has(step.move.to) ||
+                    attacks(guard, defender, step.after.board.occupied).has(target) ||
+                    step.before.isLegal(capture) ||
+                    !probe.isLegal(capture) ||
+                    unblocked.isLegal(capture)
+                )
+                    continue;
+                const withoutGuard = unblocked.clone();
+                withoutGuard.board.take(defender);
+                if (!withoutGuard.isLegal(capture)) continue;
+
+                const cover = (
+                    pos: Chess,
+                    targets: Square[],
+                    balance: number,
+                    allowGuardExchange: boolean,
+                    retainedPiece?: Square,
+                ): KingInterferenceBranch[] | null => {
+                    if (pos.isEnd()) return null;
+                    const branches: KingInterferenceBranch[] = [];
+                    for (const reply of recoveryMoves(pos, side)) {
+                        if (reply.promotion) return null;
+                        const next = visit(pos, reply);
+                        if (next.isEnd()) return null;
+                        const movedTargets = mapTargets(targets, reply);
+                        const nextBalance = balance - capturedValue(pos, reply);
+                        const takesBlocker =
+                            allowGuardExchange &&
+                            reply.from === defender &&
+                            reply.to === step.move.to &&
+                            capturedValue(pos, reply) > 0;
+                        const kingFrom = next.board.kingOf(side)!;
+                        let best: KingInterferenceBranch | null = null;
+                        for (const answer of recoveryMoves(next, side)) {
+                            if (answer.promotion) continue;
+                            const guardRecapture = takesBlocker && answer.to === reply.to;
+                            const capturesGuard =
+                                allowGuardExchange &&
+                                answer.from === step.move.to &&
+                                answer.to === (reply.from === defender ? reply.to : defender) &&
+                                capturedValue(next, answer) > 0;
+                            const kingCapture =
+                                answer.from === kingFrom &&
+                                (guardRecapture || movedTargets.includes(answer.to)) &&
+                                capturedValue(next, answer) > 0;
+                            // After actually taking the guard, a declined exchange
+                            // may retain earned material by saving that capturer.
+                            // A quiet move can never manufacture the pawn floor.
+                            const retention =
+                                retainedPiece !== undefined &&
+                                nextBalance >= 100 &&
+                                answer.from === retainedPiece &&
+                                !capturedValue(next, answer) &&
+                                !next.isCheck();
+                            if (!kingCapture && !capturesGuard && !retention) continue;
+                            const gain = participantCaptureGain(
+                                next,
+                                answer,
+                                [...next.board[side], answer.to],
+                                budget,
+                            );
+                            if (
+                                gain !== null &&
+                                nextBalance + gain >= 100 &&
+                                noImmediateTerminalRefutation(next, answer, budget)
+                            ) {
+                                best = {
+                                    replyUci: makeUci(reply),
+                                    replySan: makeSan(pos, reply),
+                                    answerUci: makeUci(answer),
+                                    answerSan: makeSan(next, answer),
+                                    gain: nextBalance + gain,
+                                };
+                                break;
+                            }
+                            if (!(kingCapture && guardRecapture) && !capturesGuard) continue;
+                            const leaf = visit(next, answer);
+                            const continuation = cover(
+                                leaf,
+                                mapTargets(guarded, reply),
+                                nextBalance + capturedValue(next, answer),
+                                false,
+                                capturesGuard ? answer.to : undefined,
+                            );
+                            if (continuation) {
+                                best = {
+                                    replyUci: makeUci(reply),
+                                    replySan: makeSan(pos, reply),
+                                    answerUci: makeUci(answer),
+                                    answerSan: makeSan(next, answer),
+                                    gain: Math.min(...continuation.map((branch) => branch.gain)),
+                                    continuation,
+                                };
+                                break;
+                            }
+                        }
+                        if (!best) {
+                            onFailure?.(
+                                `Unproved defence ${makeSan(pos, reply)} from ${makeFen(pos.toSetup())}`,
+                            );
+                            return null;
+                        }
+                        branches.push(best);
+                    }
+                    return branches.length ? branches : null;
+                };
+                const branches = cover(step.after, [target], step.capture, true);
+                if (!branches) continue;
+                proof = {
+                    defender,
+                    target,
+                    capturer: king,
+                    gain: Math.min(...branches.map((branch) => branch.gain)),
+                    branches,
+                };
+                break;
+            }
+            if (proof) break;
+        }
+    } catch (error) {
+        // Incomplete legal coverage is unknown, never success.
+        onFailure?.(error instanceof Error ? error.message : "Incomplete king interference proof");
+    }
+    if (nodeLimit === 4096) {
+        kingInterferenceCache.set(key, proof);
+        if (kingInterferenceCache.size > 128)
+            kingInterferenceCache.delete(kingInterferenceCache.keys().next().value!);
+    }
+    return proof;
+}
+
+/** Only an actual certified pawn capture gets this payoff. A root certificate
+ * does not paint a future pawn as already won, and a different PV branch must
+ * not borrow another branch's receipt. */
+export function kingInterferencePayoffEvidence(
+    steps: TacticalReplayStep[],
+    index: number,
+    source: TacticalMotifEvidence["source"],
+): TacticalMotifEvidence | null {
+    const step = steps[index];
+    if (!step || step.capture !== 100 || step.before.board.get(step.move.from)?.role !== "king")
+        return null;
+    for (const distance of [2, 4]) {
+        const start = index - distance;
+        if (start < 0) continue;
+        const proof = proveKingCaptureInterference(steps[start]);
+        if (!proof) continue;
+        let branch = proof.branches.find(
+            (entry) =>
+                entry.replyUci === steps[start + 1].uci && entry.answerUci === steps[start + 2].uci,
+        );
+        if (distance === 4)
+            branch = branch?.continuation?.find(
+                (entry) => entry.replyUci === steps[start + 3].uci && entry.answerUci === step.uci,
+            );
+        if (!branch || branch.continuation) continue;
+        return {
+            id: "hangingPiece",
+            label: "Interference Payoff",
+            source,
+            confidence: "high",
+            ply: index + 1,
+            moveUci: step.uci,
+            value: 100,
+            evidence: `${step.san} wins a pawn after ${steps[start].san} cut the defending ${steps[start].before.board.get(proof.defender)!.role}'s ray${distance === 4 ? " and the guard was exchanged" : ""}. This is the material payoff of the earlier interference, not a separate root tactic.`,
+        };
+    }
+    return null;
+}
+
 /** Cutting a defensive ray is a candidate, not proof. Removing only the
  * blocker is a protection probe (not a legal variation): the legal exchange
  * on the named target must improve. Then test EVERY real defence, including
@@ -7912,7 +8153,21 @@ function interferenceProof(step: TacticalReplayStep, source: TacticalMotifEviden
             return { motif, defender, target, capturer, attacksDefender };
         }
     }
-    return null;
+    const kingProof = proveKingCaptureInterference(step);
+    if (!kingProof) return null;
+    const guard = step.before.board.get(kingProof.defender)!;
+    const victim = step.before.board.get(kingProof.target)!;
+    const motif: TacticalMotifEvidence = {
+        id: "interference",
+        label: "Interference",
+        source,
+        confidence: "high",
+        ply: 1,
+        moveUci: step.uci,
+        value: kingProof.gain,
+        evidence: `${step.san} blocks the ${guard.role} on ${makeSquare(kingProof.defender)} from defending the ${victim.role} on ${makeSquare(kingProof.target)}, making the king's capture safe. Every legal reply loses material; exchanging the blocker still allows the king to win a target previously defended by that same ${guard.role}.`,
+    };
+    return { ...kingProof, motif, attacksDefender: false };
 }
 
 type SelfInterferenceProof = {

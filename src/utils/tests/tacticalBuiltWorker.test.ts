@@ -107,6 +107,33 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "rare:king-interference-exchange-payoff",
+                input: {
+                    fen: "6R1/5k2/8/5r1p/5p1K/5P2/6P1/8 w - - 10 50",
+                    pvUci: ["g8g5", "f5g5", "h4g5", "h5h4", "g5f4"],
+                    engineName: "Lichess source branch",
+                    depth: 16,
+                },
+            },
+            {
+                id: "constructed:knight-interferes-bishop-guard",
+                input: {
+                    fen: "k7/8/5bN1/8/3pK3/3P4/8/8 w - - 0 1",
+                    pvUci: ["g6e5", "f6e5", "e4e5", "a8b7", "e5d4"],
+                    engineName: "Constructed material gain, not game result",
+                    depth: 16,
+                },
+            },
+            {
+                id: "constructed:interference-off-square-knight-liability",
+                input: {
+                    fen: "6R1/5k2/N7/5r1p/5p1K/5P2/6P1/8 w - - 10 50",
+                    pvUci: ["g8g5", "f5f6", "h4h5", "f6a6"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:mating-rook-liability-discovery",
                 input: {
                     fen: "3r2k1/5rb1/1p3n2/3P4/1B1N1R2/8/6PP/5RK1 b - - 0 1",
@@ -669,7 +696,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(135);
+        expect(report).toHaveLength(138);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

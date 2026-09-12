@@ -1,4 +1,16 @@
-# Rare-theme real-game review — adapter 81 / live pipeline 86
+# Rare-theme real-game review — adapter 82 / live pipeline 87
+
+## King-safe interference follow-up
+
+The previously missing **w8wvY** rook ending now leads with Interference. Rg5 cuts Rf5's defence of h5, making Kxh5 legal. The important move-order exception is ...Kf6: immediate Kxh5 loses the rook (fresh Stockfish -1111 cp White), whereas Rxf5+ followed by Kxh5 after the recapture preserves the gain. Conversely, ...Rxg5 Kxg5 also wins a pawn; after ...h4 the certified capture is Kxf4, another pawn originally defended by the same rook. All twelve root replies and sixteen further replies after the relevant exchanges have concrete checked answers.
+
+The new proof has a shared 4,096-visit cap and at most two attacking replies after the root. It positively verifies the king-safety change by removing the exact guard in a protection probe; an illegal exchange sentinel is never treated as profit. Only the original guard, its originally defended targets and the actual blocker exchange can fund the gain. A declined exchange may retain material already captured by saving that capturer. Leaves debit all friendly-piece capture liabilities and reject immediate mate/promotion refutations. This remains a local material proof, not a complete endgame solver.
+
+The root lesson, missed opportunity and board arrows agree. The pawn capture gets **Interference Payoff** only at its actual, certificate-matching ply; exchanging the rooks is not labelled a free rook. A different or unsafe continuation cannot borrow that payoff. Nineteen other full rare-sample results and all 180 stored Woodpecker source/live results remain unchanged ignoring version, as do the 32 frozen priorities. Empty or unchanged results are not accuracy successes.
+
+The [40-search follow-up receipt](king-interference-stockfish-18.json) includes 28 selected real branch/leaf answers, both root searches (+401/+337 cp White), constructed controls, and the two searches completed before a deliberately retained failed expectation. A knight blocking a bishop's ray also wins a pawn locally, but its full ending evaluates only +8 cp: the earlier expectation that a pawn gain implied a winning evaluation was wrong. Accepting that knight gives a winning pawn ending instead (+526 cp after Kxe5). Likewise, the extra-Na6 control loses a knight to ...Rxa6 after taking h5, invalidating this local pawn-gain certificate even though White's overall position remains winning (+465 cp). These controls distinguish a local tactical mechanism from the result of the whole game.
+
+Earlier proposed controls were corrected before certification: ...Kg6 after Kxg5 is illegal because the kings would be adjacent, and ...Rxf3 from f6 is blocked by the pawn on f4. The actual h4 branch and off-square Na6 liability replace those hypotheses. The public receipt preserves the contrary engine evidence rather than counting rejected expectations as classification improvements.
 
 ## Scope and method
 
@@ -21,7 +33,7 @@ Both helpers have 4,096-visit limits and abstain on incomplete proofs. Material 
 | zYjb5 | Forced interference is the useful main cause; defensive self-interference and rook capture occur later. Corrected. |
 | dkEzJ | c3 cuts the queen's defence of the rook while attacking the queen. Existing Interference is appropriate. |
 | UiHeK | The checking attack has both material and mating branches. Keep Forcing Attack primary and the actual Rxh2+ skewer at ply 3; source interference/deflection tags alone cannot replace it. |
-| w8wvY | Rg5 interferes with the rook's defence of h5 and wins a pawn. Root is still unproved; rook exchange and pawn-ending continuations need coverage. |
+| w8wvY | Rg5 interferes with the rook's defence of h5 and wins a pawn. Corrected in adapter 82, including both rook-exchange directions and the actual-ply pawn payoff. |
 | IKbcw | Kb2 attacks the pinned knight. Passing does not reverse the winning side under the unrestricted search: White has Ba5 (+434 cp), preserving the pin and waiting. Premature Bxc3 instead evaluates -20 cp. Thus that restricted capture alone is not evidence that the position is a draw with the other side to move. Pin remains the useful immediate lesson; do not certify a supplied zugzwang tag from one losing or drawing alternative. |
 | gnlcF | Ra3 wins according to the engine, but the waiting-move/zugzwang explanation remains unproved. A later rook check cannot explain the first move by itself. |
 | e9KxD | Genuine missing endgame explanation: after the exchange and ...Ke6, White to move evaluates -655 cp; the identical board with Black to move evaluates +7 cp Black. This supports a reached zugzwang candidate, not a runtime all-moves proof or a root ...Kf6 zugzwang badge. |
@@ -39,10 +51,10 @@ Both helpers have 4,096-visit limits and abstain on incomplete proofs. Material 
 | 4Ds65 | ...Bg4 and ...Rae8 are a quiet pin/preparation gap, not a verified free bishop from the passive source reply alone. |
 | 4RNK5 | With engine evaluation, the existing conditional Quiet Preparation is useful; the source-only scan abstains. The later rook offer and skewer must retain conditional/actual-ply wording. |
 
-Among these 20 source inputs, one primary changes (zYjb5) and one other continuation gains a mechanism (om0GQ). The remaining eighteen full classifications are unchanged ignoring version. This is not twenty correct answers.
+Relative to adapter 80, adapter 81 changed one primary (zYjb5) and added a mechanism to one other continuation (om0GQ). Adapter 82 additionally recovers w8wvY, leaving the other nineteen adapter-81 full results unchanged. This is not twenty correct answers.
 
 ## Broader regression and delivery scope
 
 Exact-input replays of seven private Woodpecker reports cover 180 positions, including the new 21-position positional quarter sample. Their full source and live results are unchanged ignoring version; those were reclassifications of stored engine lines, not 180 new engine searches. The 32 frozen mistake-priority judgements are unchanged. The new quarter sample's compensating-exchange false positive remains open; private data and detailed receipts stay outside Git.
 
-Final verification and delivery status are recorded in [the current course audit](private-course-review.md). The [135-input production-worker timing receipt](built-worker-adapter81.json) exposes the measured startup and classification times; the additional rare/private inputs are deadline/parity checks, not part of these percentiles. No native app, package or service was restarted/deployed, and source/render/controller tests are not physical WebView proof.
+Final verification and delivery status are recorded in [the current course audit](private-course-review.md). The [138-input production-worker timing receipt](built-worker-adapter82.json) exposes the measured startup and classification times; the additional rare/private inputs are deadline/parity checks, not part of these percentiles. No native app, package or service was restarted/deployed, and source/render/controller tests are not physical WebView proof.

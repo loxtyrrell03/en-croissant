@@ -27,6 +27,7 @@ import {
     replayTacticalLine,
     selfInterferenceEvidence,
     matingKingDeflectionEvidence,
+    kingInterferencePayoffEvidence,
 } from "./causalTactics";
 import type {
     MistakeReviewMotifClassification,
@@ -111,7 +112,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 81;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 82;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -1008,6 +1009,13 @@ export function buildTacticalTimeline(
             evidence.set(`${index + 1}:deflection`, {
                 ...matingDeflection,
                 ply: index + 1,
+                actor: step.before.turn,
+                relevance: "secondary",
+            });
+        const interferencePayoff = kingInterferencePayoffEvidence(replay, index, source);
+        if (interferencePayoff)
+            evidence.set(`${index + 1}:hangingPiece`, {
+                ...interferencePayoff,
                 actor: step.before.turn,
                 relevance: "secondary",
             });

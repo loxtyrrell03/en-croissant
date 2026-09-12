@@ -1,0 +1,3065 @@
+{
+  "scope": "CC0 Lichess w8wvY and constructed decision/defence audit. Local material bounds are not full engine evaluations or game results. No accuracy estimate.",
+  "engine": {
+    "name": "Stockfish 18",
+    "depth": 16,
+    "threads": 1,
+    "hashMb": 32,
+    "scorePerspective": "side to move"
+  },
+  "sourceFixtureSha256": "c80356923da60cce5b48b37046a878290f36997862f921b944015a3cf69ccc88",
+  "completedSearches": 40,
+  "proof": {
+    "defender": 37,
+    "target": 39,
+    "capturer": 31,
+    "gain": 100,
+    "branches": [
+      {
+        "replyUci": "f7e8",
+        "replySan": "Ke8",
+        "answerUci": "g5f5",
+        "answerSan": "Rxf5",
+        "gain": 500
+      },
+      {
+        "replyUci": "f7f8",
+        "replySan": "Kf8",
+        "answerUci": "g5f5",
+        "answerSan": "Rxf5+",
+        "gain": 500
+      },
+      {
+        "replyUci": "f7e7",
+        "replySan": "Ke7",
+        "answerUci": "g5f5",
+        "answerSan": "Rxf5",
+        "gain": 500
+      },
+      {
+        "replyUci": "f7e6",
+        "replySan": "Ke6",
+        "answerUci": "g5f5",
+        "answerSan": "Rxf5",
+        "gain": 100,
+        "continuation": [
+          {
+            "replyUci": "e6d7",
+            "replySan": "Kd7",
+            "answerUci": "f5f8",
+            "answerSan": "Rf8",
+            "gain": 500
+          },
+          {
+            "replyUci": "e6e7",
+            "replySan": "Ke7",
+            "answerUci": "f5a5",
+            "answerSan": "Ra5",
+            "gain": 500
+          },
+          {
+            "replyUci": "e6d6",
+            "replySan": "Kd6",
+            "answerUci": "f5f8",
+            "answerSan": "Rf8",
+            "gain": 500
+          },
+          {
+            "replyUci": "e6f5",
+            "replySan": "Kxf5",
+            "answerUci": "h4h5",
+            "answerSan": "Kxh5",
+            "gain": 100
+          }
+        ]
+      },
+      {
+        "replyUci": "f7f6",
+        "replySan": "Kf6",
+        "answerUci": "g5f5",
+        "answerSan": "Rxf5+",
+        "gain": 100,
+        "continuation": [
+          {
+            "replyUci": "f6e7",
+            "replySan": "Ke7",
+            "answerUci": "f5a5",
+            "answerSan": "Ra5",
+            "gain": 500
+          },
+          {
+            "replyUci": "f6g7",
+            "replySan": "Kg7",
+            "answerUci": "f5a5",
+            "answerSan": "Ra5",
+            "gain": 500
+          },
+          {
+            "replyUci": "f6e6",
+            "replySan": "Ke6",
+            "answerUci": "f5f8",
+            "answerSan": "Rf8",
+            "gain": 500
+          },
+          {
+            "replyUci": "f6g6",
+            "replySan": "Kg6",
+            "answerUci": "f5f8",
+            "answerSan": "Rf8",
+            "gain": 500
+          },
+          {
+            "replyUci": "f6f5",
+            "replySan": "Kxf5",
+            "answerUci": "h4h5",
+            "answerSan": "Kxh5",
+            "gain": 100
+          }
+        ]
+      },
+      {
+        "replyUci": "f5f6",
+        "replySan": "Rf6",
+        "answerUci": "h4h5",
+        "answerSan": "Kxh5",
+        "gain": 100
+      },
+      {
+        "replyUci": "f5a5",
+        "replySan": "Ra5",
+        "answerUci": "g5a5",
+        "answerSan": "Rxa5",
+        "gain": 500
+      },
+      {
+        "replyUci": "f5b5",
+        "replySan": "Rb5",
+        "answerUci": "g5b5",
+        "answerSan": "Rxb5",
+        "gain": 500
+      },
+      {
+        "replyUci": "f5c5",
+        "replySan": "Rc5",
+        "answerUci": "g5c5",
+        "answerSan": "Rxc5",
+        "gain": 500
+      },
+      {
+        "replyUci": "f5d5",
+        "replySan": "Rd5",
+        "answerUci": "g5d5",
+        "answerSan": "Rxd5",
+        "gain": 500
+      },
+      {
+        "replyUci": "f5e5",
+        "replySan": "Re5",
+        "answerUci": "g5e5",
+        "answerSan": "Rxe5",
+        "gain": 500
+      },
+      {
+        "replyUci": "f5g5",
+        "replySan": "Rxg5",
+        "answerUci": "h4g5",
+        "answerSan": "Kxg5",
+        "gain": 100,
+        "continuation": [
+          {
+            "replyUci": "f7e8",
+            "replySan": "Ke8",
+            "answerUci": "g5h5",
+            "answerSan": "Kxh5",
+            "gain": 100
+          },
+          {
+            "replyUci": "f7f8",
+            "replySan": "Kf8",
+            "answerUci": "g5h5",
+            "answerSan": "Kxh5",
+            "gain": 100
+          },
+          {
+            "replyUci": "f7g8",
+            "replySan": "Kg8",
+            "answerUci": "g5h5",
+            "answerSan": "Kxh5",
+            "gain": 100
+          },
+          {
+            "replyUci": "f7e7",
+            "replySan": "Ke7",
+            "answerUci": "g5h5",
+            "answerSan": "Kxh5",
+            "gain": 100
+          },
+          {
+            "replyUci": "f7g7",
+            "replySan": "Kg7",
+            "answerUci": "g5h5",
+            "answerSan": "Kxh5",
+            "gain": 100
+          },
+          {
+            "replyUci": "f7e6",
+            "replySan": "Ke6",
+            "answerUci": "g5h5",
+            "answerSan": "Kxh5",
+            "gain": 100
+          },
+          {
+            "replyUci": "h5h4",
+            "replySan": "h4",
+            "answerUci": "g5f4",
+            "answerSan": "Kxf4",
+            "gain": 100
+          }
+        ]
+      }
+    ]
+  },
+  "runs": [
+    {
+      "status": "completed",
+      "requested": 33,
+      "completed": 33,
+      "searches": [
+        {
+          "id": "king-interference:root-best",
+          "fen": "6R1/5k2/8/5r1p/5p1K/5P2/6P1/8 w - - 10 50",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g8g5",
+                "f5f6",
+                "h4h5",
+                "f7e7",
+                "g5e5",
+                "e7d6",
+                "e5e4",
+                "d6d5",
+                "h5g4",
+                "f6g6",
+                "g4f4",
+                "g6g2",
+                "f4f5",
+                "g2b2",
+                "e4e8",
+                "b2b6"
+              ],
+              "pvSan": [
+                "Rg5",
+                "Rf6",
+                "Kxh5",
+                "Ke7",
+                "Re5+",
+                "Kd6",
+                "Re4",
+                "Kd5",
+                "Kg4",
+                "Rg6+",
+                "Kxf4",
+                "Rxg2",
+                "Kf5",
+                "Rb2",
+                "Re8",
+                "Rb6"
+              ],
+              "cp": 401,
+              "mate": null
+            },
+            {
+              "depth": 16,
+              "multipv": 2,
+              "pvUci": [
+                "g2g4",
+                "f5a5",
+                "g8c8",
+                "h5g4",
+                "c8c7",
+                "f7g6",
+                "h4g4"
+              ],
+              "pvSan": [
+                "g4",
+                "Ra5",
+                "Rc8",
+                "hxg4",
+                "Rc7+",
+                "Kg6",
+                "Kxg4"
+              ],
+              "cp": 13,
+              "mate": null
+            },
+            {
+              "depth": 16,
+              "multipv": 3,
+              "pvUci": [
+                "g8c8",
+                "f7g7",
+                "g2g4",
+                "f4g3",
+                "h4g3",
+                "f5g5",
+                "g3h3",
+                "g5f5"
+              ],
+              "pvSan": [
+                "Rc8",
+                "Kg7",
+                "g4",
+                "fxg3",
+                "Kxg3",
+                "Rg5+",
+                "Kh3",
+                "Rf5"
+              ],
+              "cp": 10,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [
+              {
+                "id": "interference",
+                "label": "Interference",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "g8g5",
+                "value": 100,
+                "evidence": "Rg5 blocks the rook on f5 from defending the pawn on h5, making the king's capture safe. Every legal reply loses material; exchanging the blocker still allows the king to win a target previously defended by that same rook.",
+                "relevance": "primary"
+              }
+            ],
+            "timeline": [
+              {
+                "id": "interference",
+                "label": "Interference",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "g8g5",
+                "value": 100,
+                "evidence": "Rg5 blocks the rook on f5 from defending the pawn on h5, making the king's capture safe. Every legal reply loses material; exchanging the blocker still allows the king to win a target previously defended by that same rook.",
+                "relevance": "primary",
+                "actor": "white"
+              },
+              {
+                "id": "hangingPiece",
+                "label": "Interference Payoff",
+                "source": "available",
+                "confidence": "high",
+                "ply": 3,
+                "moveUci": "h4h5",
+                "value": 100,
+                "evidence": "Kxh5 wins a pawn after Rg5 cut the defending rook's ray. This is the material payoff of the earlier interference, not a separate root tactic.",
+                "actor": "white",
+                "relevance": "secondary"
+              }
+            ],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:root-restricted",
+          "fen": "6R1/5k2/8/5r1p/5p1K/5P2/6P1/8 w - - 10 50",
+          "searchMove": "g8g5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g8g5",
+                "f5f6",
+                "h4h5",
+                "f7e7",
+                "g5e5",
+                "e7d6",
+                "e5e8",
+                "d6d5",
+                "h5g5",
+                "f6f7",
+                "e8e4",
+                "f7g7",
+                "g5f4",
+                "g7g2",
+                "f4f5",
+                "g2g8",
+                "e4e6",
+                "g8h8",
+                "e6g6",
+                "h8h5",
+                "f5g4",
+                "h5h2",
+                "f3f4",
+                "h2h1",
+                "g4g5",
+                "d5e4",
+                "g6e6",
+                "e4f3"
+              ],
+              "pvSan": [
+                "Rg5",
+                "Rf6",
+                "Kxh5",
+                "Ke7",
+                "Re5+",
+                "Kd6",
+                "Re8",
+                "Kd5",
+                "Kg5",
+                "Rf7",
+                "Re4",
+                "Rg7+",
+                "Kxf4",
+                "Rxg2",
+                "Kf5",
+                "Rg8",
+                "Re6",
+                "Rh8",
+                "Rg6",
+                "Rh5+",
+                "Kg4",
+                "Rh2",
+                "f4",
+                "Rh1",
+                "Kg5",
+                "Ke4",
+                "Re6+",
+                "Kf3"
+              ],
+              "cp": 337,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [
+              {
+                "id": "interference",
+                "label": "Interference",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "g8g5",
+                "value": 100,
+                "evidence": "Rg5 blocks the rook on f5 from defending the pawn on h5, making the king's capture safe. Every legal reply loses material; exchanging the blocker still allows the king to win a target previously defended by that same rook.",
+                "relevance": "primary"
+              }
+            ],
+            "timeline": [
+              {
+                "id": "interference",
+                "label": "Interference",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "g8g5",
+                "value": 100,
+                "evidence": "Rg5 blocks the rook on f5 from defending the pawn on h5, making the king's capture safe. Every legal reply loses material; exchanging the blocker still allows the king to win a target previously defended by that same rook.",
+                "relevance": "primary",
+                "actor": "white"
+              },
+              {
+                "id": "hangingPiece",
+                "label": "Interference Payoff",
+                "source": "available",
+                "confidence": "high",
+                "ply": 3,
+                "moveUci": "h4h5",
+                "value": 100,
+                "evidence": "Kxh5 wins a pawn after Rg5 cut the defending rook's ray. This is the material payoff of the earlier interference, not a separate root tactic.",
+                "actor": "white",
+                "relevance": "secondary"
+              }
+            ],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:branch-1:Ke8-Rxf5",
+          "fen": "4k3/8/8/5rRp/5p1K/5P2/6P1/8 w - - 12 51",
+          "moves": [
+            "g8g5",
+            "f7e8"
+          ],
+          "searchMove": "g5f5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5f5",
+                "e8d7",
+                "f5f6",
+                "d7c7",
+                "h4h5",
+                "c7b7",
+                "f6f4",
+                "b7b6",
+                "g2g3",
+                "b6a7"
+              ],
+              "pvSan": [
+                "Rxf5",
+                "Kd7",
+                "Rf6",
+                "Kc7",
+                "Kxh5",
+                "Kb7",
+                "Rxf4",
+                "Kb6",
+                "g3",
+                "Ka7"
+              ],
+              "cp": 708,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "g5f5 wins the loose rook on f5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "g5f5",
+                "relevance": "primary",
+                "value": 500
+              }
+            ],
+            "timeline": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "g5f5 wins the loose rook on f5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "g5f5",
+                "relevance": "primary",
+                "value": 500,
+                "actor": "white"
+              }
+            ],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:branch-2:Kf8-Rxf5+",
+          "fen": "5k2/8/8/5rRp/5p1K/5P2/6P1/8 w - - 12 51",
+          "moves": [
+            "g8g5",
+            "f7f8"
+          ],
+          "searchMove": "g5f5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5f5",
+                "f8e7",
+                "f5f4",
+                "e7d6",
+                "h4h5",
+                "d6c5",
+                "f4a4",
+                "c5b6",
+                "h5g5",
+                "b6b5",
+                "f3f4",
+                "b5b6",
+                "g2g3",
+                "b6b5",
+                "a4a8",
+                "b5c4",
+                "a8c8",
+                "c4d4"
+              ],
+              "pvSan": [
+                "Rxf5+",
+                "Ke7",
+                "Rxf4",
+                "Kd6",
+                "Kxh5",
+                "Kc5",
+                "Ra4",
+                "Kb6",
+                "Kg5",
+                "Kb5",
+                "f4",
+                "Kb6",
+                "g3",
+                "Kb5",
+                "Ra8",
+                "Kc4",
+                "Rc8+",
+                "Kd4"
+              ],
+              "cp": 707,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [
+              {
+                "id": "intermezzo",
+                "label": "Intermediate Check",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "g5f5",
+                "value": 600,
+                "evidence": "Rxf5+ takes the rook with check before Kxh5. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Kxh5 first allows Rf6, preventing an immediate profitable capture of that rook. The move order matters, not just the two captures.",
+                "relevance": "primary"
+              }
+            ],
+            "timeline": [
+              {
+                "id": "intermezzo",
+                "label": "Intermediate Check",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "g5f5",
+                "value": 600,
+                "evidence": "Rxf5+ takes the rook with check before Kxh5. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Kxh5 first allows Rf6, preventing an immediate profitable capture of that rook. The move order matters, not just the two captures.",
+                "relevance": "primary",
+                "actor": "white"
+              }
+            ],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:branch-3:Ke7-Rxf5",
+          "fen": "8/4k3/8/5rRp/5p1K/5P2/6P1/8 w - - 12 51",
+          "moves": [
+            "g8g5",
+            "f7e7"
+          ],
+          "searchMove": "g5f5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5f5",
+                "e7e6",
+                "f5f4",
+                "e6e5",
+                "f4c4",
+                "e5f5",
+                "h4h5",
+                "f5f6",
+                "c4f4",
+                "f6g7",
+                "h5g5",
+                "g7g8",
+                "f4c4",
+                "g8f7",
+                "g2g3",
+                "f7g7",
+                "f3f4",
+                "g7h7"
+              ],
+              "pvSan": [
+                "Rxf5",
+                "Ke6",
+                "Rxf4",
+                "Ke5",
+                "Rc4",
+                "Kf5",
+                "Kxh5",
+                "Kf6",
+                "Rf4+",
+                "Kg7",
+                "Kg5",
+                "Kg8",
+                "Rc4",
+                "Kf7",
+                "g3",
+                "Kg7",
+                "f4",
+                "Kh7"
+              ],
+              "cp": 714,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "g5f5 wins the loose rook on f5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "g5f5",
+                "relevance": "primary",
+                "value": 500
+              }
+            ],
+            "timeline": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "g5f5 wins the loose rook on f5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "g5f5",
+                "relevance": "primary",
+                "value": 500,
+                "actor": "white"
+              }
+            ],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:branch-4:Ke6-Rxf5",
+          "fen": "8/8/4k3/5rRp/5p1K/5P2/6P1/8 w - - 12 51",
+          "moves": [
+            "g8g5",
+            "f7e6"
+          ],
+          "searchMove": "g5f5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5f5",
+                "e6d6",
+                "h4h5",
+                "d6d7",
+                "h5g4",
+                "d7c6",
+                "g4g5",
+                "c6b6",
+                "f5f8",
+                "b6a5",
+                "f8e8",
+                "a5b6",
+                "e8e6",
+                "b6a5"
+              ],
+              "pvSan": [
+                "Rxf5",
+                "Kd6",
+                "Kxh5",
+                "Kd7",
+                "Kg4",
+                "Kc6",
+                "Kg5",
+                "Kb6",
+                "Rf8",
+                "Ka5",
+                "Re8",
+                "Kb6",
+                "Re6+",
+                "Ka5"
+              ],
+              "cp": 702,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:leaf-5:Ke6-Rxf5-Kd7-Rf8",
+          "fen": "8/3k4/8/5R1p/5p1K/5P2/6P1/8 w - - 1 52",
+          "moves": [
+            "g8g5",
+            "f7e6",
+            "g5f5",
+            "e6d7"
+          ],
+          "searchMove": "f5f8",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "f5f8",
+                "d7e7",
+                "f8f4",
+                "e7d6",
+                "h4h5",
+                "d6c6",
+                "f4c4",
+                "c6b5",
+                "h5g5",
+                "b5a5",
+                "c4c8"
+              ],
+              "pvSan": [
+                "Rf8",
+                "Ke7",
+                "Rxf4",
+                "Kd6",
+                "Kxh5",
+                "Kc6",
+                "Rc4+",
+                "Kb5",
+                "Kg5",
+                "Ka5",
+                "Rc8"
+              ],
+              "cp": 715,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:leaf-6:Ke6-Rxf5-Ke7-Ra5",
+          "fen": "8/4k3/8/5R1p/5p1K/5P2/6P1/8 w - - 1 52",
+          "moves": [
+            "g8g5",
+            "f7e6",
+            "g5f5",
+            "e6e7"
+          ],
+          "searchMove": "f5a5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "f5a5",
+                "e7d7",
+                "h4h5",
+                "d7e6",
+                "h5g5",
+                "e6d6",
+                "g5f4",
+                "d6c7"
+              ],
+              "pvSan": [
+                "Ra5",
+                "Kd7",
+                "Kxh5",
+                "Ke6",
+                "Kg5",
+                "Kd6",
+                "Kxf4",
+                "Kc7"
+              ],
+              "cp": 666,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:leaf-7:Ke6-Rxf5-Kd6-Rf8",
+          "fen": "8/8/3k4/5R1p/5p1K/5P2/6P1/8 w - - 1 52",
+          "moves": [
+            "g8g5",
+            "f7e6",
+            "g5f5",
+            "e6d6"
+          ],
+          "searchMove": "f5f8",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "f5f8",
+                "d6e5",
+                "h4h5",
+                "e5d4",
+                "f8e8",
+                "d4d5",
+                "h5g4",
+                "d5d4",
+                "g4f4",
+                "d4d3"
+              ],
+              "pvSan": [
+                "Rf8",
+                "Ke5",
+                "Kxh5",
+                "Kd4",
+                "Re8",
+                "Kd5",
+                "Kg4",
+                "Kd4",
+                "Kxf4",
+                "Kd3"
+              ],
+              "cp": 701,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:leaf-8:Ke6-Rxf5-Kxf5-Kxh5",
+          "fen": "8/8/8/5k1p/5p1K/5P2/6P1/8 w - - 0 52",
+          "moves": [
+            "g8g5",
+            "f7e6",
+            "g5f5",
+            "e6f5"
+          ],
+          "searchMove": "h4h5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "h4h5",
+                "f5f6",
+                "h5g4",
+                "f6e5",
+                "g4g5",
+                "e5d4",
+                "g5f4",
+                "d4d5",
+                "g2g4",
+                "d5d4",
+                "g4g5",
+                "d4d3",
+                "g5g6",
+                "d3d4",
+                "g6g7",
+                "d4c5",
+                "f4e4"
+              ],
+              "pvSan": [
+                "Kxh5",
+                "Kf6",
+                "Kg4",
+                "Ke5",
+                "Kg5",
+                "Kd4",
+                "Kxf4",
+                "Kd5",
+                "g4",
+                "Kd4",
+                "g5",
+                "Kd3",
+                "g6",
+                "Kd4",
+                "g7",
+                "Kc5",
+                "Ke4"
+              ],
+              "cp": 1234,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:branch-9:Kf6-Rxf5+",
+          "fen": "8/8/5k2/5rRp/5p1K/5P2/6P1/8 w - - 12 51",
+          "moves": [
+            "g8g5",
+            "f7f6"
+          ],
+          "searchMove": "g5f5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5f5",
+                "f6g6",
+                "f5b5",
+                "g6h6",
+                "b5b6",
+                "h6g7",
+                "h4h5",
+                "g7h8",
+                "h5g5",
+                "h8g7",
+                "b6b1",
+                "g7g8",
+                "b1b8",
+                "g8h7"
+              ],
+              "pvSan": [
+                "Rxf5+",
+                "Kg6",
+                "Rb5",
+                "Kh6",
+                "Rb6+",
+                "Kg7",
+                "Kxh5",
+                "Kh8",
+                "Kg5",
+                "Kg7",
+                "Rb1",
+                "Kg8",
+                "Rb8+",
+                "Kh7"
+              ],
+              "cp": 696,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:leaf-10:Kf6-Rxf5+-Ke7-Ra5",
+          "fen": "8/4k3/8/5R1p/5p1K/5P2/6P1/8 w - - 1 52",
+          "moves": [
+            "g8g5",
+            "f7f6",
+            "g5f5",
+            "f6e7"
+          ],
+          "searchMove": "f5a5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "f5a5",
+                "e7d7",
+                "h4h5",
+                "d7e6",
+                "h5g5",
+                "e6d6",
+                "g5f4",
+                "d6c7"
+              ],
+              "pvSan": [
+                "Ra5",
+                "Kd7",
+                "Kxh5",
+                "Ke6",
+                "Kg5",
+                "Kd6",
+                "Kxf4",
+                "Kc7"
+              ],
+              "cp": 666,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:leaf-11:Kf6-Rxf5+-Kg7-Ra5",
+          "fen": "8/6k1/8/5R1p/5p1K/5P2/6P1/8 w - - 1 52",
+          "moves": [
+            "g8g5",
+            "f7f6",
+            "g5f5",
+            "f6g7"
+          ],
+          "searchMove": "f5a5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "f5a5",
+                "g7f6",
+                "h4h5",
+                "f6e6",
+                "h5g5",
+                "e6e7",
+                "g5f4",
+                "e7f6",
+                "a5a6",
+                "f6g7",
+                "f4g5",
+                "g7h8"
+              ],
+              "pvSan": [
+                "Ra5",
+                "Kf6",
+                "Kxh5",
+                "Ke6",
+                "Kg5",
+                "Ke7",
+                "Kxf4",
+                "Kf6",
+                "Ra6+",
+                "Kg7",
+                "Kg5",
+                "Kh8"
+              ],
+              "cp": 688,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:leaf-12:Kf6-Rxf5+-Ke6-Rf8",
+          "fen": "8/8/4k3/5R1p/5p1K/5P2/6P1/8 w - - 1 52",
+          "moves": [
+            "g8g5",
+            "f7f6",
+            "g5f5",
+            "f6e6"
+          ],
+          "searchMove": "f5f8",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "f5f8",
+                "e6e5",
+                "h4g5",
+                "e5d5",
+                "f8f4",
+                "d5e5",
+                "g5h5",
+                "e5f4",
+                "h5h4",
+                "f4e3",
+                "h4g4",
+                "e3d4"
+              ],
+              "pvSan": [
+                "Rf8",
+                "Ke5",
+                "Kg5",
+                "Kd5",
+                "Rxf4",
+                "Ke5",
+                "Kxh5",
+                "Kxf4",
+                "Kh4",
+                "Ke3",
+                "Kg4",
+                "Kd4"
+              ],
+              "cp": 695,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:leaf-13:Kf6-Rxf5+-Kg6-Rf8",
+          "fen": "8/8/6k1/5R1p/5p1K/5P2/6P1/8 w - - 1 52",
+          "moves": [
+            "g8g5",
+            "f7f6",
+            "g5f5",
+            "f6g6"
+          ],
+          "searchMove": "f5f8",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "f5f8",
+                "g6g7",
+                "f8f4",
+                "g7g6",
+                "g2g3",
+                "g6h6",
+                "f4f6",
+                "h6g7",
+                "h4g5",
+                "g7h8"
+              ],
+              "pvSan": [
+                "Rf8",
+                "Kg7",
+                "Rxf4",
+                "Kg6",
+                "g3",
+                "Kh6",
+                "Rf6+",
+                "Kg7",
+                "Kg5",
+                "Kh8"
+              ],
+              "cp": 709,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:leaf-14:Kf6-Rxf5+-Kxf5-Kxh5",
+          "fen": "8/8/8/5k1p/5p1K/5P2/6P1/8 w - - 0 52",
+          "moves": [
+            "g8g5",
+            "f7f6",
+            "g5f5",
+            "f6f5"
+          ],
+          "searchMove": "h4h5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "h4h5",
+                "f5f6",
+                "h5g4",
+                "f6e5",
+                "g4g5",
+                "e5d4",
+                "g5f4",
+                "d4d5",
+                "g2g4",
+                "d5d4",
+                "g4g5",
+                "d4d3",
+                "g5g6",
+                "d3d4",
+                "g6g7",
+                "d4c5",
+                "f4e4"
+              ],
+              "pvSan": [
+                "Kxh5",
+                "Kf6",
+                "Kg4",
+                "Ke5",
+                "Kg5",
+                "Kd4",
+                "Kxf4",
+                "Kd5",
+                "g4",
+                "Kd4",
+                "g5",
+                "Kd3",
+                "g6",
+                "Kd4",
+                "g7",
+                "Kc5",
+                "Ke4"
+              ],
+              "cp": 1234,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:branch-15:Rf6-Kxh5",
+          "fen": "8/5k2/5r2/6Rp/5p1K/5P2/6P1/8 w - - 12 51",
+          "moves": [
+            "g8g5",
+            "f5f6"
+          ],
+          "searchMove": "h4h5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "h4h5",
+                "f7e7",
+                "g5e5",
+                "e7d6",
+                "e5e4",
+                "d6d5",
+                "h5g5",
+                "f6f8",
+                "e4f4",
+                "f8g8",
+                "g5f5",
+                "g8g2",
+                "f4g4",
+                "g2h2",
+                "g4g6",
+                "h2h5",
+                "f5g4",
+                "h5e5",
+                "f3f4",
+                "e5e6",
+                "g4f5",
+                "e6e8",
+                "f5g5"
+              ],
+              "pvSan": [
+                "Kxh5",
+                "Ke7",
+                "Re5+",
+                "Kd6",
+                "Re4",
+                "Kd5",
+                "Kg5",
+                "Rf8",
+                "Rxf4",
+                "Rg8+",
+                "Kf5",
+                "Rxg2",
+                "Rg4",
+                "Rh2",
+                "Rg6",
+                "Rh5+",
+                "Kg4",
+                "Re5",
+                "f4",
+                "Re6",
+                "Kf5",
+                "Re8",
+                "Kg5"
+              ],
+              "cp": 329,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:branch-16:Ra5-Rxa5",
+          "fen": "8/5k2/8/r5Rp/5p1K/5P2/6P1/8 w - - 12 51",
+          "moves": [
+            "g8g5",
+            "f5a5"
+          ],
+          "searchMove": "g5a5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5a5",
+                "f7g6",
+                "a5a6",
+                "g6h7",
+                "h4h5",
+                "h7g7",
+                "a6b6",
+                "g7f7",
+                "h5h6",
+                "f7g8",
+                "b6b5",
+                "g8f7",
+                "b5f5",
+                "f7e6"
+              ],
+              "pvSan": [
+                "Rxa5",
+                "Kg6",
+                "Ra6+",
+                "Kh7",
+                "Kxh5",
+                "Kg7",
+                "Rb6",
+                "Kf7",
+                "Kh6",
+                "Kg8",
+                "Rb5",
+                "Kf7",
+                "Rf5+",
+                "Ke6"
+              ],
+              "cp": 676,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "g5a5 wins the loose rook on a5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "g5a5",
+                "relevance": "primary",
+                "value": 500
+              }
+            ],
+            "timeline": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "g5a5 wins the loose rook on a5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "g5a5",
+                "relevance": "primary",
+                "value": 500,
+                "actor": "white"
+              }
+            ],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:branch-17:Rb5-Rxb5",
+          "fen": "8/5k2/8/1r4Rp/5p1K/5P2/6P1/8 w - - 12 51",
+          "moves": [
+            "g8g5",
+            "f5b5"
+          ],
+          "searchMove": "g5b5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5b5",
+                "f7f6",
+                "b5b4",
+                "f6e5",
+                "h4h5",
+                "e5f5",
+                "b4a4",
+                "f5e5",
+                "h5g5",
+                "e5d6",
+                "a4f4",
+                "d6c7",
+                "f4a4"
+              ],
+              "pvSan": [
+                "Rxb5",
+                "Kf6",
+                "Rb4",
+                "Ke5",
+                "Kxh5",
+                "Kf5",
+                "Ra4",
+                "Ke5",
+                "Kg5",
+                "Kd6",
+                "Rxf4",
+                "Kc7",
+                "Ra4"
+              ],
+              "cp": 691,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "g5b5 wins the loose rook on b5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "g5b5",
+                "relevance": "primary",
+                "value": 500
+              }
+            ],
+            "timeline": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "g5b5 wins the loose rook on b5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "g5b5",
+                "relevance": "primary",
+                "value": 500,
+                "actor": "white"
+              }
+            ],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:branch-18:Rc5-Rxc5",
+          "fen": "8/5k2/8/2r3Rp/5p1K/5P2/6P1/8 w - - 12 51",
+          "moves": [
+            "g8g5",
+            "f5c5"
+          ],
+          "searchMove": "g5c5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5c5",
+                "f7e7",
+                "h4h5",
+                "e7d6",
+                "c5a5",
+                "d6e6",
+                "h5g5",
+                "e6f7",
+                "a5a7",
+                "f7g8",
+                "g5f4",
+                "g8h8",
+                "a7a2",
+                "h8g8",
+                "f4g5"
+              ],
+              "pvSan": [
+                "Rxc5",
+                "Ke7",
+                "Kxh5",
+                "Kd6",
+                "Ra5",
+                "Ke6",
+                "Kg5",
+                "Kf7",
+                "Ra7+",
+                "Kg8",
+                "Kxf4",
+                "Kh8",
+                "Ra2",
+                "Kg8",
+                "Kg5"
+              ],
+              "cp": 710,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "g5c5 wins the loose rook on c5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "g5c5",
+                "relevance": "primary",
+                "value": 500
+              }
+            ],
+            "timeline": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "g5c5 wins the loose rook on c5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "g5c5",
+                "relevance": "primary",
+                "value": 500,
+                "actor": "white"
+              }
+            ],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:branch-19:Rd5-Rxd5",
+          "fen": "8/5k2/8/3r2Rp/5p1K/5P2/6P1/8 w - - 12 51",
+          "moves": [
+            "g8g5",
+            "f5d5"
+          ],
+          "searchMove": "g5d5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5d5",
+                "f7f6",
+                "d5h5",
+                "f6g6",
+                "h5a5",
+                "g6f6",
+                "h4h5",
+                "f6e7",
+                "a5a6",
+                "e7d7",
+                "h5g5",
+                "d7c7",
+                "g5f4",
+                "c7b7",
+                "a6a4",
+                "b7b8"
+              ],
+              "pvSan": [
+                "Rxd5",
+                "Kf6",
+                "Rxh5",
+                "Kg6",
+                "Ra5",
+                "Kf6",
+                "Kh5",
+                "Ke7",
+                "Ra6",
+                "Kd7",
+                "Kg5",
+                "Kc7",
+                "Kxf4",
+                "Kb7",
+                "Ra4",
+                "Kb8"
+              ],
+              "cp": 702,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "g5d5 wins the loose rook on d5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "g5d5",
+                "relevance": "primary",
+                "value": 500
+              }
+            ],
+            "timeline": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "g5d5 wins the loose rook on d5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "g5d5",
+                "relevance": "primary",
+                "value": 500,
+                "actor": "white"
+              }
+            ],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:branch-20:Re5-Rxe5",
+          "fen": "8/5k2/8/4r1Rp/5p1K/5P2/6P1/8 w - - 12 51",
+          "moves": [
+            "g8g5",
+            "f5e5"
+          ],
+          "searchMove": "g5e5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5e5",
+                "f7f6",
+                "e5a5",
+                "f6g6",
+                "a5h5",
+                "g6f7",
+                "h5a5",
+                "f7e7",
+                "h4g4"
+              ],
+              "pvSan": [
+                "Rxe5",
+                "Kf6",
+                "Ra5",
+                "Kg6",
+                "Rxh5",
+                "Kf7",
+                "Ra5",
+                "Ke7",
+                "Kg4"
+              ],
+              "cp": 700,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "g5e5 wins the loose rook on e5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "g5e5",
+                "relevance": "primary",
+                "value": 500
+              }
+            ],
+            "timeline": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "g5e5 wins the loose rook on e5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "g5e5",
+                "relevance": "primary",
+                "value": 500,
+                "actor": "white"
+              }
+            ],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:branch-21:Rxg5-Kxg5",
+          "fen": "8/5k2/8/6rp/5p1K/5P2/6P1/8 w - - 0 51",
+          "moves": [
+            "g8g5",
+            "f5g5"
+          ],
+          "searchMove": "h4g5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "h4g5",
+                "f7e6",
+                "g5h5",
+                "e6f5",
+                "h5h4",
+                "f5f6",
+                "h4g4",
+                "f6e5",
+                "g4g5",
+                "e5d4",
+                "g5f4",
+                "d4d5",
+                "g2g4",
+                "d5c6",
+                "f4e5"
+              ],
+              "pvSan": [
+                "Kxg5",
+                "Ke6",
+                "Kxh5",
+                "Kf5",
+                "Kh4",
+                "Kf6",
+                "Kg4",
+                "Ke5",
+                "Kg5",
+                "Kd4",
+                "Kxf4",
+                "Kd5",
+                "g4",
+                "Kc6",
+                "Ke5"
+              ],
+              "cp": 1207,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "h4g5 wins the loose rook on g5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "h4g5",
+                "relevance": "primary",
+                "value": 500
+              }
+            ],
+            "timeline": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "h4g5 wins the loose rook on g5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "h4g5",
+                "relevance": "primary",
+                "value": 500,
+                "actor": "white"
+              }
+            ],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:leaf-22:Rxg5-Kxg5-Ke8-Kxh5",
+          "fen": "4k3/8/8/6Kp/5p2/5P2/6P1/8 w - - 1 52",
+          "moves": [
+            "g8g5",
+            "f5g5",
+            "h4g5",
+            "f7e8"
+          ],
+          "searchMove": "g5h5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5h5",
+                "e8d7",
+                "h5g4",
+                "d7e6",
+                "g4f4",
+                "e6d5",
+                "g2g4",
+                "d5c4",
+                "g4g5",
+                "c4d5",
+                "g5g6",
+                "d5e6",
+                "f4g5",
+                "e6d5",
+                "g6g7",
+                "d5c4"
+              ],
+              "pvSan": [
+                "Kxh5",
+                "Kd7",
+                "Kg4",
+                "Ke6",
+                "Kxf4",
+                "Kd5",
+                "g4",
+                "Kc4",
+                "g5",
+                "Kd5",
+                "g6",
+                "Ke6",
+                "Kg5",
+                "Kd5",
+                "g7",
+                "Kc4"
+              ],
+              "cp": 935,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:leaf-23:Rxg5-Kxg5-Kf8-Kxh5",
+          "fen": "5k2/8/8/6Kp/5p2/5P2/6P1/8 w - - 1 52",
+          "moves": [
+            "g8g5",
+            "f5g5",
+            "h4g5",
+            "f7f8"
+          ],
+          "searchMove": "g5h5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5h5",
+                "f8e7",
+                "h5g4",
+                "e7d6",
+                "g4f4",
+                "d6c5",
+                "g2g4",
+                "c5b4",
+                "g4g5",
+                "b4b3",
+                "f4e4",
+                "b3b4",
+                "e4f5",
+                "b4c3",
+                "f5g4",
+                "c3c4"
+              ],
+              "pvSan": [
+                "Kxh5",
+                "Ke7",
+                "Kg4",
+                "Kd6",
+                "Kxf4",
+                "Kc5",
+                "g4",
+                "Kb4",
+                "g5",
+                "Kb3",
+                "Ke4",
+                "Kb4",
+                "Kf5",
+                "Kc3",
+                "Kg4",
+                "Kc4"
+              ],
+              "cp": 749,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:leaf-24:Rxg5-Kxg5-Kg8-Kxh5",
+          "fen": "6k1/8/8/6Kp/5p2/5P2/6P1/8 w - - 1 52",
+          "moves": [
+            "g8g5",
+            "f5g5",
+            "h4g5",
+            "f7g8"
+          ],
+          "searchMove": "g5h5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5h5",
+                "g8f7",
+                "h5g4",
+                "f7e6",
+                "g4f4",
+                "e6f6",
+                "g2g4",
+                "f6f7",
+                "f4f5",
+                "f7g8",
+                "f5f6",
+                "g8h7",
+                "g4g5",
+                "h7h8",
+                "g5g6",
+                "h8g8",
+                "f6g5"
+              ],
+              "pvSan": [
+                "Kxh5",
+                "Kf7",
+                "Kg4",
+                "Ke6",
+                "Kxf4",
+                "Kf6",
+                "g4",
+                "Kf7",
+                "Kf5",
+                "Kg8",
+                "Kf6",
+                "Kh7",
+                "g5",
+                "Kh8",
+                "g6",
+                "Kg8",
+                "Kg5"
+              ],
+              "cp": 851,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:leaf-25:Rxg5-Kxg5-Ke7-Kxh5",
+          "fen": "8/4k3/8/6Kp/5p2/5P2/6P1/8 w - - 1 52",
+          "moves": [
+            "g8g5",
+            "f5g5",
+            "h4g5",
+            "f7e7"
+          ],
+          "searchMove": "g5h5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5h5",
+                "e7f6",
+                "h5g4",
+                "f6e5",
+                "g4g5",
+                "e5e6",
+                "g5f4",
+                "e6f6",
+                "g2g3",
+                "f6e6",
+                "g3g4",
+                "e6f6",
+                "g4g5",
+                "f6e6",
+                "f4e4",
+                "e6d6",
+                "e4f5",
+                "d6d5",
+                "g5g6",
+                "d5d4",
+                "g6g7"
+              ],
+              "pvSan": [
+                "Kxh5",
+                "Kf6",
+                "Kg4",
+                "Ke5",
+                "Kg5",
+                "Ke6",
+                "Kxf4",
+                "Kf6",
+                "g3",
+                "Ke6",
+                "g4",
+                "Kf6",
+                "g5+",
+                "Ke6",
+                "Ke4",
+                "Kd6",
+                "Kf5",
+                "Kd5",
+                "g6",
+                "Kd4",
+                "g7"
+              ],
+              "cp": 743,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:leaf-26:Rxg5-Kxg5-Kg7-Kxh5",
+          "fen": "8/6k1/8/6Kp/5p2/5P2/6P1/8 w - - 1 52",
+          "moves": [
+            "g8g5",
+            "f5g5",
+            "h4g5",
+            "f7g7"
+          ],
+          "searchMove": "g5h5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5h5",
+                "g7f7",
+                "h5g4",
+                "f7f6",
+                "g4f4",
+                "f6g6",
+                "g2g4",
+                "g6f6",
+                "f4g3"
+              ],
+              "pvSan": [
+                "Kxh5",
+                "Kf7",
+                "Kg4",
+                "Kf6",
+                "Kxf4",
+                "Kg6",
+                "g4",
+                "Kf6",
+                "Kg3"
+              ],
+              "cp": 725,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:leaf-27:Rxg5-Kxg5-Ke6-Kxh5",
+          "fen": "8/8/4k3/6Kp/5p2/5P2/6P1/8 w - - 1 52",
+          "moves": [
+            "g8g5",
+            "f5g5",
+            "h4g5",
+            "f7e6"
+          ],
+          "searchMove": "g5h5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5h5",
+                "e6f5",
+                "h5h4",
+                "f5e6",
+                "h4g4",
+                "e6e5",
+                "g4g5",
+                "e5d5",
+                "g5f4",
+                "d5d4",
+                "g2g4",
+                "d4c5",
+                "f4e3",
+                "c5b6",
+                "e3e4",
+                "b6c7",
+                "e4d4"
+              ],
+              "pvSan": [
+                "Kxh5",
+                "Kf5",
+                "Kh4",
+                "Ke6",
+                "Kg4",
+                "Ke5",
+                "Kg5",
+                "Kd5",
+                "Kxf4",
+                "Kd4",
+                "g4",
+                "Kc5",
+                "Ke3",
+                "Kb6",
+                "Ke4",
+                "Kc7",
+                "Kd4"
+              ],
+              "cp": 740,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:leaf-28:Rxg5-Kxg5-h4-Kxf4",
+          "fen": "8/5k2/8/6K1/5p1p/5P2/6P1/8 w - - 0 52",
+          "moves": [
+            "g8g5",
+            "f5g5",
+            "h4g5",
+            "h5h4"
+          ],
+          "searchMove": "g5f4",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g5f4",
+                "f7f6",
+                "f4g4",
+                "f6e5",
+                "g4h4",
+                "e5f4",
+                "h4h3",
+                "f4g5",
+                "g2g4",
+                "g5f6",
+                "h3g3",
+                "f6e6",
+                "g3h2"
+              ],
+              "pvSan": [
+                "Kxf4",
+                "Kf6",
+                "Kg4",
+                "Ke5",
+                "Kxh4",
+                "Kf4",
+                "Kh3",
+                "Kg5",
+                "g4",
+                "Kf6",
+                "Kg3",
+                "Ke6",
+                "Kh2"
+              ],
+              "cp": 724,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:premature-Kxh5-after-Kf6",
+          "fen": "8/8/5k2/5rRp/5p1K/5P2/6P1/8 w - - 12 51",
+          "moves": [
+            "g8g5",
+            "f7f6"
+          ],
+          "searchMove": "h4h5",
+          "maxCp": 0,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "h4h5",
+                "f5g5",
+                "h5h6",
+                "g5g2",
+                "h6h7",
+                "g2g3",
+                "h7h8",
+                "g3f3",
+                "h8g8",
+                "f3g3",
+                "g8f8",
+                "f6f5",
+                "f8e7",
+                "f4f3",
+                "e7d7",
+                "f3f2",
+                "d7c6",
+                "f2f1q",
+                "c6c7",
+                "f1g2"
+              ],
+              "pvSan": [
+                "Kxh5",
+                "Rxg5+",
+                "Kh6",
+                "Rxg2",
+                "Kh7",
+                "Rg3",
+                "Kh8",
+                "Rxf3",
+                "Kg8",
+                "Rg3+",
+                "Kf8",
+                "Kf5",
+                "Ke7",
+                "f3",
+                "Kd7",
+                "f2",
+                "Kc6",
+                "f1=Q",
+                "Kc7",
+                "Qg2"
+              ],
+              "cp": -1111,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:unguarded-knight-negative",
+          "fen": "8/5k2/N4r2/6Rp/5p1K/5P2/6P1/8 w - - 12 51",
+          "moves": [
+            "g8g5",
+            "f5f6"
+          ],
+          "searchMove": "h4h5",
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "h4h5",
+                "f6a6",
+                "g5f5",
+                "f7g7",
+                "f5f4",
+                "a6h6",
+                "h5g4",
+                "h6g6",
+                "g4h3",
+                "g6h6",
+                "h3g3",
+                "g7g6",
+                "f4c4",
+                "h6h8",
+                "c4c5",
+                "h8h7"
+              ],
+              "pvSan": [
+                "Kxh5",
+                "Rxa6",
+                "Rf5+",
+                "Kg7",
+                "Rxf4",
+                "Rh6+",
+                "Kg4",
+                "Rg6+",
+                "Kh3",
+                "Rh6+",
+                "Kg3",
+                "Kg6",
+                "Rc4",
+                "Rh8",
+                "Rc5",
+                "Rh7"
+              ],
+              "cp": 465,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        },
+        {
+          "id": "king-interference:extra-pawn-takes-blocker",
+          "fen": "8/5k2/7p/5rRp/5p1K/5P2/6P1/8 b - - 11 50",
+          "moves": [
+            "g8g5"
+          ],
+          "searchMove": "h6g5",
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "h6g5",
+                "h4h5",
+                "f5d5",
+                "h5g4",
+                "f7f6",
+                "g2g3",
+                "f4g3",
+                "g4g3",
+                "f6f5",
+                "f3f4",
+                "d5d3",
+                "g3g2",
+                "f5f4",
+                "g2f2",
+                "d3d2"
+              ],
+              "pvSan": [
+                "hxg5+",
+                "Kxh5",
+                "Rd5",
+                "Kg4",
+                "Kf6",
+                "g3",
+                "fxg3",
+                "Kxg3",
+                "Kf5",
+                "f4",
+                "Rd3+",
+                "Kg2",
+                "Kxf4",
+                "Kf2",
+                "Rd2+"
+              ],
+              "cp": 670,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "h6g5 wins the loose rook on g5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "h6g5",
+                "relevance": "primary",
+                "value": 500
+              }
+            ],
+            "timeline": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "h6g5 wins the loose rook on g5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "h6g5",
+                "relevance": "primary",
+                "value": 500,
+                "actor": "black"
+              }
+            ],
+            "motifClassifierVersion": "site-55.adapter-81"
+          }
+        }
+      ]
+    },
+    {
+      "status": "aborted after an incorrect full-evaluation expectation",
+      "requested": 5,
+      "completed": 2,
+      "searches": [
+        {
+          "id": "king-interference:bishop-best",
+          "fen": "k7/8/5bN1/8/3pK3/3P4/8/8 w - - 0 1",
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "e4f5",
+                "f6d8",
+                "f5e6",
+                "d8c7",
+                "g6h4",
+                "a8b7",
+                "e6d7",
+                "c7e5",
+                "h4f3"
+              ],
+              "pvSan": [
+                "Kf5",
+                "Bd8",
+                "Ke6",
+                "Bc7",
+                "Nh4",
+                "Kb7",
+                "Kd7",
+                "Be5",
+                "Nf3"
+              ],
+              "cp": 22,
+              "mate": null
+            },
+            {
+              "depth": 16,
+              "multipv": 2,
+              "pvUci": [
+                "e4d5",
+                "a8b7",
+                "d5d6",
+                "f6g5",
+                "g6e5",
+                "g5f4",
+                "d6d5"
+              ],
+              "pvSan": [
+                "Kd5",
+                "Kb7",
+                "Kd6",
+                "Bg5",
+                "Ne5",
+                "Bf4",
+                "Kd5"
+              ],
+              "cp": 21,
+              "mate": null
+            },
+            {
+              "depth": 16,
+              "multipv": 3,
+              "pvUci": [
+                "g6e5",
+                "a8b7",
+                "e4d4",
+                "b7b6",
+                "d4d5",
+                "f6e7"
+              ],
+              "pvSan": [
+                "Ne5",
+                "Kb7",
+                "Kxd4",
+                "Kb6",
+                "Kd5",
+                "Be7"
+              ],
+              "cp": 13,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-82"
+          }
+        },
+        {
+          "id": "king-interference:bishop-Ne5",
+          "fen": "k7/8/5bN1/8/3pK3/3P4/8/8 w - - 0 1",
+          "searchMove": "g6e5",
+          "minCp": 100,
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g6e5",
+                "a8b7",
+                "e4d4",
+                "f6g5",
+                "d4d5",
+                "g5h6",
+                "d5d6",
+                "h6c1",
+                "d6d7",
+                "c1e3",
+                "e5g6"
+              ],
+              "pvSan": [
+                "Ne5",
+                "Kb7",
+                "Kxd4",
+                "Bg5",
+                "Kd5",
+                "Bh6",
+                "Kd6",
+                "Bc1",
+                "Kd7",
+                "Be3",
+                "Ng6"
+              ],
+              "cp": 8,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [
+              {
+                "id": "interference",
+                "label": "Interference",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "g6e5",
+                "value": 100,
+                "evidence": "Ne5 blocks the bishop on f6 from defending the pawn on d4, making the king's capture safe. Every legal reply loses material; exchanging the blocker still allows the king to win a target previously defended by that same bishop.",
+                "relevance": "primary"
+              }
+            ],
+            "timeline": [
+              {
+                "id": "interference",
+                "label": "Interference",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "g6e5",
+                "value": 100,
+                "evidence": "Ne5 blocks the bishop on f6 from defending the pawn on d4, making the king's capture safe. Every legal reply loses material; exchanging the blocker still allows the king to win a target previously defended by that same bishop.",
+                "relevance": "primary",
+                "actor": "white"
+              },
+              {
+                "id": "hangingPiece",
+                "label": "Interference Payoff",
+                "source": "available",
+                "confidence": "high",
+                "ply": 3,
+                "moveUci": "e4d4",
+                "value": 100,
+                "evidence": "Kxd4 wins a pawn after Ne5 cut the defending bishop's ray. This is the material payoff of the earlier interference, not a separate root tactic.",
+                "actor": "white",
+                "relevance": "secondary"
+              }
+            ],
+            "motifClassifierVersion": "site-55.adapter-82"
+          }
+        }
+      ]
+    },
+    {
+      "status": "completed",
+      "requested": 5,
+      "completed": 5,
+      "searches": [
+        {
+          "id": "king-interference:bishop-best",
+          "fen": "k7/8/5bN1/8/3pK3/3P4/8/8 w - - 0 1",
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "e4f5",
+                "f6d8",
+                "f5e6",
+                "d8c7",
+                "g6h4",
+                "a8b7",
+                "e6d7",
+                "c7e5",
+                "h4f3"
+              ],
+              "pvSan": [
+                "Kf5",
+                "Bd8",
+                "Ke6",
+                "Bc7",
+                "Nh4",
+                "Kb7",
+                "Kd7",
+                "Be5",
+                "Nf3"
+              ],
+              "cp": 22,
+              "mate": null
+            },
+            {
+              "depth": 16,
+              "multipv": 2,
+              "pvUci": [
+                "e4d5",
+                "a8b7",
+                "d5d6",
+                "f6g5",
+                "g6e5",
+                "g5f4",
+                "d6d5"
+              ],
+              "pvSan": [
+                "Kd5",
+                "Kb7",
+                "Kd6",
+                "Bg5",
+                "Ne5",
+                "Bf4",
+                "Kd5"
+              ],
+              "cp": 21,
+              "mate": null
+            },
+            {
+              "depth": 16,
+              "multipv": 3,
+              "pvUci": [
+                "g6e5",
+                "a8b7",
+                "e4d4",
+                "b7b6",
+                "d4d5",
+                "f6e7"
+              ],
+              "pvSan": [
+                "Ne5",
+                "Kb7",
+                "Kxd4",
+                "Kb6",
+                "Kd5",
+                "Be7"
+              ],
+              "cp": 13,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-82"
+          }
+        },
+        {
+          "id": "king-interference:bishop-Ne5",
+          "fen": "k7/8/5bN1/8/3pK3/3P4/8/8 w - - 0 1",
+          "searchMove": "g6e5",
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "g6e5",
+                "a8b7",
+                "e4d4",
+                "f6g5",
+                "d4d5",
+                "g5h6",
+                "d5d6",
+                "h6c1",
+                "d6d7",
+                "c1e3",
+                "e5g6"
+              ],
+              "pvSan": [
+                "Ne5",
+                "Kb7",
+                "Kxd4",
+                "Bg5",
+                "Kd5",
+                "Bh6",
+                "Kd6",
+                "Bc1",
+                "Kd7",
+                "Be3",
+                "Ng6"
+              ],
+              "cp": 8,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [
+              {
+                "id": "interference",
+                "label": "Interference",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "g6e5",
+                "value": 100,
+                "evidence": "Ne5 blocks the bishop on f6 from defending the pawn on d4, making the king's capture safe. Every legal reply loses material; exchanging the blocker still allows the king to win a target previously defended by that same bishop.",
+                "relevance": "primary"
+              }
+            ],
+            "timeline": [
+              {
+                "id": "interference",
+                "label": "Interference",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "g6e5",
+                "value": 100,
+                "evidence": "Ne5 blocks the bishop on f6 from defending the pawn on d4, making the king's capture safe. Every legal reply loses material; exchanging the blocker still allows the king to win a target previously defended by that same bishop.",
+                "relevance": "primary",
+                "actor": "white"
+              },
+              {
+                "id": "hangingPiece",
+                "label": "Interference Payoff",
+                "source": "available",
+                "confidence": "high",
+                "ply": 3,
+                "moveUci": "e4d4",
+                "value": 100,
+                "evidence": "Kxd4 wins a pawn after Ne5 cut the defending bishop's ray. This is the material payoff of the earlier interference, not a separate root tactic.",
+                "actor": "white",
+                "relevance": "secondary"
+              }
+            ],
+            "motifClassifierVersion": "site-55.adapter-82"
+          }
+        },
+        {
+          "id": "king-interference:bishop-acceptance",
+          "fen": "k7/8/8/4b3/3pK3/3P4/8/8 w - - 0 2",
+          "moves": [
+            "g6e5",
+            "f6e5"
+          ],
+          "searchMove": "e4e5",
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "e4e5",
+                "a8b7",
+                "e5d4",
+                "b7c6",
+                "d4e5",
+                "c6d7",
+                "e5d5",
+                "d7e7",
+                "d5c6",
+                "e7e8",
+                "c6d6",
+                "e8d8",
+                "d3d4",
+                "d8c8",
+                "d6e7",
+                "c8b7",
+                "d4d5",
+                "b7c7",
+                "e7e6",
+                "c7d8"
+              ],
+              "pvSan": [
+                "Kxe5",
+                "Kb7",
+                "Kxd4",
+                "Kc6",
+                "Ke5",
+                "Kd7",
+                "Kd5",
+                "Ke7",
+                "Kc6",
+                "Ke8",
+                "Kd6",
+                "Kd8",
+                "d4",
+                "Kc8",
+                "Ke7",
+                "Kb7",
+                "d5",
+                "Kc7",
+                "Ke6",
+                "Kd8"
+              ],
+              "cp": 526,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "e4e5 wins the loose bishop on e5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "e4e5",
+                "relevance": "primary",
+                "value": 330
+              }
+            ],
+            "timeline": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "e4e5 wins the loose bishop on e5.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "e4e5",
+                "relevance": "primary",
+                "value": 330,
+                "actor": "white"
+              }
+            ],
+            "motifClassifierVersion": "site-55.adapter-82"
+          }
+        },
+        {
+          "id": "king-interference:bishop-payoff",
+          "fen": "8/1k6/8/4K3/3p4/3P4/8/8 w - - 1 3",
+          "moves": [
+            "g6e5",
+            "f6e5",
+            "e4e5",
+            "a8b7"
+          ],
+          "searchMove": "e5d4",
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "e5d4",
+                "b7c6",
+                "d4e5",
+                "c6d7",
+                "e5d5",
+                "d7c7",
+                "d5e6",
+                "c7b8",
+                "e6d7",
+                "b8b7",
+                "d7d6",
+                "b7b6",
+                "d3d4",
+                "b6b7",
+                "d4d5",
+                "b7b6",
+                "d6e7",
+                "b6b5",
+                "d5d6",
+                "b5c5",
+                "d6d7",
+                "c5d5",
+                "e7f6",
+                "d5d4"
+              ],
+              "pvSan": [
+                "Kxd4",
+                "Kc6",
+                "Ke5",
+                "Kd7",
+                "Kd5",
+                "Kc7",
+                "Ke6",
+                "Kb8",
+                "Kd7",
+                "Kb7",
+                "Kd6",
+                "Kb6",
+                "d4",
+                "Kb7",
+                "d5",
+                "Kb6",
+                "Ke7",
+                "Kb5",
+                "d6",
+                "Kc5",
+                "d7",
+                "Kd5",
+                "Kf6",
+                "Kd4"
+              ],
+              "cp": 523,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [],
+            "motifClassifierVersion": "site-55.adapter-82"
+          }
+        },
+        {
+          "id": "king-interference:off-square-knight-loss",
+          "fen": "8/5k2/N4r2/6RK/5p2/5P2/6P1/8 b - - 0 51",
+          "moves": [
+            "g8g5",
+            "f5f6",
+            "h4h5"
+          ],
+          "searchMove": "f6a6",
+          "lines": [
+            {
+              "depth": 16,
+              "multipv": 1,
+              "pvUci": [
+                "f6a6",
+                "g5f5",
+                "f7g7",
+                "f5f4",
+                "a6h6",
+                "h5g4",
+                "h6g6",
+                "g4h3",
+                "g6h6",
+                "f4h4",
+                "h6f6",
+                "h4e4",
+                "g7g6",
+                "h3g3",
+                "g6f7"
+              ],
+              "pvSan": [
+                "Rxa6",
+                "Rf5+",
+                "Kg7",
+                "Rxf4",
+                "Rh6+",
+                "Kg4",
+                "Rg6+",
+                "Kh3",
+                "Rh6+",
+                "Rh4",
+                "Rf6",
+                "Re4",
+                "Kg6",
+                "Kg3",
+                "Kf7"
+              ],
+              "cp": -465,
+              "mate": null
+            }
+          ],
+          "result": {
+            "motifs": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "f6a6 wins the loose knight on a6.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "f6a6",
+                "relevance": "primary",
+                "value": 320
+              }
+            ],
+            "timeline": [
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "f6a6 wins the loose knight on a6.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "f6a6",
+                "relevance": "primary",
+                "value": 320,
+                "actor": "black"
+              }
+            ],
+            "motifClassifierVersion": "site-55.adapter-82"
+          }
+        }
+      ]
+    }
+  ],
+  "contraryEvidence": "The initial bishop supplement expected Ne5's pawn gain to imply >=100 cp in the full ending. Stockfish returned +8 cp; that expectation was wrong. The corrected audit retains the drawish evaluation and the local pawn-gain certificate. In the knight-liability control, Rxa6 offsets the local pawn gain although the overall position remains winning for White."
+}
