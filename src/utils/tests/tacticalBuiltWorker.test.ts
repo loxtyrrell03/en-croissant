@@ -207,9 +207,29 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             },
             {
                 id: "constructed:unresolved-root-retains-later-fork",
+                // Historical ID retained: now independently certified by
+                // the square-clearing preparation, not a borrowed later fork.
                 input: {
                     fen: "5r1k/6pp/8/8/4n3/5NPQ/4Bq1P/4R2K b - - 0 1",
                     pvUci: ["f2e1", "f3e1", "e4f2", "h1g2", "f2h3", "e1f3", "f8f3", "e2f3", "h3g5"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
+                id: "constructed:fork-square-already-empty-control",
+                input: {
+                    fen: "5r1k/6pp/8/8/4n3/5NPQ/3qB2P/4R2K b - - 0 1",
+                    pvUci: ["d2e1", "f3e1", "e4f2", "h1g2", "f2h3"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
+                id: "constructed:root-only-cleared-fork-square",
+                input: {
+                    fen: "5r1k/6pp/8/8/4n3/5NPQ/4Bq1P/4R2K b - - 0 1",
+                    pvUci: ["f2e1"],
                     engineName: "Constructed",
                     depth: 16,
                 },
@@ -555,7 +575,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(123);
+        expect(report).toHaveLength(125);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
@@ -665,8 +685,12 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_
             expect(result.scan).toEqual(buildLiveTacticalScan(input));
             expect(result.scan.motifs[0]).toMatchObject({ id: theme, value });
             expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+            expect(result.startupMs).toBeLessThan(TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
         }
     },
+    // Aggregate batch allowance; every individual worker still has the
+    // unchanged application startup and classification deadlines above.
+    120000,
 );
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_DISJOINT_REPORT)(

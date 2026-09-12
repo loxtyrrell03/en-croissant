@@ -38,8 +38,8 @@ const laterScan = buildLiveTacticalScan({
 });
 test("an unresolved root exposes later themes only as collapsed continuation details", () => {
   const value = buildLiveTacticalScan({
-    fen: "5r1k/6pp/8/8/4n3/5NPQ/4Bq1P/4R2K b - - 0 1",
-    pvUci: ["f2e1", "f3e1", "e4f2", "h1g2", "f2h3", "e1f3", "f8f3", "e2f3", "h3g5"],
+    fen: "5r1k/6pp/8/8/4n3/5NPQ/3qB2P/4R2K b - - 0 1",
+    pvUci: ["d2e1", "f3e1", "e4f2", "h1g2", "f2h3", "e1f3", "f8f3", "e2f3", "h3g5"],
     depth: 16,
     engineName: "Constructed",
   });
@@ -50,6 +50,24 @@ test("an unresolved root exposes later themes only as collapsed continuation det
   expect(element.textContent).toContain("No first-move tactic was verified");
   expect(element.textContent).not.toContain("Sacrifice found");
   expect(element.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Fork");
+  expect(element.querySelectorAll("details[open]")).toHaveLength(0);
+});
+test("a verified square-clearing capture leads with the preparation, not its later fork", () => {
+  const value = buildLiveTacticalScan({
+    fen: "5r1k/6pp/8/8/4n3/5NPQ/4Bq1P/4R2K b - - 0 1",
+    pvUci: ["f2e1", "f3e1", "e4f2", "h1g2", "f2h3"],
+    depth: 16,
+    engineName: "Constructed",
+  });
+  const element = document.createElement("div");
+  element.innerHTML = markup(value);
+  expect(value.motifs[0]).toMatchObject({ id: "forkPreparation", ply: 1 });
+  expect(element.textContent).toContain("clearing f2 for a checking fork");
+  expect(element.textContent).not.toContain("Continuation only");
+  expect(element.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Fork");
+  expect(element.querySelector('[data-tactical-ply="2"]')?.textContent ?? "").not.toContain(
+    "Hanging",
+  );
   expect(element.querySelectorAll("details[open]")).toHaveLength(0);
 });
 test("a root mate proof does not relabel the supplied material continuation as checkmate", () => {

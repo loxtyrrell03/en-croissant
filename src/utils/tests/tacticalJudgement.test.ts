@@ -519,6 +519,191 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(!engine || !process.env.TACTICAL_VACATED_FORK_REPORT)(
+        "audit square-clearing fork preparations and every selected root defence",
+        async () => {
+            const { resolve, relative, isAbsolute, sep, dirname, basename } =
+                await import("node:path");
+            const requested = resolve(process.env.TACTICAL_VACATED_FORK_REPORT!);
+            const output = resolve(realpathSync(dirname(requested)), basename(requested));
+            const path = relative(realpathSync(process.cwd()), output);
+            expect(isAbsolute(path) || path === ".." || path.startsWith(`..${sep}`)).toBe(true);
+            expect(existsSync(output)).toBe(false);
+            const examples = [
+                {
+                    name: "Constructed square clearance",
+                    fen: "5r1k/6pp/8/8/4n3/5NPQ/4Bq1P/4R2K b - - 0 1",
+                    root: "f2e1",
+                    minimumScore: -50,
+                    accepted: ["f2e1", "f3e1", "e4f2"],
+                    payoff: "f2h3",
+                    alternative: "h7h6",
+                },
+            ];
+            if (process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE) {
+                const sample = JSON.parse(
+                    readFileSync(process.env.TACTICAL_PRIVATE_FOURTH_SAMPLE, "utf8"),
+                );
+                const row = sample.cases.find(
+                    (r: { eligibleIndex: number }) => r.eligibleIndex === 57,
+                );
+                examples.push({
+                    name: "Private course square clearance",
+                    fen: row.fen,
+                    root: row.sourceUci[0],
+                    minimumScore: 100,
+                    accepted: row.sourceUci.slice(0, 3),
+                    payoff: row.sourceUci[4],
+                    alternative: "h7h6",
+                });
+            }
+            if (process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE) {
+                const sample = JSON.parse(
+                    readFileSync(process.env.TACTICAL_PRIVATE_DISJOINT_SAMPLE, "utf8"),
+                );
+                const row = sample.cases.find(
+                    (r: { eligibleIndex: number }) => r.eligibleIndex === 126,
+                );
+                examples.push({
+                    name: "Private non-checking square clearance",
+                    fen: row.fen,
+                    root: row.sourceUci[0],
+                    minimumScore: 100,
+                    accepted: row.sourceUci.slice(0, 3),
+                    payoff: row.sourceUci[4],
+                    alternative: "a5a4",
+                });
+            }
+            const report = [];
+            for (const item of examples) {
+                const root = replayTacticalLine(item.fen, [item.root])[0];
+                const proof = proveCaptureForkPreparation(root)!;
+                expect(proof).not.toBeNull();
+                const inputs = [{ label: "Root", fen: item.fen, move: item.root, winning: true }];
+                for (const branch of [
+                    ...proof.branches,
+                    ...proof.declined,
+                    ...(proof.otherCaptures ?? []),
+                ]) {
+                    const next = root.after.clone();
+                    const reply = parseSan(next, branch.reply)!;
+                    expect(reply).toBeDefined();
+                    next.play(reply);
+                    const answer = parseSan(next, branch.answer)!;
+                    expect(answer).toBeDefined();
+                    inputs.push({
+                        label: `${branch.reply}: ${branch.answer}`,
+                        fen: makeFen(next.toSetup()),
+                        move: makeUci(answer),
+                        winning: true,
+                    });
+                }
+                inputs.push({
+                    label: "Missed preparation",
+                    fen: item.fen,
+                    move: item.alternative,
+                    winning: false,
+                });
+                const accepted = replayTacticalLine(item.fen, item.accepted);
+                expect(accepted).toHaveLength(3);
+                const fork = accepted[2];
+                for (const [from, dests] of fork.after.allDests())
+                    for (const to of dests) {
+                        const next = fork.after.clone(),
+                            reply = { from, to };
+                        next.play(reply);
+                        inputs.push({
+                            label: `Fork defence ${makeSan(fork.after, reply)}: ${makeSan(next, parseUci(item.payoff)!)}`,
+                            fen: makeFen(next.toSetup()),
+                            move: item.payoff,
+                            winning: true,
+                        });
+                    }
+                const searches = [];
+                for (const input of inputs) {
+                    const lines = [
+                        ...(await analyse(engine, input.fen, input.move, 16, 1)).values(),
+                    ];
+                    searches.push({ ...input, lines });
+                }
+                report.push({ ...item, proof, searches });
+            }
+            const controls = [];
+            for (const input of [
+                {
+                    name: "Capturing the forker refutes the offer",
+                    fen: "5r1k/6pp/8/8/4n3/5NPQ/4BqRP/4R2K b - - 0 1",
+                    prefix: ["f2e1", "f3e1", "e4f2", "g2f2"],
+                },
+                {
+                    name: "Smaller fork victim cannot repay the offer",
+                    fen: "5r1k/6pp/8/8/4n3/5NPR/4Bq1P/4R2K b - - 0 1",
+                    prefix: ["f2e1"],
+                },
+            ]) {
+                const steps = replayTacticalLine(input.fen, input.prefix);
+                expect(steps).toHaveLength(input.prefix.length);
+                const last = steps.at(-1)!;
+                const lines = [
+                    ...(
+                        await analyse(engine, makeFen(last.before.toSetup()), last.uci, 16, 1)
+                    ).values(),
+                ];
+                controls.push({ ...input, lines, proof: proveCaptureForkPreparation(steps[0]) });
+            }
+            const choiceFen = "5r1k/6pp/8/8/4n1Q1/5NP1/4Bq1P/4R2K w - - 0 1";
+            const choices = [];
+            for (const move of ["g4h4", "g4h3", "g4e4"]) {
+                const lines = [...(await analyse(engine, choiceFen, move, 16, 1)).values()];
+                choices.push({ move, lines });
+            }
+            const better = choices[0].lines[0],
+                bad = choices[1].lines[0];
+            const review = classifyMistakeReviewMotifs({
+                fen: choiceFen,
+                bestMoveUci: better.pvUci[0],
+                playedMoveUci: bad.pvUci[0],
+                pvUci: better.pvUci,
+                refutationUci: bad.pvUci.slice(1),
+                cpBefore: better.cp,
+                cpAfter: bad.cp,
+            });
+            writeFileSync(
+                output,
+                JSON.stringify(
+                    {
+                        examples: report,
+                        controls,
+                        choices,
+                        review,
+                        explanation: buildMistakeReviewTacticalExplanation(review),
+                    },
+                    null,
+                    2,
+                ),
+            );
+            for (const item of report)
+                for (const search of item.searches.filter((s) => s.winning)) {
+                    const line = search.lines[0];
+                    expect({
+                        branch: search.label,
+                        meetsBound:
+                            (line.cp ?? Math.sign(line.mate ?? 0) * 10000) > item.minimumScore,
+                    }).toEqual({ branch: search.label, meetsBound: true });
+                }
+            for (const control of controls) expect(control.proof).toBeNull();
+            // Qh4 refutes this exact offer, but Rxf3 is a different equalizing
+            // resource. A successful local defence is not global safety and
+            // these near-equal choices are not an engine-valued blunder.
+            expect(Math.abs(better.cp ?? 10000)).toBeLessThan(50);
+            expect(Math.abs(bad.cp ?? 10000)).toBeLessThan(50);
+            expect(review.allowedMotifs[0]).toMatchObject({
+                id: "forkPreparation",
+                comparison: "prevented",
+            });
+        },
+        180000,
+    );
     test.skipIf(!engine || !process.env.TACTICAL_OFFER_RELEVANCE_REPORT)(
         "audit cooperative offers against concrete alternative defences",
         async () => {

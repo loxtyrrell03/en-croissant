@@ -28,8 +28,10 @@ test("a cooperative bishop-offer line cannot certify a sound sacrifice", () => {
 
 const position = "6k1/q7/8/8/8/r1P1R3/5B2/6K1 b - - 0 1";
 const line = ["a3c3", "e3c3", "a7a1", "g1h2", "a1c3"];
-const preparation = "5r1k/6pp/8/8/4n3/5NPQ/4Bq1P/4R2K b - - 0 1";
-const preparationLine = ["f2e1", "f3e1", "e4f2", "h1g2", "f2h3", "e1f3", "f8f3", "e2f3", "h3g5"];
+// Here f2 was already empty: unlike a genuine square-clearing offer,
+// Qxe1+ cannot borrow the later fork to explain its own purpose.
+const preparation = "5r1k/6pp/8/8/4n3/5NPQ/3qB2P/4R2K b - - 0 1";
+const preparationLine = ["d2e1", "f3e1", "e4f2", "h1g2", "f2h3", "e1f3", "f8f3", "e2f3", "h3g5"];
 
 test("an unresolved preparation retains its actual later fork without inventing a primary", () => {
     const result = classifyPositionTacticalMotifs({ fen: preparation, pvUci: preparationLine });
