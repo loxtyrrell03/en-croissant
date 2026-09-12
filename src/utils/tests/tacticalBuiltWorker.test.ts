@@ -107,6 +107,33 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:guard-deflection-root",
+                input: {
+                    fen: "2b1r1k1/p1q3b1/8/3P4/3N4/8/8/2BQRBK1 b - - 0 1",
+                    pvUci: ["e8e1"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
+                id: "constructed:balanced-exchange-recovery",
+                input: {
+                    fen: "2b1r1k1/p1q3b1/8/3n4/3NP3/8/8/2BQRBK1 w - - 0 1",
+                    pvUci: ["e4d5", "e8e1", "d1e1", "g7d4"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
+                id: "opening:balanced-later-knight-exchange",
+                input: {
+                    fen: "r4k1r/pbq1b1pp/1pn5/2pBN3/3P4/4P3/PP3PPP/R1BQ1RK1 b - - 0 13",
+                    pvUci: ["c6e5", "d5b7", "c7b7", "d4e5"],
+                    engineName: "Reached opening continuation",
+                    depth: 16,
+                },
+            },
+            {
                 id: "rare:king-interference-exchange-payoff",
                 input: {
                     fen: "6R1/5k2/8/5r1p/5p1K/5P2/6P1/8 w - - 10 50",
@@ -696,7 +723,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(138);
+        expect(report).toHaveLength(141);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
@@ -757,8 +784,9 @@ for (const { name, path, count } of [
         async () => {
             const report = JSON.parse(readFileSync(path!, "utf8"));
             expect(report.cases).toHaveLength(count);
+            const exchangeChecks: { index: number; primary: string[]; recovery: boolean }[] = [];
             for (const row of report.cases) {
-                for (const input of [
+                const inputs: LiveTacticalScanInput[] = [
                     {
                         fen: row.fen,
                         pvUci: row.engineLines[0].pvUci,
@@ -772,7 +800,28 @@ for (const { name, path, count } of [
                         engineName: "Private source continuation",
                         depth: 16,
                     },
-                ]) {
+                ];
+                if (name === "positional-quarter" && row.id === "private-corpus:501") {
+                    const reached = replayTacticalLine(row.fen, row.sourceUci).at(-1)!;
+                    const moves = ["e4d5", "e8e1", "d1e1", "g7d4"];
+                    const steps = replayTacticalLine(makeFen(reached.after.toSetup()), moves);
+                    if (steps.length !== 4) throw new Error("Incomplete private exchange fixture");
+                    inputs.push(
+                        {
+                            fen: makeFen(steps[0].before.toSetup()),
+                            pvUci: moves,
+                            engineName: "Private exchange temptation",
+                            depth: 16,
+                        },
+                        {
+                            fen: makeFen(steps[1].before.toSetup()),
+                            pvUci: moves.slice(1),
+                            engineName: "Private guard deflection",
+                            depth: 16,
+                        },
+                    );
+                }
+                for (const [index, input] of inputs.entries()) {
                     const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
                     expect({ id: row.id, scan: result.scan }).toEqual({
                         id: row.id,
@@ -782,8 +831,27 @@ for (const { name, path, count } of [
                         TACTICAL_CLASSIFICATION_TIMEOUT_MS,
                     );
                     expect(result.startupMs).toBeLessThan(TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
+                    if (index >= 2)
+                        exchangeChecks.push({
+                            index,
+                            primary: result.scan.motifs.map((motif) => motif.id),
+                            recovery: result.scan.variations[0].timeline.some(
+                                (motif) =>
+                                    motif.label === "Material Recovery" &&
+                                    motif.ply === 4 &&
+                                    motif.value === 0,
+                            ),
+                        });
                 }
             }
+            expect(exchangeChecks).toEqual(
+                name === "positional-quarter"
+                    ? [
+                          { index: 2, primary: [], recovery: true },
+                          { index: 3, primary: ["deflection"], recovery: false },
+                      ]
+                    : [],
+            );
         },
         120000,
     );

@@ -1,4 +1,10 @@
-# Rare-theme real-game review — adapter 82 / live pipeline 87
+# Rare-theme real-game review — adapter 83 / live pipeline 88
+
+## Guard-deflection and compensation follow-up
+
+The [current course audit](private-course-review.md) fixes the positional-course false free-piece claim and adds an independently verified guard-deflection mechanism. The full exchange's later capture now says Material Recovery when it merely restores the earlier loss; a standalone reached deflection retains its actual payoff. A larger Removing the Defenders lesson keeps priority over its duplicate component. The missed move-order lesson is retained in review, while a newly found pawn deflection in another course variation stays secondary at Black's actual ply, not White's unproved starting cause.
+
+All twenty adapter-82 rare-theme outputs remain unchanged. The 99 additional engine searches include the rejected assumption that a constructed deflection was the best move: a queen check was much stronger. This is further noise/secondary-theme work, not new zugzwang coverage or a claim that the rare sample is solved. The [public decision receipt](exchange-defence-stockfish-18.json) contains fourteen of those searches; the paid-course branches remain private.
 
 ## King-safe interference follow-up
 
@@ -55,6 +61,6 @@ Relative to adapter 80, adapter 81 changed one primary (zYjb5) and added a mecha
 
 ## Broader regression and delivery scope
 
-Exact-input replays of seven private Woodpecker reports cover 180 positions, including the new 21-position positional quarter sample. Their full source and live results are unchanged ignoring version; those were reclassifications of stored engine lines, not 180 new engine searches. The 32 frozen mistake-priority judgements are unchanged. The new quarter sample's compensating-exchange false positive remains open; private data and detailed receipts stay outside Git.
+Exact-input replays of seven private Woodpecker reports cover 180 positions, including the 21-position positional quarter sample. Adapter 83 leaves all source and 179 live results unchanged ignoring version; one live second variation gains the actual-ply pawn deflection described above. Those are reclassifications of stored engine lines, not 180 new engine searches. The 32 frozen mistake-priority judgements are unchanged. The quarter sample's separately reached compensating-exchange false positive is now fixed and explicitly tested through the built worker; private data and detailed receipts stay outside Git.
 
-Final verification and delivery status are recorded in [the current course audit](private-course-review.md). The [138-input production-worker timing receipt](built-worker-adapter82.json) exposes the measured startup and classification times; the additional rare/private inputs are deadline/parity checks, not part of these percentiles. No native app, package or service was restarted/deployed, and source/render/controller tests are not physical WebView proof.
+Final verification and delivery status are recorded in [the current course audit](private-course-review.md). The [141-input production-worker timing receipt](built-worker-adapter83.json) exposes the measured startup and classification times; the additional rare/private inputs are deadline/parity checks, not part of these percentiles. No native app, package or service was restarted/deployed, and source/render/controller tests are not physical WebView proof.

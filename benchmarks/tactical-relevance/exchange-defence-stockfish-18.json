@@ -1,0 +1,1403 @@
+{
+  "scope": "Constructed controls and the separately reached public opening continuation. Centipawns are full-position estimates from the side to move, not local material bounds. This is development evidence, not an accuracy estimate.",
+  "engine": {
+    "name": "Stockfish 18",
+    "depth": 16,
+    "threads": 1,
+    "hashMb": 32,
+    "scorePerspective": "side to move"
+  },
+  "completedSearches": 14,
+  "humanReview": [
+    "Nxe5 Bxb7 Qxb7 dxe5 and Nxe5 dxe5 Bxd5 Qxd5 both balance material. Truncating the second exchange before Qxd5 invented a profit. White is already favoured, so a negative Black score is not evidence that Nxe5 newly loses.",
+    "The blocked bishop, additional bishop guard and alternative rook recapturer controls preserve genuine exd5 material gains. The alternative recapturer is on f1; an earlier a1 construction was invalid because Qd1 blocked its route.",
+    "These searches corroborate selected moves, not arbitrary longer play or the accuracy of all classifier outputs. The embedded classifier results are development snapshots; final source/controller parity is recorded separately.",
+    "A tempting sparse missed-deflection benchmark was rejected: Qg3+ is +782 cp Black, Rxe1 only +2, and Kh8 -873. Rxe1 has a real local guard-deflection mechanism but is not this position's best lesson. The real private positional move-order comparison, independently searched, is used for the missed-opportunity regression instead."
+  ],
+  "searches": [
+    {
+      "id": "opening:best",
+      "fen": "r4k1r/pbq1b1pp/1pn5/2pBN3/3P4/4P3/PP3PPP/R1BQ1RK1 b - - 0 13",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c6e5",
+            "d4e5",
+            "b7d5",
+            "d1d5",
+            "a8d8",
+            "d5e4",
+            "c5c4",
+            "a2a4",
+            "g7g6",
+            "e4c2",
+            "c7e5",
+            "c2c4",
+            "f8g7",
+            "g2g3",
+            "h8f8"
+          ],
+          "pvSan": [
+            "Nxe5",
+            "dxe5",
+            "Bxd5",
+            "Qxd5",
+            "Rd8",
+            "Qe4",
+            "c4",
+            "a4",
+            "g6",
+            "Qc2",
+            "Qxe5",
+            "Qxc4",
+            "Kg7",
+            "g3",
+            "Rhf8"
+          ],
+          "cp": -259,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "e7f6",
+            "d5c6",
+            "b7c6",
+            "e5c6",
+            "c7c6",
+            "d4d5",
+            "c6e8",
+            "f2f3",
+            "e8e5",
+            "e3e4"
+          ],
+          "pvSan": [
+            "Bf6",
+            "Bxc6",
+            "Bxc6",
+            "Nxc6",
+            "Qxc6",
+            "d5",
+            "Qe8",
+            "f3",
+            "Qe5",
+            "e4"
+          ],
+          "cp": -353,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "a8c8",
+            "d1f3",
+            "e7f6",
+            "e5g4",
+            "f8e7",
+            "f3e4",
+            "e7d8",
+            "g4f6",
+            "g7f6",
+            "f1d1",
+            "c5d4",
+            "e3d4"
+          ],
+          "pvSan": [
+            "Rc8",
+            "Qf3+",
+            "Bf6",
+            "Ng4",
+            "Ke7",
+            "Qe4+",
+            "Kd8",
+            "Nxf6",
+            "gxf6",
+            "Rd1",
+            "cxd4",
+            "exd4"
+          ],
+          "cp": -390,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-82"
+      }
+    },
+    {
+      "id": "opening:Nxe5",
+      "fen": "r4k1r/pbq1b1pp/1pn5/2pBN3/3P4/4P3/PP3PPP/R1BQ1RK1 b - - 0 13",
+      "searchMove": "c6e5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c6e5",
+            "d4e5",
+            "b7d5",
+            "d1d5",
+            "a8d8",
+            "d5e4",
+            "c5c4",
+            "f2f4",
+            "c7c5",
+            "f4f5",
+            "f8f7",
+            "e4f4",
+            "d8d3",
+            "e5e6",
+            "f7e8",
+            "g1h1",
+            "e7d6",
+            "f4h4",
+            "c5e5",
+            "e3e4"
+          ],
+          "pvSan": [
+            "Nxe5",
+            "dxe5",
+            "Bxd5",
+            "Qxd5",
+            "Rd8",
+            "Qe4",
+            "c4",
+            "f4",
+            "Qc5",
+            "f5",
+            "Kf7",
+            "Qf4",
+            "Rd3",
+            "e6+",
+            "Ke8",
+            "Kh1",
+            "Bd6",
+            "Qh4",
+            "Qe5",
+            "e4"
+          ],
+          "cp": -248,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-82"
+      }
+    },
+    {
+      "id": "opening:response-0:Bxb7",
+      "fen": "r4k1r/pbq1b1pp/1p6/2pBn3/3P4/4P3/PP3PPP/R1BQ1RK1 w - - 0 14",
+      "searchMove": "d5b7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5b7",
+            "c7b7",
+            "d4e5",
+            "b7e4",
+            "d1h5",
+            "a8d8",
+            "b2b3",
+            "g7g6",
+            "h5e2",
+            "f8g7",
+            "c1b2",
+            "h8e8",
+            "a1c1",
+            "d8d3",
+            "c1c4",
+            "e4d5",
+            "e3e4",
+            "d5d7",
+            "b2c3",
+            "e8d8"
+          ],
+          "pvSan": [
+            "Bxb7",
+            "Qxb7",
+            "dxe5",
+            "Qe4",
+            "Qh5",
+            "Rd8",
+            "b3",
+            "g6",
+            "Qe2",
+            "Kg7",
+            "Bb2",
+            "Rhe8",
+            "Rac1",
+            "Rd3",
+            "Rc4",
+            "Qd5",
+            "e4",
+            "Qd7",
+            "Bc3",
+            "Rd8"
+          ],
+          "cp": 279,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-82"
+      }
+    },
+    {
+      "id": "opening:response-1:gxf3",
+      "fen": "r4k1r/pBq1b1pp/1p6/2p5/3P4/4Pn2/PP3PPP/R1BQ1RK1 w - - 1 15",
+      "searchMove": "g2f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g2f3",
+            "c7b7",
+            "e3e4",
+            "b7c6",
+            "d4c5",
+            "b6c5",
+            "c1e3",
+            "c6e6",
+            "a1c1",
+            "f8f7",
+            "g1g2",
+            "h8d8",
+            "d1e2",
+            "a8b8"
+          ],
+          "pvSan": [
+            "gxf3",
+            "Qxb7",
+            "e4",
+            "Qc6",
+            "dxc5",
+            "bxc5",
+            "Be3",
+            "Qe6",
+            "Rc1",
+            "Kf7",
+            "Kg2",
+            "Rhd8",
+            "Qe2",
+            "Rab8"
+          ],
+          "cp": 287,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-82"
+      }
+    },
+    {
+      "id": "opening:response-2:Kxg2",
+      "fen": "r4k1r/p3b1pp/1p6/2p1P3/8/4P3/PP3PqP/R1BQ1RK1 w - - 0 16",
+      "searchMove": "g1g2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g1g2",
+            "a8d8",
+            "d1f3",
+            "f8g8",
+            "g2h1",
+            "h7h5",
+            "e3e4",
+            "h5h4",
+            "f3g4",
+            "d8f8",
+            "c1e3",
+            "h4h3",
+            "f1g1",
+            "h8h7",
+            "e5e6",
+            "f8d8",
+            "g4e2",
+            "h7h4"
+          ],
+          "pvSan": [
+            "Kxg2",
+            "Rd8",
+            "Qf3+",
+            "Kg8",
+            "Kh1",
+            "h5",
+            "e4",
+            "h4",
+            "Qg4",
+            "Rf8",
+            "Be3",
+            "h3",
+            "Rg1",
+            "Rh7",
+            "e6",
+            "Rd8",
+            "Qe2",
+            "Rh4"
+          ],
+          "cp": 704,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "g1g2 wins the loose queen on g2.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "g1g2",
+            "relevance": "primary",
+            "value": 900
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "g1g2 wins the loose queen on g2.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "g1g2",
+            "relevance": "primary",
+            "value": 900,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-82"
+      }
+    },
+    {
+      "id": "opening:response-3:dxe5",
+      "fen": "r4k1r/pq2b1pp/1p6/2p1n3/3P4/4P3/PP3PPP/R1BQ1RK1 w - - 0 15",
+      "searchMove": "d4e5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4e5",
+            "b7e4",
+            "b2b3",
+            "a8d8",
+            "d1h5",
+            "g7g6",
+            "h5e2",
+            "e4d3",
+            "e2f3",
+            "d3f5",
+            "c1b2",
+            "f5f3",
+            "g2f3",
+            "d8d2",
+            "b2c3",
+            "d2c2"
+          ],
+          "pvSan": [
+            "dxe5",
+            "Qe4",
+            "b3",
+            "Rd8",
+            "Qh5",
+            "g6",
+            "Qe2",
+            "Qd3",
+            "Qf3+",
+            "Qf5",
+            "Bb2",
+            "Qxf3",
+            "gxf3",
+            "Rd2",
+            "Bc3",
+            "Rc2"
+          ],
+          "cp": 268,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "d4e5 wins the loose knight on e5.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4e5",
+            "relevance": "primary",
+            "value": 320
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "d4e5 wins the loose knight on e5.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4e5",
+            "relevance": "primary",
+            "value": 320,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-82"
+      }
+    },
+    {
+      "id": "opening:direct-pawn-recapture",
+      "fen": "r4k1r/pbq1b1pp/1p6/2pBn3/3P4/4P3/PP3PPP/R1BQ1RK1 w - - 0 14",
+      "moves": [
+        "c6e5"
+      ],
+      "searchMove": "d4e5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4e5",
+            "b7d5",
+            "d1d5",
+            "a8d8",
+            "d5f3",
+            "f8e8",
+            "f3g3",
+            "g7g6",
+            "b2b3",
+            "c7c6",
+            "g3g4",
+            "b6b5",
+            "f1d1",
+            "d8d1",
+            "g4d1",
+            "c5c4",
+            "b3c4",
+            "b5c4",
+            "a1b1",
+            "e8f7",
+            "c1b2",
+            "c4c3"
+          ],
+          "pvSan": [
+            "dxe5",
+            "Bxd5",
+            "Qxd5",
+            "Rd8",
+            "Qf3+",
+            "Ke8",
+            "Qg3",
+            "g6",
+            "b3",
+            "Qc6",
+            "Qg4",
+            "b5",
+            "Rd1",
+            "Rxd1+",
+            "Qxd1",
+            "c4",
+            "bxc4",
+            "bxc4",
+            "Rb1",
+            "Kf7",
+            "Bb2",
+            "c3"
+          ],
+          "cp": 265,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "d4e5 wins the loose knight on e5.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4e5",
+            "relevance": "primary",
+            "value": 220
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "d4e5 wins the loose knight on e5.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4e5",
+            "relevance": "primary",
+            "value": 220,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-82"
+      }
+    },
+    {
+      "id": "opening:direct-exchange-completes",
+      "fen": "r4k1r/p1q1b1pp/1p6/2pbP3/8/4P3/PP3PPP/R1BQ1RK1 w - - 0 15",
+      "moves": [
+        "c6e5",
+        "d4e5",
+        "b7d5"
+      ],
+      "searchMove": "d1d5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d1d5",
+            "a8d8",
+            "d5f3",
+            "f8g8",
+            "f3e4",
+            "c5c4",
+            "e4c2",
+            "c7e5",
+            "c2c4",
+            "e5d5",
+            "c4a4",
+            "b6b5",
+            "a4a7",
+            "e7f6",
+            "a7a5",
+            "g8f7",
+            "e3e4",
+            "d5d3",
+            "a5a7",
+            "d8d7",
+            "a7e3",
+            "d3e3",
+            "c1e3"
+          ],
+          "pvSan": [
+            "Qxd5",
+            "Rd8",
+            "Qf3+",
+            "Kg8",
+            "Qe4",
+            "c4",
+            "Qc2",
+            "Qxe5",
+            "Qxc4+",
+            "Qd5",
+            "Qa4",
+            "b5",
+            "Qxa7",
+            "Bf6",
+            "Qa5",
+            "Kf7",
+            "e4",
+            "Qd3",
+            "Qa7+",
+            "Rd7",
+            "Qe3",
+            "Qxe3",
+            "Bxe3"
+          ],
+          "cp": 264,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "d1d5 wins the loose bishop on d5.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d1d5",
+            "relevance": "primary",
+            "value": 330
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "d1d5 wins the loose bishop on d5.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d1d5",
+            "relevance": "primary",
+            "value": 330,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-82"
+      }
+    },
+    {
+      "id": "constructed:blocked-bishop",
+      "fen": "2bqr1k1/p5b1/5p2/3n4/3NP3/8/8/2BQRBK1 w - - 0 1",
+      "searchMove": "e4d5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e4d5",
+            "e8e1",
+            "d1e1",
+            "d8d5",
+            "e1e8",
+            "g8h7",
+            "c1e3",
+            "c8d7",
+            "f1d3",
+            "f6f5",
+            "e8e7",
+            "h7g8",
+            "e7d8",
+            "g8f7",
+            "d3c4",
+            "d5c4",
+            "d8d7",
+            "f7g8",
+            "d7e8",
+            "g8h7",
+            "e8h5",
+            "h7g8",
+            "d4f5",
+            "c4f7"
+          ],
+          "pvSan": [
+            "exd5",
+            "Rxe1",
+            "Qxe1",
+            "Qxd5",
+            "Qe8+",
+            "Kh7",
+            "Be3",
+            "Bd7",
+            "Bd3+",
+            "f5",
+            "Qe7",
+            "Kg8",
+            "Qd8+",
+            "Kf7",
+            "Bc4",
+            "Qxc4",
+            "Qxd7+",
+            "Kg8",
+            "Qe8+",
+            "Kh7",
+            "Qh5+",
+            "Kg8",
+            "Nxf5",
+            "Qf7"
+          ],
+          "cp": 121,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "e4d5 wins the loose knight on d5.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e4d5",
+            "relevance": "primary",
+            "value": 220
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e1e8 forks the king on g8 and bishop on c8. The line continues with d8d7, winning the bishop.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "e1e8",
+            "relevance": "secondary",
+            "value": 220
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "e4d5 wins the loose knight on d5.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e4d5",
+            "relevance": "primary",
+            "value": 220,
+            "actor": "white"
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "e1e8 forks the king on g8 and bishop on c8. The line continues with d8d7, winning the bishop.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "e1e8",
+            "relevance": "secondary",
+            "value": 220,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-82"
+      }
+    },
+    {
+      "id": "constructed:extra-guard",
+      "fen": "2bqr1k1/p5b1/8/3n4/3NP3/2B5/8/2BQRBK1 w - - 0 1",
+      "searchMove": "e4d5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e4d5",
+            "e8f8",
+            "f1g2",
+            "d8h4",
+            "d1d2",
+            "c8h3",
+            "e1e4",
+            "h4h5",
+            "d2g5",
+            "h5g5",
+            "c1g5",
+            "g7d4",
+            "c3d4",
+            "h3g2",
+            "g1g2",
+            "f8f5"
+          ],
+          "pvSan": [
+            "exd5",
+            "Rf8",
+            "Bg2",
+            "Qh4",
+            "Qd2",
+            "Bh3",
+            "Re4",
+            "Qh5",
+            "Qg5",
+            "Qxg5",
+            "Bxg5",
+            "Bxd4+",
+            "Bxd4",
+            "Bxg2",
+            "Kxg2",
+            "Rf5"
+          ],
+          "cp": 455,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "e4d5 wins the loose knight on d5.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e4d5",
+            "relevance": "primary",
+            "value": 220
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "e4d5 wins the loose knight on d5.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e4d5",
+            "relevance": "primary",
+            "value": 220,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-82"
+      }
+    },
+    {
+      "id": "constructed:alternate-recapturer",
+      "fen": "2bqr1k1/p5b1/8/3n4/3NP3/8/8/2BQRRK1 w - - 0 1",
+      "searchMove": "e4d5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e4d5",
+            "e8e1",
+            "d1e1",
+            "g7d4",
+            "g1h2",
+            "d4g7",
+            "e1e4",
+            "c8d7",
+            "c1e3",
+            "d8b8",
+            "h2g2",
+            "b8b2",
+            "f1f2",
+            "b2c3",
+            "f2f3",
+            "a7a5",
+            "e4e7",
+            "c3c2",
+            "e3f2",
+            "c2g6",
+            "f3g3"
+          ],
+          "pvSan": [
+            "exd5",
+            "Rxe1",
+            "Qxe1",
+            "Bxd4+",
+            "Kh2",
+            "Bg7",
+            "Qe4",
+            "Bd7",
+            "Be3",
+            "Qb8+",
+            "Kg2",
+            "Qb2+",
+            "Rf2",
+            "Qc3",
+            "Rf3",
+            "a5",
+            "Qe7",
+            "Qc2+",
+            "Bf2",
+            "Qg6+",
+            "Rg3"
+          ],
+          "cp": 223,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "e4d5 wins the loose knight on d5.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e4d5",
+            "relevance": "primary",
+            "value": 220
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "e4d5 wins the loose knight on d5.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "e4d5",
+            "relevance": "primary",
+            "value": 220,
+            "actor": "white"
+          },
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 4,
+            "moveUci": "g7d4",
+            "value": 420,
+            "evidence": "Bxd4+ takes the knight with check before Qxd5. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Qxd5 first allows Nc2, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures.",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-82"
+      }
+    },
+    {
+      "id": "guard-review:best",
+      "fen": "2b1r1k1/p1q3b1/8/3P4/3N4/8/8/2BQRBK1 b - - 0 1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c7g3",
+            "g1h1",
+            "e8e1",
+            "d1f3",
+            "e1f1",
+            "f3f1",
+            "g3h4",
+            "h1g2",
+            "h4h3",
+            "g2f2",
+            "g7d4",
+            "f2e1",
+            "h3g3",
+            "e1d1",
+            "c8g4",
+            "f1e2",
+            "g3d3",
+            "c1d2",
+            "d3e2",
+            "d1c2"
+          ],
+          "pvSan": [
+            "Qg3+",
+            "Kh1",
+            "Rxe1",
+            "Qf3",
+            "Rxf1+",
+            "Qxf1",
+            "Qh4+",
+            "Kg2",
+            "Qh3+",
+            "Kf2",
+            "Bxd4+",
+            "Ke1",
+            "Qg3+",
+            "Kd1",
+            "Bg4+",
+            "Qe2",
+            "Qd3+",
+            "Bd2",
+            "Qxe2+",
+            "Kc2"
+          ],
+          "cp": 782,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "g7d4",
+            "d1d4",
+            "c7g3",
+            "g1h1",
+            "e8e1",
+            "d4g1",
+            "g3g1",
+            "h1g1",
+            "e1c1",
+            "g1f2",
+            "c8b7",
+            "d5d6",
+            "c1d1",
+            "d6d7",
+            "d1d7",
+            "f2e3",
+            "g8h8"
+          ],
+          "pvSan": [
+            "Bxd4+",
+            "Qxd4",
+            "Qg3+",
+            "Kh1",
+            "Rxe1",
+            "Qg1",
+            "Qxg1+",
+            "Kxg1",
+            "Rxc1",
+            "Kf2",
+            "Bb7",
+            "d6",
+            "Rd1",
+            "d7",
+            "Rxd7",
+            "Ke3",
+            "Kh8"
+          ],
+          "cp": 542,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "e8e1",
+            "d1e1",
+            "g7d4",
+            "g1g2",
+            "c7c2",
+            "c1d2",
+            "g8f7",
+            "f1b5",
+            "c2g6",
+            "e1g3",
+            "c8g4",
+            "g3f4",
+            "g4f5",
+            "g2f1",
+            "d4b6",
+            "f1e2",
+            "g6g2",
+            "e2d1",
+            "g2g1",
+            "b5f1"
+          ],
+          "pvSan": [
+            "Rxe1",
+            "Qxe1",
+            "Bxd4+",
+            "Kg2",
+            "Qc2+",
+            "Bd2",
+            "Kf7",
+            "Bb5",
+            "Qg6+",
+            "Qg3",
+            "Bg4",
+            "Qf4+",
+            "Bf5+",
+            "Kf1",
+            "Bb6",
+            "Ke2",
+            "Qg2+",
+            "Kd1",
+            "Qg1+",
+            "Bf1"
+          ],
+          "cp": 22,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c7g3",
+            "evidence": "Qg3+ forks the rook on e1 and king on g1; no legal reply saves both targets without conceding material.",
+            "relevance": "primary",
+            "value": 1550
+          },
+          {
+            "id": "attacking_undefended_piece",
+            "label": "Threatening a Piece",
+            "confidence": "medium",
+            "evidence": "Threatening a Piece appears on g3h4 at ply 7 of the current best line.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "g3h4",
+            "relevance": "secondary",
+            "value": 1550
+          }
+        ],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c7g3",
+            "evidence": "Qg3+ forks the rook on e1 and king on g1; no legal reply saves both targets without conceding material.",
+            "relevance": "primary",
+            "value": 1550,
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "e8e1 wins the loose rook on e1.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e8e1",
+            "relevance": "secondary",
+            "value": 500,
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Winning Recapture",
+            "confidence": "high",
+            "evidence": "Qxf1 wins the rook on f1 in exchange for the bishop just captured there. The settled local exchange gains 1.7 pawns of material; this is the payoff, not a newly hanging piece.",
+            "source": "available",
+            "ply": 6,
+            "moveUci": "f3f1",
+            "relevance": "secondary",
+            "value": 170,
+            "actor": "white"
+          },
+          {
+            "id": "attacking_undefended_piece",
+            "label": "Threatening a Piece",
+            "confidence": "medium",
+            "evidence": "Threatening a Piece appears on g3h4 at ply 7 of the current best line.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "g3h4",
+            "relevance": "secondary",
+            "value": 1550,
+            "actor": "black"
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "g3h4 forks the king on h1 and knight on d4. The line continues with d3e2, winning the queen.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "g3h4",
+            "relevance": "secondary",
+            "value": 1220,
+            "actor": "black"
+          },
+          {
+            "id": "forcingAttack",
+            "label": "Forcing Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 9,
+            "moveUci": "h4h3",
+            "value": 320,
+            "evidence": "Qh3+ starts a checking attack that wins material or mates against every legal reply. After Kf2, Bxd4+ Be3 Qxf1+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "g7d4 wins the loose knight on d4.",
+            "source": "available",
+            "ply": 11,
+            "moveUci": "g7d4",
+            "relevance": "secondary",
+            "value": 320,
+            "actor": "black"
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "source": "available",
+            "confidence": "high",
+            "ply": 17,
+            "moveUci": "g3d3",
+            "evidence": "Qd3+ forks the king on d1 and queen on e2; no legal reply saves both targets without conceding material. The queen on e2 cannot capture on d3 because it is pinned to its king on d1.",
+            "relevance": "secondary",
+            "value": 900,
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "d3e2 wins the loose queen on e2.",
+            "source": "available",
+            "ply": 19,
+            "moveUci": "d3e2",
+            "relevance": "secondary",
+            "value": 900,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-83"
+      }
+    },
+    {
+      "id": "guard-review:Rxe1",
+      "fen": "2b1r1k1/p1q3b1/8/3P4/3N4/8/8/2BQRBK1 b - - 0 1",
+      "searchMove": "e8e1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e8e1",
+            "d1e1",
+            "g7d4",
+            "g1g2",
+            "c7c2",
+            "c1d2",
+            "g8f7",
+            "f1b5",
+            "c2g6",
+            "e1g3",
+            "g6g3",
+            "g2g3",
+            "c8e6",
+            "d5e6",
+            "f7e6",
+            "g3g2",
+            "e6d6",
+            "d2f4",
+            "d6c5"
+          ],
+          "pvSan": [
+            "Rxe1",
+            "Qxe1",
+            "Bxd4+",
+            "Kg2",
+            "Qc2+",
+            "Bd2",
+            "Kf7",
+            "Bb5",
+            "Qg6+",
+            "Qg3",
+            "Qxg3+",
+            "Kxg3",
+            "Be6",
+            "dxe6+",
+            "Kxe6",
+            "Kg2",
+            "Kd6",
+            "Bf4+",
+            "Kc5"
+          ],
+          "cp": 2,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "deflection",
+            "label": "Deflection",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e8e1",
+            "value": 320,
+            "evidence": "Rxe1 offers the rook to deflect the queen from d1. If Qxe1, Bxd4+ wins the now-unguarded knight on d4. Before the offer, that defender could legally recapture; the move order matters. All legal recaptures and declined offers retain extra material in the checked short exchanges; the continuation depends on the defence.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "deflection",
+            "label": "Deflection",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e8e1",
+            "value": 320,
+            "evidence": "Rxe1 offers the rook to deflect the queen from d1. If Qxe1, Bxd4+ wins the now-unguarded knight on d4. Before the offer, that defender could legally recapture; the move order matters. All legal recaptures and declined offers retain extra material in the checked short exchanges; the continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Deflection Payoff",
+            "confidence": "high",
+            "evidence": "Bxd4+ wins the target after Rxe1 drew the queen away from defending the knight on d4. This is the payoff of the earlier deflection, not a separate root tactic.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g7d4",
+            "relevance": "secondary",
+            "value": 320,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-83"
+      }
+    },
+    {
+      "id": "guard-review:Kh8",
+      "fen": "2b1r1k1/p1q3b1/8/3P4/3N4/8/8/2BQRBK1 b - - 0 1",
+      "searchMove": "g8h8",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g8h8",
+            "e1e8",
+            "g7f8",
+            "d1h5",
+            "h8g8",
+            "e8f8",
+            "g8f8",
+            "h5h8",
+            "f8f7",
+            "h8h7",
+            "f7f6",
+            "h7c7",
+            "c8g4",
+            "c7f4",
+            "f6e7",
+            "f4g4",
+            "e7d8",
+            "g4g8",
+            "d8d7",
+            "f1b5",
+            "d7c7"
+          ],
+          "pvSan": [
+            "Kh8",
+            "Rxe8+",
+            "Bf8",
+            "Qh5+",
+            "Kg8",
+            "Rxf8+",
+            "Kxf8",
+            "Qh8+",
+            "Kf7",
+            "Qh7+",
+            "Kf6",
+            "Qxc7",
+            "Bg4",
+            "Qf4+",
+            "Ke7",
+            "Qxg4",
+            "Kd8",
+            "Qg8+",
+            "Kd7",
+            "Bb5+",
+            "Kc7"
+          ],
+          "cp": -873,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-83"
+      }
+    }
+  ]
+}

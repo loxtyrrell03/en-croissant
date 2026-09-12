@@ -188,6 +188,51 @@ export function winningRecaptureEvidence(
         )
             return null;
     }
+    if (motif.id === "hangingPiece" && step?.capture && index >= 2) {
+        const offer = steps[index - 2];
+        const proof = proveCaptureDeflection(offer);
+        const branch = proof?.accepted.find(
+            (entry) =>
+                entry.mode === "guard" &&
+                entry.reply === previous.san &&
+                entry.answer === step.san &&
+                entry.from === step.move.from &&
+                entry.target === step.move.to,
+        );
+        if (branch) {
+            const start = Math.max(0, index - 3);
+            const context = steps.slice(start, index + 1);
+            const checked = replayTacticalLine(
+                makeFen(context[0].before.toSetup()),
+                context.map((s) => s.uci),
+            );
+            if (
+                checked.length === context.length &&
+                context.every(
+                    (entry, i) =>
+                        makeUci(entry.move) === checked[i].uci &&
+                        entry.capture === checked[i].capture &&
+                        makeFen(entry.before.toSetup()) === makeFen(checked[i].before.toSetup()) &&
+                        makeFen(entry.after.toSetup()) === makeFen(checked[i].after.toSetup()),
+                )
+            ) {
+                const prior = steps[index - 3];
+                const recovery =
+                    prior &&
+                    !prior.move.promotion &&
+                    prior.capture === step.capture &&
+                    prior.before.turn !== step.before.turn &&
+                    offer.capture === previous.capture;
+                const victim = step.before.board.get(step.move.to)!;
+                return {
+                    ...motif,
+                    label: recovery ? "Material Recovery" : "Deflection Payoff",
+                    value: recovery ? 0 : branch.gain,
+                    evidence: `${step.san} ${recovery ? "recovers material after" : "wins the target after"} ${offer.san} drew the ${offer.after.board.get(branch.receiver)!.role} away from defending the ${victim.role} on ${makeSquare(branch.target)}.${recovery ? ` This restores the material surrendered by ${prior.san}; the complete exchange has no net material gain.` : " This is the payoff of the earlier deflection, not a separate root tactic."}`,
+                };
+            }
+        }
+    }
     if (
         motif.id === "hangingPiece" &&
         step?.capture &&
@@ -5751,11 +5796,13 @@ export function tacticalBoardEvidence(
                 // These are possible acceptances, not already opened queen rays
                 // or a pin which exists only after a particular recapture.
                 arrows: capture.accepted
-                    .filter((branch) => branch.mode === "ray")
-                    .map((branch) => ({
-                        from: makeSquare(branch.receiver),
-                        to: makeSquare(step.move.to),
-                    })),
+                    .filter((branch) => branch.mode === "ray" || branch.mode === "guard")
+                    .flatMap((branch) => [
+                        { from: makeSquare(branch.receiver), to: makeSquare(step.move.to) },
+                        ...(branch.mode === "guard"
+                            ? [{ from: makeSquare(branch.receiver), to: makeSquare(branch.target) }]
+                            : []),
+                    ]),
             };
         if (!deflectionEvidence(suffix, motif.source)) return null;
         return {
@@ -6624,7 +6671,7 @@ type CaptureDeflectionProof = {
         reply: string;
         answer: string;
         gain: number;
-        mode: "ray" | "pin" | "capture";
+        mode: "ray" | "guard" | "pin" | "capture";
         receiver: Square;
         from: Square;
         target: Square;
@@ -7024,7 +7071,7 @@ export function proveReinforcedPin(
 }
 
 /** Different receivers need not lose by the same mechanism. A receiver can
- * vacate a blocking square or enter an absolute pin; a quiet reinforcement
+ * abandon a legally guarded target, vacate a blocking square or enter an absolute pin; a quiet reinforcement
  * of that pin is checked against every reply. Other branches must retain the
  * captured material through the offered piece or an answer to check. */
 export function proveCaptureDeflection(
@@ -7085,19 +7132,47 @@ export function proveCaptureDeflection(
             let branch: CaptureDeflectionProof["accepted"][number] | undefined;
             for (const move of legalMoves(next)) {
                 const piece = next.board.get(move.from)!;
-                if (
-                    !capturedValue(next, move) ||
-                    !["bishop", "rook", "queen"].includes(piece.role) ||
-                    !between(move.from, move.to).has(reply.from)
-                )
+                if (!capturedValue(next, move) || !["bishop", "rook", "queen"].includes(piece.role))
                     continue;
+                const openedRay = between(move.from, move.to).has(reply.from);
+                let abandonedGuard = false;
+                let guardedGain = -VALUE.king;
+                const oldTarget = root.before.board.get(move.to);
+                const newTarget = next.board.get(move.to);
+                if (
+                    !openedRay &&
+                    move.to !== reply.to &&
+                    oldTarget &&
+                    newTarget &&
+                    oldTarget.color === newTarget.color &&
+                    oldTarget.role === newTarget.role &&
+                    root.before.isLegal(move)
+                ) {
+                    const receiver = root.before.board.get(reply.from)!;
+                    if (
+                        attacks(receiver, reply.from, root.before.board.occupied).has(move.to) &&
+                        !attacks(receiver, reply.to, next.board.occupied).has(move.to)
+                    ) {
+                        // Use the actual pre-offer board, not a restored guard
+                        // beside a newly imposed check. That exact piece must
+                        // really be able to recapture the premature capture.
+                        const premature = visit(root.before, move);
+                        guardedGain = tacticalExchangeGain(root.before, move);
+                        abandonedGuard =
+                            guardedGain > -VALUE.king &&
+                            guardedGain < 90 &&
+                            premature.isLegal({ from: reply.from, to: move.to });
+                    }
+                }
+                if (!openedRay && !abandonedGuard) continue;
                 const gain = settled(next, move);
+                if (!openedRay && gain !== null && gain - guardedGain < 100) continue;
                 if (gain !== null && balance + gain >= 90) {
                     branch = {
                         reply: makeSan(root.after, reply),
                         answer: makeSan(next, move),
                         gain: balance + gain,
-                        mode: "ray",
+                        mode: openedRay ? "ray" : "guard",
                         receiver: reply.from,
                         from: move.from,
                         target: move.to,
@@ -7168,8 +7243,8 @@ export function proveCaptureDeflection(
             minimum = Math.min(minimum, branch.gain);
             accepted.push(branch);
         }
-        if (!accepted.some((branch) => branch.mode === "ray"))
-            throw new Error("No blocking defender deflected");
+        if (!accepted.some((branch) => branch.mode === "ray" || branch.mode === "guard"))
+            throw new Error("No defending piece deflected");
         for (const reply of replies) {
             if (receivers.includes(reply)) continue;
             if (reply.promotion) throw new Error("Promoting defence");
@@ -7480,7 +7555,9 @@ function deflectionEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
     }
     const capture = bait && proveCaptureDeflection(bait);
     if (capture) {
-        const branch = capture.accepted.find((branch) => branch.mode === "ray")!;
+        const branch = capture.accepted.find(
+            (branch) => branch.mode === "ray" || branch.mode === "guard",
+        )!;
         const pin = capture.accepted.find((branch) => branch.mode === "pin");
         return {
             id: "deflection",
@@ -7490,7 +7567,7 @@ function deflectionEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
             ply: 1,
             moveUci: bait.uci,
             value: capture.gain,
-            evidence: `${bait.san} offers the ${bait.after.board.get(bait.move.to)!.role} to deflect the ${bait.after.board.get(branch.receiver)!.role} from ${makeSquare(branch.receiver)}. If ${branch.reply}, ${branch.answer} exploits the opened line to the ${bait.after.board.get(branch.target)!.role} on ${makeSquare(branch.target)}.${pin ? ` A different recapture, ${pin.reply}, puts the ${bait.after.board.get(pin.receiver)!.role} in a pin to its king; ${pin.answer} adds an attack on it. That pin belongs to this branch, not every defence.` : ""} All legal recaptures and declined offers retain extra material in the checked short exchanges; the continuation depends on the defence.`,
+            evidence: `${bait.san} offers the ${bait.after.board.get(bait.move.to)!.role} to deflect the ${bait.after.board.get(branch.receiver)!.role} from ${makeSquare(branch.receiver)}. If ${branch.reply}, ${branch.answer} ${branch.mode === "guard" ? "wins the now-unguarded" : "exploits the opened line to the"} ${bait.after.board.get(branch.target)!.role} on ${makeSquare(branch.target)}.${branch.mode === "guard" ? " Before the offer, that defender could legally recapture; the move order matters." : ""}${pin ? ` A different recapture, ${pin.reply}, puts the ${bait.after.board.get(pin.receiver)!.role} in a pin to its king; ${pin.answer} adds an attack on it. That pin belongs to this branch, not every defence.` : ""} All legal recaptures and declined offers retain extra material in the checked short exchanges; the continuation depends on the defence.`,
         } satisfies TacticalMotifEvidence;
     }
     if (
@@ -9303,6 +9380,30 @@ export function auditTacticalMotifs(
     const filtered = normalizedCandidates
         .filter((m) => {
             if (incidentalMatingMechanisms.has(m.id) && m.ply === 1) return false;
+            // Capturing one guard AND deflecting the other is the fuller
+            // explanation. Its matching guard-deflection component is not
+            // a second badge, nor a reason to replace the combined lesson.
+            if (
+                m.id === "deflection" &&
+                m.ply &&
+                candidates.some((other) => other.id === "capturingDefender" && other.ply === m.ply)
+            ) {
+                const step = steps[m.ply - 1];
+                const combined = proveCombinedDefenderRemoval(step);
+                const capture = combined && proveCaptureDeflection(step);
+                if (
+                    combined &&
+                    capture &&
+                    capture.gain <= combined.gain &&
+                    capture.accepted.every(
+                        (branch) =>
+                            branch.mode === "guard" &&
+                            branch.target === combined.target &&
+                            branch.receiver === combined.receiver,
+                    )
+                )
+                    return false;
+            }
             if (
                 m.id === "promotion" &&
                 candidates.some((other) => other.id === "underPromotion" && other.ply === m.ply)
@@ -10436,21 +10537,29 @@ export function clearanceKingDefence(
     return null;
 }
 
+type CountercaptureDefenceAudit = {
+    nodesUsed: number;
+    responses: { fen: string; moveUci: string; moveSan: string; balance: number }[];
+};
+
 /** Positive local defence starting with a countercapture. Enumerate all immediate
- * captures through two legal recapture rounds, then use bounded exchange leaves.
+ * captures through two legal capture-response rounds, then use bounded exchange leaves.
  * Non-capturing checks require a real non-checking reply whose every recovery
  * capture stays below the material threshold. Carry the original compensation
  * through those leaves; named fork victims alone miss captures of the forker's
  * captor. Optional equal-recapture credit is supplied only after validating the
  * actual preceding capture. The separate capture-offset mode counts the
  * current root capture without prior exchange credit and requires an
- * off-square, non-checking defensive capture. Quiet preparations and longer checks are outside
+ * off-square, non-checking first defensive capture. Later compensation may
+ * capture another piece with check: the attacker's legal check evasions are
+ * replayed, not skipped. Quiet preparations and longer checks are outside
  * this local witness; failure cannot establish either safety or a tactical win. */
 export function counterCaptureMaterialDefence(
     root: TacticalReplayStep,
     nodeLimit = 8192,
     previousCaptureCost = 0,
     captureOffsetMode = false,
+    onProof?: (audit: CountercaptureDefenceAudit) => void,
 ): { defence: string; defenceUci: string; checkingDefences: string[] } | null {
     if (
         !Number.isSafeInteger(nodeLimit) ||
@@ -10465,6 +10574,16 @@ export function counterCaptureMaterialDefence(
     )
         return null;
     let nodes = nodeLimit;
+    const responses: CountercaptureDefenceAudit["responses"] = [];
+    const record = (pos: Chess, move: NormalMove, balance: number) => {
+        if (onProof)
+            responses.push({
+                fen: makeFen(pos.toSetup()),
+                moveUci: makeUci(move),
+                moveSan: makeSan(pos, move),
+                balance,
+            });
+    };
     const visit = (pos: Chess, move: NormalMove) => {
         if (--nodes < 0) throw new Error("Countercapture defence budget exhausted");
         const next = pos.clone();
@@ -10480,7 +10599,9 @@ export function counterCaptureMaterialDefence(
             const next = visit(pos, move);
             if (next.isEnd()) return null;
             const capture = delta(pos, move);
-            if (!capture && !next.isCheck()) continue;
+            // A quiet check evasion may attack the compensating capturer.
+            // Require a concrete safe defensive move before ending that leaf.
+            if (!capture && !next.isCheck() && !pos.isCheck()) continue;
             if (!capture) {
                 let answer: string | null = null;
                 for (const reply of legalMoves(next)) {
@@ -10503,6 +10624,7 @@ export function counterCaptureMaterialDefence(
                     }
                     if (resolved) {
                         answer = makeSan(next, reply);
+                        record(next, reply, remaining);
                         break;
                     }
                 }
@@ -10526,14 +10648,16 @@ export function counterCaptureMaterialDefence(
                 continue;
             let answered = false;
             for (const reply of legalMoves(next)) {
-                if (reply.to !== move.to || !capturedValue(next, reply)) continue;
+                if (!capturedValue(next, reply) || reply.promotion) continue;
                 const after = visit(next, reply);
-                if (after.isCheck()) continue;
+                const responseCount = responses.length;
                 const branch = safe(after, balance + capture - delta(next, reply), rounds - 1);
                 if (branch) {
+                    record(next, reply, balance + capture - delta(next, reply));
                     answered = true;
                     break;
                 }
+                responses.length = responseCount;
             }
             if (!answered) return null;
         }
@@ -10545,17 +10669,18 @@ export function counterCaptureMaterialDefence(
             if (captureOffsetMode && defence.to === root.move.to) continue;
             const next = visit(root.after, defence);
             if (next.isCheck() || next.isEnd()) continue;
-            const checkingDefences = safe(
-                next,
-                root.capture - previousCaptureCost - delta(root.after, defence),
-                2,
-            );
-            if (checkingDefences)
+            responses.length = 0;
+            const balance = root.capture - previousCaptureCost - delta(root.after, defence);
+            record(root.after, defence, balance);
+            const checkingDefences = safe(next, balance, 2);
+            if (checkingDefences) {
+                onProof?.({ nodesUsed: nodeLimit - nodes, responses });
                 return {
                     defence: makeSan(root.after, defence),
                     defenceUci: makeUci(defence),
                     checkingDefences,
                 };
+            }
         }
     } catch {
         return null;

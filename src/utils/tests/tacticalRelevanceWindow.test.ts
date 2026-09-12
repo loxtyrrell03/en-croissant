@@ -56,12 +56,13 @@ describe("keep continuation lessons connected to the starting tactic", () => {
         const result = classifyPositionTacticalMotifs({ fen, pvUci });
         expect(result.motifs[0]?.id).toBe("attackingF2F7");
         expect(result.timeline?.some((m) => (m.ply ?? 0) > 4)).toBe(false);
-        // Navigating to that later position must still assess its own tactic.
+        // Reassess the reached board independently, but do not assume a
+        // capture is profitable: Bxb7 Qxb7 dxe5 balances this exchange.
         const later = classifyPositionTacticalMotifs({
             fen: makeFen(steps[17].before.toSetup()),
             pvUci: pvUci.slice(17),
         });
-        expect(later.motifs.length).toBeGreaterThan(0);
+        expect(later.motifs).toEqual([]);
     });
 
     test("a delayed recapture of the knight which won a queen is not a newly hanging knight", () => {

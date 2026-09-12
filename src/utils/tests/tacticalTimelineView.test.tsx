@@ -6,6 +6,34 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("a balanced exchange explains the opponent's deflection and recovery without free-piece badges", () => {
+  const fen = "2b1r1k1/p1q3b1/8/3n4/3NP3/8/8/2BQRBK1 w - - 0 1";
+  const pvUci = ["e4d5", "e8e1", "d1e1", "g7d4"];
+  const result = classifyPositionTacticalMotifs({ fen, pvUci });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider>
+      <TacticalLineExplanation
+        moves={replayTacticalLine(fen, pvUci).map((s) => s.san)}
+        motifs={result.timeline ?? []}
+      />
+    </MantineProvider>,
+  );
+  expect(container.querySelector("details")?.hasAttribute("open")).toBe(false);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).not.toContain(
+    "Hanging Piece",
+  );
+  expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).toContain("Deflection");
+  expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).toContain("Black");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).not.toContain(
+    "Winning Recapture",
+  );
+  const payoff = container.querySelector('[data-tactical-ply="4"]')?.textContent;
+  expect(payoff).toContain("Material Recovery");
+  expect(payoff).toContain("no net material gain");
+  expect(payoff).not.toContain("Hanging Piece");
+});
+
 test("king interference stays primary while the exchange and pawn payoff have separate plies", () => {
   const fen = "6R1/5k2/8/5r1p/5p1K/5P2/6P1/8 w - - 10 50";
   const pvUci = ["g8g5", "f5g5", "h4g5", "h5h4", "g5f4"];
