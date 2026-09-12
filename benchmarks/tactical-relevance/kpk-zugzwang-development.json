@@ -1,0 +1,29 @@
+{
+  "scope": "Additional real-game development continuation and exact KPK checks. The source puzzle was selected from the existing development fixture by material count, not classifier output. This is not held-out accuracy.",
+  "license": "CC0-1.0",
+  "sourceFixtureSha256": "c80356923da60cce5b48b37046a878290f36997862f921b944015a3cf69ccc88",
+  "source": "chessmistaketrainer/benchmarks/tactical-classifier/lichess-2026-08-02-fixture-v1.jsonl",
+  "cases": [
+    {
+      "id": "lichess:wXMJJ",
+      "sourceGameUrl": "https://lichess.org/qJ0aresT/black#132",
+      "sourceThemes": [
+        "crushing",
+        "defensiveMove",
+        "endgame",
+        "long",
+        "pawnEndgame",
+        "zugzwang"
+      ],
+      "startFen": "8/8/6k1/8/4p1K1/8/5P2/8 w - - 1 67",
+      "bestLine": [
+        "g4f4",
+        "e4e3",
+        "f4e3",
+        "g6f5",
+        "e3f3"
+      ],
+      "initialJudgement": "Kf3 at ply 5 takes the opposition and obliges the defending king to concede ground; compare this reached position with a pass. Do not borrow the later zugzwang as the proof of Kf4 at the root."
+    }
+  ]
+}

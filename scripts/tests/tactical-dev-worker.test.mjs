@@ -99,6 +99,18 @@ test(
           { multipv: 2, pvUci: ["c4f7", "e8f8", "f7b3"], cp: 350 },
         ],
       },
+      {
+        name: "exact KPK zugzwang",
+        fen: "8/8/8/5k2/8/4K3/5P2/8 w - - 1 69",
+        pvUci: ["e3f3"],
+        expectedPrimary: ["zugzwang"],
+      },
+      {
+        name: "pawn-ending entry with a claimable draw",
+        fen: "8/8/6k1/8/4p1K1/8/5P2/8 w - - 98 67",
+        pvUci: ["g4f4"],
+        expectedPrimary: [],
+      },
     ];
     const report = [];
     for (const item of cases) {
@@ -106,6 +118,8 @@ test(
       assert.ok(result.startupMs < TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
       assert.ok(result.classificationMs < TACTICAL_CLASSIFICATION_TIMEOUT_MS);
       assert.equal(result.modules.length, 1, "development must serve a self-contained verifier");
+      if (item.expectedPrimary)
+        assert.deepEqual(result.scan.motifs.map((motif) => motif.id), item.expectedPrimary);
       assert.deepEqual(
         result.modules.filter((url) =>
           /engines\.ts|unwrap\.tsx|tauri|react|mantine|@vite\/client/.test(url),

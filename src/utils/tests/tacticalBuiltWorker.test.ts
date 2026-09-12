@@ -107,6 +107,43 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "endgame:claimable-entry",
+                input: {
+                    fen: "8/8/6k1/8/4p1K1/8/5P2/8 w - - 98 67",
+                    pvUci: ["g4f4"], engineName: "Fifty-move boundary", depth: 16,
+                },
+            },
+            {
+                id: "endgame:real-pawn-ending-entry",
+                input: {
+                    fen: "8/8/6k1/8/4p1K1/8/5P2/8 w - - 1 67",
+                    pvUci: ["g4f4", "e4e3", "f4e3", "g6f5", "e3f3"],
+                    engineName: "Real KPK continuation",
+                    depth: 16,
+                },
+            },
+            {
+                id: "endgame:exact-zugzwang",
+                input: {
+                    fen: "8/8/8/5k2/8/4K3/5P2/8 w - - 1 69",
+                    pvUci: ["e3f3"], engineName: "Exact KPK", depth: 16,
+                },
+            },
+            {
+                id: "endgame:drawn-pawn-ending",
+                input: {
+                    fen: "8/8/8/5k2/8/5K2/5P2/8 w - - 0 1",
+                    pvUci: ["f3g3"], engineName: "Exact KPK", depth: 16,
+                },
+            },
+            {
+                id: "endgame:reflected-zugzwang",
+                input: {
+                    fen: "8/5p2/4k3/8/5K2/8/8/8 b - - 1 69",
+                    pvUci: ["e6f6"], engineName: "Exact KPK", depth: 16,
+                },
+            },
+            {
                 id: "constructed:guard-deflection-root",
                 input: {
                     fen: "2b1r1k1/p1q3b1/8/3P4/3N4/8/8/2BQRBK1 b - - 0 1",
@@ -723,7 +760,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(141);
+        expect(report).toHaveLength(146);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

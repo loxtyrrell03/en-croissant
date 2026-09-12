@@ -6,6 +6,23 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("a winning pawn-ending entry stays primary and actual opposition is secondary", () => {
+  const row = JSON.parse(readFileSync("benchmarks/tactical-relevance/kpk-zugzwang-development.json", "utf8")).cases[0];
+  const result = classifyPositionTacticalMotifs({ fen: row.startFen, pvUci: row.bestLine });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(
+    <MantineProvider><TacticalLineExplanation moves={replayTacticalLine(row.startFen, row.bestLine).map((step) => step.san)} motifs={result.timeline ?? []} /></MantineProvider>,
+  );
+  expect(container.querySelector("details")?.hasAttribute("open")).toBe(false);
+  expect(result.motifs.map((motif) => motif.label)).toEqual(["Winning Pawn Ending"]);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Winning Pawn Ending");
+  const opposition = container.querySelector('[data-tactical-ply="5"]')?.textContent;
+  expect(opposition).toContain("Zugzwang");
+  expect(opposition).toContain("would be drawn");
+  expect(opposition).toContain("White");
+  expect(container.textContent).not.toContain("Hanging Piece");
+});
+
 test("a balanced exchange explains the opponent's deflection and recovery without free-piece badges", () => {
   const fen = "2b1r1k1/p1q3b1/8/3n4/3NP3/8/8/2BQRBK1 w - - 0 1";
   const pvUci = ["e4d5", "e8e1", "d1e1", "g7d4"];

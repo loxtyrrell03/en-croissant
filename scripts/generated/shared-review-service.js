@@ -442,7 +442,7 @@ var knightAttacks = (square) => KNIGHT_ATTACKS[square];
 * Gets squares attacked or defended by a pawn of the given `color`
 * on `square`.
 */
-var pawnAttacks = (color, square) => PAWN_ATTACKS[color][square];
+var pawnAttacks$1 = (color, square) => PAWN_ATTACKS[color][square];
 var FILE_RANGE = tabulate((sq) => SquareSet.fromFile(squareFile(sq)).without(sq));
 var RANK_RANGE = tabulate((sq) => SquareSet.fromRank(squareRank(sq)).without(sq));
 var DIAG_RANGE = tabulate((sq) => {
@@ -495,7 +495,7 @@ var queenAttacks = (square, occupied) => bishopAttacks(square, occupied).xor(roo
 */
 var attacks = (piece, square, occupied) => {
 	switch (piece.role) {
-		case "pawn": return pawnAttacks(piece.color, square);
+		case "pawn": return pawnAttacks$1(piece.color, square);
 		case "knight": return knightAttacks(square);
 		case "bishop": return bishopAttacks(square, occupied);
 		case "rook": return rookAttacks(square, occupied);
@@ -806,7 +806,7 @@ var IllegalSetup;
 	IllegalSetup["Variant"] = "ERR_VARIANT";
 })(IllegalSetup || (IllegalSetup = {}));
 var PositionError = class extends Error {};
-var attacksTo = (square, attacker, board, occupied) => board[attacker].intersect(rookAttacks(square, occupied).intersect(board.rooksAndQueens()).union(bishopAttacks(square, occupied).intersect(board.bishopsAndQueens())).union(knightAttacks(square).intersect(board.knight)).union(kingAttacks(square).intersect(board.king)).union(pawnAttacks(opposite(attacker), square).intersect(board.pawn)));
+var attacksTo = (square, attacker, board, occupied) => board[attacker].intersect(rookAttacks(square, occupied).intersect(board.rooksAndQueens()).union(bishopAttacks(square, occupied).intersect(board.bishopsAndQueens())).union(knightAttacks(square).intersect(board.knight)).union(kingAttacks(square).intersect(board.king)).union(pawnAttacks$1(opposite(attacker), square).intersect(board.pawn)));
 var Castles = class Castles {
 	constructor() {}
 	static default() {
@@ -1009,7 +1009,7 @@ var Position = class {
 		if (!piece || piece.color !== this.turn) return SquareSet.empty();
 		let pseudo, legal;
 		if (piece.role === "pawn") {
-			pseudo = pawnAttacks(this.turn, square).intersect(this.board[opposite(this.turn)]);
+			pseudo = pawnAttacks$1(this.turn, square).intersect(this.board[opposite(this.turn)]);
 			const delta = this.turn === "white" ? 8 : -8;
 			const step = square + delta;
 			if (0 <= step && step < 64 && !this.board.occupied.has(step)) {
@@ -1197,12 +1197,12 @@ var validEpSquare = (pos, square) => {
 var legalEpSquare = (pos) => {
 	if (!defined(pos.epSquare)) return;
 	const ctx = pos.ctx();
-	const candidates = pos.board.pieces(pos.turn, "pawn").intersect(pawnAttacks(opposite(pos.turn), pos.epSquare));
+	const candidates = pos.board.pieces(pos.turn, "pawn").intersect(pawnAttacks$1(opposite(pos.turn), pos.epSquare));
 	for (const candidate of candidates) if (pos.dests(candidate, ctx).has(pos.epSquare)) return pos.epSquare;
 };
 var canCaptureEp = (pos, pawnFrom, ctx) => {
 	if (!defined(pos.epSquare)) return false;
-	if (!pawnAttacks(pos.turn, pawnFrom).has(pos.epSquare)) return false;
+	if (!pawnAttacks$1(pos.turn, pawnFrom).has(pos.epSquare)) return false;
 	if (!defined(ctx.king)) return true;
 	const delta = pos.turn === "white" ? 8 : -8;
 	const captured = pos.epSquare - delta;
@@ -1742,7 +1742,7 @@ var Antichess = class extends Position {
 	}
 	ctx() {
 		const ctx = super.ctx();
-		if (defined(this.epSquare) && pawnAttacks(opposite(this.turn), this.epSquare).intersects(this.board.pieces(this.turn, "pawn"))) {
+		if (defined(this.epSquare) && pawnAttacks$1(opposite(this.turn), this.epSquare).intersects(this.board.pieces(this.turn, "pawn"))) {
 			ctx.mustCapture = true;
 			return ctx;
 		}
@@ -9330,6 +9330,196 @@ function detectAllowedThemesDetailed(fenAfterBadMove, refutationPV, opponentSide
 	return detectThemesDetailed(syntheticMistake);
 }
 //#endregion
+//#region src/utils/tacticalMotifs/kpkBitbase.ts
+var KPK_STATES = 1536 * 64 * 2;
+var kingMoves = Array.from({ length: 64 }, (_, square) => Array.from({ length: 64 }, (_, target) => target).filter((target) => target !== square && kingDistance(square, target) === 1));
+function kingDistance(a, b) {
+	return Math.max(Math.abs((a & 7) - (b & 7)), Math.abs((a >> 3) - (b >> 3)));
+}
+function pawnAttacks(pawn, target) {
+	return target >> 3 === (pawn >> 3) + 1 && Math.abs((target & 7) - (pawn & 7)) === 1;
+}
+function kpkIndex({ pawn, ownKing, enemyKing, pawnTurn }) {
+	return ((((pawn >> 3) - 1) * 4 + (pawn & 7)) * 2 + (pawnTurn ? 0 : 1)) * 4096 + ownKing * 64 + enemyKing;
+}
+function kpkState(index) {
+	const group = index >> 13;
+	return {
+		pawn: (Math.floor(group / 4) + 1) * 8 + group % 4,
+		ownKing: index >> 6 & 63,
+		enemyKing: index & 63,
+		pawnTurn: (index >> 12 & 1) === 0
+	};
+}
+function validKpk(state) {
+	return state.pawn !== state.ownKing && state.pawn !== state.enemyKing && kingDistance(state.ownKing, state.enemyKing) > 1 && (!state.pawnTurn || !pawnAttacks(state.pawn, state.enemyKing));
+}
+function sliderAttacks(from, to, king, queen) {
+	const dx = (to & 7) - (from & 7), dy = (to >> 3) - (from >> 3);
+	if (!(dx === 0 || dy === 0 || queen && Math.abs(dx) === Math.abs(dy))) return false;
+	const step = Math.sign(dx) + Math.sign(dy) * 8;
+	for (let square = from + step; square !== to; square += step) if (square === king) return false;
+	return true;
+}
+/** KQK/KRK is won unless the king can immediately take the new piece or the
+* promotion stalemates. Try both: a queen alone can wrongly reject rook wins. */
+function winningKpkPromotion(state) {
+	const target = state.pawn + 8;
+	if (target === state.ownKing || target === state.enemyKing) return false;
+	if (kingDistance(target, state.enemyKing) === 1 && kingDistance(target, state.ownKing) > 1) return false;
+	return [true, false].some((queen) => sliderAttacks(target, state.enemyKing, state.ownKing, queen) || kingMoves[state.enemyKing].some((square) => kingDistance(square, state.ownKing) > 1 && square !== target && !sliderAttacks(target, square, state.ownKing, queen)));
+}
+function kpkTransitions(state) {
+	const result = [];
+	if (!validKpk(state)) return result;
+	if (state.pawnTurn) {
+		for (const square of kingMoves[state.ownKing]) if (square !== state.pawn && kingDistance(square, state.enemyKing) > 1) result.push({
+			from: state.ownKing,
+			target: square,
+			to: kpkIndex({
+				...state,
+				ownKing: square,
+				pawnTurn: false
+			})
+		});
+		const target = state.pawn + 8;
+		if (target !== state.ownKing && target !== state.enemyKing) {
+			result.push({
+				from: state.pawn,
+				target,
+				to: state.pawn >= 48 ? winningKpkPromotion(state) ? "promotion" : "draw" : kpkIndex({
+					...state,
+					pawn: target,
+					pawnTurn: false
+				})
+			});
+			if (state.pawn < 16 && target + 8 !== state.ownKing && target + 8 !== state.enemyKing) result.push({
+				from: state.pawn,
+				target: target + 8,
+				to: kpkIndex({
+					...state,
+					pawn: target + 8,
+					pawnTurn: false
+				})
+			});
+		}
+	} else for (const square of kingMoves[state.enemyKing]) if (kingDistance(square, state.ownKing) > 1 && !pawnAttacks(state.pawn, square)) result.push({
+		from: state.enemyKing,
+		target: square,
+		to: square === state.pawn ? "draw" : kpkIndex({
+			...state,
+			enemyKing: square,
+			pawnTurn: true
+		})
+	});
+	return result;
+}
+function buildKpkBitbase() {
+	const ranks = new Uint8Array(KPK_STATES);
+	const valid = new Uint8Array(KPK_STATES);
+	const replies = new Uint8Array(KPK_STATES);
+	const longest = new Uint8Array(KPK_STATES);
+	const heads = new Int32Array(KPK_STATES).fill(-1);
+	const parents = new Uint32Array(KPK_STATES * 10);
+	const links = new Int32Array(KPK_STATES * 10);
+	const queue = new Uint32Array(KPK_STATES);
+	let edges = 0, tail = 0;
+	for (let index = 0; index < KPK_STATES; index++) {
+		const state = kpkState(index);
+		if (!validKpk(state)) continue;
+		valid[index] = 1;
+		const moves = kpkTransitions(state);
+		replies[index] = moves.length;
+		for (const move of moves) if (move.to === "promotion") {
+			ranks[index] = 1;
+			queue[tail++] = index;
+		} else if (typeof move.to === "number") {
+			if (edges >= parents.length) throw new Error("KPK graph capacity exceeded");
+			parents[edges] = index;
+			links[edges] = heads[move.to];
+			heads[move.to] = edges++;
+		}
+	}
+	for (let cursor = 0; cursor < tail; cursor++) {
+		const child = queue[cursor];
+		for (let edge = heads[child]; edge !== -1; edge = links[edge]) {
+			const parent = parents[edge];
+			if (ranks[parent]) continue;
+			const pawnTurn = (parent >> 12 & 1) === 0;
+			longest[parent] = Math.max(longest[parent], ranks[child]);
+			if (pawnTurn || --replies[parent] === 0) {
+				const rank = longest[parent] + 1;
+				if (rank >= 255) throw new Error("KPK proof rank overflow");
+				ranks[parent] = rank;
+				queue[tail++] = parent;
+			}
+		}
+	}
+	return {
+		ranks,
+		valid,
+		winningStates: tail,
+		edges
+	};
+}
+var table;
+function probeKingPawnEndgame(position) {
+	if (position.board.occupied.size() !== 3 || position.board.pawn.size() !== 1 || position.board.king.size() !== 2 || position.epSquare !== void 0) return null;
+	let pawn = position.board.pawn.first();
+	const pawnSide = position.board.get(pawn).color;
+	let ownKing = position.board.kingOf(pawnSide);
+	let enemyKing = position.board.kingOf(pawnSide === "white" ? "black" : "white");
+	if (pawnSide === "black") {
+		pawn ^= 56;
+		ownKing ^= 56;
+		enemyKing ^= 56;
+	}
+	if ((pawn & 7) > 3) {
+		pawn ^= 7;
+		ownKing ^= 7;
+		enemyKing ^= 7;
+	}
+	const state = {
+		pawn,
+		ownKing,
+		enemyKing,
+		pawnTurn: position.turn === pawnSide
+	};
+	if (pawn < 8 || pawn >= 56 || !validKpk(state)) return null;
+	table ??= buildKpkBitbase();
+	const promotionPlies = table.ranks[kpkIndex(state)];
+	if (promotionPlies && position.halfmoves + promotionPlies >= 100) return null;
+	return {
+		pawnSide,
+		win: promotionPlies > 0,
+		promotionPlies
+	};
+}
+function proveKpkZugzwang(position) {
+	const actual = probeKingPawnEndgame(position);
+	if (!actual?.win || position.turn === actual.pawnSide || position.isCheck() || position.isEnd()) return null;
+	const passed = position.clone();
+	passed.turn = actual.pawnSide;
+	const waiting = probeKingPawnEndgame(passed);
+	if (!waiting || waiting.win) return null;
+	const replies = [...position.allDests()].flatMap(([from, targets]) => [...targets].map((to) => ({
+		from,
+		to
+	})));
+	if (!replies.length || replies.some((move) => {
+		const after = position.clone();
+		after.play(move);
+		const result = probeKingPawnEndgame(after);
+		return !result?.win || result.pawnSide !== actual.pawnSide;
+	})) return null;
+	return {
+		pawnSide: actual.pawnSide,
+		defender: position.turn,
+		replies,
+		promotionPlies: actual.promotionPlies
+	};
+}
+//#endregion
 //#region src/utils/tacticalMotifs/causalTactics.ts
 var VALUE = {
 	pawn: 100,
@@ -9357,7 +9547,8 @@ var MECHANISMS = new Set([
 	"discoveredCheck",
 	"doubleCheck",
 	"clearance",
-	"xRayAttack"
+	"xRayAttack",
+	"zugzwang"
 ]);
 var MATE = /(?:^mate(?:In\d+)?$|Mate$)/;
 var CONCRETE_THEMES = new Set([
@@ -14704,15 +14895,71 @@ function matingKingDeflectionEvidence(step, source) {
 		evidence: `${step.san} draws the king away from defending ${makeSquare(proof.target)}. After ${branch.reply}, ${branch.mate} is checkmate. Capturing on ${makeSquare(proof.target)} first would allow the king to take that piece. Every legal reply allows this mating capture; this is the mechanism at this move, not a separate material win.`
 	};
 }
+function proveKpkEntry(step) {
+	if (step.capture || step.move.promotion || step.after.halfmoves >= 99 || step.before.board.get(step.move.from)?.role !== "king" || step.after.board.occupied.size() !== 4 || step.after.board.pawn.size() !== 2 || step.after.board.king.size() !== 2 || step.after.isEnd()) return null;
+	const attacker = step.before.turn;
+	const targets = [...step.after.board.pieces(opposite(attacker), "pawn")];
+	if (targets.length !== 1 || step.after.board.pieces(attacker, "pawn").size() !== 1) return null;
+	const target = targets[0];
+	const king = {
+		role: "king",
+		color: attacker
+	};
+	if (attacks(king, step.move.from, step.before.board.occupied).has(target) || !attacks(king, step.move.to, step.after.board.occupied).has(target)) return null;
+	const branches = [];
+	for (const reply of legalMoves(step.after)) {
+		if (reply.promotion) return null;
+		const next = step.after.clone();
+		next.play(reply);
+		const victim = reply.from === target ? reply.to : target;
+		const capture = {
+			from: step.move.to,
+			to: victim
+		};
+		if (!next.isLegal(capture) || next.board.get(victim)?.role !== "pawn") return null;
+		const ending = next.clone();
+		ending.play(capture);
+		const proof = probeKingPawnEndgame(ending);
+		if (!proof?.win || proof.pawnSide !== attacker) return null;
+		branches.push({
+			reply: makeSan(step.after, reply),
+			replyUci: makeUci(reply),
+			capture: makeSan(next, capture),
+			captureUci: makeUci(capture),
+			fen: makeFen(next.toSetup()),
+			promotionPlies: proof.promotionPlies
+		});
+	}
+	return branches.length ? {
+		target,
+		branches
+	} : null;
+}
+function kpkZugzwangEvidence(step, source) {
+	if (step.move.promotion || step.after.isCheck()) return null;
+	const proof = proveKpkZugzwang(step.after);
+	if (!proof || proof.pawnSide !== step.before.turn) return null;
+	const defender = proof.defender === "white" ? "White" : "Black";
+	return {
+		id: "zugzwang",
+		label: "Zugzwang",
+		source,
+		confidence: "high",
+		ply: 1,
+		moveUci: step.uci,
+		value: 0,
+		evidence: `${step.san} puts ${defender} in zugzwang. All ${proof.replies.length} legal king moves lose the pawn ending, but the identical board would be drawn if ${defender} could pass. Exact king-and-pawn analysis verifies both outcomes; this is a winning endgame, not a claim of an immediate material gain.`
+	};
+}
 function hasTacticalStart(fen, line, allowConditional = true) {
 	const steps = replayTacticalLine(fen, line.slice(0, 11));
 	const root = steps[0];
-	return Boolean(root && (root.capture || root.move.promotion || root.after.isCheck() || hasConcreteThreat(root) || proveReinforcedPin(root) || proveQuietMateThreat(root) || quietPreparation(steps) || (allowConditional ? proveQuietTacticalPreparation(steps) : proveQuietTacticalPreparation(steps)?.forced)));
+	return Boolean(root && (root.capture || root.move.promotion || root.after.isCheck() || proveKpkEntry(root) || kpkZugzwangEvidence(root, "available") || hasConcreteThreat(root) || proveReinforcedPin(root) || proveQuietMateThreat(root) || quietPreparation(steps) || (allowConditional ? proveQuietTacticalPreparation(steps) : proveQuietTacticalPreparation(steps)?.forced)));
 }
 function episodeEnd(steps, allowConditional = false) {
 	for (let i = 0; i < steps.length; i += 2) {
 		const step = steps[i];
-		if (!step.capture && !step.move.promotion && !step.before.isCheck() && !step.after.isCheck() && !hasConcreteThreat(step) && !proveReinforcedPin(step) && !proveQuietMateThreat(step) && !quietPreparation(steps.slice(i, i + 5)) && !(i === 0 && allowConditional ? proveQuietTacticalPreparation(steps.slice(i, i + 11)) : proveQuietTacticalPreparation(steps.slice(i, i + 11))?.forced)) return i;
+		if (!step.capture && !step.move.promotion && !step.before.isCheck() && !step.after.isCheck() && !proveKpkEntry(step) && !kpkZugzwangEvidence(step, "available") && !hasConcreteThreat(step) && !proveReinforcedPin(step) && !proveQuietMateThreat(step) && !quietPreparation(steps.slice(i, i + 5)) && !(i === 0 && allowConditional ? proveQuietTacticalPreparation(steps.slice(i, i + 11)) : proveQuietTacticalPreparation(steps.slice(i, i + 11))?.forced)) return i;
 	}
 	return steps.length;
 }
@@ -14763,6 +15010,23 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		settled = -VALUE.king;
 	}
 	const candidates = [];
+	const pawnEnding = proveKpkEntry(steps[0]);
+	if (pawnEnding) {
+		const captures = [...new Set(pawnEnding.branches.map((branch) => branch.capture))];
+		candidates.push({
+			id: "tacticalPreparation",
+			label: "Winning Pawn Ending",
+			source: proposals[0]?.source ?? "available",
+			confidence: "high",
+			ply: 1,
+			moveUci: steps[0].uci,
+			value: 0,
+			verifiedCombination: true,
+			evidence: `${steps[0].san} attacks the pawn on ${makeSquare(pawnEnding.target)}. All ${pawnEnding.branches.length} legal replies allow ${captures.join(" or ")}, reaching a winning king-and-pawn ending. The captured pawn and the exact resulting endgame are checked separately for every defence; this is not a claim that zugzwang already exists on this board.`
+		});
+	}
+	const zugzwang = kpkZugzwangEvidence(steps[0], proposals[0]?.source ?? "available");
+	if (zugzwang) candidates.push(zugzwang);
 	if (promotionCombination) {
 		const root = steps[0];
 		candidates.push({
@@ -15679,7 +15943,14 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 		if (motif.ply !== 1 || motif.moveUci !== reply) return motif;
 		let comparison;
 		let comparisonEvidence = "";
-		if (!alternative) {
+		if (motif.id === "zugzwang") {
+			const proof = proveKpkZugzwang(step.after);
+			const bestOutcome = probeKingPawnEndgame(better[0].after);
+			if (proof?.pawnSide === step.before.turn && bestOutcome?.pawnSide === proof.pawnSide) {
+				comparison = bestOutcome.win ? "persists" : "prevented";
+				comparisonEvidence = bestOutcome.win ? `Even after ${bestSan}, exact king-and-pawn analysis still gives ${proof.pawnSide} a won ending. The displayed zugzwang does not establish that this move caused the loss.` : `${bestSan} holds a drawn king-and-pawn ending against every legal continuation. After ${actual[0].san}, ${step.san} instead reaches a verified winning zugzwang.`;
+			}
+		} else if (!alternative) {
 			comparison = "prevented";
 			comparisonEvidence = `${bestSan} makes the immediate reply ${step.san} illegal.`;
 		} else if (motif.id === "discoveredAttack" && step.after.isCheck() && alternative.after.isCheck() && !actual[0].capture && !better[0].capture) {
@@ -16300,7 +16571,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 83;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 84;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

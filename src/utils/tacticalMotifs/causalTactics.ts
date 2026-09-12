@@ -5,6 +5,7 @@ import { makeSan, parseSan } from "chessops/san";
 import type { Color, NormalMove, Role, Square } from "chessops/types";
 import { makeSquare, makeUci, opposite, parseUci } from "chessops/util";
 import type { TacticalMotifEvidence } from "./types";
+import { probeKingPawnEndgame, proveKpkZugzwang } from "./kpkBitbase";
 
 const VALUE: Record<Role, number> = {
     pawn: 100,
@@ -33,6 +34,7 @@ const MECHANISMS = new Set([
     "doubleCheck",
     "clearance",
     "xRayAttack",
+    "zugzwang",
 ]);
 const MATE = /(?:^mate(?:In\d+)?$|Mate$)/;
 const CONCRETE_THEMES = new Set([
@@ -5520,6 +5522,7 @@ export function tacticalBoardEvidence(
         !motif?.ply ||
         ![
             "perpetualCheck",
+            "zugzwang",
             "promotionCombination",
             "forcingAttack",
             "doubleThreat",
@@ -5542,6 +5545,16 @@ export function tacticalBoardEvidence(
         return null;
     const step = replayTacticalLine(fen, line.slice(0, motif.ply))[motif.ply - 1];
     if (!step) return null;
+    if (motif.id === "tacticalPreparation") {
+        const entry = proveKpkEntry(step);
+        if (entry) return { square: makeSquare(entry.target), arrows: [{ from: makeSquare(step.move.from), to: makeSquare(step.move.to) }] };
+    }
+    if (motif.id === "zugzwang") {
+        const proof = proveKpkZugzwang(step.after);
+        return proof && proof.pawnSide === step.before.turn
+            ? { square: makeSquare(step.after.board.kingOf(proof.defender)!), arrows: [{ from: makeSquare(step.move.from), to: makeSquare(step.move.to) }] }
+            : null;
+    }
     if (motif.id === "perpetualCheck") {
         const king = step.after.board.kingOf(opposite(step.before.turn))!;
         return {
@@ -8534,6 +8547,45 @@ export function matingKingDeflectionEvidence(
     };
 }
 
+export function proveKpkEntry(step: TacticalReplayStep) {
+    // A quiet defensive reply can be announced to claim the fifty-move draw
+    // before our capture resets the clock. Do not count that reset too early.
+    if (step.capture || step.move.promotion || step.after.halfmoves >= 99 || step.before.board.get(step.move.from)?.role !== "king" || step.after.board.occupied.size() !== 4 || step.after.board.pawn.size() !== 2 || step.after.board.king.size() !== 2 || step.after.isEnd()) return null;
+    const attacker = step.before.turn;
+    const targets = [...step.after.board.pieces(opposite(attacker), "pawn")];
+    if (targets.length !== 1 || step.after.board.pieces(attacker, "pawn").size() !== 1) return null;
+    const target = targets[0];
+    const king = { role: "king", color: attacker } as const;
+    if (attacks(king, step.move.from, step.before.board.occupied).has(target) || !attacks(king, step.move.to, step.after.board.occupied).has(target)) return null;
+    const branches = [];
+    for (const reply of legalMoves(step.after)) {
+        if (reply.promotion) return null;
+        const next = step.after.clone();
+        next.play(reply);
+        const victim = reply.from === target ? reply.to : target;
+        const capture = { from: step.move.to, to: victim };
+        if (!next.isLegal(capture) || next.board.get(victim)?.role !== "pawn") return null;
+        const ending = next.clone();
+        ending.play(capture);
+        const proof = probeKingPawnEndgame(ending);
+        if (!proof?.win || proof.pawnSide !== attacker) return null;
+        branches.push({ reply: makeSan(step.after, reply), replyUci: makeUci(reply), capture: makeSan(next, capture), captureUci: makeUci(capture), fen: makeFen(next.toSetup()), promotionPlies: proof.promotionPlies });
+    }
+    return branches.length ? { target, branches } : null;
+}
+
+export function kpkZugzwangEvidence(step: TacticalReplayStep, source: TacticalMotifEvidence["source"]): TacticalMotifEvidence | null {
+    if (step.move.promotion || step.after.isCheck()) return null;
+    const proof = proveKpkZugzwang(step.after);
+    if (!proof || proof.pawnSide !== step.before.turn) return null;
+    const defender = proof.defender === "white" ? "White" : "Black";
+    return {
+        id: "zugzwang", label: "Zugzwang", source, confidence: "high", ply: 1,
+        moveUci: step.uci, value: 0,
+        evidence: `${step.san} puts ${defender} in zugzwang. All ${proof.replies.length} legal king moves lose the pawn ending, but the identical board would be drawn if ${defender} could pass. Exact king-and-pawn analysis verifies both outcomes; this is a winning endgame, not a claim of an immediate material gain.`,
+    };
+}
+
 export function hasTacticalStart(fen: string, line: string[], allowConditional = true) {
     const steps = replayTacticalLine(fen, line.slice(0, 11));
     const root = steps[0];
@@ -8542,6 +8594,8 @@ export function hasTacticalStart(fen: string, line: string[], allowConditional =
         (root.capture ||
             root.move.promotion ||
             root.after.isCheck() ||
+            proveKpkEntry(root) ||
+            kpkZugzwangEvidence(root, "available") ||
             hasConcreteThreat(root) ||
             proveReinforcedPin(root) ||
             proveQuietMateThreat(root) ||
@@ -8560,6 +8614,8 @@ export function episodeEnd(steps: TacticalReplayStep[], allowConditional = false
             !step.move.promotion &&
             !step.before.isCheck() &&
             !step.after.isCheck() &&
+            !proveKpkEntry(step) &&
+            !kpkZugzwangEvidence(step, "available") &&
             !hasConcreteThreat(step) &&
             !proveReinforcedPin(step) &&
             !proveQuietMateThreat(step) &&
@@ -8664,6 +8720,17 @@ export function auditTacticalMotifs(
         settled = -VALUE.king;
     }
     const candidates: TacticalMotifEvidence[] = [];
+    const pawnEnding = proveKpkEntry(steps[0]);
+    if (pawnEnding) {
+        const captures = [...new Set(pawnEnding.branches.map((branch) => branch.capture))];
+        candidates.push({
+            id: "tacticalPreparation", label: "Winning Pawn Ending", source: proposals[0]?.source ?? "available", confidence: "high", ply: 1,
+            moveUci: steps[0].uci, value: 0, verifiedCombination: true,
+            evidence: `${steps[0].san} attacks the pawn on ${makeSquare(pawnEnding.target)}. All ${pawnEnding.branches.length} legal replies allow ${captures.join(" or ")}, reaching a winning king-and-pawn ending. The captured pawn and the exact resulting endgame are checked separately for every defence; this is not a claim that zugzwang already exists on this board.`,
+        });
+    }
+    const zugzwang = kpkZugzwangEvidence(steps[0], proposals[0]?.source ?? "available");
+    if (zugzwang) candidates.push(zugzwang);
     if (promotionCombination) {
         const root = steps[0];
         candidates.push({
@@ -10138,7 +10205,16 @@ export function compareImmediateTacticalDefence(
         if (motif.ply !== 1 || motif.moveUci !== reply) return motif;
         let comparison: TacticalMotifEvidence["comparison"];
         let comparisonEvidence = "";
-        if (!alternative) {
+        if (motif.id === "zugzwang") {
+            const proof = proveKpkZugzwang(step.after);
+            const bestOutcome = probeKingPawnEndgame(better[0].after);
+            if (proof?.pawnSide === step.before.turn && bestOutcome?.pawnSide === proof.pawnSide) {
+                comparison = bestOutcome.win ? "persists" : "prevented";
+                comparisonEvidence = bestOutcome.win
+                    ? `Even after ${bestSan}, exact king-and-pawn analysis still gives ${proof.pawnSide} a won ending. The displayed zugzwang does not establish that this move caused the loss.`
+                    : `${bestSan} holds a drawn king-and-pawn ending against every legal continuation. After ${actual[0].san}, ${step.san} instead reaches a verified winning zugzwang.`;
+            }
+        } else if (!alternative) {
             comparison = "prevented";
             comparisonEvidence = `${bestSan} makes the immediate reply ${step.san} illegal.`;
         } else if (
