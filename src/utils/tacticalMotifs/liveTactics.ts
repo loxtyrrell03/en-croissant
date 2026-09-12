@@ -147,7 +147,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 89;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 90;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {
@@ -162,6 +162,8 @@ export type LiveTacticalBoardLabel = {
     text: string;
     color: string;
     square: string | null;
+    /** A proved mechanism at the primary move, never a future PV badge. */
+    supporting?: true;
 };
 
 export type LiveTacticalVariation = {
@@ -333,7 +335,22 @@ function buildLiveTacticalVariation(
     const furthestTrigger = Math.max(1, ...triggerPlies);
     const arrowLimit =
         motifs.length > 0 ? Math.min(lineUci.length, Math.max(3, furthestTrigger + 1), 6) : 0;
-    const geometry = tacticalBoardEvidence(input.fen, lineUci, motifs[0]);
+    const primaryGeometry = tacticalBoardEvidence(input.fen, lineUci, motifs[0]);
+    const supporting =
+        motifs[0]?.label === "Forcing Mate"
+            ? classification.timeline?.find(
+                  (motif) =>
+                      motif.ply === motifs[0].ply &&
+                      motif.id === "clearance" &&
+                      motif.relevance === "secondary" &&
+                      motif.verifiedCombination &&
+                      motif.value === 10000,
+              )
+            : undefined;
+    const supportingGeometry = supporting
+        ? tacticalBoardEvidence(input.fen, lineUci, supporting)
+        : null;
+    const geometry = primaryGeometry ?? supportingGeometry;
     const prefixLimit = geometry ? Math.min(motifs[0].ply ?? 1, 6) : arrowLimit;
     const arrows = lineUci.slice(0, prefixLimit).map<LiveTacticalBoardArrow>((move, index) => ({
         from: move.slice(0, 2),
@@ -353,11 +370,29 @@ function buildLiveTacticalVariation(
         text: liveTacticalMotifLabel(motif),
         color: tacticalMotifColor(motif.id),
         square:
-            (index === 0 ? geometry?.square : null) ??
+            (index === 0 ? primaryGeometry?.square : null) ??
             motif.moveUci?.slice(2, 4) ??
             (motif.id === "attackingF2F7" ? lineUci[0]?.slice(2, 4) : null) ??
             null,
     }));
+    // Labels can be up to 42% of the board width. Keep the primary label
+    // alone when a same-rank support badge would overlap it; the supporting
+    // arrow and continuation explanation are still retained.
+    const primarySquare = labels[0]?.square;
+    const supportingSquare = supportingGeometry?.square;
+    const adjacentLabel =
+        primarySquare &&
+        supportingSquare &&
+        primarySquare[1] === supportingSquare[1] &&
+        Math.abs(primarySquare.charCodeAt(0) - supportingSquare.charCodeAt(0)) < 4;
+    if (supporting && supportingGeometry && !adjacentLabel)
+        labels.push({
+            id: supporting.id,
+            text: supporting.label,
+            color: tacticalMotifColor(supporting.id),
+            square: supportingGeometry.square,
+            supporting: true,
+        });
 
     return {
         multipv: variation.multipv ?? fallbackMultipv,
@@ -470,7 +505,14 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
         lineUci: primary.lineUci,
         lineSan: primary.lineSan,
         arrows: aggregateVariationArrows([primary]),
-        labels: aggregateVariationLabels([{ ...primary, labels: primary.labels.slice(0, 1) }]),
+        labels: aggregateVariationLabels([
+            {
+                ...primary,
+                labels: primary.labels
+                    .filter((label, index) => index === 0 || label.supporting)
+                    .slice(0, 2),
+            },
+        ]),
         variations: publicVariations,
         motifClassifierVersion: primary.motifClassifierVersion,
         ...(immediate ? { preferredMultipv: immediate.multipv } : {}),
@@ -557,7 +599,9 @@ export function previewLiveTacticalVariation(
         lineUci: variation.lineUci,
         lineSan: variation.lineSan,
         arrows: variation.arrows,
-        labels: variation.labels.slice(0, 1),
+        labels: variation.labels
+            .filter((label, index) => index === 0 || label.supporting)
+            .slice(0, 2),
     };
 }
 

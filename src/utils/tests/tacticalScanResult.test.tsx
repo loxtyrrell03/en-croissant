@@ -338,6 +338,19 @@ test("Show on board switches one candidate at a time and resets for a new scan",
   expect(button().getAttribute("aria-pressed")).toBe("false");
   await render(scan);
   expect(button().getAttribute("aria-pressed")).toBe("false");
+  const clearance = buildLiveTacticalScan({
+    fen: "8/8/2k1B3/2b4r/p7/Pp4B1/1P2bPP1/R1K1R3 b - - 3 34",
+    pvUci: ["c5e3", "f2e3", "h5c5", "e6c4", "c5c4", "c1b1", "e2d3"],
+    pvSan: ["Be3+", "fxe3", "Rc5+", "Bc4", "Rxc4+", "Kb1", "Bd3#"],
+    engineName: "Regression", depth: 16,
+  });
+  await render(clearance);
+  await act(async () => container.querySelector<HTMLButtonElement>('[aria-label="Show Be3+ on board"]')!.click());
+  expect(onPreviewChange.mock.lastCall?.[0].labels.map((label: {id: string}) => label.id)).toEqual(["mateIn4", "clearance"]);
+  expect(onPreviewChange.mock.lastCall?.[0].arrows).toHaveLength(2);
+  await render(scan);
+  await act(async () => button().click());
+  expect(onPreviewChange.mock.lastCall?.[0].labels).toHaveLength(1);
   await render(cycleScan);
   const immediate = () =>
     container.querySelector<HTMLButtonElement>('[aria-label="Show Rxd5 on board"]')!;

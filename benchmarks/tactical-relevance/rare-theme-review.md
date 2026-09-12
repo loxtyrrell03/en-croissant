@@ -1,4 +1,10 @@
-# Rare-theme real-game review — adapter 84 / live pipeline 89
+# Rare-theme real-game review — adapter 85 / live pipeline 90
+
+## Branch-specific mating clearance follow-up
+
+The [mating-clearance review](mating-clearance-review.md) independently certifies the rook route in NrHkx while retaining Forcing Mate as primary. Be3+ clears c5 for Rc5+ after fxe3; Kb1 instead permits Bd3# without using that route. The supporting label belongs only to the matching actual continuation. Three Woodpecker positions gain the same explanatory layer, while three other candidate clearances keep their existing, more precise Discovered Check or Double Check instead of duplicate badges. All 180 course primary labels, every rare-sample primary and all 32 frozen priorities remain unchanged; this is secondary-theme improvement, not twenty solved rare puzzles.
+
+The final 51 fresh engine searches include the contrary losing Rc5 after Kb1, blocked-route and king-flight controls, and constructed mates which are valid but not fastest. The root-only mate proof is independent of the supplied PV; clearance is not shown without its matching branch. A late announced fifty-move claim now blocks affected mating certificates before a later capture can reset the clock. The [current course audit](private-course-review.md) records complete verification and delivery limits; interference and exact KPK coverage remain intact without claiming broader zugzwang completion.
 
 ## Exact pawn-ending zugzwang follow-up
 
@@ -59,14 +65,14 @@ Both helpers have 4,096-visit limits and abstain on incomplete proofs. Material 
 | NGZzo | Double Threat is more informative than blindly copying Trapped Piece: a rook retreat can permit Nf6+, forking king and queen instead. |
 | GDK87 | The immediate pawn capture is incidental to the rook trap; existing Trapped Piece is appropriate. |
 | tA2XR | Fork is the material point; the queen and knight give double check. The supporting checking mechanism could be clearer, without adding unrelated pin/clearance badges. |
-| NrHkx | Forced mate remains primary. The bishop vacates c5 for the rook; the separate clearance explanation still needs independent relevance/proof. |
+| NrHkx | Forced mate remains primary. Be3+ vacates c5 for Rc5+ after fxe3; Kb1 instead permits Bd3#. Adapter 85 adds the independently proved, branch-specific supporting Mating Clearance without borrowing it for the declined route. |
 | 4Ds65 | ...Bg4 and ...Rae8 are a quiet pin/preparation gap, not a verified free bishop from the passive source reply alone. |
 | 4RNK5 | With engine evaluation, the existing conditional Quiet Preparation is useful; the source-only scan abstains. The later rook offer and skewer must retain conditional/actual-ply wording. |
 
-Relative to adapter 80, adapter 81 changed one primary (zYjb5) and added a mechanism to one other continuation (om0GQ). Adapter 82 additionally recovers w8wvY, leaving the other nineteen adapter-81 full results unchanged. This is not twenty correct answers.
+Relative to adapter 80, adapter 81 changed one primary (zYjb5) and added a mechanism to one other continuation (om0GQ). Adapter 82 additionally recovers w8wvY, leaving the other nineteen adapter-81 full results unchanged. Adapter 85 adds the supporting route in NrHkx while preserving the other nineteen full results and all twenty main themes. This is not twenty correct answers.
 
 ## Broader regression and delivery scope
 
-Exact-input replays of seven private Woodpecker reports cover 180 positions, including the 21-position positional quarter sample. Adapter 83 left all source and 179 live results unchanged ignoring version; one live second variation gained the actual-ply pawn deflection described above. Adapter 84 preserves all 180 of those full source/live results. Those are reclassifications of stored engine lines, not 180 new engine searches. The 32 frozen mistake-priority judgements are unchanged. The quarter sample's separately reached compensating-exchange false positive remains fixed and explicitly tested through the built worker; private data and detailed receipts stay outside Git.
+Exact-input replays of seven private Woodpecker reports cover 180 positions, including the 21-position positional quarter sample. Adapter 83 left all source and 179 live results unchanged ignoring version; one live second variation gained the actual-ply pawn deflection described above. Adapter 84 preserves all 180 of those full source/live results. Adapter 85 changes only the three supporting clearance explanations, leaving 177 full source/live results and all 180 primary labels unchanged. Those are reclassifications of stored engine lines, not 180 new engine searches. The 32 frozen mistake-priority judgements are unchanged. The quarter sample's separately reached compensating-exchange false positive remains fixed and explicitly tested through the built worker; private data and detailed receipts stay outside Git.
 
-Final verification and delivery status are recorded in [the current course audit](private-course-review.md). The [146-input production-worker timing receipt](built-worker-adapter84.json) exposes the measured startup and classification times; the additional rare/private inputs are deadline/parity checks, not part of these percentiles. No native app, package or service was restarted/deployed, and source/render/controller tests are not physical WebView proof.
+Final verification and delivery status are recorded in [the current course audit](private-course-review.md). The [152-input production-worker timing receipt](built-worker-adapter85.json) exposes the measured startup and classification times; the additional rare/private inputs are deadline/parity checks, not part of these percentiles. No native app, package or service was restarted/deployed, and source/render/controller tests are not physical WebView proof.

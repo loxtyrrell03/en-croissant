@@ -13,8 +13,8 @@ export type TacticalMotifEvidence = {
     /** Material payoff in centipawns; 10000 represents mate. A proved
      * perpetual uses zero: a drawing resource is not a material gain. */
     value?: number;
-    /** Set by an all-defence compound-exchange proof, never inferred from
-     * a PV tag or score. Its local residual may be smaller than a pawn. */
+    /** Set by an all-defence compound or mating proof, never inferred from
+     * a PV tag or score. A material residual may be smaller than a pawn. */
     verifiedCombination?: true;
     actor?: "white" | "black";
     comparison?: "prevented" | "persists" | "reduced";

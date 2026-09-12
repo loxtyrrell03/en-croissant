@@ -6,6 +6,19 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("a mating clearance explains the used branch without replacing the mate or making acceptance compulsory", () => {
+  const row = JSON.parse(readFileSync("benchmarks/tactical-relevance/rare-theme-development.json", "utf8")).cases.find((row: {id: string}) => row.id === "lichess:NrHkx");
+  const result = classifyPositionTacticalMotifs({fen: row.startFen, pvUci: row.bestLine});
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={replayTacticalLine(row.startFen, row.bestLine).map(step => step.san)} motifs={result.timeline ?? []} /></MantineProvider>);
+  expect(container.querySelector("details")?.hasAttribute("open")).toBe(false);
+  expect(result.motifs[0]).toMatchObject({id: "mateIn4", relevance: "primary"});
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Mating Clearance");
+  expect(container.textContent).toContain("Kb1 instead permits Bd3#");
+  expect(container.textContent).toContain("not a compulsory reply");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).not.toContain("Mating Clearance");
+});
+
 test("a winning pawn-ending entry stays primary and actual opposition is secondary", () => {
   const row = JSON.parse(readFileSync("benchmarks/tactical-relevance/kpk-zugzwang-development.json", "utf8")).cases[0];
   const result = classifyPositionTacticalMotifs({ fen: row.startFen, pvUci: row.bestLine });

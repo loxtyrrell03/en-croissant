@@ -27,6 +27,7 @@ import {
     replayTacticalLine,
     selfInterferenceEvidence,
     matingKingDeflectionEvidence,
+    matingClearanceEvidence,
     kingInterferencePayoffEvidence,
 } from "./causalTactics";
 import type {
@@ -112,7 +113,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 84;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 85;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -1012,6 +1013,14 @@ export function buildTacticalTimeline(
                 actor: step.before.turn,
                 relevance: "secondary",
             });
+        const matingClearance = matingClearanceEvidence(replay.slice(index), source);
+        if (matingClearance && !evidence.has(`${index + 1}:${matingClearance.id}`))
+            evidence.set(`${index + 1}:${matingClearance.id}`, {
+                ...matingClearance,
+                ply: index + 1,
+                actor: step.before.turn,
+                relevance: "secondary",
+            });
         const interferencePayoff = kingInterferencePayoffEvidence(replay, index, source);
         if (interferencePayoff)
             evidence.set(`${index + 1}:hangingPiece`, {
@@ -1141,6 +1150,29 @@ export function buildTacticalTimeline(
         replay,
         normalizeMatingPayoffs(replay, [...evidence.values()]),
     )
+        .filter(
+            (motif) =>
+                !(
+                    motif.label === "Forcing Mate" &&
+                    motif.relevance !== "primary" &&
+                    [...evidence.values()].some(
+                        (other) =>
+                            other.ply === motif.ply &&
+                            other.actor === motif.actor &&
+                            other.verifiedCombination &&
+                            other.value === 10000 &&
+                            ["clearance", "discoveredCheck", "doubleCheck"].includes(other.id),
+                    ) &&
+                    [...evidence.values()].some(
+                        (other) =>
+                            other.ply === motif.ply &&
+                            other.actor === motif.actor &&
+                            other.relevance === "primary" &&
+                            other.value === 10000 &&
+                            other.label !== "Forcing Mate",
+                    )
+                ),
+        )
         .filter(
             (motif) =>
                 (motif.ply ?? 0) <= connectedPlies &&

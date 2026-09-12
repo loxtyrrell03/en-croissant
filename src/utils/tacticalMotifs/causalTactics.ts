@@ -818,6 +818,16 @@ type QuietMateProof = {
 const quietMateCache = new Map<string, QuietMateProof | null>();
 const QUIET_MATE_NODE_LIMIT = 4096;
 
+/** Claims may use the move about to be played. Captures/pawn moves reset the
+ * clock; checkmate has already ended the game and takes precedence. FEN alone
+ * cannot reconstruct existing repetition claims. */
+function defenderCanClaimFiftyMoveDraw(position: Chess) {
+    if (position.isCheckmate() || position.halfmoves < 99) return false;
+    return position.halfmoves >= 100 || legalMoves(position).some(move =>
+        position.board.get(move.from)?.role !== "pawn" && capturedValue(position, move) === 0,
+    );
+}
+
 /** A null-move threat is only a candidate. Certify a quiet mating move only
  * after EVERY legal defence has a legal mate-in-one answer. A single PV, an
  * empty/stalemated reply set, or an exhausted budget is never a proof. */
@@ -834,6 +844,7 @@ function proveMateNextTurn(
     quietOnly = false,
 ): QuietMateProof | null {
     if (quietOnly && (step.capture || step.move.promotion || step.after.isCheck())) return null;
+    if (defenderCanClaimFiftyMoveDraw(step.after)) return null;
     const key = `${quietOnly}:${makeFen(step.after.toSetup())}`;
     if (nodeLimit === QUIET_MATE_NODE_LIMIT && quietMateCache.has(key))
         return quietMateCache.get(key)!;
@@ -896,6 +907,7 @@ export function proveMateWithinThree(
     )
         return null;
     const root = steps[0];
+    if (defenderCanClaimFiftyMoveDraw(root.after)) return null;
     const key = `${makeFen(root.after.toSetup())}:${steps[2].uci}`;
     if (nodeLimit === 16384 && preparationCache.has(key)) return preparationCache.get(key)!;
     let nodes = nodeLimit;
@@ -921,6 +933,7 @@ export function proveMateWithinThree(
         );
         for (const move of moves) {
             const next = visit(pos, move);
+            if (defenderCanClaimFiftyMoveDraw(next)) continue;
             const replies = legalMoves(next);
             if (!replies.length) continue;
             let sample: string[] | null = null;
@@ -1018,7 +1031,7 @@ export function proveShortCheckingMate(
     };
     const defend = (pos: Chess, remaining: number): string[] | null => {
         if (pos.isCheckmate()) return [];
-        if (!remaining || pos.isEnd()) return null;
+        if (!remaining || pos.isEnd() || defenderCanClaimFiftyMoveDraw(pos)) return null;
         let longest: string[] | null = null;
         for (const reply of moves(pos)) {
             const win = attack(visit(pos, reply), remaining);
@@ -1144,7 +1157,7 @@ export function proveCheckingMate(
         return null;
     };
     const defend = (pos: Chess, remaining: number, quiet: number): string[] | null => {
-        if (pos.isInsufficientMaterial()) return null;
+        if (pos.isInsufficientMaterial() || defenderCanClaimFiftyMoveDraw(pos)) return null;
         const cacheKey = `${makeFen(pos.toSetup())}:${remaining}:${quiet}`;
         if (defendMemo.has(cacheKey)) return defendMemo.get(cacheKey)!;
         const replies = legalMoves(pos);
@@ -5545,6 +5558,17 @@ export function tacticalBoardEvidence(
         return null;
     const step = replayTacticalLine(fen, line.slice(0, motif.ply))[motif.ply - 1];
     if (!step) return null;
+    if (motif.relevance === "secondary" && ["clearance", "discoveredCheck", "doubleCheck"].includes(motif.id)) {
+        const suffix = replayTacticalLine(fen, line).slice(motif.ply - 1);
+        const supporting = matingClearanceEvidence(suffix, motif.source);
+        const proof = supporting?.id === motif.id && proveMatingClearance(step);
+        if (proof) {
+            const king = step.after.board.kingOf(step.after.turn)!;
+            return motif.id === "clearance"
+                ? {square: makeSquare(proof.square), arrows: [{from: makeSquare(proof.slider), to: makeSquare(proof.square)}]}
+                : {square: makeSquare(step.move.to), arrows: [...step.after.board[step.before.turn]].filter(from => attacks(step.after.board.get(from)!, from, step.after.board.occupied).has(king)).map(from => ({from: makeSquare(from), to: makeSquare(king)}))};
+        }
+    }
     if (motif.id === "tacticalPreparation") {
         const entry = proveKpkEntry(step);
         if (entry) return { square: makeSquare(entry.target), arrows: [{ from: makeSquare(step.move.from), to: makeSquare(step.move.to) }] };
@@ -5634,6 +5658,9 @@ export function tacticalBoardEvidence(
     }
     if (motif.id === "clearance") {
         const suffix = replayTacticalLine(fen, line).slice(motif.ply - 1);
+        const mating = motif.label === "Mating Clearance" && proveMatingClearance(step);
+        if (mating && matingClearanceEvidence(suffix, motif.source))
+            return { square: makeSquare(mating.square), arrows: [{from: makeSquare(mating.slider), to: makeSquare(mating.square)}] };
         const proof = proveForcingClearance(suffix);
         if (proof)
             return {
@@ -8547,6 +8574,222 @@ export function matingKingDeflectionEvidence(
     };
 }
 
+type MatingClearanceProof = {
+    square: Square;
+    slider: Square;
+    maxMoves: number;
+    branches: {
+        reply: string;
+        replyUci: string;
+        entry?: string;
+        entryUci?: string;
+        line: string[];
+    }[];
+    witnesses: { fen: string; move: string }[];
+    visits: number;
+};
+const matingClearanceCache = new Map<string, MatingClearanceProof | null>();
+
+/** A checking departure vacates a square for another slider's checking entry.
+ * Every defence must admit a complete checking mate within three further
+ * attacking moves; at least one must use the new route. Other branches are
+ * explicitly distinct, not evidence that the clearance response is forced. */
+export function proveMatingClearance(
+    root: TacticalReplayStep,
+    nodeLimit = 4096,
+): MatingClearanceProof | null {
+    if (
+        !Number.isSafeInteger(nodeLimit) ||
+        nodeLimit <= 0 ||
+        root.move.promotion ||
+        !root.after.isCheck() ||
+        root.after.isEnd() ||
+        root.after.board.get(root.move.from)
+    )
+        return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    if (nodeLimit === 4096 && matingClearanceCache.has(key)) return matingClearanceCache.get(key)!;
+    let nodes = nodeLimit;
+    const visit = (position: Chess, move: NormalMove) => {
+        if (--nodes < 0) throw new Error("Mating clearance budget exhausted");
+        const next = position.clone();
+        next.play(move);
+        return next;
+    };
+    const flip = root.before.turn === "white" ? 0 : 56;
+    const moves = (position: Chess) =>
+        legalMoves(position).sort(
+            (a, b) => (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip),
+        );
+    type Continuation = { line: string[]; witnesses: { fen: string; move: string }[] };
+    const memo = new Map<string, Continuation | null>();
+    const attack = (position: Chess, remaining: number): Continuation | null => {
+        if (!remaining || position.isEnd()) return null;
+        const checks: { move: NormalMove; after: Chess }[] = [];
+        for (const move of moves(position)) {
+            const after = visit(position, move);
+            if (after.isCheck()) checks.push({ move, after });
+        }
+        // Do not narrate a longer detour when a direct mate is available.
+        // Iterative distances share the same budget and defence memo.
+        for (let distance = 0; distance < remaining; distance++)
+            for (const { move, after } of checks) {
+                const win = defend(after, distance);
+                if (win)
+                    return {
+                        line: [makeSan(position, move), ...win.line],
+                        witnesses: [
+                            { fen: makeFen(position.toSetup()), move: makeUci(move) },
+                            ...win.witnesses,
+                        ],
+                    };
+            }
+        return null;
+    };
+    const defend = (position: Chess, remaining: number): Continuation | null => {
+        if (position.isCheckmate()) return { line: [], witnesses: [] };
+        if (!remaining || position.isEnd() || defenderCanClaimFiftyMoveDraw(position)) return null;
+        const state = `${makeFen(position.toSetup())}:${remaining}`;
+        if (memo.has(state)) return memo.get(state)!;
+        let longest: string[] | null = null;
+        const witnesses: Continuation["witnesses"] = [];
+        for (const reply of moves(position)) {
+            const next = visit(position, reply);
+            const answer = attack(next, remaining);
+            if (!answer) {
+                memo.set(state, null);
+                return null;
+            }
+            const line = [makeSan(position, reply), ...answer.line];
+            witnesses.push(...answer.witnesses);
+            if (!longest || line.length > longest.length) longest = line;
+        }
+        const result = longest ? { line: longest, witnesses } : null;
+        memo.set(state, result);
+        return result;
+    };
+    let proof: MatingClearanceProof | null = null;
+    try {
+        const replies = moves(root.after);
+        if (defenderCanClaimFiftyMoveDraw(root.after)) return null;
+        for (const slider of root.before.board[root.before.turn]) {
+            const piece = root.before.board.get(slider)!;
+            if (
+                !["rook", "bishop", "queen"].includes(piece.role) ||
+                slider === root.move.from ||
+                root.after.board.get(slider)?.role !== piece.role
+            )
+                continue;
+            const targets = attacks(piece, slider, root.after.board.occupied).diff(
+                root.after.board[root.before.turn],
+            );
+            const routes = [...targets].filter(
+                (to) =>
+                    (to === root.move.from || between(slider, to).has(root.move.from)) &&
+                    !root.before.isLegal({ from: slider, to }),
+            );
+            if (!routes.length) continue;
+            const branches: MatingClearanceProof["branches"] = [];
+            const witnesses: Continuation["witnesses"] = [];
+            for (const reply of replies) {
+                const next = visit(root.after, reply);
+                let branch: MatingClearanceProof["branches"][number] | null = null;
+                for (const to of routes) {
+                    const move = { from: slider, to };
+                    if (!next.isLegal(move) || next.board.get(slider)?.color !== root.before.turn)
+                        continue;
+                    const entered = visit(next, move);
+                    if (!entered.isCheck()) continue;
+                    const win = defend(entered, 2);
+                    if (win) {
+                        branch = {
+                            reply: makeSan(root.after, reply),
+                            replyUci: makeUci(reply),
+                            entry: makeSan(next, move),
+                            entryUci: makeUci(move),
+                            line: [makeSan(root.after, reply), makeSan(next, move), ...win.line],
+                        };
+                        witnesses.push(
+                            { fen: makeFen(next.toSetup()), move: makeUci(move) },
+                            ...win.witnesses,
+                        );
+                        break;
+                    }
+                }
+                if (!branch) {
+                    const win = attack(next, 3);
+                    if (win) {
+                        branch = {
+                            reply: makeSan(root.after, reply),
+                            replyUci: makeUci(reply),
+                            line: [makeSan(root.after, reply), ...win.line],
+                        };
+                        witnesses.push(...win.witnesses);
+                    }
+                }
+                if (!branch) break;
+                branches.push(branch);
+            }
+            if (branches.some((branch) => branch.entryUci) && branches.length === replies.length) {
+                proof = {
+                    square: root.move.from,
+                    slider,
+                    branches,
+                    witnesses: [
+                        ...new Map(
+                            witnesses.map((witness) => [`${witness.fen}:${witness.move}`, witness]),
+                        ).values(),
+                    ],
+                    maxMoves: 1 + Math.max(...branches.map((branch) => branch.line.length / 2)),
+                    visits: nodeLimit - nodes,
+                };
+                break;
+            }
+        }
+    } catch {
+        // Budget exhaustion cannot certify even a plausible mating route.
+    }
+    if (nodeLimit === 4096) {
+        matingClearanceCache.set(key, proof);
+        if (matingClearanceCache.size > 128)
+            matingClearanceCache.delete(matingClearanceCache.keys().next().value!);
+    }
+    return proof;
+}
+
+export function matingClearanceEvidence(
+    steps: TacticalReplayStep[],
+    source: TacticalMotifEvidence["source"],
+): TacticalMotifEvidence | null {
+    // The route is a supporting mechanism of the supplied, legally replayed
+    // branch, not a compulsory continuation or a second main winning theme.
+    if (steps.length < 3) return null;
+    const root = steps[0];
+    const proof = proveMatingClearance(root);
+    const branch = proof?.branches.find(
+        (item) => item.replyUci === steps[1].uci && item.entryUci === steps[2].uci,
+    );
+    if (!proof || !branch) return null;
+    const alternatives = proof.branches.filter((item) => !item.entryUci);
+    const king = root.after.board.kingOf(root.after.turn)!;
+    const checking = [...root.after.board[root.before.turn]].filter((from) =>
+        attacks(root.after.board.get(from)!, from, root.after.board.occupied).has(king),
+    );
+    const discovered = checking.includes(proof.slider);
+    const doubleCheck = discovered && checking.length >= 2;
+    return {
+        id: doubleCheck ? "doubleCheck" : discovered ? "discoveredCheck" : "clearance",
+        label: doubleCheck ? "Double Check" : discovered ? "Discovered Check" : "Mating Clearance",
+        source,
+        confidence: "high",
+        ply: 1,
+        moveUci: root.uci,
+        value: 10000,
+        verifiedCombination: true,
+        evidence: `${root.san} ${discovered ? "uncovers check by" : `clears ${makeSquare(proof.square)} for`} the ${root.before.board.get(proof.slider)!.role} on ${makeSquare(proof.slider)}.${doubleCheck ? " Both pieces give check." : ""} In this continuation, ${branch.reply} allows ${branch.entry}, leading to forced mate.${alternatives.length ? ` ${alternatives[0].reply} instead permits ${alternatives[0].line.slice(1).join(" ")}, without using the cleared route.` : ""} Every legal defence is separately mated; ${discovered ? "the checking mechanism" : "clearance"} explains this branch, not a compulsory reply or an extra material win.`,
+    };
+}
+
 export function proveKpkEntry(step: TacticalReplayStep) {
     // A quiet defensive reply can be announced to claim the fifty-move draw
     // before our capture resets the clock. Do not count that reset too early.
@@ -8682,8 +8925,16 @@ export function auditTacticalMotifs(
     const steps = replayTacticalLine(fen, line);
     if (!steps.length) return [];
     const allowConditional = typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= -30;
-    const checkingMate =
+    let checkingMate =
         proveShortCheckingMate(steps[0]) ?? (steps.length >= 3 ? proveCheckingMate(steps) : null);
+    if (!checkingMate) {
+        const clearanceMate = proveMatingClearance(steps[0]);
+        if (clearanceMate) checkingMate = {
+            maxMoves: clearanceMate.maxMoves,
+            replyCount: clearanceMate.branches.length,
+            example: [steps[0].san, ...clearanceMate.branches.reduce((a, b) => a.line.length >= b.line.length ? a : b).line],
+        };
+    }
     const promotionCombination = provePromotionCombination(steps[0]);
     const promotionPly = steps.findIndex(
         (step) => step.before.turn === steps[0].before.turn && step.move.promotion,

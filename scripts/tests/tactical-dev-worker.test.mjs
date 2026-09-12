@@ -106,6 +106,14 @@ test(
         expectedPrimary: ["zugzwang"],
       },
       {
+        name: "mating clearance and compact supporting board geometry",
+        fen: "8/8/2k1B3/2b4r/p7/Pp4B1/1P2bPP1/R1K1R3 b - - 3 34",
+        pvUci: ["c5e3", "f2e3", "h5c5", "e6c4", "c5c4", "c1b1", "e2d3"],
+        expectedPrimary: ["mateIn4"],
+        expectedLabels: ["mateIn4", "clearance"],
+        expectedArrowCount: 2,
+      },
+      {
         name: "pawn-ending entry with a claimable draw",
         fen: "8/8/6k1/8/4p1K1/8/5P2/8 w - - 98 67",
         pvUci: ["g4f4"],
@@ -120,6 +128,10 @@ test(
       assert.equal(result.modules.length, 1, "development must serve a self-contained verifier");
       if (item.expectedPrimary)
         assert.deepEqual(result.scan.motifs.map((motif) => motif.id), item.expectedPrimary);
+      if (item.expectedLabels)
+        assert.deepEqual(result.scan.labels.map((label) => label.id), item.expectedLabels);
+      if (item.expectedArrowCount !== undefined)
+        assert.equal(result.scan.arrows.length, item.expectedArrowCount);
       assert.deepEqual(
         result.modules.filter((url) =>
           /engines\.ts|unwrap\.tsx|tauri|react|mantine|@vite\/client/.test(url),

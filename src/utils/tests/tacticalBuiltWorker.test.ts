@@ -716,6 +716,14 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                     depth: 16,
                 },
             },
+            ...[
+                {id: "mating-clearance:real", fen: "8/8/2k1B3/2b4r/p7/Pp4B1/1P2bPP1/R1K1R3 b - - 3 34", pvUci: ["c5e3", "f2e3", "h5c5", "e6c4", "c5c4", "c1b1", "e2d3"]},
+                {id: "mating-clearance:root-only", fen: "8/8/2k1B3/2b4r/p7/Pp4B1/1P2bPP1/R1K1R3 b - - 3 34", pvUci: ["c5e3"]},
+                {id: "mating-clearance:declined", fen: "8/8/2k1B3/2b4r/p7/Pp4B1/1P2bPP1/R1K1R3 b - - 3 34", pvUci: ["c5e3", "c1b1", "e2d3"]},
+                {id: "mating-clearance:claimable-draw", fen: "8/8/2k1B3/2b4r/p7/Pp4B1/1P2bPP1/R1K1R3 b - - 98 34", pvUci: ["c5e3", "f2e3", "h5c5", "e6c4", "c5c4", "c1b1", "e2d3"]},
+                {id: "mating-clearance:line", fen: "8/8/8/8/3b3r/1p1k4/1Bb5/KR1n4 b - - 0 1", pvUci: ["d4b2", "b1b2", "h4a4", "b2a2", "a4a2"]},
+                {id: "mating-clearance:double-check", fen: "7k/5b2/6P1/8/7B/8/8/K6R w - - 0 1", pvUci: ["h4f6", "h8g8", "h1h8"]},
+            ].map(({id, ...input}) => ({id, input: {...input, engineName: "Regression", depth: 16}})),
             ...ordinary.map((row) => ({
                 id: row.id,
                 input: {
@@ -760,7 +768,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(146);
+        expect(report).toHaveLength(152);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
