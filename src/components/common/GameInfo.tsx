@@ -43,8 +43,18 @@ function GameInfo({
 
   return (
     <Box px="md" pt="md">
-      <FideInfo opened={whiteOpened} setOpened={setWhiteOpened} name={headers.white} />
-      <FideInfo opened={blackOpened} setOpened={setBlackOpened} name={headers.black} />
+      <FideInfo
+        opened={whiteOpened}
+        setOpened={setWhiteOpened}
+        name={headers.white}
+        fideId={headers.other?.WhiteFideId}
+      />
+      <FideInfo
+        opened={blackOpened}
+        setOpened={setBlackOpened}
+        name={headers.black}
+        fideId={headers.other?.BlackFideId}
+      />
 
       <Group w="100%" wrap="nowrap">
         {!simplified && (
@@ -53,6 +63,10 @@ function GameInfo({
             tt="uppercase"
             fw="bold"
             className={classes.colorHover}
+            component="button"
+            type="button"
+            aria-label="White player FIDE info"
+            style={{ border: 0, padding: 0, background: "none" }}
             onClick={() => setWhiteOpened(true)}
           >
             White
@@ -103,6 +117,10 @@ function GameInfo({
             tt="uppercase"
             fw="bold"
             ta="right"
+            component="button"
+            type="button"
+            aria-label="Black player FIDE info"
+            style={{ border: 0, padding: 0, background: "none" }}
             onClick={() => setBlackOpened(true)}
             className={classes.colorHover}
           >

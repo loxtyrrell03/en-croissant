@@ -23,8 +23,23 @@ export function BoardBar({
       <Group gap="xs" align="flex-end" wrap="nowrap" style={{ minWidth: 0 }}>
         {leftSection}
         <Group gap={6} align="baseline" wrap="nowrap" style={{ minWidth: 0 }}>
-          <Text fw="bold" size="md" truncate style={{ cursor: "pointer" }} onClick={onNameClick}>
-            {name !== "?" && name}
+          <Text
+            component="button"
+            type="button"
+            aria-label={`${name && name !== "?" ? name : "Player"} FIDE info`}
+            fw="bold"
+            size="md"
+            truncate
+            style={{
+              cursor: "pointer",
+              border: 0,
+              padding: 0,
+              background: "none",
+              textAlign: "left",
+            }}
+            onClick={onNameClick}
+          >
+            {name && name !== "?" ? name : "Player"}
           </Text>
           {rating && (
             <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>

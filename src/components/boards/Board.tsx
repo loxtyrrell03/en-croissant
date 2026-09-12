@@ -2497,8 +2497,8 @@ function Board({
       </Box>
       {(whiteFideOpen || blackFideOpen) && (
         <Suspense fallback={null}>
-          <FideInfo opened={whiteFideOpen} setOpened={setWhiteFideOpen} name={headers.white} />
-          <FideInfo opened={blackFideOpen} setOpened={setBlackFideOpen} name={headers.black} />
+          <FideInfo opened={whiteFideOpen} setOpened={setWhiteFideOpen} name={headers.white} fideId={headers.other?.WhiteFideId} />
+          <FideInfo opened={blackFideOpen} setOpened={setBlackFideOpen} name={headers.black} fideId={headers.other?.BlackFideId} />
         </Suspense>
       )}
     </>
