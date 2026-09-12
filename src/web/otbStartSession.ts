@@ -1,6 +1,9 @@
 import {
     DEFAULT_WEB_OTB_IMPORT_SOURCES,
     startWebOtbImport,
+    loadWebOtbImportJobStatus,
+    refreshWebOtbImportJob,
+    WebOtbJobNotFoundError,
     WEB_OTB_JOB_STORAGE_KEY,
     type WebOtbImportJob,
     type WebOtbImportRequest,
@@ -9,12 +12,24 @@ import {
 import { getWebServerUrl } from "./serverUrl";
 
 export const WEB_OTB_START_STORAGE_KEY = "encroissant-web-otb-start";
+export type SavedOtbSearchDetails = {
+    id: string;
+    savedAt: number;
+    startRaw: string | null;
+    legacyRaw: string | null;
+};
+export type WebOtbSelectionReview = {
+    startRaw: string | null;
+    legacyRaw: string | null;
+    missingJobId: string | null;
+};
 type SavedStart = {
     version: 1;
     id: string;
     server: string;
     request: WebOtbImportRequest;
     accepted: boolean;
+    previousSearches?: SavedOtbSearchDetails[];
 };
 type Snapshot = {
     ready: boolean;
@@ -23,6 +38,9 @@ type Snapshot = {
     confirmed: WebOtbImportJob | null;
     busy: boolean;
     error: string | null;
+    errorAction: "connect" | "set-aside" | "undo" | null;
+    canSetAside: boolean;
+    previousSearches: SavedOtbSearchDetails[];
 };
 let snapshot: Snapshot = {
     ready: false,
@@ -31,6 +49,9 @@ let snapshot: Snapshot = {
     confirmed: null,
     busy: false,
     error: null,
+    errorAction: null,
+    canSetAside: false,
+    previousSearches: [],
 };
 const listeners = new Set<() => void>();
 let operation: Promise<void> | null = null;
@@ -67,17 +88,58 @@ function validRequest(request: WebOtbImportRequest | null | undefined) {
     );
 }
 
+class SelectionReadError extends Error {}
+
+function validHistory(value: unknown): value is SavedOtbSearchDetails[] {
+    return (
+        Array.isArray(value) &&
+        value.every(
+            (entry) =>
+                entry &&
+                typeof entry.id === "string" &&
+                Number.isSafeInteger(entry.savedAt) &&
+                entry.savedAt >= 0 &&
+                entry.savedAt <= 8_640_000_000_000_000 &&
+                (entry.startRaw === null || typeof entry.startRaw === "string") &&
+                (entry.legacyRaw === null || typeof entry.legacyRaw === "string"),
+        )
+    );
+}
+
 function readSelection() {
     try {
         return readStoredSelection();
     } catch (error) {
+        if (error instanceof SelectionReadError) throw error;
         throw new Error(storageMessage(error));
     }
 }
 
 function readStoredSelection() {
     const stored = window.localStorage.getItem(WEB_OTB_START_STORAGE_KEY);
-    const record = stored === null ? null : (JSON.parse(stored) as SavedStart);
+    let record: (SavedStart & { state?: string }) | null;
+    try {
+        record = stored === null ? null : JSON.parse(stored);
+    } catch {
+        throw new SelectionReadError("The saved PC search could not be read.");
+    }
+    const previousSearches = record?.previousSearches ?? [];
+    if (!validHistory(previousSearches))
+        throw new SelectionReadError("The saved PC search details could not be read.");
+    // One canonical write both keeps the old raw details and clears selection.
+    // Its presence takes priority over a leftover legacy mirror.
+    if (record?.version === 1 && record.state === "idle") {
+        if (
+            !record.previousSearches?.length ||
+            "id" in record ||
+            "request" in record ||
+            "accepted" in record ||
+            "server" in record
+        ) {
+            throw new SelectionReadError("The saved PC search details could not be read.");
+        }
+        return { record: null, jobId: null, previousSearches };
+    }
     if (
         stored !== null &&
         (!record ||
@@ -85,19 +147,132 @@ function readStoredSelection() {
             !idPattern.test(record.id) ||
             typeof record.accepted !== "boolean" ||
             !validRequest(record.request))
-    )
-        throw new Error(
-            "The saved PC search could not be read. Keep this browser's data and retry the connection.",
-        );
+    ) {
+        throw new SelectionReadError("The saved PC search could not be read.");
+    }
     if (record && record.server !== currentServer()) {
-        throw new Error(
+        throw new SelectionReadError(
             "This search belongs to another PC connection. Reopen the phone app address used to start it.",
         );
     }
     const legacyId = record ? null : window.localStorage.getItem(WEB_OTB_JOB_STORAGE_KEY);
     if (legacyId && !/^[A-Za-z0-9_-]+$/.test(legacyId))
-        throw new Error("The saved PC search ID could not be read.");
-    return { record, jobId: record ? (record.accepted ? record.id : null) : legacyId };
+        throw new SelectionReadError("The saved PC search ID could not be read.");
+    return {
+        record,
+        jobId: record ? (record.accepted ? record.id : null) : legacyId,
+        previousSearches,
+    };
+}
+
+function readRawSelection() {
+    return {
+        startRaw: window.localStorage.getItem(WEB_OTB_START_STORAGE_KEY),
+        legacyRaw: window.localStorage.getItem(WEB_OTB_JOB_STORAGE_KEY),
+    };
+}
+function sameRawSelection(
+    left: ReturnType<typeof readRawSelection>,
+    right: ReturnType<typeof readRawSelection>,
+) {
+    return left.startRaw === right.startRaw && left.legacyRaw === right.legacyRaw;
+}
+
+export function reviewWebOtbSelection(missingJobId: string | null): WebOtbSelectionReview {
+    if (operation)
+        throw new Error("Wait for the current PC connection before changing the search.");
+    const raw = readRawSelection();
+    try {
+        const current = readSelection();
+        if (!missingJobId || (current.jobId ?? current.record?.id) !== missingJobId)
+            throw new Error("Check the selected search before setting it aside.");
+    } catch (error) {
+        if (!(error instanceof SelectionReadError)) throw error;
+        missingJobId = null;
+    }
+    return { ...raw, missingJobId };
+}
+
+export function setAsideWebOtbSelection(review: WebOtbSelectionReview) {
+    return runStart(async () => {
+        if (review.missingJobId) {
+            try {
+                await loadWebOtbImportJobStatus(review.missingJobId);
+                refreshWebOtbImportJob(review.missingJobId);
+                return null;
+            } catch (error) {
+                if (
+                    !(error instanceof WebOtbJobNotFoundError) ||
+                    error.jobId !== review.missingJobId
+                )
+                    throw error;
+            }
+        }
+        return withSelectionLock(() => {
+            if (!sameRawSelection(readRawSelection(), review)) {
+                refresh();
+                throw new Error(
+                    "The saved search changed in another tab. Review it again before continuing.",
+                );
+            }
+            let previousSearches: SavedOtbSearchDetails[] = [];
+            try {
+                previousSearches = readSelection().previousSearches;
+            } catch {
+                /* The exact unreadable record is retained below. */
+            }
+            const details: SavedOtbSearchDetails = {
+                id: crypto.randomUUID(),
+                savedAt: Date.now(),
+                startRaw: review.startRaw,
+                legacyRaw: review.legacyRaw,
+            };
+            window.localStorage.setItem(
+                WEB_OTB_START_STORAGE_KEY,
+                JSON.stringify({
+                    version: 1,
+                    state: "idle",
+                    previousSearches: [...previousSearches, details],
+                }),
+            );
+            publish({
+                record: null,
+                jobId: null,
+                confirmed: null,
+                ready: true,
+                error: null,
+                canSetAside: false,
+                previousSearches: [...previousSearches, details],
+            });
+            return null;
+        });
+    }, "set-aside");
+}
+
+export function undoWebOtbSetAside(detailsId: string) {
+    return runStart(
+        async () =>
+            withSelectionLock(() => {
+                const selection = readSelection();
+                const details = selection.previousSearches.at(-1);
+                if (selection.record || selection.jobId || details?.id !== detailsId)
+                    throw new Error(
+                        "The selected search changed. Keep its current details before restoring another.",
+                    );
+                if (window.localStorage.getItem(WEB_OTB_JOB_STORAGE_KEY) !== details.legacyRaw)
+                    throw new Error(
+                        "Another tab changed the saved search. Its current details have been kept.",
+                    );
+                if (details.startRaw === null)
+                    window.localStorage.removeItem(WEB_OTB_START_STORAGE_KEY);
+                else window.localStorage.setItem(WEB_OTB_START_STORAGE_KEY, details.startRaw);
+                publish({ previousSearches: [] });
+                refresh();
+                if (snapshot.ready && snapshot.jobId) refreshWebOtbImportJob(snapshot.jobId);
+                return null;
+            }),
+        "undo",
+    );
 }
 
 function refresh() {
@@ -112,10 +287,15 @@ function refresh() {
             jobId: confirmed?.id ?? next.jobId,
             confirmed,
             ready: true,
+            canSetAside: false,
             error: same ? snapshot.error : null,
         });
     } catch (error) {
-        publish({ ready: false, error: storageMessage(error) });
+        publish({
+            ready: false,
+            canSetAside: error instanceof SelectionReadError,
+            error: storageMessage(error),
+        });
     }
 }
 
@@ -157,7 +337,18 @@ async function withSelectionLock<T>(action: () => T): Promise<T> {
     });
 }
 
-export function beginWebOtbStart(request: WebOtbImportRequest, expectedJobId: string | null) {
+export function getWebOtbSelectionVersion() {
+    const stored = window.localStorage.getItem(WEB_OTB_START_STORAGE_KEY);
+    return stored === null
+        ? `legacy:${JSON.stringify(window.localStorage.getItem(WEB_OTB_JOB_STORAGE_KEY))}`
+        : `record:${stored}`;
+}
+
+export function beginWebOtbStart(
+    request: WebOtbImportRequest,
+    expectedJobId: string | null,
+    expectedSelectionVersion?: string,
+) {
     return runStart(async () =>
         withSelectionLock(() => {
             if (!validRequest(request))
@@ -165,6 +356,15 @@ export function beginWebOtbStart(request: WebOtbImportRequest, expectedJobId: st
                     "Check the player, FIDE ID, year and selected sources before starting the search.",
                 );
             const current = readSelection();
+            if (
+                expectedSelectionVersion !== undefined &&
+                getWebOtbSelectionVersion() !== expectedSelectionVersion
+            ) {
+                refresh();
+                throw new Error(
+                    "The selected PC search changed while finding the player. Review the current search before starting another.",
+                );
+            }
             if (current.record && !current.record.accepted) {
                 refresh();
                 throw new Error(
@@ -183,13 +383,23 @@ export function beginWebOtbStart(request: WebOtbImportRequest, expectedJobId: st
                 server: currentServer(),
                 request: structuredClone(request),
                 accepted: false,
+                ...(current.previousSearches.length
+                    ? { previousSearches: current.previousSearches }
+                    : {}),
             };
             try {
                 window.localStorage.setItem(WEB_OTB_START_STORAGE_KEY, JSON.stringify(record));
             } catch (error) {
                 throw new Error(storageMessage(error));
             }
-            publish({ record, jobId: null, confirmed: null, ready: true });
+            publish({
+                record,
+                jobId: null,
+                confirmed: null,
+                ready: true,
+                canSetAside: false,
+                previousSearches: current.previousSearches,
+            });
             return record;
         }),
     );
@@ -205,9 +415,12 @@ export function retryWebOtbStart() {
     );
 }
 
-function runStart(prepare: () => Promise<SavedStart | null>) {
+function runStart(
+    prepare: () => Promise<SavedStart | null>,
+    action: "connect" | "set-aside" | "undo" = "connect",
+) {
     if (operation) return operation;
-    publish({ busy: true, error: null });
+    publish({ busy: true, error: null, errorAction: null });
     let ownedId: string | null = null;
     operation = Promise.resolve()
         .then(async () => {
@@ -250,6 +463,7 @@ function runStart(prepare: () => Promise<SavedStart | null>) {
         .catch((error: unknown) => {
             if (!ownedId || snapshot.record?.id === ownedId) {
                 publish({
+                    errorAction: action,
                     error:
                         error instanceof Error
                             ? error.message

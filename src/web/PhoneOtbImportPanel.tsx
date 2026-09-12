@@ -43,6 +43,8 @@ import {
   getWebOtbProgressValue,
   searchWebFidePlayers,
   watchWebOtbImportJob,
+  refreshWebOtbImportJob,
+  WebOtbJobNotFoundError,
   type WebOtbImportedGame,
   type WebOtbImportJob,
   type WebOtbImportSources,
@@ -50,8 +52,14 @@ import {
 import {
   beginWebOtbStart,
   getWebOtbStartSnapshot,
+  getWebOtbSelectionVersion,
   retryWebOtbStart,
   subscribeWebOtbStart,
+  reviewWebOtbSelection,
+  setAsideWebOtbSelection,
+  undoWebOtbSetAside,
+  type WebOtbSelectionReview,
+  type SavedOtbSearchDetails,
 } from "./otbStartSession";
 import classes from "./OnlineGameAnalysisPanel.module.css";
 
@@ -72,7 +80,7 @@ export default function PhoneOtbImportPanel({
   const [visibleGames, setVisibleGames] = useState(20);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const startSession = useSyncExternalStore(subscribeWebOtbStart, getWebOtbStartSnapshot);
-  const jobId = startSession.jobId;
+  const jobId = startSession.ready ? startSession.jobId : null;
   const [observedJob, setJob] = useState<WebOtbImportJob | null>(null);
   const job =
     observedJob?.id === jobId
@@ -87,6 +95,22 @@ export default function PhoneOtbImportPanel({
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [jobError, setJobError] = useState<string | null>(null);
+  const [missingJobId, setMissingJobId] = useState<string | null>(null);
+  const [readRetrying, setReadRetrying] = useState(false);
+  const [selectionReview, setSelectionReview] = useState<WebOtbSelectionReview | null>(null);
+  const form = useRef<HTMLDivElement>(null);
+  const reviewTrigger = useRef<HTMLButtonElement>(null);
+  const reviewBack = useRef<HTMLButtonElement>(null);
+  const reviewOpen = Boolean(selectionReview);
+  const previousReviewOpen = useRef(false);
+  useEffect(() => {
+    if (reviewOpen) reviewBack.current?.focus();
+    else if (previousReviewOpen.current) {
+      if (reviewTrigger.current) reviewTrigger.current.focus();
+      else form.current?.querySelector<HTMLInputElement>("input:not(:disabled)")?.focus();
+    }
+    previousReviewOpen.current = reviewOpen;
+  }, [reviewOpen]);
   const mounted = useRef(true);
   const stopRequest = useRef<symbol | null>(null);
   const analyzeRequest = useRef<symbol | null>(null);
@@ -105,8 +129,9 @@ export default function PhoneOtbImportPanel({
   const identityRequest = useFideIdentityRequest();
   const preflightRef = useRef(false);
   const games = useMemo(() => (job ? getWebOtbImportedGames(job) : []), [job]);
-  const running = job?.status === "queued" || job?.status === "running";
-  const restoring = Boolean(jobId && !job);
+  const missing = Boolean(jobId && missingJobId === jobId);
+  const running = !missing && (job?.status === "queued" || job?.status === "running");
+  const restoring = Boolean(jobId && !job && !missing);
   const formDisabled =
     running ||
     starting ||
@@ -114,6 +139,8 @@ export default function PhoneOtbImportPanel({
     stopping ||
     startSession.busy ||
     pendingStart ||
+    missing ||
+    reviewOpen ||
     !startSession.ready;
 
   useEffect(() => {
@@ -131,6 +158,10 @@ export default function PhoneOtbImportPanel({
   }, [startSession.record, setPlayerName]);
 
   useEffect(() => {
+    setJobError(null);
+    setMissingJobId(null);
+    setReadRetrying(false);
+    setSelectionReview(null);
     if (!jobId) return;
     let active = true;
     const unsubscribe = watchWebOtbImportJob(
@@ -150,13 +181,19 @@ export default function PhoneOtbImportPanel({
           fromYearManuallyEditedRef.current = true;
         }
         setJob(next);
+        setMissingJobId(null);
+        setReadRetrying(false);
+        setSelectionReview((review) => (review?.missingJobId === next.id ? null : review));
         setJobError(next.status === "failed" ? next.error || "The PC OTB import failed." : null);
       },
       (caught) => {
-        if (active) {
+        if (active && currentJobId.current === jobId) {
           const message =
             caught instanceof Error ? caught.message : "The PC search could not be loaded.";
-          setJobError(`${message} Retrying automatically…`);
+          const notFound = caught instanceof WebOtbJobNotFoundError && caught.jobId === jobId;
+          setMissingJobId(notFound ? jobId : null);
+          setReadRetrying(false);
+          setJobError(notFound ? message : `${message} Retrying automatically…`);
         }
       },
     );
@@ -165,6 +202,31 @@ export default function PhoneOtbImportPanel({
       unsubscribe();
     };
   }, [jobId, setPlayerName]);
+
+  function reviewSelection() {
+    identityRequest.cancel();
+    try {
+      setSelectionReview(reviewWebOtbSelection(missing ? jobId : null));
+      setError(null);
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : "The saved search could not be reviewed.",
+      );
+    }
+  }
+
+  async function confirmSetAside() {
+    if (!selectionReview || startSession.busy) return;
+    await setAsideWebOtbSelection(selectionReview);
+    if (mounted.current && !getWebOtbStartSnapshot().error) setSelectionReview(null);
+  }
+
+  function retryJob() {
+    if (!jobId || readRetrying) return;
+    setReadRetrying(true);
+    setJobError(null);
+    refreshWebOtbImportJob(jobId);
+  }
 
   function selectFidePlayer(player: FidePlayer) {
     setSelectedPlayer(player);
@@ -251,6 +313,7 @@ export default function PhoneOtbImportPanel({
     setError(null);
     setJobError(null);
     try {
+      const selectionVersion = getWebOtbSelectionVersion();
       const identity = await resolveIdentity(controller.signal);
       if (controller.signal.aborted) return;
       setResolvingIdentity(false);
@@ -262,6 +325,7 @@ export default function PhoneOtbImportPanel({
           sources,
         },
         jobId,
+        selectionVersion,
       );
     } catch (startError) {
       if (controller.signal.aborted || !mounted.current) return;
@@ -339,7 +403,7 @@ export default function PhoneOtbImportPanel({
         : progress?.message;
 
   return (
-    <Stack className={classes.otbForm} gap="sm">
+    <Stack ref={form} className={classes.otbForm} gap="sm">
       <Alert color="blue" icon={<IconDeviceDesktop size={17} />} variant="light">
         Your PC searches and saves these games. Keep it on until the search finishes.
       </Alert>
@@ -478,9 +542,7 @@ export default function PhoneOtbImportPanel({
       ) : pendingStart ? null : (
         <Button
           className={classes.otbAction}
-          disabled={
-            !playerName.trim() || restoring || stopping || pendingStart || !startSession.ready
-          }
+          disabled={!playerName.trim() || formDisabled}
           leftSection={<IconSearch size={16} />}
           loading={starting || startSession.busy || (restoring && !jobError)}
           onClick={() => void startSearch()}
@@ -490,7 +552,7 @@ export default function PhoneOtbImportPanel({
         </Button>
       )}
 
-      {(pendingStart || startSession.error || !startSession.ready) && (
+      {!selectionReview && (pendingStart || startSession.error || !startSession.ready) && (
         <Stack gap="xs">
           {startSession.error ? (
             <Alert className={classes.importError} color="red" variant="light">
@@ -501,14 +563,20 @@ export default function PhoneOtbImportPanel({
               Reconnect to the saved PC search.
             </Text>
           ) : null}
-          <Button
-            className={classes.otbAction}
-            variant="light"
-            loading={startSession.busy}
-            onClick={() => void retryWebOtbStart()}
-          >
-            {startSession.busy ? "Connecting to PC…" : "Retry connection"}
-          </Button>
+          {(pendingStart ||
+            !startSession.ready ||
+            !startSession.errorAction ||
+            startSession.errorAction === "connect") && (
+            <Button
+              className={classes.otbAction}
+              variant="light"
+              loading={startSession.busy}
+              onClick={() => void retryWebOtbStart()}
+            >
+              {startSession.busy ? "Connecting to PC…" : "Retry connection"}
+            </Button>
+          )}
+
           {pendingStart && (
             <Text c="dimmed" size="xs">
               Retry reconnects to the same search.
@@ -517,7 +585,106 @@ export default function PhoneOtbImportPanel({
         </Stack>
       )}
 
-      {restoring && (
+      {jobError || readRetrying ? (
+        <Stack gap="xs">
+          {jobError && (
+            <Alert className={classes.importError} color="red" variant="light">
+              {jobError}
+            </Alert>
+          )}
+          {jobId && job?.status !== "failed" && (
+            <Button
+              className={classes.otbAction}
+              variant="light"
+              loading={readRetrying}
+              disabled={startSession.busy}
+              onClick={retryJob}
+            >
+              Retry loading
+            </Button>
+          )}
+        </Stack>
+      ) : null}
+      {(missing || startSession.canSetAside) && !selectionReview && (
+        <Button
+          ref={reviewTrigger}
+          className={classes.otbAction}
+          variant="subtle"
+          disabled={startSession.busy || readRetrying}
+          onClick={reviewSelection}
+        >
+          Set aside search
+        </Button>
+      )}
+      {selectionReview && (
+        <Alert
+          color="yellow"
+          variant="light"
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && !startSession.busy) {
+              event.preventDefault();
+              setSelectionReview(null);
+            }
+          }}
+        >
+          <Stack gap="xs">
+            {startSession.error && (
+              <Text role="alert" c="red" size="sm">
+                {startSession.error}
+              </Text>
+            )}
+            <Text size="sm">
+              This keeps a copy of the search details and leaves any PC search running. Games
+              already imported stay available.
+            </Text>
+            <Button
+              className={classes.otbAction}
+              loading={startSession.busy}
+              onClick={() => void confirmSetAside()}
+            >
+              Keep details and continue
+            </Button>
+            <Button
+              ref={reviewBack}
+              variant="subtle"
+              disabled={startSession.busy}
+              onClick={() => setSelectionReview(null)}
+            >
+              Back
+            </Button>
+          </Stack>
+        </Alert>
+      )}
+      {startSession.previousSearches.length > 0 && (
+        <Stack gap="xs">
+          {!startSession.record && !jobId && startSession.ready && (
+            <Button
+              variant="subtle"
+              className={classes.otbAction}
+              loading={startSession.busy}
+              onClick={() => void undoWebOtbSetAside(startSession.previousSearches.at(-1)!.id)}
+            >
+              Undo set aside
+            </Button>
+          )}
+          <details>
+            <summary style={{ cursor: "pointer" }}>
+              Kept search details ({startSession.previousSearches.length})
+            </summary>
+            <Stack gap="xs" mt="xs">
+              {startSession.previousSearches.map((details) => (
+                <Group key={details.id} justify="space-between" wrap="wrap">
+                  <Text size="xs">Saved {new Date(details.savedAt).toLocaleString()}</Text>
+                  <Button variant="subtle" onClick={() => downloadSearchDetails(details)}>
+                    Download details
+                  </Button>
+                </Group>
+              ))}
+            </Stack>
+          </details>
+        </Stack>
+      )}
+      {restoring && !jobError && (
         <Text role="status" size="sm">
           Checking the saved PC search…
         </Text>
@@ -556,11 +723,6 @@ export default function PhoneOtbImportPanel({
       {error ? (
         <Alert className={classes.importError} color="red" variant="light">
           {error}
-        </Alert>
-      ) : null}
-      {jobError ? (
-        <Alert className={classes.importError} color="red" variant="light">
-          {jobError}
         </Alert>
       ) : null}
 
@@ -667,4 +829,17 @@ function useStoredString(key: string) {
     }
   }, [key, value]);
   return [value, setValue] as const;
+}
+
+function downloadSearchDetails(details: SavedOtbSearchDetails) {
+  const url = URL.createObjectURL(
+    new Blob([JSON.stringify(details, null, 2)], { type: "application/json" }),
+  );
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `pc-search-details-${details.id}.json`;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }

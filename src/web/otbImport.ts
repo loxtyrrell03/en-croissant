@@ -7,6 +7,13 @@ import { withWebRequestDeadline } from "./requestDeadline";
 export const WEB_OTB_JOB_STORAGE_KEY = "encroissant-web-otb-job";
 export const WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY = "encroissant-web-otb-prep-handled-job";
 
+export class WebOtbJobNotFoundError extends Error {
+    constructor(readonly jobId: string) {
+        super("The PC could not find this saved search.");
+        this.name = "WebOtbJobNotFoundError";
+    }
+}
+
 export type WebOtbImportSources = {
     lichessBroadcasts: boolean;
     broadcastArchives: boolean;
@@ -129,14 +136,18 @@ export async function startWebOtbImport(request: WebOtbImportRequest, jobId: str
     return job;
 }
 
-export async function loadWebOtbImportJob(jobId: string, signal?: AbortSignal) {
-    const job = await requestWebOtbJobStatus(
+export function loadWebOtbImportJobStatus(jobId: string, signal?: AbortSignal) {
+    return requestWebOtbJobStatus(
         `api/otb-import/jobs/${encodeURIComponent(jobId)}`,
         {
             signal,
         },
         jobId,
     );
+}
+
+export async function loadWebOtbImportJob(jobId: string, signal?: AbortSignal) {
+    const job = await loadWebOtbImportJobStatus(jobId, signal);
     if (
         job.status !== "completed" ||
         !job.artifactAvailable ||
@@ -165,6 +176,11 @@ export async function cancelWebOtbImport(jobId: string) {
     );
     // A status GET started before Stop may still be in flight. Replace that
     // observation before it can publish an older running state or empty result.
+    refreshWebOtbImportJob(jobId);
+    return job;
+}
+
+export function refreshWebOtbImportJob(jobId: string) {
     const watcher = webOtbJobWatchers.get(jobId);
     if (watcher) {
         watcher.controller?.abort();
@@ -173,9 +189,9 @@ export async function cancelWebOtbImport(jobId: string) {
         watcher.timer = null;
         watcher.inFlight = false;
         watcher.terminal = false;
+        watcher.error = null;
         if (watcher.subscribers.size > 0) void pollWebOtbImportJob(jobId, watcher);
     }
-    return job;
 }
 
 type WebOtbJobSubscriber = {
@@ -190,6 +206,7 @@ type WebOtbJobWatcher = {
     timer: ReturnType<typeof setTimeout> | null;
     inFlight: boolean;
     terminal: boolean;
+    error: unknown;
 };
 
 // The collector finishes many complete imports between one-second boundaries.
@@ -217,6 +234,7 @@ export function watchWebOtbImportJob(
             timer: null,
             inFlight: false,
             terminal: false,
+            error: null,
         };
         webOtbJobWatchers.set(jobId, watcher);
     }
@@ -224,6 +242,7 @@ export function watchWebOtbImportJob(
     const subscriber = { onJob, onError };
     watcher.subscribers.add(subscriber);
     if (watcher.job) onJob(watcher.job);
+    if (watcher.error) onError(watcher.error);
     if (!watcher.terminal && !watcher.inFlight && !watcher.timer) {
         void pollWebOtbImportJob(jobId, watcher);
     }
@@ -246,10 +265,15 @@ async function pollWebOtbImportJob(jobId: string, watcher: WebOtbJobWatcher) {
         const job = await loadWebOtbImportJob(jobId, controller.signal);
         if (controller.signal.aborted || watcher.controller !== controller) return;
         watcher.job = job;
+        watcher.error = null;
         watcher.terminal = job.status === "completed" || job.status === "failed";
         for (const subscriber of watcher.subscribers) subscriber.onJob(job);
     } catch (error) {
         if (!controller.signal.aborted && watcher.controller === controller) {
+            watcher.error = error;
+            // A confirmed missing record needs an explicit retry or reviewed
+            // recovery, not a permanent half-second polling loop.
+            watcher.terminal = error instanceof WebOtbJobNotFoundError;
             for (const subscriber of watcher.subscribers) subscriber.onError(error);
         }
     } finally {
@@ -366,6 +390,16 @@ async function requestWebOtbJobStatus(
                 | { error?: string }
                 | null;
             if (!response.ok) {
+                if (
+                    response.status === 404 &&
+                    expectedId &&
+                    (!init?.method || init.method === "GET") &&
+                    body &&
+                    "error" in body &&
+                    body.error === "OTB import job not found."
+                ) {
+                    throw new WebOtbJobNotFoundError(expectedId);
+                }
                 if (response.status === 405 && init?.method === "PUT") {
                     throw new Error(
                         "The PC phone service needs updating before this search can start. Update it, then retry this search.",
