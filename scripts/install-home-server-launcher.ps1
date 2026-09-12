@@ -10,7 +10,7 @@ $ServerRoot = [IO.Path]::GetFullPath($ServerRoot)
 $launcherRoot = Join-Path $ServerRoot 'launcher'
 $installedLauncher = Join-Path $launcherRoot 'run-installed-home-server.ps1'
 New-Item -ItemType Directory -Path $launcherRoot -Force | Out-Null
-foreach ($name in @('run-installed-home-server.ps1', 'phone-service-controller.mjs', 'manage-phone-services.ps1', 'run-phone-service-controller.ps1')) {
+foreach ($name in @('run-installed-home-server.ps1', 'phone-service-controller.mjs', 'manage-phone-services.ps1', 'run-phone-service-controller.ps1', 'watch-phone-service-controller.ps1')) {
   $destination = Join-Path $launcherRoot $name
   Copy-Item -LiteralPath (Join-Path $PSScriptRoot $name) -Destination "$destination.next-$PID" -Force
   Move-Item -LiteralPath "$destination.next-$PID" -Destination $destination -Force
@@ -37,6 +37,18 @@ $taskPrincipal = New-ScheduledTaskPrincipal -UserId $taskUser -LogonType Interac
 $taskSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1)
 $taskSettings.Priority = 4
 Stop-ScheduledTask -TaskName $TaskName -TaskPath '\' -ErrorAction SilentlyContinue
+# Stopping WScript via Scheduler does not reclaim its detached PS/Node children.
+# Stop only the installed controller/runner identities before handing over the
+# port; backend process identity and user data remain owned by their launchers.
+$controllerScript = Join-Path $launcherRoot 'phone-service-controller.mjs'
+$oldControllers = @(Get-CimInstance Win32_Process | Where-Object {
+  ($_.Name -eq 'node.exe' -and ([string]$_.CommandLine).Contains('"' + $controllerScript + '"')) -or
+  ($_.Name -eq 'powershell.exe' -and ([string]$_.CommandLine).Contains('"' + $controllerRunner + '"'))
+})
+foreach ($oldController in $oldControllers) {
+  Stop-Process -Id $oldController.ProcessId -Force -ErrorAction SilentlyContinue
+  Wait-Process -Id $oldController.ProcessId -Timeout 5 -ErrorAction SilentlyContinue
+}
 Register-ScheduledTask -TaskName $TaskName -TaskPath '\' -Action $taskAction -Trigger $taskTrigger -Principal $taskPrincipal -Settings $taskSettings -Force | Out-Null
 
 # Preserve the engine task's installed executable, user and recovery settings;
@@ -62,6 +74,13 @@ if ([IO.Path]::GetFileName($engineAction.Execute) -ieq 'node.exe') {
   throw 'The engine task has an unrecognized launcher; its action was preserved.'
 }
 Start-ScheduledTask -TaskName $TaskName -TaskPath '\'
+$watchdogScript = Join-Path $launcherRoot 'watch-phone-service-controller.ps1'
+$watchdogVbs = Join-Path $launcherRoot 'phone-service-watchdog.vbs'
+$watchdogCommand = '"' + $powershell + '" -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $watchdogScript + '" -ServerRoot "' + $ServerRoot + '" -Port ' + $ControllerPort + ' -TaskName "' + $TaskName + '"'
+[IO.File]::WriteAllText($watchdogVbs, ('Set shell = CreateObject("WScript.Shell")' + "`r`nWScript.Quit shell.Run(" + '"' + $watchdogCommand.Replace('"', '""') + '", 0, True)' + "`r`n"), [Text.Encoding]::ASCII)
+$watchdogAction = New-ScheduledTaskAction -Execute $wscript -Argument "//B //Nologo `"$watchdogVbs`""
+$watchdogTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 1)
+Register-ScheduledTask -TaskName ($TaskName + 'Watchdog') -TaskPath '\' -Action $watchdogAction -Trigger $watchdogTrigger -Principal $taskPrincipal -Settings $taskSettings -Force | Out-Null
 $installedAction = @((Get-ScheduledTask -TaskName $TaskName -TaskPath '\').Actions)[0]
 if ($installedAction.Execute -ne $wscript -or $installedAction.Arguments -notlike "*`"$controllerVbs`"*") {
   throw 'The installed controller task did not retain its headless launcher.'

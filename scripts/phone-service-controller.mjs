@@ -3,10 +3,18 @@ import { readFile, writeFile, rename, stat, mkdir } from "node:fs/promises";
 import { createReadStream } from "node:fs";
 import { dirname, extname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
+import { spawn } from "node:child_process";
 
-const run = promisify(execFile);
+function run(file, args, options) {
+  return new Promise((done, reject) => {
+    // A long-lived grandchild must not hold execFile's captured pipe handles
+    // open after the Windows helper has exited. Follow exit, not stdio close.
+    const child = spawn(file, args, { windowsHide: true, stdio: "ignore" });
+    const timer = setTimeout(() => { child.kill(); reject(new Error("Service control timed out.")); }, options.timeout);
+    child.once("error", (error) => { clearTimeout(timer); reject(error); });
+    child.once("exit", (code) => { clearTimeout(timer); if (code === 0) done(); else reject(new Error(`Service helper exited with code ${code}.`)); });
+  });
+}
 const mime = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript",

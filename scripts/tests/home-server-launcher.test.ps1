@@ -14,6 +14,7 @@ foreach ($path in @(
   $collectorTerminatorPath
   (Join-Path $scriptsRoot 'manage-phone-services.ps1')
   (Join-Path $scriptsRoot 'run-phone-service-controller.ps1')
+  (Join-Path $scriptsRoot 'watch-phone-service-controller.ps1')
 )) {
   $tokens = $null
   $parseErrors = $null
@@ -35,6 +36,13 @@ if ($launcher -notmatch 'taskkill\.exe\s+/PID.*?/T\s+/F') {
 }
 
 $installer = Get-Content -Raw -LiteralPath $installerPath
+$controllerRunner = Get-Content -Raw -LiteralPath (Join-Path $scriptsRoot 'run-phone-service-controller.ps1')
+if ($controllerRunner -notmatch '\$process\.WaitForExit\(\)' -or $controllerRunner -match '-PassThru\s+-Wait') {
+  throw 'Scheduler must track the controller exit rather than wait for its surviving backend descendants.'
+}
+if ($installer -notmatch 'Stop-Process -Id \$oldController.ProcessId') {
+  throw 'Controller replacement must reclaim the exact installed controller left behind by WScript.'
+}
 if ($installer -notmatch "launcher.*run-installed-home-server\.ps1") {
   throw 'The task installer does not target the installed launcher directory.'
 }
