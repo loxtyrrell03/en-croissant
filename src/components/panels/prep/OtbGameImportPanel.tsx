@@ -22,6 +22,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { mutate } from "swr";
 import { commands, events, type OtbImportProgress, type OtbImportReport } from "@/bindings";
 import { FidePlayerSearchInput } from "@/components/common/FidePlayerSearchInput";
+import { useFideIdentityRequest } from "@/components/common/useFideIdentityRequest";
+import { resolveFideImportIdentity } from "@/utils/fideImportIdentity";
 import { databaseConversionStateAtom } from "@/state/atoms";
 import { getDatabases, type SuccessDatabaseInfo } from "@/utils/db";
 import { getDatabasesDir } from "@/utils/directories";
@@ -108,13 +110,17 @@ export default function OtbGameImportPanel({
   const laneStartedAtRef = useRef<Record<string, number>>({});
   const initialNameAppliedRef = useRef(initialPlayerName);
   const fromYearManuallyEditedRef = useRef(false);
+  const identityRequest = useFideIdentityRequest();
+  const preflightRef = useRef(false);
+  const [identityError, setIdentityError] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialPlayerName && (!playerName.trim() || playerName === initialNameAppliedRef.current)) {
+      identityRequest.cancel();
       setPlayerName(initialPlayerName);
       initialNameAppliedRef.current = initialPlayerName;
     }
-  }, [initialPlayerName, playerName]);
+  }, [identityRequest, initialPlayerName, playerName]);
 
   useEffect(() => {
     const unlisten = events.otbImportProgress.listen(({ payload }) => {
@@ -184,207 +190,222 @@ export default function OtbGameImportPanel({
   };
 
   const changePlayerName = (value: string) => {
+    identityRequest.cancel();
+    setIdentityError(null);
     setPlayerName(value);
     if (selectedPlayer && value.trim() !== selectedPlayer.name) clearSelectedPlayer();
   };
 
   const changeFideId = (value: string) => {
+    identityRequest.cancel();
+    setIdentityError(null);
     const clean = value.replace(/\D/g, "");
     setFideId(clean);
     setFideIdAuto(false);
     if (selectedPlayer && clean !== String(selectedPlayer.id)) setSelectedPlayer(null);
   };
 
-  const autofillFromFideId = async () => {
+  async function autofillFromFideId() {
     const id = fideId.trim();
-    if (!/^\d{4,}$/.test(id) || id === String(selectedPlayer?.id ?? "")) return;
-    const player = (await searchFidePlayers(id)).find((candidate) => String(candidate.id) === id);
-    if (player) selectFidePlayer(player);
-  };
+    if (
+      running ||
+      preflightRef.current ||
+      !/^\d{4,}$/.test(id) ||
+      id === String(selectedPlayer?.id ?? "")
+    )
+      return;
+    const controller = identityRequest.begin();
+    try {
+      const players = await searchFidePlayers(id, controller.signal);
+      if (controller.signal.aborted) return;
+      const player = players.find((candidate) => candidate.id === Number(id));
+      if (player) selectFidePlayer(player);
+      else
+        setIdentityError(
+          "No player was found for that FIDE ID. Check the ID or search by full name.",
+        );
+    } catch (error) {
+      if (!controller.signal.aborted)
+        setIdentityError(
+          error instanceof Error ? error.message : "FIDE lookup failed. Retry the search.",
+        );
+    }
+  }
 
-  const resolveImportIdentity = async () => {
-    let name = playerName.trim();
-    let id = fideId.trim();
-    let resolvedPlayer = selectedPlayer;
-    const lookup = /^\d+$/.test(name) ? name : /^\d{4,}$/.test(id) ? id : "";
-    if (!selectedPlayer && lookup) {
-      const player = (await searchFidePlayers(lookup)).find(
-        (candidate) => String(candidate.id) === lookup,
-      );
-      if (player) {
-        resolvedPlayer = player;
-        selectFidePlayer(player);
-        name = player.name;
-        id = String(player.id);
-      }
-    }
-    if (!resolvedPlayer && !lookup && name) {
-      const normalizedName = name.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
-      const player = (await searchFidePlayers(name).catch(() => [])).find(
-        (candidate) =>
-          candidate.name.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim() ===
-          normalizedName,
-      );
-      if (player) {
-        resolvedPlayer = player;
-        selectFidePlayer(player);
-        name = player.name;
-        id = String(player.id);
-      }
-    }
+  async function resolveIdentity(signal: AbortSignal) {
+    const identity = await resolveFideImportIdentity(
+      playerName,
+      fideId,
+      selectedPlayer,
+      searchFidePlayers,
+      signal,
+    );
+    if (signal.aborted) throw signal.reason;
+    if (identity.player) selectFidePlayer(identity.player);
     const resolvedFromYear = getFideImportStartYear(
-      resolvedPlayer,
+      identity.player,
       currentYear,
       fromYearManuallyEditedRef.current ? fromYear : null,
     );
-    if (!fromYearManuallyEditedRef.current && resolvedFromYear !== fromYear) {
-      setFromYear(resolvedFromYear);
-    }
-    return { name, id, fromYear: resolvedFromYear };
-  };
+    if (!fromYearManuallyEditedRef.current) setFromYear(resolvedFromYear);
+    return { ...identity, fromYear: resolvedFromYear };
+  }
 
   const runImport = async () => {
-    if (running || resolvingIdentity) return;
+    if (running || preflightRef.current) return;
+    preflightRef.current = true;
+    const controller = identityRequest.begin();
+    setIdentityError(null);
     setResolvingIdentity(true);
-    const identity = await resolveImportIdentity();
-    setResolvingIdentity(false);
-    const jobId = `otb-import-${Date.now()}`;
-    const baseTitle = getOtbImportTitle(identity.name, identity.fromYear);
-    const title = shouldSaveDatabase
-      ? getUniqueOtbDatabaseTitle(baseTitle, localDatabases)
-      : baseTitle;
-    const filename = sanitizeOtbImportFilename(title);
-    const targetDir = shouldSaveDatabase
-      ? databaseDir || (await getDatabasesDir())
-      : await tempDir();
-    const dbPath = await resolve(
-      targetDir,
-      shouldSaveDatabase ? `${filename}.db3` : `${filename}-${jobId}.db3`,
-    );
-    const pgnPath = await resolve(
-      targetDir,
-      shouldSaveDatabase ? `${filename}.pgn` : `${filename}-${jobId}.pgn`,
-    );
-    const cacheDir = await resolve(await appCacheDir(), "otb-game-import");
-    const request = createOtbImportRequest({
-      jobId,
-      playerName: identity.name,
-      fideId: identity.id,
-      fromYear: identity.fromYear,
-      sources,
-      localPgnPaths,
-      cacheDir,
-      outputPath: pgnPath,
-    });
-    const validationError = validateOtbImportRequest(request, currentYear);
-    if (validationError) {
-      notifications.show({
-        title: "OTB import needs more information",
-        message: validationError,
-        color: "yellow",
-      });
-      return;
-    }
-
-    activeJobIdRef.current = jobId;
-    setRunning(true);
-    setProgress(null);
-    setLanes({});
-    setLaneTotal(0);
-    laneStartedAtRef.current = {};
-    setEtaNow(Date.now());
-    setReport(null);
-    setImportedGameCount(null);
-    setStopping(false);
-    const startedAt = Date.now();
-    setConversionState((current) => ({
-      ...current,
-      inProgress: true,
-      phase: "downloading",
-      progress: null,
-      progressId: jobId,
-      sourceKind: "otb-games",
-      startedAt,
-      updatedAt: startedAt,
-      totalGames: 0,
-      totalGamesExpected: null,
-      elapsedSeconds: 0,
-      targetDatabasePath: dbPath,
-      targetDatabaseTitle: title,
-      sourceFileName: pgnPath.split(/[\\/]/).at(-1) ?? null,
-    }));
-
     try {
-      const result = unwrap(await commands.collectOtbGames(request));
-      setReport(result);
-      if (result.gamesFound === 0) {
-        const sourceError = result.sources.flatMap((source) => source.errors).at(0);
-        throw new Error(
-          result.cancelled
-            ? "The search was stopped before any games were found."
-            : sourceError || "No verified public OTB PGNs were found for this player.",
-        );
-      }
-      if (!result.coverageComplete && !result.cancelled) {
-        throw new Error(
-          `The search kept its verified games but did not build a database because not every selected source completed: ${result.coverageGaps.join(" ")}`,
-        );
-      }
-
-      setConversionState((current) => ({
-        ...current,
-        phase: "converting",
-        progress: 0,
-        updatedAt: Date.now(),
-        totalGames: 0,
-        totalGamesExpected: result.gamesFound,
-      }));
-      unwrap(
-        await commands.convertPgn(pgnPath, dbPath, null, title, getOtbImportDescription(result)),
+      const identity = await resolveIdentity(controller.signal);
+      if (controller.signal.aborted) return;
+      const jobId = `otb-import-${Date.now()}`;
+      const baseTitle = getOtbImportTitle(identity.name, identity.fromYear);
+      const title = shouldSaveDatabase
+        ? getUniqueOtbDatabaseTitle(baseTitle, localDatabases)
+        : baseTitle;
+      const filename = sanitizeOtbImportFilename(title);
+      const targetDir = shouldSaveDatabase
+        ? databaseDir || (await getDatabasesDir())
+        : await tempDir();
+      const dbPath = await resolve(
+        targetDir,
+        shouldSaveDatabase ? `${filename}.db3` : `${filename}-${jobId}.db3`,
       );
-      unwrap(await commands.deleteDuplicatedGames(dbPath));
-      unwrap(await commands.deleteEmptyGames(dbPath));
-      const databaseInfo = unwrap(await commands.getDbInfo(dbPath));
-      const convertedGameCount = databaseInfo.game_count;
-      setImportedGameCount(convertedGameCount);
+      const pgnPath = await resolve(
+        targetDir,
+        shouldSaveDatabase ? `${filename}.pgn` : `${filename}-${jobId}.pgn`,
+      );
+      const cacheDir = await resolve(await appCacheDir(), "otb-game-import");
+      const request = createOtbImportRequest({
+        jobId,
+        playerName: identity.name,
+        fideId: identity.id,
+        fromYear: identity.fromYear,
+        sources,
+        localPgnPaths,
+        cacheDir,
+        outputPath: pgnPath,
+      });
+      const validationError = validateOtbImportRequest(request, currentYear);
+      if (validationError) {
+        notifications.show({
+          title: "OTB import needs more information",
+          message: validationError,
+          color: "yellow",
+        });
+        return;
+      }
+
+      if (controller.signal.aborted) return;
+      activeJobIdRef.current = jobId;
+      setRunning(true);
+      setResolvingIdentity(false);
+      setProgress(null);
+      setLanes({});
+      setLaneTotal(0);
+      laneStartedAtRef.current = {};
+      setEtaNow(Date.now());
+      setReport(null);
+      setImportedGameCount(null);
+      setStopping(false);
+      const startedAt = Date.now();
       setConversionState((current) => ({
         ...current,
-        progress: 100,
-        totalGames: convertedGameCount,
-        updatedAt: Date.now(),
+        inProgress: true,
+        phase: "downloading",
+        progress: null,
+        progressId: jobId,
+        sourceKind: "otb-games",
+        startedAt,
+        updatedAt: startedAt,
+        totalGames: 0,
+        totalGamesExpected: null,
+        elapsedSeconds: 0,
+        targetDatabasePath: dbPath,
+        targetDatabaseTitle: title,
+        sourceFileName: pgnPath.split(/[\\/]/).at(-1) ?? null,
       }));
-      await commands.clearGames();
 
-      if (shouldSaveDatabase) {
-        const nextDatabases = await getDatabases();
-        await mutate("databases", nextDatabases, { revalidate: false });
+      try {
+        const result = unwrap(await commands.collectOtbGames(request));
+        setReport(result);
+        if (result.gamesFound === 0) {
+          const sourceError = result.sources.flatMap((source) => source.errors).at(0);
+          throw new Error(
+            result.cancelled
+              ? "The search was stopped before any games were found."
+              : sourceError || "No verified public OTB PGNs were found for this player.",
+          );
+        }
+        if (!result.coverageComplete && !result.cancelled) {
+          throw new Error(
+            `The search kept its verified games but did not build a database because not every selected source completed: ${result.coverageGaps.join(" ")}`,
+          );
+        }
+
+        setConversionState((current) => ({
+          ...current,
+          phase: "converting",
+          progress: 0,
+          updatedAt: Date.now(),
+          totalGames: 0,
+          totalGamesExpected: result.gamesFound,
+        }));
+        unwrap(
+          await commands.convertPgn(pgnPath, dbPath, null, title, getOtbImportDescription(result)),
+        );
+        unwrap(await commands.deleteDuplicatedGames(dbPath));
+        unwrap(await commands.deleteEmptyGames(dbPath));
+        const databaseInfo = unwrap(await commands.getDbInfo(dbPath));
+        const convertedGameCount = databaseInfo.game_count;
+        setImportedGameCount(convertedGameCount);
+        setConversionState((current) => ({
+          ...current,
+          progress: 100,
+          totalGames: convertedGameCount,
+          updatedAt: Date.now(),
+        }));
+        await commands.clearGames();
+
+        if (shouldSaveDatabase) {
+          const nextDatabases = await getDatabases();
+          await mutate("databases", nextDatabases, { revalidate: false });
+        }
+        await onImported({
+          dbPath,
+          title,
+          temporary: !shouldSaveDatabase,
+          importedGameCount: convertedGameCount,
+          report: result,
+        });
+        notifications.show({
+          title: result.cancelled ? "Partial OTB database ready" : "OTB prep database ready",
+          message:
+            convertedGameCount === result.gamesFound
+              ? `${convertedGameCount} OTB game${convertedGameCount === 1 ? "" : "s"} imported${result.cancelled ? " from the stopped search" : ""}; ${result.duplicatesRemoved} duplicate${result.duplicatesRemoved === 1 ? "" : "s"} removed.`
+              : `${convertedGameCount} usable OTB game${convertedGameCount === 1 ? "" : "s"} imported from ${result.gamesFound} unique source records; ${result.gamesFound - convertedGameCount} malformed or empty record${result.gamesFound - convertedGameCount === 1 ? "" : "s"} skipped.`,
+          color: "green",
+        });
+      } catch (error) {
+        notifications.show({
+          title: "Could not build the OTB prep database",
+          message: error instanceof Error ? error.message : String(error),
+          color: "red",
+        });
+      } finally {
+        activeJobIdRef.current = null;
+        setStopping(false);
+        resetDatabaseConversionState(setConversionState);
+        setRunning(false);
       }
-      await onImported({
-        dbPath,
-        title,
-        temporary: !shouldSaveDatabase,
-        importedGameCount: convertedGameCount,
-        report: result,
-      });
-      notifications.show({
-        title: result.cancelled ? "Partial OTB database ready" : "OTB prep database ready",
-        message:
-          convertedGameCount === result.gamesFound
-            ? `${convertedGameCount} OTB game${convertedGameCount === 1 ? "" : "s"} imported${result.cancelled ? " from the stopped search" : ""}; ${result.duplicatesRemoved} duplicate${result.duplicatesRemoved === 1 ? "" : "s"} removed.`
-            : `${convertedGameCount} usable OTB game${convertedGameCount === 1 ? "" : "s"} imported from ${result.gamesFound} unique source records; ${result.gamesFound - convertedGameCount} malformed or empty record${result.gamesFound - convertedGameCount === 1 ? "" : "s"} skipped.`,
-        color: "green",
-      });
     } catch (error) {
-      notifications.show({
-        title: "Could not build the OTB prep database",
-        message: error instanceof Error ? error.message : String(error),
-        color: "red",
-      });
+      if (!controller.signal.aborted)
+        setIdentityError(error instanceof Error ? error.message : String(error));
     } finally {
-      activeJobIdRef.current = null;
-      setStopping(false);
-      resetDatabaseConversionState(setConversionState);
-      setRunning(false);
+      preflightRef.current = false;
+      setResolvingIdentity(false);
     }
   };
 
@@ -407,6 +428,11 @@ export default function OtbGameImportPanel({
 
   return (
     <Stack gap={dense ? 4 : "md"}>
+      {identityError && (
+        <Text role="alert" c="red" size="sm">
+          {identityError}
+        </Text>
+      )}
       {asDialog ? null : (
         <Alert color="blue" variant="light" p={dense ? 6 : "xs"}>
           <Text size="xs">
@@ -416,13 +442,21 @@ export default function OtbGameImportPanel({
           </Text>
         </Alert>
       )}
+      {resolvingIdentity && (
+        <Button variant="subtle" onClick={() => identityRequest.cancel()}>
+          Stop FIDE search
+        </Button>
+      )}
       <Group gap={dense ? 4 : "sm"} wrap="wrap" align="flex-end">
         <Box style={asDialog ? { flex: 1, minWidth: 220 } : { width: dense ? 210 : 260 }}>
           <FidePlayerSearchInput
             disabled={running || resolvingIdentity}
             label={asDialog ? "Player" : "Opponent"}
             onChange={changePlayerName}
-            onSelect={selectFidePlayer}
+            onSelect={(player) => {
+              identityRequest.cancel();
+              selectFidePlayer(player);
+            }}
             searchPlayers={searchFidePlayers}
             selected={selectedPlayer}
             size={controlSize}
@@ -430,6 +464,7 @@ export default function OtbGameImportPanel({
           />
         </Box>
         <TextInput
+          disabled={running || resolvingIdentity}
           label="FIDE ID"
           placeholder="Autofilled"
           value={fideId}
@@ -439,6 +474,7 @@ export default function OtbGameImportPanel({
           w={dense ? 112 : 132}
         />
         <NumberInput
+          disabled={running || resolvingIdentity}
           label="Since"
           value={fromYear}
           onChange={(value) => {
@@ -453,6 +489,7 @@ export default function OtbGameImportPanel({
         />
         {!forceSaveDatabase ? (
           <Checkbox
+            disabled={running || resolvingIdentity}
             label="Save database"
             checked={saveDatabase}
             onChange={(event) => setSaveDatabase(event.currentTarget.checked)}
@@ -464,6 +501,7 @@ export default function OtbGameImportPanel({
         {OTB_IMPORT_SOURCE_DETAILS.map((source) => (
           <Tooltip key={source.key} label={source.detail}>
             <Checkbox
+              disabled={running || resolvingIdentity}
               label={
                 <span>
                   {source.label}
@@ -488,6 +526,7 @@ export default function OtbGameImportPanel({
             variant="default"
             size={controlSize}
             leftSection={<IconFilePlus size="0.95rem" />}
+            disabled={running || resolvingIdentity}
             onClick={() => void addLocalPgnSources()}
           >
             Add PGN sources

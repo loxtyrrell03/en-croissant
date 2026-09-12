@@ -14,7 +14,7 @@ export type FidePlayer = {
     };
 };
 
-type RawFidePlayer = Partial<FidePlayer>;
+type RawFidePlayer = Omit<Partial<FidePlayer>, "inactive"> & { inactive?: unknown };
 
 export const MAX_FIDE_SEARCH_RESULTS = 8;
 export const FIDE_IMPORT_FALLBACK_YEAR = 1900;
@@ -40,20 +40,31 @@ export function getFideImportStartYear(
     return FIDE_IMPORT_FALLBACK_YEAR;
 }
 
+function positiveInteger(value: unknown): number | undefined {
+    return typeof value === "number" && Number.isSafeInteger(value) && value > 0
+        ? value
+        : undefined;
+}
+
 export function parseFidePlayer(raw: unknown): FidePlayer | null {
     if (!raw || typeof raw !== "object") return null;
     const player = raw as RawFidePlayer;
-    if (typeof player.id !== "number" || typeof player.name !== "string") return null;
+    if (
+        positiveInteger(player.id) === undefined ||
+        typeof player.name !== "string" ||
+        !player.name.trim()
+    )
+        return null;
     return {
-        id: player.id,
+        id: player.id!,
         name: player.name,
         title: typeof player.title === "string" ? player.title : undefined,
         federation: typeof player.federation === "string" ? player.federation : undefined,
-        year: typeof player.year === "number" ? player.year : undefined,
-        standard: typeof player.standard === "number" ? player.standard : undefined,
-        rapid: typeof player.rapid === "number" ? player.rapid : undefined,
-        blitz: typeof player.blitz === "number" ? player.blitz : undefined,
-        inactive: player.inactive === true ? true : undefined,
+        year: positiveInteger(player.year),
+        standard: positiveInteger(player.standard),
+        rapid: positiveInteger(player.rapid),
+        blitz: positiveInteger(player.blitz),
+        inactive: player.inactive === true || player.inactive === 1 ? true : undefined,
         photo:
             player.photo && typeof player.photo === "object"
                 ? {
@@ -93,7 +104,8 @@ export function describeFidePlayer(player: FidePlayer) {
     if (player.federation) parts.push(player.federation);
     if (player.year) parts.push(`b. ${player.year}`);
     const rating = getFidePlayerRating(player);
-    if (rating) parts.push(String(rating));
+    if (rating)
+        parts.push(`${player.standard ? "Standard" : player.rapid ? "Rapid" : "Blitz"} ${rating}`);
     if (player.inactive) parts.push("inactive");
     return parts.join(" · ");
 }

@@ -3,7 +3,13 @@ const MAX_RESULTS = 8;
 
 export function parseFidePlayer(raw) {
   if (!raw || typeof raw !== "object") return null;
-  if (!Number.isInteger(raw.id) || typeof raw.name !== "string" || !raw.name.trim()) return null;
+  if (
+    !Number.isSafeInteger(raw.id) ||
+    raw.id <= 0 ||
+    typeof raw.name !== "string" ||
+    !raw.name.trim()
+  )
+    return null;
   const player = { id: raw.id, name: raw.name };
   for (const field of ["title", "federation"]) {
     if (typeof raw[field] === "string") player[field] = raw[field];
@@ -15,9 +21,9 @@ export function parseFidePlayer(raw) {
     if (Object.keys(photo).length) player.photo = photo;
   }
   for (const field of ["year", "standard", "rapid", "blitz"]) {
-    if (Number.isFinite(raw[field])) player[field] = raw[field];
+    if (Number.isSafeInteger(raw[field]) && raw[field] > 0) player[field] = raw[field];
   }
-  if (raw.inactive === true) player.inactive = true;
+  if (raw.inactive === true || raw.inactive === 1) player.inactive = true;
   return player;
 }
 
@@ -27,7 +33,8 @@ function parseFidePlayers(raw) {
   const players = [];
   for (const entry of entries) {
     const player = parseFidePlayer(entry);
-    if (!player || seen.has(player.id)) continue;
+    if (!player) throw new Error("FIDE lookup returned an unreadable response. Retry the search.");
+    if (seen.has(player.id)) continue;
     seen.add(player.id);
     players.push(player);
   }
@@ -107,16 +114,24 @@ export class FidePlayerSearchService {
     timeoutMs = 8_000,
     cacheTtlMs = 60 * 60 * 1_000,
     missTtlMs = 5 * 60 * 1_000,
+    maxCacheEntries = 128,
+    minSpacingMs = 500,
   } = {}) {
     this.fetchImpl = fetchImpl;
     this.timeoutMs = timeoutMs;
     this.cacheTtlMs = cacheTtlMs;
     this.missTtlMs = missTtlMs;
+    this.maxCacheEntries = maxCacheEntries;
+    this.minSpacingMs = minSpacingMs;
+    this.nextStart = 0;
+    this.backoffUntil = 0;
+    this.tail = Promise.resolve();
     this.cache = new Map();
     this.inFlight = new Map();
   }
 
-  async search(query) {
+  async search(query, signal) {
+    if (signal?.aborted) throw signal.reason;
     const trimmed = String(query || "")
       .trim()
       .slice(0, 100);
@@ -124,43 +139,133 @@ export class FidePlayerSearchService {
     const key = trimmed.toLocaleLowerCase();
     const cached = this.cache.get(key);
     if (cached && cached.expiresAt > Date.now()) return cached.players;
-    const pending = this.inFlight.get(key);
-    if (pending) return pending;
-
-    const request = this.#fetch(trimmed)
-      .then((players) => {
-        this.cache.set(key, {
-          players,
-          expiresAt: Date.now() + (players.length ? this.cacheTtlMs : this.missTtlMs),
+    if (this.backoffUntil > Date.now()) throw busyError();
+    let pending = this.inFlight.get(key);
+    if (!pending) {
+      const controller = new AbortController();
+      const timer = setTimeout(
+        () => controller.abort(new Error("FIDE lookup took too long. Retry the search.")),
+        this.timeoutMs,
+      );
+      const entry = { controller, readers: 0, promise: null };
+      // A queued request gets the same deadline as its body read. The lane keeps
+      // its order even if a queued caller cancels before the previous one ends.
+      const operation = this.tail.then(async () => {
+        if (controller.signal.aborted) throw controller.signal.reason;
+        await waitForStart(Math.max(0, this.nextStart - Date.now()), controller.signal);
+        if (this.backoffUntil > Date.now()) throw busyError();
+        this.nextStart = Date.now() + this.minSpacingMs;
+        return untilAborted(this.#fetch(trimmed, controller.signal), controller.signal);
+      });
+      this.tail = operation.then(
+        () => {},
+        () => {},
+      );
+      entry.promise = untilAborted(operation, controller.signal)
+        .then((players) => {
+          if (controller.signal.aborted) throw controller.signal.reason;
+          this.cache.delete(key);
+          this.cache.set(key, {
+            players,
+            expiresAt: Date.now() + (players.length ? this.cacheTtlMs : this.missTtlMs),
+          });
+          while (this.cache.size > this.maxCacheEntries)
+            this.cache.delete(this.cache.keys().next().value);
+          return players;
+        })
+        .finally(() => {
+          clearTimeout(timer);
+          if (this.inFlight.get(key) === entry) this.inFlight.delete(key);
         });
-        return players;
-      })
-      .finally(() => this.inFlight.delete(key));
-    this.inFlight.set(key, request);
-    return request;
+      this.inFlight.set(key, entry);
+      pending = entry;
+    }
+    pending.readers += 1;
+    try {
+      return await untilAborted(pending.promise, signal);
+    } finally {
+      pending.readers -= 1;
+      if (pending.readers === 0 && this.inFlight.get(key) === pending) {
+        this.inFlight.delete(key);
+        pending.controller.abort();
+      }
+    }
   }
 
-  async #fetch(query) {
+  async #fetch(query, signal) {
     const numeric = /^\d+$/.test(query);
     const url = numeric
       ? `${FIDE_PLAYER_URL}/${query}`
       : `${FIDE_PLAYER_URL}?q=${encodeURIComponent(query)}`;
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
-    try {
-      const response = await this.fetchImpl(url, {
-        headers: {
-          accept: "application/json",
-          "user-agent": "En Croissant private phone OTB importer/1.0",
-        },
-        signal: controller.signal,
-      });
-      if (response.status === 404) return [];
-      if (!response.ok) throw new Error(`Lichess FIDE lookup returned HTTP ${response.status}.`);
-      const players = parseFidePlayers(await response.json());
-      return (numeric ? players : rankFidePlayers(query, players)).slice(0, MAX_RESULTS);
-    } finally {
-      clearTimeout(timer);
+    const response = await this.fetchImpl(url, {
+      headers: {
+        accept: "application/json",
+        "user-agent": "En Croissant private phone OTB importer/1.0",
+      },
+      signal,
+    });
+    if (signal.aborted) throw signal.reason;
+    if (response.status === 429) {
+      const retry = response.headers.get("retry-after");
+      const seconds = Number(retry);
+      const requested = seconds > 0 ? seconds * 1000 : Date.parse(retry) - Date.now();
+      this.backoffUntil = Math.max(
+        this.backoffUntil,
+        Date.now() + Math.max(60_000, Number.isFinite(requested) ? requested : 0),
+      );
+      throw busyError();
     }
+    if (numeric && response.status === 404) return [];
+    if (!response.ok) throw new Error(`Lichess FIDE lookup returned HTTP ${response.status}.`);
+    const body = await response.json();
+    if (signal.aborted) throw signal.reason;
+    if (numeric ? Array.isArray(body) : !Array.isArray(body))
+      throw new Error("FIDE lookup returned an unreadable response. Retry the search.");
+    const players = parseFidePlayers(body);
+    if (numeric && (players.length !== 1 || players[0].id !== Number(query)))
+      throw new Error("FIDE lookup returned a different player. Retry the search.");
+    return (numeric ? players : rankFidePlayers(query, players)).slice(0, MAX_RESULTS);
   }
+}
+
+function busyError() {
+  return new Error("FIDE lookup is busy. Wait at least a minute before retrying.");
+}
+
+function untilAborted(promise, signal) {
+  if (!signal) return promise;
+  return new Promise((resolve, reject) => {
+    const detach = () => signal.removeEventListener("abort", onAbort);
+    const onAbort = () => {
+      detach();
+      reject(signal.reason);
+    };
+    signal.addEventListener("abort", onAbort, { once: true });
+    if (signal.aborted) onAbort();
+    promise.then(
+      (value) => {
+        detach();
+        resolve(value);
+      },
+      (error) => {
+        detach();
+        reject(error);
+      },
+    );
+  });
+}
+
+function waitForStart(ms, signal) {
+  return new Promise((resolve, reject) => {
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(signal.reason);
+    };
+    const timer = setTimeout(() => {
+      signal.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    signal.addEventListener("abort", onAbort, { once: true });
+    if (signal.aborted) onAbort();
+  });
 }

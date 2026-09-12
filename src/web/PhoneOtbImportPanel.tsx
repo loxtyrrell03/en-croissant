@@ -21,6 +21,8 @@ import {
 } from "@tabler/icons-react";
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { FidePlayerSearchInput } from "@/components/common/FidePlayerSearchInput";
+import { useFideIdentityRequest } from "@/components/common/useFideIdentityRequest";
+import { resolveFideImportIdentity } from "@/utils/fideImportIdentity";
 import {
   FIDE_IMPORT_FALLBACK_YEAR,
   getFideImportStartYear,
@@ -29,7 +31,6 @@ import {
 import {
   DEFAULT_WEB_OTB_IMPORT_SOURCES,
   cancelWebOtbImport,
-  findExactWebFidePlayer,
   getWebOtbImportedGames,
   getWebOtbProgressValue,
   searchWebFidePlayers,
@@ -62,10 +63,13 @@ export default function PhoneOtbImportPanel({
   const [job, setJob] = useState<WebOtbImportJob | null>(null);
   const [jobId, setJobId] = useState(() => window.localStorage.getItem(WEB_OTB_JOB_STORAGE_KEY));
   const [starting, setStarting] = useState(false);
+  const [resolvingIdentity, setResolvingIdentity] = useState(false);
   const [stopping, setStopping] = useState(false);
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fromYearManuallyEditedRef = useRef(false);
+  const identityRequest = useFideIdentityRequest();
+  const preflightRef = useRef(false);
   const games = useMemo(() => (job ? getWebOtbImportedGames(job) : []), [job]);
   const running = job?.status === "queued" || job?.status === "running";
   const openedInPrep = Boolean(
@@ -104,11 +108,15 @@ export default function PhoneOtbImportPanel({
   }
 
   function changePlayerName(value: string) {
+    identityRequest.cancel();
+    setError(null);
     setPlayerName(value);
     if (selectedPlayer && value.trim() !== selectedPlayer.name) clearSelectedPlayer();
   }
 
   function changeFideId(value: string) {
+    identityRequest.cancel();
+    setError(null);
     const clean = value.replace(/\D/g, "");
     setFideId(clean);
     setFideIdAuto(false);
@@ -117,55 +125,56 @@ export default function PhoneOtbImportPanel({
 
   async function autofillFromFideId() {
     const id = fideId.trim();
-    if (!/^\d{4,}$/.test(id) || id === String(selectedPlayer?.id ?? "")) return;
-    const player = (await searchWebFidePlayers(id)).find(
-      (candidate) => String(candidate.id) === id,
-    );
-    if (player) selectFidePlayer(player);
+    if (
+      running ||
+      preflightRef.current ||
+      !/^\d{4,}$/.test(id) ||
+      id === String(selectedPlayer?.id ?? "")
+    )
+      return;
+    const controller = identityRequest.begin();
+    try {
+      const players = await searchWebFidePlayers(id, controller.signal);
+      if (controller.signal.aborted) return;
+      const player = players.find((candidate) => candidate.id === Number(id));
+      if (player) selectFidePlayer(player);
+      else setError("No player was found for that FIDE ID. Check the ID or search by full name.");
+    } catch (error) {
+      if (!controller.signal.aborted)
+        setError(error instanceof Error ? error.message : "FIDE lookup failed. Retry the search.");
+    }
   }
 
-  async function resolveIdentity() {
-    let name = playerName.trim();
-    let id = fideId.trim();
-    let resolvedPlayer = selectedPlayer;
-    const lookup = /^\d+$/.test(name) ? name : /^\d{4,}$/.test(id) ? id : "";
-    if (!selectedPlayer && lookup) {
-      const player = (await searchWebFidePlayers(lookup)).find(
-        (candidate) => String(candidate.id) === lookup,
-      );
-      if (player) {
-        resolvedPlayer = player;
-        selectFidePlayer(player);
-        name = player.name;
-        id = String(player.id);
-      }
-    }
-    if (!selectedPlayer && !lookup && name) {
-      const player = findExactWebFidePlayer(await searchWebFidePlayers(name).catch(() => []), name);
-      if (player) {
-        resolvedPlayer = player;
-        selectFidePlayer(player);
-        name = player.name;
-        id = String(player.id);
-      }
-    }
+  async function resolveIdentity(signal: AbortSignal) {
+    const identity = await resolveFideImportIdentity(
+      playerName,
+      fideId,
+      selectedPlayer,
+      searchWebFidePlayers,
+      signal,
+    );
+    if (signal.aborted) throw signal.reason;
+    if (identity.player) selectFidePlayer(identity.player);
     const resolvedFromYear = getFideImportStartYear(
-      resolvedPlayer,
+      identity.player,
       currentYear,
       fromYearManuallyEditedRef.current ? fromYear : null,
     );
-    if (!fromYearManuallyEditedRef.current && resolvedFromYear !== fromYear) {
-      setFromYear(resolvedFromYear);
-    }
-    return { name, id, fromYear: resolvedFromYear };
+    if (!fromYearManuallyEditedRef.current) setFromYear(resolvedFromYear);
+    return { ...identity, fromYear: resolvedFromYear };
   }
 
   async function startSearch() {
-    if (starting || running) return;
+    if (preflightRef.current || starting || running) return;
+    preflightRef.current = true;
+    const controller = identityRequest.begin();
     setStarting(true);
+    setResolvingIdentity(true);
     setError(null);
     try {
-      const identity = await resolveIdentity();
+      const identity = await resolveIdentity(controller.signal);
+      if (controller.signal.aborted) return;
+      setResolvingIdentity(false);
       const next = await startWebOtbImport({
         playerName: identity.name,
         fideId: identity.id,
@@ -176,11 +185,14 @@ export default function PhoneOtbImportPanel({
       setJobId(next.id);
       window.localStorage.setItem(WEB_OTB_JOB_STORAGE_KEY, next.id);
     } catch (startError) {
+      if (controller.signal.aborted) return;
       setError(
         startError instanceof Error ? startError.message : "The PC OTB search could not start.",
       );
     } finally {
+      preflightRef.current = false;
       setStarting(false);
+      setResolvingIdentity(false);
     }
   }
 
@@ -234,11 +246,19 @@ export default function PhoneOtbImportPanel({
         The phone only controls this search. Your PC downloads, filters, validates, deduplicates,
         stores every OTB result, and resolves FIDE player suggestions.
       </Alert>
+      {resolvingIdentity && (
+        <Button variant="subtle" onClick={() => identityRequest.cancel()}>
+          Stop FIDE search
+        </Button>
+      )}
       <FidePlayerSearchInput
-        disabled={running}
+        disabled={running || starting}
         label="Player full name"
         onChange={changePlayerName}
-        onSelect={selectFidePlayer}
+        onSelect={(player) => {
+          identityRequest.cancel();
+          selectFidePlayer(player);
+        }}
         searchPlayers={searchWebFidePlayers}
         selected={selectedPlayer}
         mobileInline
@@ -248,7 +268,7 @@ export default function PhoneOtbImportPanel({
       <Box className={classes.identityFields}>
         <TextInput
           autoCapitalize="none"
-          disabled={running}
+          disabled={running || starting}
           inputMode="numeric"
           label="FIDE ID"
           placeholder="Autofilled"
@@ -258,7 +278,7 @@ export default function PhoneOtbImportPanel({
           onChange={(event) => changeFideId(event.currentTarget.value)}
         />
         <NumberInput
-          disabled={running}
+          disabled={running || starting}
           label="Games since"
           max={currentYear}
           min={FIDE_IMPORT_FALLBACK_YEAR}
@@ -288,7 +308,7 @@ export default function PhoneOtbImportPanel({
         <Stack gap={6}>
           <SourceCheckbox
             detail="FIDE-linked Lichess events plus Chessscope"
-            disabled={running}
+            disabled={running || starting}
             label="Targeted broadcasts"
             source="lichessBroadcasts"
             sources={sources}
@@ -296,7 +316,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="Chess-Results player and event PGNs"
-            disabled={running}
+            disabled={running || starting}
             label="Chess-Results"
             source="chessResults"
             sources={sources}
@@ -304,7 +324,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="Public tournament PGNs linked from ChessBase news coverage"
-            disabled={running}
+            disabled={running || starting}
             label="ChessBase news PGNs"
             source="chessbaseNews"
             sources={sources}
@@ -312,7 +332,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="Organiser archives, BritBase and PGN Mentor"
-            disabled={running}
+            disabled={running || starting}
             label="Official public PGN indexes"
             source="officialPgnIndexes"
             sources={sources}
@@ -320,7 +340,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="The Week in Chess public PGNs"
-            disabled={running}
+            disabled={running || starting}
             label="TWIC"
             source="twic"
             sources={sources}
@@ -328,7 +348,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="Searches indexed official monthly Lichess broadcasts"
-            disabled={running}
+            disabled={running || starting}
             label="Full Lichess archive"
             source="broadcastArchives"
             sources={sources}
@@ -336,7 +356,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="Checks user-created Lichess broadcasts not covered elsewhere"
-            disabled={running}
+            disabled={running || starting}
             label="Community broadcasts"
             source="communityBroadcasts"
             sources={sources}

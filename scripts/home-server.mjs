@@ -399,17 +399,23 @@ async function handleRequest(request, response) {
     if (query.length < minimum) {
       return writeJson(response, 400, { error: "Enter more of the player name or FIDE ID." });
     }
+    const controller = new AbortController();
+    const onClose = () => { if (!response.writableEnded) controller.abort(); };
+    response.once("close", onClose);
     try {
       return writeJson(
         response,
         200,
-        { players: await fidePlayerSearch.search(query) },
+        { players: await fidePlayerSearch.search(query, controller.signal) },
         { "cache-control": "private, max-age=300" },
       );
     } catch (error) {
+      if (controller.signal.aborted) return;
       return writeJson(response, 502, {
         error: error instanceof Error ? error.message : "FIDE player search failed.",
-      });
+      }, { "cache-control": "no-store" });
+    } finally {
+      response.removeListener("close", onClose);
     }
   }
 

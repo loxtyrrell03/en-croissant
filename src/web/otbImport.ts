@@ -1,3 +1,4 @@
+import { withFideRequestDeadline } from "@/utils/fideRequestLifetime";
 import { getWebServerUrl } from "./serverUrl";
 import { parseFidePlayers, type FidePlayer } from "@/utils/fidePlayer";
 import type { WebImportResult } from "./model";
@@ -230,22 +231,40 @@ export async function searchWebFidePlayers(
     query: string,
     signal?: AbortSignal,
 ): Promise<FidePlayer[]> {
-    const response = await fetch(
-        getWebServerUrl(`api/otb-import/players?q=${encodeURIComponent(query.trim())}`),
-        {
-            headers: { accept: "application/json" },
-            cache: "no-store",
-            signal,
-        },
-    );
-    const body = (await response.json().catch(() => null)) as {
-        players?: unknown;
-        error?: string;
-    } | null;
-    if (!response.ok) {
-        throw new Error(body?.error || "The PC FIDE player search did not respond.");
-    }
-    return parseFidePlayers(body?.players);
+    return withFideRequestDeadline(async (requestSignal) => {
+        const response = await fetch(
+            getWebServerUrl(`api/otb-import/players?q=${encodeURIComponent(query.trim())}`),
+            {
+                headers: { accept: "application/json" },
+                cache: "no-store",
+                signal: requestSignal,
+            },
+        );
+        const body = (await response.json().catch(() => null)) as {
+            players?: unknown;
+            error?: string;
+        } | null;
+        if (!response.ok) {
+            throw new Error(body?.error || "The PC FIDE player search did not respond.");
+        }
+        if (
+            !body ||
+            !Array.isArray(body.players) ||
+            body.players.some((player) => parseFidePlayers(player).length !== 1)
+        ) {
+            throw new Error(
+                "The PC FIDE search returned an unreadable response. Retry the search.",
+            );
+        }
+        const players = parseFidePlayers(body.players);
+        if (
+            /^\d+$/.test(query.trim()) &&
+            players.some((player) => player.id !== Number(query.trim()))
+        ) {
+            throw new Error("The PC FIDE search returned a different player. Retry the search.");
+        }
+        return players;
+    }, signal);
 }
 
 export function findExactWebFidePlayer(players: FidePlayer[], playerName: string) {
