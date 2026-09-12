@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { it, vi, expect } from "vitest";
 import { INITIAL_FEN } from "chessops/fen";
 import { createEmptyWebState } from "../storage";
+import { webStateSession } from "../webStateSession";
 import { parsePgnDatabase } from "../pgn";
 import WebApp from "../WebApp";
 import { DEFAULT_WEB_OTB_IMPORT_SOURCES, type WebOtbImportJob } from "../otbImport";
@@ -96,6 +97,7 @@ it("renders a finished OTB database and opens Prep without crashing", async () =
     expect(container.querySelector(".orientation-white")).not.toBeNull();
     // A newly finished import must keep its results accessible rather than mounting Prep.
     window.localStorage.setItem("encroissant-web-otb-job", "completed-test");
+    window.dispatchEvent(new StorageEvent("storage", { key: "encroissant-web-otb-job" }));
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 1600));
     });
@@ -127,12 +129,12 @@ it("renders a finished OTB database and opens Prep without crashing", async () =
     await act(async () => watcher.callback!(job));
     expect(
       container.querySelector('button[data-view="import"]')?.getAttribute("aria-pressed"),
-    ).toBe("true");
-    expect(container.textContent).toContain("Review mistakes across my games");
+    ).toBe("false");
+    expect(container.querySelector(".orientation-white")).not.toBeNull();
     expect(container.textContent).not.toContain("This view could not open");
-    expect(window.localStorage.getItem("encroissant-web-otb-prep-handled-job")).toBe(
-      "completed-test",
-    );
+    expect(
+      webStateSession.getSnapshot().savedState?.completedOtbImports?.["completed-test"],
+    ).toMatchObject({ databaseId: parsed.database.id });
   } finally {
     await act(async () => root.unmount());
     window.localStorage.clear();

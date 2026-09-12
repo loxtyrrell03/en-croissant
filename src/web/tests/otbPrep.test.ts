@@ -107,6 +107,31 @@ describe("OTB completion Prep handoff", () => {
         expect(second.state.prepWorkspaces[0].userColor).toBe("white");
     });
 
+    it("retains edited games and intentional removals when a recorded completion replays", () => {
+        const job = completedJob();
+        const first = applyWebOtbPrepCompletion(createEmptyWebState(), job, "white")!;
+        const removed = { ...first.state, databases: [], gamesByDatabase: {}, prepWorkspaces: [] };
+        expect(applyWebOtbPrepCompletion(removed, job, "black")?.state).toBe(removed);
+        first.state.gamesByDatabase[first.completion.databaseId][0].event = "My edited event";
+        expect(applyWebOtbPrepCompletion(first.state, job, "black")?.state).toBe(first.state);
+        expect(first.state.gamesByDatabase[first.completion.databaseId][0].event).toBe(
+            "My edited event",
+        );
+    });
+
+    it("migrates a legacy completed Prep without replacing its game annotations", () => {
+        const job = completedJob();
+        const first = applyWebOtbPrepCompletion(createEmptyWebState(), job, "white")!;
+        delete first.state.completedOtbImports;
+        first.state.gamesByDatabase[first.completion.databaseId][0].event = "Keep this edit";
+        const migrated = applyWebOtbPrepCompletion(first.state, job, "black")!;
+        expect(migrated.state.gamesByDatabase).toBe(first.state.gamesByDatabase);
+        expect(migrated.state.completedOtbImports?.[job.id]).toEqual({
+            databaseId: first.completion.databaseId,
+            prepId: first.completion.prepId,
+        });
+    });
+
     it("does not navigate for unfinished, failed, or empty jobs", () => {
         const state = createEmptyWebState();
         const running = { ...completedJob(), status: "running" as const };

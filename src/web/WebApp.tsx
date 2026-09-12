@@ -83,6 +83,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type Dispatch,
   type ReactNode,
   type SetStateAction,
@@ -281,12 +282,7 @@ import {
   webGameToLine,
   webGameToRootLines,
 } from "./pgn";
-import {
-  createEmptyWebBoardState,
-  createEmptyWebState,
-  loadWebState,
-  saveWebState,
-} from "./storage";
+import { createEmptyWebBoardState } from "./storage";
 import {
   getWebBoardPlayerLabels,
   getWebBoardSourceTitle,
@@ -301,15 +297,11 @@ import {
   releaseWebPcEngine,
   stopWebStockfish18Search,
 } from "./stockfishEngine";
-import {
-  watchWebOtbImportJob,
-  WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY,
-  type WebOtbImportedGame,
-  type WebOtbImportJob,
-} from "./otbImport";
-import { applyWebOtbPrepCompletion, shouldOpenWebOtbPrep } from "./otbPrep";
+import { watchWebOtbImportJob, type WebOtbImportedGame, type WebOtbImportJob } from "./otbImport";
+import { applyWebOtbPrepCompletion } from "./otbPrep";
 import { getWebOtbStartSnapshot, subscribeWebOtbStart } from "./otbStartSession";
 import { installWebAppLifecycle } from "./webAppLifecycle";
+import { installWebStatePageLifecycle, webStateSession } from "./webStateSession";
 
 type ViewMode = "board" | "stats" | "files" | "review" | "import";
 type BoardPanelMode = "moves" | "online" | "database" | "prep" | "engine" | "coach";
@@ -527,8 +519,9 @@ function WebAppContent() {
     document.body.classList.add("phone-companion");
     return () => document.body.classList.remove("phone-companion");
   }, []);
-  const [state, setState] = useState<WebCompanionState>(() => createEmptyWebState());
-  const [loaded, setLoaded] = useState(false);
+  const workspace = useSyncExternalStore(webStateSession.subscribe, webStateSession.getSnapshot);
+  const { state, loaded } = workspace;
+  const setState = webStateSession.setState;
   const [view, setView] = useState<ViewMode>("board");
   const [boardPanelMode, setBoardPanelMode] = useState<BoardPanelMode>("moves");
   const [importing, setImporting] = useState(false);
@@ -538,47 +531,18 @@ function WebAppContent() {
   const [lichessToken, setLichessToken] = usePersistentString(WEB_LICHESS_TOKEN_STORAGE_KEY, "");
   const [lichessAuthReady, setLichessAuthReady] = useState(false);
   const lichessTokenAtStartup = useRef(lichessToken);
-  const saveReady = useRef(false);
+  const initialSelectionReady = useRef(false);
   const coachMigrationStarted = useRef(false);
 
   useEffect(() => {
-    void loadWebState()
-      .then((saved) => {
-        setState(saved);
-        setSelectedDatabaseId(saved.databases[0]?.id ?? null);
-        setLoaded(true);
-      })
-      .catch((error) => {
-        console.error(error);
-        setLoaded(true);
-        notifications.show({
-          title: "Storage unavailable",
-          message: "The web companion opened without saved browser data.",
-          color: "red",
-        });
-      });
+    void webStateSession.load();
   }, []);
-
+  useEffect(() => installWebStatePageLifecycle(), []);
   useEffect(() => {
-    if (!loaded) return;
-    if (!saveReady.current) {
-      saveReady.current = true;
-      return;
-    }
-
-    const timeout = window.setTimeout(() => {
-      void saveWebState(state).catch((error) => {
-        console.error(error);
-        notifications.show({
-          title: "Save failed",
-          message: "Browser storage rejected the latest change.",
-          color: "red",
-        });
-      });
-    }, 250);
-
-    return () => window.clearTimeout(timeout);
-  }, [loaded, state]);
+    if (!loaded || initialSelectionReady.current) return;
+    initialSelectionReady.current = true;
+    setSelectedDatabaseId(state.databases[0]?.id ?? null);
+  }, [loaded, state.databases]);
 
   useEffect(() => {
     if (!loaded || coachMigrationStarted.current) return;
@@ -610,7 +574,7 @@ function WebAppContent() {
 
   useEffect(() => {
     if (!import.meta.env.PROD) return;
-    return installWebAppLifecycle(import.meta.env.BASE_URL);
+    return installWebAppLifecycle(import.meta.env.BASE_URL, webStateSession.canReload);
   }, []);
 
   useEffect(() => {
@@ -682,7 +646,7 @@ function WebAppContent() {
       setSelectedGameId(game.id);
       setView("board");
     },
-    [],
+    [setState],
   );
 
   const openEmptyBoard = useCallback(() => {
@@ -696,14 +660,14 @@ function WebAppContent() {
     }));
     setSelectedGameId(null);
     setView("board");
-  }, []);
+  }, [setState]);
 
   const addImportedDatabases = useCallback(
     (imported: WebImportResult[]) => {
       setState((current) => mergeImportedWebDatabases(current, imported));
       setSelectedDatabaseId(imported[0]?.database.id ?? selectedDatabaseId);
     },
-    [selectedDatabaseId],
+    [selectedDatabaseId, setState],
   );
 
   const importPgnText = useCallback(
@@ -798,89 +762,40 @@ function WebAppContent() {
     [importPgnText, loadGameOnBoard],
   );
 
-  const openCompletedOtbImportForPrep = useCallback(
-    (job: WebOtbImportJob) => {
-      const imported = job.prepDatabase;
-      if (job.status !== "completed" || !imported || imported.games.length === 0) {
-        throw new Error("The PC did not return a usable OTB prep database.");
-      }
-
-      const userColor = activePrep?.userColor ?? readStoredWebPrepUserColor();
-      setState((current) => {
-        const completed = applyWebOtbPrepCompletion(current, job, userColor);
-        return completed
-          ? { ...completed.state, activePrepId: current.activePrepId, board: current.board }
-          : current;
-      });
-      setSelectedDatabaseId(imported.database.id);
-      setSelectedGameId(null);
-      setView("import");
-      notifications.show({
-        title: "OTB games imported",
-        message: `${pluralWeb(imported.games.length, "game")} saved. Open a game or choose Review.`,
-        color: "green",
-      });
-    },
-    [activePrep?.userColor],
-  );
-
   useEffect(() => {
     if (!loaded) return;
     let active = true;
     let monitoredJobId: string | null = null;
     let unsubscribe: (() => void) | null = null;
-    let terminal = false;
-    let inFlight = false;
 
-    const handleJob = (job: WebOtbImportJob) => {
-      const jobId = job.id;
-      if (!active || jobId !== monitoredJobId || terminal || inFlight) return;
+    const handleJob = async (job: WebOtbImportJob) => {
+      if (!active || job.id !== monitoredJobId || job.status !== "completed") return;
+      const current = webStateSession.getSnapshot().state;
+      if (current.completedOtbImports?.[job.id]) return;
+      const color =
+        current.prepWorkspaces.find((prep) => prep.id === current.activePrepId)?.userColor ??
+        readStoredWebPrepUserColor();
+      const completed = applyWebOtbPrepCompletion(current, job, color);
+      if (!completed) return;
+      // Stage once, retaining the active game. The same transaction saves the
+      // games, Prep and receipt. A failed save stays owned by the workspace retry.
+      setState({ ...completed.state, activePrepId: current.activePrepId, board: current.board });
       try {
-        const handledJobId = window.localStorage.getItem(WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY);
-        const completionExists = state.prepWorkspaces.some((prep) => prep.id === `prep-${jobId}`);
-        if (handledJobId === jobId && completionExists) {
-          terminal = true;
-          return;
-        }
-
-        if (
-          job.status === "failed" ||
-          (job.status === "completed" && !job.prepDatabase?.games.length)
-        ) {
-          terminal = true;
-          return;
-        }
-        if (
-          !shouldOpenWebOtbPrep(
-            job,
-            completionExists ? handledJobId : null,
-            inFlight ? jobId : null,
-          )
-        ) {
-          return;
-        }
-
-        inFlight = true;
-        // Keep completion and its receipt in one synchronous turn. A cached watcher
-        // can replay as soon as the resulting state resubscribes.
-        openCompletedOtbImportForPrep(job);
-        window.localStorage.setItem(WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY, job.id);
-        terminal = true;
-      } catch (error) {
-        if (active) {
-          terminal = true;
-          notifications.show({
-            title: "Could not open OTB Prep",
-            message:
-              error instanceof Error
-                ? error.message
-                : "The imported OTB database could not be opened in Prep.",
-            color: "red",
-          });
-        }
-      } finally {
-        inFlight = false;
+        await webStateSession.flush();
+      } catch {
+        return; // The persistent Retry save control owns recovery and pending edits.
       }
+      if (!active || job.id !== monitoredJobId) return;
+      const snapshot = webStateSession.getSnapshot();
+      const databaseId = completed.completion.databaseId;
+      const savedCount = snapshot.savedState?.gamesByDatabase[databaseId]?.length ?? 0;
+      if (!savedCount || !snapshot.state.databases.some((database) => database.id === databaseId))
+        return;
+      notifications.show({
+        title: "OTB games imported",
+        message: `${pluralWeb(savedCount, "game")} saved. Open Import to view the games.`,
+        color: "green",
+      });
     };
 
     const monitorActiveJob = () => {
@@ -890,24 +805,33 @@ function WebAppContent() {
       unsubscribe?.();
       unsubscribe = null;
       monitoredJobId = jobId;
-      terminal = false;
-      inFlight = false;
       if (jobId) {
-        unsubscribe = watchWebOtbImportJob(jobId, (job) => void handleJob(job));
+        unsubscribe = watchWebOtbImportJob(jobId, (job) => {
+          void handleJob(job).catch((error: unknown) => {
+            if (!active || job.id !== monitoredJobId) return;
+            notifications.show({
+              title: "Could not open OTB games",
+              message:
+                error instanceof Error ? error.message : "The PC import could not be opened.",
+              color: "red",
+            });
+          });
+        });
       }
     };
 
     const stopMonitoring = subscribeWebOtbStart(monitorActiveJob);
+    monitorActiveJob();
     return () => {
       active = false;
       unsubscribe?.();
       stopMonitoring();
     };
-  }, [loaded, openCompletedOtbImportForPrep, state.prepWorkspaces]);
+  }, [loaded, setState]);
 
   const importFiles = useCallback(
     async (files: FileList | null) => {
-      if (!files || files.length === 0) return;
+      if (!webStateSession.getSnapshot().loaded || !files || files.length === 0) return;
       setImporting(true);
 
       try {
@@ -1237,6 +1161,7 @@ function WebAppContent() {
                 size="xs"
                 leftSection={<IconUpload size={15} />}
                 loading={importing}
+                disabled={!loaded}
                 variant="light"
               >
                 Import
@@ -1245,6 +1170,7 @@ function WebAppContent() {
                   multiple
                   type="file"
                   accept=".pgn,application/x-chess-pgn,text/plain"
+                  disabled={!loaded}
                   onChange={(event) => {
                     void importFiles(event.currentTarget.files);
                     event.currentTarget.value = "";
@@ -1256,6 +1182,34 @@ function WebAppContent() {
         </Box>
 
         <main className={classes.main}>
+          {workspace.saveError && (
+            <Stack
+              gap="xs"
+              role="alert"
+              p="sm"
+              mb="sm"
+              style={{
+                border: "1px solid var(--mantine-color-red-7)",
+                borderRadius: "var(--mantine-radius-sm)",
+              }}
+            >
+              <Text size="sm">
+                Changes haven't been saved. Keep this tab open; allow browser storage or free space,
+                then retry.
+              </Text>
+              <Button
+                variant="light"
+                color="red"
+                loading={workspace.saving}
+                onClick={() => {
+                  void webStateSession.flush().catch(() => {});
+                }}
+                style={{ alignSelf: "flex-start" }}
+              >
+                Retry save
+              </Button>
+            </Stack>
+          )}
           <PhoneErrorBoundary
             onRecover={() => {
               setView("import");
@@ -1265,10 +1219,32 @@ function WebAppContent() {
             {!loaded || !lichessAuthReady ? (
               <Center h="60svh">
                 <Stack align="center" gap="xs">
-                  <Loader />
-                  <Text size="sm" c="dimmed">
-                    Opening web workspace
-                  </Text>
+                  {workspace.loadError ? (
+                    <Stack gap="xs" align="center" p="md" maw={440} role="alert">
+                      <Text size="sm">
+                        Saved games couldn't be opened. Your existing workspace has been kept.
+                      </Text>
+                      <Text size="sm" c="dimmed">
+                        {workspace.loadError}
+                      </Text>
+                      <Button
+                        variant="light"
+                        loading={workspace.loading}
+                        onClick={() => {
+                          void webStateSession.load();
+                        }}
+                      >
+                        Retry loading
+                      </Button>
+                    </Stack>
+                  ) : (
+                    <>
+                      <Loader />
+                      <Text size="sm" c="dimmed">
+                        Opening web workspace
+                      </Text>
+                    </>
+                  )}
                 </Stack>
               </Center>
             ) : view === "review" ? (

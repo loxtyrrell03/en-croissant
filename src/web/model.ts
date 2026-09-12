@@ -187,6 +187,7 @@ export type WebEngineLine = {
 };
 
 export type WebCompanionState = {
+    completedOtbImports?: Record<string, { databaseId: string; prepId: string }>;
     mistakeReview?: import("./mistakeReview").PhoneReviewState;
     version: 1;
     databases: WebDatabase[];
