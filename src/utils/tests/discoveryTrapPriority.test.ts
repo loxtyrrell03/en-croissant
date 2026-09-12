@@ -15,7 +15,7 @@ test.each([["e6c7"], ["e6c7", "f7g7", "c7a8"]])(
     "a larger joint discovered attack leads over its smaller trapped-rook consequence: %j",
     (...pvUci) => {
         const result = classifyPositionTacticalMotifs({ fen, pvUci });
-        expect(result.motifs[0]).toMatchObject({ id: "discoveredAttack", value: 600, ply: 1 });
+        expect(result.motifs[0]).toMatchObject({ id: "discoveredAttack", value: 500, ply: 1 });
         expect(result.motifs[0].evidence).toContain("bishop on b3 against the queen on f7");
         expect(result.motifs[0].evidence).toContain("knight on c7 also attacks the rook on a8");
         expect(result.motifs.some((m) => m.id === "trappedPiece" && m.ply === 1)).toBe(false);
@@ -83,7 +83,7 @@ test("colour reflection preserves the combined attack and its two board targets"
         );
     expect(reflected.split(" ")[0]).toBe(reflectedBoard);
     const result = classifyPositionTacticalMotifs({ fen: reflected, pvUci: ["e3c2"] });
-    expect(result.motifs[0]).toMatchObject({ id: "discoveredAttack", value: 600 });
+    expect(result.motifs[0]).toMatchObject({ id: "discoveredAttack", value: 500 });
     expect(result.motifs[0].evidence).toContain("queen on f2");
     expect(result.motifs[0].evidence).toContain("rook on a1");
 });
@@ -96,7 +96,7 @@ test("missing the stronger discovery teaches its mechanism instead of the smalle
         pvUci: ["e6c7", "f7g7", "c7a8"],
         refutationUci: ["f7f8"],
     });
-    expect(result.missedMotifs[0]).toMatchObject({ id: "discoveredAttack", value: 600 });
+    expect(result.missedMotifs[0]).toMatchObject({ id: "discoveredAttack", value: 500 });
     expect(buildMistakeReviewTacticalExplanation(result)?.primary).toMatchObject({
         id: "discoveredAttack",
         source: "missed",

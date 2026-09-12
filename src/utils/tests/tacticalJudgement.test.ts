@@ -3940,6 +3940,79 @@ describe("expert tactical judgement with fresh engine lines", () => {
     );
     test.skipIf(
         !engine ||
+            !process.env.TACTICAL_PRIVATE_PROBES ||
+            !process.env.TACTICAL_PRIVATE_PROBE_REPORT,
+    )(
+        "inspect private positional decisions and legal defensive witnesses",
+        async () => {
+            const { privateReportPath } =
+                await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
+            const output = privateReportPath(process.env.TACTICAL_PRIVATE_PROBE_REPORT!);
+            expect(existsSync(output)).toBe(false);
+            const request = JSON.parse(
+                readFileSync(process.env.TACTICAL_PRIVATE_PROBES!, "utf8"),
+            ) as {
+                samplePath: string;
+                probes: {
+                    id: string;
+                    caseId?: string;
+                    fen?: string;
+                    moves?: string[];
+                    searchMove?: string;
+                    minCp?: number;
+                    maxCp?: number;
+                }[];
+            };
+            const sample = JSON.parse(readFileSync(request.samplePath, "utf8"));
+            const searches = [];
+            for (const probe of request.probes) {
+                const originalFen =
+                    probe.fen ??
+                    sample.cases.find((row: { id: string }) => row.id === probe.caseId)?.fen;
+                expect(originalFen).toBeTruthy();
+                const moves = probe.moves ?? [];
+                const replay = replayTacticalLine(originalFen, moves);
+                expect(replay).toHaveLength(moves.length);
+                const fen = replay.length ? makeFen(replay.at(-1)!.after.toSetup()) : originalFen;
+                const lines = [...(await analyse(engine, fen, probe.searchMove)).values()];
+                expect(lines[0].depth).toBe(16);
+                const result = classifyPositionTacticalMotifs({
+                    fen,
+                    pvUci: lines[0].pvUci,
+                    rootCp: lines[0].cp,
+                });
+                searches.push({ ...probe, fen, lines, result });
+                writeFileSync(
+                    output,
+                    JSON.stringify(
+                        {
+                            scope: "Private decision/defence audit; centipawns are side-to-move full-position engine estimates, not local material certificates. No accuracy score is inferred.",
+                            sourceSha256: sample.sourceSha256,
+                            requested: request.probes.length,
+                            completed: searches.length,
+                            searches,
+                        },
+                        null,
+                        2,
+                    ),
+                    { flag: searches.length === 1 ? "wx" : "w" },
+                );
+                expect({
+                    id: probe.id,
+                    aboveMinimum:
+                        probe.minCp === undefined ||
+                        (lines[0].cp !== null && lines[0].cp >= probe.minCp),
+                    belowMaximum:
+                        probe.maxCp === undefined ||
+                        (lines[0].cp !== null && lines[0].cp <= probe.maxCp),
+                }).toEqual({ id: probe.id, aboveMinimum: true, belowMaximum: true });
+            }
+            expect(searches).toHaveLength(request.probes.length);
+        },
+        600000,
+    );
+    test.skipIf(
+        !engine ||
             !process.env.TACTICAL_PRIVATE_PGN_SAMPLE ||
             !process.env.TACTICAL_PRIVATE_PGN_REPORT,
     )(

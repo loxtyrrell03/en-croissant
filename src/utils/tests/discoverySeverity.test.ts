@@ -32,9 +32,9 @@ test("Ng5 makes an existing checking discovery more costly rather than creating 
 });
 
 test("both discovered attacks and their different material costs are real", () => {
-    for (const [move, gain] of [
-        ["f3g5", 890],
-        ["f3d4", 570],
+    for (const [move, gain, bound] of [
+        ["f3g5", 890, 790],
+        ["f3d4", 570, 470],
     ] as const) {
         const line = replayTacticalLine(fen, [move, "d8g5", "h4g5", "f8a8"]);
         expect(line).toHaveLength(4);
@@ -44,7 +44,7 @@ test("both discovered attacks and their different material costs are real", () =
             fen: makeFen(line[0].after.toSetup()),
             pvUci: input.refutationUci,
         });
-        expect(result.motifs[0]).toMatchObject({ id: "discoveredAttack", value: gain });
+        expect(result.motifs[0]).toMatchObject({ id: "discoveredAttack", value: bound });
     }
 });
 

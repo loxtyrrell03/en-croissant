@@ -133,6 +133,36 @@ export function winningRecaptureEvidence(
 ): TacticalMotifEvidence | null {
     const step = steps[index],
         previous = steps[index - 1];
+    // An equal recapture can incidentally remove a guard or open a ray.
+    // Do not call that a fresh material win when an independently checked
+    // countercapture balances the exchange. A small lower bound alone is
+    // not a refutation, and missing/mismatched history grants no credit.
+    if (
+        MECHANISMS.has(motif.id) &&
+        (motif.value ?? Infinity) <= (previous?.capture ?? 0) &&
+        step?.capture &&
+        previous?.capture === step.capture &&
+        previous.move.to === step.move.to &&
+        !previous.move.promotion &&
+        !step.move.promotion
+    ) {
+        const pair = replayTacticalLine(makeFen(previous.before.toSetup()), [
+            previous.uci,
+            step.uci,
+        ]);
+        if (
+            pair.length === 2 &&
+            [previous, step].every(
+                (entry, i) =>
+                    makeUci(entry.move) === entry.uci &&
+                    entry.capture === pair[i].capture &&
+                    makeFen(entry.before.toSetup()) === makeFen(pair[i].before.toSetup()) &&
+                    makeFen(entry.after.toSetup()) === makeFen(pair[i].after.toSetup()),
+            ) &&
+            counterCaptureMaterialDefence(step, 8192, previous.capture)
+        )
+            return null;
+    }
     // A countercheck can delay acceptance by one king move. Require the
     // complete, contiguous history and the independently proved branch;
     // an earlier sacrifice label or a cooperative PV cannot hide a capture.
@@ -319,9 +349,9 @@ export function filterCompensatedRootCaptures(
         makeFen(history[0].after.toSetup()) !== makeFen(root.before.toSetup())
     )
         return motifs;
-    if (isCompensatedContinuationCapture(history, 1))
-        return motifs.filter((motif) => motif.id !== "hangingPiece" || motif.ply !== 1);
+    const compensated = isCompensatedContinuationCapture(history, 1);
     return motifs.flatMap((motif) => {
+        if (compensated && motif.id === "hangingPiece" && motif.ply === 1) return [];
         const contextual = motif.ply === 1 ? winningRecaptureEvidence(history, 1, motif) : motif;
         return contextual ? [contextual] : [];
     });
@@ -3760,11 +3790,13 @@ const DISCOVERY_NODE_LIMIT = 4096;
 
 /** One extra forcing tempo beyond an immediate material capture. Every legal
  * defence is checked; the battery and its legal recapturers supply the check.
+ * Leaves debit immediate captures of any friendly piece, not just the battery.
  * The PV is not a defence list. A budget failure is unknown, not a proof. */
 export function proveDiscoveredMaterial(
     step: TacticalReplayStep,
     nodeLimit = DISCOVERY_NODE_LIMIT,
 ) {
+    if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
     const rays = revealedRays(step);
     if (!rays.length) return null;
     const key = `${makeFen(step.before.toSetup())}:${step.uci}`;
@@ -3814,8 +3846,15 @@ export function proveDiscoveredMaterial(
                     if (--nodes < 0) throw new Error("Discovery proof budget exhausted");
                     const move: NormalMove = { from, to, promotion };
                     if (!pos.isLegal(move)) continue;
-                    const gain = tacticalExchangeGain(pos, move);
-                    if (gain <= -VALUE.king) continue;
+                    const budget = { nodes };
+                    const gain = participantCaptureGain(
+                        pos,
+                        move,
+                        [...pos.board[side], move.to],
+                        budget,
+                    );
+                    nodes = budget.nodes;
+                    if (gain === null) continue;
                     best = Math.max(best, balance + gain);
                 }
             }
@@ -3904,15 +3943,18 @@ const exchangeDiscoveryCache = new Map<string, ExchangeDiscoveryProof | null>();
 /** A newly opened battery and the moving piece can overload a shared defender.
  * If a target escapes while guarding another target, allow one capture of that
  * defender, with every subsequent reply checked by the defender-removal proof.
- * The complete outer/inner search shares one budget; PV replies nominate nothing. */
+ * The complete outer/inner search shares one budget and accounts for all friendly
+ * pieces at capture leaves; PV replies nominate nothing. */
 export function proveExchangeDiscovery(
     step: TacticalReplayStep,
     nodeLimit = 8192,
+    onFailure?: (reason: string) => void,
 ): ExchangeDiscoveryProof | null {
+    if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
     const rays = revealedRays(step);
     if (!rays.length) return null;
     const key = `${makeFen(step.before.toSetup())}:${step.uci}`;
-    if (nodeLimit === 8192 && exchangeDiscoveryCache.has(key))
+    if (!onFailure && nodeLimit === 8192 && exchangeDiscoveryCache.has(key))
         return exchangeDiscoveryCache.get(key)!;
     const side = step.before.turn;
     const pieces = [...new Set([step.move.to, ...rays.map((r) => r.from)])];
@@ -3949,7 +3991,12 @@ export function proveExchangeDiscovery(
                 (m) => victims.includes(m.to) && capturedValue(pos, m),
             );
             for (const move of moves) {
-                const gain = participantCaptureGain(pos, move, pieces, budget);
+                const gain = participantCaptureGain(
+                    pos,
+                    move,
+                    [...pos.board[side], move.to],
+                    budget,
+                );
                 if (gain !== null) best = Math.max(best, balance + gain);
             }
             if (best < 100) {
@@ -3981,6 +4028,7 @@ export function proveExchangeDiscovery(
                         nodeLimit,
                         budget,
                         2,
+                        true,
                     );
                     if (gain === null || balance + gain < 100) continue;
                     best = balance + gain;
@@ -3999,10 +4047,11 @@ export function proveExchangeDiscovery(
             minimum = Math.min(minimum, best);
         }
         if (witness && Number.isFinite(minimum)) result = { gain: minimum, ...witness };
-    } catch {
+    } catch (error) {
+        onFailure?.(error instanceof Error ? error.message : String(error));
         // A missing branch or exhausted shared budget is unknown, never a proof.
     }
-    if (nodeLimit === 8192) {
+    if (!onFailure && nodeLimit === 8192) {
         exchangeDiscoveryCache.set(key, result);
         if (exchangeDiscoveryCache.size > 128)
             exchangeDiscoveryCache.delete(exchangeDiscoveryCache.keys().next().value!);
@@ -4031,7 +4080,7 @@ function discoveredEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
         (step.after.isCheckmate() ||
             (steps[2]?.after.isCheckmate() && Boolean(proveMateNextTurn(step))) ||
             (steps[4]?.after.isCheckmate() && Boolean(proveMateWithinThree(steps.slice(0, 5)))));
-    const proof = mate
+    const immediate = mate
         ? null
         : materialThreatProof(
               step,
@@ -4039,6 +4088,24 @@ function discoveredEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
               capturers,
               kingRay ? [...between(kingRay.from, kingRay.target)] : [],
           );
+    const complete =
+        immediate?.kind === "proven"
+            ? materialThreatProof(
+                  step,
+                  targets,
+                  capturers,
+                  kingRay ? [...between(kingRay.from, kingRay.target)] : [],
+                  false,
+                  undefined,
+                  { allPiecesAtLeaf: true },
+              )
+            : null;
+    // A stricter liability check is not a reason to increase the lesson's
+    // value by selecting a different (possibly mating) leaf.
+    const proof =
+        complete?.kind === "proven" && immediate?.kind === "proven"
+            ? { ...complete, gain: Math.min(complete.gain, immediate.gain) }
+            : (complete ?? immediate);
     const directGain =
         proof?.kind === "proven" ? proof.gain : !mate ? proveDiscoveredMaterial(step) : null;
     const exchange = !mate && directGain === null ? proveExchangeDiscovery(step) : null;
@@ -5665,10 +5732,12 @@ export function proveDefenderCombination(
     nodeLimit = 4096,
     sharedBudget?: ProofBudget,
     evasionLimit = 1,
+    allPiecesAtLeaf = false,
 ): number | null {
-    const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}:${evasionLimit}`;
+    const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}:${evasionLimit}:${allPiecesAtLeaf}`;
     if (!sharedBudget && nodeLimit === 4096 && defenderCombinationCache.has(key))
         return defenderCombinationCache.get(key)!;
+    const side = step.before.turn;
     const budget = sharedBudget ?? { nodes: nodeLimit };
     const delta = (pos: Chess, move: NormalMove) =>
         capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
@@ -5695,7 +5764,12 @@ export function proveDefenderCombination(
                 !capturedValue(pos, move)
             )
                 continue;
-            const gain = participantCaptureGain(pos, move, pieces, budget);
+            const gain = participantCaptureGain(
+                pos,
+                move,
+                allPiecesAtLeaf ? [...pos.board[side], move.to] : pieces,
+                budget,
+            );
             if (gain !== null) best = Math.max(best, balance + gain);
         }
         // Bishop/knight exchange imbalance must not erase a genuine pawn gain.
@@ -5706,7 +5780,12 @@ export function proveDefenderCombination(
         if (retained && !pos.isCheck()) {
             for (const move of legalMoves(pos)) {
                 if (capturedValue(pos, move) || move.promotion) continue;
-                const gain = participantCaptureGain(pos, move, pieces, budget);
+                const gain = participantCaptureGain(
+                    pos,
+                    move,
+                    allPiecesAtLeaf ? [...pos.board[side], move.to] : pieces,
+                    budget,
+                );
                 if (gain !== null && balance + gain >= 90) return balance + gain;
             }
         }
@@ -9080,15 +9159,20 @@ export function clearanceKingDefence(
  * Non-capturing checks require a real non-checking reply whose every recovery
  * capture stays below the material threshold. Carry the original compensation
  * through those leaves; named fork victims alone miss captures of the forker's
- * captor. Quiet preparations and longer checks are outside this local witness. */
+ * captor. Optional equal-recapture credit is supplied only after validating the
+ * actual preceding capture. Quiet preparations and longer checks are outside
+ * this local witness; failure cannot establish either safety or a tactical win. */
 export function counterCaptureMaterialDefence(
     root: TacticalReplayStep,
     nodeLimit = 8192,
+    previousCaptureCost = 0,
 ): { defence: string; defenceUci: string; checkingDefences: string[] } | null {
     if (
-        !Number.isFinite(nodeLimit) ||
+        !Number.isSafeInteger(nodeLimit) ||
         nodeLimit <= 0 ||
-        root.capture ||
+        root.capture !== previousCaptureCost ||
+        !Number.isSafeInteger(previousCaptureCost) ||
+        previousCaptureCost < 0 ||
         root.move.promotion ||
         root.after.isCheck() ||
         root.after.isEnd()
@@ -9145,6 +9229,10 @@ export function counterCaptureMaterialDefence(
                 if (gain <= -VALUE.king || balance + gain >= 100) return null;
                 continue;
             }
+            // In the equal-recapture mode, an uncapturable return of the
+            // material just lost is not an extra win. Checks still require
+            // a real answer; this does not certify later quiet play as safe.
+            if (previousCaptureCost && !next.isCheck() && balance + capture < 100) continue;
             let answered = false;
             for (const reply of legalMoves(next)) {
                 if (reply.to !== move.to || !capturedValue(next, reply)) continue;
@@ -9165,7 +9253,11 @@ export function counterCaptureMaterialDefence(
             if (!capturedValue(root.after, defence) || defence.promotion) continue;
             const next = visit(root.after, defence);
             if (next.isCheck() || next.isEnd()) continue;
-            const checkingDefences = safe(next, -delta(root.after, defence), 2);
+            const checkingDefences = safe(
+                next,
+                root.capture - previousCaptureCost - delta(root.after, defence),
+                2,
+            );
             if (checkingDefences)
                 return {
                     defence: makeSan(root.after, defence),

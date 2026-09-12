@@ -531,6 +531,44 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                     ],
                 },
             },
+            {
+                id: "balanced-defender-recapture",
+                input: {
+                    fen: "3q2k1/4bppp/5n2/3p2B1/8/2N2N2/2Q2PPP/6K1 b - - 0 1",
+                    pvUci: ["f6e4", "c3e4", "d5e4", "g5e7", "d8e7"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
+                id: "incidental-pawn-discovery",
+                input: {
+                    fen: "2r2rk1/p2n2pp/B7/2p5/3P4/Q4b2/6PP/2R1K2R w - - 0 1",
+                    pvUci: ["a6c8", "f8c8", "a3a7"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
+                id: "balanced-defender-history",
+                input: {
+                    fen: makeFen(
+                        replayTacticalLine("3q2k1/4bppp/5n2/3p2B1/8/2N2N2/2Q2PPP/6K1 b - - 0 1", [
+                            "f6e4",
+                            "c3e4",
+                        ])[1].after.toSetup(),
+                    ),
+                    previousFen: makeFen(
+                        replayTacticalLine("3q2k1/4bppp/5n2/3p2B1/8/2N2N2/2Q2PPP/6K1 b - - 0 1", [
+                            "f6e4",
+                        ])[0].after.toSetup(),
+                    ),
+                    previousMoveUci: "c3e4",
+                    pvUci: ["d5e4", "g5e7", "d8e7"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
             ...ordinary.map((row) => ({
                 id: row.id,
                 input: {
@@ -575,7 +613,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(125);
+        expect(report).toHaveLength(128);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
@@ -615,15 +653,16 @@ test.skipIf(
     expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
 });
 
-for (const { name, path } of [
-    { name: "third", path: process.env.TACTICAL_PRIVATE_THIRD_REPORT },
-    { name: "fourth", path: process.env.TACTICAL_PRIVATE_FOURTH_REPORT },
+for (const { name, path, count } of [
+    { name: "third", path: process.env.TACTICAL_PRIVATE_THIRD_REPORT, count: 24 },
+    { name: "fourth", path: process.env.TACTICAL_PRIVATE_FOURTH_REPORT, count: 24 },
+    { name: "positional", path: process.env.TACTICAL_PRIVATE_POSITIONAL_REPORT, count: 42 },
 ]) {
     test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !path)(
         `the ${name} disjoint sample retains full source and live timelines through the worker`,
         async () => {
             const report = JSON.parse(readFileSync(path!, "utf8"));
-            expect(report.cases).toHaveLength(24);
+            expect(report.cases).toHaveLength(count);
             for (const row of report.cases) {
                 for (const input of [
                     {

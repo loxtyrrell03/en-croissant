@@ -9437,6 +9437,10 @@ function isCompensatedContinuationCapture(steps, index) {
 * do not borrow earlier gains, future PV play or promotion bookkeeping. */
 function winningRecaptureEvidence(steps, index, motif) {
 	const step = steps[index], previous = steps[index - 1];
+	if (MECHANISMS.has(motif.id) && (motif.value ?? Infinity) <= (previous?.capture ?? 0) && step?.capture && previous?.capture === step.capture && previous.move.to === step.move.to && !previous.move.promotion && !step.move.promotion) {
+		const pair = replayTacticalLine(makeFen(previous.before.toSetup()), [previous.uci, step.uci]);
+		if (pair.length === 2 && [previous, step].every((entry, i) => makeUci(entry.move) === entry.uci && entry.capture === pair[i].capture && makeFen(entry.before.toSetup()) === makeFen(pair[i].before.toSetup()) && makeFen(entry.after.toSetup()) === makeFen(pair[i].after.toSetup())) && counterCaptureMaterialDefence(step, 8192, previous.capture)) return null;
+	}
 	if (motif.id === "hangingPiece" && step?.capture && index >= 3) {
 		const offer = steps[index - 3];
 		const check = steps[index - 2];
@@ -9528,8 +9532,9 @@ function filterCompensatedRootCaptures(fen, line, motifs, previousFen, previousM
 	const history = replayTacticalLine(previousFen, [previousMove, line[0]]);
 	const root = replayTacticalLine(fen, [line[0]])[0];
 	if (!root || history.length !== 2 || makeFen(history[0].after.toSetup()) !== makeFen(root.before.toSetup())) return motifs;
-	if (isCompensatedContinuationCapture(history, 1)) return motifs.filter((motif) => motif.id !== "hangingPiece" || motif.ply !== 1);
+	const compensated = isCompensatedContinuationCapture(history, 1);
 	return motifs.flatMap((motif) => {
+		if (compensated && motif.id === "hangingPiece" && motif.ply === 1) return [];
 		const contextual = motif.ply === 1 ? winningRecaptureEvidence(history, 1, motif) : motif;
 		return contextual ? [contextual] : [];
 	});
@@ -11867,8 +11872,10 @@ var discoveryProofCache = /* @__PURE__ */ new Map();
 var DISCOVERY_NODE_LIMIT = 4096;
 /** One extra forcing tempo beyond an immediate material capture. Every legal
 * defence is checked; the battery and its legal recapturers supply the check.
+* Leaves debit immediate captures of any friendly piece, not just the battery.
 * The PV is not a defence list. A budget failure is unknown, not a proof. */
 function proveDiscoveredMaterial(step, nodeLimit = DISCOVERY_NODE_LIMIT) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
 	const rays = revealedRays(step);
 	if (!rays.length) return null;
 	const key = `${makeFen(step.before.toSetup())}:${step.uci}`;
@@ -11908,8 +11915,10 @@ function proveDiscoveredMaterial(step, nodeLimit = DISCOVERY_NODE_LIMIT) {
 						promotion
 					};
 					if (!pos.isLegal(move)) continue;
-					const gain = tacticalExchangeGain(pos, move);
-					if (gain <= -VALUE.king) continue;
+					const budget = { nodes };
+					const gain = participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+					nodes = budget.nodes;
+					if (gain === null) continue;
 					best = Math.max(best, balance + gain);
 				}
 			}
@@ -11957,12 +11966,14 @@ var exchangeDiscoveryCache = /* @__PURE__ */ new Map();
 /** A newly opened battery and the moving piece can overload a shared defender.
 * If a target escapes while guarding another target, allow one capture of that
 * defender, with every subsequent reply checked by the defender-removal proof.
-* The complete outer/inner search shares one budget; PV replies nominate nothing. */
-function proveExchangeDiscovery(step, nodeLimit = 8192) {
+* The complete outer/inner search shares one budget and accounts for all friendly
+* pieces at capture leaves; PV replies nominate nothing. */
+function proveExchangeDiscovery(step, nodeLimit = 8192, onFailure) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
 	const rays = revealedRays(step);
 	if (!rays.length) return null;
 	const key = `${makeFen(step.before.toSetup())}:${step.uci}`;
-	if (nodeLimit === 8192 && exchangeDiscoveryCache.has(key)) return exchangeDiscoveryCache.get(key);
+	if (!onFailure && nodeLimit === 8192 && exchangeDiscoveryCache.has(key)) return exchangeDiscoveryCache.get(key);
 	const side = step.before.turn;
 	const pieces = [...new Set([step.move.to, ...rays.map((r) => r.from)])];
 	const targets = [...new Set(pieces.flatMap((from) => [...attacks(step.after.board.get(from), from, step.after.board.occupied).intersect(step.after.board[opposite(side)])]))];
@@ -11985,7 +11996,7 @@ function proveExchangeDiscovery(step, nodeLimit = 8192) {
 			let best = -VALUE.king;
 			const moves = legalMoves(pos).filter((m) => victims.includes(m.to) && capturedValue(pos, m));
 			for (const move of moves) {
-				const gain = participantCaptureGain(pos, move, pieces, budget);
+				const gain = participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
 				if (gain !== null) best = Math.max(best, balance + gain);
 			}
 			if (best < 100) for (const move of moves) {
@@ -12002,7 +12013,7 @@ function proveExchangeDiscovery(step, nodeLimit = 8192) {
 					san: makeSan(pos, move),
 					capture: capturedValue(pos, move),
 					balance: delta(pos, move)
-				}, victims.filter((to) => to !== move.to), [...new Set([...pieces.filter((from) => from !== move.from), move.to])], nodeLimit, budget, 2);
+				}, victims.filter((to) => to !== move.to), [...new Set([...pieces.filter((from) => from !== move.from), move.to])], nodeLimit, budget, 2, true);
 				if (gain === null || balance + gain < 100) continue;
 				best = balance + gain;
 				witness = {
@@ -12019,8 +12030,10 @@ function proveExchangeDiscovery(step, nodeLimit = 8192) {
 			gain: minimum,
 			...witness
 		};
-	} catch {}
-	if (nodeLimit === 8192) {
+	} catch (error) {
+		onFailure?.(error instanceof Error ? error.message : String(error));
+	}
+	if (!onFailure && nodeLimit === 8192) {
 		exchangeDiscoveryCache.set(key, result);
 		if (exchangeDiscoveryCache.size > 128) exchangeDiscoveryCache.delete(exchangeDiscoveryCache.keys().next().value);
 	}
@@ -12036,7 +12049,12 @@ function discoveredEvidence(steps, source) {
 	const targets = [...new Set([...rays.map((r) => r.target), ...attacks(moved, step.move.to, step.after.board.occupied).intersect(step.after.board[opposite(step.before.turn)])])];
 	const capturers = [...new Set([...rays.map((r) => r.from), step.move.to])];
 	const mate = Boolean(kingRay) && (step.after.isCheckmate() || steps[2]?.after.isCheckmate() && Boolean(proveMateNextTurn(step)) || steps[4]?.after.isCheckmate() && Boolean(proveMateWithinThree(steps.slice(0, 5))));
-	const proof = mate ? null : materialThreatProof(step, targets, capturers, kingRay ? [...between(kingRay.from, kingRay.target)] : []);
+	const immediate = mate ? null : materialThreatProof(step, targets, capturers, kingRay ? [...between(kingRay.from, kingRay.target)] : []);
+	const complete = immediate?.kind === "proven" ? materialThreatProof(step, targets, capturers, kingRay ? [...between(kingRay.from, kingRay.target)] : [], false, void 0, { allPiecesAtLeaf: true }) : null;
+	const proof = complete?.kind === "proven" && immediate?.kind === "proven" ? {
+		...complete,
+		gain: Math.min(complete.gain, immediate.gain)
+	} : complete ?? immediate;
 	const directGain = proof?.kind === "proven" ? proof.gain : !mate ? proveDiscoveredMaterial(step) : null;
 	const exchange = !mate && directGain === null ? proveExchangeDiscovery(step) : null;
 	const gain = directGain ?? exchange?.gain ?? null;
@@ -12913,9 +12931,10 @@ function participantCaptureGain(pos, move, pieces, budget) {
 * the piece behind it, or a simultaneous attack by the capturing piece.
 * One checking counterattack may be answered; never follow a cooperative PV.
 * Exchange leaves also debit an off-square capture of an attacking piece. */
-function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sharedBudget, evasionLimit = 1) {
-	const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}:${evasionLimit}`;
+function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sharedBudget, evasionLimit = 1, allPiecesAtLeaf = false) {
+	const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}:${evasionLimit}:${allPiecesAtLeaf}`;
 	if (!sharedBudget && nodeLimit === 4096 && defenderCombinationCache.has(key)) return defenderCombinationCache.get(key);
+	const side = step.before.turn;
 	const budget = sharedBudget ?? { nodes: nodeLimit };
 	const delta = (pos, move) => capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
 	const visit = (pos, move) => {
@@ -12929,13 +12948,13 @@ function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sh
 		let best = -VALUE.king;
 		for (const move of legalMoves(pos)) {
 			if (!victims.includes(move.to) || !pieces.includes(move.from) || !capturedValue(pos, move)) continue;
-			const gain = participantCaptureGain(pos, move, pieces, budget);
+			const gain = participantCaptureGain(pos, move, allPiecesAtLeaf ? [...pos.board[side], move.to] : pieces, budget);
 			if (gain !== null) best = Math.max(best, balance + gain);
 		}
 		if (best >= 90) return best;
 		if (retained && !pos.isCheck()) for (const move of legalMoves(pos)) {
 			if (capturedValue(pos, move) || move.promotion) continue;
-			const gain = participantCaptureGain(pos, move, pieces, budget);
+			const gain = participantCaptureGain(pos, move, allPiecesAtLeaf ? [...pos.board[side], move.to] : pieces, budget);
 			if (gain !== null && balance + gain >= 90) return balance + gain;
 		}
 		if (!evasion || !pos.isCheck()) return null;
@@ -15177,9 +15196,11 @@ function clearanceKingDefence(root, nodeLimit = 32768) {
 * Non-capturing checks require a real non-checking reply whose every recovery
 * capture stays below the material threshold. Carry the original compensation
 * through those leaves; named fork victims alone miss captures of the forker's
-* captor. Quiet preparations and longer checks are outside this local witness. */
-function counterCaptureMaterialDefence(root, nodeLimit = 8192) {
-	if (!Number.isFinite(nodeLimit) || nodeLimit <= 0 || root.capture || root.move.promotion || root.after.isCheck() || root.after.isEnd()) return null;
+* captor. Optional equal-recapture credit is supplied only after validating the
+* actual preceding capture. Quiet preparations and longer checks are outside
+* this local witness; failure cannot establish either safety or a tactical win. */
+function counterCaptureMaterialDefence(root, nodeLimit = 8192, previousCaptureCost = 0) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture !== previousCaptureCost || !Number.isSafeInteger(previousCaptureCost) || previousCaptureCost < 0 || root.move.promotion || root.after.isCheck() || root.after.isEnd()) return null;
 	let nodes = nodeLimit;
 	const visit = (pos, move) => {
 		if (--nodes < 0) throw new Error("Countercapture defence budget exhausted");
@@ -15229,6 +15250,7 @@ function counterCaptureMaterialDefence(root, nodeLimit = 8192) {
 				if (gain <= -VALUE.king || balance + gain >= 100) return null;
 				continue;
 			}
+			if (previousCaptureCost && !next.isCheck() && balance + capture < 100) continue;
 			let answered = false;
 			for (const reply of legalMoves(next)) {
 				if (reply.to !== move.to || !capturedValue(next, reply)) continue;
@@ -15248,7 +15270,7 @@ function counterCaptureMaterialDefence(root, nodeLimit = 8192) {
 			if (!capturedValue(root.after, defence) || defence.promotion) continue;
 			const next = visit(root.after, defence);
 			if (next.isCheck() || next.isEnd()) continue;
-			const checkingDefences = safe(next, -delta(root.after, defence), 2);
+			const checkingDefences = safe(next, root.capture - previousCaptureCost - delta(root.after, defence), 2);
 			if (checkingDefences) return {
 				defence: makeSan(root.after, defence),
 				defenceUci: makeUci(defence),
@@ -15444,7 +15466,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 76;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 77;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
