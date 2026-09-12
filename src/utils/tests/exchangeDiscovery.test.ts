@@ -14,10 +14,9 @@ import { buildLiveTacticalScan } from "@/utils/tacticalMotifs/liveTactics";
 const fen = "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15";
 const line = ["d7e5", "d3c3", "a5c3", "b2c3", "e5c4"];
 
-// The chess judgement remains: Ne5 is winning. Its old all-defence
-// certificate used Nxc4 after b4 and ignored bxa5 winning the queen.
-// Preserve the desired coverage as expected failures, not relabelled negatives.
-test.fails.each([
+// Ne5 is winning, but its old certificate used Nxc4 after b4 and ignored
+// bxa5. The recovered proof must use the queen capture and legal continuation.
+test.each([
     line,
     ["d7e5"],
     ["d7e5", "d3f1", "d8d4"],
@@ -52,11 +51,15 @@ test.each([
     expect(result.motifs.some((m) => m.id === "discoveredAttack" && m.ply === 1)).toBe(false);
 });
 
-test("the unsupported root cannot borrow the old incomplete proof or an invalid budget", () => {
+test("the recovered root uses Nxd3 against the queen counterattack; invalid budgets abstain", () => {
     const step = replayTacticalLine(fen, line)[0];
     const failures: string[] = [];
-    expect(proveExchangeDiscovery(step, 8192, (reason) => failures.push(reason))).toBeNull();
-    expect(failures.some((reason) => reason.includes("b4"))).toBe(true);
+    const proof = proveExchangeDiscovery(step, 8192, (reason) => failures.push(reason));
+    expect(proof?.branches.find((branch) => branch.reply === "b4")).toMatchObject({
+        answer: "Nxd3",
+        extended: true,
+    });
+    expect(failures).toEqual([]);
     expect(proveExchangeDiscovery(step, 0)).toBeNull();
     expect(proveExchangeDiscovery(step, 1)).toBeNull();
 });
@@ -69,7 +72,7 @@ test("checking sacrifices cannot erase already earned material when the next tar
     ).not.toBeNull();
 });
 
-test.fails("the board highlights the root discovery, not the future queen-exchange destination", () => {
+test("the board highlights the root discovery, not the future queen-exchange destination", () => {
     const scan = buildLiveTacticalScan({ fen, pvUci: line, engineName: "Regression", depth: 16 });
     expect(scan.motifs[0].id).toBe("discoveredAttack");
     expect(scan.arrows.map((a) => `${a.from}${a.to}`)).toEqual(

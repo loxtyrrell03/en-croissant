@@ -107,6 +107,24 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "recovered:root-only-exchange-discovery",
+                input: {
+                    fen: "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
+                    pvUci: ["d7e5"],
+                    engineName: "Regression",
+                    depth: 16,
+                },
+            },
+            {
+                id: "recovered:reflected-root-only-exchange-discovery",
+                input: {
+                    fen: "r3r1k1/1pp2pp1/p2q3p/2bnn3/Q6B/2P2P1P/PP1N1P2/2KR1BR1 w - - 0 15",
+                    pvUci: ["d2e4"],
+                    engineName: "Regression",
+                    depth: 16,
+                },
+            },
+            {
                 id: "constructed:root-mate-over-material-pv",
                 input: {
                     fen: "R2r2k1/p4ppp/1p6/2pq4/4R3/1P2PQ2/P5PP/6K1 w - - 0 24",
@@ -613,7 +631,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(128);
+        expect(report).toHaveLength(130);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

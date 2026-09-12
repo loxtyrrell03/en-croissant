@@ -11966,14 +11966,16 @@ var exchangeDiscoveryCache = /* @__PURE__ */ new Map();
 /** A newly opened battery and the moving piece can overload a shared defender.
 * If a target escapes while guarding another target, allow one capture of that
 * defender, with every subsequent reply checked by the defender-removal proof.
+* A concrete countercapture by that same capturer may supply a new target;
+* a safe quiet move may retain material actually captured, never fund a win.
 * The complete outer/inner search shares one budget and accounts for all friendly
-* pieces at capture leaves; PV replies nominate nothing. */
-function proveExchangeDiscovery(step, nodeLimit = 8192, onFailure) {
+* pieces and immediate terminal resources at leaves; PV replies nominate nothing. */
+function proveExchangeDiscovery(step, nodeLimit = 8192, onFailure, onLeaf) {
 	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
 	const rays = revealedRays(step);
 	if (!rays.length) return null;
 	const key = `${makeFen(step.before.toSetup())}:${step.uci}`;
-	if (!onFailure && nodeLimit === 8192 && exchangeDiscoveryCache.has(key)) return exchangeDiscoveryCache.get(key);
+	if (!onFailure && !onLeaf && nodeLimit === 8192 && exchangeDiscoveryCache.has(key)) return exchangeDiscoveryCache.get(key);
 	const side = step.before.turn;
 	const pieces = [...new Set([step.move.to, ...rays.map((r) => r.from)])];
 	const targets = [...new Set(pieces.flatMap((from) => [...attacks(step.after.board.get(from), from, step.after.board.occupied).intersect(step.after.board[opposite(side)])]))];
@@ -11981,11 +11983,15 @@ function proveExchangeDiscovery(step, nodeLimit = 8192, onFailure) {
 	const budget = { nodes: nodeLimit };
 	const delta = (pos, move) => capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
 	let result = null;
+	let defensiveBranch = "";
 	try {
-		const replies = legalMoves(step.after);
+		const replies = recoveryMoves(step.after, side);
+		const branches = [];
 		let minimum = Infinity;
 		let witness = null;
 		for (const reply of replies) {
+			defensiveBranch = makeSan(step.after, reply);
+			const startingNodes = budget.nodes;
 			if (--budget.nodes < 0) throw new Error("Exchange discovery proof exhausted");
 			const pos = step.after.clone();
 			pos.play(reply);
@@ -11994,10 +12000,15 @@ function proveExchangeDiscovery(step, nodeLimit = 8192, onFailure) {
 			const victims = targets.map((to) => to === reply.from ? reply.to : to).filter((to) => pos.board.get(to)?.color === opposite(side));
 			if (pos.isCheck()) victims.push(...pos.ctx().checkers);
 			let best = -VALUE.king;
-			const moves = legalMoves(pos).filter((m) => victims.includes(m.to) && capturedValue(pos, m));
+			let answer = "";
+			let extended = false;
+			const moves = recoveryMoves(pos, side).filter((m) => victims.includes(m.to) && capturedValue(pos, m));
 			for (const move of moves) {
 				const gain = participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
-				if (gain !== null) best = Math.max(best, balance + gain);
+				if (gain !== null && balance + gain > best && balance + gain >= 100 && noImmediateTerminalRefutation(pos, move, budget)) {
+					best = balance + gain;
+					answer = makeSan(pos, move);
+				}
 			}
 			if (best < 100) for (const move of moves) {
 				const defender = pos.board.get(move.to);
@@ -12013,10 +12024,12 @@ function proveExchangeDiscovery(step, nodeLimit = 8192, onFailure) {
 					san: makeSan(pos, move),
 					capture: capturedValue(pos, move),
 					balance: delta(pos, move)
-				}, victims.filter((to) => to !== move.to), [...new Set([...pieces.filter((from) => from !== move.from), move.to])], nodeLimit, budget, 2, true);
+				}, [...new Set([...victims.filter((to) => to !== move.to), ...attacks(after.board.get(move.to), move.to, after.board.occupied).intersect(after.board[opposite(side)])])], [...new Set([...pieces.filter((from) => from !== move.from), move.to])], nodeLimit, budget, 2, true, Math.max(90, 100 - balance), onLeaf);
 				if (gain === null || balance + gain < 100) continue;
 				best = balance + gain;
-				witness = {
+				answer = makeSan(pos, move);
+				extended = true;
+				if (!witness || VALUE[pos.board.get(move.from).role] === VALUE[defender.role]) witness = {
 					example: [makeSan(step.after, reply), makeSan(pos, move)],
 					exchangeFrom: move.from,
 					exchangeTarget: move.to
@@ -12025,15 +12038,23 @@ function proveExchangeDiscovery(step, nodeLimit = 8192, onFailure) {
 			}
 			if (best < 100 || budget.nodes < 0) throw new Error(`Unproved defensive branch ${makeSan(step.after, reply)} ${budget.nodes}`);
 			minimum = Math.min(minimum, best);
+			branches.push({
+				reply: defensiveBranch,
+				answer,
+				gain: best,
+				extended,
+				nodesUsed: startingNodes - budget.nodes
+			});
 		}
 		if (witness && Number.isFinite(minimum)) result = {
 			gain: minimum,
-			...witness
+			...witness,
+			branches
 		};
 	} catch (error) {
-		onFailure?.(error instanceof Error ? error.message : String(error));
+		onFailure?.(`${error instanceof Error ? error.message : String(error)} (${defensiveBranch})`);
 	}
-	if (!onFailure && nodeLimit === 8192) {
+	if (!onFailure && !onLeaf && nodeLimit === 8192) {
 		exchangeDiscoveryCache.set(key, result);
 		if (exchangeDiscoveryCache.size > 128) exchangeDiscoveryCache.delete(exchangeDiscoveryCache.keys().next().value);
 	}
@@ -12081,7 +12102,7 @@ function discoveredEvidence(steps, source) {
 	const profitableTargets = !kingRay && !exchange ? winningTargets(step.after, step.move.to, step.before.turn) : null;
 	const supportingTargets = profitableTargets ? moverTargets.filter((to) => profitableTargets.includes(to)) : moverTargets;
 	const accompaniment = (!kingRay && step.after.isCheck() ? ` The moving ${moved.role} gives check, so the opponent cannot simply ignore the exposed attack.` : "") + (supportingTargets.length ? ` The ${moved.role} on ${makeSquare(step.move.to)} also attacks ${supportingTargets.map((to) => `the ${step.after.board.get(to).role} on ${makeSquare(to)}`).join(" and ")}.` : "");
-	const consequence = mate ? step.after.isCheckmate() ? "There is no legal defence: checkmate." : "Every legal defence allows the verified short forced mate." : exchange ? `The shared defence cannot save all these targets: after ${exchange.example[0]}, ${exchange.example[1]} removes the defender. Every legal reply permits a local material gain, including the defender exchange and up to two checking counterattacks; recaptures and exposed attacking pieces are included.` : `Every legal ${kingRay ? "answer to the discovered check" : "reply"} ${proof?.kind === "proven" ? "concedes material" : "allows material gain or mate with at most one extra checking move, allowing for legal recaptures"}. Captures and interpositions are included in this check.`;
+	const consequence = mate ? step.after.isCheckmate() ? "There is no legal defence: checkmate." : "Every legal defence allows the verified short forced mate." : exchange ? `The shared defence cannot save all these targets: after ${exchange.example[0]}, ${exchange.example[1]} removes the defender. Every legal reply permits a local material gain, including exchanges and up to two checking counterattacks; immediate losses elsewhere on the board, mate and promotion replies are checked.` : `Every legal ${kingRay ? "answer to the discovered check" : "reply"} ${proof?.kind === "proven" ? "concedes material" : "allows material gain or mate with at most one extra checking move, allowing for legal recaptures"}. Captures and interpositions are included in this check.`;
 	return {
 		motif: {
 			id,
@@ -12909,6 +12930,52 @@ function capturedDefenderProof(step, source) {
 	return null;
 }
 var defenderCombinationCache = /* @__PURE__ */ new Map();
+/** Stable board order from the defending side's home rank. Reflection must
+* not change which branch uses the finite recovery budget first. */
+function recoveryMoves(pos, side) {
+	const flip = side === "white" ? 56 : 0;
+	return legalMoves(pos).sort((a, b) => (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip));
+}
+/** Cheap, conservative check nomination for an already-legal move. Castling
+* is always nominated; en-passant removes the off-square captured pawn too.
+* The caller still replays nominated moves before accepting a mate. */
+function mayGiveCheck(pos, move) {
+	const side = pos.turn;
+	const piece = pos.board.get(move.from);
+	const king = pos.board.kingOf(opposite(side));
+	if (king === void 0 || move.promotion) return true;
+	if (piece.role === "king" && pos.board.get(move.to)?.color === side) return true;
+	let occupied = pos.board.occupied.without(move.from).with(move.to);
+	if (piece.role === "pawn" && move.to === pos.epSquare) occupied = occupied.without(move.to + (side === "white" ? -8 : 8));
+	if (attacks(piece, move.to, occupied).has(king)) return true;
+	for (const from of pos.board[side]) {
+		if (from === move.from) continue;
+		const other = pos.board.get(from);
+		if ([
+			"bishop",
+			"rook",
+			"queen"
+		].includes(other.role) && attacks(other, from, occupied).has(king)) return true;
+	}
+	return false;
+}
+/** Material arithmetic cannot settle a branch which stalemates or allows
+* an immediate mate/promotion. Longer quiet play is outside this local proof. */
+function noImmediateTerminalRefutation(pos, move, budget) {
+	if (--budget.nodes < 0) throw new Error("Material leaf proof exhausted");
+	const leaf = pos.clone();
+	leaf.play(move);
+	if (leaf.isEnd()) return leaf.isCheckmate();
+	for (const reply of recoveryMoves(leaf, pos.turn)) {
+		if (reply.promotion) return false;
+		if (!mayGiveCheck(leaf, reply)) continue;
+		if (--budget.nodes < 0) throw new Error("Material leaf proof exhausted");
+		const next = leaf.clone();
+		next.play(reply);
+		if (next.isCheckmate()) return false;
+	}
+	return true;
+}
 function participantCaptureGain(pos, move, pieces, budget) {
 	if (--budget.nodes < 0) throw new Error("Participant capture proof exhausted");
 	const gain = tacticalExchangeGain(pos, move);
@@ -12931,9 +12998,10 @@ function participantCaptureGain(pos, move, pieces, budget) {
 * the piece behind it, or a simultaneous attack by the capturing piece.
 * One checking counterattack may be answered; never follow a cooperative PV.
 * Exchange leaves also debit an off-square capture of an attacking piece. */
-function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sharedBudget, evasionLimit = 1, allPiecesAtLeaf = false) {
-	const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}:${evasionLimit}:${allPiecesAtLeaf}`;
-	if (!sharedBudget && nodeLimit === 4096 && defenderCombinationCache.has(key)) return defenderCombinationCache.get(key);
+function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sharedBudget, evasionLimit = 1, allPiecesAtLeaf = false, minimumGain = 90, onLeaf) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !Number.isSafeInteger(minimumGain) || minimumGain <= 0 || !Number.isSafeInteger(evasionLimit) || evasionLimit < 0) return null;
+	const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}:${evasionLimit}:${allPiecesAtLeaf}:${minimumGain}`;
+	if (!onLeaf && !sharedBudget && nodeLimit === 4096 && defenderCombinationCache.has(key)) return defenderCombinationCache.get(key);
 	const side = step.before.turn;
 	const budget = sharedBudget ?? { nodes: nodeLimit };
 	const delta = (pos, move) => capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
@@ -12943,29 +13011,53 @@ function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sh
 		next.play(move);
 		return next;
 	};
+	const moves = (pos) => allPiecesAtLeaf ? recoveryMoves(pos, side) : legalMoves(pos);
 	const answer = (pos, victims, pieces, balance, evasion, retained) => {
 		if (pos.isEnd()) return null;
 		let best = -VALUE.king;
-		for (const move of legalMoves(pos)) {
+		for (const move of moves(pos)) {
 			if (!victims.includes(move.to) || !pieces.includes(move.from) || !capturedValue(pos, move)) continue;
 			const gain = participantCaptureGain(pos, move, allPiecesAtLeaf ? [...pos.board[side], move.to] : pieces, budget);
-			if (gain !== null) best = Math.max(best, balance + gain);
+			if (gain !== null && (!allPiecesAtLeaf || balance + gain < minimumGain || noImmediateTerminalRefutation(pos, move, budget))) {
+				best = Math.max(best, balance + gain);
+				if (allPiecesAtLeaf && best >= minimumGain) {
+					onLeaf?.({
+						fen: makeFen(pos.toSetup()),
+						moveUci: makeUci(move),
+						balance,
+						gain: best,
+						quiet: false
+					});
+					return best;
+				}
+			}
 		}
-		if (best >= 90) return best;
-		if (retained && !pos.isCheck()) for (const move of legalMoves(pos)) {
+		if (best >= minimumGain) return best;
+		if (retained && balance >= minimumGain && !pos.isCheck()) for (const move of moves(pos)) {
 			if (capturedValue(pos, move) || move.promotion) continue;
 			const gain = participantCaptureGain(pos, move, allPiecesAtLeaf ? [...pos.board[side], move.to] : pieces, budget);
-			if (gain !== null && balance + gain >= 90) return balance + gain;
+			if (gain !== null && balance + gain >= minimumGain && (!allPiecesAtLeaf || noImmediateTerminalRefutation(pos, move, budget))) {
+				onLeaf?.({
+					fen: makeFen(pos.toSetup()),
+					moveUci: makeUci(move),
+					balance,
+					gain: balance + gain,
+					quiet: true
+				});
+				return balance + gain;
+			}
 		}
 		if (!evasion || !pos.isCheck()) return null;
-		for (const move of legalMoves(pos)) {
+		const evasions = moves(pos);
+		if (allPiecesAtLeaf) evasions.sort((a, b) => delta(pos, b) - delta(pos, a) || VALUE[pos.board.get(a.from).role] - VALUE[pos.board.get(b.from).role]);
+		for (const move of evasions) {
 			const gain = defend(visit(pos, move), victims.filter((to) => to !== move.to), [...new Set([...pieces.map((sq) => sq === move.from ? move.to : sq), move.to])], balance + delta(pos, move), evasion - 1, retained || capturedValue(pos, move) > 0);
 			if (gain !== null) return gain;
 		}
 		return null;
 	};
 	const defend = (pos, victims, pieces, balance, evasion, retained = false) => {
-		const replies = legalMoves(pos);
+		const replies = moves(pos);
 		if (!replies.length) return null;
 		let minimum = Infinity;
 		for (const reply of replies) {
@@ -12984,9 +13076,9 @@ function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sh
 	};
 	let result = null;
 	try {
-		result = defend(step.after, targets, capturers, delta(step.before, step.move), evasionLimit);
+		result = defend(step.after, targets, capturers, delta(step.before, step.move), evasionLimit, allPiecesAtLeaf && step.capture > 0);
 	} catch {}
-	if (!sharedBudget && nodeLimit === 4096) {
+	if (!onLeaf && !sharedBudget && nodeLimit === 4096) {
 		defenderCombinationCache.set(key, result);
 		if (defenderCombinationCache.size > 256) defenderCombinationCache.delete(defenderCombinationCache.keys().next().value);
 	}
@@ -15466,7 +15558,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 77;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 78;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

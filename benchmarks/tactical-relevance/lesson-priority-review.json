@@ -1,10 +1,7 @@
 {
-  "scope": "32 frozen before/after engine scenarios from real-game positions and constructed controls, plus separately tested colour-reflected controls. Human judgements remain unchanged; two known exchange-discovery proof gaps are expected failures, not correct negatives. Reused development data, not holdout validation or general accuracy. Engine lines are frozen depth-16 evidence, not fresh searches in this report.",
-  "unresolvedJudgements": [
-    "Developing the bishop misses the overloaded-queen discovery",
-    "The real Nxd4 mistake allows the overloaded-queen discovery"
-  ],
-  "primaryMatches": 30,
+  "scope": "32 frozen before/after engine scenarios from real-game positions and constructed controls, plus separately tested colour-reflected controls. Human judgements remain unchanged. Reused development data, not holdout validation or general accuracy. Engine lines are frozen depth-16 evidence, not fresh searches in this report.",
+  "unresolvedJudgements": [],
+  "primaryMatches": 32,
   "secondaryLessons": 5,
   "distinctPrimaryThemes": [
     "backRankMate",
@@ -316,22 +313,23 @@
       "name": "Developing the bishop misses the overloaded-queen discovery",
       "expectedPrimary": "discoveredAttack",
       "expectedSource": "missed",
-      "primary": "fork",
-      "source": "allowed",
+      "primary": "discoveredAttack",
+      "source": "missed",
       "comparison": "unproved",
       "secondary": null,
       "secondarySource": null,
-      "explanation": "In the displayed continuation, Qf5+ forks the king on c8 and bishop on h5. The line continues with Qxh5, winning the bishop. This later tactic depends on the preceding replies; it is not an immediate refutation."
+      "explanation": "The better move had this tactic: Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including exchanges and up to two checking counterattacks; immediate losses elsewhere on the board, mate and promotion replies are checked."
     },
     {
       "name": "The real Nxd4 mistake allows the overloaded-queen discovery",
       "expectedPrimary": "discoveredAttack",
       "expectedSource": "allowed",
-      "primary": null,
-      "source": null,
-      "comparison": "unproved",
+      "primary": "discoveredAttack",
+      "source": "allowed",
+      "comparison": "prevented",
       "secondary": null,
-      "secondarySource": null
+      "secondarySource": null,
+      "explanation": "Your move allowed this tactic: Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including exchanges and up to two checking counterattacks; immediate losses elsewhere on the board, mate and promotion replies are checked. After Nh4, Ne5 no longer uncovers an attack on an enemy piece. Qb3 answers the remaining immediate threats; legal captures, a defender exchange and checking forks do not force a local material gain. This prevents this discovered-attack mechanism, not every possible later combination."
     },
     {
       "name": "Taking a pawn misses the promotion-backed knight fork",

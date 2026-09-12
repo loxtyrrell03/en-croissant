@@ -8,9 +8,9 @@ import { quietMaterialDefence, replayTacticalLine } from "../tacticalMotifs/caus
 const fen = "2kr1br1/pp1n1p2/2p2p1p/q6b/2BpN3/P2Q1N1P/1PP2PP1/R3R1K1 w - - 0 15";
 const reply = ["d7e5", "d3c3", "a5c3", "b2c3", "e5c4"];
 
-// Desired causal coverage is retained as an explicit gap: the original
-// all-defence discovery certificate ignored a counterattack on the queen.
-test.fails.each([reply, ["d7e5"]])(
+// Recovery of the all-defence attack must retain the independent defence
+// comparison; the better move's safety is not inferred from a failed proof.
+test.each([reply, ["d7e5"]])(
     "Nh4 avoids the exposed knight and retains a defence to the other attacks: %j",
     (...refutationUci) => {
         const result = classifyMistakeReviewMotifs({
@@ -77,7 +77,7 @@ test("Qc3 in the alternative position also loses the queen to the retained d-paw
     expect(line[3].capture).toBe(900);
 });
 
-test.fails("the reflected position keeps Black's queen defence and the same causal lesson", () => {
+test("the reflected position keeps Black's queen defence and the same causal lesson", () => {
     const position = "r3r1k1/1pp2pp1/p2q1n1p/2bPn3/Q6B/2P2P1P/PP1N1P2/2KR1BR1 b - - 0 15";
     const result = classifyMistakeReviewMotifs({
         fen: position,

@@ -36,6 +36,22 @@ const laterScan = buildLiveTacticalScan({
   engineName: "Constructed",
   depth: 16,
 });
+test("the recovered exchange discovery is the headline and shows only current-board arrows", () => {
+  const value = buildLiveTacticalScan({
+    fen: "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
+    pvUci: ["d7e5", "d3c3", "a5c3", "b2c3", "e5c4"],
+    depth: 16,
+    engineName: "Regression",
+  });
+  const element = document.createElement("div");
+  element.innerHTML = markup(value);
+  expect(value.motifs[0]).toMatchObject({ id: "discoveredAttack", ply: 1 });
+  expect(element.textContent).toContain("Discovered Attack found");
+  expect(element.textContent).toContain("Qc3, Qxc3");
+  expect(element.textContent).not.toContain("Continuation only");
+  expect(value.arrows.map((arrow) => `${arrow.from}${arrow.to}`)).toContain("d8d4");
+  expect(value.arrows.map((arrow) => `${arrow.from}${arrow.to}`)).not.toContain("a5c3");
+});
 test("an unresolved root exposes later themes only as collapsed continuation details", () => {
   const value = buildLiveTacticalScan({
     fen: "5r1k/6pp/8/8/4n3/5NPQ/3qB2P/4R2K b - - 0 1",

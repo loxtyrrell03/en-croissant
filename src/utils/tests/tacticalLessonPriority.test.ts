@@ -138,25 +138,15 @@ function classify(row: CausalCase) {
     });
 }
 
-// Keep the human judgements fixed. The old exchange-discovery proof ignored
-// a counterattack on its queen; withdrawal creates two known coverage gaps.
-const unresolvedJudgements = new Set([
-    "Developing the bishop misses the overloaded-queen discovery",
-    "The real Nxd4 mistake allows the overloaded-queen discovery",
-]);
+// Human judgements stay fixed when proof implementations change.
 for (const row of cases)
-    (unresolvedJudgements.has(row.name) ? test.fails : test)(
-        `frozen before/after engine evidence retains the judged primary: ${row.name}`,
-        () => {
-            const result = buildMistakeReviewTacticalExplanation(classify(row));
-            // Conditional registration above is still a real Vitest test.
-            // eslint-disable-next-line jest/no-standalone-expect
-            expect({ id: result?.primary.id, source: result?.primary.source }).toEqual({
-                id: row.primary,
-                source: row.source,
-            });
-        },
-    );
+    test(`frozen before/after engine evidence retains the judged primary: ${row.name}`, () => {
+        const result = buildMistakeReviewTacticalExplanation(classify(row));
+        expect({ id: result?.primary.id, source: result?.primary.source }).toEqual({
+            id: row.primary,
+            source: row.source,
+        });
+    });
 
 test("the real Be7 lesson retains both the hanging bishop and missed forcing attack", () => {
     const row = cases.find(
@@ -190,26 +180,20 @@ function reflect(row: CausalCase): CausalCase {
 }
 
 for (const original of cases)
-    (unresolvedJudgements.has(original.name) ? test.fails : test)(
-        `colour-reflected control preserves legal lines and lesson ownership: ${original.name}`,
-        () => {
-            const row = reflect(original);
-            // Conditional registration above is still a real Vitest test.
-            /* eslint-disable jest/no-standalone-expect */
-            expect(replayTacticalLine(row.fen, row.before[0].pvUci)).toHaveLength(
-                row.before[0].pvUci.length,
-            );
-            expect(replayTacticalLine(row.fen, [row.played, ...row.after[0].pvUci])).toHaveLength(
-                row.after[0].pvUci.length + 1,
-            );
-            const result = buildMistakeReviewTacticalExplanation(classify(row));
-            expect({ id: result?.primary.id, source: result?.primary.source }).toEqual({
-                id: row.primary,
-                source: row.source,
-            });
-            /* eslint-enable jest/no-standalone-expect */
-        },
-    );
+    test(`colour-reflected control preserves legal lines and lesson ownership: ${original.name}`, () => {
+        const row = reflect(original);
+        expect(replayTacticalLine(row.fen, row.before[0].pvUci)).toHaveLength(
+            row.before[0].pvUci.length,
+        );
+        expect(replayTacticalLine(row.fen, [row.played, ...row.after[0].pvUci])).toHaveLength(
+            row.after[0].pvUci.length + 1,
+        );
+        const result = buildMistakeReviewTacticalExplanation(classify(row));
+        expect({ id: result?.primary.id, source: result?.primary.source }).toEqual({
+            id: row.primary,
+            source: row.source,
+        });
+    });
 
 test("a missed chance to exploit a pin is a user's opportunity, not an opponent threat", () => {
     const result = classifyMistakeReviewMotifs({
@@ -250,17 +234,15 @@ test.skipIf(!process.env.TACTICAL_LESSON_REPORT)(
         expect(report).toHaveLength(32);
         expect(
             report.every(
-                (row) =>
-                    unresolvedJudgements.has(row.name) ||
-                    (row.primary === row.expectedPrimary && row.source === row.expectedSource),
+                (row) => row.primary === row.expectedPrimary && row.source === row.expectedSource,
             ),
         ).toBe(true);
         writeFileSync(
             process.env.TACTICAL_LESSON_REPORT!,
             JSON.stringify(
                 {
-                    scope: "32 frozen before/after engine scenarios from real-game positions and constructed controls, plus separately tested colour-reflected controls. Human judgements remain unchanged; two known exchange-discovery proof gaps are expected failures, not correct negatives. Reused development data, not holdout validation or general accuracy. Engine lines are frozen depth-16 evidence, not fresh searches in this report.",
-                    unresolvedJudgements: [...unresolvedJudgements],
+                    scope: "32 frozen before/after engine scenarios from real-game positions and constructed controls, plus separately tested colour-reflected controls. Human judgements remain unchanged. Reused development data, not holdout validation or general accuracy. Engine lines are frozen depth-16 evidence, not fresh searches in this report.",
+                    unresolvedJudgements: [],
                     primaryMatches: report.filter(
                         (row) =>
                             row.primary === row.expectedPrimary &&
