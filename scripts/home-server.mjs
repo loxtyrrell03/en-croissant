@@ -435,6 +435,18 @@ async function handleRequest(request, response) {
 
   const otbJobMatch = pathname.match(/^\/api\/otb-import\/jobs\/([A-Za-z0-9_-]+)$/);
   if (otbJobMatch) {
+    if (method === "PUT") {
+      try {
+        const payload = await readJsonBody(request, maxOtbImportRequestBytes);
+        const job = await otbImportService.createJob(payload, otbJobMatch[1]);
+        return writeJson(response, 202, job, { "cache-control": "no-store" });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        const status =
+          error?.code === "OTB_JOB_REQUEST_CONFLICT" ? 409 : /not installed/i.test(message) ? 503 : 400;
+        return writeJson(response, status, { error: message }, { "cache-control": "no-store" });
+      }
+    }
     if (method !== "GET" && method !== "DELETE") {
       return writeJson(response, 405, { error: "Method not allowed." });
     }
