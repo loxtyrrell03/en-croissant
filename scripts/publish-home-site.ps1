@@ -1,5 +1,5 @@
 param(
-  [string]$SiteUrl = "https://lox-pc.tail89d19b.ts.net",
+  [string]$SiteUrl = "",
   [string]$SiteRoot = "",
   [int]$Port = 8787,
   [switch]$SkipBuild,
@@ -7,6 +7,11 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+if (-not $SiteUrl) {
+  $tailStatus = & (Get-Command tailscale.exe -ErrorAction Stop).Source status --json | ConvertFrom-Json
+  if (-not $tailStatus.Self.DNSName) { throw 'The PC does not have a current Tailscale hostname.' }
+  $SiteUrl = 'https://' + $tailStatus.Self.DNSName.TrimEnd('.')
+}
 $repoRoot = Split-Path -Parent $PSScriptRoot
 . (Join-Path $PSScriptRoot "phone-publish-guard.ps1")
 
@@ -190,7 +195,7 @@ try {
   }
 
   if (-not $SkipRestart) {
-    & (Get-Command tailscale.exe -ErrorAction Stop).Source serve --bg --yes $Port
+    & (Get-Command tailscale.exe -ErrorAction Stop).Source serve --bg --yes 8786
     if ($LASTEXITCODE -ne 0) {
       throw "Tailscale Serve could not expose the PC phone site privately."
     }

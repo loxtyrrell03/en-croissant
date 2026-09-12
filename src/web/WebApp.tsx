@@ -117,6 +117,8 @@ import {
 import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import classes from "./WebApp.module.css";
 import PhoneMistakeReview from "./PhoneMistakeReview";
+import PhonePcServices from "./PhonePcServices";
+import { usePcServicesAvailability } from "./pcServices";
 import PhoneErrorBoundary from "./PhoneErrorBoundary";
 import PhoneAppBoundary from "./PhoneAppBoundary";
 import PhoneAnnotationBar from "./PhoneAnnotationBar";
@@ -1255,6 +1257,7 @@ function WebAppContent() {
           </Box>
         </Box>
 
+        <PhonePcServices />
         <main className={classes.main}>
           <PhoneErrorBoundary
             onRecover={() => {
@@ -4409,6 +4412,7 @@ function EngineUnderBoardPanel({
   const [status, setStatus] = useState<WebEnginePanelStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const pcServices = usePcServicesAvailability();
   const performancePreset =
     settings.engineKind === "lc0" ? settings.lc0Preset : settings.stockfishPreset;
 
@@ -4424,7 +4428,7 @@ function EngineUnderBoardPanel({
   }, [analysisRequestId, setSettings]);
 
   useEffect(() => {
-    if (!settings.enabled || suspended) {
+    if (!settings.enabled || suspended || pcServices === "off" || pcServices === "starting") {
       if (!suspended) void releaseWebPcEngine(settings.engineKind);
       setStatus("idle");
       setError(null);
@@ -4483,6 +4487,7 @@ function EngineUnderBoardPanel({
     performancePreset,
     suspended,
     upcomingFens,
+    pcServices,
   ]);
 
   useEffect(() => {
@@ -4525,7 +4530,11 @@ function EngineUnderBoardPanel({
     ? "Auto network"
     : getLc0NetworkDisplayName(settings.lc0Network);
   const analysisSource = topLine ? getWebEngineSourceLabel(topLine) : engineLabel;
-  const compactEngineMeta = getWebCompactEngineMeta({
+  const compactEngineMeta = pcServices === "off"
+    ? { label: "PC services off", accessibleLabel: "PC services are off" }
+    : status === "error"
+    ? { label: "Unavailable", accessibleLabel: "PC engine is unavailable" }
+    : getWebCompactEngineMeta({
     enabled: analysisEnabled,
     topLine,
     nodeCount,

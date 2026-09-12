@@ -36,6 +36,7 @@ import type { DrawShape } from "@lichess-org/chessground/draw";
 import type { Key } from "@lichess-org/chessground/types";
 import { reviewMistakeFrames } from "./reviewVisuals";
 import { sharedReviewRequest, type SharedReviewSnapshot } from "./sharedReviewClient";
+import { PC_SERVICES_CHANGED } from "./pcServices";
 
 type Props = {
   state: WebCompanionState;
@@ -100,10 +101,13 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
       }
     };
     void refresh();
+    const servicesChanged = () => void refresh();
+    window.addEventListener(PC_SERVICES_CHANGED, servicesChanged);
     const timer = setInterval(() => void refresh(), 15_000);
     return () => {
       abort.abort();
       clearInterval(timer);
+      window.removeEventListener(PC_SERVICES_CHANGED, servicesChanged);
     };
   }, []);
   const controller = useRef<AbortController | null>(null);

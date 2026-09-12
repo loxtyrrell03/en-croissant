@@ -12,6 +12,8 @@ foreach ($path in @(
   $installerPath,
   $publisherPath,
   $collectorTerminatorPath
+  (Join-Path $scriptsRoot 'manage-phone-services.ps1')
+  (Join-Path $scriptsRoot 'run-phone-service-controller.ps1')
 )) {
   $tokens = $null
   $parseErrors = $null
