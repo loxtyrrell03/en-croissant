@@ -50,6 +50,7 @@ try {
   assert.deepEqual(errors, []);
   assert.equal(await page.getByText(/Gaming PC Stockfish is unavailable/).count(), 0);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+  await page.getByText('PGN imported', { exact: true }).waitFor({ state: 'hidden', timeout: 15_000 });
   await page.screenshot({ path: resolve(output, 'phone-engine.png'), fullPage: true });
   await writeFile(resolve(output, 'phone-engine.json'), JSON.stringify({ base, errors, responses, serviceWorkerActive: true, staleServiceCacheIgnored: true, displayedDepth: 10 }, null, 2));
   console.log(JSON.stringify({ base, displayedDepth: 10, staleServiceCacheIgnored: true, errors }));
