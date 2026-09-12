@@ -100,7 +100,7 @@ function getPgnHeader(pgn, name) {
 	return pgn.match(new RegExp(`^\\[${name}\\s+"([^"]*)"\\]`, "m"))?.[1] ?? null;
 }
 //#endregion
-//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/types.js
+//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/types.js
 var FILE_NAMES = [
 	"a",
 	"b",
@@ -134,7 +134,7 @@ var CASTLING_SIDES = ["a", "h"];
 var isDrop = (v) => "role" in v;
 var isNormal = (v) => "from" in v;
 //#endregion
-//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/util.js
+//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/util.js
 var defined = (v) => v !== void 0;
 var opposite = (color) => color === "white" ? "black" : "white";
 var squareRank = (square) => square >> 3;
@@ -197,7 +197,7 @@ var makeUci = (move) => isDrop(move) ? `${roleToChar(move.role).toUpperCase()}@$
 var kingCastlesTo = (color, side) => color === "white" ? side === "a" ? 2 : 6 : side === "a" ? 58 : 62;
 var rookCastlesTo = (color, side) => color === "white" ? side === "a" ? 3 : 5 : side === "a" ? 59 : 61;
 //#endregion
-//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/squareSet.js
+//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/squareSet.js
 var popcnt32 = (n) => {
 	n = n - (n >>> 1 & 1431655765);
 	n = (n & 858993459) + (n >>> 2 & 858993459);
@@ -379,7 +379,7 @@ var SquareSet = class SquareSet {
 	}
 };
 //#endregion
-//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/attacks.js
+//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/attacks.js
 /**
 * Compute attacks and rays.
 *
@@ -521,7 +521,7 @@ var ray = (a, b) => {
 */
 var between = (a, b) => ray(a, b).intersect(SquareSet.full().shl64(a).xor(SquareSet.full().shl64(b))).withoutFirst();
 //#endregion
-//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/board.js
+//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/board.js
 /**
 * Piece positions on a board.
 *
@@ -635,7 +635,7 @@ var Board = class Board {
 	}
 };
 //#endregion
-//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/setup.js
+//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/setup.js
 var MaterialSide = class MaterialSide {
 	constructor() {}
 	static empty() {
@@ -740,7 +740,7 @@ var RemainingChecks = class RemainingChecks {
 	}
 };
 //#endregion
-//#region node_modules/.pnpm/@badrap+result@0.2.13/node_modules/@badrap/result/dist/index.modern.mjs
+//#region ../../en-croissant/node_modules/.pnpm/@badrap+result@0.2.13/node_modules/@badrap/result/dist/index.modern.mjs
 var r$1 = class {
 	unwrap(r, t) {
 		const e = this._chain((t) => n$2.ok(r ? r(t) : t), (r) => t ? n$2.ok(t(r)) : n$2.err(r));
@@ -796,7 +796,7 @@ var n$2;
 	};
 })(n$2 || (n$2 = {}));
 //#endregion
-//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/chess.js
+//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/chess.js
 var IllegalSetup;
 (function(IllegalSetup) {
 	IllegalSetup["Empty"] = "ERR_EMPTY";
@@ -1481,7 +1481,7 @@ var makeFen = (setup, opts) => [
 	...(opts === null || opts === void 0 ? void 0 : opts.epd) ? [] : [Math.max(0, Math.min(setup.halfmoves, 9999)), Math.max(1, Math.min(setup.fullmoves, 9999))]
 ].join(" ");
 //#endregion
-//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/san.js
+//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/san.js
 var makeSanWithoutSuffix = (pos, move) => {
 	let san = "";
 	if (isDrop(move)) {
@@ -1581,7 +1581,7 @@ var parseSan = (pos, san) => {
 	};
 };
 //#endregion
-//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/variant.js
+//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/variant.js
 var Crazyhouse = class extends Position {
 	constructor() {
 		super("crazyhouse");
@@ -2070,7 +2070,7 @@ var setupPosition = (rules, setup) => {
 	}
 };
 //#endregion
-//#region node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/pgn.js
+//#region ../../en-croissant/node_modules/.pnpm/chessops@0.14.0/node_modules/chessops/dist/esm/pgn.js
 /**
 * Parse, transform and write PGN.
 *
@@ -2606,7 +2606,7 @@ var parseComment = (comment) => {
 	};
 };
 //#endregion
-//#region node_modules/.pnpm/ts-pattern@5.0.8/node_modules/ts-pattern/dist/index.js
+//#region ../../en-croissant/node_modules/.pnpm/ts-pattern@5.0.8/node_modules/ts-pattern/dist/index.js
 var t = Symbol.for("@ts-pattern/matcher"), e = Symbol.for("@ts-pattern/isVariadic"), n$1 = "@ts-pattern/anonymous-select-key", r = (t) => Boolean(t && "object" == typeof t), i = (e) => e && !!e[t], s = (n, o, c) => {
 	if (i(n)) {
 		const { matched: r, selections: i } = n[t]().match(o);
@@ -16253,7 +16253,7 @@ function gradePhoneReview(card, grade, now = Date.now()) {
 	};
 }
 //#endregion
-//#region node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/alea.js
+//#region ../../en-croissant/node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/alea.js
 var require_alea = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	(function(global, module$6, define) {
 		function Alea(seed) {
@@ -16326,7 +16326,7 @@ var require_alea = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	})(exports, typeof module == "object" && module, typeof define == "function" && define);
 }));
 //#endregion
-//#region node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xor128.js
+//#region ../../en-croissant/node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xor128.js
 var require_xor128 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	(function(global, module$5, define) {
 		function XorGen(seed) {
@@ -16384,7 +16384,7 @@ var require_xor128 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	})(exports, typeof module == "object" && module, typeof define == "function" && define);
 }));
 //#endregion
-//#region node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xorwow.js
+//#region ../../en-croissant/node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xorwow.js
 var require_xorwow = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	(function(global, module$4, define) {
 		function XorGen(seed) {
@@ -16447,7 +16447,7 @@ var require_xorwow = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	})(exports, typeof module == "object" && module, typeof define == "function" && define);
 }));
 //#endregion
-//#region node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xorshift7.js
+//#region ../../en-croissant/node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xorshift7.js
 var require_xorshift7 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	(function(global, module$3, define) {
 		function XorGen(seed) {
@@ -16520,7 +16520,7 @@ var require_xorshift7 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	})(exports, typeof module == "object" && module, typeof define == "function" && define);
 }));
 //#endregion
-//#region node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xor4096.js
+//#region ../../en-croissant/node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xor4096.js
 var require_xor4096 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	(function(global, module$2, define) {
 		function XorGen(seed) {
@@ -16613,7 +16613,7 @@ var require_xor4096 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	})(exports, typeof module == "object" && module, typeof define == "function" && define);
 }));
 //#endregion
-//#region node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/tychei.js
+//#region ../../en-croissant/node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/tychei.js
 var require_tychei = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	(function(global, module$1, define) {
 		function XorGen(seed) {
@@ -16677,7 +16677,7 @@ var require_tychei = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	})(exports, typeof module == "object" && module, typeof define == "function" && define);
 }));
 //#endregion
-//#region node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/seedrandom.js
+//#region ../../en-croissant/node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/seedrandom.js
 var require_seedrandom$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	(function(global, pool, math) {
 		var width = 256, chunks = 6, digits = 52, rngname = "random", startdenom = math.pow(width, chunks), significance = math.pow(2, digits), overflow = significance * 2, mask = width - 1, nodecrypto;
@@ -17392,9 +17392,11 @@ function engineLine(fen, depth, score, uciMoves) {
 	};
 }
 var BackgroundEngine = class {
-	constructor(path) {
+	constructor(path, timeoutMs = 3e4, launch = spawn) {
+		this.timeoutMs = timeoutMs;
+		this.closed = false;
 		if (!path) throw new Error("The PC Stockfish path is not configured.");
-		this.child = spawn(path, [], {
+		this.child = launch(path, [], {
 			windowsHide: true,
 			stdio: "pipe"
 		});
@@ -17404,18 +17406,27 @@ var BackgroundEngine = class {
 			} catch {}
 		});
 		this.child.on("error", (e) => this.waiting?.reject(e));
+		this.child.stdin.on("error", (e) => this.waiting?.reject(e));
 		this.child.on("exit", () => this.waiting?.reject(/* @__PURE__ */ new Error("Background engine exited; preparation will retry.")));
 		this.child.stderr.resume();
 		createInterface({ input: this.child.stdout }).on("line", (l) => this.waiting?.line(l));
 		this.ready = this.exchange("uci", (l) => l === "uciok" ? { result: void 0 } : null).then(() => this.exchange("setoption name Threads value 1\nsetoption name Hash value 64\nisready", (l) => l === "readyok" ? { result: void 0 } : null));
+		this.ready.catch(() => {});
 	}
 	exchange(command, accept) {
 		return new Promise((resolve, reject) => {
+			if (this.closed || this.child.stdin.destroyed || this.child.stdin.writableEnded) {
+				reject(/* @__PURE__ */ new Error("Background engine is closed; preparation will retry."));
+				return;
+			}
+			let settled = false;
 			const timer = setTimeout(() => {
-				this.close();
 				finish(/* @__PURE__ */ new Error("Background engine timed out."));
-			}, 3e4);
+				this.close();
+			}, this.timeoutMs);
 			const finish = (error, value) => {
+				if (settled) return;
+				settled = true;
 				clearTimeout(timer);
 				this.waiting = void 0;
 				if (error) reject(error);
@@ -17432,7 +17443,13 @@ var BackgroundEngine = class {
 					}
 				}
 			};
-			this.child.stdin.write(`${command}\n`);
+			try {
+				this.child.stdin.write(`${command}\n`, (error) => {
+					if (error) finish(error);
+				});
+			} catch (error) {
+				finish(error);
+			}
 		});
 	}
 	async analyze(fen) {
@@ -17454,9 +17471,12 @@ var BackgroundEngine = class {
 		});
 	}
 	close() {
-		this.child.stdin.end("quit\n");
+		if (this.closed) return;
+		this.closed = true;
+		this.waiting?.reject(/* @__PURE__ */ new Error("Background engine is closed; preparation will retry."));
+		this.child.stdin.destroy();
 		this.child.kill();
 	}
 };
 //#endregion
-export { SharedReviewService, engineLine };
+export { BackgroundEngine, SharedReviewService, engineLine };

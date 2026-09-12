@@ -17,6 +17,8 @@ Adopted as cross-repository user guidance on 2026-09-08. Project-specific archit
 
 ## Milestone documentation
 
+- On 2026-09-12, the installed phone server's fatal `ERR_STREAM_WRITE_AFTER_END` was traced to repeated background-review engine cleanup. `BackgroundEngine.close()` is now idempotent, destroys stdin without a final write, and immediately rejects pending work; pipe failures are contained per request. Seven focused built-service tests pass, including timeout/cleanup, pause, broken-pipe and child-exit regressions. Initial installed services were restored; controller/recovery delivery is a separate milestone.
+
 - Agents must update this `AGENTS.md` after every meaningful, verified milestone and include that update in the same milestone commit.
 - Record concise, durable context: important behavior or architecture changes, decisions and their rationale, relevant tests or verification, deployment or runtime state, and material limitations or follow-up work.
 - Update or replace stale guidance instead of accumulating contradictory history; keep notes factual and useful to future agents.
