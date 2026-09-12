@@ -890,7 +890,13 @@ export type OtbImportNewestGame = { date: string; event: string; white: string; 
 export type OtbImportProgress = { jobId: string; source: string; phase: string; current: number; total: number; gamesFound: number; message: string }
 export type OtbImportReport = { playerName: string; fideId: string | null; outputPath: string; cancelled: boolean; gamesFound: number; duplicatesRemoved: number; suspectedOnlineGamesExcluded: number; identityMismatchesExcluded: number; coverageComplete: boolean; coverageGaps: string[]; newestGame: OtbImportNewestGame | null; sources: OtbImportSourceReport[] }
 export type OtbImportRequest = { jobId: string; playerName: string; fideId: string | null; fromYear: number; includeLichessBroadcasts: boolean; includeLichessBroadcastArchives: boolean; includeLichessCommunityBroadcasts: boolean; includeChessResults: boolean; includeChessbaseNews: boolean; includeOfficialPgnIndexes: boolean; includeTwic: boolean; localPgnPaths: string[]; cacheDir: string; outputPath: string }
-export type OtbImportSourceReport = { source: string; elapsedMs: number; archivesChecked: number; cachedArchives: number; matchedGames: number; uniqueGamesAdded: number; errors: string[] }
+export type OtbImportSourceReport = { source: string;
+/**
+ * Wall-clock time for this concurrent source lane. This is deliberately
+ * measured around the whole lane so benchmark reports expose discovery,
+ * network, index, and merge stalls rather than only download time.
+ */
+elapsedMs: number; archivesChecked: number; cachedArchives: number; matchedGames: number; uniqueGamesAdded: number; errors: string[] }
 export type OutOpening = { name: string; fen: string }
 export type Outcome = "1-0" | "0-1" | "1/2-1/2" | "*"
 export type PgnSplitReport = { created: number; targetDir: string }

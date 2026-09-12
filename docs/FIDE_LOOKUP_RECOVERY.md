@@ -1,5 +1,7 @@
 # FIDE search recovery
 
+Current verification update (2026-09-12): the historical primary elapsedMs mismatch below is resolved at its native Specta export, preserving the existing JSON number contract. Both checkouts now pass TypeScript and the production frontend build. The native contract regression and eight import utility tests pass; see docs/PHONE_OTB_LIFECYCLE.md for the scoped evidence. This does not add installed-app or live-network verification to the earlier FIDE fixtures.
+
 The desktop and phone import pickers distinguish a failed lookup from a confirmed empty result. Errors have an adjacent Retry search action. Clearing, shortening, disabling or unmounting the picker abandons its pending request; replacement queries cannot select old suggestions. Desktop results open only while the input has focus. Suggestions retain complete names, labelled rating types and FIDE IDs, and the desktop list uses its available viewport height.
 
 Desktop lookups use the existing shared Lichess request lane, including its spacing and rate-limit cooldown. Direct lookup and ranked search share a bounded cache and pending request. Cancelling one reader preserves other readers; cancelling the last reader abandons the transport. The eight-second deadline includes queueing and body reads, including a provider promise that ignores abort. Only successful responses and confirmed misses are cached. The existing full-career year helper and tolerant name ranking remain in the common player model. The unused older prep picker was removed after checking all source consumers.
