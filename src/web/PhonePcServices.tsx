@@ -1,4 +1,5 @@
-import { ActionIcon, Button, Group, Popover, Stack, Switch, Text } from "@mantine/core";
+import { PerformanceHelp } from "@/shared/PerformanceHelp";
+import { Button, Group, Stack, Switch, Text } from "@mantine/core";
 import { useEffect, useRef, useState } from "react";
 import { type PcServicesStatus, requestPcServices } from "./pcServices";
 import classes from "./PhonePcServices.module.css";
@@ -8,7 +9,7 @@ export default function PhonePcServices() {
   const [pending, setPending] = useState(false);
   const [requested, setRequested] = useState<boolean | undefined>();
   const [error, setError] = useState("");
-  const [help, setHelp] = useState(false);
+
   const mounted = useRef(false);
   const request = useRef<AbortController | null>(null);
   async function load(enabled?: boolean) {
@@ -74,37 +75,7 @@ export default function PhonePcServices() {
           <Text size="sm" fw={700}>
             PC services
           </Text>
-          <Popover
-            opened={help}
-            onChange={setHelp}
-            width={280}
-            position="bottom-start"
-            withArrow
-            withinPortal
-          >
-            <Popover.Target>
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                size="sm"
-                aria-label="About PC services"
-                onMouseEnter={() => setHelp(true)}
-                onFocus={() => setHelp(true)}
-                onBlur={() => setHelp(false)}
-                onMouseLeave={() => setHelp(false)}
-                onKeyDown={(event) => { if (event.key === "Escape") { event.stopPropagation(); setHelp(false); } }}
-                onClick={() => setHelp(true)}
-              >
-                ?
-              </ActionIcon>
-            </Popover.Target>
-            <Popover.Dropdown onMouseLeave={() => setHelp(false)}>
-              <Text size="sm">
-                Starts the PC engine and review server. The PC must be awake and connected to
-                Tailscale.
-              </Text>
-            </Popover.Dropdown>
-          </Popover>
+          <PerformanceHelp label="About PC services">Starts the PC engine and review server. The PC must be awake and connected to Tailscale.</PerformanceHelp>
         </Group>
         <Group gap="sm" wrap="nowrap">
           <Text
