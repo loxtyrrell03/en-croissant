@@ -58,7 +58,9 @@ describe("discovered threats must cause the gain", () => {
         expect(proveDiscoveredMaterial(root, 0)).toBeNull();
         const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
         expect(result.motifs[0]).toMatchObject({ id: "discoveredCheck", ply: 1 });
-        expect(result.motifs[0].evidence).toContain("one extra checking move");
+        expect(result.motifs[0].evidence).toContain(
+            "including checking answers to countercaptures",
+        );
         // Kg8 avoids the immediate pawn exchange, but Rg5+ forces a queen
         // block. Testing just the f6 PV would miss this required branch.
         const escape = replayTacticalLine(fen, ["e5f5", "h8g8", "f5g5", "f8g7", "g5g7"]);

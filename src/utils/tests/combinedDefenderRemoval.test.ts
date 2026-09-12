@@ -6,6 +6,7 @@ import {
     proveCombinedDefenderRemoval,
     replayTacticalLine,
     winningRecaptureEvidence,
+    counterCaptureMaterialDefence,
 } from "../tacticalMotifs/causalTactics";
 import {
     classifyPositionTacticalMotifs,
@@ -53,13 +54,15 @@ test("accepting the sacrifice is not a profitable recapture for the opponent", (
     expect(viewed.motifs.some((m) => m.id === "hangingPiece")).toBe(false);
 });
 
-test("a standalone recapture without verified history cannot borrow the sacrifice proof", () => {
+test("a standalone recapture has its own countercapture defence without borrowing history", () => {
     const accepted = replayTacticalLine(fen, line)[0];
     const viewed = classifyPositionTacticalMotifs({
         fen: makeFen(accepted.after.toSetup()),
         pvUci: [line[1]],
     });
-    expect(viewed.motifs.some((m) => m.id === "hangingPiece")).toBe(true);
+    const step = replayTacticalLine(makeFen(accepted.after.toSetup()), [line[1]])[0];
+    expect(counterCaptureMaterialDefence(step, 8192, 0, true)?.defence).toBe("Qxc7");
+    expect(viewed.motifs.some((m) => m.id === "hangingPiece")).toBe(false);
 });
 
 test("current-board arrows show both guards of the actual target", () => {

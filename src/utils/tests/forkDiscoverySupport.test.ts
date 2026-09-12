@@ -7,6 +7,7 @@ import {
     replayTacticalLine,
     tacticalExchangeGain,
     proveDiscoveryBackedFork,
+    counterCaptureMaterialDefence,
 } from "../tacticalMotifs/causalTactics";
 import {
     classifyPositionTacticalMotifs,
@@ -98,13 +99,17 @@ test("the fork target's best countercapture is compensation, not a newly hung bi
     });
     expect(contextual.motifs.find((m) => m.id === "hangingPiece")?.label).toBe("Countercapture");
     expect(
-        classifyPositionTacticalMotifs({ fen: after, pvUci: pvUci.slice(1) }).motifs.find(
+        counterCaptureMaterialDefence(replayTacticalLine(after, pvUci.slice(1))[0], 8192, 0, true)
+            ?.defence,
+    ).toBe("Nxc7");
+    expect(
+        classifyPositionTacticalMotifs({ fen: after, pvUci: pvUci.slice(1) }).motifs.some(
             (m) => m.id === "hangingPiece",
-        )?.label,
-    ).toBe("Hanging Piece");
+        ),
+    ).toBe(false);
 });
 
-test("accepting the proved knight offer loses its false free-knight badge only with matching history", () => {
+test("accepting the knight offer also has an independently proved countercapture without history", () => {
     const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
     expect(result.timeline?.some((m) => m.ply === 2 && m.id === "hangingPiece")).toBe(false);
     const after = makeFen(replayTacticalLine(fen, line)[0].after.toSetup());
@@ -117,10 +122,14 @@ test("accepting the proved knight offer loses its false free-knight badge only w
         }).motifs.some((m) => m.id === "hangingPiece"),
     ).toBe(false);
     expect(
+        counterCaptureMaterialDefence(replayTacticalLine(after, [line[1]])[0], 8192, 0, true)
+            ?.defence,
+    ).toBe("Bxf6");
+    expect(
         classifyPositionTacticalMotifs({ fen: after, pvUci: [line[1]] }).motifs.some(
             (m) => m.id === "hangingPiece",
         ),
-    ).toBe(true);
+    ).toBe(false);
 });
 
 test("a move attacking only the queen cannot borrow the two-target fork certificate", () => {

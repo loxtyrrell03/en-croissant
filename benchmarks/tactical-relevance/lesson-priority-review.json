@@ -151,9 +151,9 @@
       "primary": "intermezzo",
       "source": "missed",
       "comparison": "unproved",
-      "secondary": null,
-      "secondarySource": null,
-      "explanation": "The better move had this tactic: Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures."
+      "secondary": "hangingPiece",
+      "secondarySource": "allowed",
+      "explanation": "The better move had this tactic: Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures. Your move also allowed an opponent tactic (Hanging Piece): Qxg5 wins the loose bishop on g5. Bxd2+ makes the immediate reply Qxg5 illegal."
     },
     {
       "name": "Recaptured the bishop before taking the knight with check",
@@ -173,9 +173,9 @@
       "primary": "intermezzo",
       "source": "allowed",
       "comparison": "prevented",
-      "secondary": "hangingPiece",
-      "secondarySource": "missed",
-      "explanation": "Your move allowed this tactic: Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures. Qxg5 makes the immediate reply Bxd2+ illegal. You also missed a tactical opportunity (Hanging Piece): Qxg5 wins the loose bishop on g5."
+      "secondary": null,
+      "secondarySource": null,
+      "explanation": "Your move allowed this tactic: Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures. Qxg5 makes the immediate reply Bxd2+ illegal."
     },
     {
       "name": "Allowed an intermediate knight capture before the bishop recapture",

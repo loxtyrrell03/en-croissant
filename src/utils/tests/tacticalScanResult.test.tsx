@@ -52,6 +52,37 @@ test("the recovered exchange discovery is the headline and shows only current-bo
   expect(value.arrows.map((arrow) => `${arrow.from}${arrow.to}`)).toContain("d8d4");
   expect(value.arrows.map((arrow) => `${arrow.from}${arrow.to}`)).not.toContain("a5c3");
 });
+
+test("a mating countercapture defence supports the discovery without advertising root checkmate", () => {
+  const value = buildLiveTacticalScan({
+    fen: "3r2k1/5rb1/1p3n2/3P4/1B1N1R2/8/6PP/5RK1 b - - 0 1",
+    pvUci: ["f6d5", "d4c6", "d5f4", "c6d8", "f4e2", "g1h1", "f7f1"],
+    depth: 16,
+    engineName: "Constructed",
+  });
+  const element = document.createElement("div");
+  element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Discovered Attack found");
+  expect(element.textContent).toContain("rook on f7 against the rook on f4");
+  expect(element.textContent).toContain("bishop on g7 against the knight on d4");
+  expect(element.querySelector('[data-tactical-ply="1"]')?.textContent).not.toContain("Checkmate");
+  expect(element.querySelector('[data-tactical-ply="7"]')?.textContent).toContain("Checkmate");
+  expect(value.arrows.map((a) => a.from + a.to)).not.toContain("f7f1");
+});
+
+test("the knight-for-queen countercapture does not render a free-piece headline", () => {
+  const value = buildLiveTacticalScan({
+    fen: "4k3/6p1/5N2/8/8/8/3q4/3R2K1 b - - 0 1",
+    pvUci: ["g7f6"],
+    depth: 16,
+    engineName: "Constructed",
+  });
+  const element = document.createElement("div");
+  element.innerHTML = markup(value);
+  expect(element.textContent).not.toContain("Hanging Piece found");
+  expect(element.textContent).not.toContain("wins the loose knight");
+  expect(value.labels).toHaveLength(0);
+});
 test("an unresolved root exposes later themes only as collapsed continuation details", () => {
   const value = buildLiveTacticalScan({
     fen: "5r1k/6pp/8/8/4n3/5NPQ/3qB2P/4R2K b - - 0 1",

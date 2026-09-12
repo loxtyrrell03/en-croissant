@@ -124,10 +124,9 @@ describe("tactical causes and continuation evidence", () => {
             pvUci: ["d3e4", "h6g5"],
             refutationUci: ["h6g5"],
         });
-        expect(result.allowedMotifs[0]).toMatchObject({
-            id: "hangingPiece",
-            comparison: "persists",
-        });
+        // The queen can still be taken after ...hxg5. That capture does not
+        // establish a material win for Black, even without the earlier PV.
+        expect(result.allowedMotifs).toEqual([]);
         expect(buildMistakeReviewTacticalExplanation(result)?.source).toBe("missed");
         expect(buildMistakeReviewTacticalExplanation(result)?.primary.evidence).toContain(
             "queen on e4",

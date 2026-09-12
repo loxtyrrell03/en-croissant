@@ -9481,6 +9481,16 @@ function winningRecaptureEvidence(steps, index, motif) {
 				};
 			}
 		}
+		const discovery = discoveredEvidence([previous], motif.source);
+		if (discovery && (discovery.motif.value ?? 0) > 0) {
+			if (step.move.to === previous.move.to) return null;
+			const taken = step.before.board.get(step.move.to);
+			if (taken) return {
+				...motif,
+				label: "Countercapture",
+				evidence: `${step.san} takes the ${taken.role} on ${makeSquare(step.move.to)} as compensation. This legal reply is covered by the independently verified ${discovery.motif.label.toLowerCase()} after ${previous.san}; it does not refute that combination.`
+			};
+		}
 	}
 	if (motif.id === "hangingPiece" && step?.capture && previous?.capture && proveMatingDeflection(previous)?.declined.some((branch) => branch.reply === step.san)) return null;
 	if (motif.id !== "hangingPiece" || !step?.capture || !previous?.capture || previous.move.to !== step.move.to || previous.move.promotion || step.move.promotion) return motif;
@@ -9562,13 +9572,13 @@ var matingCaptureReplyCache = /* @__PURE__ */ new Map();
 * permits forced mate in at most two checking moves. No supplied continuation
 * or sacrifice tag is needed. Every legal defence is included, and incomplete
 * searches abstain. This does not prove the preceding offer against declines. */
-function proveMatingCaptureReply(step, nodeLimit = 4096) {
+function proveMatingCaptureReply(step, nodeLimit = 4096, sharedBudget) {
 	if (!step.capture || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
 	const key = makeFen(step.after.toSetup());
-	if (nodeLimit === 4096 && matingCaptureReplyCache.has(key)) return matingCaptureReplyCache.get(key);
-	let nodes = nodeLimit;
+	if (!sharedBudget && nodeLimit === 4096 && matingCaptureReplyCache.has(key)) return matingCaptureReplyCache.get(key);
+	const budget = sharedBudget ?? { nodes: nodeLimit };
 	const visit = (position, move) => {
-		if (--nodes < 0) throw new Error("Mating capture reply budget exhausted");
+		if (--budget.nodes < 0) throw new Error("Mating capture reply budget exhausted");
 		const next = position.clone();
 		next.play(move);
 		return next;
@@ -9577,6 +9587,7 @@ function proveMatingCaptureReply(step, nodeLimit = 4096) {
 		if (position.isEnd()) return null;
 		const checks = [];
 		for (const move of legalMoves(position)) {
+			if (sharedBudget && !mayGiveCheck(position, move)) continue;
 			const next = visit(position, move);
 			if (next.isCheckmate()) return [makeSan(position, move)];
 			if (remaining > 1 && next.isCheck()) checks.push({
@@ -9607,7 +9618,7 @@ function proveMatingCaptureReply(step, nodeLimit = 4096) {
 	try {
 		proof = attack(step.after, 2);
 	} catch {}
-	if (nodeLimit === 4096) {
+	if (!sharedBudget && nodeLimit === 4096) {
 		matingCaptureReplyCache.set(key, proof);
 		if (matingCaptureReplyCache.size > 128) matingCaptureReplyCache.delete(matingCaptureReplyCache.keys().next().value);
 	}
@@ -11874,12 +11885,12 @@ var DISCOVERY_NODE_LIMIT = 4096;
 * defence is checked; the battery and its legal recapturers supply the check.
 * Leaves debit immediate captures of any friendly piece, not just the battery.
 * The PV is not a defence list. A budget failure is unknown, not a proof. */
-function proveDiscoveredMaterial(step, nodeLimit = DISCOVERY_NODE_LIMIT) {
-	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
+function proveDiscoveredMaterial(step, nodeLimit = DISCOVERY_NODE_LIMIT, minimumGain = 100, onLeaf, onFailure) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !Number.isSafeInteger(minimumGain) || minimumGain <= 0) return null;
 	const rays = revealedRays(step);
 	if (!rays.length) return null;
-	const key = `${makeFen(step.before.toSetup())}:${step.uci}`;
-	if (nodeLimit === DISCOVERY_NODE_LIMIT && discoveryProofCache.has(key)) return discoveryProofCache.get(key);
+	const key = `${makeFen(step.before.toSetup())}:${step.uci}:${minimumGain}`;
+	if (!onFailure && !onLeaf && nodeLimit === DISCOVERY_NODE_LIMIT && discoveryProofCache.has(key)) return discoveryProofCache.get(key);
 	let nodes = nodeLimit;
 	const side = step.before.turn;
 	const capturers = [...new Set([...rays.map((r) => r.from), step.move.to])];
@@ -11916,14 +11927,23 @@ function proveDiscoveredMaterial(step, nodeLimit = DISCOVERY_NODE_LIMIT) {
 					};
 					if (!pos.isLegal(move)) continue;
 					const budget = { nodes };
-					const gain = participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+					const matingReplies = [];
+					const gain = discoveryCaptureGain(pos, move, minimumGain - balance, budget, (reply) => matingReplies.push(reply));
 					nodes = budget.nodes;
 					if (gain === null) continue;
 					best = Math.max(best, balance + gain);
+					if (balance + gain >= minimumGain) onLeaf?.({
+						fen: makeFen(pos.toSetup()),
+						moveUci: makeUci(move),
+						balance,
+						gain: balance + gain,
+						quiet: false,
+						...matingReplies.length ? { matingReplies } : {}
+					});
 				}
 			}
 		}
-		if (best >= 100) return best;
+		if (best >= minimumGain) return best;
 		if (!extraCheck) return null;
 		for (const move of legalMoves(pos)) {
 			if (!pieces.includes(move.from)) continue;
@@ -11947,7 +11967,10 @@ function proveDiscoveredMaterial(step, nodeLimit = DISCOVERY_NODE_LIMIT) {
 			if (blocks.includes(reply.to)) movedTargets.push(reply.to);
 			const remaining = delta(pos, reply) && pieces.includes(reply.to) ? [...new Set([...pieces, ...legalMoves(next).filter((move) => move.to === reply.to).map((move) => move.from)])] : pieces;
 			const gain = answer(next, [...new Set(movedTargets)], remaining, balance - delta(pos, reply), extraCheck);
-			if (gain === null) return null;
+			if (gain === null) {
+				if (pos === step.after) onFailure?.(`Unproved reply ${makeSan(pos, reply)} (${nodes})`);
+				return null;
+			}
 			minimum = Math.min(minimum, gain);
 		}
 		return Number.isFinite(minimum) ? minimum : null;
@@ -11955,8 +11978,10 @@ function proveDiscoveredMaterial(step, nodeLimit = DISCOVERY_NODE_LIMIT) {
 	let proof = null;
 	try {
 		proof = defend(step.after, targets, capturers, delta(step.before, step.move), true);
-	} catch {}
-	if (nodeLimit === DISCOVERY_NODE_LIMIT) {
+	} catch (error) {
+		onFailure?.(error instanceof Error ? error.message : String(error));
+	}
+	if (!onFailure && !onLeaf && nodeLimit === DISCOVERY_NODE_LIMIT) {
 		discoveryProofCache.set(key, proof);
 		if (discoveryProofCache.size > 256) discoveryProofCache.delete(discoveryProofCache.keys().next().value);
 	}
@@ -12076,10 +12101,16 @@ function discoveredEvidence(steps, source) {
 		...complete,
 		gain: Math.min(complete.gain, immediate.gain)
 	} : complete ?? immediate;
-	const directGain = proof?.kind === "proven" ? proof.gain : !mate ? proveDiscoveredMaterial(step) : null;
+	const minimumGain = step.capture ? Math.max(100, tacticalExchangeGain(step.before, step.move) + 1) : 100;
+	const immediateEnough = proof?.kind === "proven" && proof.gain >= minimumGain;
+	const directGain = immediateEnough ? proof.gain : !mate ? proveDiscoveredMaterial(step, DISCOVERY_NODE_LIMIT, minimumGain) : null;
 	const exchange = !mate && directGain === null ? proveExchangeDiscovery(step) : null;
 	const gain = directGain ?? exchange?.gain ?? null;
 	if (!mate && gain === null) return null;
+	if (!mate && kingRay && gain !== null && rays.length === 1 && step.after.ctx().checkers.size() === 1) {
+		const order = intermediateCaptureProof(step);
+		if (order && order.gain === gain && targets.every((to) => to === kingRay.target || to === order.deferred.to)) return null;
+	}
 	if (!kingRay && gain !== null) {
 		const fork = proveMateBackedFork(step);
 		const deflection = fork && fork.gain >= gain ? proveMatingDeflection(step) : null;
@@ -12094,15 +12125,14 @@ function discoveredEvidence(steps, source) {
 	if (!mate && step.capture && tacticalExchangeGain(step.before, step.move) >= gain) return null;
 	const id = kingRay ? step.after.ctx().checkers.size() > 1 ? "doubleCheck" : "discoveredCheck" : "discoveredAttack";
 	const label = id === "doubleCheck" ? "Double Check" : kingRay ? "Discovered Check" : "Discovered Attack";
-	const ray = kingRay ?? rays[0];
-	const slider = step.after.board.get(ray.from);
-	const victim = step.after.board.get(ray.target);
-	const action = `${step.san} vacates ${makeSquare(step.move.from)}, uncovering the ${slider.role} on ${makeSquare(ray.from)} against the ${victim.role} on ${makeSquare(ray.target)}.`;
+	const materialRays = rays.filter((ray) => step.after.board.get(ray.target)?.role !== "pawn");
+	const opened = (kingRay ? [kingRay] : (materialRays.length ? materialRays : rays).slice(0, 2)).map((ray) => `the ${step.after.board.get(ray.from).role} on ${makeSquare(ray.from)} against the ${step.after.board.get(ray.target).role} on ${makeSquare(ray.target)}`);
+	const action = `${step.san} vacates ${makeSquare(step.move.from)}, uncovering ${opened.join(" and ")}.`;
 	const moverTargets = targets.filter((to) => !rays.some((r) => r.target === to) && step.after.board.get(to)?.role !== "king");
 	const profitableTargets = !kingRay && !exchange ? winningTargets(step.after, step.move.to, step.before.turn) : null;
 	const supportingTargets = profitableTargets ? moverTargets.filter((to) => profitableTargets.includes(to)) : moverTargets;
 	const accompaniment = (!kingRay && step.after.isCheck() ? ` The moving ${moved.role} gives check, so the opponent cannot simply ignore the exposed attack.` : "") + (supportingTargets.length ? ` The ${moved.role} on ${makeSquare(step.move.to)} also attacks ${supportingTargets.map((to) => `the ${step.after.board.get(to).role} on ${makeSquare(to)}`).join(" and ")}.` : "");
-	const consequence = mate ? step.after.isCheckmate() ? "There is no legal defence: checkmate." : "Every legal defence allows the verified short forced mate." : exchange ? `The shared defence cannot save all these targets: after ${exchange.example[0]}, ${exchange.example[1]} removes the defender. Every legal reply permits a local material gain, including exchanges and up to two checking counterattacks; immediate losses elsewhere on the board, mate and promotion replies are checked.` : `Every legal ${kingRay ? "answer to the discovered check" : "reply"} ${proof?.kind === "proven" ? "concedes material" : "allows material gain or mate with at most one extra checking move, allowing for legal recaptures"}. Captures and interpositions are included in this check.`;
+	const consequence = mate ? step.after.isCheckmate() ? "There is no legal defence: checkmate." : "Every legal defence allows the verified short forced mate." : exchange ? `The shared defence cannot save all these targets: after ${exchange.example[0]}, ${exchange.example[1]} removes the defender. Every legal reply permits a local material gain, including exchanges and up to two checking counterattacks; immediate losses elsewhere on the board, mate and promotion replies are checked.` : `Every legal ${kingRay ? "answer to the discovered check" : "reply"} ${immediateEnough ? "concedes material" : "allows material gain or a short forced mate, including checking answers to countercaptures"}. Captures and interpositions are included in this check.`;
 	return {
 		motif: {
 			id,
@@ -12976,6 +13006,52 @@ function noImmediateTerminalRefutation(pos, move, budget) {
 	}
 	return true;
 }
+/** An off-square countercapture is not a material defence when accepting
+* it is independently mated in at most two checks. The same-square exchange
+* bound still applies, and every such mating proof consumes the shared budget. */
+function discoveryCaptureGain(pos, move, required, budget, onMate) {
+	const side = pos.turn;
+	const pieces = [...pos.board[side], move.to];
+	const direct = participantCaptureGain(pos, move, pieces, budget);
+	if (direct === null) return null;
+	if (direct >= required) return noImmediateTerminalRefutation(pos, move, budget) ? direct : null;
+	const exchange = tacticalExchangeGain(pos, move);
+	if (exchange < required) return null;
+	const next = pos.clone();
+	next.play(move);
+	if (next.isEnd() || !noImmediateTerminalRefutation(pos, move, budget)) return null;
+	const capture = capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+	let liability = 0;
+	for (const reply of recoveryMoves(next, side)) {
+		if (reply.to === move.to || !pieces.includes(reply.to) || !capturedValue(next, reply)) continue;
+		if (--budget.nodes < 0) throw new Error("Discovery liability proof exhausted");
+		const loss = tacticalExchangeGain(next, reply);
+		if (loss <= -VALUE.king) return null;
+		if (capture - Math.max(capture - exchange, loss) < required) {
+			const after = next.clone();
+			after.play(reply);
+			const mate = proveMatingCaptureReply({
+				before: next,
+				after,
+				move: reply,
+				uci: makeUci(reply),
+				san: makeSan(next, reply),
+				capture: capturedValue(next, reply),
+				balance: 0
+			}, 4096, budget);
+			if (budget.nodes < 0) throw new Error("Discovery mating liability budget exhausted");
+			if (mate) {
+				onMate?.({
+					replyUci: makeUci(reply),
+					mate
+				});
+				continue;
+			}
+		}
+		liability = Math.max(liability, loss);
+	}
+	return capture - Math.max(capture - exchange, liability);
+}
 function participantCaptureGain(pos, move, pieces, budget) {
 	if (--budget.nodes < 0) throw new Error("Participant capture proof exhausted");
 	const gain = tacticalExchangeGain(pos, move);
@@ -13136,7 +13212,7 @@ function intermediateCaptureProof(step, nodeLimit = 512) {
 			extra,
 			deferred,
 			escape,
-			evidence: `${step.san} takes the ${victim.role} with check before ${makeSan(step.before, deferred)}. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing ${makeSan(step.before, deferred)} first allows ${makeSan(reversed, escape)}, preventing an immediate profitable capture of that ${victim.role}. The move order matters, not just the two captures.`
+			evidence: `${step.san} takes the ${victim.role} with check before ${makeSan(step.before, deferred)}.${revealedRays(step).filter((ray) => step.after.board.get(ray.target)?.role === "king").map((ray) => ` Moving off ${makeSquare(step.move.from)} uncovers check from the ${step.after.board.get(ray.from).role} on ${makeSquare(ray.from)}.`).join("")} Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing ${makeSan(step.before, deferred)} first allows ${makeSan(reversed, escape)}, preventing an immediate profitable capture of that ${victim.role}. The move order matters, not just the two captures.`
 		};
 	}
 	return best;
@@ -14081,7 +14157,7 @@ function causeRank(motif, directGain = 0) {
 		"forcingAttack"
 	].indexOf(motif.id));
 }
-function auditTacticalMotifs(fen, line, proposals, rootCp) {
+function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	const steps = replayTacticalLine(fen, line);
 	if (!steps.length) return [];
 	const allowConditional = typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= -30;
@@ -14550,7 +14626,11 @@ function auditTacticalMotifs(fen, line, proposals, rootCp) {
 		value: 1e4,
 		evidence: `${root.san} is checkmate: the king is in check and there is no legal reply.`
 	});
-	const normalizedCandidates = normalizeMatingPayoffs(steps, candidates);
+	const countercapture = candidates.some((m) => m.id === "hangingPiece" && m.ply === 1) ? compensatedLooseCapture(root) : null;
+	const normalizedCandidates = normalizeMatingPayoffs(steps, candidates.flatMap((m) => {
+		if (!countercapture || m.id !== "hangingPiece" || m.ply !== 1) return [m];
+		return filterCompensatedRootCaptures(fen, line, [m], context?.previousFen, context?.previousMoveUci).filter((entry) => entry.label === "Countercapture");
+	}));
 	const incidentalMatingMechanisms = /* @__PURE__ */ new Set();
 	for (const kind of ["fork", "skewer"]) {
 		if (!checkingMate || !candidates.some((m) => m.id === kind && m.ply === 1)) continue;
@@ -15289,10 +15369,12 @@ function clearanceKingDefence(root, nodeLimit = 32768) {
 * capture stays below the material threshold. Carry the original compensation
 * through those leaves; named fork victims alone miss captures of the forker's
 * captor. Optional equal-recapture credit is supplied only after validating the
-* actual preceding capture. Quiet preparations and longer checks are outside
+* actual preceding capture. The separate capture-offset mode counts the
+* current root capture without prior exchange credit and requires an
+* off-square, non-checking defensive capture. Quiet preparations and longer checks are outside
 * this local witness; failure cannot establish either safety or a tactical win. */
-function counterCaptureMaterialDefence(root, nodeLimit = 8192, previousCaptureCost = 0) {
-	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture !== previousCaptureCost || !Number.isSafeInteger(previousCaptureCost) || previousCaptureCost < 0 || root.move.promotion || root.after.isCheck() || root.after.isEnd()) return null;
+function counterCaptureMaterialDefence(root, nodeLimit = 8192, previousCaptureCost = 0, captureOffsetMode = false) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !captureOffsetMode && root.capture !== previousCaptureCost || captureOffsetMode && (!root.capture || previousCaptureCost !== 0) || !Number.isSafeInteger(previousCaptureCost) || previousCaptureCost < 0 || root.move.promotion || root.after.isCheck() || root.after.isEnd()) return null;
 	let nodes = nodeLimit;
 	const visit = (pos, move) => {
 		if (--nodes < 0) throw new Error("Countercapture defence budget exhausted");
@@ -15342,7 +15424,7 @@ function counterCaptureMaterialDefence(root, nodeLimit = 8192, previousCaptureCo
 				if (gain <= -VALUE.king || balance + gain >= 100) return null;
 				continue;
 			}
-			if (previousCaptureCost && !next.isCheck() && balance + capture < 100) continue;
+			if ((previousCaptureCost || captureOffsetMode) && !next.isCheck() && balance + capture < 100) continue;
 			let answered = false;
 			for (const reply of legalMoves(next)) {
 				if (reply.to !== move.to || !capturedValue(next, reply)) continue;
@@ -15360,6 +15442,7 @@ function counterCaptureMaterialDefence(root, nodeLimit = 8192, previousCaptureCo
 	try {
 		for (const defence of legalMoves(root.after)) {
 			if (!capturedValue(root.after, defence) || defence.promotion) continue;
+			if (captureOffsetMode && defence.to === root.move.to) continue;
 			const next = visit(root.after, defence);
 			if (next.isCheck() || next.isEnd()) continue;
 			const checkingDefences = safe(next, root.capture - previousCaptureCost - delta(root.after, defence), 2);
@@ -15373,6 +15456,20 @@ function counterCaptureMaterialDefence(root, nodeLimit = 8192, previousCaptureCo
 		return null;
 	}
 	return null;
+}
+var compensatedLooseCaptureCache = /* @__PURE__ */ new Map();
+/** A free-piece headline must not count only the first capture when a
+* concrete off-square countercapture removes that gain. This is a positive
+* bounded defence, not an inference from an engine score or a failed attack. */
+function compensatedLooseCapture(root) {
+	if (!root.capture || root.move.promotion || root.after.isCheck() || root.after.isEnd()) return null;
+	if (!legalMoves(root.after).some((move) => move.to !== root.move.to && capturedValue(root.after, move) >= root.capture)) return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (compensatedLooseCaptureCache.has(key)) return compensatedLooseCaptureCache.get(key);
+	const proof = counterCaptureMaterialDefence(root, 8192, 0, true);
+	compensatedLooseCaptureCache.set(key, proof);
+	if (compensatedLooseCaptureCache.size > 256) compensatedLooseCaptureCache.delete(compensatedLooseCaptureCache.keys().next().value);
+	return proof;
 }
 /** Accept a capture offer and positively retain its material cost. This is
 * separate from a failed attacking proof: every immediate capture/check is
@@ -15558,7 +15655,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 78;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 79;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -16120,7 +16217,10 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 			themeStepIndex: 0,
 			themeStepIndexByTheme: Object.fromEntries(normalizeThemeIds(themes).map((id) => [id, 0]))
 		};
-		const candidates = auditTacticalMotifs(rawSteps[index]?.fenBefore ?? "", suffix, toMotifEvidence(detail, source, sanLine?.slice(index)));
+		const candidates = auditTacticalMotifs(rawSteps[index]?.fenBefore ?? "", suffix, toMotifEvidence(detail, source, sanLine?.slice(index)), void 0, index > 0 ? {
+			previousFen: rawSteps[index - 1]?.fenBefore,
+			previousMoveUci: replay[index - 1].uci
+		} : void 0);
 		for (const motif of candidates.filter((m) => m.ply === 1)) {
 			if (motif.id === "perpetualCheck" && [...evidence.values()].some((previous) => previous.id === "perpetualCheck" && previous.actor === step.before.turn && (previous.ply ?? Infinity) < index + 1 && replay.slice(previous.ply, index + 1).every((entry) => entry.before.turn !== step.before.turn || entry.after.isCheck()))) continue;
 			if (motif.id === "forcingAttack" && [...evidence.values()].some((previous) => previous.id === "forcingAttack" && previous.actor === step.before.turn && (previous.ply ?? Infinity) < index + 1)) continue;
@@ -16196,7 +16296,10 @@ function classifyMistakeReviewMotifs(input) {
 		allowedDetail = null;
 	}
 	const classification = {
-		allowedMotifs: filterCompensatedRootCaptures(fenAfterPlayedMove ?? "", refutationLine, auditTacticalMotifs(fenAfterPlayedMove ?? "", refutationLine, toMotifEvidence(allowedDetail, "allowed", input.refutationSan), typeof input.cpAfter === "number" ? input.cpAfter * (fenSide(fenAfterPlayedMove ?? "") === "w" ? 1 : -1) : void 0), fen, playedMoveUci).map((m) => ({
+		allowedMotifs: filterCompensatedRootCaptures(fenAfterPlayedMove ?? "", refutationLine, auditTacticalMotifs(fenAfterPlayedMove ?? "", refutationLine, toMotifEvidence(allowedDetail, "allowed", input.refutationSan), typeof input.cpAfter === "number" ? input.cpAfter * (fenSide(fenAfterPlayedMove ?? "") === "w" ? 1 : -1) : void 0, {
+			previousFen: fen,
+			previousMoveUci: playedMoveUci
+		}), fen, playedMoveUci).map((m) => ({
 			...m,
 			source: "allowed"
 		})),

@@ -107,6 +107,24 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             {
+                id: "constructed:mating-rook-liability-discovery",
+                input: {
+                    fen: "3r2k1/5rb1/1p3n2/3P4/1B1N1R2/8/6PP/5RK1 b - - 0 1",
+                    pvUci: ["f6d5"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
+                id: "constructed:queen-countercapture-invalidates-free-knight",
+                input: {
+                    fen: "4k3/6p1/5N2/8/8/8/3q4/3R2K1 b - - 0 1",
+                    pvUci: ["g7f6"],
+                    engineName: "Constructed",
+                    depth: 16,
+                },
+            },
+            {
                 id: "recovered:root-only-exchange-discovery",
                 input: {
                     fen: "2kr1br1/pp1n1p2/2p2p1p/q6b/2BNN3/P2Q3P/1PP2PP1/R3R1K1 b - - 0 15",
@@ -631,7 +649,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(130);
+        expect(report).toHaveLength(132);
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,
@@ -672,9 +690,15 @@ test.skipIf(
 });
 
 for (const { name, path, count } of [
+    { name: "original", path: process.env.TACTICAL_PRIVATE_PGN_REPORT, count: 24 },
     { name: "third", path: process.env.TACTICAL_PRIVATE_THIRD_REPORT, count: 24 },
     { name: "fourth", path: process.env.TACTICAL_PRIVATE_FOURTH_REPORT, count: 24 },
     { name: "positional", path: process.env.TACTICAL_PRIVATE_POSITIONAL_REPORT, count: 42 },
+    {
+        name: "positional-middle",
+        path: process.env.TACTICAL_PRIVATE_POSITIONAL_MIDDLE_REPORT,
+        count: 21,
+    },
 ]) {
     test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !path)(
         `the ${name} disjoint sample retains full source and live timelines through the worker`,
@@ -718,6 +742,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_
     async () => {
         const sample = JSON.parse(readFileSync(process.env.TACTICAL_PRIVATE_PGN_SAMPLE!, "utf8"));
         for (const [id, theme, value] of [
+            ["private-easy:135", "discoveredAttack", 250],
             ["private-easy:145", "fork", 80],
             ["private-easy:68", "pin", 100],
             ["private-easy:77", "forkPreparation", 100],

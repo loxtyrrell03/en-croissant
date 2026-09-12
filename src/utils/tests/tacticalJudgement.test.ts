@@ -3961,6 +3961,7 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     searchMove?: string;
                     minCp?: number;
                     maxCp?: number;
+                    mateWithin?: number;
                 }[];
             };
             const sample = JSON.parse(readFileSync(request.samplePath, "utf8"));
@@ -4005,7 +4006,17 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     belowMaximum:
                         probe.maxCp === undefined ||
                         (lines[0].cp !== null && lines[0].cp <= probe.maxCp),
-                }).toEqual({ id: probe.id, aboveMinimum: true, belowMaximum: true });
+                    mateWithinBound:
+                        probe.mateWithin === undefined ||
+                        (lines[0].mate !== null &&
+                            Math.sign(lines[0].mate) === Math.sign(probe.mateWithin) &&
+                            Math.abs(lines[0].mate) <= Math.abs(probe.mateWithin)),
+                }).toEqual({
+                    id: probe.id,
+                    aboveMinimum: true,
+                    belowMaximum: true,
+                    mateWithinBound: true,
+                });
             }
             expect(searches).toHaveLength(request.probes.length);
         },

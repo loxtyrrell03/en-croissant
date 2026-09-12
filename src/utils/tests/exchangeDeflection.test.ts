@@ -2,7 +2,11 @@ import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
 import { makeFen } from "chessops/fen";
 import { parseSan } from "chessops/san";
-import { proveExchangeDeflection, replayTacticalLine } from "../tacticalMotifs/causalTactics";
+import {
+    proveExchangeDeflection,
+    replayTacticalLine,
+    counterCaptureMaterialDefence,
+} from "../tacticalMotifs/causalTactics";
 import {
     classifyPositionTacticalMotifs,
     classifyMistakeReviewMotifs,
@@ -86,10 +90,14 @@ test("accepting the proved non-capturing rook offer is not a newly hanging rook"
     });
     expect(contextual.motifs.some((m) => m.id === "hangingPiece")).toBe(false);
     expect(
+        counterCaptureMaterialDefence(replayTacticalLine(after, [line[1]])[0], 8192, 0, true)
+            ?.defence,
+    ).toBe("Qxd5");
+    expect(
         classifyPositionTacticalMotifs({ fen: after, pvUci: [line[1]] }).motifs.some(
             (m) => m.id === "hangingPiece",
         ),
-    ).toBe(true);
+    ).toBe(false);
 });
 
 test("missing the checking deflection names the root opportunity rather than a later loose queen", () => {
