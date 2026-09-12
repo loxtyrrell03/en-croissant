@@ -181,6 +181,46 @@ test("cancels a running phone job and unlocks it durably", async () => {
   }
 });
 
+test("a Stop received after completion retains the saved result and does not terminate a process", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-croissant-otb-completed-stop-"));
+  try {
+    let terminations = 0;
+    const service = new OtbImportService({
+      root,
+      binaryPath: join(root, "unused"),
+      terminateProcessTree: async () => {
+        terminations++;
+      },
+    });
+    await service.initialize();
+    const job = {
+      id: "otb-finished",
+      status: "completed",
+      gameCount: 1,
+      artifactAvailable: true,
+      updatedAt: "2026-09-12T12:00:00Z",
+      completedAt: "2026-09-12T12:00:00Z",
+      error: null,
+    };
+    service.jobs.set(job.id, job);
+    await service.persistArtifact(job.id, {
+      jobId: job.id,
+      games: [{ id: "one", pgn: "1. e4 *" }],
+      prepDatabase: null,
+    });
+    await service.persist(job);
+    const savedBefore = await readFile(join(root, "jobs", `${job.id}.json`), "utf8");
+    const stopped = await service.cancelJob(job.id);
+    assert.equal(stopped.status, "completed");
+    assert.equal(stopped.artifactAvailable, true);
+    assert.equal(terminations, 0);
+    assert.ok(await service.getJobArtifact(job.id));
+    assert.equal(await readFile(join(root, "jobs", `${job.id}.json`), "utf8"), savedBefore);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("cancellation terminates the exact collector process tree before unlocking", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-croissant-otb-tree-cancel-"));
   try {

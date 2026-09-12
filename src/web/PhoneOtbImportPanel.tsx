@@ -37,7 +37,6 @@ import {
   startWebOtbImport,
   watchWebOtbImportJob,
   WEB_OTB_JOB_STORAGE_KEY,
-  WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY,
   type WebOtbImportedGame,
   type WebOtbImportJob,
   type WebOtbImportSources,
@@ -67,26 +66,63 @@ export default function PhoneOtbImportPanel({
   const [stopping, setStopping] = useState(false);
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [jobError, setJobError] = useState<string | null>(null);
+  const mounted = useRef(true);
+  const stopRequest = useRef<symbol | null>(null);
+  const analyzeRequest = useRef<symbol | null>(null);
+  const currentJobId = useRef(jobId);
+  const restoredIdentityId = useRef<string | null>(null);
+  currentJobId.current = jobId;
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      stopRequest.current = null;
+      analyzeRequest.current = null;
+    };
+  }, []);
   const fromYearManuallyEditedRef = useRef(false);
   const identityRequest = useFideIdentityRequest();
   const preflightRef = useRef(false);
   const games = useMemo(() => (job ? getWebOtbImportedGames(job) : []), [job]);
   const running = job?.status === "queued" || job?.status === "running";
-  const openedInPrep = Boolean(
-    job?.id && window.localStorage.getItem(WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY) === job.id,
-  );
+  const restoring = Boolean(jobId && !job);
 
   useEffect(() => {
     if (!jobId) return;
-    return watchWebOtbImportJob(
+    let active = true;
+    const unsubscribe = watchWebOtbImportJob(
       jobId,
       (next) => {
+        if (!active || currentJobId.current !== next.id) return;
+        if (restoredIdentityId.current !== next.id && next.request?.playerName) {
+          restoredIdentityId.current = next.id;
+          const id = String(next.request.fideId || "");
+          setPlayerName(next.request.playerName);
+          setFideId(id);
+          setFideIdAuto(Boolean(id));
+          setSelectedPlayer(
+            /^\d+$/.test(id) ? { id: Number(id), name: next.request.playerName } : null,
+          );
+          setFromYear(next.request.fromYear);
+          fromYearManuallyEditedRef.current = true;
+        }
         setJob(next);
-        setError(next.status === "failed" ? next.error || "The PC OTB import failed." : null);
+        setJobError(next.status === "failed" ? next.error || "The PC OTB import failed." : null);
       },
-      () => setError("The PC connection dropped. Reconnecting automatically…"),
+      (caught) => {
+        if (active) {
+          const message =
+            caught instanceof Error ? caught.message : "The PC search could not be loaded.";
+          setJobError(`${message} Retrying automatically…`);
+        }
+      },
     );
-  }, [jobId]);
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, [jobId, setPlayerName]);
 
   function selectFidePlayer(player: FidePlayer) {
     setSelectedPlayer(player);
@@ -165,12 +201,13 @@ export default function PhoneOtbImportPanel({
   }
 
   async function startSearch() {
-    if (preflightRef.current || starting || running) return;
+    if (preflightRef.current || starting || running || restoring || stopRequest.current) return;
     preflightRef.current = true;
     const controller = identityRequest.begin();
     setStarting(true);
     setResolvingIdentity(true);
     setError(null);
+    setJobError(null);
     try {
       const identity = await resolveIdentity(controller.signal);
       if (controller.signal.aborted) return;
@@ -197,35 +234,52 @@ export default function PhoneOtbImportPanel({
   }
 
   async function analyze(game: WebOtbImportedGame) {
-    if (analyzingId) return;
+    if (analyzeRequest.current) return;
+    const request = Symbol();
+    analyzeRequest.current = request;
     setAnalyzingId(game.id);
     setError(null);
     try {
       await onAnalyzeGame(game);
     } catch (analysisError) {
+      if (!mounted.current || analyzeRequest.current !== request) return;
       setError(
         analysisError instanceof Error
           ? analysisError.message
           : "This OTB game could not be opened for analysis.",
       );
     } finally {
-      setAnalyzingId(null);
+      if (mounted.current && analyzeRequest.current === request) {
+        analyzeRequest.current = null;
+        setAnalyzingId(null);
+      }
     }
   }
 
   async function stopSearch() {
-    if (!job?.id || !running || stopping) return;
+    if (!job?.id || !running || stopRequest.current) return;
+    const request = Symbol();
+    const id = job.id;
+    stopRequest.current = request;
     setStopping(true);
     setError(null);
     try {
-      await cancelWebOtbImport(job.id);
-      window.localStorage.removeItem(WEB_OTB_JOB_STORAGE_KEY);
-      setJobId(null);
-      setJob(null);
+      const next = await cancelWebOtbImport(id);
+      if (!mounted.current || stopRequest.current !== request || currentJobId.current !== id)
+        return;
+      // Completion can win the race with Stop. Retain its ID so the shared
+      // watcher and Prep handoff can still fetch the complete PC artifact.
+      setJob((current) => (current?.id === id && current.status === "completed" ? current : next));
+      setJobError(next.status === "failed" ? next.error || "The PC search stopped." : null);
     } catch (stopError) {
+      if (!mounted.current || stopRequest.current !== request || currentJobId.current !== id)
+        return;
       setError(stopError instanceof Error ? stopError.message : "The PC search could not stop.");
     } finally {
-      setStopping(false);
+      if (mounted.current && stopRequest.current === request) {
+        stopRequest.current = null;
+        setStopping(false);
+      }
     }
   }
 
@@ -243,8 +297,7 @@ export default function PhoneOtbImportPanel({
   return (
     <Stack className={classes.otbForm} gap="sm">
       <Alert color="blue" icon={<IconDeviceDesktop size={17} />} variant="light">
-        The phone only controls this search. Your PC downloads, filters, validates, deduplicates,
-        stores every OTB result, and resolves FIDE player suggestions.
+        Your PC searches and saves these games. Keep it on until the search finishes.
       </Alert>
       {resolvingIdentity && (
         <Button variant="subtle" onClick={() => identityRequest.cancel()}>
@@ -252,7 +305,7 @@ export default function PhoneOtbImportPanel({
         </Button>
       )}
       <FidePlayerSearchInput
-        disabled={running || starting}
+        disabled={running || starting || restoring || stopping}
         label="Player full name"
         onChange={changePlayerName}
         onSelect={(player) => {
@@ -268,7 +321,7 @@ export default function PhoneOtbImportPanel({
       <Box className={classes.identityFields}>
         <TextInput
           autoCapitalize="none"
-          disabled={running || starting}
+          disabled={running || starting || restoring || stopping}
           inputMode="numeric"
           label="FIDE ID"
           placeholder="Autofilled"
@@ -278,7 +331,7 @@ export default function PhoneOtbImportPanel({
           onChange={(event) => changeFideId(event.currentTarget.value)}
         />
         <NumberInput
-          disabled={running || starting}
+          disabled={running || starting || restoring || stopping}
           label="Games since"
           max={currentYear}
           min={FIDE_IMPORT_FALLBACK_YEAR}
@@ -296,6 +349,7 @@ export default function PhoneOtbImportPanel({
       </Text>
 
       <Button
+        className={classes.otbAction}
         justify="space-between"
         onClick={() => setAdvancedOpen((open) => !open)}
         rightSection={<IconChevronDown size={15} />}
@@ -308,7 +362,7 @@ export default function PhoneOtbImportPanel({
         <Stack gap={6}>
           <SourceCheckbox
             detail="FIDE-linked Lichess events plus Chessscope"
-            disabled={running || starting}
+            disabled={running || starting || restoring || stopping}
             label="Targeted broadcasts"
             source="lichessBroadcasts"
             sources={sources}
@@ -316,7 +370,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="Chess-Results player and event PGNs"
-            disabled={running || starting}
+            disabled={running || starting || restoring || stopping}
             label="Chess-Results"
             source="chessResults"
             sources={sources}
@@ -324,7 +378,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="Public tournament PGNs linked from ChessBase news coverage"
-            disabled={running || starting}
+            disabled={running || starting || restoring || stopping}
             label="ChessBase news PGNs"
             source="chessbaseNews"
             sources={sources}
@@ -332,7 +386,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="Organiser archives, BritBase and PGN Mentor"
-            disabled={running || starting}
+            disabled={running || starting || restoring || stopping}
             label="Official public PGN indexes"
             source="officialPgnIndexes"
             sources={sources}
@@ -340,7 +394,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="The Week in Chess public PGNs"
-            disabled={running || starting}
+            disabled={running || starting || restoring || stopping}
             label="TWIC"
             source="twic"
             sources={sources}
@@ -348,7 +402,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="Searches indexed official monthly Lichess broadcasts"
-            disabled={running || starting}
+            disabled={running || starting || restoring || stopping}
             label="Full Lichess archive"
             source="broadcastArchives"
             sources={sources}
@@ -356,7 +410,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="Checks user-created Lichess broadcasts not covered elsewhere"
-            disabled={running || starting}
+            disabled={running || starting || restoring || stopping}
             label="Community broadcasts"
             source="communityBroadcasts"
             sources={sources}
@@ -367,6 +421,7 @@ export default function PhoneOtbImportPanel({
 
       {running ? (
         <Button
+          className={classes.otbAction}
           color="red"
           leftSection={<IconPlayerStop size={16} />}
           loading={stopping}
@@ -378,14 +433,21 @@ export default function PhoneOtbImportPanel({
         </Button>
       ) : (
         <Button
-          disabled={!playerName.trim()}
+          className={classes.otbAction}
+          disabled={!playerName.trim() || restoring || stopping}
           leftSection={<IconSearch size={16} />}
-          loading={starting}
+          loading={starting || restoring}
           onClick={() => void startSearch()}
           size="md"
         >
           Search OTB games on PC
         </Button>
+      )}
+
+      {restoring && (
+        <Text role="status" size="sm">
+          Checking the saved PC search…
+        </Text>
       )}
 
       {running && progress ? (
@@ -404,10 +466,17 @@ export default function PhoneOtbImportPanel({
           <Progress animated={running} size="xs" value={progressValue} />
         </Stack>
       ) : null}
-      {job?.status === "completed" ? (
+      {job?.status === "completed" &&
+      job.artifactAvailable &&
+      !job.artifactLoaded &&
+      games.length === 0 ? (
+        <Text role="status" size="sm">
+          Loading the saved games from your PC…
+        </Text>
+      ) : job?.status === "completed" ? (
         <Alert color={games.length > 0 ? "green" : "yellow"} variant="light">
           {games.length > 0
-            ? `${games.length} verified OTB game${games.length === 1 ? "" : "s"} ready from ${job.request.fromYear <= FIDE_IMPORT_FALLBACK_YEAR ? "the full career" : `since ${job.request.fromYear}`}. ${openedInPrep ? "Saved to your imported games." : "Saving your games…"}`
+            ? `${games.length} verified OTB game${games.length === 1 ? "" : "s"} ready ${job.request.fromYear <= FIDE_IMPORT_FALLBACK_YEAR ? "from the full career" : `since ${job.request.fromYear}`}.`
             : "The PC search completed without any usable OTB games."}
         </Alert>
       ) : null}
@@ -416,33 +485,39 @@ export default function PhoneOtbImportPanel({
           {error}
         </Alert>
       ) : null}
+      {jobError ? (
+        <Alert className={classes.importError} color="red" variant="light">
+          {jobError}
+        </Alert>
+      ) : null}
 
       {games.length > 0 ? (
         <Stack gap="xs">
           <Group justify="space-between">
             <Text fw={700} size="xs">
-              Imported OTB games
+              OTB games ready
             </Text>
             <Badge variant="light">{games.length}</Badge>
           </Group>
           <ScrollArea.Autosize mah={420}>
             <Box className={classes.gameList}>
               {games.slice(0, visibleGames).map((game) => (
-                <Box className={classes.gameCard} key={game.id}>
+                <Box className={`${classes.gameCard} ${classes.otbGameCard}`} key={game.id}>
                   <Box className={classes.gameDetails}>
                     <Group gap={6} wrap="nowrap">
-                      <Text fw={700} size="xs" truncate>
+                      <Text fw={700} size="xs" style={{ overflowWrap: "anywhere" }}>
                         {game.white} – {game.black}
                       </Text>
                       <Badge size="xs" variant="light">
                         {game.result}
                       </Badge>
                     </Group>
-                    <Text c="dimmed" size="0.68rem" truncate>
+                    <Text c="dimmed" size="xs" style={{ overflowWrap: "anywhere" }}>
                       {formatOtbDate(game.date)} · {game.event}
                     </Text>
                   </Box>
                   <Button
+                    disabled={Boolean(analyzingId) && analyzingId !== game.id}
                     loading={analyzingId === game.id}
                     onClick={() => void analyze(game)}
                     size="compact-xs"
