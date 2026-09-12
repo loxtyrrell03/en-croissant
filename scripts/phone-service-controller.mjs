@@ -208,14 +208,17 @@ export async function createPhoneServiceController({
           return json(response, 400, { error: "Enabled must be true or false." });
         // Persist and reconcile in one ordered lane so overlapping requests and the
         // recovery timer cannot undo a later off choice or falsely report success.
-        const operation = enqueue(async () => {
+        await enqueue(async () => {
           await writeFile(`${statePath}.next`, JSON.stringify({ enabled: value.enabled }));
           await rename(`${statePath}.next`, statePath);
           enabled = value.enabled;
-          await reconcile();
+          lastError = null;
+          busy = true;
         });
-        await operation;
-        return json(response, lastError ? 503 : 200, snapshot());
+        // Acknowledge the saved choice promptly. Polling reports actual readiness
+        // while Windows launches the processes; an HTTP timeout is not a receipt.
+        void enqueue(reconcile);
+        return json(response, 202, snapshot());
       })().catch((error) => {
         if (!response.headersSent) json(response, 500, { error: error.message });
         else response.destroy();

@@ -52,7 +52,7 @@ export default function PhonePcServices() {
       document.removeEventListener("visibilitychange", visible);
     };
   }, []);
-  const ready = status?.enabled && status.home && status.engine;
+  const ready = status?.enabled && status.home && status.engine && !status.busy;
   const label = pending
     ? requested
       ? "Starting…"
@@ -61,6 +61,8 @@ export default function PhonePcServices() {
       ? "Unreachable"
       : !status
         ? "Checking…"
+        : status.busy
+          ? status.enabled ? "Starting…" : "Stopping…"
         : status.error
           ? "Unavailable"
           : !status.enabled
@@ -118,7 +120,7 @@ export default function PhonePcServices() {
           <Text size="xs" c="dimmed">
             {status.enabled
               ? `Engine ${status.engine ? "ready" : "starting"} · Reviews ${status.home ? "ready" : "starting"}`
-              : "PC analysis and reviews are stopped."}
+            : status.busy ? "Stopping PC analysis and reviews…" : "PC analysis and reviews are stopped."}
           </Text>
         )
       )}

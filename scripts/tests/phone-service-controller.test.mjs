@@ -95,21 +95,25 @@ test("starts absent services, recovers a crash, and persists Off across controll
   await f.controller.reconcile();
   assert.deepEqual(f.actions, ["Ensure", "Ensure"]);
   const response = await f.post(false);
-  assert.equal(response.status, 200);
+  assert.equal(response.status, 202);
+  assert.equal((await response.json()).busy, true);
+  await f.controller.reconcile();
   assert.deepEqual(f.actions, ["Ensure", "Ensure", "Stop"]);
   assert.equal(JSON.parse(await readFile(join(f.root, "phone-services.json"))).enabled, false);
   await f.restart();
   assert.equal(f.controller.snapshot().enabled, false);
   assert.equal(f.actions.length, 3);
-  assert.equal((await f.post(true)).status, 200);
+  assert.equal((await f.post(true)).status, 202);
+  await f.controller.reconcile();
   assert.equal(f.controller.snapshot().engine, true);
 });
 
 test("recovery is truthful when launching fails and can be retried", async (t) => {
   const f = await fixture(t, false, true);
   const response = await f.post(true);
-  assert.equal(response.status, 503);
-  const status = await response.json();
+  assert.equal(response.status, 202);
+  await f.controller.reconcile();
+  const status = f.controller.snapshot();
   assert.equal(status.home, false);
   assert.equal(status.engine, false);
   assert.equal(status.error, "Startup failed");
@@ -161,8 +165,12 @@ test("concurrent opposite requests settle in order and leave the latest choice p
   const responses = await Promise.all([on, off]);
   assert.deepEqual(
     responses.map((r) => r.status),
-    [200, 200],
+    [202, 202],
   );
+  await f.controller.reconcile();
   assert.equal(f.controller.snapshot().enabled, false);
-  assert.deepEqual(f.actions, ["Ensure", "Stop"]);
+  assert.equal(f.controller.snapshot().engine, false);
+  assert.equal(JSON.parse(await readFile(join(f.root, "phone-services.json"))).enabled, false);
+  // Coalescing a not-yet-started On followed immediately by Off is also safe.
+  if (f.actions.length) assert.equal(f.actions.at(-1), "Stop");
 });

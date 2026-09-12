@@ -44,6 +44,15 @@ Register-ScheduledTask -TaskName $TaskName -TaskPath '\' -Action $taskAction -Tr
 $engineTask = Get-ScheduledTask -TaskName 'Stockfish18Remote' -TaskPath '\EnCroissant\' -ErrorAction Stop
 $engineAction = @($engineTask.Actions)[0]
 $engineVbs = Join-Path $launcherRoot 'phone-engine-service.vbs'
+$engineRoot = Join-Path $env:LOCALAPPDATA 'Stockfish18Server'
+$engineConfigPath = Join-Path $engineRoot 'config.json'
+$engineConfig = Get-Content -Raw -LiteralPath $engineConfigPath | ConvertFrom-Json
+$engineConfig | Add-Member -NotePropertyName backendIdleMs -NotePropertyValue 0 -Force
+[IO.File]::WriteAllText("$engineConfigPath.next", ($engineConfig | ConvertTo-Json -Depth 10), [Text.UTF8Encoding]::new($false))
+Move-Item -LiteralPath "$engineConfigPath.next" -Destination $engineConfigPath -Force
+$engineServerPath = Join-Path $engineRoot 'server\stockfish-remote-server.mjs'
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'stockfish-remote-server.mjs') -Destination "$engineServerPath.next" -Force
+Move-Item -LiteralPath "$engineServerPath.next" -Destination $engineServerPath -Force
 if ([IO.Path]::GetFileName($engineAction.Execute) -ieq 'node.exe') {
   $engineCommand = '"' + $engineAction.Execute + '" ' + $engineAction.Arguments
   [IO.File]::WriteAllText($engineVbs, ('Set shell = CreateObject("WScript.Shell")' + "`r`nWScript.Quit shell.Run(" + '"' + $engineCommand.Replace('"', '""') + '", 0, True)' + "`r`n"), [Text.Encoding]::ASCII)
