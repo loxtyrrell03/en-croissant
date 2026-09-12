@@ -16,6 +16,7 @@ mod fs;
 mod lexer;
 mod oauth;
 mod opening;
+mod otb_database_save;
 mod otb_import;
 mod pgn;
 mod progress;
@@ -55,7 +56,7 @@ use crate::db::{
     get_database_clock_coverage, get_mistake_review_game_metadata, get_most_common_player,
     get_opening_health_player_positions, get_plan_explorer, get_player, get_players_game_info,
     get_tournaments, move_database, preload_reference_db, replace_database_from_pgn,
-    search_position, set_database_search_paused, MmapSearchIndex,
+    save_otb_database, search_position, set_database_search_paused, MmapSearchIndex,
 };
 use crate::game::{
     abort_game, get_game_engine_logs, get_game_state, make_game_move, resign_game, start_game,
@@ -206,6 +207,7 @@ fn main() {
             get_file_metadata,
             merge_players,
             convert_pgn,
+            save_otb_database,
             replace_database_from_pgn,
             get_player,
             get_most_common_player,

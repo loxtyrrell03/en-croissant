@@ -384,6 +384,14 @@ async convertPgn(file: string, dbPath: string, timestamp: number | null, title: 
     else return { status: "error", error: e  as any };
 }
 },
+async saveOtbDatabase(file: string, dbPath: string, jobId: string, title: string, description: string) : Promise<Result<number, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("save_otb_database", { file, dbPath, jobId, title, description }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async replaceDatabaseFromPgn(file: string, dbPath: string, title: string, description: string | null) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("replace_database_from_pgn", { file, dbPath, title, description }) };

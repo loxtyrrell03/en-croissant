@@ -851,6 +851,75 @@ struct ActiveConversionGuard<'a> {
     key: String,
 }
 
+#[tauri::command]
+#[specta::specta]
+pub async fn save_otb_database(
+    file: PathBuf,
+    db_path: PathBuf,
+    job_id: String,
+    title: String,
+    description: String,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, AppState>,
+) -> Result<u32, Error> {
+    save_otb_database_inner(&file, &db_path, &job_id, &title, &description, &app, &state)
+}
+
+fn save_otb_database_inner<R: tauri::Runtime>(
+    file: &Path,
+    db_path: &Path,
+    job_id: &str,
+    title: &str,
+    description: &str,
+    app: &tauri::AppHandle<R>,
+    state: &tauri::State<'_, AppState>,
+) -> Result<u32, Error> {
+    crate::otb_database_save::save_otb_database(
+        file,
+        db_path,
+        job_id,
+        title,
+        description,
+        |pending| -> Result<(), Error> {
+            let pending_key = pending.to_str().ok_or_else(|| {
+                io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    "Invalid database destination path",
+                )
+            })?;
+            let build = (|| {
+                convert_pgn_inner(
+                    file,
+                    pending,
+                    None,
+                    app,
+                    title.to_string(),
+                    Some(description.to_string()),
+                    state,
+                )?;
+                // The importer uses an unjournaled private database for speed.
+                // Reopen with normal transactions before cleanup and publication.
+                state.connection_pool.remove(pending_key);
+                let db = &mut get_db_or_create(state, pending_key, ConnectionOptions::default())?;
+                db.transaction::<_, Error, _>(|db| {
+                    delete_duplicated_games_in_db(db)?;
+                    delete_nonmeaningful_empty_games(db)?;
+                    let count = games::table.count().get_result(db)?;
+                    update_info_count(db, "GameCount", count)?;
+                    delete_orphaned_data(db)?;
+                    Ok(())
+                })
+            })();
+            // All connections must close before the private file can be
+            // published or discarded, including after a valid-prefix error.
+            state.connection_pool.remove(pending_key);
+            clear_database_search_caches(state, pending);
+            build
+        },
+    )
+    .map_err(|error| io::Error::other(error.to_string()).into())
+}
+
 impl Drop for ActiveConversionGuard<'_> {
     fn drop(&mut self) {
         self.conversions.remove(&self.key);
@@ -3153,6 +3222,128 @@ pub async fn preload_reference_db(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn otb_database_native_save_command_matches_generated_binding() {
+        let generated = tauri_specta::Builder::<tauri::Wry>::new()
+            .commands(tauri_specta::collect_commands!(
+                save_otb_database,
+                convert_pgn
+            ))
+            .export_str(
+                specta_typescript::Typescript::default()
+                    .bigint(specta_typescript::BigIntExportBehavior::BigInt),
+            )
+            .unwrap();
+        let command = |text: &str| -> Vec<String> {
+            let text = text.replace("\r\n", "\n");
+            let start = text.find("async saveOtbDatabase(").unwrap();
+            text[start..]
+                .split("\n},")
+                .next()
+                .unwrap()
+                .split_whitespace()
+                .map(str::to_string)
+                .collect()
+        };
+        assert_eq!(
+            command(&generated),
+            command(include_str!("../../../src/bindings/generated.ts"))
+        );
+    }
+
+    #[cfg(feature = "headless-otb")]
+    #[test]
+    fn otb_database_native_save_replay_preserves_deliberate_removal() {
+        use tauri::Manager;
+        let directory = tempfile::tempdir().unwrap();
+        let source = directory.path().join("source.pgn");
+        let destination = directory.path().join("saved.db3");
+        let game = "[Event \"Fixture\"]\n[White \"One\"]\n[Black \"Two\"]\n[Result \"*\"]\n\n1. e4 e5 *\n\n";
+        std::fs::write(&source, game.repeat(2)).unwrap();
+        let app = tauri::test::mock_builder()
+            .manage(AppState::default())
+            .build(tauri::test::mock_context(tauri::test::noop_assets()))
+            .unwrap();
+        let state = app.state::<AppState>();
+        assert_eq!(
+            save_otb_database_inner(
+                &source,
+                &destination,
+                "job-1",
+                "Fixture",
+                "",
+                app.handle(),
+                &state
+            )
+            .unwrap(),
+            1
+        );
+        let database = rusqlite::Connection::open(&destination).unwrap();
+        database.execute("DELETE FROM Games", []).unwrap();
+        drop(database);
+        assert_eq!(
+            save_otb_database_inner(
+                &source,
+                &destination,
+                "job-1",
+                "Fixture",
+                "",
+                app.handle(),
+                &state
+            )
+            .unwrap(),
+            0
+        );
+        assert!(state.connection_pool.is_empty());
+        assert_eq!(std::fs::read_dir(directory.path()).unwrap().count(), 2);
+    }
+
+    #[cfg(feature = "headless-otb")]
+    #[test]
+    fn otb_database_native_save_partial_parse_never_publishes_and_can_retry() {
+        use tauri::Manager;
+        let directory = tempfile::tempdir().unwrap();
+        let source = directory.path().join("source.pgn");
+        let destination = directory.path().join("saved.db3");
+        let game = "[Event \"Fixture\"]\n[White \"One\"]\n[Black \"Two\"]\n[Result \"*\"]\n\n1. e4 e5 *\n\n";
+        let malformed = format!("{game}[Event \"Broken\"]\n\n{{unterminated comment");
+        std::fs::write(&source, &malformed).unwrap();
+        let app = tauri::test::mock_builder()
+            .manage(AppState::default())
+            .build(tauri::test::mock_context(tauri::test::noop_assets()))
+            .unwrap();
+        let state = app.state::<AppState>();
+        assert!(save_otb_database_inner(
+            &source,
+            &destination,
+            "job-1",
+            "Fixture",
+            "",
+            app.handle(),
+            &state
+        )
+        .is_err());
+        assert!(!destination.exists());
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), malformed);
+        assert!(state.connection_pool.is_empty());
+        assert_eq!(std::fs::read_dir(directory.path()).unwrap().count(), 1);
+        std::fs::write(&source, game).unwrap();
+        assert_eq!(
+            save_otb_database_inner(
+                &source,
+                &destination,
+                "job-1",
+                "Fixture",
+                "",
+                app.handle(),
+                &state
+            )
+            .unwrap(),
+            1
+        );
+        assert_eq!(std::fs::read_dir(directory.path()).unwrap().count(), 2);
+    }
     use pgn_reader::BufferedReader;
     use shakmaty::{Move, Role, Square};
 
