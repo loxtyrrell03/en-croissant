@@ -35,6 +35,7 @@ const f=window.fx={calls:[],pending:[],holds:new Set(params.get('hold')?[params.
  release(name){const index=f.pending.findIndex(p=>p.name===name);if(index>=0)f.pending.splice(index,1)[0].resolve()},
  async call(name,action){f.calls.push(name);const value=action?.();if(f.holds.has(name))await new Promise(resolve=>f.pending.push({name,resolve}));if(f.failures[name]){f.failures[name]--;throw Error('Example '+name+' failure')}return value},
 };
+localStorage.removeItem('encroissant-web-otb-start');
 localStorage.setItem('encroissant-web-otb-player','Example Player');
 if(params.get('mode')!=='new')localStorage.setItem(WEB_OTB_JOB_STORAGE_KEY,'job-1');else localStorage.removeItem(WEB_OTB_JOB_STORAGE_KEY);
 localStorage.setItem(WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY,'job-1');
@@ -44,7 +45,7 @@ window.fetch=async(url,options={})=>{
  if(p==='/api/otb-import/players')return new Response(JSON.stringify({players:[{id:1503014,name:'Example Player',year:1998}]}));
  if(!p.startsWith('/api/otb-import/jobs'))return realFetch(url,options);
  let body;
- if(options.method==='POST')body=await f.call('start',()=>structuredClone(f.job));
+ if(options.method==='PUT'||options.method==='POST')body=await f.call('start',()=>{if(options.method==='PUT'){f.job.id=p.split('/').at(-1);f.job.request=JSON.parse(options.body)}return structuredClone(f.job)});
  else if(options.method==='DELETE')body=await f.call('stop',()=>{if(f.stopMode==='failed'){f.job.status='failed';f.job.error='Search stopped.'}else if(f.stopMode==='completed')f.job.status='completed';return structuredClone(f.job)});
  else if(p.endsWith('/artifact'))body=await f.call('artifact',()=>({jobId:f.job.id,games:[f.game],prepDatabase:{games:[f.game]}}));
  else body=await f.call('status',()=>structuredClone(f.job));

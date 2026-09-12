@@ -19,7 +19,15 @@ import {
   IconPlayerStop,
   IconSearch,
 } from "@tabler/icons-react";
-import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { FidePlayerSearchInput } from "@/components/common/FidePlayerSearchInput";
 import { useFideIdentityRequest } from "@/components/common/useFideIdentityRequest";
 import { resolveFideImportIdentity } from "@/utils/fideImportIdentity";
@@ -34,13 +42,17 @@ import {
   getWebOtbImportedGames,
   getWebOtbProgressValue,
   searchWebFidePlayers,
-  startWebOtbImport,
   watchWebOtbImportJob,
-  WEB_OTB_JOB_STORAGE_KEY,
   type WebOtbImportedGame,
   type WebOtbImportJob,
   type WebOtbImportSources,
 } from "./otbImport";
+import {
+  beginWebOtbStart,
+  getWebOtbStartSnapshot,
+  retryWebOtbStart,
+  subscribeWebOtbStart,
+} from "./otbStartSession";
 import classes from "./OnlineGameAnalysisPanel.module.css";
 
 const WEB_OTB_PLAYER_KEY = "encroissant-web-otb-player";
@@ -59,8 +71,16 @@ export default function PhoneOtbImportPanel({
   const [sources, setSources] = useState<WebOtbImportSources>(DEFAULT_WEB_OTB_IMPORT_SOURCES);
   const [visibleGames, setVisibleGames] = useState(20);
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [job, setJob] = useState<WebOtbImportJob | null>(null);
-  const [jobId, setJobId] = useState(() => window.localStorage.getItem(WEB_OTB_JOB_STORAGE_KEY));
+  const startSession = useSyncExternalStore(subscribeWebOtbStart, getWebOtbStartSnapshot);
+  const jobId = startSession.jobId;
+  const [observedJob, setJob] = useState<WebOtbImportJob | null>(null);
+  const job =
+    observedJob?.id === jobId
+      ? observedJob
+      : startSession.confirmed?.id === jobId
+        ? startSession.confirmed
+        : null;
+  const pendingStart = Boolean(startSession.record && !startSession.record.accepted);
   const [starting, setStarting] = useState(false);
   const [resolvingIdentity, setResolvingIdentity] = useState(false);
   const [stopping, setStopping] = useState(false);
@@ -87,6 +107,28 @@ export default function PhoneOtbImportPanel({
   const games = useMemo(() => (job ? getWebOtbImportedGames(job) : []), [job]);
   const running = job?.status === "queued" || job?.status === "running";
   const restoring = Boolean(jobId && !job);
+  const formDisabled =
+    running ||
+    starting ||
+    restoring ||
+    stopping ||
+    startSession.busy ||
+    pendingStart ||
+    !startSession.ready;
+
+  useEffect(() => {
+    const record = startSession.record;
+    if (!record || restoredIdentityId.current === record.id) return;
+    restoredIdentityId.current = record.id;
+    const id = record.request.fideId || "";
+    setPlayerName(record.request.playerName);
+    setFideId(id);
+    setFideIdAuto(Boolean(id));
+    setSelectedPlayer(id ? { id: Number(id), name: record.request.playerName } : null);
+    setFromYear(record.request.fromYear);
+    setSources(record.request.sources);
+    fromYearManuallyEditedRef.current = true;
+  }, [startSession.record, setPlayerName]);
 
   useEffect(() => {
     if (!jobId) return;
@@ -201,7 +243,7 @@ export default function PhoneOtbImportPanel({
   }
 
   async function startSearch() {
-    if (preflightRef.current || starting || running || restoring || stopRequest.current) return;
+    if (preflightRef.current || formDisabled || stopRequest.current) return;
     preflightRef.current = true;
     const controller = identityRequest.begin();
     setStarting(true);
@@ -212,24 +254,26 @@ export default function PhoneOtbImportPanel({
       const identity = await resolveIdentity(controller.signal);
       if (controller.signal.aborted) return;
       setResolvingIdentity(false);
-      const next = await startWebOtbImport({
-        playerName: identity.name,
-        fideId: identity.id,
-        fromYear: identity.fromYear,
-        sources,
-      });
-      setJob(next);
-      setJobId(next.id);
-      window.localStorage.setItem(WEB_OTB_JOB_STORAGE_KEY, next.id);
+      await beginWebOtbStart(
+        {
+          playerName: identity.name,
+          fideId: identity.id,
+          fromYear: identity.fromYear,
+          sources,
+        },
+        jobId,
+      );
     } catch (startError) {
-      if (controller.signal.aborted) return;
+      if (controller.signal.aborted || !mounted.current) return;
       setError(
         startError instanceof Error ? startError.message : "The PC OTB search could not start.",
       );
     } finally {
       preflightRef.current = false;
-      setStarting(false);
-      setResolvingIdentity(false);
+      if (mounted.current) {
+        setStarting(false);
+        setResolvingIdentity(false);
+      }
     }
   }
 
@@ -305,7 +349,7 @@ export default function PhoneOtbImportPanel({
         </Button>
       )}
       <FidePlayerSearchInput
-        disabled={running || starting || restoring || stopping}
+        disabled={formDisabled}
         label="Player full name"
         onChange={changePlayerName}
         onSelect={(player) => {
@@ -321,7 +365,7 @@ export default function PhoneOtbImportPanel({
       <Box className={classes.identityFields}>
         <TextInput
           autoCapitalize="none"
-          disabled={running || starting || restoring || stopping}
+          disabled={formDisabled}
           inputMode="numeric"
           label="FIDE ID"
           placeholder="Autofilled"
@@ -331,7 +375,7 @@ export default function PhoneOtbImportPanel({
           onChange={(event) => changeFideId(event.currentTarget.value)}
         />
         <NumberInput
-          disabled={running || starting || restoring || stopping}
+          disabled={formDisabled}
           label="Games since"
           max={currentYear}
           min={FIDE_IMPORT_FALLBACK_YEAR}
@@ -362,7 +406,7 @@ export default function PhoneOtbImportPanel({
         <Stack gap={6}>
           <SourceCheckbox
             detail="FIDE-linked Lichess events plus Chessscope"
-            disabled={running || starting || restoring || stopping}
+            disabled={formDisabled}
             label="Targeted broadcasts"
             source="lichessBroadcasts"
             sources={sources}
@@ -370,7 +414,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="Chess-Results player and event PGNs"
-            disabled={running || starting || restoring || stopping}
+            disabled={formDisabled}
             label="Chess-Results"
             source="chessResults"
             sources={sources}
@@ -378,7 +422,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="Public tournament PGNs linked from ChessBase news coverage"
-            disabled={running || starting || restoring || stopping}
+            disabled={formDisabled}
             label="ChessBase news PGNs"
             source="chessbaseNews"
             sources={sources}
@@ -386,7 +430,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="Organiser archives, BritBase and PGN Mentor"
-            disabled={running || starting || restoring || stopping}
+            disabled={formDisabled}
             label="Official public PGN indexes"
             source="officialPgnIndexes"
             sources={sources}
@@ -394,7 +438,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="The Week in Chess public PGNs"
-            disabled={running || starting || restoring || stopping}
+            disabled={formDisabled}
             label="TWIC"
             source="twic"
             sources={sources}
@@ -402,7 +446,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="Searches indexed official monthly Lichess broadcasts"
-            disabled={running || starting || restoring || stopping}
+            disabled={formDisabled}
             label="Full Lichess archive"
             source="broadcastArchives"
             sources={sources}
@@ -410,7 +454,7 @@ export default function PhoneOtbImportPanel({
           />
           <SourceCheckbox
             detail="Checks user-created Lichess broadcasts not covered elsewhere"
-            disabled={running || starting || restoring || stopping}
+            disabled={formDisabled}
             label="Community broadcasts"
             source="communityBroadcasts"
             sources={sources}
@@ -431,17 +475,46 @@ export default function PhoneOtbImportPanel({
         >
           Stop search
         </Button>
-      ) : (
+      ) : pendingStart ? null : (
         <Button
           className={classes.otbAction}
-          disabled={!playerName.trim() || restoring || stopping}
+          disabled={
+            !playerName.trim() || restoring || stopping || pendingStart || !startSession.ready
+          }
           leftSection={<IconSearch size={16} />}
-          loading={starting || restoring}
+          loading={starting || startSession.busy || (restoring && !jobError)}
           onClick={() => void startSearch()}
           size="md"
         >
           Search OTB games on PC
         </Button>
+      )}
+
+      {(pendingStart || startSession.error || !startSession.ready) && (
+        <Stack gap="xs">
+          {startSession.error ? (
+            <Alert className={classes.importError} color="red" variant="light">
+              {startSession.error}
+            </Alert>
+          ) : pendingStart && !startSession.busy ? (
+            <Text role="status" size="sm">
+              Reconnect to the saved PC search.
+            </Text>
+          ) : null}
+          <Button
+            className={classes.otbAction}
+            variant="light"
+            loading={startSession.busy}
+            onClick={() => void retryWebOtbStart()}
+          >
+            {startSession.busy ? "Connecting to PC…" : "Retry connection"}
+          </Button>
+          {pendingStart && (
+            <Text c="dimmed" size="xs">
+              Retry reconnects to the same search.
+            </Text>
+          )}
+        </Stack>
       )}
 
       {restoring && (
@@ -573,10 +646,25 @@ function formatOtbDate(value: string) {
 }
 
 function useStoredString(key: string) {
-  const [value, setValue] = useState(() => window.localStorage.getItem(key) ?? "");
+  const [value, setValue] = useState(() => {
+    try {
+      return window.localStorage.getItem(key) ?? "";
+    } catch {
+      return "";
+    }
+  });
+  const previous = useRef(value);
   useEffect(() => {
-    if (value.trim()) window.localStorage.setItem(key, value);
-    else window.localStorage.removeItem(key);
+    if (previous.current === value) return;
+    previous.current = value;
+    // This is only a name preference. The complete search request is persisted
+    // separately and must succeed before a PC search is sent.
+    try {
+      if (value.trim()) window.localStorage.setItem(key, value);
+      else window.localStorage.removeItem(key);
+    } catch {
+      /* optional preference */
+    }
   }, [key, value]);
   return [value, setValue] as const;
 }

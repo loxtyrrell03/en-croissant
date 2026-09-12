@@ -65,12 +65,13 @@ import {FidePlayerSearchInput} from '/src/components/common/FidePlayerSearchInpu
 import Phone from '/src/web/PhoneOtbImportPanel';import Desktop from '/src/components/panels/prep/OtbGameImportPanel';
 const mode=new URLSearchParams(location.search).get('mode')||'desktop-picker';const phone=mode.startsWith('phone');
 window.fixture={status:200,hold:false,players:Array.from({length:8},(_,i)=>({id:12345+i,name:'Example, '+['Alex','Alexandra','Benedict','Charlotte','Dominic','Eleanor','Frederick','Georgina'][i],year:1990+i,federation:'ENG',standard:2200-i*10})),requests:[],pending:[],imports:[],paths:0,selected:[]};
-const f=window.fixture;const realFetch=window.fetch;
+const f=window.fixture;localStorage.removeItem('encroissant-web-otb-start');localStorage.removeItem('encroissant-web-otb-job');
+const realFetch=window.fetch;
 window.fetch=(url,options)=>{const u=String(url);if(u.includes('/api/fide/player')||u.includes('/api/otb-import/players')){
  const q=u.includes('?')?new URL(u,location.origin).searchParams.get('q'):u.split('/').pop();const request={q,aborted:false};f.requests.push(request);options?.signal?.addEventListener('abort',()=>request.aborted=true);
  const response=()=>{const players=f.players;const body=f.status===200?(u.includes('/api/otb-import/')?{players:/^\\d+$/.test(q)?players.filter(player=>player.id===Number(q)):players}:/^\\d+$/.test(q)?players[0]:players):{error:'FIDE lookup unavailable. Retry the search.'};return new Response(JSON.stringify(body),{status:f.status});};
  return f.hold?new Promise(resolve=>f.pending.push(()=>resolve(response()))):Promise.resolve(response());
- }if(u.includes('/api/otb-import/jobs')&&options?.method==='POST'){f.imports.push(JSON.parse(options.body));return Promise.resolve(new Response(JSON.stringify({error:'Fixture stopped after request validation'}),{status:503}));}return realFetch(url,options);};
+ }if(u.includes('/api/otb-import/jobs')&&(options?.method==='PUT'||options?.method==='POST')){f.imports.push(JSON.parse(options.body));return Promise.resolve(new Response(JSON.stringify({error:'Fixture stopped after request validation'}),{status:503}));}return realFetch(url,options);};
 function App(){const [value,setValue]=useState(''),[selected,setSelected]=useState(null),[disabled,setDisabled]=useState(false),[visible,setVisible]=useState(true),[scale,setScale]=useState(1);
  Object.assign(f,{setValue:v=>flushSync(()=>setValue(v)),setDisabled:v=>flushSync(()=>setDisabled(v)),setVisible:v=>flushSync(()=>setVisible(v)),setScale:v=>flushSync(()=>setScale(v))});
  const picker=<><FidePlayerSearchInput mobileInline={phone} value={value} onChange={v=>{setValue(v);setSelected(null);}} selected={selected} onSelect={p=>{f.selected.push(p);setSelected(p);setValue(p.name);}} searchPlayers={phone?searchWebFidePlayers:searchFidePlayers} disabled={disabled}/><Button variant="default">Outside field</Button></>;

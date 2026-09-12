@@ -303,12 +303,12 @@ import {
 } from "./stockfishEngine";
 import {
   watchWebOtbImportJob,
-  WEB_OTB_JOB_STORAGE_KEY,
   WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY,
   type WebOtbImportedGame,
   type WebOtbImportJob,
 } from "./otbImport";
 import { applyWebOtbPrepCompletion, shouldOpenWebOtbPrep } from "./otbPrep";
+import { getWebOtbStartSnapshot, subscribeWebOtbStart } from "./otbStartSession";
 import { installWebAppLifecycle } from "./webAppLifecycle";
 
 type ViewMode = "board" | "stats" | "files" | "review" | "import";
@@ -835,14 +835,14 @@ function WebAppContent() {
     const handleJob = (job: WebOtbImportJob) => {
       const jobId = job.id;
       if (!active || jobId !== monitoredJobId || terminal || inFlight) return;
-      const handledJobId = window.localStorage.getItem(WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY);
-      const completionExists = state.prepWorkspaces.some((prep) => prep.id === `prep-${jobId}`);
-      if (handledJobId === jobId && completionExists) {
-        terminal = true;
-        return;
-      }
-
       try {
+        const handledJobId = window.localStorage.getItem(WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY);
+        const completionExists = state.prepWorkspaces.some((prep) => prep.id === `prep-${jobId}`);
+        if (handledJobId === jobId && completionExists) {
+          terminal = true;
+          return;
+        }
+
         if (
           job.status === "failed" ||
           (job.status === "completed" && !job.prepDatabase?.games.length)
@@ -867,7 +867,7 @@ function WebAppContent() {
         window.localStorage.setItem(WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY, job.id);
         terminal = true;
       } catch (error) {
-        if (active && inFlight) {
+        if (active) {
           terminal = true;
           notifications.show({
             title: "Could not open OTB Prep",
@@ -884,7 +884,8 @@ function WebAppContent() {
     };
 
     const monitorActiveJob = () => {
-      const jobId = window.localStorage.getItem(WEB_OTB_JOB_STORAGE_KEY);
+      const session = getWebOtbStartSnapshot();
+      const jobId = session.ready ? session.jobId : null;
       if (jobId === monitoredJobId) return;
       unsubscribe?.();
       unsubscribe = null;
@@ -896,12 +897,11 @@ function WebAppContent() {
       }
     };
 
-    monitorActiveJob();
-    const timer = window.setInterval(monitorActiveJob, 1_500);
+    const stopMonitoring = subscribeWebOtbStart(monitorActiveJob);
     return () => {
       active = false;
       unsubscribe?.();
-      window.clearInterval(timer);
+      stopMonitoring();
     };
   }, [loaded, openCompletedOtbImportForPrep, state.prepWorkspaces]);
 

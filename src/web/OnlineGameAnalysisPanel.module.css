@@ -75,10 +75,16 @@
   gap: 0.75rem;
 }
 
+.otbForm :global(.mantine-Input-input:disabled) {
+  color: var(--mantine-color-text);
+  -webkit-text-fill-color: var(--mantine-color-text);
+  opacity: 1;
+}
+
 @media (max-width: 48rem) {
   .otbForm :global(.mantine-Input-input) {
     /* iOS zooms the whole page when an editable field is smaller than 16px. */
-    font-size: 1rem;
+    font-size: calc(1rem * var(--mantine-scale));
   }
 
   .otbForm :global(.mantine-Checkbox-root) {
