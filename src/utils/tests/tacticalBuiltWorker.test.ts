@@ -106,6 +106,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             bestLine: string[];
         }[];
         const cases = [
+            ...[
+                { id: "quiet-mating-attack:real", fen: "8/pp4k1/3P2p1/8/2PbB2p/6qP/PP6/5Q1K b - - 0 35", pvUci: ["d4e5", "f1g2", "g3e1", "g2g1", "e1e4"] },
+                { id: "quiet-mating-attack:root-only", fen: "8/pp4k1/3P2p1/8/2PbB2p/6qP/PP6/5Q1K b - - 0 35", pvUci: ["d4e5"] },
+                { id: "quiet-mating-attack:queen-liability", fen: "8/pp4k1/3P2p1/8/2PbB2p/6qP/PP4R1/5Q1K b - - 0 35", pvUci: ["d4e5"] },
+                { id: "quiet-mating-attack:checking-deflection", fen: "8/pp4k1/3P2p1/4b3/2P1B2p/6qP/PP4Q1/7K b - - 2 36", pvUci: ["g3e1"] },
+                { id: "quiet-mating-attack:payoff", fen: "8/pp4k1/3P2p1/4b3/2P1B2p/7P/PP6/4q1QK b - - 4 37", pvUci: ["e1e4"] },
+                { id: "quiet-mating-attack:pin-liability", fen: "8/pp4k1/3P2p1/4b3/2P1q2p/7P/PP4Q1/7K b - - 1 38", pvUci: ["e5b2", "g2e4"] },
+                { id: "constructed:checking-discovery-capture", fen: "k7/3q3p/1r6/8/N7/8/8/R5K1 w - - 0 1", pvUci: ["a4b6", "a8b8", "b6d7"] },
+            ].map(({id, fen, pvUci}) => ({ id, input: {fen, pvUci, depth: 16, engineName: "Real-game mating-attack regression"} })),
             {
                 id: "endgame:claimable-entry",
                 input: {
@@ -768,7 +777,14 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(152);
+        expect(report).toHaveLength(159);
+        expect(Object.fromEntries(report.filter((item) => item.id.startsWith("quiet-mating-attack:")).map((item) => [item.id, item.primary]))).toMatchObject({
+            "quiet-mating-attack:real": ["forcingAttack"],
+            "quiet-mating-attack:root-only": ["forcingAttack"],
+            "quiet-mating-attack:queen-liability": [],
+            "quiet-mating-attack:checking-deflection": ["deflection"],
+            "quiet-mating-attack:pin-liability": [],
+        });
         if (process.env.TACTICAL_WORKER_REPORT)
             writeFileSync(
                 process.env.TACTICAL_WORKER_REPORT,

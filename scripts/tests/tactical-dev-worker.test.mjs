@@ -114,6 +114,14 @@ test(
         expectedArrowCount: 2,
       },
       {
+        name: "quiet mating attack with actual-ply deflection",
+        fen: "8/pp4k1/3P2p1/8/2PbB2p/6qP/PP6/5Q1K b - - 0 35",
+        pvUci: ["d4e5", "f1g2", "g3e1", "g2g1", "e1e4"],
+        expectedPrimary: ["forcingAttack"],
+        expectedLabels: ["forcingAttack"],
+        expectedArrowCount: 2,
+      },
+      {
         name: "pawn-ending entry with a claimable draw",
         fen: "8/8/6k1/8/4p1K1/8/5P2/8 w - - 98 67",
         pvUci: ["g4f4"],

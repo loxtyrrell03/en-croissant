@@ -135,6 +135,20 @@ export function winningRecaptureEvidence(
 ): TacticalMotifEvidence | null {
     const step = steps[index],
         previous = steps[index - 1];
+    if (motif.id === "hangingPiece" && step?.capture && index >= 2) {
+        const checking = steps[index - 2];
+        const context = [checking, previous, step];
+        const replay = replayTacticalLine(makeFen(checking.before.toSetup()), context.map(item => item.uci));
+        const matching = replay.length === 3 && context.every((item, i) =>
+            makeFen(item.before.toSetup()) === makeFen(replay[i].before.toSetup()) &&
+            makeFen(item.after.toSetup()) === makeFen(replay[i].after.toSetup()));
+        const proof = matching ? proveCheckingDeflection(checking) : null;
+        const branch = proof?.branches.find(item => item.replyUci === previous.uci && item.captureUci === step.uci);
+        if (proof && branch) return {
+            ...motif, label: "Deflection Payoff", value: branch.gain,
+            evidence: `${step.san} wins the ${step.before.board.get(step.move.to)!.role} after ${checking.san} forced the ${checking.before.board.get(proof.guard)!.role} away from its guarding square with ${previous.san}. This is the payoff of the earlier deflection, not an additional material gain.`,
+        };
+    }
     // An equal recapture can incidentally remove a guard or open a ray.
     // Do not call that a fresh material win when an independently checked
     // countercapture balances the exchange. A small lower bound alone is
@@ -1702,9 +1716,93 @@ export function proveMixedCheckingAttack(
     return proof;
 }
 
+type QuietMatingAttackProof = MixedCheckingAttackProof & {
+    threat: NormalMove;
+    threatSan: string;
+    visits: number;
+};
+const quietMatingAttackCache = new Map<string, QuietMatingAttackProof | null>();
+
+/** A new mate-in-one threat may force a material concession instead of mate.
+ * The pass position only nominates that threat. Every actual reply needs an
+ * independent continuation by the prepared piece or its mating partner, with
+ * at most three further checks. No PV supplies moves, targets or leaf values. */
+export function proveQuietMatingAttack(
+    root: TacticalReplayStep,
+    nodeLimit = 8192,
+    onFailure?: (reason: string) => void,
+): QuietMatingAttackProof | null {
+    if (
+        !root ||
+        !Number.isSafeInteger(nodeLimit) ||
+        nodeLimit <= 0 ||
+        root.capture ||
+        root.move.promotion ||
+        root.before.isCheck() ||
+        root.after.isCheck() ||
+        root.after.isEnd() ||
+        root.after.board.get(root.move.to)?.color !== root.before.turn
+    )
+        return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    if (!onFailure && nodeLimit === 8192 && quietMatingAttackCache.has(key))
+        return quietMatingAttackCache.get(key)!;
+    const budget = { nodes: nodeLimit };
+    const visit = (position: Chess, move: NormalMove) => {
+        if (--budget.nodes < 0) throw new Error("Quiet mating attack budget exhausted");
+        const after = position.clone();
+        after.play(move);
+        return after;
+    };
+    let result: QuietMatingAttackProof | null = null;
+    try {
+        // An already available mate makes an unrelated fresh threat redundant.
+        if (legalMoves(root.before).some((move) => visit(root.before, move).isCheckmate()))
+            return null;
+        const probe = withTurn(root.after, root.before.turn);
+        const flip = root.before.turn === "white" ? 0 : 56;
+        const threats = legalMoves(probe).sort(
+            (a, b) => (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip),
+        );
+        for (const threat of threats) {
+            if (threat.promotion || !visit(probe, threat).isCheckmate()) continue;
+            const premature = {
+                ...threat,
+                from: threat.from === root.move.to ? root.move.from : threat.from,
+            };
+            if (root.before.isLegal(premature) && visit(root.before, premature).isCheckmate())
+                continue;
+            const active = [...new Set([root.move.to, threat.from])];
+            const proof = computeMixedCheckingAttack(root, nodeLimit, {
+                active,
+                budget,
+                onFailure,
+            });
+            if (proof) {
+                result = {
+                    ...proof,
+                    threat,
+                    threatSan: makeSan(probe, threat),
+                    visits: nodeLimit - budget.nodes,
+                };
+                break;
+            }
+        }
+    } catch (error) {
+        onFailure?.(error instanceof Error ? error.message : "Unproved quiet mating attack");
+    }
+    if (!onFailure && nodeLimit === 8192) {
+        quietMatingAttackCache.set(key, result);
+        if (quietMatingAttackCache.size > 128)
+            quietMatingAttackCache.delete(quietMatingAttackCache.keys().next().value!);
+    }
+    return result;
+}
+
 function computeMixedCheckingAttack(
     root: TacticalReplayStep,
     nodeLimit: number,
+    quiet?: { active: Square[]; budget: ProofBudget; onFailure?: (reason: string) => void },
 ): MixedCheckingAttackProof | null {
     if (
         !root ||
@@ -1713,16 +1811,23 @@ function computeMixedCheckingAttack(
         root.capture ||
         root.move.promotion ||
         root.before.isCheck() ||
-        !root.after.isCheck() ||
+        (quiet ? root.after.isCheck() : !root.after.isCheck()) ||
         root.after.isEnd()
     )
         return null;
     const side = root.before.turn;
-    if (!root.after.ctx().checkers.has(root.move.to)) return null;
+    if (!quiet && !root.after.ctx().checkers.has(root.move.to)) return null;
     const replies = legalMoves(root.after);
-    if (!replies.some((move) => move.to === root.move.to && capturedValue(root.after, move)))
+    if (
+        !quiet &&
+        !replies.some((move) => move.to === root.move.to && capturedValue(root.after, move))
+    )
         return null;
-    const budget = { nodes: nodeLimit };
+    const budget = quiet?.budget ?? { nodes: nodeLimit };
+    const moved = (active: Square[] | undefined, move: NormalMove) =>
+        active
+            ?.filter((square) => square !== move.to)
+            .map((square) => (square === move.from ? move.to : square));
     const ordered = (pos: Chess) => {
         const flip = side === "white" ? 0 : 56;
         return legalMoves(pos).sort(
@@ -1774,9 +1879,11 @@ function computeMixedCheckingAttack(
         }
         return null;
     };
-    const attack = (pos: Chess, balance: number, checks: number): Win | null => {
+    const attack = (pos: Chess, balance: number, checks: number, active?: Square[]): Win | null => {
         if (pos.isEnd()) return null;
-        const moves = ordered(pos);
+        const moves = ordered(pos).filter(
+            (move) => !active || active.includes(move.from) || pos.isCheck(),
+        );
         // Prefer an available mate over longer optional sacrifices.
         for (const move of moves) {
             if (move.promotion) continue;
@@ -1827,7 +1934,12 @@ function computeMixedCheckingAttack(
             if (move.promotion) continue;
             const next = visit(pos, move);
             if (!next.isCheck()) continue;
-            const win = defend(next, balance + capturedValue(pos, move), checks - 1);
+            const win = defend(
+                next,
+                balance + capturedValue(pos, move),
+                checks - 1,
+                moved(active, move),
+            );
             if (win)
                 return {
                     gain: win.gain,
@@ -1837,13 +1949,18 @@ function computeMixedCheckingAttack(
         }
         return null;
     };
-    const defend = (pos: Chess, balance: number, checks: number): Win | null => {
-        if (pos.isEnd()) return null;
+    const defend = (pos: Chess, balance: number, checks: number, active?: Square[]): Win | null => {
+        if (pos.isEnd() || (quiet && defenderCanClaimFiftyMoveDraw(pos))) return null;
         let minimum: Win | null = null;
         const decisions: MixedCheckingAttackProof["decisions"] = [];
         for (const move of ordered(pos)) {
             if (move.promotion) return null;
-            const win = attack(visit(pos, move), balance - capturedValue(pos, move), checks);
+            const win = attack(
+                visit(pos, move),
+                balance - capturedValue(pos, move),
+                checks,
+                moved(active, move),
+            );
             if (!win) return null;
             decisions.push(...win.decisions);
             if (!minimum || win.gain < minimum.gain)
@@ -1852,12 +1969,23 @@ function computeMixedCheckingAttack(
         return minimum;
     };
     try {
+        if (quiet && defenderCanClaimFiftyMoveDraw(root.after)) return null;
         const branches: MixedCheckingAttackProof["branches"] = [];
         const decisions: MixedCheckingAttackProof["decisions"] = [];
         for (const reply of ordered(root.after)) {
             if (reply.promotion) return null;
-            const win = attack(visit(root.after, reply), -capturedValue(root.after, reply), 5);
-            if (!win) return null;
+            const win = attack(
+                visit(root.after, reply),
+                -capturedValue(root.after, reply),
+                quiet ? 3 : 5,
+                moved(quiet?.active, reply),
+            );
+            if (!win) {
+                quiet?.onFailure?.(
+                    `Unproved quiet-attack reply ${makeSan(root.after, reply)} after ${nodeLimit - budget.nodes} visits`,
+                );
+                return null;
+            }
             decisions.push(...win.decisions);
             branches.push({ reply: makeSan(root.after, reply), gain: win.gain, line: win.line });
         }
@@ -5261,9 +5389,18 @@ export function provePinnedCapture(step: TacticalReplayStep, nodeLimit = 4096) {
     const victim = step.before.board.get(step.move.to);
     if (!step.capture || step.move.promotion || !victim || victim.color === step.before.turn)
         return null;
-    const immediate = tacticalExchangeGain(step.before, step.move);
     const ray = pinRestrictsCapture(step);
     if (!ray) return null;
+    // A pinned defender may still capture the pinner along its pin ray.
+    // Account for all pieces left behind, not just exchanges on the captured
+    // square, before treating the pin as a profitable capture mechanism.
+    let immediate: number;
+    try {
+        immediate = participantCaptureGain(step.before, step.move,
+            [...step.before.board[step.before.turn], step.move.to], { nodes: nodeLimit }) ?? -VALUE.king;
+    } catch {
+        return null;
+    }
     const pinner = step.after.board.get(ray.pinner)!;
     const aligned = (square: Square, diagonalOnly = false) => {
         const file = Math.abs((ray.pinner % 8) - (square % 8));
@@ -5608,7 +5745,12 @@ export function tacticalBoardEvidence(
               }
             : null;
     }
-    if (motif.id === "forcingAttack")
+    if (motif.id === "forcingAttack") {
+        const quiet = proveQuietMatingAttack(step);
+        if (quiet) return {
+            square: makeSquare(step.move.to),
+            arrows: [{ from: makeSquare(quiet.threat.from), to: makeSquare(quiet.threat.to) }],
+        };
         return {
             square: makeSquare(step.move.to),
             arrows: [
@@ -5618,6 +5760,7 @@ export function tacticalBoardEvidence(
                 },
             ],
         };
+    }
     if (motif.id === "doubleThreat") {
         const proof = proveQuietDoubleThreat(step);
         if (proof)
@@ -5793,6 +5936,13 @@ export function tacticalBoardEvidence(
             : null;
     }
     if (motif.id === "deflection") {
+        const checking = proveCheckingDeflection(step);
+        if (checking) return {
+            square: makeSquare(checking.guard),
+            // The original guarding connection exists on the starting board;
+            // the capture of its victim belongs to the later payoff move.
+            arrows: [{ from: makeSquare(checking.guard), to: makeSquare(checking.target) }],
+        };
         const kingDeflection =
             motif.label === "Mating Deflection" && proveMatingKingDeflection(step);
         if (kingDeflection) {
@@ -6654,6 +6804,9 @@ export function intermediateCaptureProof(step: TacticalReplayStep, nodeLimit = 5
             [deferred.to],
             [deferred.from, step.move.to],
             [step.move.to],
+            false,
+            undefined,
+            { allPiecesAtLeaf: true },
         );
         if (gain.kind !== "proven") continue;
         const extra = gain.gain - Math.max(rootGain, deferredGain);
@@ -7553,11 +7706,156 @@ export function proveExchangeDeflection(
     return proof;
 }
 
+type CheckingDeflectionProof = {
+    gain: number;
+    guard: Square;
+    target: Square;
+    branches: {
+        reply: string;
+        replyUci: string;
+        capture: string;
+        captureUci: string;
+        gain: number;
+    }[];
+};
+const checkingDeflectionCache = new Map<string, CheckingDeflectionProof | null>();
+
+/** The forced check evasion must move the same genuine guard away from a
+ * target. Taking that target before displacement has a legal recapture by
+ * this guard; after EVERY evasion the checked capture wins material instead.
+ * The pre-evasion capture is a protection probe, not a playable variation. */
+export function proveCheckingDeflection(
+    root: TacticalReplayStep,
+    nodeLimit = 4096,
+): CheckingDeflectionProof | null {
+    if (
+        !root ||
+        !Number.isSafeInteger(nodeLimit) ||
+        nodeLimit <= 0 ||
+        root.capture ||
+        root.move.promotion ||
+        root.before.isCheck() ||
+        !root.after.isCheck() ||
+        root.after.isEnd() ||
+        !root.after.ctx().checkers.has(root.move.to)
+    )
+        return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    if (nodeLimit === 4096 && checkingDeflectionCache.has(key))
+        return checkingDeflectionCache.get(key)!;
+    const side = root.before.turn;
+    const replies = legalMoves(root.after);
+    const guard = replies[0]?.from;
+    const defender = guard === undefined ? undefined : root.before.board.get(guard);
+    if (
+        guard === undefined ||
+        !defender ||
+        defender.color === side ||
+        defender.role === "king" ||
+        replies.some((reply) => reply.from !== guard || reply.promotion)
+    )
+        return null;
+    const budget = { nodes: nodeLimit };
+    const visit = (position: Chess, move: NormalMove) => {
+        if (--budget.nodes < 0) throw new Error("Checking deflection budget exhausted");
+        const after = position.clone();
+        after.play(move);
+        return after;
+    };
+    let result: CheckingDeflectionProof | null = null;
+    try {
+        if (defenderCanClaimFiftyMoveDraw(root.after)) return null;
+        const probe = withTurn(root.after, side);
+        const targets = [...root.after.board[opposite(side)]]
+            .filter((target) => !["king", "pawn"].includes(root.after.board.get(target)!.role))
+            .sort(
+                (a, b) =>
+                    VALUE[root.after.board.get(b)!.role] - VALUE[root.after.board.get(a)!.role],
+            );
+        for (const target of targets) {
+            if (
+                target === guard ||
+                !attacks(defender, guard, root.before.board.occupied).has(target)
+            )
+                continue;
+            const capture = { from: root.move.to, to: target };
+            if (!probe.isLegal(capture) || tacticalExchangeGain(probe, capture) >= 100) continue;
+            const premature = visit(probe, capture);
+            const recapture = { from: guard, to: target };
+            if (!premature.isLegal(recapture) || tacticalExchangeGain(premature, recapture) < 100)
+                continue;
+            const branches: CheckingDeflectionProof["branches"] = [];
+            for (const reply of replies) {
+                const next = visit(root.after, reply);
+                if (next.isEnd() || !next.isLegal(capture)) break;
+                const after = visit(next, capture);
+                if (after.isEnd()) break;
+                const relocatedGuard = { from: reply.to, to: target };
+                if (
+                    after.isLegal(relocatedGuard) &&
+                    tacticalExchangeGain(after, relocatedGuard) >= 100
+                )
+                    break;
+                let safe = true;
+                for (const resource of legalMoves(after)) {
+                    if (resource.promotion || visit(after, resource).isCheck()) {
+                        safe = false;
+                        break;
+                    }
+                }
+                if (!safe) break;
+                const gain = participantCaptureGain(
+                    next,
+                    capture,
+                    [...next.board[side], target],
+                    budget,
+                );
+                if (gain === null || gain - capturedValue(root.after, reply) < 100) break;
+                branches.push({
+                    reply: makeSan(root.after, reply),
+                    replyUci: makeUci(reply),
+                    capture: makeSan(next, capture),
+                    captureUci: makeUci(capture),
+                    gain: gain - capturedValue(root.after, reply),
+                });
+            }
+            if (branches.length === replies.length) {
+                result = {
+                    guard,
+                    target,
+                    gain: Math.min(...branches.map((branch) => branch.gain)),
+                    branches,
+                };
+                break;
+            }
+        }
+    } catch {
+        // An incomplete displacement or liability proof remains unknown.
+    }
+    if (nodeLimit === 4096) {
+        checkingDeflectionCache.set(key, result);
+        if (checkingDeflectionCache.size > 128)
+            checkingDeflectionCache.delete(checkingDeflectionCache.keys().next().value!);
+    }
+    return result;
+}
+
 /** Select a verified acceptance mechanism. The legacy guarded-target route
  * uses a restoration probe; the blocking-defender route proves the newly
  * opened legal capture and permits different receivers to lose differently. */
 function deflectionEvidence(steps: TacticalReplayStep[], source: TacticalMotifEvidence["source"]) {
     const [bait, reply, payoff] = steps;
+    const checking = bait && proveCheckingDeflection(bait);
+    if (checking) {
+        const branch = checking.branches.find(item => item.replyUci === reply?.uci) ?? checking.branches[0];
+        const guard = bait.before.board.get(checking.guard)!;
+        const victim = bait.before.board.get(checking.target)!;
+        return {
+            id: "deflection", label: "Deflection", source, confidence: "high", ply: 1,
+            moveUci: bait.uci, value: checking.gain,
+            evidence: `${bait.san} forces the ${guard.role} on ${makeSquare(checking.guard)} away from defending the ${victim.role} on ${makeSquare(checking.target)}. After ${branch.reply}, ${branch.capture} wins material. Before that displacement the same guard could legally recapture on ${makeSquare(checking.target)}; every legal check evasion now concedes a verified gain. The deflection happens with this check, not with an earlier quiet move.`,
+        } satisfies TacticalMotifEvidence;
+    }
     const exchange = bait && proveExchangeDeflection(bait);
     if (exchange)
         return {
@@ -8842,6 +9140,7 @@ export function hasTacticalStart(fen: string, line: string[], allowConditional =
             hasConcreteThreat(root) ||
             proveReinforcedPin(root) ||
             proveQuietMateThreat(root) ||
+            proveQuietMatingAttack(root) ||
             quietPreparation(steps) ||
             (allowConditional
                 ? proveQuietTacticalPreparation(steps)
@@ -8862,6 +9161,7 @@ export function episodeEnd(steps: TacticalReplayStep[], allowConditional = false
             !hasConcreteThreat(step) &&
             !proveReinforcedPin(step) &&
             !proveQuietMateThreat(step) &&
+            !proveQuietMatingAttack(step) &&
             !quietPreparation(steps.slice(i, i + 5)) &&
             !(i === 0 && allowConditional
                 ? proveQuietTacticalPreparation(steps.slice(i, i + 11))
@@ -9017,6 +9317,15 @@ export function auditTacticalMotifs(
             moveUci: steps[0].uci,
             value: forcingAttack.gain,
             evidence: `${steps[0].san} ${mixedCheckingAttack ? `offers the ${steps[0].before.board.get(steps[0].move.from)!.role} with check` : "starts a checking attack"} that wins material or mates against every legal reply. After ${material.reply}, ${material.line.join(" ")} wins material.${mateBranch ? ` Instead, ${mateBranch.reply} allows ${mateBranch.line.join(" ")}, forcing mate.` : ""} The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.`,
+        });
+    }
+    const quietAttack = !mate ? proveQuietMatingAttack(steps[0]) : null;
+    if (quietAttack) {
+        const material = quietAttack.branches.find(branch => branch.gain === quietAttack.gain)!;
+        candidates.push({
+            id: "forcingAttack", label: "Mating Attack", source: proposals[0]?.source ?? "available",
+            confidence: "high", ply: 1, moveUci: steps[0].uci, value: quietAttack.gain,
+            evidence: `${steps[0].san} creates the new threat ${quietAttack.threatSan}. Stopping the mate concedes material: after ${material.reply}, ${material.line.join(" ")} wins material. All ${quietAttack.branches.length} legal replies allow a verified local material gain or mate, including captures and counterchecks. This proves a material concession, not a forced-mate claim; later mechanisms belong to their actual moves.`,
         });
     }
     const doubleThreat = !mate && !verifiedFork(steps[0]) ? proveQuietDoubleThreat(steps[0]) : null;
@@ -9698,6 +10007,23 @@ export function auditTacticalMotifs(
     const filtered = normalizedCandidates
         .filter((m) => {
             if (incidentalMatingMechanisms.has(m.id) && m.ply === 1) return false;
+            // A fully verified checking discovery already includes its initial
+            // capture. Keep the mechanism, not a second loose-piece badge for
+            // the same move. A smaller/unproved or nonchecking discovery does
+            // not qualify, nor does a capture on a different ply.
+            if (m.id === "hangingPiece" && m.ply) {
+                const step = steps[m.ply - 1];
+                const captureGain = step?.capture ? tacticalExchangeGain(step.before, step.move) : Infinity;
+                const discovery = candidates.find((other) =>
+                    ["discoveredCheck", "doubleCheck"].includes(other.id) &&
+                    other.ply === m.ply && other.moveUci === m.moveUci &&
+                    other.confidence === "high" && (other.value ?? 0) > captureGain);
+                if (step?.capture && discovery) {
+                    const proof = discoveredEvidence(steps.slice(m.ply - 1), discovery.source);
+                    if (proof && proof.motif.id === discovery.id &&
+                        (proof.motif.value ?? 0) > captureGain) return false;
+                }
+            }
             // Capturing one guard AND deflecting the other is the fuller
             // explanation. Its matching guard-deflection component is not
             // a second badge, nor a reason to replace the combined lesson.

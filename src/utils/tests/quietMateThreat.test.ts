@@ -105,14 +105,17 @@ describe("quiet mating preparations", () => {
         expect(explanation?.primary.id).toBe("mateIn3");
     });
 
-    test("rejects a longer cooperative mate when a bishop has a checking defence", () => {
+    test("a bishop's checking defence refutes mate in three, but the mating threat still wins that bishop", () => {
         const fen = "7k/7p/5Kp1/7Q/8/8/8/2b5 w - - 0 1";
         const pvUci = ["h5h2", "h7h5", "f6g6", "h8g8", "h2b8"];
         const steps = replayTacticalLine(fen, pvUci);
         expect(steps.at(-1)?.after.isCheckmate()).toBe(true);
         expect(replayTacticalLine(fen, ["h5h2", "c1g5"])[1].after.isCheck()).toBe(true);
         expect(proveMateWithinThree(steps)).toBeNull();
-        expect(classifyPositionTacticalMotifs({ fen, pvUci }).motifs).toEqual([]);
+        const motifs = classifyPositionTacticalMotifs({ fen, pvUci }).motifs;
+        expect(motifs).toHaveLength(1);
+        expect(motifs[0]).toMatchObject({ id: "forcingAttack", label: "Mating Attack", ply: 1, value: 330 });
+        expect(motifs[0].evidence).toContain("not a forced-mate claim");
     });
 
     test("does not blame a quiet mating threat on one move when it persists after both supplied moves", () => {

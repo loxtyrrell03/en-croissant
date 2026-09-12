@@ -98,19 +98,20 @@ test("taking the exposed discovery rook is compensation, not a hanging-rook mist
     ).not.toBe("Countercapture");
 });
 test.skipIf(!process.env.TACTICAL_PRIVATE_THIRD_SAMPLE)(
-    "one intermediate discovered check is not two competing lessons",
+    "a checked discovery is one lesson, without an unsafe deferred pawn capture",
     () => {
         const sample = JSON.parse(readFileSync(process.env.TACTICAL_PRIVATE_THIRD_SAMPLE!, "utf8"));
         const row = sample.cases.find((r: { id: string }) => r.id === "private-easy:105");
         const result = classifyPositionTacticalMotifs({ fen: row.fen, pvUci: row.sourceUci });
         // The root preparation is now proved independently. The later
-        // intermediate discovery still remains one lesson, not two badges.
+        // discovery remains one lesson. Qxa2 is not safe against every
+        // check evasion; the complete discovery proof uses promotions too.
         expect(result.motifs[0]).toMatchObject({ id: "forkPreparation", ply: 1 });
         expect(result.timeline?.filter((m) => m.ply === 5).map((m) => m.id)).toEqual([
-            "intermezzo",
+            "discoveredCheck",
         ]);
         expect(result.timeline?.find((m) => m.ply === 5)?.evidence).toContain(
-            "uncovers check from the queen",
+            "uncovering the queen on a6 against the king",
         );
     },
 );

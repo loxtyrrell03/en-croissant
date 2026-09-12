@@ -162,7 +162,8 @@ test.skipIf(!process.env.TACTICAL_PRIVATE_THIRD_SAMPLE)(
         const result = classifyPositionTacticalMotifs({ fen: row.fen, pvUci: row.sourceUci });
         expect(result.motifs[0]).toMatchObject({ id: "forkPreparation", ply: 1, value: 220 });
         expect(result.timeline?.find((m) => m.id === "fork")).toMatchObject({ ply: 3 });
-        expect(result.timeline?.find((m) => m.id === "intermezzo")).toMatchObject({ ply: 5 });
+        expect(result.timeline?.find((m) => m.id === "discoveredCheck")).toMatchObject({ ply: 5 });
+        expect(result.timeline?.some((m) => m.id === "intermezzo" && m.ply === 5)).toBe(false);
         const review = classifyMistakeReviewMotifs({
             fen: row.fen,
             playedMoveUci: "d4d3",

@@ -1,4 +1,8 @@
-# Rare-theme real-game review — adapter 85 / live pipeline 90
+# Rare-theme real-game review — adapter 86 / live pipeline 91
+
+## Quiet mating attack and checking deflection follow-up
+
+The [new review](quiet-mating-attack-review.md) recovers nBrWE's quiet Be5 with an independent all-defence Mating Attack proof. Qe1+ is Deflection on its actual ply; Qxe4+ is the payoff, not an extra bishop gain or an unsound Intermediate Check before a remote pawn capture. Ninety fresh public/private engine searches validate and constrain this milestone, including rejected capture plans. The other nineteen rare outputs, all 180 course primary labels and 32 priorities remain unchanged. Four private continuation results change through liability-aware noise filtering; no accuracy percentage follows. Existing interference and exact KPK coverage passes, while broader/drawing zugzwang and quiet-trap gaps remain open.
 
 ## Branch-specific mating clearance follow-up
 
@@ -58,7 +62,7 @@ Both helpers have 4,096-visit limits and abstain on incomplete proofs. Material 
 | QSKdo | The engine supports ...Kd5 and penetration toward f4. Opposition/zugzwang versus a direct threat still needs a complete causal explanation. Empty is not a correct negative. |
 | CSh8J | Nd5+ forks king and knight; accepting deflects the promotion guard. Fork is a defensible root lesson and promotion belongs at ply 3. The conditional guard-deflection explanation could be clearer. |
 | ZVq1J | Longer discovered-check/rook-offer combination remains incompletely explained. Source and engine move orders differ; retain later verified mechanisms at their actual plies, not as the initial move's cause. |
-| nBrWE | Quiet bishop move, mating threats and queen deflection are a real coverage gap. The winning engine score does not independently prove the intended main mechanism. |
+| nBrWE | Be5 now has a bounded all-defence Mating Attack certificate. Qe1+ is the actual later queen Deflection and Qxe4+ its payoff. A losing remote Bxb2 cannot finance an Intermediate Check. The proof's local material bound is not the full-position engine score or a forced-mate claim. |
 | om0GQ | Mate in three stays primary; the verified king deflection is secondary at Rg7+. Corrected. |
 | dLG91 | Ra1 traps the queen; Qxa1+ Qxa1 is queen for rook, not a free queen. Existing Trapped Piece is appropriate. |
 | snAK4 | The multi-move queen/rook trap and pin are still unproved at the root. Do not borrow final capture totals. |
@@ -75,4 +79,4 @@ Relative to adapter 80, adapter 81 changed one primary (zYjb5) and added a mecha
 
 Exact-input replays of seven private Woodpecker reports cover 180 positions, including the 21-position positional quarter sample. Adapter 83 left all source and 179 live results unchanged ignoring version; one live second variation gained the actual-ply pawn deflection described above. Adapter 84 preserves all 180 of those full source/live results. Adapter 85 changes only the three supporting clearance explanations, leaving 177 full source/live results and all 180 primary labels unchanged. Those are reclassifications of stored engine lines, not 180 new engine searches. The 32 frozen mistake-priority judgements are unchanged. The quarter sample's separately reached compensating-exchange false positive remains fixed and explicitly tested through the built worker; private data and detailed receipts stay outside Git.
 
-Final verification and delivery status are recorded in [the current course audit](private-course-review.md). The [152-input production-worker timing receipt](built-worker-adapter85.json) exposes the measured startup and classification times; the additional rare/private inputs are deadline/parity checks, not part of these percentiles. No native app, package or service was restarted/deployed, and source/render/controller tests are not physical WebView proof.
+Final verification and delivery status are recorded in [the current course audit](private-course-review.md). The [159-input production-worker timing receipt](built-worker-adapter86.json) exposes the measured startup and classification times; the additional rare/private inputs are deadline/parity checks, not part of these percentiles. No native app, package or service was restarted/deployed, and source/render/controller tests are not physical WebView proof.

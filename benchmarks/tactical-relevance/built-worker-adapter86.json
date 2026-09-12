@@ -1,0 +1,1477 @@
+{
+  "scope": "Actual application worker controller with cold production JS worker import, classification and structured transfer on this Node host. Separate startup and computation deadlines; excludes engine search and does not prove WebView or physical UI latency.",
+  "deadlineMs": 3000,
+  "startupDeadlineMs": 20000,
+  "cases": [
+    {
+      "id": "quiet-mating-attack:real",
+      "elapsedMs": 95.51160000000004,
+      "startupMs": 28.845000000000027,
+      "classificationMs": 66.66660000000002,
+      "primary": [
+        "forcingAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "quiet-mating-attack:root-only",
+      "elapsedMs": 69.68560000000025,
+      "startupMs": 27.797000000000025,
+      "classificationMs": 41.888600000000224,
+      "primary": [
+        "forcingAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "quiet-mating-attack:queen-liability",
+      "elapsedMs": 34.33010000000013,
+      "startupMs": 26.0940999999998,
+      "classificationMs": 8.236000000000331,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "quiet-mating-attack:checking-deflection",
+      "elapsedMs": 52.678100000000086,
+      "startupMs": 26.097699999999804,
+      "classificationMs": 26.58040000000028,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "quiet-mating-attack:payoff",
+      "elapsedMs": 48.27689999999984,
+      "startupMs": 25.864399999999932,
+      "classificationMs": 22.41249999999991,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "quiet-mating-attack:pin-liability",
+      "elapsedMs": 60.41939999999977,
+      "startupMs": 25.066699999999855,
+      "classificationMs": 35.35269999999991,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:checking-discovery-capture",
+      "elapsedMs": 56.33669999999984,
+      "startupMs": 27.254500000000007,
+      "classificationMs": 29.08219999999983,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "endgame:claimable-entry",
+      "elapsedMs": 31.4704999999999,
+      "startupMs": 24.91319999999996,
+      "classificationMs": 6.557299999999941,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "endgame:real-pawn-ending-entry",
+      "elapsedMs": 99.89359999999988,
+      "startupMs": 25.697599999999966,
+      "classificationMs": 74.19599999999991,
+      "primary": [
+        "tacticalPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "endgame:exact-zugzwang",
+      "elapsedMs": 88.63650000000007,
+      "startupMs": 26.870800000000145,
+      "classificationMs": 61.765699999999924,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "endgame:drawn-pawn-ending",
+      "elapsedMs": 80.19090000000006,
+      "startupMs": 26.73700000000008,
+      "classificationMs": 53.453899999999976,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "endgame:reflected-zugzwang",
+      "elapsedMs": 94.44970000000012,
+      "startupMs": 26.191600000000108,
+      "classificationMs": 68.25810000000001,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:guard-deflection-root",
+      "elapsedMs": 71.49739999999974,
+      "startupMs": 24.909200000000055,
+      "classificationMs": 46.58819999999969,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:balanced-exchange-recovery",
+      "elapsedMs": 107.34000000000015,
+      "startupMs": 26.36239999999998,
+      "classificationMs": 80.97760000000017,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "opening:balanced-later-knight-exchange",
+      "elapsedMs": 111.02550000000019,
+      "startupMs": 28.308400000000347,
+      "classificationMs": 82.71709999999985,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "rare:king-interference-exchange-payoff",
+      "elapsedMs": 64.4992000000002,
+      "startupMs": 26.327400000000125,
+      "classificationMs": 38.171800000000076,
+      "primary": [
+        "interference"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:knight-interferes-bishop-guard",
+      "elapsedMs": 105.95779999999968,
+      "startupMs": 25.1574999999998,
+      "classificationMs": 80.80029999999988,
+      "primary": [
+        "interference"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:interference-off-square-knight-liability",
+      "elapsedMs": 67.55099999999993,
+      "startupMs": 25.172500000000127,
+      "classificationMs": 42.3784999999998,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:mating-rook-liability-discovery",
+      "elapsedMs": 98.32850000000008,
+      "startupMs": 26.284700000000157,
+      "classificationMs": 72.04379999999992,
+      "primary": [
+        "discoveredAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:queen-countercapture-invalidates-free-knight",
+      "elapsedMs": 43.36270000000013,
+      "startupMs": 24.684900000000198,
+      "classificationMs": 18.677799999999934,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "recovered:root-only-exchange-discovery",
+      "elapsedMs": 150.45859999999993,
+      "startupMs": 25.153999999999996,
+      "classificationMs": 125.30459999999994,
+      "primary": [
+        "discoveredAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "recovered:reflected-root-only-exchange-discovery",
+      "elapsedMs": 148.3177999999998,
+      "startupMs": 26.174399999999878,
+      "classificationMs": 122.14339999999993,
+      "primary": [
+        "discoveredAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:root-mate-over-material-pv",
+      "elapsedMs": 75.85089999999946,
+      "startupMs": 24.248099999999795,
+      "classificationMs": 51.60279999999966,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:root-only-queen-offer-mate",
+      "elapsedMs": 49.902100000000246,
+      "startupMs": 24.577800000000025,
+      "classificationMs": 25.32430000000022,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:mixed-checking-offer",
+      "elapsedMs": 91.68449999999939,
+      "startupMs": 24.89469999999983,
+      "classificationMs": 66.78979999999956,
+      "primary": [
+        "forcingAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:later-fork-labelled-as-continuation",
+      "elapsedMs": 89.15080000000034,
+      "startupMs": 24.040200000000368,
+      "classificationMs": 65.11059999999998,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:declined-fork-preparation",
+      "elapsedMs": 91.22329999999965,
+      "startupMs": 23.657499999999345,
+      "classificationMs": 67.56580000000031,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:captured-fork-defender",
+      "elapsedMs": 69.6197000000002,
+      "startupMs": 24.392800000000534,
+      "classificationMs": 45.22689999999966,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:future-promotion-not-root-cause",
+      "elapsedMs": 94.77970000000005,
+      "startupMs": 24.946100000000115,
+      "classificationMs": 69.83359999999993,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:capture-to-discovered-check",
+      "elapsedMs": 69.38990000000013,
+      "startupMs": 25.037199999999757,
+      "classificationMs": 44.35270000000037,
+      "primary": [
+        "attraction"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:checking-skewer-with-defended-block",
+      "elapsedMs": 75.0610000000006,
+      "startupMs": 27.246100000000297,
+      "classificationMs": 47.81490000000031,
+      "primary": [
+        "skewer"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:cooperative-bishop-offer",
+      "elapsedMs": 65.11580000000049,
+      "startupMs": 24.53729999999996,
+      "classificationMs": 40.57850000000053,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:unproved-clearance-offer",
+      "elapsedMs": 75.70720000000074,
+      "startupMs": 24.59100000000035,
+      "classificationMs": 51.11620000000039,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:unresolved-root-retains-later-fork",
+      "elapsedMs": 82.6855999999998,
+      "startupMs": 25.151100000000042,
+      "classificationMs": 57.53449999999975,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:fork-square-already-empty-control",
+      "elapsedMs": 70.44779999999992,
+      "startupMs": 25.178600000000188,
+      "classificationMs": 45.26919999999973,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:root-only-cleared-fork-square",
+      "elapsedMs": 56.440599999999904,
+      "startupMs": 24.954999999999927,
+      "classificationMs": 31.485599999999977,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:shared-mating-route",
+      "elapsedMs": 73.85519999999997,
+      "startupMs": 24.68870000000061,
+      "classificationMs": 49.16649999999936,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:countercapture-and-delayed-fork",
+      "elapsedMs": 89.58070000000043,
+      "startupMs": 24.70680000000084,
+      "classificationMs": 64.8738999999996,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:pawn-square-clearance-fork",
+      "elapsedMs": 60.62910000000011,
+      "startupMs": 24.26420000000053,
+      "classificationMs": 36.36489999999958,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:immediate-alternative-after-cycle",
+      "elapsedMs": 174.64579999999933,
+      "startupMs": 25.085399999999936,
+      "classificationMs": 149.5603999999994,
+      "primary": [
+        "capturingDefender"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:combined-defender-removal",
+      "elapsedMs": 92.86729999999989,
+      "startupMs": 26.387000000000626,
+      "classificationMs": 66.48029999999926,
+      "primary": [
+        "capturingDefender"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "regression:connected-pin-entry",
+      "elapsedMs": 51.69800000000032,
+      "startupMs": 24.614199999999983,
+      "classificationMs": 27.083800000000338,
+      "primary": [
+        "pin"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:incidental-pin-check-cycle",
+      "elapsedMs": 55.90639999999985,
+      "startupMs": 24.42110000000048,
+      "classificationMs": 31.48529999999937,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:exchange-deflection",
+      "elapsedMs": 73.33840000000055,
+      "startupMs": 24.72240000000056,
+      "classificationMs": 48.615999999999985,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:mating-king-acceptance",
+      "elapsedMs": 65.46030000000064,
+      "startupMs": 26.035499999999956,
+      "classificationMs": 39.42480000000069,
+      "primary": [
+        "attraction"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:discovery-backed-fork",
+      "elapsedMs": 129.02010000000064,
+      "startupMs": 24.194300000000112,
+      "classificationMs": 104.82580000000053,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:mating-capture",
+      "elapsedMs": 49.65340000000015,
+      "startupMs": 24.827800000000025,
+      "classificationMs": 24.825600000000122,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:two-minors-for-rook",
+      "elapsedMs": 85.93069999999989,
+      "startupMs": 24.134100000000217,
+      "classificationMs": 61.79659999999967,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:mate-backed-fork",
+      "elapsedMs": 84.22639999999956,
+      "startupMs": 24.660799999999654,
+      "classificationMs": 59.565599999999904,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:perpetual-check",
+      "elapsedMs": 55.62369999999919,
+      "startupMs": 24.05319999999938,
+      "classificationMs": 31.57049999999981,
+      "primary": [
+        "perpetualCheck"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:reinforced-pin",
+      "elapsedMs": 56.880200000000514,
+      "startupMs": 24.24420000000009,
+      "classificationMs": 32.63600000000042,
+      "primary": [
+        "pin"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:blocking-defender-deflection",
+      "elapsedMs": 71.21330000000034,
+      "startupMs": 25.164700000000266,
+      "classificationMs": 46.04860000000008,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:quiet-capture-fork-preparation",
+      "elapsedMs": 70.3762999999999,
+      "startupMs": 24.579000000000633,
+      "classificationMs": 45.79729999999927,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:quiet-pawn-fork-preparation",
+      "elapsedMs": 78.50410000000011,
+      "startupMs": 24.2511999999997,
+      "classificationMs": 54.25290000000041,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:quiet-pawn-fork-checking-escape",
+      "elapsedMs": 72.93080000000009,
+      "startupMs": 25.28729999999996,
+      "classificationMs": 47.64350000000013,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:quiet-pawn-fork-extra-defender",
+      "elapsedMs": 80.19480000000021,
+      "startupMs": 24.9984000000004,
+      "classificationMs": 55.19639999999981,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:accepted-fork-sacrifice",
+      "elapsedMs": 48.27390000000014,
+      "startupMs": 24.877700000000004,
+      "classificationMs": 23.396200000000135,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:accepted-mating-sacrifice",
+      "elapsedMs": 45.32850000000053,
+      "startupMs": 24.293800000000374,
+      "classificationMs": 21.034700000000157,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:capturing-fork-preparation",
+      "elapsedMs": 55.57640000000083,
+      "startupMs": 25.38920000000053,
+      "classificationMs": 30.187200000000303,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:mating-deflection-declined",
+      "elapsedMs": 63.39080000000013,
+      "startupMs": 24.798799999999574,
+      "classificationMs": 38.59200000000055,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:fork-backed-by-checking-recapture",
+      "elapsedMs": 84.90800000000036,
+      "startupMs": 25.98109999999997,
+      "classificationMs": 58.92690000000039,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:defender-removing-fork-preparation",
+      "elapsedMs": 82.03530000000046,
+      "startupMs": 24.422700000000077,
+      "classificationMs": 57.612600000000384,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:queen-capture-over-incidental-pin",
+      "elapsedMs": 43.07560000000012,
+      "startupMs": 24.160799999999654,
+      "classificationMs": 18.91480000000047,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:exchange-for-discovery-attraction",
+      "elapsedMs": 97.01920000000064,
+      "startupMs": 25.22229999999945,
+      "classificationMs": 71.79690000000119,
+      "primary": [
+        "attraction"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:quiet-mating-deflection-exchange",
+      "elapsedMs": 102.33860000000095,
+      "startupMs": 24.38680000000022,
+      "classificationMs": 77.95180000000073,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:mate-independent-of-fork-victim",
+      "elapsedMs": 51.31210000000101,
+      "startupMs": 23.810200000001714,
+      "classificationMs": 27.501899999999296,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:knight-exchange-for-pawn",
+      "elapsedMs": 56.93680000000131,
+      "startupMs": 24.144600000001446,
+      "classificationMs": 32.792199999999866,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:bishop-exchange-for-pawn",
+      "elapsedMs": 64.77909999999974,
+      "startupMs": 24.192699999999604,
+      "classificationMs": 40.58640000000014,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:protected-discovery-payoff",
+      "elapsedMs": 77.63290000000052,
+      "startupMs": 24.4312000000009,
+      "classificationMs": 53.20169999999962,
+      "primary": [
+        "discoveredAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "screenshot:f7-alternatives",
+      "elapsedMs": 99.47069999999985,
+      "startupMs": 24.910499999999956,
+      "classificationMs": 74.5601999999999,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "balanced-defender-recapture",
+      "elapsedMs": 121.06290000000081,
+      "startupMs": 25.843800000000556,
+      "classificationMs": 95.21910000000025,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "incidental-pawn-discovery",
+      "elapsedMs": 92.99980000000141,
+      "startupMs": 25.269000000000233,
+      "classificationMs": 67.73080000000118,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "balanced-defender-history",
+      "elapsedMs": 87.68730000000141,
+      "startupMs": 24.853500000001077,
+      "classificationMs": 62.83380000000034,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-clearance:real",
+      "elapsedMs": 65.40439999999944,
+      "startupMs": 25.538800000000265,
+      "classificationMs": 39.865599999999176,
+      "primary": [
+        "mateIn4"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-clearance:root-only",
+      "elapsedMs": 52.60579999999936,
+      "startupMs": 25.72989999999845,
+      "classificationMs": 26.87590000000091,
+      "primary": [
+        "mateIn4"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-clearance:declined",
+      "elapsedMs": 55.69050000000061,
+      "startupMs": 27.73489999999947,
+      "classificationMs": 27.95560000000114,
+      "primary": [
+        "mateIn4"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-clearance:claimable-draw",
+      "elapsedMs": 66.47639999999956,
+      "startupMs": 25.490199999998367,
+      "classificationMs": 40.98620000000119,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-clearance:line",
+      "elapsedMs": 60.27140000000145,
+      "startupMs": 24.810100000000602,
+      "classificationMs": 35.46130000000085,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-clearance:double-check",
+      "elapsedMs": 45.73059999999896,
+      "startupMs": 24.706099999999424,
+      "classificationMs": 21.024499999999534,
+      "primary": [
+        "doubleCheck"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply8",
+      "elapsedMs": 247.26770000000033,
+      "startupMs": 24.99200000000019,
+      "classificationMs": 222.27570000000014,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply13",
+      "elapsedMs": 142.55019999999968,
+      "startupMs": 25.30160000000069,
+      "classificationMs": 117.24859999999899,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply18",
+      "elapsedMs": 242.5064999999995,
+      "startupMs": 25.6257999999998,
+      "classificationMs": 216.8806999999997,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply23",
+      "elapsedMs": 205.72409999999945,
+      "startupMs": 25.987299999998868,
+      "classificationMs": 179.73680000000058,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply28",
+      "elapsedMs": 51.973799999999756,
+      "startupMs": 26.220100000000457,
+      "classificationMs": 25.7536999999993,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply33",
+      "elapsedMs": 102.57960000000094,
+      "startupMs": 25.59610000000066,
+      "classificationMs": 76.98350000000028,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply38",
+      "elapsedMs": 38.48559999999998,
+      "startupMs": 25.80529999999999,
+      "classificationMs": 12.680299999999988,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply43",
+      "elapsedMs": 137.5497000000014,
+      "startupMs": 28.42070000000058,
+      "classificationMs": 109.12900000000081,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply8",
+      "elapsedMs": 178.6788000000015,
+      "startupMs": 25.675700000001598,
+      "classificationMs": 153.0030999999999,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply13",
+      "elapsedMs": 96.18349999999919,
+      "startupMs": 26.49749999999949,
+      "classificationMs": 69.6859999999997,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply18",
+      "elapsedMs": 627.8094999999994,
+      "startupMs": 25.214200000000346,
+      "classificationMs": 602.595299999999,
+      "primary": [
+        "mateIn7"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply23",
+      "elapsedMs": 229.94850000000042,
+      "startupMs": 26.09780000000137,
+      "classificationMs": 203.85069999999905,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply28",
+      "elapsedMs": 149.31640000000152,
+      "startupMs": 25.60410000000047,
+      "classificationMs": 123.71230000000105,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply33",
+      "elapsedMs": 211.64919999999984,
+      "startupMs": 24.65400000000045,
+      "classificationMs": 186.9951999999994,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply38",
+      "elapsedMs": 123.73290000000088,
+      "startupMs": 25.681400000001304,
+      "classificationMs": 98.05149999999958,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply43",
+      "elapsedMs": 102.77189999999973,
+      "startupMs": 24.946200000000317,
+      "classificationMs": 77.82569999999942,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply48",
+      "elapsedMs": 149.46290000000045,
+      "startupMs": 23.770800000000236,
+      "classificationMs": 125.69210000000021,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply53",
+      "elapsedMs": 72.77220000000125,
+      "startupMs": 25.998900000000503,
+      "classificationMs": 46.773300000000745,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply58",
+      "elapsedMs": 41.01939999999922,
+      "startupMs": 25.031199999999444,
+      "classificationMs": 15.988199999999779,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply8",
+      "elapsedMs": 38.33299999999872,
+      "startupMs": 24.701900000000023,
+      "classificationMs": 13.631099999998696,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply13",
+      "elapsedMs": 146.39440000000104,
+      "startupMs": 25.428100000000995,
+      "classificationMs": 120.96630000000005,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply18",
+      "elapsedMs": 146.8109999999997,
+      "startupMs": 33.3096000000005,
+      "classificationMs": 113.5013999999992,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply23",
+      "elapsedMs": 38.1242000000002,
+      "startupMs": 26.92950000000019,
+      "classificationMs": 11.194700000000012,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply28",
+      "elapsedMs": 111.6833000000006,
+      "startupMs": 30.29030000000057,
+      "classificationMs": 81.39300000000003,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply9",
+      "elapsedMs": 161.05010000000038,
+      "startupMs": 30.397899999999936,
+      "classificationMs": 130.65220000000045,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply14",
+      "elapsedMs": 42.03269999999975,
+      "startupMs": 29.117699999998877,
+      "classificationMs": 12.915000000000873,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply19",
+      "elapsedMs": 138.20809999999983,
+      "startupMs": 26.67189999999937,
+      "classificationMs": 111.53620000000046,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply24",
+      "elapsedMs": 90.82099999999991,
+      "startupMs": 27.218800000000556,
+      "classificationMs": 63.60219999999936,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply29",
+      "elapsedMs": 133.8577000000023,
+      "startupMs": 28.598500000000058,
+      "classificationMs": 105.25920000000224,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply34",
+      "elapsedMs": 283.78719999999885,
+      "startupMs": 26.660100000000966,
+      "classificationMs": 257.1270999999979,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply39",
+      "elapsedMs": 107.14390000000276,
+      "startupMs": 26.109300000000076,
+      "classificationMs": 81.03460000000268,
+      "primary": [
+        "discoveredAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply44",
+      "elapsedMs": 102.3148000000001,
+      "startupMs": 25.389500000001135,
+      "classificationMs": 76.92529999999897,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply9",
+      "elapsedMs": 39.6820000000007,
+      "startupMs": 28.80739999999787,
+      "classificationMs": 10.874600000002829,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply14",
+      "elapsedMs": 509.1102000000028,
+      "startupMs": 25.166800000002695,
+      "classificationMs": 483.9434000000001,
+      "primary": [
+        "forcingAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply19",
+      "elapsedMs": 157.54089999999997,
+      "startupMs": 24.83510000000024,
+      "classificationMs": 132.70579999999973,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply24",
+      "elapsedMs": 284.6283000000003,
+      "startupMs": 24.14730000000054,
+      "classificationMs": 260.48099999999977,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply29",
+      "elapsedMs": 195.77939999999944,
+      "startupMs": 27.790099999998347,
+      "classificationMs": 167.9893000000011,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply34",
+      "elapsedMs": 206.40000000000146,
+      "startupMs": 25.656800000000658,
+      "classificationMs": 180.7432000000008,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply39",
+      "elapsedMs": 195.62189999999828,
+      "startupMs": 26.61859999999797,
+      "classificationMs": 169.0033000000003,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply44",
+      "elapsedMs": 164.08190000000104,
+      "startupMs": 26.851299999998446,
+      "classificationMs": 137.2306000000026,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply49",
+      "elapsedMs": 47.13839999999982,
+      "startupMs": 31.1304999999993,
+      "classificationMs": 16.007900000000518,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply54",
+      "elapsedMs": 87.85180000000037,
+      "startupMs": 26.862600000000384,
+      "classificationMs": 60.98919999999998,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply59",
+      "elapsedMs": 56.86419999999998,
+      "startupMs": 27.002199999998993,
+      "classificationMs": 29.86200000000099,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply9",
+      "elapsedMs": 216.1127000000015,
+      "startupMs": 29.647499999999127,
+      "classificationMs": 186.46520000000237,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply14",
+      "elapsedMs": 40.126100000001315,
+      "startupMs": 26.453199999999924,
+      "classificationMs": 13.672900000001391,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply19",
+      "elapsedMs": 43.237999999997555,
+      "startupMs": 25.257999999997992,
+      "classificationMs": 17.979999999999563,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply24",
+      "elapsedMs": 38.56900000000314,
+      "startupMs": 26.3734000000004,
+      "classificationMs": 12.195600000002742,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply29",
+      "elapsedMs": 84.28779999999824,
+      "startupMs": 24.70499999999811,
+      "classificationMs": 59.582800000000134,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:DVSJh",
+      "elapsedMs": 49.24630000000252,
+      "startupMs": 27.0525000000016,
+      "classificationMs": 22.19380000000092,
+      "primary": [
+        "anastasiaMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:007c6",
+      "elapsedMs": 49.059000000001106,
+      "startupMs": 29.005400000001828,
+      "classificationMs": 20.05359999999928,
+      "primary": [
+        "bodenMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:fVRuW",
+      "elapsedMs": 117.24380000000019,
+      "startupMs": 28.63850000000093,
+      "classificationMs": 88.60529999999926,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:K56tk",
+      "elapsedMs": 50.26469999999972,
+      "startupMs": 31.10069999999905,
+      "classificationMs": 19.16400000000067,
+      "primary": [
+        "dovetailMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:NKnZo",
+      "elapsedMs": 46.69159999999829,
+      "startupMs": 25.377599999999802,
+      "classificationMs": 21.313999999998487,
+      "primary": [
+        "killBoxMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:5hjz7",
+      "elapsedMs": 58.261099999999715,
+      "startupMs": 28.804599999999482,
+      "classificationMs": 29.456500000000233,
+      "primary": [
+        "bodenMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:GIB50",
+      "elapsedMs": 49.5522000000019,
+      "startupMs": 28.16939999999886,
+      "classificationMs": 21.382800000003044,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:REAdh",
+      "elapsedMs": 44.65049999999974,
+      "startupMs": 25.826900000000023,
+      "classificationMs": 18.823599999999715,
+      "primary": [
+        "hookMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:NGZzo",
+      "elapsedMs": 100.66280000000188,
+      "startupMs": 26.131100000002334,
+      "classificationMs": 74.53169999999955,
+      "primary": [
+        "doubleThreat"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:4Osgg",
+      "elapsedMs": 75.05489999999918,
+      "startupMs": 27.251499999998487,
+      "classificationMs": 47.80340000000069,
+      "primary": [
+        "mateIn4"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:UCiYo",
+      "elapsedMs": 57.50119999999879,
+      "startupMs": 26.730100000000675,
+      "classificationMs": 30.771099999998114,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:CSh8J",
+      "elapsedMs": 59.3112000000001,
+      "startupMs": 26.245500000000902,
+      "classificationMs": 33.0656999999992,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:opGD7",
+      "elapsedMs": 59.459600000001956,
+      "startupMs": 25.979800000000978,
+      "classificationMs": 33.47980000000098,
+      "primary": [
+        "forcingAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:fJrhT",
+      "elapsedMs": 67.5632000000005,
+      "startupMs": 27.200300000000425,
+      "classificationMs": 40.36290000000008,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:MJZcU",
+      "elapsedMs": 270.56930000000284,
+      "startupMs": 25.28070000000298,
+      "classificationMs": 245.28859999999986,
+      "primary": [
+        "promotionCombination"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:0RleZ",
+      "elapsedMs": 46.021199999999226,
+      "startupMs": 26.152299999997922,
+      "classificationMs": 19.868900000001304,
+      "primary": [
+        "hookMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:Z5arb",
+      "elapsedMs": 122.72199999999793,
+      "startupMs": 25.169999999998254,
+      "classificationMs": 97.55199999999968,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:iUj3e",
+      "elapsedMs": 153.8158000000003,
+      "startupMs": 25.3137999999999,
+      "classificationMs": 128.5020000000004,
+      "primary": [
+        "skewer"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:Kvpvi",
+      "elapsedMs": 54.3208999999988,
+      "startupMs": 24.35020000000077,
+      "classificationMs": 29.970699999998033,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:hz3ed",
+      "elapsedMs": 44.616299999997864,
+      "startupMs": 24.089199999998527,
+      "classificationMs": 20.527099999999336,
+      "primary": [
+        "triangleMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:o8K8i",
+      "elapsedMs": 66.7492999999995,
+      "startupMs": 24.625700000000506,
+      "classificationMs": 42.12359999999899,
+      "primary": [
+        "enPassant"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:w1lKu",
+      "elapsedMs": 133.28389999999854,
+      "startupMs": 24.611699999997654,
+      "classificationMs": 108.67220000000088,
+      "primary": [
+        "clearance"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:rqXvZ",
+      "elapsedMs": 107.95700000000215,
+      "startupMs": 27.22030000000086,
+      "classificationMs": 80.73670000000129,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:ouIHI",
+      "elapsedMs": 54.56239999999889,
+      "startupMs": 25.8140999999996,
+      "classificationMs": 28.74829999999929,
+      "primary": [
+        "discoveredAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:eOCp9",
+      "elapsedMs": 33.467499999998836,
+      "startupMs": 25.028599999997823,
+      "classificationMs": 8.438900000001013,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:erSYy",
+      "elapsedMs": 56.02390000000014,
+      "startupMs": 25.264100000000326,
+      "classificationMs": 30.759799999999814,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:vztmO",
+      "elapsedMs": 46.939000000002125,
+      "startupMs": 24.910400000000664,
+      "classificationMs": 22.02860000000146,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:G8wdr",
+      "elapsedMs": 221.41509999999835,
+      "startupMs": 24.106299999999464,
+      "classificationMs": 197.30879999999888,
+      "primary": [
+        "discoveredAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:4GiqO",
+      "elapsedMs": 32.15309999999954,
+      "startupMs": 24.69380000000092,
+      "classificationMs": 7.4592999999986205,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:wh6Ac",
+      "elapsedMs": 42.16250000000218,
+      "startupMs": 24.06970000000001,
+      "classificationMs": 18.09280000000217,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:NOaM1",
+      "elapsedMs": 52.32979999999952,
+      "startupMs": 24.191200000001118,
+      "classificationMs": 28.138599999998405,
+      "primary": [
+        "skewer"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:JaKHo",
+      "elapsedMs": 66.21940000000177,
+      "startupMs": 24.247000000003027,
+      "classificationMs": 41.97239999999874,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    }
+  ]
+}

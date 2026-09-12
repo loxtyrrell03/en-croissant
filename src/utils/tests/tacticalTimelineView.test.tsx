@@ -6,6 +6,20 @@ import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLin
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 
+test("a quiet mating attack keeps the later checking deflection on its own move", () => {
+  const row = JSON.parse(readFileSync("benchmarks/tactical-relevance/rare-theme-development.json", "utf8")).cases.find((row: {id: string}) => row.id === "lichess:nBrWE");
+  const result = classifyPositionTacticalMotifs({fen: row.startFen, pvUci: row.bestLine});
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={replayTacticalLine(row.startFen, row.bestLine).map(step => step.san)} motifs={result.timeline ?? []} /></MantineProvider>);
+  expect(container.querySelector("details")?.hasAttribute("open")).toBe(false);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Mating Attack");
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).not.toContain("Deflection");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Deflection");
+  expect(container.querySelector('[data-tactical-ply="5"]')?.textContent).toContain("Deflection Payoff");
+  expect(container.textContent).not.toContain("Intermediate Check");
+  expect(container.textContent).toContain("not a forced-mate claim");
+});
+
 test("a mating clearance explains the used branch without replacing the mate or making acceptance compulsory", () => {
   const row = JSON.parse(readFileSync("benchmarks/tactical-relevance/rare-theme-development.json", "utf8")).cases.find((row: {id: string}) => row.id === "lichess:NrHkx");
   const result = classifyPositionTacticalMotifs({fen: row.startFen, pvUci: row.bestLine});
