@@ -113,10 +113,13 @@ test("sharp unresolved attacking and exchange positions are not re-labelled posi
     }
 });
 
-test("the genuine missed checking capture is retained rather than borrowing the later queen capture", () => {
+test("the genuine missed checking capture leads with its discovery rather than the later queen capture", () => {
     const row = cases.find((row: any) => row.id === "context:BkwHTU3l:ply59")!;
     expect(row.nature).toMatchObject({ nature: "tactical", aspect: "missed" });
     expect(row.nature.reason).toContain("Rxd7+");
-    expect(row.nature.reason).not.toContain("Rxa7");
+    expect(row.explanation.primary).toMatchObject({ id: "discoveredCheck", ply: 1, moveUci: "d3d7" });
+    // The queen exchange is now independently verified as a conditional
+    // defense, not borrowed from a later PV as the root's main theme.
+    expect(row.nature.reason).toContain("Rxc2 is met by Rxa7");
     expect(row.nature.reason).toBe(row.explanation.text);
 });

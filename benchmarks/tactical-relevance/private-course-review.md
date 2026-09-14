@@ -1,6 +1,20 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 106 / live pipeline 111
+## Current classifier: adapter 107 / live pipeline 112
+
+The [discovered-capture review](discovered-capture-review.md) corrects a real-game
+Hanging Piece primary to Discovered Check through an independent recapture
+counterfactual and bounded all-defence retention. The critical queen exchange is
+included; future capture arrows stay at their actual plies. Motif migration now
+also refreshes derived nature text, which remains version 4. One of 45 frozen
+public game-context results changes; all 246 private source/live results, twenty
+rare results and 32 priorities remain unchanged, not certified accurate. The
+review records fresh engine and runtime evidence and retains contrary controls:
+older generic capture valuations still ignore some checking-piece losses and
+compensation. That is the next accuracy gap, not an abstention success. No owner
+restart, installation or deployment.
+
+## Prior adapter 106 / live pipeline 111
 
 Desktop mistake nature is now version 4. The [mistake-nature review](mistake-nature-review.md)
 replaces independent SAN/PV-shape accusations with the existing root-cause proofs,

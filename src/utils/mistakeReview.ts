@@ -1610,7 +1610,9 @@ function applyMistakeReviewMotifClassification(
 ): Position {
     if (!position.mistakeReview) return position;
 
-    return {
+    // Nature is now derived from the proved root motifs. Updating just the
+    // badges would leave a current-version card explaining an obsolete cause.
+    return applyMistakeReviewNatureClassification({
         ...position,
         mistakeReview: {
             ...position.mistakeReview,
@@ -1620,7 +1622,7 @@ function applyMistakeReviewMotifClassification(
             missedTimeline: classification.missedTimeline,
             motifClassifierVersion: classification.motifClassifierVersion,
         },
-    };
+    }, classifyMistakeReviewNature(position));
 }
 
 function applyMistakeReviewNatureClassification(
@@ -1875,6 +1877,7 @@ function getMistakeReviewNatureClassificationCacheKey(
     const list = (value: unknown) => (Array.isArray(value) ? value.join(" ") : "");
     return JSON.stringify([
         MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION,
+        MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
         field("fen") ?? "",
         field("bestMoveSan") ?? metadata?.bestMoveSan ?? field("answer") ?? "",
         field("bestMoveUci") ?? metadata?.bestMoveUci ?? field("answerUci") ?? "",

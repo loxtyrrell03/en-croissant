@@ -976,7 +976,7 @@ describe("mistake review helpers", () => {
         expect(getMistakeReviewMotifs(unclassified)).toEqual([]);
     });
 
-    test("motif migration classifies old cards once and preserves nature metadata", async () => {
+    test("motif migration classifies old cards once and refreshes derived nature metadata", async () => {
         const oldCard = position({
             fen: "r5k1/1b3p1p/p2P2pP/1p5n/5N2/3B3q/PP4PB/R2Q2RK b - - 0 29",
             answer: "Ng3#",
@@ -1001,8 +1001,10 @@ describe("mistake review helpers", () => {
         expect(firstMigration.updatedCount).toBe(1);
         expect(migrated.motifClassifierVersion).toBeDefined();
         expect(migrated.missedMotifs?.map((motif) => motif.id)).toContain("smotheredMate");
-        expect(migrated.nature).toBe("tactical");
-        expect(migrated.natureClassifierVersion).toBe(3);
+        // This old fixture has no legal played-move comparison on its new
+        // board. A mating best move alone cannot certify a missed cause.
+        expect(migrated.nature).toBe("unknown");
+        expect(migrated.natureClassifierVersion).toBe(4);
 
         const secondMigration = await migrateMistakeReviewDeckMotifClassifications(
             firstMigration.deck,

@@ -6,10 +6,10 @@ import { makeFen, parseFen } from "chessops/fen";
 import { parseUci } from "chessops/util";
 
 const [mode, input, output] = process.argv.slice(2);
-assert(["contexts", "nature-contexts", "nature-controls", "capture-choice"].includes(mode));
+assert(["contexts", "nature-contexts", "nature-controls", "capture-choice", "discovered-capture"].includes(mode));
 const sample = JSON.parse(
   readFileSync(
-    mode === "nature-controls" ? "benchmarks/tactical-relevance/nature-countercheck-controls.json" : `benchmarks/tactical-relevance/${mode === "nature-contexts" ? "nature" : "quiet-game"}-context-development.json`,
+    mode === "discovered-capture" ? "benchmarks/tactical-relevance/discovered-capture-development.json" : mode === "nature-controls" ? "benchmarks/tactical-relevance/nature-countercheck-controls.json" : `benchmarks/tactical-relevance/${mode === "nature-contexts" ? "nature" : "quiet-game"}-context-development.json`,
     "utf8",
   ),
 );
@@ -23,7 +23,29 @@ const after = (fen, uci) => {
   pos.play(move);
   return makeFen(pos.toSetup());
 };
-if (mode === "nature-controls") {
+if (mode === "discovered-capture") {
+  for (const row of sample.cases) for (const reflected of [false, true]) {
+    const fields = row.fen.split(" ");
+    if (reflected) {
+      fields[0] = fields[0].split("/").reverse().join("/").replace(/[a-zA-Z]/g, c => c === c.toLowerCase() ? c.toUpperCase() : c.toLowerCase());
+      fields[1] = fields[1] === "w" ? "b" : "w";
+    }
+    const fen = fields.join(" ");
+    allowed.add(fen);
+    const nextFen = after(fen, reflected ? row.root.replace(/[1-8]/g, rank => String(9 - Number(rank))) : row.root);
+    allowed.add(nextFen);
+    const pos = Chess.fromSetup(parseFen(nextFen).unwrap()).unwrap();
+    for (const [from, dests] of pos.allDests()) for (const to of dests) {
+      assert(!(pos.board.get(from)?.role === "pawn" && (to < 8 || to >= 56)));
+      const next = pos.clone();
+      assert(next.isLegal({ from, to }));
+      next.play({ from, to });
+      allowed.add(makeFen(next.toSetup()));
+    }
+  }
+  assert.equal(report.searches.length, report.requested);
+  assert.equal(new Set(report.searches.map(row => row.id)).size, report.requested);
+} else if (mode === "nature-controls") {
   for (const row of sample.cases) {
     let position = row.fen;
     allowed.add(position);
@@ -62,7 +84,7 @@ writeFileSync(
     {
       engine: "Stockfish 18, one thread, 32 MB hash, depth 16",
       scope:
-        "Fresh engine searches of the selected public Lichess game boards. Scores are full-position estimates from the side to move, not certified local material gains or human primary-theme labels.",
+        "Fresh engine searches of selected public game boards and, where included, mechanism controls. Scores are full-position estimates from the side to move, not certified local material gains or human primary-theme labels.",
       sourceSha256: createHash("sha256").update(bytes).digest("hex"),
       searches,
     },

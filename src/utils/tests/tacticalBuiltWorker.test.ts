@@ -90,6 +90,48 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
     }
 }
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("discovered capture mechanisms and additional whole-game contexts survive the production controller", async () => {
+    const sample = JSON.parse(readFileSync("benchmarks/tactical-relevance/discovered-capture-development.json", "utf8"));
+    const report = [];
+    for (const row of sample.cases) for (const reflected of [false, true]) for (const rootOnly of [false, true]) {
+        const fields = row.fen.split(" ");
+        const mirror = (move: string) => move.replace(/[1-8]/g, rank => String(9 - Number(rank)));
+        if (reflected) {
+            fields[0] = fields[0].split("/").reverse().join("/").replace(/[a-zA-Z]/g, (c: string) => c === c.toLowerCase() ? c.toUpperCase() : c.toLowerCase());
+            fields[1] = fields[1] === "w" ? "b" : "w";
+        }
+        const moves = rootOnly ? [row.root] : row.pvUci;
+        const input = { fen: fields.join(" "), pvUci: reflected ? moves.map(mirror) : moves, depth: 16, engineName: "Discovered capture audit" };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+        expect(!row.expectedProof || result.scan.motifs[0].id === "discoveredCheck").toBe(true);
+        report.push({ id: `${row.id}:${reflected ? "reflected" : "original"}:${rootOnly ? "root" : "line"}`,
+            startupMs: result.startupMs, classificationMs: result.classificationMs, primary: result.scan.motifs.map(m => m.id) });
+    }
+    const contexts = JSON.parse(readFileSync("benchmarks/tactical-relevance/nature-context-development.json", "utf8"));
+    const engine = JSON.parse(readFileSync("benchmarks/tactical-relevance/nature-context-stockfish-18.json", "utf8"));
+    for (const row of contexts.cases) {
+        const best = engine.searches.find((s: any) => s.id === `${row.id}:best`);
+        const reply = engine.searches.find((s: any) => s.id === `${row.id}:reply`);
+        for (const [lane, partial] of [
+            ["source", { fen: row.fen, pvUci: row.sourceUci, previousFen: row.previousFen, previousMoveUci: row.previousMoveUci }],
+            ["best", { fen: row.fen, pvUci: best.lines[0].pvUci, variations: best.lines, previousFen: row.previousFen, previousMoveUci: row.previousMoveUci }],
+            ["response", { fen: reply.fen, pvUci: reply.lines[0].pvUci, variations: reply.lines, previousFen: row.fen, previousMoveUci: row.sourceUci[0] }],
+        ] as const) {
+            const input = { ...partial, depth: 16, engineName: "Whole-game context audit" };
+            const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+            expect(result.scan).toEqual(buildLiveTacticalScan(input));
+            expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+            report.push({ id: `${row.id}:${lane}`, startupMs: result.startupMs,
+                classificationMs: result.classificationMs, primary: result.scan.motifs.map(m => m.id) });
+        }
+    }
+    expect(report).toHaveLength(104);
+    if (process.env.TACTICAL_DISCOVERY_WORKER_REPORT) writeFileSync(process.env.TACTICAL_DISCOVERY_WORKER_REPORT,
+        JSON.stringify({ scope: "Public mechanism controls plus 24 frozen opening/middle/ending game contexts, three input lanes. Source parity is not accuracy and timings exclude engine/UI.", cases: report }, null, 2), { flag: "wx" });
+}, 120000);
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("preparation safety and connected alternatives survive the production controller", async () => {
     const sample = JSON.parse(readFileSync("benchmarks/tactical-relevance/preparation-safety-development.json", "utf8"));
     const report = [];

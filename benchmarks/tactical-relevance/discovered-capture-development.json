@@ -1,0 +1,70 @@
+{
+  "scope": "One real-game primary-theme defect and mechanism-directed controls, judged before probing these controls. This is a development set, not representative classifier accuracy. Bounds are local material, not Stockfish evaluation.",
+  "cases": [
+    {
+      "id": "real-queen-exchange",
+      "sourceGameUrl": "https://lichess.org/BkwHTU3l#59",
+      "fen": "5rk1/Q1RR1pp1/4p2p/8/4KP2/3rP3/P1q3PP/8 b - - 1 30",
+      "root": "d3d7",
+      "pvUci": ["d3d7", "c7c2", "d7a7"],
+      "expectedProof": true,
+      "why": "The discovered queen check forbids Rxd7. Rxc2 instead uncovers Rxa7, trading queens while retaining the captured rook. Discovered Check is the root mechanism, not a loose rook or a future queen capture."
+    },
+    {
+      "id": "bishop-check-retention",
+      "fen": "6k1/2RR4/8/8/4K3/3r4/8/1b6 b - - 0 1",
+      "root": "d3d7",
+      "pvUci": ["d3d7", "e4f3", "d7d1"],
+      "expectedProof": true,
+      "why": "The bishop's newly uncovered check prevents the equal rook recapture. The capturing rook can escape after the check is answered."
+    },
+    {
+      "id": "incidental-check-free-rook",
+      "fen": "5rk1/3R1pp1/4p2p/8/4KP2/3rP3/P1q3PP/8 b - - 1 30",
+      "root": "d3d7",
+      "pvUci": ["d3d7", "e4f3", "d7d1"],
+      "expectedProof": false,
+      "why": "There is no recapturer; the rook was already free. Do not promote the incidental discovery over its capture."
+    },
+    {
+      "id": "checker-capture-without-compensation",
+      "fen": "5rk1/2RR1pp1/4p2p/8/4KP2/3rP3/P1q3PP/8 b - - 1 30",
+      "root": "d3d7",
+      "pvUci": ["d3d7", "c7c2"],
+      "expectedProof": false,
+      "why": "Rxc2 wins the checking queen; there is no screened queen on a7 to compensate. A check cannot forbid capturing its source."
+    },
+    {
+      "id": "king-captures-discovering-piece",
+      "fen": "6k1/8/8/8/4KP2/3n4/6N1/1b6 b - - 0 1",
+      "root": "d3f4",
+      "pvUci": ["d3f4", "e4f4"],
+      "expectedProof": false,
+      "why": "The knight cannot recapture on f4 while in check, but the king can. Cover legal king captures, not just the forbidden nominal recapturer."
+    },
+    {
+      "id": "off-square-queen-liability",
+      "fen": "6k1/2RR4/8/8/4K3/3r4/2q5/1b6 b - - 0 1",
+      "root": "d3d7",
+      "pvUci": ["d3d7", "c7c2"],
+      "expectedProof": false,
+      "why": "Qc2 itself is the discovered checker and blocks Bb1. Removing Qc2 uncovers another check, so this single-checker counterfactual cannot isolate the mechanism. In the real Rxc2 Bxc2 exchange Black gains only 100 local material, not the raw rook's 500. This is not a whole-position negative; the older hanging-piece valuation remains a separate gap."
+    },
+    {
+      "id": "checker-also-supports-exchange-square",
+      "fen": "6k1/2Q5/8/8/4K3/2Rr4/2q5/8 b - - 0 1",
+      "root": "d3c3",
+      "pvUci": ["d3c3"],
+      "expectedProof": false,
+      "why": "Removing Qc2 would change support of c3 as well as remove check. That counterfactual cannot establish that the discovered check made the capture work."
+    },
+    {
+      "id": "checker-also-screens-own-king",
+      "fen": "5r2/Q1RR1ppk/4p2p/8/4KP2/3rP3/P1q3PP/1B6 b - - 1 30",
+      "root": "d3d7",
+      "pvUci": ["d3d7"],
+      "expectedProof": false,
+      "why": "Qc2 also lies on the b1-h7 bishop ray toward its own king. Removing it could change king safety in later exchanges, even while another blocker remains. Abstain from this counterfactual, not a claim that the whole move loses."
+    }
+  ]
+}

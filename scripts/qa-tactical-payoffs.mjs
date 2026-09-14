@@ -22,10 +22,11 @@ const { chromium } = require("playwright");
 const castlingMode = process.argv.includes("--castling");
 const interferenceMode = process.argv.includes("--interference");
 const quietMateMode = process.argv.includes("--quiet-mate");
+const discoveryMode = process.argv.includes("--discovery");
 const root = process.cwd(),
   output = resolve(
     root,
-    quietMateMode
+    discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
       ? "tmp/tactical-quiet-mate-adapter104"
       : interferenceMode
         ? "tmp/tactical-interference-adapter104"
@@ -41,7 +42,11 @@ const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
 const cases = (
-  quietMateMode
+  discoveryMode
+    ? JSON.parse(await readFile("benchmarks/tactical-relevance/discovered-capture-development.json", "utf8"))
+        .cases.filter(row => row.id === "real-queen-exchange")
+        .flatMap(row => [1, 3].map(length => ({ ...row, id: `${row.id}:${length}`, pvUci: row.pvUci.slice(0, length) })))
+    : quietMateMode
     ? JSON.parse(
         await readFile("benchmarks/tactical-relevance/quiet-mate-development.json", "utf8"),
       ).cases.flatMap((row) =>
@@ -150,7 +155,34 @@ try {
           index,
           scale,
         });
-        if (row.expectedQuietMate) {
+        if (discoveryMode) {
+          const button = page.getByRole("button", { name: /^Show .* on board$/ });
+          await button.waitFor();
+          await button.focus();
+          await page.keyboard.press("Enter");
+          const preview = await page.evaluate(() => ({
+            main: window.fixture.last?.motifs[0]?.id,
+            arrows: window.fixture.last?.arrows.map(arrow => [arrow.from, arrow.to]),
+            labels: window.fixture.last?.labels,
+          }));
+          assert.equal(preview.main, "discoveredCheck");
+          assert(preview.arrows.some(([from, to]) => from === "c2" && to === "e4"));
+          assert(!preview.arrows.some(([from, to]) => from === "d7" && to === "a7"));
+          assert(preview.labels.some(label => label.text === "Discovered Check"));
+          assert.equal(await page.locator("[data-tactical-candidate]").count(), 1);
+          await page.locator("summary").focus();
+          await page.keyboard.press("Enter");
+          const first = await page.locator('[data-tactical-ply="1"]').innerText();
+          assert(first.toLowerCase().includes("discovered check"), first);
+          assert(!first.includes("Hanging Piece"));
+          if (row.pvUci.length > 1) {
+            const third = await page.locator('[data-tactical-ply="3"]').innerText();
+            assert(third.includes("Rxa7"));
+          }
+          if (width === 360 && scale === 2) await page.screenshot({
+            path: resolve(output, `${row.id.replaceAll(":", "-")}.png`), fullPage: true,
+          });
+        } else if (row.expectedQuietMate) {
           const button = page.getByRole("button", { name: /^Show .* on board$/ });
           await button.waitFor();
           await button.focus();
