@@ -68,6 +68,8 @@ test.skipIf(
                     pvUci: row.sourceUci,
                     pvSan: row.sourceSan,
                     rootCp: row.sourceEngine.cp,
+                    previousFen: row.previousFen,
+                    previousMoveUci: row.previousMoveUci,
                 });
                 const scan = buildLiveTacticalScan({
                     fen: row.fen,
@@ -75,6 +77,8 @@ test.skipIf(
                     variations: row.engineLines,
                     depth: 16,
                     engineName: "Stockfish 18",
+                    previousFen: row.previousFen,
+                    previousMoveUci: row.previousMoveUci,
                 });
                 const source = clean(sourceResult) !== clean(row.sourceResult),
                     live = clean(scan) !== clean(row.scan);

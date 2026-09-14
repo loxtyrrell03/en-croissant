@@ -97,10 +97,11 @@ export function TacticalScanResult({
               <ThemeIcon size="xl" radius="xl" variant="light" color="gray">
                 <IconBolt size="1.25rem" />
               </ThemeIcon>
-              <Text fw={700}>No tactical theme verified</Text>
+              <Text fw={700}>{tacticalVariations.length ? "No immediate theme verified" : "No tactical theme verified"}</Text>
               <Text size="sm" c="dimmed" maw={390}>
-                The bounded scan could not verify a specific theme in these candidate lines. This
-                does not rule out a deeper tactic.
+                {tacticalVariations.length
+                  ? "The scan did not verify a tactical explanation for the first move. Later themes depend on the continuation shown."
+                  : "The bounded scan could not verify a specific theme in these candidate lines. This does not rule out a deeper tactic."}
               </Text>
             </Stack>
           </Center>

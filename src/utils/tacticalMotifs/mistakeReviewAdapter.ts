@@ -113,7 +113,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 86;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 87;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -872,10 +872,52 @@ export function classifyPositionTacticalMotifs(
         motifs,
     );
     return {
-        motifs,
+        motifs: selectRootConnectedLessons(fen, bestLine, motifs, timeline),
         ...(motifs.length || timeline.length ? { timeline } : {}),
         motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
     };
+}
+
+/** A PV can switch initiative without two quiet plies: a counterattack may
+ * consist entirely of checks, evasions and captures. A later local gain then
+ * explains that reached board, not the initial move. Keep it in the timeline,
+ * but do not let it donate a root headline or board annotation. This is a
+ * relevance boundary, not a refutation of the later tactical certificate.
+ * A check alone is insufficient: require an independently verified opposing
+ * mechanism, initiated outside a forced check evasion. */
+function selectRootConnectedLessons(
+    fen: string,
+    line: string[],
+    motifs: TacticalMotifEvidence[],
+    timeline: TacticalMotifEvidence[],
+) {
+    if (!motifs.some((motif) => (motif.ply ?? 1) > 1)) return motifs;
+    // These root proofs already connect their forcing ending independently
+    // of the supplied PV, including counterchecks during the combination.
+    if (
+        motifs.some(
+            (motif) => motif.ply === 1 &&
+                (motif.value === 10000 || motif.id === "promotionCombination"),
+        )
+    ) return motifs;
+    const replay = replayTacticalLine(fen, line);
+    const actor = replay[0]?.before.turn;
+    const mechanisms = new Set([
+        "fork", "forkPreparation", "doubleThreat", "skewer", "pin", "interference",
+        "deflection", "attraction", "capturingDefender", "discoveredCheck",
+        "doubleCheck", "forcingAttack", "trappedPiece",
+    ]);
+    const counterplay = timeline.filter((motif) => {
+        const step = replay[(motif.ply ?? 0) - 1];
+        return (
+            step && step.before.turn !== actor && motif.confidence === "high" &&
+            (motif.value ?? 0) > 0 &&
+            (mechanisms.has(motif.id) || motif.value === 10000) &&
+            !step.before.isCheck() && step.after.isCheck()
+        );
+    });
+    const boundary = Math.min(...counterplay.map((motif) => motif.ply!));
+    return motifs.filter((motif) => (motif.ply ?? 1) <= boundary);
 }
 
 /** Without a certified root lesson, a capture in a speculative line may be
@@ -1358,6 +1400,13 @@ export function classifyMistakeReviewMotifs(
             : {}),
     };
 
+    compared.allowedMotifs = selectRootConnectedLessons(
+        fenAfterPlayedMove ?? "", refutationLine, compared.allowedMotifs,
+        compared.allowedTimeline ?? [],
+    );
+    compared.missedMotifs = selectRootConnectedLessons(
+        fen, bestLine, compared.missedMotifs, compared.missedTimeline ?? [],
+    );
     motifCache.set(key, compared);
     if (motifCache.size > MOTIF_CACHE_LIMIT) {
         const oldestKey = motifCache.keys().next().value;

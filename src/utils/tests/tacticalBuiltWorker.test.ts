@@ -8,6 +8,7 @@ import { parseSan } from "chessops/san";
 import { makeUci } from "chessops/util";
 import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
+import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import {
     buildLiveTacticalScan,
     type LiveTacticalScanInput,
@@ -733,6 +734,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 {id: "mating-clearance:line", fen: "8/8/8/8/3b3r/1p1k4/1Bb5/KR1n4 b - - 0 1", pvUci: ["d4b2", "b1b2", "h4a4", "b2a2", "a4a2"]},
                 {id: "mating-clearance:double-check", fen: "7k/5b2/6P1/8/7B/8/8/K6R w - - 0 1", pvUci: ["h4f6", "h8g8", "h1h8"]},
             ].map(({id, ...input}) => ({id, input: {...input, engineName: "Regression", depth: 16}})),
+            ...[0, 9, 18].map((index) => ({
+                id: `counterplay:${index}`,
+                input: {
+                    fen: index === 0 ? counterplayFen : makeFen(replayTacticalLine(counterplayFen, counterplayLine)[index].before.toSetup()),
+                    pvUci: counterplayLine.slice(index),
+                    ...(index === 0 ? { previousFen: counterplayPreviousFen, previousMoveUci: "d6b4" } : {}),
+                    engineName: "Generated engine game", depth: 16,
+                },
+            })),
             ...ordinary.map((row) => ({
                 id: row.id,
                 input: {
@@ -766,6 +776,8 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, item.input);
             const expected = buildLiveTacticalScan(item.input);
             expect({ id: item.id, scan: result.scan }).toEqual({ id: item.id, scan: expected });
+            if (item.id === "counterplay:9" && result.scan.variations[0].timeline.some((motif) => motif.id === "skewer"))
+                throw new Error("The built worker advertised the mating-trap skewer payoff");
             expect(result.startupMs).toBeLessThan(TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
             expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
             report.push({
@@ -777,7 +789,10 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(159);
+        expect(report).toHaveLength(162);
+        expect(Object.fromEntries(report.filter((item) => item.id.startsWith("counterplay:")).map((item) => [item.id, item.primary]))).toEqual({
+            "counterplay:0": [], "counterplay:9": ["forkPreparation"], "counterplay:18": ["trappedPiece"],
+        });
         expect(Object.fromEntries(report.filter((item) => item.id.startsWith("quiet-mating-attack:")).map((item) => [item.id, item.primary]))).toMatchObject({
             "quiet-mating-attack:real": ["forcingAttack"],
             "quiet-mating-attack:root-only": ["forcingAttack"],
@@ -839,6 +854,8 @@ for (const { name, path, count } of [
         path: process.env.TACTICAL_PRIVATE_POSITIONAL_QUARTER_REPORT,
         count: 21,
     },
+    { name: "positional-upper-quarter", path: process.env.TACTICAL_PRIVATE_POSITIONAL_UPPER_QUARTER_REPORT, count: 21 },
+    { name: "engine-games-wide", path: process.env.TACTICAL_PRIVATE_ENGINE_GAMES_REPORT, count: 24 },
 ]) {
     test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !path)(
         `the ${name} disjoint sample retains full source and live timelines through the worker`,
@@ -852,12 +869,16 @@ for (const { name, path, count } of [
                         fen: row.fen,
                         pvUci: row.engineLines[0].pvUci,
                         variations: row.engineLines,
+                        previousFen: row.previousFen,
+                        previousMoveUci: row.previousMoveUci,
                         engineName: "Stockfish 18",
                         depth: 16,
                     },
                     {
                         fen: row.fen,
                         pvUci: row.sourceUci,
+                        previousFen: row.previousFen,
+                        previousMoveUci: row.previousMoveUci,
                         engineName: "Private source continuation",
                         depth: 16,
                     },

@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, expect, test, vi } from "vitest";
 import { TacticalScanResult } from "@/components/panels/tactics/TacticalScanResult";
+import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import {
   buildLiveTacticalScan,
   previewLiveTacticalVariation,
@@ -35,6 +36,18 @@ const laterScan = buildLiveTacticalScan({
   pvSan: ["Bh3+", "Kb8", "Qe5+", "Qd6", "Qxh8+"],
   engineName: "Constructed",
   depth: 16,
+});
+test("a remote trap stays collapsed and cannot become the recapture's headline or board preview", () => {
+  const value = buildLiveTacticalScan({ fen: counterplayFen, previousFen: counterplayPreviousFen, previousMoveUci: "d6b4", pvUci: counterplayLine, engineName: "Generated engine game", depth: 16 });
+  const element = document.createElement("div");
+  element.innerHTML = markup(value);
+  expect(element.textContent).toContain("No immediate theme verified");
+  expect(element.textContent).toContain("Continuation only");
+  expect(element.textContent).not.toContain("Trapped Rook in the continuation");
+  expect(element.textContent).not.toContain("White's main tactical idea");
+  expect(element.querySelector('[data-tactical-ply="19"]')?.textContent).toContain("Trapped Rook");
+  expect(element.querySelectorAll("details[open]")).toHaveLength(0);
+  expect(previewLiveTacticalVariation(value, 1).arrows).toEqual([]);
 });
 test("the recovered exchange discovery is the headline and shows only current-board arrows", () => {
   const value = buildLiveTacticalScan({

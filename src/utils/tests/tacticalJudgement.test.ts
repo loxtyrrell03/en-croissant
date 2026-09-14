@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
-import { Chess } from "chessops/chess";
+import { Chess, castlingSide } from "chessops/chess";
 import { makeFen, parseFen } from "chessops/fen";
 import { makeSan, parseSan } from "chessops/san";
 import { makeUci, parseUci } from "chessops/util";
@@ -445,10 +445,17 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
     // Stockfish may ignore an illegal searchmoves entry and silently return
     // its unrestricted best move. Never certify that as the requested control.
     const position = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
+    let wireSearchMove = searchMove;
     if (searchMove) {
         const move = parseUci(searchMove);
         if (!move || !position.isLegal(move))
             throw new Error(`Illegal restricted move: ${searchMove}`);
+        // chessops SAN uses king-to-rook castling; standard UCI uses the
+        // king's destination. Never send the rook square and accept an
+        // unrestricted fallback as a castling control.
+        const castle = castlingSide(position, move);
+        if (castle && "from" in move)
+            wireSearchMove = makeUci({ from: move.from, to: (move.from & 56) + (castle === "h" ? 6 : 2) });
     }
     const child = spawn(engine, [], { windowsHide: true, stdio: "pipe" });
     const lines = new Map<number, JudgementEngineLine>();
@@ -473,19 +480,20 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
                     );
                 if (row === "readyok")
                     child.stdin.write(
-                        `position fen ${fen}\ngo depth ${depth}${searchMove ? ` searchmoves ${searchMove}` : ""}\n`,
+                        `position fen ${fen}\ngo depth ${depth}${wireSearchMove ? ` searchmoves ${wireSearchMove}` : ""}\n`,
                     );
                 const match = row.match(
                     /info depth (\d+).* multipv (\d+).* score (cp|mate) (-?\d+).* pv (.+)/,
                 );
                 if (match) {
                     const pvUci = match[5].trim().split(/\s+/);
-                    if (searchMove && pvUci[0] !== searchMove) {
+                    if (wireSearchMove && pvUci[0] !== wireSearchMove) {
                         clearTimeout(timer);
                         child.kill();
                         reject(new Error(`Engine ignored restricted move: ${searchMove}`));
                         return;
                     }
+                    if (searchMove) pvUci[0] = searchMove;
                     const pos = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
                     const pvSan = pvUci.map((uci) => {
                         const move = parseUci(uci)!;
@@ -519,6 +527,18 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(!engine || !process.env.TACTICAL_CASTLING_AUDIT)("restricted castling accepts both legal notations without unrestricted fallback", async () => {
+        for (const side of ["w", "b"]) {
+            const rank = side === "w" ? "1" : "8";
+            const fen = `r3k2r/8/8/8/8/8/8/R3K2R ${side} KQkq - 0 1`;
+            for (const file of ["a", "c", "g", "h"]) {
+                const move = `e${rank}${file}${rank}`;
+                const result = [...(await analyse(engine, fen, move, 8, 1)).values()][0];
+                expect(result.pvUci[0]).toBe(move);
+                expect(result.pvSan[0]).toBe(["a", "c"].includes(file) ? "O-O-O" : "O-O");
+            }
+        }
+    }, 60000);
     test.skipIf(!engine || !process.env.TACTICAL_VACATED_FORK_REPORT)(
         "audit square-clearing fork preparations and every selected root defence",
         async () => {
@@ -4050,7 +4070,7 @@ describe("expert tactical judgement with fresh engine lines", () => {
                 sourceSha256: string;
                 selection: string;
                 eligiblePositions: number;
-                cases: { id: string; fen: string; sourceUci: string[]; sourceSan: string[] }[];
+                cases: { id: string; fen: string; sourceUci: string[]; sourceSan: string[]; previousFen?: string; previousMoveUci?: string }[];
             };
             expect(sample.cases.length).toBeGreaterThan(0);
             const report = [];
@@ -4074,6 +4094,8 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     pvUci: row.sourceUci,
                     pvSan: row.sourceSan,
                     rootCp: sourceEngine.cp,
+                    previousFen: row.previousFen,
+                    previousMoveUci: row.previousMoveUci,
                 });
                 const scan = buildLiveTacticalScan({
                     fen: row.fen,
@@ -4081,6 +4103,8 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     variations: engineLines,
                     depth: 16,
                     engineName: "Stockfish 18",
+                    previousFen: row.previousFen,
+                    previousMoveUci: row.previousMoveUci,
                 });
                 report.push({ ...row, engineLines, sourceEngine, sourceResult, scan });
                 writeFileSync(

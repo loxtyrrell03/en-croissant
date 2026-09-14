@@ -448,16 +448,18 @@ function legalMoves(pos: Chess): NormalMove[] {
 const matingCaptureReplyCache = new Map<string, string[] | null>();
 
 /** A material recapture cannot be called a win when its actual reached board
- * permits forced mate in at most two checking moves. No supplied continuation
+ * permits forced mate in at most two checking moves by default. King-skewer
+ * leaves request three moves within their existing shared budget. No supplied continuation
  * or sacrifice tag is needed. Every legal defence is included, and incomplete
  * searches abstain. This does not prove the preceding offer against declines. */
 export function proveMatingCaptureReply(
     step: TacticalReplayStep,
     nodeLimit = 4096,
     sharedBudget?: ProofBudget,
+    maxMoves: 2 | 3 = 2,
 ): string[] | null {
     if (!step.capture || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
-    const key = makeFen(step.after.toSetup());
+    const key = `${makeFen(step.after.toSetup())}:${maxMoves}`;
     if (!sharedBudget && nodeLimit === 4096 && matingCaptureReplyCache.has(key))
         return matingCaptureReplyCache.get(key)!;
     const budget = sharedBudget ?? { nodes: nodeLimit };
@@ -494,7 +496,7 @@ export function proveMatingCaptureReply(
     };
     let proof: string[] | null = null;
     try {
-        proof = attack(step.after, 2);
+        proof = attack(step.after, maxMoves);
     } catch {
         // A budget failure cannot erase a material lesson.
     }
@@ -504,6 +506,20 @@ export function proveMatingCaptureReply(
             matingCaptureReplyCache.delete(matingCaptureReplyCache.keys().next().value!);
     }
     return proof;
+}
+
+/** A king-front skewer cannot fund its gain by taking a rook and getting
+ * mated. Search the opponent's checking replies under the enclosing proof's
+ * shared budget. Exhaustion is unknown, not a safe-capture certificate. */
+function skewerCaptureAllowsMate(pos: Chess, move: NormalMove, budget: ProofBudget) {
+    const after = pos.clone();
+    after.play(move);
+    const mate = proveMatingCaptureReply({
+        before: pos, after, move, uci: makeUci(move), san: makeSan(pos, move),
+        capture: capturedValue(pos, move), balance: 0,
+    }, 4096, budget, 3);
+    if (budget.nodes < 0) throw new Error("Skewer mating-reply proof exhausted");
+    return mate !== null;
 }
 
 type PerpetualCheckProof = { line: string[]; cycle: string[]; replyCount: number };
@@ -1595,6 +1611,7 @@ export function proveCheckingMaterialAttack(
         for (const move of moves) {
             if (move.to !== square || !capturedValue(pos, move)) continue;
             if (checkingSkewer) {
+                if (skewerCaptureAllowsMate(pos, move, budget)) continue;
                 const leaf = visit(pos, move);
                 if (leaf.isEnd()) continue;
                 let safe = true;
@@ -4840,11 +4857,12 @@ function discoveredEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
 type RayTactic = { kind: "pin" | "skewer"; pinner: Square; front: Square; rear: Square };
 
 function rayMaterialProof(step: TacticalReplayStep, ray: RayTactic) {
+    const rejectCaptureMate = ray.kind === "skewer" && step.after.board.get(ray.front)?.role === "king";
     const blocks =
         ray.kind === "skewer" && step.after.board.get(ray.front)?.role === "king"
             ? [...between(ray.pinner, ray.front)]
             : [];
-    let proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to]);
+    let proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to], [], false, undefined, { rejectCaptureMate });
     if (proof.kind === "proven") return proof;
     if (blocks.length)
         proof = materialThreatProof(
@@ -4854,7 +4872,7 @@ function rayMaterialProof(step: TacticalReplayStep, ray: RayTactic) {
             blocks,
             false,
             undefined,
-            { allPiecesAtLeaf: true },
+            { allPiecesAtLeaf: true, rejectCaptureMate },
         );
     if (proof.kind === "proven" && blocks.length) return { ...proof, blockingProof: true as const };
     if (proof.kind !== "proven" && blocks.length) {
@@ -4941,6 +4959,7 @@ type MaterialProofOptions = {
     mateAnswerMoves?: 1 | 4;
     mateNodeLimit?: number;
     allPiecesAtLeaf?: boolean;
+    rejectCaptureMate?: boolean;
 };
 function materialThreatGain(step: TacticalReplayStep, targets: Square[], capturers: Square[]) {
     const proof = materialThreatProof(step, targets, capturers);
@@ -4956,7 +4975,7 @@ function materialThreatProof(
     promotionFrom?: Square,
     options: MaterialProofOptions = {},
 ) {
-    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}`;
+    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}:${Boolean(options.rejectCaptureMate)}`;
     if (materialProofCache.has(key)) return materialProofCache.get(key)!;
     const proof = computeMaterialThreatGain(
         step,
@@ -5053,6 +5072,16 @@ function computeMaterialThreatGain(
                 for (const promotion of promotions) {
                     const move: NormalMove = { from, to: target, promotion };
                     if (!next.isLegal(move)) continue;
+                    if (options.rejectCaptureMate) {
+                        const budget = { nodes: mateNodes };
+                        try {
+                            const unsafe = skewerCaptureAllowsMate(next, move, budget);
+                            mateNodes = budget.nodes;
+                            if (unsafe) continue;
+                        } catch {
+                            return { kind: "unknown" };
+                        }
+                    }
                     let exchangeGain = tacticalExchangeGain(next, move);
                     if (options.allPiecesAtLeaf) {
                         const budget = { nodes: mateNodes };

@@ -9797,12 +9797,13 @@ function legalMoves(pos) {
 }
 var matingCaptureReplyCache = /* @__PURE__ */ new Map();
 /** A material recapture cannot be called a win when its actual reached board
-* permits forced mate in at most two checking moves. No supplied continuation
+* permits forced mate in at most two checking moves by default. King-skewer
+* leaves request three moves within their existing shared budget. No supplied continuation
 * or sacrifice tag is needed. Every legal defence is included, and incomplete
 * searches abstain. This does not prove the preceding offer against declines. */
-function proveMatingCaptureReply(step, nodeLimit = 4096, sharedBudget) {
+function proveMatingCaptureReply(step, nodeLimit = 4096, sharedBudget, maxMoves = 2) {
 	if (!step.capture || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
-	const key = makeFen(step.after.toSetup());
+	const key = `${makeFen(step.after.toSetup())}:${maxMoves}`;
 	if (!sharedBudget && nodeLimit === 4096 && matingCaptureReplyCache.has(key)) return matingCaptureReplyCache.get(key);
 	const budget = sharedBudget ?? { nodes: nodeLimit };
 	const visit = (position, move) => {
@@ -9844,13 +9845,31 @@ function proveMatingCaptureReply(step, nodeLimit = 4096, sharedBudget) {
 	};
 	let proof = null;
 	try {
-		proof = attack(step.after, 2);
+		proof = attack(step.after, maxMoves);
 	} catch {}
 	if (!sharedBudget && nodeLimit === 4096) {
 		matingCaptureReplyCache.set(key, proof);
 		if (matingCaptureReplyCache.size > 128) matingCaptureReplyCache.delete(matingCaptureReplyCache.keys().next().value);
 	}
 	return proof;
+}
+/** A king-front skewer cannot fund its gain by taking a rook and getting
+* mated. Search the opponent's checking replies under the enclosing proof's
+* shared budget. Exhaustion is unknown, not a safe-capture certificate. */
+function skewerCaptureAllowsMate(pos, move, budget) {
+	const after = pos.clone();
+	after.play(move);
+	const mate = proveMatingCaptureReply({
+		before: pos,
+		after,
+		move,
+		uci: makeUci(move),
+		san: makeSan(pos, move),
+		capture: capturedValue(pos, move),
+		balance: 0
+	}, 4096, budget, 3);
+	if (budget.nodes < 0) throw new Error("Skewer mating-reply proof exhausted");
+	return mate !== null;
 }
 var perpetualCheckCache = /* @__PURE__ */ new Map();
 /** A repeated-looking PV is not proof. Search checking moves only, with all
@@ -10628,6 +10647,7 @@ function proveCheckingMaterialAttack(steps, nodeLimit = 16384) {
 		for (const move of moves) {
 			if (move.to !== square || !capturedValue(pos, move)) continue;
 			if (checkingSkewer) {
+				if (skewerCaptureAllowsMate(pos, move, budget)) continue;
 				const leaf = visit(pos, move);
 				if (leaf.isEnd()) continue;
 				let safe = true;
@@ -12632,10 +12652,14 @@ function discoveredEvidence(steps, source) {
 	};
 }
 function rayMaterialProof(step, ray) {
+	const rejectCaptureMate = ray.kind === "skewer" && step.after.board.get(ray.front)?.role === "king";
 	const blocks = ray.kind === "skewer" && step.after.board.get(ray.front)?.role === "king" ? [...between(ray.pinner, ray.front)] : [];
-	let proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to]);
+	let proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to], [], false, void 0, { rejectCaptureMate });
 	if (proof.kind === "proven") return proof;
-	if (blocks.length) proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to], blocks, false, void 0, { allPiecesAtLeaf: true });
+	if (blocks.length) proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to], blocks, false, void 0, {
+		allPiecesAtLeaf: true,
+		rejectCaptureMate
+	});
 	if (proof.kind === "proven" && blocks.length) return {
 		...proof,
 		blockingProof: true
@@ -12706,7 +12730,7 @@ function materialThreatGain(step, targets, capturers) {
 	return proof.kind === "proven" ? proof.gain : null;
 }
 function materialThreatProof(step, targets, capturers, interpositions = [], allowMateAnswer = false, promotionFrom, options = {}) {
-	const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}`;
+	const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}:${Boolean(options.rejectCaptureMate)}`;
 	if (materialProofCache.has(key)) return materialProofCache.get(key);
 	const proof = computeMaterialThreatGain(step, targets, capturers, interpositions, allowMateAnswer, promotionFrom, options);
 	materialProofCache.set(key, proof);
@@ -12787,6 +12811,16 @@ function computeMaterialThreatGain(step, targets, capturers, interpositions, all
 						promotion
 					};
 					if (!next.isLegal(move)) continue;
+					if (options.rejectCaptureMate) {
+						const budget = { nodes: mateNodes };
+						try {
+							const unsafe = skewerCaptureAllowsMate(next, move, budget);
+							mateNodes = budget.nodes;
+							if (unsafe) continue;
+						} catch {
+							return { kind: "unknown" };
+						}
+					}
 					let exchangeGain = tacticalExchangeGain(next, move);
 					if (options.allPiecesAtLeaf) {
 						const budget = { nodes: mateNodes };
@@ -16965,7 +16999,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 86;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 87;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -17448,6 +17482,40 @@ function chooseMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs })
 		primary: missed
 	};
 }
+/** A PV can switch initiative without two quiet plies: a counterattack may
+* consist entirely of checks, evasions and captures. A later local gain then
+* explains that reached board, not the initial move. Keep it in the timeline,
+* but do not let it donate a root headline or board annotation. This is a
+* relevance boundary, not a refutation of the later tactical certificate.
+* A check alone is insufficient: require an independently verified opposing
+* mechanism, initiated outside a forced check evasion. */
+function selectRootConnectedLessons(fen, line, motifs, timeline) {
+	if (!motifs.some((motif) => (motif.ply ?? 1) > 1)) return motifs;
+	if (motifs.some((motif) => motif.ply === 1 && (motif.value === 1e4 || motif.id === "promotionCombination"))) return motifs;
+	const replay = replayTacticalLine(fen, line);
+	const actor = replay[0]?.before.turn;
+	const mechanisms = new Set([
+		"fork",
+		"forkPreparation",
+		"doubleThreat",
+		"skewer",
+		"pin",
+		"interference",
+		"deflection",
+		"attraction",
+		"capturingDefender",
+		"discoveredCheck",
+		"doubleCheck",
+		"forcingAttack",
+		"trappedPiece"
+	]);
+	const counterplay = timeline.filter((motif) => {
+		const step = replay[(motif.ply ?? 0) - 1];
+		return step && step.before.turn !== actor && motif.confidence === "high" && (motif.value ?? 0) > 0 && (mechanisms.has(motif.id) || motif.value === 1e4) && !step.before.isCheck() && step.after.isCheck();
+	});
+	const boundary = Math.min(...counterplay.map((motif) => motif.ply));
+	return motifs.filter((motif) => (motif.ply ?? 1) <= boundary);
+}
 /** Without a certified root lesson, a capture in a speculative line may be
 * acceptance of an offer rather than a separate material mistake. Keep its
 * SAN move, but do not add a generic gain badge before a checked mechanism
@@ -17659,6 +17727,8 @@ function classifyMistakeReviewMotifs(input) {
 		...refutationLine.length && fenAfterPlayedMove ? { allowedTimeline: selectContinuationLessons(filterCompensatedRootCaptures(fenAfterPlayedMove ?? "", refutationLine, buildTacticalTimeline(fenAfterPlayedMove ?? "", refutationLine, "allowed", allowedMotifs, input.refutationSan), fen, playedMoveUci), allowedMotifs) } : {},
 		...!playedTheBestMove && bestLine.length ? { missedTimeline: selectContinuationLessons(buildTacticalTimeline(fen, bestLine, "missed", classification.missedMotifs, input.pvSan), classification.missedMotifs) } : {}
 	};
+	compared.allowedMotifs = selectRootConnectedLessons(fenAfterPlayedMove ?? "", refutationLine, compared.allowedMotifs, compared.allowedTimeline ?? []);
+	compared.missedMotifs = selectRootConnectedLessons(fen, bestLine, compared.missedMotifs, compared.missedTimeline ?? []);
 	motifCache.set(key, compared);
 	if (motifCache.size > MOTIF_CACHE_LIMIT) {
 		const oldestKey = motifCache.keys().next().value;
