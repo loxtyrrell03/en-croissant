@@ -13,6 +13,7 @@ import { directThreatFen, directThreatLine, directThreatControls } from "./fixtu
 import { tablebaseCases } from "./fixtures/tablebaseRelevance";
 import { directMaterialPayoffCases, reflectPayoff } from "./fixtures/directMaterialPayoff";
 import { castlingAliasCases } from "./fixtures/castlingRelevance";
+import { matingInterferenceCases, reflectMatingInterference } from "./fixtures/matingInterference";
 import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import { trappedRookFen, trapControls, unrelatedPayoffTrap } from "./fixtures/trapRelevance";
 import { interferenceExamples, interferenceControls, compensatedInterference } from "./fixtures/interferenceRelevance";
@@ -89,6 +90,21 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
     }
 }
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_INTERFERENCE_AUDIT_INPUT)("new private root and secondary mating mechanisms survive the actual controller", async () => {
+    const audit = JSON.parse(readFileSync(process.env.TACTICAL_INTERFERENCE_AUDIT_INPUT!, "utf8"));
+    const rows = audit.results.flatMap((group: any) => group.cases);
+    for (const id of ["private-easy:190", "private-easy:10"]) {
+        const row = rows.find((row: any) => row.id === id);
+        const input = { fen: row.fen, pvUci: row.engineLines[0].pvUci, variations: row.engineLines, depth: 16, engineName: "Stockfish 18" };
+        const { scan } = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(scan.motifs[0].id).toBe(id.endsWith(":190") ? "interference" : "deflection");
+        expect(scan.motifs).toHaveLength(1);
+        if (id.endsWith(":10") && !scan.variations[0].timeline.some(m => m.id === "forcingAttack" && m.ply === 5))
+            throw new Error("Missing independently proved secondary mating threat");
+    }
+});
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("the fresh promotion PV does not portray sacrifice acceptance as a win", async () => {
     const input = { fen: promotionCounterplayBase, pvUci: promotionCounterplayEngineLine, depth: 16, engineName: "Stockfish 18" };
     const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
@@ -133,6 +149,12 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         const blackContext = JSON.parse(readFileSync("benchmarks/tactical-relevance/black-context-stockfish-18.json", "utf8"));
         const castles = JSON.parse(readFileSync("benchmarks/tactical-relevance/castling-stockfish-18.json", "utf8"));
         const cases = [
+            ...JSON.parse(readFileSync("benchmarks/tactical-relevance/mating-interference-stockfish-18.json", "utf8")).searches.filter((row: any) => /:(best|root)$/.test(row.id)).map((row: any) => ({
+                id: `mating-interference-engine:${row.id}`, input: { fen: row.fen, pvUci: row.lines[0].pvUci, variations: row.lines, depth: 16, engineName: "Stockfish 18" },
+            })),
+            ...matingInterferenceCases.flatMap(row => [row, { ...reflectMatingInterference(row), id: `${row.id}:black` }]).map(row => ({
+                id: `mating-interference:${row.id}`, input: { fen: row.fen, pvUci: [row.move], depth: 16, engineName: "Mechanism control" },
+            })),
             ...castlingAliasCases.map(row => ({ id: `castling-control:${row.id}`, input: { fen: row.fen, pvUci: row.pvUci, depth: 16, engineName: "Castling control" } })),
             ...castles.cases.flatMap((row: any) => [
                 { id: `castling-source:${row.id}`, input: { fen: row.fen, pvUci: row.castleLine.pvUci, variations: [row.castleLine], depth: 16, engineName: "Stockfish 18" } },
@@ -919,6 +941,11 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 if (result.scan.motifs[0]?.id !== row.theme || result.scan.variations[0].timeline.find(m => m.ply === 3)?.label !== row.label)
                     throw new Error(`Material mechanism/payoff judgement failed: ${row.id}`);
             }
+            if (item.id.startsWith("mating-interference:")) {
+                const positive = item.id.includes("rook-interposition");
+                if (result.scan.motifs.some(m => m.label === "Mating Interference") !== positive || (positive && result.scan.motifs.length !== 1))
+                    throw new Error(`Independent mating-interference judgement failed: ${item.id}`);
+            }
             if (item.id.startsWith("castling-control:")) {
                 const row = castlingAliasCases.find(row => item.id === `castling-control:${row.id}`)!;
                 if (row.mate) {
@@ -955,7 +982,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(727);
+        expect(report).toHaveLength(763);
         for (const length of [1, promotionCounterplayLine.length]) expect(promotionEndingResults.get(`promotion-ending:real:${length}`)!.motifs[0]).toMatchObject({ id: "promotionCombination", value: 220 });
         expect(promotionEndingResults.get("promotion-ending:real:5")!.variations[0].timeline.some((m) => m.ply === 2 && m.id === "hangingPiece")).toBe(false);
         for (const row of pawnRaceRefutations) for (const length of [1, row.historicalLine.length]) expect(promotionEndingResults.get(`promotion-ending:${row.id}:${length}`)!.motifs.some((m) => m.id === "promotionCombination")).toBe(false);

@@ -1,0 +1,4529 @@
+{
+  "scope": "Allowlisted constructed controls only. 213 fresh depth-16 searches: 124 public and 89 private. Every defence and recorded choice for the two public and two private positive mechanisms; private chess content is excluded. Full-position scores are not local proof values.",
+  "searches": [
+    {
+      "id": "rook-interposition:best",
+      "fen": "r6k/1r6/4P3/6Q1/8/8/8/6RK w - - 0 1",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g5e5",
+            "h8h7",
+            "e5h2"
+          ],
+          "pvSan": [
+            "Qe5+",
+            "Kh7",
+            "Qh2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g5f6",
+            "h8h7",
+            "f6h4"
+          ],
+          "pvSan": [
+            "Qf6+",
+            "Kh7",
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "e6e7",
+            "b7e7",
+            "g5f6",
+            "h8h7",
+            "f6h4"
+          ],
+          "pvSan": [
+            "e7",
+            "Rxe7",
+            "Qf6+",
+            "Kh7",
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:root",
+      "fen": "r6k/1r6/4P3/6Q1/8/8/8/6RK w - - 0 1",
+      "searchMove": "e6e7",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "e6e7",
+            "b7e7",
+            "g5f6",
+            "h8h7",
+            "f6h4"
+          ],
+          "pvSan": [
+            "e7",
+            "Rxe7",
+            "Qf6+",
+            "Kh7",
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:b7b1",
+      "fen": "r6k/4P3/8/6Q1/8/8/8/1r4RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:b7b2",
+      "fen": "r6k/4P3/8/6Q1/8/8/1r6/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:b7b3",
+      "fen": "r6k/4P3/8/6Q1/8/1r6/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:b7b4",
+      "fen": "r6k/4P3/8/6Q1/1r6/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g7"
+          ],
+          "pvSan": [
+            "Qg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:b7b5",
+      "fen": "r6k/4P3/8/1r4Q1/8/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g7"
+          ],
+          "pvSan": [
+            "Qg7#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g5h4",
+            "b5h5",
+            "h4h5"
+          ],
+          "pvSan": [
+            "Qh4+",
+            "Rh5",
+            "Qxh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:b7b6",
+      "fen": "r6k/4P3/1r6/6Q1/8/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g7"
+          ],
+          "pvSan": [
+            "Qg7#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g5h4",
+            "b6h6",
+            "h4h6"
+          ],
+          "pvSan": [
+            "Qh4+",
+            "Rh6",
+            "Qxh6#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g5h5",
+            "b6h6",
+            "h5h6"
+          ],
+          "pvSan": [
+            "Qh5+",
+            "Rh6",
+            "Qxh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:b7a7",
+      "fen": "r6k/r3P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:b7c7",
+      "fen": "r6k/2r1P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:b7d7",
+      "fen": "r6k/3rP3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:b7e7",
+      "fen": "r6k/4r3/8/6Q1/8/8/8/6RK w - - 0 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g5f6",
+            "h8h7",
+            "f6h4"
+          ],
+          "pvSan": [
+            "Qf6+",
+            "Kh7",
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "g5e7",
+            "a8a7",
+            "e7f6",
+            "h8h7",
+            "f6h4"
+          ],
+          "pvSan": [
+            "Qxe7",
+            "Ra7",
+            "Qf6+",
+            "Kh7",
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": 237,
+          "mate": null,
+          "pvUci": [
+            "g5c5",
+            "e7h7",
+            "h1g2",
+            "h7g7",
+            "g2f3",
+            "g7g1",
+            "c5g1",
+            "a8a3",
+            "f3e4",
+            "a3a4",
+            "e4e5",
+            "a4a5",
+            "e5e6"
+          ],
+          "pvSan": [
+            "Qc5",
+            "Rh7+",
+            "Kg2",
+            "Rg7+",
+            "Kf3",
+            "Rxg1",
+            "Qxg1",
+            "Ra3+",
+            "Ke4",
+            "Ra4+",
+            "Ke5",
+            "Ra5+",
+            "Ke6"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:b7b8",
+      "fen": "rr5k/4P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:a8a1",
+      "fen": "7k/1r2P3/8/6Q1/8/8/8/r5RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g8"
+          ],
+          "pvSan": [
+            "Qg8#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:a8a2",
+      "fen": "7k/1r2P3/8/6Q1/8/8/r7/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g8"
+          ],
+          "pvSan": [
+            "Qg8#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:a8a3",
+      "fen": "7k/1r2P3/8/6Q1/8/r7/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g8"
+          ],
+          "pvSan": [
+            "Qg8#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:a8a4",
+      "fen": "7k/1r2P3/8/6Q1/r7/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g7"
+          ],
+          "pvSan": [
+            "Qg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:a8a5",
+      "fen": "7k/1r2P3/8/r5Q1/8/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g7"
+          ],
+          "pvSan": [
+            "Qg7#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g8"
+          ],
+          "pvSan": [
+            "Qg8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:a8a6",
+      "fen": "7k/1r2P3/r7/6Q1/8/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g7"
+          ],
+          "pvSan": [
+            "Qg7#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g8"
+          ],
+          "pvSan": [
+            "Qg8#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g5h4",
+            "a6h6",
+            "h4h6"
+          ],
+          "pvSan": [
+            "Qh4+",
+            "Rh6",
+            "Qxh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:a8a7",
+      "fen": "7k/rr2P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g8"
+          ],
+          "pvSan": [
+            "Qg8#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:a8b8",
+      "fen": "1r5k/1r2P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:a8c8",
+      "fen": "2r4k/1r2P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:a8d8",
+      "fen": "3r3k/1r2P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:a8e8",
+      "fen": "4r2k/1r2P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:a8f8",
+      "fen": "5r1k/1r2P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:a8g8",
+      "fen": "6rk/1r2P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g8"
+          ],
+          "pvSan": [
+            "Qxg8#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:defence:h8h7",
+      "fen": "r7/1r2P2k/8/6Q1/8/8/8/6RK w - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g7"
+          ],
+          "pvSan": [
+            "Qg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:0",
+      "fen": "r6k/4r3/8/6Q1/8/8/8/6RK w - - 0 2",
+      "searchMove": "g5e7",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "g5e7",
+            "a8a7",
+            "e7d8",
+            "h8h7",
+            "d8h4"
+          ],
+          "pvSan": [
+            "Qxe7",
+            "Ra7",
+            "Qd8+",
+            "Kh7",
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:1",
+      "fen": "r6k/4P3/8/6Q1/8/8/8/1r4RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:2",
+      "fen": "r6k/4P3/8/6Q1/8/8/1r6/6RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:3",
+      "fen": "r6k/4P3/8/6Q1/8/1r6/8/6RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:4",
+      "fen": "r6k/4P3/8/6Q1/1r6/8/8/6RK w - - 1 2",
+      "searchMove": "g5h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:5",
+      "fen": "r6k/4P3/8/1r4Q1/8/8/8/6RK w - - 1 2",
+      "searchMove": "g5h6",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:6",
+      "fen": "r6k/4P3/1r6/6Q1/8/8/8/6RK w - - 1 2",
+      "searchMove": "g5g7",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g7"
+          ],
+          "pvSan": [
+            "Qg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:7",
+      "fen": "r6k/r3P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:8",
+      "fen": "r6k/2r1P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:9",
+      "fen": "r6k/3rP3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:10",
+      "fen": "rr5k/4P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:11",
+      "fen": "7k/1r2P3/8/6Q1/8/8/8/r5RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:12",
+      "fen": "7k/1r2P3/8/6Q1/8/8/r7/6RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:13",
+      "fen": "7k/1r2P3/8/6Q1/8/r7/8/6RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:14",
+      "fen": "7k/1r2P3/8/6Q1/r7/8/8/6RK w - - 1 2",
+      "searchMove": "g5h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:15",
+      "fen": "7k/1r2P3/8/r5Q1/8/8/8/6RK w - - 1 2",
+      "searchMove": "g5h6",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:16",
+      "fen": "7k/1r2P3/r7/6Q1/8/8/8/6RK w - - 1 2",
+      "searchMove": "g5g7",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g7"
+          ],
+          "pvSan": [
+            "Qg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:17",
+      "fen": "7k/rr2P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:18",
+      "fen": "1r5k/1r2P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:19",
+      "fen": "2r4k/1r2P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:20",
+      "fen": "3r3k/1r2P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:21",
+      "fen": "4r2k/1r2P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:22",
+      "fen": "5r1k/1r2P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:23",
+      "fen": "6rk/1r2P3/8/6Q1/8/8/8/6RK w - - 1 2",
+      "searchMove": "g5g8",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g8"
+          ],
+          "pvSan": [
+            "Qxg8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:decision:24",
+      "fen": "r7/1r2P2k/8/6Q1/8/8/8/6RK w - - 1 2",
+      "searchMove": "g5h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:best",
+      "fen": "6rk/8/8/8/6q1/4p3/1R6/R6K b - - 0 1",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g4e4",
+            "h1h2",
+            "e4h7"
+          ],
+          "pvSan": [
+            "Qe4+",
+            "Kh2",
+            "Qh7#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g4f3",
+            "h1h2",
+            "f3h5"
+          ],
+          "pvSan": [
+            "Qf3+",
+            "Kh2",
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "e3e2",
+            "b2e2",
+            "g4f3",
+            "h1h2",
+            "f3h5"
+          ],
+          "pvSan": [
+            "e2",
+            "Rxe2",
+            "Qf3+",
+            "Kh2",
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:root",
+      "fen": "6rk/8/8/8/6q1/4p3/1R6/R6K b - - 0 1",
+      "searchMove": "e3e2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "e3e2",
+            "b2e2",
+            "g4f3",
+            "h1h2",
+            "f3h5"
+          ],
+          "pvSan": [
+            "e2",
+            "Rxe2",
+            "Qf3+",
+            "Kh2",
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:a1b1",
+      "fen": "6rk/8/8/8/6q1/8/1R2p3/1R5K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:a1c1",
+      "fen": "6rk/8/8/8/6q1/8/1R2p3/2R4K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:a1d1",
+      "fen": "6rk/8/8/8/6q1/8/1R2p3/3R3K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:a1e1",
+      "fen": "6rk/8/8/8/6q1/8/1R2p3/4R2K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:a1f1",
+      "fen": "6rk/8/8/8/6q1/8/1R2p3/5R1K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:a1g1",
+      "fen": "6rk/8/8/8/6q1/8/1R2p3/6RK b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g1"
+          ],
+          "pvSan": [
+            "Qxg1#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:a1a2",
+      "fen": "6rk/8/8/8/6q1/8/RR2p3/7K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g1"
+          ],
+          "pvSan": [
+            "Qg1#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:a1a3",
+      "fen": "6rk/8/8/8/6q1/R7/1R2p3/7K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g1"
+          ],
+          "pvSan": [
+            "Qg1#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g4h4",
+            "a3h3",
+            "h4h3"
+          ],
+          "pvSan": [
+            "Qh4+",
+            "Rh3",
+            "Qxh3#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:a1a4",
+      "fen": "6rk/8/8/8/R5q1/8/1R2p3/7K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g1"
+          ],
+          "pvSan": [
+            "Qg1#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:a1a5",
+      "fen": "6rk/8/8/R7/6q1/8/1R2p3/7K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g1"
+          ],
+          "pvSan": [
+            "Qg1#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:a1a6",
+      "fen": "6rk/8/R7/8/6q1/8/1R2p3/7K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g1"
+          ],
+          "pvSan": [
+            "Qg1#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:a1a7",
+      "fen": "6rk/R7/8/8/6q1/8/1R2p3/7K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g1"
+          ],
+          "pvSan": [
+            "Qg1#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:a1a8",
+      "fen": "R5rk/8/8/8/6q1/8/1R2p3/7K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g1"
+          ],
+          "pvSan": [
+            "Qg1#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:h1h2",
+      "fen": "6rk/8/8/8/6q1/8/1R2p2K/R7 b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:b2b1",
+      "fen": "6rk/8/8/8/6q1/8/4p3/RR5K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:b2a2",
+      "fen": "6rk/8/8/8/6q1/8/R3p3/R6K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:b2c2",
+      "fen": "6rk/8/8/8/6q1/8/2R1p3/R6K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:b2d2",
+      "fen": "6rk/8/8/8/6q1/8/3Rp3/R6K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:b2e2",
+      "fen": "6rk/8/8/8/6q1/8/4R3/R6K b - - 0 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g4f3",
+            "h1h2",
+            "f3h5"
+          ],
+          "pvSan": [
+            "Qf3+",
+            "Kh2",
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "g4e2",
+            "a1a2",
+            "e2f3",
+            "h1h2",
+            "f3h5"
+          ],
+          "pvSan": [
+            "Qxe2",
+            "Ra2",
+            "Qf3+",
+            "Kh2",
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": 264,
+          "mate": null,
+          "pvUci": [
+            "g4c4",
+            "e2h2",
+            "h8g7",
+            "h2g2",
+            "g7f7",
+            "g2g8",
+            "f7g8",
+            "a1g1",
+            "g8f8",
+            "h1h2",
+            "c4c7",
+            "h2g2",
+            "c7c6",
+            "g2g3",
+            "c6g6",
+            "g3f2",
+            "g6b6",
+            "f2f1",
+            "b6b1",
+            "f1f2",
+            "b1b2",
+            "f2e1",
+            "b2c1",
+            "e1f2"
+          ],
+          "pvSan": [
+            "Qc4",
+            "Rh2+",
+            "Kg7",
+            "Rg2+",
+            "Kf7",
+            "Rxg8",
+            "Kxg8",
+            "Rg1+",
+            "Kf8",
+            "Kh2",
+            "Qc7+",
+            "Kg2",
+            "Qc6+",
+            "Kg3",
+            "Qg6+",
+            "Kf2",
+            "Qb6+",
+            "Kf1",
+            "Qb1+",
+            "Kf2",
+            "Qb2+",
+            "Ke1",
+            "Qc1+",
+            "Kf2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:b2b3",
+      "fen": "6rk/8/8/8/6q1/1R6/4p3/R6K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g4h4",
+            "b3h3",
+            "h4h3"
+          ],
+          "pvSan": [
+            "Qh4+",
+            "Rh3",
+            "Qxh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g4h5",
+            "b3h3",
+            "h5h3"
+          ],
+          "pvSan": [
+            "Qh5+",
+            "Rh3",
+            "Qxh3#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:b2b4",
+      "fen": "6rk/8/8/8/1R4q1/8/4p3/R6K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g4h5",
+            "b4h4",
+            "h5h4"
+          ],
+          "pvSan": [
+            "Qh5+",
+            "Rh4",
+            "Qxh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:b2b5",
+      "fen": "6rk/8/8/1R6/6q1/8/4p3/R6K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:b2b6",
+      "fen": "6rk/8/1R6/8/6q1/8/4p3/R6K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:b2b7",
+      "fen": "6rk/1R6/8/8/6q1/8/4p3/R6K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:defence:b2b8",
+      "fen": "1R4rk/8/8/8/6q1/8/4p3/R6K b - - 1 2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:0",
+      "fen": "6rk/8/8/8/6q1/8/4R3/R6K b - - 0 2",
+      "searchMove": "g4e2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "g4e2",
+            "a1a2",
+            "e2d1",
+            "h1h2",
+            "d1h5"
+          ],
+          "pvSan": [
+            "Qxe2",
+            "Ra2",
+            "Qd1+",
+            "Kh2",
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:1",
+      "fen": "1R4rk/8/8/8/6q1/8/4p3/R6K b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:2",
+      "fen": "6rk/1R6/8/8/6q1/8/4p3/R6K b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:3",
+      "fen": "6rk/8/1R6/8/6q1/8/4p3/R6K b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:4",
+      "fen": "6rk/8/8/1R6/6q1/8/4p3/R6K b - - 1 2",
+      "searchMove": "g4h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:5",
+      "fen": "6rk/8/8/8/1R4q1/8/4p3/R6K b - - 1 2",
+      "searchMove": "g4h3",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:6",
+      "fen": "6rk/8/8/8/6q1/1R6/4p3/R6K b - - 1 2",
+      "searchMove": "g4g2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:7",
+      "fen": "6rk/8/8/8/6q1/8/R3p3/R6K b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:8",
+      "fen": "6rk/8/8/8/6q1/8/2R1p3/R6K b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:9",
+      "fen": "6rk/8/8/8/6q1/8/3Rp3/R6K b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:10",
+      "fen": "6rk/8/8/8/6q1/8/4p3/RR5K b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:11",
+      "fen": "R5rk/8/8/8/6q1/8/1R2p3/7K b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:12",
+      "fen": "6rk/R7/8/8/6q1/8/1R2p3/7K b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:13",
+      "fen": "6rk/8/R7/8/6q1/8/1R2p3/7K b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:14",
+      "fen": "6rk/8/8/R7/6q1/8/1R2p3/7K b - - 1 2",
+      "searchMove": "g4h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:15",
+      "fen": "6rk/8/8/8/R5q1/8/1R2p3/7K b - - 1 2",
+      "searchMove": "g4h3",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:16",
+      "fen": "6rk/8/8/8/6q1/R7/1R2p3/7K b - - 1 2",
+      "searchMove": "g4g2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:17",
+      "fen": "6rk/8/8/8/6q1/8/RR2p3/7K b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:18",
+      "fen": "6rk/8/8/8/6q1/8/1R2p3/1R5K b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:19",
+      "fen": "6rk/8/8/8/6q1/8/1R2p3/2R4K b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:20",
+      "fen": "6rk/8/8/8/6q1/8/1R2p3/3R3K b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:21",
+      "fen": "6rk/8/8/8/6q1/8/1R2p3/4R2K b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:22",
+      "fen": "6rk/8/8/8/6q1/8/1R2p3/5R1K b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:23",
+      "fen": "6rk/8/8/8/6q1/8/1R2p3/6RK b - - 1 2",
+      "searchMove": "g4g1",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g1"
+          ],
+          "pvSan": [
+            "Qxg1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rook-interposition:black:decision:24",
+      "fen": "6rk/8/8/8/6q1/8/1R2p2K/R7 b - - 1 2",
+      "searchMove": "g4h5",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "queen-countercheck:best",
+      "fen": "r6k/1q6/2P1P3/6Q1/8/8/8/6RK w - - 0 1",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "c6b7",
+            "a8a5",
+            "g5g8"
+          ],
+          "pvSan": [
+            "cxb7",
+            "Ra5",
+            "Qg8#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g5e5",
+            "h8h7",
+            "e5h2"
+          ],
+          "pvSan": [
+            "Qe5+",
+            "Kh7",
+            "Qh2#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g5f6",
+            "h8h7",
+            "f6h4"
+          ],
+          "pvSan": [
+            "Qf6+",
+            "Kh7",
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "queen-countercheck:root",
+      "fen": "r6k/1q6/2P1P3/6Q1/8/8/8/6RK w - - 0 1",
+      "searchMove": "e6e7",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": 0,
+          "mate": null,
+          "pvUci": [
+            "e6e7",
+            "b7c6",
+            "g1g2",
+            "a8a1",
+            "h1h2",
+            "c6c7",
+            "g5g3",
+            "c7g3",
+            "h2g3",
+            "a1e1",
+            "g3f3",
+            "e1e7",
+            "g2a2",
+            "h8h7",
+            "a2a5",
+            "e7f7",
+            "f3g4",
+            "f7g7",
+            "g4f5",
+            "g7f7"
+          ],
+          "pvSan": [
+            "e7",
+            "Qxc6+",
+            "Rg2",
+            "Ra1+",
+            "Kh2",
+            "Qc7+",
+            "Qg3",
+            "Qxg3+",
+            "Kxg3",
+            "Re1",
+            "Kf3",
+            "Rxe7",
+            "Ra2",
+            "Kh7",
+            "Ra5",
+            "Rf7+",
+            "Kg4",
+            "Rg7+",
+            "Kf5",
+            "Rf7+"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "queen-countercheck:black:best",
+      "fen": "6rk/8/8/8/6q1/2p1p3/1Q6/R6K b - - 0 1",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "c3b2",
+            "a1d1",
+            "g4g2"
+          ],
+          "pvSan": [
+            "cxb2",
+            "Rd1",
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g4e4",
+            "h1h2",
+            "e4h7"
+          ],
+          "pvSan": [
+            "Qe4+",
+            "Kh2",
+            "Qh7#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g4f3",
+            "h1h2",
+            "f3h5"
+          ],
+          "pvSan": [
+            "Qf3+",
+            "Kh2",
+            "Qh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "queen-countercheck:black:root",
+      "fen": "6rk/8/8/8/6q1/2p1p3/1Q6/R6K b - - 0 1",
+      "searchMove": "e3e2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": 0,
+          "mate": null,
+          "pvUci": [
+            "e3e2",
+            "b2c3",
+            "g8g7",
+            "a1a8",
+            "h8h7",
+            "c3c2",
+            "g7g6",
+            "c2c7",
+            "g6g7",
+            "c7h2",
+            "h7g6",
+            "a8a6",
+            "g6f7",
+            "a6a7",
+            "f7g8",
+            "a7g7",
+            "g4g7",
+            "h2e2",
+            "g7g5"
+          ],
+          "pvSan": [
+            "e2",
+            "Qxc3+",
+            "Rg7",
+            "Ra8+",
+            "Kh7",
+            "Qc2+",
+            "Rg6",
+            "Qc7+",
+            "Rg7",
+            "Qh2+",
+            "Kg6",
+            "Ra6+",
+            "Kf7",
+            "Ra7+",
+            "Kg8",
+            "Rxg7+",
+            "Qxg7",
+            "Qxe2",
+            "Qg5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "missing-mate-support:best",
+      "fen": "r6k/1r6/4P3/6Q1/8/8/8/7K w - - 0 1",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": 15,
+          "mate": null,
+          "pvUci": [
+            "e6e7",
+            "b7b1",
+            "h1h2",
+            "a8a2",
+            "h2g3",
+            "b1b3",
+            "g3h4",
+            "a2h2",
+            "h4g4",
+            "h2g2",
+            "g4f4",
+            "g2g5",
+            "e7e8q",
+            "g5g8",
+            "e8h5",
+            "h8g7",
+            "h5e5",
+            "g7h7",
+            "e5e4",
+            "g8g6",
+            "e4e7",
+            "h7g8",
+            "e7e8",
+            "g8g7",
+            "e8a4",
+            "g6g3"
+          ],
+          "pvSan": [
+            "e7",
+            "Rb1+",
+            "Kh2",
+            "Ra2+",
+            "Kg3",
+            "Rb3+",
+            "Kh4",
+            "Rh2+",
+            "Kg4",
+            "Rg2+",
+            "Kf4",
+            "Rxg5",
+            "e8=Q+",
+            "Rg8",
+            "Qh5+",
+            "Kg7",
+            "Qe5+",
+            "Kh7",
+            "Qe4+",
+            "Rg6",
+            "Qe7+",
+            "Kg8",
+            "Qe8+",
+            "Kg7",
+            "Qa4",
+            "Rgg3"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": 0,
+          "mate": null,
+          "pvUci": [
+            "g5f6",
+            "h8g8",
+            "e6e7",
+            "b7b1",
+            "h1h2",
+            "a8a2",
+            "h2h3",
+            "b1h1",
+            "h3g3",
+            "h1g1",
+            "g3f3",
+            "g1f1",
+            "f3e3",
+            "f1f6",
+            "e7e8r"
+          ],
+          "pvSan": [
+            "Qf6+",
+            "Kg8",
+            "e7",
+            "Rb1+",
+            "Kh2",
+            "Ra2+",
+            "Kh3",
+            "Rh1+",
+            "Kg3",
+            "Rg1+",
+            "Kf3",
+            "Rf1+",
+            "Ke3",
+            "Rxf6",
+            "e8=R+"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": 0,
+          "mate": null,
+          "pvUci": [
+            "g5d5",
+            "b7h7",
+            "h1g2",
+            "a8f8",
+            "g2g3",
+            "h7g7",
+            "g3h4",
+            "f8e8",
+            "d5e4",
+            "h8g8",
+            "e4d5",
+            "e8e7"
+          ],
+          "pvSan": [
+            "Qd5",
+            "Rh7+",
+            "Kg2",
+            "Rf8",
+            "Kg3",
+            "Rg7+",
+            "Kh4",
+            "Re8",
+            "Qe4",
+            "Kg8",
+            "Qd5",
+            "Ree7"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "missing-mate-support:root",
+      "fen": "r6k/1r6/4P3/6Q1/8/8/8/7K w - - 0 1",
+      "searchMove": "e6e7",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": 3,
+          "mate": null,
+          "pvUci": [
+            "e6e7",
+            "b7b8",
+            "g5f6",
+            "h8h7",
+            "h1g2",
+            "b8g8",
+            "g2f3",
+            "a8a3",
+            "f3e4",
+            "a3a4",
+            "e4f5",
+            "a4a5",
+            "f5f4",
+            "a5a4",
+            "f4e3",
+            "a4a3",
+            "e3e2",
+            "a3a2",
+            "e2d3",
+            "a2a3",
+            "d3d4"
+          ],
+          "pvSan": [
+            "e7",
+            "Rbb8",
+            "Qf6+",
+            "Kh7",
+            "Kg2",
+            "Rg8+",
+            "Kf3",
+            "Ra3+",
+            "Ke4",
+            "Ra4+",
+            "Kf5",
+            "Ra5+",
+            "Kf4",
+            "Ra4+",
+            "Ke3",
+            "Ra3+",
+            "Ke2",
+            "Ra2+",
+            "Kd3",
+            "Ra3+",
+            "Kd4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "missing-mate-support:black:best",
+      "fen": "7k/8/8/8/6q1/4p3/1R6/R6K b - - 0 1",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": 0,
+          "mate": null,
+          "pvUci": [
+            "e3e2",
+            "a1a8",
+            "h8g7",
+            "b2b7",
+            "g7f6",
+            "a8f8",
+            "f6e6",
+            "f8e8",
+            "e6d6",
+            "b7e7",
+            "g4h4",
+            "h1g1",
+            "h4g3",
+            "g1h1"
+          ],
+          "pvSan": [
+            "e2",
+            "Ra8+",
+            "Kg7",
+            "Rb7+",
+            "Kf6",
+            "Rf8+",
+            "Ke6",
+            "Re8+",
+            "Kd6",
+            "Rbe7",
+            "Qh4+",
+            "Kg1",
+            "Qg3+",
+            "Kh1"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": 0,
+          "mate": null,
+          "pvUci": [
+            "g4f3",
+            "h1g1",
+            "e3e2",
+            "b2b8",
+            "h8g7",
+            "a1a7",
+            "g7g6",
+            "b8g8",
+            "g6h6",
+            "g8h8",
+            "h6g5",
+            "h8g8"
+          ],
+          "pvSan": [
+            "Qf3+",
+            "Kg1",
+            "e2",
+            "Rb8+",
+            "Kg7",
+            "Ra7+",
+            "Kg6",
+            "Rg8+",
+            "Kh6",
+            "Rh8+",
+            "Kg5",
+            "Rg8+"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": -9,
+          "mate": null,
+          "pvUci": [
+            "g4e4",
+            "b2g2",
+            "h8h7",
+            "a1f1",
+            "e4d4",
+            "f1e1",
+            "d4e4",
+            "h1g1",
+            "e4e5",
+            "g2e2",
+            "e5g3",
+            "g1h1",
+            "g3f3",
+            "h1h2",
+            "f3f4",
+            "h2g2",
+            "f4e4",
+            "g2g1"
+          ],
+          "pvSan": [
+            "Qe4+",
+            "Rg2",
+            "Kh7",
+            "Rf1",
+            "Qd4",
+            "Re1",
+            "Qe4",
+            "Kg1",
+            "Qe5",
+            "Rge2",
+            "Qg3+",
+            "Kh1",
+            "Qf3+",
+            "Kh2",
+            "Qf4+",
+            "Kg2",
+            "Qe4+",
+            "Kg1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "missing-mate-support:black:root",
+      "fen": "7k/8/8/8/6q1/4p3/1R6/R6K b - - 0 1",
+      "searchMove": "e3e2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": 5,
+          "mate": null,
+          "pvUci": [
+            "e3e2",
+            "b2b1",
+            "g4h3",
+            "h1g1",
+            "h3g3",
+            "g1h1",
+            "h8h7",
+            "b1e1",
+            "g3f3",
+            "h1h2",
+            "h7g6",
+            "e1g1",
+            "g6f7",
+            "a1e1",
+            "f3f2",
+            "h2h3",
+            "f7f6",
+            "h3g4",
+            "f6e5",
+            "e1a1",
+            "f2f4",
+            "g4h3",
+            "f4h6"
+          ],
+          "pvSan": [
+            "e2",
+            "Rbb1",
+            "Qh3+",
+            "Kg1",
+            "Qg3+",
+            "Kh1",
+            "Kh7",
+            "Re1",
+            "Qf3+",
+            "Kh2",
+            "Kg6",
+            "Rg1+",
+            "Kf7",
+            "Rae1",
+            "Qf2+",
+            "Kh3",
+            "Kf6",
+            "Kg4",
+            "Ke5",
+            "Ra1",
+            "Qf4+",
+            "Kh3",
+            "Qh6+"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "already-blocked-defence:best",
+      "fen": "r6k/1r3p2/4P3/6Q1/8/8/8/6RK w - - 0 1",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h5"
+          ],
+          "pvSan": [
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5h6"
+          ],
+          "pvSan": [
+            "Qh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "already-blocked-defence:root",
+      "fen": "r6k/1r3p2/4P3/6Q1/8/8/8/6RK w - - 0 1",
+      "searchMove": "e6e7",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "e6e7",
+            "a8d8",
+            "g5h4"
+          ],
+          "pvSan": [
+            "e7",
+            "Rd8",
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "already-blocked-defence:black:best",
+      "fen": "6rk/8/8/8/6q1/4p3/1R3P2/R6K b - - 0 1",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g2"
+          ],
+          "pvSan": [
+            "Qg2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h3"
+          ],
+          "pvSan": [
+            "Qh3#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4h4"
+          ],
+          "pvSan": [
+            "Qh4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "already-blocked-defence:black:root",
+      "fen": "6rk/8/8/8/6q1/4p3/1R3P2/R6K b - - 0 1",
+      "searchMove": "e3e2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "e3e2",
+            "a1d1",
+            "g4g2"
+          ],
+          "pvSan": [
+            "e2",
+            "Rd1",
+            "Qg2#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "extra-diagonal-defender:best",
+      "fen": "r4b1k/1r6/4P3/6Q1/8/8/8/6RK w - - 0 1",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g5g8"
+          ],
+          "pvSan": [
+            "Qg8#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "e6e7",
+            "h8h7",
+            "g5g8",
+            "h7h6",
+            "g8h8"
+          ],
+          "pvSan": [
+            "e7",
+            "Kh7",
+            "Qg8+",
+            "Kh6",
+            "Qh8#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": 313,
+          "mate": null,
+          "pvUci": [
+            "g5e5",
+            "f8g7",
+            "e5h5",
+            "g7h6",
+            "h5f3",
+            "a8b8",
+            "f3c3",
+            "h6g7",
+            "c3h3",
+            "h8g8"
+          ],
+          "pvSan": [
+            "Qe5+",
+            "Bg7",
+            "Qh5+",
+            "Bh6",
+            "Qf3",
+            "Rab8",
+            "Qc3+",
+            "Bg7",
+            "Qh3+",
+            "Kg8"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "extra-diagonal-defender:root",
+      "fen": "r4b1k/1r6/4P3/6Q1/8/8/8/6RK w - - 0 1",
+      "searchMove": "e6e7",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "e6e7",
+            "h8h7",
+            "g5g8",
+            "h7h6",
+            "g8h8"
+          ],
+          "pvSan": [
+            "e7",
+            "Kh7",
+            "Qg8+",
+            "Kh6",
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "extra-diagonal-defender:black:best",
+      "fen": "6rk/8/8/8/6q1/4p3/1R6/R4B1K b - - 0 1",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "g4g1"
+          ],
+          "pvSan": [
+            "Qg1#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "e3e2",
+            "h1h2",
+            "g4g1",
+            "h2h3",
+            "g1h1"
+          ],
+          "pvSan": [
+            "e2",
+            "Kh2",
+            "Qg1+",
+            "Kh3",
+            "Qh1#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": 372,
+          "mate": null,
+          "pvUci": [
+            "g4f3",
+            "f1g2",
+            "f3h5",
+            "h1g1",
+            "e3e2",
+            "a1e1",
+            "h5c5",
+            "g1h1",
+            "g8e8",
+            "b2b3",
+            "c5f2",
+            "b3h3",
+            "h8g7",
+            "e1e2",
+            "f2e2",
+            "h3g3",
+            "g7f6"
+          ],
+          "pvSan": [
+            "Qf3+",
+            "Bg2",
+            "Qh5+",
+            "Kg1",
+            "e2",
+            "Re1",
+            "Qc5+",
+            "Kh1",
+            "Re8",
+            "Rb3",
+            "Qf2",
+            "Rh3+",
+            "Kg7",
+            "Rxe2",
+            "Qxe2",
+            "Rg3+",
+            "Kf6"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "extra-diagonal-defender:black:root",
+      "fen": "6rk/8/8/8/6q1/4p3/1R6/R4B1K b - - 0 1",
+      "searchMove": "e3e2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "e3e2",
+            "h1h2",
+            "g4g1",
+            "h2h3",
+            "g1h1"
+          ],
+          "pvSan": [
+            "e2",
+            "Kh2",
+            "Qg1+",
+            "Kh3",
+            "Qh1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "checking-resource:best",
+      "fen": "r6k/1r6/4P3/6Q1/8/8/8/4K1R1 w - - 0 1",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g5f6",
+            "h8h7",
+            "f6h4"
+          ],
+          "pvSan": [
+            "Qf6+",
+            "Kh7",
+            "Qh4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g5e5",
+            "h8h7",
+            "e5h2"
+          ],
+          "pvSan": [
+            "Qe5+",
+            "Kh7",
+            "Qh2#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "g5h4",
+            "b7h7",
+            "h4f6",
+            "h7g7",
+            "f6g7"
+          ],
+          "pvSan": [
+            "Qh4+",
+            "Rh7",
+            "Qf6+",
+            "Rg7",
+            "Qxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "checking-resource:root",
+      "fen": "r6k/1r6/4P3/6Q1/8/8/8/4K1R1 w - - 0 1",
+      "searchMove": "e6e7",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": 531,
+          "mate": null,
+          "pvUci": [
+            "e6e7",
+            "b7b1",
+            "e1d2",
+            "b1g1",
+            "g5g1",
+            "a8g8",
+            "g1g8",
+            "h8g8",
+            "e7e8q",
+            "g8g7",
+            "d2e3",
+            "g7h7",
+            "e8f7",
+            "h7h6",
+            "e3d4",
+            "h6g5",
+            "d4d5",
+            "g5h6"
+          ],
+          "pvSan": [
+            "e7",
+            "Rb1+",
+            "Kd2",
+            "Rxg1",
+            "Qxg1",
+            "Rg8",
+            "Qxg8+",
+            "Kxg8",
+            "e8=Q+",
+            "Kg7",
+            "Ke3",
+            "Kh7",
+            "Qf7+",
+            "Kh6",
+            "Kd4",
+            "Kg5",
+            "Kd5",
+            "Kh6"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "checking-resource:black:best",
+      "fen": "4k1r1/8/8/8/6q1/4p3/1R6/R6K b - - 0 1",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g4f3",
+            "h1h2",
+            "f3h5"
+          ],
+          "pvSan": [
+            "Qf3+",
+            "Kh2",
+            "Qh5#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "g4e4",
+            "h1h2",
+            "e4h7"
+          ],
+          "pvSan": [
+            "Qe4+",
+            "Kh2",
+            "Qh7#"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "g4h5",
+            "b2h2",
+            "h5f3",
+            "h2g2",
+            "f3g2"
+          ],
+          "pvSan": [
+            "Qh5+",
+            "Rh2",
+            "Qf3+",
+            "Rg2",
+            "Qxg2#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "checking-resource:black:root",
+      "fen": "4k1r1/8/8/8/6q1/4p3/1R6/R6K b - - 0 1",
+      "searchMove": "e3e2",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": 551,
+          "mate": null,
+          "pvUci": [
+            "e3e2",
+            "b2b8",
+            "e8d7",
+            "b8g8",
+            "g4g8",
+            "a1g1",
+            "g8d5",
+            "h1h2",
+            "d5f3",
+            "g1b1",
+            "f3f2",
+            "h2h1",
+            "f2g3",
+            "b1b7",
+            "d7c8",
+            "b7b1",
+            "e2e1q"
+          ],
+          "pvSan": [
+            "e2",
+            "Rb8+",
+            "Kd7",
+            "Rxg8",
+            "Qxg8",
+            "Rg1",
+            "Qd5+",
+            "Kh2",
+            "Qf3",
+            "Rb1",
+            "Qf2+",
+            "Kh1",
+            "Qg3",
+            "Rb7+",
+            "Kc8",
+            "Rb1",
+            "e1=Q+"
+          ]
+        }
+      ]
+    }
+  ]
+}

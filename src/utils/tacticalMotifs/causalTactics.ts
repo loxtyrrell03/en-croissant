@@ -2110,7 +2110,13 @@ function computeMixedCheckingAttack(
     )
         return null;
     const budget = quiet?.budget ?? discovery?.budget ?? { nodes: nodeLimit };
-    const minimumGain = discovery?.minimumGain ?? 300;
+    // A new mating threat may force a pawn or exchange concession, not a
+    // whole piece. Still demand more than any already available capture;
+    // otherwise a weaker first proof can both add noise and hide a better one.
+    const minimumGain = discovery?.minimumGain ?? (quiet && !quiet.captureThreat
+        ? Math.max(100, ...legalMoves(root.before).filter(move => capturedValue(root.before, move))
+            .map(move => tacticalExchangeGain(root.before, move) + 1))
+        : 300);
     const moved = (active: Square[] | undefined, move: NormalMove) =>
         active
             ?.filter((square) => square !== move.to)
@@ -2349,6 +2355,34 @@ function computeMixedCheckingAttack(
         discovery?.onFailure?.(error instanceof Error ? error.message : String(error));
         return null;
     }
+}
+
+/** The new mate threat can be caused by cutting a slider's defensive route.
+ * Removing the blocker is a geometry probe, not a legal game continuation.
+ * The same defence must be legal against the premature threat, and every
+ * actual root reply is covered separately by the supplied attack proof. */
+export function matingThreatInterference(root: TacticalReplayStep, proof: QuietMatingAttackProof) {
+    if (root.capture || proof.threat.from === root.move.to || !root.before.isLegal(proof.threat)) return null;
+    const early = root.before.clone();
+    early.play(proof.threat);
+    const actual = withTurn(root.after, root.before.turn);
+    if (!actual.isLegal(proof.threat)) return null;
+    const open = actual.clone();
+    open.board.take(root.move.to);
+    if (!open.isLegal(proof.threat)) return null;
+    actual.play(proof.threat);
+    open.play(proof.threat);
+    if (!actual.isCheckmate()) return null;
+    for (const defence of legalMoves(open)) {
+        const guard = open.board.get(defence.from)!;
+        const original = root.before.board.get(defence.from);
+        if (!["bishop", "rook", "queen"].includes(guard.role) ||
+            original?.color !== guard.color || original.role !== guard.role || !early.isLegal(defence)) continue;
+        const blockers = [...between(defence.from, defence.to).intersect(actual.board.occupied)];
+        if (blockers.length === 1 && blockers[0] === root.move.to)
+            return { from: defence.from, to: defence.to, role: guard.role, defence: makeSan(open, defence) };
+    }
+    return null;
 }
 
 type ForcingClearanceProof = {
@@ -6556,6 +6590,15 @@ export function tacticalBoardEvidence(
         return null;
     const step = replayTacticalLine(fen, line.slice(0, motif.ply))[motif.ply - 1];
     if (!step) return null;
+    if (motif.id === "interference" && motif.label === "Mating Interference") {
+        const attack = proveQuietMatingAttack(step);
+        const cut = attack && matingThreatInterference(step, attack);
+        if (cut) return { square: makeSquare(step.move.to), arrows: [
+            { from: makeSquare(cut.from), to: makeSquare(cut.to) },
+            { from: makeSquare(attack.threat.from), to: makeSquare(attack.threat.to) },
+        ] };
+        return null;
+    }
     if (motif.relevance === "secondary" && ["clearance", "discoveredCheck", "doubleCheck"].includes(motif.id)) {
         const suffix = replayTacticalLine(fen, line).slice(motif.ply - 1);
         const supporting = matingClearanceEvidence(suffix, motif.source);
@@ -10538,10 +10581,12 @@ export function auditTacticalMotifs(
     const quietAttack = !mate ? (steps[0].capture ? proveMatingCaptureAttack(steps[0]) : proveQuietMatingAttack(steps[0])) : null;
     if (quietAttack) {
         const material = quietAttack.branches.find(branch => branch.gain === quietAttack.gain)!;
+        const interference = matingThreatInterference(steps[0], quietAttack);
         candidates.push({
-            id: "forcingAttack", label: "Mating Attack", source: proposals[0]?.source ?? "available",
+            id: interference ? "interference" : "forcingAttack",
+            label: interference ? "Mating Interference" : "Mating Attack", source: proposals[0]?.source ?? "available",
             confidence: "high", ply: 1, moveUci: steps[0].uci, value: quietAttack.gain,
-            evidence: `${steps[0].san} creates the new threat ${quietAttack.threatSan}. Stopping the mate concedes material: after ${material.reply}, ${material.line.join(" ")} wins material. All ${quietAttack.branches.length} legal replies allow a verified local material gain or mate, including captures and counterchecks. This proves a material concession, not a forced-mate claim; later mechanisms belong to their actual moves.`,
+            evidence: `${steps[0].san} ${interference ? `cuts the ${interference.role}'s defensive route from ${makeSquare(interference.from)} to ${makeSquare(interference.to)}, creating the threat` : "creates the new threat"} ${quietAttack.threatSan}.${interference ? ` Without the blocker on ${makeSquare(steps[0].move.to)}, ${interference.defence} could answer that threat.` : ""} Stopping the mate concedes material: after ${material.reply}, ${material.line.join(" ")} wins material. All ${quietAttack.branches.length} legal replies allow a verified local material gain or mate, including captures and counterchecks. This proves a material concession, not a forced-mate claim; later mechanisms belong to their actual moves.`,
         });
     }
     const doubleThreat = !mate && !verifiedFork(steps[0]) ? proveQuietDoubleThreat(steps[0]) : null;
@@ -11254,6 +11299,10 @@ export function auditTacticalMotifs(
     const fork = candidates.find((m) => m.id === "fork");
     const filtered = normalizedCandidates
         .filter((m) => {
+            // Prefer the independently covered version of the SAME threat
+            // over a PV-conditioned route with a larger nominal payoff.
+            if (m.id === "tacticalPreparation" && m.confidence === "medium" && m.ply === 1 &&
+                quietAttack && tacticalPreparation?.threat[0] === quietAttack.threatSan) return false;
             if (incidentalMatingMechanisms.has(m.id) && m.ply === 1) return false;
             // The revealed line and the mover's attack form one discovery.
             // Do not count its same-ply material-target subset again as a

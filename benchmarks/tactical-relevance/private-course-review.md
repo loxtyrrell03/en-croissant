@@ -1,6 +1,12 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 102 / live pipeline 107
+## Current classifier: adapter 103 / live pipeline 108
+
+The [mating-interference review](mating-interference-review.md) records a recovered course root, a corrected primary label and an actual-ply secondary mating threat. A new mate may force a pawn/exchange concession, but must beat pre-existing captures and retain independent all-defence evidence. A verified cut defensive route can explain Interference; the same threat's conditional Quiet Preparation is suppressed. A stronger forced mate retains priority. Final validation includes 213 fresh engine searches with contrary and pre-existing-mate controls, eight retained-baseline inputs and 246 exact course replays. Only three source/live modes across two course positions change; the other 244 full results and all twenty rare results are unchanged, not certified accurate.
+
+The linked review records complete source/build/worker/browser evidence and the rejected queen-trap experiment: fresh winning engine choices did not rescue an insufficient local retention proof. That root and broader accuracy gaps remain open. No owner app/service restart or deployment; paid material stays private.
+
+## Prior adapter 102 / live pipeline 107
 
 The [castling and rare-root review](castling-relevance-review.md) records a legal queenside-castling crash found by an all-defence real-puzzle audit. Replay now respects both castling notations, proof helpers handle compound moves safely, and board previews draw the actual king/rook moves. Ordinary checks and pre-existing pins do not gain phantom themes; genuine castling mates remain primary, including missed lessons. Eighteen output-blind real-game castling options and three unresolved rare roots receive 96 final fresh engine searches. A missed queen-rook fork and an allowed loose-bishop capture are independently checked in review and on the actual after-move scan.
 
