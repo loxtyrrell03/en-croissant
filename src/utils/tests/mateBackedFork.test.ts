@@ -72,7 +72,7 @@ test("accepting the mate-backed fork is not displayed as winning a hanging knigh
         classifyPositionTacticalMotifs({ fen: after, pvUci: ["e8f7"] }).motifs.some(
             (m) => m.id === "hangingPiece",
         ),
-    ).toBe(true);
+    ).toBe(false);
 });
 
 test("without the mating bishop, accepting the offered knight retains its real material lesson", () => {

@@ -57,7 +57,8 @@ test("each full public game contains its nominated puzzle and every fixed contex
 
 test("exact source and engine replay retains unrelated results across the twenty-three boards", () => {
     const clean = (value: unknown) =>
-        JSON.stringify(value, (key, v) => (key === "motifClassifierVersion" ? undefined : v));
+        JSON.stringify(value, (key, v) => key === "motifClassifierVersion" ? undefined : v && typeof v === "object" && !Array.isArray(v)
+            ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.localeCompare(b))) : v);
     const cases = receipt.cases.map((row: any) => {
         const sourceResult = classifyPositionTacticalMotifs({
             fen: row.fen,
@@ -96,7 +97,17 @@ test("exact source and engine replay retains unrelated results across the twenty
     ).toMatchObject({ ply: 2, actor: "black", relevance: "secondary" });
     const changed = new Set(["lichess:brn5j", "lichess:kO37k", "lichess:qY3NM", "lichess:49h84"]);
     for (const row of cases.filter((row: { id: string }) => !changed.has(row.id))) {
-        const before = receipt.cases.find((prior: { id: string }) => prior.id === row.id);
+        const before = structuredClone(receipt.cases.find((prior: { id: string }) => prior.id === row.id));
+        // The f7 pawn capture has a 100 cp local material bound, not the
+        // 10000 mate sentinel copied from the separate mating mechanism.
+        if (row.id === "lichess:I5Waq") {
+            for (const motifs of [before.sourceResult.motifs, before.sourceResult.timeline,
+                before.scan.variations[0].motifs, before.scan.variations[0].timeline]) {
+                const pawn = motifs.find((m: { id: string }) => m.id === "attackingF2F7");
+                if (pawn.value !== 10000) throw new Error("Unexpected frozen f7 material value");
+                pawn.value = 100;
+            }
+        }
         expect({ id: row.id, result: clean(row.sourceResult), scan: clean(row.scan) }).toEqual({
             id: before.id,
             result: clean(before.sourceResult),

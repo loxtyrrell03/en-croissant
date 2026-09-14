@@ -173,12 +173,16 @@ test("a larger played capture is not described as equal, and en passant names th
         { ...proposal, moveUci: "a8a4" },
     ]);
     expect(larger[0].comparisonEvidence).toContain("larger immediate exchange gain");
-    const ep = "7k/8/8/3pPp2/2P5/8/6PP/6K1 w - f6 0 1";
+    const ep = "7k/8/8/3pPp2/2P5/1P6/6PP/6K1 w - f6 0 1";
     const result = qualifyComparableCaptureChoice(ep, "c4d5", "e5f6", [
         { ...proposal, moveUci: "c4d5", value: 100 },
     ]);
     expect(result[0].alternativeCapture).toBe(true);
     expect(result[0].comparisonEvidence).toContain("exf6 captures the pawn on f5");
+    // Without b3, ...dxc4 balances the en-passant gain elsewhere.
+    expect(qualifyComparableCaptureChoice(ep.replace("1P6", "8"), "c4d5", "e5f6", [
+        { ...proposal, moveUci: "c4d5", value: 100 },
+    ])[0].alternativeCapture).toBeUndefined();
 });
 
 test.each(["prevented", "reduced", "persists", undefined] as const)(

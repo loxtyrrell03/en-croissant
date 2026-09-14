@@ -28,7 +28,8 @@ test("frozen engine and source inputs retain unrelated judgements across the ful
     );
     const clean = (value: unknown) =>
         JSON.stringify(value, (key, entry) =>
-            key === "motifClassifierVersion" ? undefined : entry,
+            key === "motifClassifierVersion" ? undefined : entry && typeof entry === "object" && !Array.isArray(entry)
+                ? Object.fromEntries(Object.entries(entry).sort(([a], [b]) => a.localeCompare(b))) : entry,
         );
     const changed = new Set(["lichess:qQG5v", "lichess:sKDBG", "lichess:xxDaj", "lichess:SD5oo", "lichess:qn2Fy", "lichess:j8Up4", "lichess:S9vEb", "lichess:DBBd9", "lichess:J3vOR"]);
     const cases = receipt.cases.map((r: any) => {

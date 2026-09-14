@@ -1,5 +1,5 @@
 import { makeSquare } from "chessops/util";
-import { replayTacticalLine, tacticalExchangeGain, type TacticalReplayStep } from "./causalTactics";
+import { replayTacticalLine, tacticalCaptureGain, tacticalExchangeGain, type TacticalReplayStep } from "./causalTactics";
 import type { TacticalMotifEvidence } from "./types";
 
 function capturedPiece(step: TacticalReplayStep) {
@@ -46,6 +46,10 @@ export function qualifyComparableCaptureChoice(
         return motifs;
     const bestGain = tacticalExchangeGain(best.before, best.move);
     const playedGain = tacticalExchangeGain(played.before, played.move);
+    // A capture that loses material elsewhere cannot fund the comparison.
+    // The comparison below remains same-square arithmetic, not a claim that
+    // two lower bounds establish equally good moves.
+    if ((tacticalCaptureGain(best) ?? 0) <= 0 || (tacticalCaptureGain(played) ?? 0) <= 0) return motifs;
     // Less than a pawn of exchange difference is not itself a compelling
     // missed-material lesson. In particular, bishop versus knight is 10 cp.
     // Negative/zero/exhausted exchanges cannot fund this qualification.

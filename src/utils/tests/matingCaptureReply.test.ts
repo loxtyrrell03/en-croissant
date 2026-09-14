@@ -77,14 +77,14 @@ test("root and timeline agree without needing future PV moves for the capture pr
     });
     expect(root.motifs.some((m) => m.id === "hangingPiece")).toBe(false);
     const noHistory = classifyPositionTacticalMotifs({ fen: after, pvUci: [line[1]] });
-    expect(noHistory.motifs.some((m) => m.id === "hangingPiece")).toBe(true);
+    expect(noHistory.motifs.some((m) => m.id === "hangingPiece")).toBe(false);
     const wrongHistory = classifyPositionTacticalMotifs({
         fen: after,
         previousFen: fen.replace("4NpP1", "5pP1"),
         previousMoveUci: line[0],
         pvUci: [line[1]],
     });
-    expect(wrongHistory.motifs.some((m) => m.id === "hangingPiece")).toBe(true);
+    expect(wrongHistory.motifs.some((m) => m.id === "hangingPiece")).toBe(false);
 });
 
 test("removing the bishop supplies a real king escape and an uncaptured move cannot qualify", () => {

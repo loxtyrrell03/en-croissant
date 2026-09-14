@@ -15,7 +15,9 @@ export const directMaterialPayoffCases = [
         pvUci: ["e4d6", "e8f8", "d6c8"],
         theme: "fork",
         label: "Fork Payoff",
-        value: 900,
+        // Collecting the queen ends in K+N versus K: an observed payoff,
+        // not another independent winning-material certificate.
+        value: undefined,
     },
     {
         id: "rook-skewer",

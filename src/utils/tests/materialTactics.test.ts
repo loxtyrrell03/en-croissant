@@ -78,11 +78,12 @@ describe("judged material tactics", () => {
             classifyPositionTacticalMotifs({ fen, pvUci }).motifs.map((m) => m.id),
         ).not.toContain("capturingDefender");
     });
-    test("when the queen can flee, the proven win is the captured knight", () => {
+    test("a captured knight is not a material win when the queen takes an off-square rook", () => {
         const fen = "7k/8/5n2/3qP1P1/8/8/8/3R2K1 w - - 0 1";
         const pvUci = ["e5f6", "h8g8", "d1d5"];
         expect(replayTacticalLine(fen, ["e5f6", "d5e6"])).toHaveLength(2);
-        expect(classifyPositionTacticalMotifs({ fen, pvUci }).motifs[0]?.id).toBe("hangingPiece");
+        expect(replayTacticalLine(fen, ["e5f6", "d5d1"])[1].san).toBe("Qxd1+");
+        expect(classifyPositionTacticalMotifs({ fen, pvUci }).motifs).toEqual([]);
     });
     test("a later promotion is attached only to its actual ply", () => {
         const fen = "4k3/4n3/8/3P4/2B5/8/8/4R1K1 w - - 0 1";

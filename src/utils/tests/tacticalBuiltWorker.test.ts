@@ -12,6 +12,7 @@ import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixed
 import { directThreatFen, directThreatLine, directThreatControls } from "./fixtures/directThreatRelevance";
 import { tablebaseCases } from "./fixtures/tablebaseRelevance";
 import { directMaterialPayoffCases, reflectPayoff } from "./fixtures/directMaterialPayoff";
+import { captureGainLiabilityCases, reflectCaptureLiability } from "./fixtures/captureGainLiability";
 import { castlingAliasCases } from "./fixtures/castlingRelevance";
 import { matingInterferenceCases, reflectMatingInterference } from "./fixtures/matingInterference";
 import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
@@ -1195,6 +1196,35 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
     120000,
 );
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("capture liabilities and sound deflection payoffs survive the production worker", async () => {
+    const reports = [];
+    const controls = [...captureGainLiabilityCases, ...captureGainLiabilityCases.map(reflectCaptureLiability)];
+    for (const row of controls) {
+        const input = {fen:row.fen,pvUci:[row.move],depth:16,engineName:"Liability control"};
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.find(m => m.id === "hangingPiece")?.label).toBe(row.label);
+        expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+        reports.push({id:row.id,classificationMs:result.classificationMs,startupMs:result.startupMs,primary:result.scan.motifs.map(m=>m.id)});
+    }
+    const original = {id:"quiet-deflection",fen:"4r2k/5rp1/6qp/3PB3/4Q2n/3R4/6PP/4R1K1 b - - 0 1",move:"e8e5",gain:330,label:"Deflection"};
+    for (const reflected of [false,true]) {
+        const row = reflected ? reflectCaptureLiability(original) : original;
+        for (const [kind,line] of [["root",["e8e5"]],["direct",["e8e5","e4h4","g6d3"]],["unsound-exchange",["e8e5","e4h4","e5e1","h4e1","g6d3"]]] as const) {
+            const input = {fen:row.fen,pvUci:line.map(m => reflected ? m.replace(/[1-8]/g,r=>String(9-Number(r))) : m),depth:16,engineName:"Deflection control"};
+            const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+            expect(result.scan).toEqual(buildLiveTacticalScan(input));
+            expect(result.scan.motifs[0]?.id).toBe("deflection");
+            const timeline = result.scan.variations[0].timeline;
+            expect(kind !== "direct" || timeline.some(m => m.ply === 3 && m.label === "Deflection Payoff" && m.value === undefined)).toBe(true);
+            expect(kind !== "unsound-exchange" || !timeline.some(m=>m.ply === 5 && m.id === "hangingPiece")).toBe(true);
+            expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+            reports.push({id:`${row.id}:${kind}`,classificationMs:result.classificationMs,startupMs:result.startupMs,primary:result.scan.motifs.map(m=>m.id)});
+        }
+    }
+    if (process.env.TACTICAL_CAPTURE_WORKER_REPORT) writeFileSync(process.env.TACTICAL_CAPTURE_WORKER_REPORT,JSON.stringify({cases:reports},null,2),{flag:"wx"});
+},120000);
+
 test.skipIf(
     !process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_MATING_OVERLAP_REPORT,
 )("the real reached checking skewer survives the built worker boundary", async () => {
@@ -1372,7 +1402,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_PRIVATE_
             ["private-easy:49", "forkPreparation", 100],
             ["private-easy:193", "deflection", 100],
             ["private-easy:58", "attraction", 100],
-            ["private-easy:202", "deflection", 330],
+            ["private-easy:202", "deflection", 150],
         ] as const) {
             const row = sample.cases.find((item: { id: string }) => item.id === id);
             const input = {

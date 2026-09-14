@@ -567,7 +567,7 @@ test("a declined mating offer does not label its compensated knight capture a ne
   );
   const root = container.querySelector('[data-tactical-ply="1"]')!;
   expect(root.textContent).toContain("Accepting with Qxe5 allows Qxg2#");
-  expect(root.textContent).toContain("After Qxh4, Rxe1+");
+  expect(root.textContent).toContain("Qxh4 Qxd3");
   expect(root.textContent).toContain("not a forced-mate claim");
   expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).toContain("Qxh4");
   expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).not.toContain(

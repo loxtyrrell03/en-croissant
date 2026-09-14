@@ -112,7 +112,7 @@ test("an opponent's new fork remains distinct from the primary queen capture", (
         fen: "6k1/8/4q3/8/1n6/8/4R3/R3K3 w Q - 0 1",
         pvUci: ["e2e6", "b4c2", "e1d1", "c2a1"],
     });
-    expect(result.motifs[0]).toMatchObject({ id: "hangingPiece", label: "Hanging Piece", ply: 1 });
+    expect(result.motifs[0]).toMatchObject({ id: "hangingPiece", label: "Material Gain", value: 400, ply: 1 });
     expect(result.timeline).toContainEqual(
         expect.objectContaining({ id: "fork", ply: 2, actor: "black" }),
     );

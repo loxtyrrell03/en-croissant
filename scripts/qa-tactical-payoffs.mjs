@@ -11,6 +11,7 @@ import { parseFen } from "chessops/fen";
 import { parseUci } from "chessops/util";
 import { makeSan } from "chessops/san";
 import { directMaterialPayoffCases } from "../src/utils/tests/fixtures/directMaterialPayoff.ts";
+import { captureGainLiabilityCases } from "../src/utils/tests/fixtures/captureGainLiability.ts";
 import { castlingAliasCases } from "../src/utils/tests/fixtures/castlingRelevance.ts";
 import {
   matingInterferenceCases,
@@ -23,10 +24,11 @@ const castlingMode = process.argv.includes("--castling");
 const interferenceMode = process.argv.includes("--interference");
 const quietMateMode = process.argv.includes("--quiet-mate");
 const discoveryMode = process.argv.includes("--discovery");
+const liabilityMode = process.argv.includes("--liability");
 const root = process.cwd(),
   output = resolve(
     root,
-    discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
+    liabilityMode ? "tmp/tactical-liability-adapter108" : discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
       ? "tmp/tactical-quiet-mate-adapter104"
       : interferenceMode
         ? "tmp/tactical-interference-adapter104"
@@ -42,7 +44,13 @@ const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
 const cases = (
-  discoveryMode
+  liabilityMode
+    ? [
+        ...captureGainLiabilityCases.filter(row => row.id === "partial-compensation" || row.id === "checking-queen-loss")
+            .map(row => ({...row,pvUci:[row.move],expectedLabel:row.label})),
+        {id:"sound-deflection",fen:"4r2k/5rp1/6qp/3PB3/4Q2n/3R4/6PP/4R1K1 b - - 0 1",pvUci:["e8e5","e4h4","g6d3"],expectedLabel:"Deflection",payoff:true},
+      ]
+    : discoveryMode
     ? JSON.parse(await readFile("benchmarks/tactical-relevance/discovered-capture-development.json", "utf8"))
         .cases.filter(row => row.id === "real-queen-exchange")
         .flatMap(row => [1, 3].map(length => ({ ...row, id: `${row.id}:${length}`, pvUci: row.pvUci.slice(0, length) })))
@@ -155,7 +163,22 @@ try {
           index,
           scale,
         });
-        if (discoveryMode) {
+        if (liabilityMode) {
+          if (!row.expectedLabel) {
+            await page.getByText("No tactical theme verified",{exact:true}).waitFor();
+            assert.equal(await page.getByRole("button",{name:/^Show .* on board$/}).count(),0);
+          } else {
+            const button = page.getByRole("button",{name:/^Show .* on board$/});
+            await button.waitFor(); await button.focus(); await page.keyboard.press("Enter");
+            assert.equal(await page.evaluate(()=>window.fixture.last?.motifs[0]?.label),row.expectedLabel);
+            assert(!(await page.locator("main").innerText()).includes("Hanging Piece"));
+            if (row.payoff) {
+              await page.locator("summary").focus(); await page.keyboard.press("Enter");
+              await page.getByText("Deflection Payoff",{exact:true}).waitFor();
+            }
+          }
+          if (width===360 && scale===2) await page.screenshot({path:resolve(output,`${row.id}.png`),fullPage:true});
+        } else if (discoveryMode) {
           const button = page.getByRole("button", { name: /^Show .* on board$/ });
           await button.waitFor();
           await button.focus();

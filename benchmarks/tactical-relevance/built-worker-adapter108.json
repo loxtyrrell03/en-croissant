@@ -1,0 +1,241 @@
+{
+  "scope": "Production-controller Node worker computation and transfer, excluding engine and rendered UI. 1021 public inputs plus 508 private inputs passed in the complete 20-group suite; private positions are not published. This is a bounded regression/performance receipt, not an accuracy percentage.",
+  "classifier": "site-55.adapter-108",
+  "pipeline": 113,
+  "artifactSha256": "f1953f25fede7c89c568c744861b86a1f93ead796cfc998bcbf021657a30fabd",
+  "publicInputs": 1021,
+  "privateInputs": 508,
+  "timings": {
+    "medianMs": 36.81369999999879,
+    "p95Ms": 202.22349999999278,
+    "maxMs": 901.1276999999973,
+    "maxStartupMs": 37.165299999993294
+  },
+  "groups": [
+    {
+      "group": "public",
+      "count": 808,
+      "sourceSha256": "29fe20e11702205b94699266fff508e53a3d6a2fb1c3a191c4112a71aea7ba0e",
+      "changedPrimaryLists": [
+        {
+          "id": "trap-audit:control:unrelated-payoff",
+          "prior": [
+            "hangingPiece"
+          ],
+          "current": []
+        }
+      ]
+    },
+    {
+      "group": "game",
+      "count": 63,
+      "sourceSha256": "4ffd9cdb9a7322153a365264c88c32dbc3c437b32f20809a1ae68dd4a75e3d8a",
+      "changedPrimaryLists": []
+    },
+    {
+      "group": "preparation",
+      "count": 28,
+      "sourceSha256": "dd929ec1d2237f3316db68f3e34048d0b23d298fcec6f10fdeb6811f92ee2d6c",
+      "changedPrimaryLists": []
+    },
+    {
+      "group": "discovery",
+      "count": 104,
+      "sourceSha256": "0c3a1c06934f0c0e24b42d3f5459852c563edbc469009d84c003e483bbc03f78",
+      "changedPrimaryLists": [
+        {
+          "id": "checker-capture-without-compensation:original:line",
+          "prior": [
+            "hangingPiece"
+          ],
+          "current": []
+        },
+        {
+          "id": "checker-capture-without-compensation:original:root",
+          "prior": [
+            "hangingPiece"
+          ],
+          "current": []
+        },
+        {
+          "id": "checker-capture-without-compensation:reflected:line",
+          "prior": [
+            "hangingPiece"
+          ],
+          "current": []
+        },
+        {
+          "id": "checker-capture-without-compensation:reflected:root",
+          "prior": [
+            "hangingPiece"
+          ],
+          "current": []
+        },
+        {
+          "id": "checker-also-screens-own-king:original:line",
+          "prior": [
+            "hangingPiece"
+          ],
+          "current": []
+        },
+        {
+          "id": "checker-also-screens-own-king:original:root",
+          "prior": [
+            "hangingPiece"
+          ],
+          "current": []
+        },
+        {
+          "id": "checker-also-screens-own-king:reflected:line",
+          "prior": [
+            "hangingPiece"
+          ],
+          "current": []
+        },
+        {
+          "id": "checker-also-screens-own-king:reflected:root",
+          "prior": [
+            "hangingPiece"
+          ],
+          "current": []
+        }
+      ]
+    },
+    {
+      "group": "capture",
+      "count": 18,
+      "sourceSha256": "bc55b1eed03bb13602c57029e5fb75a473ff683762d6c3c41dfd0505587bbe1f",
+      "changedPrimaryLists": []
+    }
+  ],
+  "newControls": [
+    {
+      "id": "checking-queen-loss",
+      "classificationMs": 39.220999999990454,
+      "startupMs": 25.689199999993434,
+      "primary": []
+    },
+    {
+      "id": "partial-compensation",
+      "classificationMs": 40.64329999999609,
+      "startupMs": 27.40810000000056,
+      "primary": [
+        "hangingPiece"
+      ]
+    },
+    {
+      "id": "free-queen",
+      "classificationMs": 25.856600000028266,
+      "startupMs": 29.611599999974715,
+      "primary": [
+        "hangingPiece"
+      ]
+    },
+    {
+      "id": "knight-for-rook-loss",
+      "classificationMs": 29.54059999997844,
+      "startupMs": 28.373300000006566,
+      "primary": []
+    },
+    {
+      "id": "rook-acceptance-mated",
+      "classificationMs": 36.12200000000303,
+      "startupMs": 28.0848999999871,
+      "primary": []
+    },
+    {
+      "id": "stalemating-capture",
+      "classificationMs": 18.323800000012852,
+      "startupMs": 28.168999999994412,
+      "primary": []
+    },
+    {
+      "id": "checking-queen-loss:reflected",
+      "classificationMs": 41.554000000003725,
+      "startupMs": 25.605999999999767,
+      "primary": []
+    },
+    {
+      "id": "partial-compensation:reflected",
+      "classificationMs": 34.72750000000815,
+      "startupMs": 25.95319999998901,
+      "primary": [
+        "hangingPiece"
+      ]
+    },
+    {
+      "id": "free-queen:reflected",
+      "classificationMs": 22.126299999974435,
+      "startupMs": 26.448400000022957,
+      "primary": [
+        "hangingPiece"
+      ]
+    },
+    {
+      "id": "knight-for-rook-loss:reflected",
+      "classificationMs": 29.8923000000068,
+      "startupMs": 27.17720000000554,
+      "primary": []
+    },
+    {
+      "id": "rook-acceptance-mated:reflected",
+      "classificationMs": 36.81369999999879,
+      "startupMs": 26.096600000018952,
+      "primary": []
+    },
+    {
+      "id": "stalemating-capture:reflected",
+      "classificationMs": 17.593900000007125,
+      "startupMs": 26.51260000001639,
+      "primary": []
+    },
+    {
+      "id": "quiet-deflection:root",
+      "classificationMs": 69.31470000001718,
+      "startupMs": 26.592399999994086,
+      "primary": [
+        "deflection"
+      ]
+    },
+    {
+      "id": "quiet-deflection:direct",
+      "classificationMs": 101.97579999998561,
+      "startupMs": 26.688600000023143,
+      "primary": [
+        "deflection"
+      ]
+    },
+    {
+      "id": "quiet-deflection:unsound-exchange",
+      "classificationMs": 105.33869999999297,
+      "startupMs": 26.178200000023935,
+      "primary": [
+        "deflection"
+      ]
+    },
+    {
+      "id": "quiet-deflection:reflected:root",
+      "classificationMs": 59.1079000000027,
+      "startupMs": 28.024600000004284,
+      "primary": [
+        "deflection"
+      ]
+    },
+    {
+      "id": "quiet-deflection:reflected:direct",
+      "classificationMs": 94.01829999999609,
+      "startupMs": 26.36720000000787,
+      "primary": [
+        "deflection"
+      ]
+    },
+    {
+      "id": "quiet-deflection:reflected:unsound-exchange",
+      "classificationMs": 95.30590000000666,
+      "startupMs": 26.295899999997346,
+      "primary": [
+        "deflection"
+      ]
+    }
+  ]
+}

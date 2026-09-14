@@ -25,6 +25,8 @@ import {
     hasTacticalStart,
     isCompensatedContinuationCapture,
     winningRecaptureEvidence,
+    contextualCaptureObservation,
+    tacticalCaptureGain,
     normalizeMatingPayoffs,
     normalizeContinuingTactics,
     replayTacticalLine,
@@ -121,7 +123,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 107;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 108;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -1111,6 +1113,11 @@ export function buildTacticalTimeline(
                 actor: step.before.turn,
                 relevance: "secondary",
             });
+        const captureKey = `${index + 1}:hangingPiece`;
+        if (!evidence.has(captureKey) && step.capture && (tacticalCaptureGain(step) ?? 0) < 100) {
+            const observed = contextualCaptureObservation(replay, index, [...evidence.values()], source);
+            if (observed) evidence.set(captureKey, observed);
+        }
         if (!tacticalStart) continue;
         // These are observed legal actions, not certificates explaining the
         // root move. Record them at their actual ply even when a promoted

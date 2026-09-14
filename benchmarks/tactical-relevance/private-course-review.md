@@ -1,6 +1,20 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 107 / live pipeline 112
+## Current classifier: adapter 108 / live pipeline 113
+
+The [capture-liability review](capture-liability-review.md) replaces same-square-only
+generic capture admission with bounded all-friendly-piece/countercheck accounting.
+Compensated gains are no longer called free pieces; independently connected payoffs
+keep their actual-ply roles. Fresh engine review corrected a losing checking exchange
+and a queen capture that permits forced mate in the quiet deflection proof. That real
+course primary remains Deflection with a lower local bound and a safe moved-threat
+capture. Ten of 246 private positions change in at least one full source/live result;
+all primary ID lists remain. Four rare continuations change value or SAN wording,
+without changing their main themes. Unchanged outputs and withheld continuation
+claims are not accuracy successes. The linked review records verification, private
+receipts, local proof limits and delivery boundaries. No owner restart or deployment.
+
+## Prior adapter 107 / live pipeline 112
 
 The [discovered-capture review](discovered-capture-review.md) corrects a real-game
 Hanging Piece primary to Discovered Check through an independent recapture
