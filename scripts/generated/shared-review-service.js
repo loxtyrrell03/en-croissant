@@ -11019,6 +11019,233 @@ function computeMixedCheckingAttack(root, nodeLimit, quiet, discovery) {
 	}
 }
 var forcingClearanceCache = /* @__PURE__ */ new Map();
+var promotionClearanceCache = /* @__PURE__ */ new Map();
+/** An advanced pawn may both threaten promotion and clear a checking route.
+* A rook stopping the promotion must lose to that newly opened route against
+* every reply. Only checks, captures of that guard and promotion of the SAME
+* pawn are admitted; a cooperative future PV cannot nominate a payoff. */
+function provePromotionClearance(root, nodeLimit = 4096, onFailure) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture || root.move.promotion || root.before.isCheck() || root.after.isCheck() || root.after.isEnd() || root.before.board.get(root.move.from)?.role !== "pawn" || Math.floor(root.move.to / 8) !== (root.before.turn === "white" ? 6 : 1)) return null;
+	const side = root.before.turn, pawn = root.move.to, budget = { nodes: nodeLimit };
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (nodeLimit === 4096 && !onFailure && promotionClearanceCache.has(key)) return promotionClearanceCache.get(key);
+	const visit = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("Promotion clearance budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const delta = (pos, move) => capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+	const routes = (pos) => recoveryMoves(pos, side).filter((move) => {
+		const piece = pos.board.get(move.from);
+		return [
+			"bishop",
+			"rook",
+			"queen"
+		].includes(piece.role) && root.before.board.get(move.from)?.role === piece.role && (move.to === root.move.from || between(move.from, move.to).has(root.move.from)) && !root.before.isLegal(move) && !capturedValue(pos, move) && mayGiveCheck(pos, move) && visit(pos, move).isCheck();
+	});
+	const material = (pos, move, balance) => {
+		if (visit(pos, move).isEnd()) return null;
+		const gain = participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+		if (gain === null || balance + gain < 100 || !noImmediateTerminalRefutation(pos, move, budget)) return null;
+		return {
+			fen: makeFen(pos.toSetup()),
+			moveUci: makeUci(move),
+			gain: balance + gain
+		};
+	};
+	const promotion = (pos, balance) => {
+		if (pos.board.get(pawn)?.color !== side || pos.board.get(pawn)?.role !== "pawn") return null;
+		for (const move of recoveryMoves(pos, side)) {
+			if (move.from !== pawn || !move.promotion) continue;
+			const proof = material(pos, move, balance);
+			if (proof) return proof;
+		}
+		return null;
+	};
+	const defend = (pos, move, guard, balance, checks, onlyPromotion) => {
+		const after = visit(pos, move);
+		if (after.isCheckmate()) return {
+			fen: makeFen(pos.toSetup()),
+			moveUci: makeUci(move),
+			gain: null
+		};
+		if (after.isEnd() || defenderCanClaimFiftyMoveDraw(after)) return null;
+		const replies = [];
+		let minimum = Infinity;
+		for (const reply of recoveryMoves(after, side)) {
+			if (reply.promotion) return null;
+			const next = visit(after, reply);
+			if (next.isEnd()) return null;
+			const movedGuard = guard === reply.from ? reply.to : guard;
+			const retained = balance + delta(pos, move) - delta(after, reply);
+			const proof = onlyPromotion ? promotion(next, retained) : attack(next, movedGuard, retained, checks);
+			if (!proof) return null;
+			minimum = Math.min(minimum, proof.gain ?? Infinity);
+			replies.push({
+				replyUci: makeUci(reply),
+				next: proof
+			});
+		}
+		return replies.length ? {
+			fen: makeFen(pos.toSetup()),
+			moveUci: makeUci(move),
+			gain: Number.isFinite(minimum) ? minimum : null,
+			replies
+		} : null;
+	};
+	const attack = (pos, guard, balance, checks) => {
+		if (pos.isEnd()) return null;
+		const promotes = promotion(pos, balance);
+		if (promotes) return promotes;
+		for (const move of recoveryMoves(pos, side)) {
+			if (move.to !== guard || !capturedValue(pos, move)) continue;
+			const settled = material(pos, move, balance);
+			if (settled) return settled;
+			const converted = defend(pos, move, void 0, balance, 0, true);
+			if (converted) return converted;
+		}
+		if (!checks) return null;
+		for (const move of recoveryMoves(pos, side)) {
+			if (move.promotion || !mayGiveCheck(pos, move)) continue;
+			if (!visit(pos, move).isCheck()) continue;
+			const proof = defend(pos, move, guard, balance, checks - 1, false);
+			if (proof) return proof;
+		}
+		return null;
+	};
+	let result = null;
+	try {
+		if (!routes(withTurn(root.after, side)).length || defenderCanClaimFiftyMoveDraw(root.after)) return null;
+		const branches = [];
+		for (const reply of recoveryMoves(root.after, side)) {
+			const next = visit(root.after, reply), balance = -delta(root.after, reply);
+			if (next.isEnd() || reply.promotion) return null;
+			let node = promotion(next, balance), kind = "promotion";
+			const checkingRoutes = routes(next);
+			if (!node && reply.to === root.move.from) for (const move of recoveryMoves(next, side)) {
+				if (move.to !== reply.to || !capturedValue(next, move)) continue;
+				node = material(next, move, balance);
+				if (node) {
+					kind = "capture";
+					break;
+				}
+			}
+			if (!node) {
+				if (recoveryMoves(next, side).filter((move) => move.from === pawn && move.promotion).some((move) => {
+					const promoted = visit(next, move), capture = {
+						from: reply.to,
+						to: move.to
+					};
+					return promoted.isLegal(capture) && tacticalExchangeGain(promoted, capture) >= 100;
+				})) for (const move of checkingRoutes) {
+					node = defend(next, move, reply.to, balance, 2, false);
+					if (node) {
+						kind = "clearance";
+						break;
+					}
+				}
+			}
+			if (!node) {
+				onFailure?.(`Unproved reply ${makeSan(root.after, reply)}`);
+				return null;
+			}
+			branches.push({
+				replyUci: makeUci(reply),
+				kind,
+				node
+			});
+		}
+		const gain = Math.min(...branches.map((branch) => branch.node.gain ?? Infinity));
+		if (branches.some((branch) => branch.kind === "clearance") && Number.isFinite(gain) && gain >= 100) result = {
+			gain,
+			visits: nodeLimit - budget.nodes,
+			branches
+		};
+	} catch (error) {
+		onFailure?.(error instanceof Error ? error.message : String(error));
+	}
+	if (nodeLimit === 4096 && !onFailure) {
+		promotionClearanceCache.set(key, result);
+		if (promotionClearanceCache.size > 128) promotionClearanceCache.delete(promotionClearanceCache.keys().next().value);
+	}
+	return result;
+}
+/** Only the exact independently verified branch joins its later mechanisms
+* to this root. Stop at the proved capture/promotion or a divergent move. */
+function promotionClearanceEpisodeLength(steps) {
+	const proof = steps[0] && provePromotionClearance(steps[0]);
+	if (!proof) return null;
+	const branch = proof.branches.find((item) => item.replyUci === steps[1]?.uci);
+	if (!branch) return 1;
+	let node = branch.node, end = 2;
+	for (let index = 2; index < steps.length; index += 2) {
+		if (node.moveUci !== steps[index].uci || node.fen !== makeFen(steps[index].before.toSetup())) break;
+		end = index + 1;
+		const reply = node.replies?.find((item) => item.replyUci === steps[index + 1]?.uci);
+		if (!reply) break;
+		end = index + 2;
+		node = reply.next;
+	}
+	return end;
+}
+/** Normalize only the exact selected proof path. Alternative continuations
+* retain their independent labels; later material cannot be borrowed from
+* the certificate after a different attacking move. */
+function normalizePromotionClearanceTimeline(steps, motifs) {
+	const root = steps[0], proof = root && provePromotionClearance(root);
+	if (!proof) return motifs;
+	const branch = proof.branches.find((item) => item.replyUci === steps[1]?.uci);
+	if (!branch) return motifs;
+	const nodes = /* @__PURE__ */ new Map();
+	const replies = /* @__PURE__ */ new Map();
+	let node = branch.node;
+	if (steps[1] && makeFen(steps[1].after.toSetup()) === node.fen) replies.set(1, node);
+	for (let index = 2; index < steps.length; index += 2) {
+		if (node.fen !== makeFen(steps[index].before.toSetup()) || node.moveUci !== steps[index].uci) break;
+		nodes.set(index, node);
+		const reply = node.replies?.find((item) => item.replyUci === steps[index + 1]?.uci);
+		if (!reply || makeFen(steps[index + 1].after.toSetup()) !== reply.next.fen) break;
+		replies.set(index + 1, reply.next);
+		node = reply.next;
+	}
+	return motifs.flatMap((motif) => {
+		const index = (motif.ply ?? 0) - 1, step = steps[index], current = nodes.get(index);
+		if (!step || motif.relevance === "primary") return [motif];
+		if (index === 2 && branch.kind === "clearance" && current && motif.id === "skewer" && (motif.value ?? Infinity) < (current.gain ?? 0)) {
+			const rays = relevantRayTactics(step).filter((ray) => ray.kind === "skewer");
+			if (rays.length && rays.every((ray) => step.after.board.get(ray.rear)?.role === "pawn" && ![...nodes.keys()].some((at) => at > index && steps[at].capture && steps[at].move.to === ray.rear))) return [];
+		}
+		if (current && motif.id === "fork" && current.gain !== null) {
+			const balanceBefore = step.balance - step.capture;
+			return [{
+				...motif,
+				value: Math.min(motif.value ?? Infinity, current.gain - balanceBefore),
+				evidence: `${step.san} forks the ${winningTargets(step.after, step.move.to, root.before.turn).map((sq) => `${step.after.board.get(sq).role} on ${makeSquare(sq)}`).join(" and ")}. The verified continuation includes the capture and any compensation, with promotion of the pawn on ${makeSquare(root.move.to)} checked when needed. The local bound is not the value of an extra free piece.`
+			}];
+		}
+		if (current && motif.id === "hangingPiece" && step.capture) {
+			const fork = motifs.find((other) => other.id === "fork" && other.ply === index - 1 && nodes.has(index - 2) && steps[index - 2].move.to === step.move.from);
+			return [{
+				...motif,
+				label: fork ? "Fork Payoff" : "Clearance Payoff",
+				value: void 0,
+				evidence: `${step.san} takes the ${step.before.board.get(step.move.to).role} in the verified ${fork ? "fork" : "clearance"} continuation. Any countercapture is included in the combination; this is not another independent free-piece gain.`
+			}];
+		}
+		const reply = replies.get(index);
+		if (reply && motif.id === "hangingPiece" && step.capture && step.before.turn !== root.before.turn) {
+			const answer = replayTacticalLine(reply.fen, [reply.moveUci])[0];
+			return [{
+				...motif,
+				label: "Countercapture",
+				value: 0,
+				evidence: `${step.san} takes the ${step.before.board.get(step.move.to).role} as compensation, but ${answer.san} preserves the verified combination. This is not a separate material win for ${step.before.turn === "white" ? "White" : "Black"}.`
+			}];
+		}
+		return [motif];
+	});
+}
 /** Checking clearance may prepare different quiet slider moves against
 * different king replies. Verify each branch, not just the supplied line. */
 function proveForcingClearance(steps, nodeLimit = 32768) {
@@ -15776,7 +16003,7 @@ function hasTacticalStart(fen, line, allowConditional = true) {
 function episodeEnd(steps, allowConditional = false) {
 	for (let i = 0; i < steps.length; i += 2) {
 		const step = steps[i];
-		if (!step.capture && !step.move.promotion && !step.before.isCheck() && !step.after.isCheck() && !proveKpkEntry(step) && !kpkZugzwangEvidence(step, "available") && !hasConcreteThreat(step) && !proveReinforcedPin(step) && !proveQuietMateThreat(step) && !proveQuietMatingAttack(step) && !quietPreparation(steps.slice(i, i + 5)) && !(i === 0 && allowConditional ? proveQuietTacticalPreparation(steps.slice(i, i + 11)) : proveQuietTacticalPreparation(steps.slice(i, i + 11))?.forced)) return i;
+		if (!step.capture && !step.move.promotion && !step.before.isCheck() && !step.after.isCheck() && !proveKpkEntry(step) && !kpkZugzwangEvidence(step, "available") && !hasConcreteThreat(step) && !proveReinforcedPin(step) && !proveQuietMateThreat(step) && !proveQuietMatingAttack(step) && !provePromotionClearance(step) && !quietPreparation(steps.slice(i, i + 5)) && !(i === 0 && allowConditional ? proveQuietTacticalPreparation(steps.slice(i, i + 11)) : proveQuietTacticalPreparation(steps.slice(i, i + 11))?.forced)) return i;
 	}
 	return steps.length;
 }
@@ -16076,6 +16303,22 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		value: clearance.gain,
 		evidence: `${steps[0].san} clears ${makeSquare(steps[0].move.from)} for the ${steps[0].after.board.get(clearance.branches[0].from).role}: ${clearance.branches.map((branch) => `${branch.reply} is met by ${branch.preparation}`).join("; ")}. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory.`
 	});
+	const promotionClearance = provePromotionClearance(steps[0]);
+	if (promotionClearance) {
+		const root = steps[0], branch = promotionClearance.branches.find((candidate) => candidate.kind === "clearance");
+		const reply = makeSan(root.after, parseUci(branch.replyUci));
+		const entry = replayTacticalLine(branch.node.fen, [branch.node.moveUci])[0];
+		candidates.push({
+			id: "clearance",
+			label: "Promotion Clearance",
+			source: proposals[0]?.source ?? "available",
+			confidence: "high",
+			ply: 1,
+			moveUci: root.uci,
+			value: promotionClearance.gain,
+			evidence: `${root.san} threatens promotion and clears ${makeSquare(root.move.from)} for the ${entry.before.board.get(entry.move.from).role} on ${makeSquare(entry.move.from)}. If ${reply} stops the pawn, ${entry.san} uses that cleared route. Every legal defence permits verified material gain or mate; countercaptures of the checking piece and promotion of this same pawn are checked separately. This explains the pawn move, not a promotion or fork already on the board.`
+		});
+	}
 	for (let index = 0; index < episode.length; index += 2) {
 		const intermediate = index === 0 ? intermediateCaptureProof(episode[index]) : null;
 		if (intermediate) candidates.push({
@@ -17579,7 +17822,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 94;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 95;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -18113,7 +18356,7 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 	const terminal = fullReplay.findIndex((step) => step.after.isEnd() || promotionEpisode && step.before.turn === fullReplay[0].before.turn && step.move.promotion);
 	const terminalReplay = terminal < 0 ? fullReplay : fullReplay.slice(0, terminal + 1);
 	const episodeReplay = rootMotifs.length ? terminalReplay : terminalReplay.slice(0, episodeEnd(terminalReplay));
-	const clearanceEpisode = rootMotifs[0]?.id === "clearance" ? forcingClearanceEpisodeLength(episodeReplay) : null;
+	const clearanceEpisode = rootMotifs[0]?.id === "clearance" ? rootMotifs[0].label === "Promotion Clearance" ? promotionClearanceEpisodeLength(episodeReplay) : forcingClearanceEpisodeLength(episodeReplay) : null;
 	const replay = clearanceEpisode !== null ? episodeReplay.slice(0, clearanceEpisode) : promotionEpisode ? episodeReplay.slice(0, 17) : episodeReplay;
 	const legalLine = replay.map((step) => step.uci);
 	const positionKey = (fen) => fen.split(" ").slice(0, 4).join(" ");
@@ -18233,7 +18476,7 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 			});
 		}
 	}
-	return normalizeContinuingTactics(replay, normalizeMatingPayoffs(replay, [...evidence.values()])).filter((motif) => !(motif.label === "Forcing Mate" && motif.relevance !== "primary" && [...evidence.values()].some((other) => other.ply === motif.ply && other.actor === motif.actor && other.verifiedCombination && other.value === 1e4 && [
+	return normalizeContinuingTactics(replay, normalizeMatingPayoffs(replay, rootMotifs[0]?.label === "Promotion Clearance" ? normalizePromotionClearanceTimeline(replay, [...evidence.values()]) : [...evidence.values()])).filter((motif) => !(motif.label === "Forcing Mate" && motif.relevance !== "primary" && [...evidence.values()].some((other) => other.ply === motif.ply && other.actor === motif.actor && other.verifiedCombination && other.value === 1e4 && [
 		"clearance",
 		"discoveredCheck",
 		"doubleCheck"

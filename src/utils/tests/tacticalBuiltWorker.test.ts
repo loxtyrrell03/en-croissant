@@ -11,6 +11,7 @@ import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import { trappedRookFen, trapControls, unrelatedPayoffTrap } from "./fixtures/trapRelevance";
 import { interferenceExamples, interferenceControls, compensatedInterference } from "./fixtures/interferenceRelevance";
+import { promotionClearanceFen, promotionClearanceLine, promotionClearanceControls } from "./fixtures/promotionClearance";
 import {
     buildLiveTacticalScan,
     type LiveTacticalScanInput,
@@ -111,7 +112,17 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const drawingCases = JSON.parse(readFileSync("benchmarks/tactical-relevance/drawing-zugzwang-tablebase-verified.json", "utf8")).selected as { id: string; beforeFen: string; moveUci: string; expected: "draw" | "win" | null }[];
         const secondary = JSON.parse(readFileSync("benchmarks/tactical-relevance/secondary-theme-stockfish-18.json", "utf8"));
+        const crossPhase=JSON.parse(readFileSync("benchmarks/tactical-relevance/cross-phase-stockfish-18.json","utf8"));
         const cases = [
+            ...crossPhase.cases.flatMap((row:any)=>[
+                {id:`cross-phase-source:${row.id}`,input:{fen:row.fen,pvUci:row.sourceUci,variations:[{pvUci:row.sourceUci,pvSan:row.sourceSan,cp:row.sourceEngine.cp,mate:row.sourceEngine.mate,depth:16,multipv:1}],depth:16,engineName:"Frozen source",previousFen:row.previousFen,previousMoveUci:row.previousMoveUci}},
+                {id:`cross-phase-engine:${row.id}`,input:{fen:row.fen,pvUci:row.engineLines[0].pvUci,variations:row.engineLines,depth:16,engineName:"Stockfish 18",previousFen:row.previousFen,previousMoveUci:row.previousMoveUci}},
+            ]),
+            ...[
+                {id:"promotion-clearance:root",fen:promotionClearanceFen,pvUci:promotionClearanceLine.slice(0,1)},
+                {id:"promotion-clearance:continuation",fen:promotionClearanceFen,pvUci:promotionClearanceLine},
+                ...promotionClearanceControls.map(c=>({id:`promotion-clearance:control:${c.id}`,fen:c.fen,pvUci:promotionClearanceLine.slice(0,1)})),
+            ].map(({id,...input})=>({id,input:{...input,depth:16,engineName:"Promotion clearance"}})),
             ...secondary.cases.flatMap((row: any) => [
                 {id: `secondary-source:${row.id}`, input: {fen: row.fen, pvUci: row.sourceUci, depth: 16, engineName: "Frozen source"}},
                 {id: `secondary-engine:${row.id}`, input: {fen: row.fen, pvUci: row.engineLines[0].pvUci, variations: row.engineLines, depth: 16, engineName: "Stockfish 18", previousFen: row.previousFen, previousMoveUci: row.previousMoveUci}},
@@ -829,6 +840,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         const secondaryResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         const trapResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         const interferenceResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
+        const promotionResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         for (const item of cases) {
             // A fresh worker never inherits the in-process proof caches.
             const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, item.input);
@@ -837,6 +849,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             if (item.id.startsWith("secondary-source:")) secondaryResults.set(item.id, result.scan);
             if (item.id.startsWith("trap-audit:")) trapResults.set(item.id, result.scan);
             if (item.id.startsWith("interference-audit:")) interferenceResults.set(item.id,result.scan);
+            if (item.id.startsWith("promotion-clearance:")) promotionResults.set(item.id,result.scan);
             if (item.id === "counterplay:9" && result.scan.variations[0].timeline.some((motif) => motif.id === "skewer"))
                 throw new Error("The built worker advertised the mating-trap skewer payoff");
             if (item.id.startsWith("ray-liability:")) rayResults.set(item.id, result.scan);
@@ -854,7 +867,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(310);
+        expect(report).toHaveLength(362);
+        for(const mode of ["root","continuation"]){
+            const scan=promotionResults.get(`promotion-clearance:${mode}`)!;
+            expect(scan.motifs[0]).toMatchObject({id:"clearance",label:"Promotion Clearance",value:500});
+            expect(scan.labels.map(l=>l.id)).toEqual(["clearance"]);
+            expect(scan.arrows.map(a=>[a.from,a.to])).toEqual([["c6","c7"],["b6","c6"]]);
+        }
+        expect(promotionResults.get("promotion-clearance:continuation")!.variations[0].timeline.map(m=>[m.ply,m.label,m.value])).toEqual([[1,"Promotion Clearance",500],[5,"Fork",500],[7,"Fork Payoff",undefined],[8,"Countercapture",0],[9,"Promotion",undefined]]);
+        for(const control of promotionClearanceControls)expect(promotionResults.get(`promotion-clearance:control:${control.id}`)!.motifs.some(m=>m.label==="Promotion Clearance")).toBe(false);
         for(const item of interferenceExamples) for(const mode of ["root","recovery"]){
             const scan=interferenceResults.get(`interference-audit:${mode}:${item.id}`)!;
             expect(scan.motifs[0]).toMatchObject({id:"interference",ply:1,value:item.gain});

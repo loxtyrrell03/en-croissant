@@ -194,6 +194,23 @@ test(
         pvUci: ["e6e7"],
         expectedPrimary: [],
       },
+      {
+        name: "the quiet pawn clearance owns the root without future fork arrows",
+        fen: "8/8/1RP5/p3n3/8/1P5k/r6p/5N1K w - - 3 61",
+        pvUci: ["c6c7","a2c2","b6h6","h3g4","f1e3","g4g5","e3c2","g5h6","c7c8q"],
+        expectedPrimary: ["clearance"],expectedLabels:["clearance"],expectedArrowCount:2,
+      },
+      {
+        name: "an extra promotion guard defeats the quiet clearance claim",
+        fen: "r7/8/1RP5/p3n3/8/1P5k/r6p/5N1K w - - 3 61",
+        pvUci: ["c6c7"],expectedPrimary:[],
+      },
+      {
+        name: "the fresh opening recapture retains its compensation context",
+        fen:"rn1q1rk1/5ppp/p3pn2/1pp2bB1/3P4/PBb1PN2/1P3PPP/2RQ1RK1 w - - 0 13",
+        previousFen:"rn1q1rk1/5ppp/p3pn2/1pp2bB1/1b1P4/PBN1PN2/1P3PPP/2RQ1RK1 b - - 0 12",
+        previousMoveUci:"b4c3",pvUci:["c1c3","c5d4","f3d4"],expectedPrimary:[],
+      },
     ];
     const report = [];
     for (const item of cases) {

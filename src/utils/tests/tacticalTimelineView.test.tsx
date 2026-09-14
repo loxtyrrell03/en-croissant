@@ -8,6 +8,20 @@ import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 import { trappedRookFen, trappedRookLine } from "./fixtures/trapRelevance";
 import { counterplayFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import { interferenceExamples } from "./fixtures/interferenceRelevance";
+import { promotionClearanceFen, promotionClearanceLine } from "./fixtures/promotionClearance";
+
+test("a promotion clearance renders its fork, payoff and compensation without free-piece noise",()=>{
+  const result=classifyPositionTacticalMotifs({fen:promotionClearanceFen,pvUci:promotionClearanceLine});
+  const container=document.createElement("div");
+  container.innerHTML=renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={replayTacticalLine(promotionClearanceFen,promotionClearanceLine).map(s=>s.san)} motifs={result.timeline??[]} /></MantineProvider>);
+  expect(container.querySelector("details")?.hasAttribute("open")).toBe(false);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Promotion Clearance");
+  expect(container.querySelector('[data-tactical-ply="5"]')?.textContent).toContain("Fork");
+  expect(container.querySelector('[data-tactical-ply="7"]')?.textContent).toContain("Fork Payoff");
+  expect(container.querySelector('[data-tactical-ply="8"]')?.textContent).toContain("Countercapture");
+  expect(container.querySelector('[data-tactical-ply="9"]')?.textContent).toContain("Promotion");
+  expect(container.textContent).not.toContain("Hanging Piece");
+});
 
 test.each(interferenceExamples)("a restored defence does not move the interference lesson to a later ply: $id", item => {
   const result = classifyPositionTacticalMotifs(item);

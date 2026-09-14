@@ -19,6 +19,8 @@ import {
     compareImmediateTacticalDefence,
     filterCompensatedRootCaptures,
     forcingClearanceEpisodeLength,
+    promotionClearanceEpisodeLength,
+    normalizePromotionClearanceTimeline,
     hasTacticalStart,
     isCompensatedContinuationCapture,
     winningRecaptureEvidence,
@@ -114,7 +116,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 94;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 95;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -976,7 +978,11 @@ export function buildTacticalTimeline(
     // The pawn-race proof searches at most eight further attacking moves.
     // A later promotion cannot join an unrelated engine continuation to it.
     const clearanceEpisode =
-        rootMotifs[0]?.id === "clearance" ? forcingClearanceEpisodeLength(episodeReplay) : null;
+        rootMotifs[0]?.id === "clearance"
+            ? rootMotifs[0].label === "Promotion Clearance"
+                ? promotionClearanceEpisodeLength(episodeReplay)
+                : forcingClearanceEpisodeLength(episodeReplay)
+            : null;
     const replay =
         clearanceEpisode !== null
             ? episodeReplay.slice(0, clearanceEpisode)
@@ -1199,7 +1205,9 @@ export function buildTacticalTimeline(
     }
     return normalizeContinuingTactics(
         replay,
-        normalizeMatingPayoffs(replay, [...evidence.values()]),
+        normalizeMatingPayoffs(replay, rootMotifs[0]?.label === "Promotion Clearance"
+            ? normalizePromotionClearanceTimeline(replay, [...evidence.values()])
+            : [...evidence.values()]),
     )
         .filter(
             (motif) =>
