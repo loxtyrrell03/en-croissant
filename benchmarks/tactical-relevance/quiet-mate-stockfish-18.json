@@ -1,0 +1,3568 @@
+{
+  "scope": "134 fresh Stockfish 18 depth-16 searches: nine best and fixed roots, every selected attack and terminal mating choice in six complete short-mate certificates. Three longer mates remain classifier coverage gaps. No private data and no population accuracy claim.",
+  "searches": [
+    {
+      "id": "lichess:06PHz:best",
+      "fen": "8/P7/2p5/2P5/2P1Pk1p/7p/6p1/6K1 b - - 0 43",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "f4g3",
+            "a7a8r",
+            "h3h2"
+          ],
+          "pvSan": [
+            "Kg3",
+            "a8=R",
+            "h2#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": -504,
+          "mate": null,
+          "pvUci": [
+            "f4e4",
+            "a7a8q",
+            "e4d4",
+            "a8c6",
+            "d4c4",
+            "g1h2",
+            "c4b4",
+            "c6d6",
+            "b4b3"
+          ],
+          "pvSan": [
+            "Kxe4",
+            "a8=Q",
+            "Kd4",
+            "Qxc6",
+            "Kxc4",
+            "Kh2",
+            "Kb4",
+            "Qd6",
+            "Kb3"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": -659,
+          "mate": null,
+          "pvUci": [
+            "f4e5",
+            "a7a8q",
+            "e5d4",
+            "a8a3",
+            "d4c4",
+            "a3h3",
+            "c4c5",
+            "g1g2",
+            "c5b6",
+            "g2f3",
+            "b6b7",
+            "h3h4"
+          ],
+          "pvSan": [
+            "Ke5",
+            "a8=Q",
+            "Kd4",
+            "Qa3",
+            "Kxc4",
+            "Qxh3",
+            "Kxc5",
+            "Kxg2",
+            "Kb6",
+            "Kf3",
+            "Kb7",
+            "Qxh4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:06PHz:root",
+      "fen": "8/P7/2p5/2P5/2P1Pk1p/7p/6p1/6K1 b - - 0 43",
+      "searchMove": "f4g3",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "f4g3",
+            "a7a8r",
+            "h3h2"
+          ],
+          "pvSan": [
+            "Kg3",
+            "a8=R",
+            "h2#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:06PHz:answer:a7a8q",
+      "fen": "Q7/8/2p5/2P5/2P1P2p/6kp/6p1/6K1 b - - 0 44",
+      "searchMove": "h3h2",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h3h2"
+          ],
+          "pvSan": [
+            "h2#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:06PHz:answer:a7a8r",
+      "fen": "R7/8/2p5/2P5/2P1P2p/6kp/6p1/6K1 b - - 0 44",
+      "searchMove": "h3h2",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h3h2"
+          ],
+          "pvSan": [
+            "h2#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:06PHz:answer:a7a8b",
+      "fen": "B7/8/2p5/2P5/2P1P2p/6kp/6p1/6K1 b - - 0 44",
+      "searchMove": "h3h2",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h3h2"
+          ],
+          "pvSan": [
+            "h2#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:06PHz:answer:a7a8n",
+      "fen": "N7/8/2p5/2P5/2P1P2p/6kp/6p1/6K1 b - - 0 44",
+      "searchMove": "h3h2",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h3h2"
+          ],
+          "pvSan": [
+            "h2#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:06PHz:answer:e4e5",
+      "fen": "8/P7/2p5/2P1P3/2P4p/6kp/6p1/6K1 b - - 0 44",
+      "searchMove": "h3h2",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h3h2"
+          ],
+          "pvSan": [
+            "h2#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0XwFD:best",
+      "fen": "k7/P7/1P3p2/1K3P2/7p/6bP/8/8 w - - 7 66",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "b5a6",
+            "g3d6",
+            "b6b7"
+          ],
+          "pvSan": [
+            "Ka6",
+            "Bd6",
+            "b7#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": 0,
+          "mate": null,
+          "pvUci": [
+            "b5c5",
+            "g3f2",
+            "c5c6",
+            "f2d4",
+            "c6c7",
+            "d4b6",
+            "c7b6"
+          ],
+          "pvSan": [
+            "Kc5",
+            "Bf2+",
+            "Kc6",
+            "Bd4",
+            "Kc7",
+            "Bxb6+",
+            "Kxb6"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": 0,
+          "mate": null,
+          "pvUci": [
+            "b5c6",
+            "g3f2",
+            "c6c7",
+            "f2b6",
+            "c7b6"
+          ],
+          "pvSan": [
+            "Kc6",
+            "Bf2",
+            "Kc7",
+            "Bxb6+",
+            "Kxb6"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0XwFD:root",
+      "fen": "k7/P7/1P3p2/1K3P2/7p/6bP/8/8 w - - 7 66",
+      "searchMove": "b5a6",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "b5a6",
+            "g3e1",
+            "b6b7"
+          ],
+          "pvSan": [
+            "Ka6",
+            "Be1",
+            "b7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0XwFD:answer:g3e1",
+      "fen": "k7/P7/KP3p2/5P2/7p/7P/8/4b3 w - - 9 67",
+      "searchMove": "b6b7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b6b7"
+          ],
+          "pvSan": [
+            "b7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0XwFD:answer:g3f2",
+      "fen": "k7/P7/KP3p2/5P2/7p/7P/5b2/8 w - - 9 67",
+      "searchMove": "b6b7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b6b7"
+          ],
+          "pvSan": [
+            "b7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0XwFD:answer:g3h2",
+      "fen": "k7/P7/KP3p2/5P2/7p/7P/7b/8 w - - 9 67",
+      "searchMove": "b6b7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b6b7"
+          ],
+          "pvSan": [
+            "b7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0XwFD:answer:g3f4",
+      "fen": "k7/P7/KP3p2/5P2/5b1p/7P/8/8 w - - 9 67",
+      "searchMove": "b6b7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b6b7"
+          ],
+          "pvSan": [
+            "b7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0XwFD:answer:g3e5",
+      "fen": "k7/P7/KP3p2/4bP2/7p/7P/8/8 w - - 9 67",
+      "searchMove": "b6b7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b6b7"
+          ],
+          "pvSan": [
+            "b7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0XwFD:answer:g3d6",
+      "fen": "k7/P7/KP1b1p2/5P2/7p/7P/8/8 w - - 9 67",
+      "searchMove": "b6b7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b6b7"
+          ],
+          "pvSan": [
+            "b7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0XwFD:answer:g3c7",
+      "fen": "k7/P1b5/KP3p2/5P2/7p/7P/8/8 w - - 9 67",
+      "searchMove": "b6b7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b6b7"
+          ],
+          "pvSan": [
+            "b7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0XwFD:answer:g3b8",
+      "fen": "kb6/P7/KP3p2/5P2/7p/7P/8/8 w - - 9 67",
+      "searchMove": "b6b7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b6b7"
+          ],
+          "pvSan": [
+            "b7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:best",
+      "fen": "8/B4k2/6r1/5K1n/P3Pn1P/5P2/8/R7 b - - 0 32",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "f4d3",
+            "e4e5",
+            "h5g3"
+          ],
+          "pvSan": [
+            "Nd3",
+            "e5",
+            "Ng3#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": 0,
+          "mate": null,
+          "pvUci": [
+            "g6f6",
+            "f5e5",
+            "f4g6",
+            "e5d5",
+            "f6f3",
+            "a7d4",
+            "h5g3",
+            "a4a5",
+            "g6e7",
+            "d5e5",
+            "e7c6",
+            "e5d5"
+          ],
+          "pvSan": [
+            "Rf6+",
+            "Ke5",
+            "Ng6+",
+            "Kd5",
+            "Rxf3",
+            "Bd4",
+            "Ng3",
+            "a5",
+            "Ne7+",
+            "Ke5",
+            "Nc6+",
+            "Kd5"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": -19,
+          "mate": null,
+          "pvUci": [
+            "f4g2",
+            "a7f2",
+            "g6f6",
+            "f5e5",
+            "h5f4",
+            "a4a5",
+            "f4d3",
+            "e5d5",
+            "d3f2",
+            "a5a6",
+            "g2e3",
+            "d5c5",
+            "f6f3",
+            "a6a7",
+            "f2e4",
+            "c5d4"
+          ],
+          "pvSan": [
+            "Ng2",
+            "Bf2",
+            "Rf6+",
+            "Ke5",
+            "Nhf4",
+            "a5",
+            "Nd3+",
+            "Kd5",
+            "Nxf2",
+            "a6",
+            "Ne3+",
+            "Kc5",
+            "Rxf3",
+            "a7",
+            "Nxe4+",
+            "Kd4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:root",
+      "fen": "8/B4k2/6r1/5K1n/P3Pn1P/5P2/8/R7 b - - 0 32",
+      "searchMove": "f4d3",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "f4d3",
+            "a7b6",
+            "h5g7"
+          ],
+          "pvSan": [
+            "Nd3",
+            "Bb6",
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a7b8",
+      "fen": "1B6/5k2/6r1/5K1n/P3P2P/3n1P2/8/R7 b - - 2 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a7b6",
+      "fen": "8/5k2/1B4r1/5K1n/P3P2P/3n1P2/8/R7 b - - 2 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a7c5",
+      "fen": "8/5k2/6r1/2B2K1n/P3P2P/3n1P2/8/R7 b - - 2 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a7d4",
+      "fen": "8/5k2/6r1/5K1n/P2BP2P/3n1P2/8/R7 b - - 2 33",
+      "searchMove": "h5g3",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g3"
+          ],
+          "pvSan": [
+            "Ng3#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a7e3",
+      "fen": "8/5k2/6r1/5K1n/P3P2P/3nBP2/8/R7 b - - 2 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a7f2",
+      "fen": "8/5k2/6r1/5K1n/P3P2P/3n1P2/5B2/R7 b - - 2 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a7g1",
+      "fen": "8/5k2/6r1/5K1n/P3P2P/3n1P2/8/R5B1 b - - 2 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a4a5",
+      "fen": "8/B4k2/6r1/P4K1n/4P2P/3n1P2/8/R7 b - - 0 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:e4e5",
+      "fen": "8/B4k2/6r1/4PK1n/P6P/3n1P2/8/R7 b - - 0 33",
+      "searchMove": "h5g3",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g3"
+          ],
+          "pvSan": [
+            "Ng3#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:f3f4",
+      "fen": "8/B4k2/6r1/5K1n/P3PP1P/3n4/8/R7 b - - 0 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a1a3",
+      "fen": "8/B4k2/6r1/5K1n/P3P2P/R2n1P2/8/8 b - - 2 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a1a2",
+      "fen": "8/B4k2/6r1/5K1n/P3P2P/3n1P2/R7/8 b - - 2 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a1b1",
+      "fen": "8/B4k2/6r1/5K1n/P3P2P/3n1P2/8/1R6 b - - 2 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a1c1",
+      "fen": "8/B4k2/6r1/5K1n/P3P2P/3n1P2/8/2R5 b - - 2 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a1d1",
+      "fen": "8/B4k2/6r1/5K1n/P3P2P/3n1P2/8/3R4 b - - 2 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a1e1",
+      "fen": "8/B4k2/6r1/5K1n/P3P2P/3n1P2/8/4R3 b - - 2 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a1f1",
+      "fen": "8/B4k2/6r1/5K1n/P3P2P/3n1P2/8/5R2 b - - 2 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a1g1",
+      "fen": "8/B4k2/6r1/5K1n/P3P2P/3n1P2/8/6R1 b - - 2 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0iAUN:answer:a1h1",
+      "fen": "8/B4k2/6r1/5K1n/P3P2P/3n1P2/8/7R b - - 2 33",
+      "searchMove": "h5g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h5g7"
+          ],
+          "pvSan": [
+            "Ng7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:best",
+      "fen": "r7/Pk6/1r6/RP6/3P1P2/7K/7P/1R6 b - - 0 47",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "b6g6",
+            "b5b6",
+            "a8h8",
+            "a5h5",
+            "h8h5"
+          ],
+          "pvSan": [
+            "Rg6",
+            "b6",
+            "Rh8+",
+            "Rh5",
+            "Rxh5#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": -341,
+          "mate": null,
+          "pvUci": [
+            "b6h6",
+            "h3g2",
+            "a8g8",
+            "g2f2",
+            "h6h2",
+            "f2e3",
+            "h2h3",
+            "e3e4",
+            "g8e8",
+            "e4d5",
+            "b7a8",
+            "a5a6",
+            "e8f8",
+            "b1f1",
+            "h3b3",
+            "a6e6",
+            "f8d8",
+            "e6d6",
+            "b3b5",
+            "d5e6"
+          ],
+          "pvSan": [
+            "Rh6+",
+            "Kg2",
+            "Rg8+",
+            "Kf2",
+            "Rxh2+",
+            "Ke3",
+            "Rh3+",
+            "Ke4",
+            "Re8+",
+            "Kd5",
+            "Ka8",
+            "Ra6",
+            "Rf8",
+            "Rf1",
+            "Rb3",
+            "Re6",
+            "Rd8+",
+            "Rd6",
+            "Rxb5+",
+            "Ke6"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": -412,
+          "mate": null,
+          "pvUci": [
+            "a8h8",
+            "h3g3",
+            "b7a8",
+            "h2h4",
+            "b6g6",
+            "g3f3",
+            "h8h4",
+            "b5b6",
+            "g6b6",
+            "b1g1",
+            "h4h8",
+            "g1g5",
+            "b6b7",
+            "f3e4",
+            "b7b3",
+            "a5e5"
+          ],
+          "pvSan": [
+            "Rh8+",
+            "Kg3",
+            "Ka8",
+            "h4",
+            "Rg6+",
+            "Kf3",
+            "Rxh4",
+            "b6",
+            "Rxb6",
+            "Rg1",
+            "Rh8",
+            "Rgg5",
+            "Rb7",
+            "Ke4",
+            "Rb3",
+            "Rae5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:root",
+      "fen": "r7/Pk6/1r6/RP6/3P1P2/7K/7P/1R6 b - - 0 47",
+      "searchMove": "b6g6",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "b6g6",
+            "b5b6",
+            "a8h8",
+            "a5h5",
+            "h8h5"
+          ],
+          "pvSan": [
+            "Rg6",
+            "b6",
+            "Rh8+",
+            "Rh5",
+            "Rxh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:a5a6",
+      "fen": "r7/Pk6/R5r1/1P6/3P1P2/7K/7P/1R6 b - - 2 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:a5a4",
+      "fen": "r7/Pk6/6r1/1P6/R2P1P2/7K/7P/1R6 b - - 2 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:a5a3",
+      "fen": "r7/Pk6/6r1/1P6/3P1P2/R6K/7P/1R6 b - - 2 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:a5a2",
+      "fen": "r7/Pk6/6r1/1P6/3P1P2/7K/R6P/1R6 b - - 2 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:a5a1",
+      "fen": "r7/Pk6/6r1/1P6/3P1P2/7K/7P/RR6 b - - 2 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:b5b6",
+      "fen": "r7/Pk6/1P4r1/R7/3P1P2/7K/7P/1R6 b - - 0 48",
+      "searchMove": "a8h8",
+      "mateWithin": 2,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "a8h8",
+            "a5h5",
+            "h8h5"
+          ],
+          "pvSan": [
+            "Rh8+",
+            "Rh5",
+            "Rxh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:mate:b5b6:a5h5",
+      "fen": "7r/Pk6/1P4r1/7R/3P1P2/7K/7P/1R6 b - - 2 49",
+      "searchMove": "h8h5",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h8h5"
+          ],
+          "pvSan": [
+            "Rxh5#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:d4d5",
+      "fen": "r7/Pk6/6r1/RP1P4/5P2/7K/7P/1R6 b - - 0 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:f4f5",
+      "fen": "r7/Pk6/6r1/RP3P2/3P4/7K/7P/1R6 b - - 0 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:h3h4",
+      "fen": "r7/Pk6/6r1/RP6/3P1P1K/8/7P/1R6 b - - 2 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:b1b4",
+      "fen": "r7/Pk6/6r1/RP6/1R1P1P2/7K/7P/8 b - - 2 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:b1b3",
+      "fen": "r7/Pk6/6r1/RP6/3P1P2/1R5K/7P/8 b - - 2 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:b1b2",
+      "fen": "r7/Pk6/6r1/RP6/3P1P2/7K/1R5P/8 b - - 2 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:b1a1",
+      "fen": "r7/Pk6/6r1/RP6/3P1P2/7K/7P/R7 b - - 2 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:b1c1",
+      "fen": "r7/Pk6/6r1/RP6/3P1P2/7K/7P/2R5 b - - 2 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:b1d1",
+      "fen": "r7/Pk6/6r1/RP6/3P1P2/7K/7P/3R4 b - - 2 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:b1e1",
+      "fen": "r7/Pk6/6r1/RP6/3P1P2/7K/7P/4R3 b - - 2 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:b1f1",
+      "fen": "r7/Pk6/6r1/RP6/3P1P2/7K/7P/5R2 b - - 2 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:b1g1",
+      "fen": "r7/Pk6/6r1/RP6/3P1P2/7K/7P/6R1 b - - 2 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0IJ6I:answer:b1h1",
+      "fen": "r7/Pk6/6r1/RP6/3P1P2/7K/7P/7R b - - 2 48",
+      "searchMove": "a8h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "a8h8"
+          ],
+          "pvSan": [
+            "Rh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:09Cf3:best",
+      "fen": "1R6/1P6/6p1/8/6kP/8/1r4P1/7K b - - 2 56",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "g4g3",
+            "b8c8",
+            "b2b1",
+            "c8c1",
+            "b1c1"
+          ],
+          "pvSan": [
+            "Kg3",
+            "Rc8",
+            "Rb1+",
+            "Rc1",
+            "Rxc1#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": -325,
+          "mate": null,
+          "pvUci": [
+            "b2b1",
+            "h1h2",
+            "b1b6",
+            "h2g1",
+            "g4g3",
+            "g1f1",
+            "g3h2",
+            "b8g8",
+            "b6b1",
+            "f1e2",
+            "b1b7",
+            "g8g6",
+            "b7h7",
+            "g2g3",
+            "h7h8"
+          ],
+          "pvSan": [
+            "Rb1+",
+            "Kh2",
+            "Rb6",
+            "Kg1",
+            "Kg3",
+            "Kf1",
+            "Kh2",
+            "Rg8",
+            "Rb1+",
+            "Ke2",
+            "Rxb7",
+            "Rxg6",
+            "Rh7",
+            "g3",
+            "Rh8"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": -417,
+          "mate": null,
+          "pvUci": [
+            "b2b6",
+            "h1h2",
+            "b6b1",
+            "h4h5",
+            "g6g5",
+            "h5h6",
+            "b1b6",
+            "h2g1",
+            "g4g3",
+            "g1f1",
+            "b6f6",
+            "f1e2",
+            "f6f7",
+            "b8g8",
+            "f7b7",
+            "g8g5",
+            "g3f4",
+            "g5g7",
+            "b7b2",
+            "e2d3",
+            "b2b3",
+            "d3d2",
+            "b3b6",
+            "h6h7",
+            "b6h6"
+          ],
+          "pvSan": [
+            "Rb6",
+            "Kh2",
+            "Rb1",
+            "h5",
+            "g5",
+            "h6",
+            "Rb6",
+            "Kg1",
+            "Kg3",
+            "Kf1",
+            "Rf6+",
+            "Ke2",
+            "Rf7",
+            "Rg8",
+            "Rxb7",
+            "Rxg5+",
+            "Kf4",
+            "Rg7",
+            "Rb2+",
+            "Kd3",
+            "Rb3+",
+            "Kd2",
+            "Rb6",
+            "h7",
+            "Rh6"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:09Cf3:root",
+      "fen": "1R6/1P6/6p1/8/6kP/8/1r4P1/7K b - - 2 56",
+      "searchMove": "g4g3",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "g4g3",
+            "b8c8",
+            "b2b1",
+            "c8c1",
+            "b1c1"
+          ],
+          "pvSan": [
+            "Kg3",
+            "Rc8",
+            "Rb1+",
+            "Rc1",
+            "Rxc1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:09Cf3:answer:b8a8",
+      "fen": "R7/1P6/6p1/8/7P/6k1/1r4P1/7K b - - 4 57",
+      "searchMove": "b2b1",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b2b1"
+          ],
+          "pvSan": [
+            "Rb1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:09Cf3:answer:b8c8",
+      "fen": "2R5/1P6/6p1/8/7P/6k1/1r4P1/7K b - - 4 57",
+      "searchMove": "b2b1",
+      "mateWithin": 2,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "b2b1",
+            "c8c1",
+            "b1c1"
+          ],
+          "pvSan": [
+            "Rb1+",
+            "Rc1",
+            "Rxc1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:09Cf3:mate:b8c8:c8c1",
+      "fen": "8/1P6/6p1/8/7P/6k1/6P1/1rR4K b - - 6 58",
+      "searchMove": "b1c1",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b1c1"
+          ],
+          "pvSan": [
+            "Rxc1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:09Cf3:answer:b8d8",
+      "fen": "3R4/1P6/6p1/8/7P/6k1/1r4P1/7K b - - 4 57",
+      "searchMove": "b2b1",
+      "mateWithin": 2,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "b2b1",
+            "d8d1",
+            "b1d1"
+          ],
+          "pvSan": [
+            "Rb1+",
+            "Rd1",
+            "Rxd1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:09Cf3:mate:b8d8:d8d1",
+      "fen": "8/1P6/6p1/8/7P/6k1/6P1/1r1R3K b - - 6 58",
+      "searchMove": "b1d1",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b1d1"
+          ],
+          "pvSan": [
+            "Rxd1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:09Cf3:answer:b8e8",
+      "fen": "4R3/1P6/6p1/8/7P/6k1/1r4P1/7K b - - 4 57",
+      "searchMove": "b2b1",
+      "mateWithin": 2,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "b2b1",
+            "e8e1",
+            "b1e1"
+          ],
+          "pvSan": [
+            "Rb1+",
+            "Re1",
+            "Rxe1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:09Cf3:mate:b8e8:e8e1",
+      "fen": "8/1P6/6p1/8/7P/6k1/6P1/1r2R2K b - - 6 58",
+      "searchMove": "b1e1",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b1e1"
+          ],
+          "pvSan": [
+            "Rxe1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:09Cf3:answer:b8f8",
+      "fen": "5R2/1P6/6p1/8/7P/6k1/1r4P1/7K b - - 4 57",
+      "searchMove": "b2b1",
+      "mateWithin": 2,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "b2b1",
+            "f8f1",
+            "b1f1"
+          ],
+          "pvSan": [
+            "Rb1+",
+            "Rf1",
+            "Rxf1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:09Cf3:mate:b8f8:f8f1",
+      "fen": "8/1P6/6p1/8/7P/6k1/6P1/1r3R1K b - - 6 58",
+      "searchMove": "b1f1",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b1f1"
+          ],
+          "pvSan": [
+            "Rxf1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:09Cf3:answer:b8g8",
+      "fen": "6R1/1P6/6p1/8/7P/6k1/1r4P1/7K b - - 4 57",
+      "searchMove": "b2b1",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b2b1"
+          ],
+          "pvSan": [
+            "Rb1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:09Cf3:answer:b8h8",
+      "fen": "7R/1P6/6p1/8/7P/6k1/1r4P1/7K b - - 4 57",
+      "searchMove": "b2b1",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b2b1"
+          ],
+          "pvSan": [
+            "Rb1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:09Cf3:answer:h4h5",
+      "fen": "1R6/1P6/6p1/7P/8/6k1/1r4P1/7K b - - 0 57",
+      "searchMove": "b2b1",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b2b1"
+          ],
+          "pvSan": [
+            "Rb1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:09Cf3:answer:h1g1",
+      "fen": "1R6/1P6/6p1/8/7P/6k1/1r4P1/6K1 b - - 4 57",
+      "searchMove": "b2b1",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "b2b1"
+          ],
+          "pvSan": [
+            "Rb1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:best",
+      "fen": "3rrk2/1ppqnpbQ/p3p1p1/3p1P2/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 23",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "f5f6",
+            "e7f5",
+            "c1h6",
+            "e8e7",
+            "h7h8"
+          ],
+          "pvSan": [
+            "f6",
+            "Nf5",
+            "Bh6",
+            "Re7",
+            "Qh8#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": 148,
+          "mate": null,
+          "pvUci": [
+            "c1h6",
+            "e7f5",
+            "e4f5",
+            "f8e7",
+            "h6g7",
+            "e6f5",
+            "h7h4",
+            "e7d6",
+            "g7f6",
+            "d8a8",
+            "c3c4",
+            "d6c6",
+            "f6e5",
+            "d7e6",
+            "c4d5",
+            "e6d5",
+            "a1c1",
+            "c6b6",
+            "h4h3"
+          ],
+          "pvSan": [
+            "Bh6",
+            "Nxf5",
+            "exf5",
+            "Ke7",
+            "Bxg7",
+            "exf5",
+            "Qh4+",
+            "Kd6",
+            "Bf6",
+            "Ra8",
+            "c4",
+            "Kc6",
+            "Be5",
+            "Qe6",
+            "cxd5+",
+            "Qxd5",
+            "Rc1+",
+            "Kb6",
+            "Qxh3"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": 58,
+          "mate": null,
+          "pvUci": [
+            "d3b5",
+            "e7c6",
+            "c1h6",
+            "f8e7",
+            "h7g7",
+            "a6b5",
+            "f5g6",
+            "c6d4",
+            "a1f1",
+            "d4e2",
+            "g1f2",
+            "e8g8",
+            "g7f7",
+            "e7d6",
+            "e4e5",
+            "d6c6",
+            "f2e2",
+            "d8a8",
+            "f7d7",
+            "c6d7",
+            "g6g7",
+            "a8a2",
+            "f1f8",
+            "a2b2",
+            "e2f3"
+          ],
+          "pvSan": [
+            "Bb5",
+            "Nc6",
+            "Bh6",
+            "Ke7",
+            "Qxg7",
+            "axb5",
+            "fxg6",
+            "Nxd4",
+            "Rf1",
+            "Ne2+",
+            "Kf2",
+            "Rg8",
+            "Qxf7+",
+            "Kd6",
+            "e5+",
+            "Kc6",
+            "Kxe2",
+            "Ra8",
+            "Qxd7+",
+            "Kxd7",
+            "g7",
+            "Rxa2",
+            "Rf8",
+            "Rxb2+",
+            "Kf3"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:root",
+      "fen": "3rrk2/1ppqnpbQ/p3p1p1/3p1P2/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 23",
+      "searchMove": "f5f6",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 3,
+          "pvUci": [
+            "f5f6",
+            "e7f5",
+            "c1h6",
+            "e8e7",
+            "h7h8"
+          ],
+          "pvSan": [
+            "f6",
+            "Nf5",
+            "Bh6",
+            "Re7",
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:d5e4",
+      "fen": "3rrk2/1ppqnpbQ/p3pPp1/8/3Pp3/2PB3p/PP5P/R1B3K1 w - - 0 24",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:g7f6",
+      "fen": "3rrk2/1ppqnp1Q/p3pbp1/3p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 0 24",
+      "searchMove": "c1h6",
+      "mateWithin": 2,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "c1h6",
+            "f6g7",
+            "h6g7"
+          ],
+          "pvSan": [
+            "Bh6+",
+            "Bg7",
+            "Bxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:g7f6:f6g7",
+      "fen": "3rrk2/1ppqnpbQ/p3p1pB/3p4/3PP3/2PB3p/PP5P/R5K1 w - - 2 25",
+      "searchMove": "h6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h6g7"
+          ],
+          "pvSan": [
+            "Bxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:a6a5",
+      "fen": "3rrk2/1ppqnpbQ/4pPp1/p2p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 0 24",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:e6e5",
+      "fen": "3rrk2/1ppqnpbQ/p4Pp1/3pp3/3PP3/2PB3p/PP5P/R1B3K1 w - - 0 24",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:g6g5",
+      "fen": "3rrk2/1ppqnpbQ/p3pP2/3p2p1/3PP3/2PB3p/PP5P/R1B3K1 w - - 0 24",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:b7b5",
+      "fen": "3rrk2/2pqnpbQ/p3pPp1/1p1p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 0 24",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:b7b6",
+      "fen": "3rrk2/2pqnpbQ/pp2pPp1/3p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 0 24",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:c7c5",
+      "fen": "3rrk2/1p1qnpbQ/p3pPp1/2pp4/3PP3/2PB3p/PP5P/R1B3K1 w - - 0 24",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:c7c6",
+      "fen": "3rrk2/1p1qnpbQ/p1p1pPp1/3p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 0 24",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:d7a4",
+      "fen": "3rrk2/1pp1npbQ/p3pPp1/3p4/q2PP3/2PB3p/PP5P/R1B3K1 w - - 1 24",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:d7b5",
+      "fen": "3rrk2/1pp1npbQ/p3pPp1/1q1p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 24",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:d7c6",
+      "fen": "3rrk2/1pp1npbQ/p1q1pPp1/3p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 24",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:d7d6",
+      "fen": "3rrk2/1pp1npbQ/p2qpPp1/3p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 24",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:d7c8",
+      "fen": "2qrrk2/1pp1npbQ/p3pPp1/3p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 24",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:e7f5",
+      "fen": "3rrk2/1ppq1pbQ/p3pPp1/3p1n2/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 24",
+      "searchMove": "c1h6",
+      "mateWithin": 2,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "c1h6",
+            "d5e4",
+            "h7h8"
+          ],
+          "pvSan": [
+            "Bh6",
+            "dxe4",
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:f5h6",
+      "fen": "3rrk2/1ppq1pbQ/p3pPpn/3p4/3PP3/2PB3p/PP5P/R5K1 w - - 0 25",
+      "searchMove": "h7g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7g7"
+          ],
+          "pvSan": [
+            "Qxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:g7h6",
+      "fen": "3rrk2/1ppq1p1Q/p3pPpb/3p1n2/3PP3/2PB3p/PP5P/R5K1 w - - 0 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:d5e4",
+      "fen": "3rrk2/1ppq1pbQ/p3pPpB/5n2/3Pp3/2PB3p/PP5P/R5K1 w - - 0 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:f5d4",
+      "fen": "3rrk2/1ppq1pbQ/p3pPpB/3p4/3nP3/2PB3p/PP5P/R5K1 w - - 0 25",
+      "searchMove": "h6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h6g7"
+          ],
+          "pvSan": [
+            "Bxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:f5e3",
+      "fen": "3rrk2/1ppq1pbQ/p3pPpB/3p4/3PP3/2PBn2p/PP5P/R5K1 w - - 3 25",
+      "searchMove": "h6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h6g7"
+          ],
+          "pvSan": [
+            "Bxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:f5g3",
+      "fen": "3rrk2/1ppq1pbQ/p3pPpB/3p4/3PP3/2PB2np/PP5P/R5K1 w - - 3 25",
+      "searchMove": "h6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h6g7"
+          ],
+          "pvSan": [
+            "Bxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:f5h4",
+      "fen": "3rrk2/1ppq1pbQ/p3pPpB/3p4/3PP2n/2PB3p/PP5P/R5K1 w - - 3 25",
+      "searchMove": "h6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h6g7"
+          ],
+          "pvSan": [
+            "Bxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:f5d6",
+      "fen": "3rrk2/1ppq1pbQ/p2npPpB/3p4/3PP3/2PB3p/PP5P/R5K1 w - - 3 25",
+      "searchMove": "h6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h6g7"
+          ],
+          "pvSan": [
+            "Bxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:f5e7",
+      "fen": "3rrk2/1ppqnpbQ/p3pPpB/3p4/3PP3/2PB3p/PP5P/R5K1 w - - 3 25",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:a6a5",
+      "fen": "3rrk2/1ppq1pbQ/4pPpB/p2p1n2/3PP3/2PB3p/PP5P/R5K1 w - - 0 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:e6e5",
+      "fen": "3rrk2/1ppq1pbQ/p4PpB/3ppn2/3PP3/2PB3p/PP5P/R5K1 w - - 0 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:g6g5",
+      "fen": "3rrk2/1ppq1pbQ/p3pP1B/3p1np1/3PP3/2PB3p/PP5P/R5K1 w - - 0 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:b7b5",
+      "fen": "3rrk2/2pq1pbQ/p3pPpB/1p1p1n2/3PP3/2PB3p/PP5P/R5K1 w - - 0 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:b7b6",
+      "fen": "3rrk2/2pq1pbQ/pp2pPpB/3p1n2/3PP3/2PB3p/PP5P/R5K1 w - - 0 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:c7c5",
+      "fen": "3rrk2/1p1q1pbQ/p3pPpB/2pp1n2/3PP3/2PB3p/PP5P/R5K1 w - - 0 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:c7c6",
+      "fen": "3rrk2/1p1q1pbQ/p1p1pPpB/3p1n2/3PP3/2PB3p/PP5P/R5K1 w - - 0 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:d7a4",
+      "fen": "3rrk2/1pp2pbQ/p3pPpB/3p1n2/q2PP3/2PB3p/PP5P/R5K1 w - - 3 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:d7b5",
+      "fen": "3rrk2/1pp2pbQ/p3pPpB/1q1p1n2/3PP3/2PB3p/PP5P/R5K1 w - - 3 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:d7c6",
+      "fen": "3rrk2/1pp2pbQ/p1q1pPpB/3p1n2/3PP3/2PB3p/PP5P/R5K1 w - - 3 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:d7d6",
+      "fen": "3rrk2/1pp2pbQ/p2qpPpB/3p1n2/3PP3/2PB3p/PP5P/R5K1 w - - 3 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:d7e7",
+      "fen": "3rrk2/1pp1qpbQ/p3pPpB/3p1n2/3PP3/2PB3p/PP5P/R5K1 w - - 3 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:d7c8",
+      "fen": "2qrrk2/1pp2pbQ/p3pPpB/3p1n2/3PP3/2PB3p/PP5P/R5K1 w - - 3 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:d8a8",
+      "fen": "r3rk2/1ppq1pbQ/p3pPpB/3p1n2/3PP3/2PB3p/PP5P/R5K1 w - - 3 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:d8b8",
+      "fen": "1r2rk2/1ppq1pbQ/p3pPpB/3p1n2/3PP3/2PB3p/PP5P/R5K1 w - - 3 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:d8c8",
+      "fen": "2r1rk2/1ppq1pbQ/p3pPpB/3p1n2/3PP3/2PB3p/PP5P/R5K1 w - - 3 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:e7f5:e8e7",
+      "fen": "3r1k2/1ppqrpbQ/p3pPpB/3p1n2/3PP3/2PB3p/PP5P/R5K1 w - - 3 25",
+      "searchMove": "h7h8",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7h8"
+          ],
+          "pvSan": [
+            "Qh8#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:e7c6",
+      "fen": "3rrk2/1ppq1pbQ/p1n1pPp1/3p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 24",
+      "searchMove": "h7g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7g7"
+          ],
+          "pvSan": [
+            "Qxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:e7c8",
+      "fen": "2nrrk2/1ppq1pbQ/p3pPp1/3p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 24",
+      "searchMove": "h7g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7g7"
+          ],
+          "pvSan": [
+            "Qxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:e7g8",
+      "fen": "3rrkn1/1ppq1pbQ/p3pPp1/3p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 24",
+      "searchMove": "h7g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "h7g7"
+          ],
+          "pvSan": [
+            "Qxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:g7h6",
+      "fen": "3rrk2/1ppqnp1Q/p3pPpb/3p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 24",
+      "searchMove": "c1h6",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "c1h6"
+          ],
+          "pvSan": [
+            "Bxh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:g7h8",
+      "fen": "3rrk1b/1ppqnp1Q/p3pPp1/3p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 24",
+      "searchMove": "h7h8",
+      "mateWithin": 2,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 2,
+          "pvUci": [
+            "h7h8",
+            "e7g8",
+            "c1h6"
+          ],
+          "pvSan": [
+            "Qxh8+",
+            "Ng8",
+            "Bh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:mate:g7h8:e7g8",
+      "fen": "3rrknQ/1ppq1p2/p3pPp1/3p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 25",
+      "searchMove": "c1h6",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "c1h6"
+          ],
+          "pvSan": [
+            "Bh6#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:d8a8",
+      "fen": "r3rk2/1ppqnpbQ/p3pPp1/3p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 24",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:d8b8",
+      "fen": "1r2rk2/1ppqnpbQ/p3pPp1/3p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 24",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0hHGN:answer:d8c8",
+      "fen": "2r1rk2/1ppqnpbQ/p3pPp1/3p4/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 24",
+      "searchMove": "f6g7",
+      "mateWithin": 1,
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 1,
+          "pvUci": [
+            "f6g7"
+          ],
+          "pvSan": [
+            "fxg7#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0z5nl:best",
+      "fen": "6Q1/4qp2/7p/3pPp1k/1p1P4/5PP1/6K1/8 w - - 0 42",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 4,
+          "pvUci": [
+            "g2h3",
+            "e7e6",
+            "g3g4",
+            "f5g4",
+            "f3g4",
+            "e6g4",
+            "g8g4"
+          ],
+          "pvSan": [
+            "Kh3",
+            "Qe6",
+            "g4+",
+            "fxg4+",
+            "fxg4+",
+            "Qxg4+",
+            "Qxg4#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": 7,
+          "mate": null,
+          "pvUci": [
+            "g8b8",
+            "e7g5",
+            "b8f8",
+            "g5g6",
+            "f8e7",
+            "g6e6",
+            "e7b4",
+            "e6a6",
+            "b4d2",
+            "a6c4",
+            "f3f4",
+            "h5g6",
+            "g2g1",
+            "g6g7",
+            "g1h2",
+            "c4f1"
+          ],
+          "pvSan": [
+            "Qb8",
+            "Qg5",
+            "Qf8",
+            "Qg6",
+            "Qe7",
+            "Qe6",
+            "Qxb4",
+            "Qa6",
+            "Qd2",
+            "Qc4",
+            "f4",
+            "Kg6",
+            "Kg1",
+            "Kg7",
+            "Kh2",
+            "Qf1"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": 4,
+          "mate": null,
+          "pvUci": [
+            "g8c8",
+            "e7e6",
+            "c8b7",
+            "f5f4",
+            "b7b4",
+            "f4g3",
+            "b4d6",
+            "h5g6",
+            "g2g3",
+            "e6d6",
+            "e5d6",
+            "g6f6",
+            "g3h4",
+            "f6e6",
+            "h4h5",
+            "e6d6",
+            "h5h6"
+          ],
+          "pvSan": [
+            "Qc8",
+            "Qe6",
+            "Qb7",
+            "f4",
+            "Qxb4",
+            "fxg3",
+            "Qd6",
+            "Kg6",
+            "Kxg3",
+            "Qxd6",
+            "exd6",
+            "Kf6",
+            "Kh4",
+            "Ke6",
+            "Kh5",
+            "Kxd6",
+            "Kxh6"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0z5nl:root",
+      "fen": "6Q1/4qp2/7p/3pPp1k/1p1P4/5PP1/6K1/8 w - - 0 42",
+      "searchMove": "g2h3",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 4,
+          "pvUci": [
+            "g2h3",
+            "e7e6",
+            "g3g4",
+            "f5g4",
+            "f3g4",
+            "e6g4",
+            "g8g4"
+          ],
+          "pvSan": [
+            "Kh3",
+            "Qe6",
+            "g4+",
+            "fxg4+",
+            "fxg4+",
+            "Qxg4+",
+            "Qxg4#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0rcU4:best",
+      "fen": "5rk1/Q1RR1pp1/4pq1p/4N3/5P2/4P3/Pr4PP/6K1 b - - 1 23",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 4,
+          "pvUci": [
+            "f6h4",
+            "e5d3",
+            "b2b1",
+            "c7c1",
+            "b1c1",
+            "d3c1",
+            "h4e1"
+          ],
+          "pvSan": [
+            "Qh4",
+            "Nd3",
+            "Rb1+",
+            "Rc1",
+            "Rxc1+",
+            "Nxc1",
+            "Qe1#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": -72,
+          "mate": null,
+          "pvUci": [
+            "b2b1",
+            "g1f2",
+            "f6h4",
+            "f2f3",
+            "b1b2",
+            "e5d3",
+            "h4h5",
+            "g2g4",
+            "h5h3",
+            "f3e4",
+            "h3g2",
+            "e4e5",
+            "b2a2",
+            "a7c5",
+            "a2a8",
+            "c5c2",
+            "g2g4"
+          ],
+          "pvSan": [
+            "Rb1+",
+            "Kf2",
+            "Qh4+",
+            "Kf3",
+            "Rb2",
+            "Nd3",
+            "Qh5+",
+            "g4",
+            "Qh3+",
+            "Ke4",
+            "Qg2+",
+            "Ke5",
+            "Rxa2",
+            "Qc5",
+            "Raa8",
+            "Qc2",
+            "Qxg4"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": -185,
+          "mate": null,
+          "pvUci": [
+            "f6f5",
+            "a7d4",
+            "f8b8",
+            "e5d3",
+            "b2b1",
+            "g1f2",
+            "e6e5",
+            "d4e5",
+            "f5g6",
+            "e5d4",
+            "g6g4",
+            "c7c2",
+            "g4h4",
+            "f2f3"
+          ],
+          "pvSan": [
+            "Qf5",
+            "Qd4",
+            "Rfb8",
+            "Nd3",
+            "Rb1+",
+            "Kf2",
+            "e5",
+            "Qxe5",
+            "Qg6",
+            "Qd4",
+            "Qg4",
+            "Rc2",
+            "Qh4+",
+            "Kf3"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0rcU4:root",
+      "fen": "5rk1/Q1RR1pp1/4pq1p/4N3/5P2/4P3/Pr4PP/6K1 b - - 1 23",
+      "searchMove": "f6h4",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 4,
+          "pvUci": [
+            "f6h4",
+            "e5d3",
+            "b2b1",
+            "c7c1",
+            "b1c1",
+            "d3c1",
+            "h4e1"
+          ],
+          "pvSan": [
+            "Qh4",
+            "Nd3",
+            "Rb1+",
+            "Rc1",
+            "Rxc1+",
+            "Nxc1",
+            "Qe1#"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0QPvf:best",
+      "fen": "2Q3qk/p5pp/2p5/8/8/7P/5rP1/1R5K w - - 3 33",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 4,
+          "pvUci": [
+            "b1b8",
+            "f2f1",
+            "h1h2",
+            "f1f8",
+            "c8f8",
+            "g8f8",
+            "b8f8"
+          ],
+          "pvSan": [
+            "Rb8",
+            "Rf1+",
+            "Kh2",
+            "Rf8",
+            "Qxf8",
+            "Qxf8",
+            "Rxf8#"
+          ]
+        },
+        {
+          "multipv": 2,
+          "depth": 16,
+          "cp": -2,
+          "mate": null,
+          "pvUci": [
+            "c8c6",
+            "h7h6",
+            "c6d6",
+            "f2f8",
+            "d6c7",
+            "g8a2",
+            "b1b8",
+            "a2a1",
+            "h1h2",
+            "f8b8",
+            "c7b8",
+            "h8h7",
+            "b8c7",
+            "a7a5"
+          ],
+          "pvSan": [
+            "Qxc6",
+            "h6",
+            "Qd6",
+            "Rf8",
+            "Qc7",
+            "Qa2",
+            "Rb8",
+            "Qa1+",
+            "Kh2",
+            "Rxb8",
+            "Qxb8+",
+            "Kh7",
+            "Qc7",
+            "a5"
+          ]
+        },
+        {
+          "multipv": 3,
+          "depth": 16,
+          "cp": -20,
+          "mate": null,
+          "pvUci": [
+            "c8c7",
+            "f2f8",
+            "c7a7",
+            "g8c4",
+            "h1h2",
+            "c6c5",
+            "a7c7",
+            "h7h6",
+            "b1d1",
+            "c4f4",
+            "c7f4",
+            "f8f4",
+            "d1d7",
+            "h8h7",
+            "d7c7",
+            "f4f5",
+            "c7d7",
+            "f5g5"
+          ],
+          "pvSan": [
+            "Qc7",
+            "Rf8",
+            "Qxa7",
+            "Qc4",
+            "Kh2",
+            "c5",
+            "Qc7",
+            "h6",
+            "Rd1",
+            "Qf4+",
+            "Qxf4",
+            "Rxf4",
+            "Rd7",
+            "Kh7",
+            "Rc7",
+            "Rf5",
+            "Rd7",
+            "Rg5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lichess:0QPvf:root",
+      "fen": "2Q3qk/p5pp/2p5/8/8/7P/5rP1/1R5K w - - 3 33",
+      "searchMove": "b1b8",
+      "lines": [
+        {
+          "multipv": 1,
+          "depth": 16,
+          "cp": null,
+          "mate": 4,
+          "pvUci": [
+            "b1b8",
+            "f2f1",
+            "h1h2",
+            "f1h1",
+            "h2h1",
+            "g8c8",
+            "b8c8"
+          ],
+          "pvSan": [
+            "Rb8",
+            "Rf1+",
+            "Kh2",
+            "Rh1+",
+            "Kxh1",
+            "Qxc8",
+            "Rxc8#"
+          ]
+        }
+      ]
+    }
+  ]
+}

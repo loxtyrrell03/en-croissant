@@ -149,6 +149,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         const blackContext = JSON.parse(readFileSync("benchmarks/tactical-relevance/black-context-stockfish-18.json", "utf8"));
         const castles = JSON.parse(readFileSync("benchmarks/tactical-relevance/castling-stockfish-18.json", "utf8"));
         const cases = [
+            ...JSON.parse(readFileSync("benchmarks/tactical-relevance/quiet-mate-development.json", "utf8")).cases.flatMap((row: any) => [row, {
+                ...row, id: `${row.id}:reflected`, startFen: reflectMatingInterference({ fen: row.startFen, move: row.bestLine[0] }).fen,
+                bestLine: row.bestLine.map((move: string) => reflectMatingInterference({ fen: row.startFen, move }).move),
+            }].flatMap(example => [1, example.bestLine.length].map(length => ({
+                id: `quiet-mate:${example.id}:${length === 1 ? "short" : "full"}`, input: { fen: example.startFen, pvUci: example.bestLine.slice(0, length), depth: 16, engineName: "Frozen unseen game" },
+            })))),
+            ...JSON.parse(readFileSync("benchmarks/tactical-relevance/quiet-mate-stockfish-18.json", "utf8")).searches.filter((row: any) => row.id.endsWith(":root")).map((row: any) => ({
+                id: `quiet-mate-engine:${row.id}`, input: { fen: row.fen, pvUci: row.lines[0].pvUci, variations: row.lines, depth: 16, engineName: "Stockfish 18" },
+            })),
             ...JSON.parse(readFileSync("benchmarks/tactical-relevance/mating-interference-stockfish-18.json", "utf8")).searches.filter((row: any) => /:(best|root)$/.test(row.id)).map((row: any) => ({
                 id: `mating-interference-engine:${row.id}`, input: { fen: row.fen, pvUci: row.lines[0].pvUci, variations: row.lines, depth: 16, engineName: "Stockfish 18" },
             })),
@@ -943,8 +952,16 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             }
             if (item.id.startsWith("mating-interference:")) {
                 const positive = item.id.includes("rook-interposition");
-                if (result.scan.motifs.some(m => m.label === "Mating Interference") !== positive || (positive && result.scan.motifs.length !== 1))
+                if (result.scan.variations[0].timeline.some(m => m.label === "Mating Interference") !== positive ||
+                    (positive && (result.scan.motifs.length !== 1 || result.scan.motifs[0].id !== "mateIn3")))
                     throw new Error(`Independent mating-interference judgement failed: ${item.id}`);
+            }
+            if (item.id.startsWith("quiet-mate:") || item.id.startsWith("quiet-mate-engine:")) {
+                const mateIn2 = /06PHz|0XwFD|0iAUN/.test(item.id), mateIn3 = /0IJ6I|09Cf3|0hHGN/.test(item.id);
+                if (JSON.stringify(result.scan.motifs.map(m => m.id)) !== JSON.stringify(mateIn2 ? ["mateThreat"] : mateIn3 ? ["mateIn3"] : []))
+                    throw new Error(`Quiet mating primary or retained coverage gap changed: ${item.id}`);
+                if (item.id.includes("0hHGN") && result.scan.variations[0].timeline.some(m => m.id === "fork" && m.ply === 1))
+                    throw new Error(`Mate-backed material fork noise: ${item.id}`);
             }
             if (item.id.startsWith("castling-control:")) {
                 const row = castlingAliasCases.find(row => item.id === `castling-control:${row.id}`)!;
@@ -982,7 +999,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(763);
+        expect(report).toHaveLength(808);
         for (const length of [1, promotionCounterplayLine.length]) expect(promotionEndingResults.get(`promotion-ending:real:${length}`)!.motifs[0]).toMatchObject({ id: "promotionCombination", value: 220 });
         expect(promotionEndingResults.get("promotion-ending:real:5")!.variations[0].timeline.some((m) => m.ply === 2 && m.id === "hangingPiece")).toBe(false);
         for (const row of pawnRaceRefutations) for (const length of [1, row.historicalLine.length]) expect(promotionEndingResults.get(`promotion-ending:${row.id}:${length}`)!.motifs.some((m) => m.id === "promotionCombination")).toBe(false);

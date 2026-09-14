@@ -149,7 +149,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 108;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 109;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {
@@ -358,12 +358,19 @@ function buildLiveTacticalVariation(
                       motif.label === "Mating Deflection" && motif.verifiedCombination &&
                       motif.confidence === "high" && motif.relevance === "secondary",
               )
-            : undefined;
+            : ["Mating Preparation", "Mate Threat"].includes(motifs[0]?.label)
+              ? classification.timeline?.find(motif => motif.ply === motifs[0].ply &&
+                  motif.id === "interference" && motif.label === "Mating Interference" &&
+                  motif.confidence === "high" && motif.relevance === "secondary")
+              : undefined;
     const supportingGeometry = supporting
         ? tacticalBoardEvidence(input.fen, lineUci, supporting, input.tablebaseEvidence)
         : null;
     const geometry = primaryGeometry ?? supportingGeometry;
-    const prefixLimit = geometry ? Math.min(motifs[0].ply ?? 1, 6) : arrowLimit;
+    // A root-proved quiet mate must not acquire arbitrary reply arrows just
+    // because this PV is longer. Specific same-ply geometry remains useful.
+    const quietMate = ["Mating Preparation", "Mate Threat"].includes(motifs[0]?.label);
+    const prefixLimit = geometry || quietMate ? Math.min(motifs[0].ply ?? 1, 6) : arrowLimit;
     const replay = replayTacticalLine(input.fen, lineUci);
     // Wire UCI may point at the original rook square. Draw the two actual
     // castling moves, never a king move into that corner (or an illegal tail).

@@ -1,6 +1,12 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 103 / live pipeline 108
+## Current classifier: adapter 104 / live pipeline 109
+
+The [quiet-mate relevance review](quiet-mate-relevance-review.md) records PV-independent quiet mating preparations, removal of a mating-backed fork badge, and stable root board arrows with independently proved interference support. Nine output-blind real Lichess games span pawn, bishop, piece and rook endings, a middlegame and longer-mate controls. Three real root-only mate-in-three lessons are recovered or corrected; the three mate-in-four roots remain explicit coverage gaps. Initial chess judgements precede output, retained adapter-103 inputs reproduce the defects, and 203 fresh engine searches validate complete short-mate certificates and contrary defences. The proof budget and production deadlines are unchanged.
+
+All 246 private source/live full results, all twenty rare results and 32 frozen priorities remain unchanged, not certified accurate. An additional 356 eligible quiet roots across private and public game phases produce no new short-mate claims. The linked review records final source/build/worker/browser evidence and retained limits. No owner app/service restart or deployment; paid material stays private.
+
+## Prior adapter 103 / live pipeline 108
 
 The [mating-interference review](mating-interference-review.md) records a recovered course root, a corrected primary label and an actual-ply secondary mating threat. A new mate may force a pawn/exchange concession, but must beat pre-existing captures and retain independent all-defence evidence. A verified cut defensive route can explain Interference; the same threat's conditional Quiet Preparation is suppressed. A stronger forced mate retains priority. Final validation includes 213 fresh engine searches with contrary and pre-existing-mate controls, eight retained-baseline inputs and 246 exact course replays. Only three source/live modes across two course positions change; the other 244 full results and all twenty rare results are unchanged, not certified accurate.
 

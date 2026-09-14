@@ -139,6 +139,8 @@ test("missing a castling mate keeps mate as the lesson, not a rook capture or co
     expect(result.missedMotifs).toHaveLength(1);
 });
 
+// Eighteen games in both notations plus mistake/reply paths. The aggregate
+// test allowance is separate from the unchanged per-scan worker deadline.
 test("audits full castling continuations and mistake causes without importing their later noise", () => {
     const data = JSON.parse(
         readFileSync("benchmarks/tactical-relevance/castling-stockfish-18.json", "utf8"),
@@ -224,4 +226,4 @@ test("audits full castling continuations and mistake causes without importing th
             ) + "\n",
             { flag: "wx" },
         );
-});
+}, 15000);

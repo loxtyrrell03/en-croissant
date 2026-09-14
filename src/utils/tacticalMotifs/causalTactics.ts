@@ -1149,53 +1149,71 @@ function proveMateNextTurn(
     return proof;
 }
 
-type MatePreparationProof = { replyCount: number; example: string[] };
+type MatePreparationProof = {
+    replyCount: number;
+    example: string[];
+    visits: number;
+    branches: { replyUci: string; attackUci: string; replies?: { replyUci: string; mateUci: string }[] }[];
+};
 const preparationCache = new Map<string, MatePreparationProof | null>();
 
-/** Verify a short supplied mate-in-three candidate with an AND/OR tree, not
- * with the supplied replies alone. The PV only orders legal attacking moves.
- * The cap keeps this local proof from becoming a second unbounded engine. */
+/** A quiet mate-in-three is proved from the root, independent of PV length
+ * or ordering. Other roots retain supplied-line nomination. Every defence is
+ * covered, including quiet moves, counterchecks, castling and promotions.
+ * Incomplete searches abstain under the existing shared operation cap. */
 export function proveMateWithinThree(
     steps: TacticalReplayStep[],
     nodeLimit = 16384,
 ): MatePreparationProof | null {
-    if (
-        steps.length < 5 ||
-        !steps[4].after.isCheckmate() ||
-        steps[4].before.turn !== steps[0].before.turn
-    )
-        return null;
     const root = steps[0];
-    if (defenderCanClaimFiftyMoveDraw(root.after)) return null;
-    const key = `${makeFen(root.after.toSetup())}:${steps[2].uci}`;
+    if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.after.isEnd() ||
+        defenderCanClaimFiftyMoveDraw(root.after)) return null;
+    const independentQuiet = !root.capture && !root.move.promotion && !root.before.isCheck() && !root.after.isCheck();
+    if (!independentQuiet && (!steps[4]?.after.isCheckmate() || steps[4].before.turn !== root.before.turn)) return null;
+    const hint = independentQuiet ? undefined : steps[2]?.uci;
+    const key = `${makeFen(root.after.toSetup())}:${independentQuiet ? "quiet" : hint}`;
     if (nodeLimit === 16384 && preparationCache.has(key)) return preparationCache.get(key)!;
     let nodes = nodeLimit;
+    const flip = root.before.turn === "white" ? 0 : 56;
+    const ordered = (pos: Chess) => legalMoves(pos).sort((a, b) =>
+        capturedValue(pos, b) - capturedValue(pos, a) ||
+        (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip));
     const visit = (pos: Chess, move: NormalMove) => {
         if (--nodes < 0) throw new Error("Preparation proof budget exhausted");
         const next = pos.clone();
         next.play(move);
         return next;
     };
+    const immediateCache = new Map<string, { san: string; uci: string } | null>();
     const mateInOne = (pos: Chess) => {
-        for (const move of legalMoves(pos))
-            if (visit(pos, move).isCheckmate()) return makeSan(pos, move);
-        return null;
+        const key = makeFen(pos.toSetup());
+        if (immediateCache.has(key)) return immediateCache.get(key)!;
+        let result: { san: string; uci: string } | null = null;
+        for (const move of ordered(pos)) {
+            // Safe check nomination includes discovered, en-passant and
+            // compound castling checks. Only actual checkmate can certify.
+            if (!mayGiveCheck(pos, move)) continue;
+            if (visit(pos, move).isCheckmate()) { result = { san: makeSan(pos, move), uci: makeUci(move) }; break; }
+        }
+        immediateCache.set(key, result);
+        return result;
     };
-    const forceMate = (pos: Chess): string[] | null => {
+    type Continuation = { line: string[]; attackUci: string; replies?: { replyUci: string; mateUci: string }[] };
+    const forceMate = (pos: Chess): Continuation | null => {
         const immediate = mateInOne(pos);
-        if (immediate) return [immediate];
-        const moves = legalMoves(pos);
+        if (immediate) return { line: [immediate.san], attackUci: immediate.uci };
+        const moves = ordered(pos).map(move => ({ move, next: visit(pos, move) }));
         moves.sort(
             (a, b) =>
-                Number(b.from === steps[2].move.from && b.to === steps[2].move.to) -
-                Number(a.from === steps[2].move.from && a.to === steps[2].move.to),
+                Number(makeUci(b.move) === hint) - Number(makeUci(a.move) === hint) ||
+                Number(b.next.isCheck()) - Number(a.next.isCheck()),
         );
-        for (const move of moves) {
-            const next = visit(pos, move);
+        for (const { move, next } of moves) {
             if (defenderCanClaimFiftyMoveDraw(next)) continue;
-            const replies = legalMoves(next);
+            const replies = ordered(next);
             if (!replies.length) continue;
             let sample: string[] | null = null;
+            const branches: { replyUci: string; mateUci: string }[] = [];
             let allMated = true;
             for (const reply of replies) {
                 const mate = mateInOne(visit(next, reply));
@@ -1203,25 +1221,30 @@ export function proveMateWithinThree(
                     allMated = false;
                     break;
                 }
-                sample ??= [makeSan(pos, move), makeSan(next, reply), mate];
+                sample ??= [makeSan(pos, move), makeSan(next, reply), mate.san];
+                branches.push({ replyUci: makeUci(reply), mateUci: mate.uci });
             }
-            if (allMated) return sample;
+            if (allMated && sample) return { line: sample, attackUci: makeUci(move), replies: branches };
         }
         return null;
     };
     let proof: MatePreparationProof | null = null;
     try {
-        const replies = legalMoves(root.after);
+        const replies = ordered(root.after);
         const answers: string[][] = [];
+        const branches: MatePreparationProof["branches"] = [];
         for (const reply of replies) {
             const continuation = forceMate(visit(root.after, reply));
             if (!continuation) break;
-            answers.push([makeSan(root.after, reply), ...continuation]);
+            answers.push([makeSan(root.after, reply), ...continuation.line]);
+            branches.push({ replyUci: makeUci(reply), attackUci: continuation.attackUci, replies: continuation.replies });
         }
         if (replies.length && answers.length === replies.length)
             proof = {
                 replyCount: replies.length,
                 example: answers.sort((a, b) => b.length - a.length)[0],
+                visits: nodeLimit - nodes,
+                branches,
             };
     } catch {
         // Failed or incomplete search is not evidence of a forced mate.
@@ -10578,11 +10601,13 @@ export function auditTacticalMotifs(
             evidence: `${steps[0].san} ${mixedCheckingAttack ? `offers the ${steps[0].before.board.get(steps[0].move.from)!.role} with check` : "starts a checking attack"} that wins material or mates against every legal reply. After ${material.reply}, ${material.line.join(" ")} wins material.${mateBranch ? ` Instead, ${mateBranch.reply} allows ${mateBranch.line.join(" ")}, forcing mate.` : ""} The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.`,
         });
     }
-    const quietAttack = !mate ? (steps[0].capture ? proveMatingCaptureAttack(steps[0]) : proveQuietMatingAttack(steps[0])) : null;
+    const quietAttack = !mate
+        ? (steps[0].capture ? proveMatingCaptureAttack(steps[0]) : proveQuietMatingAttack(steps[0]))
+        : !steps[0].capture && !steps[0].after.isCheck() ? proveQuietMatingAttack(steps[0]) : null;
     if (quietAttack) {
         const material = quietAttack.branches.find(branch => branch.gain === quietAttack.gain)!;
         const interference = matingThreatInterference(steps[0], quietAttack);
-        candidates.push({
+        if (!mate || interference) candidates.push({
             id: interference ? "interference" : "forcingAttack",
             label: interference ? "Mating Interference" : "Mating Attack", source: proposals[0]?.source ?? "available",
             confidence: "high", ply: 1, moveUci: steps[0].uci, value: quietAttack.gain,
@@ -10858,6 +10883,7 @@ export function auditTacticalMotifs(
             label: "Mating Preparation",
             source: proposals[0]?.source ?? "available",
             confidence: "high",
+            value: 10000,
             ply: 1,
             moveUci: steps[0].uci,
             evidence: `${steps[0].san} is a quiet mating preparation. All ${preparation.replyCount} legal ${attacker === "white" ? "Black" : "White"} replies allow forced mate within two more moves; for example, ${preparation.example.join(" ")}.`,
@@ -11023,7 +11049,7 @@ export function auditTacticalMotifs(
             // This proof borrows a mating continuation to rescue the fork.
             // If the initiating move already has an independent all-defence
             // mate certificate, that is not another material-fork lesson.
-            if (mating && proposal.ply === 1 && checkingMate) continue;
+            if (mating && proposal.ply === 1 && (checkingMate || quietMate || preparation)) continue;
             const exchange = sound && !immediateFork(step) ? proveExchangeForPawnFork(step) : null;
             const promotion = sound && !immediateFork(step) ? provePromotionBackedFork(step) : null;
             const recapture = sound && !immediateFork(step) ? proveRecaptureBackedFork(step) : null;
@@ -11303,6 +11329,8 @@ export function auditTacticalMotifs(
             // over a PV-conditioned route with a larger nominal payoff.
             if (m.id === "tacticalPreparation" && m.confidence === "medium" && m.ply === 1 &&
                 quietAttack && tacticalPreparation?.threat[0] === quietAttack.threatSan) return false;
+            if (m.id === "forcingAttack" && m.label === "Mating Attack" && m.ply === 1 &&
+                (preparation || quietMate)) return false;
             if (incidentalMatingMechanisms.has(m.id) && m.ply === 1) return false;
             // The revealed line and the mover's attack form one discovery.
             // Do not count its same-ply material-target subset again as a

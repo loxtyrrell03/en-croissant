@@ -1,0 +1,2366 @@
+{
+  "revision": "e7a33a83a55fbb55839dde36ffdcc011f7d7ff90",
+  "scope": "Exact predecessor source/live outputs on 18 new public inputs. Reproduces PV-length-dependent primary themes; not a population accuracy result.",
+  "cases": [
+    {
+      "id": "lichess:06PHz:short",
+      "input": {
+        "fen": "8/P7/2p5/2P5/2P1Pk1p/7p/6p1/6K1 b - - 0 43",
+        "pvUci": [
+          "f4g3"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4g3",
+            "evidence": "Kg3 threatens h2#. All 5 legal White replies allow mate on the next move; for example, e5 h2#.",
+            "relevance": "primary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4g3",
+            "evidence": "Kg3 threatens h2#. All 5 legal White replies allow mate on the next move; for example, e5 h2#.",
+            "relevance": "primary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "8/P7/2p5/2P5/2P1Pk1p/7p/6p1/6K1 b - - 0 43",
+        "side": "black",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4g3",
+            "evidence": "Kg3 threatens h2#. All 5 legal White replies allow mate on the next move; for example, e5 h2#.",
+            "relevance": "primary",
+            "value": 10000
+          }
+        ],
+        "lineUci": [
+          "f4g3"
+        ],
+        "lineSan": [],
+        "arrows": [
+          {
+            "from": "f4",
+            "to": "g3",
+            "ply": 1,
+            "role": "trigger"
+          }
+        ],
+        "labels": [
+          {
+            "id": "mateThreat",
+            "text": "Mate Threat",
+            "color": "#d35400",
+            "square": "g3"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "mateThreat",
+                "label": "Mate Threat",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f4g3",
+                "evidence": "Kg3 threatens h2#. All 5 legal White replies allow mate on the next move; for example, e5 h2#.",
+                "relevance": "primary",
+                "value": 10000
+              }
+            ],
+            "timeline": [
+              {
+                "id": "mateThreat",
+                "label": "Mate Threat",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f4g3",
+                "evidence": "Kg3 threatens h2#. All 5 legal White replies allow mate on the next move; for example, e5 h2#.",
+                "relevance": "primary",
+                "value": 10000,
+                "actor": "black"
+              }
+            ],
+            "lineUci": [
+              "f4g3"
+            ],
+            "lineSan": [],
+            "arrows": [
+              {
+                "from": "f4",
+                "to": "g3",
+                "ply": 1,
+                "role": "trigger"
+              }
+            ],
+            "labels": [
+              {
+                "id": "mateThreat",
+                "text": "Mate Threat",
+                "color": "#d35400",
+                "square": "g3"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:06PHz:full",
+      "input": {
+        "fen": "8/P7/2p5/2P5/2P1Pk1p/7p/6p1/6K1 b - - 0 43",
+        "pvUci": [
+          "f4g3",
+          "e4e5",
+          "h3h2"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4g3",
+            "evidence": "Kg3 threatens h2#. All 5 legal White replies allow mate on the next move; for example, e5 h2#.",
+            "relevance": "primary",
+            "value": 10000
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "h2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h3h2",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4g3",
+            "evidence": "Kg3 threatens h2#. All 5 legal White replies allow mate on the next move; for example, e5 h2#.",
+            "relevance": "primary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "h2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h3h2",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "8/P7/2p5/2P5/2P1Pk1p/7p/6p1/6K1 b - - 0 43",
+        "side": "black",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4g3",
+            "evidence": "Kg3 threatens h2#. All 5 legal White replies allow mate on the next move; for example, e5 h2#.",
+            "relevance": "primary",
+            "value": 10000
+          }
+        ],
+        "lineUci": [
+          "f4g3",
+          "e4e5",
+          "h3h2"
+        ],
+        "lineSan": [],
+        "arrows": [
+          {
+            "from": "f4",
+            "to": "g3",
+            "ply": 1,
+            "role": "trigger"
+          },
+          {
+            "from": "e4",
+            "to": "e5",
+            "ply": 2,
+            "role": "reply"
+          },
+          {
+            "from": "h3",
+            "to": "h2",
+            "ply": 3,
+            "role": "trigger"
+          }
+        ],
+        "labels": [
+          {
+            "id": "mateThreat",
+            "text": "Mate Threat",
+            "color": "#d35400",
+            "square": "g3"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "mateThreat",
+                "label": "Mate Threat",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f4g3",
+                "evidence": "Kg3 threatens h2#. All 5 legal White replies allow mate on the next move; for example, e5 h2#.",
+                "relevance": "primary",
+                "value": 10000
+              },
+              {
+                "id": "mateIn1",
+                "label": "Checkmate",
+                "confidence": "high",
+                "evidence": "h2# is checkmate: the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 3,
+                "moveUci": "h3h2",
+                "relevance": "secondary",
+                "value": 10000
+              }
+            ],
+            "timeline": [
+              {
+                "id": "mateThreat",
+                "label": "Mate Threat",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f4g3",
+                "evidence": "Kg3 threatens h2#. All 5 legal White replies allow mate on the next move; for example, e5 h2#.",
+                "relevance": "primary",
+                "value": 10000,
+                "actor": "black"
+              },
+              {
+                "id": "mateIn1",
+                "label": "Checkmate",
+                "confidence": "high",
+                "evidence": "h2# is checkmate: the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 3,
+                "moveUci": "h3h2",
+                "relevance": "secondary",
+                "value": 10000,
+                "actor": "black"
+              }
+            ],
+            "lineUci": [
+              "f4g3",
+              "e4e5",
+              "h3h2"
+            ],
+            "lineSan": [],
+            "arrows": [
+              {
+                "from": "f4",
+                "to": "g3",
+                "ply": 1,
+                "role": "trigger"
+              },
+              {
+                "from": "e4",
+                "to": "e5",
+                "ply": 2,
+                "role": "reply"
+              },
+              {
+                "from": "h3",
+                "to": "h2",
+                "ply": 3,
+                "role": "trigger"
+              }
+            ],
+            "labels": [
+              {
+                "id": "mateThreat",
+                "text": "Mate Threat",
+                "color": "#d35400",
+                "square": "g3"
+              },
+              {
+                "id": "mateIn1",
+                "text": "Later: Checkmate",
+                "color": "#c0392b",
+                "square": "h2"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:0XwFD:short",
+      "input": {
+        "fen": "k7/P7/1P3p2/1K3P2/7p/6bP/8/8 w - - 7 66",
+        "pvUci": [
+          "b5a6"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b5a6",
+            "evidence": "Ka6 threatens b7#. All 8 legal Black replies allow mate on the next move; for example, Be1 b7#.",
+            "relevance": "primary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b5a6",
+            "evidence": "Ka6 threatens b7#. All 8 legal Black replies allow mate on the next move; for example, Be1 b7#.",
+            "relevance": "primary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "k7/P7/1P3p2/1K3P2/7p/6bP/8/8 w - - 7 66",
+        "side": "white",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b5a6",
+            "evidence": "Ka6 threatens b7#. All 8 legal Black replies allow mate on the next move; for example, Be1 b7#.",
+            "relevance": "primary",
+            "value": 10000
+          }
+        ],
+        "lineUci": [
+          "b5a6"
+        ],
+        "lineSan": [],
+        "arrows": [
+          {
+            "from": "b5",
+            "to": "a6",
+            "ply": 1,
+            "role": "trigger"
+          }
+        ],
+        "labels": [
+          {
+            "id": "mateThreat",
+            "text": "Mate Threat",
+            "color": "#d35400",
+            "square": "a6"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "mateThreat",
+                "label": "Mate Threat",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "b5a6",
+                "evidence": "Ka6 threatens b7#. All 8 legal Black replies allow mate on the next move; for example, Be1 b7#.",
+                "relevance": "primary",
+                "value": 10000
+              }
+            ],
+            "timeline": [
+              {
+                "id": "mateThreat",
+                "label": "Mate Threat",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "b5a6",
+                "evidence": "Ka6 threatens b7#. All 8 legal Black replies allow mate on the next move; for example, Be1 b7#.",
+                "relevance": "primary",
+                "value": 10000,
+                "actor": "white"
+              }
+            ],
+            "lineUci": [
+              "b5a6"
+            ],
+            "lineSan": [],
+            "arrows": [
+              {
+                "from": "b5",
+                "to": "a6",
+                "ply": 1,
+                "role": "trigger"
+              }
+            ],
+            "labels": [
+              {
+                "id": "mateThreat",
+                "text": "Mate Threat",
+                "color": "#d35400",
+                "square": "a6"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:0XwFD:full",
+      "input": {
+        "fen": "k7/P7/1P3p2/1K3P2/7p/6bP/8/8 w - - 7 66",
+        "pvUci": [
+          "b5a6",
+          "g3e1",
+          "b6b7"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b5a6",
+            "evidence": "Ka6 threatens b7#. All 8 legal Black replies allow mate on the next move; for example, Be1 b7#.",
+            "relevance": "primary",
+            "value": 10000
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "b7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "b6b7",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b5a6",
+            "evidence": "Ka6 threatens b7#. All 8 legal Black replies allow mate on the next move; for example, Be1 b7#.",
+            "relevance": "primary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "b7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "b6b7",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "k7/P7/1P3p2/1K3P2/7p/6bP/8/8 w - - 7 66",
+        "side": "white",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b5a6",
+            "evidence": "Ka6 threatens b7#. All 8 legal Black replies allow mate on the next move; for example, Be1 b7#.",
+            "relevance": "primary",
+            "value": 10000
+          }
+        ],
+        "lineUci": [
+          "b5a6",
+          "g3e1",
+          "b6b7"
+        ],
+        "lineSan": [],
+        "arrows": [
+          {
+            "from": "b5",
+            "to": "a6",
+            "ply": 1,
+            "role": "trigger"
+          },
+          {
+            "from": "g3",
+            "to": "e1",
+            "ply": 2,
+            "role": "reply"
+          },
+          {
+            "from": "b6",
+            "to": "b7",
+            "ply": 3,
+            "role": "trigger"
+          }
+        ],
+        "labels": [
+          {
+            "id": "mateThreat",
+            "text": "Mate Threat",
+            "color": "#d35400",
+            "square": "a6"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "mateThreat",
+                "label": "Mate Threat",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "b5a6",
+                "evidence": "Ka6 threatens b7#. All 8 legal Black replies allow mate on the next move; for example, Be1 b7#.",
+                "relevance": "primary",
+                "value": 10000
+              },
+              {
+                "id": "mateIn1",
+                "label": "Checkmate",
+                "confidence": "high",
+                "evidence": "b7# is checkmate: the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 3,
+                "moveUci": "b6b7",
+                "relevance": "secondary",
+                "value": 10000
+              }
+            ],
+            "timeline": [
+              {
+                "id": "mateThreat",
+                "label": "Mate Threat",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "b5a6",
+                "evidence": "Ka6 threatens b7#. All 8 legal Black replies allow mate on the next move; for example, Be1 b7#.",
+                "relevance": "primary",
+                "value": 10000,
+                "actor": "white"
+              },
+              {
+                "id": "mateIn1",
+                "label": "Checkmate",
+                "confidence": "high",
+                "evidence": "b7# is checkmate: the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 3,
+                "moveUci": "b6b7",
+                "relevance": "secondary",
+                "value": 10000,
+                "actor": "white"
+              }
+            ],
+            "lineUci": [
+              "b5a6",
+              "g3e1",
+              "b6b7"
+            ],
+            "lineSan": [],
+            "arrows": [
+              {
+                "from": "b5",
+                "to": "a6",
+                "ply": 1,
+                "role": "trigger"
+              },
+              {
+                "from": "g3",
+                "to": "e1",
+                "ply": 2,
+                "role": "reply"
+              },
+              {
+                "from": "b6",
+                "to": "b7",
+                "ply": 3,
+                "role": "trigger"
+              }
+            ],
+            "labels": [
+              {
+                "id": "mateThreat",
+                "text": "Mate Threat",
+                "color": "#d35400",
+                "square": "a6"
+              },
+              {
+                "id": "mateIn1",
+                "text": "Later: Checkmate",
+                "color": "#c0392b",
+                "square": "b7"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:0iAUN:short",
+      "input": {
+        "fen": "8/B4k2/6r1/5K1n/P3Pn1P/5P2/8/R7 b - - 0 32",
+        "pvUci": [
+          "f4d3"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4d3",
+            "evidence": "Nd3 threatens Ng3#. All 19 legal White replies allow mate on the next move; for example, Rb1 Ng3#.",
+            "relevance": "primary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4d3",
+            "evidence": "Nd3 threatens Ng3#. All 19 legal White replies allow mate on the next move; for example, Rb1 Ng3#.",
+            "relevance": "primary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "8/B4k2/6r1/5K1n/P3Pn1P/5P2/8/R7 b - - 0 32",
+        "side": "black",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4d3",
+            "evidence": "Nd3 threatens Ng3#. All 19 legal White replies allow mate on the next move; for example, Rb1 Ng3#.",
+            "relevance": "primary",
+            "value": 10000
+          }
+        ],
+        "lineUci": [
+          "f4d3"
+        ],
+        "lineSan": [],
+        "arrows": [
+          {
+            "from": "f4",
+            "to": "d3",
+            "ply": 1,
+            "role": "trigger"
+          }
+        ],
+        "labels": [
+          {
+            "id": "mateThreat",
+            "text": "Mate Threat",
+            "color": "#d35400",
+            "square": "d3"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "mateThreat",
+                "label": "Mate Threat",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f4d3",
+                "evidence": "Nd3 threatens Ng3#. All 19 legal White replies allow mate on the next move; for example, Rb1 Ng3#.",
+                "relevance": "primary",
+                "value": 10000
+              }
+            ],
+            "timeline": [
+              {
+                "id": "mateThreat",
+                "label": "Mate Threat",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f4d3",
+                "evidence": "Nd3 threatens Ng3#. All 19 legal White replies allow mate on the next move; for example, Rb1 Ng3#.",
+                "relevance": "primary",
+                "value": 10000,
+                "actor": "black"
+              }
+            ],
+            "lineUci": [
+              "f4d3"
+            ],
+            "lineSan": [],
+            "arrows": [
+              {
+                "from": "f4",
+                "to": "d3",
+                "ply": 1,
+                "role": "trigger"
+              }
+            ],
+            "labels": [
+              {
+                "id": "mateThreat",
+                "text": "Mate Threat",
+                "color": "#d35400",
+                "square": "d3"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:0iAUN:full",
+      "input": {
+        "fen": "8/B4k2/6r1/5K1n/P3Pn1P/5P2/8/R7 b - - 0 32",
+        "pvUci": [
+          "f4d3",
+          "f3f4",
+          "h5g3"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4d3",
+            "evidence": "Nd3 threatens Ng3#. All 19 legal White replies allow mate on the next move; for example, Rb1 Ng3#.",
+            "relevance": "primary",
+            "value": 10000
+          },
+          {
+            "id": "cornerMate",
+            "label": "Corner Mate",
+            "confidence": "medium",
+            "evidence": "Ng3# is checkmate (Corner Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h5g3",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4d3",
+            "evidence": "Nd3 threatens Ng3#. All 19 legal White replies allow mate on the next move; for example, Rb1 Ng3#.",
+            "relevance": "primary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "cornerMate",
+            "label": "Corner Mate",
+            "confidence": "medium",
+            "evidence": "Ng3# is checkmate (Corner Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "h5g3",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "8/B4k2/6r1/5K1n/P3Pn1P/5P2/8/R7 b - - 0 32",
+        "side": "black",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4d3",
+            "evidence": "Nd3 threatens Ng3#. All 19 legal White replies allow mate on the next move; for example, Rb1 Ng3#.",
+            "relevance": "primary",
+            "value": 10000
+          }
+        ],
+        "lineUci": [
+          "f4d3",
+          "f3f4",
+          "h5g3"
+        ],
+        "lineSan": [],
+        "arrows": [
+          {
+            "from": "f4",
+            "to": "d3",
+            "ply": 1,
+            "role": "trigger"
+          },
+          {
+            "from": "f3",
+            "to": "f4",
+            "ply": 2,
+            "role": "reply"
+          },
+          {
+            "from": "h5",
+            "to": "g3",
+            "ply": 3,
+            "role": "trigger"
+          }
+        ],
+        "labels": [
+          {
+            "id": "mateThreat",
+            "text": "Mate Threat",
+            "color": "#d35400",
+            "square": "d3"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "mateThreat",
+                "label": "Mate Threat",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f4d3",
+                "evidence": "Nd3 threatens Ng3#. All 19 legal White replies allow mate on the next move; for example, Rb1 Ng3#.",
+                "relevance": "primary",
+                "value": 10000
+              },
+              {
+                "id": "cornerMate",
+                "label": "Corner Mate",
+                "confidence": "medium",
+                "evidence": "Ng3# is checkmate (Corner Mate): the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 3,
+                "moveUci": "h5g3",
+                "relevance": "secondary",
+                "value": 10000
+              }
+            ],
+            "timeline": [
+              {
+                "id": "mateThreat",
+                "label": "Mate Threat",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f4d3",
+                "evidence": "Nd3 threatens Ng3#. All 19 legal White replies allow mate on the next move; for example, Rb1 Ng3#.",
+                "relevance": "primary",
+                "value": 10000,
+                "actor": "black"
+              },
+              {
+                "id": "cornerMate",
+                "label": "Corner Mate",
+                "confidence": "medium",
+                "evidence": "Ng3# is checkmate (Corner Mate): the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 3,
+                "moveUci": "h5g3",
+                "relevance": "secondary",
+                "value": 10000,
+                "actor": "black"
+              }
+            ],
+            "lineUci": [
+              "f4d3",
+              "f3f4",
+              "h5g3"
+            ],
+            "lineSan": [],
+            "arrows": [
+              {
+                "from": "f4",
+                "to": "d3",
+                "ply": 1,
+                "role": "trigger"
+              },
+              {
+                "from": "f3",
+                "to": "f4",
+                "ply": 2,
+                "role": "reply"
+              },
+              {
+                "from": "h5",
+                "to": "g3",
+                "ply": 3,
+                "role": "trigger"
+              }
+            ],
+            "labels": [
+              {
+                "id": "mateThreat",
+                "text": "Mate Threat",
+                "color": "#d35400",
+                "square": "d3"
+              },
+              {
+                "id": "cornerMate",
+                "text": "Later: Corner Mate",
+                "color": "#8e44ad",
+                "square": "g3"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:0IJ6I:short",
+      "input": {
+        "fen": "r7/Pk6/1r6/RP6/3P1P2/7K/7P/1R6 b - - 0 47",
+        "pvUci": [
+          "b6g6"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "r7/Pk6/1r6/RP6/3P1P2/7K/7P/1R6 b - - 0 47",
+        "side": "black",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [],
+        "lineUci": [
+          "b6g6"
+        ],
+        "lineSan": [],
+        "arrows": [],
+        "labels": [],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [],
+            "timeline": [],
+            "lineUci": [
+              "b6g6"
+            ],
+            "lineSan": [],
+            "arrows": [],
+            "labels": []
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:0IJ6I:full",
+      "input": {
+        "fen": "r7/Pk6/1r6/RP6/3P1P2/7K/7P/1R6 b - - 0 47",
+        "pvUci": [
+          "b6g6",
+          "b5b6",
+          "a8h8",
+          "a5h5",
+          "h8h5"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6g6",
+            "evidence": "Rg6 is a quiet mating preparation. All 19 legal White replies allow forced mate within two more moves; for example, b6 Rh8+ Rh5 Rxh5#.",
+            "relevance": "primary",
+            "value": 10000
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxh5# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h8h5",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6g6",
+            "evidence": "Rg6 is a quiet mating preparation. All 19 legal White replies allow forced mate within two more moves; for example, b6 Rh8+ Rh5 Rxh5#.",
+            "relevance": "primary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxh5# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h8h5",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "r7/Pk6/1r6/RP6/3P1P2/7K/7P/1R6 b - - 0 47",
+        "side": "black",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6g6",
+            "evidence": "Rg6 is a quiet mating preparation. All 19 legal White replies allow forced mate within two more moves; for example, b6 Rh8+ Rh5 Rxh5#.",
+            "relevance": "primary",
+            "value": 10000
+          }
+        ],
+        "lineUci": [
+          "b6g6",
+          "b5b6",
+          "a8h8",
+          "a5h5",
+          "h8h5"
+        ],
+        "lineSan": [],
+        "arrows": [
+          {
+            "from": "b6",
+            "to": "g6",
+            "ply": 1,
+            "role": "trigger"
+          },
+          {
+            "from": "b5",
+            "to": "b6",
+            "ply": 2,
+            "role": "reply"
+          },
+          {
+            "from": "a8",
+            "to": "h8",
+            "ply": 3,
+            "role": "attacker"
+          },
+          {
+            "from": "a5",
+            "to": "h5",
+            "ply": 4,
+            "role": "reply"
+          },
+          {
+            "from": "h8",
+            "to": "h5",
+            "ply": 5,
+            "role": "trigger"
+          }
+        ],
+        "labels": [
+          {
+            "id": "mateIn3",
+            "text": "Mating Preparation",
+            "color": "#c0392b",
+            "square": "g6"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "mateIn3",
+                "label": "Mating Preparation",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "b6g6",
+                "evidence": "Rg6 is a quiet mating preparation. All 19 legal White replies allow forced mate within two more moves; for example, b6 Rh8+ Rh5 Rxh5#.",
+                "relevance": "primary",
+                "value": 10000
+              },
+              {
+                "id": "mateIn1",
+                "label": "Checkmate",
+                "confidence": "high",
+                "evidence": "Rxh5# is checkmate: the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 5,
+                "moveUci": "h8h5",
+                "relevance": "secondary",
+                "value": 10000
+              }
+            ],
+            "timeline": [
+              {
+                "id": "mateIn3",
+                "label": "Mating Preparation",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "b6g6",
+                "evidence": "Rg6 is a quiet mating preparation. All 19 legal White replies allow forced mate within two more moves; for example, b6 Rh8+ Rh5 Rxh5#.",
+                "relevance": "primary",
+                "value": 10000,
+                "actor": "black"
+              },
+              {
+                "id": "mateIn1",
+                "label": "Checkmate",
+                "confidence": "high",
+                "evidence": "Rxh5# is checkmate: the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 5,
+                "moveUci": "h8h5",
+                "relevance": "secondary",
+                "value": 10000,
+                "actor": "black"
+              }
+            ],
+            "lineUci": [
+              "b6g6",
+              "b5b6",
+              "a8h8",
+              "a5h5",
+              "h8h5"
+            ],
+            "lineSan": [],
+            "arrows": [
+              {
+                "from": "b6",
+                "to": "g6",
+                "ply": 1,
+                "role": "trigger"
+              },
+              {
+                "from": "b5",
+                "to": "b6",
+                "ply": 2,
+                "role": "reply"
+              },
+              {
+                "from": "a8",
+                "to": "h8",
+                "ply": 3,
+                "role": "attacker"
+              },
+              {
+                "from": "a5",
+                "to": "h5",
+                "ply": 4,
+                "role": "reply"
+              },
+              {
+                "from": "h8",
+                "to": "h5",
+                "ply": 5,
+                "role": "trigger"
+              }
+            ],
+            "labels": [
+              {
+                "id": "mateIn3",
+                "text": "Mating Preparation",
+                "color": "#c0392b",
+                "square": "g6"
+              },
+              {
+                "id": "mateIn1",
+                "text": "Later: Checkmate",
+                "color": "#c0392b",
+                "square": "h5"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:09Cf3:short",
+      "input": {
+        "fen": "1R6/1P6/6p1/8/6kP/8/1r4P1/7K b - - 2 56",
+        "pvUci": [
+          "g4g3"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "1R6/1P6/6p1/8/6kP/8/1r4P1/7K b - - 2 56",
+        "side": "black",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [],
+        "lineUci": [
+          "g4g3"
+        ],
+        "lineSan": [],
+        "arrows": [],
+        "labels": [],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [],
+            "timeline": [],
+            "lineUci": [
+              "g4g3"
+            ],
+            "lineSan": [],
+            "arrows": [],
+            "labels": []
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:09Cf3:full",
+      "input": {
+        "fen": "1R6/1P6/6p1/8/6kP/8/1r4P1/7K b - - 2 56",
+        "pvUci": [
+          "g4g3",
+          "b8c8",
+          "b2b1",
+          "c8c1",
+          "b1c1"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g4g3",
+            "evidence": "Kg3 is a quiet mating preparation. All 9 legal White replies allow forced mate within two more moves; for example, Rc8 Rb1+ Rc1 Rxc1#.",
+            "relevance": "primary",
+            "value": 10000
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxc1# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "b1c1",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g4g3",
+            "evidence": "Kg3 is a quiet mating preparation. All 9 legal White replies allow forced mate within two more moves; for example, Rc8 Rb1+ Rc1 Rxc1#.",
+            "relevance": "primary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxc1# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "b1c1",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "1R6/1P6/6p1/8/6kP/8/1r4P1/7K b - - 2 56",
+        "side": "black",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g4g3",
+            "evidence": "Kg3 is a quiet mating preparation. All 9 legal White replies allow forced mate within two more moves; for example, Rc8 Rb1+ Rc1 Rxc1#.",
+            "relevance": "primary",
+            "value": 10000
+          }
+        ],
+        "lineUci": [
+          "g4g3",
+          "b8c8",
+          "b2b1",
+          "c8c1",
+          "b1c1"
+        ],
+        "lineSan": [],
+        "arrows": [
+          {
+            "from": "g4",
+            "to": "g3",
+            "ply": 1,
+            "role": "trigger"
+          },
+          {
+            "from": "b8",
+            "to": "c8",
+            "ply": 2,
+            "role": "reply"
+          },
+          {
+            "from": "b2",
+            "to": "b1",
+            "ply": 3,
+            "role": "attacker"
+          },
+          {
+            "from": "c8",
+            "to": "c1",
+            "ply": 4,
+            "role": "reply"
+          },
+          {
+            "from": "b1",
+            "to": "c1",
+            "ply": 5,
+            "role": "trigger"
+          }
+        ],
+        "labels": [
+          {
+            "id": "mateIn3",
+            "text": "Mating Preparation",
+            "color": "#c0392b",
+            "square": "g3"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "mateIn3",
+                "label": "Mating Preparation",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "g4g3",
+                "evidence": "Kg3 is a quiet mating preparation. All 9 legal White replies allow forced mate within two more moves; for example, Rc8 Rb1+ Rc1 Rxc1#.",
+                "relevance": "primary",
+                "value": 10000
+              },
+              {
+                "id": "mateIn1",
+                "label": "Checkmate",
+                "confidence": "high",
+                "evidence": "Rxc1# is checkmate: the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 5,
+                "moveUci": "b1c1",
+                "relevance": "secondary",
+                "value": 10000
+              }
+            ],
+            "timeline": [
+              {
+                "id": "mateIn3",
+                "label": "Mating Preparation",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "g4g3",
+                "evidence": "Kg3 is a quiet mating preparation. All 9 legal White replies allow forced mate within two more moves; for example, Rc8 Rb1+ Rc1 Rxc1#.",
+                "relevance": "primary",
+                "value": 10000,
+                "actor": "black"
+              },
+              {
+                "id": "mateIn1",
+                "label": "Checkmate",
+                "confidence": "high",
+                "evidence": "Rxc1# is checkmate: the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 5,
+                "moveUci": "b1c1",
+                "relevance": "secondary",
+                "value": 10000,
+                "actor": "black"
+              }
+            ],
+            "lineUci": [
+              "g4g3",
+              "b8c8",
+              "b2b1",
+              "c8c1",
+              "b1c1"
+            ],
+            "lineSan": [],
+            "arrows": [
+              {
+                "from": "g4",
+                "to": "g3",
+                "ply": 1,
+                "role": "trigger"
+              },
+              {
+                "from": "b8",
+                "to": "c8",
+                "ply": 2,
+                "role": "reply"
+              },
+              {
+                "from": "b2",
+                "to": "b1",
+                "ply": 3,
+                "role": "attacker"
+              },
+              {
+                "from": "c8",
+                "to": "c1",
+                "ply": 4,
+                "role": "reply"
+              },
+              {
+                "from": "b1",
+                "to": "c1",
+                "ply": 5,
+                "role": "trigger"
+              }
+            ],
+            "labels": [
+              {
+                "id": "mateIn3",
+                "text": "Mating Preparation",
+                "color": "#c0392b",
+                "square": "g3"
+              },
+              {
+                "id": "mateIn1",
+                "text": "Later: Checkmate",
+                "color": "#c0392b",
+                "square": "c1"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:0hHGN:short",
+      "input": {
+        "fen": "3rrk2/1ppqnpbQ/p3p1p1/3p1P2/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 23",
+        "pvUci": [
+          "f5f6"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f5f6",
+            "evidence": "f6 forks the knight on e7 and bishop on g7. Capturing the forking piece does not escape: Bxf6 permits a forced mate (Bh6+ Bg7 Bxg7#). Other defences concede a verified local material gain on the fork targets or mate; legal recaptures and immediate off-square losses are included. The mating continuation is conditional, not a forced mate from this position.",
+            "value": 220,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f5f6",
+            "evidence": "f6 forks the knight on e7 and bishop on g7. Capturing the forking piece does not escape: Bxf6 permits a forced mate (Bh6+ Bg7 Bxg7#). Other defences concede a verified local material gain on the fork targets or mate; legal recaptures and immediate off-square losses are included. The mating continuation is conditional, not a forced mate from this position.",
+            "value": 220,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "3rrk2/1ppqnpbQ/p3p1p1/3p1P2/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 23",
+        "side": "white",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f5f6",
+            "evidence": "f6 forks the knight on e7 and bishop on g7. Capturing the forking piece does not escape: Bxf6 permits a forced mate (Bh6+ Bg7 Bxg7#). Other defences concede a verified local material gain on the fork targets or mate; legal recaptures and immediate off-square losses are included. The mating continuation is conditional, not a forced mate from this position.",
+            "value": 220,
+            "relevance": "primary"
+          }
+        ],
+        "lineUci": [
+          "f5f6"
+        ],
+        "lineSan": [],
+        "arrows": [
+          {
+            "from": "f5",
+            "to": "f6",
+            "ply": 1,
+            "role": "trigger"
+          },
+          {
+            "from": "f6",
+            "to": "e7",
+            "ply": 1,
+            "role": "attacker"
+          },
+          {
+            "from": "f6",
+            "to": "g7",
+            "ply": 1,
+            "role": "attacker"
+          }
+        ],
+        "labels": [
+          {
+            "id": "fork",
+            "text": "Fork",
+            "color": "#e74c3c",
+            "square": "f6"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "fork",
+                "label": "Fork",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f5f6",
+                "evidence": "f6 forks the knight on e7 and bishop on g7. Capturing the forking piece does not escape: Bxf6 permits a forced mate (Bh6+ Bg7 Bxg7#). Other defences concede a verified local material gain on the fork targets or mate; legal recaptures and immediate off-square losses are included. The mating continuation is conditional, not a forced mate from this position.",
+                "value": 220,
+                "relevance": "primary"
+              }
+            ],
+            "timeline": [
+              {
+                "id": "fork",
+                "label": "Fork",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f5f6",
+                "evidence": "f6 forks the knight on e7 and bishop on g7. Capturing the forking piece does not escape: Bxf6 permits a forced mate (Bh6+ Bg7 Bxg7#). Other defences concede a verified local material gain on the fork targets or mate; legal recaptures and immediate off-square losses are included. The mating continuation is conditional, not a forced mate from this position.",
+                "value": 220,
+                "relevance": "primary",
+                "actor": "white"
+              }
+            ],
+            "lineUci": [
+              "f5f6"
+            ],
+            "lineSan": [],
+            "arrows": [
+              {
+                "from": "f5",
+                "to": "f6",
+                "ply": 1,
+                "role": "trigger"
+              },
+              {
+                "from": "f6",
+                "to": "e7",
+                "ply": 1,
+                "role": "attacker"
+              },
+              {
+                "from": "f6",
+                "to": "g7",
+                "ply": 1,
+                "role": "attacker"
+              }
+            ],
+            "labels": [
+              {
+                "id": "fork",
+                "text": "Fork",
+                "color": "#e74c3c",
+                "square": "f6"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:0hHGN:full",
+      "input": {
+        "fen": "3rrk2/1ppqnpbQ/p3p1p1/3p1P2/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 23",
+        "pvUci": [
+          "f5f6",
+          "g7f6",
+          "c1h6",
+          "f6g7",
+          "h7g7"
+        ]
+      },
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f5f6",
+            "evidence": "f6 is a quiet mating preparation. All 23 legal Black replies allow forced mate within two more moves; for example, Nf5 Bh6 dxe4 Qh8#.",
+            "relevance": "primary",
+            "value": 10000
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qxg7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h7g7",
+            "relevance": "secondary",
+            "value": 10000
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f5f6",
+            "evidence": "f6 forks the knight on e7 and bishop on g7. Capturing the forking piece does not escape: Bxf6 permits a forced mate (Bh6+ Bg7 Bxg7#). Other defences concede a verified local material gain on the fork targets or mate; legal recaptures and immediate off-square losses are included. The mating continuation is conditional, not a forced mate from this position.",
+            "value": 220,
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f5f6",
+            "evidence": "f6 is a quiet mating preparation. All 23 legal Black replies allow forced mate within two more moves; for example, Nf5 Bh6 dxe4 Qh8#.",
+            "relevance": "primary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "fork",
+            "label": "Fork",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f5f6",
+            "evidence": "f6 forks the knight on e7 and bishop on g7. Capturing the forking piece does not escape: Bxf6 permits a forced mate (Bh6+ Bg7 Bxg7#). Other defences concede a verified local material gain on the fork targets or mate; legal recaptures and immediate off-square losses are included. The mating continuation is conditional, not a forced mate from this position.",
+            "value": 220,
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qxg7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h7g7",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "3rrk2/1ppqnpbQ/p3p1p1/3p1P2/3PP3/2PB3p/PP5P/R1B3K1 w - - 1 23",
+        "side": "white",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f5f6",
+            "evidence": "f6 is a quiet mating preparation. All 23 legal Black replies allow forced mate within two more moves; for example, Nf5 Bh6 dxe4 Qh8#.",
+            "relevance": "primary",
+            "value": 10000
+          }
+        ],
+        "lineUci": [
+          "f5f6",
+          "g7f6",
+          "c1h6",
+          "f6g7",
+          "h7g7"
+        ],
+        "lineSan": [],
+        "arrows": [
+          {
+            "from": "f5",
+            "to": "f6",
+            "ply": 1,
+            "role": "trigger"
+          },
+          {
+            "from": "g7",
+            "to": "f6",
+            "ply": 2,
+            "role": "reply"
+          },
+          {
+            "from": "c1",
+            "to": "h6",
+            "ply": 3,
+            "role": "attacker"
+          },
+          {
+            "from": "f6",
+            "to": "g7",
+            "ply": 4,
+            "role": "reply"
+          },
+          {
+            "from": "h7",
+            "to": "g7",
+            "ply": 5,
+            "role": "trigger"
+          }
+        ],
+        "labels": [
+          {
+            "id": "mateIn3",
+            "text": "Mating Preparation",
+            "color": "#c0392b",
+            "square": "f6"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "mateIn3",
+                "label": "Mating Preparation",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f5f6",
+                "evidence": "f6 is a quiet mating preparation. All 23 legal Black replies allow forced mate within two more moves; for example, Nf5 Bh6 dxe4 Qh8#.",
+                "relevance": "primary",
+                "value": 10000
+              },
+              {
+                "id": "fork",
+                "label": "Fork",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f5f6",
+                "evidence": "f6 forks the knight on e7 and bishop on g7. Capturing the forking piece does not escape: Bxf6 permits a forced mate (Bh6+ Bg7 Bxg7#). Other defences concede a verified local material gain on the fork targets or mate; legal recaptures and immediate off-square losses are included. The mating continuation is conditional, not a forced mate from this position.",
+                "value": 220,
+                "relevance": "secondary"
+              },
+              {
+                "id": "mateIn1",
+                "label": "Checkmate",
+                "confidence": "high",
+                "evidence": "Qxg7# is checkmate: the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 5,
+                "moveUci": "h7g7",
+                "relevance": "secondary",
+                "value": 10000
+              }
+            ],
+            "timeline": [
+              {
+                "id": "mateIn3",
+                "label": "Mating Preparation",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f5f6",
+                "evidence": "f6 is a quiet mating preparation. All 23 legal Black replies allow forced mate within two more moves; for example, Nf5 Bh6 dxe4 Qh8#.",
+                "relevance": "primary",
+                "value": 10000,
+                "actor": "white"
+              },
+              {
+                "id": "fork",
+                "label": "Fork",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f5f6",
+                "evidence": "f6 forks the knight on e7 and bishop on g7. Capturing the forking piece does not escape: Bxf6 permits a forced mate (Bh6+ Bg7 Bxg7#). Other defences concede a verified local material gain on the fork targets or mate; legal recaptures and immediate off-square losses are included. The mating continuation is conditional, not a forced mate from this position.",
+                "value": 220,
+                "relevance": "secondary",
+                "actor": "white"
+              },
+              {
+                "id": "mateIn1",
+                "label": "Checkmate",
+                "confidence": "high",
+                "evidence": "Qxg7# is checkmate: the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 5,
+                "moveUci": "h7g7",
+                "relevance": "secondary",
+                "value": 10000,
+                "actor": "white"
+              }
+            ],
+            "lineUci": [
+              "f5f6",
+              "g7f6",
+              "c1h6",
+              "f6g7",
+              "h7g7"
+            ],
+            "lineSan": [],
+            "arrows": [
+              {
+                "from": "f5",
+                "to": "f6",
+                "ply": 1,
+                "role": "trigger"
+              },
+              {
+                "from": "g7",
+                "to": "f6",
+                "ply": 2,
+                "role": "reply"
+              },
+              {
+                "from": "c1",
+                "to": "h6",
+                "ply": 3,
+                "role": "attacker"
+              },
+              {
+                "from": "f6",
+                "to": "g7",
+                "ply": 4,
+                "role": "reply"
+              },
+              {
+                "from": "h7",
+                "to": "g7",
+                "ply": 5,
+                "role": "trigger"
+              }
+            ],
+            "labels": [
+              {
+                "id": "mateIn3",
+                "text": "Mating Preparation",
+                "color": "#c0392b",
+                "square": "f6"
+              },
+              {
+                "id": "fork",
+                "text": "Fork",
+                "color": "#e74c3c",
+                "square": "f6"
+              },
+              {
+                "id": "mateIn1",
+                "text": "Later: Checkmate",
+                "color": "#c0392b",
+                "square": "g7"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:0z5nl:short",
+      "input": {
+        "fen": "6Q1/4qp2/7p/3pPp1k/1p1P4/5PP1/6K1/8 w - - 0 42",
+        "pvUci": [
+          "g2h3"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "6Q1/4qp2/7p/3pPp1k/1p1P4/5PP1/6K1/8 w - - 0 42",
+        "side": "white",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [],
+        "lineUci": [
+          "g2h3"
+        ],
+        "lineSan": [],
+        "arrows": [],
+        "labels": [],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [],
+            "timeline": [],
+            "lineUci": [
+              "g2h3"
+            ],
+            "lineSan": [],
+            "arrows": [],
+            "labels": []
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:0z5nl:full",
+      "input": {
+        "fen": "6Q1/4qp2/7p/3pPp1k/1p1P4/5PP1/6K1/8 w - - 0 42",
+        "pvUci": [
+          "g2h3",
+          "e7e6",
+          "g3g4",
+          "f5g4",
+          "f3g4",
+          "e6g4",
+          "g8g4"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "6Q1/4qp2/7p/3pPp1k/1p1P4/5PP1/6K1/8 w - - 0 42",
+        "side": "white",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [],
+        "lineUci": [
+          "g2h3",
+          "e7e6",
+          "g3g4",
+          "f5g4",
+          "f3g4",
+          "e6g4",
+          "g8g4"
+        ],
+        "lineSan": [],
+        "arrows": [],
+        "labels": [],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [],
+            "timeline": [],
+            "lineUci": [
+              "g2h3",
+              "e7e6",
+              "g3g4",
+              "f5g4",
+              "f3g4",
+              "e6g4",
+              "g8g4"
+            ],
+            "lineSan": [],
+            "arrows": [],
+            "labels": []
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:0rcU4:short",
+      "input": {
+        "fen": "5rk1/Q1RR1pp1/4pq1p/4N3/5P2/4P3/Pr4PP/6K1 b - - 1 23",
+        "pvUci": [
+          "f6h4"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "5rk1/Q1RR1pp1/4pq1p/4N3/5P2/4P3/Pr4PP/6K1 b - - 1 23",
+        "side": "black",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [],
+        "lineUci": [
+          "f6h4"
+        ],
+        "lineSan": [],
+        "arrows": [],
+        "labels": [],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [],
+            "timeline": [],
+            "lineUci": [
+              "f6h4"
+            ],
+            "lineSan": [],
+            "arrows": [],
+            "labels": []
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:0rcU4:full",
+      "input": {
+        "fen": "5rk1/Q1RR1pp1/4pq1p/4N3/5P2/4P3/Pr4PP/6K1 b - - 1 23",
+        "pvUci": [
+          "f6h4",
+          "e5d3",
+          "b2b1",
+          "c7c1",
+          "b1c1",
+          "d3c1",
+          "h4e1"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "5rk1/Q1RR1pp1/4pq1p/4N3/5P2/4P3/Pr4PP/6K1 b - - 1 23",
+        "side": "black",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [],
+        "lineUci": [
+          "f6h4",
+          "e5d3",
+          "b2b1",
+          "c7c1",
+          "b1c1",
+          "d3c1",
+          "h4e1"
+        ],
+        "lineSan": [],
+        "arrows": [],
+        "labels": [],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [],
+            "timeline": [],
+            "lineUci": [
+              "f6h4",
+              "e5d3",
+              "b2b1",
+              "c7c1",
+              "b1c1",
+              "d3c1",
+              "h4e1"
+            ],
+            "lineSan": [],
+            "arrows": [],
+            "labels": []
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:0QPvf:short",
+      "input": {
+        "fen": "2Q3qk/p5pp/2p5/8/8/7P/5rP1/1R5K w - - 3 33",
+        "pvUci": [
+          "b1b8"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "2Q3qk/p5pp/2p5/8/8/7P/5rP1/1R5K w - - 3 33",
+        "side": "white",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [],
+        "lineUci": [
+          "b1b8"
+        ],
+        "lineSan": [],
+        "arrows": [],
+        "labels": [],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [],
+            "timeline": [],
+            "lineUci": [
+              "b1b8"
+            ],
+            "lineSan": [],
+            "arrows": [],
+            "labels": []
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    },
+    {
+      "id": "lichess:0QPvf:full",
+      "input": {
+        "fen": "2Q3qk/p5pp/2p5/8/8/7P/5rP1/1R5K w - - 3 33",
+        "pvUci": [
+          "b1b8",
+          "f2f1",
+          "h1h2",
+          "g8c8",
+          "b8c8",
+          "f1f8",
+          "c8f8"
+        ]
+      },
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-103"
+      },
+      "scan": {
+        "fen": "2Q3qk/p5pp/2p5/8/8/7P/5rP1/1R5K w - - 3 33",
+        "side": "white",
+        "engineName": "Retained baseline",
+        "depth": 16,
+        "motifs": [],
+        "lineUci": [
+          "b1b8",
+          "f2f1",
+          "h1h2",
+          "g8c8",
+          "b8c8",
+          "f1f8",
+          "c8f8"
+        ],
+        "lineSan": [],
+        "arrows": [],
+        "labels": [],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [],
+            "timeline": [],
+            "lineUci": [
+              "b1b8",
+              "f2f1",
+              "h1h2",
+              "g8c8",
+              "b8c8",
+              "f1f8",
+              "c8f8"
+            ],
+            "lineSan": [],
+            "arrows": [],
+            "labels": []
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-103"
+      }
+    }
+  ]
+}

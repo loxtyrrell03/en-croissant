@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { Worker } from "node:worker_threads";
 import test from "node:test";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
@@ -91,7 +91,12 @@ test(
     const { castlingAliasCases } = await import("../../src/utils/tests/fixtures/castlingRelevance.ts");
     const { matingInterferenceCases, reflectMatingInterference } = await import("../../src/utils/tests/fixtures/matingInterference.ts");
     const cases = [
-      ...matingInterferenceCases.filter(row => row.id !== "already-blocked-defence").flatMap(row => [row, { ...reflectMatingInterference(row), id: `${row.id}:black` }]).map(row => ({ name: `mating interference: ${row.id}`, fen: row.fen, pvUci: [row.move], expectedPrimary: row.expected ? [row.expected] : [] })),
+      ...matingInterferenceCases.filter(row => row.id !== "already-blocked-defence").flatMap(row => [row, { ...reflectMatingInterference(row), id: `${row.id}:black` }]).map(row => ({ name: `mating interference: ${row.id}`, fen: row.fen, pvUci: [row.move], expectedPrimary: row.expected || row.id.startsWith("extra-diagonal-defender") ? ["mateIn3"] : [], expectedTimeline: row.expected ? { id: "interference", ply: 1, actor: row.id.endsWith(":black") ? "black" : "white" } : undefined })),
+      ...JSON.parse(readFileSync("benchmarks/tactical-relevance/quiet-mate-development.json", "utf8")).cases.flatMap(row => [1, row.bestLine.length].map(length => ({
+        name: `quiet mate: ${row.id}:${length}`, fen: row.startFen, pvUci: row.bestLine.slice(0, length),
+        expectedPrimary: row.stratum === "mateIn2" ? ["mateThreat"] : row.stratum === "mateIn3" ? ["mateIn3"] : [],
+        expectedArrows: row.stratum !== "mateIn4" ? [[row.bestLine[0].slice(0, 2), row.bestLine[0].slice(2, 4)]] : [],
+      }))),
       ...castlingAliasCases.map(row => ({ name: `castling: ${row.id}`, fen: row.fen, pvUci: row.pvUci, expectedPrimary: row.mate ? ["mateIn1"] : row.id.includes("check-not-mate") ? [] : undefined, expectedArrows: row.mate ? [[row.pvUci[0].slice(0, 2), row.kingTo], [row.rookFrom, row.rookTo]] : undefined, expectedSquare: row.mate ? row.kingTo : undefined })),
       ...[...directMaterialPayoffCases, ...directMaterialPayoffCases.map(reflectPayoff)].map(row => ({ name: `direct payoff: ${row.id}`, fen: row.fen, pvUci: row.pvUci, expectedPrimary: [row.theme], expectedPayoff: row.label })),
       ...tablebaseCases.filter(row => ["EKWHC:g4f4", "EKWHC-reciprocal-draw"].includes(row.id)).map(row => ({ name: row.id, fen: row.fen, pvUci: [row.move], tablebaseEvidence: row.evidence, expectedPrimary: ["zugzwang"], expectedLabels: ["zugzwang"] })),

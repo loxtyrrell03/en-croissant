@@ -21,14 +21,17 @@ const require = createRequire(process.env.TACTICAL_QA_DEPENDENCIES || import.met
 const { chromium } = require("playwright");
 const castlingMode = process.argv.includes("--castling");
 const interferenceMode = process.argv.includes("--interference");
+const quietMateMode = process.argv.includes("--quiet-mate");
 const root = process.cwd(),
   output = resolve(
     root,
-    interferenceMode
-      ? "tmp/tactical-interference-adapter103"
-      : castlingMode
-        ? "tmp/tactical-castling-adapter102"
-        : "tmp/tactical-payoffs-adapter101",
+    quietMateMode
+      ? "tmp/tactical-quiet-mate-adapter104"
+      : interferenceMode
+        ? "tmp/tactical-interference-adapter104"
+        : castlingMode
+          ? "tmp/tactical-castling-adapter102"
+          : "tmp/tactical-payoffs-adapter101",
   );
 await mkdir(output, { recursive: true });
 const contexts = JSON.parse(
@@ -38,23 +41,40 @@ const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
 const cases = (
-  interferenceMode
-    ? matingInterferenceCases
-        .filter((row) => row.id !== "already-blocked-defence")
-        .flatMap((row) => [row, { ...reflectMatingInterference(row), id: `${row.id}:black` }])
-        .map((row) => ({ ...row, pvUci: [row.move] }))
-    : castlingMode
-      ? castlingAliasCases
-      : [
-          ...directMaterialPayoffCases,
-          ...quiet.map((row) => ({
-            id: row.id,
-            fen: row.fen,
-            pvUci: row.engineLines[0].pvUci,
-            previousFen: row.previousFen,
-            previousMoveUci: row.previousMoveUci,
-          })),
-        ]
+  quietMateMode
+    ? JSON.parse(
+        await readFile("benchmarks/tactical-relevance/quiet-mate-development.json", "utf8"),
+      ).cases.flatMap((row) =>
+        [1, row.bestLine.length].map((length) => ({
+          ...row,
+          id: `${row.id}:${length}`,
+          fen: row.startFen,
+          pvUci: row.bestLine.slice(0, length),
+          expectedQuietMate:
+            row.stratum === "mateIn2" ? "mateThreat" : row.stratum === "mateIn3" ? "mateIn3" : null,
+        })),
+      )
+    : interferenceMode
+      ? matingInterferenceCases
+          .filter((row) => row.id !== "already-blocked-defence")
+          .flatMap((row) => [row, { ...reflectMatingInterference(row), id: `${row.id}:black` }])
+          .map((row) => ({
+            ...row,
+            pvUci: [row.move],
+            expectedQuietMate: row.id.startsWith("extra-diagonal-defender") ? "mateIn3" : null,
+          }))
+      : castlingMode
+        ? castlingAliasCases
+        : [
+            ...directMaterialPayoffCases,
+            ...quiet.map((row) => ({
+              id: row.id,
+              fen: row.fen,
+              pvUci: row.engineLines[0].pvUci,
+              previousFen: row.previousFen,
+              previousMoveUci: row.previousMoveUci,
+            })),
+          ]
 ).map((row) => {
   const pos = Chess.fromSetup(parseFen(row.fen).unwrap()).unwrap();
   const pvSan = row.pvUci.map((uci) => {
@@ -130,7 +150,36 @@ try {
           index,
           scale,
         });
-        if (interferenceMode && row.expected) {
+        if (row.expectedQuietMate) {
+          const button = page.getByRole("button", { name: /^Show .* on board$/ });
+          await button.waitFor();
+          await button.focus();
+          await page.keyboard.press("Enter");
+          const preview = await page.evaluate(() => ({
+            main: window.fixture.last?.motifs[0]?.id,
+            arrows: window.fixture.last?.arrows.map((arrow) => [arrow.from, arrow.to]),
+            labels: window.fixture.last?.labels,
+          }));
+          assert.equal(preview.main, row.expectedQuietMate);
+          assert.deepEqual(preview.arrows, [[row.pvUci[0].slice(0, 2), row.pvUci[0].slice(2, 4)]]);
+          assert.equal(preview.labels.length, 1);
+          assert.equal(await page.locator("[data-tactical-candidate]").count(), 1);
+          await page.locator("summary").focus();
+          await page.keyboard.press("Enter");
+          const rootText = await page.locator('[data-tactical-ply="1"]').innerText();
+          assert(!rootText.toLowerCase().includes("fork"));
+          if (row.pvUci.length > 1)
+            assert(
+              (await page.locator(`[data-tactical-ply="${row.pvUci.length}"]`).innerText())
+                .toLowerCase()
+                .includes("mate"),
+            );
+          if (width === 360 && scale === 2)
+            await page.screenshot({
+              path: resolve(output, `${row.id.replaceAll(":", "-")}.png`),
+              fullPage: true,
+            });
+        } else if (interferenceMode && row.expected) {
           const button = page.getByRole("button", { name: /^Show .* on board$/ });
           await button.waitFor();
           await button.focus();
@@ -140,7 +189,7 @@ try {
             arrows: window.fixture.last?.arrows.map((arrow) => [arrow.from, arrow.to]),
             square: window.fixture.last?.labels[0]?.square,
           }));
-          assert.equal(preview.main, "interference");
+          assert.equal(preview.main, "mateIn3");
           assert.equal(preview.square, row.move.slice(2, 4));
           assert.deepEqual(
             preview.arrows,
@@ -159,7 +208,9 @@ try {
           assert.equal(await page.locator("[data-tactical-candidate]").count(), 1);
           await page.locator("summary").focus();
           await page.keyboard.press("Enter");
-          assert((await page.locator("main").innerText()).includes("Mating Interference"));
+          assert(
+            (await page.locator("main").innerText()).toLowerCase().includes("mating interference"),
+          );
           if (width === 360 && scale === 2) {
             await page.screenshot({
               path: resolve(output, `${row.id.replaceAll(":", "-")}.png`),

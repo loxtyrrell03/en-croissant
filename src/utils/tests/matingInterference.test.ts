@@ -55,8 +55,11 @@ test.each(examples.filter((row) => row.expected))("new mate mechanism: $id", (ro
     expect(proof).toMatchObject({ gain: 400 });
     expect(proof!.branches).toHaveLength(legalMoves(root.after).length);
     expect(matingThreatInterference(root, proof!)).toMatchObject({ role: "rook" });
-    expect(result.motifs).toHaveLength(1);
+    expect(result.motifs).toHaveLength(2);
     expect(result.motifs[0]).toMatchObject({
+        id: "mateIn3", label: "Mating Preparation", ply: 1, value: 10000,
+    });
+    expect(result.motifs[1]).toMatchObject({
         id: "interference",
         label: "Mating Interference",
         ply: 1,
@@ -123,10 +126,12 @@ test("the blocker cuts a legal rook interposition, not a future engine capture",
 test("root-only, accepting and declining lines retain one primary mechanism", () => {
     for (const pvUci of [["e6e7"], ["e6e7", "b7e7", "g5e7"], ["e6e7", "b7b4", "g5h5"]]) {
         const result = classifyPositionTacticalMotifs({ fen: rookMatingInterferenceFen, pvUci });
-        expect(result.motifs[0]).toMatchObject({ id: "interference", ply: 1, value: 400 });
-        expect(result.motifs.filter((m) => m.ply === 1)).toHaveLength(1);
-        expect(result.motifs[0].evidence).toContain("not a forced-mate claim");
-        expect(tacticalBoardEvidence(rookMatingInterferenceFen, pvUci, result.motifs[0])).toEqual({
+        expect(result.motifs[0]).toMatchObject({ id: "mateIn3", ply: 1, value: 10000 });
+        expect(result.motifs.filter((m) => m.ply === 1)).toHaveLength(2);
+        const interference = result.motifs.find(m => m.id === "interference")!;
+        expect(interference).toMatchObject({ value: 400, relevance: "secondary" });
+        expect(interference.evidence).toContain("not a forced-mate claim");
+        expect(tacticalBoardEvidence(rookMatingInterferenceFen, pvUci, interference)).toEqual({
             square: "e7",
             arrows: [
                 { from: "b7", to: "h7" },
@@ -141,6 +146,8 @@ test("root-only, accepting and declining lines retain one primary mechanism", ()
         engineName: "Fixture",
     });
     expect(scan.labels).toHaveLength(1);
+    expect(scan.motifs[0].id).toBe("mateIn3");
+    expect(scan.variations[0].timeline).toContainEqual(expect.objectContaining({ id: "interference", ply: 1, value: 400 }));
     expect(scan.arrows).toEqual([
         { from: "e6", to: "e7", ply: 1, role: "trigger" },
         { from: "b7", to: "h7", ply: 1, role: "attacker" },
@@ -148,7 +155,7 @@ test("root-only, accepting and declining lines retain one primary mechanism", ()
     ]);
 });
 
-test("missed interference keeps the independently proved root cause", () => {
+test("missed mating preparation keeps interference as a separately proved supporting mechanism", () => {
     const review = classifyMistakeReviewMotifs({
         fen: rookMatingInterferenceFen,
         bestMoveUci: "e6e7",
@@ -156,10 +163,11 @@ test("missed interference keeps the independently proved root cause", () => {
         pvUci: ["e6e7", "b7e7", "g5e7"],
     });
     expect(buildMistakeReviewTacticalExplanation(review)?.primary).toMatchObject({
-        id: "interference",
+        id: "mateIn3",
         source: "missed",
         ply: 1,
     });
+    expect(review.missedMotifs).toContainEqual(expect.objectContaining({ id: "interference", ply: 1 }));
 });
 
 test("invalid or exhausted budgets cannot borrow a cached interference proof", () => {
@@ -224,8 +232,8 @@ test.skipIf(
         const proof = proveQuietMatingAttack(root);
         if (row.expected && !proof) throw new Error(`Missing independent proof: ${row.id}`);
         const result = classifyPositionTacticalMotifs({ fen: row.fen, pvUci: [row.move] });
-        if (row.expected && result.motifs[0]?.id !== row.expected)
-            throw new Error(`Wrong primary mechanism: ${row.id}`);
+        if (row.expected && !result.motifs.some(m => m.id === row.expected))
+            throw new Error(`Missing independently verified mechanism: ${row.id}`);
         return {
             ...row,
             proof,

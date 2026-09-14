@@ -10493,37 +10493,62 @@ function proveMateNextTurn(step, nodeLimit = QUIET_MATE_NODE_LIMIT, quietOnly = 
 	return proof;
 }
 var preparationCache = /* @__PURE__ */ new Map();
-/** Verify a short supplied mate-in-three candidate with an AND/OR tree, not
-* with the supplied replies alone. The PV only orders legal attacking moves.
-* The cap keeps this local proof from becoming a second unbounded engine. */
+/** A quiet mate-in-three is proved from the root, independent of PV length
+* or ordering. Other roots retain supplied-line nomination. Every defence is
+* covered, including quiet moves, counterchecks, castling and promotions.
+* Incomplete searches abstain under the existing shared operation cap. */
 function proveMateWithinThree(steps, nodeLimit = 16384) {
-	if (steps.length < 5 || !steps[4].after.isCheckmate() || steps[4].before.turn !== steps[0].before.turn) return null;
 	const root = steps[0];
-	if (defenderCanClaimFiftyMoveDraw(root.after)) return null;
-	const key = `${makeFen(root.after.toSetup())}:${steps[2].uci}`;
+	if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.after.isEnd() || defenderCanClaimFiftyMoveDraw(root.after)) return null;
+	const independentQuiet = !root.capture && !root.move.promotion && !root.before.isCheck() && !root.after.isCheck();
+	if (!independentQuiet && (!steps[4]?.after.isCheckmate() || steps[4].before.turn !== root.before.turn)) return null;
+	const hint = independentQuiet ? void 0 : steps[2]?.uci;
+	const key = `${makeFen(root.after.toSetup())}:${independentQuiet ? "quiet" : hint}`;
 	if (nodeLimit === 16384 && preparationCache.has(key)) return preparationCache.get(key);
 	let nodes = nodeLimit;
+	const flip = root.before.turn === "white" ? 0 : 56;
+	const ordered = (pos) => legalMoves(pos).sort((a, b) => capturedValue(pos, b) - capturedValue(pos, a) || (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip));
 	const visit = (pos, move) => {
 		if (--nodes < 0) throw new Error("Preparation proof budget exhausted");
 		const next = pos.clone();
 		next.play(move);
 		return next;
 	};
+	const immediateCache = /* @__PURE__ */ new Map();
 	const mateInOne = (pos) => {
-		for (const move of legalMoves(pos)) if (visit(pos, move).isCheckmate()) return makeSan(pos, move);
-		return null;
+		const key = makeFen(pos.toSetup());
+		if (immediateCache.has(key)) return immediateCache.get(key);
+		let result = null;
+		for (const move of ordered(pos)) {
+			if (!mayGiveCheck(pos, move)) continue;
+			if (visit(pos, move).isCheckmate()) {
+				result = {
+					san: makeSan(pos, move),
+					uci: makeUci(move)
+				};
+				break;
+			}
+		}
+		immediateCache.set(key, result);
+		return result;
 	};
 	const forceMate = (pos) => {
 		const immediate = mateInOne(pos);
-		if (immediate) return [immediate];
-		const moves = legalMoves(pos);
-		moves.sort((a, b) => Number(b.from === steps[2].move.from && b.to === steps[2].move.to) - Number(a.from === steps[2].move.from && a.to === steps[2].move.to));
-		for (const move of moves) {
-			const next = visit(pos, move);
+		if (immediate) return {
+			line: [immediate.san],
+			attackUci: immediate.uci
+		};
+		const moves = ordered(pos).map((move) => ({
+			move,
+			next: visit(pos, move)
+		}));
+		moves.sort((a, b) => Number(makeUci(b.move) === hint) - Number(makeUci(a.move) === hint) || Number(b.next.isCheck()) - Number(a.next.isCheck()));
+		for (const { move, next } of moves) {
 			if (defenderCanClaimFiftyMoveDraw(next)) continue;
-			const replies = legalMoves(next);
+			const replies = ordered(next);
 			if (!replies.length) continue;
 			let sample = null;
+			const branches = [];
 			let allMated = true;
 			for (const reply of replies) {
 				const mate = mateInOne(visit(next, reply));
@@ -10534,25 +10559,41 @@ function proveMateWithinThree(steps, nodeLimit = 16384) {
 				sample ??= [
 					makeSan(pos, move),
 					makeSan(next, reply),
-					mate
+					mate.san
 				];
+				branches.push({
+					replyUci: makeUci(reply),
+					mateUci: mate.uci
+				});
 			}
-			if (allMated) return sample;
+			if (allMated && sample) return {
+				line: sample,
+				attackUci: makeUci(move),
+				replies: branches
+			};
 		}
 		return null;
 	};
 	let proof = null;
 	try {
-		const replies = legalMoves(root.after);
+		const replies = ordered(root.after);
 		const answers = [];
+		const branches = [];
 		for (const reply of replies) {
 			const continuation = forceMate(visit(root.after, reply));
 			if (!continuation) break;
-			answers.push([makeSan(root.after, reply), ...continuation]);
+			answers.push([makeSan(root.after, reply), ...continuation.line]);
+			branches.push({
+				replyUci: makeUci(reply),
+				attackUci: continuation.attackUci,
+				replies: continuation.replies
+			});
 		}
 		if (replies.length && answers.length === replies.length) proof = {
 			replyCount: replies.length,
-			example: answers.sort((a, b) => b.length - a.length)[0]
+			example: answers.sort((a, b) => b.length - a.length)[0],
+			visits: nodeLimit - nodes,
+			branches
 		};
 	} catch {}
 	if (nodeLimit === 16384) {
@@ -16667,11 +16708,11 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 			evidence: `${steps[0].san} ${mixedCheckingAttack ? `offers the ${steps[0].before.board.get(steps[0].move.from).role} with check` : "starts a checking attack"} that wins material or mates against every legal reply. After ${material.reply}, ${material.line.join(" ")} wins material.${mateBranch ? ` Instead, ${mateBranch.reply} allows ${mateBranch.line.join(" ")}, forcing mate.` : ""} The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.`
 		});
 	}
-	const quietAttack = !mate ? steps[0].capture ? proveMatingCaptureAttack(steps[0]) : proveQuietMatingAttack(steps[0]) : null;
+	const quietAttack = !mate ? steps[0].capture ? proveMatingCaptureAttack(steps[0]) : proveQuietMatingAttack(steps[0]) : !steps[0].capture && !steps[0].after.isCheck() ? proveQuietMatingAttack(steps[0]) : null;
 	if (quietAttack) {
 		const material = quietAttack.branches.find((branch) => branch.gain === quietAttack.gain);
 		const interference = matingThreatInterference(steps[0], quietAttack);
-		candidates.push({
+		if (!mate || interference) candidates.push({
 			id: interference ? "interference" : "forcingAttack",
 			label: interference ? "Mating Interference" : "Mating Attack",
 			source: proposals[0]?.source ?? "available",
@@ -16899,6 +16940,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		label: "Mating Preparation",
 		source: proposals[0]?.source ?? "available",
 		confidence: "high",
+		value: 1e4,
 		ply: 1,
 		moveUci: steps[0].uci,
 		evidence: `${steps[0].san} is a quiet mating preparation. All ${preparation.replyCount} legal ${attacker === "white" ? "Black" : "White"} replies allow forced mate within two more moves; for example, ${preparation.example.join(" ")}.`
@@ -16990,7 +17032,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		else if (proposal.id === "fork") {
 			sound = verifiedFork(step);
 			const mating = sound && !immediateFork(step) ? proveMateBackedFork(step) : null;
-			if (mating && proposal.ply === 1 && checkingMate) continue;
+			if (mating && proposal.ply === 1 && (checkingMate || quietMate || preparation)) continue;
 			const exchange = sound && !immediateFork(step) ? proveExchangeForPawnFork(step) : null;
 			const promotion = sound && !immediateFork(step) ? provePromotionBackedFork(step) : null;
 			const recapture = sound && !immediateFork(step) ? proveRecaptureBackedFork(step) : null;
@@ -17179,6 +17221,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	const fork = candidates.find((m) => m.id === "fork");
 	const filtered = normalizedCandidates.filter((m) => {
 		if (m.id === "tacticalPreparation" && m.confidence === "medium" && m.ply === 1 && quietAttack && tacticalPreparation?.threat[0] === quietAttack.threatSan) return false;
+		if (m.id === "forcingAttack" && m.label === "Mating Attack" && m.ply === 1 && (preparation || quietMate)) return false;
 		if (incidentalMatingMechanisms.has(m.id) && m.ply === 1) return false;
 		if (m.id === "attacking_undefended_piece" && m.ply) {
 			const discovery = candidates.find((other) => DISCOVERED_THEMES.has(other.id) && other.ply === m.ply && other.moveUci === m.moveUci && other.confidence === "high" && (other.value ?? 0) >= (m.value ?? Infinity) && (other.value ?? 1e4) < 1e4);
@@ -18424,7 +18467,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 103;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 104;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
