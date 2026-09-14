@@ -135,6 +135,13 @@ test(
         expectedLabels: ["zugzwang"],
         expectedArrowCount: 1,
       },
+      {
+        name: "opening discovered check with independently verified continuations",
+        fen: "rnbqkbnr/pppp2pp/5p2/4P3/8/2N5/PP2QPPP/R1B1KBNR w KQkq - 0 7",
+        pvUci: ["e5f6"],
+        expectedPrimary: ["discoveredCheck"],
+        expectedLabels: ["discoveredCheck"],
+      },
     ];
     const report = [];
     for (const item of cases) {

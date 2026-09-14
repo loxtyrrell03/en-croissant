@@ -1,0 +1,25 @@
+{
+  "scope": "Provisional chess judgements written before running the engine or classifier on this fixed sample. Empty output is not automatically correct. No statistical accuracy claim.",
+  "selection": "Reached plies 2, 4, 6, 10, 11 and 12 in each of the three complete previously frozen ordinary games. No overlap with the original or adjacent root samples. No output-based replacement.",
+  "source": "ordinary-games-development.json",
+  "cases": [
+    { "id": "ordinary-1:ply2", "judgement": "Ordinary central development. No immediate tactical mechanism expected." },
+    { "id": "ordinary-1:ply4", "judgement": "Quiet development against a restrained black centre. No forced material win expected." },
+    { "id": "ordinary-1:ply6", "judgement": "Opening development. Central space and preparing castling matter more than tactical tags." },
+    { "id": "ordinary-1:ply10", "judgement": "h3 gains a tempo on Ng4, which can retreat to f6. A single attack is not a fork or trapped piece." },
+    { "id": "ordinary-1:ply11", "judgement": "The attacked knight can retreat. No reason to call the natural retreat a tactical combination." },
+    { "id": "ordinary-1:ply12", "judgement": "Castling and development. Bg5 geometrically pins Nf6 toward Ke8 but ordinary pressure alone is not a winning pin." },
+    { "id": "ordinary-2:ply2", "judgement": "Normal open-game starting position. No immediate forced gain." },
+    { "id": "ordinary-2:ply4", "judgement": "Centre Game capture. Recovering the exchanged d-pawn with Qxd4 is not a free pawn win; c3 is an optional gambit." },
+    { "id": "ordinary-2:ply6", "judgement": "Nxc3 recovers one of the two white pawns just surrendered in the gambit. It is development and partial recovery, not a newly won pawn." },
+    { "id": "ordinary-2:ply10", "judgement": "Black has retreated and lost development tempi. White should exploit development; a concrete forced tactic is uncertain." },
+    { "id": "ordinary-2:ply11", "judgement": "Qe2 supports e5 but also obstructs development. Black should develop or challenge the centre. Later king exposure cannot be attributed to this board yet." },
+    { "id": "ordinary-2:ply12", "judgement": "f6 weakens the king. exf6 may be forcing, but alternatives to the game's Kf7 must be tested before claiming a mating attack." },
+    { "id": "ordinary-3:ply2", "judgement": "Symmetrical knight development. No immediate tactic." },
+    { "id": "ordinary-3:ply4", "judgement": "Standard kingside fianchetto setup. No immediate tactic." },
+    { "id": "ordinary-3:ply6", "judgement": "Ordinary opening development. No immediate tactic." },
+    { "id": "ordinary-3:ply10", "judgement": "Bf5 attacks Qd3, which should move. The f5 bishop is defended by g6, so Qxf5 is not winning a hanging bishop." },
+    { "id": "ordinary-3:ply11", "judgement": "Qxf5 hangs the queen to gxf5. Hanging queen is the primary cause; the preceding bishop capture must be subtracted from the material claim." },
+    { "id": "ordinary-3:ply12", "judgement": "White is down queen for bishop. Bxf6 Bxf6 is an equal minor-piece exchange, not a newly winning pin or exchange." }
+  ]
+}

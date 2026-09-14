@@ -4419,7 +4419,8 @@ describe("expert tactical judgement with fresh engine lines", () => {
         !engine ||
             !(
                 process.env.TACTICAL_ORDINARY_GAME_REPORT ||
-                process.env.TACTICAL_ORDINARY_ADJACENT_REPORT
+                process.env.TACTICAL_ORDINARY_ADJACENT_REPORT ||
+                process.env.TACTICAL_ORDINARY_EARLY_REPORT
             ),
     )(
         "audit an output-blind longitudinal sample of ordinary games",
@@ -4442,7 +4443,14 @@ describe("expert tactical judgement with fresh engine lines", () => {
                 // A second fixed, disjoint sample is nominated before looking
                 // at its output; never replace or reselect the original rows.
                 const firstIndex = process.env.TACTICAL_ORDINARY_ADJACENT_REPORT ? 8 : 7;
-                for (let index = firstIndex; index < Math.min(60, steps.length); index += 5) {
+                const indices = process.env.TACTICAL_ORDINARY_EARLY_REPORT
+                    ? [1, 3, 5, 9, 10, 11]
+                    : Array.from(
+                          { length: Math.max(0, Math.ceil((Math.min(60, steps.length) - firstIndex) / 5)) },
+                          (_, offset) => firstIndex + offset * 5,
+                      );
+                for (const index of indices) {
+                    if (index >= steps.length) continue;
                     const step = steps[index];
                     if (step.after.isEnd()) continue;
                     const beforeFen = makeFen(step.before.toSetup()),
@@ -4500,7 +4508,8 @@ describe("expert tactical judgement with fresh engine lines", () => {
             // Keep the previously complete fixture available to regression
             // readers until the replacement audit has fully finished.
             writeFileSync(
-                (process.env.TACTICAL_ORDINARY_ADJACENT_REPORT ??
+                (process.env.TACTICAL_ORDINARY_EARLY_REPORT ??
+                    process.env.TACTICAL_ORDINARY_ADJACENT_REPORT ??
                     process.env.TACTICAL_ORDINARY_GAME_REPORT)!,
                 JSON.stringify(report, null, 2),
             );

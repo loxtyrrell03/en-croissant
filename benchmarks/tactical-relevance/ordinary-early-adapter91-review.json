@@ -1,0 +1,180 @@
+[
+  {
+    "id": "ordinary-1:ply2",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-1:ply4",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-1:ply6",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-1:ply10",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-1:ply11",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-1:ply12",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-2:ply2",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-2:ply4",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-2:ply6",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-2:ply10",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-2:ply11",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-2:ply12",
+    "result": {
+      "motifs": [
+        {
+          "id": "discoveredCheck",
+          "label": "Discovered Check",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e5f6",
+          "evidence": "exf6+ vacates e5, uncovering the queen on e2 against the king on e8. The pawn on f6 also attacks the pawn on g7. Every legal answer permits a verified material gain through the checking attack: Qe7 Qxe7+; Kf7 Qh5+ g6 Qd5+ Ke8 Qe5+ Qe7 Qxe7+; Be7 fxe7; Ne7 fxe7. The branches differ; later checks belong to their actual moves. Initial captures, recaptures and immediate losses elsewhere are included, with at most five further checks before the material payoff.",
+          "value": 320,
+          "relevance": "primary"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "discoveredCheck",
+          "label": "Discovered Check",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "e5f6",
+          "evidence": "exf6+ vacates e5, uncovering the queen on e2 against the king on e8. The pawn on f6 also attacks the pawn on g7. Every legal answer permits a verified material gain through the checking attack: Qe7 Qxe7+; Kf7 Qh5+ g6 Qd5+ Ke8 Qe5+ Qe7 Qxe7+; Be7 fxe7; Ne7 fxe7. The branches differ; later checks belong to their actual moves. Initial captures, recaptures and immediate losses elsewhere are included, with at most five further checks before the material payoff.",
+          "value": 320,
+          "relevance": "primary",
+          "actor": "white"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-3:ply2",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-3:ply4",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-3:ply6",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-3:ply10",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-3:ply11",
+    "result": {
+      "motifs": [
+        {
+          "id": "hangingPiece",
+          "label": "Winning Recapture",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "g6f5",
+          "evidence": "gxf5 wins the queen on f5 in exchange for the bishop just captured there. The settled local exchange gains 5.7 pawns of material; this is the payoff, not a newly hanging piece.",
+          "relevance": "primary",
+          "value": 570
+        }
+      ],
+      "timeline": [
+        {
+          "id": "hangingPiece",
+          "label": "Winning Recapture",
+          "source": "available",
+          "confidence": "high",
+          "ply": 1,
+          "moveUci": "g6f5",
+          "evidence": "gxf5 wins the queen on f5 in exchange for the bishop just captured there. The settled local exchange gains 5.7 pawns of material; this is the payoff, not a newly hanging piece.",
+          "relevance": "primary",
+          "value": 570,
+          "actor": "black"
+        }
+      ],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  },
+  {
+    "id": "ordinary-3:ply12",
+    "result": {
+      "motifs": [],
+      "motifClassifierVersion": "site-55.adapter-91"
+    }
+  }
+]

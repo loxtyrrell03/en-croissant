@@ -30,6 +30,17 @@ const markup = (value: LiveTacticalScan) =>
     </MantineProvider>,
   );
 
+test("the opening discovered check is the headline without borrowing a future bishop arrow", () => {
+  const value = buildLiveTacticalScan({ fen: "rnbqkbnr/pppp2pp/5p2/4P3/8/2N5/PP2QPPP/R1B1KBNR w KQkq - 0 7", pvUci: ["e5f6", "g8e7", "f6e7", "d8e7"], engineName: "Frozen opening", depth: 16 });
+  const element = document.createElement("div");
+  element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Discovered Check found");
+  expect(element.textContent).not.toContain("Forcing Mate found");
+  expect(value.labels[0].text).toContain("Discovered Check");
+  expect(value.arrows.map(arrow => arrow.from + arrow.to)).toContain("e2e8");
+  expect(value.arrows.some(arrow => arrow.from === "c1" || arrow.from === "f1")).toBe(false);
+});
+
 test("drawing opposition is labelled as a draw, not a won ending or future promotion", () => {
   const value = buildLiveTacticalScan({ fen: "8/2k5/8/8/2K5/2P5/8/8 b - - 0 1", pvUci: ["c7c6", "c4b4", "c6b6"], engineName: "Exact ending", depth: 16 });
   const element = document.createElement("div");

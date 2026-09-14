@@ -1,6 +1,14 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 90 / live pipeline 95
+## Current classifier: adapter 91 / live pipeline 96
+
+The [opening and positional review](opening-discovery-relevance-review.md) adds 39 output-blind positions: eighteen early boards from three previously frozen real games and 21 unseen positional-course roots selected by fixed SHA order across all chapters. Initial chess judgements preceded outputs. Development, exchanges, gambit recovery and pressure remain distinct from forced tactics; an apparent poisoned-bishop assumption was corrected after engine checks. Six course forcing/defensive judgements remain uncertain, not certified correct negatives.
+
+The real opening exf6+ now explains Discovered Check, including the king's alternative to interposing. Five further checks use a shared 8,192-operation budget; the final proof needs 7,596. Shorter completed proofs are reused safely, ordering is colour/file stable, and additional participants must join with check. All friendly-piece liabilities and immediate counterplay remain checked. Missed/allowed review and starting-board arrows retain the root discovery; heterogeneous continuations do not borrow single-target causal comparisons. Existing budgets/deadlines are unchanged.
+
+Verification: 1,628 selected tests, 246 exact course/generated-game replays, 724 actual-controller worker inputs across fourteen tests, both builds, type checking, eight-file lint, three service tests, two cache scenarios and eight isolated HTTP cases pass. The completed 27-search witness audit supports all 21 chosen proof decisions and retains contrary controls; broader fresh root/defence audits are recorded in the linked review. All prior 225 full results, the new 21 positional results, twenty rare results, 32 priorities and 198 previous public worker headline lists are unchanged, not certified accurate. Public worker median/p95/max is 82/204/608 ms excluding engine/UI; the unchanged subset is 85/221/608 ms. Artifact: liveTactics.worker-lOyUJpI0.js. No owner app/package/service restart or deployment; wider quiet/rare/causal and native gaps remain open. Paid data stays private.
+
+## Prior adapter 90 / live pipeline 95
 
 The [drawing-zugzwang review](drawing-zugzwang-review.md) adds a missing defensive lesson: taking the opposition can hold a draw when every real reply draws but a pass would let the pawn side win. Labels, board geometry and missed/allowed explanations distinguish drawing resources from winning endings and from already drawn positions. A reserve pawn tempo is a contrary control. Exact KPK probes now ignore unusable en-passant metadata after a double push; with one pawn no legal capture can use it. Existing fifty-move conservatism, bitbase graph and worker deadlines are unchanged.
 
