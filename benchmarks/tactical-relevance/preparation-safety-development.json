@@ -1,0 +1,76 @@
+{
+  "scope": "Two retained real Lichess roots and five deliberately constructed adversarial variants. These are development checks, not an independent accuracy sample. A withheld certificate is not a claim that the whole position is losing or free of tactics.",
+  "cases": [
+    {
+      "id": "lichess:NGZzo:safe-answer",
+      "kind": "quiet",
+      "fen": "r5k1/5p2/Br2p1p1/1PNpPb1q/3P4/4P1Q1/5K1P/6R1 w - - 0 33",
+      "root": "c5d7",
+      "pvUci": ["c5d7", "g8g7", "d7b6"],
+      "resourceUci": ["c5d7", "f5d3", "d7b6", "h5e2"],
+      "expectedProof": true,
+      "judgement": "Nd7 creates a real rook attack plus checking fork. Against Bd3, taking the rook allows Qe2 mate; Nf6+ must replace that unsafe witness. The genuine primary theme should survive.",
+      "sourceGameUrl": "https://lichess.org/7lzGil6H/black#64"
+    },
+    {
+      "id": "checking-preparation:safe-base",
+      "kind": "checking",
+      "fen": "8/7R/5kp1/2R2p2/5n2/7P/1r6/5K2 b - - 1 45",
+      "root": "b2b1",
+      "pvUci": ["b2b1", "f1f2", "f4d3", "f2f3", "d3c5"],
+      "expectedProof": true,
+      "judgement": "Rb1+ prepares a checking knight fork; blocking with Rc1 instead loses that rook. Preserve the root preparation and the actual later fork.",
+      "sourceGameUrl": "https://lichess.org/l8sSle4i#89"
+    },
+    {
+      "id": "constructed:double-threat-queen-liability",
+      "kind": "quiet",
+      "fen": "r5k1/5p2/Br2p1p1/1PNpPb1q/3P4/4P1Q1/Q4K1P/6R1 w - - 0 33",
+      "root": "c5d7",
+      "pvUci": ["c5d7", "g8g7", "d7b6"],
+      "resourceUci": ["c5d7", "f5b1", "d7b6", "b1a2"],
+      "expectedProof": false,
+      "judgement": "The extra queen is deliberately unprotected. After Bb1, taking a rook loses that queen; even the checking fork must account for this off-square liability. Reject the old all-defence certificate, not all possible ways White might win."
+    },
+    {
+      "id": "constructed:fork-payoff-rook-liability",
+      "kind": "quiet",
+      "fen": "r5k1/5p2/Br2p1p1/1PNpPb1q/3P4/4P1Q1/5K1P/R5R1 w - - 0 33",
+      "root": "c5d7",
+      "pvUci": ["c5d7", "g8g7", "d7b6"],
+      "resourceUci": ["c5d7", "b6a6", "d7f6", "g8f8", "f6h5", "a6a1"],
+      "expectedProof": true,
+      "judgement": "Rbxa6 takes a bishop before the fork; after Kf8 and Nxh5, Rxa1 reduces that line's local residual to 70 cp. But White can instead answer Rbxa6 with Rxa6: the moved original rook victim can be captured by an ally. Retain the genuine double threat using this connected alternative, not the unsafe fork witness."
+    },
+    {
+      "id": "constructed:double-threat-counterattack",
+      "kind": "quiet",
+      "fen": "r5k1/5p2/Br1bp1p1/1PNpPb1q/3P4/4P1Q1/5K1P/6R1 w - - 0 33",
+      "root": "c5d7",
+      "pvUci": ["c5d7", "g8g7", "d7b6"],
+      "resourceUci": ["c5d7", "d6e5", "d7b6", "e5g3"],
+      "expectedProof": false,
+      "judgement": "Bxe5 threatens the queen while preventing Nf6+. The old rook-taking witness ignores the queen loss; material elsewhere and the defender's counterattack matter."
+    },
+    {
+      "id": "constructed:double-threat-promotion",
+      "kind": "quiet",
+      "fen": "r5k1/5p2/Br2p1p1/1PNpPb1q/3P4/p3P1Q1/5K1P/6R1 w - - 0 33",
+      "root": "c5d7",
+      "pvUci": ["c5d7", "g8g7", "d7b6"],
+      "resourceUci": ["c5d7", "a3a2", "d7b6", "a2a1q"],
+      "expectedProof": false,
+      "judgement": "An advanced passed pawn is a concrete resource after the advertised payoff. The bounded preparation must not certify a gain while silently ignoring promotion."
+    },
+    {
+      "id": "constructed:checking-preparation-queen-liability",
+      "kind": "checking",
+      "fen": "8/q6R/5kp1/2R2p2/5n2/7P/1r6/5K2 b - - 1 45",
+      "root": "b2b1",
+      "pvUci": ["b2b1", "f1f2", "f4d3", "f2f3", "d3c5"],
+      "resourceUci": ["b2b1", "f1f2", "f4d3", "f2f3", "d3c5", "h7a7"],
+      "expectedProof": false,
+      "judgement": "The checking sequence wins a rook but allows the other rook to capture Black's queen. Check and fork geometry cannot certify the preparation while ignoring the off-square queen."
+    }
+  ]
+}

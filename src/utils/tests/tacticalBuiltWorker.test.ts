@@ -90,6 +90,32 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
     }
 }
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("preparation safety and connected alternatives survive the production controller", async () => {
+    const sample = JSON.parse(readFileSync("benchmarks/tactical-relevance/preparation-safety-development.json", "utf8"));
+    const report = [];
+    for (const row of sample.cases) for (const reflected of [false, true]) for (const rootOnly of [false, true]) {
+        const fields = row.fen.split(" ");
+        const mirror = (move: string) => move.replace(/[1-8]/g, rank => String(9 - Number(rank)));
+        if (reflected) {
+            fields[0] = fields[0].split("/").reverse().join("/").replace(/[a-zA-Z]/g, (c: string) => c === c.toLowerCase() ? c.toUpperCase() : c.toLowerCase());
+            fields[1] = fields[1] === "w" ? "b" : "w";
+        }
+        const moves = rootOnly ? [row.root] : row.pvUci;
+        const input = { fen: fields.join(" "), pvUci: reflected ? moves.map(mirror) : moves, depth: 16, engineName: "Preparation safety" };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+        const theme = row.kind === "quiet" ? "doubleThreat" : "forkPreparation";
+        expect(result.scan.motifs.some(m => m.id === theme && m.ply === 1)).toBe(row.expectedProof);
+        report.push({ id: `${row.id}:${reflected ? "reflected" : "original"}:${rootOnly ? "root" : "line"}`,
+            elapsedMs: result.elapsedMs, startupMs: result.startupMs, classificationMs: result.classificationMs,
+            primary: result.scan.motifs.map(m => m.id), matchesSource: true });
+    }
+    expect(report).toHaveLength(28);
+    if (process.env.TACTICAL_PREPARATION_WORKER_REPORT) writeFileSync(process.env.TACTICAL_PREPARATION_WORKER_REPORT,
+        JSON.stringify({ scope: "Public preparation controls in both colours, with root-only and longer lines. Source parity is not an accuracy score.", cases: report }, null, 2), { flag: "wx" });
+}, 120000);
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("fixed whole-game boards keep their source, best and actual-response meanings in the production worker", async () => {
     const sample = JSON.parse(readFileSync("benchmarks/tactical-relevance/quiet-game-context-development.json", "utf8"));
     const engine = JSON.parse(readFileSync("benchmarks/tactical-relevance/quiet-game-context-stockfish-18.json", "utf8"));

@@ -3483,18 +3483,19 @@ function checkingForkSearch(
                         !blockingSquares?.has(capture.to))
                 )
                     continue;
-                if (strictLeaves) {
-                    const leaf = visit(next, capture);
-                    let unresolved = false;
-                    for (const resource of legalMoves(leaf)) {
-                        if (resource.promotion || visit(leaf, resource).isCheckmate()) {
-                            unresolved = true;
-                            break;
-                        }
-                    }
-                    if (unresolved) continue;
-                }
-                let gain = participantCaptureGain(next, capture, pieces, budget);
+                // A checking fork cannot finance losing an unrelated piece or
+                // allowing mate after its payoff. This applies to quiet/checking
+                // preparations as well as the newer capture preparations.
+                if (strictLeaves && !noImmediateTerminalRefutation(next, capture, budget))
+                    continue;
+                let gain = strictLeaves
+                    ? participantCaptureGain(
+                          next,
+                          capture,
+                          [...next.board[side], ...pieces, capture.to],
+                          budget,
+                      )
+                    : preparationCaptureGain(next, capture, budget);
                 if (
                     recovery &&
                     gain !== null &&
@@ -4459,13 +4460,16 @@ const doubleThreatCache = new Map<string, DoubleThreatProof | null>();
 export function proveQuietDoubleThreat(
     root: TacticalReplayStep,
     nodeLimit = 8192,
+    onFailure?: (reason: string) => void,
 ): DoubleThreatProof | null {
     if (
         root.capture ||
         root.move.promotion ||
         root.before.isCheck() ||
         root.after.isCheck() ||
-        root.after.isEnd()
+        root.after.isEnd() ||
+        !Number.isSafeInteger(nodeLimit) ||
+        nodeLimit <= 0
     )
         return null;
     const side = root.before.turn;
@@ -4477,7 +4481,8 @@ export function proveQuietDoubleThreat(
     );
     if (!directTargets.length) return null;
     const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
-    if (nodeLimit === 8192 && doubleThreatCache.has(key)) return doubleThreatCache.get(key)!;
+    const cacheable = !onFailure && nodeLimit === 8192;
+    if (cacheable && doubleThreatCache.has(key)) return doubleThreatCache.get(key)!;
     const budget = { nodes: nodeLimit };
     const { visit, delta, fork } = checkingForkSearch(side, budget);
     let proof: DoubleThreatProof | null = null;
@@ -4510,38 +4515,24 @@ export function proveQuietDoubleThreat(
             let captureGain = -Infinity;
             for (const capture of legalMoves(next)) {
                 if (!mapped.includes(capture.to) || !capturedValue(next, capture)) continue;
-                // The prepared piece supplies ordinary captures. A checking
-                // target or one that captures it can also be taken by an ally.
+                // The prepared piece supplies ordinary captures. An original
+                // victim that moves onto an ally's capture square is still a
+                // connected payoff, including a non-checking queen retreat.
                 if (
                     capture.from !== root.move.to &&
                     !(
-                        targets.includes(reply.from) &&
-                        (next.isCheck() ||
-                            (reply.to === root.move.to && capturedValue(root.after, reply)))
+                        targets.includes(reply.from) && capture.to === reply.to
                     )
                 )
                     continue;
-                const gain = participantCaptureGain(
-                    next,
-                    capture,
-                    [root.move.to, capture.to],
-                    budget,
-                );
+                const gain = preparationCaptureGain(next, capture, budget);
                 if (gain !== null && balance + gain > captureGain) {
                     captureGain = balance + gain;
                     captureAnswer = capture;
                 }
             }
-            if (captureAnswer && captureGain >= 100) {
-                minimum = Math.min(minimum, captureGain);
-                branches.push({
-                    reply: makeSan(root.after, reply),
-                    answer: makeSan(next, captureAnswer),
-                    kind: "capture",
-                });
-                continue;
-            }
-            let won = false;
+            let selectedFork: (typeof threats)[number] | undefined;
+            let forkGain = -Infinity;
             for (const threat of threats) {
                 if (next.board.get(root.move.to)?.color !== side || !next.isLegal(threat.move))
                     continue;
@@ -4551,18 +4542,29 @@ export function proveQuietDoubleThreat(
                     [threat.move.to],
                     directTargets.map((sq) => (sq === reply.from ? reply.to : sq)),
                 );
-                if (!result || balance + result.gain < 100) continue;
-                minimum = Math.min(minimum, balance + result.gain);
+                if (!result || balance + result.gain < 100 || balance + result.gain <= forkGain)
+                    continue;
+                forkGain = balance + result.gain;
+                selectedFork = threat;
+            }
+            // Do not settle for an inferior exchange merely because it was
+            // enumerated before a stronger connected checking fork.
+            if (selectedFork && forkGain > captureGain) {
+                minimum = Math.min(minimum, forkGain);
                 branches.push({
                     reply: makeSan(root.after, reply),
-                    answer: makeSan(next, threat.move),
+                    answer: makeSan(next, selectedFork.move),
                     kind: "fork",
                 });
-                forkThreat ??= threat;
-                won = true;
-                break;
-            }
-            if (!won) throw new Error(`Unproved double-threat reply ${makeSan(root.after, reply)}`);
+                forkThreat ??= selectedFork;
+            } else if (captureAnswer && captureGain >= 100) {
+                minimum = Math.min(minimum, captureGain);
+                branches.push({
+                    reply: makeSan(root.after, reply),
+                    answer: makeSan(next, captureAnswer),
+                    kind: "capture",
+                });
+            } else throw new Error(`Unproved double-threat reply ${makeSan(root.after, reply)}`);
         }
         if (
             forkThreat &&
@@ -4577,10 +4579,11 @@ export function proveQuietDoubleThreat(
                 threatTargets: forkThreat.targets,
                 branches,
             };
-    } catch {
+    } catch (error) {
         /* An unproved defence, including countercheck, remains unknown. */
+        onFailure?.(error instanceof Error ? error.message : String(error));
     }
-    if (nodeLimit === 8192) {
+    if (cacheable) {
         doubleThreatCache.set(key, proof);
         if (doubleThreatCache.size > 128)
             doubleThreatCache.delete(doubleThreatCache.keys().next().value!);
@@ -4594,8 +4597,16 @@ export function proveQuietDoubleThreat(
 export function proveCheckingForkPreparation(
     root: TacticalReplayStep,
     nodeLimit = 4096,
+    onFailure?: (reason: string) => void,
 ): ForkPreparationProof | null {
-    if (root.capture || root.move.promotion || !root.after.isCheck() || root.after.isEnd())
+    if (
+        root.capture ||
+        root.move.promotion ||
+        !root.after.isCheck() ||
+        root.after.isEnd() ||
+        !Number.isSafeInteger(nodeLimit) ||
+        nodeLimit <= 0
+    )
         return null;
     const side = root.before.turn;
     const king = root.after.board.kingOf(opposite(side))!;
@@ -4608,7 +4619,8 @@ export function proveCheckingForkPreparation(
     )
         return null;
     const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
-    if (nodeLimit === 4096 && forkPreparationCache.has(key)) return forkPreparationCache.get(key)!;
+    const cacheable = !onFailure && nodeLimit === 4096;
+    if (cacheable && forkPreparationCache.has(key)) return forkPreparationCache.get(key)!;
     const budget = { nodes: nodeLimit };
     const { visit, delta, fork } = checkingForkSearch(side, budget);
     let proof: ForkPreparationProof | null = null;
@@ -4623,7 +4635,7 @@ export function proveCheckingForkPreparation(
             const balance = -delta(root.after, reply);
             const blockCapture = { from: root.move.to, to: reply.to };
             if (between(root.move.to, king).has(reply.to) && next.isLegal(blockCapture)) {
-                const gain = participantCaptureGain(next, blockCapture, [root.move.to], budget);
+                const gain = preparationCaptureGain(next, blockCapture, budget);
                 if (gain !== null && balance + gain >= 100) {
                     minimum = Math.min(minimum, balance + gain);
                     branches.push({
@@ -4662,14 +4674,16 @@ export function proveCheckingForkPreparation(
                 won = true;
                 break;
             }
-            if (!won) throw new Error("A legal defence avoids the preparation");
+            if (!won)
+                throw new Error(`Unproved fork-preparation reply ${makeSan(root.after, reply)}`);
         }
         if (hasFork && Number.isFinite(minimum))
             proof = { gain: minimum, targets: [...targets], branches };
-    } catch {
+    } catch (error) {
         /* Unknown branches and exhausted budgets are not a tactical proof. */
+        onFailure?.(error instanceof Error ? error.message : String(error));
     }
-    if (nodeLimit === 4096) {
+    if (cacheable) {
         forkPreparationCache.set(key, proof);
         if (forkPreparationCache.size > 128)
             forkPreparationCache.delete(forkPreparationCache.keys().next().value!);
@@ -7498,6 +7512,55 @@ function discoveryCaptureGain(
         liability = Math.max(liability, loss);
     }
     return capture - Math.max(capture - exchange, liability);
+}
+
+/** A quiet/checking preparation cannot stop immediately before a king hunt.
+ * Every countercheck needs a material-retaining legal answer that permits no
+ * immediate mate or promotion. This is a one-evasion local safety horizon,
+ * not a proof against longer king hunts or perpetual-check sequences. */
+function preparationCaptureGain(pos: Chess, move: NormalMove, budget: ProofBudget): number | null {
+    const side = pos.turn;
+    const delta = (board: Chess, action: NormalMove) =>
+        capturedValue(board, action) + (action.promotion ? VALUE[action.promotion] - VALUE.pawn : 0);
+    let minimum = participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+    if (minimum === null || !noImmediateTerminalRefutation(pos, move, budget)) return null;
+    const visit = (board: Chess, action: NormalMove) => {
+        if (--budget.nodes < 0) throw new Error("Preparation countercheck budget exhausted");
+        const next = board.clone();
+        next.play(action);
+        return next;
+    };
+    const retain = (checked: Chess, balance: number): number | null => {
+        if (checked.isEnd()) return null;
+        let best = -Infinity;
+        const answers = recoveryMoves(checked, side).sort(
+            (a, b) => capturedValue(checked, b) - capturedValue(checked, a),
+        );
+        for (const answer of answers) {
+            if (answer.promotion) continue;
+            const gain = participantCaptureGain(
+                checked,
+                answer,
+                [...checked.board[side], answer.to],
+                budget,
+            );
+            if (gain === null || balance + gain <= best) continue;
+            if (!noImmediateTerminalRefutation(checked, answer, budget)) continue;
+            best = Math.max(best, balance + gain);
+            if (best >= minimum!) break;
+        }
+        return Number.isFinite(best) ? best : null;
+    };
+    const leaf = visit(pos, move);
+    for (const resource of recoveryMoves(leaf, side)) {
+        if (!mayGiveCheck(leaf, resource)) continue;
+        const checked = visit(leaf, resource);
+        if (!checked.isCheck()) continue;
+        const retained = retain(checked, delta(pos, move) - delta(leaf, resource));
+        if (retained === null) return null;
+        minimum = Math.min(minimum, retained);
+    }
+    return minimum;
 }
 
 function participantCaptureGain(

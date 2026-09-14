@@ -1,6 +1,12 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 105 / live pipeline 110
+## Current classifier: adapter 106 / live pipeline 111
+
+The [preparation-safety review](preparation-safety-review.md) records all-piece payoff liabilities, a bounded answer to post-payoff counterchecks, connected allied captures of moved victims and stronger-branch selection. Fresh engine review exposed both mate-in-one and mate-in-two witnesses in a real double threat; its genuine primary and later fork remain with safer answers. Four constructed preparation certificates are withheld in both colours, while an allied recapture preserves another genuine combination. These withheld certificates are not claims that the entire positions are non-tactical or losing.
+
+All 246 private primary lists and 32 frozen priorities remain unchanged. One opening source continuation gains a ply-7 preparation; one engine-game continuation lowers its local bound for an off-square pawn loss. The other 244 full results are unchanged apart from version. All twenty rare primary lists remain; only the real double-threat full result changes. The linked review records 127 final fresh engine searches, 2,123 selected passes, 1,407 production-controller inputs, 81 cold-HTTP cases and twelve existing renderer groups, plus builds, type/lint and service/cache checks. The one-countercheck safety horizon does not certify longer king hunts or perpetuals; connected capture-choice, broader accuracy/nature and native-runtime gaps remain open. No owner restart, installation or deployment; paid material stays private.
+
+## Prior adapter 105 / live pipeline 110
 
 The [capture-choice relevance review](capture-choice-relevance-review.md) adds 21 fixed boards from four public games across openings, quiet positions, exchanges and endings, with initial judgements before output and 127 fresh engine searches. A generic missed hanging-piece capture is qualified when the played move has a comparable or larger positive local exchange; this is not equal-position or causal proof. Independently supported opponent lessons retain priority, and save/reload, desktop/phone timelines and shared-service explanations preserve the qualification. A Black-started PGN ownership defect is corrected using the actual legal turn rather than local move-index parity.
 
