@@ -5740,6 +5740,21 @@ function materialThreatGain(step: TacticalReplayStep, targets: Square[], capture
     return proof.kind === "proven" ? proof.gain : null;
 }
 
+/** A direct-threat badge must use its own complete, liability-aware bound,
+ * not the material value seen later in a cooperative engine variation. */
+export function proveDirectMaterialThreat(step: TacticalReplayStep) {
+    const targets = winningTargets(step.after, step.move.to, step.before.turn);
+    if (!targets.length || step.after.isEnd() || defenderCanClaimFiftyMoveDraw(step.after)) return null;
+    const proof = materialThreatProof(step, targets, [step.move.to], [], false, undefined, {
+        allPiecesAtLeaf: true,
+    });
+    const initialGain = step.capture || step.move.promotion
+        ? tacticalExchangeGain(step.before, step.move) : 0;
+    return proof.kind === "proven" && proof.complete && proof.gain < 10000 &&
+        initialGain > -VALUE.king && proof.gain > Math.max(0, initialGain)
+        ? { ...proof, targets } : null;
+}
+
 function materialThreatProof(
     step: TacticalReplayStep,
     targets: Square[],
@@ -11019,11 +11034,16 @@ export function auditTacticalMotifs(
             sound = step.capture > 0 && tacticalExchangeGain(step.before, step.move) >= 100;
         else if (proposal.id === "hangingPiece")
             sound = step.capture >= 320 && tacticalExchangeGain(step.before, step.move) >= 100;
-        else if (proposal.id === "attacking_undefended_piece")
-            sound =
-                materialThreatGain(step, winningTargets(step.after, step.move.to, attacker), [
-                    step.move.to,
-                ]) !== null;
+        else if (proposal.id === "attacking_undefended_piece") {
+            const threat = proveDirectMaterialThreat(step);
+            sound = Boolean(threat);
+            if (threat) proposal = {
+                ...proposal,
+                value: threat.gain,
+                confidence: "high",
+                evidence: `${step.san} attacks ${threat.targets.map(to => `the ${step.after.board.get(to)!.role} on ${makeSquare(to)}`).join(" and ")}. Every legal defence permits a verified local material gain on these targets. Captures, recaptures and immediate losses elsewhere are included; this is not the full position's evaluation.`,
+            };
+        }
         else if (proposal.id === "sacrifice") {
             const exchangeGain = tacticalExchangeGain(step.before, step.move);
             // Material recovered in one cooperative PV does not establish
@@ -11214,6 +11234,35 @@ export function auditTacticalMotifs(
     const filtered = normalizedCandidates
         .filter((m) => {
             if (incidentalMatingMechanisms.has(m.id) && m.ply === 1) return false;
+            // The revealed line and the mover's attack form one discovery.
+            // Do not count its same-ply material-target subset again as a
+            // generic threat. Unrelated targets, a larger direct gain, or
+            // a mate-only/unproved discovery do not qualify for suppression.
+            if (m.id === "attacking_undefended_piece" && m.ply) {
+                const discovery = candidates.find(other =>
+                    DISCOVERED_THEMES.has(other.id) && other.ply === m.ply &&
+                    other.moveUci === m.moveUci && other.confidence === "high" &&
+                    (other.value ?? 0) >= (m.value ?? Infinity) &&
+                    (other.value ?? 10000) < 10000);
+                if (discovery) {
+                    const direct = proveDirectMaterialThreat(steps[m.ply - 1]);
+                    const proof = discoveredEvidence(steps.slice(m.ply - 1), discovery.source);
+                    if (direct && proof && proof.motif.id === discovery.id &&
+                        (proof.motif.value ?? 0) >= direct.gain &&
+                        (proof.motif.value ?? 10000) < 10000 &&
+                        direct.targets.length && direct.targets.every(to => proof.targets.includes(to))) return false;
+                }
+                const trap = candidates.find(other =>
+                    other.id === "trappedPiece" && other.ply === m.ply &&
+                    other.moveUci === m.moveUci && other.confidence === "high" &&
+                    (other.value ?? 0) >= (m.value ?? Infinity));
+                if (trap) {
+                    const direct = proveDirectMaterialThreat(steps[m.ply - 1]);
+                    const proof = trappedPieceProof(steps[m.ply - 1], trap.source);
+                    if (direct && proof && (proof.motif.value ?? 0) >= direct.gain &&
+                        direct.targets.length && direct.targets.every(to => to === proof.target)) return false;
+                }
+            }
             // A smaller king-front skewer on the SAME revealed checking ray
             // is already explained by a verified discovery when its rear
             // victim is also one of that discovery's material targets. Do

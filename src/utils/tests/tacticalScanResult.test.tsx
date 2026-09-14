@@ -6,6 +6,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { TacticalScanResult } from "@/components/panels/tactics/TacticalScanResult";
 import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import { mixedForkFen, mixedForkLine } from "./fixtures/mixedTargetFork";
+import { directThreatFen, directThreatLine } from "./fixtures/directThreatRelevance";
 import {
   buildLiveTacticalScan,
   previewLiveTacticalVariation,
@@ -30,6 +31,17 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a discovery has one root lesson while promotion and the capture payoff remain later", () => {
+  const value = buildLiveTacticalScan({ fen: directThreatFen, pvUci: directThreatLine, engineName: "Public counterfactual", depth: 16 });
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Discovered Check found");
+  expect(element.textContent).not.toContain("Threatening a Piece");
+  expect(element.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Discovered Check");
+  expect(element.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Under-Promotion");
+  expect(value.labels.map(label => label.id)).toEqual(["discoveredCheck"]);
+  expect(element.querySelector("details")?.hasAttribute("open")).toBe(false);
+});
 
 test("the mixed-target fork leads the panel while the actual pin payoff stays later", () => {
   const value = buildLiveTacticalScan({ fen: mixedForkFen, pvUci: mixedForkLine, engineName: "Frozen real game", depth: 16 });

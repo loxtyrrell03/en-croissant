@@ -9,6 +9,7 @@ import { makeUci } from "chessops/util";
 import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
+import { directThreatFen, directThreatLine, directThreatControls } from "./fixtures/directThreatRelevance";
 import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import { trappedRookFen, trapControls, unrelatedPayoffTrap } from "./fixtures/trapRelevance";
 import { interferenceExamples, interferenceControls, compensatedInterference } from "./fixtures/interferenceRelevance";
@@ -127,6 +128,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         const crossPhase=JSON.parse(readFileSync("benchmarks/tactical-relevance/cross-phase-stockfish-18.json","utf8"));
         const broaderGame = JSON.parse(readFileSync("benchmarks/tactical-relevance/broader-game-stockfish-18.json", "utf8"));
         const cases = [
+            ...[
+                { id: "root", fen: directThreatFen, pvUci: directThreatLine.slice(0, 1) },
+                { id: "continuation", fen: directThreatFen, pvUci: directThreatLine },
+                ...directThreatControls.map(row => ({ ...row, pvUci: ["e6e7"] })),
+            ].map(({ id, ...input }) => ({ id: `direct-threat:${id}`, input: { ...input, depth: 16, engineName: "Direct threat audit" } })),
+            ...JSON.parse(readFileSync("benchmarks/tactical-relevance/checking-pawn-stockfish-18.json", "utf8")).groups.find((g: any) => g.id === "sample").searches.map((row: any) => ({
+                id: `checking-capture:${row.id}`,
+                input: { fen: row.fen, pvUci: row.lines[0].pvUci, variations: row.lines, depth: 16, engineName: "Stockfish 18" },
+            })),
             ...broaderGame.cases.flatMap((row: any, index: number) => {
                 const after = broaderGame.responses[index];
                 return [
@@ -903,7 +913,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(462);
+        expect(report).toHaveLength(527);
         for (const length of [1, promotionCounterplayLine.length]) expect(promotionEndingResults.get(`promotion-ending:real:${length}`)!.motifs[0]).toMatchObject({ id: "promotionCombination", value: 220 });
         expect(promotionEndingResults.get("promotion-ending:real:5")!.variations[0].timeline.some((m) => m.ply === 2 && m.id === "hangingPiece")).toBe(false);
         for (const row of pawnRaceRefutations) for (const length of [1, row.historicalLine.length]) expect(promotionEndingResults.get(`promotion-ending:${row.id}:${length}`)!.motifs.some((m) => m.id === "promotionCombination")).toBe(false);

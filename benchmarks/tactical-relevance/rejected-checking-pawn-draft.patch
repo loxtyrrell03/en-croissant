@@ -1,0 +1,108 @@
+diff --git a/src/utils/tacticalMotifs/causalTactics.ts b/src/utils/tacticalMotifs/causalTactics.ts
+index 8db2d3a5..3d9c1085 100644
+--- a/src/utils/tacticalMotifs/causalTactics.ts
++++ b/src/utils/tacticalMotifs/causalTactics.ts
+@@ -1719,4 +1719,103 @@ type CheckingAttackProof = {
+     target: Square;
+     branches: { reply: string; line: string[]; gain: number }[];
+ };
++
++type CheckingPawnCaptureProof = {
++    gain: number;
++    visits: number;
++    branches: { replyUci: string; holdUci: string; resources: { fen: string; replyUci: string; answerUci: string }[] }[];
++};
++
++/** A checking pawn capture is not settled by counting the captured pawn.
++ * Each check evasion needs a legal quiet continuation retaining that gain.
++ * Immediate captures, checks, advanced passers and double attacks receive
++ * explicit bounded replies. No future PV supplies a balance or a defence. */
++export function proveCheckingPawnCapture(root: TacticalReplayStep, nodeLimit = 16384,
++    onFailure?: (message: string) => void): CheckingPawnCaptureProof | null {
++    if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture !== VALUE.pawn ||
++        root.move.promotion || root.before.isCheck() || root.after.isEnd() ||
++        !root.after.isCheck() || !root.after.ctx().checkers.has(root.move.to) ||
++        defenderCanClaimFiftyMoveDraw(root.after)) return null;
++    const side = root.before.turn;
++    const budget = { nodes: nodeLimit };
++    const visit = (pos: Chess, move: NormalMove) => {
++        if (--budget.nodes < 0) throw new Error("Checking capture retention exhausted");
++        const next = pos.clone(); next.play(move); return next;
++    };
++    const delta = (pos: Chess, move: NormalMove) => capturedValue(pos, move) +
++        (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
++    const seventh = (pos: Chess, move: NormalMove) => pos.board.get(move.from)?.role === "pawn" &&
++        Math.floor(move.to / 8) === (pos.turn === "white" ? 6 : 1);
++    const ordered = (pos: Chess) => legalMoves(pos).sort((a, b) =>
++        capturedValue(pos, b) - capturedValue(pos, a) || (a.from ^ (side === "white" ? 0 : 56)) - (b.from ^ (side === "white" ? 0 : 56)) || a.to - b.to);
++    type Resource = CheckingPawnCaptureProof["branches"][number]["resources"][number];
++    const settle = (pos: Chess, balance: number, depth: number, ancestors: Set<string>): Resource[] | null => {
++        if (balance < VALUE.pawn || pos.isEnd() || defenderCanClaimFiftyMoveDraw(pos)) return null;
++        const key = makeFen(pos.toSetup()).split(" ").slice(0, 4).join(" ");
++        if (ancestors.has(key)) return null;
++        const path = new Set([...ancestors, key]);
++        const resources: Resource[] = [];
++        for (const reply of ordered(pos)) {
++            const after = visit(pos, reply);
++            if (after.isEnd()) return null;
++            const advanced = seventh(pos, reply);
++            const doubleAttack = !after.isCheck() && !capturedValue(pos, reply) && winningTargets(after, reply.to, pos.turn).length >= 2;
++            if (!pos.isCheck() && !after.isCheck() && !reply.promotion && !advanced && !doubleAttack) {
++                if (!capturedValue(pos, reply)) continue;
++                const exchange = tacticalExchangeGain(pos, reply);
++                if (exchange <= -VALUE.king) return null;
++                if (exchange <= 0) continue;
++            }
++            if (!depth) return null;
++            const retained = balance - delta(pos, reply);
++            let witness: Resource[] | null = null;
++            let answerUci = "";
++            for (const answer of ordered(after)) {
++                if (answer.promotion) continue;
++                const capturesResource = answer.to === reply.to && capturedValue(after, answer) > 0;
++                const blocksPasser = advanced && answer.to === reply.to + (pos.turn === "white" ? 8 : -8);
++                if (!pos.isCheck() && !after.isCheck() && !capturesResource && !blocksPasser && !doubleAttack) continue;
++                const leaf = visit(after, answer);
++                const proof = settle(leaf, retained + delta(after, answer), depth - 1, path);
++                if (proof) { witness = proof; answerUci = makeUci(answer); break; }
++            }
++            if (!witness) return null;
++            resources.push({ fen: makeFen(pos.toSetup()), replyUci: makeUci(reply), answerUci }, ...witness);
++        }
++        return resources;
++    };
++    try {
++        const branches: CheckingPawnCaptureProof["branches"] = [];
++        for (const reply of ordered(root.after)) {
++            if (reply.promotion || capturedValue(root.after, reply)) return null;
++            const after = visit(root.after, reply);
++            if (after.isEnd()) return null;
++            const holds = ordered(after).filter(move => !move.promotion && !capturedValue(after, move));
++            // Blocking an advanced pawn or attacking the queen is a concrete
++            // retention action; prefer it over unrelated king shuffling.
++            const priority = (move: NormalMove) => {
++                const p = after.board.get(move.from)!;
++                const from = move.to + (side === "white" ? 8 : -8);
++                const blocks = from >= 0 && from < 64 && after.board.get(from)?.color !== side && after.board.get(from)?.role === "pawn";
++                const queen = after.board.queen.intersect(after.board[opposite(side)]).first();
++                const attacksQueen = queen !== undefined && attacks(p, move.to, after.board.occupied.without(move.from).with(move.to)).has(queen);
++                return Number(blocks) * 2 + Number(attacksQueen);
++            };
++            holds.sort((a, b) => priority(b) - priority(a));
++            let branch: CheckingPawnCaptureProof["branches"][number] | null = null;
++            for (const hold of holds) {
++                const leaf = visit(after, hold);
++                if (leaf.isCheck() || leaf.isEnd()) continue;
++                const resources = settle(leaf, root.capture, 4, new Set());
++                if (resources) { branch = { replyUci: makeUci(reply), holdUci: makeUci(hold), resources }; break; }
++            }
++            if (!branch) { onFailure?.(`No retained pawn after ${makeSan(root.after, reply)}`); return null; }
++            branches.push(branch);
++        }
++        return { gain: VALUE.pawn, visits: nodeLimit - budget.nodes, branches };
++    } catch (error) {
++        onFailure?.(error instanceof Error ? error.message : String(error));
++        return null;
++    }
++}
+ const checkingAttackCache = new Map<string, CheckingAttackProof | null>();

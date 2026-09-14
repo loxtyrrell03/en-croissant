@@ -13334,6 +13334,18 @@ function materialThreatGain(step, targets, capturers) {
 	const proof = materialThreatProof(step, targets, capturers);
 	return proof.kind === "proven" ? proof.gain : null;
 }
+/** A direct-threat badge must use its own complete, liability-aware bound,
+* not the material value seen later in a cooperative engine variation. */
+function proveDirectMaterialThreat(step) {
+	const targets = winningTargets(step.after, step.move.to, step.before.turn);
+	if (!targets.length || step.after.isEnd() || defenderCanClaimFiftyMoveDraw(step.after)) return null;
+	const proof = materialThreatProof(step, targets, [step.move.to], [], false, void 0, { allPiecesAtLeaf: true });
+	const initialGain = step.capture || step.move.promotion ? tacticalExchangeGain(step.before, step.move) : 0;
+	return proof.kind === "proven" && proof.complete && proof.gain < 1e4 && initialGain > -VALUE.king && proof.gain > Math.max(0, initialGain) ? {
+		...proof,
+		targets
+	} : null;
+}
 function materialThreatProof(step, targets, capturers, interpositions = [], allowMateAnswer = false, promotionFrom, options = {}) {
 	const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}:${Boolean(options.rayMaterialOnly)}:${Boolean(options.rejectCaptureMate)}:${Boolean(options.captureWitnesses)}`;
 	if (materialProofCache.has(key)) return materialProofCache.get(key);
@@ -16845,8 +16857,16 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		else if (proposal.id === "capturingDefender") sound = Boolean(capturedDefenderEvidence(step, proposal.source));
 		else if (proposal.id === "attackingF2F7") sound = step.capture > 0 && tacticalExchangeGain(step.before, step.move) >= 100;
 		else if (proposal.id === "hangingPiece") sound = step.capture >= 320 && tacticalExchangeGain(step.before, step.move) >= 100;
-		else if (proposal.id === "attacking_undefended_piece") sound = materialThreatGain(step, winningTargets(step.after, step.move.to, attacker), [step.move.to]) !== null;
-		else if (proposal.id === "sacrifice") {
+		else if (proposal.id === "attacking_undefended_piece") {
+			const threat = proveDirectMaterialThreat(step);
+			sound = Boolean(threat);
+			if (threat) proposal = {
+				...proposal,
+				value: threat.gain,
+				confidence: "high",
+				evidence: `${step.san} attacks ${threat.targets.map((to) => `the ${step.after.board.get(to).role} on ${makeSquare(to)}`).join(" and ")}. Every legal defence permits a verified local material gain on these targets. Captures, recaptures and immediate losses elsewhere are included; this is not the full position's evaluation.`
+			};
+		} else if (proposal.id === "sacrifice") {
 			const exchangeGain = tacticalExchangeGain(step.before, step.move);
 			const localMate = proposal.ply === 1 ? checkingMate || quietMate || preparation : proveShortCheckingMate(step) || proveCheckingMate(episode.slice(proposal.ply - 1)) || proveQuietMateThreat(step) || quietPreparation(episode.slice(proposal.ply - 1));
 			sound = Boolean(localMate) && exchangeGain > -VALUE.king && exchangeGain <= -90;
@@ -16965,6 +16985,20 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	const fork = candidates.find((m) => m.id === "fork");
 	const filtered = normalizedCandidates.filter((m) => {
 		if (incidentalMatingMechanisms.has(m.id) && m.ply === 1) return false;
+		if (m.id === "attacking_undefended_piece" && m.ply) {
+			const discovery = candidates.find((other) => DISCOVERED_THEMES.has(other.id) && other.ply === m.ply && other.moveUci === m.moveUci && other.confidence === "high" && (other.value ?? 0) >= (m.value ?? Infinity) && (other.value ?? 1e4) < 1e4);
+			if (discovery) {
+				const direct = proveDirectMaterialThreat(steps[m.ply - 1]);
+				const proof = discoveredEvidence(steps.slice(m.ply - 1), discovery.source);
+				if (direct && proof && proof.motif.id === discovery.id && (proof.motif.value ?? 0) >= direct.gain && (proof.motif.value ?? 1e4) < 1e4 && direct.targets.length && direct.targets.every((to) => proof.targets.includes(to))) return false;
+			}
+			const trap = candidates.find((other) => other.id === "trappedPiece" && other.ply === m.ply && other.moveUci === m.moveUci && other.confidence === "high" && (other.value ?? 0) >= (m.value ?? Infinity));
+			if (trap) {
+				const direct = proveDirectMaterialThreat(steps[m.ply - 1]);
+				const proof = trappedPieceProof(steps[m.ply - 1], trap.source);
+				if (direct && proof && (proof.motif.value ?? 0) >= direct.gain && direct.targets.length && direct.targets.every((to) => to === proof.target)) return false;
+			}
+		}
 		if (m.id === "skewer" && m.ply) {
 			const discovery = candidates.find((other) => ["discoveredCheck", "doubleCheck"].includes(other.id) && other.ply === m.ply && other.moveUci === m.moveUci && other.confidence === "high" && (other.value ?? 0) < 1e4 && (other.value ?? 0) >= (m.value ?? Infinity));
 			const step = steps[m.ply - 1];
@@ -18119,7 +18153,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 98;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 99;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

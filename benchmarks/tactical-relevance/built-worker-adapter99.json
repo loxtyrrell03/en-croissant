@@ -1,0 +1,4669 @@
+{
+  "scope": "Actual application worker controller with cold production JS worker import, classification and structured transfer on this Node host. Separate startup and computation deadlines; excludes engine search and does not prove WebView or physical UI latency.",
+  "deadlineMs": 3000,
+  "startupDeadlineMs": 20000,
+  "cases": [
+    {
+      "id": "direct-threat:root",
+      "elapsedMs": 65.62800000000016,
+      "startupMs": 29.78859999999986,
+      "classificationMs": 35.839400000000296,
+      "primary": [
+        "discoveredCheck"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "direct-threat:continuation",
+      "elapsedMs": 78.67680000000018,
+      "startupMs": 29.751700000000255,
+      "classificationMs": 48.92509999999993,
+      "primary": [
+        "discoveredCheck"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "direct-threat:missing-revealed-check",
+      "elapsedMs": 75.5940999999998,
+      "startupMs": 29.76260000000002,
+      "classificationMs": 45.83149999999978,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "direct-threat:no-material-victim",
+      "elapsedMs": 67.5969,
+      "startupMs": 26.727100000000064,
+      "classificationMs": 40.86979999999994,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "direct-threat:checking-ray-interposition",
+      "elapsedMs": 61.43299999999999,
+      "startupMs": 29.19419999999991,
+      "classificationMs": 32.23880000000008,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:dc2111b50ccd",
+      "elapsedMs": 64.99019999999973,
+      "startupMs": 29.088400000000092,
+      "classificationMs": 35.90179999999964,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:dc2111b50ccd:choice",
+      "elapsedMs": 65.87660000000005,
+      "startupMs": 30.135099999999966,
+      "classificationMs": 35.74150000000009,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:e0e5088e948b",
+      "elapsedMs": 105.11859999999979,
+      "startupMs": 29.18269999999984,
+      "classificationMs": 75.93589999999995,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:e0e5088e948b:choice",
+      "elapsedMs": 113.88409999999976,
+      "startupMs": 30.41289999999981,
+      "classificationMs": 83.47119999999995,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:991007a8fe50",
+      "elapsedMs": 77.58339999999998,
+      "startupMs": 28.93259999999964,
+      "classificationMs": 48.650800000000345,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:991007a8fe50:choice",
+      "elapsedMs": 37.51080000000002,
+      "startupMs": 25.634900000000016,
+      "classificationMs": 11.875900000000001,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:e3f499c28a39",
+      "elapsedMs": 124.6234999999997,
+      "startupMs": 24.3154999999997,
+      "classificationMs": 100.30799999999999,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:e3f499c28a39:choice",
+      "elapsedMs": 103.63000000000011,
+      "startupMs": 24.16899999999987,
+      "classificationMs": 79.46100000000024,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:e2508c1bb5cb",
+      "elapsedMs": 83.28799999999956,
+      "startupMs": 28.902799999999843,
+      "classificationMs": 54.38519999999971,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:e2508c1bb5cb:choice",
+      "elapsedMs": 106.4344000000001,
+      "startupMs": 28.905099999999948,
+      "classificationMs": 77.52930000000015,
+      "primary": [
+        "tacticalPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:a45ce61cb9c7",
+      "elapsedMs": 123.95719999999983,
+      "startupMs": 27.401099999999133,
+      "classificationMs": 96.5561000000007,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:a45ce61cb9c7:choice",
+      "elapsedMs": 146.55259999999998,
+      "startupMs": 28.89100000000053,
+      "classificationMs": 117.66159999999945,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:94df55c56738",
+      "elapsedMs": 87.5064999999995,
+      "startupMs": 32.906199999999444,
+      "classificationMs": 54.60030000000006,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:94df55c56738:choice",
+      "elapsedMs": 74.7555999999995,
+      "startupMs": 26.60109999999986,
+      "classificationMs": 48.15449999999964,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:b0b9f9303109",
+      "elapsedMs": 83.73649999999998,
+      "startupMs": 29.04989999999998,
+      "classificationMs": 54.6866,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:b0b9f9303109:choice",
+      "elapsedMs": 544.5264999999999,
+      "startupMs": 26.35699999999997,
+      "classificationMs": 518.1695,
+      "primary": [
+        "mateIn7"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:2f92806b3db7",
+      "elapsedMs": 104.2484000000004,
+      "startupMs": 25.168899999999667,
+      "classificationMs": 79.07950000000073,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:2f92806b3db7:choice",
+      "elapsedMs": 117.20820000000003,
+      "startupMs": 30.823599999999715,
+      "classificationMs": 86.38460000000032,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:f1e58d209a36",
+      "elapsedMs": 106.87049999999999,
+      "startupMs": 29.39550000000054,
+      "classificationMs": 77.47499999999945,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:f1e58d209a36:choice",
+      "elapsedMs": 46.18759999999929,
+      "startupMs": 29.280399999999645,
+      "classificationMs": 16.907199999999648,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:3357612730d9",
+      "elapsedMs": 152.8058000000001,
+      "startupMs": 27.447900000000118,
+      "classificationMs": 125.35789999999997,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:3357612730d9:choice",
+      "elapsedMs": 46.24110000000019,
+      "startupMs": 30.42699999999968,
+      "classificationMs": 15.814100000000508,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:51e390d06bab",
+      "elapsedMs": 79.34550000000036,
+      "startupMs": 29.660899999999856,
+      "classificationMs": 49.6846000000005,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:51e390d06bab:choice",
+      "elapsedMs": 115.17590000000018,
+      "startupMs": 25.606800000000476,
+      "classificationMs": 89.56909999999971,
+      "primary": [
+        "forcingAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:757eb761eaa4",
+      "elapsedMs": 82.34130000000005,
+      "startupMs": 31.847999999999956,
+      "classificationMs": 50.49330000000009,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:757eb761eaa4:choice",
+      "elapsedMs": 83.33179999999993,
+      "startupMs": 29.26720000000023,
+      "classificationMs": 54.0645999999997,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:3b74915f1abc",
+      "elapsedMs": 89.92179999999917,
+      "startupMs": 29.540899999999965,
+      "classificationMs": 60.3808999999992,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:3b74915f1abc:choice",
+      "elapsedMs": 69.52850000000035,
+      "startupMs": 26.128700000000208,
+      "classificationMs": 43.39980000000014,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:4dcd82bf67e6",
+      "elapsedMs": 89.82020000000011,
+      "startupMs": 24.932600000000093,
+      "classificationMs": 64.88760000000002,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:4dcd82bf67e6:choice",
+      "elapsedMs": 184.08839999999873,
+      "startupMs": 27.626999999999498,
+      "classificationMs": 156.46139999999923,
+      "primary": [
+        "mateIn5"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:68e8d935ebe5",
+      "elapsedMs": 112.69790000000103,
+      "startupMs": 30.004400000001624,
+      "classificationMs": 82.6934999999994,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:68e8d935ebe5:choice",
+      "elapsedMs": 38.98990000000049,
+      "startupMs": 25.871900000000096,
+      "classificationMs": 13.118000000000393,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:4ffa153cb40e",
+      "elapsedMs": 107.7507999999998,
+      "startupMs": 29.43279999999868,
+      "classificationMs": 78.31800000000112,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:4ffa153cb40e:choice",
+      "elapsedMs": 45.4989000000005,
+      "startupMs": 30.157400000000052,
+      "classificationMs": 15.341500000000451,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:aefa9706376c",
+      "elapsedMs": 112.23970000000008,
+      "startupMs": 30.03689999999915,
+      "classificationMs": 82.20280000000093,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:aefa9706376c:choice",
+      "elapsedMs": 105.98869999999988,
+      "startupMs": 28.527100000001155,
+      "classificationMs": 77.46159999999873,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:37c492854d3d",
+      "elapsedMs": 54.23710000000028,
+      "startupMs": 29.381500000001324,
+      "classificationMs": 24.855599999998958,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:37c492854d3d:choice",
+      "elapsedMs": 53.15869999999995,
+      "startupMs": 30.03559999999925,
+      "classificationMs": 23.123100000000704,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:1b4b6dae2244",
+      "elapsedMs": 133.8735000000015,
+      "startupMs": 30.54830000000038,
+      "classificationMs": 103.32520000000113,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:1b4b6dae2244:choice",
+      "elapsedMs": 44.615200000000186,
+      "startupMs": 29.909600000000864,
+      "classificationMs": 14.705599999999322,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:e94905e1d6c0",
+      "elapsedMs": 123.34310000000005,
+      "startupMs": 29.430200000000696,
+      "classificationMs": 93.91289999999935,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:e94905e1d6c0:choice",
+      "elapsedMs": 158.16009999999915,
+      "startupMs": 29.114799999999377,
+      "classificationMs": 129.04529999999977,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:2436c202e80c",
+      "elapsedMs": 79.74079999999958,
+      "startupMs": 28.08770000000004,
+      "classificationMs": 51.65309999999954,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:2436c202e80c:choice",
+      "elapsedMs": 82.86039999999957,
+      "startupMs": 29.27089999999953,
+      "classificationMs": 53.589500000000044,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:6dd8f600a5ec",
+      "elapsedMs": 103.7430000000004,
+      "startupMs": 28.801799999999275,
+      "classificationMs": 74.94120000000112,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:6dd8f600a5ec:choice",
+      "elapsedMs": 256.4413000000004,
+      "startupMs": 29.241400000000795,
+      "classificationMs": 227.19989999999962,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:c5ad41847c38",
+      "elapsedMs": 161.3632000000016,
+      "startupMs": 70.45290000000023,
+      "classificationMs": 90.91030000000137,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:c5ad41847c38:choice",
+      "elapsedMs": 151.21669999999904,
+      "startupMs": 62.98309999999947,
+      "classificationMs": 88.23359999999957,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:c385cccaa112",
+      "elapsedMs": 399.27180000000044,
+      "startupMs": 77.03300000000127,
+      "classificationMs": 322.2387999999992,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:c385cccaa112:choice",
+      "elapsedMs": 86.82730000000083,
+      "startupMs": 52.86300000000119,
+      "classificationMs": 33.96429999999964,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:93e65e2ce6f9",
+      "elapsedMs": 140.41039999999884,
+      "startupMs": 59.188200000000506,
+      "classificationMs": 81.22219999999834,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:93e65e2ce6f9:choice",
+      "elapsedMs": 137.31700000000092,
+      "startupMs": 41.375700000000506,
+      "classificationMs": 95.94130000000041,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:2ac08b7cecc6",
+      "elapsedMs": 121.06700000000092,
+      "startupMs": 28.79240000000027,
+      "classificationMs": 92.27460000000065,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:2ac08b7cecc6:choice",
+      "elapsedMs": 116.67069999999876,
+      "startupMs": 31.52429999999913,
+      "classificationMs": 85.14639999999963,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:5952acd90e77",
+      "elapsedMs": 70.99559999999838,
+      "startupMs": 29.713200000000143,
+      "classificationMs": 41.28239999999823,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:5952acd90e77:choice",
+      "elapsedMs": 42.699000000000524,
+      "startupMs": 30.13889999999992,
+      "classificationMs": 12.560100000000602,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:1dd7b48b5b07",
+      "elapsedMs": 86.23140000000058,
+      "startupMs": 30.60150000000067,
+      "classificationMs": 55.62989999999991,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:1dd7b48b5b07:choice",
+      "elapsedMs": 45.06290000000081,
+      "startupMs": 27.960699999999633,
+      "classificationMs": 17.102200000001176,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:c370f6a83580",
+      "elapsedMs": 108.39370000000054,
+      "startupMs": 26.34820000000036,
+      "classificationMs": 82.04550000000017,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-capture:checking-pawn:c370f6a83580:choice",
+      "elapsedMs": 157.73580000000038,
+      "startupMs": 30.4966000000004,
+      "classificationMs": 127.23919999999998,
+      "primary": [
+        "doubleThreat"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:h5yHhpzr:ply6",
+      "elapsedMs": 43.65419999999904,
+      "startupMs": 32.21240000000034,
+      "classificationMs": 11.441799999998693,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:h5yHhpzr:ply6",
+      "elapsedMs": 46.999400000000605,
+      "startupMs": 31.10190000000148,
+      "classificationMs": 15.897499999999127,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:h5yHhpzr:ply6",
+      "elapsedMs": 50.259900000000926,
+      "startupMs": 33.73730000000069,
+      "classificationMs": 16.52260000000024,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:h5yHhpzr:ply16",
+      "elapsedMs": 132.8711999999996,
+      "startupMs": 32.41200000000026,
+      "classificationMs": 100.45919999999933,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:h5yHhpzr:ply16",
+      "elapsedMs": 485.0779999999995,
+      "startupMs": 32.96849999999904,
+      "classificationMs": 452.1095000000005,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:h5yHhpzr:ply16",
+      "elapsedMs": 364.2515999999996,
+      "startupMs": 67.5028999999995,
+      "classificationMs": 296.7487000000001,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:h5yHhpzr:ply30",
+      "elapsedMs": 81.38329999999951,
+      "startupMs": 59.59859999999935,
+      "classificationMs": 21.784700000000157,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:h5yHhpzr:ply30",
+      "elapsedMs": 81.59719999999834,
+      "startupMs": 55.13769999999931,
+      "classificationMs": 26.459499999999025,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:h5yHhpzr:ply30",
+      "elapsedMs": 108.06759999999849,
+      "startupMs": 74.84039999999914,
+      "classificationMs": 33.22719999999936,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:h5yHhpzr:ply50",
+      "elapsedMs": 81.23899999999958,
+      "startupMs": 63.205400000000736,
+      "classificationMs": 18.03359999999884,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:h5yHhpzr:ply50",
+      "elapsedMs": 82.94560000000092,
+      "startupMs": 60.338800000001356,
+      "classificationMs": 22.606799999999566,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:h5yHhpzr:ply50",
+      "elapsedMs": 91.8047000000006,
+      "startupMs": 64.65660000000025,
+      "classificationMs": 27.14810000000034,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:h5yHhpzr:ply70",
+      "elapsedMs": 280.7993999999999,
+      "startupMs": 69.46349999999984,
+      "classificationMs": 211.33590000000004,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:h5yHhpzr:ply70",
+      "elapsedMs": 296.0023999999994,
+      "startupMs": 70.25149999999849,
+      "classificationMs": 225.7509000000009,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:h5yHhpzr:ply70",
+      "elapsedMs": 253.61239999999998,
+      "startupMs": 50.83129999999983,
+      "classificationMs": 202.78110000000015,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:h5yHhpzr:ply90",
+      "elapsedMs": 75.19659999999931,
+      "startupMs": 59.66599999999926,
+      "classificationMs": 15.53060000000005,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:h5yHhpzr:ply90",
+      "elapsedMs": 160.9425999999985,
+      "startupMs": 55.181700000001,
+      "classificationMs": 105.76089999999749,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:h5yHhpzr:ply90",
+      "elapsedMs": 297.324099999998,
+      "startupMs": 52.97220000000016,
+      "classificationMs": 244.35189999999784,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:zJqoVvf1:ply6",
+      "elapsedMs": 90.33130000000165,
+      "startupMs": 74.9890000000014,
+      "classificationMs": 15.34230000000025,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:zJqoVvf1:ply6",
+      "elapsedMs": 113.03849999999875,
+      "startupMs": 80.83840000000055,
+      "classificationMs": 32.2000999999982,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:zJqoVvf1:ply6",
+      "elapsedMs": 125.24339999999938,
+      "startupMs": 89.51459999999861,
+      "classificationMs": 35.728800000000774,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:zJqoVvf1:ply16",
+      "elapsedMs": 94.49140000000261,
+      "startupMs": 65.0561000000016,
+      "classificationMs": 29.435300000001007,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:zJqoVvf1:ply16",
+      "elapsedMs": 472.8269,
+      "startupMs": 61.164199999999255,
+      "classificationMs": 411.66270000000077,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:zJqoVvf1:ply16",
+      "elapsedMs": 735.9890999999989,
+      "startupMs": 60.50720000000001,
+      "classificationMs": 675.4818999999989,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:zJqoVvf1:ply30",
+      "elapsedMs": 209.79179999999906,
+      "startupMs": 62.26090000000113,
+      "classificationMs": 147.53089999999793,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:zJqoVvf1:ply30",
+      "elapsedMs": 493.40940000000046,
+      "startupMs": 62.13390000000072,
+      "classificationMs": 431.27549999999974,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:zJqoVvf1:ply30",
+      "elapsedMs": 169.62679999999818,
+      "startupMs": 96.17559999999867,
+      "classificationMs": 73.45119999999952,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:zJqoVvf1:ply50",
+      "elapsedMs": 136.40970000000016,
+      "startupMs": 115.85789999999906,
+      "classificationMs": 20.551800000001094,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:zJqoVvf1:ply50",
+      "elapsedMs": 141.01260000000184,
+      "startupMs": 95.14419999999882,
+      "classificationMs": 45.86840000000302,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:zJqoVvf1:ply50",
+      "elapsedMs": 443.7595000000001,
+      "startupMs": 92.83000000000175,
+      "classificationMs": 350.92949999999837,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:zJqoVvf1:ply70",
+      "elapsedMs": 74.33780000000115,
+      "startupMs": 60.04170000000158,
+      "classificationMs": 14.29609999999957,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:zJqoVvf1:ply70",
+      "elapsedMs": 83.7941000000028,
+      "startupMs": 60.204499999999825,
+      "classificationMs": 23.589600000002974,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:zJqoVvf1:ply70",
+      "elapsedMs": 92.7303000000029,
+      "startupMs": 80.64559999999983,
+      "classificationMs": 12.084700000003068,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:zJqoVvf1:ply90",
+      "elapsedMs": 74.06300000000192,
+      "startupMs": 50.42250000000058,
+      "classificationMs": 23.64050000000134,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:zJqoVvf1:ply90",
+      "elapsedMs": 72.72520000000077,
+      "startupMs": 52.425100000000384,
+      "classificationMs": 20.300100000000384,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:zJqoVvf1:ply90",
+      "elapsedMs": 207.96880000000237,
+      "startupMs": 55.30450000000201,
+      "classificationMs": 152.66430000000037,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:QwS7iWSm:ply6",
+      "elapsedMs": 63.013599999998405,
+      "startupMs": 51.69350000000122,
+      "classificationMs": 11.320099999997183,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:QwS7iWSm:ply6",
+      "elapsedMs": 199.44710000000123,
+      "startupMs": 55.96490000000267,
+      "classificationMs": 143.48219999999856,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:QwS7iWSm:ply6",
+      "elapsedMs": 85.34140000000116,
+      "startupMs": 47.27270000000135,
+      "classificationMs": 38.06869999999981,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:QwS7iWSm:ply16",
+      "elapsedMs": 203.19510000000082,
+      "startupMs": 113.84800000000178,
+      "classificationMs": 89.34709999999905,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:QwS7iWSm:ply16",
+      "elapsedMs": 286.3904999999977,
+      "startupMs": 185.85879999999815,
+      "classificationMs": 100.53169999999955,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:QwS7iWSm:ply16",
+      "elapsedMs": 201.5630999999994,
+      "startupMs": 123.90319999999701,
+      "classificationMs": 77.65990000000238,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:QwS7iWSm:ply30",
+      "elapsedMs": 72.75959999999759,
+      "startupMs": 62.50499999999738,
+      "classificationMs": 10.25460000000021,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:QwS7iWSm:ply30",
+      "elapsedMs": 752.1177000000025,
+      "startupMs": 77.64979999999923,
+      "classificationMs": 674.4679000000033,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:QwS7iWSm:ply30",
+      "elapsedMs": 394.6991999999991,
+      "startupMs": 114.04899999999907,
+      "classificationMs": 280.65020000000004,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:QwS7iWSm:ply50",
+      "elapsedMs": 83.43849999999657,
+      "startupMs": 67.85589999999866,
+      "classificationMs": 15.58259999999791,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:QwS7iWSm:ply50",
+      "elapsedMs": 824.5400000000009,
+      "startupMs": 109.43960000000152,
+      "classificationMs": 715.1003999999994,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:QwS7iWSm:ply50",
+      "elapsedMs": 222.78499999999985,
+      "startupMs": 92.16699999999764,
+      "classificationMs": 130.6180000000022,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:QwS7iWSm:ply70",
+      "elapsedMs": 294.3400999999976,
+      "startupMs": 111.8760000000002,
+      "classificationMs": 182.46409999999742,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:QwS7iWSm:ply70",
+      "elapsedMs": 634.7583999999988,
+      "startupMs": 108.05509999999776,
+      "classificationMs": 526.703300000001,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:QwS7iWSm:ply70",
+      "elapsedMs": 273.04829999999856,
+      "startupMs": 60.76380000000063,
+      "classificationMs": 212.28449999999793,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:QwS7iWSm:ply90",
+      "elapsedMs": 171.259399999999,
+      "startupMs": 60.66570000000138,
+      "classificationMs": 110.59369999999763,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:QwS7iWSm:ply90",
+      "elapsedMs": 81.20179999999891,
+      "startupMs": 60.40109999999913,
+      "classificationMs": 20.80069999999978,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:QwS7iWSm:ply90",
+      "elapsedMs": 355.65429999999833,
+      "startupMs": 51.50759999999718,
+      "classificationMs": 304.14670000000115,
+      "primary": [
+        "mateIn5"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:T675oRjx:ply6",
+      "elapsedMs": 80.58389999999781,
+      "startupMs": 59.954099999999016,
+      "classificationMs": 20.629799999998795,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:T675oRjx:ply6",
+      "elapsedMs": 75.3080000000009,
+      "startupMs": 55.84160000000338,
+      "classificationMs": 19.46639999999752,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:T675oRjx:ply6",
+      "elapsedMs": 79.15269999999873,
+      "startupMs": 55.65350000000035,
+      "classificationMs": 23.499199999998382,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:T675oRjx:ply16",
+      "elapsedMs": 67.54839999999967,
+      "startupMs": 64.49989999999889,
+      "classificationMs": 3.048500000000786,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:T675oRjx:ply16",
+      "elapsedMs": 248.46420000000217,
+      "startupMs": 91.88000000000102,
+      "classificationMs": 156.58420000000115,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:T675oRjx:ply16",
+      "elapsedMs": 968.4219000000012,
+      "startupMs": 129.76789999999892,
+      "classificationMs": 838.6540000000023,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:T675oRjx:ply30",
+      "elapsedMs": 576.9794000000002,
+      "startupMs": 155.11369999999806,
+      "classificationMs": 421.8657000000021,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:T675oRjx:ply30",
+      "elapsedMs": 1054.4189000000006,
+      "startupMs": 145.71370000000024,
+      "classificationMs": 908.7052000000003,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:T675oRjx:ply30",
+      "elapsedMs": 78.1707000000024,
+      "startupMs": 57.614699999998265,
+      "classificationMs": 20.556000000004133,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:T675oRjx:ply50",
+      "elapsedMs": 67.3156999999992,
+      "startupMs": 62.85809999999765,
+      "classificationMs": 4.457600000001548,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:T675oRjx:ply50",
+      "elapsedMs": 65.16030000000319,
+      "startupMs": 49.409599999999045,
+      "classificationMs": 15.750700000004144,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:T675oRjx:ply50",
+      "elapsedMs": 78.40860000000248,
+      "startupMs": 55.97980000000098,
+      "classificationMs": 22.4288000000015,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-source:context:T675oRjx:ply70",
+      "elapsedMs": 146.2592999999979,
+      "startupMs": 85.35209999999643,
+      "classificationMs": 60.90720000000147,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-engine:context:T675oRjx:ply70",
+      "elapsedMs": 107.43269999999757,
+      "startupMs": 80.48709999999846,
+      "classificationMs": 26.945599999999104,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "broader-response:context:T675oRjx:ply70",
+      "elapsedMs": 82.66049999999814,
+      "startupMs": 56.44959999999992,
+      "classificationMs": 26.21089999999822,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "mixed-fork:root",
+      "elapsedMs": 148.55520000000251,
+      "startupMs": 50.46340000000055,
+      "classificationMs": 98.09180000000197,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mixed-fork:continuation",
+      "elapsedMs": 174.6972999999998,
+      "startupMs": 51.27859999999782,
+      "classificationMs": 123.41870000000199,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mixed-fork:unpin-king-b2",
+      "elapsedMs": 93.60339999999997,
+      "startupMs": 42.82369999999355,
+      "classificationMs": 50.779700000006414,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "mixed-fork:missing-pinner",
+      "elapsedMs": 93.8099000000002,
+      "startupMs": 41.84339999999793,
+      "classificationMs": 51.96650000000227,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "mixed-fork:second-pawn-guard",
+      "elapsedMs": 99.90899999999965,
+      "startupMs": 42.86569999999483,
+      "classificationMs": 57.04330000000482,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "mixed-fork:capture-the-forker",
+      "elapsedMs": 100.98329999999987,
+      "startupMs": 46.148300000000745,
+      "classificationMs": 54.83499999999913,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "mixed-fork:off-square-queen-liability",
+      "elapsedMs": 82.69989999999962,
+      "startupMs": 32.027399999999034,
+      "classificationMs": 50.67250000000058,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "promotion-ending:real:1",
+      "elapsedMs": 800.3630000000048,
+      "startupMs": 34.34649999999965,
+      "classificationMs": 766.0165000000052,
+      "primary": [
+        "promotionCombination"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "promotion-ending:real:5",
+      "elapsedMs": 817.3905000000013,
+      "startupMs": 32.30879999999888,
+      "classificationMs": 785.0817000000025,
+      "primary": [
+        "promotionCombination"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "promotion-ending:king-3:1",
+      "elapsedMs": 520.6573999999964,
+      "startupMs": 31.49489999999787,
+      "classificationMs": 489.16249999999854,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "promotion-ending:king-3:15",
+      "elapsedMs": 539.729800000001,
+      "startupMs": 35.05950000000303,
+      "classificationMs": 504.67029999999795,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "promotion-ending:king-12:1",
+      "elapsedMs": 897.170100000003,
+      "startupMs": 30.986799999998766,
+      "classificationMs": 866.1833000000042,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "promotion-ending:king-12:19",
+      "elapsedMs": 934.7315000000017,
+      "startupMs": 36.49979999999778,
+      "classificationMs": 898.2317000000039,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "promotion-ending:king-13:1",
+      "elapsedMs": 887.1690999999992,
+      "startupMs": 35.116900000000896,
+      "classificationMs": 852.0521999999983,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "promotion-ending:king-13:13",
+      "elapsedMs": 902.4579999999987,
+      "startupMs": 31.289599999996426,
+      "classificationMs": 871.1684000000023,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "promotion-ending:king-24:1",
+      "elapsedMs": 809.185000000005,
+      "startupMs": 27.295799999999872,
+      "classificationMs": 781.8892000000051,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "promotion-ending:king-24:17",
+      "elapsedMs": 858.287900000003,
+      "startupMs": 27.078099999998813,
+      "classificationMs": 831.2098000000042,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-mechanism:49h84:1",
+      "elapsedMs": 56.79780000000028,
+      "startupMs": 31.10020000000077,
+      "classificationMs": 25.69759999999951,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-mechanism:49h84:3",
+      "elapsedMs": 57.5599000000002,
+      "startupMs": 29.261100000003353,
+      "classificationMs": 28.298799999996845,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-mechanism:qY3NM:1",
+      "elapsedMs": 69.3012000000017,
+      "startupMs": 32.92399999999907,
+      "classificationMs": 36.37720000000263,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-mechanism:qY3NM:5",
+      "elapsedMs": 82.07629999999335,
+      "startupMs": 29.18569999999454,
+      "classificationMs": 52.89059999999881,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-mechanism:kO37k:1",
+      "elapsedMs": 65.33979999999428,
+      "startupMs": 28.950699999993958,
+      "classificationMs": 36.389100000000326,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-mechanism:kO37k:5",
+      "elapsedMs": 78.99369999999908,
+      "startupMs": 28.46349999999802,
+      "classificationMs": 50.53020000000106,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-mechanism:control:absent-guard",
+      "elapsedMs": 59.04130000000441,
+      "startupMs": 29.854599999998754,
+      "classificationMs": 29.186700000005658,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-mechanism:control:king-flight",
+      "elapsedMs": 61.40450000000419,
+      "startupMs": 27.4690000000046,
+      "classificationMs": 33.93549999999959,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-mechanism:control:second-guard",
+      "elapsedMs": 66.41870000000199,
+      "startupMs": 30.025300000001153,
+      "classificationMs": 36.39340000000084,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-mechanism:control:pinned-guard",
+      "elapsedMs": 61.40699999999924,
+      "startupMs": 29.50539999999455,
+      "classificationMs": 31.90160000000469,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-mechanism:control:missing-approach",
+      "elapsedMs": 57.93839999999909,
+      "startupMs": 29.680999999996857,
+      "classificationMs": 28.257400000002235,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-mechanism:control:missing-support",
+      "elapsedMs": 55.87569999999687,
+      "startupMs": 26.91399999999703,
+      "classificationMs": 28.961699999999837,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-mechanism:control:extra-receiver",
+      "elapsedMs": 63.48369999999704,
+      "startupMs": 29.604800000000978,
+      "classificationMs": 33.878899999996065,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-mechanism:control:guarded-finish",
+      "elapsedMs": 65.89919999999984,
+      "startupMs": 28.285600000002887,
+      "classificationMs": 37.61359999999695,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:lichess:9cqKR",
+      "elapsedMs": 43.22650000000431,
+      "startupMs": 29.294800000003306,
+      "classificationMs": 13.931700000001001,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:lichess:9cqKR",
+      "elapsedMs": 41.24250000000029,
+      "startupMs": 28.048299999994924,
+      "classificationMs": 13.194200000005367,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:lichess:hGEvH",
+      "elapsedMs": 97.09800000000541,
+      "startupMs": 31.173000000002503,
+      "classificationMs": 65.92500000000291,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:lichess:hGEvH",
+      "elapsedMs": 115.70850000000064,
+      "startupMs": 30.679800000005343,
+      "classificationMs": 85.0286999999953,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:lichess:kO37k",
+      "elapsedMs": 80.8012000000017,
+      "startupMs": 28.439800000000105,
+      "classificationMs": 52.361400000001595,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:lichess:kO37k",
+      "elapsedMs": 78.83810000000085,
+      "startupMs": 28.680400000004738,
+      "classificationMs": 50.15769999999611,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:lichess:brn5j",
+      "elapsedMs": 69.54630000000179,
+      "startupMs": 28.16920000000391,
+      "classificationMs": 41.37709999999788,
+      "primary": [
+        "clearance"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:lichess:brn5j",
+      "elapsedMs": 98.2534999999989,
+      "startupMs": 29.8179999999993,
+      "classificationMs": 68.43549999999959,
+      "primary": [
+        "clearance"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:lichess:49h84",
+      "elapsedMs": 56.200800000005984,
+      "startupMs": 26.394100000004983,
+      "classificationMs": 29.806700000001,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:lichess:49h84",
+      "elapsedMs": 56.71669999999722,
+      "startupMs": 27.769099999997707,
+      "classificationMs": 28.94759999999951,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:lichess:qY3NM",
+      "elapsedMs": 80.02979999999661,
+      "startupMs": 28.5708999999988,
+      "classificationMs": 51.45889999999781,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:lichess:qY3NM",
+      "elapsedMs": 81.93869999999879,
+      "startupMs": 29.426800000001094,
+      "classificationMs": 52.511899999997695,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:lichess:W2tIf",
+      "elapsedMs": 39.25279999999475,
+      "startupMs": 29.260199999996985,
+      "classificationMs": 9.992599999997765,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:lichess:W2tIf",
+      "elapsedMs": 36.458999999995285,
+      "startupMs": 25.855900000002293,
+      "classificationMs": 10.603099999992992,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:lichess:EKWHC",
+      "elapsedMs": 37.61109999999462,
+      "startupMs": 27.930899999999383,
+      "classificationMs": 9.680199999995239,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:lichess:EKWHC",
+      "elapsedMs": 37.894399999997404,
+      "startupMs": 27.570999999996275,
+      "classificationMs": 10.32340000000113,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:lichess:KRLot",
+      "elapsedMs": 51.336300000002666,
+      "startupMs": 29.03360000000248,
+      "classificationMs": 22.302700000000186,
+      "primary": [
+        "backRankMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:lichess:KRLot",
+      "elapsedMs": 51.464899999999034,
+      "startupMs": 28.472999999998137,
+      "classificationMs": 22.991900000000896,
+      "primary": [
+        "backRankMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:lichess:SIVEv",
+      "elapsedMs": 66.95339999999851,
+      "startupMs": 28.140699999996286,
+      "classificationMs": 38.81270000000222,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:lichess:SIVEv",
+      "elapsedMs": 72.65480000000389,
+      "startupMs": 29.341400000004796,
+      "classificationMs": 43.31339999999909,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:lichess:30PgS",
+      "elapsedMs": 47.24559999999474,
+      "startupMs": 24.319499999997788,
+      "classificationMs": 22.92609999999695,
+      "primary": [
+        "doubleBishopMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:lichess:30PgS",
+      "elapsedMs": 55.511600000005274,
+      "startupMs": 29.4007000000056,
+      "classificationMs": 26.110899999999674,
+      "primary": [
+        "doubleBishopMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:lichess:I5Waq",
+      "elapsedMs": 65.55570000000444,
+      "startupMs": 28.44510000000446,
+      "classificationMs": 37.11059999999998,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:lichess:I5Waq",
+      "elapsedMs": 69.51169999999547,
+      "startupMs": 28.218699999997625,
+      "classificationMs": 41.292999999997846,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:context:etolcQHz:ply8",
+      "elapsedMs": 43.36819999999716,
+      "startupMs": 31.673299999994924,
+      "classificationMs": 11.694900000002235,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:context:etolcQHz:ply8",
+      "elapsedMs": 213.973699999995,
+      "startupMs": 28.207799999996496,
+      "classificationMs": 185.7658999999985,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:context:etolcQHz:ply24",
+      "elapsedMs": 41.588700000000244,
+      "startupMs": 29.845800000002782,
+      "classificationMs": 11.742899999997462,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:context:etolcQHz:ply24",
+      "elapsedMs": 45.494200000001,
+      "startupMs": 28.514799999997194,
+      "classificationMs": 16.979400000003807,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:context:etolcQHz:ply48",
+      "elapsedMs": 39.91859999999724,
+      "startupMs": 28.296299999994517,
+      "classificationMs": 11.622300000002724,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:context:etolcQHz:ply48",
+      "elapsedMs": 177.61000000000058,
+      "startupMs": 27.269599999999627,
+      "classificationMs": 150.34040000000095,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:context:etolcQHz:ply80",
+      "elapsedMs": 37.19499999999971,
+      "startupMs": 27.64039999999659,
+      "classificationMs": 9.55460000000312,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:context:etolcQHz:ply80",
+      "elapsedMs": 39.24010000000271,
+      "startupMs": 30.026499999999942,
+      "classificationMs": 9.21360000000277,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:context:MHuRInPi:ply8",
+      "elapsedMs": 151.72200000000157,
+      "startupMs": 29.051100000004226,
+      "classificationMs": 122.67089999999735,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:context:MHuRInPi:ply8",
+      "elapsedMs": 43.707399999999325,
+      "startupMs": 28.14839999999822,
+      "classificationMs": 15.559000000001106,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:context:MHuRInPi:ply24",
+      "elapsedMs": 36.86130000000412,
+      "startupMs": 24.69480000000476,
+      "classificationMs": 12.16649999999936,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:context:MHuRInPi:ply24",
+      "elapsedMs": 39.96220000000176,
+      "startupMs": 27.72500000000582,
+      "classificationMs": 12.237199999995937,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:context:MHuRInPi:ply48",
+      "elapsedMs": 39.0763999999981,
+      "startupMs": 27.93409999999858,
+      "classificationMs": 11.142299999999523,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:context:MHuRInPi:ply48",
+      "elapsedMs": 48.32220000000234,
+      "startupMs": 30.04899999999907,
+      "classificationMs": 18.27320000000327,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:context:xwAZeVkB:ply8",
+      "elapsedMs": 39.64719999999943,
+      "startupMs": 28.33759999999893,
+      "classificationMs": 11.3096000000005,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:context:xwAZeVkB:ply8",
+      "elapsedMs": 179.74789999999484,
+      "startupMs": 27.57999999999447,
+      "classificationMs": 152.16790000000037,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:context:xwAZeVkB:ply24",
+      "elapsedMs": 119.47149999999965,
+      "startupMs": 29.781499999997322,
+      "classificationMs": 89.69000000000233,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:context:xwAZeVkB:ply24",
+      "elapsedMs": 256.21399999999994,
+      "startupMs": 29.005799999999,
+      "classificationMs": 227.20820000000094,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:context:xwAZeVkB:ply48",
+      "elapsedMs": 40.009600000004866,
+      "startupMs": 28.791900000003807,
+      "classificationMs": 11.21770000000106,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:context:xwAZeVkB:ply48",
+      "elapsedMs": 126.32549999999901,
+      "startupMs": 27.941200000001118,
+      "classificationMs": 98.38429999999789,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-source:context:xwAZeVkB:ply80",
+      "elapsedMs": 69.10660000000644,
+      "startupMs": 25.205300000001444,
+      "classificationMs": 43.901300000004994,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "cross-phase-engine:context:xwAZeVkB:ply80",
+      "elapsedMs": 68.42409999999654,
+      "startupMs": 25.519799999994575,
+      "classificationMs": 42.90430000000197,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "promotion-clearance:root",
+      "elapsedMs": 48.387399999999616,
+      "startupMs": 26.074399999997695,
+      "classificationMs": 22.31300000000192,
+      "primary": [
+        "clearance"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "promotion-clearance:continuation",
+      "elapsedMs": 76.18470000000525,
+      "startupMs": 23.745699999999488,
+      "classificationMs": 52.43900000000576,
+      "primary": [
+        "clearance"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "promotion-clearance:control:no-cleared-rook",
+      "elapsedMs": 32.94410000000062,
+      "startupMs": 25.615200000000186,
+      "classificationMs": 7.328900000000431,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "promotion-clearance:control:no-forking-knight",
+      "elapsedMs": 38.22569999999541,
+      "startupMs": 23.876799999998184,
+      "classificationMs": 14.34889999999723,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "promotion-clearance:control:second-promotion-guard",
+      "elapsedMs": 33.60870000000432,
+      "startupMs": 24.838000000003376,
+      "classificationMs": 8.770700000000943,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "promotion-clearance:control:counter-promotion",
+      "elapsedMs": 33.605100000000675,
+      "startupMs": 24.327299999997194,
+      "classificationMs": 9.27780000000348,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:DBBd9",
+      "elapsedMs": 150.99899999999616,
+      "startupMs": 29.666400000001886,
+      "classificationMs": 121.33259999999427,
+      "primary": [
+        "interference"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:DBBd9",
+      "elapsedMs": 218.85499999999593,
+      "startupMs": 25.628700000001118,
+      "classificationMs": 193.2262999999948,
+      "primary": [
+        "interference"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:qQG5v",
+      "elapsedMs": 62.323300000003655,
+      "startupMs": 29.136100000003353,
+      "classificationMs": 33.1872000000003,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:qQG5v",
+      "elapsedMs": 57.413699999997334,
+      "startupMs": 24.764499999997497,
+      "classificationMs": 32.64919999999984,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-root:lichess:qQG5v",
+      "elapsedMs": 45.85729999999603,
+      "startupMs": 23.82499999999709,
+      "classificationMs": 22.03229999999894,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:J3vOR",
+      "elapsedMs": 110.18770000000222,
+      "startupMs": 24.50730000000476,
+      "classificationMs": 85.68039999999746,
+      "primary": [
+        "interference"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:J3vOR",
+      "elapsedMs": 187.7497000000003,
+      "startupMs": 30.797599999998056,
+      "classificationMs": 156.95210000000225,
+      "primary": [
+        "interference"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:HuMdz",
+      "elapsedMs": 66.28439999999682,
+      "startupMs": 30.451799999995274,
+      "classificationMs": 35.83260000000155,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:HuMdz",
+      "elapsedMs": 82.02300000000105,
+      "startupMs": 27.67569999999978,
+      "classificationMs": 54.34730000000127,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:nkeLA",
+      "elapsedMs": 47.72739999999612,
+      "startupMs": 27.88390000000072,
+      "classificationMs": 19.8434999999954,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:nkeLA",
+      "elapsedMs": 50.120999999999185,
+      "startupMs": 28.956599999997707,
+      "classificationMs": 21.16440000000148,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:R13Ct",
+      "elapsedMs": 105.08410000000003,
+      "startupMs": 29.241900000000896,
+      "classificationMs": 75.84219999999914,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:R13Ct",
+      "elapsedMs": 281.87599999999657,
+      "startupMs": 28.579499999999825,
+      "classificationMs": 253.29649999999674,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:BvWlf",
+      "elapsedMs": 36.711999999999534,
+      "startupMs": 27.725899999997637,
+      "classificationMs": 8.986100000001898,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:BvWlf",
+      "elapsedMs": 40.404899999994086,
+      "startupMs": 28.871399999996356,
+      "classificationMs": 11.53349999999773,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:vMQ3b",
+      "elapsedMs": 39.28500000000349,
+      "startupMs": 29.68880000000354,
+      "classificationMs": 9.596199999999953,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:vMQ3b",
+      "elapsedMs": 38.75929999999789,
+      "startupMs": 27.660799999997835,
+      "classificationMs": 11.098500000000058,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:pV2Bd",
+      "elapsedMs": 37.4007000000056,
+      "startupMs": 27.907700000003388,
+      "classificationMs": 9.493000000002212,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:pV2Bd",
+      "elapsedMs": 38.81659999999829,
+      "startupMs": 28.605400000000373,
+      "classificationMs": 10.211199999997916,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:sKDBG",
+      "elapsedMs": 69.68129999999655,
+      "startupMs": 28.058199999999488,
+      "classificationMs": 41.623099999997066,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:sKDBG",
+      "elapsedMs": 65.34500000000116,
+      "startupMs": 24.173600000001898,
+      "classificationMs": 41.17139999999927,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-root:lichess:sKDBG",
+      "elapsedMs": 47.75499999999738,
+      "startupMs": 23.687700000002224,
+      "classificationMs": 24.067299999995157,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:xxDaj",
+      "elapsedMs": 77.77909999999974,
+      "startupMs": 29.6875,
+      "classificationMs": 48.091599999999744,
+      "primary": [
+        "xRayAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:xxDaj",
+      "elapsedMs": 104.50890000000072,
+      "startupMs": 28.680899999999383,
+      "classificationMs": 75.82800000000134,
+      "primary": [
+        "xRayAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-root:lichess:xxDaj",
+      "elapsedMs": 61.64100000000326,
+      "startupMs": 28.40860000000248,
+      "classificationMs": 33.23240000000078,
+      "primary": [
+        "xRayAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:SD5oo",
+      "elapsedMs": 70.65350000000035,
+      "startupMs": 29.081599999997707,
+      "classificationMs": 41.57190000000264,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:SD5oo",
+      "elapsedMs": 70.86319999999978,
+      "startupMs": 29.863899999996647,
+      "classificationMs": 40.99930000000313,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-root:lichess:SD5oo",
+      "elapsedMs": 62.18899999999849,
+      "startupMs": 29.120999999999185,
+      "classificationMs": 33.0679999999993,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:qn2Fy",
+      "elapsedMs": 114.00069999999687,
+      "startupMs": 28.176999999996042,
+      "classificationMs": 85.82370000000083,
+      "primary": [
+        "trappedPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:qn2Fy",
+      "elapsedMs": 151.20059999999648,
+      "startupMs": 27.928699999996752,
+      "classificationMs": 123.27189999999973,
+      "primary": [
+        "trappedPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:j8Up4",
+      "elapsedMs": 90.50430000000051,
+      "startupMs": 29.457699999999022,
+      "classificationMs": 61.04660000000149,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:j8Up4",
+      "elapsedMs": 98.0109999999986,
+      "startupMs": 27.81720000000496,
+      "classificationMs": 70.19379999999364,
+      "primary": [
+        "trappedPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:S9vEb",
+      "elapsedMs": 159.28609999999753,
+      "startupMs": 29.349099999999453,
+      "classificationMs": 129.93699999999808,
+      "primary": [
+        "trappedPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:S9vEb",
+      "elapsedMs": 202.38579999999638,
+      "startupMs": 29.50680000000284,
+      "classificationMs": 172.87899999999354,
+      "primary": [
+        "trappedPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:i2SLh",
+      "elapsedMs": 37.751100000001315,
+      "startupMs": 28.94249999999738,
+      "classificationMs": 8.808600000003935,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:i2SLh",
+      "elapsedMs": 37.24459999999817,
+      "startupMs": 27.729099999996834,
+      "classificationMs": 9.515500000001339,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:oSj8l",
+      "elapsedMs": 58.93269999999757,
+      "startupMs": 29.19369999999617,
+      "classificationMs": 29.739000000001397,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:oSj8l",
+      "elapsedMs": 79.86300000000483,
+      "startupMs": 28.56880000000092,
+      "classificationMs": 51.29420000000391,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-source:lichess:c6L21",
+      "elapsedMs": 64.15639999999985,
+      "startupMs": 29.713299999995797,
+      "classificationMs": 34.44310000000405,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-engine:lichess:c6L21",
+      "elapsedMs": 116.90069999999832,
+      "startupMs": 31.192399999999907,
+      "classificationMs": 85.70829999999842,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:xxDaj:reply:d1d2",
+      "elapsedMs": 167.98519999999553,
+      "startupMs": 25.331599999997707,
+      "classificationMs": 142.65359999999782,
+      "primary": [
+        "intermezzo"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:xxDaj:reply:g2f1",
+      "elapsedMs": 88.82500000000437,
+      "startupMs": 28.879899999999907,
+      "classificationMs": 59.94510000000446,
+      "primary": [
+        "intermezzo"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:xxDaj:reply:g2g1",
+      "elapsedMs": 88.62519999999495,
+      "startupMs": 29.84549999999581,
+      "classificationMs": 58.77969999999914,
+      "primary": [
+        "intermezzo"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:xxDaj:reply:g2h1",
+      "elapsedMs": 108.06970000000001,
+      "startupMs": 27.67659999999887,
+      "classificationMs": 80.39310000000114,
+      "primary": [
+        "intermezzo"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:xxDaj:reply:g2h3",
+      "elapsedMs": 77.29469999999856,
+      "startupMs": 24.41189999999915,
+      "classificationMs": 52.882799999999406,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:xxDaj:reply:c7c2",
+      "elapsedMs": 69.23340000000462,
+      "startupMs": 28.819500000005064,
+      "classificationMs": 40.41389999999956,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:sKDBG:reply:a2a1",
+      "elapsedMs": 64.69539999999688,
+      "startupMs": 31.47030000000086,
+      "classificationMs": 33.22509999999602,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:sKDBG:reply:c2b1",
+      "elapsedMs": 56.139900000001944,
+      "startupMs": 31.16660000000411,
+      "classificationMs": 24.973299999997835,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:sKDBG:reply:c2c1",
+      "elapsedMs": 48.36170000000129,
+      "startupMs": 29.81890000000567,
+      "classificationMs": 18.542799999995623,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:sKDBG:reply:c2d1",
+      "elapsedMs": 52.053399999997055,
+      "startupMs": 28.511899999997695,
+      "classificationMs": 23.54149999999936,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:SD5oo:reply:e2e1",
+      "elapsedMs": 45.227099999996426,
+      "startupMs": 26.072699999996985,
+      "classificationMs": 19.15439999999944,
+      "primary": [
+        "backRankMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:qQG5v:ply1",
+      "elapsedMs": 55.46209999999701,
+      "startupMs": 29.73359999999957,
+      "classificationMs": 25.72849999999744,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:qQG5v:ply2",
+      "elapsedMs": 63.46609999999782,
+      "startupMs": 29.111699999994016,
+      "classificationMs": 34.35440000000381,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:qQG5v:ply3",
+      "elapsedMs": 51.042499999995925,
+      "startupMs": 30.219499999999243,
+      "classificationMs": 20.822999999996682,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:qQG5v:ply4",
+      "elapsedMs": 54.36819999999716,
+      "startupMs": 29.30240000000049,
+      "classificationMs": 25.06579999999667,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:qQG5v:old-guard",
+      "elapsedMs": 127.4629999999961,
+      "startupMs": 28.837899999998626,
+      "classificationMs": 98.62509999999747,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:qQG5v:missing-g4",
+      "elapsedMs": 54.77619999999297,
+      "startupMs": 30.80399999999645,
+      "classificationMs": 23.97219999999652,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:qQG5v:missing-e7",
+      "elapsedMs": 599.1734999999971,
+      "startupMs": 29.65269999999873,
+      "classificationMs": 569.5207999999984,
+      "primary": [
+        "skewer"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:qQG5v:second-guard",
+      "elapsedMs": 128.28369999999995,
+      "startupMs": 30.840100000001257,
+      "classificationMs": 97.4435999999987,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:xxDaj:off-square-liability",
+      "elapsedMs": 92.44689999999537,
+      "startupMs": 29.081999999994878,
+      "classificationMs": 63.36490000000049,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:oSj8l:promotion-q",
+      "elapsedMs": 69.14970000000176,
+      "startupMs": 29.281800000004296,
+      "classificationMs": 39.86789999999746,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:oSj8l:promotion-r",
+      "elapsedMs": 64.1756000000023,
+      "startupMs": 29.52440000000206,
+      "classificationMs": 34.651200000000244,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:oSj8l:promotion-b",
+      "elapsedMs": 64.20679999999993,
+      "startupMs": 30.20730000000185,
+      "classificationMs": 33.99949999999808,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:oSj8l:promotion-n",
+      "elapsedMs": 71.47490000000107,
+      "startupMs": 28.776499999999942,
+      "classificationMs": 42.69840000000113,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:nkeLA:after",
+      "elapsedMs": 43.23729999999341,
+      "startupMs": 30.281699999999546,
+      "classificationMs": 12.955599999993865,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:nkeLA:pass",
+      "elapsedMs": 39.882900000004156,
+      "startupMs": 27.89680000000226,
+      "classificationMs": 11.986100000001898,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:BvWlf:after",
+      "elapsedMs": 40.60609999999724,
+      "startupMs": 27.722499999996217,
+      "classificationMs": 12.883600000001024,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:BvWlf:pass",
+      "elapsedMs": 40.62960000000021,
+      "startupMs": 27.640199999994365,
+      "classificationMs": 12.989400000005844,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:vMQ3b:after",
+      "elapsedMs": 62.16769999999815,
+      "startupMs": 28.31040000000212,
+      "classificationMs": 33.85729999999603,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:vMQ3b:pass",
+      "elapsedMs": 59.19930000000022,
+      "startupMs": 27.99539999999979,
+      "classificationMs": 31.20390000000043,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:pV2Bd:after",
+      "elapsedMs": 54.74850000000151,
+      "startupMs": 23.52339999999822,
+      "classificationMs": 31.225100000003295,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:pV2Bd:pass",
+      "elapsedMs": 39.68340000000171,
+      "startupMs": 27.90520000000106,
+      "classificationMs": 11.778200000000652,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "secondary-probe:i2SLh:after-queening",
+      "elapsedMs": 110.91109999999753,
+      "startupMs": 27.948100000001432,
+      "classificationMs": 82.9629999999961,
+      "primary": [
+        "promotion"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-discovery:root-only",
+      "elapsedMs": 134.0650999999998,
+      "startupMs": 29.193500000001222,
+      "classificationMs": 104.87159999999858,
+      "primary": [
+        "discoveredCheck"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-discovery:captured-checker",
+      "elapsedMs": 67.97200000000157,
+      "startupMs": 28.99699999999575,
+      "classificationMs": 38.97500000000582,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "checking-discovery:blocked-ray",
+      "elapsedMs": 67.74930000000313,
+      "startupMs": 27.96820000000298,
+      "classificationMs": 39.78110000000015,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:148872",
+      "elapsedMs": 81.51640000000043,
+      "startupMs": 26.099999999998545,
+      "classificationMs": 55.416400000001886,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:109952",
+      "elapsedMs": 82.99040000000241,
+      "startupMs": 25.838500000005297,
+      "classificationMs": 57.15189999999711,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:147337",
+      "elapsedMs": 88.82760000000417,
+      "startupMs": 29.170799999999872,
+      "classificationMs": 59.656800000004296,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:16804",
+      "elapsedMs": 80.27919999999722,
+      "startupMs": 27.539499999998952,
+      "classificationMs": 52.739699999998265,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:154482",
+      "elapsedMs": 78.45829999999842,
+      "startupMs": 26.784399999996822,
+      "classificationMs": 51.673900000001595,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:71848",
+      "elapsedMs": 80.96530000000348,
+      "startupMs": 28.250700000004144,
+      "classificationMs": 52.714599999999336,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:17440",
+      "elapsedMs": 85.63799999999901,
+      "startupMs": 23.10160000000178,
+      "classificationMs": 62.53639999999723,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:25762",
+      "elapsedMs": 88.04729999999836,
+      "startupMs": 23.34259999999631,
+      "classificationMs": 64.70470000000205,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:187130",
+      "elapsedMs": 92.45000000000437,
+      "startupMs": 28.18420000000333,
+      "classificationMs": 64.26580000000104,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:154233",
+      "elapsedMs": 96.80619999999908,
+      "startupMs": 28.66019999999844,
+      "classificationMs": 68.14600000000064,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:21536",
+      "elapsedMs": 93.943299999999,
+      "startupMs": 27.697400000004563,
+      "classificationMs": 66.24589999999444,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:42796",
+      "elapsedMs": 93.87939999999799,
+      "startupMs": 29.608699999997043,
+      "classificationMs": 64.27070000000094,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:50728",
+      "elapsedMs": 84.4346000000005,
+      "startupMs": 25.090799999998126,
+      "classificationMs": 59.343800000002375,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:75954",
+      "elapsedMs": 90.25089999999909,
+      "startupMs": 25.361700000001292,
+      "classificationMs": 64.8891999999978,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:84406",
+      "elapsedMs": 96.70100000000093,
+      "startupMs": 27.870600000002014,
+      "classificationMs": 68.83039999999892,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:142010",
+      "elapsedMs": 95.08929999999964,
+      "startupMs": 27.760699999998906,
+      "classificationMs": 67.32860000000073,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:150267",
+      "elapsedMs": 89.2381000000023,
+      "startupMs": 25.325799999998708,
+      "classificationMs": 63.9123000000036,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:174649",
+      "elapsedMs": 93.72140000000218,
+      "startupMs": 29.57510000000184,
+      "classificationMs": 64.14630000000034,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:kpk:191291",
+      "elapsedMs": 94.83770000000368,
+      "startupMs": 27.190600000001723,
+      "classificationMs": 67.64710000000196,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:opposition",
+      "elapsedMs": 102.50760000000446,
+      "startupMs": 29.2274000000034,
+      "classificationMs": 73.28020000000106,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "drawing-audit:reserve-tempo",
+      "elapsedMs": 86.22350000000006,
+      "startupMs": 29.628600000003644,
+      "classificationMs": 56.594899999996414,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "capture-mating-attack:compensated",
+      "elapsedMs": 81.28540000000066,
+      "startupMs": 29.806400000001304,
+      "classificationMs": 51.47899999999936,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "capture-mating-attack:root-only",
+      "elapsedMs": 54.2361000000019,
+      "startupMs": 25.26879999999801,
+      "classificationMs": 28.96730000000389,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "capture-mating-attack:recapture",
+      "elapsedMs": 60.94740000000456,
+      "startupMs": 27.197800000001735,
+      "classificationMs": 33.74960000000283,
+      "primary": [
+        "forcingAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "capture-mating-attack:surviving-guard",
+      "elapsedMs": 62.406699999999546,
+      "startupMs": 28.157500000001164,
+      "classificationMs": 34.24919999999838,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "capture-mating-attack:free-bishop",
+      "elapsedMs": 57.531599999994796,
+      "startupMs": 28.87079999999696,
+      "classificationMs": 28.660799999997835,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "capture-mating-attack:checking-promotion",
+      "elapsedMs": 60.32169999999314,
+      "startupMs": 28.463299999995797,
+      "classificationMs": 31.858399999997346,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "quiet-mating-attack:real",
+      "elapsedMs": 92.89249999999447,
+      "startupMs": 28.281899999994494,
+      "classificationMs": 64.61059999999998,
+      "primary": [
+        "forcingAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "quiet-mating-attack:root-only",
+      "elapsedMs": 72.16339999999764,
+      "startupMs": 29.52799999999843,
+      "classificationMs": 42.63539999999921,
+      "primary": [
+        "forcingAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "quiet-mating-attack:queen-liability",
+      "elapsedMs": 38.366900000000896,
+      "startupMs": 28.777500000003783,
+      "classificationMs": 9.589399999997113,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "quiet-mating-attack:checking-deflection",
+      "elapsedMs": 55.76879999999801,
+      "startupMs": 27.745100000000093,
+      "classificationMs": 28.023699999997916,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "quiet-mating-attack:payoff",
+      "elapsedMs": 50.121500000001106,
+      "startupMs": 25.814100000003236,
+      "classificationMs": 24.30739999999787,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "quiet-mating-attack:pin-liability",
+      "elapsedMs": 64.6310999999987,
+      "startupMs": 28.358399999997346,
+      "classificationMs": 36.27270000000135,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:checking-discovery-capture",
+      "elapsedMs": 60.12700000000041,
+      "startupMs": 28.855500000005122,
+      "classificationMs": 31.271499999995285,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "endgame:claimable-entry",
+      "elapsedMs": 36.32650000000285,
+      "startupMs": 27.98790000000008,
+      "classificationMs": 8.33860000000277,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "endgame:real-pawn-ending-entry",
+      "elapsedMs": 105.27620000000024,
+      "startupMs": 27.723599999997532,
+      "classificationMs": 77.55260000000271,
+      "primary": [
+        "tacticalPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "endgame:exact-zugzwang",
+      "elapsedMs": 97.96410000000469,
+      "startupMs": 29.373200000001816,
+      "classificationMs": 68.59090000000288,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "endgame:drawn-pawn-ending",
+      "elapsedMs": 85.17710000000079,
+      "startupMs": 28.991699999998673,
+      "classificationMs": 56.18540000000212,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "endgame:reflected-zugzwang",
+      "elapsedMs": 95.6333999999988,
+      "startupMs": 28.819499999997788,
+      "classificationMs": 66.81390000000101,
+      "primary": [
+        "zugzwang"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:guard-deflection-root",
+      "elapsedMs": 75.30550000000221,
+      "startupMs": 27.778400000002875,
+      "classificationMs": 47.527099999999336,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:balanced-exchange-recovery",
+      "elapsedMs": 105.01000000000204,
+      "startupMs": 28.010000000002037,
+      "classificationMs": 77,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "opening:balanced-later-knight-exchange",
+      "elapsedMs": 105.32179999999789,
+      "startupMs": 27.695999999996275,
+      "classificationMs": 77.62580000000162,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "rare:king-interference-exchange-payoff",
+      "elapsedMs": 75.49519999999757,
+      "startupMs": 29.578999999997905,
+      "classificationMs": 45.91619999999966,
+      "primary": [
+        "interference"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:knight-interferes-bishop-guard",
+      "elapsedMs": 108.65610000000015,
+      "startupMs": 28.32289999999921,
+      "classificationMs": 80.33320000000094,
+      "primary": [
+        "interference"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:interference-off-square-knight-liability",
+      "elapsedMs": 77.91330000000016,
+      "startupMs": 28.274199999999837,
+      "classificationMs": 49.639100000000326,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:mating-rook-liability-discovery",
+      "elapsedMs": 103.57719999999972,
+      "startupMs": 28.188300000001618,
+      "classificationMs": 75.3888999999981,
+      "primary": [
+        "discoveredAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:queen-countercapture-invalidates-free-knight",
+      "elapsedMs": 51.36390000000392,
+      "startupMs": 28.908000000003085,
+      "classificationMs": 22.455900000000838,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "recovered:root-only-exchange-discovery",
+      "elapsedMs": 158.88630000000558,
+      "startupMs": 27.4291000000012,
+      "classificationMs": 131.45720000000438,
+      "primary": [
+        "discoveredAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "recovered:reflected-root-only-exchange-discovery",
+      "elapsedMs": 141.80129999999917,
+      "startupMs": 28.98109999999724,
+      "classificationMs": 112.82020000000193,
+      "primary": [
+        "discoveredAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:root-mate-over-material-pv",
+      "elapsedMs": 91.38550000000396,
+      "startupMs": 28.663000000000466,
+      "classificationMs": 62.72250000000349,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:root-only-queen-offer-mate",
+      "elapsedMs": 56.27279999999155,
+      "startupMs": 28.288000000000466,
+      "classificationMs": 27.984799999991083,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:mixed-checking-offer",
+      "elapsedMs": 95.47999999999593,
+      "startupMs": 25.399199999999837,
+      "classificationMs": 70.08079999999609,
+      "primary": [
+        "forcingAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:later-fork-labelled-as-continuation",
+      "elapsedMs": 87.88249999999243,
+      "startupMs": 24.234799999991083,
+      "classificationMs": 63.64770000000135,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:declined-fork-preparation",
+      "elapsedMs": 85.4320000000007,
+      "startupMs": 24.19640000000072,
+      "classificationMs": 61.23559999999998,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:captured-fork-defender",
+      "elapsedMs": 76.07830000000831,
+      "startupMs": 23.893600000010338,
+      "classificationMs": 52.184699999997974,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:future-promotion-not-root-cause",
+      "elapsedMs": 108.96939999998722,
+      "startupMs": 29.250899999999092,
+      "classificationMs": 79.71849999998813,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:capture-to-discovered-check",
+      "elapsedMs": 75.46479999998701,
+      "startupMs": 27.68069999999716,
+      "classificationMs": 47.78409999998985,
+      "primary": [
+        "attraction"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:checking-skewer-with-defended-block",
+      "elapsedMs": 80.26350000000093,
+      "startupMs": 24.960900000005495,
+      "classificationMs": 55.30259999999544,
+      "primary": [
+        "skewer"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:cooperative-bishop-offer",
+      "elapsedMs": 66.28570000000764,
+      "startupMs": 25.091499999994994,
+      "classificationMs": 41.19420000001264,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:unproved-clearance-offer",
+      "elapsedMs": 85.76599999998871,
+      "startupMs": 27.656999999991967,
+      "classificationMs": 58.10899999999674,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:unresolved-root-retains-later-fork",
+      "elapsedMs": 89.40400000000955,
+      "startupMs": 26.713900000002468,
+      "classificationMs": 62.69010000000708,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:fork-square-already-empty-control",
+      "elapsedMs": 79.33469999999215,
+      "startupMs": 28.5564999999915,
+      "classificationMs": 50.77820000000065,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:root-only-cleared-fork-square",
+      "elapsedMs": 68.38989999999467,
+      "startupMs": 31.863500000006752,
+      "classificationMs": 36.526399999987916,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:shared-mating-route",
+      "elapsedMs": 75.9832999999926,
+      "startupMs": 26.366199999989476,
+      "classificationMs": 49.61710000000312,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:countercapture-and-delayed-fork",
+      "elapsedMs": 96.7502999999997,
+      "startupMs": 28.004199999995762,
+      "classificationMs": 68.74610000000393,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:pawn-square-clearance-fork",
+      "elapsedMs": 73.48769999999786,
+      "startupMs": 28.833800000007614,
+      "classificationMs": 44.653899999990244,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:immediate-alternative-after-cycle",
+      "elapsedMs": 182.97960000000603,
+      "startupMs": 28.615600000004633,
+      "classificationMs": 154.3640000000014,
+      "primary": [
+        "capturingDefender"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:combined-defender-removal",
+      "elapsedMs": 96.77109999999811,
+      "startupMs": 28.46229999999923,
+      "classificationMs": 68.30879999999888,
+      "primary": [
+        "capturingDefender"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "regression:connected-pin-entry",
+      "elapsedMs": 56.27009999999427,
+      "startupMs": 26.0283000000054,
+      "classificationMs": 30.24179999998887,
+      "primary": [
+        "pin"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:incidental-pin-check-cycle",
+      "elapsedMs": 60.26039999999921,
+      "startupMs": 25.212099999989732,
+      "classificationMs": 35.048300000009476,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:exchange-deflection",
+      "elapsedMs": 80.78130000000237,
+      "startupMs": 25.957199999989825,
+      "classificationMs": 54.82410000001255,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:mating-king-acceptance",
+      "elapsedMs": 68.47580000000016,
+      "startupMs": 25.682800000009593,
+      "classificationMs": 42.79299999999057,
+      "primary": [
+        "attraction"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:discovery-backed-fork",
+      "elapsedMs": 138.579899999997,
+      "startupMs": 24.747400000007474,
+      "classificationMs": 113.83249999998952,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:mating-capture",
+      "elapsedMs": 60.45749999998952,
+      "startupMs": 29.53059999999823,
+      "classificationMs": 30.926899999991292,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:two-minors-for-rook",
+      "elapsedMs": 97.90150000000722,
+      "startupMs": 28.541500000006636,
+      "classificationMs": 69.36000000000058,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:mate-backed-fork",
+      "elapsedMs": 96.94830000000366,
+      "startupMs": 29.102000000013504,
+      "classificationMs": 67.84629999999015,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:perpetual-check",
+      "elapsedMs": 65.11539999999513,
+      "startupMs": 28.746899999998277,
+      "classificationMs": 36.36849999999686,
+      "primary": [
+        "perpetualCheck"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:reinforced-pin",
+      "elapsedMs": 72.4204999999929,
+      "startupMs": 27.278899999990244,
+      "classificationMs": 45.141600000002654,
+      "primary": [
+        "pin"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:blocking-defender-deflection",
+      "elapsedMs": 70.9594999999972,
+      "startupMs": 24.215100000001257,
+      "classificationMs": 46.74439999999595,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:quiet-capture-fork-preparation",
+      "elapsedMs": 71.18379999999888,
+      "startupMs": 24.303100000004633,
+      "classificationMs": 46.88069999999425,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:quiet-pawn-fork-preparation",
+      "elapsedMs": 78.56369999999879,
+      "startupMs": 25.83419999999751,
+      "classificationMs": 52.72950000000128,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:quiet-pawn-fork-checking-escape",
+      "elapsedMs": 75.34920000001148,
+      "startupMs": 24.42840000000433,
+      "classificationMs": 50.92080000000715,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:quiet-pawn-fork-extra-defender",
+      "elapsedMs": 92.29669999999169,
+      "startupMs": 25.800699999992503,
+      "classificationMs": 66.49599999999919,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:accepted-fork-sacrifice",
+      "elapsedMs": 54.15929999999935,
+      "startupMs": 25.855899999995017,
+      "classificationMs": 28.30340000000433,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:accepted-mating-sacrifice",
+      "elapsedMs": 54.75089999999909,
+      "startupMs": 28.370200000004843,
+      "classificationMs": 26.38069999999425,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:capturing-fork-preparation",
+      "elapsedMs": 65.08990000000631,
+      "startupMs": 28.367700000002515,
+      "classificationMs": 36.722200000003795,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:mating-deflection-declined",
+      "elapsedMs": 75.68889999999374,
+      "startupMs": 28.821299999995972,
+      "classificationMs": 46.867599999997765,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:fork-backed-by-checking-recapture",
+      "elapsedMs": 95.1307000000088,
+      "startupMs": 31.07970000000205,
+      "classificationMs": 64.05100000000675,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:defender-removing-fork-preparation",
+      "elapsedMs": 98.31139999999141,
+      "startupMs": 28.869699999995646,
+      "classificationMs": 69.44169999999576,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:queen-capture-over-incidental-pin",
+      "elapsedMs": 54.9377999999997,
+      "startupMs": 28.42710000000079,
+      "classificationMs": 26.510699999998906,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:exchange-for-discovery-attraction",
+      "elapsedMs": 108.96190000000934,
+      "startupMs": 28.250700000004144,
+      "classificationMs": 80.71120000000519,
+      "primary": [
+        "attraction"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:quiet-mating-deflection-exchange",
+      "elapsedMs": 119.4265000000014,
+      "startupMs": 29.069800000012037,
+      "classificationMs": 90.35669999998936,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:mate-independent-of-fork-victim",
+      "elapsedMs": 59.74169999999867,
+      "startupMs": 29.590600000010454,
+      "classificationMs": 30.15109999998822,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:knight-exchange-for-pawn",
+      "elapsedMs": 67.1301999999996,
+      "startupMs": 27.605000000010477,
+      "classificationMs": 39.52519999998913,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "constructed:bishop-exchange-for-pawn",
+      "elapsedMs": 74.51919999999518,
+      "startupMs": 25.146999999997206,
+      "classificationMs": 49.372199999997974,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:protected-discovery-payoff",
+      "elapsedMs": 78.68939999998838,
+      "startupMs": 24.07259999999951,
+      "classificationMs": 54.61679999998887,
+      "primary": [
+        "discoveredAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "screenshot:f7-alternatives",
+      "elapsedMs": 98.29270000000542,
+      "startupMs": 24.234700000000885,
+      "classificationMs": 74.05800000000454,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "balanced-defender-recapture",
+      "elapsedMs": 111.20839999998861,
+      "startupMs": 24.01029999999446,
+      "classificationMs": 87.19809999999416,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "incidental-pawn-discovery",
+      "elapsedMs": 98.14019999999437,
+      "startupMs": 28.841599999999744,
+      "classificationMs": 69.29859999999462,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "balanced-defender-history",
+      "elapsedMs": 94.91169999999693,
+      "startupMs": 28.48279999999795,
+      "classificationMs": 66.42889999999898,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-clearance:real",
+      "elapsedMs": 69.47189999998955,
+      "startupMs": 28.453800000002957,
+      "classificationMs": 41.01809999998659,
+      "primary": [
+        "mateIn4"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-clearance:root-only",
+      "elapsedMs": 55.5005000000092,
+      "startupMs": 29.138400000010733,
+      "classificationMs": 26.362099999998463,
+      "primary": [
+        "mateIn4"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-clearance:declined",
+      "elapsedMs": 61.9658999999956,
+      "startupMs": 28.870899999994435,
+      "classificationMs": 33.095000000001164,
+      "primary": [
+        "mateIn4"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-clearance:claimable-draw",
+      "elapsedMs": 71.49899999999616,
+      "startupMs": 26.152000000001863,
+      "classificationMs": 45.346999999994296,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-clearance:line",
+      "elapsedMs": 69.1356999999989,
+      "startupMs": 29.38949999999022,
+      "classificationMs": 39.746200000008685,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "mating-clearance:double-check",
+      "elapsedMs": 54.99920000000566,
+      "startupMs": 28.98410000000149,
+      "classificationMs": 26.015100000004168,
+      "primary": [
+        "doubleCheck"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "trap-audit:root-only",
+      "elapsedMs": 93.84649999999965,
+      "startupMs": 27.64220000000205,
+      "classificationMs": 66.2042999999976,
+      "primary": [
+        "trappedPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "trap-audit:defender-removal",
+      "elapsedMs": 126.86059999999998,
+      "startupMs": 29.336900000009337,
+      "classificationMs": 97.52369999999064,
+      "primary": [
+        "trappedPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "trap-audit:control:absent-knight",
+      "elapsedMs": 63.608399999997346,
+      "startupMs": 29.30359999999928,
+      "classificationMs": 34.30479999999807,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "trap-audit:control:open-file",
+      "elapsedMs": 69.16879999999946,
+      "startupMs": 27.845100000005914,
+      "classificationMs": 41.32369999999355,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "trap-audit:control:missing-pawn-guard",
+      "elapsedMs": 65.96429999999236,
+      "startupMs": 29.216499999994994,
+      "classificationMs": 36.74779999999737,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "trap-audit:control:promotion-counterplay",
+      "elapsedMs": 87.65909999998985,
+      "startupMs": 27.68970000000263,
+      "classificationMs": 59.96939999998722,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "trap-audit:control:off-square-queen",
+      "elapsedMs": 82.17059999999765,
+      "startupMs": 29.157300000006217,
+      "classificationMs": 53.01329999999143,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "trap-audit:control:unrelated-payoff",
+      "elapsedMs": 77.92979999999807,
+      "startupMs": 29.860599999999977,
+      "classificationMs": 48.06919999999809,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "interference-audit:root:J3vOR",
+      "elapsedMs": 108.43189999999595,
+      "startupMs": 29.066099999996368,
+      "classificationMs": 79.36579999999958,
+      "primary": [
+        "interference"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "interference-audit:recovery:J3vOR",
+      "elapsedMs": 159.60970000000088,
+      "startupMs": 28.96819999998843,
+      "classificationMs": 130.64150000001246,
+      "primary": [
+        "interference"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "interference-audit:root:DBBd9",
+      "elapsedMs": 110.38619999999355,
+      "startupMs": 31.33839999999327,
+      "classificationMs": 79.04780000000028,
+      "primary": [
+        "interference"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "interference-audit:recovery:DBBd9",
+      "elapsedMs": 146.25930000000517,
+      "startupMs": 29.28269999999611,
+      "classificationMs": 116.97660000000906,
+      "primary": [
+        "interference"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "interference-audit:control:no-second-blocker",
+      "elapsedMs": 102.12579999999434,
+      "startupMs": 29.163400000004913,
+      "classificationMs": 72.96239999998943,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "interference-audit:control:no-target-attacker",
+      "elapsedMs": 80.91820000000007,
+      "startupMs": 30.120699999999488,
+      "classificationMs": 50.79750000000058,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "interference-audit:control:rook-countercapture",
+      "elapsedMs": 110.48130000001402,
+      "startupMs": 28.575800000005984,
+      "classificationMs": 81.90550000000803,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "interference-audit:control:no-guard-recapturer",
+      "elapsedMs": 98.2838000000047,
+      "startupMs": 29.33860000000277,
+      "classificationMs": 68.94520000000193,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "interference-audit:control:mating-counterplay",
+      "elapsedMs": 116.32280000000901,
+      "startupMs": 29.317800000004354,
+      "classificationMs": 87.00500000000466,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "interference-audit:compensated",
+      "elapsedMs": 110.75680000000284,
+      "startupMs": 30.658500000005006,
+      "classificationMs": 80.09829999999783,
+      "primary": [
+        "interference"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "counterplay:0",
+      "elapsedMs": 302.52470000000903,
+      "startupMs": 30.089999999996508,
+      "classificationMs": 272.4347000000125,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "counterplay:9",
+      "elapsedMs": 182.14800000000105,
+      "startupMs": 28.917700000005425,
+      "classificationMs": 153.23029999999562,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "counterplay:18",
+      "elapsedMs": 82.15389999999024,
+      "startupMs": 25.939099999988684,
+      "classificationMs": 56.21480000000156,
+      "primary": [
+        "trappedPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ray-liability:pin",
+      "elapsedMs": 77.71080000000075,
+      "startupMs": 27.478900000001886,
+      "classificationMs": 50.23189999999886,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ray-liability:pin-safe",
+      "elapsedMs": 57.80100000000675,
+      "startupMs": 29.250800000008894,
+      "classificationMs": 28.550199999997858,
+      "primary": [
+        "pin"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ray-liability:mate",
+      "elapsedMs": 53.00250000000233,
+      "startupMs": 28.2670000000071,
+      "classificationMs": 24.735499999995227,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ray-liability:skewer",
+      "elapsedMs": 67.54969999998866,
+      "startupMs": 28.78740000000107,
+      "classificationMs": 38.76229999998759,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ray-liability:mating-decline",
+      "elapsedMs": 60.08060000000114,
+      "startupMs": 26.484299999996438,
+      "classificationMs": 33.5963000000047,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ray-liability:checking-recovery",
+      "elapsedMs": 77.13169999999809,
+      "startupMs": 24.385500000003958,
+      "classificationMs": 52.74619999999413,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ray-liability:drawing-rescue",
+      "elapsedMs": 45.4484999999986,
+      "startupMs": 23.991399999998976,
+      "classificationMs": 21.457099999999627,
+      "primary": [
+        "skewer"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ray-liability:same-victim",
+      "elapsedMs": 64.84500000000116,
+      "startupMs": 23.72950000000128,
+      "classificationMs": 41.115499999999884,
+      "primary": [
+        "discoveredCheck"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ray-liability:separate-victim",
+      "elapsedMs": 57.673299999994924,
+      "startupMs": 26.06939999999304,
+      "classificationMs": 31.603900000001886,
+      "primary": [
+        "discoveredCheck"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply8",
+      "elapsedMs": 223.5798000000068,
+      "startupMs": 24.55570000001171,
+      "classificationMs": 199.0240999999951,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply13",
+      "elapsedMs": 156.11219999998866,
+      "startupMs": 29.15539999998873,
+      "classificationMs": 126.95679999999993,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply18",
+      "elapsedMs": 263.0828000000038,
+      "startupMs": 28.432600000000093,
+      "classificationMs": 234.65020000000368,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply23",
+      "elapsedMs": 183.7895000000135,
+      "startupMs": 27.92720000000554,
+      "classificationMs": 155.86230000000796,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply28",
+      "elapsedMs": 45.36500000000524,
+      "startupMs": 23.35250000000815,
+      "classificationMs": 22.01249999999709,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply33",
+      "elapsedMs": 83.22409999999218,
+      "startupMs": 23.401799999992363,
+      "classificationMs": 59.822299999999814,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply38",
+      "elapsedMs": 35.932199999995646,
+      "startupMs": 23.81380000000354,
+      "classificationMs": 12.118399999992107,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply43",
+      "elapsedMs": 115.51200000000244,
+      "startupMs": 23.692600000009406,
+      "classificationMs": 91.81939999999304,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply8",
+      "elapsedMs": 153.63099999999395,
+      "startupMs": 26.708499999993364,
+      "classificationMs": 126.92250000000058,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply13",
+      "elapsedMs": 99.32570000000123,
+      "startupMs": 29.831099999995786,
+      "classificationMs": 69.49460000000545,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply18",
+      "elapsedMs": 535.6790999999939,
+      "startupMs": 29.075299999996787,
+      "classificationMs": 506.60379999999714,
+      "primary": [
+        "mateIn7"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply23",
+      "elapsedMs": 224.5905999999959,
+      "startupMs": 24.07159999999567,
+      "classificationMs": 200.51900000000023,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply28",
+      "elapsedMs": 156.58430000000226,
+      "startupMs": 30.33879999999772,
+      "classificationMs": 126.24550000000454,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply33",
+      "elapsedMs": 234.91240000000107,
+      "startupMs": 28.50119999999879,
+      "classificationMs": 206.41120000000228,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply38",
+      "elapsedMs": 114.40890000000945,
+      "startupMs": 29.091599999999744,
+      "classificationMs": 85.31730000000971,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply43",
+      "elapsedMs": 112.67519999999786,
+      "startupMs": 29.82149999999092,
+      "classificationMs": 82.85370000000694,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply48",
+      "elapsedMs": 155.8966999999975,
+      "startupMs": 28.237800000002608,
+      "classificationMs": 127.6588999999949,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply53",
+      "elapsedMs": 78.20900000000256,
+      "startupMs": 28.729400000011083,
+      "classificationMs": 49.47959999999148,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply58",
+      "elapsedMs": 48.598299999997835,
+      "startupMs": 28.968399999997928,
+      "classificationMs": 19.629899999999907,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply8",
+      "elapsedMs": 43.21999999998661,
+      "startupMs": 28.36009999999078,
+      "classificationMs": 14.859899999995832,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply13",
+      "elapsedMs": 137.1536000000051,
+      "startupMs": 28.53420000000915,
+      "classificationMs": 108.61939999999595,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply18",
+      "elapsedMs": 118.61900000000605,
+      "startupMs": 28.090200000006007,
+      "classificationMs": 90.52880000000005,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply23",
+      "elapsedMs": 39.07620000001043,
+      "startupMs": 28.395100000008824,
+      "classificationMs": 10.681100000001607,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply28",
+      "elapsedMs": 103.085699999996,
+      "startupMs": 31.448199999998906,
+      "classificationMs": 71.63749999999709,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply2",
+      "elapsedMs": 44.76920000000973,
+      "startupMs": 29.531499999997322,
+      "classificationMs": 15.23770000001241,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply4",
+      "elapsedMs": 42.74559999999474,
+      "startupMs": 28.274699999994482,
+      "classificationMs": 14.470900000000256,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply6",
+      "elapsedMs": 43.08279999998922,
+      "startupMs": 28.01380000000063,
+      "classificationMs": 15.068999999988591,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply10",
+      "elapsedMs": 134.34399999999732,
+      "startupMs": 28.34219999999914,
+      "classificationMs": 106.00179999999818,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply11",
+      "elapsedMs": 42.25229999999283,
+      "startupMs": 28.752599999992526,
+      "classificationMs": 13.499700000000303,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply12",
+      "elapsedMs": 43.834499999997206,
+      "startupMs": 28.37719999998808,
+      "classificationMs": 15.457300000009127,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply2",
+      "elapsedMs": 43.70659999999043,
+      "startupMs": 28.43639999999141,
+      "classificationMs": 15.270199999999022,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply4",
+      "elapsedMs": 126.52769999999146,
+      "startupMs": 28.43059999999241,
+      "classificationMs": 98.09709999999905,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply6",
+      "elapsedMs": 133.39629999999306,
+      "startupMs": 28.87290000000212,
+      "classificationMs": 104.52339999999094,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply10",
+      "elapsedMs": 45.90219999999681,
+      "startupMs": 29.876699999993434,
+      "classificationMs": 16.025500000003376,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply11",
+      "elapsedMs": 44.89379999999073,
+      "startupMs": 29.265299999999115,
+      "classificationMs": 15.628499999991618,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply12",
+      "elapsedMs": 218.75079999999434,
+      "startupMs": 28.18269999999029,
+      "classificationMs": 190.56810000000405,
+      "primary": [
+        "discoveredCheck"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply2",
+      "elapsedMs": 43.787899999995716,
+      "startupMs": 28.7101999999868,
+      "classificationMs": 15.077700000008917,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply4",
+      "elapsedMs": 42.70120000001043,
+      "startupMs": 28.042300000000978,
+      "classificationMs": 14.658900000009453,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply6",
+      "elapsedMs": 43.22420000001148,
+      "startupMs": 27.484600000010687,
+      "classificationMs": 15.739600000000792,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply10",
+      "elapsedMs": 148.77079999999842,
+      "startupMs": 27.965500000005704,
+      "classificationMs": 120.80529999999271,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply11",
+      "elapsedMs": 131.9268000000011,
+      "startupMs": 28.019700000004377,
+      "classificationMs": 103.90709999999672,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply12",
+      "elapsedMs": 42.5963000000047,
+      "startupMs": 27.982300000003306,
+      "classificationMs": 14.614000000001397,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply9",
+      "elapsedMs": 138.28030000001309,
+      "startupMs": 27.417800000010175,
+      "classificationMs": 110.86250000000291,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply14",
+      "elapsedMs": 45.32259999999951,
+      "startupMs": 29.950599999996484,
+      "classificationMs": 15.372000000003027,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply19",
+      "elapsedMs": 136.33909999999742,
+      "startupMs": 28.626599999988684,
+      "classificationMs": 107.71250000000873,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply24",
+      "elapsedMs": 80.63999999999942,
+      "startupMs": 25.398099999991246,
+      "classificationMs": 55.24190000000817,
+      "primary": [
+        "mateIn3"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply29",
+      "elapsedMs": 118.69430000000284,
+      "startupMs": 28.160000000003492,
+      "classificationMs": 90.53429999999935,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply34",
+      "elapsedMs": 254.1600000000035,
+      "startupMs": 29.29099999999744,
+      "classificationMs": 224.86900000000605,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply39",
+      "elapsedMs": 103.05229999999574,
+      "startupMs": 27.67139999999199,
+      "classificationMs": 75.38090000000375,
+      "primary": [
+        "discoveredAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-1:ply44",
+      "elapsedMs": 102.97389999999723,
+      "startupMs": 27.597099999999045,
+      "classificationMs": 75.37679999999818,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply9",
+      "elapsedMs": 42.802999999999884,
+      "startupMs": 28.94079999999667,
+      "classificationMs": 13.862200000003213,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply14",
+      "elapsedMs": 545.8105000000069,
+      "startupMs": 28.31029999999737,
+      "classificationMs": 517.5002000000095,
+      "primary": [
+        "forcingAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply19",
+      "elapsedMs": 181.5746999999974,
+      "startupMs": 27.992599999997765,
+      "classificationMs": 153.58209999999963,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply24",
+      "elapsedMs": 277.3917999999976,
+      "startupMs": 27.181100000001607,
+      "classificationMs": 250.210699999996,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply29",
+      "elapsedMs": 178.75370000000112,
+      "startupMs": 28.49890000000596,
+      "classificationMs": 150.25479999999516,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply34",
+      "elapsedMs": 198.83150000000023,
+      "startupMs": 29.566500000000815,
+      "classificationMs": 169.26499999999942,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply39",
+      "elapsedMs": 201.68500000001222,
+      "startupMs": 28.5570000000007,
+      "classificationMs": 173.12800000001153,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply44",
+      "elapsedMs": 186.54919999999402,
+      "startupMs": 27.86239999999816,
+      "classificationMs": 158.68679999999586,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply49",
+      "elapsedMs": 43.76559999999881,
+      "startupMs": 29.098400000002584,
+      "classificationMs": 14.667199999996228,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply54",
+      "elapsedMs": 81.86030000000028,
+      "startupMs": 27.67710000000079,
+      "classificationMs": 54.18319999999949,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-2:ply59",
+      "elapsedMs": 53.956200000000536,
+      "startupMs": 28.550199999997858,
+      "classificationMs": 25.406000000002678,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply9",
+      "elapsedMs": 170.6017000000138,
+      "startupMs": 27.84330000000773,
+      "classificationMs": 142.75840000000608,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply14",
+      "elapsedMs": 47.134799999999814,
+      "startupMs": 32.42530000000261,
+      "classificationMs": 14.709499999997206,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply19",
+      "elapsedMs": 49.552899999995134,
+      "startupMs": 29.273300000000745,
+      "classificationMs": 20.27959999999439,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply24",
+      "elapsedMs": 42.322000000000116,
+      "startupMs": 27.605299999995623,
+      "classificationMs": 14.716700000004494,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "ordinary-3:ply29",
+      "elapsedMs": 82.94610000000102,
+      "startupMs": 25.695200000001932,
+      "classificationMs": 57.25089999999909,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:DVSJh",
+      "elapsedMs": 49.66959999999381,
+      "startupMs": 28.69340000000375,
+      "classificationMs": 20.976199999990058,
+      "primary": [
+        "anastasiaMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:007c6",
+      "elapsedMs": 50.632099999987986,
+      "startupMs": 28.13189999999304,
+      "classificationMs": 22.500199999994948,
+      "primary": [
+        "bodenMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:fVRuW",
+      "elapsedMs": 106.96600000000035,
+      "startupMs": 31.048500000004424,
+      "classificationMs": 75.91749999999593,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:K56tk",
+      "elapsedMs": 50.8579000000027,
+      "startupMs": 27.540399999998044,
+      "classificationMs": 23.317500000004657,
+      "primary": [
+        "dovetailMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:NKnZo",
+      "elapsedMs": 52.191399999996065,
+      "startupMs": 28.887099999992643,
+      "classificationMs": 23.304300000003423,
+      "primary": [
+        "killBoxMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:5hjz7",
+      "elapsedMs": 50.19419999999809,
+      "startupMs": 28.265599999998813,
+      "classificationMs": 21.92859999999928,
+      "primary": [
+        "bodenMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:GIB50",
+      "elapsedMs": 50.16489999998885,
+      "startupMs": 27.620899999994435,
+      "classificationMs": 22.543999999994412,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:REAdh",
+      "elapsedMs": 48.786999999996624,
+      "startupMs": 27.61119999999937,
+      "classificationMs": 21.175799999997253,
+      "primary": [
+        "hookMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:NGZzo",
+      "elapsedMs": 100.77349999999569,
+      "startupMs": 27.650699999998324,
+      "classificationMs": 73.12279999999737,
+      "primary": [
+        "doubleThreat"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:4Osgg",
+      "elapsedMs": 76.04300000000512,
+      "startupMs": 24.72400000000198,
+      "classificationMs": 51.31900000000314,
+      "primary": [
+        "mateIn4"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:UCiYo",
+      "elapsedMs": 57.521099999998114,
+      "startupMs": 27.06699999999546,
+      "classificationMs": 30.454100000002654,
+      "primary": [
+        "hangingPiece"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:CSh8J",
+      "elapsedMs": 63.2326999999932,
+      "startupMs": 32.5847999999969,
+      "classificationMs": 30.647899999996298,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:opGD7",
+      "elapsedMs": 56.52409999999509,
+      "startupMs": 25.11239999999816,
+      "classificationMs": 31.411699999996927,
+      "primary": [
+        "forcingAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:fJrhT",
+      "elapsedMs": 71.43680000001041,
+      "startupMs": 23.653800000000047,
+      "classificationMs": 47.78300000001036,
+      "primary": [
+        "forkPreparation"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:MJZcU",
+      "elapsedMs": 653.6149000000005,
+      "startupMs": 26.398800000009942,
+      "classificationMs": 627.2160999999905,
+      "primary": [
+        "promotionCombination"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:0RleZ",
+      "elapsedMs": 50.309900000007474,
+      "startupMs": 29.3353000000061,
+      "classificationMs": 20.974600000001374,
+      "primary": [
+        "hookMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:Z5arb",
+      "elapsedMs": 148.36329999999725,
+      "startupMs": 28.53299999999581,
+      "classificationMs": 119.83030000000144,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:iUj3e",
+      "elapsedMs": 164.24189999999362,
+      "startupMs": 29.180500000002212,
+      "classificationMs": 135.0613999999914,
+      "primary": [
+        "skewer"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:Kvpvi",
+      "elapsedMs": 64.32510000000184,
+      "startupMs": 29.047399999995832,
+      "classificationMs": 35.27770000000601,
+      "primary": [
+        "mateIn2"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:hz3ed",
+      "elapsedMs": 53.99240000000282,
+      "startupMs": 28.3298000000068,
+      "classificationMs": 25.66259999999602,
+      "primary": [
+        "triangleMate"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:o8K8i",
+      "elapsedMs": 72.27500000000873,
+      "startupMs": 25.146100000012666,
+      "classificationMs": 47.128899999996065,
+      "primary": [
+        "enPassant"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:w1lKu",
+      "elapsedMs": 142.07090000000608,
+      "startupMs": 29.172300000005635,
+      "classificationMs": 112.89860000000044,
+      "primary": [
+        "clearance"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:rqXvZ",
+      "elapsedMs": 120.04899999999907,
+      "startupMs": 28.71950000000652,
+      "classificationMs": 91.32949999999255,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:ouIHI",
+      "elapsedMs": 63.77490000000398,
+      "startupMs": 29.181400000001304,
+      "classificationMs": 34.59350000000268,
+      "primary": [
+        "discoveredAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:eOCp9",
+      "elapsedMs": 37.48199999998906,
+      "startupMs": 27.376399999993737,
+      "classificationMs": 10.10559999999532,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:erSYy",
+      "elapsedMs": 62.88890000000538,
+      "startupMs": 27.797500000000582,
+      "classificationMs": 35.091400000004796,
+      "primary": [
+        "fork"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:vztmO",
+      "elapsedMs": 53.549499999993714,
+      "startupMs": 27.973399999988033,
+      "classificationMs": 25.57610000000568,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:G8wdr",
+      "elapsedMs": 237.75849999999627,
+      "startupMs": 27.892500000001746,
+      "classificationMs": 209.86599999999453,
+      "primary": [
+        "discoveredAttack"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:4GiqO",
+      "elapsedMs": 39.16099999999278,
+      "startupMs": 29.817399999999907,
+      "classificationMs": 9.343599999992875,
+      "primary": [],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:wh6Ac",
+      "elapsedMs": 50.90270000000601,
+      "startupMs": 28.535499999998137,
+      "classificationMs": 22.36720000000787,
+      "primary": [
+        "mateIn1"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:NOaM1",
+      "elapsedMs": 62.752800000002026,
+      "startupMs": 27.6649000000034,
+      "classificationMs": 35.087899999998626,
+      "primary": [
+        "skewer"
+      ],
+      "matchesSource": true
+    },
+    {
+      "id": "lichess:JaKHo",
+      "elapsedMs": 72.29690000000119,
+      "startupMs": 27.338199999998324,
+      "classificationMs": 44.958700000002864,
+      "primary": [
+        "deflection"
+      ],
+      "matchesSource": true
+    }
+  ]
+}

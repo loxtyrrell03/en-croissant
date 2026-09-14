@@ -1,6 +1,12 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 98 / live pipeline 103
+## Current classifier: adapter 99 / live pipeline 104
+
+The [direct-threat relevance review](direct-threat-relevance-review.md) replaces PV-funded generic-threat values with complete target-specific material bounds, including immediate liabilities and capture/promotion/draw guards. Same-target discovery and trap badges are deduplicated without moving later promotion/capture details to the root. Thirty hash-selected checking captures across 155 public opening, positional, tactical and ending boards receive 115 fresh engine searches including controls and selected witnesses. A proposed checking-pawn proof is explicitly rejected after its winning root concealed a losing quiet continuation; the real checking-capture coverage gaps remain open.
+
+All 246 private primary lists and live results are unchanged. One source continuation loses a redundant Threatening a Piece badge beside its already-verified Trapped Queen; the primary is not replaced. Existing rare/cross-phase/broader game results and 32 priorities remain unchanged, not certified accurate. See the linked review for final verification, source/worker receipts, scope and native-delivery limitations. No owner app/service restart or deployment; paid material stays private.
+
+## Prior adapter 98 / live pipeline 103
 
 The [broader-game review](broader-game-relevance-review.md) adds 23 fixed opening, middlegame and ending contexts plus all 23 actual after-move boards, with 106 public fresh engine searches. A quiet three-target fork is independently verified against all 27 replies; the supporting pin stays on its actual capture ply. Two-target defences, king-unpinning, counterchecks, missed-versus-allowed severity and a contrary queen-sacrifice variant are explicitly checked. The rule excludes checking/capturing entries, king-and-pawn-only pressure and unproved liabilities, retains existing stronger proof ownership, and keeps worker deadlines unchanged.
 

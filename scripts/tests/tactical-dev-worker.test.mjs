@@ -3,6 +3,7 @@ import { writeFileSync } from "node:fs";
 import { Worker } from "node:worker_threads";
 import test from "node:test";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
+import { directThreatFen, directThreatLine } from "../../src/utils/tests/fixtures/directThreatRelevance.ts";
 import {
   classifyLiveTacticsInWorker,
   TACTICAL_CLASSIFICATION_TIMEOUT_MS,
@@ -86,6 +87,7 @@ test(
   async (t) => {
     assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(new URL(origin).hostname));
     const cases = [
+      { name: "discovered check suppresses its duplicate direct threat", fen: directThreatFen, pvUci: directThreatLine, expectedPrimary: ["discoveredCheck"], expectedLabels: ["discoveredCheck"] },
       { name: "quiet mixed-target fork", fen: mixedForkFen, pvUci: ["d2f3"], expectedPrimary: ["fork"] },
       { name: "mixed fork keeps its later pin", fen: mixedForkFen, pvUci: mixedForkLine, expectedPrimary: ["fork"] },
       { name: "unpinning answers the immediate fork", fen: mixedForkControls[0].fen, pvUci: ["d2f3"], expectedPrimary: [] },
