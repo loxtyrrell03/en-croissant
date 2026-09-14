@@ -13,11 +13,36 @@ import {
     kpkState,
     kpkTransitions,
     probeKingPawnEndgame,
+    proveKpkZugzwang,
     validKpk,
     winningKpkPromotion,
 } from "../tacticalMotifs/kpkBitbase";
 
 const table = buildKpkBitbase();
+
+test("all canonical positions distinguish winning, drawing and absent zugzwang", () => {
+    const failures = [];
+    const counts = { valid: 0, win: 0, draw: 0, neither: 0 };
+    for (let index = 0; index < KPK_STATES; index++) {
+        if (!table.valid[index]) continue;
+        const state = kpkState(index);
+        const board = Board.empty();
+        board.set(state.pawn as Square, { role: "pawn", color: "white" });
+        board.set(state.ownKing as Square, { role: "king", color: "white" });
+        board.set(state.enemyKing as Square, { role: "king", color: "black" });
+        const position = Chess.fromSetup({ board, turn: state.pawnTurn ? "white" : "black", castlingRights: SquareSet.empty(), halfmoves: 0, fullmoves: 1, pockets: undefined, epSquare: undefined, remainingChecks: undefined }).unwrap();
+        const pass = kpkIndex({ ...state, pawnTurn: !state.pawnTurn });
+        const win = Boolean(table.ranks[index]), passWin = Boolean(table.ranks[pass]);
+        const valid = Boolean(table.valid[pass]) && !position.isCheck() && !position.isEnd();
+        const expected = valid && state.pawnTurn && !win && passWin ? "draw" : valid && !state.pawnTurn && win && !passWin ? "win" : null;
+        const actual = proveKpkZugzwang(position)?.outcome ?? null;
+        counts.valid++;
+        counts[expected ?? "neither"]++;
+        if (expected !== actual) failures.push({ index, expected, actual });
+    }
+    expect(failures).toEqual([]);
+    expect(counts).toEqual({ valid: 165676, win: 80, draw: 80, neither: 165516 });
+});
 test.skipIf(!process.env.TACTICAL_KPK_DECISION_REPORT)(
     "inspect drawn-to-lost king choices before choosing an explanation fixture",
     () => {

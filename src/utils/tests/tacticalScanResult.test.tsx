@@ -30,6 +30,18 @@ const markup = (value: LiveTacticalScan) =>
     </MantineProvider>,
   );
 
+test("drawing opposition is labelled as a draw, not a won ending or future promotion", () => {
+  const value = buildLiveTacticalScan({ fen: "8/2k5/8/8/2K5/2P5/8/8 b - - 0 1", pvUci: ["c7c6", "c4b4", "c6b6"], engineName: "Exact ending", depth: 16 });
+  const element = document.createElement("div");
+  element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Drawing Zugzwang found");
+  expect(element.textContent).toContain("holds the draw");
+  expect(element.textContent).not.toContain("this is a winning endgame");
+  expect(element.textContent).not.toContain("Promotion");
+  expect(value.labels[0]).toMatchObject({ text: "Drawing Zugzwang", square: "c4" });
+  expect(value.arrows.map(a => a.from + a.to)).toEqual(["c7c6"]);
+});
+
 test("the stronger discovery leads the panel and board without discarding a distinct smaller skewer", () => {
   const value = buildLiveTacticalScan({ fen: "8/p2R1pk1/1p2r3/1p2n2b/2P1K3/6PP/3QP3/8 b - - 0 1", pvUci: ["e5c4"], engineName: "Constructed", depth: 16 });
   const element = document.createElement("div");

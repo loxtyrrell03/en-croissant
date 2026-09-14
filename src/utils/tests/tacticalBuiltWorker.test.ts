@@ -106,7 +106,11 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             startFen: string;
             bestLine: string[];
         }[];
+        const drawingCases = JSON.parse(readFileSync("benchmarks/tactical-relevance/drawing-zugzwang-tablebase-verified.json", "utf8")).selected as { id: string; beforeFen: string; moveUci: string; expected: "draw" | "win" | null }[];
         const cases = [
+            ...drawingCases.map(row => ({ id: `drawing-audit:${row.id}`, input: { fen: row.beforeFen, pvUci: [row.moveUci], depth: 16, engineName: "Independent tablebase audit" } })),
+            { id: "drawing-audit:opposition", input: { fen: "8/2k5/8/8/2K5/2P5/8/8 b - - 0 1", pvUci: ["c7c6", "c4b4", "c6b6"], depth: 16, engineName: "Drawing opposition" } },
+            { id: "drawing-audit:reserve-tempo", input: { fen: "8/1k6/8/8/2K5/8/2P5/8 b - - 0 1", pvUci: ["b7c6"], depth: 16, engineName: "Reserve tempo control" } },
             ...[
                 { id: "capture-mating-attack:compensated", fen: "6k1/5ppp/8/8/7q/6pb/4B1PP/5RBK w - - 0 1", pvUci: ["g2h3", "h4h3", "f1f2", "g3f2", "g1f2"] },
                 { id: "capture-mating-attack:root-only", fen: "6k1/5ppp/8/8/7q/6pb/4B1PP/5RBK w - - 0 1", pvUci: ["g2h3"] },
@@ -791,6 +795,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         ];
         const report = [];
         const rayResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
+        const drawingResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         for (const item of cases) {
             // A fresh worker never inherits the in-process proof caches.
             const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, item.input);
@@ -799,6 +804,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             if (item.id === "counterplay:9" && result.scan.variations[0].timeline.some((motif) => motif.id === "skewer"))
                 throw new Error("The built worker advertised the mating-trap skewer payoff");
             if (item.id.startsWith("ray-liability:")) rayResults.set(item.id, result.scan);
+            if (item.id.startsWith("drawing-audit:")) drawingResults.set(item.id, result.scan);
             expect(result.startupMs).toBeLessThan(TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
             expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
             report.push({
@@ -810,7 +816,12 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(177);
+        expect(report).toHaveLength(198);
+        for (const row of drawingCases)
+            expect(drawingResults.get(`drawing-audit:${row.id}`)!.motifs.find(m => m.id === "zugzwang")?.label ?? null).toBe(row.expected === "draw" ? "Drawing Zugzwang" : row.expected === "win" ? "Zugzwang" : null);
+        expect(drawingResults.get("drawing-audit:opposition")!.motifs[0]).toMatchObject({ id: "zugzwang", label: "Drawing Zugzwang", value: 0 });
+        expect(drawingResults.get("drawing-audit:opposition")!.labels[0]).toMatchObject({ text: "Drawing Zugzwang", square: "c4" });
+        expect(drawingResults.get("drawing-audit:reserve-tempo")!.motifs.some(m => m.id === "zugzwang")).toBe(false);
         for (const id of ["ray-liability:pin", "ray-liability:mate", "ray-liability:skewer", "ray-liability:mating-decline", "ray-liability:same-victim"])
             expect(rayResults.get(id)!.motifs.some(m => ["pin", "skewer"].includes(m.id))).toBe(false);
         expect(rayResults.get("ray-liability:separate-victim")!.motifs[0]).toMatchObject({ id: "discoveredCheck", value: 680 });

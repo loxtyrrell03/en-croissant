@@ -127,6 +127,14 @@ test(
         pvUci: ["g4f4"],
         expectedPrimary: [],
       },
+      {
+        name: "drawing KPK opposition",
+        fen: "8/2k5/8/8/2K5/2P5/8/8 b - - 0 1",
+        pvUci: ["c7c6"],
+        expectedPrimary: ["zugzwang"],
+        expectedLabels: ["zugzwang"],
+        expectedArrowCount: 1,
+      },
     ];
     const report = [];
     for (const item of cases) {

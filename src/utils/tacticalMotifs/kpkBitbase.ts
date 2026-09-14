@@ -1,5 +1,5 @@
 import type { Chess } from "chessops/chess";
-import type { Color } from "chessops/types";
+import type { Color, NormalMove } from "chessops/types";
 
 // Exact finite K+P versus K reachability, with colour/file symmetry. This is
 // generated locally once, not an engine-score threshold or a downloaded table.
@@ -170,10 +170,12 @@ export function probeKingPawnEndgame(
     if (
         position.board.occupied.size() !== 3 ||
         position.board.pawn.size() !== 1 ||
-        position.board.king.size() !== 2 ||
-        position.epSquare !== undefined
+        position.board.king.size() !== 2
     )
         return null;
+    // chessops retains an epSquare after a double pawn push. With only one
+    // pawn there is no opposing pawn that could use it, so it cannot change
+    // this ending's legal moves or outcome.
     let pawn = position.board.pawn.first()!;
     const pawnSide = position.board.get(pawn)!.color;
     let ownKing = position.board.kingOf(pawnSide)!;
@@ -200,14 +202,27 @@ export function probeKingPawnEndgame(
 
 export function proveKpkZugzwang(position: Chess) {
     const actual = probeKingPawnEndgame(position);
-    if (!actual?.win || position.turn === actual.pawnSide || position.isCheck() || position.isEnd())
-        return null;
+    if (!actual || position.isCheck() || position.isEnd()) return null;
+    // The obligation must worsen the compelled side's exact result: the
+    // bare king loses instead of drawing, or the pawn side draws instead of
+    // winning. Mere opposition/low mobility with equal outcomes is not enough.
+    const winning = actual.win && position.turn !== actual.pawnSide;
+    const drawing = !actual.win && position.turn === actual.pawnSide;
+    if (!winning && !drawing) return null;
     const passed = position.clone();
-    passed.turn = actual.pawnSide;
+    passed.turn = position.turn === "white" ? "black" : "white";
     const waiting = probeKingPawnEndgame(passed);
-    if (!waiting || waiting.win) return null;
-    const replies = [...position.allDests()].flatMap(([from, targets]) =>
-        [...targets].map((to) => ({ from, to })),
+    if (!waiting || waiting.win === actual.win) return null;
+    const replies: NormalMove[] = [...position.allDests()].flatMap(([from, targets]) =>
+        [...targets].flatMap((to): NormalMove[] =>
+            position.board.get(from)?.role === "pawn" && (to < 8 || to >= 56)
+                ? (["queen", "rook", "bishop", "knight"] as const).map((promotion) => ({
+                      from,
+                      to,
+                      promotion,
+                  }))
+                : [{ from, to }],
+        ),
     );
     if (
         !replies.length ||
@@ -215,12 +230,24 @@ export function proveKpkZugzwang(position: Chess) {
             const after = position.clone();
             after.play(move);
             const result = probeKingPawnEndgame(after);
-            return !result?.win || result.pawnSide !== actual.pawnSide;
+            if (result) return result.win !== actual.win || result.pawnSide !== actual.pawnSide;
+            if (!drawing) return true;
+            // Promotions leave KPK. All four choices must still draw: a dead
+            // minor-piece ending, stalemate, or a legal immediate king capture
+            // of the new queen/rook. Never infer a draw from an unknown probe.
+            if (after.isStalemate() || after.isInsufficientMaterial()) return false;
+            if (!move.promotion || after.isCheckmate()) return true;
+            const from = after.board.kingOf(after.turn);
+            if (from === undefined || !after.isLegal({ from, to: move.to })) return true;
+            after.play({ from, to: move.to });
+            return !after.isInsufficientMaterial();
         })
     )
         return null;
     return {
         pawnSide: actual.pawnSide,
+        beneficiary: passed.turn,
+        outcome: winning ? ("win" as const) : ("draw" as const),
         defender: position.turn,
         replies,
         promotionPlies: actual.promotionPlies,

@@ -5796,7 +5796,7 @@ export function tacticalBoardEvidence(
     }
     if (motif.id === "zugzwang") {
         const proof = proveKpkZugzwang(step.after);
-        return proof && proof.pawnSide === step.before.turn
+        return proof && proof.beneficiary === step.before.turn
             ? { square: makeSquare(step.after.board.kingOf(proof.defender)!), arrows: [{ from: makeSquare(step.move.from), to: makeSquare(step.move.to) }] }
             : null;
     }
@@ -9202,12 +9202,14 @@ export function proveKpkEntry(step: TacticalReplayStep) {
 export function kpkZugzwangEvidence(step: TacticalReplayStep, source: TacticalMotifEvidence["source"]): TacticalMotifEvidence | null {
     if (step.move.promotion || step.after.isCheck()) return null;
     const proof = proveKpkZugzwang(step.after);
-    if (!proof || proof.pawnSide !== step.before.turn) return null;
+    if (!proof || proof.beneficiary !== step.before.turn) return null;
     const defender = proof.defender === "white" ? "White" : "Black";
     return {
-        id: "zugzwang", label: "Zugzwang", source, confidence: "high", ply: 1,
+        id: "zugzwang", label: proof.outcome === "draw" ? "Drawing Zugzwang" : "Zugzwang", source, confidence: "high", ply: 1,
         moveUci: step.uci, value: 0,
-        evidence: `${step.san} puts ${defender} in zugzwang. All ${proof.replies.length} legal king moves lose the pawn ending, but the identical board would be drawn if ${defender} could pass. Exact king-and-pawn analysis verifies both outcomes; this is a winning endgame, not a claim of an immediate material gain.`,
+        evidence: proof.outcome === "draw"
+            ? `${step.san} holds the draw by putting ${defender} in zugzwang. All ${proof.replies.length} legal moves leave a drawn ending, but ${defender} would win if ${defender} could pass on this identical board. Exact king-and-pawn analysis verifies both outcomes, including pawn moves and promotion choices. This is a drawing resource, not a material win.`
+            : `${step.san} puts ${defender} in zugzwang. All ${proof.replies.length} legal king moves lose the pawn ending, but the identical board would be drawn if ${defender} could pass. Exact king-and-pawn analysis verifies both outcomes; this is a winning endgame, not a claim of an immediate material gain.`,
     };
 }
 
@@ -10906,11 +10908,18 @@ export function compareImmediateTacticalDefence(
         if (motif.id === "zugzwang") {
             const proof = proveKpkZugzwang(step.after);
             const bestOutcome = probeKingPawnEndgame(better[0].after);
-            if (proof?.pawnSide === step.before.turn && bestOutcome?.pawnSide === proof.pawnSide) {
-                comparison = bestOutcome.win ? "persists" : "prevented";
-                comparisonEvidence = bestOutcome.win
-                    ? `Even after ${bestSan}, exact king-and-pawn analysis still gives ${proof.pawnSide} a won ending. The displayed zugzwang does not establish that this move caused the loss.`
-                    : `${bestSan} holds a drawn king-and-pawn ending against every legal continuation. After ${actual[0].san}, ${step.san} instead reaches a verified winning zugzwang.`;
+            if (proof?.beneficiary === step.before.turn && bestOutcome?.pawnSide === proof.pawnSide) {
+                if (proof.outcome === "draw") {
+                    comparison = bestOutcome.win ? "prevented" : "persists";
+                    comparisonEvidence = bestOutcome.win
+                        ? `${bestSan} retains a won king-and-pawn ending against every legal defence. After ${actual[0].san}, ${step.san} instead secures a verified drawing zugzwang; the move gives up the win, not a material gain.`
+                        : `Even after ${bestSan}, exact king-and-pawn analysis gives a drawn ending. The opponent's drawing resource does not establish that this move gave up a win.`;
+                } else {
+                    comparison = bestOutcome.win ? "persists" : "prevented";
+                    comparisonEvidence = bestOutcome.win
+                        ? `Even after ${bestSan}, exact king-and-pawn analysis still gives ${proof.pawnSide} a won ending. The displayed zugzwang does not establish that this move caused the loss.`
+                        : `${bestSan} holds a drawn king-and-pawn ending against every legal continuation. After ${actual[0].san}, ${step.san} instead reaches a verified winning zugzwang.`;
+                }
             }
         } else if (!alternative) {
             comparison = "prevented";

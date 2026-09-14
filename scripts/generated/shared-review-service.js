@@ -9464,7 +9464,7 @@ function buildKpkBitbase() {
 }
 var table;
 function probeKingPawnEndgame(position) {
-	if (position.board.occupied.size() !== 3 || position.board.pawn.size() !== 1 || position.board.king.size() !== 2 || position.epSquare !== void 0) return null;
+	if (position.board.occupied.size() !== 3 || position.board.pawn.size() !== 1 || position.board.king.size() !== 2) return null;
 	let pawn = position.board.pawn.first();
 	const pawnSide = position.board.get(pawn).color;
 	let ownKing = position.board.kingOf(pawnSide);
@@ -9497,23 +9497,50 @@ function probeKingPawnEndgame(position) {
 }
 function proveKpkZugzwang(position) {
 	const actual = probeKingPawnEndgame(position);
-	if (!actual?.win || position.turn === actual.pawnSide || position.isCheck() || position.isEnd()) return null;
+	if (!actual || position.isCheck() || position.isEnd()) return null;
+	const winning = actual.win && position.turn !== actual.pawnSide;
+	const drawing = !actual.win && position.turn === actual.pawnSide;
+	if (!winning && !drawing) return null;
 	const passed = position.clone();
-	passed.turn = actual.pawnSide;
+	passed.turn = position.turn === "white" ? "black" : "white";
 	const waiting = probeKingPawnEndgame(passed);
-	if (!waiting || waiting.win) return null;
-	const replies = [...position.allDests()].flatMap(([from, targets]) => [...targets].map((to) => ({
+	if (!waiting || waiting.win === actual.win) return null;
+	const replies = [...position.allDests()].flatMap(([from, targets]) => [...targets].flatMap((to) => position.board.get(from)?.role === "pawn" && (to < 8 || to >= 56) ? [
+		"queen",
+		"rook",
+		"bishop",
+		"knight"
+	].map((promotion) => ({
+		from,
+		to,
+		promotion
+	})) : [{
 		from,
 		to
-	})));
+	}]));
 	if (!replies.length || replies.some((move) => {
 		const after = position.clone();
 		after.play(move);
 		const result = probeKingPawnEndgame(after);
-		return !result?.win || result.pawnSide !== actual.pawnSide;
+		if (result) return result.win !== actual.win || result.pawnSide !== actual.pawnSide;
+		if (!drawing) return true;
+		if (after.isStalemate() || after.isInsufficientMaterial()) return false;
+		if (!move.promotion || after.isCheckmate()) return true;
+		const from = after.board.kingOf(after.turn);
+		if (from === void 0 || !after.isLegal({
+			from,
+			to: move.to
+		})) return true;
+		after.play({
+			from,
+			to: move.to
+		});
+		return !after.isInsufficientMaterial();
 	})) return null;
 	return {
 		pawnSide: actual.pawnSide,
+		beneficiary: passed.turn,
+		outcome: winning ? "win" : "draw",
 		defender: position.turn,
 		replies,
 		promotionPlies: actual.promotionPlies
@@ -15360,17 +15387,17 @@ function proveKpkEntry(step) {
 function kpkZugzwangEvidence(step, source) {
 	if (step.move.promotion || step.after.isCheck()) return null;
 	const proof = proveKpkZugzwang(step.after);
-	if (!proof || proof.pawnSide !== step.before.turn) return null;
+	if (!proof || proof.beneficiary !== step.before.turn) return null;
 	const defender = proof.defender === "white" ? "White" : "Black";
 	return {
 		id: "zugzwang",
-		label: "Zugzwang",
+		label: proof.outcome === "draw" ? "Drawing Zugzwang" : "Zugzwang",
 		source,
 		confidence: "high",
 		ply: 1,
 		moveUci: step.uci,
 		value: 0,
-		evidence: `${step.san} puts ${defender} in zugzwang. All ${proof.replies.length} legal king moves lose the pawn ending, but the identical board would be drawn if ${defender} could pass. Exact king-and-pawn analysis verifies both outcomes; this is a winning endgame, not a claim of an immediate material gain.`
+		evidence: proof.outcome === "draw" ? `${step.san} holds the draw by putting ${defender} in zugzwang. All ${proof.replies.length} legal moves leave a drawn ending, but ${defender} would win if ${defender} could pass on this identical board. Exact king-and-pawn analysis verifies both outcomes, including pawn moves and promotion choices. This is a drawing resource, not a material win.` : `${step.san} puts ${defender} in zugzwang. All ${proof.replies.length} legal king moves lose the pawn ending, but the identical board would be drawn if ${defender} could pass. Exact king-and-pawn analysis verifies both outcomes; this is a winning endgame, not a claim of an immediate material gain.`
 	};
 }
 function hasTacticalStart(fen, line, allowConditional = true) {
@@ -16417,7 +16444,10 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 		if (motif.id === "zugzwang") {
 			const proof = proveKpkZugzwang(step.after);
 			const bestOutcome = probeKingPawnEndgame(better[0].after);
-			if (proof?.pawnSide === step.before.turn && bestOutcome?.pawnSide === proof.pawnSide) {
+			if (proof?.beneficiary === step.before.turn && bestOutcome?.pawnSide === proof.pawnSide) if (proof.outcome === "draw") {
+				comparison = bestOutcome.win ? "prevented" : "persists";
+				comparisonEvidence = bestOutcome.win ? `${bestSan} retains a won king-and-pawn ending against every legal defence. After ${actual[0].san}, ${step.san} instead secures a verified drawing zugzwang; the move gives up the win, not a material gain.` : `Even after ${bestSan}, exact king-and-pawn analysis gives a drawn ending. The opponent's drawing resource does not establish that this move gave up a win.`;
+			} else {
 				comparison = bestOutcome.win ? "persists" : "prevented";
 				comparisonEvidence = bestOutcome.win ? `Even after ${bestSan}, exact king-and-pawn analysis still gives ${proof.pawnSide} a won ending. The displayed zugzwang does not establish that this move caused the loss.` : `${bestSan} holds a drawn king-and-pawn ending against every legal continuation. After ${actual[0].san}, ${step.san} instead reaches a verified winning zugzwang.`;
 			}
@@ -17090,7 +17120,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 89;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 90;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

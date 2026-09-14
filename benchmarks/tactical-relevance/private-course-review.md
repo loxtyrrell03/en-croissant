@@ -1,6 +1,14 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 89 / live pipeline 94
+## Current classifier: adapter 90 / live pipeline 95
+
+The [drawing-zugzwang review](drawing-zugzwang-review.md) adds a missing defensive lesson: taking the opposition can hold a draw when every real reply draws but a pass would let the pawn side win. Labels, board geometry and missed/allowed explanations distinguish drawing resources from winning endings and from already drawn positions. A reserve pawn tempo is a contrary control. Exact KPK probes now ignore unusable en-passant metadata after a double push; with one pawn no legal capture can use it. Existing fifty-move conservatism, bitbase graph and worker deadlines are unchanged.
+
+All 165,676 legal canonical zero-clock KPK positions match the internal outcome-change rule (80 winning and 80 drawing zugzwangs). A structurally selected nineteen-position independent Syzygy audit checks 38 actual/pass queries and 57 legal replies in the thirteen qualifying examples. Forty-two fresh depth-16 Stockfish searches agree with the selected outcomes and practical decisions, without treating nonzero drawn estimates as material claims. The initial twenty missing double-push certificates are preserved in a contrary receipt.
+
+Verification: 1,588 selected tests, final exact replays, 661 actual-controller production-worker inputs across thirteen tests, both builds, whole-project type checking, ten-file lint, three service tests, two dev-cache scenarios and seven cold HTTP cases pass. All 225 course/generated-game full results, twenty rare results, 32 priorities and 177 prior public primary-ID lists are unchanged, not certified accurate. The [198-input public receipt](built-worker-adapter90.json) measures median/p95/max 82/215/605 ms excluding engine/UI; the common 177 cases measure 80/241/605 ms. Artifact: liveTactics.worker-BYTc7k8I.js. No app/package/service restart or deployment. Broader quiet/rare/causal classification, larger-ending zugzwang and native verification remain open; this is exact KPK coverage, not general endgame completeness.
+
+## Prior adapter 89 / live pipeline 94
 
 The [ray-liability and relevance review](ray-liability-relevance-review.md) removes a false continuation Pin, reduces an endgame Skewer's bound after an off-square pawn countercapture, and removes a real Lichess skewer already contained in a stronger discovered check. A distinct smaller ray stays secondary; missed-opportunity explanation and board labels now prioritize the larger same-move direct attack. Ray leaves debit all friendly pieces and immediate terminal counterplay within unchanged budgets. Material-only terminal handling preserves genuine drawing rescues without using mate as fictional material profit.
 
