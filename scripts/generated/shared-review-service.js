@@ -9744,8 +9744,16 @@ function replayTacticalLine(fen, line) {
 		let balance = 0;
 		const steps = [];
 		for (const uci of line) {
-			const move = parseUci(uci);
+			let move = parseUci(uci);
 			if (!move || !("from" in move) || !pos.isLegal(move)) break;
+			const castle = castlingSide(pos, move);
+			if (castle) {
+				const landing = {
+					from: move.from,
+					to: kingCastlesTo(pos.turn, castle)
+				};
+				if (castlingSide(pos, landing) === castle && pos.isLegal(landing)) move = landing;
+			}
 			const before = pos.clone();
 			const capture = capturedValue(pos, move);
 			const promotion = move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0;
@@ -10772,7 +10780,9 @@ function proveQuietTacticalPreparation(steps, nodeLimit = 16384) {
 	const victim = root.after.board.get(target);
 	if (!victim || victim.color === root.before.turn || VALUE[victim.role] < VALUE.rook) return null;
 	let mover = root.move.to;
-	let moverRole = root.after.board.get(mover).role;
+	const movingPiece = root.after.board.get(mover);
+	if (!movingPiece) return null;
+	let moverRole = movingPiece.role;
 	let moverAlive = true;
 	let participates = false;
 	let pin;
@@ -10782,7 +10792,9 @@ function proveQuietTacticalPreparation(steps, nodeLimit = 16384) {
 		if (step.before.board.get(mover)?.color !== root.before.turn || step.before.board.get(mover)?.role !== moverRole) moverAlive = false;
 		if (moverAlive && step.move.from === mover) {
 			mover = step.move.to;
-			moverRole = step.after.board.get(mover).role;
+			const movedPiece = step.after.board.get(mover);
+			if (!movedPiece) return null;
+			moverRole = movedPiece.role;
 			if (step.after.isCheck()) participates = true;
 		} else if (step.after.isCheck() && between(step.move.from, step.move.to).has(root.move.from)) participates = true;
 		if (moverAlive && step.after.ctx().checkers.has(mover)) participates = true;
@@ -14764,6 +14776,7 @@ function proveReinforcedPin(root, nodeLimit = 8192) {
 	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
 	if (nodeLimit === 8192 && reinforcedPinCache.has(key)) return reinforcedPinCache.get(key);
 	const mover = root.after.board.get(root.move.to);
+	if (!mover) return null;
 	const before = rayTactics(root.before, root.before.turn);
 	const candidates = rayTactics(root.after, root.before.turn).filter((ray) => ray.kind === "pin" && ray.pinner !== root.move.to && root.after.board.get(ray.rear)?.role === "king" && root.after.ctx().blockers.has(ray.front) && before.some((old) => old.kind === "pin" && old.pinner === ray.pinner && old.front === ray.front && old.rear === ray.rear) && attacks(mover, root.move.to, root.after.board.occupied).has(ray.front) && !attacks(mover, root.move.from, root.before.board.occupied).has(ray.front));
 	let proof = null;
@@ -14950,6 +14963,7 @@ var exchangeDeflectionCache = /* @__PURE__ */ new Map();
 function proveExchangeDeflection(root, nodeLimit = 8192, onFailure) {
 	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.move.promotion || !root.after.isCheck() || root.after.isEnd()) return null;
 	const piece = root.after.board.get(root.move.to);
+	if (!piece) return null;
 	if (![
 		"bishop",
 		"rook",
@@ -18374,7 +18388,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 101;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 102;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

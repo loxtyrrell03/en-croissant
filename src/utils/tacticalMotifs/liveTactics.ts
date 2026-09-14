@@ -9,6 +9,8 @@ import {
 import type { TacticalMotifEvidence } from "./types";
 import { replayTacticalLine, tacticalBoardEvidence } from "./causalTactics";
 import { makeFen } from "chessops/fen";
+import { castlingSide } from "chessops/chess";
+import { kingCastlesTo, rookCastlesTo, makeSquare } from "chessops/util";
 
 const CORE_TACTICAL_THEME_IDS = new Set([
     "perpetualCheck",
@@ -147,7 +149,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 106;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 107;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {
@@ -362,12 +364,26 @@ function buildLiveTacticalVariation(
         : null;
     const geometry = primaryGeometry ?? supportingGeometry;
     const prefixLimit = geometry ? Math.min(motifs[0].ply ?? 1, 6) : arrowLimit;
-    const arrows = lineUci.slice(0, prefixLimit).map<LiveTacticalBoardArrow>((move, index) => ({
-        from: move.slice(0, 2),
-        to: move.slice(2, 4),
-        ply: index + 1,
-        role: triggerPlies.has(index + 1) ? "trigger" : index % 2 === 0 ? "attacker" : "reply",
-    }));
+    const replay = replayTacticalLine(input.fen, lineUci);
+    // Wire UCI may point at the original rook square. Draw the two actual
+    // castling moves, never a king move into that corner (or an illegal tail).
+    const arrows = replay.slice(0, prefixLimit).flatMap<LiveTacticalBoardArrow>((step, index) => {
+        const castle = castlingSide(step.before, step.move);
+        const role = triggerPlies.has(index + 1) ? "trigger" : index % 2 === 0 ? "attacker" : "reply";
+        const moves = [{
+            from: step.move.from,
+            to: castle ? kingCastlesTo(step.before.turn, castle) : step.move.to,
+        }];
+        const rook = castle ? step.before.castles.rook[step.before.turn][castle] : undefined;
+        if (castle && rook !== undefined)
+            moves.push({ from: rook, to: rookCastlesTo(step.before.turn, castle) });
+        return moves.filter(move => move.from !== move.to).map(move => ({
+            from: makeSquare(move.from),
+            to: makeSquare(move.to),
+            ply: index + 1,
+            role,
+        }));
+    });
     if (geometry)
         for (const arrow of geometry.arrows) {
             if (
@@ -381,7 +397,12 @@ function buildLiveTacticalVariation(
         color: tacticalMotifColor(motif.id),
         square:
             (index === 0 ? primaryGeometry?.square : null) ??
-            motif.moveUci?.slice(2, 4) ??
+            (() => {
+                const step = motif.ply ? replay[motif.ply - 1] : undefined;
+                if (!step || step.uci !== motif.moveUci) return motif.moveUci?.slice(2, 4);
+                const castle = castlingSide(step.before, step.move);
+                return makeSquare(castle ? kingCastlesTo(step.before.turn, castle) : step.move.to);
+            })() ??
             (motif.id === "attackingF2F7" ? lineUci[0]?.slice(2, 4) : null) ??
             null,
     }));

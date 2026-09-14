@@ -1,6 +1,12 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 101 / live pipeline 106
+## Current classifier: adapter 102 / live pipeline 107
+
+The [castling and rare-root review](castling-relevance-review.md) records a legal queenside-castling crash found by an all-defence real-puzzle audit. Replay now respects both castling notations, proof helpers handle compound moves safely, and board previews draw the actual king/rook moves. Ordinary checks and pre-existing pins do not gain phantom themes; genuine castling mates remain primary, including missed lessons. Eighteen output-blind real-game castling options and three unresolved rare roots receive 96 final fresh engine searches. A missed queen-rook fork and an allowed loose-bishop capture are independently checked in review and on the actual after-move scan.
+
+All 246 private source/live full results and twenty rare results remain unchanged, not certified accurate. The linked review records the 1,992-test selection, production/browser/HTTP checks, retained cold-start variability, withdrawn rare-proof experiment and remaining coverage gaps. No owner app/service restart or deployment; paid material stays private.
+
+## Prior adapter 101 / live pipeline 106
 
 The [Black-root context and payoff review](black-context-relevance-review.md) adds 20 fixed real-game roots and their 20 actual after-move boards, including openings, quiet middlegames, exchanges and endings. Initial chess judgements preceded fresh output; 71 fresh public engine searches review roots, replies, mechanism controls and all legal defences of a real checking discovery. Its later capture now says Discovery Payoff. The same proof/identity-linked normalization covers forks, pins and skewers, preserves genuine opponent/missed themes, and never admits a new tactic from the supplied continuation.
 

@@ -88,7 +88,9 @@ test(
   { skip: !origin },
   async (t) => {
     assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(new URL(origin).hostname));
+    const { castlingAliasCases } = await import("../../src/utils/tests/fixtures/castlingRelevance.ts");
     const cases = [
+      ...castlingAliasCases.map(row => ({ name: `castling: ${row.id}`, fen: row.fen, pvUci: row.pvUci, expectedPrimary: row.mate ? ["mateIn1"] : row.id.includes("check-not-mate") ? [] : undefined, expectedArrows: row.mate ? [[row.pvUci[0].slice(0, 2), row.kingTo], [row.rookFrom, row.rookTo]] : undefined, expectedSquare: row.mate ? row.kingTo : undefined })),
       ...[...directMaterialPayoffCases, ...directMaterialPayoffCases.map(reflectPayoff)].map(row => ({ name: `direct payoff: ${row.id}`, fen: row.fen, pvUci: row.pvUci, expectedPrimary: [row.theme], expectedPayoff: row.label })),
       ...tablebaseCases.filter(row => ["EKWHC:g4f4", "EKWHC-reciprocal-draw"].includes(row.id)).map(row => ({ name: row.id, fen: row.fen, pvUci: [row.move], tablebaseEvidence: row.evidence, expectedPrimary: ["zugzwang"], expectedLabels: ["zugzwang"] })),
       { name: "discovered check suppresses its duplicate direct threat", fen: directThreatFen, pvUci: directThreatLine, expectedPrimary: ["discoveredCheck"], expectedLabels: ["discoveredCheck"] },
@@ -256,6 +258,8 @@ test(
         assert.equal(result.scan.variations[0].timeline.find(motif => motif.ply === 3)?.label, item.expectedPayoff);
       if (item.expectedPrimary)
         assert.deepEqual(result.scan.motifs.map((motif) => motif.id), item.expectedPrimary);
+      if (item.expectedArrows) assert.deepEqual(result.scan.arrows.map(arrow => [arrow.from, arrow.to]), item.expectedArrows);
+      if (item.expectedSquare) assert.equal(result.scan.labels[0].square, item.expectedSquare);
       if (item.expectedLabels)
         assert.deepEqual(result.scan.labels.map((label) => label.id), item.expectedLabels);
       if (item.expectedArrowCount !== undefined)

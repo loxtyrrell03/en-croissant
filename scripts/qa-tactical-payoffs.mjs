@@ -11,11 +11,16 @@ import { parseFen } from "chessops/fen";
 import { parseUci } from "chessops/util";
 import { makeSan } from "chessops/san";
 import { directMaterialPayoffCases } from "../src/utils/tests/fixtures/directMaterialPayoff.ts";
+import { castlingAliasCases } from "../src/utils/tests/fixtures/castlingRelevance.ts";
 
 const require = createRequire(process.env.TACTICAL_QA_DEPENDENCIES || import.meta.url);
 const { chromium } = require("playwright");
+const castlingMode = process.argv.includes("--castling");
 const root = process.cwd(),
-  output = resolve(root, "tmp/tactical-payoffs-adapter101");
+  output = resolve(
+    root,
+    castlingMode ? "tmp/tactical-castling-adapter102" : "tmp/tactical-payoffs-adapter101",
+  );
 await mkdir(output, { recursive: true });
 const contexts = JSON.parse(
   await readFile("benchmarks/tactical-relevance/black-context-stockfish-18.json", "utf8"),
@@ -23,16 +28,20 @@ const contexts = JSON.parse(
 const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
-const cases = [
-  ...directMaterialPayoffCases,
-  ...quiet.map((row) => ({
-    id: row.id,
-    fen: row.fen,
-    pvUci: row.engineLines[0].pvUci,
-    previousFen: row.previousFen,
-    previousMoveUci: row.previousMoveUci,
-  })),
-].map((row) => {
+const cases = (
+  castlingMode
+    ? castlingAliasCases
+    : [
+        ...directMaterialPayoffCases,
+        ...quiet.map((row) => ({
+          id: row.id,
+          fen: row.fen,
+          pvUci: row.engineLines[0].pvUci,
+          previousFen: row.previousFen,
+          previousMoveUci: row.previousMoveUci,
+        })),
+      ]
+).map((row) => {
   const pos = Chess.fromSetup(parseFen(row.fen).unwrap()).unwrap();
   const pvSan = row.pvUci.map((uci) => {
     const move = parseUci(uci);
@@ -107,7 +116,28 @@ try {
           index,
           scale,
         });
-        if (row.label) {
+        if (row.mate) {
+          const button = page.getByRole("button", { name: /^Show .* on board$/ });
+          await button.waitFor();
+          await button.focus();
+          await page.keyboard.press("Enter");
+          const preview = await page.evaluate(() => ({
+            main: window.fixture.last?.motifs[0]?.id,
+            arrows: window.fixture.last?.arrows.map((arrow) => [arrow.from, arrow.to]),
+            square: window.fixture.last?.labels[0]?.square,
+          }));
+          assert.equal(preview.main, "mateIn1");
+          assert.deepEqual(preview.arrows, [
+            [row.pvUci[0].slice(0, 2), row.kingTo],
+            [row.rookFrom, row.rookTo],
+          ]);
+          assert.equal(preview.square, row.kingTo);
+          if (width === 360 && scale === 2)
+            await page.screenshot({
+              path: resolve(output, row.id.replaceAll(":", "-") + ".png"),
+              fullPage: true,
+            });
+        } else if (row.label) {
           const button = page.getByRole("button", { name: /^Show .* on board$/ });
           await button.waitFor();
           assert.equal(await page.locator("details[open]").count(), 0);

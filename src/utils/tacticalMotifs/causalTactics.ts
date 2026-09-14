@@ -1,9 +1,9 @@
 import { attacks, between } from "chessops/attacks";
-import { Chess } from "chessops/chess";
+import { Chess, castlingSide } from "chessops/chess";
 import { makeFen, parseFen } from "chessops/fen";
 import { makeSan, parseSan } from "chessops/san";
 import type { Color, NormalMove, Role, Square } from "chessops/types";
-import { makeSquare, makeUci, opposite, parseUci } from "chessops/util";
+import { kingCastlesTo, makeSquare, makeUci, opposite, parseUci } from "chessops/util";
 import type { TacticalMotifEvidence } from "./types";
 import { probeKingPawnEndgame, proveKpkZugzwang } from "./kpkBitbase";
 import { proveTablebaseZugzwang, tablebaseZugzwangEvidence, verifiedTablebasePosition, type TablebaseEvidence } from "./tablebaseEvidence";
@@ -71,8 +71,19 @@ export function replayTacticalLine(fen: string, line: string[]): TacticalReplayS
         let balance = 0;
         const steps: TacticalReplayStep[] = [];
         for (const uci of line) {
-            const move = parseUci(uci);
+            let move = parseUci(uci);
             if (!move || !("from" in move) || !pos.isLegal(move)) break;
+            // Chessops also encodes castling as king-to-rook. Most tactical
+            // geometry follows the mover's landing square, which is not the
+            // emptied rook corner. Use the equivalent legal king-destination
+            // move, retaining the original UCI for caller/line identity.
+            // Some Chess960 king destinations are ambiguous ordinary king
+            // moves: never reinterpret those as a different legal action.
+            const castle = castlingSide(pos, move);
+            if (castle) {
+                const landing = { from: move.from, to: kingCastlesTo(pos.turn, castle) };
+                if (castlingSide(pos, landing) === castle && pos.isLegal(landing)) move = landing;
+            }
             const before = pos.clone();
             const capture = capturedValue(pos, move);
             const promotion = move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0;
@@ -1550,7 +1561,9 @@ export function proveQuietTacticalPreparation(
     // The initiating piece must participate, or clear the path of a different
     // checking piece. A quiet pawn move cannot borrow an unrelated combination.
     let mover = root.move.to;
-    let moverRole = root.after.board.get(mover)!.role;
+    const movingPiece = root.after.board.get(mover);
+    if (!movingPiece) return null; // an unrepresentable compound move is not a single-piece proof
+    let moverRole = movingPiece.role;
     let moverAlive = true;
     let participates = false;
     let pin: TacticalPreparationProof["pin"];
@@ -1570,7 +1583,9 @@ export function proveQuietTacticalPreparation(
             moverAlive = false;
         if (moverAlive && step.move.from === mover) {
             mover = step.move.to;
-            moverRole = step.after.board.get(mover)!.role;
+            const movedPiece = step.after.board.get(mover);
+            if (!movedPiece) return null;
+            moverRole = movedPiece.role;
             if (step.after.isCheck()) participates = true;
         } else if (
             step.after.isCheck() &&
@@ -8093,7 +8108,8 @@ export function proveReinforcedPin(
         return null;
     const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
     if (nodeLimit === 8192 && reinforcedPinCache.has(key)) return reinforcedPinCache.get(key)!;
-    const mover = root.after.board.get(root.move.to)!;
+    const mover = root.after.board.get(root.move.to);
+    if (!mover) return null;
     const before = rayTactics(root.before, root.before.turn);
     const candidates = rayTactics(root.after, root.before.turn).filter(
         (ray) =>
@@ -8384,7 +8400,8 @@ export function proveExchangeDeflection(
         root.after.isEnd()
     )
         return null;
-    const piece = root.after.board.get(root.move.to)!;
+    const piece = root.after.board.get(root.move.to);
+    if (!piece) return null;
     if (!["bishop", "rook", "queen"].includes(piece.role)) return null;
     const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
     if (!onFailure && nodeLimit === 8192 && exchangeDeflectionCache.has(key))
