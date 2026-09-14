@@ -6477,6 +6477,18 @@ export function tacticalBoardEvidence(
             };
         const suffix = replayTacticalLine(fen, line).slice(motif.ply - 1);
         const mating = proveMatingDeflection(step);
+        if (mating?.forcingMate) {
+            const branch = mating.mating[0];
+            if (branch.mode === "entry") {
+                const accepted = step.after.clone();
+                accepted.play(parseSan(accepted, branch.reply)!);
+                const entry = parseSan(accepted, branch.mate) as NormalMove;
+                return {square: makeSquare(branch.defender),
+                    arrows: [{from: makeSquare(entry.from), to: makeSquare(branch.defender)}]};
+            }
+            return {square: makeSquare(branch.defender),
+                arrows: [{from: makeSquare(branch.defender), to: makeSquare(branch.mode === "block" ? step.after.board.kingOf(opposite(step.before.turn))! : branch.target)}]};
+        }
         if (mating)
             return {
                 square: makeSquare(step.move.to),
@@ -8391,15 +8403,31 @@ function deflectionEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
                     ` The move also opens the ${bait.after.board.get(ray.from)!.role}'s line from ${makeSquare(ray.from)} to ${makeSquare(ray.target)} for ${ray.mate}.`,
             )
             .join("");
+        const extendedMate = branch.continuation;
+        const acceptance = extendedMate
+            ? `a verified mate starting with ${branch.mate} (${extendedMate.map(item => `${item.replySan} ${item.mateSan}`).join("; ")})`
+            : branch.mate;
+        const removedDuty = branch.mode === "entry"
+            ? `the ${defender.role} no longer blocks the slider's approach to ${makeSquare(branch.target)}`
+            : branch.mode === "block"
+                ? `the ${defender.role} no longer blocks the mating line from ${makeSquare(branch.target)} to ${makeSquare(bait.after.board.kingOf(opposite(bait.before.turn))!)}`
+                : `the defender no longer guards ${makeSquare(branch.target)}`;
+        const verifiedDeclines = mating.forcingMate
+            ? `${decline ? `The other legal replies also allow immediate mate; for example, ${decline.reply} ${decline.answer}. ` : ""}Every legal defence permits mate. This is the supporting mechanism, not an extra material win.`
+            : decline ? `Declining can avoid this mate, but every legal decline has a checked material win or immediate mate. ${decline.continuation ? `After ${decline.reply}, ${decline.answer} forces an answer to check before the material recovery; ${decline.continuation.join(" ")} is one checked continuation.` : `For example, ${decline.reply} ${decline.answer}.`} This is not a forced-mate claim.`
+            : extendedMate ? "Every legal reply accepts the offer and permits the verified mating continuation; each subsequent defence is checked." : "Every legal reply accepts the offer and allows immediate mate.";
         return {
             id: "deflection",
-            label: "Deflection",
+            label: mating.forcingMate ? "Mating Deflection" : "Deflection",
             source,
             confidence: "high",
             ply: 1,
             moveUci: bait.uci,
-            value: mating.gain,
-            evidence: `${bait.san} offers the ${bait.after.board.get(bait.move.to)!.role} to deflect the ${defender.role} from ${makeSquare(branch.defender)}. Accepting with ${branch.reply} allows ${branch.mate}: ${branch.mode === "block" ? `the ${defender.role} no longer blocks the mating line from ${makeSquare(branch.target)} to ${makeSquare(bait.after.board.kingOf(opposite(bait.before.turn))!)}` : `the defender no longer guards ${makeSquare(branch.target)}`}.${opening} ${decline ? `Declining can avoid this mate, but every legal decline has a checked material win or immediate mate. ${decline.continuation ? `After ${decline.reply}, ${decline.answer} forces an answer to check before the material recovery; ${decline.continuation.join(" ")} is one checked continuation.` : `For example, ${decline.reply} ${decline.answer}.`} This is not a forced-mate claim.` : "Every legal reply accepts the offer and allows immediate mate."}`,
+            // A fully mating continuation supports the independent mate
+            // headline; it is not spendable material or a competing payoff.
+            value: mating.forcingMate ? undefined : mating.gain,
+            ...(mating.forcingMate ? {verifiedCombination: true as const} : {}),
+            evidence: `${bait.san} offers the ${bait.after.board.get(bait.move.to)!.role} to deflect the ${defender.role} from ${makeSquare(branch.defender)}. Accepting with ${branch.reply} allows ${acceptance}: ${removedDuty}.${opening} ${verifiedDeclines}`,
         } satisfies TacticalMotifEvidence;
     }
     const capture = bait && proveCaptureDeflection(bait);
@@ -8555,9 +8583,12 @@ type MatingDeflectionProof = {
         mate: string;
         defender: Square;
         target: Square;
-        mode: "guard" | "block";
+        mode: "guard" | "block" | "entry";
+        continuation?: { replyUci: string; replySan: string; fen: string; mateUci: string; mateSan: string }[];
     }[];
     declined: { reply: string; answer: string; gain: number; continuation?: string[] }[];
+    forcingMate?: true;
+    visits?: number;
 };
 const matingDeflectionCache = new Map<string, MatingDeflectionProof | null>();
 
@@ -8580,7 +8611,8 @@ function matingDeflectionRays(root: TacticalReplayStep, proof: MatingDeflectionP
 }
 
 /** A normal capture can offer its mover to a mating-square defender or a
- * blocker of the mating ray. Every acceptance must allow immediate mate,
+ * blocker of the mating ray. Every acceptance must allow immediate mate
+ * or (for a checking offer) a guard-dependent check followed by mate,
  * and every declined offer must retain material through a related move.
  * Restoring the receiver is a causal geometry probe, never a legal PV. */
 export function proveMatingDeflection(
@@ -8635,25 +8667,53 @@ export function proveMatingDeflection(
                     throw new Error("King attraction is not defender deflection");
                 let found = false;
                 for (const mate of moves(next)) {
-                    if (mate.promotion || !visit(next, mate).isCheckmate()) continue;
+                    if (mate.promotion) continue;
+                    const entered = visit(next, mate);
+                    const immediate = entered.isCheckmate();
+                    if (!immediate && (!root.after.isCheck() || !entered.isCheck() ||
+                        entered.isEnd() || defenderCanClaimFiftyMoveDraw(entered))) continue;
                     const restored = next.clone();
                     restored.board.take(reply.to);
                     restored.board.set(reply.from, defender);
-                    if (!restored.isLegal(mate)) continue;
-                    const defended = visit(restored, mate);
-                    const checker = defended.board.get(mate.to)!;
-                    const guard = defended.isLegal({ from: reply.from, to: mate.to });
+                    // Moving the receiver may open the slider's approach to
+                    // the checking square, not merely its final mating ray.
+                    // Restoring that exact piece must be the sole obstruction.
+                    const entry = ["bishop", "rook", "queen"].includes(next.board.get(mate.from)!.role) &&
+                        between(mate.from, mate.to).has(reply.from) &&
+                        between(mate.from, mate.to).intersect(restored.board.occupied).size() === 1 &&
+                        !restored.isLegal(mate);
+                    if (!entry && !restored.isLegal(mate)) continue;
+                    const defended = entry ? null : visit(restored, mate);
+                    const checker = entered.board.get(mate.to)!;
+                    const guard = defended?.isLegal({ from: reply.from, to: mate.to }) ?? false;
                     const block =
+                        !!defended &&
                         ["bishop", "rook", "queen"].includes(checker.role) &&
                         between(mate.to, king).has(reply.from) &&
                         !defended.isCheck();
-                    if (defended.isCheckmate() || (!guard && !block)) continue;
+                    if (defended?.isCheckmate() || (!guard && !block && !entry)) continue;
+                    let continuation: MatingDeflectionProof["mating"][number]["continuation"];
+                    if (!immediate) {
+                        continuation = [];
+                        for (const defence of moves(entered)) {
+                            const reached = visit(entered, defence);
+                            if (reached.isEnd()) break;
+                            const finish = moves(reached).find(move =>
+                                mayGiveCheck(reached, move) && visit(reached, move).isCheckmate());
+                            if (!finish) break;
+                            continuation.push({replyUci: makeUci(defence), replySan: makeSan(entered, defence),
+                                fen: makeFen(reached.toSetup()), mateUci: makeUci(finish),
+                                mateSan: makeSan(reached, finish)});
+                        }
+                        if (!continuation.length || continuation.length !== moves(entered).length) continue;
+                    }
                     mating.push({
                         reply: makeSan(root.after, reply),
                         mate: makeSan(next, mate),
                         defender: reply.from,
                         target: mate.to,
-                        mode: guard ? "guard" : "block",
+                        mode: entry ? "entry" : guard ? "guard" : "block",
+                        ...(continuation ? {continuation} : {}),
                     });
                     found = true;
                     break;
@@ -8742,7 +8802,25 @@ export function proveMatingDeflection(
             minimum = Math.min(minimum, best.gain, root.capture);
             declined.push(best);
         }
-        if (mating.length) proof = { gain: minimum, mating, declined };
+        const extended = mating.some(branch => branch.mode === "entry" || branch.continuation?.length);
+        // Once the new mating route is established, don't illustrate a king
+        // decline with an incidental pawn gain when the offered piece mates.
+        if (extended && root.after.isCheck()) for (const branch of declined) {
+            const reply = parseSan(root.after, branch.reply) as NormalMove;
+            const next = visit(root.after, reply);
+            for (const answer of moves(next)) {
+                if (answer.from !== root.move.to || !mayGiveCheck(next, answer) ||
+                    !visit(next, answer).isCheckmate()) continue;
+                branch.answer = makeSan(next, answer);
+                branch.gain = 10000;
+                delete branch.continuation;
+                break;
+            }
+        }
+        const forcingMate = extended && declined.every(branch => branch.gain === 10000);
+        if (mating.length) proof = { gain: forcingMate ? 10000 : minimum, mating, declined,
+            ...(extended ? {visits: nodeLimit - budget.nodes} : {}),
+            ...(forcingMate ? {forcingMate: true} : {}) };
     } catch (error) {
         onFailure?.(error instanceof Error ? error.message : "Unproved mating deflection");
     }
@@ -9315,13 +9393,14 @@ type ForcedInterferenceProof = {
 
 /** An actual defensive move can interrupt its own protection of a mating
  * square. Unlike the material certificate, even a guarded pawn matters.
- * Compare the identical legal capture before/after the block: the exact old
- * guard could recapture before, whereas the new capture is actual checkmate.
- * The turn swap is a protection probe, not a legal variation or root proof. */
+ * Compare the identical legal capture before/after the block. The old guard
+ * could recapture, or a pre-existing check requires a separate sole-blocker
+ * and king-safety probe on the resulting mating board. Neither hypothetical
+ * geometry probe is a legal variation or an independent root proof. */
 export function proveMatingSelfInterference(
     step: TacticalReplayStep,
     nodeLimit = 512,
-): (Omit<SelfInterferenceProof, "gain"> & { mate: true }) | null {
+): (Omit<SelfInterferenceProof, "gain"> & { mate: true; checkEvasion?: true }) | null {
     if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || step.move.promotion ||
         step.before.board.get(step.move.to) || step.after.isEnd()) return null;
     let remaining = nodeLimit;
@@ -9343,12 +9422,27 @@ export function proveMatingSelfInterference(
                 if (!step.after.isLegal(capture) || !beforeProbe.isLegal(capture)) continue;
                 const old = beforeProbe.clone();
                 old.play(capture);
-                if (!old.isLegal({ from: defender, to: target })) continue;
                 const next = step.after.clone();
                 next.play(capture);
                 if (!next.isCheckmate()) continue;
+                const previouslyLegal = old.isLegal({ from: defender, to: target });
+                if (!previouslyLegal) {
+                    // An existing check can make the old recapture illegal for
+                    // an unrelated reason. On the ACTUAL mating board, prove
+                    // that the new blocker alone prevents this guard's capture.
+                    // Keep the king on its real square, including king blockers:
+                    // this occupancy/king-safety probe is not a legal variation.
+                    if (!step.before.isCheck() || --remaining < 0 ||
+                        between(defender, target).intersect(next.board.occupied).size() !== 1 ||
+                        !attacks(guard, defender, next.board.occupied.without(step.move.to)).has(target)) continue;
+                    const recaptured = next.clone();
+                    recaptured.board.take(defender);
+                    recaptured.board.set(target, guard);
+                    if (recaptured.isCheck()) continue;
+                }
                 return { defender, target, capturer, blocker: step.move.to, mate: true,
-                    captureUci: makeUci(capture), captureSan: makeSan(step.after, capture) };
+                    captureUci: makeUci(capture), captureSan: makeSan(step.after, capture),
+                    ...(previouslyLegal ? {} : {checkEvasion: true}) };
             }
         }
     }
@@ -9427,7 +9521,7 @@ export function selfInterferenceEvidence(
         ply: 1,
         moveUci: step.uci,
         value: "mate" in proof ? 10000 : proof.gain,
-        evidence: `${step.san} blocks ${side}'s ${step.before.board.get(proof.defender)!.role} on ${makeSquare(proof.defender)} from defending the ${step.after.board.get(proof.target)!.role} on ${makeSquare(proof.target)}. ${proof.captureSan} ${"mate" in proof ? "is now checkmate" : "now wins material"}; the guard could legally recapture before this blocking move. This explains the concession, not a tactic won by ${side}.`,
+        evidence: `${step.san} blocks ${side}'s ${step.before.board.get(proof.defender)!.role} on ${makeSquare(proof.defender)} from defending the ${step.after.board.get(proof.target)!.role} on ${makeSquare(proof.target)}. ${proof.captureSan} ${"mate" in proof ? "is now checkmate" : "now wins material"}; ${"checkEvasion" in proof ? "the guard's line was open before this move. On the resulting mating board, this blocker is the only obstruction to a king-safe recapture" : "the guard could legally recapture before this blocking move"}. This explains the concession, not a tactic won by ${side}.`,
     };
 }
 

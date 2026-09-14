@@ -81,7 +81,21 @@ test("exact source and engine replay retains unrelated results across the twenty
     const restored = cases.find((row: { id: string }) => row.id === "lichess:brn5j");
     expect(restored.sourceResult.motifs[0]).toMatchObject({ id: "clearance", ply: 1, value: 500 });
     expect(restored.scan.motifs[0]).toMatchObject({ id: "clearance", ply: 1, value: 500 });
-    for (const row of cases.filter((row: { id: string }) => row.id !== "lichess:brn5j")) {
+    for (const id of ["lichess:kO37k", "lichess:qY3NM"]) {
+        const row = cases.find((row: { id: string }) => row.id === id);
+        expect(row.sourceResult.motifs[0]).toMatchObject({ id: "mateIn3", ply: 1 });
+        expect(row.scan.motifs[0]).toMatchObject({ id: "mateIn3", ply: 1 });
+        expect(
+            row.sourceResult.timeline.find((m: { id: string }) => m.id === "deflection"),
+        ).toMatchObject({ ply: 1, relevance: "secondary" });
+    }
+    const interrupted = cases.find((row: { id: string }) => row.id === "lichess:49h84");
+    expect(interrupted.sourceResult.motifs[0]).toMatchObject({ id: "mateIn2", ply: 1 });
+    expect(
+        interrupted.sourceResult.timeline.find((m: { id: string }) => m.id === "selfInterference"),
+    ).toMatchObject({ ply: 2, actor: "black", relevance: "secondary" });
+    const changed = new Set(["lichess:brn5j", "lichess:kO37k", "lichess:qY3NM", "lichess:49h84"]);
+    for (const row of cases.filter((row: { id: string }) => !changed.has(row.id))) {
         const before = receipt.cases.find((prior: { id: string }) => prior.id === row.id);
         expect({ id: row.id, result: clean(row.sourceResult), scan: clean(row.scan) }).toEqual({
             id: before.id,
@@ -94,7 +108,7 @@ test("exact source and engine replay retains unrelated results across the twenty
             process.env.TACTICAL_CROSS_PHASE_REPORT,
             JSON.stringify(
                 {
-                    scope: "Exact source/engine-input replay. One restored promotion-clearance root; other twenty-two results unchanged, not certified accurate. Larger-ending and quiet-combination coverage gaps are retained.",
+                    scope: "Exact source/engine-input replay. Promotion clearance remains; two mating deflections and one actual-ply self-interference improve secondary explanations. All twenty-three primary IDs remain unchanged from adapter95, not certified accurate. Larger-ending and quiet-combination coverage gaps are retained.",
                     cases,
                 },
                 null,

@@ -12,6 +12,7 @@ import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtu
 import { trappedRookFen, trapControls, unrelatedPayoffTrap } from "./fixtures/trapRelevance";
 import { interferenceExamples, interferenceControls, compensatedInterference } from "./fixtures/interferenceRelevance";
 import { promotionClearanceFen, promotionClearanceLine, promotionClearanceControls } from "./fixtures/promotionClearance";
+import { matingMechanismExamples, matingMechanismControls } from "./fixtures/matingMechanismRelevance";
 import {
     buildLiveTacticalScan,
     type LiveTacticalScanInput,
@@ -114,6 +115,8 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         const secondary = JSON.parse(readFileSync("benchmarks/tactical-relevance/secondary-theme-stockfish-18.json", "utf8"));
         const crossPhase=JSON.parse(readFileSync("benchmarks/tactical-relevance/cross-phase-stockfish-18.json","utf8"));
         const cases = [
+            ...matingMechanismExamples.flatMap(row=>[1,row.pvUci.length].map(length=>({id:`mating-mechanism:${row.id}:${length}`,input:{...row,pvUci:row.pvUci.slice(0,length),depth:16,engineName:"Mating mechanism"}}))),
+            ...matingMechanismControls.map(row=>({id:`mating-mechanism:control:${row.id}`,input:{fen:row.fen,pvUci:row.theme==="selfInterference"?matingMechanismExamples[0].pvUci:[matingMechanismExamples[1].pvUci[0]],depth:16,engineName:"Mechanism counterexample"}})),
             ...crossPhase.cases.flatMap((row:any)=>[
                 {id:`cross-phase-source:${row.id}`,input:{fen:row.fen,pvUci:row.sourceUci,variations:[{pvUci:row.sourceUci,pvSan:row.sourceSan,cp:row.sourceEngine.cp,mate:row.sourceEngine.mate,depth:16,multipv:1}],depth:16,engineName:"Frozen source",previousFen:row.previousFen,previousMoveUci:row.previousMoveUci}},
                 {id:`cross-phase-engine:${row.id}`,input:{fen:row.fen,pvUci:row.engineLines[0].pvUci,variations:row.engineLines,depth:16,engineName:"Stockfish 18",previousFen:row.previousFen,previousMoveUci:row.previousMoveUci}},
@@ -841,6 +844,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         const trapResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         const interferenceResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         const promotionResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
+        const matingMechanismResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         for (const item of cases) {
             // A fresh worker never inherits the in-process proof caches.
             const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, item.input);
@@ -850,6 +854,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             if (item.id.startsWith("trap-audit:")) trapResults.set(item.id, result.scan);
             if (item.id.startsWith("interference-audit:")) interferenceResults.set(item.id,result.scan);
             if (item.id.startsWith("promotion-clearance:")) promotionResults.set(item.id,result.scan);
+            if (item.id.startsWith("mating-mechanism:")) matingMechanismResults.set(item.id,result.scan);
             if (item.id === "counterplay:9" && result.scan.variations[0].timeline.some((motif) => motif.id === "skewer"))
                 throw new Error("The built worker advertised the mating-trap skewer payoff");
             if (item.id.startsWith("ray-liability:")) rayResults.set(item.id, result.scan);
@@ -867,7 +872,18 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(362);
+        expect(report).toHaveLength(376);
+        for(const row of matingMechanismExamples)for(const length of [1,row.pvUci.length]){
+            const scan=matingMechanismResults.get(`mating-mechanism:${row.id}:${length}`)!;
+            expect(scan.motifs.map(m=>m.id)).toEqual([row.id==="49h84"?"mateIn2":"mateIn3"]);
+            expect(scan.labels.some(l=>l.id==="selfInterference")).toBe(false);
+        }
+        expect(matingMechanismResults.get("mating-mechanism:qY3NM:5")!.arrows.map(a=>[a.from,a.to])).toEqual([["f3","f6"],["e1","e6"]]);
+        expect(matingMechanismResults.get("mating-mechanism:49h84:3")!.variations[0].timeline.find(m=>m.id==="selfInterference")).toMatchObject({ply:2,actor:"black",relevance:"secondary"});
+        for(const row of matingMechanismControls){
+            const scan=matingMechanismResults.get(`mating-mechanism:control:${row.id}`)!;
+            expect(scan.variations[0].timeline.some(m=>row.theme==="selfInterference"?m.id==="selfInterference":m.id==="deflection"&&m.verifiedCombination)).toBe(false);
+        }
         for(const mode of ["root","continuation"]){
             const scan=promotionResults.get(`promotion-clearance:${mode}`)!;
             expect(scan.motifs[0]).toMatchObject({id:"clearance",label:"Promotion Clearance",value:500});

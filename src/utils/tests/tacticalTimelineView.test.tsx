@@ -9,6 +9,17 @@ import { trappedRookFen, trappedRookLine } from "./fixtures/trapRelevance";
 import { counterplayFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import { interferenceExamples } from "./fixtures/interferenceRelevance";
 import { promotionClearanceFen, promotionClearanceLine } from "./fixtures/promotionClearance";
+import { matingMechanismExamples } from "./fixtures/matingMechanismRelevance";
+
+test.each(matingMechanismExamples)("mate stays primary while the secondary mechanism renders on its actual ply: $id",row=>{
+  const result=classifyPositionTacticalMotifs(row);
+  const container=document.createElement("div");
+  container.innerHTML=renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={replayTacticalLine(row.fen,row.pvUci).map(s=>s.san)} motifs={result.timeline??[]} /></MantineProvider>);
+  expect(container.querySelector("details")?.hasAttribute("open")).toBe(false);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Forcing Mate");
+  expect(container.querySelector(`[data-tactical-ply="${row.id==="49h84"?2:1}"]`)?.textContent).toContain(row.id==="49h84"?"Self-Interference":"Mating Deflection");
+  expect(result.motifs[0].label).toBe("Forcing Mate");
+});
 
 test("a promotion clearance renders its fork, payoff and compensation without free-piece noise",()=>{
   const result=classifyPositionTacticalMotifs({fen:promotionClearanceFen,pvUci:promotionClearanceLine});

@@ -201,6 +201,17 @@ test(
         expectedPrimary: ["clearance"],expectedLabels:["clearance"],expectedArrowCount:2,
       },
       {
+        name: "mating deflection supports mate without a whole future line on the board",
+        fen:"4r2k/3R4/1q2rp1p/8/1p5P/p4QP1/7K/4R3 w - - 0 43",
+        pvUci:["f3f6","e6f6","e1e8","f6f8","e8f8"],
+        expectedPrimary:["mateIn3"],expectedLabels:["mateIn3"],expectedArrowCount:2,
+      },
+      {
+        name:"mating self-interference remains the king evasion's secondary mechanism",
+        fen:"8/4R1p1/p4k2/1b1p1p1p/1P4r1/2P3P1/3K4/4R3 w - - 2 49",
+        pvUci:["e1e6","f6g5","e7g7"],expectedPrimary:["mateIn2"],expectedLabels:["mateIn2"],
+      },
+      {
         name: "an extra promotion guard defeats the quiet clearance claim",
         fen: "r7/8/1RP5/p3n3/8/1P5k/r6p/5N1K w - - 3 61",
         pvUci: ["c6c7"],expectedPrimary:[],

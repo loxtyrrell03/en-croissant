@@ -147,7 +147,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 100;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 101;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {
@@ -349,6 +349,10 @@ function buildLiveTacticalVariation(
                   (motif) => motif.ply === motifs[0].ply && motif.id === "xRayAttack" &&
                       motif.label === "X-Ray Support" && motif.confidence === "high" &&
                       motif.relevance === "secondary" && motif.value === undefined,
+              ) ?? classification.timeline?.find(
+                  (motif) => motif.ply === motifs[0].ply && motif.id === "deflection" &&
+                      motif.label === "Mating Deflection" && motif.verifiedCombination &&
+                      motif.confidence === "high" && motif.relevance === "secondary",
               )
             : undefined;
     const supportingGeometry = supporting
