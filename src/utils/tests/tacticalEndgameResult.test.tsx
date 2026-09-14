@@ -4,9 +4,12 @@ import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { buildLiveTacticalScan } from "../tacticalMotifs/liveTactics";
 import { tablebaseCases } from "./fixtures/tablebaseRelevance";
+import { drawingCaptureEvidenceCases } from "./fixtures/drawingCaptureEvidence";
 
 const mocks = vi.hoisted(() => ({ lookup: vi.fn(), classify: vi.fn() }));
-vi.mock("../tacticalMotifs/tablebaseLookup", () => ({ lookupZugzwangEvidence: mocks.lookup }));
+vi.mock("../tacticalMotifs/tablebaseLookup", () => ({
+  lookupTacticalEndgameEvidence: mocks.lookup,
+}));
 vi.mock("../tacticalMotifs/liveTacticsWorker", () => ({
   classifyLiveTacticsInWorker: mocks.classify,
 }));
@@ -64,6 +67,38 @@ async function render(value = scan) {
 function button(text: string) {
   return [...host.querySelectorAll("button")].find((b) => b.textContent?.includes(text))!;
 }
+
+test.each(["king-rook-rescue", "bishop-rook-exchange", "already-dead"])(
+  "the actual endgame action distinguishes a saving capture from ordinary draws: %s",
+  async (id) => {
+    const capture = drawingCaptureEvidenceCases.find((r) => r.id === id)!;
+    const value = { fen: capture.fen, pvUci: [capture.move], engineName: "Stockfish", depth: 16 };
+    mocks.lookup.mockResolvedValue(capture.evidence);
+    await act(async () =>
+      root.render(
+        <MantineProvider>
+          <TacticalEndgameResult
+            scan={buildLiveTacticalScan(value)}
+            input={value}
+            onPreviewChange={changed}
+          />
+        </MantineProvider>,
+      ),
+    );
+    expect(mocks.lookup).not.toHaveBeenCalled();
+    const verify = button("online");
+    expect(Boolean(verify)).toBe(id !== "already-dead");
+    if (!verify) return;
+    expect(host.textContent).toContain("Optional saving-draw check");
+    await act(async () => verify.click());
+    expect(host.textContent).toContain(
+      capture.expected ? "Saving draw verified after Kxe5" : "No necessary saving capture verified",
+    );
+    expect(changed.mock.calls.at(-1)?.[0].motifs.map((m: { id: string }) => m.id)).toEqual(
+      capture.expected ? ["drawingCapture"] : [],
+    );
+  },
+);
 
 test("local results remain visible and no lookup happens until the explicit online action", async () => {
   await render();

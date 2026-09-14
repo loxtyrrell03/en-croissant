@@ -11,6 +11,7 @@ import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { directThreatFen, directThreatLine, directThreatControls } from "./fixtures/directThreatRelevance";
 import { tablebaseCases } from "./fixtures/tablebaseRelevance";
+import { drawingCaptureEvidenceCases } from "./fixtures/drawingCaptureEvidence";
 import { directMaterialPayoffCases, reflectPayoff } from "./fixtures/directMaterialPayoff";
 import { captureGainLiabilityCases, reflectCaptureLiability } from "./fixtures/captureGainLiability";
 import { castlingAliasCases } from "./fixtures/castlingRelevance";
@@ -90,6 +91,21 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
         vi.unstubAllGlobals();
     }
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("saving captures and drawn-exchange controls survive the actual worker", async () => {
+    const report = [];
+    for (const row of drawingCaptureEvidenceCases) for (const verified of [false, true]) {
+        const input = { fen: row.fen, pvUci: [row.move], engineName: "Stockfish", depth: 16,
+            ...(verified ? { tablebaseEvidence: row.evidence } : {}) };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.some(m => m.id === "drawingCapture")).toBe(verified && row.expected);
+        expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+        expect(result.startupMs).toBeLessThan(TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
+        report.push({id:`${row.id}:${verified ? "verified" : "local"}`,startupMs:result.startupMs,classificationMs:result.classificationMs,primary:result.scan.motifs.map(m=>m.id)});
+    }
+    if (process.env.TACTICAL_DRAWING_CAPTURE_WORKER_REPORT) writeFileSync(process.env.TACTICAL_DRAWING_CAPTURE_WORKER_REPORT,JSON.stringify(report,null,2),{flag:"wx"});
+}, 120000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("discovered capture mechanisms and additional whole-game contexts survive the production controller", async () => {
     const sample = JSON.parse(readFileSync("benchmarks/tactical-relevance/discovered-capture-development.json", "utf8"));

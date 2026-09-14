@@ -152,6 +152,97 @@ export function tablebaseZugzwangRequests(fen: string, moveUci: string) {
     return { before, after, passed, move, actualFen: makeFen(after.toSetup()), passedFen };
 }
 
+/** Capturing the last mating material is locally terminal, but that alone
+ * does not make it a saving tactic. Exact outcomes of the alternatives are
+ * required separately; routine drawn exchanges must remain quiet. */
+export function drawingCaptureRequest(fen: string, moveUci: string) {
+    if (typeof moveUci !== "string" || moveUci.length > 5) return null;
+    const before = tablebasePosition(fen),
+        move = parseUci(moveUci);
+    if (
+        !before ||
+        before.isEnd() ||
+        before.halfmoves >= 100 ||
+        !move ||
+        !("from" in move) ||
+        !before.board.get(move.to) ||
+        !before.isLegal(move)
+    )
+        return null;
+    const after = before.clone();
+    after.play(move);
+    if (!after.isInsufficientMaterial()) return null;
+    return { before, after, move, fen: makeFen(before.toSetup()) };
+}
+
+export function proveDrawingCapture(
+    fen: string,
+    moveUci: string,
+    evidence?: TablebaseEvidence | null,
+) {
+    const request = drawingCaptureRequest(fen, moveUci);
+    if (!request) return null;
+    const exact = verifiedTablebasePosition(request.fen, evidence);
+    if (
+        !exact ||
+        exact.outcome !== 0 ||
+        !exact.moves.some((m) => m.uci === moveUci && m.outcome === 0)
+    )
+        return null;
+    const drawing = exact.moves.filter((m) => m.outcome === 0);
+    // Permit equivalent captures of the same last piece, but not quiet
+    // drawing alternatives or another unrelated route to a drawn ending.
+    if (
+        !exact.moves.some((m) => m.outcome === 1) ||
+        drawing.some((m) => {
+            const alternative = drawingCaptureRequest(fen, m.uci);
+            return !alternative || alternative.move.to !== request.move.to;
+        })
+    )
+        return null;
+    return {
+        ...request,
+        drawingMoves: drawing.map((m) => m.uci),
+        losingMoves: exact.moves.filter((m) => m.outcome === 1).map((m) => m.uci),
+    };
+}
+
+export function drawingCaptureEvidence(
+    fen: string,
+    moveUci: string,
+    evidence: TablebaseEvidence | null | undefined,
+    source: TacticalMotifEvidence["source"],
+): TacticalMotifEvidence | null {
+    const proof = proveDrawingCapture(fen, moveUci, evidence);
+    if (!proof) return null;
+    const captured = proof.before.board.get(proof.move.to)!;
+    return {
+        id: "drawingCapture",
+        label: "Drawing Capture",
+        source,
+        confidence: "high",
+        ply: 1,
+        moveUci,
+        value: 0,
+        evidence: `${makeSan(proof.before, proof.move)} removes the last ${captured.role} and immediately draws by insufficient material. ${proof.drawingMoves.length === 1 ? "Every other legal move loses" : "Only captures of this piece draw; every other legal move loses"}, according to Lichess Syzygy. This saves the game, not a material win.`,
+    };
+}
+
+/** The explicit online action requests either one real root or the existing
+ * actual/pass pair. Ordinary scans never make these network requests. */
+export function tablebaseTacticalRequests(fen: string, moveUci: string) {
+    const capture = drawingCaptureRequest(fen, moveUci);
+    if (capture) return { ...capture, kind: "drawingCapture" as const, targets: [capture.fen] };
+    const zugzwang = tablebaseZugzwangRequests(fen, moveUci);
+    return zugzwang
+        ? {
+              ...zugzwang,
+              kind: "zugzwang" as const,
+              targets: [zugzwang.actualFen, zugzwang.passedFen],
+          }
+        : null;
+}
+
 export function proveTablebaseZugzwang(
     fen: string,
     moveUci: string,

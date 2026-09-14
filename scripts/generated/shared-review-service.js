@@ -3051,6 +3051,415 @@ function parseWebPgnStartSeconds(headers) {
 	return Number.isFinite(timestamp) ? timestamp / 1e3 : null;
 }
 //#endregion
+//#region src/utils/tacticalMotifs/kpkBitbase.ts
+var KPK_STATES = 1536 * 64 * 2;
+var kingMoves = Array.from({ length: 64 }, (_, square) => Array.from({ length: 64 }, (_, target) => target).filter((target) => target !== square && kingDistance(square, target) === 1));
+function kingDistance(a, b) {
+	return Math.max(Math.abs((a & 7) - (b & 7)), Math.abs((a >> 3) - (b >> 3)));
+}
+function pawnAttacks(pawn, target) {
+	return target >> 3 === (pawn >> 3) + 1 && Math.abs((target & 7) - (pawn & 7)) === 1;
+}
+function kpkIndex({ pawn, ownKing, enemyKing, pawnTurn }) {
+	return ((((pawn >> 3) - 1) * 4 + (pawn & 7)) * 2 + (pawnTurn ? 0 : 1)) * 4096 + ownKing * 64 + enemyKing;
+}
+function kpkState(index) {
+	const group = index >> 13;
+	return {
+		pawn: (Math.floor(group / 4) + 1) * 8 + group % 4,
+		ownKing: index >> 6 & 63,
+		enemyKing: index & 63,
+		pawnTurn: (index >> 12 & 1) === 0
+	};
+}
+function validKpk(state) {
+	return state.pawn !== state.ownKing && state.pawn !== state.enemyKing && kingDistance(state.ownKing, state.enemyKing) > 1 && (!state.pawnTurn || !pawnAttacks(state.pawn, state.enemyKing));
+}
+function sliderAttacks(from, to, king, queen) {
+	const dx = (to & 7) - (from & 7), dy = (to >> 3) - (from >> 3);
+	if (!(dx === 0 || dy === 0 || queen && Math.abs(dx) === Math.abs(dy))) return false;
+	const step = Math.sign(dx) + Math.sign(dy) * 8;
+	for (let square = from + step; square !== to; square += step) if (square === king) return false;
+	return true;
+}
+/** KQK/KRK is won unless the king can immediately take the new piece or the
+* promotion stalemates. Try both: a queen alone can wrongly reject rook wins. */
+function winningKpkPromotion(state) {
+	const target = state.pawn + 8;
+	if (target === state.ownKing || target === state.enemyKing) return false;
+	if (kingDistance(target, state.enemyKing) === 1 && kingDistance(target, state.ownKing) > 1) return false;
+	return [true, false].some((queen) => sliderAttacks(target, state.enemyKing, state.ownKing, queen) || kingMoves[state.enemyKing].some((square) => kingDistance(square, state.ownKing) > 1 && square !== target && !sliderAttacks(target, square, state.ownKing, queen)));
+}
+function kpkTransitions(state) {
+	const result = [];
+	if (!validKpk(state)) return result;
+	if (state.pawnTurn) {
+		for (const square of kingMoves[state.ownKing]) if (square !== state.pawn && kingDistance(square, state.enemyKing) > 1) result.push({
+			from: state.ownKing,
+			target: square,
+			to: kpkIndex({
+				...state,
+				ownKing: square,
+				pawnTurn: false
+			})
+		});
+		const target = state.pawn + 8;
+		if (target !== state.ownKing && target !== state.enemyKing) {
+			result.push({
+				from: state.pawn,
+				target,
+				to: state.pawn >= 48 ? winningKpkPromotion(state) ? "promotion" : "draw" : kpkIndex({
+					...state,
+					pawn: target,
+					pawnTurn: false
+				})
+			});
+			if (state.pawn < 16 && target + 8 !== state.ownKing && target + 8 !== state.enemyKing) result.push({
+				from: state.pawn,
+				target: target + 8,
+				to: kpkIndex({
+					...state,
+					pawn: target + 8,
+					pawnTurn: false
+				})
+			});
+		}
+	} else for (const square of kingMoves[state.enemyKing]) if (kingDistance(square, state.ownKing) > 1 && !pawnAttacks(state.pawn, square)) result.push({
+		from: state.enemyKing,
+		target: square,
+		to: square === state.pawn ? "draw" : kpkIndex({
+			...state,
+			enemyKing: square,
+			pawnTurn: true
+		})
+	});
+	return result;
+}
+function buildKpkBitbase() {
+	const ranks = new Uint8Array(KPK_STATES);
+	const valid = new Uint8Array(KPK_STATES);
+	const replies = new Uint8Array(KPK_STATES);
+	const longest = new Uint8Array(KPK_STATES);
+	const heads = new Int32Array(KPK_STATES).fill(-1);
+	const parents = new Uint32Array(KPK_STATES * 10);
+	const links = new Int32Array(KPK_STATES * 10);
+	const queue = new Uint32Array(KPK_STATES);
+	let edges = 0, tail = 0;
+	for (let index = 0; index < KPK_STATES; index++) {
+		const state = kpkState(index);
+		if (!validKpk(state)) continue;
+		valid[index] = 1;
+		const moves = kpkTransitions(state);
+		replies[index] = moves.length;
+		for (const move of moves) if (move.to === "promotion") {
+			ranks[index] = 1;
+			queue[tail++] = index;
+		} else if (typeof move.to === "number") {
+			if (edges >= parents.length) throw new Error("KPK graph capacity exceeded");
+			parents[edges] = index;
+			links[edges] = heads[move.to];
+			heads[move.to] = edges++;
+		}
+	}
+	for (let cursor = 0; cursor < tail; cursor++) {
+		const child = queue[cursor];
+		for (let edge = heads[child]; edge !== -1; edge = links[edge]) {
+			const parent = parents[edge];
+			if (ranks[parent]) continue;
+			const pawnTurn = (parent >> 12 & 1) === 0;
+			longest[parent] = Math.max(longest[parent], ranks[child]);
+			if (pawnTurn || --replies[parent] === 0) {
+				const rank = longest[parent] + 1;
+				if (rank >= 255) throw new Error("KPK proof rank overflow");
+				ranks[parent] = rank;
+				queue[tail++] = parent;
+			}
+		}
+	}
+	return {
+		ranks,
+		valid,
+		winningStates: tail,
+		edges
+	};
+}
+var table;
+function probeKingPawnEndgame(position) {
+	if (position.board.occupied.size() !== 3 || position.board.pawn.size() !== 1 || position.board.king.size() !== 2) return null;
+	let pawn = position.board.pawn.first();
+	const pawnSide = position.board.get(pawn).color;
+	let ownKing = position.board.kingOf(pawnSide);
+	let enemyKing = position.board.kingOf(pawnSide === "white" ? "black" : "white");
+	if (pawnSide === "black") {
+		pawn ^= 56;
+		ownKing ^= 56;
+		enemyKing ^= 56;
+	}
+	if ((pawn & 7) > 3) {
+		pawn ^= 7;
+		ownKing ^= 7;
+		enemyKing ^= 7;
+	}
+	const state = {
+		pawn,
+		ownKing,
+		enemyKing,
+		pawnTurn: position.turn === pawnSide
+	};
+	if (pawn < 8 || pawn >= 56 || !validKpk(state)) return null;
+	table ??= buildKpkBitbase();
+	const promotionPlies = table.ranks[kpkIndex(state)];
+	if (promotionPlies && position.halfmoves + promotionPlies >= 100) return null;
+	return {
+		pawnSide,
+		win: promotionPlies > 0,
+		promotionPlies
+	};
+}
+function proveKpkZugzwang(position) {
+	const actual = probeKingPawnEndgame(position);
+	if (!actual || position.isCheck() || position.isEnd()) return null;
+	const winning = actual.win && position.turn !== actual.pawnSide;
+	const drawing = !actual.win && position.turn === actual.pawnSide;
+	if (!winning && !drawing) return null;
+	const passed = position.clone();
+	passed.turn = position.turn === "white" ? "black" : "white";
+	const waiting = probeKingPawnEndgame(passed);
+	if (!waiting || waiting.win === actual.win) return null;
+	const replies = [...position.allDests()].flatMap(([from, targets]) => [...targets].flatMap((to) => position.board.get(from)?.role === "pawn" && (to < 8 || to >= 56) ? [
+		"queen",
+		"rook",
+		"bishop",
+		"knight"
+	].map((promotion) => ({
+		from,
+		to,
+		promotion
+	})) : [{
+		from,
+		to
+	}]));
+	if (!replies.length || replies.some((move) => {
+		const after = position.clone();
+		after.play(move);
+		const result = probeKingPawnEndgame(after);
+		if (result) return result.win !== actual.win || result.pawnSide !== actual.pawnSide;
+		if (!drawing) return true;
+		if (after.isStalemate() || after.isInsufficientMaterial()) return false;
+		if (!move.promotion || after.isCheckmate()) return true;
+		const from = after.board.kingOf(after.turn);
+		if (from === void 0 || !after.isLegal({
+			from,
+			to: move.to
+		})) return true;
+		after.play({
+			from,
+			to: move.to
+		});
+		return !after.isInsufficientMaterial();
+	})) return null;
+	return {
+		pawnSide: actual.pawnSide,
+		beneficiary: passed.turn,
+		outcome: winning ? "win" : "draw",
+		defender: position.turn,
+		replies,
+		promotionPlies: actual.promotionPlies
+	};
+}
+//#endregion
+//#region src/utils/tacticalMotifs/tablebaseEvidence.ts
+var object = (value) => value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
+/** Categories refer to the position's side to move, including child records.
+* Uncertain maybe-/syzygy-/unknown categories cannot establish a 50-move-safe
+* outcome. Cursed wins and blessed losses are draws under that rule.
+* Provider contract: https://github.com/lichess-org/lila-tablebase#http-api */
+function outcome(value) {
+	if (value === "win") return 1;
+	if (value === "loss") return -1;
+	if (value === "draw" || value === "cursed-win" || value === "blessed-loss") return 0;
+	return null;
+}
+function legalMoves$1(pos) {
+	return [...pos.allDests()].flatMap(([from, tos]) => [...tos].flatMap((to) => pos.board.get(from)?.role === "pawn" && (to < 8 || to >= 56) ? [
+		"queen",
+		"rook",
+		"bishop",
+		"knight"
+	].map((promotion) => ({
+		from,
+		to,
+		promotion
+	})) : [{
+		from,
+		to
+	}]));
+}
+function tablebasePosition(fen) {
+	if (typeof fen !== "string" || fen.length > 200) return null;
+	const parsed = parseFen$1(fen).chain((setup) => Chess.fromSetup(setup));
+	if (parsed.isErr) return null;
+	const pos = parsed.value;
+	if (pos.board.occupied.size() > 7 || pos.castles.castlingRights.nonEmpty() || pos.epSquare !== void 0) return null;
+	return pos;
+}
+function terminalFlags(data, pos) {
+	return data.checkmate === pos.isCheckmate() && data.stalemate === pos.isStalemate() && data.insufficient_material === pos.isInsufficientMaterial() && data.variant_win === false && data.variant_loss === false;
+}
+/** Validate transport identity, every legal move (including all promotions),
+* terminal facts and parent/child minimax consistency. This validates a
+* tablebase certificate, not the provider's entire database from scratch. */
+function validateTablebaseRecord(record, expectedFen) {
+	const pos = tablebasePosition(expectedFen);
+	const recorded = typeof record?.fen === "string" ? tablebasePosition(record.fen) : null;
+	if (!pos || !recorded || makeFen(recorded.toSetup()) !== makeFen(pos.toSetup())) return null;
+	const data = object(record.result);
+	if (!data || !terminalFlags(data, pos) || !Array.isArray(data.moves) || data.moves.length > 256) return null;
+	const value = outcome(data.category);
+	if (value === null) return null;
+	const legal = legalMoves$1(pos);
+	if (data.moves.length !== legal.length) return null;
+	const available = new Map(legal.map((move) => [makeUci(move), move]));
+	const moves = [];
+	for (const raw of data.moves) {
+		const row = object(raw);
+		if (!row || typeof row.uci !== "string") return null;
+		const move = available.get(row.uci);
+		if (!move) return null;
+		available.delete(row.uci);
+		const childValue = outcome(row.category);
+		if (childValue === null) return null;
+		const next = pos.clone();
+		next.play(move);
+		if (!terminalFlags(row, next)) return null;
+		if (next.isCheckmate() ? childValue !== -1 : next.isEnd() && childValue !== 0) return null;
+		moves.push({
+			uci: row.uci,
+			outcome: childValue
+		});
+	}
+	if (available.size) return null;
+	if (value !== (pos.isCheckmate() ? -1 : pos.isEnd() ? 0 : Math.max(...moves.map((move) => -move.outcome)))) return null;
+	const local = probeKingPawnEndgame(pos);
+	if (local && value !== (local.win ? pos.turn === local.pawnSide ? 1 : -1 : 0)) return null;
+	return {
+		fen: makeFen(pos.toSetup()),
+		outcome: value,
+		moves
+	};
+}
+function tablebaseZugzwangRequests(fen, moveUci) {
+	if (typeof moveUci !== "string" || moveUci.length > 5) return null;
+	const before = tablebasePosition(fen), move = parseUci(moveUci);
+	if (!before || before.isCheck() || before.isEnd() || !move || !("from" in move) || move.promotion || before.board.get(move.to) || !before.isLegal(move)) return null;
+	const after = before.clone();
+	after.play(move);
+	if (after.isCheck() || after.isEnd() || after.halfmoves >= 99 || !tablebasePosition(makeFen(after.toSetup()))) return null;
+	const passed = after.clone();
+	passed.turn = before.turn;
+	const passedFen = makeFen(passed.toSetup());
+	if (!tablebasePosition(passedFen)) return null;
+	return {
+		before,
+		after,
+		passed,
+		move,
+		actualFen: makeFen(after.toSetup()),
+		passedFen
+	};
+}
+/** Capturing the last mating material is locally terminal, but that alone
+* does not make it a saving tactic. Exact outcomes of the alternatives are
+* required separately; routine drawn exchanges must remain quiet. */
+function drawingCaptureRequest(fen, moveUci) {
+	if (typeof moveUci !== "string" || moveUci.length > 5) return null;
+	const before = tablebasePosition(fen), move = parseUci(moveUci);
+	if (!before || before.isEnd() || before.halfmoves >= 100 || !move || !("from" in move) || !before.board.get(move.to) || !before.isLegal(move)) return null;
+	const after = before.clone();
+	after.play(move);
+	if (!after.isInsufficientMaterial()) return null;
+	return {
+		before,
+		after,
+		move,
+		fen: makeFen(before.toSetup())
+	};
+}
+function proveDrawingCapture(fen, moveUci, evidence) {
+	const request = drawingCaptureRequest(fen, moveUci);
+	if (!request) return null;
+	const exact = verifiedTablebasePosition(request.fen, evidence);
+	if (!exact || exact.outcome !== 0 || !exact.moves.some((m) => m.uci === moveUci && m.outcome === 0)) return null;
+	const drawing = exact.moves.filter((m) => m.outcome === 0);
+	if (!exact.moves.some((m) => m.outcome === 1) || drawing.some((m) => {
+		const alternative = drawingCaptureRequest(fen, m.uci);
+		return !alternative || alternative.move.to !== request.move.to;
+	})) return null;
+	return {
+		...request,
+		drawingMoves: drawing.map((m) => m.uci),
+		losingMoves: exact.moves.filter((m) => m.outcome === 1).map((m) => m.uci)
+	};
+}
+function drawingCaptureEvidence(fen, moveUci, evidence, source) {
+	const proof = proveDrawingCapture(fen, moveUci, evidence);
+	if (!proof) return null;
+	const captured = proof.before.board.get(proof.move.to);
+	return {
+		id: "drawingCapture",
+		label: "Drawing Capture",
+		source,
+		confidence: "high",
+		ply: 1,
+		moveUci,
+		value: 0,
+		evidence: `${makeSan(proof.before, proof.move)} removes the last ${captured.role} and immediately draws by insufficient material. ${proof.drawingMoves.length === 1 ? "Every other legal move loses" : "Only captures of this piece draw; every other legal move loses"}, according to Lichess Syzygy. This saves the game, not a material win.`
+	};
+}
+function proveTablebaseZugzwang(fen, moveUci, evidence) {
+	if (evidence?.provider !== "lichess-syzygy" || !Array.isArray(evidence.records) || evidence.records.length > 32) return null;
+	const request = tablebaseZugzwangRequests(fen, moveUci);
+	if (!request) return null;
+	const actual = verifiedTablebasePosition(request.actualFen, evidence), passed = verifiedTablebasePosition(request.passedFen, evidence);
+	if (!actual || !passed || !actual.moves.length || !passed.moves.length) return null;
+	const beneficiaryActual = -actual.outcome;
+	if (beneficiaryActual < 0 || beneficiaryActual <= passed.outcome) return null;
+	if (actual.moves.some((reply) => reply.outcome < beneficiaryActual)) return null;
+	return {
+		beneficiary: request.before.turn,
+		defender: request.after.turn,
+		outcome: beneficiaryActual === 1 ? "win" : "draw",
+		passedOutcome: passed.outcome,
+		replies: actual.moves.map((reply) => ({
+			...reply,
+			san: makeSan(request.after, parseUci(reply.uci))
+		})),
+		pieceCount: request.after.board.occupied.size()
+	};
+}
+function verifiedTablebasePosition(fen, evidence) {
+	if (evidence?.provider !== "lichess-syzygy" || !Array.isArray(evidence.records) || evidence.records.length > 32) return null;
+	const records = evidence.records.filter((record) => record?.fen === fen);
+	return records.length === 1 ? validateTablebaseRecord(records[0], fen) : null;
+}
+function tablebaseZugzwangEvidence(fen, moveUci, evidence, source) {
+	const proof = proveTablebaseZugzwang(fen, moveUci, evidence);
+	if (!proof) return null;
+	const request = tablebaseZugzwangRequests(fen, moveUci);
+	const defender = proof.defender === "white" ? "White" : "Black";
+	const passing = proof.passedOutcome === 0 ? "draw" : "win";
+	return {
+		id: "zugzwang",
+		label: proof.outcome === "draw" ? "Drawing Zugzwang" : "Zugzwang",
+		source,
+		confidence: "high",
+		ply: 1,
+		moveUci,
+		value: 0,
+		evidence: `${makeSan(request.before, request.move)} ${proof.outcome === "draw" ? "holds the draw" : "wins the ending"} by zugzwang. ${proof.outcome === "draw" ? "The best defence only draws" : `All ${proof.replies.length} legal replies lose`}; ${defender} would ${passing} if allowed to pass. Both outcomes are verified by ${proof.pieceCount}-piece Lichess Syzygy.`
+	};
+}
+//#endregion
 //#region src/utils/tacticalMotifs/siteClassifier/chess-primitives.js
 /**
 * chess-primitives.js — Rich chess board query layer
@@ -9328,367 +9737,6 @@ function detectAllowedThemesDetailed(fenAfterBadMove, refutationPV, opponentSide
 	if (cpAfter !== null) syntheticMistake.cpAfter = cpAfter;
 	if (sacrificeIntentCp !== null) syntheticMistake._sacrificeIntentCp = sacrificeIntentCp;
 	return detectThemesDetailed(syntheticMistake);
-}
-//#endregion
-//#region src/utils/tacticalMotifs/kpkBitbase.ts
-var KPK_STATES = 1536 * 64 * 2;
-var kingMoves = Array.from({ length: 64 }, (_, square) => Array.from({ length: 64 }, (_, target) => target).filter((target) => target !== square && kingDistance(square, target) === 1));
-function kingDistance(a, b) {
-	return Math.max(Math.abs((a & 7) - (b & 7)), Math.abs((a >> 3) - (b >> 3)));
-}
-function pawnAttacks(pawn, target) {
-	return target >> 3 === (pawn >> 3) + 1 && Math.abs((target & 7) - (pawn & 7)) === 1;
-}
-function kpkIndex({ pawn, ownKing, enemyKing, pawnTurn }) {
-	return ((((pawn >> 3) - 1) * 4 + (pawn & 7)) * 2 + (pawnTurn ? 0 : 1)) * 4096 + ownKing * 64 + enemyKing;
-}
-function kpkState(index) {
-	const group = index >> 13;
-	return {
-		pawn: (Math.floor(group / 4) + 1) * 8 + group % 4,
-		ownKing: index >> 6 & 63,
-		enemyKing: index & 63,
-		pawnTurn: (index >> 12 & 1) === 0
-	};
-}
-function validKpk(state) {
-	return state.pawn !== state.ownKing && state.pawn !== state.enemyKing && kingDistance(state.ownKing, state.enemyKing) > 1 && (!state.pawnTurn || !pawnAttacks(state.pawn, state.enemyKing));
-}
-function sliderAttacks(from, to, king, queen) {
-	const dx = (to & 7) - (from & 7), dy = (to >> 3) - (from >> 3);
-	if (!(dx === 0 || dy === 0 || queen && Math.abs(dx) === Math.abs(dy))) return false;
-	const step = Math.sign(dx) + Math.sign(dy) * 8;
-	for (let square = from + step; square !== to; square += step) if (square === king) return false;
-	return true;
-}
-/** KQK/KRK is won unless the king can immediately take the new piece or the
-* promotion stalemates. Try both: a queen alone can wrongly reject rook wins. */
-function winningKpkPromotion(state) {
-	const target = state.pawn + 8;
-	if (target === state.ownKing || target === state.enemyKing) return false;
-	if (kingDistance(target, state.enemyKing) === 1 && kingDistance(target, state.ownKing) > 1) return false;
-	return [true, false].some((queen) => sliderAttacks(target, state.enemyKing, state.ownKing, queen) || kingMoves[state.enemyKing].some((square) => kingDistance(square, state.ownKing) > 1 && square !== target && !sliderAttacks(target, square, state.ownKing, queen)));
-}
-function kpkTransitions(state) {
-	const result = [];
-	if (!validKpk(state)) return result;
-	if (state.pawnTurn) {
-		for (const square of kingMoves[state.ownKing]) if (square !== state.pawn && kingDistance(square, state.enemyKing) > 1) result.push({
-			from: state.ownKing,
-			target: square,
-			to: kpkIndex({
-				...state,
-				ownKing: square,
-				pawnTurn: false
-			})
-		});
-		const target = state.pawn + 8;
-		if (target !== state.ownKing && target !== state.enemyKing) {
-			result.push({
-				from: state.pawn,
-				target,
-				to: state.pawn >= 48 ? winningKpkPromotion(state) ? "promotion" : "draw" : kpkIndex({
-					...state,
-					pawn: target,
-					pawnTurn: false
-				})
-			});
-			if (state.pawn < 16 && target + 8 !== state.ownKing && target + 8 !== state.enemyKing) result.push({
-				from: state.pawn,
-				target: target + 8,
-				to: kpkIndex({
-					...state,
-					pawn: target + 8,
-					pawnTurn: false
-				})
-			});
-		}
-	} else for (const square of kingMoves[state.enemyKing]) if (kingDistance(square, state.ownKing) > 1 && !pawnAttacks(state.pawn, square)) result.push({
-		from: state.enemyKing,
-		target: square,
-		to: square === state.pawn ? "draw" : kpkIndex({
-			...state,
-			enemyKing: square,
-			pawnTurn: true
-		})
-	});
-	return result;
-}
-function buildKpkBitbase() {
-	const ranks = new Uint8Array(KPK_STATES);
-	const valid = new Uint8Array(KPK_STATES);
-	const replies = new Uint8Array(KPK_STATES);
-	const longest = new Uint8Array(KPK_STATES);
-	const heads = new Int32Array(KPK_STATES).fill(-1);
-	const parents = new Uint32Array(KPK_STATES * 10);
-	const links = new Int32Array(KPK_STATES * 10);
-	const queue = new Uint32Array(KPK_STATES);
-	let edges = 0, tail = 0;
-	for (let index = 0; index < KPK_STATES; index++) {
-		const state = kpkState(index);
-		if (!validKpk(state)) continue;
-		valid[index] = 1;
-		const moves = kpkTransitions(state);
-		replies[index] = moves.length;
-		for (const move of moves) if (move.to === "promotion") {
-			ranks[index] = 1;
-			queue[tail++] = index;
-		} else if (typeof move.to === "number") {
-			if (edges >= parents.length) throw new Error("KPK graph capacity exceeded");
-			parents[edges] = index;
-			links[edges] = heads[move.to];
-			heads[move.to] = edges++;
-		}
-	}
-	for (let cursor = 0; cursor < tail; cursor++) {
-		const child = queue[cursor];
-		for (let edge = heads[child]; edge !== -1; edge = links[edge]) {
-			const parent = parents[edge];
-			if (ranks[parent]) continue;
-			const pawnTurn = (parent >> 12 & 1) === 0;
-			longest[parent] = Math.max(longest[parent], ranks[child]);
-			if (pawnTurn || --replies[parent] === 0) {
-				const rank = longest[parent] + 1;
-				if (rank >= 255) throw new Error("KPK proof rank overflow");
-				ranks[parent] = rank;
-				queue[tail++] = parent;
-			}
-		}
-	}
-	return {
-		ranks,
-		valid,
-		winningStates: tail,
-		edges
-	};
-}
-var table;
-function probeKingPawnEndgame(position) {
-	if (position.board.occupied.size() !== 3 || position.board.pawn.size() !== 1 || position.board.king.size() !== 2) return null;
-	let pawn = position.board.pawn.first();
-	const pawnSide = position.board.get(pawn).color;
-	let ownKing = position.board.kingOf(pawnSide);
-	let enemyKing = position.board.kingOf(pawnSide === "white" ? "black" : "white");
-	if (pawnSide === "black") {
-		pawn ^= 56;
-		ownKing ^= 56;
-		enemyKing ^= 56;
-	}
-	if ((pawn & 7) > 3) {
-		pawn ^= 7;
-		ownKing ^= 7;
-		enemyKing ^= 7;
-	}
-	const state = {
-		pawn,
-		ownKing,
-		enemyKing,
-		pawnTurn: position.turn === pawnSide
-	};
-	if (pawn < 8 || pawn >= 56 || !validKpk(state)) return null;
-	table ??= buildKpkBitbase();
-	const promotionPlies = table.ranks[kpkIndex(state)];
-	if (promotionPlies && position.halfmoves + promotionPlies >= 100) return null;
-	return {
-		pawnSide,
-		win: promotionPlies > 0,
-		promotionPlies
-	};
-}
-function proveKpkZugzwang(position) {
-	const actual = probeKingPawnEndgame(position);
-	if (!actual || position.isCheck() || position.isEnd()) return null;
-	const winning = actual.win && position.turn !== actual.pawnSide;
-	const drawing = !actual.win && position.turn === actual.pawnSide;
-	if (!winning && !drawing) return null;
-	const passed = position.clone();
-	passed.turn = position.turn === "white" ? "black" : "white";
-	const waiting = probeKingPawnEndgame(passed);
-	if (!waiting || waiting.win === actual.win) return null;
-	const replies = [...position.allDests()].flatMap(([from, targets]) => [...targets].flatMap((to) => position.board.get(from)?.role === "pawn" && (to < 8 || to >= 56) ? [
-		"queen",
-		"rook",
-		"bishop",
-		"knight"
-	].map((promotion) => ({
-		from,
-		to,
-		promotion
-	})) : [{
-		from,
-		to
-	}]));
-	if (!replies.length || replies.some((move) => {
-		const after = position.clone();
-		after.play(move);
-		const result = probeKingPawnEndgame(after);
-		if (result) return result.win !== actual.win || result.pawnSide !== actual.pawnSide;
-		if (!drawing) return true;
-		if (after.isStalemate() || after.isInsufficientMaterial()) return false;
-		if (!move.promotion || after.isCheckmate()) return true;
-		const from = after.board.kingOf(after.turn);
-		if (from === void 0 || !after.isLegal({
-			from,
-			to: move.to
-		})) return true;
-		after.play({
-			from,
-			to: move.to
-		});
-		return !after.isInsufficientMaterial();
-	})) return null;
-	return {
-		pawnSide: actual.pawnSide,
-		beneficiary: passed.turn,
-		outcome: winning ? "win" : "draw",
-		defender: position.turn,
-		replies,
-		promotionPlies: actual.promotionPlies
-	};
-}
-//#endregion
-//#region src/utils/tacticalMotifs/tablebaseEvidence.ts
-var object = (value) => value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
-/** Categories refer to the position's side to move, including child records.
-* Uncertain maybe-/syzygy-/unknown categories cannot establish a 50-move-safe
-* outcome. Cursed wins and blessed losses are draws under that rule.
-* Provider contract: https://github.com/lichess-org/lila-tablebase#http-api */
-function outcome(value) {
-	if (value === "win") return 1;
-	if (value === "loss") return -1;
-	if (value === "draw" || value === "cursed-win" || value === "blessed-loss") return 0;
-	return null;
-}
-function legalMoves$1(pos) {
-	return [...pos.allDests()].flatMap(([from, tos]) => [...tos].flatMap((to) => pos.board.get(from)?.role === "pawn" && (to < 8 || to >= 56) ? [
-		"queen",
-		"rook",
-		"bishop",
-		"knight"
-	].map((promotion) => ({
-		from,
-		to,
-		promotion
-	})) : [{
-		from,
-		to
-	}]));
-}
-function tablebasePosition(fen) {
-	if (typeof fen !== "string" || fen.length > 200) return null;
-	const parsed = parseFen$1(fen).chain((setup) => Chess.fromSetup(setup));
-	if (parsed.isErr) return null;
-	const pos = parsed.value;
-	if (pos.board.occupied.size() > 7 || pos.castles.castlingRights.nonEmpty() || pos.epSquare !== void 0) return null;
-	return pos;
-}
-function terminalFlags(data, pos) {
-	return data.checkmate === pos.isCheckmate() && data.stalemate === pos.isStalemate() && data.insufficient_material === pos.isInsufficientMaterial() && data.variant_win === false && data.variant_loss === false;
-}
-/** Validate transport identity, every legal move (including all promotions),
-* terminal facts and parent/child minimax consistency. This validates a
-* tablebase certificate, not the provider's entire database from scratch. */
-function validateTablebaseRecord(record, expectedFen) {
-	const pos = tablebasePosition(expectedFen);
-	const recorded = typeof record?.fen === "string" ? tablebasePosition(record.fen) : null;
-	if (!pos || !recorded || makeFen(recorded.toSetup()) !== makeFen(pos.toSetup())) return null;
-	const data = object(record.result);
-	if (!data || !terminalFlags(data, pos) || !Array.isArray(data.moves) || data.moves.length > 256) return null;
-	const value = outcome(data.category);
-	if (value === null) return null;
-	const legal = legalMoves$1(pos);
-	if (data.moves.length !== legal.length) return null;
-	const available = new Map(legal.map((move) => [makeUci(move), move]));
-	const moves = [];
-	for (const raw of data.moves) {
-		const row = object(raw);
-		if (!row || typeof row.uci !== "string") return null;
-		const move = available.get(row.uci);
-		if (!move) return null;
-		available.delete(row.uci);
-		const childValue = outcome(row.category);
-		if (childValue === null) return null;
-		const next = pos.clone();
-		next.play(move);
-		if (!terminalFlags(row, next)) return null;
-		if (next.isCheckmate() ? childValue !== -1 : next.isEnd() && childValue !== 0) return null;
-		moves.push({
-			uci: row.uci,
-			outcome: childValue
-		});
-	}
-	if (available.size) return null;
-	if (value !== (pos.isCheckmate() ? -1 : pos.isEnd() ? 0 : Math.max(...moves.map((move) => -move.outcome)))) return null;
-	const local = probeKingPawnEndgame(pos);
-	if (local && value !== (local.win ? pos.turn === local.pawnSide ? 1 : -1 : 0)) return null;
-	return {
-		fen: makeFen(pos.toSetup()),
-		outcome: value,
-		moves
-	};
-}
-function tablebaseZugzwangRequests(fen, moveUci) {
-	if (typeof moveUci !== "string" || moveUci.length > 5) return null;
-	const before = tablebasePosition(fen), move = parseUci(moveUci);
-	if (!before || before.isCheck() || before.isEnd() || !move || !("from" in move) || move.promotion || before.board.get(move.to) || !before.isLegal(move)) return null;
-	const after = before.clone();
-	after.play(move);
-	if (after.isCheck() || after.isEnd() || after.halfmoves >= 99 || !tablebasePosition(makeFen(after.toSetup()))) return null;
-	const passed = after.clone();
-	passed.turn = before.turn;
-	const passedFen = makeFen(passed.toSetup());
-	if (!tablebasePosition(passedFen)) return null;
-	return {
-		before,
-		after,
-		passed,
-		move,
-		actualFen: makeFen(after.toSetup()),
-		passedFen
-	};
-}
-function proveTablebaseZugzwang(fen, moveUci, evidence) {
-	if (evidence?.provider !== "lichess-syzygy" || !Array.isArray(evidence.records) || evidence.records.length > 32) return null;
-	const request = tablebaseZugzwangRequests(fen, moveUci);
-	if (!request) return null;
-	const actual = verifiedTablebasePosition(request.actualFen, evidence), passed = verifiedTablebasePosition(request.passedFen, evidence);
-	if (!actual || !passed || !actual.moves.length || !passed.moves.length) return null;
-	const beneficiaryActual = -actual.outcome;
-	if (beneficiaryActual < 0 || beneficiaryActual <= passed.outcome) return null;
-	if (actual.moves.some((reply) => reply.outcome < beneficiaryActual)) return null;
-	return {
-		beneficiary: request.before.turn,
-		defender: request.after.turn,
-		outcome: beneficiaryActual === 1 ? "win" : "draw",
-		passedOutcome: passed.outcome,
-		replies: actual.moves.map((reply) => ({
-			...reply,
-			san: makeSan(request.after, parseUci(reply.uci))
-		})),
-		pieceCount: request.after.board.occupied.size()
-	};
-}
-function verifiedTablebasePosition(fen, evidence) {
-	if (evidence?.provider !== "lichess-syzygy" || !Array.isArray(evidence.records) || evidence.records.length > 32) return null;
-	const records = evidence.records.filter((record) => record?.fen === fen);
-	return records.length === 1 ? validateTablebaseRecord(records[0], fen) : null;
-}
-function tablebaseZugzwangEvidence(fen, moveUci, evidence, source) {
-	const proof = proveTablebaseZugzwang(fen, moveUci, evidence);
-	if (!proof) return null;
-	const request = tablebaseZugzwangRequests(fen, moveUci);
-	const defender = proof.defender === "white" ? "White" : "Black";
-	const passing = proof.passedOutcome === 0 ? "draw" : "win";
-	return {
-		id: "zugzwang",
-		label: proof.outcome === "draw" ? "Drawing Zugzwang" : "Zugzwang",
-		source,
-		confidence: "high",
-		ply: 1,
-		moveUci,
-		value: 0,
-		evidence: `${makeSan(request.before, request.move)} ${proof.outcome === "draw" ? "holds the draw" : "wins the ending"} by zugzwang. ${proof.outcome === "draw" ? "The best defence only draws" : `All ${proof.replies.length} legal replies lose`}; ${defender} would ${passing} if allowed to pass. Both outcomes are verified by ${proof.pieceCount}-piece Lichess Syzygy.`
-	};
 }
 //#endregion
 //#region src/utils/tacticalMotifs/causalTactics.ts
@@ -16853,6 +16901,11 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	const steps = replayTacticalLine(fen, line);
 	if (!steps.length) return [];
 	const allowConditional = typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= -30;
+	const drawing = drawingCaptureEvidence(fen, steps[0].uci, context?.tablebaseEvidence, proposals[0]?.source ?? "available");
+	if (drawing) return [{
+		...drawing,
+		relevance: "primary"
+	}];
 	let checkingMate = proveShortCheckingMate(steps[0]) ?? (steps.length >= 3 ? proveCheckingMate(steps) : null);
 	if (!checkingMate) {
 		const clearanceMate = proveMatingClearance(steps[0]);
@@ -18034,7 +18087,14 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 		if (motif.ply !== 1 || motif.moveUci !== reply) return motif;
 		let comparison;
 		let comparisonEvidence = "";
-		if (motif.id === "zugzwang") {
+		if (motif.id === "drawingCapture") {
+			const exact = proveDrawingCapture(makeFen(step.before.toSetup()), step.uci, tablebaseEvidence);
+			const bestChild = verifiedTablebasePosition(fen, tablebaseEvidence)?.moves.find((move) => move.uci === bestMove)?.outcome ?? verifiedTablebasePosition(makeFen(better[0].after.toSetup()), tablebaseEvidence)?.outcome;
+			if (exact && bestChild !== void 0) {
+				comparison = bestChild === -1 ? "prevented" : "persists";
+				comparisonEvidence = bestChild === -1 ? `${bestSan} retains an exact tablebase win. ${actual[0].san} instead allows ${step.san}, immediately drawing by insufficient material.` : `${bestSan} does not retain a tablebase win. The opponent's saving capture does not establish that this move gave up a win.`;
+			}
+		} else if (motif.id === "zugzwang") {
 			const proof = proveKpkZugzwang(step.after);
 			const bestOutcome = probeKingPawnEndgame(better[0].after);
 			const exact = proveTablebaseZugzwang(makeFen(step.before.toSetup()), step.uci, tablebaseEvidence);
@@ -18770,7 +18830,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 108;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 109;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -19102,6 +19162,7 @@ function toMotifEvidence(detailInput, source, sanLineInput) {
 }
 var IMPORTANT_TACTICAL_THEME_IDS = new Set([
 	"perpetualCheck",
+	"drawingCapture",
 	"promotionCombination",
 	"forcingAttack",
 	"forkPreparation",
@@ -19135,6 +19196,7 @@ var IMPORTANT_TACTICAL_THEME_IDS = new Set([
 ]);
 var MOTIF_IMPORTANCE = {
 	perpetualCheck: 39,
+	drawingCapture: 40,
 	backRankMate: 1,
 	doubleCheck: 5,
 	fork: 10,
@@ -19194,7 +19256,7 @@ function isAlternativeCapture(motif) {
 	return motif?.source === "missed" && motif.id === "hangingPiece" && motif.ply === 1 && motif.alternativeCapture === true;
 }
 function isImmediateTacticalLesson(motif) {
-	return Boolean(motif && !isAlternativeCapture(motif) && motif.ply === 1 && motif.confidence !== "low" && ((motif.value ?? 0) >= 100 || motif.id === "perpetualCheck" || motif.verifiedCombination === true && motif.confidence === "high" && (motif.value ?? 0) > 0 && ["fork", "forkPreparation"].includes(motif.id)));
+	return Boolean(motif && !isAlternativeCapture(motif) && motif.ply === 1 && motif.confidence !== "low" && ((motif.value ?? 0) >= 100 || motif.id === "perpetualCheck" || motif.id === "drawingCapture" && motif.confidence === "high" || motif.verifiedCombination === true && motif.confidence === "high" && (motif.value ?? 0) > 0 && ["fork", "forkPreparation"].includes(motif.id)));
 }
 function buildMistakeReviewTacticalExplanation(input) {
 	const explanation = chooseMistakeReviewTacticalExplanation(input);
@@ -19518,6 +19580,8 @@ function classifyMistakeReviewMotifs(input) {
 		motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION
 	};
 	classification.missedMotifs = qualifyComparableCaptureChoice(fen, bestMoveUci, playedMoveUci, classification.missedMotifs);
+	const playedEndgameOutcome = verifiedTablebasePosition(fen, input.tablebaseEvidence)?.moves.find((move) => move.uci === playedMoveUci)?.outcome;
+	classification.missedMotifs = classification.missedMotifs.filter((m) => m.id !== "drawingCapture" || playedEndgameOutcome === 1);
 	const allowedMotifs = compareBestLineTacticalDefence(fen, playedMoveUci, refutationLine, bestLine, compareImmediateTacticalDefence(fen, bestMoveUci, playedMoveUci, refutationLine[0], classification.allowedMotifs, input.tablebaseEvidence));
 	const compared = {
 		...classification,
@@ -19526,6 +19590,7 @@ function classifyMistakeReviewMotifs(input) {
 		...!playedTheBestMove && bestLine.length ? { missedTimeline: selectContinuationLessons(buildTacticalTimeline(fen, bestLine, "missed", classification.missedMotifs, input.pvSan, input.tablebaseEvidence), classification.missedMotifs) } : {}
 	};
 	compared.allowedMotifs = selectRootConnectedLessons(fenAfterPlayedMove ?? "", refutationLine, compared.allowedMotifs, compared.allowedTimeline ?? []);
+	if (compared.missedTimeline) compared.missedTimeline = compared.missedTimeline.filter((m) => m.id !== "drawingCapture" || m.ply !== 1 || playedEndgameOutcome === 1);
 	compared.missedMotifs = selectRootConnectedLessons(fen, bestLine, compared.missedMotifs, compared.missedTimeline ?? []);
 	if (!input.tablebaseEvidence) motifCache.set(key, compared);
 	if (motifCache.size > MOTIF_CACHE_LIMIT) {

@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { lookupZugzwangEvidence } from "../tacticalMotifs/tablebaseLookup";
+import { lookupTacticalEndgameEvidence } from "../tacticalMotifs/tablebaseLookup";
 import { tablebaseCases } from "./fixtures/tablebaseRelevance";
 
 const row = tablebaseCases.find((r) => r.id === "EKWHC:g4f4")!;
@@ -15,7 +15,7 @@ test("an explicit lookup sends only two exact positions, with no cookies or refe
         .mockResolvedValueOnce(new Response(body(0)))
         .mockResolvedValueOnce(new Response(body(1)));
     vi.stubGlobal("fetch", fetcher);
-    const result = await lookupZugzwangEvidence(row.fen, row.move, new AbortController().signal);
+    const result = await lookupTacticalEndgameEvidence(row.fen, row.move, new AbortController().signal);
     expect(result).toEqual(row.evidence);
     expect(fetcher).toHaveBeenCalledTimes(2);
     for (let index = 0; index < 2; index++) {
@@ -47,7 +47,7 @@ test.each(["http", "missing", "uncertain", "malformed", "oversized"])(
         const fetcher = vi.fn().mockResolvedValue(response);
         vi.stubGlobal("fetch", fetcher);
         await expect(
-            lookupZugzwangEvidence(row.fen, row.move, new AbortController().signal),
+            lookupTacticalEndgameEvidence(row.fen, row.move, new AbortController().signal),
         ).rejects.toThrow(/Lichess|JSON|endgame|Expected/);
         expect(fetcher).toHaveBeenCalledTimes(1);
     },
@@ -67,7 +67,7 @@ test.each(["timeout", "cancel"])(
         );
         vi.stubGlobal("fetch", fetcher);
         const controller = new AbortController();
-        const done = lookupZugzwangEvidence(row.fen, row.move, controller.signal).catch(
+        const done = lookupTacticalEndgameEvidence(row.fen, row.move, controller.signal).catch(
             (error) => error,
         );
         if (kind === "cancel") controller.abort();
@@ -82,11 +82,11 @@ test("an already cancelled or ineligible request does not contact the service", 
     vi.stubGlobal("fetch", fetcher);
     const controller = new AbortController();
     controller.abort();
-    await expect(lookupZugzwangEvidence(row.fen, row.move, controller.signal)).rejects.toThrow(
+    await expect(lookupTacticalEndgameEvidence(row.fen, row.move, controller.signal)).rejects.toThrow(
         /aborted/i,
     );
     await expect(
-        lookupZugzwangEvidence(row.fen, "a1a8", new AbortController().signal),
+        lookupTacticalEndgameEvidence(row.fen, "a1a8", new AbortController().signal),
     ).rejects.toThrow("not eligible");
     expect(fetcher).not.toHaveBeenCalled();
 });

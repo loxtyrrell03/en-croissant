@@ -14,6 +14,7 @@ import { kingCastlesTo, rookCastlesTo, makeSquare } from "chessops/util";
 
 const CORE_TACTICAL_THEME_IDS = new Set([
     "perpetualCheck",
+    "drawingCapture",
     "promotionCombination",
     "forcingAttack",
     "doubleThreat",
@@ -48,6 +49,7 @@ const CORE_TACTICAL_THEME_IDS = new Set([
 ]);
 
 const THEME_PRIORITY = [
+    "drawingCapture",
     "promotionCombination",
     "backRankMate",
     "smotheredMate",
@@ -96,6 +98,7 @@ const THEME_PRIORITY = [
 ];
 
 const THEME_DESCRIPTIONS: Record<string, string> = {
+    drawingCapture: "Capturing the last mating material saves a draw; the other legal moves lose.",
     perpetualCheck:
         "Repeated checks can force a claimable draw; the defender's legal alternatives are included.",
     promotionCombination:
@@ -149,7 +152,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 113;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 114;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {

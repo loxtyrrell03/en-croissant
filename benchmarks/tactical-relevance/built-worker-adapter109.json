@@ -1,0 +1,58 @@
+{
+  "scope": "Production controller plus compiled Node worker. 1021 prior public primary lists remain unchanged; 22 new exact-draw/local controls also pass. 508 private worker inputs pass separately. This is regression/performance evidence, not general accuracy or installed/native proof.",
+  "classifier": "site-55.adapter-109",
+  "pipeline": 114,
+  "artifactSha256": "4ea79c3688c4da3e59207f21c628700e38f215d4d4990860bb09a14e9c623c1f",
+  "publicInputs": 1043,
+  "privateInputs": 508,
+  "timings": {
+    "medianMs": 33.56570000000647,
+    "p95Ms": 182.7606999999989,
+    "maxMs": 959.5123000000021,
+    "maxStartupMs": 33.65820000000531
+  },
+  "groups": [
+    {
+      "group": "public",
+      "count": 808,
+      "sourceSha256": "743c974ec951aaf963c9773fd673cde7f775aa1360b4fa4775d82b057f65ca73",
+      "changedPrimaryLists": []
+    },
+    {
+      "group": "game",
+      "count": 63,
+      "sourceSha256": "0c7b3fa5f833edeae2a83dd33f7e0cda0471b8b6dbbcd48aa497a989ca55670a",
+      "changedPrimaryLists": []
+    },
+    {
+      "group": "preparation",
+      "count": 28,
+      "sourceSha256": "13bec36431b8f689f79374c380bcbc72787e292602e067073eb29cb399dc5c3d",
+      "changedPrimaryLists": []
+    },
+    {
+      "group": "discovery",
+      "count": 104,
+      "sourceSha256": "1b775b109415853cc3bb40b12a193505b3666e0fa2c9a05706befda845bc7ace",
+      "changedPrimaryLists": []
+    },
+    {
+      "group": "capture",
+      "count": 18,
+      "sourceSha256": "3457ecea0e9689aea7b4d67e4a1daffe3f551930cc98ee8f7ca465025f145f81",
+      "changedPrimaryLists": []
+    },
+    {
+      "group": "drawing-capture",
+      "count": 22,
+      "sourceSha256": "d219d06b307bd33f457298140f3ba1ea2f65e71e40bf1eeb71e16a055769ca95"
+    }
+  ],
+  "coldHttp": {
+    "cases": 81,
+    "serverStartupMs": 3262.3235,
+    "firstStartupMs": 1204.5747,
+    "maxStartupMs": 1585.8562000000002,
+    "maxClassificationMs": 1204.4606999999996
+  }
+}

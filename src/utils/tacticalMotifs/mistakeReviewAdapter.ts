@@ -1,7 +1,7 @@
 import { makeFen } from "chessops/fen";
 import { makeSquare } from "chessops/util";
 import type { Square } from "chessops/types";
-import type { TablebaseEvidence } from "./tablebaseEvidence";
+import { verifiedTablebasePosition, type TablebaseEvidence } from "./tablebaseEvidence";
 import {
     THEME_COLORS,
     THEME_DETECTOR_VERSION,
@@ -123,7 +123,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 108;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 109;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -579,6 +579,7 @@ function toMotifEvidence(
 
 const IMPORTANT_TACTICAL_THEME_IDS = new Set([
     "perpetualCheck",
+    "drawingCapture",
     "promotionCombination",
     "forcingAttack",
     "forkPreparation",
@@ -613,6 +614,7 @@ const IMPORTANT_TACTICAL_THEME_IDS = new Set([
 
 const MOTIF_IMPORTANCE: Record<string, number> = {
     perpetualCheck: 39,
+    drawingCapture: 40,
     backRankMate: 1,
     doubleCheck: 5,
     fork: 10,
@@ -719,6 +721,7 @@ export function isImmediateTacticalLesson(motif: TacticalMotifEvidence | undefin
         motif.confidence !== "low" &&
         ((motif.value ?? 0) >= 100 ||
             motif.id === "perpetualCheck" ||
+            (motif.id === "drawingCapture" && motif.confidence === "high") ||
             (motif.verifiedCombination === true &&
                 motif.confidence === "high" &&
                 (motif.value ?? 0) > 0 &&
@@ -1409,6 +1412,13 @@ export function classifyMistakeReviewMotifs(
     classification.missedMotifs = qualifyComparableCaptureChoice(
         fen, bestMoveUci, playedMoveUci, classification.missedMotifs,
     );
+    // The nominated drawing capture is not missed if the played move also
+    // holds the same exact draw (including an equivalent capture). A score
+    // supplied by the caller cannot contradict the complete WDL evidence.
+    const playedEndgameOutcome = verifiedTablebasePosition(fen, input.tablebaseEvidence)
+        ?.moves.find(move => move.uci === playedMoveUci)?.outcome;
+    classification.missedMotifs = classification.missedMotifs.filter(m =>
+        m.id !== "drawingCapture" || playedEndgameOutcome === 1);
     const allowedMotifs = compareBestLineTacticalDefence(
         fen,
         playedMoveUci,
@@ -1468,6 +1478,8 @@ export function classifyMistakeReviewMotifs(
         fenAfterPlayedMove ?? "", refutationLine, compared.allowedMotifs,
         compared.allowedTimeline ?? [],
     );
+    if (compared.missedTimeline) compared.missedTimeline = compared.missedTimeline.filter(m =>
+        m.id !== "drawingCapture" || m.ply !== 1 || playedEndgameOutcome === 1);
     compared.missedMotifs = selectRootConnectedLessons(
         fen, bestLine, compared.missedMotifs, compared.missedTimeline ?? [],
     );

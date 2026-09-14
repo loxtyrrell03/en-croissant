@@ -6,7 +6,7 @@ import type { Color, NormalMove, Role, Square } from "chessops/types";
 import { kingCastlesTo, makeSquare, makeUci, opposite, parseUci } from "chessops/util";
 import type { TacticalMotifEvidence } from "./types";
 import { probeKingPawnEndgame, proveKpkZugzwang } from "./kpkBitbase";
-import { proveTablebaseZugzwang, tablebaseZugzwangEvidence, verifiedTablebasePosition, type TablebaseEvidence } from "./tablebaseEvidence";
+import { proveDrawingCapture, drawingCaptureEvidence, proveTablebaseZugzwang, tablebaseZugzwangEvidence, verifiedTablebasePosition, type TablebaseEvidence } from "./tablebaseEvidence";
 
 const VALUE: Record<Role, number> = {
     pawn: 100,
@@ -6760,6 +6760,7 @@ export function tacticalBoardEvidence(
         !motif?.ply ||
         ![
             "perpetualCheck",
+            "drawingCapture",
             "zugzwang",
             "promotionCombination",
             "forcingAttack",
@@ -6784,6 +6785,11 @@ export function tacticalBoardEvidence(
         return null;
     const step = replayTacticalLine(fen, line.slice(0, motif.ply))[motif.ply - 1];
     if (!step) return null;
+    if (motif.id === "drawingCapture") {
+        return proveDrawingCapture(makeFen(step.before.toSetup()), step.uci, tablebaseEvidence)
+            ? { square: makeSquare(step.move.to), arrows: [{ from: makeSquare(step.move.from), to: makeSquare(step.move.to) }] }
+            : null;
+    }
     if (motif.id === "interference" && motif.label === "Mating Interference") {
         const attack = proveQuietMatingAttack(step);
         const cut = attack && matingThreatInterference(step, attack);
@@ -10754,6 +10760,10 @@ export function auditTacticalMotifs(
     const steps = replayTacticalLine(fen, line);
     if (!steps.length) return [];
     const allowConditional = typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= -30;
+    const drawing = drawingCaptureEvidence(fen, steps[0].uci, context?.tablebaseEvidence, proposals[0]?.source ?? "available");
+    // The game ends here. Later PV events cannot compete with the exact
+    // saving outcome or turn its captured material into a winning headline.
+    if (drawing) return [{ ...drawing, relevance: "primary" as const }];
     let checkingMate =
         proveShortCheckingMate(steps[0]) ?? (steps.length >= 3 ? proveCheckingMate(steps) : null);
     if (!checkingMate) {
@@ -12548,7 +12558,20 @@ export function compareImmediateTacticalDefence(
         if (motif.ply !== 1 || motif.moveUci !== reply) return motif;
         let comparison: TacticalMotifEvidence["comparison"];
         let comparisonEvidence = "";
-        if (motif.id === "zugzwang") {
+        if (motif.id === "drawingCapture") {
+            const exact = proveDrawingCapture(makeFen(step.before.toSetup()), step.uci, tablebaseEvidence);
+            const original = verifiedTablebasePosition(fen, tablebaseEvidence);
+            const bestChild = original?.moves.find(move => move.uci === bestMove)?.outcome ??
+                verifiedTablebasePosition(makeFen(better[0].after.toSetup()), tablebaseEvidence)?.outcome;
+            // Making this capture illegal is not enough: the other position
+            // might still draw. Compare complete endgame outcomes instead.
+            if (exact && bestChild !== undefined) {
+                comparison = bestChild === -1 ? "prevented" : "persists";
+                comparisonEvidence = bestChild === -1
+                    ? `${bestSan} retains an exact tablebase win. ${actual[0].san} instead allows ${step.san}, immediately drawing by insufficient material.`
+                    : `${bestSan} does not retain a tablebase win. The opponent's saving capture does not establish that this move gave up a win.`;
+            }
+        } else if (motif.id === "zugzwang") {
             const proof = proveKpkZugzwang(step.after);
             const bestOutcome = probeKingPawnEndgame(better[0].after);
             const exact = proveTablebaseZugzwang(makeFen(step.before.toSetup()), step.uci, tablebaseEvidence);

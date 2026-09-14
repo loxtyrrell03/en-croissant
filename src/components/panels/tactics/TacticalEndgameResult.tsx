@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { makeSan } from "chessops/san";
 import type { LiveTacticalScan, LiveTacticalScanInput } from "@/utils/tacticalMotifs/liveTactics";
 import { classifyLiveTacticsInWorker } from "@/utils/tacticalMotifs/liveTacticsWorker";
-import { tablebaseZugzwangRequests } from "@/utils/tacticalMotifs/tablebaseEvidence";
-import { lookupZugzwangEvidence } from "@/utils/tacticalMotifs/tablebaseLookup";
+import { tablebaseTacticalRequests } from "@/utils/tacticalMotifs/tablebaseEvidence";
+import { lookupTacticalEndgameEvidence } from "@/utils/tacticalMotifs/tablebaseLookup";
 import { TacticalScanResult } from "./TacticalScanResult";
 
 export function TacticalEndgameResult({
@@ -26,8 +26,12 @@ export function TacticalEndgameResult({
     error?: string;
   } | null>(null);
   const current = verification?.source === scan ? verification : null;
-  const request = tablebaseZugzwangRequests(scan.fen, scan.lineUci[0] ?? "");
-  const eligible = input.fen === scan.fen && request && request.after.board.occupied.size() > 3;
+  const request = tablebaseTacticalRequests(scan.fen, scan.lineUci[0] ?? "");
+  const eligible =
+    input.fen === scan.fen &&
+    request &&
+    (request.kind === "drawingCapture" || request.after.board.occupied.size() > 3);
+  const capture = request?.kind === "drawingCapture";
   const moveLabel = request ? makeSan(request.before, request.move) : scan.lineUci[0];
   useEffect(
     () => () => {
@@ -44,7 +48,7 @@ export function TacticalEndgameResult({
     const active = () => pending.current === controller && !controller.signal.aborted;
     setVerification({ source: scan, status: "checking" });
     try {
-      const tablebaseEvidence = await lookupZugzwangEvidence(
+      const tablebaseEvidence = await lookupTacticalEndgameEvidence(
         scan.fen,
         scan.lineUci[0],
         controller.signal,
@@ -106,10 +110,10 @@ export function TacticalEndgameResult({
             {current?.status === "done"
               ? current.result?.variations
                   .find((line) => line.lineUci[0] === scan.lineUci[0])
-                  ?.motifs.some((m) => m.id === "zugzwang" && m.ply === 1)
-                ? `Zugzwang verified after ${moveLabel}.`
-                : `No outcome-changing zugzwang verified after ${moveLabel}.`
-              : "Optional zugzwang check: sends this position to Lichess. The local result stays available."}
+                  ?.motifs.some((m) => m.id === request?.kind && m.ply === 1)
+                ? `${capture ? "Saving draw" : "Zugzwang"} verified after ${moveLabel}.`
+                : `No ${capture ? "necessary saving capture" : "outcome-changing zugzwang"} verified after ${moveLabel}.`
+              : `Optional ${capture ? "saving-draw" : "zugzwang"} check: sends this position to Lichess. The local result stays available.`}
           </Text>
           {current?.status === "error" && (
             <Alert color="orange" title="Online verification unavailable">

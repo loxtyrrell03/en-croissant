@@ -1,5 +1,5 @@
 import {
-    tablebaseZugzwangRequests,
+    tablebaseTacticalRequests,
     validateTablebaseRecord,
     type TablebaseEvidence,
 } from "./tablebaseEvidence";
@@ -8,14 +8,14 @@ const LOOKUP_TIMEOUT_MS = 8_000;
 const MAX_RESPONSE_BYTES = 128_000;
 
 /** Called only by the explicit online-verification action, never by a normal
- * scan or the CPU worker. One bounded pair, no retry storm or private-game batch. */
-export async function lookupZugzwangEvidence(
+ * scan or the CPU worker. At most two bounded requests, no private-game batch. */
+export async function lookupTacticalEndgameEvidence(
     fen: string,
     move: string,
     signal: AbortSignal,
 ): Promise<TablebaseEvidence> {
-    const request = tablebaseZugzwangRequests(fen, move);
-    if (!request) throw new Error("This move is not eligible for an exact zugzwang check.");
+    const request = tablebaseTacticalRequests(fen, move);
+    if (!request) throw new Error("This move is not eligible for an exact endgame check.");
     const controller = new AbortController();
     const abort = () => controller.abort(signal.reason);
     signal.addEventListener("abort", abort, { once: true });
@@ -28,7 +28,7 @@ export async function lookupZugzwangEvidence(
         const records = [];
         // Sequential probing respects the public service. Both records are
         // necessary; a failed or uncertain response never becomes a negative.
-        for (const target of [request.actualFen, request.passedFen]) {
+        for (const target of request.targets) {
             controller.signal.throwIfAborted();
             const response = await fetch(
                 `https://tablebase.lichess.org/standard?fen=${encodeURIComponent(target)}`,
