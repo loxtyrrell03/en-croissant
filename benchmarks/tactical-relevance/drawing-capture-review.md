@@ -80,5 +80,7 @@ Private evidence lives under `Documents/OnCrescent Tactical Benchmarks/`:
 `adapter109-selected-final.json`, `adapter109-nature-verified.json`,
 `adapter109-rare-verified.json`, six `adapter109-worker-*-verified.json` reports,
 `adapter109-dev-cold-verified.json` and `drawing-capture-game-sample.json`.
-This source milestone does not itself certify installed/native operation.
-Desktop delivery is recorded separately after its build and checks.
+The matching standalone desktop executable has since been rebuilt from this
+committed milestone, while the normal desktop shortcut uses the updated source.
+See `docs/TACTICAL_DESKTOP_DELIVERY.md` for package hashes, recovery and the
+remaining distinction between build/linkage and native-window verification.
