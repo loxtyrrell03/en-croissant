@@ -7,6 +7,19 @@ import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeRe
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 import { trappedRookFen, trappedRookLine } from "./fixtures/trapRelevance";
 import { counterplayFen, counterplayLine } from "./fixtures/tacticalCounterplay";
+import { interferenceExamples } from "./fixtures/interferenceRelevance";
+
+test.each(interferenceExamples)("a restored defence does not move the interference lesson to a later ply: $id", item => {
+  const result = classifyPositionTacticalMotifs(item);
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={replayTacticalLine(item.fen,item.pvUci).map(s=>s.san)} motifs={result.timeline??[]} /></MantineProvider>);
+  expect(container.querySelector("details")?.hasAttribute("open")).toBe(false);
+  const root = container.querySelector('[data-tactical-ply="1"]')?.textContent;
+  expect(root).toContain("Interference");
+  expect(root).toContain(item.id === "DBBd9" ? "f5 cuts the same defender's line again" : "Bxd3 removes it");
+  expect(root).not.toContain("Hanging Piece");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain(item.id === "DBBd9" ? "Interference" : "Bxf5");
+});
 
 test("the rook trap explains the initial king move and the defended-rook resource", () => {
   const result = classifyPositionTacticalMotifs({fen: trappedRookFen, pvUci: trappedRookLine});

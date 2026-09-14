@@ -1,6 +1,12 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 93 / live pipeline 98
+## Current classifier: adapter 94 / live pipeline 99
+
+The [restored-interference review](interference-relevance-review.md) recovers Be4 through capture of an added defender and gives b5 its first-move lesson before the second cut f5. Independent proofs cover 43 plus 40 and 39 plus 43 legal replies in 659 and 980 of 4,096 shared operations. All-friendly liabilities reduce an older rook-gain bound by a pawn; root/missed explanations and actual-ply secondary themes remain separate. The 268-search public receipt includes four defensive counterfactuals and a fifth unsafe-payoff case whose initial king-escape assumptions were contradicted by promotion and longer mates. That abstention is not counted as a correct negative. Local material bounds remain distinct from engine evaluations or best-play guarantees.
+
+Verification: 1,714 selected tests, 815 actual-controller worker inputs, both builds, TypeScript, twelve-file lint, three service tests, two cache scenarios and fifteen isolated HTTP cases pass. Public worker median/p95/max is 78/181/526 ms for 310 inputs, excluding engine/UI; first/next HTTP startup is 1,500/70 ms, with KPK reaching 2,072 ms. Earlier 9,820 ms startup remains contrary evidence, not a certified latency fix. Artifact: liveTactics.worker-Dn-6tjjs.js. All 246 exact private full results, nineteen of twenty rare results, sixteen of eighteen secondary-sample results and 32 priorities are unchanged; stable outputs are not certified accurate. The linked review records changed first-move ownership and authoritative private adapter94 receipts. No owner app/package/service restart or deployment; paid data stays private. Broader quiet/rare/causal/endgame and native gaps remain open.
+
+## Prior adapter 93 / live pipeline 98
 
 The [trap and compensation review](trap-relevance-review.md) recovers a real king attack on a trapped rook through bounded defender capture and safe material retention. Every legal root reply is covered; all friendly-piece liabilities are debited, and genuine traps retain lower compensated bounds. A counterattacking queen can be recaptured, but unrelated loose material cannot justify a trap. Root/missed lessons and actual-ply continuations remain separate, with no speculative future board arrows. The 178-search public receipt retains contrary best-move results: a local material witness is not necessarily best full-position play.
 

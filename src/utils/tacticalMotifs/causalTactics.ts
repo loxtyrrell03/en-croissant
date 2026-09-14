@@ -5397,7 +5397,21 @@ function computeMaterialThreatGain(
                     const promoted = next.clone();
                     promoted.play(move);
                     if (promoted.isEnd() && !promoted.isCheckmate()) continue;
-                    const gain = tacticalExchangeGain(next, move);
+                    let gain = tacticalExchangeGain(next, move);
+                    if (options.allPiecesAtLeaf) {
+                        const budget = {nodes: mateNodes};
+                        try {
+                            const settled = participantCaptureGain(
+                                next, move, [...next.board[step.before.turn], move.to], budget,
+                            );
+                            const safe = noImmediateTerminalRefutation(next, move, budget);
+                            mateNodes = budget.nodes;
+                            if (settled === null || !safe) continue;
+                            gain = settled;
+                        } catch {
+                            return {kind: "unknown"};
+                        }
+                    }
                     if (gain <= -VALUE.king) {
                         unknown = true;
                         continue;
@@ -8760,66 +8774,175 @@ export function kingInterferencePayoffEvidence(
     return null;
 }
 
+type InterferenceGeometry = { defender: Square; target: Square; capturer: Square; attacksDefender: boolean };
+
+function interferenceCut(step: TacticalReplayStep, defender: Square, target: Square): InterferenceGeometry | null {
+    const side = step.before.turn, enemy = opposite(side);
+    const guard = step.before.board.get(defender), victim = step.after.board.get(target);
+    if (step.before.board.get(step.move.to) || guard?.color !== enemy ||
+        !["rook", "bishop", "queen"].includes(guard.role) || victim?.color !== enemy ||
+        victim.role === "king" || VALUE[victim.role] < 320 ||
+        !between(defender, target).has(step.move.to) ||
+        !attacks(guard, defender, step.before.board.occupied).has(target) ||
+        attacks(guard, defender, step.after.board.occupied).has(target)) return null;
+    const probe = withTurn(step.after, side), unblocked = probe.clone();
+    unblocked.board.take(step.move.to);
+    const attacksDefender = winningTargets(step.after, step.move.to, side).includes(defender);
+    for (const from of step.after.board[side]) {
+        if (from === step.move.to) {
+            if (!attacksDefender) continue;
+            const withoutGuard = probe.clone(); withoutGuard.board.take(defender);
+            const protectedGain = tacticalExchangeGain(probe, {from, to: target});
+            const exposedGain = tacticalExchangeGain(withoutGuard, {from, to: target});
+            if (protectedGain > -VALUE.king && exposedGain >= 100 && exposedGain - protectedGain >= 100)
+                return {defender, target, capturer: from, attacksDefender};
+        } else {
+            const blockedGain = tacticalExchangeGain(probe, {from, to: target});
+            const restoredGain = tacticalExchangeGain(unblocked, {from, to: target});
+            if (restoredGain > -VALUE.king && blockedGain >= 100 && blockedGain - restoredGain >= 100)
+                return {defender, target, capturer: from, attacksDefender};
+        }
+    }
+    return null;
+}
+
+type InterferenceRecoveryBranch = {
+    replyUci: string; fen: string; answerUci: string; gain: number;
+    kind: "capture" | "removeGuard" | "recut";
+    continuation?: MaterialRecoveryLeaf[];
+    recut?: InterferenceRecoveryBranch[];
+};
+type InterferenceRecoveryProof = {gain: number; visits: number; branches: InterferenceRecoveryBranch[]};
+const interferenceRecoveryCache = new Map<string, InterferenceRecoveryProof | null>();
+
+/** The opponent may restore the same guard or insert an additional defender.
+ * Permit one further cut of that exact ray, or capture the actual new guard.
+ * Every real defence and all friendly liabilities share a finite budget;
+ * unrelated quiet improving moves and cooperative PVs cannot fund the claim. */
+export function proveInterferenceContinuation(
+    root: TacticalReplayStep, defender: Square, target: Square, nodeLimit = 4096,
+    onFailure?: (reason: string) => void,
+): InterferenceRecoveryProof | null {
+    if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.after.isEnd()) return null;
+    const geometry = interferenceCut(root, defender, target);
+    if (!geometry) return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}:${defender}:${target}`;
+    if (nodeLimit === 4096 && !onFailure && interferenceRecoveryCache.has(key))
+        return interferenceRecoveryCache.get(key)!;
+    const side = root.before.turn, budget = {nodes: nodeLimit};
+    let currentReply = "";
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--budget.nodes < 0) throw new Error("Interference recovery budget exhausted");
+        const next = pos.clone(); next.play(move); return next;
+    };
+    const delta = (pos: Chess, move: NormalMove) => capturedValue(pos, move) +
+        (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+    const capture = (pos: Chess, victims: Square[]) => {
+        let best: {gain: number; move: NormalMove} | null = null;
+        for (const move of recoveryMoves(pos, side)) {
+            if (!victims.includes(move.to) || !capturedValue(pos, move)) continue;
+            const gain = participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+            if (gain === null || (best && gain <= best.gain)) continue;
+            // Mate owns its own certificate; never spend a mating sentinel
+            // as material profit from an interference.
+            if (visit(pos, move).isCheckmate() || !noImmediateTerminalRefutation(pos, move, budget)) continue;
+            best = {gain, move};
+        }
+        return best;
+    };
+    const settles = (
+        step: TacticalReplayStep, cut: InterferenceGeometry, extend: boolean, minimumGain: number,
+    ): {gain: number; branches: InterferenceRecoveryBranch[]} | null => {
+        if (step.after.isEnd() || defenderCanClaimFiftyMoveDraw(step.after)) return null;
+        const branches: InterferenceRecoveryBranch[] = [];
+        let minimum = Infinity;
+        for (const reply of recoveryMoves(step.after, side)) {
+            currentReply = makeSan(step.after, reply);
+            const next = visit(step.after, reply), balance = delta(step.before, step.move) - delta(step.after, reply);
+            const guard = relocatedSquare({before: step.after, after: next, move: reply}, cut.defender);
+            const victim = relocatedSquare({before: step.after, after: next, move: reply}, cut.target);
+            if (guard === undefined || victim === undefined) return null;
+            const victims = [victim, ...(cut.attacksDefender ? [guard] : []), ...(reply.to === step.move.to ? [reply.to] : [])];
+            const direct = capture(next, victims);
+            let answer: InterferenceRecoveryBranch | undefined;
+            const common = {replyUci: makeUci(reply), fen: makeFen(next.toSetup())};
+            if (direct && balance + direct.gain >= minimumGain)
+                answer = {...common, answerUci: makeUci(direct.move), gain: balance + direct.gain, kind: "capture"};
+            if (!answer && extend && !next.isCheck()) {
+                for (const move of recoveryMoves(next, side)) {
+                    if (move.promotion) continue;
+                    if (move.to === reply.to && capturedValue(next, move) &&
+                        next.board.get(reply.to)?.role !== "king") {
+                        // Removing only this moved piece must improve a legal
+                        // exchange on an original target. It is a protection
+                        // probe, never an extra piece removed in a variation.
+                        const without = next.clone(); without.board.take(reply.to);
+                        const helps = victims.filter(sq => sq !== reply.to).some(to =>
+                            [...next.board[side]].some(from => {
+                                if (--budget.nodes < 0) throw new Error("Interference guard nomination exhausted");
+                                const old = tacticalExchangeGain(next, {from, to});
+                                const exposed = tacticalExchangeGain(without, {from, to});
+                                return exposed > -VALUE.king && exposed >= 100 && exposed - old >= 100;
+                            }));
+                        if (!helps) continue;
+                        const removal = replayTacticalLine(common.fen, [makeUci(move)])[0];
+                        const leaves: MaterialRecoveryLeaf[] = [];
+                        const gain = proveDefenderCombination(removal, [victim, ...(cut.attacksDefender ? [guard] : [])],
+                            [...removal.after.board[side]], nodeLimit, budget, 1, true,
+                            Math.max(1, minimumGain - balance), leaf => leaves.push(leaf));
+                        if (budget.nodes < 0) throw new Error("Interference removal budget exhausted");
+                        if (gain !== null && balance + gain >= minimumGain)
+                            answer = {...common, answerUci: removal.uci, gain: balance + gain, kind: "removeGuard", continuation: leaves};
+                    } else if (!capturedValue(next, move) && guard === reply.to &&
+                        between(guard, victim).has(move.to)) {
+                        const after = visit(next, move);
+                        const recut: TacticalReplayStep = {before: next, after, move, uci: makeUci(move), san: makeSan(next, move), capture: 0, balance: 0};
+                        const second = interferenceCut(recut, guard, victim);
+                        // The restored original guard must face the new threat.
+                        if (!second?.attacksDefender) continue;
+                        const proof = settles(recut, second, false, Math.max(1, minimumGain - balance));
+                        if (proof && balance + proof.gain >= minimumGain)
+                            answer = {...common, answerUci: recut.uci, gain: balance + proof.gain, kind: "recut", recut: proof.branches};
+                    }
+                    if (answer) break;
+                }
+            }
+            if (!answer) return null;
+            branches.push(answer); minimum = Math.min(minimum, answer.gain);
+        }
+        return branches.length && Number.isFinite(minimum) ? {gain: minimum, branches} : null;
+    };
+    let result: InterferenceRecoveryProof | null = null;
+    try {
+        const proof = settles(root, geometry, true, Math.max(100, root.capture + 100));
+        if (proof) result = {...proof, visits: nodeLimit - budget.nodes};
+        else onFailure?.(`${currentReply}: No connected recovery for this defence`);
+    } catch (error) {
+        onFailure?.(`${currentReply}: ${error instanceof Error ? error.message : "Incomplete interference proof"}`);
+    }
+    if (nodeLimit === 4096 && !onFailure) {
+        interferenceRecoveryCache.set(key, result);
+        if (interferenceRecoveryCache.size > 256) interferenceRecoveryCache.delete(interferenceRecoveryCache.keys().next().value!);
+    }
+    return result;
+}
+
 /** Cutting a defensive ray is a candidate, not proof. Removing only the
  * blocker is a protection probe (not a legal variation): the legal exchange
  * on the named target must improve. Then test EVERY real defence, including
  * capturing the blocker, using only that target and the blocking square. */
 function interferenceProof(step: TacticalReplayStep, source: TacticalMotifEvidence["source"]) {
-    const side = step.before.turn;
-    const enemy = opposite(side);
-    // An occupied landing square already interrupted this defensive ray.
+    const side = step.before.turn, enemy = opposite(side);
     if (step.before.board.get(step.move.to)) return null;
-    const probe = withTurn(step.after, side);
-    const unblocked = probe.clone();
-    unblocked.board.take(step.move.to);
     for (const defender of step.before.board[enemy]) {
         const piece = step.before.board.get(defender)!;
         if (!["rook", "bishop", "queen"].includes(piece.role)) continue;
-        const targets = attacks(piece, defender, step.before.board.occupied).intersect(
-            step.before.board[enemy],
-        );
+        const targets = attacks(piece, defender, step.before.board.occupied).intersect(step.before.board[enemy]);
         for (const target of targets) {
-            const victim = step.after.board.get(target);
-            // En passant removes a pre-move target from a different square.
-            // Only a surviving enemy piece can still need this defence.
-            if (
-                !victim ||
-                victim.color !== enemy ||
-                victim.role === "king" ||
-                VALUE[victim.role] < 320
-            )
-                continue;
-            if (!between(defender, target).has(step.move.to)) continue;
-            if (attacks(piece, defender, step.after.board.occupied).has(target)) continue;
-            const attacksDefender = winningTargets(step.after, step.move.to, side).includes(
-                defender,
-            );
-            const capturer = [...step.after.board[side]].find((from) => {
-                if (from === step.move.to) {
-                    // A bishop between queen and knight attacks BOTH. Taking
-                    // the knight now reopens the queen's ray, but every real
-                    // queen retreat can still lose a target. Establish the
-                    // queen's actual protection before testing those replies.
-                    if (!attacksDefender) return false;
-                    const withoutDefender = probe.clone();
-                    withoutDefender.board.take(defender);
-                    const protectedGain = tacticalExchangeGain(probe, { from, to: target });
-                    const exposedGain = tacticalExchangeGain(withoutDefender, { from, to: target });
-                    return (
-                        protectedGain > -VALUE.king &&
-                        exposedGain >= 100 &&
-                        exposedGain - protectedGain >= 100
-                    );
-                }
-                const blockedGain = tacticalExchangeGain(probe, { from, to: target });
-                const restoredGain = tacticalExchangeGain(unblocked, { from, to: target });
-                return (
-                    restoredGain > -VALUE.king &&
-                    blockedGain >= 100 &&
-                    blockedGain - restoredGain >= 100
-                );
-            });
-            if (capturer === undefined) continue;
+            const cut = interferenceCut(step, defender, target);
+            if (!cut) continue;
+            const {capturer, attacksDefender} = cut;
+            const victim = step.after.board.get(target)!;
             const proof = materialThreatProof(
                 step,
                 [target, ...(attacksDefender ? [defender] : [])],
@@ -8827,10 +8950,20 @@ function interferenceProof(step: TacticalReplayStep, source: TacticalMotifEviden
                 [step.move.to],
                 false,
                 step.after.board.get(step.move.to)?.role === "pawn" ? step.move.to : undefined,
+                {allPiecesAtLeaf: true},
             );
-            if (proof.kind !== "proven") continue;
-            if (step.capture && tacticalExchangeGain(step.before, step.move) >= proof.gain)
-                continue;
+            const recovery = proof.kind !== "proven"
+                ? proveInterferenceContinuation(step, defender, target) : null;
+            const gain = recovery?.gain ?? (proof.kind === "proven" ? proof.gain : 0);
+            if (gain < 100 || gain >= 10000) continue;
+            if (step.capture && tacticalExchangeGain(step.before, step.move) >= gain) continue;
+            const examples = (recovery?.branches ?? []).filter(branch => branch.kind !== "capture").slice(0, 2).map(branch => {
+                const reply = makeSan(step.after, parseUci(branch.replyUci) as NormalMove);
+                const answer = replayTacticalLine(branch.fen, [branch.answerUci])[0].san;
+                return branch.kind === "recut"
+                    ? ` ${reply} restores the defence; ${answer} cuts the same defender's line again.`
+                    : ` ${reply} adds a defender; ${answer} removes it, with the remaining material gain verified against every reply.`;
+            }).join("");
             const motif: TacticalMotifEvidence = {
                 id: "interference",
                 label: "Interference",
@@ -8838,10 +8971,10 @@ function interferenceProof(step: TacticalReplayStep, source: TacticalMotifEviden
                 confidence: "high",
                 ply: 1,
                 moveUci: step.uci,
-                value: proof.gain,
-                evidence: `${step.san} blocks the ${piece.role} on ${makeSquare(defender)} from defending the ${victim.role} on ${makeSquare(target)}${step.after.isCheck() ? ", with check" : ""}.${attacksDefender ? ` It also attacks that ${piece.role}, forcing a choice between the threats.` : ""} Every legal reply allows material gain on these targets or the blocking square${step.after.board.get(step.move.to)?.role === "pawn" && (step.move.to < 16 || step.move.to >= 48) ? ", or through promotion of the blocking pawn" : ""}; legal recaptures are included.`,
+                value: gain,
+                evidence: `${step.san} blocks the ${piece.role} on ${makeSquare(defender)} from defending the ${victim.role} on ${makeSquare(target)}${step.after.isCheck() ? ", with check" : ""}.${attacksDefender ? ` It also attacks that ${piece.role}, forcing a choice between the threats.` : ""}${examples} Every legal reply allows material gain on these targets or the blocking square${recovery ? ", including the verified continuations against restored defences" : ""}${step.after.board.get(step.move.to)?.role === "pawn" && (step.move.to < 16 || step.move.to >= 48) ? ", or through promotion of the blocking pawn" : ""}; legal recaptures are included.`,
             };
-            return { motif, defender, target, capturer, attacksDefender };
+            return {motif, defender, target, capturer, attacksDefender, extended: Boolean(recovery)};
         }
     }
     const kingProof = proveKingCaptureInterference(step);

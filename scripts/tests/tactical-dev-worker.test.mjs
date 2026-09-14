@@ -172,6 +172,28 @@ test(
         pvUci: ["g1f2"],
         expectedPrimary: [],
       },
+      {
+        name: "the first interference explains the repeated cut without future arrows",
+        fen: "1r1q1rk1/pp1Nbpp1/7p/n2p4/Q7/2PP4/PP3PPP/R1B2RK1 b - - 1 15",
+        pvUci: ["b7b5", "a4g4", "f7f5", "g4g3", "d8d7"],
+        expectedPrimary: ["interference"],
+        expectedLabels: ["interference"],
+        expectedArrowCount: 4,
+      },
+      {
+        name: "the bishop's interference includes the reinforcing defender",
+        fen: "4r2k/1bq1rpp1/p4p2/1pn2N2/8/2P4P/PPQ1BPP1/R3R1K1 b - - 5 21",
+        pvUci: ["b7e4"],
+        expectedPrimary: ["interference"],
+        expectedLabels: ["interference"],
+        expectedArrowCount: 4,
+      },
+      {
+        name: "a material interference claim cannot ignore immediate mate",
+        fen: "3k4/1r5q/3PP3/8/8/1p6/1rb5/K6Q w - - 0 1",
+        pvUci: ["e6e7"],
+        expectedPrimary: [],
+      },
     ];
     const report = [];
     for (const item of cases) {

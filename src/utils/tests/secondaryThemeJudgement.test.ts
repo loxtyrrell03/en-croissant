@@ -30,7 +30,7 @@ test("frozen engine and source inputs retain unrelated judgements across the ful
         JSON.stringify(value, (key, entry) =>
             key === "motifClassifierVersion" ? undefined : entry,
         );
-    const changed = new Set(["lichess:qQG5v", "lichess:sKDBG", "lichess:xxDaj", "lichess:SD5oo", "lichess:qn2Fy", "lichess:j8Up4", "lichess:S9vEb"]);
+    const changed = new Set(["lichess:qQG5v", "lichess:sKDBG", "lichess:xxDaj", "lichess:SD5oo", "lichess:qn2Fy", "lichess:j8Up4", "lichess:S9vEb", "lichess:DBBd9", "lichess:J3vOR"]);
     const cases = receipt.cases.map((r: any) => {
         const sourceResult = classifyPositionTacticalMotifs({
             fen: r.fen,
@@ -56,7 +56,7 @@ test("frozen engine and source inputs retain unrelated judgements across the ful
                 (clean(sourceResult) === clean(r.sourceResult) && clean(scan) === clean(r.scan)),
         }).toEqual({ id: r.id, unchangedOrReviewed: true });
         expect(scan.motifs[0]?.id).toBe(
-            r.id === "lichess:SD5oo" ? "mateIn2" : r.id === "lichess:qn2Fy" ? "trappedPiece" : r.scan.motifs[0]?.id,
+            r.id === "lichess:SD5oo" ? "mateIn2" : r.id === "lichess:qn2Fy" ? "trappedPiece" : r.id === "lichess:J3vOR" ? "interference" : r.scan.motifs[0]?.id,
         );
         return { ...r, sourceResult, scan };
     });
@@ -65,7 +65,7 @@ test("frozen engine and source inputs retain unrelated judgements across the ful
             process.env.TACTICAL_SECONDARY_FINAL_REPORT,
             JSON.stringify(
                 {
-                    scope: "Exact engine/source-input replay. Seven changed explanations reviewed across adapters 92 and 93; unchanged/empty outputs are not accuracy successes.",
+                    scope: "Exact engine/source-input replay. Nine changed explanations reviewed across adapters 92 through 94; unchanged/empty outputs are not accuracy successes.",
                     cases,
                 },
                 null,

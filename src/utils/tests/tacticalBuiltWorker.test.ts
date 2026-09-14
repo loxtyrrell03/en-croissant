@@ -10,6 +10,7 @@ import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import { trappedRookFen, trapControls, unrelatedPayoffTrap } from "./fixtures/trapRelevance";
+import { interferenceExamples, interferenceControls, compensatedInterference } from "./fixtures/interferenceRelevance";
 import {
     buildLiveTacticalScan,
     type LiveTacticalScanInput,
@@ -766,6 +767,14 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 ...trapControls.map(c => ({id: `trap-audit:control:${c.id}`, fen: c.fen, pvUci: ["g1f2"]})),
                 {id: "trap-audit:control:unrelated-payoff", ...unrelatedPayoffTrap},
             ].map(({id, ...input}) => ({id, input: {...input, engineName: "Trap audit", depth: 16}})),
+            ...[
+                ...interferenceExamples.flatMap(item => [
+                    {id: `interference-audit:root:${item.id}`,fen:item.fen,pvUci:item.pvUci.slice(0,1)},
+                    {id: `interference-audit:recovery:${item.id}`,fen:item.fen,pvUci:[item.pvUci[0],item.reply,item.answer]},
+                ]),
+                ...interferenceControls.map(item => ({id:`interference-audit:control:${item.id}`,fen:item.fen,pvUci:[item.move]})),
+                {id:"interference-audit:compensated",...compensatedInterference},
+            ].map(({id,...input})=>({id,input:{...input,engineName:"Interference audit",depth:16}})),
             ...[0, 9, 18].map((index) => ({
                 id: `counterplay:${index}`,
                 input: {
@@ -819,6 +828,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         const discoveryResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         const secondaryResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         const trapResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
+        const interferenceResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         for (const item of cases) {
             // A fresh worker never inherits the in-process proof caches.
             const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, item.input);
@@ -826,6 +836,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             expect({ id: item.id, scan: result.scan }).toEqual({ id: item.id, scan: expected });
             if (item.id.startsWith("secondary-source:")) secondaryResults.set(item.id, result.scan);
             if (item.id.startsWith("trap-audit:")) trapResults.set(item.id, result.scan);
+            if (item.id.startsWith("interference-audit:")) interferenceResults.set(item.id,result.scan);
             if (item.id === "counterplay:9" && result.scan.variations[0].timeline.some((motif) => motif.id === "skewer"))
                 throw new Error("The built worker advertised the mating-trap skewer payoff");
             if (item.id.startsWith("ray-liability:")) rayResults.set(item.id, result.scan);
@@ -843,7 +854,16 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(300);
+        expect(report).toHaveLength(310);
+        for(const item of interferenceExamples) for(const mode of ["root","recovery"]){
+            const scan=interferenceResults.get(`interference-audit:${mode}:${item.id}`)!;
+            expect(scan.motifs[0]).toMatchObject({id:"interference",ply:1,value:item.gain});
+            expect(scan.labels.map(label=>label.id)).toEqual(["interference"]);
+            expect(scan.arrows.some(arrow=>arrow.to===(item.id==="DBBd9"?"f5":"d3"))).toBe(false);
+        }
+        for(const item of interferenceControls)
+            expect(interferenceResults.get(`interference-audit:control:${item.id}`)!.motifs.some(m=>m.id==="interference")).toBe(false);
+        expect(interferenceResults.get("interference-audit:compensated")!.motifs[0]).toMatchObject({id:"interference",value:400});
         for (const id of ["root-only", "defender-removal"]) {
             const result = trapResults.get(`trap-audit:${id}`)!;
             expect(result.motifs[0]).toMatchObject({id: "trappedPiece", ply: 1, value: 180});
