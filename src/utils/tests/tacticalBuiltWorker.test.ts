@@ -8,6 +8,7 @@ import { parseSan } from "chessops/san";
 import { makeUci } from "chessops/util";
 import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
+import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import { trappedRookFen, trapControls, unrelatedPayoffTrap } from "./fixtures/trapRelevance";
 import { interferenceExamples, interferenceControls, compensatedInterference } from "./fixtures/interferenceRelevance";
@@ -124,7 +125,21 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         const drawingCases = JSON.parse(readFileSync("benchmarks/tactical-relevance/drawing-zugzwang-tablebase-verified.json", "utf8")).selected as { id: string; beforeFen: string; moveUci: string; expected: "draw" | "win" | null }[];
         const secondary = JSON.parse(readFileSync("benchmarks/tactical-relevance/secondary-theme-stockfish-18.json", "utf8"));
         const crossPhase=JSON.parse(readFileSync("benchmarks/tactical-relevance/cross-phase-stockfish-18.json","utf8"));
+        const broaderGame = JSON.parse(readFileSync("benchmarks/tactical-relevance/broader-game-stockfish-18.json", "utf8"));
         const cases = [
+            ...broaderGame.cases.flatMap((row: any, index: number) => {
+                const after = broaderGame.responses[index];
+                return [
+                    { id: `broader-source:${row.id}`, input: { fen: row.fen, pvUci: row.sourceUci, previousFen: row.previousFen, previousMoveUci: row.previousMoveUci, depth: 16, engineName: "Frozen source" } },
+                    { id: `broader-engine:${row.id}`, input: { fen: row.fen, pvUci: row.engineLines[0].pvUci, variations: row.engineLines, previousFen: row.previousFen, previousMoveUci: row.previousMoveUci, depth: 16, engineName: "Stockfish 18" } },
+                    { id: `broader-response:${row.id}`, input: { fen: after.fen, pvUci: after.lines[0].pvUci, variations: after.lines, previousFen: row.fen, previousMoveUci: row.sourceUci[0], depth: 16, engineName: "Stockfish 18" } },
+                ];
+            }),
+            ...[
+                { id: "root", fen: mixedForkFen, pvUci: ["d2f3"] },
+                { id: "continuation", fen: mixedForkFen, pvUci: mixedForkLine },
+                ...mixedForkControls.map(c => ({ ...c, pvUci: ["d2f3"] })),
+            ].map(({ id, ...input }) => ({ id: `mixed-fork:${id}`, input: { ...input, depth: 16, engineName: "Mixed-target fork" } })),
             ...[
                 { id: "real", fen: promotionCounterplayBase, historicalLine: promotionCounterplayLine },
                 ...pawnRaceRefutations,
@@ -888,7 +903,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(386);
+        expect(report).toHaveLength(462);
         for (const length of [1, promotionCounterplayLine.length]) expect(promotionEndingResults.get(`promotion-ending:real:${length}`)!.motifs[0]).toMatchObject({ id: "promotionCombination", value: 220 });
         expect(promotionEndingResults.get("promotion-ending:real:5")!.variations[0].timeline.some((m) => m.ply === 2 && m.id === "hangingPiece")).toBe(false);
         for (const row of pawnRaceRefutations) for (const length of [1, row.historicalLine.length]) expect(promotionEndingResults.get(`promotion-ending:${row.id}:${length}`)!.motifs.some((m) => m.id === "promotionCombination")).toBe(false);

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { writeFileSync } from "node:fs";
 import { Worker } from "node:worker_threads";
 import test from "node:test";
+import { mixedForkFen, mixedForkLine, mixedForkControls } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
 import {
   classifyLiveTacticsInWorker,
   TACTICAL_CLASSIFICATION_TIMEOUT_MS,
@@ -85,6 +86,10 @@ test(
   async (t) => {
     assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(new URL(origin).hostname));
     const cases = [
+      { name: "quiet mixed-target fork", fen: mixedForkFen, pvUci: ["d2f3"], expectedPrimary: ["fork"] },
+      { name: "mixed fork keeps its later pin", fen: mixedForkFen, pvUci: mixedForkLine, expectedPrimary: ["fork"] },
+      { name: "unpinning answers the immediate fork", fen: mixedForkControls[0].fen, pvUci: ["d2f3"], expectedPrimary: [] },
+      { name: "a second pawn guard answers the fork", fen: mixedForkControls[2].fen, pvUci: ["d2f3"], expectedPrimary: [] },
       {
         name: "reported Reti position",
         fen: "rnbqkbnr/ppp1pppp/8/3p4/2P5/5N2/PP1PPPPP/RNBQKB1R b KQkq - 0 2",

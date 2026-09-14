@@ -2678,7 +2678,7 @@ export function forcingClearanceEpisodeLength(steps: TacticalReplayStep[]): numb
     return null;
 }
 
-function winningTargets(pos: Chess, from: Square, side: Color) {
+function winningTargets(pos: Chess, from: Square, side: Color, includePawns = false) {
     const probe = withTurn(pos, side);
     const piece = probe.board.get(from);
     if (!piece || piece.color !== side) return [];
@@ -2692,7 +2692,7 @@ function winningTargets(pos: Chess, from: Square, side: Color) {
                 ? (["queen", "rook", "bishop", "knight"] as const)
                 : [undefined];
         return (
-            target.role !== "pawn" &&
+            (includePawns || target.role !== "pawn") &&
             promotions.some(
                 (promotion) => tacticalExchangeGain(probe, { from, to, promotion }) >= 100,
             )
@@ -2700,9 +2700,111 @@ function winningTargets(pos: Chess, from: Square, side: Color) {
     });
 }
 
+type MixedTargetForkProof = Extract<MaterialThreatProof, { kind: "proven" }> & {
+    targets: Square[];
+    supportingPins: { ray: RayTactic; target: Square }[];
+};
+const mixedTargetForkCache = new Map<string, MixedTargetForkProof | null>();
+
+/** A pawn can be the material payoff of a genuine quiet fork of a piece. Require
+ * a complete named-target proof, including allied recaptures of a moving
+ * victim and off-square liabilities. Mere pressure on a pawn is insufficient.
+ * Prefer a sufficient pair instead of drawing every incidental pawn attack. */
+export function proveMixedTargetFork(
+    step: TacticalReplayStep,
+    nodeLimit = 8192,
+    onAttempt?: (targets: Square[], proof: MaterialThreatProof) => void,
+): MixedTargetForkProof | null {
+    if (
+        !Number.isSafeInteger(nodeLimit) ||
+        nodeLimit <= 0 ||
+        step.capture ||
+        step.after.isCheck() ||
+        step.after.isEnd() ||
+        step.move.promotion ||
+        defenderCanClaimFiftyMoveDraw(step.after)
+    )
+        return null;
+    const key = `${makeFen(step.before.toSetup())}:${step.uci}`;
+    if (!onAttempt && nodeLimit === 8192 && mixedTargetForkCache.has(key))
+        return mixedTargetForkCache.get(key)!;
+    const result = computeMixedTargetFork(step, nodeLimit, onAttempt);
+    if (!onAttempt && nodeLimit === 8192) {
+        mixedTargetForkCache.set(key, result);
+        if (mixedTargetForkCache.size > 128)
+            mixedTargetForkCache.delete(mixedTargetForkCache.keys().next().value!);
+    }
+    return result;
+}
+
+function computeMixedTargetFork(
+    step: TacticalReplayStep,
+    nodeLimit: number,
+    onAttempt?: (targets: Square[], proof: MaterialThreatProof) => void,
+): MixedTargetForkProof | null {
+    const side = step.before.turn;
+    const targets = winningTargets(step.after, step.move.to, side, true);
+    const pawns = targets.filter((to) => step.after.board.get(to)!.role === "pawn");
+    const pieces = targets.filter(
+        (to) =>
+            step.after.board.get(to)!.role !== "king" &&
+            VALUE[step.after.board.get(to)!.role] >= VALUE.knight,
+    );
+    if (!pawns.length || !pieces.length) return null;
+    const subsets = pieces.flatMap((piece) => pawns.map((pawn) => [piece, pawn]));
+    if (pieces.length + pawns.length > 2) subsets.push([...pieces, ...pawns]);
+    const allowance = Math.floor(nodeLimit / subsets.length);
+    if (allowance < 1) return null;
+    for (const pair of subsets) {
+        const proof = materialThreatProof(
+            step,
+            pair,
+            [...step.after.board[side]],
+            [],
+            false,
+            undefined,
+            {
+                allPiecesAtLeaf: true,
+                rayMaterialOnly: true,
+                rejectCaptureMate: true,
+                mateNodeLimit: allowance,
+                captureWitnesses: true,
+            },
+        );
+        onAttempt?.(pair, proof);
+        if (proof.kind === "proven" && proof.complete && proof.gain >= 100 && proof.gain < 10000) {
+            const supports = new Map<string, { ray: RayTactic; target: Square }>();
+            for (const branch of proof.captureBranches ?? []) {
+                const line = replayTacticalLine(makeFen(step.after.toSetup()), [
+                    branch.replyUci,
+                    branch.answerUci,
+                ]);
+                if (line.length !== 2) return null;
+                const ray = pinRestrictsCapture(line[1]);
+                if (
+                    ray &&
+                    rayTactics(step.after, side).some(
+                        (other) =>
+                            other.kind === "pin" &&
+                            other.pinner === ray.pinner &&
+                            other.front === ray.front &&
+                            other.rear === ray.rear,
+                    )
+                )
+                    supports.set(`${ray.pinner}:${ray.front}:${ray.rear}:${line[1].move.to}`, {
+                        ray,
+                        target: line[1].move.to,
+                    });
+            }
+            return { ...proof, targets: pair, supportingPins: [...supports.values()] };
+        }
+    }
+    return null;
+}
+
 /** A fork must survive the opponent's choice, including capturing the forker,
  * a checking counterattack, or one move that protects both targets. */
-function verifiedFork(step: TacticalReplayStep) {
+function establishedFork(step: TacticalReplayStep) {
     return (
         immediateFork(step) ||
         proveRecaptureBackedFork(step) !== null ||
@@ -2712,6 +2814,10 @@ function verifiedFork(step: TacticalReplayStep) {
         proveDiscoveryBackedFork(step) !== null ||
         proveQuietPawnFork(step) !== null
     );
+}
+
+function verifiedFork(step: TacticalReplayStep) {
+    return establishedFork(step) || proveMixedTargetFork(step) !== null;
 }
 
 type DiscoveryBackedForkProof = {
@@ -5612,6 +5718,7 @@ type MaterialThreatProof =
           complete: boolean;
           defence: string;
           matingDefences?: { defence: string; mate: string }[];
+          captureBranches?: { replyUci: string; answerUci: string; gain: number }[];
       }
     | { kind: "forcing"; gain: number; checks: string[] }
     | { kind: "refuted"; defence: string; checking: boolean }
@@ -5626,6 +5733,7 @@ type MaterialProofOptions = {
     // instead fund a ray motif with a checkmate's synthetic material value.
     rayMaterialOnly?: boolean;
     rejectCaptureMate?: boolean;
+    captureWitnesses?: boolean;
 };
 function materialThreatGain(step: TacticalReplayStep, targets: Square[], capturers: Square[]) {
     const proof = materialThreatProof(step, targets, capturers);
@@ -5641,7 +5749,7 @@ function materialThreatProof(
     promotionFrom?: Square,
     options: MaterialProofOptions = {},
 ) {
-    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}:${Boolean(options.rayMaterialOnly)}:${Boolean(options.rejectCaptureMate)}`;
+    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}:${Boolean(options.rayMaterialOnly)}:${Boolean(options.rejectCaptureMate)}:${Boolean(options.captureWitnesses)}`;
     if (materialProofCache.has(key)) return materialProofCache.get(key)!;
     const proof = computeMaterialThreatGain(
         step,
@@ -5677,6 +5785,7 @@ function computeMaterialThreatGain(
     const checks: string[] = [];
     let mateNodes = mateNodeLimit;
     const matingDefences: { defence: string; mate: string }[] = [];
+    const captureBranches: { replyUci: string; answerUci: string; gain: number }[] = [];
     const checkingMateAnswer = (position: Chess, remaining: number): string[] | null => {
         const checks: { move: NormalMove; answer: Chess }[] = [];
         for (const move of legalMoves(position)) {
@@ -5711,6 +5820,7 @@ function computeMaterialThreatGain(
         const next = step.after.clone();
         next.play(reply);
         let best = -VALUE.king;
+        let answerUci: string | undefined;
         let unknown = false;
         // Capturing the attacking piece with the skewered queen may itself
         // lose the queen to a supporter. Consider that legal recapture too.
@@ -5804,14 +5914,16 @@ function computeMaterialThreatGain(
                         unknown = true;
                         continue;
                     }
-                    best = Math.max(
-                        best,
+                    const candidateGain =
                         step.capture +
-                            (step.move.promotion ? VALUE[step.move.promotion] - VALUE.pawn : 0) -
-                            capturedValue(step.after, reply) -
-                            (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0) +
-                            exchangeGain,
-                    );
+                        (step.move.promotion ? VALUE[step.move.promotion] - VALUE.pawn : 0) -
+                        capturedValue(step.after, reply) -
+                        (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0) +
+                        exchangeGain;
+                    if (candidateGain > best) {
+                        best = candidateGain;
+                        if (options.captureWitnesses) answerUci = makeUci(move);
+                    }
                 }
             }
         }
@@ -5891,6 +6003,10 @@ function computeMaterialThreatGain(
             minimum = best;
             limitingDefence = makeSan(step.after, reply);
         }
+        if (options.captureWitnesses) {
+            if (!answerUci) return { kind: "unknown" };
+            captureBranches.push({ replyUci: makeUci(reply), answerUci, gain: best });
+        }
     }
     if (incomplete || !Number.isFinite(minimum)) return { kind: "unknown" };
     return checks.length
@@ -5901,6 +6017,7 @@ function computeMaterialThreatGain(
               complete,
               defence: limitingDefence,
               ...(matingDefences.length ? { matingDefences } : {}),
+              ...(options.captureWitnesses ? { captureBranches } : {}),
           };
 }
 
@@ -6781,11 +6898,12 @@ export function tacticalBoardEvidence(
     }
     if (motif.id === "fork" && verifiedFork(step)) {
         const promotion = !immediateFork(step) ? provePromotionBackedFork(step) : null;
+        const mixed = !establishedFork(step) ? proveMixedTargetFork(step) : null;
         const pin = pinRestrictsCapture(step);
         const conditionalPin = !immediateFork(step)
             ? proveDiscoveryBackedFork(step)?.branches[0].pin
             : undefined;
-        const support =
+        const support = mixed?.supportingPins[0]?.ray ?? (
             conditionalPin &&
             rayTactics(step.before, step.before.turn).some(
                 (ray) =>
@@ -6795,11 +6913,11 @@ export function tacticalBoardEvidence(
                     ray.rear === conditionalPin.rear,
             )
                 ? conditionalPin
-                : undefined;
+                : undefined);
         return {
             square: makeSquare(step.move.to),
             arrows: [
-                ...winningTargets(step.after, step.move.to, step.before.turn).map((to) => ({
+                ...(mixed?.targets ?? winningTargets(step.after, step.move.to, step.before.turn)).map((to) => ({
                     from: makeSquare(step.move.to),
                     to: makeSquare(to),
                 })),
@@ -10830,6 +10948,7 @@ export function auditTacticalMotifs(
             const recapture = sound && !immediateFork(step) ? proveRecaptureBackedFork(step) : null;
             const discovery = sound && !immediateFork(step) ? proveDiscoveryBackedFork(step) : null;
             const pawn = sound && !immediateFork(step) ? proveQuietPawnFork(step) : null;
+            const mixed = sound && !establishedFork(step) ? proveMixedTargetFork(step) : null;
             if (mating) {
                 proposal = {
                     ...proposal,
@@ -10868,6 +10987,12 @@ export function auditTacticalMotifs(
                     value: recapture.gain,
                     evidence: `${step.san} forks the ${recapture.targets.map((sq) => `${step.after.board.get(sq)!.role} on ${makeSquare(sq)}`).join(" and ")}. Taking the forker with ${branch.reply} instead allows ${branch.answer}${branch.continuation.length ? `, with the verified continuation ${branch.continuation.join(" ")}` : " and immediate mate"}. Every legal defence concedes material or mate; the checking recapture, interpositions and legal exchanges are checked. The follow-up check is conditional, not already on this board.`,
                 };
+            } else if (mixed) {
+                const names = mixed.targets.map(to => `${step.after.board.get(to)!.role} on ${makeSquare(to)}`);
+                const roles = names.length === 2 ? names.join(" and ") : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+                const pins = mixed.supportingPins.map(({ ray, target }) => ` The ${step.after.board.get(ray.front)!.role} on ${makeSquare(ray.front)} cannot recapture on ${makeSquare(target)} because the ${step.after.board.get(ray.pinner)!.role} on ${makeSquare(ray.pinner)} pins it to its king on ${makeSquare(ray.rear)}.`).join("");
+                proposal = { ...proposal, value: mixed.gain,
+                    evidence: `${step.san} forks the ${roles}. Every legal reply concedes at least ${mixed.gain / 100} pawn${mixed.gain === 100 ? "" : "s"} of material on these targets, including captures of the attacker and attempts to defend several targets at once.${pins}` };
             } else if (pawn) {
                 const branch =
                     pawn.branches.find((candidate) => candidate.line.length > 1) ??
@@ -11700,8 +11825,9 @@ function materialLesson(steps: TacticalReplayStep[], motif: TacticalMotifEvidenc
             gain = proof.gain;
         }
     } else if (motif.id === "fork") {
-        targets = winningTargets(step.after, step.move.to, step.before.turn);
-        gain = targets.length >= 2 ? materialThreatGain(step, targets, [step.move.to]) : null;
+        const mixed = !establishedFork(step) ? proveMixedTargetFork(step) : null;
+        targets = mixed?.targets ?? winningTargets(step.after, step.move.to, step.before.turn);
+        gain = mixed?.gain ?? (targets.length >= 2 ? materialThreatGain(step, targets, [step.move.to]) : null);
         if (gain === null) gain = proveExchangeForPawnFork(step)?.gain ?? null;
         if (gain === null) gain = provePromotionBackedFork(step)?.gain ?? null;
     } else if (motif.id === "trappedPiece") {
@@ -12066,6 +12192,22 @@ export function compareImmediateTacticalDefence(
                 comparisonEvidence = `The same capture still wins material after ${bestSan}.`;
             }
         } else if (motif.id === "fork") {
+            const mixed = !establishedFork(step) && proveMixedTargetFork(step);
+            if (mixed) {
+                const other = proveMixedTargetFork(alternative);
+                if (other && other.targets.join(",") === mixed.targets.join(",") && other.gain >= mixed.gain)
+                    return { ...motif, comparison: "persists" as const,
+                        comparisonEvidence: `The same piece-and-pawn fork remains after ${bestSan}, with at least the same verified local gain.` };
+                // An exhausted proof or different fork cannot establish prevention.
+                if (other) return motif;
+                const counter = materialThreatProof(alternative, mixed.targets,
+                    [...alternative.after.board[alternative.before.turn]], [], false, undefined,
+                    { allPiecesAtLeaf: true, rayMaterialOnly: true, rejectCaptureMate: true, mateNodeLimit: 8192 });
+                return counter.kind === "refuted" && !counter.checking
+                    ? { ...motif, comparison: "prevented" as const,
+                        comparisonEvidence: `After ${bestSan}, ${counter.defence} answers ${alternative.san} without conceding the same immediate fork-target gain. This compares the concrete target captures, not the full position's evaluation.` }
+                    : motif;
+            }
             const quietPawn = !immediateFork(step) && proveQuietPawnFork(step);
             if (quietPawn) {
                 // A failed shallow material exchange cannot refute a longer

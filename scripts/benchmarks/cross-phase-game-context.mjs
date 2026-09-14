@@ -7,17 +7,29 @@ import { Chess } from "chessops/chess";
 import { makeSan, parseSan } from "chessops/san";
 import { makeUci } from "chessops/util";
 
-const [samplePath, output] = process.argv.slice(2);
+const [samplePath, output, profile = "initial"] = process.argv.slice(2);
 if (!samplePath || !output || existsSync(output))
   throw new Error("Provide sample and new output path");
 const sample = JSON.parse(readFileSync(samplePath, "utf8"));
 assert.equal(sample.profile, "cross-phase");
+const profiles = {
+  initial: {
+    start: 0, end: 3, plies: [8, 24, 48, 80],
+    scope: "Fixed plies 8, 24, 48, 80 from the first three output-blind cross-phase source games. No result, evaluation, player or classifier filtering. These puzzle-game contexts are not a representative ordinary-game sample. Player headers, comments and clocks are omitted.",
+  },
+  broader: {
+    start: 3, end: 7, plies: [6, 16, 30, 50, 70, 90],
+    scope: "Fixed plies 6, 16, 30, 50, 70, 90 from the next four frozen cross-phase source games (indices 3 through 6). Selection precedes engine and classifier output, without result, evaluation, player or move-quality filtering. These puzzle-game contexts are not representative ordinary games. Player headers, comments and clocks are omitted; unavailable fixed plies are recorded rather than replaced.",
+  },
+};
+const config = profiles[profile];
+assert.ok(config, "Unknown context profile");
 const games = [],
   cases = [],
   omitted = [];
 // Fixed before fetching games or seeing any evaluation/classifier output.
 // These are contexts of puzzle-selected games, not a population sample.
-for (const row of sample.cases.slice(0, 3)) {
+for (const row of sample.cases.slice(config.start, config.end)) {
   const source = new URL(row.sourceGameUrl);
   assert.equal(source.origin, "https://lichess.org");
   const gameId = source.pathname.split("/")[1];
@@ -62,7 +74,7 @@ for (const row of sample.cases.slice(0, 3)) {
     startFen: fens[0],
     moves,
   });
-  for (const ply of [8, 24, 48, 80]) {
+  for (const ply of config.plies) {
     const id = `context:${gameId}:ply${ply}`;
     if (ply >= moves.length) {
       omitted.push({ id, reason: "Game ended before this fixed sample" });
@@ -81,8 +93,7 @@ for (const row of sample.cases.slice(0, 3)) {
   }
 }
 const result = {
-  scope:
-    "Fixed plies 8, 24, 48, 80 from the first three output-blind cross-phase source games. No result, evaluation, player or classifier filtering. These puzzle-game contexts are not a representative ordinary-game sample. Player headers, comments and clocks are omitted.",
+  scope: config.scope,
   sourceSha256: sample.sourceSha256,
   games,
   cases,

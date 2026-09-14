@@ -1,6 +1,12 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 97 / live pipeline 102
+## Current classifier: adapter 98 / live pipeline 103
+
+The [broader-game review](broader-game-relevance-review.md) adds 23 fixed opening, middlegame and ending contexts plus all 23 actual after-move boards, with 106 public fresh engine searches. A quiet three-target fork is independently verified against all 27 replies; the supporting pin stays on its actual capture ply. Two-target defences, king-unpinning, counterchecks, missed-versus-allowed severity and a contrary queen-sacrifice variant are explicitly checked. The rule excludes checking/capturing entries, king-and-pawn-only pressure and unproved liabilities, retains existing stronger proof ownership, and keeps worker deadlines unchanged.
+
+All 246 private root/source results and primary lists remain unchanged. One private live continuation gains a genuine ply-5 fork, never a new root headline; its twenty legal replies and 21 fresh engine searches are recorded in `adapter98-private-mixed-fork-proofs.json` and `adapter98-private-mixed-fork-engine.json`. A duplicate checking-fork badge seen during development was withdrawn. Existing twenty rare results, 23 cross-phase results and 32 frozen primary-priority judgements remain unchanged, not certified accurate. The linked review records broader contextual judgements, contrary controls, final verification, authoritative private receipts and delivery limits. Paid material stays private; no owner app/service restart or deployment. Quiet/rare/causal/positional/ending and native verification gaps remain open.
+
+## Prior adapter 97 / live pipeline 102
 
 The [promotion-counterplay review](promotion-counterplay-review.md) hardens promotion combinations against unresolved pawn endings, checking skewers and counterpromotions. A 116-position nearby diagnostic set and seventy final fresh engine searches expose three losing sacrifices admitted by adapter96 and a fourth false claim introduced during development; all four now abstain. The real root still leads with Promotion Combination and its actual promotions stay on their own plies. A generic Winning Recapture badge is removed when the defender merely accepts the independently proved sacrifice. All 21 root replies are covered in 207,931 operations with a 220-unit local bound; capture-first witnesses replace an earlier drawing retreat. Only this proof's operation allowance rises to 262,144; the existing worker deadlines remain. Five winning variants now unproved are explicitly retained as coverage misses, not accuracy gains.
 

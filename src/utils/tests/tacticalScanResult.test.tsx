@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, expect, test, vi } from "vitest";
 import { TacticalScanResult } from "@/components/panels/tactics/TacticalScanResult";
 import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
+import { mixedForkFen, mixedForkLine } from "./fixtures/mixedTargetFork";
 import {
   buildLiveTacticalScan,
   previewLiveTacticalVariation,
@@ -29,6 +30,17 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("the mixed-target fork leads the panel while the actual pin payoff stays later", () => {
+  const value = buildLiveTacticalScan({ fen: mixedForkFen, pvUci: mixedForkLine, engineName: "Frozen real game", depth: 16 });
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Fork found");
+  expect(element.textContent).not.toContain("Pin found");
+  expect(element.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Fork");
+  expect(element.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Pin");
+  expect(element.querySelector("details")?.hasAttribute("open")).toBe(false);
+  expect(value.labels.map(label => label.id)).toEqual(["fork"]);
+});
 
 test("the mate headline keeps x-ray support on the initiating row and board", () => {
   const value = buildLiveTacticalScan({fen: "4r1k1/pp1b1pbp/2p3p1/8/1qNp4/1P1P1Q2/P1P1RPPP/4R1K1 b - - 6 23", pvUci: ["b4e1", "e2e1", "e8e1"], pvSan: ["Qxe1+", "Rxe1", "Rxe1#"], depth: 16, engineName: "Frozen real game"});
