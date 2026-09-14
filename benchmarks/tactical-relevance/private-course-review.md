@@ -1,6 +1,14 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 87 / live pipeline 92
+## Current classifier: adapter 88 / live pipeline 93
+
+The [capturing mating-attack review](capturing-mating-attack-review.md) removes a false free-bishop headline using an independently proved mating-compensation recapture, without inventing a defensive-capture explanation. Its opponent attack stays at the actual ply. A second real course root gains Mating Attack: stopping the mate concedes the queen; the accepting mate is not compulsory and one queen target is not a fork. The earlier provisional defensive-capture assumption is expressly withdrawn.
+
+Both proofs use shared 8,192-visit budgets and account for initial captures, defending promotions and piece liabilities. A guard capture must restore the exact nominated mate; unrelated material cannot fund it. Ninety-three fresh depth-16 searches audit all 71 selected real decisions, roots, defences and constructed contrary controls. The least material concession need not be the best full-position defence. Exact replay changes these two course results only; the other 199 course results, all 24 generated-game results, twenty rare cases, 32 priorities and 162 prior public worker headlines are unchanged, not independently certified correct.
+
+Verification: 1,489 selected source/render/review tests pass with 91 conditional skips; eighteen additional private proof/replay checks pass. All 631 actual-controller production-worker inputs pass thirteen tests. The [168-input public receipt](built-worker-adapter88.json) measures median/p95/max 78/216/600 ms, startup max 32 ms and computation/transfer max 572 ms, excluding engine/UI and additional private/rare inputs. Final artifact: liveTactics.worker-DVmp79X6.js. Both builds, six-file lint, whole-project type checking, three service tests and two dev-cache scenarios pass. Six isolated cold HTTP cases pass with first/next startup 1,373/69 ms; this is not stable startup or native WebView proof. Broader quiet/rare/causal and drawing/larger-ending zugzwang gaps remain. No app/package/service was restarted or deployed; paid material remains private. The linked review records limitations, corrected experimental assumptions and authoritative private receipts.
+
+## Prior adapter 87 / live pipeline 92
 
 The [counterplay relevance review](counterplay-relevance-review.md) adds 45 output-blind positions: 21 unseen positional exercises and 24 reached boards from eight generated engine games, spanning openings, middlegames and endings. These generated games are not human-game samples; the prior ordinary-game and Lichess fixtures remain separate. Human judgements preceded outputs. Completed fresh analysis comprises 75 depth-16 searches plus eight depth-8 castling controls. The latter caught and fixed a benchmark wire-notation bug; the affected 24-case audit was restarted in full, with the aborted report preserved. Move history now survives private auditing, exact replay and built-worker inputs.
 

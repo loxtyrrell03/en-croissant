@@ -37,6 +37,19 @@ const laterScan = buildLiveTacticalScan({
   engineName: "Constructed",
   depth: 16,
 });
+
+test("mating compensation removes the free-piece headline but preserves the opponent's actual-ply explanation", () => {
+  const value = buildLiveTacticalScan({ fen: "6k1/5ppp/8/8/7q/6pb/4B1PP/5RBK w - - 0 1", pvUci: ["g2h3", "h4h3", "f1f2", "g3f2", "g1f2"], engineName: "Constructed mating net", depth: 16 });
+  const element = document.createElement("div");
+  element.innerHTML = markup(value);
+  expect(element.textContent).toContain("No immediate theme verified");
+  expect(element.textContent).not.toContain("Hanging Piece");
+  expect(element.textContent).not.toContain("Defensive Capture");
+  expect(element.querySelector('[data-tactical-ply="2"]')?.textContent).toContain("Mating Attack");
+  expect(element.querySelector('[data-tactical-ply="2"]')?.textContent).toContain("Black");
+  expect(element.querySelectorAll("details[open]")).toHaveLength(0);
+  expect(previewLiveTacticalVariation(value, 1).arrows).toEqual([]);
+});
 test("a remote trap stays collapsed and cannot become the recapture's headline or board preview", () => {
   const value = buildLiveTacticalScan({ fen: counterplayFen, previousFen: counterplayPreviousFen, previousMoveUci: "d6b4", pvUci: counterplayLine, engineName: "Generated engine game", depth: 16 });
   const element = document.createElement("div");

@@ -108,6 +108,14 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         }[];
         const cases = [
             ...[
+                { id: "capture-mating-attack:compensated", fen: "6k1/5ppp/8/8/7q/6pb/4B1PP/5RBK w - - 0 1", pvUci: ["g2h3", "h4h3", "f1f2", "g3f2", "g1f2"] },
+                { id: "capture-mating-attack:root-only", fen: "6k1/5ppp/8/8/7q/6pb/4B1PP/5RBK w - - 0 1", pvUci: ["g2h3"] },
+                { id: "capture-mating-attack:recapture", fen: "6k1/5ppp/8/8/7q/6pP/4B2P/5RBK b - - 0 1", pvUci: ["h4h3"] },
+                { id: "capture-mating-attack:surviving-guard", fen: "6k1/5ppp/8/8/7q/4N1pP/4B2P/5RBK b - - 0 1", pvUci: ["h4h3"] },
+                { id: "capture-mating-attack:free-bishop", fen: "6k1/5ppp/8/8/7q/7b/4B1PP/5RBK w - - 0 1", pvUci: ["g2h3"] },
+                { id: "capture-mating-attack:checking-promotion", fen: "2k5/P4ppp/8/8/7q/6pP/4B2P/5RBK b - - 0 1", pvUci: ["h4h3"] },
+            ].map(({ id, fen, pvUci }) => ({ id, input: { fen, pvUci, depth: 16, engineName: "Constructed mating-net reduction" } })),
+            ...[
                 { id: "quiet-mating-attack:real", fen: "8/pp4k1/3P2p1/8/2PbB2p/6qP/PP6/5Q1K b - - 0 35", pvUci: ["d4e5", "f1g2", "g3e1", "g2g1", "e1e4"] },
                 { id: "quiet-mating-attack:root-only", fen: "8/pp4k1/3P2p1/8/2PbB2p/6qP/PP6/5Q1K b - - 0 35", pvUci: ["d4e5"] },
                 { id: "quiet-mating-attack:queen-liability", fen: "8/pp4k1/3P2p1/8/2PbB2p/6qP/PP4R1/5Q1K b - - 0 35", pvUci: ["d4e5"] },
@@ -789,9 +797,17 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(162);
+        expect(report).toHaveLength(168);
         expect(Object.fromEntries(report.filter((item) => item.id.startsWith("counterplay:")).map((item) => [item.id, item.primary]))).toEqual({
             "counterplay:0": [], "counterplay:9": ["forkPreparation"], "counterplay:18": ["trappedPiece"],
+        });
+        expect(Object.fromEntries(report.filter((item) => item.id.startsWith("capture-mating-attack:")).map((item) => [item.id, item.primary]))).toMatchObject({
+            "capture-mating-attack:compensated": [],
+            "capture-mating-attack:root-only": [],
+            "capture-mating-attack:recapture": ["forcingAttack"],
+            "capture-mating-attack:surviving-guard": [],
+            "capture-mating-attack:free-bishop": ["hangingPiece"],
+            "capture-mating-attack:checking-promotion": [],
         });
         expect(Object.fromEntries(report.filter((item) => item.id.startsWith("quiet-mating-attack:")).map((item) => [item.id, item.primary]))).toMatchObject({
             "quiet-mating-attack:real": ["forcingAttack"],
