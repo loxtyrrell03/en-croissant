@@ -1,6 +1,12 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 99 / live pipeline 104
+## Current classifier: adapter 100 / live pipeline 105
+
+The [exact endgame relevance review](tablebase-relevance-review.md) adds optional, exact-position Syzygy pass certificates for larger-ending winning and drawing zugzwang. Two real roots, a colour reflection and a reciprocal drawing resource qualify; source-tagged pawn wins, infiltration and equal ending controls do not. All legal moves and both outcomes are validated independently of engine PV values. The Tactics tab's explicit Verify move online action retains local results, has bounded cancellation/retry and preserves the original engine context. Normal scans do not upload positions. The mistake adapter accepts supplied certificates for missed/allowed lessons and independent better-position comparisons, but automatic game-review lookup is not wired.
+
+All 246 private source/live results and twenty rare results remain unchanged, not certified accurate. The linked review records independent evidence, corrected initial judgements, actual-browser/worker checks, benchmarks and delivery limits. No owner app/service restart or deployment; paid material remains private. Broader accuracy and automatic larger-ending review coverage remain open.
+
+## Prior adapter 99 / live pipeline 104
 
 The [direct-threat relevance review](direct-threat-relevance-review.md) replaces PV-funded generic-threat values with complete target-specific material bounds, including immediate liabilities and capture/promotion/draw guards. Same-target discovery and trap badges are deduplicated without moving later promotion/capture details to the root. Thirty hash-selected checking captures across 155 public opening, positional, tactical and ending boards receive 115 fresh engine searches including controls and selected witnesses. A proposed checking-pawn proof is explicitly rejected after its winning root concealed a losing quiet continuation; the real checking-capture coverage gaps remain open.
 

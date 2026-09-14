@@ -10,6 +10,7 @@ import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { directThreatFen, directThreatLine, directThreatControls } from "./fixtures/directThreatRelevance";
+import { tablebaseCases } from "./fixtures/tablebaseRelevance";
 import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import { trappedRookFen, trapControls, unrelatedPayoffTrap } from "./fixtures/trapRelevance";
 import { interferenceExamples, interferenceControls, compensatedInterference } from "./fixtures/interferenceRelevance";
@@ -875,6 +876,10 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 },
             })),
         ];
+        cases.push(...tablebaseCases.map(row => ({
+            id: `tablebase:${row.id}`,
+            input: { fen: row.fen, pvUci: [row.move], engineName: "Tablebase fixture", depth: 16, tablebaseEvidence: row.evidence },
+        })));
         const report = [];
         const rayResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         const drawingResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
@@ -890,6 +895,11 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, item.input);
             const expected = buildLiveTacticalScan(item.input);
             expect({ id: item.id, scan: result.scan }).toEqual({ id: item.id, scan: expected });
+            if (item.id.startsWith("tablebase:")) {
+                const row = tablebaseCases.find(row => item.id === `tablebase:${row.id}`)!;
+                if (result.scan.motifs.some(m => m.id === "zugzwang") !== row.expectedZugzwang)
+                    throw new Error(`Independent tablebase judgement failed: ${row.id}`);
+            }
             if (item.id.startsWith("promotion-ending:")) promotionEndingResults.set(item.id, result.scan);
             if (item.id.startsWith("secondary-source:")) secondaryResults.set(item.id, result.scan);
             if (item.id.startsWith("trap-audit:")) trapResults.set(item.id, result.scan);
@@ -913,7 +923,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(527);
+        expect(report).toHaveLength(549);
         for (const length of [1, promotionCounterplayLine.length]) expect(promotionEndingResults.get(`promotion-ending:real:${length}`)!.motifs[0]).toMatchObject({ id: "promotionCombination", value: 220 });
         expect(promotionEndingResults.get("promotion-ending:real:5")!.variations[0].timeline.some((m) => m.ply === 2 && m.id === "hangingPiece")).toBe(false);
         for (const row of pawnRaceRefutations) for (const length of [1, row.historicalLine.length]) expect(promotionEndingResults.get(`promotion-ending:${row.id}:${length}`)!.motifs.some((m) => m.id === "promotionCombination")).toBe(false);

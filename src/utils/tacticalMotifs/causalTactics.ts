@@ -6,6 +6,7 @@ import type { Color, NormalMove, Role, Square } from "chessops/types";
 import { makeSquare, makeUci, opposite, parseUci } from "chessops/util";
 import type { TacticalMotifEvidence } from "./types";
 import { probeKingPawnEndgame, proveKpkZugzwang } from "./kpkBitbase";
+import { proveTablebaseZugzwang, tablebaseZugzwangEvidence, verifiedTablebasePosition, type TablebaseEvidence } from "./tablebaseEvidence";
 
 const VALUE: Record<Role, number> = {
     pawn: 100,
@@ -6510,6 +6511,7 @@ export function tacticalBoardEvidence(
     fen: string,
     line: string[],
     motif: TacticalMotifEvidence | undefined,
+    tablebaseEvidence?: TablebaseEvidence | null,
 ) {
     if (
         !motif?.ply ||
@@ -6555,7 +6557,7 @@ export function tacticalBoardEvidence(
         if (entry) return { square: makeSquare(entry.target), arrows: [{ from: makeSquare(step.move.from), to: makeSquare(step.move.to) }] };
     }
     if (motif.id === "zugzwang") {
-        const proof = proveKpkZugzwang(step.after);
+        const proof = proveKpkZugzwang(step.after) ?? proveTablebaseZugzwang(makeFen(step.before.toSetup()), step.uci, tablebaseEvidence);
         return proof && proof.beneficiary === step.before.turn
             ? { square: makeSquare(step.after.board.kingOf(proof.defender)!), arrows: [{ from: makeSquare(step.move.from), to: makeSquare(step.move.to) }] }
             : null;
@@ -10245,7 +10247,7 @@ export function kpkZugzwangEvidence(step: TacticalReplayStep, source: TacticalMo
     };
 }
 
-export function hasTacticalStart(fen: string, line: string[], allowConditional = true) {
+export function hasTacticalStart(fen: string, line: string[], allowConditional = true, tablebaseEvidence?: TablebaseEvidence | null) {
     const steps = replayTacticalLine(fen, line.slice(0, 11));
     const root = steps[0];
     return Boolean(
@@ -10255,6 +10257,7 @@ export function hasTacticalStart(fen: string, line: string[], allowConditional =
             root.after.isCheck() ||
             proveKpkEntry(root) ||
             kpkZugzwangEvidence(root, "available") ||
+            tablebaseZugzwangEvidence(fen, root.uci, tablebaseEvidence, "available") ||
             hasConcreteThreat(root) ||
             proveReinforcedPin(root) ||
             proveQuietMateThreat(root) ||
@@ -10410,7 +10413,7 @@ export function auditTacticalMotifs(
     line: string[],
     proposals: TacticalMotifEvidence[],
     rootCp?: number | null,
-    context?: { previousFen?: string | null; previousMoveUci?: string | null },
+    context?: { previousFen?: string | null; previousMoveUci?: string | null; tablebaseEvidence?: TablebaseEvidence | null },
 ) {
     const steps = replayTacticalLine(fen, line);
     if (!steps.length) return [];
@@ -10430,6 +10433,7 @@ export function auditTacticalMotifs(
         (step) => step.before.turn === steps[0].before.turn && step.move.promotion,
     );
     const clearanceEnd = forcingClearanceEpisodeLength(steps);
+    const exactZugzwang = tablebaseZugzwangEvidence(fen, steps[0].uci, context?.tablebaseEvidence, proposals[0]?.source ?? "available");
     const end =
         checkingMate && steps.some((step) => step.after.isCheckmate())
             ? steps.findIndex((step) => step.after.isCheckmate()) + 1
@@ -10437,7 +10441,7 @@ export function auditTacticalMotifs(
               ? clearanceEnd
               : promotionCombination && promotionPly >= 0 && promotionPly <= 16
                 ? promotionPly + 1
-                : episodeEnd(steps, allowConditional);
+                : Math.max(exactZugzwang ? 1 : 0, episodeEnd(steps, allowConditional));
     if (!end) return [];
     const episode = steps.slice(0, end);
     const attacker = steps[0].before.turn;
@@ -10475,7 +10479,7 @@ export function auditTacticalMotifs(
             evidence: `${steps[0].san} attacks the pawn on ${makeSquare(pawnEnding.target)}. All ${pawnEnding.branches.length} legal replies allow ${captures.join(" or ")}, reaching a winning king-and-pawn ending. The captured pawn and the exact resulting endgame are checked separately for every defence; this is not a claim that zugzwang already exists on this board.`,
         });
     }
-    const zugzwang = kpkZugzwangEvidence(steps[0], proposals[0]?.source ?? "available");
+    const zugzwang = kpkZugzwangEvidence(steps[0], proposals[0]?.source ?? "available") ?? exactZugzwang;
     if (zugzwang) candidates.push(zugzwang);
     if (promotionCombination) {
         const root = steps[0];
@@ -12053,6 +12057,7 @@ export function compareImmediateTacticalDefence(
     playedMove: string | null,
     reply: string | undefined,
     motifs: TacticalMotifEvidence[],
+    tablebaseEvidence?: TablebaseEvidence | null,
 ) {
     if (!bestMove || !playedMove || !reply) return motifs;
     const actual = replayTacticalLine(fen, [playedMove, reply]);
@@ -12078,6 +12083,17 @@ export function compareImmediateTacticalDefence(
         if (motif.id === "zugzwang") {
             const proof = proveKpkZugzwang(step.after);
             const bestOutcome = probeKingPawnEndgame(better[0].after);
+            const exact = proveTablebaseZugzwang(makeFen(step.before.toSetup()), step.uci, tablebaseEvidence);
+            const betterExact = verifiedTablebasePosition(makeFen(better[0].after.toSetup()), tablebaseEvidence);
+            if (exact?.beneficiary === step.before.turn && betterExact) {
+                const actualResult = exact.outcome === "win" ? -1 : 0;
+                const bestResult = -betterExact.outcome;
+                comparison = bestResult > actualResult ? "prevented" : "persists";
+                const resultName = (value: number) => value > 0 ? "a win" : value < 0 ? "a loss" : "a draw";
+                comparisonEvidence = comparison === "prevented"
+                    ? `${bestSan} preserves ${resultName(bestResult)} with best play. After ${actual[0].san}, ${step.san} allows the opponent's verified ${exact.outcome === "draw" ? "drawing" : "winning"} zugzwang. These are separately verified Lichess Syzygy endgame outcomes, not immediate material gains.`
+                    : `Even after ${bestSan}, Lichess Syzygy gives ${resultName(bestResult)} with best play. The displayed zugzwang does not establish that this move worsened the endgame outcome.`;
+            }
             if (proof?.beneficiary === step.before.turn && bestOutcome?.pawnSide === proof.pawnSide) {
                 if (proof.outcome === "draw") {
                     comparison = bestOutcome.win ? "prevented" : "persists";

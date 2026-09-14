@@ -1,6 +1,7 @@
 import { makeFen } from "chessops/fen";
 import { makeSquare } from "chessops/util";
 import type { Square } from "chessops/types";
+import type { TablebaseEvidence } from "./tablebaseEvidence";
 import {
     THEME_COLORS,
     THEME_DETECTOR_VERSION,
@@ -49,6 +50,8 @@ export type {
 } from "./types";
 
 export type MistakeReviewMotifInput = {
+    /** Optional exact-position certificates supplied by the request owner. No network access occurs here. */
+    tablebaseEvidence?: TablebaseEvidence | null;
     fen?: string | null;
     bestMoveSan?: string | null;
     bestMoveUci?: string | null;
@@ -66,6 +69,7 @@ export type MistakeReviewMotifInput = {
 };
 
 export type PositionTacticalMotifInput = {
+    tablebaseEvidence?: TablebaseEvidence | null;
     fen?: string | null;
     pvUci?: string[] | null;
     pvSan?: string[] | null;
@@ -116,7 +120,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 99;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 100;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -856,7 +860,7 @@ export function classifyPositionTacticalMotifs(
             bestLine,
             toMotifEvidence(detail, "available", input.pvSan),
             input.rootCp,
-            { previousFen: input.previousFen, previousMoveUci: cleanUci(input.previousMoveUci) },
+            { previousFen: input.previousFen, previousMoveUci: cleanUci(input.previousMoveUci), tablebaseEvidence: input.tablebaseEvidence },
         ),
         input.previousFen,
         cleanUci(input.previousMoveUci),
@@ -868,7 +872,7 @@ export function classifyPositionTacticalMotifs(
         filterCompensatedRootCaptures(
             fen,
             bestLine,
-            buildTacticalTimeline(fen, bestLine, "available", motifs, input.pvSan),
+            buildTacticalTimeline(fen, bestLine, "available", motifs, input.pvSan, input.tablebaseEvidence),
             input.previousFen,
             cleanUci(input.previousMoveUci),
         ),
@@ -955,6 +959,7 @@ export function buildTacticalTimeline(
     source: TacticalMotifSource,
     rootMotifs: TacticalMotifEvidence[],
     sanLine?: string[] | null,
+    tablebaseEvidence?: TablebaseEvidence | null,
 ) {
     const fullReplay = replayTacticalLine(fen, line);
     const provedPromotionOffer = rootMotifs.some(
@@ -1033,6 +1038,7 @@ export function buildTacticalTimeline(
             rawSteps[index]?.fenBefore ?? "",
             suffix,
             index === 0 && rootMotifs.some((motif) => motif.id === "tacticalPreparation"),
+            tablebaseEvidence,
         );
         // A forced king evasion is not a quiet pause. Nor is a locally
         // verified quiet mating preparation. Two genuinely quiet plies mark
@@ -1137,12 +1143,13 @@ export function buildTacticalTimeline(
             suffix,
             toMotifEvidence(detail, source, sanLine?.slice(index)),
             undefined,
-            index > 0
-                ? {
+            {
+                tablebaseEvidence,
+                ...(index > 0 ? {
                       previousFen: rawSteps[index - 1]?.fenBefore,
                       previousMoveUci: replay[index - 1].uci,
-                  }
-                : undefined,
+                  } : {}),
+            },
         );
         for (const motif of candidates.filter((m) => m.ply === 1)) {
             if (
@@ -1279,7 +1286,9 @@ export function classifyMistakeReviewMotifs(
     input: MistakeReviewMotifInput,
 ): MistakeReviewMotifClassification {
     const key = cacheKey(input);
-    const cached = motifCache.get(key);
+    // Optional evidence can arrive after an earlier unknown result. Avoid
+    // caching caller-owned responses or reusing an evidence-free judgement.
+    const cached = input.tablebaseEvidence ? undefined : motifCache.get(key);
     if (cached) return cached;
 
     const fen = String(input.fen ?? "").trim();
@@ -1354,7 +1363,7 @@ export function classifyMistakeReviewMotifs(
                 typeof input.cpAfter === "number"
                     ? input.cpAfter * (fenSide(fenAfterPlayedMove ?? "") === "w" ? 1 : -1)
                     : undefined,
-                { previousFen: fen, previousMoveUci: playedMoveUci },
+                { previousFen: fen, previousMoveUci: playedMoveUci, tablebaseEvidence: input.tablebaseEvidence },
             ),
             fen,
             playedMoveUci,
@@ -1368,6 +1377,7 @@ export function classifyMistakeReviewMotifs(
                   typeof input.cpBefore === "number"
                       ? input.cpBefore * (fenSide(fen) === "w" ? 1 : -1)
                       : undefined,
+                  { tablebaseEvidence: input.tablebaseEvidence },
               ).map((m) => ({ ...m, source: "missed" as const })),
         motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
     } satisfies MistakeReviewMotifClassification;
@@ -1383,6 +1393,7 @@ export function classifyMistakeReviewMotifs(
             playedMoveUci,
             refutationLine[0],
             classification.allowedMotifs,
+            input.tablebaseEvidence,
         ),
     );
     const compared: MistakeReviewMotifClassification = {
@@ -1400,6 +1411,7 @@ export function classifyMistakeReviewMotifs(
                               "allowed",
                               allowedMotifs,
                               input.refutationSan,
+                              input.tablebaseEvidence,
                           ),
                           fen,
                           playedMoveUci,
@@ -1417,6 +1429,7 @@ export function classifyMistakeReviewMotifs(
                           "missed",
                           classification.missedMotifs,
                           input.pvSan,
+                          input.tablebaseEvidence,
                       ),
                       classification.missedMotifs,
                   ),
@@ -1431,7 +1444,7 @@ export function classifyMistakeReviewMotifs(
     compared.missedMotifs = selectRootConnectedLessons(
         fen, bestLine, compared.missedMotifs, compared.missedTimeline ?? [],
     );
-    motifCache.set(key, compared);
+    if (!input.tablebaseEvidence) motifCache.set(key, compared);
     if (motifCache.size > MOTIF_CACHE_LIMIT) {
         const oldestKey = motifCache.keys().next().value;
         if (oldestKey) motifCache.delete(oldestKey);

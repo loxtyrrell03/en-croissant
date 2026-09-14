@@ -147,7 +147,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 104;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 105;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {
@@ -205,6 +205,7 @@ export type LiveTacticalScan = {
 };
 
 export type LiveTacticalScanInput = {
+    tablebaseEvidence?: import("./tablebaseEvidence").TablebaseEvidence | null;
     fen: string;
     pvUci: string[];
     pvSan?: string[] | null;
@@ -325,6 +326,7 @@ function buildLiveTacticalVariation(
         previousFen: input.previousFen,
         previousMoveUci: input.previousMoveUci,
         rootCp: variation.cp,
+        tablebaseEvidence: input.tablebaseEvidence,
     });
     const motifs = selectLiveTacticalMotifs(classification.motifs);
     const triggerPlies = new Set(
@@ -335,7 +337,7 @@ function buildLiveTacticalVariation(
     const furthestTrigger = Math.max(1, ...triggerPlies);
     const arrowLimit =
         motifs.length > 0 ? Math.min(lineUci.length, Math.max(3, furthestTrigger + 1), 6) : 0;
-    const primaryGeometry = tacticalBoardEvidence(input.fen, lineUci, motifs[0]);
+    const primaryGeometry = tacticalBoardEvidence(input.fen, lineUci, motifs[0], input.tablebaseEvidence);
     const supporting =
         motifs[0]?.label === "Forcing Mate"
             ? classification.timeline?.find(
@@ -356,7 +358,7 @@ function buildLiveTacticalVariation(
               )
             : undefined;
     const supportingGeometry = supporting
-        ? tacticalBoardEvidence(input.fen, lineUci, supporting)
+        ? tacticalBoardEvidence(input.fen, lineUci, supporting, input.tablebaseEvidence)
         : null;
     const geometry = primaryGeometry ?? supportingGeometry;
     const prefixLimit = geometry ? Math.min(motifs[0].ply ?? 1, 6) : arrowLimit;

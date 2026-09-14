@@ -9547,6 +9547,150 @@ function proveKpkZugzwang(position) {
 	};
 }
 //#endregion
+//#region src/utils/tacticalMotifs/tablebaseEvidence.ts
+var object = (value) => value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
+/** Categories refer to the position's side to move, including child records.
+* Uncertain maybe-/syzygy-/unknown categories cannot establish a 50-move-safe
+* outcome. Cursed wins and blessed losses are draws under that rule.
+* Provider contract: https://github.com/lichess-org/lila-tablebase#http-api */
+function outcome(value) {
+	if (value === "win") return 1;
+	if (value === "loss") return -1;
+	if (value === "draw" || value === "cursed-win" || value === "blessed-loss") return 0;
+	return null;
+}
+function legalMoves$1(pos) {
+	return [...pos.allDests()].flatMap(([from, tos]) => [...tos].flatMap((to) => pos.board.get(from)?.role === "pawn" && (to < 8 || to >= 56) ? [
+		"queen",
+		"rook",
+		"bishop",
+		"knight"
+	].map((promotion) => ({
+		from,
+		to,
+		promotion
+	})) : [{
+		from,
+		to
+	}]));
+}
+function tablebasePosition(fen) {
+	if (typeof fen !== "string" || fen.length > 200) return null;
+	const parsed = parseFen$1(fen).chain((setup) => Chess.fromSetup(setup));
+	if (parsed.isErr) return null;
+	const pos = parsed.value;
+	if (pos.board.occupied.size() > 7 || pos.castles.castlingRights.nonEmpty() || pos.epSquare !== void 0) return null;
+	return pos;
+}
+function terminalFlags(data, pos) {
+	return data.checkmate === pos.isCheckmate() && data.stalemate === pos.isStalemate() && data.insufficient_material === pos.isInsufficientMaterial() && data.variant_win === false && data.variant_loss === false;
+}
+/** Validate transport identity, every legal move (including all promotions),
+* terminal facts and parent/child minimax consistency. This validates a
+* tablebase certificate, not the provider's entire database from scratch. */
+function validateTablebaseRecord(record, expectedFen) {
+	const pos = tablebasePosition(expectedFen);
+	const recorded = typeof record?.fen === "string" ? tablebasePosition(record.fen) : null;
+	if (!pos || !recorded || makeFen(recorded.toSetup()) !== makeFen(pos.toSetup())) return null;
+	const data = object(record.result);
+	if (!data || !terminalFlags(data, pos) || !Array.isArray(data.moves) || data.moves.length > 256) return null;
+	const value = outcome(data.category);
+	if (value === null) return null;
+	const legal = legalMoves$1(pos);
+	if (data.moves.length !== legal.length) return null;
+	const available = new Map(legal.map((move) => [makeUci(move), move]));
+	const moves = [];
+	for (const raw of data.moves) {
+		const row = object(raw);
+		if (!row || typeof row.uci !== "string") return null;
+		const move = available.get(row.uci);
+		if (!move) return null;
+		available.delete(row.uci);
+		const childValue = outcome(row.category);
+		if (childValue === null) return null;
+		const next = pos.clone();
+		next.play(move);
+		if (!terminalFlags(row, next)) return null;
+		if (next.isCheckmate() ? childValue !== -1 : next.isEnd() && childValue !== 0) return null;
+		moves.push({
+			uci: row.uci,
+			outcome: childValue
+		});
+	}
+	if (available.size) return null;
+	if (value !== (pos.isCheckmate() ? -1 : pos.isEnd() ? 0 : Math.max(...moves.map((move) => -move.outcome)))) return null;
+	const local = probeKingPawnEndgame(pos);
+	if (local && value !== (local.win ? pos.turn === local.pawnSide ? 1 : -1 : 0)) return null;
+	return {
+		fen: makeFen(pos.toSetup()),
+		outcome: value,
+		moves
+	};
+}
+function tablebaseZugzwangRequests(fen, moveUci) {
+	if (typeof moveUci !== "string" || moveUci.length > 5) return null;
+	const before = tablebasePosition(fen), move = parseUci(moveUci);
+	if (!before || before.isCheck() || before.isEnd() || !move || !("from" in move) || move.promotion || before.board.get(move.to) || !before.isLegal(move)) return null;
+	const after = before.clone();
+	after.play(move);
+	if (after.isCheck() || after.isEnd() || after.halfmoves >= 99 || !tablebasePosition(makeFen(after.toSetup()))) return null;
+	const passed = after.clone();
+	passed.turn = before.turn;
+	const passedFen = makeFen(passed.toSetup());
+	if (!tablebasePosition(passedFen)) return null;
+	return {
+		before,
+		after,
+		passed,
+		move,
+		actualFen: makeFen(after.toSetup()),
+		passedFen
+	};
+}
+function proveTablebaseZugzwang(fen, moveUci, evidence) {
+	if (evidence?.provider !== "lichess-syzygy" || !Array.isArray(evidence.records) || evidence.records.length > 32) return null;
+	const request = tablebaseZugzwangRequests(fen, moveUci);
+	if (!request) return null;
+	const actual = verifiedTablebasePosition(request.actualFen, evidence), passed = verifiedTablebasePosition(request.passedFen, evidence);
+	if (!actual || !passed || !actual.moves.length || !passed.moves.length) return null;
+	const beneficiaryActual = -actual.outcome;
+	if (beneficiaryActual < 0 || beneficiaryActual <= passed.outcome) return null;
+	if (actual.moves.some((reply) => reply.outcome < beneficiaryActual)) return null;
+	return {
+		beneficiary: request.before.turn,
+		defender: request.after.turn,
+		outcome: beneficiaryActual === 1 ? "win" : "draw",
+		passedOutcome: passed.outcome,
+		replies: actual.moves.map((reply) => ({
+			...reply,
+			san: makeSan(request.after, parseUci(reply.uci))
+		})),
+		pieceCount: request.after.board.occupied.size()
+	};
+}
+function verifiedTablebasePosition(fen, evidence) {
+	if (evidence?.provider !== "lichess-syzygy" || !Array.isArray(evidence.records) || evidence.records.length > 32) return null;
+	const records = evidence.records.filter((record) => record?.fen === fen);
+	return records.length === 1 ? validateTablebaseRecord(records[0], fen) : null;
+}
+function tablebaseZugzwangEvidence(fen, moveUci, evidence, source) {
+	const proof = proveTablebaseZugzwang(fen, moveUci, evidence);
+	if (!proof) return null;
+	const request = tablebaseZugzwangRequests(fen, moveUci);
+	const defender = proof.defender === "white" ? "White" : "Black";
+	const passing = proof.passedOutcome === 0 ? "draw" : "win";
+	return {
+		id: "zugzwang",
+		label: proof.outcome === "draw" ? "Drawing Zugzwang" : "Zugzwang",
+		source,
+		confidence: "high",
+		ply: 1,
+		moveUci,
+		value: 0,
+		evidence: `${makeSan(request.before, request.move)} ${proof.outcome === "draw" ? "holds the draw" : "wins the ending"} by zugzwang. ${proof.outcome === "draw" ? "The best defence only draws" : `All ${proof.replies.length} legal replies lose`}; ${defender} would ${passing} if allowed to pass. Both outcomes are verified by ${proof.pieceCount}-piece Lichess Syzygy.`
+	};
+}
+//#endregion
 //#region src/utils/tacticalMotifs/causalTactics.ts
 var VALUE = {
 	pawn: 100,
@@ -16272,10 +16416,10 @@ function kpkZugzwangEvidence(step, source) {
 		evidence: proof.outcome === "draw" ? `${step.san} holds the draw by putting ${defender} in zugzwang. All ${proof.replies.length} legal moves leave a drawn ending, but ${defender} would win if ${defender} could pass on this identical board. Exact king-and-pawn analysis verifies both outcomes, including pawn moves and promotion choices. This is a drawing resource, not a material win.` : `${step.san} puts ${defender} in zugzwang. All ${proof.replies.length} legal king moves lose the pawn ending, but the identical board would be drawn if ${defender} could pass. Exact king-and-pawn analysis verifies both outcomes; this is a winning endgame, not a claim of an immediate material gain.`
 	};
 }
-function hasTacticalStart(fen, line, allowConditional = true) {
+function hasTacticalStart(fen, line, allowConditional = true, tablebaseEvidence) {
 	const steps = replayTacticalLine(fen, line.slice(0, 11));
 	const root = steps[0];
-	return Boolean(root && (root.capture || root.move.promotion || root.after.isCheck() || proveKpkEntry(root) || kpkZugzwangEvidence(root, "available") || hasConcreteThreat(root) || proveReinforcedPin(root) || proveQuietMateThreat(root) || proveQuietMatingAttack(root) || quietPreparation(steps) || (allowConditional ? proveQuietTacticalPreparation(steps) : proveQuietTacticalPreparation(steps)?.forced)));
+	return Boolean(root && (root.capture || root.move.promotion || root.after.isCheck() || proveKpkEntry(root) || kpkZugzwangEvidence(root, "available") || tablebaseZugzwangEvidence(fen, root.uci, tablebaseEvidence, "available") || hasConcreteThreat(root) || proveReinforcedPin(root) || proveQuietMateThreat(root) || proveQuietMatingAttack(root) || quietPreparation(steps) || (allowConditional ? proveQuietTacticalPreparation(steps) : proveQuietTacticalPreparation(steps)?.forced)));
 }
 function episodeEnd(steps, allowConditional = false) {
 	for (let i = 0; i < steps.length; i += 2) {
@@ -16411,7 +16555,8 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	const promotionCombination = provePromotionCombination(steps[0]);
 	const promotionPly = steps.findIndex((step) => step.before.turn === steps[0].before.turn && step.move.promotion);
 	const clearanceEnd = forcingClearanceEpisodeLength(steps);
-	const end = checkingMate && steps.some((step) => step.after.isCheckmate()) ? steps.findIndex((step) => step.after.isCheckmate()) + 1 : clearanceEnd !== null ? clearanceEnd : promotionCombination && promotionPly >= 0 && promotionPly <= 16 ? promotionPly + 1 : episodeEnd(steps, allowConditional);
+	const exactZugzwang = tablebaseZugzwangEvidence(fen, steps[0].uci, context?.tablebaseEvidence, proposals[0]?.source ?? "available");
+	const end = checkingMate && steps.some((step) => step.after.isCheckmate()) ? steps.findIndex((step) => step.after.isCheckmate()) + 1 : clearanceEnd !== null ? clearanceEnd : promotionCombination && promotionPly >= 0 && promotionPly <= 16 ? promotionPly + 1 : Math.max(exactZugzwang ? 1 : 0, episodeEnd(steps, allowConditional));
 	if (!end) return [];
 	const episode = steps.slice(0, end);
 	const attacker = steps[0].before.turn;
@@ -16442,7 +16587,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 			evidence: `${steps[0].san} attacks the pawn on ${makeSquare(pawnEnding.target)}. All ${pawnEnding.branches.length} legal replies allow ${captures.join(" or ")}, reaching a winning king-and-pawn ending. The captured pawn and the exact resulting endgame are checked separately for every defence; this is not a claim that zugzwang already exists on this board.`
 		});
 	}
-	const zugzwang = kpkZugzwangEvidence(steps[0], proposals[0]?.source ?? "available");
+	const zugzwang = kpkZugzwangEvidence(steps[0], proposals[0]?.source ?? "available") ?? exactZugzwang;
 	if (zugzwang) candidates.push(zugzwang);
 	if (promotionCombination) {
 		const root = steps[0];
@@ -17436,7 +17581,7 @@ function checkingDiscoveryExchange(step) {
 /** Compare the same immediate reply after the played and best moves. We only
 * make a causal statement where legality/geometry/exchange provides a witness;
 * replaying the old full PV after a different move would assume bad defence. */
-function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motifs) {
+function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motifs, tablebaseEvidence) {
 	if (!bestMove || !playedMove || !reply) return motifs;
 	const actual = replayTacticalLine(fen, [playedMove, reply]);
 	const better = replayTacticalLine(fen, [bestMove, reply]);
@@ -17456,6 +17601,15 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 		if (motif.id === "zugzwang") {
 			const proof = proveKpkZugzwang(step.after);
 			const bestOutcome = probeKingPawnEndgame(better[0].after);
+			const exact = proveTablebaseZugzwang(makeFen(step.before.toSetup()), step.uci, tablebaseEvidence);
+			const betterExact = verifiedTablebasePosition(makeFen(better[0].after.toSetup()), tablebaseEvidence);
+			if (exact?.beneficiary === step.before.turn && betterExact) {
+				const actualResult = exact.outcome === "win" ? -1 : 0;
+				const bestResult = -betterExact.outcome;
+				comparison = bestResult > actualResult ? "prevented" : "persists";
+				const resultName = (value) => value > 0 ? "a win" : value < 0 ? "a loss" : "a draw";
+				comparisonEvidence = comparison === "prevented" ? `${bestSan} preserves ${resultName(bestResult)} with best play. After ${actual[0].san}, ${step.san} allows the opponent's verified ${exact.outcome === "draw" ? "drawing" : "winning"} zugzwang. These are separately verified Lichess Syzygy endgame outcomes, not immediate material gains.` : `Even after ${bestSan}, Lichess Syzygy gives ${resultName(bestResult)} with best play. The displayed zugzwang does not establish that this move worsened the endgame outcome.`;
+			}
 			if (proof?.beneficiary === step.before.turn && bestOutcome?.pawnSide === proof.pawnSide) if (proof.outcome === "draw") {
 				comparison = bestOutcome.win ? "prevented" : "persists";
 				comparisonEvidence = bestOutcome.win ? `${bestSan} retains a won king-and-pawn ending against every legal defence. After ${actual[0].san}, ${step.san} instead secures a verified drawing zugzwang; the move gives up the win, not a material gain.` : `Even after ${bestSan}, exact king-and-pawn analysis gives a drawn ending. The opponent's drawing resource does not establish that this move gave up a win.`;
@@ -18153,7 +18307,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 99;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 100;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -18681,7 +18835,7 @@ function selectContinuationLessons(timeline, rootMotifs) {
 }
 /** Each row is assessed in its own legal position. Root causes stay separate
 * so later repetitions and opponent counterplay cannot replace the lesson. */
-function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
+function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine, tablebaseEvidence) {
 	const fullReplay = replayTacticalLine(fen, line);
 	const provedPromotionOffer = rootMotifs.some((motif) => motif.id === "promotionCombination" && motif.ply === 1);
 	const promotionEpisode = provedPromotionOffer && fullReplay.slice(0, 17).some((step) => step.before.turn === fullReplay[0].before.turn && step.move.promotion);
@@ -18717,7 +18871,7 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 			unprovedPositions.add(key);
 		}
 		const suffix = legalLine.slice(index);
-		const tacticalStart = hasTacticalStart(rawSteps[index]?.fenBefore ?? "", suffix, index === 0 && rootMotifs.some((motif) => motif.id === "tacticalPreparation"));
+		const tacticalStart = hasTacticalStart(rawSteps[index]?.fenBefore ?? "", suffix, index === 0 && rootMotifs.some((motif) => motif.id === "tacticalPreparation"), tablebaseEvidence);
 		quietPlies = tacticalStart || step.before.isCheck() ? 0 : quietPlies + 1;
 		if (quietPlies >= 2 && !provedForcingEpisode) {
 			connectedPlies = index;
@@ -18786,10 +18940,13 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 			themeStepIndex: 0,
 			themeStepIndexByTheme: Object.fromEntries(normalizeThemeIds(themes).map((id) => [id, 0]))
 		};
-		const candidates = auditTacticalMotifs(rawSteps[index]?.fenBefore ?? "", suffix, toMotifEvidence(detail, source, sanLine?.slice(index)), void 0, index > 0 ? {
-			previousFen: rawSteps[index - 1]?.fenBefore,
-			previousMoveUci: replay[index - 1].uci
-		} : void 0);
+		const candidates = auditTacticalMotifs(rawSteps[index]?.fenBefore ?? "", suffix, toMotifEvidence(detail, source, sanLine?.slice(index)), void 0, {
+			tablebaseEvidence,
+			...index > 0 ? {
+				previousFen: rawSteps[index - 1]?.fenBefore,
+				previousMoveUci: replay[index - 1].uci
+			} : {}
+		});
 		for (const motif of candidates.filter((m) => m.ply === 1)) {
 			if (motif.id === "perpetualCheck" && [...evidence.values()].some((previous) => previous.id === "perpetualCheck" && previous.actor === step.before.turn && (previous.ply ?? Infinity) < index + 1 && replay.slice(previous.ply, index + 1).every((entry) => entry.before.turn !== step.before.turn || entry.after.isCheck()))) continue;
 			if (motif.id === "forcingAttack" && [...evidence.values()].some((previous) => previous.id === "forcingAttack" && previous.actor === step.before.turn && (previous.ply ?? Infinity) < index + 1)) continue;
@@ -18831,7 +18988,7 @@ function cacheKey(input) {
 }
 function classifyMistakeReviewMotifs(input) {
 	const key = cacheKey(input);
-	const cached = motifCache.get(key);
+	const cached = input.tablebaseEvidence ? void 0 : motifCache.get(key);
 	if (cached) return cached;
 	const fen = String(input.fen ?? "").trim();
 	const bestMoveUci = cleanUci(input.bestMoveUci) ?? cleanUci(input.pvUci?.[0]);
@@ -18871,27 +19028,28 @@ function classifyMistakeReviewMotifs(input) {
 	const classification = {
 		allowedMotifs: filterCompensatedRootCaptures(fenAfterPlayedMove ?? "", refutationLine, auditTacticalMotifs(fenAfterPlayedMove ?? "", refutationLine, toMotifEvidence(allowedDetail, "allowed", input.refutationSan), typeof input.cpAfter === "number" ? input.cpAfter * (fenSide(fenAfterPlayedMove ?? "") === "w" ? 1 : -1) : void 0, {
 			previousFen: fen,
-			previousMoveUci: playedMoveUci
+			previousMoveUci: playedMoveUci,
+			tablebaseEvidence: input.tablebaseEvidence
 		}), fen, playedMoveUci).map((m) => ({
 			...m,
 			source: "allowed"
 		})),
-		missedMotifs: playedTheBestMove ? [] : auditTacticalMotifs(fen, bestLine, toMotifEvidence(missedDetail, "missed", input.pvSan), typeof input.cpBefore === "number" ? input.cpBefore * (fenSide(fen) === "w" ? 1 : -1) : void 0).map((m) => ({
+		missedMotifs: playedTheBestMove ? [] : auditTacticalMotifs(fen, bestLine, toMotifEvidence(missedDetail, "missed", input.pvSan), typeof input.cpBefore === "number" ? input.cpBefore * (fenSide(fen) === "w" ? 1 : -1) : void 0, { tablebaseEvidence: input.tablebaseEvidence }).map((m) => ({
 			...m,
 			source: "missed"
 		})),
 		motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION
 	};
-	const allowedMotifs = compareBestLineTacticalDefence(fen, playedMoveUci, refutationLine, bestLine, compareImmediateTacticalDefence(fen, bestMoveUci, playedMoveUci, refutationLine[0], classification.allowedMotifs));
+	const allowedMotifs = compareBestLineTacticalDefence(fen, playedMoveUci, refutationLine, bestLine, compareImmediateTacticalDefence(fen, bestMoveUci, playedMoveUci, refutationLine[0], classification.allowedMotifs, input.tablebaseEvidence));
 	const compared = {
 		...classification,
 		allowedMotifs,
-		...refutationLine.length && fenAfterPlayedMove ? { allowedTimeline: selectContinuationLessons(filterCompensatedRootCaptures(fenAfterPlayedMove ?? "", refutationLine, buildTacticalTimeline(fenAfterPlayedMove ?? "", refutationLine, "allowed", allowedMotifs, input.refutationSan), fen, playedMoveUci), allowedMotifs) } : {},
-		...!playedTheBestMove && bestLine.length ? { missedTimeline: selectContinuationLessons(buildTacticalTimeline(fen, bestLine, "missed", classification.missedMotifs, input.pvSan), classification.missedMotifs) } : {}
+		...refutationLine.length && fenAfterPlayedMove ? { allowedTimeline: selectContinuationLessons(filterCompensatedRootCaptures(fenAfterPlayedMove ?? "", refutationLine, buildTacticalTimeline(fenAfterPlayedMove ?? "", refutationLine, "allowed", allowedMotifs, input.refutationSan, input.tablebaseEvidence), fen, playedMoveUci), allowedMotifs) } : {},
+		...!playedTheBestMove && bestLine.length ? { missedTimeline: selectContinuationLessons(buildTacticalTimeline(fen, bestLine, "missed", classification.missedMotifs, input.pvSan, input.tablebaseEvidence), classification.missedMotifs) } : {}
 	};
 	compared.allowedMotifs = selectRootConnectedLessons(fenAfterPlayedMove ?? "", refutationLine, compared.allowedMotifs, compared.allowedTimeline ?? []);
 	compared.missedMotifs = selectRootConnectedLessons(fen, bestLine, compared.missedMotifs, compared.missedTimeline ?? []);
-	motifCache.set(key, compared);
+	if (!input.tablebaseEvidence) motifCache.set(key, compared);
 	if (motifCache.size > MOTIF_CACHE_LIMIT) {
 		const oldestKey = motifCache.keys().next().value;
 		if (oldestKey) motifCache.delete(oldestKey);

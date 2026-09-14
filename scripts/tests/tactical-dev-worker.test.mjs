@@ -4,6 +4,7 @@ import { Worker } from "node:worker_threads";
 import test from "node:test";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
 import { directThreatFen, directThreatLine } from "../../src/utils/tests/fixtures/directThreatRelevance.ts";
+import { tablebaseCases } from "../../src/utils/tests/fixtures/tablebaseRelevance.ts";
 import {
   classifyLiveTacticsInWorker,
   TACTICAL_CLASSIFICATION_TIMEOUT_MS,
@@ -87,6 +88,7 @@ test(
   async (t) => {
     assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(new URL(origin).hostname));
     const cases = [
+      ...tablebaseCases.filter(row => ["EKWHC:g4f4", "EKWHC-reciprocal-draw"].includes(row.id)).map(row => ({ name: row.id, fen: row.fen, pvUci: [row.move], tablebaseEvidence: row.evidence, expectedPrimary: ["zugzwang"], expectedLabels: ["zugzwang"] })),
       { name: "discovered check suppresses its duplicate direct threat", fen: directThreatFen, pvUci: directThreatLine, expectedPrimary: ["discoveredCheck"], expectedLabels: ["discoveredCheck"] },
       { name: "quiet mixed-target fork", fen: mixedForkFen, pvUci: ["d2f3"], expectedPrimary: ["fork"] },
       { name: "mixed fork keeps its later pin", fen: mixedForkFen, pvUci: mixedForkLine, expectedPrimary: ["fork"] },

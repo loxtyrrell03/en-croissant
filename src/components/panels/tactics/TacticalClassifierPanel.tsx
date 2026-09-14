@@ -12,7 +12,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { IconCpu, IconRefresh } from "@tabler/icons-react";
-import { TacticalScanResult } from "./TacticalScanResult";
+import { TacticalEndgameResult } from "./TacticalEndgameResult";
 import { makeUci } from "chessops";
 import { Chess } from "chessops/chess";
 import { parseFen } from "chessops/fen";
@@ -33,6 +33,7 @@ import {
   LIVE_TACTICAL_SCAN_MULTIPV,
   selectLiveTacticalScanLines,
   type LiveTacticalScan,
+  type LiveTacticalScanInput,
 } from "@/utils/tacticalMotifs/liveTactics";
 import { classifyLiveTacticsInWorker } from "@/utils/tacticalMotifs/liveTacticsWorker";
 
@@ -46,7 +47,10 @@ const TACTICAL_STOP_GRACE_MS = 600;
 const TACTICAL_CANCEL_CLEANUP_MS = 35_000;
 const TACTICAL_SCAN_FALLBACK_MIN_DEPTH = 8;
 const TACTICAL_SCAN_CACHE_LIMIT = 160;
-const tacticalScanCache = new Map<string, LiveTacticalScan>();
+const tacticalScanCache = new Map<
+  string,
+  { scan: LiveTacticalScan; input: LiveTacticalScanInput }
+>();
 
 type TacticalPanelState =
   | { status: "idle"; progress: number; scan: null; error: null }
@@ -54,7 +58,13 @@ type TacticalPanelState =
   | { status: "classifying"; progress: number; scan: null; error: null }
   | { status: "startingVerifier"; progress: number; scan: null; error: null }
   | { status: "finished"; progress: number; scan: null; error: null }
-  | { status: "complete"; progress: number; scan: LiveTacticalScan; error: null }
+  | {
+      status: "complete";
+      progress: number;
+      scan: LiveTacticalScan;
+      input: LiveTacticalScanInput;
+      error: null;
+    }
   | { status: "error"; progress: number; scan: null; error: string };
 
 const INITIAL_STATE: TacticalPanelState = {
@@ -64,9 +74,9 @@ const INITIAL_STATE: TacticalPanelState = {
   error: null,
 };
 
-function rememberScan(key: string, scan: LiveTacticalScan) {
+function rememberScan(key: string, scan: LiveTacticalScan, input: LiveTacticalScanInput) {
   tacticalScanCache.delete(key);
-  tacticalScanCache.set(key, scan);
+  tacticalScanCache.set(key, { scan, input });
   while (tacticalScanCache.size > TACTICAL_SCAN_CACHE_LIMIT) {
     const oldest = tacticalScanCache.keys().next().value;
     if (!oldest) break;
@@ -163,8 +173,8 @@ function TacticalClassifierPanel({
 
     const cached = tacticalScanCache.get(scanCacheKey);
     if (cached) {
-      setState({ status: "complete", progress: 100, scan: cached, error: null });
-      onScanChange(cached);
+      setState({ status: "complete", progress: 100, ...cached, error: null });
+      onScanChange(cached.scan);
       return;
     }
 
@@ -242,41 +252,38 @@ function TacticalClassifierPanel({
       disposeListener();
       releaseEngine();
       setState({ status: "startingVerifier", progress: 99, scan: null, error: null });
-      void classifyLiveTacticsInWorker(
-        {
-          fen: position.fen,
-          pvUci: bestLine.uciMoves,
-          pvSan: bestLine.sanMoves,
-          engineName: engine.version ? `${engine.name} ${engine.version}` : engine.name,
-          depth: bestLine.depth || TACTICAL_SCAN_DEPTH,
-          previousFen: position.previousFen,
-          previousMoveUci: position.previousMoveUci,
-          variations: usableLines.map((line) => ({
-            multipv: line.multipv,
-            depth: line.depth,
-            pvUci: line.uciMoves,
-            pvSan: line.sanMoves,
-            cp:
-              line.score.value.type === "cp"
-                ? line.score.value.value * (position.fen.split(" ")[1] === "b" ? -1 : 1)
-                : null,
-            mate:
-              line.score.value.type === "mate"
-                ? line.score.value.value * (position.fen.split(" ")[1] === "b" ? -1 : 1)
-                : null,
-          })),
-        },
-        classificationController.signal,
-        () => {
-          if (isCurrentRequest())
-            setState({ status: "classifying", progress: 99, scan: null, error: null });
-        },
-      )
+      const input: LiveTacticalScanInput = {
+        fen: position.fen,
+        pvUci: bestLine.uciMoves,
+        pvSan: bestLine.sanMoves,
+        engineName: engine.version ? `${engine.name} ${engine.version}` : engine.name,
+        depth: bestLine.depth || TACTICAL_SCAN_DEPTH,
+        previousFen: position.previousFen,
+        previousMoveUci: position.previousMoveUci,
+        variations: usableLines.map((line) => ({
+          multipv: line.multipv,
+          depth: line.depth,
+          pvUci: line.uciMoves,
+          pvSan: line.sanMoves,
+          cp:
+            line.score.value.type === "cp"
+              ? line.score.value.value * (position.fen.split(" ")[1] === "b" ? -1 : 1)
+              : null,
+          mate:
+            line.score.value.type === "mate"
+              ? line.score.value.value * (position.fen.split(" ")[1] === "b" ? -1 : 1)
+              : null,
+        })),
+      };
+      void classifyLiveTacticsInWorker(input, classificationController.signal, () => {
+        if (isCurrentRequest())
+          setState({ status: "classifying", progress: 99, scan: null, error: null });
+      })
         .then((scan) => {
           if (!isCurrentRequest()) return;
           settled = true;
-          rememberScan(scanCacheKey, scan);
-          setState({ status: "complete", progress: 100, scan, error: null });
+          rememberScan(scanCacheKey, scan, input);
+          setState({ status: "complete", progress: 100, scan, input, error: null });
           onScanChange(scan);
         })
         .catch(failScan);
@@ -530,8 +537,9 @@ function TacticalClassifierPanel({
               Time-limited scan at depth {state.scan.depth}; candidate coverage may be incomplete.
             </Text>
           )}
-          <TacticalScanResult
+          <TacticalEndgameResult
             scan={state.scan}
+            input={state.input}
             lastMoveSan={position.lastMoveSan}
             onPreviewChange={onScanChange}
           />
