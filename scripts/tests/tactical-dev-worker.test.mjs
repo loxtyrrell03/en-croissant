@@ -142,6 +142,22 @@ test(
         expectedPrimary: ["discoveredCheck"],
         expectedLabels: ["discoveredCheck"],
       },
+      {
+        name: "forced mate retains x-ray support instead of an intermediate-capture headline",
+        fen: "4r1k1/pp1b1pbp/2p3p1/8/1qNp4/1P1P1Q2/P1P1RPPP/4R1K1 b - - 6 23",
+        pvUci: ["b4e1", "e2e1", "e8e1"],
+        expectedPrimary: ["mateIn2"],
+        expectedLabels: ["mateIn2", "xRayAttack"],
+        expectedArrowCount: 3,
+      },
+      {
+        name: "mating self-interference stays on the defender's actual ply",
+        fen: "8/p3NQpk/1p6/1P2p2p/6q1/6P1/P1rr1P2/5RK1 w - - 1 33",
+        pvUci: ["f7g8", "h7h6", "g8h8", "h6g5", "h8g7"],
+        expectedPrimary: ["mateIn3"],
+        expectedLabels: ["mateIn3"],
+        expectedTimeline: { id: "selfInterference", ply: 4, actor: "black" },
+      },
     ];
     const report = [];
     for (const item of cases) {
@@ -155,6 +171,12 @@ test(
         assert.deepEqual(result.scan.labels.map((label) => label.id), item.expectedLabels);
       if (item.expectedArrowCount !== undefined)
         assert.equal(result.scan.arrows.length, item.expectedArrowCount);
+      if (item.expectedTimeline) {
+        const entry = result.scan.variations[0].timeline.find(motif => motif.id === item.expectedTimeline.id);
+        assert.ok(entry);
+        assert.equal(entry.ply, item.expectedTimeline.ply);
+        assert.equal(entry.actor, item.expectedTimeline.actor);
+      }
       assert.deepEqual(
         result.modules.filter((url) =>
           /engines\.ts|unwrap\.tsx|tauri|react|mantine|@vite\/client/.test(url),

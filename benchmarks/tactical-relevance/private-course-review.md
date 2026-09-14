@@ -1,6 +1,14 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 91 / live pipeline 96
+## Current classifier: adapter 92 / live pipeline 97
+
+The [secondary-theme relevance review](secondary-theme-relevance-review.md) adds eighteen output-blind real-game puzzles across interference, defensive moves, zugzwang, x-rays, trapped pieces and advanced pawns, with 51 fresh engine searches. All-mating sentinels no longer masquerade as extra material in intermediate-capture proofs. X-ray support requires actual legal exchange geometry and independent material/mate checks; mating self-interference is shown only on the defender's actual ply. Mate remains the main lesson, with compact supporting board geometry and missed-theme timelines. Pass comparisons reject two premature zugzwang hypotheses; larger ending, trap and promotion preparations remain explicit gaps, not successful abstentions.
+
+One of 246 exact course/generated-game source/live results loses an unsupported final-capture x-ray badge; its root checking attack remains and its longer x-ray setup is still unproved. The other 245 full results, all 246 root headline lists, twenty earlier rare results, 32 priorities and 219 prior public worker headlines remain unchanged. Four of eighteen new source/live explanations change; fourteen stay unchanged, without implying accuracy.
+
+Verification: 1,657 selected tests, 797 actual-controller production-worker inputs across fourteen tests, both builds, whole-project TypeScript, ten-file lint, three service tests, two cache scenarios and ten isolated HTTP cases pass. Public worker median/p95/max is 74/201/618 ms for 292 inputs, excluding engine/UI. The common 219-input subset is 81/211/618 ms; no speedup claim. Artifact: liveTactics.worker-DbQJ1XS4.js. Final private receipts are adapter92-final-exact-replay.json, rare-theme-adapter92-final.json and adapter92-cold-http-worker.json. No owner app/package/service restart or deployment, and no native or physical UI claim. Paid data stays private; broader quiet/rare/causal/endgame gaps remain open.
+
+## Prior adapter 91 / live pipeline 96
 
 The [opening and positional review](opening-discovery-relevance-review.md) adds 39 output-blind positions: eighteen early boards from three previously frozen real games and 21 unseen positional-course roots selected by fixed SHA order across all chapters. Initial chess judgements preceded outputs. Development, exchanges, gambit recovery and pressure remain distinct from forced tactics; an apparent poisoned-bishop assumption was corrected after engine checks. Six course forcing/defensive judgements remain uncertain, not certified correct negatives.
 

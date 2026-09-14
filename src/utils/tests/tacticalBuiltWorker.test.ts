@@ -108,7 +108,14 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             bestLine: string[];
         }[];
         const drawingCases = JSON.parse(readFileSync("benchmarks/tactical-relevance/drawing-zugzwang-tablebase-verified.json", "utf8")).selected as { id: string; beforeFen: string; moveUci: string; expected: "draw" | "win" | null }[];
+        const secondary = JSON.parse(readFileSync("benchmarks/tactical-relevance/secondary-theme-stockfish-18.json", "utf8"));
         const cases = [
+            ...secondary.cases.flatMap((row: any) => [
+                {id: `secondary-source:${row.id}`, input: {fen: row.fen, pvUci: row.sourceUci, depth: 16, engineName: "Frozen source"}},
+                {id: `secondary-engine:${row.id}`, input: {fen: row.fen, pvUci: row.engineLines[0].pvUci, variations: row.engineLines, depth: 16, engineName: "Stockfish 18", previousFen: row.previousFen, previousMoveUci: row.previousMoveUci}},
+                ...(["lichess:qQG5v", "lichess:sKDBG", "lichess:SD5oo", "lichess:xxDaj"].includes(row.id) ? [{id: `secondary-root:${row.id}`, input: {fen: row.fen, pvUci: row.sourceUci.slice(0, 1), depth: 16, engineName: "Root only"}}] : []),
+            ]),
+            ...secondary.searches.map((row: any) => ({id: `secondary-probe:${row.id}`, input: {fen: row.fen, pvUci: row.lines[0].pvUci, variations: row.lines, depth: 16, engineName: "Independent decision/control"}})),
             ...[
                 { id: "checking-discovery:root-only", fen: "rnbqkbnr/pppp2pp/5p2/4P3/8/2N5/PP2QPPP/R1B1KBNR w KQkq - 0 7", pvUci: ["e5f6"] },
                 { id: "checking-discovery:captured-checker", fen: "rnbqkbnr/pppp2pp/5p2/4P3/3n4/2N5/PP2QPPP/R1B1KBNR w KQkq - 0 7", pvUci: ["e5f6"] },
@@ -803,11 +810,13 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         const rayResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         const drawingResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         const discoveryResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
+        const secondaryResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         for (const item of cases) {
             // A fresh worker never inherits the in-process proof caches.
             const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, item.input);
             const expected = buildLiveTacticalScan(item.input);
             expect({ id: item.id, scan: result.scan }).toEqual({ id: item.id, scan: expected });
+            if (item.id.startsWith("secondary-source:")) secondaryResults.set(item.id, result.scan);
             if (item.id === "counterplay:9" && result.scan.variations[0].timeline.some((motif) => motif.id === "skewer"))
                 throw new Error("The built worker advertised the mating-trap skewer payoff");
             if (item.id.startsWith("ray-liability:")) rayResults.set(item.id, result.scan);
@@ -825,7 +834,13 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(219);
+        expect(report).toHaveLength(292);
+        const selfInterference = secondaryResults.get("secondary-source:lichess:qQG5v")!;
+        expect(selfInterference.motifs[0].id).toBe("mateIn3");
+        expect(selfInterference.variations[0].timeline.find(m => m.id === "selfInterference")).toMatchObject({ply: 4, actor: "black", relevance: "secondary"});
+        const backRank = secondaryResults.get("secondary-source:lichess:SD5oo")!;
+        expect(backRank.motifs[0].id).toBe("mateIn2");
+        expect(backRank.labels.map(label => label.id)).toEqual(["mateIn2", "xRayAttack"]);
         for (const id of ["checking-discovery:root-only", "ordinary-2:ply12"]) {
             const scan = discoveryResults.get(id)!;
             expect(scan.motifs[0]).toMatchObject({ id: "discoveredCheck", value: 320, ply: 1 });

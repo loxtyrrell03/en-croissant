@@ -5850,6 +5850,7 @@ export function tacticalBoardEvidence(
             "attraction",
             "interference",
             "selfInterference",
+            "xRayAttack",
             "trappedPiece",
             "capturingDefender",
             "tacticalPreparation",
@@ -6090,7 +6091,7 @@ export function tacticalBoardEvidence(
         };
     }
     if (motif.id === "selfInterference") {
-        const proof = proveSelfInterference(step);
+        const proof = proveMatingSelfInterference(step) ?? proveSelfInterference(step);
         return proof
             ? {
                   square: makeSquare(proof.blocker),
@@ -6100,6 +6101,13 @@ export function tacticalBoardEvidence(
                   ],
               }
             : null;
+    }
+    if (motif.id === "xRayAttack") {
+        const proof = proveXRaySupport(step);
+        return proof ? { square: makeSquare(proof.receiver), arrows: [
+            { from: makeSquare(proof.slider), to: makeSquare(proof.receiver) },
+            { from: makeSquare(proof.receiver), to: makeSquare(proof.square) },
+        ] } : null;
     }
     if (motif.id === "deflection") {
         const checking = proveCheckingDeflection(step);
@@ -6974,7 +6982,10 @@ export function intermediateCaptureProof(step: TacticalReplayStep, nodeLimit = 5
             undefined,
             { allPiecesAtLeaf: true },
         );
-        if (gain.kind !== "proven") continue;
+        // An all-mating leaf is not extra material from the deferred capture.
+        // Its mate certificate owns the lesson; the sentinel must not turn an
+        // unrelated available capture into the cause of that mate.
+        if (gain.kind !== "proven" || gain.gain >= 10000) continue;
         const extra = gain.gain - Math.max(rootGain, deferredGain);
         if (extra < 90 || (best && extra <= best.extra)) continue;
         const reversed = step.before.clone();
@@ -8848,6 +8859,48 @@ type ForcedInterferenceProof = {
     gain: number;
     branches: { reply: string; replyUci: string; proof: SelfInterferenceProof }[];
 };
+
+/** An actual defensive move can interrupt its own protection of a mating
+ * square. Unlike the material certificate, even a guarded pawn matters.
+ * Compare the identical legal capture before/after the block: the exact old
+ * guard could recapture before, whereas the new capture is actual checkmate.
+ * The turn swap is a protection probe, not a legal variation or root proof. */
+export function proveMatingSelfInterference(
+    step: TacticalReplayStep,
+    nodeLimit = 512,
+): (Omit<SelfInterferenceProof, "gain"> & { mate: true }) | null {
+    if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || step.move.promotion ||
+        step.before.board.get(step.move.to) || step.after.isEnd()) return null;
+    let remaining = nodeLimit;
+    const side = step.before.turn;
+    const beforeProbe = withTurn(step.before, opposite(side));
+    for (const defender of step.before.board[side]) {
+        if (--remaining < 0) return null;
+        const guard = step.before.board.get(defender)!;
+        if (defender === step.move.from || !["bishop", "rook", "queen"].includes(guard.role)) continue;
+        for (const target of attacks(guard, defender, step.before.board.occupied).intersect(step.before.board[side])) {
+            if (--remaining < 0) return null;
+            const victim = step.after.board.get(target);
+            if (!victim || victim.color !== side || victim.role === "king" || target === step.move.to ||
+                !between(defender, target).has(step.move.to) ||
+                attacks(guard, defender, step.after.board.occupied).has(target)) continue;
+            for (const capturer of step.after.board[opposite(side)]) {
+                if (--remaining < 0) return null;
+                const capture = { from: capturer, to: target };
+                if (!step.after.isLegal(capture) || !beforeProbe.isLegal(capture)) continue;
+                const old = beforeProbe.clone();
+                old.play(capture);
+                if (!old.isLegal({ from: defender, to: target })) continue;
+                const next = step.after.clone();
+                next.play(capture);
+                if (!next.isCheckmate()) continue;
+                return { defender, target, capturer, blocker: step.move.to, mate: true,
+                    captureUci: makeUci(capture), captureSan: makeSan(step.after, capture) };
+            }
+        }
+    }
+    return null;
+}
 const forcedInterferenceCache = new Map<string, ForcedInterferenceProof | null>();
 
 /** Promote the mechanism to a root lesson only when EVERY legal check
@@ -8910,7 +8963,7 @@ export function selfInterferenceEvidence(
     step: TacticalReplayStep,
     source: TacticalMotifEvidence["source"],
 ): TacticalMotifEvidence | null {
-    const proof = proveSelfInterference(step);
+    const proof = proveMatingSelfInterference(step) ?? proveSelfInterference(step);
     if (!proof) return null;
     const side = step.before.turn === "white" ? "White" : "Black";
     return {
@@ -8920,8 +8973,8 @@ export function selfInterferenceEvidence(
         confidence: "high",
         ply: 1,
         moveUci: step.uci,
-        value: proof.gain,
-        evidence: `${step.san} blocks ${side}'s ${step.before.board.get(proof.defender)!.role} on ${makeSquare(proof.defender)} from defending the ${step.after.board.get(proof.target)!.role} on ${makeSquare(proof.target)}. ${proof.captureSan} now wins material; the guard could legally recapture before this blocking move. This explains the concession, not a tactic won by ${side}.`,
+        value: "mate" in proof ? 10000 : proof.gain,
+        evidence: `${step.san} blocks ${side}'s ${step.before.board.get(proof.defender)!.role} on ${makeSquare(proof.defender)} from defending the ${step.after.board.get(proof.target)!.role} on ${makeSquare(proof.target)}. ${proof.captureSan} ${"mate" in proof ? "is now checkmate" : "now wins material"}; the guard could legally recapture before this blocking move. This explains the concession, not a tactic won by ${side}.`,
     };
 }
 
@@ -9340,6 +9393,77 @@ export function episodeEnd(steps: TacticalReplayStep[], allowConditional = false
     return steps.length;
 }
 
+type XRaySupportProof = {
+    slider: Square;
+    receiver: Square;
+    square: Square;
+    acceptance: string;
+    recapture: string;
+    mating: boolean;
+    gain: number;
+};
+
+/** X-ray support is a concrete exchange geometry, not a label financed by
+ * profit or mate somewhere in a supplied PV. A legal capture of the offered
+ * piece must vacate the ONLY blocker on an allied slider's recapture ray.
+ * Material roots debit every friendly liability and must lose their local
+ * gain without that slider. Mating offers need independent root AND accepted
+ * branch mate proofs; their support is secondary, not an alternative headline.
+ * The slider-removal probe is not a playable variation. */
+export function proveXRaySupport(step: TacticalReplayStep, nodeLimit = 4096): XRaySupportProof | null {
+    if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || step.move.promotion || step.after.isEnd()) return null;
+    const side = step.before.turn, square = step.move.to, budget = { nodes: nodeLimit };
+    try {
+        for (const slider of step.after.board[side]) {
+            if (--budget.nodes < 0) return null;
+            const piece = step.after.board.get(slider)!;
+            if (slider === square || !["bishop", "rook", "queen"].includes(piece.role)) continue;
+            const blockers = [...between(slider, square).intersect(step.after.board.occupied)];
+            if (blockers.length !== 1) continue;
+            const receiver = blockers[0];
+            if (step.after.board.get(receiver)?.color === side) continue;
+            const acceptance = { from: receiver, to: square };
+            if (!step.after.isLegal(acceptance)) continue;
+            const accepted = step.after.clone();
+            accepted.play(acceptance);
+            const recapture = { from: slider, to: square };
+            if (!accepted.isLegal(recapture)) continue;
+            // A non-aligned bishop/rook cannot acquire support from between().
+            const recaptured = accepted.clone();
+            recaptured.play(recapture);
+            if (--budget.nodes < 0) return null;
+            // These two mate verifiers retain their own existing bounded
+            // search budgets; the exchange/geometry work uses budget above.
+            const rootMate = proveShortCheckingMate(step, Math.min(4096, nodeLimit));
+            if (rootMate) {
+                const recapStep = replayTacticalLine(makeFen(accepted.toSetup()), [makeUci(recapture)])[0];
+                if (!recapStep || (!recaptured.isCheckmate() && !proveShortCheckingMate(recapStep, Math.min(4096, nodeLimit)))) continue;
+                return { slider, receiver, square, acceptance: makeSan(step.after, acceptance), recapture: makeSan(accepted, recapture), mating: true, gain: 10000 };
+            }
+            if (!step.capture) continue;
+            const without = step.before.clone();
+            without.board.take(slider);
+            if (!without.isLegal(step.move)) continue;
+            const reduced = tacticalExchangeGain(without, step.move);
+            if (reduced <= -VALUE.king) continue;
+            const gain = participantCaptureGain(step.before, step.move, [...step.before.board[side], square], budget);
+            if (gain === null || gain < 90 || gain - reduced < 90 || !noImmediateTerminalRefutation(step.before, step.move, budget)) continue;
+            return { slider, receiver, square, acceptance: makeSan(step.after, acceptance), recapture: makeSan(accepted, recapture), mating: false, gain };
+        }
+    } catch {
+        // Partial coverage and exhausted exchange budgets never establish support.
+    }
+    return null;
+}
+
+export function xRaySupportEvidence(step: TacticalReplayStep, source: TacticalMotifEvidence["source"]): TacticalMotifEvidence | null {
+    const proof = proveXRaySupport(step);
+    if (!proof) return null;
+    return { id: "xRayAttack", label: "X-Ray Support", source, confidence: "high", ply: 1,
+        moveUci: step.uci, ...(proof.mating ? {} : { value: proof.gain }),
+        evidence: `${step.san} uses the ${step.after.board.get(proof.slider)!.role} on ${makeSquare(proof.slider)} behind the opposing ${step.after.board.get(proof.receiver)!.role} on ${makeSquare(proof.receiver)}. If ${proof.acceptance}, that piece vacates the ray and allows ${proof.recapture}${proof.mating ? ", with a separately verified forced mate" : ", preserving the material gain"}. This is support for the exchange on ${makeSquare(proof.square)}, not another attack at its eventual payoff.` };
+}
+
 function trapIsMainCause(motif: TacticalMotifEvidence, directGain: number) {
     return (
         motif.id === "trappedPiece" &&
@@ -9439,6 +9563,11 @@ export function auditTacticalMotifs(
         settled = -VALUE.king;
     }
     const candidates: TacticalMotifEvidence[] = [];
+    const xRaySupport = xRaySupportEvidence(steps[0], proposals[0]?.source ?? "available");
+    // A separately proved mate stays the headline. Its conditional exchange
+    // support is added at the actual move by the timeline, without a mate
+    // sentinel that could masquerade as another primary cause.
+    if (xRaySupport?.value !== undefined) candidates.push(xRaySupport);
     const pawnEnding = proveKpkEntry(steps[0]);
     if (pawnEnding) {
         const captures = [...new Set(pawnEnding.branches.map((branch) => branch.capture))];
@@ -9777,6 +9906,10 @@ export function auditTacticalMotifs(
         ];
     }
     for (let proposal of proposals) {
+        // Legacy x-rays were admitted solely by a profitable/mating PV and
+        // could point at an unrelated final capture. Only the local exchange
+        // certificate above (or the mating timeline) may issue this theme.
+        if (proposal.id === "xRayAttack") continue;
         // Only the certificates below may issue this ranking metadata.
         // A supplied PV label must not smuggle in a proof assertion.
         proposal = { ...proposal };
@@ -10349,6 +10482,7 @@ export function auditTacticalMotifs(
             // (removing a defender, interference, etc.) remain distinct.
             // A mate tag or cooperating PV without this proof cannot hide it.
             if (m.id === "hangingPiece" && checkingMate && m.ply === 1) return false;
+            if (m.id === "hangingPiece" && m.ply === 1 && xRaySupport?.value !== undefined) return false;
             if (
                 m.id === "attacking_undefended_piece" &&
                 candidates.some(

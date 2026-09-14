@@ -29,6 +29,7 @@ import {
     matingKingDeflectionEvidence,
     matingClearanceEvidence,
     kingInterferencePayoffEvidence,
+    xRaySupportEvidence,
 } from "./causalTactics";
 import type {
     MistakeReviewMotifClassification,
@@ -113,7 +114,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 91;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 92;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -1047,6 +1048,14 @@ export function buildTacticalTimeline(
                     relevance: "secondary",
                 });
         }
+        const xRaySupport = xRaySupportEvidence(step, source);
+        if (xRaySupport && xRaySupport.value === undefined)
+            evidence.set(`${index + 1}:xRayAttack`, {
+                ...xRaySupport,
+                ply: index + 1,
+                actor: step.before.turn,
+                relevance: "secondary",
+            });
         const matingDeflection = matingKingDeflectionEvidence(step, source);
         if (matingDeflection && !evidence.has(`${index + 1}:deflection`))
             evidence.set(`${index + 1}:deflection`, {

@@ -30,6 +30,29 @@ const markup = (value: LiveTacticalScan) =>
     </MantineProvider>,
   );
 
+test("the mate headline keeps x-ray support on the initiating row and board", () => {
+  const value = buildLiveTacticalScan({fen: "4r1k1/pp1b1pbp/2p3p1/8/1qNp4/1P1P1Q2/P1P1RPPP/4R1K1 b - - 6 23", pvUci: ["b4e1", "e2e1", "e8e1"], pvSan: ["Qxe1+", "Rxe1", "Rxe1#"], depth: 16, engineName: "Frozen real game"});
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Forcing Mate found");
+  expect(element.textContent).not.toContain("Intermediate Check");
+  expect(element.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("X-Ray Support");
+  expect(element.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Back Rank Mate");
+  expect(element.querySelector('[data-tactical-ply="3"]')?.textContent).not.toContain("X-Ray");
+  expect(value.labels.map(label => label.id)).toEqual(["mateIn2", "xRayAttack"]);
+  expect(value.arrows.map(a => a.from + a.to)).toEqual(["b4e1", "e8e2", "e2e1"]);
+  expect(previewLiveTacticalVariation(value, 1)?.labels).toEqual(value.labels);
+});
+
+test("mating self-interference is the defender's later detail, not the headline", () => {
+  const value = buildLiveTacticalScan({fen: "8/p3NQpk/1p6/1P2p2p/6q1/6P1/P1rr1P2/5RK1 w - - 1 33", pvUci: ["f7g8", "h7h6", "g8h8", "h6g5", "h8g7"], pvSan: ["Qg8+", "Kh6", "Qh8+", "Kg5", "Qxg7#"], depth: 16, engineName: "Frozen real game"});
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Forcing Mate found");
+  expect(element.querySelector('[data-tactical-ply="4"]')?.textContent).toContain("Self-Interference");
+  expect(element.querySelector('[data-tactical-ply="1"]')?.textContent).not.toContain("Self-Interference");
+  expect(value.labels.some(label => label.id === "selfInterference")).toBe(false);
+  expect(value.arrows.some(a => a.from === "g4" && a.to === "g5")).toBe(false);
+});
+
 test("the opening discovered check is the headline without borrowing a future bishop arrow", () => {
   const value = buildLiveTacticalScan({ fen: "rnbqkbnr/pppp2pp/5p2/4P3/8/2N5/PP2QPPP/R1B1KBNR w KQkq - 0 7", pvUci: ["e5f6", "g8e7", "f6e7", "d8e7"], engineName: "Frozen opening", depth: 16 });
   const element = document.createElement("div");
