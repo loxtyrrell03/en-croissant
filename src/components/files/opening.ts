@@ -35,6 +35,7 @@ const tacticalMotifEvidenceSchema = z.object({
     actor: z.enum(["white", "black"]).optional(),
     comparison: z.enum(["prevented", "persists", "reduced"]).optional(),
     comparisonEvidence: z.string().optional(),
+    alternativeCapture: z.literal(true).optional(),
 });
 
 type Sm2CardFields = {

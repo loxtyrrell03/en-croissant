@@ -19,6 +19,10 @@ export type TacticalMotifEvidence = {
     actor?: "white" | "black";
     comparison?: "prevented" | "persists" | "reduced";
     comparisonEvidence?: string;
+    /** A root missed hanging-piece capture has a comparable positive local
+     * exchange alternative in the played move. Not a proof of equal overall
+     * value or safety, and not itself an established cause of the mistake. */
+    alternativeCapture?: true;
 };
 
 export type MistakeReviewMotifClassification = {

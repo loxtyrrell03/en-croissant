@@ -162,7 +162,7 @@ export function createPhoneReviewCard(
         after,
         drop: before - after,
         explanation: tacticalExplanation
-            ? `${tacticalExplanation.primary.label}: ${tacticalExplanation.text}`
+            ? `${tacticalExplanation.primary.alternativeCapture ? tacticalExplanation.title : tacticalExplanation.primary.label}: ${tacticalExplanation.text}`
             : `Keep the position's chances with ${best.sanMoves[0] ?? best.uciMoves[0]}. Compare the best line with the reply to ${move.san}.`,
         createdAt: now,
         due: now,

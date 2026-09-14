@@ -34,6 +34,7 @@ import {
     kingInterferencePayoffEvidence,
     xRaySupportEvidence,
 } from "./causalTactics";
+import { qualifyComparableCaptureChoice } from "./captureChoice";
 import type {
     MistakeReviewMotifClassification,
     PositionTacticalMotifClassification,
@@ -120,7 +121,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 104;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 105;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -692,10 +693,16 @@ function isConditionalMaterial(motif: TacticalMotifEvidence | undefined) {
     return Boolean(motif && (motif.ply ?? 0) > 1 && !MATE_MOTIF_PATTERN.test(motif.id));
 }
 
+function isAlternativeCapture(motif: TacticalMotifEvidence | undefined) {
+    return motif?.source === "missed" && motif.id === "hangingPiece" &&
+        motif.ply === 1 && motif.alternativeCapture === true;
+}
+
 /** A post-move tactic is not automatically a newly caused one. */
 export function tacticalMotifPerspective(motif: TacticalMotifEvidence) {
     if (motif.source === "missed")
-        return isConditionalMaterial(motif) ? "Continuation idea" : "Missed opportunity";
+        return isAlternativeCapture(motif) ? "Capture choice" :
+            isConditionalMaterial(motif) ? "Continuation idea" : "Missed opportunity";
     if (motif.source === "available") return "Available tactic";
     if (motif.comparison === "persists") return "Existing danger";
     if (motif.comparison === "reduced") return "More costly";
@@ -705,6 +712,7 @@ export function tacticalMotifPerspective(motif: TacticalMotifEvidence) {
 function isImmediateLesson(motif: TacticalMotifEvidence | undefined) {
     return Boolean(
         motif &&
+        !isAlternativeCapture(motif) &&
         motif.ply === 1 &&
         motif.confidence !== "low" &&
         ((motif.value ?? 0) >= 100 ||
@@ -762,7 +770,8 @@ function chooseMistakeReviewTacticalExplanation({
     if (!allowed && !missed) return null;
     // A proved root lesson must not lose to a motif that only appears after
     // several conditional PV replies. Preserve verified mating consequences.
-    const allowedRootOverConditional = allowed?.ply === 1 && isConditionalMaterial(missed);
+    const allowedRootOverConditional = allowed?.ply === 1 &&
+        (isConditionalMaterial(missed) || isAlternativeCapture(missed));
 
     if (
         missed &&
@@ -773,6 +782,14 @@ function chooseMistakeReviewTacticalExplanation({
             (missed.ply === 1 && isConditionalMaterial(allowed)) ||
             (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))
     ) {
+        if (isAlternativeCapture(missed)) {
+            return {
+                title: "Capture in the better line",
+                text: missed.comparisonEvidence ?? "Both moves have comparable immediate captures. The capture alone is not a verified explanation of why the move was worse.",
+                source: "missed",
+                primary: missed,
+            };
+        }
         if (isConditionalMaterial(missed)) {
             return {
                 title: "Tactic in the better line",
@@ -1352,7 +1369,7 @@ export function classifyMistakeReviewMotifs(
         }
     }
 
-    const classification = {
+    const classification: MistakeReviewMotifClassification = {
         allowedMotifs: filterCompensatedRootCaptures(
             fenAfterPlayedMove ?? "",
             refutationLine,
@@ -1382,6 +1399,9 @@ export function classifyMistakeReviewMotifs(
         motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
     } satisfies MistakeReviewMotifClassification;
 
+    classification.missedMotifs = qualifyComparableCaptureChoice(
+        fen, bestMoveUci, playedMoveUci, classification.missedMotifs,
+    );
     const allowedMotifs = compareBestLineTacticalDefence(
         fen,
         playedMoveUci,

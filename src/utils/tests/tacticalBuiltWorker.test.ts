@@ -90,6 +90,32 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
     }
 }
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("fixed whole-game boards keep their source, best and actual-response meanings in the production worker", async () => {
+    const sample = JSON.parse(readFileSync("benchmarks/tactical-relevance/quiet-game-context-development.json", "utf8"));
+    const engine = JSON.parse(readFileSync("benchmarks/tactical-relevance/quiet-game-context-stockfish-18.json", "utf8"));
+    const report = [];
+    for (const row of sample.cases) {
+        const best = engine.searches.find((s: any) => s.id === `${row.id}:best`);
+        const reply = engine.searches.find((s: any) => s.id === `${row.id}:reply`);
+        const inputs = [
+            { fen: row.fen, pvUci: row.sourceUci, previousFen: row.previousFen, previousMoveUci: row.previousMoveUci },
+            { fen: row.fen, pvUci: best.lines[0].pvUci, variations: best.lines, previousFen: row.previousFen, previousMoveUci: row.previousMoveUci },
+            { fen: reply.fen, pvUci: reply.lines[0].pvUci, variations: reply.lines, previousFen: row.fen, previousMoveUci: row.sourceUci[0] },
+        ];
+        for (const [index, partial] of inputs.entries()) {
+            const input = { ...partial, depth: 16, engineName: "Public game audit" };
+            const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+            expect(result.scan).toEqual(buildLiveTacticalScan(input));
+            expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+            expect(result.startupMs).toBeLessThan(TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
+            report.push({ id: row.id, lane: ["source", "best", "response"][index], elapsedMs: result.elapsedMs,
+                startupMs: result.startupMs, classificationMs: result.classificationMs, primary: result.scan.motifs.map(m => m.id) });
+        }
+    }
+    expect(report).toHaveLength(63);
+    if (process.env.TACTICAL_GAME_WORKER_REPORT) writeFileSync(process.env.TACTICAL_GAME_WORKER_REPORT, JSON.stringify({ scope: "Production controller-worker parity for the 21 new public game contexts. Stability is not accuracy; timings exclude the engine and rendered UI.", cases: report }, null, 2), { flag: "wx" });
+}, 120000);
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_INTERFERENCE_AUDIT_INPUT)("new private root and secondary mating mechanisms survive the actual controller", async () => {
     const audit = JSON.parse(readFileSync(process.env.TACTICAL_INTERFERENCE_AUDIT_INPUT!, "utf8"));
     const rows = audit.results.flatMap((group: any) => group.cases);

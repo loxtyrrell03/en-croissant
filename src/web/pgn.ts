@@ -316,7 +316,9 @@ function buildWebMove({
     const ply = previousPly + 1;
     const webMove: WebMove = {
         ply,
-        color: ply % 2 === 1 ? "white" : "black",
+        // Ply is the index within this imported line, not the game's absolute
+        // move count. FEN-started games and variations may begin with Black.
+        color: position.turn,
         san,
         uci,
         fenBefore,

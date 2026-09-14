@@ -1,6 +1,12 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 104 / live pipeline 109
+## Current classifier: adapter 105 / live pipeline 110
+
+The [capture-choice relevance review](capture-choice-relevance-review.md) adds 21 fixed boards from four public games across openings, quiet positions, exchanges and endings, with initial judgements before output and 127 fresh engine searches. A generic missed hanging-piece capture is qualified when the played move has a comparable or larger positive local exchange; this is not equal-position or causal proof. Independently supported opponent lessons retain priority, and save/reload, desktop/phone timelines and shared-service explanations preserve the qualification. A Black-started PGN ownership defect is corrected using the actual legal turn rather than local move-index parity.
+
+All 246 private source/live full results, twenty rare results and 32 frozen priorities remain unchanged, not certified accurate. The linked review records 2,092 selected passing tests, 1,379 production-controller inputs, twelve actual React/Chrome groups, 81 cold-HTTP cases and the unrelated pre-existing stats wording failure in the wider PGN-consumer run. The connected capture-choice mechanism, nature-classifier disagreements and broader accuracy/native-runtime gaps remain open. No owner app/service restart or deployment; paid material stays private.
+
+## Prior adapter 104 / live pipeline 109
 
 The [quiet-mate relevance review](quiet-mate-relevance-review.md) records PV-independent quiet mating preparations, removal of a mating-backed fork badge, and stable root board arrows with independently proved interference support. Nine output-blind real Lichess games span pawn, bishop, piece and rook endings, a middlegame and longer-mate controls. Three real root-only mate-in-three lessons are recovered or corrected; the three mate-in-four roots remain explicit coverage gaps. Initial chess judgements precede output, retained adapter-103 inputs reproduce the defects, and 203 fresh engine searches validate complete short-mate certificates and contrary defences. The proof budget and production deadlines are unchanged.
 

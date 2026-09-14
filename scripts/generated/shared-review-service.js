@@ -2945,7 +2945,7 @@ function buildWebMove({ child, position, fenBefore, previousPly, gameIndex, warn
 	const ply = previousPly + 1;
 	const webMove = {
 		ply,
-		color: ply % 2 === 1 ? "white" : "black",
+		color: position.turn,
 		san,
 		uci,
 		fenBefore,
@@ -18464,10 +18464,35 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 	return null;
 }
 //#endregion
+//#region src/utils/tacticalMotifs/captureChoice.ts
+function capturedPiece(step) {
+	const square = step.before.board.has(step.move.to) ? step.move.to : step.move.to + (step.before.turn === "white" ? -8 : 8);
+	return `the ${step.before.board.get(square)?.role} on ${makeSquare(square)}`;
+}
+/** Compare only the two capture-square exchanges, not whole-position safety.
+* This can disqualify a generic capture as the established reason for choosing
+* one move over another; it cannot prove the moves equally good or replace an
+* independently verified fork, pin, mate, or other connected mechanism. */
+function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
+	if (!bestMove || !playedMove || bestMove === playedMove || !motifs.some((motif) => motif.source === "missed" && motif.id === "hangingPiece" && motif.ply === 1 && motif.moveUci === bestMove && !motif.verifiedCombination)) return motifs;
+	const best = replayTacticalLine(fen, [bestMove])[0];
+	const played = replayTacticalLine(fen, [playedMove])[0];
+	if (!best || !played || !best.capture || !played.capture || best.move.promotion || played.move.promotion) return motifs;
+	const bestGain = tacticalExchangeGain(best.before, best.move);
+	const playedGain = tacticalExchangeGain(played.before, played.move);
+	if (bestGain <= 0 || playedGain <= 0 || bestGain - playedGain >= 90) return motifs;
+	const comparison = Math.abs(bestGain - playedGain) < 90 ? "Their immediate exchanges are comparable" : "Your move has the larger immediate exchange gain";
+	return motifs.map((motif) => motif.source === "missed" && motif.id === "hangingPiece" && motif.ply === 1 && motif.moveUci === bestMove && !motif.verifiedCombination ? {
+		...motif,
+		alternativeCapture: true,
+		comparisonEvidence: `${best.san} captures ${capturedPiece(best)}; ${played.san} captures ${capturedPiece(played)}. ${comparison}, so the capture alone is not a verified explanation of why the move was worse.`
+	} : motif);
+}
+//#endregion
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 104;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 105;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -18887,8 +18912,11 @@ function selectImportantTacticalMotifs(motifs, limit = 3) {
 function isConditionalMaterial(motif) {
 	return Boolean(motif && (motif.ply ?? 0) > 1 && !MATE_MOTIF_PATTERN.test(motif.id));
 }
+function isAlternativeCapture(motif) {
+	return motif?.source === "missed" && motif.id === "hangingPiece" && motif.ply === 1 && motif.alternativeCapture === true;
+}
 function isImmediateLesson(motif) {
-	return Boolean(motif && motif.ply === 1 && motif.confidence !== "low" && ((motif.value ?? 0) >= 100 || motif.id === "perpetualCheck" || motif.verifiedCombination === true && motif.confidence === "high" && (motif.value ?? 0) > 0 && ["fork", "forkPreparation"].includes(motif.id)));
+	return Boolean(motif && !isAlternativeCapture(motif) && motif.ply === 1 && motif.confidence !== "low" && ((motif.value ?? 0) >= 100 || motif.id === "perpetualCheck" || motif.verifiedCombination === true && motif.confidence === "high" && (motif.value ?? 0) > 0 && ["fork", "forkPreparation"].includes(motif.id)));
 }
 function buildMistakeReviewTacticalExplanation(input) {
 	const explanation = chooseMistakeReviewTacticalExplanation(input);
@@ -18908,8 +18936,14 @@ function chooseMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs })
 	const allowed = selectImportantTacticalMotifs(allowedMotifs, 1)[0];
 	const missed = selectImportantTacticalMotifs(missedMotifs, 1)[0];
 	if (!allowed && !missed) return null;
-	const allowedRootOverConditional = allowed?.ply === 1 && isConditionalMaterial(missed);
+	const allowedRootOverConditional = allowed?.ply === 1 && (isConditionalMaterial(missed) || isAlternativeCapture(missed));
 	if (missed && !allowedRootOverConditional && (!allowed || !allowed.comparison && isImmediateLesson(missed) || allowed.comparison === "persists" || missed.ply === 1 && isConditionalMaterial(allowed) || (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))) {
+		if (isAlternativeCapture(missed)) return {
+			title: "Capture in the better line",
+			text: missed.comparisonEvidence ?? "Both moves have comparable immediate captures. The capture alone is not a verified explanation of why the move was worse.",
+			source: "missed",
+			primary: missed
+		};
 		if (isConditionalMaterial(missed)) return {
 			title: "Tactic in the better line",
 			text: `In the displayed continuation after the better move, ${missed.evidence} This later idea depends on the replies shown; it is not a verified explanation of what the first move missed.`,
@@ -19200,6 +19234,7 @@ function classifyMistakeReviewMotifs(input) {
 		})),
 		motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION
 	};
+	classification.missedMotifs = qualifyComparableCaptureChoice(fen, bestMoveUci, playedMoveUci, classification.missedMotifs);
 	const allowedMotifs = compareBestLineTacticalDefence(fen, playedMoveUci, refutationLine, bestLine, compareImmediateTacticalDefence(fen, bestMoveUci, playedMoveUci, refutationLine[0], classification.allowedMotifs, input.tablebaseEvidence));
 	const compared = {
 		...classification,
@@ -19298,7 +19333,7 @@ function createPhoneReviewCard(game, index, player, best, reply, now = Date.now(
 		before,
 		after,
 		drop: before - after,
-		explanation: tacticalExplanation ? `${tacticalExplanation.primary.label}: ${tacticalExplanation.text}` : `Keep the position's chances with ${best.sanMoves[0] ?? best.uciMoves[0]}. Compare the best line with the reply to ${move.san}.`,
+		explanation: tacticalExplanation ? `${tacticalExplanation.primary.alternativeCapture ? tacticalExplanation.title : tacticalExplanation.primary.label}: ${tacticalExplanation.text}` : `Keep the position's chances with ${best.sanMoves[0] ?? best.uciMoves[0]}. Compare the best line with the reply to ${move.san}.`,
 		createdAt: now,
 		due: now,
 		streak: 0,

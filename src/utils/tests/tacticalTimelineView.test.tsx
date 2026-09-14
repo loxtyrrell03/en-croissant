@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { expect, test } from "vitest";
 import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLineExplanation";
-import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
+import { classifyPositionTacticalMotifs, classifyMistakeReviewMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 import { trappedRookFen, trappedRookLine } from "./fixtures/trapRelevance";
 import { counterplayFen, counterplayLine } from "./fixtures/tacticalCounterplay";
@@ -12,6 +12,18 @@ import { promotionClearanceFen, promotionClearanceLine } from "./fixtures/promot
 import { matingMechanismExamples } from "./fixtures/matingMechanismRelevance";
 import { promotionCounterplayBase, promotionCounterplayEngineLine } from "./fixtures/promotionCounterplay";
 import { directMaterialPayoffCases } from "./fixtures/directMaterialPayoff";
+
+test("the better-line timeline preserves a comparable capture's qualified meaning", () => {
+  const result = classifyMistakeReviewMotifs({ fen: "1rr3k1/5ppp/2B1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 b - - 0 21",
+    bestMoveUci: "c8c6", playedMoveUci: "f5g4", pvUci: ["c8c6", "g4e5", "c6c2"], refutationUci: ["c6e4"] });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={["Rxc6", "Ne5", "Rxc2"]} motifs={result.missedTimeline ?? []} /></MantineProvider>);
+  const root = container.querySelector('[data-tactical-ply="1"]')!;
+  expect(root.textContent).toContain("Capture choice");
+  expect(root.textContent).toContain("Rxc6 captures the bishop on c6; fxg4 captures the knight on g4");
+  expect(root.textContent).not.toContain("Hanging Piece");
+  expect(container.querySelector("details")?.hasAttribute("open")).toBe(false);
+});
 
 test.each(directMaterialPayoffCases)("$id renders one mechanism and its later payoff, not another hanging-piece lesson", row => {
   const result = classifyPositionTacticalMotifs(row);

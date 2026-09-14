@@ -6495,8 +6495,9 @@ function MistakeReviewGameInfoPanel({
                   size="xs"
                   color={tacticalMotifColor(motif.id)}
                   variant={motif.source === "allowed" ? "filled" : "light"}
+                  styles={motif.alternativeCapture ? { root: { height: "auto", maxWidth: "100%" }, label: { whiteSpace: "normal", overflowWrap: "anywhere", lineHeight: 1.4, textAlign: "center" } } : undefined}
                 >
-                  {tacticalMotifPerspective(motif)} · {motif.label}
+                  {tacticalMotifPerspective(motif)}{motif.alternativeCapture ? "" : ` · ${motif.label}`}
                 </Badge>
               </Tooltip>
             ))}

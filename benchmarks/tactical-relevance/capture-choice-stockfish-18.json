@@ -1,0 +1,3282 @@
+{
+  "engine": "Stockfish 18, one thread, 32 MB hash, depth 16",
+  "scope": "Fresh engine searches of the selected public Lichess game boards. Scores are full-position estimates from the side to move, not certified local material gains or human primary-theme labels.",
+  "sourceSha256": "6cc891d44105db785b9b254676764e147f8516b9f13153f171d020d696284eb8",
+  "searches": [
+    {
+      "id": "capture-choice:root",
+      "fen": "1rr3k1/5ppp/2B1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 b - - 0 21",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c8c6",
+            "g4e5",
+            "c6c2",
+            "e1b1",
+            "h7h6",
+            "e5f3",
+            "b8b4",
+            "b1d1",
+            "g7g5",
+            "f3d4",
+            "c2b2",
+            "d4e6",
+            "f7e6",
+            "d1b1",
+            "b2c2"
+          ],
+          "pvSan": [
+            "Rxc6",
+            "Ne5",
+            "Rxc2",
+            "Reb1",
+            "h6",
+            "Nf3",
+            "Rb4",
+            "Rd1",
+            "g5",
+            "Nd4",
+            "Rb2",
+            "Nxe6",
+            "fxe6",
+            "Rdb1",
+            "Rc2"
+          ],
+          "cp": -151,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "f5g4",
+            "c6e4",
+            "c8c5",
+            "a2a4",
+            "c5a5",
+            "e1d1",
+            "g7g6",
+            "d1d4",
+            "g8g7",
+            "g1f1",
+            "e6f5"
+          ],
+          "pvSan": [
+            "fxg4",
+            "Be4",
+            "Rc5",
+            "a4",
+            "Ra5",
+            "Red1",
+            "g6",
+            "Rd4",
+            "Kg7",
+            "Kf1",
+            "Bf5"
+          ],
+          "cp": -419,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "b8b6",
+            "g4e5",
+            "f7f6",
+            "c6d7",
+            "e6d7",
+            "e5d7",
+            "b6d6",
+            "d7f6",
+            "g8f7",
+            "f6d7",
+            "d6d7",
+            "c2c4",
+            "d7a7",
+            "a2a4",
+            "c8b8",
+            "a1b1"
+          ],
+          "pvSan": [
+            "Rb6",
+            "Ne5",
+            "f6",
+            "Bd7",
+            "Bxd7",
+            "Nxd7",
+            "Rd6",
+            "Nxf6+",
+            "Kf7",
+            "Nd7",
+            "Rxd7",
+            "c4",
+            "Ra7",
+            "a4",
+            "Rb8",
+            "Rab1"
+          ],
+          "cp": -473,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6",
+      "fen": "1rr3k1/5ppp/2B1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 b - - 0 21",
+      "searchMove": "c8c6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c8c6",
+            "g4e5",
+            "c6c2",
+            "e1b1",
+            "g7g6",
+            "h2h3",
+            "g8g7",
+            "e5f3",
+            "b8b4",
+            "b1d1",
+            "g7f6",
+            "d1d2",
+            "c2d2",
+            "f3d2",
+            "g6g5",
+            "g1f1",
+            "e6c8",
+            "f1e1"
+          ],
+          "pvSan": [
+            "Rxc6",
+            "Ne5",
+            "Rxc2",
+            "Reb1",
+            "g6",
+            "h3",
+            "Kg7",
+            "Nf3",
+            "Rb4",
+            "Rd1",
+            "Kf6",
+            "Rd2",
+            "Rxd2",
+            "Nxd2",
+            "g5",
+            "Kf1",
+            "Bc8",
+            "Ke1"
+          ],
+          "cp": -137,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:a1b1",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "a1b1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a1b1",
+            "f5g4",
+            "b1b2",
+            "c6a6",
+            "c2c4",
+            "g8f8",
+            "e1e2",
+            "a6b6",
+            "f2f3",
+            "g4f3",
+            "g2f3",
+            "g7g6",
+            "g1f2"
+          ],
+          "pvSan": [
+            "Rab1",
+            "fxg4",
+            "Rb2",
+            "Ra6",
+            "c4",
+            "Kf8",
+            "Ree2",
+            "Rab6",
+            "f3",
+            "gxf3",
+            "gxf3",
+            "g6",
+            "Kf2"
+          ],
+          "cp": -284,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:a1c1",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "a1c1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a1c1",
+            "f5g4",
+            "c2c4",
+            "g7g6",
+            "g1f1",
+            "c6c5",
+            "c1c2",
+            "b8a8",
+            "c2d2",
+            "c5h5",
+            "f1g1",
+            "h5a5"
+          ],
+          "pvSan": [
+            "Rac1",
+            "fxg4",
+            "c4",
+            "g6",
+            "Kf1",
+            "Rc5",
+            "Rc2",
+            "Ra8",
+            "Rd2",
+            "Rh5",
+            "Kg1",
+            "Rha5"
+          ],
+          "cp": -301,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:a1d1",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "a1d1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a1d1",
+            "f5g4",
+            "c2c4",
+            "c6a6",
+            "d1d2",
+            "h7h5",
+            "g1f1",
+            "h5h4",
+            "e1e2"
+          ],
+          "pvSan": [
+            "Rad1",
+            "fxg4",
+            "c4",
+            "Ra6",
+            "Rd2",
+            "h5",
+            "Kf1",
+            "h4",
+            "Ree2"
+          ],
+          "cp": -264,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:e1b1",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1b1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1b1",
+            "f5g4",
+            "a2a4",
+            "c6c2",
+            "b3b4",
+            "e6a2",
+            "b1c1",
+            "c2c1",
+            "a1c1",
+            "g8f8",
+            "b4b5",
+            "f8e7",
+            "c1a1",
+            "a2d5",
+            "a1b1",
+            "b8a8",
+            "b5b6",
+            "d5b7",
+            "b1a1",
+            "h7h6",
+            "a4a5",
+            "g7g6",
+            "a1e1",
+            "e7f6"
+          ],
+          "pvSan": [
+            "Reb1",
+            "fxg4",
+            "a4",
+            "Rxc2",
+            "b4",
+            "Ba2",
+            "Rc1",
+            "Rxc1+",
+            "Rxc1",
+            "Kf8",
+            "b5",
+            "Ke7",
+            "Ra1",
+            "Bd5",
+            "Rb1",
+            "Ra8",
+            "b6",
+            "Bb7",
+            "Ra1",
+            "h6",
+            "a5",
+            "g6",
+            "Re1+",
+            "Kf6"
+          ],
+          "cp": -277,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:e1c1",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1c1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1c1",
+            "f5g4",
+            "c2c4",
+            "c6a6",
+            "c4c5",
+            "g8f8",
+            "h2h3",
+            "g4h3",
+            "c5c6",
+            "f8e7",
+            "c6c7",
+            "b8c8",
+            "b3b4",
+            "a6a7",
+            "a2a4",
+            "c8c7"
+          ],
+          "pvSan": [
+            "Rec1",
+            "fxg4",
+            "c4",
+            "Ra6",
+            "c5",
+            "Kf8",
+            "h3",
+            "gxh3",
+            "c6",
+            "Ke7",
+            "c7",
+            "Rc8",
+            "b4",
+            "Ra7",
+            "a4",
+            "Rcxc7"
+          ],
+          "cp": -288,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:e1d1",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1d1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1d1",
+            "f5g4",
+            "c2c4",
+            "g7g6",
+            "g1f1",
+            "c6c5",
+            "d1d2",
+            "c5h5",
+            "a1c1",
+            "g8f8",
+            "f1g1",
+            "f8e7",
+            "c1d1",
+            "b8c8",
+            "a2a4",
+            "c8b8",
+            "d2b2",
+            "h5c5"
+          ],
+          "pvSan": [
+            "Red1",
+            "fxg4",
+            "c4",
+            "g6",
+            "Kf1",
+            "Rc5",
+            "Rd2",
+            "Rh5",
+            "Rc1",
+            "Kf8",
+            "Kg1",
+            "Ke7",
+            "Rcd1",
+            "Rc8",
+            "a4",
+            "Rb8",
+            "Rb2",
+            "Rc5"
+          ],
+          "cp": -289,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:e1f1",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1f1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1f1",
+            "f5g4",
+            "c2c4",
+            "h7h5",
+            "f2f3",
+            "g4f3",
+            "f1f3",
+            "c6a6",
+            "g1f2",
+            "a6a3",
+            "f3c3",
+            "b8a8",
+            "f2e3",
+            "h5h4",
+            "e3d4",
+            "a3a2",
+            "a1a2",
+            "a8a2"
+          ],
+          "pvSan": [
+            "Rf1",
+            "fxg4",
+            "c4",
+            "h5",
+            "f3",
+            "gxf3",
+            "Rxf3",
+            "Ra6",
+            "Kf2",
+            "Ra3",
+            "Rc3",
+            "Rba8",
+            "Ke3",
+            "h4",
+            "Kd4",
+            "Rxa2",
+            "Rxa2",
+            "Rxa2"
+          ],
+          "cp": -285,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:e1e2",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1e2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1e2",
+            "f5g4",
+            "a2a4",
+            "g7g6",
+            "e2d2",
+            "h7h5",
+            "f2f3",
+            "g4f3",
+            "g2f3",
+            "g6g5",
+            "a1a3",
+            "g8h7",
+            "a4a5"
+          ],
+          "pvSan": [
+            "Re2",
+            "fxg4",
+            "a4",
+            "g6",
+            "Rd2",
+            "h5",
+            "f3",
+            "gxf3",
+            "gxf3",
+            "g5",
+            "Ra3",
+            "Kh7",
+            "a5"
+          ],
+          "cp": -291,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:e1e3",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1e3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1e3",
+            "f5g4",
+            "c2c4",
+            "g8f8",
+            "f2f3",
+            "g4f3",
+            "g2f3",
+            "c6d6",
+            "a2a4",
+            "e6c8",
+            "g1f2",
+            "d6d2",
+            "f2g3",
+            "d2b2",
+            "a1d1"
+          ],
+          "pvSan": [
+            "Re3",
+            "fxg4",
+            "c4",
+            "Kf8",
+            "f3",
+            "gxf3",
+            "gxf3",
+            "Rd6",
+            "a4",
+            "Bc8",
+            "Kf2",
+            "Rd2+",
+            "Kg3",
+            "Rb2",
+            "Rd1"
+          ],
+          "cp": -276,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:e1e4",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1e4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1e4",
+            "f5e4",
+            "g4e3",
+            "f7f5",
+            "c2c4",
+            "f5f4",
+            "e3d1",
+            "c6d6",
+            "d1c3",
+            "b8d8",
+            "a1e1",
+            "d6d4",
+            "h2h4",
+            "e6g4",
+            "c3e4",
+            "d4d1",
+            "e1d1",
+            "g4d1"
+          ],
+          "pvSan": [
+            "Re4",
+            "fxe4",
+            "Ne3",
+            "f5",
+            "c4",
+            "f4",
+            "Nd1",
+            "Rd6",
+            "Nc3",
+            "Rbd8",
+            "Re1",
+            "Rd4",
+            "h4",
+            "Bg4",
+            "Nxe4",
+            "Rd1",
+            "Rxd1",
+            "Bxd1"
+          ],
+          "cp": -476,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:e1e5",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1e5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1e5",
+            "f5g4",
+            "c2c4",
+            "c6d6",
+            "e5b5",
+            "b8d8",
+            "f2f3",
+            "g4f3",
+            "g2f3",
+            "e6d7",
+            "b5c5",
+            "d8b8",
+            "g1f2",
+            "d7c6",
+            "a1e1",
+            "g8f8",
+            "e1e2",
+            "g7g6",
+            "e2e3",
+            "h7h5"
+          ],
+          "pvSan": [
+            "Re5",
+            "fxg4",
+            "c4",
+            "Rd6",
+            "Rb5",
+            "Rbd8",
+            "f3",
+            "gxf3",
+            "gxf3",
+            "Bd7",
+            "Rc5",
+            "Rb8",
+            "Kf2",
+            "Bc6",
+            "Re1",
+            "Kf8",
+            "Re2",
+            "g6",
+            "Re3",
+            "h5"
+          ],
+          "cp": -275,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:e1e6",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1e6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1e6",
+            "f7e6",
+            "g4e3",
+            "c6c3",
+            "g2g3",
+            "g7g5",
+            "a1c1",
+            "b8a8",
+            "a2a4",
+            "a8b8",
+            "c1a1",
+            "f5f4",
+            "e3c4",
+            "c3c2",
+            "a4a5",
+            "c2c3",
+            "a5a6",
+            "b8a8"
+          ],
+          "pvSan": [
+            "Rxe6",
+            "fxe6",
+            "Ne3",
+            "Rc3",
+            "g3",
+            "g5",
+            "Rc1",
+            "Ra8",
+            "a4",
+            "Rb8",
+            "Ra1",
+            "f4",
+            "Nc4",
+            "Rxc2",
+            "a5",
+            "Rc3",
+            "a6",
+            "Ra8"
+          ],
+          "cp": -85,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:g1f1",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "g1f1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g1f1",
+            "f5g4",
+            "c2c4",
+            "c6a6",
+            "f1e2",
+            "e6f5",
+            "e2e3",
+            "g8f8",
+            "e3d4",
+            "a6h6",
+            "e1e5",
+            "f5d7",
+            "d4c3",
+            "h6h2",
+            "b3b4"
+          ],
+          "pvSan": [
+            "Kf1",
+            "fxg4",
+            "c4",
+            "Ra6",
+            "Ke2",
+            "Bf5",
+            "Ke3",
+            "Kf8",
+            "Kd4",
+            "Rh6",
+            "Re5",
+            "Bd7",
+            "Kc3",
+            "Rxh2",
+            "b4"
+          ],
+          "cp": -273,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:g1h1",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "g1h1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g1h1",
+            "f5g4",
+            "c2c4",
+            "c6a6",
+            "f2f3",
+            "g4f3",
+            "g2f3",
+            "f7f6",
+            "h2h4",
+            "g8f7",
+            "h1g2",
+            "h7h5",
+            "g2f2"
+          ],
+          "pvSan": [
+            "Kh1",
+            "fxg4",
+            "c4",
+            "Ra6",
+            "f3",
+            "gxf3",
+            "gxf3",
+            "f6",
+            "h4",
+            "Kf7",
+            "Kg2",
+            "h5",
+            "Kf2"
+          ],
+          "cp": -304,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:a2a3",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "a2a3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a2a3",
+            "f5g4",
+            "e1e2",
+            "g8f8",
+            "a3a4",
+            "e6f5",
+            "e2d2",
+            "f5c2",
+            "a4a5",
+            "c2f5",
+            "b3b4",
+            "c6a6",
+            "d2b2",
+            "f5d3",
+            "h2h3",
+            "g4h3"
+          ],
+          "pvSan": [
+            "a3",
+            "fxg4",
+            "Re2",
+            "Kf8",
+            "a4",
+            "Bf5",
+            "Rd2",
+            "Bxc2",
+            "a5",
+            "Bf5",
+            "b4",
+            "Ra6",
+            "Rb2",
+            "Bd3",
+            "h3",
+            "gxh3"
+          ],
+          "cp": -325,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:a2a4",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "a2a4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a2a4",
+            "f5g4",
+            "a1a2",
+            "f7f6",
+            "f2f3",
+            "g4f3",
+            "g2f3",
+            "c6a6"
+          ],
+          "pvSan": [
+            "a4",
+            "fxg4",
+            "Ra2",
+            "f6",
+            "f3",
+            "gxf3",
+            "gxf3",
+            "Ra6"
+          ],
+          "cp": -289,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:c2c3",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "c2c3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c2c3",
+            "f5g4",
+            "c3c4",
+            "c6a6",
+            "g1f1",
+            "g8f8",
+            "e1d1",
+            "e6f5",
+            "f1e2",
+            "a6h6",
+            "e2e3",
+            "h6h2",
+            "e3f4",
+            "f5c8",
+            "f4g3",
+            "h2h5",
+            "d1d8",
+            "f8e7",
+            "d8h8",
+            "h5a5",
+            "h8h7"
+          ],
+          "pvSan": [
+            "c3",
+            "fxg4",
+            "c4",
+            "Ra6",
+            "Kf1",
+            "Kf8",
+            "Red1",
+            "Bf5",
+            "Ke2",
+            "Rh6",
+            "Ke3",
+            "Rxh2",
+            "Kf4",
+            "Bc8",
+            "Kg3",
+            "Rh5",
+            "Rd8+",
+            "Ke7",
+            "Rh8",
+            "Ra5",
+            "Rxh7"
+          ],
+          "cp": -292,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:c2c4",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "c2c4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c2c4",
+            "f5g4",
+            "e1e5",
+            "g8f8",
+            "g1f1",
+            "c6b6",
+            "f1e2",
+            "b8a8",
+            "f2f4",
+            "g4f3",
+            "g2f3",
+            "a8a3",
+            "h2h4",
+            "b6a6",
+            "e2d3",
+            "a3a2",
+            "a1a2",
+            "a6a2",
+            "b3b4",
+            "f8e7"
+          ],
+          "pvSan": [
+            "c4",
+            "fxg4",
+            "Re5",
+            "Kf8",
+            "Kf1",
+            "Rcb6",
+            "Ke2",
+            "Ra8",
+            "f4",
+            "gxf3+",
+            "gxf3",
+            "Ra3",
+            "h4",
+            "Rba6",
+            "Kd3",
+            "Rxa2",
+            "Rxa2",
+            "Rxa2",
+            "b4",
+            "Ke7"
+          ],
+          "cp": -263,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:f2f3",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "f2f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f2f3",
+            "f5g4",
+            "c2c4",
+            "g4f3",
+            "g2f3",
+            "c6a6",
+            "g1f2",
+            "a6a3",
+            "e1d1",
+            "g8f8",
+            "d1d2",
+            "b8a8",
+            "h2h4",
+            "a8a5",
+            "f2g3",
+            "g7g6"
+          ],
+          "pvSan": [
+            "f3",
+            "fxg4",
+            "c4",
+            "gxf3",
+            "gxf3",
+            "Ra6",
+            "Kf2",
+            "Ra3",
+            "Red1",
+            "Kf8",
+            "Rd2",
+            "Rba8",
+            "h4",
+            "R8a5",
+            "Kg3",
+            "g6"
+          ],
+          "cp": -273,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:f2f4",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "f2f4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f2f4",
+            "f5g4",
+            "c2c4",
+            "g7g6",
+            "e1e5",
+            "c6b6",
+            "e5e2",
+            "b6d6",
+            "a1c1",
+            "g8f8",
+            "c4c5",
+            "d6d4",
+            "e2b2"
+          ],
+          "pvSan": [
+            "f4",
+            "fxg4",
+            "c4",
+            "g6",
+            "Re5",
+            "Rcb6",
+            "Re2",
+            "Rd6",
+            "Rc1",
+            "Kf8",
+            "c5",
+            "Rd4",
+            "Rb2"
+          ],
+          "cp": -281,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:g2g3",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "g2g3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g2g3",
+            "f5g4",
+            "c2c4",
+            "g8f8",
+            "a1d1",
+            "c6a6",
+            "e1e2",
+            "a6a5",
+            "e2b2",
+            "b8a8",
+            "d1d2",
+            "g7g6",
+            "g1f1",
+            "h7h6",
+            "f1e1"
+          ],
+          "pvSan": [
+            "g3",
+            "fxg4",
+            "c4",
+            "Kf8",
+            "Rad1",
+            "Ra6",
+            "Re2",
+            "Ra5",
+            "Rb2",
+            "Rba8",
+            "Rdd2",
+            "g6",
+            "Kf1",
+            "h6",
+            "Ke1"
+          ],
+          "cp": -289,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:h2h3",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "h2h3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h2h3",
+            "f5g4",
+            "a2a4",
+            "g4h3",
+            "a4a5",
+            "c6a6",
+            "e1b1",
+            "h7h6",
+            "b3b4",
+            "b8b5",
+            "c2c3",
+            "h3g2",
+            "c3c4"
+          ],
+          "pvSan": [
+            "h3",
+            "fxg4",
+            "a4",
+            "gxh3",
+            "a5",
+            "Ra6",
+            "Reb1",
+            "h6",
+            "b4",
+            "Rb5",
+            "c3",
+            "hxg2",
+            "c4"
+          ],
+          "cp": -295,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:h2h4",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "h2h4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h2h4",
+            "f5g4",
+            "c2c4",
+            "g7g6",
+            "g1h2",
+            "c6a6",
+            "e1b1",
+            "a6b6",
+            "c4c5",
+            "b6b5",
+            "c5c6",
+            "g8f8",
+            "a2a4",
+            "b5b3",
+            "b1b3",
+            "b8b3",
+            "a4a5"
+          ],
+          "pvSan": [
+            "h4",
+            "fxg4",
+            "c4",
+            "g6",
+            "Kh2",
+            "Ra6",
+            "Reb1",
+            "Rab6",
+            "c5",
+            "Rb5",
+            "c6",
+            "Kf8",
+            "a4",
+            "Rxb3",
+            "Rxb3",
+            "Rxb3",
+            "a5"
+          ],
+          "cp": -267,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:b3b4",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "b3b4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "b3b4",
+            "f5g4",
+            "e1b1",
+            "c6c2",
+            "a2a4",
+            "e6a2",
+            "b1c1",
+            "c2c1",
+            "a1c1",
+            "g8f8",
+            "b4b5",
+            "f8e7",
+            "c1d1",
+            "a2e6",
+            "g2g3",
+            "g7g6",
+            "d1a1",
+            "e6d5",
+            "a1e1",
+            "e7d6",
+            "e1d1",
+            "d6c5"
+          ],
+          "pvSan": [
+            "b4",
+            "fxg4",
+            "Reb1",
+            "Rxc2",
+            "a4",
+            "Ba2",
+            "Rc1",
+            "Rxc1+",
+            "Rxc1",
+            "Kf8",
+            "b5",
+            "Ke7",
+            "Rd1",
+            "Be6",
+            "g3",
+            "g6",
+            "Ra1",
+            "Bd5",
+            "Re1+",
+            "Kd6",
+            "Rd1",
+            "Kc5"
+          ],
+          "cp": -304,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:g4e3",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "g4e3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g4e3",
+            "f5f4",
+            "e3f1",
+            "c6c2",
+            "e1c1",
+            "c2e2",
+            "c1d1",
+            "g7g5",
+            "d1d2",
+            "e2e5",
+            "d2b2",
+            "b8b4",
+            "f2f3",
+            "h7h5",
+            "g1f2",
+            "g8h7",
+            "a1e1",
+            "e5c5",
+            "f1d2",
+            "c5c6",
+            "e1e4",
+            "b4b8",
+            "e4d4",
+            "b8c8",
+            "a2a4",
+            "c6c1"
+          ],
+          "pvSan": [
+            "Ne3",
+            "f4",
+            "Nf1",
+            "Rxc2",
+            "Rec1",
+            "Re2",
+            "Rd1",
+            "g5",
+            "Rd2",
+            "Re5",
+            "Rb2",
+            "Rb4",
+            "f3",
+            "h5",
+            "Kf2",
+            "Kh7",
+            "Re1",
+            "Rc5",
+            "Nd2",
+            "Rc6",
+            "Re4",
+            "Rb8",
+            "Rd4",
+            "Rbc8",
+            "a4",
+            "Rc1"
+          ],
+          "cp": 89,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:g4e5",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "g4e5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g4e5",
+            "c6c2",
+            "e1b1",
+            "g7g6",
+            "h2h3",
+            "h7h6",
+            "e5f3",
+            "b8b4",
+            "b1d1",
+            "c2b2",
+            "d1d8",
+            "g8g7",
+            "d8d2",
+            "b2d2",
+            "f3d2",
+            "b4d4",
+            "d2f3",
+            "d4d3",
+            "g1f1"
+          ],
+          "pvSan": [
+            "Ne5",
+            "Rxc2",
+            "Reb1",
+            "g6",
+            "h3",
+            "h6",
+            "Nf3",
+            "Rb4",
+            "Rd1",
+            "Rb2",
+            "Rd8+",
+            "Kg7",
+            "Rd2",
+            "Rxd2",
+            "Nxd2",
+            "Rd4",
+            "Nf3",
+            "Rd3",
+            "Kf1"
+          ],
+          "cp": 137,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:g4f6",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "g4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g4f6",
+            "g7f6",
+            "e1e2",
+            "f5f4",
+            "f2f3",
+            "c6d6",
+            "g1f2",
+            "g8g7",
+            "c2c4",
+            "d6a6",
+            "a1d1",
+            "h7h5",
+            "d1d2",
+            "b8a8",
+            "h2h4"
+          ],
+          "pvSan": [
+            "Nf6+",
+            "gxf6",
+            "Re2",
+            "f4",
+            "f3",
+            "Rd6",
+            "Kf2",
+            "Kg7",
+            "c4",
+            "Ra6",
+            "Rd1",
+            "h5",
+            "Rdd2",
+            "Rba8",
+            "h4"
+          ],
+          "cp": -151,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:c8c6:g4h6",
+      "fen": "1r4k1/5ppp/2r1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "g4h6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g4h6",
+            "g7h6",
+            "c2c4",
+            "b8a8",
+            "e1e2",
+            "c6a6",
+            "h2h4",
+            "g8g7"
+          ],
+          "pvSan": [
+            "Nh6+",
+            "gxh6",
+            "c4",
+            "Ra8",
+            "Re2",
+            "Rca6",
+            "h4",
+            "Kg7"
+          ],
+          "cp": -169,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4",
+      "fen": "1rr3k1/5ppp/2B1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 b - - 0 21",
+      "searchMove": "f5g4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f5g4",
+            "c6e4",
+            "c8c5",
+            "a2a4",
+            "c5a5",
+            "e4d3",
+            "g7g6",
+            "d3b5",
+            "g8g7",
+            "b3b4",
+            "a5a7",
+            "e1c1",
+            "e6d7",
+            "b5d7",
+            "b8b4",
+            "d7b5",
+            "a7c7"
+          ],
+          "pvSan": [
+            "fxg4",
+            "Be4",
+            "Rc5",
+            "a4",
+            "Ra5",
+            "Bd3",
+            "g6",
+            "Bb5",
+            "Kg7",
+            "b4",
+            "Ra7",
+            "Rec1",
+            "Bd7",
+            "Bxd7",
+            "Rxb4",
+            "Bb5",
+            "Rc7"
+          ],
+          "cp": -420,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:a1b1",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "a1b1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a1b1",
+            "c8c6",
+            "c2c4",
+            "g8f8",
+            "b1d1",
+            "c6a6",
+            "d1d2",
+            "a6a5",
+            "g1f1",
+            "b8a8",
+            "e1e2",
+            "f8e7",
+            "d2b2",
+            "a5h5",
+            "f1g1",
+            "e7d8",
+            "b2d2",
+            "d8c7",
+            "e2e1",
+            "a8d8"
+          ],
+          "pvSan": [
+            "Rab1",
+            "Rxc6",
+            "c4",
+            "Kf8",
+            "Rbd1",
+            "Ra6",
+            "Rd2",
+            "Ra5",
+            "Kf1",
+            "Rba8",
+            "Ree2",
+            "Ke7",
+            "Rb2",
+            "Rh5",
+            "Kg1",
+            "Kd8",
+            "Rbd2+",
+            "Kc7",
+            "Re1",
+            "Rd8"
+          ],
+          "cp": -295,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:a1c1",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "a1c1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a1c1",
+            "c8c6",
+            "c2c4",
+            "c6a6",
+            "e1e2",
+            "b8a8",
+            "c1c2",
+            "g7g5",
+            "g1f1",
+            "g8g7",
+            "e2d2",
+            "h7h5",
+            "f1e2",
+            "e6f5",
+            "c2b2",
+            "a6h6"
+          ],
+          "pvSan": [
+            "Rac1",
+            "Rxc6",
+            "c4",
+            "Ra6",
+            "Re2",
+            "Rba8",
+            "Rcc2",
+            "g5",
+            "Kf1",
+            "Kg7",
+            "Red2",
+            "h5",
+            "Ke2",
+            "Bf5",
+            "Rb2",
+            "Rh6"
+          ],
+          "cp": -293,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:a1d1",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "a1d1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a1d1",
+            "c8c6",
+            "c2c4",
+            "c6a6",
+            "d1d2",
+            "a6a5",
+            "e1d1",
+            "g8f8",
+            "d2e2",
+            "b8a8",
+            "d1d2",
+            "h7h6",
+            "g1f1",
+            "f8e7",
+            "d2b2",
+            "a5h5",
+            "f1g1",
+            "a8d8",
+            "b2d2",
+            "d8d2",
+            "e2d2"
+          ],
+          "pvSan": [
+            "Rad1",
+            "Rxc6",
+            "c4",
+            "Ra6",
+            "Rd2",
+            "Ra5",
+            "Red1",
+            "Kf8",
+            "Re2",
+            "Rba8",
+            "Rdd2",
+            "h6",
+            "Kf1",
+            "Ke7",
+            "Rb2",
+            "Rh5",
+            "Kg1",
+            "Rd8",
+            "Rbd2",
+            "Rxd2",
+            "Rxd2"
+          ],
+          "cp": -279,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:e1b1",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1b1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1b1",
+            "c8c6",
+            "b1b2",
+            "e6f5",
+            "a1c1",
+            "b8c8",
+            "c2c4",
+            "g8f8",
+            "a2a4",
+            "c8a8",
+            "f2f3",
+            "g4f3",
+            "g2f3",
+            "g7g6"
+          ],
+          "pvSan": [
+            "Reb1",
+            "Rxc6",
+            "Rb2",
+            "Bf5",
+            "Rc1",
+            "Rbc8",
+            "c4",
+            "Kf8",
+            "a4",
+            "Ra8",
+            "f3",
+            "gxf3",
+            "gxf3",
+            "g6"
+          ],
+          "cp": -265,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:e1c1",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1c1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1c1",
+            "c8c6",
+            "a2a4",
+            "g7g5",
+            "a4a5",
+            "g8g7",
+            "a1b1",
+            "h7h5",
+            "b3b4",
+            "e6c4",
+            "c1d1",
+            "g7h6",
+            "h2h3",
+            "g4h3",
+            "g2h3",
+            "h5h4",
+            "g1h2",
+            "c4b5"
+          ],
+          "pvSan": [
+            "Rec1",
+            "Rxc6",
+            "a4",
+            "g5",
+            "a5",
+            "Kg7",
+            "Rab1",
+            "h5",
+            "b4",
+            "Bc4",
+            "Rd1",
+            "Kh6",
+            "h3",
+            "gxh3",
+            "gxh3",
+            "h4",
+            "Kh2",
+            "Bb5"
+          ],
+          "cp": -291,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:e1d1",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1d1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1d1",
+            "c8c6",
+            "c2c4",
+            "g8f8",
+            "f2f3",
+            "g4f3",
+            "g2f3",
+            "c6a6",
+            "g1f2",
+            "a6a3",
+            "d1d2",
+            "g7g5",
+            "f2e2",
+            "a3a5",
+            "e2d3",
+            "a5f5",
+            "d3e3",
+            "f5e5",
+            "e3d3"
+          ],
+          "pvSan": [
+            "Red1",
+            "Rxc6",
+            "c4",
+            "Kf8",
+            "f3",
+            "gxf3",
+            "gxf3",
+            "Ra6",
+            "Kf2",
+            "Ra3",
+            "Rd2",
+            "g5",
+            "Ke2",
+            "Ra5",
+            "Kd3",
+            "Rf5",
+            "Ke3",
+            "Re5+",
+            "Kd3"
+          ],
+          "cp": -282,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:e1f1",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1f1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1f1",
+            "c8c6",
+            "c2c4",
+            "c6a6",
+            "f2f3",
+            "g4f3",
+            "g2f3",
+            "g8f8",
+            "g1f2",
+            "a6a3",
+            "f1e1",
+            "h7h5",
+            "e1e2",
+            "b8a8",
+            "e2d2",
+            "g7g6"
+          ],
+          "pvSan": [
+            "Rf1",
+            "Rxc6",
+            "c4",
+            "Ra6",
+            "f3",
+            "gxf3",
+            "gxf3",
+            "Kf8",
+            "Kf2",
+            "Ra3",
+            "Rfe1",
+            "h5",
+            "Re2",
+            "Rba8",
+            "Rd2",
+            "g6"
+          ],
+          "cp": -297,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:e1e2",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1e2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1e2",
+            "c8c6",
+            "a1d1",
+            "c6a6",
+            "c2c4",
+            "g7g6",
+            "f2f3",
+            "g8g7",
+            "d1d2",
+            "h7h6",
+            "g1f2",
+            "g4f3",
+            "g2f3",
+            "g6g5",
+            "f2e3",
+            "b8a8",
+            "e3d3",
+            "g7g6",
+            "e2f2"
+          ],
+          "pvSan": [
+            "Re2",
+            "Rxc6",
+            "Rd1",
+            "Ra6",
+            "c4",
+            "g6",
+            "f3",
+            "Kg7",
+            "Rdd2",
+            "h6",
+            "Kf2",
+            "gxf3",
+            "gxf3",
+            "g5",
+            "Ke3",
+            "Rba8",
+            "Kd3",
+            "Kg6",
+            "Rf2"
+          ],
+          "cp": -304,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:e1e3",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1e3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1e3",
+            "c8c6",
+            "c2c4",
+            "g8f8",
+            "f2f3",
+            "g4f3",
+            "e3f3",
+            "c6d6",
+            "a2a4",
+            "g7g6",
+            "a4a5",
+            "d6a6",
+            "f3c3",
+            "b8b7",
+            "a1a4",
+            "e6d7",
+            "a4a1",
+            "b7a7"
+          ],
+          "pvSan": [
+            "Re3",
+            "Rxc6",
+            "c4",
+            "Kf8",
+            "f3",
+            "gxf3",
+            "Rxf3",
+            "Rd6",
+            "a4",
+            "g6",
+            "a5",
+            "Ra6",
+            "Rc3",
+            "Rb7",
+            "Ra4",
+            "Bd7",
+            "Ra1",
+            "Rba7"
+          ],
+          "cp": -261,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:e1e4",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1e4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1e4",
+            "c8c6",
+            "e4e2",
+            "c6a6",
+            "a2a4",
+            "g7g6",
+            "g1f1",
+            "a6c6",
+            "a1a2",
+            "h7h5",
+            "e2d2",
+            "e6f5",
+            "a4a5",
+            "c6a6",
+            "d2d4",
+            "g8g7"
+          ],
+          "pvSan": [
+            "Re4",
+            "Rxc6",
+            "Re2",
+            "Ra6",
+            "a4",
+            "g6",
+            "Kf1",
+            "Rc6",
+            "Ra2",
+            "h5",
+            "Rd2",
+            "Bf5",
+            "a5",
+            "Ra6",
+            "Rd4",
+            "Kg7"
+          ],
+          "cp": -292,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:e1e5",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1e5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1e5",
+            "c8c6",
+            "c2c4",
+            "c6d6",
+            "g1f1",
+            "g7g6",
+            "f1e1",
+            "g8g7",
+            "e5b5",
+            "b8d8",
+            "a2a4",
+            "e6f5",
+            "b5e5",
+            "h7h5",
+            "b3b4"
+          ],
+          "pvSan": [
+            "Re5",
+            "Rxc6",
+            "c4",
+            "Rd6",
+            "Kf1",
+            "g6",
+            "Ke1",
+            "Kg7",
+            "Rb5",
+            "Rbd8",
+            "a4",
+            "Bf5",
+            "Re5",
+            "h5",
+            "b4"
+          ],
+          "cp": -261,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:e1e6",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "e1e6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1e6",
+            "f7e6",
+            "c6e4",
+            "g8f7",
+            "a2a4",
+            "c8c5",
+            "g1f1",
+            "f7e7",
+            "e4d3",
+            "c5a5",
+            "f1e2",
+            "h7h6",
+            "e2d2",
+            "e7d7",
+            "d2c3",
+            "a5h5",
+            "a4a5",
+            "h5h2",
+            "d3e4"
+          ],
+          "pvSan": [
+            "Rxe6",
+            "fxe6",
+            "Be4",
+            "Kf7",
+            "a4",
+            "Rc5",
+            "Kf1",
+            "Ke7",
+            "Bd3",
+            "Ra5",
+            "Ke2",
+            "h6",
+            "Kd2",
+            "Kd7",
+            "Kc3",
+            "Rh5",
+            "a5",
+            "Rxh2",
+            "Be4"
+          ],
+          "cp": 176,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:g1f1",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "g1f1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g1f1",
+            "c8c6",
+            "c2c4",
+            "c6a6",
+            "f1e2",
+            "b8a8",
+            "a2a4",
+            "a6b6",
+            "e1b1",
+            "a8b8",
+            "c4c5",
+            "b6b3",
+            "b1b3",
+            "e6b3",
+            "a4a5",
+            "g8f8",
+            "a5a6",
+            "b3d5",
+            "a6a7",
+            "b8a8",
+            "e2e3",
+            "f8e7",
+            "e3d4",
+            "d5b7"
+          ],
+          "pvSan": [
+            "Kf1",
+            "Rxc6",
+            "c4",
+            "Ra6",
+            "Ke2",
+            "Rba8",
+            "a4",
+            "Rb6",
+            "Reb1",
+            "Rab8",
+            "c5",
+            "Rxb3",
+            "Rxb3",
+            "Bxb3",
+            "a5",
+            "Kf8",
+            "a6",
+            "Bd5",
+            "a7",
+            "Ra8",
+            "Ke3",
+            "Ke7",
+            "Kd4",
+            "Bb7"
+          ],
+          "cp": -262,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:g1h1",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "g1h1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g1h1",
+            "c8c6",
+            "c2c4",
+            "c6a6",
+            "h1g1",
+            "g7g5",
+            "f2f3",
+            "g4f3",
+            "g2f3",
+            "g8g7",
+            "e1e5",
+            "h7h6",
+            "e5e2",
+            "b8d8",
+            "e2b2"
+          ],
+          "pvSan": [
+            "Kh1",
+            "Rxc6",
+            "c4",
+            "Ra6",
+            "Kg1",
+            "g5",
+            "f3",
+            "gxf3",
+            "gxf3",
+            "Kg7",
+            "Re5",
+            "h6",
+            "Re2",
+            "Rd8",
+            "Rb2"
+          ],
+          "cp": -306,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:a2a3",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "a2a3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a2a3",
+            "c8c6",
+            "e1c1",
+            "g8f8",
+            "a3a4",
+            "f8e8",
+            "a4a5",
+            "e8d8",
+            "c1d1",
+            "d8c8",
+            "c2c4",
+            "c8b7",
+            "f2f3",
+            "b7a6",
+            "f3g4",
+            "e6g4"
+          ],
+          "pvSan": [
+            "a3",
+            "Rxc6",
+            "Rec1",
+            "Kf8",
+            "a4",
+            "Ke8",
+            "a5",
+            "Kd8",
+            "Rd1+",
+            "Kc8",
+            "c4",
+            "Kb7",
+            "f3",
+            "Ka6",
+            "fxg4",
+            "Bxg4"
+          ],
+          "cp": -316,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:a2a4",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "a2a4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a2a4",
+            "c8c6",
+            "a1a2",
+            "g8f8",
+            "f2f3",
+            "g4f3",
+            "g2f3",
+            "c6d6",
+            "g1f2",
+            "b8a8",
+            "e1e5",
+            "d6d2",
+            "e5e2",
+            "d2d5",
+            "e2e4",
+            "h7h6"
+          ],
+          "pvSan": [
+            "a4",
+            "Rxc6",
+            "Ra2",
+            "Kf8",
+            "f3",
+            "gxf3",
+            "gxf3",
+            "Rd6",
+            "Kf2",
+            "Ra8",
+            "Re5",
+            "Rd2+",
+            "Re2",
+            "Rd5",
+            "Re4",
+            "h6"
+          ],
+          "cp": -276,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:c2c3",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "c2c3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c2c3",
+            "c8c6",
+            "c3c4",
+            "c6a6",
+            "f2f3",
+            "g4f3",
+            "g2f3",
+            "a6a3",
+            "e1b1",
+            "b8a8",
+            "h2h4",
+            "g7g6",
+            "b1b2",
+            "g8g7",
+            "g1f2",
+            "g7f6",
+            "f2e3"
+          ],
+          "pvSan": [
+            "c3",
+            "Rxc6",
+            "c4",
+            "Ra6",
+            "f3",
+            "gxf3",
+            "gxf3",
+            "Ra3",
+            "Reb1",
+            "Rba8",
+            "h4",
+            "g6",
+            "Rb2",
+            "Kg7",
+            "Kf2",
+            "Kf6",
+            "Ke3"
+          ],
+          "cp": -281,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:c2c4",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "c2c4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c2c4",
+            "c8c6",
+            "e1e5",
+            "c6a6",
+            "e5b5",
+            "b8a8",
+            "a2a4",
+            "g8f8",
+            "a1d1",
+            "g7g6",
+            "f2f3",
+            "g4f3",
+            "g2f3",
+            "f8e7"
+          ],
+          "pvSan": [
+            "c4",
+            "Rxc6",
+            "Re5",
+            "Ra6",
+            "Rb5",
+            "Rba8",
+            "a4",
+            "Kf8",
+            "Rd1",
+            "g6",
+            "f3",
+            "gxf3",
+            "gxf3",
+            "Ke7"
+          ],
+          "cp": -243,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:f2f3",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "f2f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f2f3",
+            "c8c6",
+            "c2c4",
+            "g4f3",
+            "g2f3",
+            "g8f8",
+            "g1f2",
+            "c6c5",
+            "f2e3",
+            "c5h5",
+            "e3d4",
+            "h5h2",
+            "e1e3",
+            "h2h4",
+            "d4c3",
+            "h7h5"
+          ],
+          "pvSan": [
+            "f3",
+            "Rxc6",
+            "c4",
+            "gxf3",
+            "gxf3",
+            "Kf8",
+            "Kf2",
+            "Rc5",
+            "Ke3",
+            "Rh5",
+            "Kd4",
+            "Rxh2",
+            "Re3",
+            "Rh4+",
+            "Kc3",
+            "h5"
+          ],
+          "cp": -265,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:f2f4",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "f2f4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f2f4",
+            "c8c6",
+            "c2c4",
+            "g7g6",
+            "e1e2",
+            "g8f8",
+            "g1f2",
+            "c6a6",
+            "a1c1",
+            "a6a8",
+            "c1c2",
+            "a8a7",
+            "c2b2",
+            "e6f5",
+            "c4c5"
+          ],
+          "pvSan": [
+            "f4",
+            "Rxc6",
+            "c4",
+            "g6",
+            "Re2",
+            "Kf8",
+            "Kf2",
+            "Ra6",
+            "Rc1",
+            "Raa8",
+            "Rcc2",
+            "Ra7",
+            "Rb2",
+            "Bf5",
+            "c5"
+          ],
+          "cp": -272,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:g2g3",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "g2g3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g2g3",
+            "c8c6",
+            "c2c4",
+            "c6a6",
+            "e1c1",
+            "g8f8",
+            "c1d1",
+            "e6f5",
+            "c4c5",
+            "f5e4",
+            "d1d2",
+            "e4f3",
+            "d2b2",
+            "b8b4",
+            "a2a3",
+            "b4b8",
+            "b3b4",
+            "f8e8"
+          ],
+          "pvSan": [
+            "g3",
+            "Rxc6",
+            "c4",
+            "Ra6",
+            "Rec1",
+            "Kf8",
+            "Rd1",
+            "Bf5",
+            "c5",
+            "Be4",
+            "Rd2",
+            "Bf3",
+            "Rb2",
+            "Rb4",
+            "a3",
+            "Rb8",
+            "b4",
+            "Ke8"
+          ],
+          "cp": -295,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:h2h3",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "h2h3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h2h3",
+            "c8c6",
+            "a2a4",
+            "g4h3",
+            "a4a5",
+            "c6a6",
+            "e1e4",
+            "g8f8",
+            "b3b4",
+            "e6d5",
+            "e4e5",
+            "d5g2",
+            "c2c3",
+            "g2c6",
+            "b4b5",
+            "c6b5"
+          ],
+          "pvSan": [
+            "h3",
+            "Rxc6",
+            "a4",
+            "gxh3",
+            "a5",
+            "Ra6",
+            "Re4",
+            "Kf8",
+            "b4",
+            "Bd5",
+            "Re5",
+            "Bxg2",
+            "c3",
+            "Bc6",
+            "b5",
+            "Bxb5"
+          ],
+          "cp": -318,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:h2h4",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "h2h4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h2h4",
+            "c8c6",
+            "c2c4",
+            "c6a6",
+            "g1h2",
+            "g7g6",
+            "e1b1",
+            "g8f8",
+            "b1d1",
+            "h7h5",
+            "h2g3",
+            "a6a5",
+            "d1d4",
+            "f8g7",
+            "g3f4",
+            "f7f6",
+            "a1e1",
+            "g6g5",
+            "h4g5",
+            "f6g5",
+            "f4g3"
+          ],
+          "pvSan": [
+            "h4",
+            "Rxc6",
+            "c4",
+            "Ra6",
+            "Kh2",
+            "g6",
+            "Reb1",
+            "Kf8",
+            "Rd1",
+            "h5",
+            "Kg3",
+            "Ra5",
+            "Rd4",
+            "Kg7",
+            "Kf4",
+            "f6",
+            "Re1",
+            "g5+",
+            "hxg5",
+            "fxg5+",
+            "Kg3"
+          ],
+          "cp": -266,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:b3b4",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "b3b4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "b3b4",
+            "c8c6",
+            "e1b1",
+            "c6c2",
+            "a2a4",
+            "e6a2",
+            "b1d1",
+            "g8f8",
+            "b4b5",
+            "c2b2",
+            "h2h3",
+            "g4h3",
+            "a4a5",
+            "b8b5",
+            "a1c1",
+            "b5b8",
+            "a5a6",
+            "b8a8",
+            "d1d7"
+          ],
+          "pvSan": [
+            "b4",
+            "Rxc6",
+            "Reb1",
+            "Rxc2",
+            "a4",
+            "Ba2",
+            "Rd1",
+            "Kf8",
+            "b5",
+            "Rb2",
+            "h3",
+            "gxh3",
+            "a5",
+            "R8xb5",
+            "Rac1",
+            "Rb8",
+            "a6",
+            "Ra8",
+            "Rd7"
+          ],
+          "cp": -303,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:c6f3",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "c6f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c6f3",
+            "g4f3",
+            "c2c4",
+            "f3g2",
+            "e1e5",
+            "g8f8",
+            "e5b5",
+            "b8b5",
+            "c4b5",
+            "f8e7",
+            "a2a4",
+            "c8c3",
+            "b3b4",
+            "c3b3",
+            "b5b6",
+            "b3b4",
+            "a4a5",
+            "e6d5",
+            "a1d1",
+            "d5a8",
+            "f2f3",
+            "b4b2"
+          ],
+          "pvSan": [
+            "Bf3",
+            "gxf3",
+            "c4",
+            "fxg2",
+            "Re5",
+            "Kf8",
+            "Rb5",
+            "Rxb5",
+            "cxb5",
+            "Ke7",
+            "a4",
+            "Rc3",
+            "b4",
+            "Rb3",
+            "b6",
+            "Rxb4",
+            "a5",
+            "Bd5",
+            "Rd1",
+            "Ba8",
+            "f3",
+            "Rb2"
+          ],
+          "cp": -287,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:c6a4",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "c6a4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c6a4",
+            "c8c2",
+            "a2a3",
+            "b8a8",
+            "e1c1",
+            "c2c1",
+            "a1c1",
+            "a8a5",
+            "g1f1",
+            "g7g5",
+            "f1e2",
+            "g8f8",
+            "e2d3",
+            "f8e7",
+            "d3c3",
+            "a5f5",
+            "b3b4",
+            "f5f2",
+            "a4c6",
+            "f2a2"
+          ],
+          "pvSan": [
+            "Ba4",
+            "Rxc2",
+            "a3",
+            "Ra8",
+            "Rec1",
+            "Rxc1+",
+            "Rxc1",
+            "Ra5",
+            "Kf1",
+            "g5",
+            "Ke2",
+            "Kf8",
+            "Kd3",
+            "Ke7",
+            "Kc3",
+            "Rf5",
+            "b4",
+            "Rxf2",
+            "Bc6",
+            "Ra2"
+          ],
+          "cp": 94,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:c6e4",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "c6e4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c6e4",
+            "c8c5",
+            "a2a4",
+            "c5a5",
+            "a1d1",
+            "g7g6",
+            "d1d4",
+            "h7h5",
+            "g2g3",
+            "g6g5",
+            "e1e3",
+            "g8g7"
+          ],
+          "pvSan": [
+            "Be4",
+            "Rc5",
+            "a4",
+            "Ra5",
+            "Rad1",
+            "g6",
+            "Rd4",
+            "h5",
+            "g3",
+            "g5",
+            "Re3",
+            "Kg7"
+          ],
+          "cp": 416,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:c6b5",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "c6b5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c6b5",
+            "b8b5",
+            "c2c4",
+            "b5a5",
+            "e1b1",
+            "a5a3",
+            "b1b2",
+            "g7g5",
+            "g1f1",
+            "c8a8",
+            "f1e2",
+            "g8g7"
+          ],
+          "pvSan": [
+            "Bb5",
+            "Rxb5",
+            "c4",
+            "Ra5",
+            "Reb1",
+            "Ra3",
+            "Rb2",
+            "g5",
+            "Kf1",
+            "Rca8",
+            "Ke2",
+            "Kg7"
+          ],
+          "cp": -269,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:c6d5",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "c6d5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c6d5",
+            "e6d5",
+            "c2c4",
+            "d5c6",
+            "e1e3",
+            "g7g6",
+            "a2a4",
+            "c8c7",
+            "a1a3",
+            "g8g7",
+            "a4a5",
+            "h7h5",
+            "g1f1"
+          ],
+          "pvSan": [
+            "Bd5",
+            "Bxd5",
+            "c4",
+            "Bc6",
+            "Re3",
+            "g6",
+            "a4",
+            "Rc7",
+            "Ra3",
+            "Kg7",
+            "a5",
+            "h5",
+            "Kf1"
+          ],
+          "cp": -256,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:c6b7",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "c6b7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c6b7",
+            "b8b7",
+            "e1e2",
+            "g8f8",
+            "c2c4",
+            "c8a8",
+            "a1d1",
+            "b7a7",
+            "d1d2",
+            "a7a5",
+            "g2g3",
+            "g7g6",
+            "d2b2",
+            "h7h6",
+            "g1g2",
+            "a5a6",
+            "g2f1",
+            "e6f5",
+            "f1e1"
+          ],
+          "pvSan": [
+            "Bb7",
+            "Rxb7",
+            "Re2",
+            "Kf8",
+            "c4",
+            "Ra8",
+            "Rd1",
+            "Rba7",
+            "Rdd2",
+            "Ra5",
+            "g3",
+            "g6",
+            "Rb2",
+            "h6",
+            "Kg2",
+            "R5a6",
+            "Kf1",
+            "Bf5",
+            "Ke1"
+          ],
+          "cp": -274,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:c6d7",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "c6d7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c6d7",
+            "e6d7",
+            "c2c4",
+            "g8f8",
+            "e1e5",
+            "c8c7",
+            "e5e2",
+            "h7h5",
+            "e2b2",
+            "c7a7",
+            "a2a4",
+            "d7e6",
+            "a4a5",
+            "g7g6"
+          ],
+          "pvSan": [
+            "Bd7",
+            "Bxd7",
+            "c4",
+            "Kf8",
+            "Re5",
+            "Rc7",
+            "Re2",
+            "h5",
+            "Rb2",
+            "Ra7",
+            "a4",
+            "Be6",
+            "a5",
+            "g6"
+          ],
+          "cp": -271,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:c6a8",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "c6a8",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c6a8",
+            "b8a8",
+            "c2c4",
+            "a8a3",
+            "e1b1",
+            "g7g5",
+            "b1b2",
+            "g8g7",
+            "g1f1",
+            "h7h6",
+            "f1e2"
+          ],
+          "pvSan": [
+            "Ba8",
+            "Rxa8",
+            "c4",
+            "Ra3",
+            "Reb1",
+            "g5",
+            "Rb2",
+            "Kg7",
+            "Kf1",
+            "h6",
+            "Ke2"
+          ],
+          "cp": -293,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "capture-choice:f5g4:c6e8",
+      "fen": "1rr3k1/5ppp/2B1b3/8/6p1/1P6/P1P2PPP/R3R1K1 w - - 0 22",
+      "searchMove": "c6e8",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c6e8",
+            "c8e8",
+            "e1b1",
+            "e6f5",
+            "a2a4",
+            "f5c2",
+            "b1b2",
+            "e8c8",
+            "h2h3",
+            "b8b3",
+            "b2b3",
+            "c2b3",
+            "a4a5",
+            "g4h3",
+            "a1b1"
+          ],
+          "pvSan": [
+            "Be8",
+            "Rxe8",
+            "Reb1",
+            "Bf5",
+            "a4",
+            "Bxc2",
+            "Rb2",
+            "Rec8",
+            "h3",
+            "Rxb3",
+            "Rxb3",
+            "Bxb3",
+            "a5",
+            "gxh3",
+            "Rb1"
+          ],
+          "cp": -279,
+          "mate": null
+        }
+      ]
+    }
+  ]
+}

@@ -11,8 +11,13 @@ const [samplePath, output, profile = "initial"] = process.argv.slice(2);
 if (!samplePath || !output || existsSync(output))
   throw new Error("Provide sample and new output path");
 const sample = JSON.parse(readFileSync(samplePath, "utf8"));
-assert.equal(sample.profile, "cross-phase");
+if (profile === "quiet-game-context") assert.equal(sample.cases.length, 9);
+else assert.equal(sample.profile, "cross-phase");
 const profiles = {
+  "quiet-game-context": {
+    start: 0, end: 4, plies: [7, 22, 41, 60, 81, 100],
+    scope: "Fixed plies 7, 22, 41, 60, 81, 100 from the first four frozen quiet-mate source games. The source puzzles were previously examined, but these game positions are selected before their engine/classifier output. No move-quality, rating, result or evaluation filtering; unavailable plies are recorded and not replaced. Includes both root colours. Puzzle-source game contexts are not representative all-chess accuracy data. Player headers/comments/clocks are omitted.",
+  },
   initial: {
     start: 0, end: 3, plies: [8, 24, 48, 80],
     scope: "Fixed plies 8, 24, 48, 80 from the first three output-blind cross-phase source games. No result, evaluation, player or classifier filtering. These puzzle-game contexts are not a representative ordinary-game sample. Player headers, comments and clocks are omitted.",
@@ -98,7 +103,7 @@ for (const row of sample.cases.slice(config.start, config.end)) {
 }
 const result = {
   scope: config.scope,
-  sourceSha256: sample.sourceSha256,
+  sourceSha256: sample.sourceSha256 ?? sample.prefixSha256,
   games,
   cases,
   omitted,

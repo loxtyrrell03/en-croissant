@@ -7,6 +7,83 @@ import { SharedReviewService, engineLine } from "../generated/shared-review-serv
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
 
+test("comparable capture qualifications survive the built service, shared deck and reload", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-shared-review-capture-choice-"));
+  const evidence = JSON.parse(
+    await readFile(
+      new URL(
+        "../../benchmarks/tactical-relevance/quiet-game-context-stockfish-18.json",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
+  const before = evidence.searches.find((s) => s.id === "context:C9q6jvtW:ply41:best");
+  const after = evidence.searches.find((s) => s.id === "context:C9q6jvtW:ply41:reply");
+  assert.ok(before && after);
+  const options = {
+    root,
+    documentsRoot: join(root, "documents"),
+    engineConfigPath: join(root, "engine.json"),
+    lookup: async (fen) => {
+      const row = [before, after].find((r) => r.fen === fen);
+      assert.ok(row, `Unexpected position: ${fen}`);
+      return {
+        depth: 16,
+        pvs: row.lines.map((line) => ({
+          cp: line.cp * (fen.split(" ")[1] === "b" ? -1 : 1),
+          moves: line.pvUci.join(" "),
+        })),
+      };
+    },
+    fetchGames: async () => [],
+  };
+  let service;
+  try {
+    await writeFile(
+      join(root, "config.json"),
+      JSON.stringify({ accounts: { chesscom: "Tester" } }),
+    );
+    const game = `[White "Opponent"]\n[Black "Tester"]\n[Date "2026.09.14"]\n[SetUp "1"]\n[FEN "${before.fen}"]\n[Result "1-0"]\n\n21... fxg4 1-0`;
+    await writeFile(
+      join(root, "games.json"),
+      JSON.stringify({
+        games: [
+          {
+            source: "chesscom",
+            pgn: game,
+            end: 1789387200,
+            url: "https://example.test/game/capture-choice",
+          },
+        ],
+      }),
+    );
+    service = new SharedReviewService(options);
+    await service.initialize(false);
+    await service.run();
+    assert.equal(service.snapshot().error, null);
+    assert.equal(service.snapshot().cards.length, 1);
+    const card = service.snapshot().cards[0];
+    assert.match(card.explanation, /^Capture in the better line:/);
+    assert.match(card.explanation, /not a verified explanation/);
+    assert.equal(card.bestTimeline[0].alternativeCapture, true);
+    assert.equal((await service.deck()).positions[0].reason, card.explanation);
+    service.close();
+    service = new SharedReviewService(options);
+    await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].bestTimeline, card.bestTimeline);
+    assert.equal((await service.deck()).positions[0].reason, card.explanation);
+  } finally {
+    service?.close();
+    const target = resolve(root);
+    assert.ok(
+      target.startsWith(resolve(tmpdir()) + sep) &&
+        target.includes("en-shared-review-capture-choice-"),
+    );
+    await rm(target, { recursive: true, force: true });
+  }
+});
+
 test("built review service publishes and reloads the constructive fork-preparation cause", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-acceptance-"));
   const evidence = JSON.parse(
