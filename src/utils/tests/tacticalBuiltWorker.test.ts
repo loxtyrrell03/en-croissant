@@ -13,6 +13,7 @@ import { trappedRookFen, trapControls, unrelatedPayoffTrap } from "./fixtures/tr
 import { interferenceExamples, interferenceControls, compensatedInterference } from "./fixtures/interferenceRelevance";
 import { promotionClearanceFen, promotionClearanceLine, promotionClearanceControls } from "./fixtures/promotionClearance";
 import { matingMechanismExamples, matingMechanismControls } from "./fixtures/matingMechanismRelevance";
+import { promotionCounterplayBase, promotionCounterplayLine, promotionCounterplayEngineLine, pawnRaceRefutations } from "./fixtures/promotionCounterplay";
 import {
     buildLiveTacticalScan,
     type LiveTacticalScanInput,
@@ -83,6 +84,15 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
     }
 }
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("the fresh promotion PV does not portray sacrifice acceptance as a win", async () => {
+    const input = { fen: promotionCounterplayBase, pvUci: promotionCounterplayEngineLine, depth: 16, engineName: "Stockfish 18" };
+    const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+    expect(result.scan).toEqual(buildLiveTacticalScan(input));
+    expect(result.scan.motifs[0]).toMatchObject({ id: "promotionCombination", ply: 1 });
+    expect(result.scan.variations[0].timeline.some((m) => m.id === "hangingPiece" && m.ply === 2)).toBe(false);
+    expect(result.scan.variations[0].timeline.find((m) => m.id === "promotion")).toMatchObject({ ply: 11 });
+});
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
     "cold production workers retain real-position results within the UI deadline",
     async () => {
@@ -115,6 +125,10 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         const secondary = JSON.parse(readFileSync("benchmarks/tactical-relevance/secondary-theme-stockfish-18.json", "utf8"));
         const crossPhase=JSON.parse(readFileSync("benchmarks/tactical-relevance/cross-phase-stockfish-18.json","utf8"));
         const cases = [
+            ...[
+                { id: "real", fen: promotionCounterplayBase, historicalLine: promotionCounterplayLine },
+                ...pawnRaceRefutations,
+            ].flatMap(({ id, fen, historicalLine }) => [1, historicalLine.length].map((length) => ({ id: `promotion-ending:${id}:${length}`, input: { fen, pvUci: historicalLine.slice(0, length), depth: 16, engineName: "Promotion ending counterplay" } }))),
             ...matingMechanismExamples.flatMap(row=>[1,row.pvUci.length].map(length=>({id:`mating-mechanism:${row.id}:${length}`,input:{...row,pvUci:row.pvUci.slice(0,length),depth:16,engineName:"Mating mechanism"}}))),
             ...matingMechanismControls.map(row=>({id:`mating-mechanism:control:${row.id}`,input:{fen:row.fen,pvUci:row.theme==="selfInterference"?matingMechanismExamples[0].pvUci:[matingMechanismExamples[1].pvUci[0]],depth:16,engineName:"Mechanism counterexample"}})),
             ...crossPhase.cases.flatMap((row:any)=>[
@@ -845,11 +859,13 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         const interferenceResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         const promotionResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         const matingMechanismResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
+        const promotionEndingResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         for (const item of cases) {
             // A fresh worker never inherits the in-process proof caches.
             const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, item.input);
             const expected = buildLiveTacticalScan(item.input);
             expect({ id: item.id, scan: result.scan }).toEqual({ id: item.id, scan: expected });
+            if (item.id.startsWith("promotion-ending:")) promotionEndingResults.set(item.id, result.scan);
             if (item.id.startsWith("secondary-source:")) secondaryResults.set(item.id, result.scan);
             if (item.id.startsWith("trap-audit:")) trapResults.set(item.id, result.scan);
             if (item.id.startsWith("interference-audit:")) interferenceResults.set(item.id,result.scan);
@@ -872,7 +888,10 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(376);
+        expect(report).toHaveLength(386);
+        for (const length of [1, promotionCounterplayLine.length]) expect(promotionEndingResults.get(`promotion-ending:real:${length}`)!.motifs[0]).toMatchObject({ id: "promotionCombination", value: 220 });
+        expect(promotionEndingResults.get("promotion-ending:real:5")!.variations[0].timeline.some((m) => m.ply === 2 && m.id === "hangingPiece")).toBe(false);
+        for (const row of pawnRaceRefutations) for (const length of [1, row.historicalLine.length]) expect(promotionEndingResults.get(`promotion-ending:${row.id}:${length}`)!.motifs.some((m) => m.id === "promotionCombination")).toBe(false);
         for(const row of matingMechanismExamples)for(const length of [1,row.pvUci.length]){
             const scan=matingMechanismResults.get(`mating-mechanism:${row.id}:${length}`)!;
             expect(scan.motifs.map(m=>m.id)).toEqual([row.id==="49h84"?"mateIn2":"mateIn3"]);

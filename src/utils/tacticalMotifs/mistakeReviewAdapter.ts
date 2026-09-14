@@ -116,7 +116,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 96;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 97;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -957,8 +957,11 @@ export function buildTacticalTimeline(
     sanLine?: string[] | null,
 ) {
     const fullReplay = replayTacticalLine(fen, line);
+    const provedPromotionOffer = rootMotifs.some(
+        (motif) => motif.id === "promotionCombination" && motif.ply === 1,
+    );
     const promotionEpisode =
-        rootMotifs.some((motif) => motif.id === "promotionCombination" && motif.ply === 1) &&
+        provedPromotionOffer &&
         fullReplay
             .slice(0, 17)
             .some((step) => step.before.turn === fullReplay[0].before.turn && step.move.promotion);
@@ -1187,7 +1190,11 @@ export function buildTacticalTimeline(
                 motif.id === "hangingPiece" &&
                 index > 0 &&
                 step.move.to === replay[index - 1].move.to &&
-                (!replay[index - 1].capture || replay[index - 1].move.promotion)
+                (!replay[index - 1].capture || replay[index - 1].move.promotion ||
+                    // The independent root proof already accounts for losing
+                    // the offered piece. Acceptance is not a separate win for
+                    // the defender, even when the supplied PV is truncated.
+                    (provedPromotionOffer && index === 1))
             )
                 continue;
             const key = `${index + 1}:${motif.id}`;

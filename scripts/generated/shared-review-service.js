@@ -10010,18 +10010,18 @@ function withTurn(pos, turn) {
 	copy.epSquare = void 0;
 	return copy;
 }
-var PROMOTION_COMBINATION_NODE_LIMIT = 131072;
+var PROMOTION_COMBINATION_NODE_LIMIT = 262144;
 var promotionCombinationCache = /* @__PURE__ */ new Map();
 /** Nominate advanced passed pawns only after a material concession removes
 * a piece controlling their advance. Every defensive reply is searched;
 * the supplied PV is not used as a substitute for those replies. */
-function provePromotionCombination(root, nodeLimit = PROMOTION_COMBINATION_NODE_LIMIT) {
+function provePromotionCombination(root, nodeLimit = PROMOTION_COMBINATION_NODE_LIMIT, onFailure, includeWitnesses = false) {
 	if (!root.capture || root.move.promotion || tacticalExchangeGain(root.before, root.move) >= 100 || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
 	const side = root.before.turn, enemy = opposite(side), direction = side === "white" ? 8 : -8;
 	const defender = root.before.board.get(root.move.to);
 	if (!defender || defender.role === "pawn" || defender.role === "king") return null;
 	const cacheKey = `${makeFen(root.before.toSetup())}:${root.uci}`;
-	if (nodeLimit === PROMOTION_COMBINATION_NODE_LIMIT && promotionCombinationCache.has(cacheKey)) return promotionCombinationCache.get(cacheKey);
+	if (!onFailure && !includeWitnesses && nodeLimit === PROMOTION_COMBINATION_NODE_LIMIT && promotionCombinationCache.has(cacheKey)) return promotionCombinationCache.get(cacheKey);
 	const pawns = [...root.after.board.pieces(side, "pawn")].filter((sq) => {
 		const distance = side === "white" ? 7 - Math.floor(sq / 8) : Math.floor(sq / 8);
 		return distance >= 1 && distance <= 3 && ![...root.after.board.pieces(enemy, "pawn")].some((other) => Math.abs(other % 8 - sq % 8) <= 1 && (side === "white" ? other > sq : other < sq));
@@ -10045,10 +10045,23 @@ function provePromotionCombination(root, nodeLimit = PROMOTION_COMBINATION_NODE_
 		return path;
 	});
 	if (!controlled.length) return null;
+	const decision = (pos, move, stage) => ({
+		fen: makeFen(pos.toSetup()),
+		moveUci: makeUci(move),
+		stage
+	});
 	let nodes = nodeLimit;
+	let rootReply = "";
+	const rootBranches = [];
 	const orderedMoves = (pos) => {
 		const moves = legalMoves(pos);
-		return side === "black" ? moves : moves.sort((a, b) => (a.from ^ 56) - (b.from ^ 56) || (a.to ^ 56) - (b.to ^ 56));
+		const racePawns = pos.turn === side ? [...pos.board.pieces(enemy, "pawn")].filter((pawn) => ![...pos.board.pieces(side, "pawn")].some((other) => Math.abs(pawn % 8 - other % 8) <= 1 && (enemy === "white" ? other >> 3 > pawn >> 3 : other >> 3 < pawn >> 3))) : [];
+		const distance = (to) => Math.min(...racePawns.map((pawn) => Math.abs(to % 8 - pawn % 8) + Math.abs((to >> 3) - (pawn >> 3))));
+		const flip = side === "white" ? 56 : 0;
+		return moves.sort((a, b) => {
+			if (racePawns.length && a.from === b.from && pos.board.get(a.from)?.role === "king") return distance(a.to) - distance(b.to) || (a.to ^ flip) - (b.to ^ flip);
+			return (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip);
+		});
 	};
 	const visit = (pos, move) => {
 		if (--nodes < 0) throw new Error("Promotion combination budget exhausted");
@@ -10057,36 +10070,137 @@ function provePromotionCombination(root, nodeLimit = PROMOTION_COMBINATION_NODE_
 		return next;
 	};
 	const delta = (pos, move) => capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - 100 : 0);
-	const safeGain = (pos, balance) => {
-		if (pos.isEnd()) return pos.isCheckmate() ? 1e4 : null;
+	const settlementCache = /* @__PURE__ */ new Map();
+	const safeGain = (pos, balance, verifyPawnThreats = true) => {
+		const key = `${makeFen(pos.toSetup()).split(" ").slice(0, 4).join(" ")}:${balance}:${verifyPawnThreats}`;
+		if (settlementCache.has(key)) return settlementCache.get(key);
+		const result = computeSafeGain(pos, balance, verifyPawnThreats);
+		settlementCache.set(key, result);
+		return result;
+	};
+	const computeSafeGain = (pos, balance, verifyPawnThreats) => {
+		if (pos.isEnd()) return pos.isCheckmate() ? {
+			gain: 1e4,
+			line: []
+		} : null;
 		if (balance < 100) return null;
-		let loss = 0;
-		for (const reply of orderedMoves(pos)) {
-			if (visit(pos, reply).isCheckmate()) return null;
-			if (!delta(pos, reply)) continue;
-			const gain = tacticalExchangeGain(pos, reply);
-			if (gain <= -VALUE.king) return null;
-			loss = Math.max(loss, gain);
+		if ([...pos.board[side]].every((sq) => {
+			const role = pos.board.get(sq).role;
+			return role === "pawn" || role === "king";
+		})) {
+			let minimum = balance;
+			let example = [];
+			const decisions = [];
+			for (const reply of orderedMoves(pos)) {
+				if (reply.promotion) return null;
+				const next = visit(pos, reply);
+				if (next.isEnd()) return null;
+				let continuation = null;
+				for (const promotion of orderedMoves(next)) {
+					if (!promotion.promotion) continue;
+					const leaf = visit(next, promotion);
+					if (!leaf.isEnd() && orderedMoves(leaf).some((move) => move.promotion)) continue;
+					const win = safeGain(leaf, balance - delta(pos, reply) + delta(next, promotion));
+					if (win) {
+						continuation = {
+							gain: Math.min(balance - delta(pos, reply), win.gain),
+							line: [
+								makeSan(pos, reply),
+								makeSan(next, promotion),
+								...win.line
+							],
+							...includeWitnesses ? { decisions: [decision(next, promotion, "pawn-ending-promotion"), ...win.decisions ?? []] } : {}
+						};
+						break;
+					}
+				}
+				if (!continuation || continuation.gain < 100) return null;
+				minimum = Math.min(minimum, continuation.gain);
+				if (includeWitnesses) decisions.push(...continuation.decisions);
+				if (continuation.line.length > example.length) example = continuation.line;
+			}
+			return {
+				gain: minimum,
+				line: example,
+				...includeWitnesses ? { decisions } : {}
+			};
 		}
-		return balance - loss >= 100 ? balance - loss : null;
+		let loss = 0;
+		let retained = balance;
+		let example = [];
+		const decisions = [];
+		for (const reply of orderedMoves(pos)) {
+			const after = visit(pos, reply);
+			if (after.isCheckmate()) return null;
+			if (delta(pos, reply)) {
+				const directLoss = tacticalExchangeGain(pos, reply);
+				if (directLoss <= -VALUE.king || balance - directLoss < 100) return null;
+				loss = Math.max(loss, directLoss);
+			}
+			if (reply.promotion && tacticalExchangeGain(pos, reply) >= 100) return null;
+			const penultimate = pos.turn === "white" ? 6 : 1;
+			const promotionThreat = !reply.promotion && pos.board.get(reply.from)?.role === "pawn" && Math.floor(reply.to / 8) === penultimate;
+			const lastPieceCapture = capturedValue(pos, reply) > 0 && [...after.board[side]].every((sq) => ["pawn", "king"].includes(after.board.get(sq).role));
+			if (lastPieceCapture && (!verifyPawnThreats || tacticalExchangeGain(pos, reply) > balance - 100)) return null;
+			if (verifyPawnThreats && (after.isCheck() || promotionThreat || lastPieceCapture)) {
+				let answer = null;
+				for (const response of orderedMoves(after).sort((a, b) => delta(after, b) - delta(after, a))) {
+					const leaf = visit(after, response);
+					if (leaf.isCheck() && !leaf.isCheckmate()) continue;
+					const win = safeGain(leaf, balance - delta(pos, reply) + delta(after, response), false);
+					if (!win) continue;
+					answer = {
+						gain: Math.min(balance, win.gain),
+						line: [
+							makeSan(pos, reply),
+							makeSan(after, response),
+							...win.line
+						],
+						...includeWitnesses ? { decisions: [decision(after, response, "counterplay-defence"), ...win.decisions ?? []] } : {}
+					};
+					break;
+				}
+				if (!answer) return null;
+				retained = Math.min(retained, answer.gain);
+				if (answer.line.length > example.length) example = answer.line;
+				if (includeWitnesses) decisions.push(...answer.decisions ?? []);
+			}
+		}
+		const gain = Math.min(balance - loss, retained);
+		return gain >= 100 ? {
+			gain,
+			line: example,
+			...includeWitnesses ? { decisions } : {}
+		} : null;
 	};
 	const memo = /* @__PURE__ */ new Map();
+	const proved = /* @__PURE__ */ new Map();
+	const refuted = /* @__PURE__ */ new Map();
 	const attack = (pos, balance, pieces, remaining) => {
 		if (remaining <= 0 || pos.isEnd()) return null;
-		const key = `${makeFen(pos.toSetup())}:${balance}:${pieces}:${remaining}`;
+		const positionKey = `${makeFen(pos.toSetup()).split(" ").slice(0, 4).join(" ")}:${balance}:${pieces}`;
+		const prior = proved.get(positionKey);
+		if (prior && prior.remaining <= remaining) return prior.win;
+		if ((refuted.get(positionKey) ?? -1) >= remaining) return null;
+		const key = `${positionKey}:${remaining}`;
 		if (memo.has(key)) return memo.get(key);
 		const prepared = orderedMoves(pos).filter((move) => pos.isCheck() || pieces.includes(move.from) || pos.board.get(move.from)?.role === "king").map((move) => ({
 			move,
 			next: visit(pos, move)
-		}));
+		})).sort((a, b) => delta(pos, b.move) - delta(pos, a.move));
 		for (const { move, next } of prepared) {
-			const gain = safeGain(next, balance + delta(pos, move));
-			if (gain !== null) {
+			const win = safeGain(next, balance + delta(pos, move));
+			if (win !== null) {
 				const result = {
-					gain,
-					line: [makeSan(pos, move)]
+					gain: win.gain,
+					line: [makeSan(pos, move), ...win.line],
+					...includeWitnesses ? { decisions: [decision(pos, move, "settle"), ...win.decisions ?? []] } : {}
 				};
 				memo.set(key, result);
+				proved.set(positionKey, {
+					remaining,
+					win: result
+				});
 				return result;
 			}
 		}
@@ -10098,13 +10212,19 @@ function provePromotionCombination(root, nodeLimit = PROMOTION_COMBINATION_NODE_
 			if (result) {
 				const proof = {
 					gain: result.gain,
-					line: [makeSan(pos, move), ...result.line]
+					line: [makeSan(pos, move), ...result.line],
+					...includeWitnesses ? { decisions: [decision(pos, move, "advance"), ...result.decisions ?? []] } : {}
 				};
 				memo.set(key, proof);
+				proved.set(positionKey, {
+					remaining,
+					win: proof
+				});
 				return proof;
 			}
 		}
 		memo.set(key, null);
+		refuted.set(positionKey, remaining);
 		return null;
 	};
 	const defend = (pos, balance, pieces, remaining) => {
@@ -10113,19 +10233,31 @@ function provePromotionCombination(root, nodeLimit = PROMOTION_COMBINATION_NODE_
 			line: []
 		} : null;
 		let minimum = Infinity, example = [];
+		const decisions = [];
 		const replies = orderedMoves(pos).sort((a, b) => delta(pos, b) - delta(pos, a));
 		for (const reply of replies) {
+			if (pos === root.after) rootReply = makeSan(pos, reply);
+			if (reply.promotion && tacticalExchangeGain(pos, reply) >= 100) return null;
 			const next = visit(pos, reply);
 			const tracked = pieces.filter((sq) => next.board.get(sq)?.color === side);
 			const continuation = attack(next, balance - delta(pos, reply), tracked, remaining);
-			if (!continuation) return null;
+			if (!continuation) {
+				if (pos === root.after) onFailure?.(`Unproved ${makeSan(pos, reply)} after ${nodeLimit - nodes} visits`);
+				return null;
+			}
 			minimum = Math.min(minimum, continuation.gain);
+			if (pos === root.after) rootBranches.push({
+				replyUci: makeUci(reply),
+				gain: continuation.gain
+			});
+			if (includeWitnesses) decisions.push(...continuation.decisions ?? []);
 			const branch = [makeSan(pos, reply), ...continuation.line];
 			if (branch.length > example.length) example = branch;
 		}
 		return Number.isFinite(minimum) ? {
 			gain: minimum,
-			line: example
+			line: example,
+			...includeWitnesses ? { decisions } : {}
 		} : null;
 	};
 	let result = null;
@@ -10136,10 +10268,13 @@ function provePromotionCombination(root, nodeLimit = PROMOTION_COMBINATION_NODE_
 			pawns,
 			controlled,
 			replyCount: legalMoves(root.after).length,
-			examinedMoves: nodeLimit - nodes
+			examinedMoves: nodeLimit - nodes,
+			...includeWitnesses ? { branches: rootBranches } : {}
 		} : null;
-	} catch {}
-	if (nodeLimit === PROMOTION_COMBINATION_NODE_LIMIT) {
+	} catch (error) {
+		onFailure?.(`${String(error)} at ${rootReply} after ${nodeLimit - nodes} visits`);
+	}
+	if (!onFailure && !includeWitnesses && nodeLimit === PROMOTION_COMBINATION_NODE_LIMIT) {
 		promotionCombinationCache.set(cacheKey, result);
 		if (promotionCombinationCache.size > 128) promotionCombinationCache.delete(promotionCombinationCache.keys().next().value);
 	}
@@ -17879,7 +18014,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 96;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 97;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -18409,7 +18544,8 @@ function selectContinuationLessons(timeline, rootMotifs) {
 * so later repetitions and opponent counterplay cannot replace the lesson. */
 function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 	const fullReplay = replayTacticalLine(fen, line);
-	const promotionEpisode = rootMotifs.some((motif) => motif.id === "promotionCombination" && motif.ply === 1) && fullReplay.slice(0, 17).some((step) => step.before.turn === fullReplay[0].before.turn && step.move.promotion);
+	const provedPromotionOffer = rootMotifs.some((motif) => motif.id === "promotionCombination" && motif.ply === 1);
+	const promotionEpisode = provedPromotionOffer && fullReplay.slice(0, 17).some((step) => step.before.turn === fullReplay[0].before.turn && step.move.promotion);
 	const terminal = fullReplay.findIndex((step) => step.after.isEnd() || promotionEpisode && step.before.turn === fullReplay[0].before.turn && step.move.promotion);
 	const terminalReplay = terminal < 0 ? fullReplay : fullReplay.slice(0, terminal + 1);
 	const episodeReplay = rootMotifs.length ? terminalReplay : terminalReplay.slice(0, episodeEnd(terminalReplay));
@@ -18519,7 +18655,7 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine) {
 			if (motif.id === "perpetualCheck" && [...evidence.values()].some((previous) => previous.id === "perpetualCheck" && previous.actor === step.before.turn && (previous.ply ?? Infinity) < index + 1 && replay.slice(previous.ply, index + 1).every((entry) => entry.before.turn !== step.before.turn || entry.after.isCheck()))) continue;
 			if (motif.id === "forcingAttack" && [...evidence.values()].some((previous) => previous.id === "forcingAttack" && previous.actor === step.before.turn && (previous.ply ?? Infinity) < index + 1)) continue;
 			if (motif.label === "Forcing Mate" && [...evidence.values()].some((previous) => previous.actor === step.before.turn && (previous.ply ?? Infinity) < index + 1 && /^mateIn\d+$/.test(previous.id) && previous.value === 1e4 && !replay[(previous.ply ?? 0) - 1]?.after.isCheckmate())) continue;
-			if (motif.id === "hangingPiece" && index > 0 && step.move.to === replay[index - 1].move.to && (!replay[index - 1].capture || replay[index - 1].move.promotion)) continue;
+			if (motif.id === "hangingPiece" && index > 0 && step.move.to === replay[index - 1].move.to && (!replay[index - 1].capture || replay[index - 1].move.promotion || provedPromotionOffer && index === 1)) continue;
 			const key = `${index + 1}:${motif.id}`;
 			if (evidence.has(key)) continue;
 			const contextual = winningRecaptureEvidence(replay, index, motif);

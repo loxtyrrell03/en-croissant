@@ -18,7 +18,7 @@ test("the real rook sacrifice removes the knight's control of the connected pass
     const root = replayTacticalLine(fen, ["f4e4"])[0];
     const proof = provePromotionCombination(root);
     expect(proof).toMatchObject({ gain: 220, replyCount: 21, controlled: [11] });
-    expect(proof!.examinedMoves).toBeLessThanOrEqual(131072);
+    expect(proof!.examinedMoves).toBeLessThanOrEqual(262144);
     const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
     expect(result.motifs[0]).toMatchObject({ id: "promotionCombination", ply: 1 });
     expect(result.timeline?.find((m) => m.id === "promotion")?.ply).toBe(5);

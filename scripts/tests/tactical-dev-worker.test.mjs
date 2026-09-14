@@ -100,6 +100,18 @@ test(
         ],
       },
       {
+        name: "promotion combination survives complete pawn-race verification",
+        fen: "3R4/5k2/6p1/p7/3pNr2/2p2P1P/P5PK/8 b - - 3 41",
+        pvUci: ["f4e4"],
+        expectedPrimary: ["promotionCombination"],
+      },
+      {
+        name: "a losing counterpromotion race cannot fund a promotion lesson",
+        fen: "3R4/8/6p1/p7/3pNr2/2p2P1P/P3k1PK/8 b - - 3 41",
+        pvUci: ["f4e4"],
+        expectedPrimary: [],
+      },
+      {
         name: "exact KPK zugzwang",
         fen: "8/8/8/5k2/8/4K3/5P2/8 w - - 1 69",
         pvUci: ["e3f3"],

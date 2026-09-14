@@ -10,6 +10,17 @@ import { counterplayFen, counterplayLine } from "./fixtures/tacticalCounterplay"
 import { interferenceExamples } from "./fixtures/interferenceRelevance";
 import { promotionClearanceFen, promotionClearanceLine } from "./fixtures/promotionClearance";
 import { matingMechanismExamples } from "./fixtures/matingMechanismRelevance";
+import { promotionCounterplayBase, promotionCounterplayEngineLine } from "./fixtures/promotionCounterplay";
+
+test("accepting the proved promotion sacrifice keeps its move without a false gain badge", () => {
+  const result = classifyPositionTacticalMotifs({ fen: promotionCounterplayBase, pvUci: promotionCounterplayEngineLine });
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={replayTacticalLine(promotionCounterplayBase, promotionCounterplayEngineLine).map(s => s.san)} motifs={result.timeline ?? []} /></MantineProvider>);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Promotion Combination");
+  expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).toContain("fxe4");
+  expect(container.querySelector('[data-tactical-ply="2"]')?.textContent).not.toContain("Winning Recapture");
+  expect(container.querySelector('[data-tactical-ply="11"]')?.textContent).toContain("Promotion");
+});
 
 test.each(matingMechanismExamples)("mate stays primary while the secondary mechanism renders on its actual ply: $id",row=>{
   const result=classifyPositionTacticalMotifs(row);
