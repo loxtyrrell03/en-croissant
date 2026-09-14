@@ -1,6 +1,12 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 100 / live pipeline 105
+## Current classifier: adapter 101 / live pipeline 106
+
+The [Black-root context and payoff review](black-context-relevance-review.md) adds 20 fixed real-game roots and their 20 actual after-move boards, including openings, quiet middlegames, exchanges and endings. Initial chess judgements preceded fresh output; 71 fresh public engine searches review roots, replies, mechanism controls and all legal defences of a real checking discovery. Its later capture now says Discovery Payoff. The same proof/identity-linked normalization covers forks, pins and skewers, preserves genuine opponent/missed themes, and never admits a new tactic from the supplied continuation.
+
+All 246 private primary lists are unchanged. Nineteen positions change only payoff labels/explanations (12 source and 16 live results, overlapping); the other 227 keep both full results. Two of twenty rare continuations receive pin/skewer payoff wording while every primary stays unchanged. A structural audit rejects any other classification, value, ply, actor, board or causal change. Stability is not accuracy certification. The linked review records 1,936 selected tests, 1,103 controller-worker inputs, 36 actual-browser groups, 37 final cold-HTTP cases, variable startup and complete delivery limits. No owner app/service restart or deployment; paid material stays private. Broader accuracy and automatic larger-ending review acquisition remain open.
+
+## Prior adapter 100 / live pipeline 105
 
 The [exact endgame relevance review](tablebase-relevance-review.md) adds optional, exact-position Syzygy pass certificates for larger-ending winning and drawing zugzwang. Two real roots, a colour reflection and a reciprocal drawing resource qualify; source-tagged pawn wins, infiltration and equal ending controls do not. All legal moves and both outcomes are validated independently of engine PV values. The Tactics tab's explicit Verify move online action retains local results, has bounded cancellation/retry and preserves the original engine context. Normal scans do not upload positions. The mistake adapter accepts supplied certificates for missed/allowed lessons and independent better-position comparisons, but automatic game-review lookup is not wired.
 

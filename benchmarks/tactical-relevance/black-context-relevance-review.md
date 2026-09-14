@@ -1,0 +1,48 @@
+# Black-root game contexts and material-payoff relevance
+
+## Scope and chess judgements
+
+Adapter 101 / live pipeline 106 continues the output-blind cross-phase sample with the remaining five public Lichess games: `mD14jttw`, `TCE52bRu`, `zcEVXTW1`, `BNbGN5Pe`, and `fvNmdR3U`. Fixed plies 5, 15, 29, 49, 69 and 89 provide **20 Black-to-move contexts and 20 actual after-move boards**. Ten unavailable fixed plies are retained as omissions, never replaced. These are puzzle-selected games, not representative ordinary chess or a held-out accuracy score.
+
+The full legal replay and selection identity are in [black-context-development.json](black-context-development.json). [Initial judgements](black-context-initial-judgement.json) were recorded before fresh engine/classifier output. [The engine receipt](black-context-stockfish-18.json) contains 43 fresh depth-16 Stockfish 18 searches: 20 roots, four fixed played moves absent from the three root candidates, and 19 independently searched actual replies. The twentieth reply is a terminal bare-kings draw. Scores are relative to each searched side, not always White; mistake-review inputs convert the Black-root scores to White-relative values.
+
+| Context | Reviewed judgement, including limits |
+| --- | --- |
+| mD14jttw, plies 5/15 | Fianchetto development and a King's Indian central break. The later exchanges and bishop pressure do not establish a current forcing tactic. |
+| mD14jttw, plies 29/49 | Bg4 attacks the rook but is not a king pin; White has f3 and ordinary rook choices. Bxc5 is an exchange, not winning a loose knight. The fresh searches prefer other Black moves, but do not prove a specific tactical cause for these smaller losses. |
+| mD14jttw, plies 69/89 | King activity, reserve tempi and a pawn race. A later promotion must not appear as a promotion action on Kf7/Kg4. The eight-piece ending and a stronger root race explanation remain unproved, not certified correct negatives. |
+| TCE52bRu, plies 5/15/29 | d6 chases a knight that can retreat; b5 takes space; Bb6 preserves a diagonal. No immediate trap, fork or forced profit is demonstrated in the examined lines. |
+| TCE52bRu, ply 49 | Rxa5 recaptures the bishop that just captured Black's bishop. Calling it a fresh hanging bishop would misread the exchange. White's actual reached position **does** have Ne7+ followed by Rxd7: the checking knight uncovers Rd1 against Nd7. **Discovered Attack** is the right root theme; Rxd7 is its **Discovery Payoff**, not a separate hanging-piece lesson. Rxa5 is already Black's best move, so the danger persists rather than proving blame for that move. |
+| zcEVXTW1, plies 5/15 | Ordinary development and a rook supporting central play. A later intermediate check does not establish a root tactical gain. |
+| zcEVXTW1, plies 29/69/89 | Equal rook trades, then a queen recapture reaching bare kings. Neither check nor the face value of a captured queen establishes a new material win. |
+| zcEVXTW1, ply 49 | Kh5 is active king play, not a trapped king or a demonstrated zugzwang. In White's alternative Nxb5 Bxb5 Rc5+, the king/bishop fork belongs at ply 3. The knight was given up first; this is an equalizing continuation, not winning an entire free bishop at the root. The main Rc5+ line has no headline. |
+| BNbGN5Pe, plies 5/15 | Slav development and the best bishop retreat Bh5. The later ...Nxg4 / ...Bxh4 mate depends on White playing g4; White's best g3 avoids that branch. Do not transplant the mate to Bh5. |
+| fvNmdR3U, plies 5/15 | A King's Gambit pawn move and knight development. The later greedy ...Bxd1 branch permits Bxf7+ and Nd5 mate, but that is not a forced mate caused by Nc6. White's fresh best reply is Bb5. |
+
+The sample exposed one concrete explanation defect, not twenty accuracy successes. All 20 Black root headlines were empty before the change and remain empty. This limited review supports several negative judgements, but does not establish exhaustive tactical absence in every position.
+
+## Implementation and contrary controls
+
+`normalizeContinuingTactics` now links an **already independently audited** generic capture to the immediately preceding same-side fork, discovery, pin or skewer. It rechecks the mechanism, tracks the actual attacking piece and victim through the legal defence, and preserves the capture's actual ply, actor, value and board identity. The primary mechanism remains the headline. The payoff remains visible in collapsed per-ply details; this is a relevance/relationship correction, not a reduction in the number of recorded moves.
+
+The normalizer does not admit new motifs or use engine scores to prove a relationship. A lower-value incidental capture, different capturer, mismatched source/move, interrupted sequence, primary capture or already-specialized payoff is not overwritten. A merely supplied pin label cannot bypass proof, and a legal king recapture refutes the constructed unprotected pin. A new opponent counter-fork remains separate. Missing a discovery retains its missed primary and better-line payoff. Existing deflection, interference, promotion, mate, zugzwang and compensation behaviour is unchanged.
+
+[Direct-payoff fixtures](../../src/utils/tests/fixtures/directMaterialPayoff.ts) cover the real discovery and constructed knight fork, rook skewer and bishop pin in both colours. [Fresh engine probes](direct-payoff-stockfish-18.json) inspect all 24 selected root/reply/capture decisions and all four legal defences of the real Ne7+. These 28 searches are separate from the 43 game-context searches. The four real defences evaluate from -543 to -602 centipawns for Black in these depth-16 searches; this is a whole-position estimate, not the classifier's 320-centipawn material certificate.
+
+Two controls matter to interpretation. The bare-knight fork saves a draw after capturing the queen: zero evaluation does not make the tactic fake. In the rook-skewer control, Kb7 permits Rxa8 Kxa8 and a draw, whereas the chosen Kd7 line leaves the rook alive and wins. The fork/skewer material lesson is valid, but the supplied continuation is not the only defence or a claim that the game is won. In the bishop-pin control, the engine sometimes prefers the pawn capture fxe7 over Bxe7; both the protected capture and legal king-recapture counterexample were checked. No engine-equality gate or fixture-specific detector was added.
+
+## Broader replay and delivery
+
+The 246 private course/generated-game inputs keep every primary list. Nineteen positions change only payoff labels/explanations: 12 source results and 16 live results, with overlap; 227 positions retain both full results. The 20 earlier rare positions retain every primary; only UiHeK's later skewer capture and IKbcw's pin capture receive payoff wording. Their actual forcing-attack/pin causes remain intact. A structural comparison rejects any other change to values, plies, actors, board arrows or classifications. These are relevance improvements, not newly solved puzzles or certified accuracy percentages.
+
+Verification: **1,936 selected tests pass**, with 85 explicitly conditional skips across 127 files; 41 new classifier/context/rendered regressions are included. Both the 41-module shared-review build and 8,873-module app build pass, along with whole-project TypeScript, scoped lint, three service checks and two development-cache scenarios. Existing build-size/plugin and large-source transform warnings remain.
+
+All **1,103 actual-controller production-worker inputs** pass across 15 tests: 597 public, 505 private and the separate promotion test. The final artifact is `liveTactics.worker-DDhhVEZA.js`. [Public worker receipt](built-worker-adapter101.json): mean 120 ms, median 85 ms, p95 286 ms and maximum 1,847 ms total on this host; maximum classification/transfer is 1,783 ms, inside the unchanged 3,000 ms deadline. All 549 previous public headline lists are unchanged. The run overlapped other verification work; these timings are not a speedup claim or engine/network/native latency measurement.
+
+The actual Chrome component/browser-worker harness passes 36 groups at 1100/760/360px and 100/200% text. It opens and closes per-ply details by keyboard, checks the payoff's actual move, verifies the unchanged main-board preview callback, checks expanded layout and quiet/equal-liquidation states, and blocks external requests. Screenshots/report are under `tmp/tactical-payoffs-adapter101/`. It does not drive the installed app or prove physical board behaviour.
+
+The final isolated forced-cold HTTP run passes 37 cases, including eight new payoff/colour inputs. First/next worker startup is 1,075/88 ms; maximum startup is 2,282 ms and maximum classification/transfer is 1,338 ms. An earlier 29-case run during concurrent verification also passes but takes **10,186 ms** for its first worker and **16,666 ms** for separate server startup. Both receipts are retained: startup remains variable, not certified fixed or native-app tested.
+
+Authoritative private receipts in `C:/Users/Lox/Documents/OnCrescent Tactical Benchmarks/`: `adapter101-final-exact-replay.json`, `rare-theme-adapter101-final.json`, `adapter101-final-stability.json`, `built-worker-adapter101-verified-private.json`, `adapter101-final-cold-http-worker.json`, and `adapter101-payoff-cold-http-worker.json`. The initial root/reply and final 28-probe engine reports are retained separately; only allowlisted public fields enter the public receipts.
+
+No owner app, native package or service was restarted or deployed. Paid course positions and detailed course receipts remain outside the repository. Wider quiet preparations, causal comparisons, endgame coverage, primary ranking and native-runtime verification remain open.

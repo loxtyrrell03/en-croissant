@@ -21,6 +21,10 @@ const profiles = {
     start: 3, end: 7, plies: [6, 16, 30, 50, 70, 90],
     scope: "Fixed plies 6, 16, 30, 50, 70, 90 from the next four frozen cross-phase source games (indices 3 through 6). Selection precedes engine and classifier output, without result, evaluation, player or move-quality filtering. These puzzle-game contexts are not representative ordinary games. Player headers, comments and clocks are omitted; unavailable fixed plies are recorded rather than replaced.",
   },
+  "black-context": {
+    start: 7, end: 12, plies: [5, 15, 29, 49, 69, 89],
+    scope: "Fixed plies 5, 15, 29, 49, 69, 89 from the remaining five frozen cross-phase source games (indices 7 through 11). These Black-to-move contexts and their actual replies complement prior White-root samples. Selection precedes fresh engine/classifier output; no result, evaluation, player or move-quality filtering. Puzzle-game contexts are not a representative all-chess sample. Player headers/comments/clocks are omitted; unavailable plies are recorded, never replaced.",
+  },
 };
 const config = profiles[profile];
 assert.ok(config, "Unknown context profile");

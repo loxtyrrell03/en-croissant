@@ -11,6 +11,7 @@ import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { directThreatFen, directThreatLine, directThreatControls } from "./fixtures/directThreatRelevance";
 import { tablebaseCases } from "./fixtures/tablebaseRelevance";
+import { directMaterialPayoffCases, reflectPayoff } from "./fixtures/directMaterialPayoff";
 import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import { trappedRookFen, trapControls, unrelatedPayoffTrap } from "./fixtures/trapRelevance";
 import { interferenceExamples, interferenceControls, compensatedInterference } from "./fixtures/interferenceRelevance";
@@ -128,7 +129,11 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         const secondary = JSON.parse(readFileSync("benchmarks/tactical-relevance/secondary-theme-stockfish-18.json", "utf8"));
         const crossPhase=JSON.parse(readFileSync("benchmarks/tactical-relevance/cross-phase-stockfish-18.json","utf8"));
         const broaderGame = JSON.parse(readFileSync("benchmarks/tactical-relevance/broader-game-stockfish-18.json", "utf8"));
+        const blackContext = JSON.parse(readFileSync("benchmarks/tactical-relevance/black-context-stockfish-18.json", "utf8"));
         const cases = [
+            ...[...directMaterialPayoffCases, ...directMaterialPayoffCases.map(reflectPayoff)].map(row => ({ id: `direct-payoff:${row.id}`, input: { fen: row.fen, pvUci: row.pvUci, depth: 16, engineName: "Public fixture" } })),
+            ...blackContext.cases.map((row: any) => ({ id: `black-context:${row.id}`, input: { fen: row.fen, pvUci: row.engineLines[0].pvUci, variations: row.engineLines, depth: 16, engineName: "Stockfish 18", previousFen: row.previousFen, previousMoveUci: row.previousMoveUci } })),
+            ...blackContext.responses.map((row: any, index: number) => ({ id: `black-context:${row.id}`, input: { fen: row.fen, pvUci: row.lines[0]?.pvUci ?? [], variations: row.lines, depth: 16, engineName: "Stockfish 18", previousFen: blackContext.cases[index].fen, previousMoveUci: blackContext.cases[index].sourceUci[0] } })),
             ...[
                 { id: "root", fen: directThreatFen, pvUci: directThreatLine.slice(0, 1) },
                 { id: "continuation", fen: directThreatFen, pvUci: directThreatLine },
@@ -900,6 +905,11 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 if (result.scan.motifs.some(m => m.id === "zugzwang") !== row.expectedZugzwang)
                     throw new Error(`Independent tablebase judgement failed: ${row.id}`);
             }
+            if (item.id.startsWith("direct-payoff:")) {
+                const row = [...directMaterialPayoffCases, ...directMaterialPayoffCases.map(reflectPayoff)].find(row => item.id === `direct-payoff:${row.id}`)!;
+                if (result.scan.motifs[0]?.id !== row.theme || result.scan.variations[0].timeline.find(m => m.ply === 3)?.label !== row.label)
+                    throw new Error(`Material mechanism/payoff judgement failed: ${row.id}`);
+            }
             if (item.id.startsWith("promotion-ending:")) promotionEndingResults.set(item.id, result.scan);
             if (item.id.startsWith("secondary-source:")) secondaryResults.set(item.id, result.scan);
             if (item.id.startsWith("trap-audit:")) trapResults.set(item.id, result.scan);
@@ -923,7 +933,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(549);
+        expect(report).toHaveLength(597);
         for (const length of [1, promotionCounterplayLine.length]) expect(promotionEndingResults.get(`promotion-ending:real:${length}`)!.motifs[0]).toMatchObject({ id: "promotionCombination", value: 220 });
         expect(promotionEndingResults.get("promotion-ending:real:5")!.variations[0].timeline.some((m) => m.ply === 2 && m.id === "hangingPiece")).toBe(false);
         for (const row of pawnRaceRefutations) for (const length of [1, row.historicalLine.length]) expect(promotionEndingResults.get(`promotion-ending:${row.id}:${length}`)!.motifs.some((m) => m.id === "promotionCombination")).toBe(false);

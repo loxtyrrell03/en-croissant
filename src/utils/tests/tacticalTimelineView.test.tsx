@@ -11,6 +11,18 @@ import { interferenceExamples } from "./fixtures/interferenceRelevance";
 import { promotionClearanceFen, promotionClearanceLine } from "./fixtures/promotionClearance";
 import { matingMechanismExamples } from "./fixtures/matingMechanismRelevance";
 import { promotionCounterplayBase, promotionCounterplayEngineLine } from "./fixtures/promotionCounterplay";
+import { directMaterialPayoffCases } from "./fixtures/directMaterialPayoff";
+
+test.each(directMaterialPayoffCases)("$id renders one mechanism and its later payoff, not another hanging-piece lesson", row => {
+  const result = classifyPositionTacticalMotifs(row);
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={replayTacticalLine(row.fen, row.pvUci).map(step => step.san)} motifs={result.timeline ?? []} /></MantineProvider>);
+  expect(container.querySelector("details")?.hasAttribute("open")).toBe(false);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain(result.motifs[0].label);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).not.toContain("Payoff");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain(row.label);
+  expect(container.textContent).not.toContain("Hanging Piece");
+});
 
 test("accepting the proved promotion sacrifice keeps its move without a false gain badge", () => {
   const result = classifyPositionTacticalMotifs({ fen: promotionCounterplayBase, pvUci: promotionCounterplayEngineLine });

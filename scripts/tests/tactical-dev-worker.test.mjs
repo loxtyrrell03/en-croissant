@@ -5,6 +5,7 @@ import test from "node:test";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
 import { directThreatFen, directThreatLine } from "../../src/utils/tests/fixtures/directThreatRelevance.ts";
 import { tablebaseCases } from "../../src/utils/tests/fixtures/tablebaseRelevance.ts";
+import { directMaterialPayoffCases, reflectPayoff } from "../../src/utils/tests/fixtures/directMaterialPayoff.ts";
 import {
   classifyLiveTacticsInWorker,
   TACTICAL_CLASSIFICATION_TIMEOUT_MS,
@@ -88,6 +89,7 @@ test(
   async (t) => {
     assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(new URL(origin).hostname));
     const cases = [
+      ...[...directMaterialPayoffCases, ...directMaterialPayoffCases.map(reflectPayoff)].map(row => ({ name: `direct payoff: ${row.id}`, fen: row.fen, pvUci: row.pvUci, expectedPrimary: [row.theme], expectedPayoff: row.label })),
       ...tablebaseCases.filter(row => ["EKWHC:g4f4", "EKWHC-reciprocal-draw"].includes(row.id)).map(row => ({ name: row.id, fen: row.fen, pvUci: [row.move], tablebaseEvidence: row.evidence, expectedPrimary: ["zugzwang"], expectedLabels: ["zugzwang"] })),
       { name: "discovered check suppresses its duplicate direct threat", fen: directThreatFen, pvUci: directThreatLine, expectedPrimary: ["discoveredCheck"], expectedLabels: ["discoveredCheck"] },
       { name: "quiet mixed-target fork", fen: mixedForkFen, pvUci: ["d2f3"], expectedPrimary: ["fork"] },
@@ -250,6 +252,8 @@ test(
       assert.ok(result.startupMs < TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
       assert.ok(result.classificationMs < TACTICAL_CLASSIFICATION_TIMEOUT_MS);
       assert.equal(result.modules.length, 1, "development must serve a self-contained verifier");
+      if (item.expectedPayoff)
+        assert.equal(result.scan.variations[0].timeline.find(motif => motif.ply === 3)?.label, item.expectedPayoff);
       if (item.expectedPrimary)
         assert.deepEqual(result.scan.motifs.map((motif) => motif.id), item.expectedPrimary);
       if (item.expectedLabels)

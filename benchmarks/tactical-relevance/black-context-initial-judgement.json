@@ -1,0 +1,25 @@
+{
+  "scope": "Initial board/source-replay judgements recorded before fresh engine or classifier output. Twenty fixed Black-to-move contexts across five puzzle-source games; omissions are retained. Statements about plausible mechanisms are provisional, not expected labels or ground truth.",
+  "cases": [
+    { "id": "context:mD14jttw:ply5", "judgement": "Normal double-fianchetto development. Bg7 does not establish a forcing gain or a tactical f2/f7 attack." },
+    { "id": "context:mD14jttw:ply15", "judgement": "The King's Indian e5 central break leads to ordinary exchanges. Neither the break nor a later bishop pin automatically constitutes a tactical win." },
+    { "id": "context:mD14jttw:ply29", "judgement": "Bg4 attacks Rd1 with tempo but the rook has ordinary retreats. This is not a pin to the king, and any forced gain needs separate evidence." },
+    { "id": "context:mD14jttw:ply49", "judgement": "Bxc5 trades bishop for knight, then Bb7 enables an ordinary rook exchange. The c8 bishop is shielding Ra8 from Rd8; do not confuse that geometry or an equal capture sequence with a won piece. Other defensive resources need engine review." },
+    { "id": "context:mD14jttw:ply69", "judgement": "An eight-piece pawn ending after a knight/pawn exchange. Kf7 centralizes against e5; reserve tempi and a pawn race matter. No zugzwang or promotion headline is proved by the supplied later line." },
+    { "id": "context:mD14jttw:ply89", "judgement": "Kg4 supports a fast h-pawn race. The actual later promotion must not become a promotion action at this king move. Check whether an independently proved root race or exact ending outcome is available." },
+    { "id": "context:TCE52bRu:ply5", "judgement": "Black has already lost e5 to the knight. d6 chases it, but retreating is legal; an attack on the knight alone is not a fork or trapped-piece tactic." },
+    { "id": "context:TCE52bRu:ply15", "judgement": "b5 seeks queenside space. The supplied later central pawn exchanges and queen trade are not proof of a root tactic." },
+    { "id": "context:TCE52bRu:ply29", "judgement": "Bb6 retreats the bishop while retaining a long diagonal. No forced tactical profit is apparent; pressure against e5/f2 and later exchanges need independent verification." },
+    { "id": "context:TCE52bRu:ply49", "judgement": "Rxa5 recaptures the bishop that just took Black's bishop on a5. It should not be sold as a fresh hanging bishop. The later Nf2+ fork occurs after further moves and needs its own ply/context." },
+    { "id": "context:zcEVXTW1:ply5", "judgement": "Nd7 is normal development against a London setup. No immediate tactical mechanism is apparent." },
+    { "id": "context:zcEVXTW1:ply15", "judgement": "Re8 supports a central break. A later intermediate knight check in the supplied exchanges does not establish a root forcing tactic." },
+    { "id": "context:zcEVXTW1:ply29", "judgement": "Rxd1+ exchanges equally for the rook that just moved to d1. The king can recapture; giving check is not enough to claim a material tactic." },
+    { "id": "context:zcEVXTW1:ply49", "judgement": "Kh5 invades toward h4/h3. White can also advance pawns and reposition the rook. Restriction or king activity is not automatically a trap or zugzwang." },
+    { "id": "context:zcEVXTW1:ply69", "judgement": "Rxd3+ trades rooks into a pawn race. White and Black subsequently queen; inspect exact move order rather than using the captured rook as a material-gain certificate." },
+    { "id": "context:zcEVXTW1:ply89", "judgement": "Kxh1 recaptures the queen after Qxh1 took Black's queen, reaching bare kings. This is an equal queen liquidation to a draw, not winning a hanging queen." },
+    { "id": "context:BNbGN5Pe:ply5", "judgement": "c6 builds a normal Slav centre. The later bishop trap and mating sequence are unrelated to the immediate development move." },
+    { "id": "context:BNbGN5Pe:ply15", "judgement": "Bh5 retreats the attacked bishop. White's later g4 permits ...Nxg4 and ...Bxh4 mate, but g4 is not forced. Check the defence and mating alternative before attaching any root mechanism." },
+    { "id": "context:fvNmdR3U:ply5", "judgement": "Black is a gambit pawn up in a King's Gambit. h6 is a pawn/defensive move, not a new material win. There may be sharper alternatives, which need engine analysis." },
+    { "id": "context:fvNmdR3U:ply15", "judgement": "Nc6 develops, while White can try Ne5 uncovering an attack on its own queen along the g4-d1 bishop ray. The greedy ...Bxd1 branch allows Bxf7+ and Nd5 mate; that branch alone cannot establish a forced root mate or refute every defence to Ne5." }
+  ]
+}

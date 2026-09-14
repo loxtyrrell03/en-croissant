@@ -17346,7 +17346,74 @@ function normalizeContinuingTactics(steps, motifs) {
 		});
 		suppressed.add(motif);
 	}
-	return motifs.filter((motif) => !suppressed.has(motif)).map((motif) => replacements.get(motif) ?? motif);
+	return normalizeDirectMaterialPayoffs(steps, motifs.filter((motif) => !suppressed.has(motif)).map((motif) => replacements.get(motif) ?? motif));
+}
+/** A verified attack and its next-turn capture are one mechanism, not two
+* unrelated lessons. Only relabel an already-audited generic capture: neither
+* this helper nor supplied future moves admit a new tactic. Require the same
+* attacker and victim through the actual defence, and stop at the next turn;
+* a later capture after a pause needs its own explanation. */
+function normalizeDirectMaterialPayoffs(steps, motifs) {
+	return motifs.map((motif) => {
+		if (motif.id !== "hangingPiece" || motif.label !== "Hanging Piece" || motif.relevance === "primary" || !motif.ply || motif.ply < 3) return motif;
+		const capture = steps[motif.ply - 1], reply = steps[motif.ply - 2];
+		const first = steps[motif.ply - 3];
+		if (!first || !reply || !capture?.capture || capture.move.promotion || capture.after.isCheckmate() || capture.uci !== motif.moveUci || capture.before.turn !== first.before.turn) return motif;
+		const victim = capture.before.board.get(capture.move.to);
+		if (!victim || victim.color === capture.before.turn) return motif;
+		const matches = motifs.filter((previous) => previous.ply === motif.ply - 2 && previous.source === motif.source && previous.moveUci === first.uci && [
+			"fork",
+			"pin",
+			"skewer",
+			...DISCOVERED_THEMES
+		].includes(previous.id)).flatMap((previous) => {
+			const pairs = [];
+			let label;
+			if (previous.id === "fork") {
+				label = "Fork Payoff";
+				if (!verifiedFork(first)) return [];
+				pairs.push(...winningTargets(first.after, first.move.to, first.before.turn).map((target) => ({
+					from: first.move.to,
+					target
+				})));
+			} else if (DISCOVERED_THEMES.has(previous.id)) {
+				label = "Discovery Payoff";
+				const rays = revealedRays(first);
+				if (!discoveredEvidence([first], previous.source)) return [];
+				pairs.push(...rays);
+				if (rays.some((ray) => first.after.board.get(ray.target)?.role === "king")) pairs.push(...winningTargets(first.after, first.move.to, first.before.turn).map((target) => ({
+					from: first.move.to,
+					target
+				})));
+			} else {
+				label = previous.id === "pin" ? "Pin Payoff" : "Skewer Payoff";
+				for (const ray of relevantRayTactics(first).filter((ray) => ray.kind === previous.id)) {
+					const proof = rayMaterialProof(first, ray);
+					if (proof.kind !== "proven" && proof.kind !== "forcing") continue;
+					pairs.push({
+						from: ray.pinner,
+						target: ray.front
+					}, {
+						from: ray.pinner,
+						target: ray.rear
+					});
+				}
+			}
+			if ((motif.value ?? 0) < (previous.value ?? 100)) return [];
+			return pairs.some(({ from, target }) => first.after.board.get(target)?.role !== "king" && relocatedSquare(reply, from) === capture.move.from && relocatedSquare(reply, target) === capture.move.to) ? [{
+				previous,
+				label
+			}] : [];
+		});
+		const primary = matches.filter((match) => match.previous.relevance === "primary");
+		const chosen = primary.length === 1 ? primary[0] : matches.length === 1 ? matches[0] : null;
+		if (!chosen) return motif;
+		return {
+			...motif,
+			label: chosen.label,
+			evidence: `${capture.san} collects the ${victim.role} on ${makeSquare(capture.move.to)}, the material payoff of the earlier ${chosen.previous.label.toLowerCase()} (${first.san}).`
+		};
+	});
 }
 function compareMaterialCause(actual, better, motif) {
 	const step = actual[1], alternative = better[1];
@@ -18307,7 +18374,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 100;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 101;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
