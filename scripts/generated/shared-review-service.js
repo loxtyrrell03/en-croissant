@@ -12319,35 +12319,45 @@ function hasConcreteThreat(step) {
 	return winningTargets(step.after, step.move.to, step.before.turn).length > 0 || Boolean(discoveredEvidence([step], "available")) || Boolean(interferenceProof(step, "available"));
 }
 var trapProofCache = /* @__PURE__ */ new Map();
-function proveTrappedMaterial(step, target, nodeLimit = 256, pinProofLimit = 8) {
+function proveTrappedMaterial(step, target, nodeLimit = 256, pinProofLimit = 8, onFailure) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !Number.isSafeInteger(pinProofLimit) || pinProofLimit < 0 || step.after.isEnd() || step.after.board.get(target)?.color !== opposite(step.before.turn) || step.after.board.get(target)?.role === "king") return null;
 	const key = `${makeFen(step.before.toSetup())}:${step.uci}:${target}`;
-	const cacheable = nodeLimit === 256 && pinProofLimit === 8;
+	const cacheable = nodeLimit === 256 && pinProofLimit === 8 && !onFailure;
 	if (cacheable && trapProofCache.has(key)) return trapProofCache.get(key);
 	const side = step.before.turn;
 	const initial = step.capture + (step.move.promotion ? VALUE[step.move.promotion] - VALUE.pawn : 0);
 	const replies = legalMoves(step.after);
 	const defenders = [];
+	const countercaptures = [];
+	const branches = [];
+	const recoveryBudget = { nodes: 4096 };
 	let minimum = Infinity;
 	let nodes = nodeLimit;
 	let pinProofs = pinProofLimit;
-	const capture = (pos, to) => {
+	let currentReply = "";
+	const capture = (pos, to, settle = true) => {
 		let best = -VALUE.king;
 		let san = "";
+		let uci = "";
 		for (const move of legalMoves(pos).filter((m) => m.to === to)) {
-			const gain = tacticalExchangeGain(pos, move);
+			const gain = settle ? participantCaptureGain(pos, move, [...pos.board[pos.turn], move.to], recoveryBudget) : tacticalExchangeGain(pos, move);
+			if (gain === null || settle && !noImmediateTerminalRefutation(pos, move, recoveryBudget)) continue;
 			if (gain > best) {
 				best = gain;
 				san = makeSan(pos, move);
+				uci = makeUci(move);
 			}
 		}
 		return {
 			gain: best,
-			san
+			san,
+			uci
 		};
 	};
 	let result = null;
 	try {
 		for (const reply of replies) {
+			currentReply = makeSan(step.after, reply);
 			if (--nodes < 0) throw new Error("Trap proof budget exhausted");
 			const next = step.after.clone();
 			next.play(reply);
@@ -12361,13 +12371,53 @@ function proveTrappedMaterial(step, target, nodeLimit = 256, pinProofLimit = 8) 
 			const direct = capture(next, victim);
 			if (balance + direct.gain >= initial + 100) {
 				minimum = Math.min(minimum, balance + direct.gain);
+				branches.push({
+					replyUci: makeUci(reply),
+					fen: makeFen(next.toSetup()),
+					answerUci: direct.uci,
+					gain: balance + direct.gain
+				});
 				continue;
+			}
+			if (reply.from !== target && capturedValue(step.after, reply)) {
+				const counter = capture(next, reply.to);
+				if (balance + counter.gain >= initial + 100) {
+					minimum = Math.min(minimum, balance + counter.gain);
+					countercaptures.push({
+						reply: makeSan(step.after, reply),
+						answer: counter.san
+					});
+					branches.push({
+						replyUci: makeUci(reply),
+						fen: makeFen(next.toSetup()),
+						answerUci: counter.uci,
+						gain: balance + counter.gain
+					});
+					continue;
+				}
 			}
 			if (reply.from === target || next.isCheck() || next.board.get(reply.to)?.role === "king") throw new Error("Safe escape or checking/king defence");
 			const unprotected = next.clone();
 			unprotected.board.take(reply.to);
-			if (capture(unprotected, victim).gain - direct.gain < 100) throw new Error("Not a causal defender");
+			if (capture(unprotected, victim, false).gain - capture(next, victim, false).gain < 100) throw new Error("Not a causal defender");
 			let answer = capture(next, reply.to);
+			let continuation;
+			if (balance + answer.gain < initial + 100) for (const move of legalMoves(next)) {
+				if (move.to !== reply.to || !capturedValue(next, move) || move.promotion) continue;
+				if (--nodes < 0) throw new Error("Trap proof budget exhausted");
+				const removal = replayTacticalLine(makeFen(next.toSetup()), [makeUci(move)])[0];
+				const leaves = [];
+				const gain = proveDefenderCombination(removal, [victim], [...removal.after.board[side]], 4096, recoveryBudget, 1, true, Math.max(1, initial + 100 - balance), (leaf) => leaves.push(leaf));
+				if (recoveryBudget.nodes < 0) throw new Error("Trap recovery budget exhausted");
+				if (gain === null || balance + gain < initial + 100) continue;
+				answer = {
+					gain,
+					san: removal.san,
+					uci: removal.uci
+				};
+				continuation = leaves;
+				break;
+			}
 			if (balance + answer.gain < initial + 100) for (const move of legalMoves(next)) {
 				if (--nodes < 0) throw new Error("Trap proof budget exhausted");
 				if (capturedValue(next, move) || move.promotion) continue;
@@ -12384,10 +12434,11 @@ function proveTrappedMaterial(step, target, nodeLimit = 256, pinProofLimit = 8) 
 				};
 				if (!relevantRayTactics(continuation).some((ray) => ray.kind === "pin" && ray.front === reply.to && after.board.get(ray.rear)?.role === "king")) continue;
 				if (--pinProofs < 0) throw new Error("Trap pin proof budget exhausted");
-				const proof = materialThreatProof(continuation, [victim, reply.to], [...after.board[side]]);
+				const proof = materialThreatProof(continuation, [victim, reply.to], [...after.board[side]], [], false, void 0, { allPiecesAtLeaf: true });
 				if (proof.kind === "proven" && proof.gain > answer.gain) answer = {
 					gain: proof.gain,
-					san: continuation.san
+					san: continuation.san,
+					uci: continuation.uci
 				};
 				if (balance + answer.gain >= initial + 100) break;
 			}
@@ -12397,12 +12448,24 @@ function proveTrappedMaterial(step, target, nodeLimit = 256, pinProofLimit = 8) 
 				reply: makeSan(step.after, reply),
 				answer: answer.san
 			});
+			branches.push({
+				replyUci: makeUci(reply),
+				fen: makeFen(next.toSetup()),
+				answerUci: answer.uci,
+				gain: balance + answer.gain,
+				...continuation ? { continuation } : {}
+			});
 		}
 		if (replies.length && Number.isFinite(minimum)) result = {
 			gain: minimum,
-			defenders
+			recoveryVisits: 4096 - recoveryBudget.nodes,
+			defenders,
+			countercaptures,
+			branches
 		};
-	} catch {}
+	} catch (error) {
+		onFailure?.(`${currentReply}: ${error instanceof Error ? error.message : "Incomplete trap proof"}`);
+	}
 	if (cacheable) {
 		trapProofCache.set(key, result);
 		if (trapProofCache.size > 256) trapProofCache.delete(trapProofCache.keys().next().value);
@@ -12430,7 +12493,7 @@ function trappedPieceProof(step, source) {
 			ply: 1,
 			moveUci: step.uci,
 			value: proof.gain,
-			evidence: `${step.san} attacks the ${victim.role} on ${makeSquare(target)}. It has no safe move, including captures.${proof.defenders.length ? ` Defending it also concedes material: ${proof.defenders.slice(0, 2).map((d) => `${d.reply} is answered by ${d.answer}`).join("; ")}. Every legal defence loses material through the trapped piece or its defender.` : " Every legal defence still permits a profitable capture of that same piece."}${step.capture ? " This wins additional material beyond the initial capture." : ""}`
+			evidence: `${step.san} attacks the ${victim.role} on ${makeSquare(target)}. It has no safe move, including captures.${proof.countercaptures.length ? ` A counterattack also concedes material: ${proof.countercaptures.slice(0, 2).map((d) => `${d.reply} is answered by ${d.answer}`).join("; ")}.${proof.defenders.length ? ` Defending it with ${proof.defenders[0].reply} instead permits ${proof.defenders[0].answer}.` : ""} Every legal defence loses material through the trapped piece, its defender or the counterattacking piece.` : proof.defenders.length ? ` Defending it also concedes material: ${proof.defenders.slice(0, 2).map((d) => `${d.reply} is answered by ${d.answer}`).join("; ")}. Every legal defence loses material through the trapped piece or its defender.` : " Every legal defence still permits a profitable capture of that same piece."}${step.capture ? " This wins additional material beyond the initial capture." : ""}`
 		};
 		proofs.push({
 			motif,
@@ -17334,7 +17397,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 92;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 93;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

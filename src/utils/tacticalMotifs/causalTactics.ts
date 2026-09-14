@@ -4242,7 +4242,19 @@ function hasConcreteThreat(step: TacticalReplayStep) {
     );
 }
 
-type TrapProof = { gain: number; defenders: { reply: string; answer: string }[] };
+type TrapProof = {
+    gain: number;
+    recoveryVisits: number;
+    defenders: { reply: string; answer: string }[];
+    countercaptures: { reply: string; answer: string }[];
+    branches: {
+        replyUci: string;
+        fen: string;
+        answerUci: string;
+        gain: number;
+        continuation?: MaterialRecoveryLeaf[];
+    }[];
+};
 const trapProofCache = new Map<string, TrapProof | null>();
 
 export function proveTrappedMaterial(
@@ -4250,33 +4262,57 @@ export function proveTrappedMaterial(
     target: Square,
     nodeLimit = 256,
     pinProofLimit = 8,
+    onFailure?: (reason: string) => void,
 ): TrapProof | null {
+    if (
+        !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 ||
+        !Number.isSafeInteger(pinProofLimit) || pinProofLimit < 0 ||
+        step.after.isEnd() || step.after.board.get(target)?.color !== opposite(step.before.turn) ||
+        step.after.board.get(target)?.role === "king"
+    ) return null;
     const key = `${makeFen(step.before.toSetup())}:${step.uci}:${target}`;
-    const cacheable = nodeLimit === 256 && pinProofLimit === 8;
+    const cacheable = nodeLimit === 256 && pinProofLimit === 8 && !onFailure;
     if (cacheable && trapProofCache.has(key)) return trapProofCache.get(key)!;
     const side = step.before.turn;
     const initial =
         step.capture + (step.move.promotion ? VALUE[step.move.promotion] - VALUE.pawn : 0);
     const replies = legalMoves(step.after);
     const defenders: TrapProof["defenders"] = [];
+    const countercaptures: TrapProof["countercaptures"] = [];
+    const branches: TrapProof["branches"] = [];
+    // Shared across every direct capture and connected defender-removal
+    // continuation. The old top-level and pin nomination limits still apply.
+    const recoveryBudget = { nodes: 4096 };
     let minimum = Infinity;
     let nodes = nodeLimit;
     let pinProofs = pinProofLimit;
-    const capture = (pos: Chess, to: Square) => {
+    let currentReply = "";
+    const capture = (pos: Chess, to: Square, settle = true) => {
         let best = -VALUE.king;
         let san = "";
+        let uci = "";
         for (const move of legalMoves(pos).filter((m) => m.to === to)) {
-            const gain = tacticalExchangeGain(pos, move);
+            const gain = settle
+                ? participantCaptureGain(
+                      pos, move, [...pos.board[pos.turn], move.to], recoveryBudget,
+                  )
+                : tacticalExchangeGain(pos, move);
+            if (
+                gain === null ||
+                (settle && !noImmediateTerminalRefutation(pos, move, recoveryBudget))
+            ) continue;
             if (gain > best) {
                 best = gain;
                 san = makeSan(pos, move);
+                uci = makeUci(move);
             }
         }
-        return { gain: best, san };
+        return { gain: best, san, uci };
     };
     let result: TrapProof | null = null;
     try {
         for (const reply of replies) {
+            currentReply = makeSan(step.after, reply);
             if (--nodes < 0) throw new Error("Trap proof budget exhausted");
             const next = step.after.clone();
             next.play(reply);
@@ -4292,7 +4328,26 @@ export function proveTrappedMaterial(
             const direct = capture(next, victim);
             if (balance + direct.gain >= initial + 100) {
                 minimum = Math.min(minimum, balance + direct.gain);
+                branches.push({
+                    replyUci: makeUci(reply), fen: makeFen(next.toSetup()),
+                    answerUci: direct.uci, gain: balance + direct.gain,
+                });
                 continue;
+            }
+            // A counterattack may capture our piece instead of saving the
+            // trapped victim. Only recapturing that actual attacking piece
+            // can be an alternate payoff, not any unrelated loose piece.
+            if (reply.from !== target && capturedValue(step.after, reply)) {
+                const counter = capture(next, reply.to);
+                if (balance + counter.gain >= initial + 100) {
+                    minimum = Math.min(minimum, balance + counter.gain);
+                    countercaptures.push({ reply: makeSan(step.after, reply), answer: counter.san });
+                    branches.push({
+                        replyUci: makeUci(reply), fen: makeFen(next.toSetup()),
+                        answerUci: counter.uci, gain: balance + counter.gain,
+                    });
+                    continue;
+                }
             }
             // If the victim itself escapes, this is not a trap. An unrelated
             // loose piece must not rescue the failed proof.
@@ -4306,9 +4361,34 @@ export function proveTrappedMaterial(
             // Removing it is a protection probe, never a game continuation.
             const unprotected = next.clone();
             unprotected.board.take(reply.to);
-            if (capture(unprotected, victim).gain - direct.gain < 100)
+            if (
+                capture(unprotected, victim, false).gain - capture(next, victim, false).gain < 100
+            )
                 throw new Error("Not a causal defender");
             let answer = capture(next, reply.to);
+            let continuation: MaterialRecoveryLeaf[] | undefined;
+            if (balance + answer.gain < initial + 100) {
+                // Taking the real newly moved guard can leave the victim
+                // exposed. Cover every recapture/escape and retain only the
+                // gain from this guard and the same trapped piece, including
+                // checking evasions and off-square friendly liabilities.
+                for (const move of legalMoves(next)) {
+                    if (move.to !== reply.to || !capturedValue(next, move) || move.promotion) continue;
+                    if (--nodes < 0) throw new Error("Trap proof budget exhausted");
+                    const removal = replayTacticalLine(makeFen(next.toSetup()), [makeUci(move)])[0];
+                    const leaves: MaterialRecoveryLeaf[] = [];
+                    const gain = proveDefenderCombination(
+                        removal, [victim], [...removal.after.board[side]], 4096,
+                        recoveryBudget, 1, true, Math.max(1, initial + 100 - balance),
+                        leaf => leaves.push(leaf),
+                    );
+                    if (recoveryBudget.nodes < 0) throw new Error("Trap recovery budget exhausted");
+                    if (gain === null || balance + gain < initial + 100) continue;
+                    answer = { gain, san: removal.san, uci: removal.uci };
+                    continuation = leaves;
+                    break;
+                }
+            }
             if (balance + answer.gain < initial + 100) {
                 for (const move of legalMoves(next)) {
                     if (--nodes < 0) throw new Error("Trap proof budget exhausted");
@@ -4338,9 +4418,10 @@ export function proveTrappedMaterial(
                         continuation,
                         [victim, reply.to],
                         [...after.board[side]],
+                        [], false, undefined, { allPiecesAtLeaf: true },
                     );
                     if (proof.kind === "proven" && proof.gain > answer.gain)
-                        answer = { gain: proof.gain, san: continuation.san };
+                        answer = { gain: proof.gain, san: continuation.san, uci: continuation.uci };
                     if (balance + answer.gain >= initial + 100) break;
                 }
             }
@@ -4348,10 +4429,21 @@ export function proveTrappedMaterial(
                 throw new Error("Defender saves the trapped piece");
             minimum = Math.min(minimum, balance + answer.gain);
             defenders.push({ reply: makeSan(step.after, reply), answer: answer.san });
+            branches.push({
+                replyUci: makeUci(reply), fen: makeFen(next.toSetup()),
+                answerUci: answer.uci, gain: balance + answer.gain,
+                ...(continuation ? { continuation } : {}),
+            });
         }
-        if (replies.length && Number.isFinite(minimum)) result = { gain: minimum, defenders };
-    } catch {
+        if (replies.length && Number.isFinite(minimum)) result = {
+            gain: minimum, recoveryVisits: 4096 - recoveryBudget.nodes,
+            defenders, countercaptures, branches,
+        };
+    } catch (error) {
         // Incomplete local proof is unknown, not evidence that no tactic exists.
+        onFailure?.(
+            `${currentReply}: ${error instanceof Error ? error.message : "Incomplete trap proof"}`,
+        );
     }
     if (cacheable) {
         trapProofCache.set(key, result);
@@ -4385,7 +4477,14 @@ function trappedPieceProof(step: TacticalReplayStep, source: TacticalMotifEviden
             moveUci: step.uci,
             value: proof.gain,
             evidence: `${step.san} attacks the ${victim.role} on ${makeSquare(target)}. It has no safe move, including captures.${
-                proof.defenders.length
+                proof.countercaptures.length
+                    ? ` A counterattack also concedes material: ${proof.countercaptures
+                          .slice(0, 2)
+                          .map(d => `${d.reply} is answered by ${d.answer}`)
+                          .join("; ")}.${proof.defenders.length
+                              ? ` Defending it with ${proof.defenders[0].reply} instead permits ${proof.defenders[0].answer}.`
+                              : ""} Every legal defence loses material through the trapped piece, its defender or the counterattacking piece.`
+                    : proof.defenders.length
                     ? ` Defending it also concedes material: ${proof.defenders
                           .slice(0, 2)
                           .map((d) => `${d.reply} is answered by ${d.answer}`)

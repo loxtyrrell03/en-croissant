@@ -158,6 +158,20 @@ test(
         expectedLabels: ["mateIn3"],
         expectedTimeline: { id: "selfInterference", ply: 4, actor: "black" },
       },
+      {
+        name: "king trap independently includes defender removal without future arrows",
+        fen: "3r2k1/pp2bpp1/2p4p/8/3PN3/P2Pr2P/1P4P1/3R1RK1 w - - 2 23",
+        pvUci: ["g1f2"],
+        expectedPrimary: ["trappedPiece"],
+        expectedLabels: ["trappedPiece"],
+        expectedArrowCount: 2,
+      },
+      {
+        name: "an open escape file defeats the rook-trap claim",
+        fen: "3r2k1/pp2bpp1/2p4p/8/4N3/P2Pr2P/1P4P1/3R1RK1 w - - 2 23",
+        pvUci: ["g1f2"],
+        expectedPrimary: [],
+      },
     ];
     const report = [];
     for (const item of cases) {

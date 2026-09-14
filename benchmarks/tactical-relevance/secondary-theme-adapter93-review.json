@@ -1,0 +1,7029 @@
+{
+  "scope": "Exact engine/source-input replay. Seven changed explanations reviewed across adapters 92 and 93; unchanged/empty outputs are not accuracy successes.",
+  "cases": [
+    {
+      "stratum": "interference",
+      "id": "lichess:DBBd9",
+      "sourceGameUrl": "https://lichess.org/MtgbMsI4#29",
+      "sourceGroup": "game:MtgbMsI4",
+      "sourceThemes": [
+        "advantage",
+        "interference",
+        "long",
+        "middlegame"
+      ],
+      "sourceFen": "1r1q1rk1/pp2bpp1/7p/n2pN3/Q7/2PP4/PP3PPP/R1B2RK1 w - - 0 15",
+      "precedingMove": "e5d7",
+      "startFen": "1r1q1rk1/pp1Nbpp1/7p/n2p4/Q7/2PP4/PP3PPP/R1B2RK1 b - - 1 15",
+      "bestLine": [
+        "b7b5",
+        "a4g4",
+        "f7f5",
+        "g4g3",
+        "d8d7"
+      ],
+      "selectionHash": "4211381da828e13a321d8dfdce781aff1ee2e8c1fdb298fa6cbdb7e97833700b",
+      "fen": "1r1q1rk1/pp1Nbpp1/7p/n2p4/Q7/2PP4/PP3PPP/R1B2RK1 b - - 1 15",
+      "sourceUci": [
+        "b7b5",
+        "a4g4",
+        "f7f5",
+        "g4g3",
+        "d8d7"
+      ],
+      "sourceSan": [
+        "b5",
+        "Qg4",
+        "f5",
+        "Qg3",
+        "Qxd7"
+      ],
+      "previousFen": "1r1q1rk1/pp2bpp1/7p/n2pN3/Q7/2PP4/PP3PPP/R1B2RK1 w - - 0 15",
+      "previousMoveUci": "e5d7",
+      "sourceResult": {
+        "motifs": [
+          {
+            "id": "interference",
+            "label": "Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "f7f5",
+            "value": 320,
+            "evidence": "f5 blocks the queen on g4 from defending the knight on d7. It also attacks that queen, forcing a choice between the threats. Every legal reply allows material gain on these targets or the blocking square; legal recaptures are included.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "interference",
+            "label": "Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "f7f5",
+            "value": 320,
+            "evidence": "f5 blocks the queen on g4 from defending the knight on d7. It also attacks that queen, forcing a choice between the threats. Every legal reply allows material gain on these targets or the blocking square; legal recaptures are included.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Qxd7 wins the loose knight on d7.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "d8d7",
+            "relevance": "secondary",
+            "value": 320,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "1r1q1rk1/pp1Nbpp1/7p/n2p4/Q7/2PP4/PP3PPP/R1B2RK1 b - - 1 15",
+        "side": "black",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "interference",
+            "label": "Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "f7f5",
+            "value": 320,
+            "evidence": "f5 blocks the queen on g4 from defending the knight on d7. It also attacks that queen, forcing a choice between the threats. Every legal reply allows material gain on these targets or the blocking square; legal recaptures are included.",
+            "relevance": "primary"
+          }
+        ],
+        "lineUci": [
+          "b7b5",
+          "a4g4",
+          "f7f5",
+          "g4g3",
+          "d8d7",
+          "c1h6",
+          "e7f6",
+          "h6f4",
+          "b8e8",
+          "h2h4",
+          "d5d4",
+          "a1c1",
+          "d4c3",
+          "b2c3",
+          "f6d8"
+        ],
+        "lineSan": [
+          "b5",
+          "Qg4",
+          "f5",
+          "Qg3",
+          "Qxd7",
+          "Bxh6",
+          "Bf6",
+          "Bf4",
+          "Rbe8",
+          "h4",
+          "d4",
+          "Rac1",
+          "dxc3",
+          "bxc3",
+          "Bd8"
+        ],
+        "arrows": [
+          {
+            "from": "b7",
+            "to": "b5",
+            "ply": 1,
+            "role": "attacker"
+          },
+          {
+            "from": "a4",
+            "to": "g4",
+            "ply": 2,
+            "role": "reply"
+          },
+          {
+            "from": "f7",
+            "to": "f5",
+            "ply": 3,
+            "role": "trigger"
+          },
+          {
+            "from": "g4",
+            "to": "f5",
+            "ply": 3,
+            "role": "attacker"
+          },
+          {
+            "from": "d8",
+            "to": "d7",
+            "ply": 3,
+            "role": "attacker"
+          },
+          {
+            "from": "f5",
+            "to": "g4",
+            "ply": 3,
+            "role": "attacker"
+          }
+        ],
+        "labels": [
+          {
+            "id": "interference",
+            "text": "Later: Interference",
+            "color": "#e67e22",
+            "square": "f5"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "interference",
+                "label": "Interference",
+                "source": "available",
+                "confidence": "high",
+                "ply": 3,
+                "moveUci": "f7f5",
+                "value": 320,
+                "evidence": "f5 blocks the queen on g4 from defending the knight on d7. It also attacks that queen, forcing a choice between the threats. Every legal reply allows material gain on these targets or the blocking square; legal recaptures are included.",
+                "relevance": "primary"
+              }
+            ],
+            "timeline": [
+              {
+                "id": "interference",
+                "label": "Interference",
+                "source": "available",
+                "confidence": "high",
+                "ply": 3,
+                "moveUci": "f7f5",
+                "value": 320,
+                "evidence": "f5 blocks the queen on g4 from defending the knight on d7. It also attacks that queen, forcing a choice between the threats. Every legal reply allows material gain on these targets or the blocking square; legal recaptures are included.",
+                "relevance": "primary",
+                "actor": "black"
+              },
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "Qxd7 wins the loose knight on d7.",
+                "source": "available",
+                "ply": 5,
+                "moveUci": "d8d7",
+                "relevance": "secondary",
+                "value": 320,
+                "actor": "black"
+              },
+              {
+                "id": "pin",
+                "label": "Pin",
+                "source": "available",
+                "confidence": "high",
+                "ply": 6,
+                "moveUci": "c1h6",
+                "value": 100,
+                "evidence": "Bxh6 wins the pawn on h6 by exploiting a pin. The pawn on g7 cannot recapture on h6 because it would expose the king on g8 to the queen on g3.",
+                "relevance": "secondary",
+                "actor": "white"
+              }
+            ],
+            "lineUci": [
+              "b7b5",
+              "a4g4",
+              "f7f5",
+              "g4g3",
+              "d8d7",
+              "c1h6",
+              "e7f6",
+              "h6f4",
+              "b8e8",
+              "h2h4",
+              "d5d4",
+              "a1c1",
+              "d4c3",
+              "b2c3",
+              "f6d8"
+            ],
+            "lineSan": [
+              "b5",
+              "Qg4",
+              "f5",
+              "Qg3",
+              "Qxd7",
+              "Bxh6",
+              "Bf6",
+              "Bf4",
+              "Rbe8",
+              "h4",
+              "d4",
+              "Rac1",
+              "dxc3",
+              "bxc3",
+              "Bd8"
+            ],
+            "arrows": [
+              {
+                "from": "b7",
+                "to": "b5",
+                "ply": 1,
+                "role": "attacker"
+              },
+              {
+                "from": "a4",
+                "to": "g4",
+                "ply": 2,
+                "role": "reply"
+              },
+              {
+                "from": "f7",
+                "to": "f5",
+                "ply": 3,
+                "role": "trigger"
+              },
+              {
+                "from": "g4",
+                "to": "f5",
+                "ply": 3,
+                "role": "attacker"
+              },
+              {
+                "from": "d8",
+                "to": "d7",
+                "ply": 3,
+                "role": "attacker"
+              },
+              {
+                "from": "f5",
+                "to": "g4",
+                "ply": 3,
+                "role": "attacker"
+              }
+            ],
+            "labels": [
+              {
+                "id": "interference",
+                "text": "Later: Interference",
+                "color": "#e67e22",
+                "square": "f5"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "b7b5",
+            "a4g4",
+            "f7f5",
+            "g4g3",
+            "d8d7",
+            "c1h6",
+            "e7f6",
+            "h6f4",
+            "b8e8",
+            "h2h4",
+            "d5d4",
+            "a1c1",
+            "d4c3",
+            "b2c3",
+            "f6d8"
+          ],
+          "pvSan": [
+            "b5",
+            "Qg4",
+            "f5",
+            "Qg3",
+            "Qxd7",
+            "Bxh6",
+            "Bf6",
+            "Bf4",
+            "Rbe8",
+            "h4",
+            "d4",
+            "Rac1",
+            "dxc3",
+            "bxc3",
+            "Bd8"
+          ],
+          "cp": 309,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "d8e8",
+            "c1h6",
+            "g7h6",
+            "a4g4",
+            "g8h7",
+            "d7f8",
+            "e8f8",
+            "g4f5",
+            "h7g7",
+            "f5d5",
+            "a5c6",
+            "a1e1",
+            "e7f6",
+            "e1e3",
+            "c6e7",
+            "d5e4",
+            "f8d8",
+            "e3g3",
+            "e7g6"
+          ],
+          "pvSan": [
+            "Qe8",
+            "Bxh6",
+            "gxh6",
+            "Qg4+",
+            "Kh7",
+            "Nxf8+",
+            "Qxf8",
+            "Qf5+",
+            "Kg7",
+            "Qxd5",
+            "Nc6",
+            "Rae1",
+            "Bf6",
+            "Re3",
+            "Ne7",
+            "Qe4",
+            "Qd8",
+            "Rg3+",
+            "Ng6"
+          ],
+          "cp": -222,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "f8e8",
+            "a4g4",
+            "g7g5",
+            "d7b8",
+            "e7d6",
+            "b8d7",
+            "e8e6",
+            "c1d2",
+            "a5c6"
+          ],
+          "pvSan": [
+            "Re8",
+            "Qg4",
+            "g5",
+            "Nxb8",
+            "Bd6",
+            "Nd7",
+            "Re6",
+            "Bd2",
+            "Nc6"
+          ],
+          "cp": -376,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "b7b5",
+          "a4g4",
+          "f7f5",
+          "g4g3",
+          "d8d7",
+          "c1h6",
+          "e7f6",
+          "h6f4",
+          "b8e8",
+          "h2h4",
+          "d5d4",
+          "a1c1",
+          "d4c3",
+          "b2c3",
+          "f6d8"
+        ],
+        "pvSan": [
+          "b5",
+          "Qg4",
+          "f5",
+          "Qg3",
+          "Qxd7",
+          "Bxh6",
+          "Bf6",
+          "Bf4",
+          "Rbe8",
+          "h4",
+          "d4",
+          "Rac1",
+          "dxc3",
+          "bxc3",
+          "Bd8"
+        ],
+        "cp": 309,
+        "mate": null
+      }
+    },
+    {
+      "stratum": "interference",
+      "id": "lichess:qQG5v",
+      "sourceGameUrl": "https://lichess.org/FBpuOG15/black#64",
+      "sourceGroup": "game:FBpuOG15",
+      "sourceThemes": [
+        "deflection",
+        "endgame",
+        "interference",
+        "long",
+        "mate",
+        "mateIn3"
+      ],
+      "sourceFen": "8/p3NQpk/1p6/1P2p2p/4q3/6P1/P1rr1P2/5RK1 b - - 0 32",
+      "precedingMove": "e4g4",
+      "startFen": "8/p3NQpk/1p6/1P2p2p/6q1/6P1/P1rr1P2/5RK1 w - - 1 33",
+      "bestLine": [
+        "f7g8",
+        "h7h6",
+        "g8h8",
+        "h6g5",
+        "h8g7"
+      ],
+      "selectionHash": "43365d103bd2ba515bbac4169ab114f21467a76464d9c20488d8dcf01c5bc2dd",
+      "fen": "8/p3NQpk/1p6/1P2p2p/6q1/6P1/P1rr1P2/5RK1 w - - 1 33",
+      "sourceUci": [
+        "f7g8",
+        "h7h6",
+        "g8h8",
+        "h6g5",
+        "h8g7"
+      ],
+      "sourceSan": [
+        "Qg8+",
+        "Kh6",
+        "Qh8+",
+        "Kg5",
+        "Qxg7#"
+      ],
+      "previousFen": "8/p3NQpk/1p6/1P2p2p/4q3/6P1/P1rr1P2/5RK1 b - - 0 32",
+      "previousMoveUci": "e4g4",
+      "sourceResult": {
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7g8",
+            "value": 10000,
+            "evidence": "Qg8+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qg8+ Kh6 Qh8+ Kg5 Qxg7#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qxg7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h8g7",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7g8",
+            "value": 10000,
+            "evidence": "Qg8+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qg8+ Kh6 Qh8+ Kg5 Qxg7#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "selfInterference",
+            "label": "Self-Interference",
+            "source": "available",
+            "confidence": "high",
+            "ply": 4,
+            "moveUci": "h6g5",
+            "value": 10000,
+            "evidence": "Kg5 blocks Black's queen on g4 from defending the pawn on g7. Qxg7# is now checkmate; the guard could legally recapture before this blocking move. This explains the concession, not a tactic won by Black.",
+            "actor": "black",
+            "relevance": "secondary"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Qxg7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "h8g7",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "8/p3NQpk/1p6/1P2p2p/6q1/6P1/P1rr1P2/5RK1 w - - 1 33",
+        "side": "white",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7g8",
+            "value": 10000,
+            "evidence": "Qg8+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qg8+ Kh6 Qh8+ Kg5 Qxg7#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          }
+        ],
+        "lineUci": [
+          "f7g8",
+          "h7h6",
+          "g8h8",
+          "h6g5",
+          "h8g7"
+        ],
+        "lineSan": [
+          "Qg8+",
+          "Kh6",
+          "Qh8+",
+          "Kg5",
+          "Qxg7#"
+        ],
+        "arrows": [
+          {
+            "from": "f7",
+            "to": "g8",
+            "ply": 1,
+            "role": "trigger"
+          },
+          {
+            "from": "h7",
+            "to": "h6",
+            "ply": 2,
+            "role": "reply"
+          },
+          {
+            "from": "g8",
+            "to": "h8",
+            "ply": 3,
+            "role": "attacker"
+          },
+          {
+            "from": "h6",
+            "to": "g5",
+            "ply": 4,
+            "role": "reply"
+          },
+          {
+            "from": "h8",
+            "to": "g7",
+            "ply": 5,
+            "role": "trigger"
+          }
+        ],
+        "labels": [
+          {
+            "id": "mateIn3",
+            "text": "Forcing Mate",
+            "color": "#c0392b",
+            "square": "g8"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "mateIn3",
+                "label": "Forcing Mate",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f7g8",
+                "value": 10000,
+                "evidence": "Qg8+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qg8+ Kh6 Qh8+ Kg5 Qxg7#. The exact continuation depends on the defence.",
+                "relevance": "primary"
+              },
+              {
+                "id": "mateIn1",
+                "label": "Checkmate",
+                "confidence": "high",
+                "evidence": "Qxg7# is checkmate: the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 5,
+                "moveUci": "h8g7",
+                "relevance": "secondary",
+                "value": 10000
+              }
+            ],
+            "timeline": [
+              {
+                "id": "mateIn3",
+                "label": "Forcing Mate",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f7g8",
+                "value": 10000,
+                "evidence": "Qg8+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qg8+ Kh6 Qh8+ Kg5 Qxg7#. The exact continuation depends on the defence.",
+                "relevance": "primary",
+                "actor": "white"
+              },
+              {
+                "id": "selfInterference",
+                "label": "Self-Interference",
+                "source": "available",
+                "confidence": "high",
+                "ply": 4,
+                "moveUci": "h6g5",
+                "value": 10000,
+                "evidence": "Kg5 blocks Black's queen on g4 from defending the pawn on g7. Qxg7# is now checkmate; the guard could legally recapture before this blocking move. This explains the concession, not a tactic won by Black.",
+                "actor": "black",
+                "relevance": "secondary"
+              },
+              {
+                "id": "mateIn1",
+                "label": "Checkmate",
+                "confidence": "high",
+                "evidence": "Qxg7# is checkmate: the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 5,
+                "moveUci": "h8g7",
+                "relevance": "secondary",
+                "value": 10000,
+                "actor": "white"
+              }
+            ],
+            "lineUci": [
+              "f7g8",
+              "h7h6",
+              "g8h8",
+              "h6g5",
+              "h8g7"
+            ],
+            "lineSan": [
+              "Qg8+",
+              "Kh6",
+              "Qh8+",
+              "Kg5",
+              "Qxg7#"
+            ],
+            "arrows": [
+              {
+                "from": "f7",
+                "to": "g8",
+                "ply": 1,
+                "role": "trigger"
+              },
+              {
+                "from": "h7",
+                "to": "h6",
+                "ply": 2,
+                "role": "reply"
+              },
+              {
+                "from": "g8",
+                "to": "h8",
+                "ply": 3,
+                "role": "attacker"
+              },
+              {
+                "from": "h6",
+                "to": "g5",
+                "ply": 4,
+                "role": "reply"
+              },
+              {
+                "from": "h8",
+                "to": "g7",
+                "ply": 5,
+                "role": "trigger"
+              }
+            ],
+            "labels": [
+              {
+                "id": "mateIn3",
+                "text": "Forcing Mate",
+                "color": "#c0392b",
+                "square": "g8"
+              },
+              {
+                "id": "mateIn1",
+                "text": "Later: Checkmate",
+                "color": "#c0392b",
+                "square": "g7"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f7g8",
+            "h7h6",
+            "g8h8",
+            "h6g5",
+            "h8g7"
+          ],
+          "pvSan": [
+            "Qg8+",
+            "Kh6",
+            "Qh8+",
+            "Kg5",
+            "Qxg7#"
+          ],
+          "cp": null,
+          "mate": 3
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "g1g2",
+            "d2d8",
+            "f1h1",
+            "g4e4",
+            "g2h2",
+            "e4g4",
+            "h2g2"
+          ],
+          "pvSan": [
+            "Kg2",
+            "Rd8",
+            "Rh1",
+            "Qe4+",
+            "Kh2",
+            "Qg4",
+            "Kg2"
+          ],
+          "cp": 0,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "f1e1",
+            "d2d8",
+            "e1e5",
+            "c2c5",
+            "e5e6",
+            "c5g5",
+            "g1g2",
+            "h5h4",
+            "g2g1",
+            "a7a5",
+            "g1g2",
+            "h4g3"
+          ],
+          "pvSan": [
+            "Re1",
+            "Rd8",
+            "Rxe5",
+            "Rc5",
+            "Re6",
+            "Rg5",
+            "Kg2",
+            "h4",
+            "Kg1",
+            "a5",
+            "Kg2",
+            "hxg3"
+          ],
+          "cp": -205,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "f7g8",
+          "h7h6",
+          "g8h8",
+          "h6g5",
+          "h8g7"
+        ],
+        "pvSan": [
+          "Qg8+",
+          "Kh6",
+          "Qh8+",
+          "Kg5",
+          "Qxg7#"
+        ],
+        "cp": null,
+        "mate": 3
+      }
+    },
+    {
+      "stratum": "interference",
+      "id": "lichess:J3vOR",
+      "sourceGameUrl": "https://lichess.org/Iji4vDQ0#41",
+      "sourceGroup": "game:Iji4vDQ0",
+      "sourceThemes": [
+        "advantage",
+        "interference",
+        "middlegame",
+        "short"
+      ],
+      "sourceFen": "4r2k/1bq1rpp1/p4p2/1pn5/3N4/2P4P/PPQ1BPP1/R3R1K1 w - - 4 21",
+      "precedingMove": "d4f5",
+      "startFen": "4r2k/1bq1rpp1/p4p2/1pn2N2/8/2P4P/PPQ1BPP1/R3R1K1 b - - 5 21",
+      "bestLine": [
+        "b7e4",
+        "c2d2",
+        "e4f5"
+      ],
+      "selectionHash": "5fb796431669e13cd572f9beabedf4457e496debc7b1f8f0f3e58ecec62aa65c",
+      "fen": "4r2k/1bq1rpp1/p4p2/1pn2N2/8/2P4P/PPQ1BPP1/R3R1K1 b - - 5 21",
+      "sourceUci": [
+        "b7e4",
+        "c2d2",
+        "e4f5"
+      ],
+      "sourceSan": [
+        "Be4",
+        "Qd2",
+        "Bxf5"
+      ],
+      "previousFen": "4r2k/1bq1rpp1/p4p2/1pn5/3N4/2P4P/PPQ1BPP1/R3R1K1 w - - 4 21",
+      "previousMoveUci": "d4f5",
+      "sourceResult": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "4r2k/1bq1rpp1/p4p2/1pn2N2/8/2P4P/PPQ1BPP1/R3R1K1 b - - 5 21",
+        "side": "black",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [],
+        "lineUci": [
+          "b7e4",
+          "f5e7",
+          "e4c2",
+          "e7d5",
+          "c7d7",
+          "e2f3",
+          "e8e1",
+          "a1e1",
+          "c5e6",
+          "h3h4",
+          "f6f5",
+          "e1c1",
+          "c2e4",
+          "f3e4",
+          "f5e4",
+          "c1d1",
+          "d7a7",
+          "h4h5",
+          "a7d7"
+        ],
+        "lineSan": [
+          "Be4",
+          "Nxe7",
+          "Bxc2",
+          "Nd5",
+          "Qd7",
+          "Bf3",
+          "Rxe1+",
+          "Rxe1",
+          "Ne6",
+          "h4",
+          "f5",
+          "Rc1",
+          "Be4",
+          "Bxe4",
+          "fxe4",
+          "Rd1",
+          "Qa7",
+          "h5",
+          "Qd7"
+        ],
+        "arrows": [],
+        "labels": [],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [],
+            "timeline": [],
+            "lineUci": [
+              "b7e4",
+              "f5e7",
+              "e4c2",
+              "e7d5",
+              "c7d7",
+              "e2f3",
+              "e8e1",
+              "a1e1",
+              "c5e6",
+              "h3h4",
+              "f6f5",
+              "e1c1",
+              "c2e4",
+              "f3e4",
+              "f5e4",
+              "c1d1",
+              "d7a7",
+              "h4h5",
+              "a7d7"
+            ],
+            "lineSan": [
+              "Be4",
+              "Nxe7",
+              "Bxc2",
+              "Nd5",
+              "Qd7",
+              "Bf3",
+              "Rxe1+",
+              "Rxe1",
+              "Ne6",
+              "h4",
+              "f5",
+              "Rc1",
+              "Be4",
+              "Bxe4",
+              "fxe4",
+              "Rd1",
+              "Qa7",
+              "h5",
+              "Qd7"
+            ],
+            "arrows": [],
+            "labels": []
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "b7e4",
+            "f5e7",
+            "e4c2",
+            "e7d5",
+            "c7d7",
+            "e2f3",
+            "e8e1",
+            "a1e1",
+            "c5e6",
+            "h3h4",
+            "f6f5",
+            "e1c1",
+            "c2e4",
+            "f3e4",
+            "f5e4",
+            "c1d1",
+            "d7a7",
+            "h4h5",
+            "a7d7"
+          ],
+          "pvSan": [
+            "Be4",
+            "Nxe7",
+            "Bxc2",
+            "Nd5",
+            "Qd7",
+            "Bf3",
+            "Rxe1+",
+            "Rxe1",
+            "Ne6",
+            "h4",
+            "f5",
+            "Rc1",
+            "Be4",
+            "Bxe4",
+            "fxe4",
+            "Rd1",
+            "Qa7",
+            "h5",
+            "Qd7"
+          ],
+          "cp": 395,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "e7e5",
+            "f5d4",
+            "c7e7",
+            "a1d1",
+            "h8g8",
+            "c2d2",
+            "g7g6",
+            "f2f3",
+            "g8g7",
+            "d2c1",
+            "b7d5"
+          ],
+          "pvSan": [
+            "Re5",
+            "Nd4",
+            "Qe7",
+            "Rad1",
+            "Kg8",
+            "Qd2",
+            "g6",
+            "f3",
+            "Kg7",
+            "Qc1",
+            "Bd5"
+          ],
+          "cp": 6,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "c7c6",
+            "f2f3",
+            "e7e5",
+            "f5d4",
+            "c6b6",
+            "e1d1",
+            "b7d5",
+            "e2f1",
+            "d5c4",
+            "b2b4",
+            "c5e6",
+            "a2a4",
+            "c4f1",
+            "g1f1",
+            "h8g8"
+          ],
+          "pvSan": [
+            "Qc6",
+            "f3",
+            "Re5",
+            "Nd4",
+            "Qb6",
+            "Red1",
+            "Bd5",
+            "Bf1",
+            "Bc4",
+            "b4",
+            "Ne6",
+            "a4",
+            "Bxf1",
+            "Kxf1",
+            "Kg8"
+          ],
+          "cp": -2,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "b7e4",
+          "f5e7",
+          "e4c2",
+          "e7d5",
+          "c7d7",
+          "e2f3",
+          "e8e1",
+          "a1e1",
+          "c5e6",
+          "h3h4",
+          "f6f5",
+          "e1c1",
+          "c2e4",
+          "f3e4",
+          "f5e4",
+          "c1d1",
+          "d7a7",
+          "h4h5",
+          "a7d7"
+        ],
+        "pvSan": [
+          "Be4",
+          "Nxe7",
+          "Bxc2",
+          "Nd5",
+          "Qd7",
+          "Bf3",
+          "Rxe1+",
+          "Rxe1",
+          "Ne6",
+          "h4",
+          "f5",
+          "Rc1",
+          "Be4",
+          "Bxe4",
+          "fxe4",
+          "Rd1",
+          "Qa7",
+          "h5",
+          "Qd7"
+        ],
+        "cp": 395,
+        "mate": null
+      }
+    },
+    {
+      "stratum": "defensiveMove",
+      "id": "lichess:HuMdz",
+      "sourceGameUrl": "https://lichess.org/my1AArl0/black#92",
+      "sourceGroup": "game:my1AArl0",
+      "sourceThemes": [
+        "advantage",
+        "defensiveMove",
+        "endgame",
+        "master",
+        "sacrifice",
+        "short"
+      ],
+      "sourceFen": "6k1/1p1r2p1/pPb3Rp/3p4/5B2/4PP2/P6P/5K2 b - - 0 46",
+      "precedingMove": "g8f7",
+      "startFen": "8/1p1r1kp1/pPb3Rp/3p4/5B2/4PP2/P6P/5K2 w - - 1 47",
+      "bestLine": [
+        "g6c6",
+        "b7c6",
+        "f4c7"
+      ],
+      "selectionHash": "023525764022d16fcd958974bd1b7b218773c9602ec3e276698cf285c19bac96",
+      "fen": "8/1p1r1kp1/pPb3Rp/3p4/5B2/4PP2/P6P/5K2 w - - 1 47",
+      "sourceUci": [
+        "g6c6",
+        "b7c6",
+        "f4c7"
+      ],
+      "sourceSan": [
+        "Rxc6",
+        "bxc6",
+        "Bc7"
+      ],
+      "previousFen": "6k1/1p1r2p1/pPb3Rp/3p4/5B2/4PP2/P6P/5K2 b - - 0 46",
+      "previousMoveUci": "g8f7",
+      "sourceResult": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "8/1p1r1kp1/pPb3Rp/3p4/5B2/4PP2/P6P/5K2 w - - 1 47",
+        "side": "white",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [],
+        "lineUci": [
+          "g6c6",
+          "b7c6",
+          "f4c7",
+          "d7e7",
+          "b6b7",
+          "e7e8",
+          "b7b8q",
+          "e8b8",
+          "c7b8",
+          "f7e6",
+          "f1e2",
+          "c6c5",
+          "e2d3",
+          "g7g5",
+          "a2a3"
+        ],
+        "lineSan": [
+          "Rxc6",
+          "bxc6",
+          "Bc7",
+          "Re7",
+          "b7",
+          "Re8",
+          "b8=Q",
+          "Rxb8",
+          "Bxb8",
+          "Ke6",
+          "Ke2",
+          "c5",
+          "Kd3",
+          "g5",
+          "a3"
+        ],
+        "arrows": [],
+        "labels": [],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [],
+            "timeline": [],
+            "lineUci": [
+              "g6c6",
+              "b7c6",
+              "f4c7",
+              "d7e7",
+              "b6b7",
+              "e7e8",
+              "b7b8q",
+              "e8b8",
+              "c7b8",
+              "f7e6",
+              "f1e2",
+              "c6c5",
+              "e2d3",
+              "g7g5",
+              "a2a3"
+            ],
+            "lineSan": [
+              "Rxc6",
+              "bxc6",
+              "Bc7",
+              "Re7",
+              "b7",
+              "Re8",
+              "b8=Q",
+              "Rxb8",
+              "Bxb8",
+              "Ke6",
+              "Ke2",
+              "c5",
+              "Kd3",
+              "g5",
+              "a3"
+            ],
+            "arrows": [],
+            "labels": []
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g6c6",
+            "b7c6",
+            "f4c7",
+            "d7e7",
+            "b6b7",
+            "e7e8",
+            "b7b8q",
+            "e8b8",
+            "c7b8",
+            "f7e6",
+            "f1e2",
+            "c6c5",
+            "e2d3",
+            "g7g5",
+            "a2a3"
+          ],
+          "pvSan": [
+            "Rxc6",
+            "bxc6",
+            "Bc7",
+            "Re7",
+            "b7",
+            "Re8",
+            "b8=Q",
+            "Rxb8",
+            "Bxb8",
+            "Ke6",
+            "Ke2",
+            "c5",
+            "Kd3",
+            "g5",
+            "a3"
+          ],
+          "cp": 451,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "g6g4",
+            "d5d4",
+            "f4e5",
+            "d4e3",
+            "g4g7",
+            "f7e6",
+            "g7d7",
+            "c6d7",
+            "e5f4",
+            "d7b5",
+            "f1e1",
+            "h6h5",
+            "f4e3",
+            "b5c4",
+            "e3g5",
+            "c4a2",
+            "h2h4"
+          ],
+          "pvSan": [
+            "Rg4",
+            "d4",
+            "Be5",
+            "dxe3",
+            "Rxg7+",
+            "Ke6",
+            "Rxd7",
+            "Bxd7",
+            "Bf4",
+            "Bb5+",
+            "Ke1",
+            "h5",
+            "Bxe3",
+            "Bc4",
+            "Bg5",
+            "Bxa2",
+            "h4"
+          ],
+          "cp": -1,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "g6g2",
+            "d5d4",
+            "f4e5",
+            "d4e3",
+            "g2g7",
+            "f7e6",
+            "g7d7",
+            "c6d7",
+            "e5f4",
+            "d7b5",
+            "f1e1",
+            "h6h5",
+            "f4e3",
+            "b5c4",
+            "a2a4"
+          ],
+          "pvSan": [
+            "Rg2",
+            "d4",
+            "Be5",
+            "dxe3",
+            "Rxg7+",
+            "Ke6",
+            "Rxd7",
+            "Bxd7",
+            "Bf4",
+            "Bb5+",
+            "Ke1",
+            "h5",
+            "Bxe3",
+            "Bc4",
+            "a4"
+          ],
+          "cp": -3,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "g6c6",
+          "b7c6",
+          "f4c7",
+          "d7e7",
+          "b6b7",
+          "e7e8",
+          "b7b8q",
+          "e8b8",
+          "c7b8",
+          "f7e6",
+          "f1e2",
+          "c6c5",
+          "e2d3",
+          "g7g5",
+          "a2a3"
+        ],
+        "pvSan": [
+          "Rxc6",
+          "bxc6",
+          "Bc7",
+          "Re7",
+          "b7",
+          "Re8",
+          "b8=Q",
+          "Rxb8",
+          "Bxb8",
+          "Ke6",
+          "Ke2",
+          "c5",
+          "Kd3",
+          "g5",
+          "a3"
+        ],
+        "cp": 451,
+        "mate": null
+      }
+    },
+    {
+      "stratum": "defensiveMove",
+      "id": "lichess:nkeLA",
+      "sourceGameUrl": "https://lichess.org/yxtV6nOi#95",
+      "sourceGroup": "game:yxtV6nOi",
+      "sourceThemes": [
+        "crushing",
+        "defensiveMove",
+        "endgame",
+        "master",
+        "pawnEndgame",
+        "short",
+        "zugzwang"
+      ],
+      "sourceFen": "8/p7/8/1P5p/3Kpk1P/8/4P3/8 w - - 3 48",
+      "precedingMove": "e2e3",
+      "startFen": "8/p7/8/1P5p/3Kpk1P/4P3/8/8 b - - 0 48",
+      "bestLine": [
+        "f4f3",
+        "d4e5",
+        "f3e3"
+      ],
+      "selectionHash": "07c6ae614f0984c9e3c0931d86624eb0e7d986c92bbba7393ad2211aed66edb3",
+      "fen": "8/p7/8/1P5p/3Kpk1P/4P3/8/8 b - - 0 48",
+      "sourceUci": [
+        "f4f3",
+        "d4e5",
+        "f3e3"
+      ],
+      "sourceSan": [
+        "Kf3",
+        "Ke5",
+        "Kxe3"
+      ],
+      "previousFen": "8/p7/8/1P5p/3Kpk1P/8/4P3/8 w - - 3 48",
+      "previousMoveUci": "e2e3",
+      "sourceResult": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "8/p7/8/1P5p/3Kpk1P/4P3/8/8 b - - 0 48",
+        "side": "black",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [],
+        "lineUci": [
+          "f4f3",
+          "d4e5",
+          "f3e3",
+          "e5f6",
+          "e3f3",
+          "f6g6",
+          "e4e3",
+          "g6h5",
+          "e3e2",
+          "h5g6",
+          "e2e1q",
+          "h4h5",
+          "e1g3",
+          "g6h6",
+          "g3d6",
+          "h6g5"
+        ],
+        "lineSan": [
+          "Kf3",
+          "Ke5",
+          "Kxe3",
+          "Kf6",
+          "Kf3",
+          "Kg6",
+          "e3",
+          "Kxh5",
+          "e2",
+          "Kg6",
+          "e1=Q",
+          "h5",
+          "Qg3+",
+          "Kh6",
+          "Qd6+",
+          "Kg5"
+        ],
+        "arrows": [],
+        "labels": [],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [],
+            "timeline": [],
+            "lineUci": [
+              "f4f3",
+              "d4e5",
+              "f3e3",
+              "e5f6",
+              "e3f3",
+              "f6g6",
+              "e4e3",
+              "g6h5",
+              "e3e2",
+              "h5g6",
+              "e2e1q",
+              "h4h5",
+              "e1g3",
+              "g6h6",
+              "g3d6",
+              "h6g5"
+            ],
+            "lineSan": [
+              "Kf3",
+              "Ke5",
+              "Kxe3",
+              "Kf6",
+              "Kf3",
+              "Kg6",
+              "e3",
+              "Kxh5",
+              "e2",
+              "Kg6",
+              "e1=Q",
+              "h5",
+              "Qg3+",
+              "Kh6",
+              "Qd6+",
+              "Kg5"
+            ],
+            "arrows": [],
+            "labels": []
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f4f3",
+            "d4e5",
+            "f3e3",
+            "e5f6",
+            "e3f3",
+            "f6g6",
+            "e4e3",
+            "g6h5",
+            "e3e2",
+            "h5g6",
+            "e2e1q",
+            "h4h5",
+            "e1g3",
+            "g6h6",
+            "g3d6",
+            "h6g5"
+          ],
+          "pvSan": [
+            "Kf3",
+            "Ke5",
+            "Kxe3",
+            "Kf6",
+            "Kf3",
+            "Kg6",
+            "e3",
+            "Kxh5",
+            "e2",
+            "Kg6",
+            "e1=Q",
+            "h5",
+            "Qg3+",
+            "Kh6",
+            "Qd6+",
+            "Kg5"
+          ],
+          "cp": 640,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "f4g4",
+            "d4e4",
+            "g4g3",
+            "e4f5",
+            "g3h4",
+            "f5f4",
+            "h4h3",
+            "e3e4",
+            "h3g2",
+            "e4e5",
+            "g2f2",
+            "e5e6",
+            "f2e2",
+            "e6e7",
+            "e2d3",
+            "e7e8q",
+            "h5h4",
+            "e8d7",
+            "d3c3",
+            "f4e5"
+          ],
+          "pvSan": [
+            "Kg4",
+            "Kxe4",
+            "Kg3",
+            "Kf5",
+            "Kxh4",
+            "Kf4",
+            "Kh3",
+            "e4",
+            "Kg2",
+            "e5",
+            "Kf2",
+            "e6",
+            "Ke2",
+            "e7",
+            "Kd3",
+            "e8=Q",
+            "h4",
+            "Qd7+",
+            "Kc3",
+            "Ke5"
+          ],
+          "cp": -603,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "f4g3",
+            "d4e4",
+            "g3f2",
+            "e4f4",
+            "f2e2",
+            "e3e4",
+            "e2d3",
+            "e4e5",
+            "d3c4",
+            "e5e6",
+            "c4b5",
+            "e6e7",
+            "a7a5",
+            "e7e8q",
+            "b5b4",
+            "e8e1",
+            "b4b3"
+          ],
+          "pvSan": [
+            "Kg3",
+            "Kxe4",
+            "Kf2",
+            "Kf4",
+            "Ke2",
+            "e4",
+            "Kd3",
+            "e5",
+            "Kc4",
+            "e6",
+            "Kxb5",
+            "e7",
+            "a5",
+            "e8=Q+",
+            "Kb4",
+            "Qe1+",
+            "Kb3"
+          ],
+          "cp": -656,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "f4f3",
+          "d4e5",
+          "f3e3",
+          "e5f6",
+          "e3f3",
+          "f6g6",
+          "e4e3",
+          "g6h5",
+          "e3e2",
+          "h5g6",
+          "e2e1q",
+          "h4h5",
+          "e1g3",
+          "g6h6",
+          "g3d6",
+          "h6g5"
+        ],
+        "pvSan": [
+          "Kf3",
+          "Ke5",
+          "Kxe3",
+          "Kf6",
+          "Kf3",
+          "Kg6",
+          "e3",
+          "Kxh5",
+          "e2",
+          "Kg6",
+          "e1=Q",
+          "h5",
+          "Qg3+",
+          "Kh6",
+          "Qd6+",
+          "Kg5"
+        ],
+        "cp": 640,
+        "mate": null
+      }
+    },
+    {
+      "stratum": "defensiveMove",
+      "id": "lichess:R13Ct",
+      "sourceGameUrl": "https://lichess.org/JAFCpDph#35",
+      "sourceGroup": "game:JAFCpDph",
+      "sourceThemes": [
+        "advantage",
+        "defensiveMove",
+        "hangingPiece",
+        "master",
+        "middlegame",
+        "short"
+      ],
+      "sourceFen": "r1bqr1k1/p4ppp/1p1b4/4NN2/1p1PpP2/4P3/PP4PP/R2Q1RK1 w - - 2 18",
+      "precedingMove": "e5f7",
+      "startFen": "r1bqr1k1/p4Npp/1p1b4/5N2/1p1PpP2/4P3/PP4PP/R2Q1RK1 b - - 0 18",
+      "bestLine": [
+        "g8f7",
+        "d1h5",
+        "f7f8"
+      ],
+      "selectionHash": "0912b6d1328dd71ffc58bd2b7b93259d500f21aea4831e0f7e129cdd180563a7",
+      "fen": "r1bqr1k1/p4Npp/1p1b4/5N2/1p1PpP2/4P3/PP4PP/R2Q1RK1 b - - 0 18",
+      "sourceUci": [
+        "g8f7",
+        "d1h5",
+        "f7f8"
+      ],
+      "sourceSan": [
+        "Kxf7",
+        "Qh5+",
+        "Kf8"
+      ],
+      "previousFen": "r1bqr1k1/p4ppp/1p1b4/4NN2/1p1PpP2/4P3/PP4PP/R2Q1RK1 w - - 2 18",
+      "previousMoveUci": "e5f7",
+      "sourceResult": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Winning Recapture",
+            "confidence": "high",
+            "evidence": "Kxf7 wins the knight on f7 in exchange for the pawn just captured there. The settled local exchange gains 2.2 pawns of material; this is the payoff, not a newly hanging piece.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "g8f7",
+            "relevance": "primary",
+            "value": 220
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Winning Recapture",
+            "confidence": "high",
+            "evidence": "Kxf7 wins the knight on f7 in exchange for the pawn just captured there. The settled local exchange gains 2.2 pawns of material; this is the payoff, not a newly hanging piece.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "g8f7",
+            "relevance": "primary",
+            "value": 220,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "r1bqr1k1/p4Npp/1p1b4/5N2/1p1PpP2/4P3/PP4PP/R2Q1RK1 b - - 0 18",
+        "side": "black",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Winning Recapture",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g8f7",
+            "evidence": "Kxf7 wins the knight on f7 in exchange for the pawn just captured there. The settled local exchange gains 2.2 pawns of material; this is the payoff, not a newly hanging piece.",
+            "relevance": "primary",
+            "value": 220
+          }
+        ],
+        "lineUci": [
+          "g8f7",
+          "d1h5",
+          "f7f8",
+          "f5d6",
+          "d8d6",
+          "h5h7",
+          "d6h6",
+          "h7h6",
+          "g7h6",
+          "f4f5",
+          "c8a6",
+          "f1f2",
+          "f8f7",
+          "g2g4",
+          "e8g8",
+          "h2h3",
+          "h6h5",
+          "a1c1",
+          "h5g4",
+          "c1c7"
+        ],
+        "lineSan": [
+          "Kxf7",
+          "Qh5+",
+          "Kf8",
+          "Nxd6",
+          "Qxd6",
+          "Qxh7",
+          "Qh6",
+          "Qxh6",
+          "gxh6",
+          "f5",
+          "Ba6",
+          "Rf2",
+          "Kf7",
+          "g4",
+          "Rg8",
+          "h3",
+          "h5",
+          "Rc1",
+          "hxg4",
+          "Rc7+"
+        ],
+        "arrows": [
+          {
+            "from": "g8",
+            "to": "f7",
+            "ply": 1,
+            "role": "trigger"
+          },
+          {
+            "from": "d1",
+            "to": "h5",
+            "ply": 2,
+            "role": "reply"
+          },
+          {
+            "from": "f7",
+            "to": "f8",
+            "ply": 3,
+            "role": "attacker"
+          }
+        ],
+        "labels": [
+          {
+            "id": "hangingPiece",
+            "text": "Winning Recapture",
+            "color": "#f39c12",
+            "square": "f7"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "hangingPiece",
+                "label": "Winning Recapture",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "g8f7",
+                "evidence": "Kxf7 wins the knight on f7 in exchange for the pawn just captured there. The settled local exchange gains 2.2 pawns of material; this is the payoff, not a newly hanging piece.",
+                "relevance": "primary",
+                "value": 220
+              }
+            ],
+            "timeline": [
+              {
+                "id": "hangingPiece",
+                "label": "Winning Recapture",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "g8f7",
+                "evidence": "Kxf7 wins the knight on f7 in exchange for the pawn just captured there. The settled local exchange gains 2.2 pawns of material; this is the payoff, not a newly hanging piece.",
+                "relevance": "primary",
+                "value": 220,
+                "actor": "black"
+              }
+            ],
+            "lineUci": [
+              "g8f7",
+              "d1h5",
+              "f7f8",
+              "f5d6",
+              "d8d6",
+              "h5h7",
+              "d6h6",
+              "h7h6",
+              "g7h6",
+              "f4f5",
+              "c8a6",
+              "f1f2",
+              "f8f7",
+              "g2g4",
+              "e8g8",
+              "h2h3",
+              "h6h5",
+              "a1c1",
+              "h5g4",
+              "c1c7"
+            ],
+            "lineSan": [
+              "Kxf7",
+              "Qh5+",
+              "Kf8",
+              "Nxd6",
+              "Qxd6",
+              "Qxh7",
+              "Qh6",
+              "Qxh6",
+              "gxh6",
+              "f5",
+              "Ba6",
+              "Rf2",
+              "Kf7",
+              "g4",
+              "Rg8",
+              "h3",
+              "h5",
+              "Rc1",
+              "hxg4",
+              "Rc7+"
+            ],
+            "arrows": [
+              {
+                "from": "g8",
+                "to": "f7",
+                "ply": 1,
+                "role": "trigger"
+              },
+              {
+                "from": "d1",
+                "to": "h5",
+                "ply": 2,
+                "role": "reply"
+              },
+              {
+                "from": "f7",
+                "to": "f8",
+                "ply": 3,
+                "role": "attacker"
+              }
+            ],
+            "labels": [
+              {
+                "id": "hangingPiece",
+                "text": "Winning Recapture",
+                "color": "#f39c12",
+                "square": "f7"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g8f7",
+            "d1h5",
+            "f7f8",
+            "f5d6",
+            "d8d6",
+            "h5h7",
+            "d6h6",
+            "h7h6",
+            "g7h6",
+            "f4f5",
+            "c8a6",
+            "f1f2",
+            "f8f7",
+            "g2g4",
+            "e8g8",
+            "h2h3",
+            "h6h5",
+            "a1c1",
+            "h5g4",
+            "c1c7",
+            "f7f6",
+            "c7c6",
+            "f6g5",
+            "f5f6",
+            "g4h3",
+            "f6f7",
+            "g8h8",
+            "c6f6",
+            "a8f8",
+            "f2f5",
+            "g5g4"
+          ],
+          "pvSan": [
+            "Kxf7",
+            "Qh5+",
+            "Kf8",
+            "Nxd6",
+            "Qxd6",
+            "Qxh7",
+            "Qh6",
+            "Qxh6",
+            "gxh6",
+            "f5",
+            "Ba6",
+            "Rf2",
+            "Kf7",
+            "g4",
+            "Rg8",
+            "h3",
+            "h5",
+            "Rc1",
+            "hxg4",
+            "Rc7+",
+            "Kf6",
+            "Rc6+",
+            "Kg5",
+            "f6",
+            "gxh3",
+            "f7",
+            "Rh8",
+            "Rcf6",
+            "Raf8",
+            "R2f5+",
+            "Kg4"
+          ],
+          "cp": 168,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "c8f5",
+            "f7d8",
+            "e8d8",
+            "a1c1",
+            "a7a5",
+            "c1c6",
+            "a5a4",
+            "c6b6",
+            "f5e6",
+            "b6d6",
+            "d8d6"
+          ],
+          "pvSan": [
+            "Bxf5",
+            "Nxd8",
+            "Rexd8",
+            "Rc1",
+            "a5",
+            "Rc6",
+            "a4",
+            "Rxb6",
+            "Be6",
+            "Rxd6",
+            "Rxd6"
+          ],
+          "cp": -371,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "d8f6",
+            "f7d6",
+            "c8f5",
+            "d6e8",
+            "a8e8",
+            "d1b3",
+            "e8e6",
+            "b3b4",
+            "f6g6",
+            "f1f2"
+          ],
+          "pvSan": [
+            "Qf6",
+            "N7xd6",
+            "Bxf5",
+            "Nxe8",
+            "Rxe8",
+            "Qb3+",
+            "Re6",
+            "Qxb4",
+            "Qg6",
+            "Rf2"
+          ],
+          "cp": -487,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "g8f7",
+          "d1h5",
+          "f7f8",
+          "f5d6",
+          "d8d6",
+          "h5h7",
+          "d6h6",
+          "h7h6",
+          "g7h6",
+          "f4f5",
+          "c8a6",
+          "f1f2",
+          "f8f7",
+          "g2g4",
+          "e8g8",
+          "h2h3",
+          "h6h5",
+          "a1c1",
+          "h5g4",
+          "c1c7",
+          "f7f6",
+          "c7c6",
+          "f6g5",
+          "f5f6",
+          "g4h3",
+          "f6f7",
+          "g8h8",
+          "c6f6",
+          "a8f8",
+          "f2f5",
+          "g5g4"
+        ],
+        "pvSan": [
+          "Kxf7",
+          "Qh5+",
+          "Kf8",
+          "Nxd6",
+          "Qxd6",
+          "Qxh7",
+          "Qh6",
+          "Qxh6",
+          "gxh6",
+          "f5",
+          "Ba6",
+          "Rf2",
+          "Kf7",
+          "g4",
+          "Rg8",
+          "h3",
+          "h5",
+          "Rc1",
+          "hxg4",
+          "Rc7+",
+          "Kf6",
+          "Rc6+",
+          "Kg5",
+          "f6",
+          "gxh3",
+          "f7",
+          "Rh8",
+          "Rcf6",
+          "Raf8",
+          "R2f5+",
+          "Kg4"
+        ],
+        "cp": 168,
+        "mate": null
+      }
+    },
+    {
+      "stratum": "zugzwang",
+      "id": "lichess:BvWlf",
+      "sourceGameUrl": "https://lichess.org/GeURB1tB/black#74",
+      "sourceGroup": "game:GeURB1tB",
+      "sourceThemes": [
+        "crushing",
+        "endgame",
+        "long",
+        "pawnEndgame",
+        "zugzwang"
+      ],
+      "sourceFen": "8/8/1p4p1/2pk1p1p/P4P1P/1PK3P1/8/8 b - - 0 37",
+      "precedingMove": "d5c6",
+      "startFen": "8/8/1pk3p1/2p2p1p/P4P1P/1PK3P1/8/8 w - - 1 38",
+      "bestLine": [
+        "c3c4",
+        "c6d6",
+        "c4b5",
+        "d6c7",
+        "a4a5"
+      ],
+      "selectionHash": "2a28c80699c2765a08e03497bac67dd242bc25afe82e5064309ca59a50431fc1",
+      "fen": "8/8/1pk3p1/2p2p1p/P4P1P/1PK3P1/8/8 w - - 1 38",
+      "sourceUci": [
+        "c3c4",
+        "c6d6",
+        "c4b5",
+        "d6c7",
+        "a4a5"
+      ],
+      "sourceSan": [
+        "Kc4",
+        "Kd6",
+        "Kb5",
+        "Kc7",
+        "a5"
+      ],
+      "previousFen": "8/8/1p4p1/2pk1p1p/P4P1P/1PK3P1/8/8 b - - 0 37",
+      "previousMoveUci": "d5c6",
+      "sourceResult": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "8/8/1pk3p1/2p2p1p/P4P1P/1PK3P1/8/8 w - - 1 38",
+        "side": "white",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [],
+        "lineUci": [
+          "c3c4",
+          "c6c7",
+          "c4b5",
+          "c7b7",
+          "a4a5",
+          "b6a5",
+          "b5c5",
+          "b7c7",
+          "c5b5",
+          "c7d6",
+          "b5a5",
+          "d6d5",
+          "b3b4",
+          "d5e4",
+          "b4b5",
+          "e4f3",
+          "b5b6",
+          "f3g3",
+          "b6b7",
+          "g3h4"
+        ],
+        "lineSan": [
+          "Kc4",
+          "Kc7",
+          "Kb5",
+          "Kb7",
+          "a5",
+          "bxa5",
+          "Kxc5",
+          "Kc7",
+          "Kb5",
+          "Kd6",
+          "Kxa5",
+          "Kd5",
+          "b4",
+          "Ke4",
+          "b5",
+          "Kf3",
+          "b6",
+          "Kxg3",
+          "b7",
+          "Kxh4"
+        ],
+        "arrows": [],
+        "labels": [],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [],
+            "timeline": [],
+            "lineUci": [
+              "c3c4",
+              "c6c7",
+              "c4b5",
+              "c7b7",
+              "a4a5",
+              "b6a5",
+              "b5c5",
+              "b7c7",
+              "c5b5",
+              "c7d6",
+              "b5a5",
+              "d6d5",
+              "b3b4",
+              "d5e4",
+              "b4b5",
+              "e4f3",
+              "b5b6",
+              "f3g3",
+              "b6b7",
+              "g3h4"
+            ],
+            "lineSan": [
+              "Kc4",
+              "Kc7",
+              "Kb5",
+              "Kb7",
+              "a5",
+              "bxa5",
+              "Kxc5",
+              "Kc7",
+              "Kb5",
+              "Kd6",
+              "Kxa5",
+              "Kd5",
+              "b4",
+              "Ke4",
+              "b5",
+              "Kf3",
+              "b6",
+              "Kxg3",
+              "b7",
+              "Kxh4"
+            ],
+            "arrows": [],
+            "labels": []
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c3c4",
+            "c6c7",
+            "c4b5",
+            "c7b7",
+            "a4a5",
+            "b6a5",
+            "b5c5",
+            "b7c7",
+            "c5b5",
+            "c7d6",
+            "b5a5",
+            "d6d5",
+            "b3b4",
+            "d5e4",
+            "b4b5",
+            "e4f3",
+            "b5b6",
+            "f3g3",
+            "b6b7",
+            "g3h4",
+            "b7b8q",
+            "h4g3",
+            "b8b6",
+            "g3f4",
+            "b6g6",
+            "h5h4",
+            "g6c6",
+            "f4g3",
+            "c6c3",
+            "g3g4"
+          ],
+          "pvSan": [
+            "Kc4",
+            "Kc7",
+            "Kb5",
+            "Kb7",
+            "a5",
+            "bxa5",
+            "Kxc5",
+            "Kc7",
+            "Kb5",
+            "Kd6",
+            "Kxa5",
+            "Kd5",
+            "b4",
+            "Ke4",
+            "b5",
+            "Kf3",
+            "b6",
+            "Kxg3",
+            "b7",
+            "Kxh4",
+            "b8=Q",
+            "Kg3",
+            "Qb6",
+            "Kxf4",
+            "Qxg6",
+            "h4",
+            "Qc6",
+            "Kg3",
+            "Qc3+",
+            "Kg4"
+          ],
+          "cp": 462,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "b3b4",
+            "c5b4",
+            "c3b4",
+            "c6d6",
+            "b4c4",
+            "d6c6"
+          ],
+          "pvSan": [
+            "b4",
+            "cxb4+",
+            "Kxb4",
+            "Kd6",
+            "Kc4",
+            "Kc6"
+          ],
+          "cp": 0,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "c3d3",
+            "b6b5",
+            "a4b5",
+            "c6b5",
+            "d3c3",
+            "b5c6",
+            "c3c4",
+            "c6d6",
+            "c4d3",
+            "d6d5",
+            "d3e3",
+            "d5c6",
+            "e3d3",
+            "c6b6",
+            "d3c4"
+          ],
+          "pvSan": [
+            "Kd3",
+            "b5",
+            "axb5+",
+            "Kxb5",
+            "Kc3",
+            "Kc6",
+            "Kc4",
+            "Kd6",
+            "Kd3",
+            "Kd5",
+            "Ke3",
+            "Kc6",
+            "Kd3",
+            "Kb6",
+            "Kc4"
+          ],
+          "cp": 0,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "c3c4",
+          "c6c7",
+          "c4b5",
+          "c7b7",
+          "a4a5",
+          "b6a5",
+          "b5c5",
+          "b7c7",
+          "c5b5",
+          "c7d6",
+          "b5a5",
+          "d6d5",
+          "b3b4",
+          "d5e4",
+          "b4b5",
+          "e4f3",
+          "b5b6",
+          "f3g3",
+          "b6b7",
+          "g3h4",
+          "b7b8q",
+          "h4g3",
+          "b8b6",
+          "g3f4",
+          "b6g6",
+          "h5h4",
+          "g6c6",
+          "f4g3",
+          "c6c3",
+          "g3g4"
+        ],
+        "pvSan": [
+          "Kc4",
+          "Kc7",
+          "Kb5",
+          "Kb7",
+          "a5",
+          "bxa5",
+          "Kxc5",
+          "Kc7",
+          "Kb5",
+          "Kd6",
+          "Kxa5",
+          "Kd5",
+          "b4",
+          "Ke4",
+          "b5",
+          "Kf3",
+          "b6",
+          "Kxg3",
+          "b7",
+          "Kxh4",
+          "b8=Q",
+          "Kg3",
+          "Qb6",
+          "Kxf4",
+          "Qxg6",
+          "h4",
+          "Qc6",
+          "Kg3",
+          "Qc3+",
+          "Kg4"
+        ],
+        "cp": 462,
+        "mate": null
+      }
+    },
+    {
+      "stratum": "zugzwang",
+      "id": "lichess:vMQ3b",
+      "sourceGameUrl": "https://lichess.org/hITPUf3v/black#96",
+      "sourceGroup": "game:hITPUf3v",
+      "sourceThemes": [
+        "crushing",
+        "endgame",
+        "long",
+        "pawnEndgame",
+        "zugzwang"
+      ],
+      "sourceFen": "8/6p1/5p1p/1pk1pP2/p3K1P1/P1PP3P/8/8 b - - 3 48",
+      "precedingMove": "c5d6",
+      "startFen": "8/6p1/3k1p1p/1p2pP2/p3K1P1/P1PP3P/8/8 w - - 4 49",
+      "bestLine": [
+        "d3d4",
+        "e5d4",
+        "e4d4",
+        "h6h5",
+        "g4h5"
+      ],
+      "selectionHash": "5f26fa0e487cad73a287f53e36cc1284fa9114060b5bd66604cd285cd6cea137",
+      "fen": "8/6p1/3k1p1p/1p2pP2/p3K1P1/P1PP3P/8/8 w - - 4 49",
+      "sourceUci": [
+        "d3d4",
+        "e5d4",
+        "e4d4",
+        "h6h5",
+        "g4h5"
+      ],
+      "sourceSan": [
+        "d4",
+        "exd4",
+        "Kxd4",
+        "h5",
+        "gxh5"
+      ],
+      "previousFen": "8/6p1/5p1p/1pk1pP2/p3K1P1/P1PP3P/8/8 b - - 3 48",
+      "previousMoveUci": "c5d6",
+      "sourceResult": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "8/6p1/3k1p1p/1p2pP2/p3K1P1/P1PP3P/8/8 w - - 4 49",
+        "side": "white",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [],
+        "lineUci": [
+          "d3d4",
+          "e5d4",
+          "e4d4",
+          "d6c6",
+          "c3c4",
+          "b5c4",
+          "d4c4",
+          "c6d6",
+          "c4b4",
+          "d6d5",
+          "b4a4",
+          "d5c5",
+          "a4a5",
+          "c5d6"
+        ],
+        "lineSan": [
+          "d4",
+          "exd4",
+          "Kxd4",
+          "Kc6",
+          "c4",
+          "bxc4",
+          "Kxc4",
+          "Kd6",
+          "Kb4",
+          "Kd5",
+          "Kxa4",
+          "Kc5",
+          "Ka5",
+          "Kd6"
+        ],
+        "arrows": [],
+        "labels": [],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [],
+            "timeline": [],
+            "lineUci": [
+              "d3d4",
+              "e5d4",
+              "e4d4",
+              "d6c6",
+              "c3c4",
+              "b5c4",
+              "d4c4",
+              "c6d6",
+              "c4b4",
+              "d6d5",
+              "b4a4",
+              "d5c5",
+              "a4a5",
+              "c5d6"
+            ],
+            "lineSan": [
+              "d4",
+              "exd4",
+              "Kxd4",
+              "Kc6",
+              "c4",
+              "bxc4",
+              "Kxc4",
+              "Kd6",
+              "Kb4",
+              "Kd5",
+              "Kxa4",
+              "Kc5",
+              "Ka5",
+              "Kd6"
+            ],
+            "arrows": [],
+            "labels": []
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d3d4",
+            "e5d4",
+            "e4d4",
+            "d6c6",
+            "c3c4",
+            "b5c4",
+            "d4c4",
+            "c6d6",
+            "c4b4",
+            "d6d5",
+            "b4a4",
+            "d5c5",
+            "a4a5",
+            "c5d6"
+          ],
+          "pvSan": [
+            "d4",
+            "exd4",
+            "Kxd4",
+            "Kc6",
+            "c4",
+            "bxc4",
+            "Kxc4",
+            "Kd6",
+            "Kb4",
+            "Kd5",
+            "Kxa4",
+            "Kc5",
+            "Ka5",
+            "Kd6"
+          ],
+          "cp": 380,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "h3h4",
+            "d6c6",
+            "d3d4",
+            "e5d4",
+            "e4d4",
+            "h6h5",
+            "g4h5",
+            "c6d6",
+            "h5h6",
+            "g7h6",
+            "h4h5",
+            "d6c6",
+            "c3c4",
+            "b5c4",
+            "d4c4",
+            "c6d6",
+            "c4b4",
+            "d6e5",
+            "b4a4",
+            "e5f5",
+            "a4a5"
+          ],
+          "pvSan": [
+            "h4",
+            "Kc6",
+            "d4",
+            "exd4",
+            "Kxd4",
+            "h5",
+            "gxh5",
+            "Kd6",
+            "h6",
+            "gxh6",
+            "h5",
+            "Kc6",
+            "c4",
+            "bxc4",
+            "Kxc4",
+            "Kd6",
+            "Kb4",
+            "Ke5",
+            "Kxa4",
+            "Kxf5",
+            "Ka5"
+          ],
+          "cp": 0,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "e4f3",
+            "d6d5",
+            "f3e3",
+            "d5c6",
+            "e3e4",
+            "c6c5",
+            "h3h4",
+            "c5c6",
+            "d3d4",
+            "e5d4",
+            "e4d4",
+            "h6h5",
+            "g4h5",
+            "c6d6",
+            "h5h6",
+            "g7h6",
+            "h4h5",
+            "d6c6",
+            "c3c4",
+            "b5c4",
+            "d4c4",
+            "c6d6",
+            "c4b4",
+            "d6e5",
+            "b4a4",
+            "e5f5",
+            "a4b4",
+            "f5e6"
+          ],
+          "pvSan": [
+            "Kf3",
+            "Kd5",
+            "Ke3",
+            "Kc6",
+            "Ke4",
+            "Kc5",
+            "h4",
+            "Kc6",
+            "d4",
+            "exd4",
+            "Kxd4",
+            "h5",
+            "gxh5",
+            "Kd6",
+            "h6",
+            "gxh6",
+            "h5",
+            "Kc6",
+            "c4",
+            "bxc4",
+            "Kxc4",
+            "Kd6",
+            "Kb4",
+            "Ke5",
+            "Kxa4",
+            "Kxf5",
+            "Kb4",
+            "Ke6"
+          ],
+          "cp": 0,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d3d4",
+          "e5d4",
+          "e4d4",
+          "d6c6",
+          "c3c4",
+          "b5c4",
+          "d4c4",
+          "c6d6",
+          "c4b4",
+          "d6d5",
+          "b4a4",
+          "d5c5",
+          "a4a5",
+          "c5d6"
+        ],
+        "pvSan": [
+          "d4",
+          "exd4",
+          "Kxd4",
+          "Kc6",
+          "c4",
+          "bxc4",
+          "Kxc4",
+          "Kd6",
+          "Kb4",
+          "Kd5",
+          "Kxa4",
+          "Kc5",
+          "Ka5",
+          "Kd6"
+        ],
+        "cp": 380,
+        "mate": null
+      }
+    },
+    {
+      "stratum": "zugzwang",
+      "id": "lichess:pV2Bd",
+      "sourceGameUrl": "https://lichess.org/pcWVHDCp#85",
+      "sourceGroup": "game:pcWVHDCp",
+      "sourceThemes": [
+        "crushing",
+        "endgame",
+        "pawnEndgame",
+        "quietMove",
+        "veryLong",
+        "zugzwang"
+      ],
+      "sourceFen": "8/p4p2/1p1k4/8/2P2K2/P2P4/8/8 w - - 5 43",
+      "precedingMove": "f4e4",
+      "startFen": "8/p4p2/1p1k4/8/2P1K3/P2P4/8/8 b - - 6 43",
+      "bestLine": [
+        "d6c5",
+        "e4e5",
+        "a7a6",
+        "a3a4",
+        "a6a5",
+        "d3d4",
+        "c5c4"
+      ],
+      "selectionHash": "7095ad0bc51221f49485c8b2639c7b5a78c2fd3ff7e69c76c0333cc01213357c",
+      "fen": "8/p4p2/1p1k4/8/2P1K3/P2P4/8/8 b - - 6 43",
+      "sourceUci": [
+        "d6c5",
+        "e4e5",
+        "a7a6",
+        "a3a4",
+        "a6a5",
+        "d3d4",
+        "c5c4"
+      ],
+      "sourceSan": [
+        "Kc5",
+        "Ke5",
+        "a6",
+        "a4",
+        "a5",
+        "d4+",
+        "Kxc4"
+      ],
+      "previousFen": "8/p4p2/1p1k4/8/2P2K2/P2P4/8/8 w - - 5 43",
+      "previousMoveUci": "f4e4",
+      "sourceResult": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "8/p4p2/1p1k4/8/2P1K3/P2P4/8/8 b - - 6 43",
+        "side": "black",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [],
+        "lineUci": [
+          "d6c5",
+          "a3a4",
+          "a7a6",
+          "a4a5",
+          "b6a5",
+          "e4e3",
+          "a5a4",
+          "e3d2",
+          "c5d4",
+          "c4c5",
+          "d4c5"
+        ],
+        "lineSan": [
+          "Kc5",
+          "a4",
+          "a6",
+          "a5",
+          "bxa5",
+          "Ke3",
+          "a4",
+          "Kd2",
+          "Kd4",
+          "c5",
+          "Kxc5"
+        ],
+        "arrows": [],
+        "labels": [],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [],
+            "timeline": [],
+            "lineUci": [
+              "d6c5",
+              "a3a4",
+              "a7a6",
+              "a4a5",
+              "b6a5",
+              "e4e3",
+              "a5a4",
+              "e3d2",
+              "c5d4",
+              "c4c5",
+              "d4c5"
+            ],
+            "lineSan": [
+              "Kc5",
+              "a4",
+              "a6",
+              "a5",
+              "bxa5",
+              "Ke3",
+              "a4",
+              "Kd2",
+              "Kd4",
+              "c5",
+              "Kxc5"
+            ],
+            "arrows": [],
+            "labels": []
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d6c5",
+            "a3a4",
+            "a7a6",
+            "a4a5",
+            "b6a5",
+            "e4e3",
+            "a5a4",
+            "e3d2",
+            "c5d4",
+            "c4c5",
+            "d4c5"
+          ],
+          "pvSan": [
+            "Kc5",
+            "a4",
+            "a6",
+            "a5",
+            "bxa5",
+            "Ke3",
+            "a4",
+            "Kd2",
+            "Kd4",
+            "c5",
+            "Kxc5"
+          ],
+          "cp": 401,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "a7a6",
+            "e4f5",
+            "d6c5",
+            "f5e5",
+            "b6b5",
+            "c4b5",
+            "a6b5",
+            "e5f6",
+            "c5d4",
+            "f6f7",
+            "d4d3",
+            "f7e6",
+            "d3c4",
+            "e6d6",
+            "b5b4"
+          ],
+          "pvSan": [
+            "a6",
+            "Kf5",
+            "Kc5",
+            "Ke5",
+            "b5",
+            "cxb5",
+            "axb5",
+            "Kf6",
+            "Kd4",
+            "Kxf7",
+            "Kxd3",
+            "Ke6",
+            "Kc4",
+            "Kd6",
+            "b4"
+          ],
+          "cp": 1,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "b6b5",
+            "c4b5",
+            "d6c5",
+            "d3d4",
+            "c5b5",
+            "e4d5",
+            "f7f5",
+            "d5e5",
+            "b5c4",
+            "d4d5",
+            "f5f4",
+            "d5d6",
+            "f4f3",
+            "d6d7",
+            "f3f2",
+            "d7d8q",
+            "f2f1q",
+            "d8d4",
+            "c4b3",
+            "d4e3",
+            "b3b2",
+            "e3d2",
+            "b2b1"
+          ],
+          "pvSan": [
+            "b5",
+            "cxb5",
+            "Kc5",
+            "d4+",
+            "Kxb5",
+            "Kd5",
+            "f5",
+            "Ke5",
+            "Kc4",
+            "d5",
+            "f4",
+            "d6",
+            "f3",
+            "d7",
+            "f2",
+            "d8=Q",
+            "f1=Q",
+            "Qd4+",
+            "Kb3",
+            "Qe3+",
+            "Kb2",
+            "Qd2+",
+            "Kb1"
+          ],
+          "cp": 0,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "d6c5",
+          "a3a4",
+          "a7a6",
+          "a4a5",
+          "b6a5",
+          "e4e3",
+          "a5a4",
+          "e3d2",
+          "c5d4",
+          "c4c5",
+          "d4c5"
+        ],
+        "pvSan": [
+          "Kc5",
+          "a4",
+          "a6",
+          "a5",
+          "bxa5",
+          "Ke3",
+          "a4",
+          "Kd2",
+          "Kd4",
+          "c5",
+          "Kxc5"
+        ],
+        "cp": 401,
+        "mate": null
+      }
+    },
+    {
+      "stratum": "xRayAttack",
+      "id": "lichess:sKDBG",
+      "sourceGameUrl": "https://lichess.org/vISccVxI#73",
+      "sourceGroup": "game:vISccVxI",
+      "sourceThemes": [
+        "endgame",
+        "long",
+        "master",
+        "mate",
+        "mateIn3",
+        "sacrifice",
+        "xRayAttack"
+      ],
+      "sourceFen": "r5k1/5pp1/8/2Ppq3/8/4P1Pp/p1Q2P1P/R5K1 w - - 2 37",
+      "precedingMove": "a1a2",
+      "startFen": "r5k1/5pp1/8/2Ppq3/8/4P1Pp/R1Q2P1P/6K1 b - - 0 37",
+      "bestLine": [
+        "e5a1",
+        "a2a1",
+        "a8a1",
+        "c2b1",
+        "a1b1"
+      ],
+      "selectionHash": "00cf2913832090697dbca4cdbe82ea843bdeb7d2f8d89ca1315a07769599e508",
+      "fen": "r5k1/5pp1/8/2Ppq3/8/4P1Pp/R1Q2P1P/6K1 b - - 0 37",
+      "sourceUci": [
+        "e5a1",
+        "a2a1",
+        "a8a1",
+        "c2b1",
+        "a1b1"
+      ],
+      "sourceSan": [
+        "Qa1+",
+        "Rxa1",
+        "Rxa1+",
+        "Qb1",
+        "Rxb1#"
+      ],
+      "previousFen": "r5k1/5pp1/8/2Ppq3/8/4P1Pp/p1Q2P1P/R5K1 w - - 2 37",
+      "previousMoveUci": "a1a2",
+      "sourceResult": {
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5a1",
+            "value": 10000,
+            "evidence": "Qa1+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qa1+ Rxa1 Rxa1+ Qb1 Rxb1#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxb1# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "a1b1",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5a1",
+            "value": 10000,
+            "evidence": "Qa1+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qa1+ Rxa1 Rxa1+ Qb1 Rxb1#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "xRayAttack",
+            "label": "X-Ray Support",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5a1",
+            "evidence": "Qa1+ uses the rook on a8 behind the opposing rook on a2. If Rxa1, that piece vacates the ray and allows Rxa1+, with a separately verified forced mate. This is support for the exchange on a1, not another attack at its eventual payoff.",
+            "actor": "black",
+            "relevance": "secondary"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxb1# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "a1b1",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "r5k1/5pp1/8/2Ppq3/8/4P1Pp/R1Q2P1P/6K1 b - - 0 37",
+        "side": "black",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e5a1",
+            "value": 10000,
+            "evidence": "Qa1+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qa1+ Rxa1 Rxa1+ Qb1 Rxb1#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          }
+        ],
+        "lineUci": [
+          "e5a1",
+          "a2a1",
+          "a8a1",
+          "c2b1",
+          "a1b1"
+        ],
+        "lineSan": [
+          "Qa1+",
+          "Rxa1",
+          "Rxa1+",
+          "Qb1",
+          "Rxb1#"
+        ],
+        "arrows": [
+          {
+            "from": "e5",
+            "to": "a1",
+            "ply": 1,
+            "role": "trigger"
+          },
+          {
+            "from": "a8",
+            "to": "a2",
+            "ply": 1,
+            "role": "attacker"
+          },
+          {
+            "from": "a2",
+            "to": "a1",
+            "ply": 1,
+            "role": "attacker"
+          }
+        ],
+        "labels": [
+          {
+            "id": "mateIn3",
+            "text": "Forcing Mate",
+            "color": "#c0392b",
+            "square": "a1"
+          },
+          {
+            "id": "xRayAttack",
+            "text": "X-Ray Support",
+            "color": "#e67e22",
+            "square": "a2",
+            "supporting": true
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "mateIn3",
+                "label": "Forcing Mate",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "e5a1",
+                "value": 10000,
+                "evidence": "Qa1+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qa1+ Rxa1 Rxa1+ Qb1 Rxb1#. The exact continuation depends on the defence.",
+                "relevance": "primary"
+              },
+              {
+                "id": "mateIn1",
+                "label": "Checkmate",
+                "confidence": "high",
+                "evidence": "Rxb1# is checkmate: the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 5,
+                "moveUci": "a1b1",
+                "relevance": "secondary",
+                "value": 10000
+              }
+            ],
+            "timeline": [
+              {
+                "id": "mateIn3",
+                "label": "Forcing Mate",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "e5a1",
+                "value": 10000,
+                "evidence": "Qa1+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qa1+ Rxa1 Rxa1+ Qb1 Rxb1#. The exact continuation depends on the defence.",
+                "relevance": "primary",
+                "actor": "black"
+              },
+              {
+                "id": "xRayAttack",
+                "label": "X-Ray Support",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "e5a1",
+                "evidence": "Qa1+ uses the rook on a8 behind the opposing rook on a2. If Rxa1, that piece vacates the ray and allows Rxa1+, with a separately verified forced mate. This is support for the exchange on a1, not another attack at its eventual payoff.",
+                "actor": "black",
+                "relevance": "secondary"
+              },
+              {
+                "id": "mateIn1",
+                "label": "Checkmate",
+                "confidence": "high",
+                "evidence": "Rxb1# is checkmate: the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 5,
+                "moveUci": "a1b1",
+                "relevance": "secondary",
+                "value": 10000,
+                "actor": "black"
+              }
+            ],
+            "lineUci": [
+              "e5a1",
+              "a2a1",
+              "a8a1",
+              "c2b1",
+              "a1b1"
+            ],
+            "lineSan": [
+              "Qa1+",
+              "Rxa1",
+              "Rxa1+",
+              "Qb1",
+              "Rxb1#"
+            ],
+            "arrows": [
+              {
+                "from": "e5",
+                "to": "a1",
+                "ply": 1,
+                "role": "trigger"
+              },
+              {
+                "from": "a8",
+                "to": "a2",
+                "ply": 1,
+                "role": "attacker"
+              },
+              {
+                "from": "a2",
+                "to": "a1",
+                "ply": 1,
+                "role": "attacker"
+              }
+            ],
+            "labels": [
+              {
+                "id": "mateIn3",
+                "text": "Forcing Mate",
+                "color": "#c0392b",
+                "square": "a1"
+              },
+              {
+                "id": "mateIn1",
+                "text": "Later: Checkmate",
+                "color": "#c0392b",
+                "square": "b1"
+              },
+              {
+                "id": "xRayAttack",
+                "text": "X-Ray Support",
+                "color": "#e67e22",
+                "square": "a2",
+                "supporting": true
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e5a1",
+            "a2a1",
+            "a8a1",
+            "c2b1",
+            "a1b1"
+          ],
+          "pvSan": [
+            "Qa1+",
+            "Rxa1",
+            "Rxa1+",
+            "Qb1",
+            "Rxb1#"
+          ],
+          "cp": null,
+          "mate": 3
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "a8e8",
+            "c5c6",
+            "d5d4",
+            "e3e4",
+            "e5d6",
+            "c6c7",
+            "d6d7",
+            "f2f3",
+            "e8c8",
+            "g1f2",
+            "c8c7",
+            "a2a8",
+            "g8h7"
+          ],
+          "pvSan": [
+            "Re8",
+            "c6",
+            "d4",
+            "e4",
+            "Qd6",
+            "c7",
+            "Qd7",
+            "f3",
+            "Rc8",
+            "Kf2",
+            "Rxc7",
+            "Ra8+",
+            "Kh7"
+          ],
+          "cp": 27,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "a8a2",
+            "c2a2",
+            "d5d4",
+            "a2a8",
+            "g8h7",
+            "a8d8",
+            "e5f5",
+            "d8h4",
+            "h7g6",
+            "e3e4",
+            "f5f3",
+            "h4h3",
+            "f3e4",
+            "h3d7",
+            "d4d3",
+            "c5c6",
+            "e4e2",
+            "c6c7",
+            "d3d2",
+            "d7d2",
+            "e2d2",
+            "c7c8q"
+          ],
+          "pvSan": [
+            "Rxa2",
+            "Qxa2",
+            "d4",
+            "Qa8+",
+            "Kh7",
+            "Qd8",
+            "Qf5",
+            "Qh4+",
+            "Kg6",
+            "e4",
+            "Qf3",
+            "Qxh3",
+            "Qxe4",
+            "Qd7",
+            "d3",
+            "c6",
+            "Qe2",
+            "c7",
+            "d2",
+            "Qxd2",
+            "Qxd2",
+            "c8=Q"
+          ],
+          "cp": 18,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e5a1",
+          "a2a1",
+          "a8a1",
+          "c2b1",
+          "a1b1"
+        ],
+        "pvSan": [
+          "Qa1+",
+          "Rxa1",
+          "Rxa1+",
+          "Qb1",
+          "Rxb1#"
+        ],
+        "cp": null,
+        "mate": 3
+      }
+    },
+    {
+      "stratum": "xRayAttack",
+      "id": "lichess:xxDaj",
+      "sourceGameUrl": "https://lichess.org/Q0o5hKT2#53",
+      "sourceGroup": "game:Q0o5hKT2",
+      "sourceThemes": [
+        "advantage",
+        "endgame",
+        "fork",
+        "short",
+        "xRayAttack"
+      ],
+      "sourceFen": "1nr3k1/p1p2ppp/2Q1p3/8/P3P3/1P3PP1/1qR3KP/3R4 w - - 4 27",
+      "precedingMove": "c6c7",
+      "startFen": "1nr3k1/p1Q2ppp/4p3/8/P3P3/1P3PP1/1qR3KP/3R4 b - - 0 27",
+      "bestLine": [
+        "b2c2",
+        "c7c2",
+        "c8c2"
+      ],
+      "selectionHash": "042a5ad90ed01736c4673521b7df1566129219aab2220c3e1ee04ff98e83469c",
+      "fen": "1nr3k1/p1Q2ppp/4p3/8/P3P3/1P3PP1/1qR3KP/3R4 b - - 0 27",
+      "sourceUci": [
+        "b2c2",
+        "c7c2",
+        "c8c2"
+      ],
+      "sourceSan": [
+        "Qxc2+",
+        "Qxc2",
+        "Rxc2+"
+      ],
+      "previousFen": "1nr3k1/p1p2ppp/2Q1p3/8/P3P3/1P3PP1/1qR3KP/3R4 w - - 4 27",
+      "previousMoveUci": "c6c7",
+      "sourceResult": {
+        "motifs": [
+          {
+            "id": "xRayAttack",
+            "label": "X-Ray Support",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b2c2",
+            "value": 500,
+            "evidence": "Qxc2+ uses the rook on c8 behind the opposing queen on c7. If Qxc2, that piece vacates the ray and allows Rxc2+, preserving the material gain. This is support for the exchange on c2, not another attack at its eventual payoff.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "xRayAttack",
+            "label": "X-Ray Support",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b2c2",
+            "value": 500,
+            "evidence": "Qxc2+ uses the rook on c8 behind the opposing queen on c7. If Qxc2, that piece vacates the ray and allows Rxc2+, preserving the material gain. This is support for the exchange on c2, not another attack at its eventual payoff.",
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "1nr3k1/p1Q2ppp/4p3/8/P3P3/1P3PP1/1qR3KP/3R4 b - - 0 27",
+        "side": "black",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "xRayAttack",
+            "label": "X-Ray Support",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b2c2",
+            "value": 500,
+            "evidence": "Qxc2+ uses the rook on c8 behind the opposing queen on c7. If Qxc2, that piece vacates the ray and allows Rxc2+, preserving the material gain. This is support for the exchange on c2, not another attack at its eventual payoff.",
+            "relevance": "primary"
+          }
+        ],
+        "lineUci": [
+          "b2c2",
+          "c7c2",
+          "c8c2",
+          "g2f1",
+          "c2c8",
+          "f1e2",
+          "g8f8",
+          "d1b1",
+          "f8e7",
+          "b3b4",
+          "b8c6",
+          "f3f4",
+          "e6e5",
+          "e2d3",
+          "c8c7",
+          "b4b5",
+          "c6a5",
+          "b5b6",
+          "a7b6",
+          "b1b6"
+        ],
+        "lineSan": [
+          "Qxc2+",
+          "Qxc2",
+          "Rxc2+",
+          "Kf1",
+          "Rc8",
+          "Ke2",
+          "Kf8",
+          "Rb1",
+          "Ke7",
+          "b4",
+          "Nc6",
+          "f4",
+          "e5",
+          "Kd3",
+          "Rc7",
+          "b5",
+          "Na5",
+          "b6",
+          "axb6",
+          "Rxb6"
+        ],
+        "arrows": [
+          {
+            "from": "b2",
+            "to": "c2",
+            "ply": 1,
+            "role": "trigger"
+          },
+          {
+            "from": "c8",
+            "to": "c7",
+            "ply": 1,
+            "role": "attacker"
+          },
+          {
+            "from": "c7",
+            "to": "c2",
+            "ply": 1,
+            "role": "attacker"
+          }
+        ],
+        "labels": [
+          {
+            "id": "xRayAttack",
+            "text": "X-Ray Support",
+            "color": "#e67e22",
+            "square": "c7"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "xRayAttack",
+                "label": "X-Ray Support",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "b2c2",
+                "value": 500,
+                "evidence": "Qxc2+ uses the rook on c8 behind the opposing queen on c7. If Qxc2, that piece vacates the ray and allows Rxc2+, preserving the material gain. This is support for the exchange on c2, not another attack at its eventual payoff.",
+                "relevance": "primary"
+              }
+            ],
+            "timeline": [
+              {
+                "id": "xRayAttack",
+                "label": "X-Ray Support",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "b2c2",
+                "value": 500,
+                "evidence": "Qxc2+ uses the rook on c8 behind the opposing queen on c7. If Qxc2, that piece vacates the ray and allows Rxc2+, preserving the material gain. This is support for the exchange on c2, not another attack at its eventual payoff.",
+                "relevance": "primary",
+                "actor": "black"
+              }
+            ],
+            "lineUci": [
+              "b2c2",
+              "c7c2",
+              "c8c2",
+              "g2f1",
+              "c2c8",
+              "f1e2",
+              "g8f8",
+              "d1b1",
+              "f8e7",
+              "b3b4",
+              "b8c6",
+              "f3f4",
+              "e6e5",
+              "e2d3",
+              "c8c7",
+              "b4b5",
+              "c6a5",
+              "b5b6",
+              "a7b6",
+              "b1b6"
+            ],
+            "lineSan": [
+              "Qxc2+",
+              "Qxc2",
+              "Rxc2+",
+              "Kf1",
+              "Rc8",
+              "Ke2",
+              "Kf8",
+              "Rb1",
+              "Ke7",
+              "b4",
+              "Nc6",
+              "f4",
+              "e5",
+              "Kd3",
+              "Rc7",
+              "b5",
+              "Na5",
+              "b6",
+              "axb6",
+              "Rxb6"
+            ],
+            "arrows": [
+              {
+                "from": "b2",
+                "to": "c2",
+                "ply": 1,
+                "role": "trigger"
+              },
+              {
+                "from": "c8",
+                "to": "c7",
+                "ply": 1,
+                "role": "attacker"
+              },
+              {
+                "from": "c7",
+                "to": "c2",
+                "ply": 1,
+                "role": "attacker"
+              }
+            ],
+            "labels": [
+              {
+                "id": "xRayAttack",
+                "text": "X-Ray Support",
+                "color": "#e67e22",
+                "square": "c7"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "b2c2",
+            "c7c2",
+            "c8c2",
+            "g2f1",
+            "c2c8",
+            "f1e2",
+            "g8f8",
+            "d1b1",
+            "f8e7",
+            "b3b4",
+            "b8c6",
+            "f3f4",
+            "e6e5",
+            "e2d3",
+            "c8c7",
+            "b4b5",
+            "c6a5",
+            "b5b6",
+            "a7b6",
+            "b1b6",
+            "a5b7",
+            "b6b5",
+            "b7c5",
+            "d3e3"
+          ],
+          "pvSan": [
+            "Qxc2+",
+            "Qxc2",
+            "Rxc2+",
+            "Kf1",
+            "Rc8",
+            "Ke2",
+            "Kf8",
+            "Rb1",
+            "Ke7",
+            "b4",
+            "Nc6",
+            "f4",
+            "e5",
+            "Kd3",
+            "Rc7",
+            "b5",
+            "Na5",
+            "b6",
+            "axb6",
+            "Rxb6",
+            "Nb7",
+            "Rb5",
+            "Nc5+",
+            "Ke3"
+          ],
+          "cp": 360,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "c8e8",
+            "c2b2",
+            "b8a6",
+            "c7c6",
+            "e8f8",
+            "c6a6",
+            "g7g5",
+            "a6a5",
+            "h7h6",
+            "b2a2",
+            "e6e5",
+            "d1b1",
+            "f8c8"
+          ],
+          "pvSan": [
+            "Re8",
+            "Rxb2",
+            "Na6",
+            "Qc6",
+            "Rf8",
+            "Qxa6",
+            "g5",
+            "Qa5",
+            "h6",
+            "Ra2",
+            "e5",
+            "Rb1",
+            "Rc8"
+          ],
+          "cp": -879,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "c8f8",
+            "c2b2",
+            "b8a6",
+            "c7a5",
+            "a6b8",
+            "d1d8",
+            "b8c6",
+            "d8f8",
+            "g8f8",
+            "a5c5",
+            "c6e7",
+            "c5a7",
+            "g7g5"
+          ],
+          "pvSan": [
+            "Rf8",
+            "Rxb2",
+            "Na6",
+            "Qa5",
+            "Nb8",
+            "Rd8",
+            "Nc6",
+            "Rxf8+",
+            "Kxf8",
+            "Qc5+",
+            "Ne7",
+            "Qxa7",
+            "g5"
+          ],
+          "cp": -887,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "b2c2",
+          "c7c2",
+          "c8c2",
+          "g2f1",
+          "c2c8",
+          "f1e2",
+          "g8f8",
+          "d1b1",
+          "f8e7",
+          "b3b4",
+          "b8c6",
+          "f3f4",
+          "e6e5",
+          "e2d3",
+          "c8c7",
+          "b4b5",
+          "c6a5",
+          "b5b6",
+          "a7b6",
+          "b1b6",
+          "a5b7",
+          "b6b5",
+          "b7c5",
+          "d3e3"
+        ],
+        "pvSan": [
+          "Qxc2+",
+          "Qxc2",
+          "Rxc2+",
+          "Kf1",
+          "Rc8",
+          "Ke2",
+          "Kf8",
+          "Rb1",
+          "Ke7",
+          "b4",
+          "Nc6",
+          "f4",
+          "e5",
+          "Kd3",
+          "Rc7",
+          "b5",
+          "Na5",
+          "b6",
+          "axb6",
+          "Rxb6",
+          "Nb7",
+          "Rb5",
+          "Nc5+",
+          "Ke3"
+        ],
+        "cp": 360,
+        "mate": null
+      }
+    },
+    {
+      "stratum": "xRayAttack",
+      "id": "lichess:SD5oo",
+      "sourceGameUrl": "https://lichess.org/MPbj9NYQ#45",
+      "sourceGroup": "game:MPbj9NYQ",
+      "sourceThemes": [
+        "backRankMate",
+        "mate",
+        "mateIn2",
+        "middlegame",
+        "short",
+        "xRayAttack"
+      ],
+      "sourceFen": "4r1k1/pp1b1pbp/2p3p1/8/1qNpQ3/1P1P4/P1P1RPPP/4R1K1 w - - 5 23",
+      "precedingMove": "e4f3",
+      "startFen": "4r1k1/pp1b1pbp/2p3p1/8/1qNp4/1P1P1Q2/P1P1RPPP/4R1K1 b - - 6 23",
+      "bestLine": [
+        "b4e1",
+        "e2e1",
+        "e8e1"
+      ],
+      "selectionHash": "04bf8045e5810ea83b745aa22ca7c2fe05eced1eae522a3f5ed94d1bcd3086b1",
+      "fen": "4r1k1/pp1b1pbp/2p3p1/8/1qNp4/1P1P1Q2/P1P1RPPP/4R1K1 b - - 6 23",
+      "sourceUci": [
+        "b4e1",
+        "e2e1",
+        "e8e1"
+      ],
+      "sourceSan": [
+        "Qxe1+",
+        "Rxe1",
+        "Rxe1#"
+      ],
+      "previousFen": "4r1k1/pp1b1pbp/2p3p1/8/1qNpQ3/1P1P4/P1P1RPPP/4R1K1 w - - 5 23",
+      "previousMoveUci": "e4f3",
+      "sourceResult": {
+        "motifs": [
+          {
+            "id": "mateIn2",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b4e1",
+            "value": 10000,
+            "evidence": "Qxe1+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qxe1+ Rxe1 Rxe1#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "backRankMate",
+            "label": "Back Rank Mate",
+            "confidence": "medium",
+            "evidence": "Rxe1# is checkmate (Back Rank Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e8e1",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn2",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b4e1",
+            "value": 10000,
+            "evidence": "Qxe1+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qxe1+ Rxe1 Rxe1#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "xRayAttack",
+            "label": "X-Ray Support",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b4e1",
+            "evidence": "Qxe1+ uses the rook on e8 behind the opposing rook on e2. If Rxe1, that piece vacates the ray and allows Rxe1#, with a separately verified forced mate. This is support for the exchange on e1, not another attack at its eventual payoff.",
+            "actor": "black",
+            "relevance": "secondary"
+          },
+          {
+            "id": "backRankMate",
+            "label": "Back Rank Mate",
+            "confidence": "medium",
+            "evidence": "Rxe1# is checkmate (Back Rank Mate): the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e8e1",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "4r1k1/pp1b1pbp/2p3p1/8/1qNp4/1P1P1Q2/P1P1RPPP/4R1K1 b - - 6 23",
+        "side": "black",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "mateIn2",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b4e1",
+            "value": 10000,
+            "evidence": "Qxe1+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qxe1+ Rxe1 Rxe1#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          }
+        ],
+        "lineUci": [
+          "b4e1",
+          "e2e1",
+          "e8e1"
+        ],
+        "lineSan": [
+          "Qxe1+",
+          "Rxe1",
+          "Rxe1#"
+        ],
+        "arrows": [
+          {
+            "from": "b4",
+            "to": "e1",
+            "ply": 1,
+            "role": "trigger"
+          },
+          {
+            "from": "e8",
+            "to": "e2",
+            "ply": 1,
+            "role": "attacker"
+          },
+          {
+            "from": "e2",
+            "to": "e1",
+            "ply": 1,
+            "role": "attacker"
+          }
+        ],
+        "labels": [
+          {
+            "id": "mateIn2",
+            "text": "Forcing Mate",
+            "color": "#c0392b",
+            "square": "e1"
+          },
+          {
+            "id": "xRayAttack",
+            "text": "X-Ray Support",
+            "color": "#e67e22",
+            "square": "e2",
+            "supporting": true
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "mateIn2",
+                "label": "Forcing Mate",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "b4e1",
+                "value": 10000,
+                "evidence": "Qxe1+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qxe1+ Rxe1 Rxe1#. The exact continuation depends on the defence.",
+                "relevance": "primary"
+              },
+              {
+                "id": "backRankMate",
+                "label": "Back Rank Mate",
+                "confidence": "medium",
+                "evidence": "Rxe1# is checkmate (Back Rank Mate): the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 3,
+                "moveUci": "e8e1",
+                "relevance": "secondary",
+                "value": 10000
+              }
+            ],
+            "timeline": [
+              {
+                "id": "mateIn2",
+                "label": "Forcing Mate",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "b4e1",
+                "value": 10000,
+                "evidence": "Qxe1+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is Qxe1+ Rxe1 Rxe1#. The exact continuation depends on the defence.",
+                "relevance": "primary",
+                "actor": "black"
+              },
+              {
+                "id": "xRayAttack",
+                "label": "X-Ray Support",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "b4e1",
+                "evidence": "Qxe1+ uses the rook on e8 behind the opposing rook on e2. If Rxe1, that piece vacates the ray and allows Rxe1#, with a separately verified forced mate. This is support for the exchange on e1, not another attack at its eventual payoff.",
+                "actor": "black",
+                "relevance": "secondary"
+              },
+              {
+                "id": "backRankMate",
+                "label": "Back Rank Mate",
+                "confidence": "medium",
+                "evidence": "Rxe1# is checkmate (Back Rank Mate): the king is in check and there is no legal reply.",
+                "source": "available",
+                "ply": 3,
+                "moveUci": "e8e1",
+                "relevance": "secondary",
+                "value": 10000,
+                "actor": "black"
+              }
+            ],
+            "lineUci": [
+              "b4e1",
+              "e2e1",
+              "e8e1"
+            ],
+            "lineSan": [
+              "Qxe1+",
+              "Rxe1",
+              "Rxe1#"
+            ],
+            "arrows": [
+              {
+                "from": "b4",
+                "to": "e1",
+                "ply": 1,
+                "role": "trigger"
+              },
+              {
+                "from": "e8",
+                "to": "e2",
+                "ply": 1,
+                "role": "attacker"
+              },
+              {
+                "from": "e2",
+                "to": "e1",
+                "ply": 1,
+                "role": "attacker"
+              }
+            ],
+            "labels": [
+              {
+                "id": "mateIn2",
+                "text": "Forcing Mate",
+                "color": "#c0392b",
+                "square": "e1"
+              },
+              {
+                "id": "backRankMate",
+                "text": "Later: Back Rank Mate",
+                "color": "#e74c3c",
+                "square": "e1"
+              },
+              {
+                "id": "xRayAttack",
+                "text": "X-Ray Support",
+                "color": "#e67e22",
+                "square": "e2",
+                "supporting": true
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "b4e1",
+            "e2e1",
+            "e8e1"
+          ],
+          "pvSan": [
+            "Qxe1+",
+            "Rxe1",
+            "Rxe1#"
+          ],
+          "cp": null,
+          "mate": 2
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "e8e6",
+            "e2e6",
+            "d7e6",
+            "f3e2",
+            "g7f8",
+            "c4e5",
+            "b4a5",
+            "e5f3",
+            "a5c3",
+            "h2h3",
+            "f8b4",
+            "e1f1",
+            "e6d5",
+            "e2e8",
+            "b4f8"
+          ],
+          "pvSan": [
+            "Re6",
+            "Rxe6",
+            "Bxe6",
+            "Qe2",
+            "Bf8",
+            "Ne5",
+            "Qa5",
+            "Nf3",
+            "Qc3",
+            "h3",
+            "Bb4",
+            "Rf1",
+            "Bd5",
+            "Qe8+",
+            "Bf8"
+          ],
+          "cp": -212,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "e8e2",
+            "f3e2",
+            "g7f8",
+            "h2h4",
+            "b4c3",
+            "h4h5",
+            "g6h5",
+            "e2e5",
+            "f8b4"
+          ],
+          "pvSan": [
+            "Rxe2",
+            "Qxe2",
+            "Bf8",
+            "h4",
+            "Qc3",
+            "h5",
+            "gxh5",
+            "Qe5",
+            "Bb4"
+          ],
+          "cp": -234,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "b4e1",
+          "e2e1",
+          "e8e1"
+        ],
+        "pvSan": [
+          "Qxe1+",
+          "Rxe1",
+          "Rxe1#"
+        ],
+        "cp": null,
+        "mate": 2
+      }
+    },
+    {
+      "stratum": "trappedPiece",
+      "id": "lichess:qn2Fy",
+      "sourceGameUrl": "https://lichess.org/YVKijnFF/black#44",
+      "sourceGroup": "game:YVKijnFF",
+      "sourceThemes": [
+        "advantage",
+        "endgame",
+        "short",
+        "trappedPiece"
+      ],
+      "sourceFen": "3r2k1/pp3pp1/2pb3p/8/3PN3/P2Pr2P/1P4P1/3R1RK1 b - - 1 22",
+      "precedingMove": "d6e7",
+      "startFen": "3r2k1/pp2bpp1/2p4p/8/3PN3/P2Pr2P/1P4P1/3R1RK1 w - - 2 23",
+      "bestLine": [
+        "g1f2",
+        "e3e4",
+        "d3e4"
+      ],
+      "selectionHash": "058122f41bc20d0e6dd9830ca823a25985ce76432b92301ebd95ead0e4cad239",
+      "fen": "3r2k1/pp2bpp1/2p4p/8/3PN3/P2Pr2P/1P4P1/3R1RK1 w - - 2 23",
+      "sourceUci": [
+        "g1f2",
+        "e3e4",
+        "d3e4"
+      ],
+      "sourceSan": [
+        "Kf2",
+        "Rxe4",
+        "dxe4"
+      ],
+      "previousFen": "3r2k1/pp3pp1/2pb3p/8/3PN3/P2Pr2P/1P4P1/3R1RK1 b - - 1 22",
+      "previousMoveUci": "d6e7",
+      "sourceResult": {
+        "motifs": [
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Rook",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g1f2",
+            "value": 180,
+            "evidence": "Kf2 attacks the rook on e3. It has no safe move, including captures. Defending it also concedes material: Bg5 is answered by Nxg5. Every legal defence loses material through the trapped piece or its defender.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Rook",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g1f2",
+            "value": 180,
+            "evidence": "Kf2 attacks the rook on e3. It has no safe move, including captures. Defending it also concedes material: Bg5 is answered by Nxg5. Every legal defence loses material through the trapped piece or its defender.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Winning Recapture",
+            "confidence": "high",
+            "evidence": "dxe4 wins the rook on e4 in exchange for the knight just captured there. The settled local exchange gains 1.8 pawns of material; this is the payoff, not a newly hanging piece.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "d3e4",
+            "relevance": "secondary",
+            "value": 180,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "3r2k1/pp2bpp1/2p4p/8/3PN3/P2Pr2P/1P4P1/3R1RK1 w - - 2 23",
+        "side": "white",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Rook",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "g1f2",
+            "value": 180,
+            "evidence": "Kf2 attacks the rook on e3. It has no safe move, including captures. Defending it also concedes material: Bg5 is answered by Nxg5. Every legal defence loses material through the trapped piece or its defender.",
+            "relevance": "primary"
+          }
+        ],
+        "lineUci": [
+          "g1f2",
+          "e3e4",
+          "d3e4",
+          "a7a5",
+          "f2f3",
+          "d8a8",
+          "d4d5",
+          "e7f6",
+          "a3a4",
+          "a8a6",
+          "d5d6",
+          "f6d8",
+          "f1e1",
+          "g8f8",
+          "e1e2",
+          "f8e8"
+        ],
+        "lineSan": [
+          "Kf2",
+          "Rxe4",
+          "dxe4",
+          "a5",
+          "Kf3",
+          "Ra8",
+          "d5",
+          "Bf6",
+          "a4",
+          "Ra6",
+          "d6",
+          "Bd8",
+          "Rfe1",
+          "Kf8",
+          "Re2",
+          "Ke8"
+        ],
+        "arrows": [
+          {
+            "from": "g1",
+            "to": "f2",
+            "ply": 1,
+            "role": "trigger"
+          },
+          {
+            "from": "f2",
+            "to": "e3",
+            "ply": 1,
+            "role": "attacker"
+          }
+        ],
+        "labels": [
+          {
+            "id": "trappedPiece",
+            "text": "Trapped Rook",
+            "color": "#d35400",
+            "square": "e3"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "trappedPiece",
+                "label": "Trapped Rook",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "g1f2",
+                "value": 180,
+                "evidence": "Kf2 attacks the rook on e3. It has no safe move, including captures. Defending it also concedes material: Bg5 is answered by Nxg5. Every legal defence loses material through the trapped piece or its defender.",
+                "relevance": "primary"
+              }
+            ],
+            "timeline": [
+              {
+                "id": "trappedPiece",
+                "label": "Trapped Rook",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "g1f2",
+                "value": 180,
+                "evidence": "Kf2 attacks the rook on e3. It has no safe move, including captures. Defending it also concedes material: Bg5 is answered by Nxg5. Every legal defence loses material through the trapped piece or its defender.",
+                "relevance": "primary",
+                "actor": "white"
+              },
+              {
+                "id": "hangingPiece",
+                "label": "Winning Recapture",
+                "confidence": "high",
+                "evidence": "dxe4 wins the rook on e4 in exchange for the knight just captured there. The settled local exchange gains 1.8 pawns of material; this is the payoff, not a newly hanging piece.",
+                "source": "available",
+                "ply": 3,
+                "moveUci": "d3e4",
+                "relevance": "secondary",
+                "value": 180,
+                "actor": "white"
+              }
+            ],
+            "lineUci": [
+              "g1f2",
+              "e3e4",
+              "d3e4",
+              "a7a5",
+              "f2f3",
+              "d8a8",
+              "d4d5",
+              "e7f6",
+              "a3a4",
+              "a8a6",
+              "d5d6",
+              "f6d8",
+              "f1e1",
+              "g8f8",
+              "e1e2",
+              "f8e8"
+            ],
+            "lineSan": [
+              "Kf2",
+              "Rxe4",
+              "dxe4",
+              "a5",
+              "Kf3",
+              "Ra8",
+              "d5",
+              "Bf6",
+              "a4",
+              "Ra6",
+              "d6",
+              "Bd8",
+              "Rfe1",
+              "Kf8",
+              "Re2",
+              "Ke8"
+            ],
+            "arrows": [
+              {
+                "from": "g1",
+                "to": "f2",
+                "ply": 1,
+                "role": "trigger"
+              },
+              {
+                "from": "f2",
+                "to": "e3",
+                "ply": 1,
+                "role": "attacker"
+              }
+            ],
+            "labels": [
+              {
+                "id": "trappedPiece",
+                "text": "Trapped Rook",
+                "color": "#d35400",
+                "square": "e3"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g1f2",
+            "e3e4",
+            "d3e4",
+            "a7a5",
+            "f2f3",
+            "d8a8",
+            "d4d5",
+            "e7f6",
+            "a3a4",
+            "a8a6",
+            "d5d6",
+            "f6d8",
+            "f1e1",
+            "g8f8",
+            "e1e2",
+            "f8e8"
+          ],
+          "pvSan": [
+            "Kf2",
+            "Rxe4",
+            "dxe4",
+            "a5",
+            "Kf3",
+            "Ra8",
+            "d5",
+            "Bf6",
+            "a4",
+            "Ra6",
+            "d6",
+            "Bd8",
+            "Rfe1",
+            "Kf8",
+            "Re2",
+            "Ke8"
+          ],
+          "cp": 334,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "e4c5",
+            "e7c5",
+            "d4c5",
+            "e3d3",
+            "d1e1",
+            "g8f8",
+            "e1e2",
+            "d3d2",
+            "f1f2",
+            "d2e2",
+            "f2e2",
+            "d8d1",
+            "g1f2"
+          ],
+          "pvSan": [
+            "Nc5",
+            "Bxc5",
+            "dxc5",
+            "Rexd3",
+            "Rde1",
+            "Kf8",
+            "Re2",
+            "Rd2",
+            "Rff2",
+            "Rxe2",
+            "Rxe2",
+            "Rd1+",
+            "Kf2"
+          ],
+          "cp": -236,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "f1e1",
+            "e3e1",
+            "d1e1",
+            "d8d4",
+            "e1d1",
+            "f7f5",
+            "e4c3",
+            "g8f7",
+            "c3e2",
+            "d4d7",
+            "d3d4"
+          ],
+          "pvSan": [
+            "Rfe1",
+            "Rxe1+",
+            "Rxe1",
+            "Rxd4",
+            "Rd1",
+            "f5",
+            "Nc3",
+            "Kf7",
+            "Ne2",
+            "Rd7",
+            "d4"
+          ],
+          "cp": -275,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "g1f2",
+          "e3e4",
+          "d3e4",
+          "a7a5",
+          "f2f3",
+          "d8a8",
+          "d4d5",
+          "e7f6",
+          "a3a4",
+          "a8a6",
+          "d5d6",
+          "f6d8",
+          "f1e1",
+          "g8f8",
+          "e1e2",
+          "f8e8"
+        ],
+        "pvSan": [
+          "Kf2",
+          "Rxe4",
+          "dxe4",
+          "a5",
+          "Kf3",
+          "Ra8",
+          "d5",
+          "Bf6",
+          "a4",
+          "Ra6",
+          "d6",
+          "Bd8",
+          "Rfe1",
+          "Kf8",
+          "Re2",
+          "Ke8"
+        ],
+        "cp": 334,
+        "mate": null
+      }
+    },
+    {
+      "stratum": "trappedPiece",
+      "id": "lichess:j8Up4",
+      "sourceGameUrl": "https://lichess.org/2h2a8ToL#69",
+      "sourceGroup": "game:2h2a8ToL",
+      "sourceThemes": [
+        "crushing",
+        "endgame",
+        "long",
+        "trappedPiece"
+      ],
+      "sourceFen": "6k1/5p2/4p1p1/4b2P/8/7r/2PQ1K2/8 w - - 0 35",
+      "precedingMove": "d2h6",
+      "startFen": "6k1/5p2/4p1pQ/4b2P/8/7r/2P2K2/8 b - - 1 35",
+      "bestLine": [
+        "e5d4",
+        "f2e2",
+        "d4e3",
+        "h6e3",
+        "h3e3"
+      ],
+      "selectionHash": "6f417e044f6e5a8632f1996d1841cad27b442ee98e47961cb07b50eb6ca6f39c",
+      "fen": "6k1/5p2/4p1pQ/4b2P/8/7r/2P2K2/8 b - - 1 35",
+      "sourceUci": [
+        "e5d4",
+        "f2e2",
+        "d4e3",
+        "h6e3",
+        "h3e3"
+      ],
+      "sourceSan": [
+        "Bd4+",
+        "Ke2",
+        "Be3",
+        "Qxe3",
+        "Rxe3+"
+      ],
+      "previousFen": "6k1/5p2/4p1p1/4b2P/8/7r/2PQ1K2/8 w - - 0 35",
+      "previousMoveUci": "d2h6",
+      "sourceResult": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 5,
+            "moveUci": "h3e3",
+            "value": 500,
+            "evidence": "Rxe3+ takes the queen with check before gxh5. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing gxh5 first allows Qc1, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures.",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "6k1/5p2/4p1pQ/4b2P/8/7r/2P2K2/8 b - - 1 35",
+        "side": "black",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Queen",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "d4e3",
+            "value": 300,
+            "evidence": "Be3 attacks the queen on h6. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece.",
+            "relevance": "primary"
+          }
+        ],
+        "lineUci": [
+          "e5d4",
+          "f2g2",
+          "d4e3",
+          "h6g6",
+          "f7g6",
+          "g2h3",
+          "g6h5",
+          "h3h4",
+          "e3f4",
+          "h4h3",
+          "g8g7",
+          "c2c3",
+          "g7h6"
+        ],
+        "lineSan": [
+          "Bd4+",
+          "Kg2",
+          "Be3",
+          "Qxg6+",
+          "fxg6",
+          "Kxh3",
+          "gxh5",
+          "Kh4",
+          "Bf4",
+          "Kh3",
+          "Kg7",
+          "c3",
+          "Kh6"
+        ],
+        "arrows": [
+          {
+            "from": "e5",
+            "to": "d4",
+            "ply": 1,
+            "role": "attacker"
+          },
+          {
+            "from": "f2",
+            "to": "g2",
+            "ply": 2,
+            "role": "reply"
+          },
+          {
+            "from": "d4",
+            "to": "e3",
+            "ply": 3,
+            "role": "trigger"
+          },
+          {
+            "from": "e3",
+            "to": "h6",
+            "ply": 3,
+            "role": "attacker"
+          }
+        ],
+        "labels": [
+          {
+            "id": "trappedPiece",
+            "text": "Later: Trapped Queen",
+            "color": "#d35400",
+            "square": "h6"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "trappedPiece",
+                "label": "Trapped Queen",
+                "source": "available",
+                "confidence": "high",
+                "ply": 3,
+                "moveUci": "d4e3",
+                "value": 300,
+                "evidence": "Be3 attacks the queen on h6. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece.",
+                "relevance": "primary"
+              }
+            ],
+            "timeline": [
+              {
+                "id": "trappedPiece",
+                "label": "Trapped Queen",
+                "source": "available",
+                "confidence": "high",
+                "ply": 3,
+                "moveUci": "d4e3",
+                "value": 300,
+                "evidence": "Be3 attacks the queen on h6. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece.",
+                "relevance": "primary",
+                "actor": "black"
+              },
+              {
+                "id": "attacking_undefended_piece",
+                "label": "Threatening a Piece",
+                "confidence": "medium",
+                "evidence": "Threatening a Piece appears on Be3 at ply 1 of the current best line.",
+                "source": "available",
+                "ply": 3,
+                "moveUci": "d4e3",
+                "relevance": "secondary",
+                "value": 400,
+                "actor": "black"
+              },
+              {
+                "id": "hangingPiece",
+                "label": "Winning Recapture",
+                "confidence": "high",
+                "evidence": "fxg6 wins the queen on g6 in exchange for the pawn just captured there. The settled local exchange gains 7 pawns of material; this is the payoff, not a newly hanging piece.",
+                "source": "available",
+                "ply": 5,
+                "moveUci": "f7g6",
+                "relevance": "secondary",
+                "value": 700,
+                "actor": "black"
+              }
+            ],
+            "lineUci": [
+              "e5d4",
+              "f2g2",
+              "d4e3",
+              "h6g6",
+              "f7g6",
+              "g2h3",
+              "g6h5",
+              "h3h4",
+              "e3f4",
+              "h4h3",
+              "g8g7",
+              "c2c3",
+              "g7h6"
+            ],
+            "lineSan": [
+              "Bd4+",
+              "Kg2",
+              "Be3",
+              "Qxg6+",
+              "fxg6",
+              "Kxh3",
+              "gxh5",
+              "Kh4",
+              "Bf4",
+              "Kh3",
+              "Kg7",
+              "c3",
+              "Kh6"
+            ],
+            "arrows": [
+              {
+                "from": "e5",
+                "to": "d4",
+                "ply": 1,
+                "role": "attacker"
+              },
+              {
+                "from": "f2",
+                "to": "g2",
+                "ply": 2,
+                "role": "reply"
+              },
+              {
+                "from": "d4",
+                "to": "e3",
+                "ply": 3,
+                "role": "trigger"
+              },
+              {
+                "from": "e3",
+                "to": "h6",
+                "ply": 3,
+                "role": "attacker"
+              }
+            ],
+            "labels": [
+              {
+                "id": "trappedPiece",
+                "text": "Later: Trapped Queen",
+                "color": "#d35400",
+                "square": "h6"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e5d4",
+            "f2g2",
+            "d4e3",
+            "h6g6",
+            "f7g6",
+            "g2h3",
+            "g6h5",
+            "h3h4",
+            "e3f4",
+            "h4h3",
+            "g8g7",
+            "c2c3",
+            "g7h6"
+          ],
+          "pvSan": [
+            "Bd4+",
+            "Kg2",
+            "Be3",
+            "Qxg6+",
+            "fxg6",
+            "Kxh3",
+            "gxh5",
+            "Kh4",
+            "Bf4",
+            "Kh3",
+            "Kg7",
+            "c3",
+            "Kh6"
+          ],
+          "cp": 453,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "e5f6",
+            "h6f4",
+            "h3h5",
+            "f4b8",
+            "g8g7",
+            "c2c4",
+            "f6a1",
+            "b8d6",
+            "a1e5",
+            "d6d8",
+            "e5f4",
+            "d8d4",
+            "e6e5",
+            "d4d6",
+            "h5h2",
+            "f2f1"
+          ],
+          "pvSan": [
+            "Bf6",
+            "Qf4",
+            "Rxh5",
+            "Qb8+",
+            "Kg7",
+            "c4",
+            "Ba1",
+            "Qd6",
+            "Be5",
+            "Qd8",
+            "Bf4",
+            "Qd4+",
+            "e5",
+            "Qd6",
+            "Rh2+",
+            "Kf1"
+          ],
+          "cp": 50,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "h3h5",
+            "h6e3",
+            "e5d6",
+            "e3b3",
+            "d6c5",
+            "f2e2",
+            "h5e5",
+            "e2f1",
+            "e5f5",
+            "f1e2",
+            "c5d4",
+            "c2c4",
+            "f5f2",
+            "e2d1"
+          ],
+          "pvSan": [
+            "Rxh5",
+            "Qe3",
+            "Bd6",
+            "Qb3",
+            "Bc5+",
+            "Ke2",
+            "Re5+",
+            "Kf1",
+            "Rf5+",
+            "Ke2",
+            "Bd4",
+            "c4",
+            "Rf2+",
+            "Kd1"
+          ],
+          "cp": 47,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "e5d4",
+          "f2g2",
+          "d4e3",
+          "h6g6",
+          "f7g6",
+          "g2h3",
+          "g6h5",
+          "h3h4",
+          "e3f4",
+          "h4h3",
+          "g8g7",
+          "c2c3",
+          "g7h6"
+        ],
+        "pvSan": [
+          "Bd4+",
+          "Kg2",
+          "Be3",
+          "Qxg6+",
+          "fxg6",
+          "Kxh3",
+          "gxh5",
+          "Kh4",
+          "Bf4",
+          "Kh3",
+          "Kg7",
+          "c3",
+          "Kh6"
+        ],
+        "cp": 453,
+        "mate": null
+      }
+    },
+    {
+      "stratum": "trappedPiece",
+      "id": "lichess:S9vEb",
+      "sourceGameUrl": "https://lichess.org/mdDpa9Xi#31",
+      "sourceGroup": "game:mdDpa9Xi",
+      "sourceThemes": [
+        "crushing",
+        "middlegame",
+        "short",
+        "trappedPiece"
+      ],
+      "sourceFen": "5rk1/1qpn1ppp/2b1pn2/Q1b5/4pP2/P1N3N1/1PPP2PP/R1B2R1K w - - 1 16",
+      "precedingMove": "b2b4",
+      "startFen": "5rk1/1qpn1ppp/2b1pn2/Q1b5/1P2pP2/P1N3N1/2PP2PP/R1B2R1K b - b3 0 16",
+      "bestLine": [
+        "f8a8",
+        "a5c5",
+        "d7c5"
+      ],
+      "selectionHash": "7381105368baafb075f95069114006385e8c6daccc1aa05c5cb11699f01c3092",
+      "fen": "5rk1/1qpn1ppp/2b1pn2/Q1b5/1P2pP2/P1N3N1/2PP2PP/R1B2R1K b - b3 0 16",
+      "sourceUci": [
+        "f8a8",
+        "a5c5",
+        "d7c5"
+      ],
+      "sourceSan": [
+        "Ra8",
+        "Qxc5",
+        "Nxc5"
+      ],
+      "previousFen": "5rk1/1qpn1ppp/2b1pn2/Q1b5/4pP2/P1N3N1/1PPP2PP/R1B2R1K w - - 1 16",
+      "previousMoveUci": "b2b4",
+      "sourceResult": {
+        "motifs": [
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Queen",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f8a8",
+            "value": 170,
+            "evidence": "Ra8 attacks the queen on a5. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Queen",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f8a8",
+            "value": 170,
+            "evidence": "Ra8 attacks the queen on a5. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Winning Recapture",
+            "confidence": "high",
+            "evidence": "Nxc5 wins the queen on c5 in exchange for the bishop just captured there. The settled local exchange gains 2.5 pawns of material; this is the payoff, not a newly hanging piece.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "d7c5",
+            "relevance": "secondary",
+            "value": 250,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "5rk1/1qpn1ppp/2b1pn2/Q1b5/1P2pP2/P1N3N1/2PP2PP/R1B2R1K b - b3 0 16",
+        "side": "black",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "trappedPiece",
+            "label": "Trapped Queen",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f8a8",
+            "value": 170,
+            "evidence": "Ra8 attacks the queen on a5. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece.",
+            "relevance": "primary"
+          }
+        ],
+        "lineUci": [
+          "f8a8",
+          "a5a8",
+          "b7a8",
+          "b4c5",
+          "e4e3",
+          "f1g1",
+          "f6g4",
+          "h2h3",
+          "a8d8",
+          "c3e4",
+          "f7f5",
+          "d2e3",
+          "f5e4",
+          "c1d2",
+          "d7f6",
+          "g3f1",
+          "c6b5",
+          "a1b1",
+          "g4f2",
+          "h1h2"
+        ],
+        "lineSan": [
+          "Ra8",
+          "Qxa8+",
+          "Qxa8",
+          "bxc5",
+          "e3",
+          "Rg1",
+          "Ng4",
+          "h3",
+          "Qd8",
+          "Nce4",
+          "f5",
+          "dxe3",
+          "fxe4",
+          "Bd2",
+          "Ndf6",
+          "Nf1",
+          "Bb5",
+          "Rb1",
+          "Nf2+",
+          "Kh2"
+        ],
+        "arrows": [
+          {
+            "from": "f8",
+            "to": "a8",
+            "ply": 1,
+            "role": "trigger"
+          },
+          {
+            "from": "a8",
+            "to": "a5",
+            "ply": 1,
+            "role": "attacker"
+          }
+        ],
+        "labels": [
+          {
+            "id": "trappedPiece",
+            "text": "Trapped Queen",
+            "color": "#d35400",
+            "square": "a5"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "trappedPiece",
+                "label": "Trapped Queen",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f8a8",
+                "value": 170,
+                "evidence": "Ra8 attacks the queen on a5. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece.",
+                "relevance": "primary"
+              }
+            ],
+            "timeline": [
+              {
+                "id": "trappedPiece",
+                "label": "Trapped Queen",
+                "source": "available",
+                "confidence": "high",
+                "ply": 1,
+                "moveUci": "f8a8",
+                "value": 170,
+                "evidence": "Ra8 attacks the queen on a5. It has no safe move, including captures. Every legal defence still permits a profitable capture of that same piece.",
+                "relevance": "primary",
+                "actor": "black"
+              },
+              {
+                "id": "hangingPiece",
+                "label": "Winning Recapture",
+                "confidence": "high",
+                "evidence": "Qxa8 wins the queen on a8 in exchange for the rook just captured there. The settled local exchange gains 4 pawns of material; this is the payoff, not a newly hanging piece.",
+                "source": "available",
+                "ply": 3,
+                "moveUci": "b7a8",
+                "relevance": "secondary",
+                "value": 400,
+                "actor": "black"
+              },
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "bxc5 wins the loose bishop on c5.",
+                "source": "available",
+                "ply": 4,
+                "moveUci": "b4c5",
+                "relevance": "secondary",
+                "value": 230,
+                "actor": "white"
+              }
+            ],
+            "lineUci": [
+              "f8a8",
+              "a5a8",
+              "b7a8",
+              "b4c5",
+              "e4e3",
+              "f1g1",
+              "f6g4",
+              "h2h3",
+              "a8d8",
+              "c3e4",
+              "f7f5",
+              "d2e3",
+              "f5e4",
+              "c1d2",
+              "d7f6",
+              "g3f1",
+              "c6b5",
+              "a1b1",
+              "g4f2",
+              "h1h2"
+            ],
+            "lineSan": [
+              "Ra8",
+              "Qxa8+",
+              "Qxa8",
+              "bxc5",
+              "e3",
+              "Rg1",
+              "Ng4",
+              "h3",
+              "Qd8",
+              "Nce4",
+              "f5",
+              "dxe3",
+              "fxe4",
+              "Bd2",
+              "Ndf6",
+              "Nf1",
+              "Bb5",
+              "Rb1",
+              "Nf2+",
+              "Kh2"
+            ],
+            "arrows": [
+              {
+                "from": "f8",
+                "to": "a8",
+                "ply": 1,
+                "role": "trigger"
+              },
+              {
+                "from": "a8",
+                "to": "a5",
+                "ply": 1,
+                "role": "attacker"
+              }
+            ],
+            "labels": [
+              {
+                "id": "trappedPiece",
+                "text": "Trapped Queen",
+                "color": "#d35400",
+                "square": "a5"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f8a8",
+            "a5a8",
+            "b7a8",
+            "b4c5",
+            "e4e3",
+            "f1g1",
+            "f6g4",
+            "h2h3",
+            "a8d8",
+            "c3e4",
+            "f7f5",
+            "d2e3",
+            "f5e4",
+            "c1d2",
+            "d7f6",
+            "g3f1",
+            "c6b5",
+            "a1b1",
+            "g4f2",
+            "h1h2",
+            "b5f1",
+            "g1f1",
+            "d8d2"
+          ],
+          "pvSan": [
+            "Ra8",
+            "Qxa8+",
+            "Qxa8",
+            "bxc5",
+            "e3",
+            "Rg1",
+            "Ng4",
+            "h3",
+            "Qd8",
+            "Nce4",
+            "f5",
+            "dxe3",
+            "fxe4",
+            "Bd2",
+            "Ndf6",
+            "Nf1",
+            "Bb5",
+            "Rb1",
+            "Nf2+",
+            "Kh2",
+            "Bxf1",
+            "Rgxf1",
+            "Qxd2"
+          ],
+          "cp": 351,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "e4e3",
+            "b4c5",
+            "c6g2",
+            "h1g1",
+            "g2h3",
+            "c3e4",
+            "h3f1",
+            "a5b4",
+            "b7d5",
+            "g3f1",
+            "e3e2",
+            "e4f6",
+            "d7f6",
+            "c1b2",
+            "e2f1n",
+            "a1f1",
+            "d5f5",
+            "b2f6",
+            "g7f6",
+            "d2d3",
+            "g8h8",
+            "g1f2"
+          ],
+          "pvSan": [
+            "e3",
+            "bxc5",
+            "Bxg2+",
+            "Kg1",
+            "Bh3",
+            "Nce4",
+            "Bxf1",
+            "Qb4",
+            "Qd5",
+            "Nxf1",
+            "e2",
+            "Nxf6+",
+            "Nxf6",
+            "Bb2",
+            "exf1=N",
+            "Rxf1",
+            "Qf5",
+            "Bxf6",
+            "gxf6",
+            "d3",
+            "Kh8",
+            "Kf2"
+          ],
+          "cp": 41,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "c5b6",
+            "a5g5",
+            "h7h6",
+            "g5h4",
+            "e4e3",
+            "h4h3",
+            "e3d2",
+            "c1d2",
+            "b7a8",
+            "f4f5",
+            "f6g4",
+            "b4b5",
+            "c6b7",
+            "a3a4",
+            "d7f6"
+          ],
+          "pvSan": [
+            "Bb6",
+            "Qg5",
+            "h6",
+            "Qh4",
+            "e3",
+            "Qh3",
+            "exd2",
+            "Bxd2",
+            "Qa8",
+            "f5",
+            "Ng4",
+            "b5",
+            "Bb7",
+            "a4",
+            "Ndf6"
+          ],
+          "cp": -84,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "f8a8",
+          "a5a8",
+          "b7a8",
+          "b4c5",
+          "e4e3",
+          "f1g1",
+          "f6g4",
+          "h2h3",
+          "a8d8",
+          "c3e4",
+          "f7f5",
+          "d2e3",
+          "f5e4",
+          "c1d2",
+          "d7f6",
+          "g3f1",
+          "c6b5",
+          "a1b1",
+          "g4f2",
+          "h1h2",
+          "b5f1",
+          "g1f1",
+          "d8d2"
+        ],
+        "pvSan": [
+          "Ra8",
+          "Qxa8+",
+          "Qxa8",
+          "bxc5",
+          "e3",
+          "Rg1",
+          "Ng4",
+          "h3",
+          "Qd8",
+          "Nce4",
+          "f5",
+          "dxe3",
+          "fxe4",
+          "Bd2",
+          "Ndf6",
+          "Nf1",
+          "Bb5",
+          "Rb1",
+          "Nf2+",
+          "Kh2",
+          "Bxf1",
+          "Rgxf1",
+          "Qxd2"
+        ],
+        "cp": 351,
+        "mate": null
+      }
+    },
+    {
+      "stratum": "advancedPawn",
+      "id": "lichess:i2SLh",
+      "sourceGameUrl": "https://lichess.org/JRH8EioB/black#98",
+      "sourceGroup": "game:JRH8EioB",
+      "sourceThemes": [
+        "advancedPawn",
+        "crushing",
+        "endgame",
+        "pawnEndgame",
+        "promotion",
+        "quietMove",
+        "veryLong"
+      ],
+      "sourceFen": "8/4K3/2p5/2Pp1k2/P7/8/8/8 b - - 0 49",
+      "precedingMove": "f5e5",
+      "startFen": "8/4K3/2p5/2Ppk3/P7/8/8/8 w - - 1 50",
+      "bestLine": [
+        "a4a5",
+        "d5d4",
+        "a5a6",
+        "d4d3",
+        "a6a7",
+        "d3d2",
+        "a7a8q"
+      ],
+      "selectionHash": "03524d3d2edd30bde5323898827ff72cd8fc7bc24406c18c1baa39138df34134",
+      "fen": "8/4K3/2p5/2Ppk3/P7/8/8/8 w - - 1 50",
+      "sourceUci": [
+        "a4a5",
+        "d5d4",
+        "a5a6",
+        "d4d3",
+        "a6a7",
+        "d3d2",
+        "a7a8q"
+      ],
+      "sourceSan": [
+        "a5",
+        "d4",
+        "a6",
+        "d3",
+        "a7",
+        "d2",
+        "a8=Q"
+      ],
+      "previousFen": "8/4K3/2p5/2Pp1k2/P7/8/8/8 b - - 0 49",
+      "previousMoveUci": "f5e5",
+      "sourceResult": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "8/4K3/2p5/2Ppk3/P7/8/8/8 w - - 1 50",
+        "side": "white",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [],
+        "lineUci": [
+          "a4a5",
+          "d5d4",
+          "a5a6",
+          "d4d3",
+          "a6a7",
+          "d3d2",
+          "a7a8q",
+          "d2d1q",
+          "a8c6",
+          "d1c2",
+          "c6d6",
+          "e5f5",
+          "c5c6",
+          "c2e4",
+          "e7d8",
+          "e4h4",
+          "d8d7",
+          "h4a4",
+          "d6c5"
+        ],
+        "lineSan": [
+          "a5",
+          "d4",
+          "a6",
+          "d3",
+          "a7",
+          "d2",
+          "a8=Q",
+          "d1=Q",
+          "Qxc6",
+          "Qc2",
+          "Qd6+",
+          "Kf5",
+          "c6",
+          "Qe4+",
+          "Kd8",
+          "Qh4+",
+          "Kd7",
+          "Qa4",
+          "Qc5+"
+        ],
+        "arrows": [],
+        "labels": [],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [],
+            "timeline": [],
+            "lineUci": [
+              "a4a5",
+              "d5d4",
+              "a5a6",
+              "d4d3",
+              "a6a7",
+              "d3d2",
+              "a7a8q",
+              "d2d1q",
+              "a8c6",
+              "d1c2",
+              "c6d6",
+              "e5f5",
+              "c5c6",
+              "c2e4",
+              "e7d8",
+              "e4h4",
+              "d8d7",
+              "h4a4",
+              "d6c5"
+            ],
+            "lineSan": [
+              "a5",
+              "d4",
+              "a6",
+              "d3",
+              "a7",
+              "d2",
+              "a8=Q",
+              "d1=Q",
+              "Qxc6",
+              "Qc2",
+              "Qd6+",
+              "Kf5",
+              "c6",
+              "Qe4+",
+              "Kd8",
+              "Qh4+",
+              "Kd7",
+              "Qa4",
+              "Qc5+"
+            ],
+            "arrows": [],
+            "labels": []
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a4a5",
+            "d5d4",
+            "a5a6",
+            "d4d3",
+            "a6a7",
+            "d3d2",
+            "a7a8q",
+            "d2d1q",
+            "a8c6",
+            "d1c2",
+            "c6d6",
+            "e5f5",
+            "c5c6",
+            "c2e4",
+            "e7d8",
+            "e4h4",
+            "d8d7",
+            "h4a4",
+            "d6c5"
+          ],
+          "pvSan": [
+            "a5",
+            "d4",
+            "a6",
+            "d3",
+            "a7",
+            "d2",
+            "a8=Q",
+            "d1=Q",
+            "Qxc6",
+            "Qc2",
+            "Qd6+",
+            "Kf5",
+            "c6",
+            "Qe4+",
+            "Kd8",
+            "Qh4+",
+            "Kd7",
+            "Qa4",
+            "Qc5+"
+          ],
+          "cp": 319,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "e7d7",
+            "d5d4",
+            "d7c6",
+            "d4d3",
+            "c6b7",
+            "d3d2",
+            "c5c6",
+            "d2d1q",
+            "c6c7",
+            "d1b3",
+            "b7a8",
+            "b3a4",
+            "a8b8",
+            "a4b5",
+            "b8a8",
+            "b5c6",
+            "a8b8",
+            "e5d6",
+            "c7c8q",
+            "c6c8",
+            "b8c8"
+          ],
+          "pvSan": [
+            "Kd7",
+            "d4",
+            "Kxc6",
+            "d3",
+            "Kb7",
+            "d2",
+            "c6",
+            "d1=Q",
+            "c7",
+            "Qb3+",
+            "Ka8",
+            "Qxa4+",
+            "Kb8",
+            "Qb5+",
+            "Ka8",
+            "Qc6+",
+            "Kb8",
+            "Kd6",
+            "c8=Q",
+            "Qxc8+",
+            "Kxc8"
+          ],
+          "cp": -41,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "e7f7",
+            "e5d4",
+            "f7e6",
+            "d4c5",
+            "e6e5",
+            "c5b6",
+            "e5d4",
+            "b6a5",
+            "d4c5",
+            "a5a4",
+            "c5c6",
+            "d5d4",
+            "c6d5",
+            "d4d3",
+            "d5c4",
+            "d3d2",
+            "c4d3",
+            "d2d1q",
+            "d3e4",
+            "d1b1",
+            "e4f3",
+            "b1b3",
+            "f3e2"
+          ],
+          "pvSan": [
+            "Kf7",
+            "Kd4",
+            "Ke6",
+            "Kxc5",
+            "Ke5",
+            "Kb6",
+            "Kd4",
+            "Ka5",
+            "Kc5",
+            "Kxa4",
+            "Kxc6",
+            "d4",
+            "Kd5",
+            "d3",
+            "Kc4",
+            "d2",
+            "Kd3",
+            "d1=Q+",
+            "Ke4",
+            "Qb1+",
+            "Kf3",
+            "Qb3+",
+            "Ke2"
+          ],
+          "cp": -536,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "a4a5",
+          "d5d4",
+          "a5a6",
+          "d4d3",
+          "a6a7",
+          "d3d2",
+          "a7a8q",
+          "d2d1q",
+          "a8c6",
+          "d1c2",
+          "c6d6",
+          "e5f5",
+          "c5c6",
+          "c2e4",
+          "e7d8",
+          "e4h4",
+          "d8d7",
+          "h4a4",
+          "d6c5"
+        ],
+        "pvSan": [
+          "a5",
+          "d4",
+          "a6",
+          "d3",
+          "a7",
+          "d2",
+          "a8=Q",
+          "d1=Q",
+          "Qxc6",
+          "Qc2",
+          "Qd6+",
+          "Kf5",
+          "c6",
+          "Qe4+",
+          "Kd8",
+          "Qh4+",
+          "Kd7",
+          "Qa4",
+          "Qc5+"
+        ],
+        "cp": 319,
+        "mate": null
+      }
+    },
+    {
+      "stratum": "advancedPawn",
+      "id": "lichess:oSj8l",
+      "sourceGameUrl": "https://lichess.org/El4gBLqB/black#106",
+      "sourceGroup": "game:El4gBLqB",
+      "sourceThemes": [
+        "advancedPawn",
+        "crushing",
+        "endgame",
+        "fork",
+        "promotion",
+        "short",
+        "underPromotion"
+      ],
+      "sourceFen": "K7/1P1q3p/Pk6/8/8/6P1/7P/8 b - - 4 53",
+      "precedingMove": "b6a6",
+      "startFen": "K7/1P1q3p/k7/8/8/6P1/7P/8 w - - 0 54",
+      "bestLine": [
+        "b7b8n",
+        "a6b5",
+        "b8d7"
+      ],
+      "selectionHash": "07391f2ee5535b6a333847627bcd25410d8342716614546a4b8ad11e44570b79",
+      "fen": "K7/1P1q3p/k7/8/8/6P1/7P/8 w - - 0 54",
+      "sourceUci": [
+        "b7b8n",
+        "a6b5",
+        "b8d7"
+      ],
+      "sourceSan": [
+        "b8=N+",
+        "Kb5",
+        "Nxd7"
+      ],
+      "previousFen": "K7/1P1q3p/Pk6/8/8/6P1/7P/8 b - - 4 53",
+      "previousMoveUci": "b6a6",
+      "sourceResult": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "b8=N+ forks the king on a6 and queen on d7. The line continues with Nxd7, winning the queen.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "b7b8n",
+            "relevance": "primary",
+            "value": 1120
+          },
+          {
+            "id": "underPromotion",
+            "label": "Under-Promotion",
+            "confidence": "medium",
+            "evidence": "b8=N+ promotes the pawn to a knight.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "b7b8n",
+            "relevance": "secondary",
+            "value": 1120
+          }
+        ],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "b8=N+ forks the king on a6 and queen on d7. The line continues with Nxd7, winning the queen.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "b7b8n",
+            "relevance": "primary",
+            "value": 1120,
+            "actor": "white"
+          },
+          {
+            "id": "underPromotion",
+            "label": "Under-Promotion",
+            "confidence": "medium",
+            "evidence": "b8=N+ promotes the pawn to a knight.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "b7b8n",
+            "relevance": "secondary",
+            "value": 1120,
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Nxd7 wins the loose queen on d7.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "b8d7",
+            "relevance": "secondary",
+            "value": 900,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "K7/1P1q3p/k7/8/8/6P1/7P/8 w - - 0 54",
+        "side": "white",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "b8=N+ forks the king on a6 and queen on d7. The line continues with Nxd7, winning the queen.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "b7b8n",
+            "relevance": "primary",
+            "value": 1120
+          }
+        ],
+        "lineUci": [
+          "b7b8n",
+          "a6b5",
+          "b8d7",
+          "h7h6",
+          "d7f6",
+          "b5c4",
+          "f6g4",
+          "h6h5",
+          "g4f6",
+          "c4d4",
+          "f6h5",
+          "d4e4",
+          "a8b8",
+          "e4f3",
+          "h5f6",
+          "f3g2",
+          "g3g4",
+          "g2h3",
+          "g4g5",
+          "h3h4"
+        ],
+        "lineSan": [
+          "b8=N+",
+          "Kb5",
+          "Nxd7",
+          "h6",
+          "Nf6",
+          "Kc4",
+          "Ng4",
+          "h5",
+          "Nf6",
+          "Kd4",
+          "Nxh5",
+          "Ke4",
+          "Kb8",
+          "Kf3",
+          "Nf6",
+          "Kg2",
+          "g4",
+          "Kh3",
+          "g5",
+          "Kh4"
+        ],
+        "arrows": [
+          {
+            "from": "b7",
+            "to": "b8",
+            "ply": 1,
+            "role": "trigger"
+          },
+          {
+            "from": "b8",
+            "to": "a6",
+            "ply": 1,
+            "role": "attacker"
+          },
+          {
+            "from": "b8",
+            "to": "d7",
+            "ply": 1,
+            "role": "attacker"
+          }
+        ],
+        "labels": [
+          {
+            "id": "fork",
+            "text": "Fork",
+            "color": "#e74c3c",
+            "square": "b8"
+          }
+        ],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [
+              {
+                "id": "fork",
+                "label": "Fork",
+                "confidence": "high",
+                "evidence": "b8=N+ forks the king on a6 and queen on d7. The line continues with Nxd7, winning the queen.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "b7b8n",
+                "relevance": "primary",
+                "value": 1120
+              },
+              {
+                "id": "underPromotion",
+                "label": "Under-Promotion",
+                "confidence": "medium",
+                "evidence": "b8=N+ promotes the pawn to a knight.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "b7b8n",
+                "relevance": "secondary",
+                "value": 1120
+              }
+            ],
+            "timeline": [
+              {
+                "id": "fork",
+                "label": "Fork",
+                "confidence": "high",
+                "evidence": "b8=N+ forks the king on a6 and queen on d7. The line continues with Nxd7, winning the queen.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "b7b8n",
+                "relevance": "primary",
+                "value": 1120,
+                "actor": "white"
+              },
+              {
+                "id": "underPromotion",
+                "label": "Under-Promotion",
+                "confidence": "medium",
+                "evidence": "b8=N+ promotes the pawn to a knight.",
+                "source": "available",
+                "ply": 1,
+                "moveUci": "b7b8n",
+                "relevance": "secondary",
+                "value": 1120,
+                "actor": "white"
+              },
+              {
+                "id": "hangingPiece",
+                "label": "Hanging Piece",
+                "confidence": "high",
+                "evidence": "Nxd7 wins the loose queen on d7.",
+                "source": "available",
+                "ply": 3,
+                "moveUci": "b8d7",
+                "relevance": "secondary",
+                "value": 900,
+                "actor": "white"
+              }
+            ],
+            "lineUci": [
+              "b7b8n",
+              "a6b5",
+              "b8d7",
+              "h7h6",
+              "d7f6",
+              "b5c4",
+              "f6g4",
+              "h6h5",
+              "g4f6",
+              "c4d4",
+              "f6h5",
+              "d4e4",
+              "a8b8",
+              "e4f3",
+              "h5f6",
+              "f3g2",
+              "g3g4",
+              "g2h3",
+              "g4g5",
+              "h3h4"
+            ],
+            "lineSan": [
+              "b8=N+",
+              "Kb5",
+              "Nxd7",
+              "h6",
+              "Nf6",
+              "Kc4",
+              "Ng4",
+              "h5",
+              "Nf6",
+              "Kd4",
+              "Nxh5",
+              "Ke4",
+              "Kb8",
+              "Kf3",
+              "Nf6",
+              "Kg2",
+              "g4",
+              "Kh3",
+              "g5",
+              "Kh4"
+            ],
+            "arrows": [
+              {
+                "from": "b7",
+                "to": "b8",
+                "ply": 1,
+                "role": "trigger"
+              },
+              {
+                "from": "b8",
+                "to": "a6",
+                "ply": 1,
+                "role": "attacker"
+              },
+              {
+                "from": "b8",
+                "to": "d7",
+                "ply": 1,
+                "role": "attacker"
+              }
+            ],
+            "labels": [
+              {
+                "id": "fork",
+                "text": "Fork",
+                "color": "#e74c3c",
+                "square": "b8"
+              },
+              {
+                "id": "underPromotion",
+                "text": "Under-Promotion",
+                "color": "#3498db",
+                "square": "b8"
+              }
+            ]
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "b7b8n",
+            "a6b5",
+            "b8d7",
+            "h7h6",
+            "d7f6",
+            "b5c4",
+            "f6g4",
+            "h6h5",
+            "g4f6",
+            "c4d4",
+            "f6h5",
+            "d4e4",
+            "a8b8",
+            "e4f3",
+            "h5f6",
+            "f3g2",
+            "g3g4",
+            "g2h3",
+            "g4g5",
+            "h3h4",
+            "g5g6"
+          ],
+          "pvSan": [
+            "b8=N+",
+            "Kb5",
+            "Nxd7",
+            "h6",
+            "Nf6",
+            "Kc4",
+            "Ng4",
+            "h5",
+            "Nf6",
+            "Kd4",
+            "Nxh5",
+            "Ke4",
+            "Kb8",
+            "Kf3",
+            "Nf6",
+            "Kg2",
+            "g4",
+            "Kh3",
+            "g5",
+            "Kh4",
+            "g6"
+          ],
+          "cp": 504,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "b7b8q",
+            "d7d5",
+            "b8b7",
+            "d5b7"
+          ],
+          "pvSan": [
+            "b8=Q",
+            "Qd5+",
+            "Qb7+",
+            "Qxb7#"
+          ],
+          "cp": null,
+          "mate": -2
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "b7b8r",
+            "d7a7"
+          ],
+          "pvSan": [
+            "b8=R",
+            "Qa7#"
+          ],
+          "cp": null,
+          "mate": -1
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "b7b8n",
+          "a6b5",
+          "b8d7",
+          "h7h6",
+          "d7f6",
+          "b5c4",
+          "f6g4",
+          "h6h5",
+          "g4f6",
+          "c4d4",
+          "f6h5",
+          "d4e4",
+          "a8b8",
+          "e4f3",
+          "h5f6",
+          "f3g2",
+          "g3g4",
+          "g2h3",
+          "g4g5",
+          "h3h4",
+          "g5g6"
+        ],
+        "pvSan": [
+          "b8=N+",
+          "Kb5",
+          "Nxd7",
+          "h6",
+          "Nf6",
+          "Kc4",
+          "Ng4",
+          "h5",
+          "Nf6",
+          "Kd4",
+          "Nxh5",
+          "Ke4",
+          "Kb8",
+          "Kf3",
+          "Nf6",
+          "Kg2",
+          "g4",
+          "Kh3",
+          "g5",
+          "Kh4",
+          "g6"
+        ],
+        "cp": 504,
+        "mate": null
+      }
+    },
+    {
+      "stratum": "advancedPawn",
+      "id": "lichess:c6L21",
+      "sourceGameUrl": "https://lichess.org/rW8JOc3d/black#100",
+      "sourceGroup": "game:rW8JOc3d",
+      "sourceThemes": [
+        "advancedPawn",
+        "crushing",
+        "deflection",
+        "endgame",
+        "master",
+        "promotion",
+        "rookEndgame",
+        "short"
+      ],
+      "sourceFen": "8/1PR5/1r4k1/6p1/7p/7P/6K1/8 b - - 2 50",
+      "precedingMove": "g6f6",
+      "startFen": "8/1PR5/1r3k2/6p1/7p/7P/6K1/8 w - - 3 51",
+      "bestLine": [
+        "c7c6",
+        "b6c6",
+        "b7b8q"
+      ],
+      "selectionHash": "07dad423964b11dfd30287cf6a5327cb6e1425b7fbae9e64158cf2996477e6dd",
+      "fen": "8/1PR5/1r3k2/6p1/7p/7P/6K1/8 w - - 3 51",
+      "sourceUci": [
+        "c7c6",
+        "b6c6",
+        "b7b8q"
+      ],
+      "sourceSan": [
+        "Rc6+",
+        "Rxc6",
+        "b8=Q"
+      ],
+      "previousFen": "8/1PR5/1r4k1/6p1/7p/7P/6K1/8 b - - 2 50",
+      "previousMoveUci": "g6f6",
+      "sourceResult": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "promotion",
+            "label": "Promotion",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "b7b8q",
+            "actor": "white",
+            "relevance": "secondary",
+            "evidence": "b8=Q promotes the pawn to a queen."
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "scan": {
+        "fen": "8/1PR5/1r3k2/6p1/7p/7P/6K1/8 w - - 3 51",
+        "side": "white",
+        "engineName": "Stockfish 18",
+        "depth": 16,
+        "motifs": [],
+        "lineUci": [
+          "c7c6",
+          "b6c6",
+          "b7b8q",
+          "c6c2",
+          "g2f1",
+          "c2c1",
+          "f1f2",
+          "f6f5",
+          "b8b2",
+          "c1c5",
+          "b2d4",
+          "c5c1",
+          "d4d3",
+          "f5f6",
+          "d3e4",
+          "c1c5",
+          "e4d4",
+          "c5e5",
+          "f2f3",
+          "f6f5"
+        ],
+        "lineSan": [
+          "Rc6+",
+          "Rxc6",
+          "b8=Q",
+          "Rc2+",
+          "Kf1",
+          "Rc1+",
+          "Kf2",
+          "Kf5",
+          "Qb2",
+          "Rc5",
+          "Qd4",
+          "Rc1",
+          "Qd3+",
+          "Kf6",
+          "Qe4",
+          "Rc5",
+          "Qd4+",
+          "Re5",
+          "Kf3",
+          "Kf5"
+        ],
+        "arrows": [],
+        "labels": [],
+        "variations": [
+          {
+            "multipv": 1,
+            "depth": 16,
+            "motifs": [],
+            "timeline": [
+              {
+                "id": "promotion",
+                "label": "Promotion",
+                "source": "available",
+                "confidence": "high",
+                "ply": 3,
+                "moveUci": "b7b8q",
+                "actor": "white",
+                "relevance": "secondary",
+                "evidence": "b8=Q promotes the pawn to a queen."
+              }
+            ],
+            "lineUci": [
+              "c7c6",
+              "b6c6",
+              "b7b8q",
+              "c6c2",
+              "g2f1",
+              "c2c1",
+              "f1f2",
+              "f6f5",
+              "b8b2",
+              "c1c5",
+              "b2d4",
+              "c5c1",
+              "d4d3",
+              "f5f6",
+              "d3e4",
+              "c1c5",
+              "e4d4",
+              "c5e5",
+              "f2f3",
+              "f6f5"
+            ],
+            "lineSan": [
+              "Rc6+",
+              "Rxc6",
+              "b8=Q",
+              "Rc2+",
+              "Kf1",
+              "Rc1+",
+              "Kf2",
+              "Kf5",
+              "Qb2",
+              "Rc5",
+              "Qd4",
+              "Rc1",
+              "Qd3+",
+              "Kf6",
+              "Qe4",
+              "Rc5",
+              "Qd4+",
+              "Re5",
+              "Kf3",
+              "Kf5"
+            ],
+            "arrows": [],
+            "labels": []
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-93"
+      },
+      "engineLines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c7c6",
+            "b6c6",
+            "b7b8q",
+            "c6c2",
+            "g2f1",
+            "c2c1",
+            "f1f2",
+            "f6f5",
+            "b8b2",
+            "c1c5",
+            "b2d4",
+            "c5c1",
+            "d4d3",
+            "f5f6",
+            "d3e4",
+            "c1c5",
+            "e4d4",
+            "c5e5",
+            "f2f3",
+            "f6f5",
+            "d4d3",
+            "f5e6",
+            "f3g4"
+          ],
+          "pvSan": [
+            "Rc6+",
+            "Rxc6",
+            "b8=Q",
+            "Rc2+",
+            "Kf1",
+            "Rc1+",
+            "Kf2",
+            "Kf5",
+            "Qb2",
+            "Rc5",
+            "Qd4",
+            "Rc1",
+            "Qd3+",
+            "Kf6",
+            "Qe4",
+            "Rc5",
+            "Qd4+",
+            "Re5",
+            "Kf3",
+            "Kf5",
+            "Qd3+",
+            "Ke6",
+            "Kg4"
+          ],
+          "cp": 351,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "g2f3",
+            "b6b4",
+            "f3e3",
+            "g5g4",
+            "h3g4",
+            "h4h3",
+            "b7b8q",
+            "b4b8",
+            "e3f2",
+            "b8b3",
+            "g4g5",
+            "f6g5",
+            "c7g7",
+            "g5f6"
+          ],
+          "pvSan": [
+            "Kf3",
+            "Rb4",
+            "Ke3",
+            "g4",
+            "hxg4",
+            "h3",
+            "b8=Q",
+            "Rxb8",
+            "Kf2",
+            "Rb3",
+            "g5+",
+            "Kxg5",
+            "Rg7+",
+            "Kf6"
+          ],
+          "cp": 7,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "g2f2",
+            "b6b3",
+            "c7c6",
+            "f6g7",
+            "c6c7",
+            "g7g6",
+            "c7c6"
+          ],
+          "pvSan": [
+            "Kf2",
+            "Rb3",
+            "Rc6+",
+            "Kg7",
+            "Rc7+",
+            "Kg6",
+            "Rc6+"
+          ],
+          "cp": 0,
+          "mate": null
+        }
+      ],
+      "sourceEngine": {
+        "depth": 16,
+        "multipv": 1,
+        "pvUci": [
+          "c7c6",
+          "b6c6",
+          "b7b8q",
+          "c6c2",
+          "g2f1",
+          "c2c1",
+          "f1f2",
+          "f6f5",
+          "b8b2",
+          "c1c5",
+          "b2d4",
+          "c5c1",
+          "d4d3",
+          "f5f6",
+          "d3e4",
+          "c1c5",
+          "e4d4",
+          "c5e5",
+          "f2f3",
+          "f6f5",
+          "d4d3",
+          "f5e6",
+          "f3g4"
+        ],
+        "pvSan": [
+          "Rc6+",
+          "Rxc6",
+          "b8=Q",
+          "Rc2+",
+          "Kf1",
+          "Rc1+",
+          "Kf2",
+          "Kf5",
+          "Qb2",
+          "Rc5",
+          "Qd4",
+          "Rc1",
+          "Qd3+",
+          "Kf6",
+          "Qe4",
+          "Rc5",
+          "Qd4+",
+          "Re5",
+          "Kf3",
+          "Kf5",
+          "Qd3+",
+          "Ke6",
+          "Kg4"
+        ],
+        "cp": 351,
+        "mate": null
+      }
+    }
+  ]
+}

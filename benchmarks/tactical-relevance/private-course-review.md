@@ -1,6 +1,12 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 92 / live pipeline 97
+## Current classifier: adapter 93 / live pipeline 98
+
+The [trap and compensation review](trap-relevance-review.md) recovers a real king attack on a trapped rook through bounded defender capture and safe material retention. Every legal root reply is covered; all friendly-piece liabilities are debited, and genuine traps retain lower compensated bounds. A counterattacking queen can be recaptured, but unrelated loose material cannot justify a trap. Root/missed lessons and actual-ply continuations remain separate, with no speculative future board arrows. The 178-search public receipt retains contrary best-move results: a local material witness is not necessarily best full-position play.
+
+Verification: 1,685 selected tests, 805 actual-controller worker inputs, both builds, TypeScript, twelve-file lint, three service tests, two cache scenarios and twelve isolated HTTP cases pass. Public worker median/p95/max is 79/195/612 ms for 300 inputs, excluding engine/UI; first HTTP startup is 8,374 ms and another case reaches 9,820 ms, so startup is not certified fixed. Artifact: liveTactics.worker-BqycAduF.js. One of 246 exact private results changes only its later trap explanation; all root headline lists, the other 245 full results, twenty rare results and 32 priorities are unchanged. Three of eighteen secondary-sample results change; only the recovered rook trap changes primary ID. Stability is not accuracy. Final private receipts use the adapter93-final-exact-replay, rare-theme-adapter93-final, adapter93-final-trap-witnesses, adapter93-trap-complete-engine and adapter93-cold-http-worker names. No owner app/package/service restart or deployment; paid data stays private. Broader quiet/rare/causal/endgame and native gaps remain open.
+
+## Prior adapter 92 / live pipeline 97
 
 The [secondary-theme relevance review](secondary-theme-relevance-review.md) adds eighteen output-blind real-game puzzles across interference, defensive moves, zugzwang, x-rays, trapped pieces and advanced pawns, with 51 fresh engine searches. All-mating sentinels no longer masquerade as extra material in intermediate-capture proofs. X-ray support requires actual legal exchange geometry and independent material/mate checks; mating self-interference is shown only on the defender's actual ply. Mate remains the main lesson, with compact supporting board geometry and missed-theme timelines. Pass comparisons reject two premature zugzwang hypotheses; larger ending, trap and promotion preparations remain explicit gaps, not successful abstentions.
 

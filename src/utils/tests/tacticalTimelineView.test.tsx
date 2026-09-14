@@ -5,6 +5,26 @@ import { expect, test } from "vitest";
 import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLineExplanation";
 import { classifyPositionTacticalMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
+import { trappedRookFen, trappedRookLine } from "./fixtures/trapRelevance";
+import { counterplayFen, counterplayLine } from "./fixtures/tacticalCounterplay";
+
+test("the rook trap explains the initial king move and the defended-rook resource", () => {
+  const result = classifyPositionTacticalMotifs({fen: trappedRookFen, pvUci: trappedRookLine});
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={replayTacticalLine(trappedRookFen, trappedRookLine).map(s => s.san)} motifs={result.timeline ?? []} /></MantineProvider>);
+  expect(container.querySelector("details")?.hasAttribute("open")).toBe(false);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Trapped Rook");
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Bg5 is answered by Nxg5");
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).not.toContain("Hanging Piece");
+});
+
+test("a much later trap remains on its actual ply and explains the countercapture", () => {
+  const result = classifyPositionTacticalMotifs({fen: counterplayFen, pvUci: counterplayLine});
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={replayTacticalLine(counterplayFen, counterplayLine).map(s => s.san)} motifs={result.timeline ?? []} /></MantineProvider>);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent ?? "").not.toContain("Trapped Rook");
+  expect(container.querySelector('[data-tactical-ply="19"]')?.textContent).toContain("Qxb5 is answered by Qxb5");
+});
 
 test("a quiet mating attack keeps the later checking deflection on its own move", () => {
   const row = JSON.parse(readFileSync("benchmarks/tactical-relevance/rare-theme-development.json", "utf8")).cases.find((row: {id: string}) => row.id === "lichess:nBrWE");

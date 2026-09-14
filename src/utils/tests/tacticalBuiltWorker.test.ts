@@ -9,6 +9,7 @@ import { makeUci } from "chessops/util";
 import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
+import { trappedRookFen, trapControls, unrelatedPayoffTrap } from "./fixtures/trapRelevance";
 import {
     buildLiveTacticalScan,
     type LiveTacticalScanInput,
@@ -759,6 +760,12 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 {id: "mating-clearance:line", fen: "8/8/8/8/3b3r/1p1k4/1Bb5/KR1n4 b - - 0 1", pvUci: ["d4b2", "b1b2", "h4a4", "b2a2", "a4a2"]},
                 {id: "mating-clearance:double-check", fen: "7k/5b2/6P1/8/7B/8/8/K6R w - - 0 1", pvUci: ["h4f6", "h8g8", "h1h8"]},
             ].map(({id, ...input}) => ({id, input: {...input, engineName: "Regression", depth: 16}})),
+            ...[
+                { id: "trap-audit:root-only", fen: trappedRookFen, pvUci: ["g1f2"] },
+                { id: "trap-audit:defender-removal", fen: trappedRookFen, pvUci: ["g1f2", "e7g5", "e4g5", "h6g5", "f2e3"] },
+                ...trapControls.map(c => ({id: `trap-audit:control:${c.id}`, fen: c.fen, pvUci: ["g1f2"]})),
+                {id: "trap-audit:control:unrelated-payoff", ...unrelatedPayoffTrap},
+            ].map(({id, ...input}) => ({id, input: {...input, engineName: "Trap audit", depth: 16}})),
             ...[0, 9, 18].map((index) => ({
                 id: `counterplay:${index}`,
                 input: {
@@ -811,12 +818,14 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         const drawingResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         const discoveryResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         const secondaryResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
+        const trapResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         for (const item of cases) {
             // A fresh worker never inherits the in-process proof caches.
             const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, item.input);
             const expected = buildLiveTacticalScan(item.input);
             expect({ id: item.id, scan: result.scan }).toEqual({ id: item.id, scan: expected });
             if (item.id.startsWith("secondary-source:")) secondaryResults.set(item.id, result.scan);
+            if (item.id.startsWith("trap-audit:")) trapResults.set(item.id, result.scan);
             if (item.id === "counterplay:9" && result.scan.variations[0].timeline.some((motif) => motif.id === "skewer"))
                 throw new Error("The built worker advertised the mating-trap skewer payoff");
             if (item.id.startsWith("ray-liability:")) rayResults.set(item.id, result.scan);
@@ -834,7 +843,15 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(292);
+        expect(report).toHaveLength(300);
+        for (const id of ["root-only", "defender-removal"]) {
+            const result = trapResults.get(`trap-audit:${id}`)!;
+            expect(result.motifs[0]).toMatchObject({id: "trappedPiece", ply: 1, value: 180});
+            expect(result.labels.map(label => label.id)).toEqual(["trappedPiece"]);
+            expect(result.arrows.some(arrow => arrow.to === "g5")).toBe(false);
+        }
+        for (const id of [...trapControls.map(c => c.id), "unrelated-payoff"])
+            expect(trapResults.get(`trap-audit:control:${id}`)!.motifs.some(m => m.id === "trappedPiece")).toBe(false);
         const selfInterference = secondaryResults.get("secondary-source:lichess:qQG5v")!;
         expect(selfInterference.motifs[0].id).toBe("mateIn3");
         expect(selfInterference.variations[0].timeline.find(m => m.id === "selfInterference")).toMatchObject({ply: 4, actor: "black", relevance: "secondary"});

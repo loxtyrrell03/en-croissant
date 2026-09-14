@@ -16,7 +16,7 @@ const line = ["c2b2", "e1g1", "b2a1"];
 
 test("a bounded trap proof abstains instead of returning a cached or incomplete answer", () => {
     const root = replayTacticalLine(trapped, line)[0];
-    expect(proveTrappedMaterial(root, 0)?.gain).toBe(830);
+    expect(proveTrappedMaterial(root, 0)?.gain).toBe(730);
     expect(proveTrappedMaterial(root, 0, 0)).toBeNull();
     expect(proveTrappedMaterial(root, 0, 256, 0)).toBeNull();
 });
@@ -34,7 +34,7 @@ test("the trapped rook is the main lesson, with the bishop capture as supporting
         id: "trappedPiece",
         label: "Trapped Rook",
         ply: 1,
-        value: 830,
+        value: 730,
     });
     expect(result.motifs[0].evidence).toContain("Qc3 is answered by Bb4");
     expect(result.motifs).toContainEqual(
