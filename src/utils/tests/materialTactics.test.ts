@@ -43,11 +43,14 @@ describe("judged material tactics", () => {
         expect(replayTacticalLine(fen, ["c4d3", "e5e4"])).toHaveLength(2);
         expect(classifyPositionTacticalMotifs({ fen, pvUci }).motifs).toEqual([]);
     });
-    test("taking a supported skewering bishop with the queen still loses material", () => {
+    test("accepting a supported bishop loses material, but a mating decline refutes the root skewer", () => {
         const fen = "1k6/7r/8/5q2/2B5/8/2P2PPP/6K1 w - - 0 1";
         const pvUci = ["c4d3", "f5d3", "c2d3"];
         expect(replayTacticalLine(fen, pvUci)).toHaveLength(3);
-        expect(classifyPositionTacticalMotifs({ fen, pvUci }).motifs[0]?.id).toBe("skewer");
+        const refutation = replayTacticalLine(fen, ["c4d3", "f5h5", "d3h7", "h5d1"]);
+        expect(refutation).toHaveLength(4);
+        expect(refutation[3].after.isCheckmate()).toBe(true);
+        expect(classifyPositionTacticalMotifs({ fen, pvUci }).motifs.some(m => m.id === "skewer" && m.ply === 1)).toBe(false);
     });
     test("the queen can safely take an unsupported skewering bishop", () => {
         const fen = "1k6/7r/8/5q2/2B5/8/5PPP/6K1 w - - 0 1";

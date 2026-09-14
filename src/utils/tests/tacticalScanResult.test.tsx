@@ -30,6 +30,18 @@ const markup = (value: LiveTacticalScan) =>
     </MantineProvider>,
   );
 
+test("the stronger discovery leads the panel and board without discarding a distinct smaller skewer", () => {
+  const value = buildLiveTacticalScan({ fen: "8/p2R1pk1/1p2r3/1p2n2b/2P1K3/6PP/3QP3/8 b - - 0 1", pvUci: ["e5c4"], engineName: "Constructed", depth: 16 });
+  const element = document.createElement("div");
+  element.innerHTML = markup(value);
+  expect(value.motifs[0]).toMatchObject({ id: "discoveredCheck", relevance: "primary" });
+  expect(element.textContent).toContain("Discovered Check found");
+  expect(element.textContent).not.toContain("Skewer found");
+  expect(element.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Skewer");
+  expect(value.labels[0].text).toContain("Discovered Check");
+  expect(value.arrows.map(a => a.from + a.to)).toContain("c4d2");
+});
+
 const laterScan = buildLiveTacticalScan({
   fen: "2k4r/1p3p2/2p3q1/P1Q3p1/3R4/8/6B1/6K1 w - - 0 1",
   pvUci: ["g2h3", "c8b8", "c5e5", "g6d6", "e5h8"],

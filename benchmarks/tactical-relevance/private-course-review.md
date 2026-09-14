@@ -1,6 +1,14 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 88 / live pipeline 93
+## Current classifier: adapter 89 / live pipeline 94
+
+The [ray-liability and relevance review](ray-liability-relevance-review.md) removes a false continuation Pin, reduces an endgame Skewer's bound after an off-square pawn countercapture, and removes a real Lichess skewer already contained in a stronger discovered check. A distinct smaller ray stays secondary; missed-opportunity explanation and board labels now prioritize the larger same-move direct attack. Ray leaves debit all friendly pieces and immediate terminal counterplay within unchanged budgets. Material-only terminal handling preserves genuine drawing rescues without using mate as fictional material profit.
+
+Thirty-five completed fresh depth-16 searches include contrary controls: an old supported-bishop test allowed a mating decline; proposed queen-liability negatives had an alternative capture or checking recovery and were rejected as negative examples. All 225 frozen source results, all course primary IDs, 24 generated-game full results and 32 priorities remain unchanged. Only two course live continuations and one of twenty rare results change; unchanged outputs are not certified correct.
+
+Verification: 1,500 selected tests, twelve final replay/ray checks, 640 actual-controller production-worker inputs across thirteen tests, both builds, type checking, seven-file lint, three service tests, two dev-cache scenarios and six isolated cold HTTP cases pass. The [177-input public receipt](built-worker-adapter89.json) has median/p95/max 78/237/568 ms excluding engine/UI; all 168 prior primary-ID lists are unchanged. Final artifact: liveTactics.worker-CeX7PLax.js. First/next HTTP startup is 1,374/65 ms in this run, not a stable or native latency claim. Broader quiet/rare/causal and drawing/larger-ending zugzwang gaps remain; interference/exact KPK coverage is unchanged. No app/package/service restart or deployment; paid inputs remain private. The linked review records exact scope, contrary evidence and private receipts.
+
+## Prior adapter 88 / live pipeline 93
 
 The [capturing mating-attack review](capturing-mating-attack-review.md) removes a false free-bishop headline using an independently proved mating-compensation recapture, without inventing a defensive-capture explanation. Its opponent attack stays at the actual ply. A second real course root gains Mating Attack: stopping the mate concedes the queen; the accepting mate is not compulsory and one queen target is not a fork. The earlier provisional defensive-capture assumption is expressly withdrawn.
 

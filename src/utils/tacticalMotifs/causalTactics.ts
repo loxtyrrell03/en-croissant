@@ -4909,7 +4909,10 @@ function rayMaterialProof(step: TacticalReplayStep, ray: RayTactic) {
         ray.kind === "skewer" && step.after.board.get(ray.front)?.role === "king"
             ? [...between(ray.pinner, ray.front)]
             : [];
-    let proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to], [], false, undefined, { rejectCaptureMate });
+    // A pin/skewer's captured target is not a gain if another friendly piece
+    // can be taken in return. Use the same liability-aware leaves as the
+    // interposition proof, including off-ray pieces and terminal counterplay.
+    let proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to], [], false, undefined, { allPiecesAtLeaf: true, rayMaterialOnly: true, rejectCaptureMate });
     if (proof.kind === "proven") return proof;
     if (blocks.length)
         proof = materialThreatProof(
@@ -4919,7 +4922,7 @@ function rayMaterialProof(step: TacticalReplayStep, ray: RayTactic) {
             blocks,
             false,
             undefined,
-            { allPiecesAtLeaf: true, rejectCaptureMate },
+            { allPiecesAtLeaf: true, rayMaterialOnly: true, rejectCaptureMate },
         );
     if (proof.kind === "proven" && blocks.length) return { ...proof, blockingProof: true as const };
     if (proof.kind !== "proven" && blocks.length) {
@@ -5006,6 +5009,9 @@ type MaterialProofOptions = {
     mateAnswerMoves?: 1 | 4;
     mateNodeLimit?: number;
     allPiecesAtLeaf?: boolean;
+    // A terminal capture may still win material into a dead draw. Do not
+    // instead fund a ray motif with a checkmate's synthetic material value.
+    rayMaterialOnly?: boolean;
     rejectCaptureMate?: boolean;
 };
 function materialThreatGain(step: TacticalReplayStep, targets: Square[], capturers: Square[]) {
@@ -5022,7 +5028,7 @@ function materialThreatProof(
     promotionFrom?: Square,
     options: MaterialProofOptions = {},
 ) {
-    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}:${Boolean(options.rejectCaptureMate)}`;
+    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}:${Boolean(options.rayMaterialOnly)}:${Boolean(options.rejectCaptureMate)}`;
     if (materialProofCache.has(key)) return materialProofCache.get(key)!;
     const proof = computeMaterialThreatGain(
         step,
@@ -5135,7 +5141,7 @@ function computeMaterialThreatGain(
                         try {
                             const leaf = next.clone();
                             leaf.play(move);
-                            if (leaf.isCheckmate()) {
+                            if (leaf.isCheckmate() && !options.rayMaterialOnly) {
                                 // Winning the target by mate is a mating
                                 // branch, not independent material evidence
                                 // for a fork inside an all-mating combination.
@@ -5146,9 +5152,11 @@ function computeMaterialThreatGain(
                                 });
                                 continue;
                             }
-                            if (leaf.isEnd() && !leaf.isCheckmate()) continue;
+                            const terminalMaterial = options.rayMaterialOnly &&
+                                (leaf.isCheckmate() || leaf.isInsufficientMaterial());
+                            if (leaf.isEnd() && !leaf.isCheckmate() && !terminalMaterial) continue;
                             let unsafe = false;
-                            for (const resource of legalMoves(leaf)) {
+                            for (const resource of terminalMaterial ? [] : legalMoves(leaf)) {
                                 if (--budget.nodes < 0)
                                     throw new Error("Fork leaf budget exhausted");
                                 const after = leaf.clone();
@@ -5162,7 +5170,7 @@ function computeMaterialThreatGain(
                                 mateNodes = budget.nodes;
                                 continue;
                             }
-                            const gain = participantCaptureGain(
+                            const gain = terminalMaterial ? exchangeGain : participantCaptureGain(
                                 next,
                                 move,
                                 [...next.board[step.before.turn], move.to],
@@ -9257,7 +9265,7 @@ function trapIsMainCause(motif: TacticalMotifEvidence, directGain: number) {
     );
 }
 
-function causeRank(motif: TacticalMotifEvidence, directGain = 0) {
+function causeRank(motif: TacticalMotifEvidence, directGain = 0, smallerRay = false) {
     // Concrete mechanisms explain why a gain/mate works. Capture, sacrifice,
     // weak-square and final mate tags describe its prerequisites or payoff.
     const mechanismPriority = [
@@ -9287,7 +9295,7 @@ function causeRank(motif: TacticalMotifEvidence, directGain = 0) {
               ? 1
               : 2;
     return (
-        family * 1000 + (motif.ply ?? 100) * 20 + Math.max(0, mechanismPriority.indexOf(motif.id))
+        family * 1000 + (motif.ply ?? 100) * 20 + (smallerRay ? 19 : Math.max(0, mechanismPriority.indexOf(motif.id)))
     );
 }
 
@@ -10088,6 +10096,28 @@ export function auditTacticalMotifs(
     const filtered = normalizedCandidates
         .filter((m) => {
             if (incidentalMatingMechanisms.has(m.id) && m.ply === 1) return false;
+            // A smaller king-front skewer on the SAME revealed checking ray
+            // is already explained by a verified discovery when its rear
+            // victim is also one of that discovery's material targets. Do
+            // not add a second badge for this subset of the combined attack.
+            // Other rays/victims and mate-only certificates remain separate.
+            if (m.id === "skewer" && m.ply) {
+                const discovery = candidates.find(other =>
+                    ["discoveredCheck", "doubleCheck"].includes(other.id) &&
+                    other.ply === m.ply && other.moveUci === m.moveUci &&
+                    other.confidence === "high" && (other.value ?? 0) < 10000 &&
+                    (other.value ?? 0) >= (m.value ?? Infinity));
+                const step = steps[m.ply - 1];
+                if (discovery && step) {
+                    const proof = discoveredEvidence(steps.slice(m.ply - 1), discovery.source);
+                    const rays = relevantRayTactics(step).filter(ray => ray.kind === "skewer");
+                    if (proof && (proof.motif.value ?? 0) >= (m.value ?? Infinity) &&
+                        (proof.motif.value ?? 0) < 10000 && rays.length && rays.every(ray =>
+                            step.after.board.get(ray.front)?.role === "king" &&
+                            proof.targets.includes(ray.rear) && proof.rays.some(opened =>
+                                opened.from === ray.pinner && opened.target === ray.front))) return false;
+                }
+            }
             // A fully verified checking discovery already includes its initial
             // capture. Keep the mechanism, not a second loose-piece badge for
             // the same move. A smaller/unproved or nonchecking discovery does
@@ -10277,8 +10307,18 @@ export function auditTacticalMotifs(
             )
                 return false;
             return true;
-        })
-        .sort((a, b) => {
+        });
+    // A fixed theme-name order must not put a small pin/skewer before a
+    // substantially larger independently verified direct attack on this same
+    // move. Keep a distinct ray secondary; causal preparations and later plies
+    // retain their existing ordering. Per-item ranks keep sorting transitive.
+    const smallerRays = new Set(filtered.filter(m =>
+        ["pin", "skewer"].includes(m.id) && m.confidence === "high" &&
+        m.value !== undefined && m.value < 10000 && filtered.some(other =>
+            ["fork", "discoveredCheck", "discoveredAttack", "doubleCheck"].includes(other.id) &&
+            other.confidence === "high" && other.ply === m.ply && other.moveUci === m.moveUci &&
+            other.value !== undefined && other.value < 10000 && other.value >= m.value! + VALUE.pawn)));
+    filtered.sort((a, b) => {
             // A proved material side-effect does not explain an independent
             // forced mate. Only mechanisms with their own mating evidence
             // may outrank the mating payoff in such a line.
@@ -10289,7 +10329,7 @@ export function auditTacticalMotifs(
             return (
                 matingPriority(a) - matingPriority(b) ||
                 rootMatingPriority(a) - rootMatingPriority(b) ||
-                causeRank(a, directGain) - causeRank(b, directGain)
+                causeRank(a, directGain, smallerRays.has(a)) - causeRank(b, directGain, smallerRays.has(b))
             );
         });
     const immediateLoose = filtered.find((m) => m.id === "hangingPiece" && m.ply === 1);

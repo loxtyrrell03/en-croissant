@@ -751,6 +751,17 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                     engineName: "Generated engine game", depth: 16,
                 },
             })),
+            ...[
+                { id: "ray-liability:pin", fen: "r5k1/1p6/8/8/7q/7P/8/3Q3K w - - 0 1", pvUci: ["d1d5"] },
+                { id: "ray-liability:pin-safe", fen: "r5k1/1p6/8/8/7q/8/8/3Q2K1 w - - 0 1", pvUci: ["d1d5"] },
+                { id: "ray-liability:mate", fen: "r3r1k1/1p6/8/8/8/8/5PPP/3Q2K1 w - - 0 1", pvUci: ["d1d5"] },
+                { id: "ray-liability:skewer", fen: "r7/6k1/8/q7/8/1R6/1P5Q/5nK1 w - - 0 1", pvUci: ["b3a3"] },
+                { id: "ray-liability:mating-decline", fen: "1k6/7r/8/5q2/2B5/8/2P2PPP/6K1 w - - 0 1", pvUci: ["c4d3"] },
+                { id: "ray-liability:checking-recovery", fen: "r7/8/8/k7/8/1R6/1P5Q/5nK1 w - - 0 1", pvUci: ["b3a3"] },
+                { id: "ray-liability:drawing-rescue", fen: "8/7q/8/5k2/2B5/8/8/6K1 w - - 0 1", pvUci: ["c4d3"] },
+                { id: "ray-liability:same-victim", fen: "8/p1pR1pk1/1p2r3/4n3/2P1K3/4P1PP/3Q4/8 b - - 0 38", pvUci: ["e5c4"] },
+                { id: "ray-liability:separate-victim", fen: "8/p2R1pk1/1p2r3/1p2n2b/2P1K3/6PP/3QP3/8 b - - 0 1", pvUci: ["e5c4"] },
+            ].map(({ id, ...input }) => ({ id, input: { ...input, engineName: "Ray regression", depth: 16 } })),
             ...ordinary.map((row) => ({
                 id: row.id,
                 input: {
@@ -779,6 +790,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             })),
         ];
         const report = [];
+        const rayResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         for (const item of cases) {
             // A fresh worker never inherits the in-process proof caches.
             const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, item.input);
@@ -786,6 +798,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             expect({ id: item.id, scan: result.scan }).toEqual({ id: item.id, scan: expected });
             if (item.id === "counterplay:9" && result.scan.variations[0].timeline.some((motif) => motif.id === "skewer"))
                 throw new Error("The built worker advertised the mating-trap skewer payoff");
+            if (item.id.startsWith("ray-liability:")) rayResults.set(item.id, result.scan);
             expect(result.startupMs).toBeLessThan(TACTICAL_WORKER_STARTUP_TIMEOUT_MS);
             expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
             report.push({
@@ -797,7 +810,14 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 matchesSource: true,
             });
         }
-        expect(report).toHaveLength(168);
+        expect(report).toHaveLength(177);
+        for (const id of ["ray-liability:pin", "ray-liability:mate", "ray-liability:skewer", "ray-liability:mating-decline", "ray-liability:same-victim"])
+            expect(rayResults.get(id)!.motifs.some(m => ["pin", "skewer"].includes(m.id))).toBe(false);
+        expect(rayResults.get("ray-liability:separate-victim")!.motifs[0]).toMatchObject({ id: "discoveredCheck", value: 680 });
+        expect(rayResults.get("ray-liability:separate-victim")!.variations[0].timeline.find(m => m.id === "skewer")).toMatchObject({ value: 100, relevance: "secondary" });
+        expect(Object.fromEntries(report.filter(item => ["ray-liability:pin-safe", "ray-liability:drawing-rescue", "ray-liability:same-victim"].includes(item.id)).map(item => [item.id, item.primary]))).toEqual({
+            "ray-liability:pin-safe": ["pin"], "ray-liability:drawing-rescue": ["skewer"], "ray-liability:same-victim": ["discoveredCheck"],
+        });
         expect(Object.fromEntries(report.filter((item) => item.id.startsWith("counterplay:")).map((item) => [item.id, item.primary]))).toEqual({
             "counterplay:0": [], "counterplay:9": ["forkPreparation"], "counterplay:18": ["trappedPiece"],
         });

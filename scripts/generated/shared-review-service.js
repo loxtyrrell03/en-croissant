@@ -12673,10 +12673,15 @@ function discoveredEvidence(steps, source) {
 function rayMaterialProof(step, ray) {
 	const rejectCaptureMate = ray.kind === "skewer" && step.after.board.get(ray.front)?.role === "king";
 	const blocks = ray.kind === "skewer" && step.after.board.get(ray.front)?.role === "king" ? [...between(ray.pinner, ray.front)] : [];
-	let proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to], [], false, void 0, { rejectCaptureMate });
+	let proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to], [], false, void 0, {
+		allPiecesAtLeaf: true,
+		rayMaterialOnly: true,
+		rejectCaptureMate
+	});
 	if (proof.kind === "proven") return proof;
 	if (blocks.length) proof = materialThreatProof(step, [ray.front, ray.rear], [ray.pinner, step.move.to], blocks, false, void 0, {
 		allPiecesAtLeaf: true,
+		rayMaterialOnly: true,
 		rejectCaptureMate
 	});
 	if (proof.kind === "proven" && blocks.length) return {
@@ -12749,7 +12754,7 @@ function materialThreatGain(step, targets, capturers) {
 	return proof.kind === "proven" ? proof.gain : null;
 }
 function materialThreatProof(step, targets, capturers, interpositions = [], allowMateAnswer = false, promotionFrom, options = {}) {
-	const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}:${Boolean(options.rejectCaptureMate)}`;
+	const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}:${Boolean(options.rayMaterialOnly)}:${Boolean(options.rejectCaptureMate)}`;
 	if (materialProofCache.has(key)) return materialProofCache.get(key);
 	const proof = computeMaterialThreatGain(step, targets, capturers, interpositions, allowMateAnswer, promotionFrom, options);
 	materialProofCache.set(key, proof);
@@ -12846,7 +12851,7 @@ function computeMaterialThreatGain(step, targets, capturers, interpositions, all
 						try {
 							const leaf = next.clone();
 							leaf.play(move);
-							if (leaf.isCheckmate()) {
+							if (leaf.isCheckmate() && !options.rayMaterialOnly) {
 								best = 1e4;
 								matingDefences.push({
 									defence: makeSan(step.after, reply),
@@ -12854,9 +12859,10 @@ function computeMaterialThreatGain(step, targets, capturers, interpositions, all
 								});
 								continue;
 							}
-							if (leaf.isEnd() && !leaf.isCheckmate()) continue;
+							const terminalMaterial = options.rayMaterialOnly && (leaf.isCheckmate() || leaf.isInsufficientMaterial());
+							if (leaf.isEnd() && !leaf.isCheckmate() && !terminalMaterial) continue;
 							let unsafe = false;
-							for (const resource of legalMoves(leaf)) {
+							for (const resource of terminalMaterial ? [] : legalMoves(leaf)) {
 								if (--budget.nodes < 0) throw new Error("Fork leaf budget exhausted");
 								const after = leaf.clone();
 								after.play(resource);
@@ -12869,7 +12875,7 @@ function computeMaterialThreatGain(step, targets, capturers, interpositions, all
 								mateNodes = budget.nodes;
 								continue;
 							}
-							const gain = participantCaptureGain(next, move, [...next.board[step.before.turn], move.to], budget);
+							const gain = terminalMaterial ? exchangeGain : participantCaptureGain(next, move, [...next.board[step.before.turn], move.to], budget);
 							if (gain === null) {
 								unknown = true;
 								mateNodes = budget.nodes;
@@ -15382,8 +15388,8 @@ function episodeEnd(steps, allowConditional = false) {
 function trapIsMainCause(motif, directGain) {
 	return motif.id === "trappedPiece" && motif.ply === 1 && motif.confidence === "high" && (motif.value ?? 0) - directGain > directGain;
 }
-function causeRank(motif, directGain = 0) {
-	return (MECHANISMS.has(motif.id) || trapIsMainCause(motif, directGain) ? 0 : MATE.test(motif.id) ? 1 : 2) * 1e3 + (motif.ply ?? 100) * 20 + Math.max(0, [
+function causeRank(motif, directGain = 0, smallerRay = false) {
+	return (MECHANISMS.has(motif.id) || trapIsMainCause(motif, directGain) ? 0 : MATE.test(motif.id) ? 1 : 2) * 1e3 + (motif.ply ?? 100) * 20 + (smallerRay ? 19 : Math.max(0, [
 		"promotionCombination",
 		"deflection",
 		"capturingDefender",
@@ -15402,7 +15408,7 @@ function causeRank(motif, directGain = 0) {
 		"clearance",
 		"xRayAttack",
 		"forcingAttack"
-	].indexOf(motif.id));
+	].indexOf(motif.id)));
 }
 function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	const steps = replayTacticalLine(fen, line);
@@ -15957,6 +15963,15 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	const fork = candidates.find((m) => m.id === "fork");
 	const filtered = normalizedCandidates.filter((m) => {
 		if (incidentalMatingMechanisms.has(m.id) && m.ply === 1) return false;
+		if (m.id === "skewer" && m.ply) {
+			const discovery = candidates.find((other) => ["discoveredCheck", "doubleCheck"].includes(other.id) && other.ply === m.ply && other.moveUci === m.moveUci && other.confidence === "high" && (other.value ?? 0) < 1e4 && (other.value ?? 0) >= (m.value ?? Infinity));
+			const step = steps[m.ply - 1];
+			if (discovery && step) {
+				const proof = discoveredEvidence(steps.slice(m.ply - 1), discovery.source);
+				const rays = relevantRayTactics(step).filter((ray) => ray.kind === "skewer");
+				if (proof && (proof.motif.value ?? 0) >= (m.value ?? Infinity) && (proof.motif.value ?? 0) < 1e4 && rays.length && rays.every((ray) => step.after.board.get(ray.front)?.role === "king" && proof.targets.includes(ray.rear) && proof.rays.some((opened) => opened.from === ray.pinner && opened.target === ray.front))) return false;
+			}
+		}
 		if (m.id === "hangingPiece" && m.ply) {
 			const step = steps[m.ply - 1];
 			const captureGain = step?.capture ? tacticalExchangeGain(step.before, step.move) : Infinity;
@@ -16020,10 +16035,17 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		if (m.id === "forcingAttack" && candidates.some((other) => other.ply === m.ply && other.id !== "forcingAttack" && MECHANISMS.has(other.id))) return false;
 		if (m.label === "Forcing Mate" && candidates.some((other) => other.ply === m.ply && MECHANISMS.has(other.id) && other.value === 1e4)) return false;
 		return true;
-	}).sort((a, b) => {
+	});
+	const smallerRays = new Set(filtered.filter((m) => ["pin", "skewer"].includes(m.id) && m.confidence === "high" && m.value !== void 0 && m.value < 1e4 && filtered.some((other) => [
+		"fork",
+		"discoveredCheck",
+		"discoveredAttack",
+		"doubleCheck"
+	].includes(other.id) && other.confidence === "high" && other.ply === m.ply && other.moveUci === m.moveUci && other.value !== void 0 && other.value < 1e4 && other.value >= m.value + VALUE.pawn)));
+	filtered.sort((a, b) => {
 		const matingPriority = (m) => mate && (m.value === 1e4 || MATE.test(m.id)) ? 0 : 1;
 		const rootMatingPriority = (m) => checkingMate && m.ply === 1 && (m.value === 1e4 || MATE.test(m.id)) ? 0 : 1;
-		return matingPriority(a) - matingPriority(b) || rootMatingPriority(a) - rootMatingPriority(b) || causeRank(a, directGain) - causeRank(b, directGain);
+		return matingPriority(a) - matingPriority(b) || rootMatingPriority(a) - rootMatingPriority(b) || causeRank(a, directGain, smallerRays.has(a)) - causeRank(b, directGain, smallerRays.has(b));
 	});
 	const immediateLoose = filtered.find((m) => m.id === "hangingPiece" && m.ply === 1);
 	if (immediateLoose && !checkingMate && !filtered.some((m) => m.ply === 1 && (MECHANISMS.has(m.id) || trapIsMainCause(m, directGain)))) {
@@ -17068,7 +17090,7 @@ function checkingForkPreparationEscape(root, targets, nodeLimit = 4096) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 88;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 89;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
