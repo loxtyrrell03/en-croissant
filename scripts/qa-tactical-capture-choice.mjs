@@ -9,8 +9,12 @@ import react from "@vitejs/plugin-react";
 
 const require = createRequire(process.env.TACTICAL_QA_DEPENDENCIES || import.meta.url);
 const { chromium } = require("playwright");
+const natureMode = process.argv.includes("--nature");
 const root = process.cwd(),
-  output = resolve(root, "tmp/tactical-capture-choice-adapter105");
+  output = resolve(
+    root,
+    natureMode ? "tmp/mistake-nature-v4" : "tmp/tactical-capture-choice-adapter105",
+  );
 await mkdir(output, { recursive: true });
 const relative = (name) =>
   "/" +
@@ -24,12 +28,23 @@ import React,{useState}from'react';import{createRoot}from'react-dom/client';impo
 import{MantineProvider}from'@mantine/core';import'@mantine/core/styles.css';
 import{TacticalAuditGameInfoPanel}from'@/components/review/OpeningReviewWorkspace';
 import{classifyMistakeReviewMotifs}from'@/utils/tacticalMotifs/mistakeReviewAdapter';
+import{classifyMistakeReviewNature,migrateMistakeReviewDeckNatureClassifications}from'@/utils/mistakeReview';
 import{positionSchema}from'@/components/files/opening';
 const input={fen:'1rr3k1/5ppp/2B1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 b - - 0 21',bestMoveUci:'c8c6',playedMoveUci:'f5g4',pvUci:['c8c6','g4e5','c6c2'],pvSan:['Rxc6','Ne5','Rxc2'],refutationUci:['c6e4','c8c5','a2a4'],refutationSan:['Be4','Rc5','a4']};
 const review={...input,...classifyMistakeReviewMotifs(input),playerColor:'black',playerName:'Public game example',opponent:'Opponent',severity:'mistake'};
 const position={fen:input.fen,sideToMove:'black',answer:'Rxc6',answerUci:'c8c6',card:{},mistakeReview:review};
+const samples={
+capture:{...input,cpLoss:269},
+quiet:{fen:'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',bestMoveUci:'g1f3',bestMoveSan:'Nf3',playedMoveUci:'h2h3',playedMoveSan:'h3',pvUci:['g1f3','g8f6','g2g3','g7g6'],refutationUci:['g8f6','g1f3','g7g6','g2g3'],cpLoss:60,reachedDepth:18},
+fork:{fen:'4k3/8/8/8/1n6/8/8/R3K2R b KQ - 0 1',bestMoveUci:'b4c2',bestMoveSan:'Nc2+',playedMoveUci:'e8d7',playedMoveSan:'Kd7',pvUci:['b4c2'],cpLoss:300}
+};
 window.fixture={};function App(){const[scale,setScale]=useState(1),[reveal,setReveal]=useState(true),[epoch,setEpoch]=useState(0),[value,setValue]=useState(position);
-window.fixture.select=(s,r,restore)=>flushSync(()=>{setScale(s);setReveal(r);setEpoch(v=>v+1);setValue({...position,mistakeReview:restore?positionSchema.shape.mistakeReview.parse(JSON.parse(JSON.stringify(review))):review})});
+window.fixture.select=async(s,r,restore,which='capture')=>{
+const data=samples[which],nature=classifyMistakeReviewNature(data);
+const value={...position,fen:data.fen,answer:data.bestMoveSan??'Rxc6',answerUci:data.bestMoveUci,mistakeReview:{...review,...data,...classifyMistakeReviewMotifs(data),nature:nature.nature,natureConfidence:nature.confidence,natureReason:nature.reason,natureAspect:nature.aspect,allowedNature:nature.allowedNature,missedNature:nature.missedNature,tacticalSignals:nature.tacticalSignals,natureClassifierVersion:4}};
+if(restore){value.mistakeReview=positionSchema.shape.mistakeReview.parse(JSON.parse(JSON.stringify({...value.mistakeReview,nature:'tactical',natureClassifierVersion:3})));const migrated=await migrateMistakeReviewDeckNatureClassifications({positions:[value]});value.mistakeReview=migrated.deck.positions[0].mistakeReview;}
+flushSync(()=>{setScale(s);setReveal(r);setEpoch(v=>v+1);setValue(value)});
+};
 return <MantineProvider forceColorScheme="dark" theme={{scale}}><main style={{padding:12,boxSizing:'border-box',width:'100%'}}><TacticalAuditGameInfoPanel key={epoch} position={value} revealAnswer={reveal}/></main></MantineProvider>}
 createRoot(document.getElementById('root')).render(<App/>);`,
 );
@@ -107,62 +122,89 @@ try {
     await page.screenshot({ path: resolve(output, "failed-render.png"), fullPage: true });
     throw error;
   }
-  for (const width of [1100, 760, 360])
-    for (const scale of [1, 2])
-      for (const restore of [false, true]) {
-        await page.setViewportSize({ width, height: 900 });
-        await page.evaluate(({ scale, restore }) => window.fixture.select(scale, true, restore), {
-          scale,
-          restore,
-        });
-        await page.getByText("Capture in the better line", { exact: true }).waitFor();
-        assert(!(await page.locator("main").innerText()).includes("What you missed"));
-        await page.getByText("Better move, move by move", { exact: true }).click();
-        const text = await page.locator("main").innerText();
-        assert(text.includes("Rxc6 captures the bishop on c6; fxg4 captures the knight on g4"));
-        assert.equal(await page.getByText("Capture choice", { exact: true }).count(), 2);
-        const clipped = await page.evaluate(() =>
-          [
-            ...document.querySelectorAll(
-              "main button,main .mantine-Badge-root,main .mantine-Badge-label,main p,main summary",
-            ),
-          ]
-            .filter((e) => {
-              const r = e.getBoundingClientRect();
-              return (
-                r.width &&
-                (r.left < -1 || r.right > innerWidth + 1 || e.scrollWidth > e.clientWidth + 2)
-              );
-            })
-            .map((e) => e.textContent),
-        );
-        assert.deepEqual(clipped, [], "Visible text/actions must fit");
-        await page.getByRole("button", { name: "Show game details", exact: true }).click();
-        await page.getByRole("button", { name: "Hide game details", exact: true }).waitFor();
-        await page.mouse.move(width - 1, 899);
-        await page.getByRole("tooltip").waitFor({ state: "hidden" });
-        if (!restore)
-          await page.screenshot({
-            path: resolve(output, `capture-${width}-${scale}.png`),
-            fullPage: true,
-          });
-        await page.evaluate(({ scale, restore }) => window.fixture.select(scale, false, restore), {
-          scale,
-          restore,
-        });
-        assert(
-          !(await page.locator("main").innerText()).includes("Capture choice"),
-          "No answer leak before reveal",
-        );
-        checks.push({ width, scale, restore, passed: true });
-      }
+  for (const which of natureMode ? ["capture", "quiet", "fork"] : ["capture"])
+    for (const width of [1100, 760, 360])
+      for (const scale of [1, 2])
+        for (const restore of [false, true]) {
+          await page.setViewportSize({ width, height: 900 });
+          await page.evaluate(
+            ({ scale, restore, which }) => window.fixture.select(scale, true, restore, which),
+            {
+              scale,
+              restore,
+              which,
+            },
+          );
+          const natureLabel =
+            which === "capture"
+              ? "Unclassified"
+              : which === "quiet"
+                ? "Likely positional"
+                : "Tactical";
+          await page.getByText(natureLabel, { exact: true }).waitFor();
+          if (which === "capture") {
+            await page.getByText("Capture in the better line", { exact: true }).waitFor();
+            assert(!(await page.locator("main").innerText()).includes("What you missed"));
+            await page.getByText("Better move, move by move", { exact: true }).click();
+            const text = await page.locator("main").innerText();
+            assert(text.includes("Rxc6 captures the bishop on c6; fxg4 captures the knight on g4"));
+            assert.equal(await page.getByText("Capture choice", { exact: true }).count(), 2);
+          } else if (which === "fork") {
+            await page.getByText("What you missed: Fork", { exact: true }).waitFor();
+          } else {
+            assert(!(await page.locator("main").innerText()).includes("What you missed"));
+          }
+          const clipped = await page.evaluate(() =>
+            [
+              ...document.querySelectorAll(
+                "main button,main .mantine-Badge-root,main .mantine-Badge-label,main p,main summary",
+              ),
+            ]
+              .filter((e) => {
+                const r = e.getBoundingClientRect();
+                return (
+                  r.width &&
+                  (r.left < -1 || r.right > innerWidth + 1 || e.scrollWidth > e.clientWidth + 2)
+                );
+              })
+              .map((e) => e.textContent),
+          );
+          assert.deepEqual(clipped, [], "Visible text/actions must fit");
+          await page.getByRole("button", { name: "Show game details", exact: true }).click();
+          await page.getByRole("button", { name: "Hide game details", exact: true }).waitFor();
+          await page.keyboard.press("Tab");
+          await page.mouse.move(1, 1);
+          await page.getByRole("tooltip").waitFor({ state: "hidden" });
+          if (!restore)
+            await page.screenshot({
+              path: resolve(output, `${which}-${width}-${scale}.png`),
+              fullPage: true,
+            });
+          await page.evaluate(
+            ({ scale, restore, which }) => window.fixture.select(scale, false, restore, which),
+            {
+              scale,
+              restore,
+              which,
+            },
+          );
+          assert(
+            !(await page.locator("main").innerText()).includes("Capture choice"),
+            "No answer leak before reveal",
+          );
+          assert(
+            !(await page.locator("main").innerText()).includes("What you missed"),
+            "No missed-theme answer before reveal",
+          );
+          checks.push({ which, width, scale, restore, passed: true });
+        }
   assert.deepEqual(errors, []);
   await writeFile(
     resolve(output, "report.json"),
     JSON.stringify(
       {
         scope:
-          "Actual existing React game-info panel; reveal, timeline, details and persisted qualification. Isolated Chrome, not owner/native runtime.",
+          "Actual existing React game-info panel; reveal, timeline, details, nature labels and v3-to-v4 persisted migration. Isolated Chrome, not owner/native runtime.",
         checks,
         errors,
       },

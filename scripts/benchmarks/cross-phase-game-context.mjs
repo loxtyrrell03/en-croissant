@@ -11,9 +11,13 @@ const [samplePath, output, profile = "initial"] = process.argv.slice(2);
 if (!samplePath || !output || existsSync(output))
   throw new Error("Provide sample and new output path");
 const sample = JSON.parse(readFileSync(samplePath, "utf8"));
-if (profile === "quiet-game-context") assert.equal(sample.cases.length, 9);
+if (["quiet-game-context", "nature-context"].includes(profile)) assert.equal(sample.cases.length, 9);
 else assert.equal(sample.profile, "cross-phase");
 const profiles = {
+  "nature-context": {
+    start: 4, end: 9, plies: [8, 21, 40, 59, 80, 99],
+    scope: "Fixed plies 8, 21, 40, 59, 80 and 99 from the remaining five frozen quiet-mate source games. These alternating-colour opening, middle and ending contexts are selected before fresh engine/nature-classifier output, without move-quality, player or evaluation filtering. The puzzle endpoints were previously examined; these game contexts are not a representative all-chess sample. Unavailable plies are recorded, not replaced. Player headers/comments/clocks are omitted.",
+  },
   "quiet-game-context": {
     start: 0, end: 4, plies: [7, 22, 41, 60, 81, 100],
     scope: "Fixed plies 7, 22, 41, 60, 81, 100 from the first four frozen quiet-mate source games. The source puzzles were previously examined, but these game positions are selected before their engine/classifier output. No move-quality, rating, result or evaluation filtering; unavailable plies are recorded and not replaced. Includes both root colours. Puzzle-source game contexts are not representative all-chess accuracy data. Player headers/comments/clocks are omitted.",

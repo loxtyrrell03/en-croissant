@@ -709,7 +709,7 @@ export function tacticalMotifPerspective(motif: TacticalMotifEvidence) {
     return motif.comparison === "prevented" ? "Overlooked threat" : "Opponent tactic";
 }
 
-function isImmediateLesson(motif: TacticalMotifEvidence | undefined) {
+export function isImmediateTacticalLesson(motif: TacticalMotifEvidence | undefined) {
     return Boolean(
         motif &&
         !isAlternativeCapture(motif) &&
@@ -732,13 +732,13 @@ export function buildMistakeReviewTacticalExplanation(input: {
     if (!explanation) return null;
     // Preserve the main lesson's ownership/ranking. Do not turn conditional
     // continuation motifs or existing/uncompared danger into another cause.
-    if (!isImmediateLesson(explanation.primary)) return explanation;
+    if (!isImmediateTacticalLesson(explanation.primary)) return explanation;
     const primaryMissed = explanation.primary.source === "missed";
     const other = primaryMissed ? input.allowedMotifs : input.missedMotifs;
     const secondary = selectImportantTacticalMotifs(
         other.filter(
             (motif) =>
-                isImmediateLesson(motif) &&
+                isImmediateTacticalLesson(motif) &&
                 (!primaryMissed ||
                     motif.comparison === "prevented" ||
                     motif.comparison === "reduced"),
@@ -777,7 +777,7 @@ function chooseMistakeReviewTacticalExplanation({
         missed &&
         !allowedRootOverConditional &&
         (!allowed ||
-            (!allowed.comparison && isImmediateLesson(missed)) ||
+            (!allowed.comparison && isImmediateTacticalLesson(missed)) ||
             allowed.comparison === "persists" ||
             (missed.ply === 1 && isConditionalMaterial(allowed)) ||
             (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))

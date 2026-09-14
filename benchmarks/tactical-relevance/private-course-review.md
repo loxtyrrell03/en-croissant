@@ -2,6 +2,15 @@
 
 ## Current classifier: adapter 106 / live pipeline 111
 
+Desktop mistake nature is now version 4. The [mistake-nature review](mistake-nature-review.md)
+replaces independent SAN/PV-shape accusations with the existing root-cause proofs,
+keeps exact zero-material zugzwang lessons, and adds Unclassified rather than treating
+missing proof as positional certainty. A further 24 fixed public game boards, 80 fresh
+engine searches, 32 reused causal lessons and 36 real-component renderer groups were
+checked. The new 2,178-test selection and all 246 private/twenty rare full motif results
+pass unchanged; the motif algorithm and worker bytes remain adapter 106. This is honest
+abstention and cause reconciliation, not proof of general accuracy or native deployment.
+
 The [preparation-safety review](preparation-safety-review.md) records all-piece payoff liabilities, a bounded answer to post-payoff counterchecks, connected allied captures of moved victims and stronger-branch selection. Fresh engine review exposed both mate-in-one and mate-in-two witnesses in a real double threat; its genuine primary and later fork remain with safer answers. Four constructed preparation certificates are withheld in both colours, while an allied recapture preserves another genuine combination. These withheld certificates are not claims that the entire positions are non-tactical or losing.
 
 All 246 private primary lists and 32 frozen priorities remain unchanged. One opening source continuation gains a ply-7 preparation; one engine-game continuation lowers its local bound for an off-square pawn loss. The other 244 full results are unchanged apart from version. All twenty rare primary lists remain; only the real double-threat full result changes. The linked review records 127 final fresh engine searches, 2,123 selected passes, 1,407 production-controller inputs, 81 cold-HTTP cases and twelve existing renderer groups, plus builds, type/lint and service/cache checks. The one-countercheck safety horizon does not certify longer king hunts or perpetuals; connected capture-choice, broader accuracy/nature and native-runtime gaps remain open. No owner restart, installation or deployment; paid material stays private.

@@ -63,7 +63,8 @@
 }
 
 .reviewBadgeGroup {
-  max-width: 45%;
+  max-width: 100%;
+  flex: 0 1 auto;
 }
 
 .reviewDetailValue {
@@ -129,10 +130,6 @@
 @container (max-width: 26rem) {
   .reviewFocusGrid {
     grid-template-columns: 1fr;
-  }
-
-  .reviewBadgeGroup {
-    max-width: 52%;
   }
 
   .reviewMovesPanel {

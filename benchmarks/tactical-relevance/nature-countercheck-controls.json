@@ -1,0 +1,7 @@
+{
+  "scope": "Constructed old nature-test claims reviewed before fresh searches. The knight fork has a legal Qd4+ countercheck followed by Qxe5; the queen move's mating threat remains unproved, not declared strategically bad.",
+  "cases": [
+    { "id": "quiet-fork", "fen": "k7/3q1r2/8/8/8/5N2/8/K7 w - - 0 1", "moves": ["f3e5", "d7d4", "a1b1", "d4e5"] },
+    { "id": "queen-threat", "fen": "5bkb/5ppp/8/8/8/8/2B5/3Q2K1 w - - 0 1", "moves": ["d1h5", "g7g6"] }
+  ]
+}

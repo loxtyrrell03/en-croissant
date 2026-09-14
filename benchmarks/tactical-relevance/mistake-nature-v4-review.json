@@ -1,0 +1,2157 @@
+{
+  "scope": "Mistake-nature v3 to v4 on 45 fixed public game boards, plus 32 reused causal lessons. Withholding an unsupported cause is not a correct-negative claim or an accuracy percentage. The source puzzle endpoints were previously reviewed; these are not representative all-chess holdouts.",
+  "sourceSha256": [
+    "ceebfda14eca545a6458c39c71c2bf7e52c31c8941dcd1e2a27ae86dd5df11a3",
+    "166c28b7191e7e17e6481c679722f0641f4a74aa4461e5a83296a1159c622e3f",
+    "d37827eaa7ff5d9ec0e0d0096c0bea69f844ec9c90c54868c41f1934d7ec111d"
+  ],
+  "before": {
+    "tactical": 39,
+    "positional": 6
+  },
+  "after": {
+    "unknown": 44,
+    "tactical": 1
+  },
+  "cases": [
+    {
+      "id": "context:yOwOb8mH:ply8",
+      "fen": "rn2kbnr/pp1qpppp/3p4/2p5/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 5",
+      "best": "Qe2",
+      "played": "d4",
+      "cpLoss": 8,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Nc6 threatens the queen on d4. Quiet best move Qe2 is tactically motivated because it prevents that concrete outcome.",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Nc6 threatens the queen on d4"
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Nc6 threatens the queen on d4",
+        "missedNature": "positional",
+        "missedReason": "best move Qe2 has no verified immediate material, mating, promotion, or forcing-threat outcome"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The supplied evaluations do not establish a meaningful loss for this move. A tactic in the position alone is not a mistake explanation.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:yOwOb8mH:ply21",
+      "fen": "r4rk1/pp1qbppp/2np1n2/4p1B1/4P3/2N2N1P/PPP2PP1/R2Q1RK1 b - - 2 11",
+      "best": "Ne8",
+      "played": "h6",
+      "cpLoss": 31,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent can play d1xd6, forking the queen at d7 and the knight at c6. Missed tactical resource: missed best line Qxe7 wins the bishop on e7",
+        "tacticalSignals": [
+          "Allowed: opponent can play d1xd6, forking the queen at d7 and the knight at c6",
+          "Missed: missed best line Qxe7 wins the bishop on e7"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent can play d1xd6, forking the queen at d7 and the knight at c6",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Qxe7 wins the bishop on e7"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The available evidence does not establish a root tactical cause. Later line events, a large evaluation loss or an unproved threat do not establish one; the decision may be positional or an unproved tactic.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:yOwOb8mH:ply40",
+      "fen": "2r1r1k1/pp3pp1/3p3p/1q6/1P1bP3/3N1P1P/P1P3P1/1R1Q1R1K w - - 3 21",
+      "best": "Nf4",
+      "played": "Nf4",
+      "cpLoss": 5,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: quiet Rc4 is tactically motivated: opponent refutation Rc4 threatens the pawn on b4. Quiet best move Nf4 is tactically motivated because it prevents that concrete outcome.",
+        "tacticalSignals": [
+          "Allowed: quiet Rc4 is tactically motivated: opponent refutation Rc4 threatens the pawn on b4"
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "quiet Rc4 is tactically motivated: opponent refutation Rc4 threatens the pawn on b4",
+        "missedNature": "positional",
+        "missedReason": "best move Nf4 has no verified immediate material, mating, promotion, or forcing-threat outcome"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:yOwOb8mH:ply59",
+      "fen": "3rr1k1/pp3p2/5p1p/4P3/qP4Q1/1RP4P/6P1/5R1K b - - 2 30",
+      "best": "Kh7",
+      "played": "Kh7",
+      "cpLoss": 9,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Ra3 threatens the queen on a4. Missed tactical resource: missed best line Rxe5 threatens the queen on f5",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Ra3 threatens the queen on a4",
+          "Allowed: opponent refutation Qe4+, creating a fork: check plus attack on the pawn at b7",
+          "Allowed: opponent refutation Qf5+, creating a fork: check plus attack on the pawn at f6",
+          "Allowed: opponent refutation Qe4+ threatens the pawn on b7",
+          "Allowed: opponent refutation Qf5+ threatens the pawn on f6",
+          "Allowed: opponent refutation begins with immediate check Qe4+ and contains 3 forcing moves within 8 plies",
+          "Missed: missed best line Rxe5 threatens the queen on f5"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Ra3 threatens the queen on a4",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Rxe5 threatens the queen on f5"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:yOwOb8mH:ply80",
+      "fen": "8/pp3k2/4R1p1/8/1P6/2P4P/3r2P1/7K w - - 2 41",
+      "best": "Re4",
+      "played": "Re3",
+      "cpLoss": 45,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Missed tactical resource: missed best line Rc7 threatens the pawn on a7",
+        "tacticalSignals": [
+          "Missed: missed best line Rc7 threatens the pawn on a7"
+        ],
+        "aspect": "missed",
+        "allowedNature": "positional",
+        "allowedReason": "opponent refutation has no verified immediate material, mating, promotion, or forcing-threat outcome",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Rc7 threatens the pawn on a7"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The available evidence does not establish a root tactical cause. Later line events, a large evaluation loss or an unproved threat do not establish one; the decision may be positional or an unproved tactic.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:yOwOb8mH:ply99",
+      "fen": "8/1R6/1P4p1/8/5k2/1r5P/6PK/8 b - - 0 50",
+      "best": "Kg5",
+      "played": "Kg5",
+      "cpLoss": 0,
+      "before": {
+        "nature": "positional",
+        "confidence": "high",
+        "reason": "Best move Kg5 has no verified material or mating outcome and no immediate evaluation-relevant forcing threat. Across the verified tactical window, positional considerations such as structure, activity, king safety, space, exchanges, or plans therefore determine the remaining decision.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "positional",
+        "allowedReason": "opponent refutation has no verified immediate material, mating, promotion, or forcing-threat outcome",
+        "missedNature": "positional",
+        "missedReason": "best move Kg5 has no verified immediate material, mating, promotion, or forcing-threat outcome"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:8OYE3aem:ply8",
+      "fen": "rnbqk2r/ppp1ppbp/3p1np1/8/3P1P2/4PN2/PPP3PP/RNBQKB1R w KQkq - 0 5",
+      "best": "Nc3",
+      "played": "Bd3",
+      "cpLoss": 9,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Qc7 threatens the pawn on c5. Quiet best move Nc3 is tactically motivated because it prevents that concrete outcome.",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Qc7 threatens the pawn on c5"
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Qc7 threatens the pawn on c5",
+        "missedNature": "positional",
+        "missedReason": "best move Nc3 has no verified immediate material, mating, promotion, or forcing-threat outcome"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The supplied evaluations do not establish a meaningful loss for this move. A tactic in the position alone is not a mistake explanation.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:8OYE3aem:ply21",
+      "fen": "r2qr1k1/1pp1ppbp/p1np1np1/8/3P1P2/2PBPRQ1/PP1N2PP/R1B3K1 b - - 0 11",
+      "best": "e5",
+      "played": "Qd7",
+      "cpLoss": 119,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation h3 threatens the knight on g4. Missed tactical resource: missed best line Nh5 threatens the queen on g3",
+        "tacticalSignals": [
+          "Allowed: opponent refutation h3 threatens the knight on g4",
+          "Missed: missed best line Nh5 threatens the queen on g3",
+          "Missed: missed best line dxe5 threatens the pawn on d4",
+          "Missed: missed best line exd4 threatens the pawn on e3"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation h3 threatens the knight on g4",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Nh5 threatens the queen on g3"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The available evidence does not establish a root tactical cause. Later line events, a large evaluation loss or an unproved threat do not establish one; the decision may be positional or an unproved tactic.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:8OYE3aem:ply40",
+      "fen": "3rrk2/1ppq1pbQ/p1n1p1p1/3p4/3P1Pp1/2PBP2R/PP5P/R1B3K1 w - - 2 21",
+      "best": "Rh4",
+      "played": "e4",
+      "cpLoss": 212,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation wins about 3 points of material within 8 plies. Missed tactical resource: quiet Rh4 is tactically motivated: missed best line Rh4 threatens the pawn on g4",
+        "tacticalSignals": [
+          "Allowed: opponent refutation wins about 3 points of material within 8 plies",
+          "Allowed: opponent refutation dxe4 threatens the bishop on d3",
+          "Allowed: opponent refutation Nxd4 threatens the pawn on f5",
+          "Allowed: opponent refutation beginning dxe4 forms a concrete sequence with 6 forcing moves",
+          "Missed: quiet Rh4 is tactically motivated: missed best line Rh4 threatens the pawn on g4",
+          "Missed: missed best line Rxg4 threatens the pawn on g6",
+          "Missed: missed best line begins with quiet Rh4, which may be tactically motivated because the verified line wins a pawn within 8 plies"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation wins about 3 points of material within 8 plies",
+        "missedNature": "tactical",
+        "missedReason": "quiet Rh4 is tactically motivated: missed best line Rh4 threatens the pawn on g4"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The available evidence does not establish a root tactical cause. Later line events, a large evaluation loss or an unproved threat do not establish one; the decision may be positional or an unproved tactic.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:eTscGjLx:ply8",
+      "fen": "r1bqkbnr/pp3ppp/2n1p3/2ppP3/3P4/2P5/PP3PPP/RNBQKBNR w KQkq - 1 5",
+      "best": "Nf3",
+      "played": "Nf3",
+      "cpLoss": 0,
+      "before": {
+        "nature": "positional",
+        "confidence": "high",
+        "reason": "Best move Nf3 has no verified material or mating outcome and no immediate evaluation-relevant forcing threat. Across the verified tactical window, positional considerations such as structure, activity, king safety, space, exchanges, or plans therefore determine the remaining decision.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "positional",
+        "allowedReason": "opponent refutation has no verified immediate material, mating, promotion, or forcing-threat outcome",
+        "missedNature": "positional",
+        "missedReason": "best move Nf3 has no verified immediate material, mating, promotion, or forcing-threat outcome"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:eTscGjLx:ply21",
+      "fen": "r3kb1r/pp3ppp/1qn1b3/3pPp2/1P1P4/P1N2N2/5PPP/R1BQK2R b KQkq - 0 11",
+      "best": "Be7",
+      "played": "Be7",
+      "cpLoss": 0,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Na4 threatens the queen on b6. Quiet best move Be7 is tactically motivated because it prevents that concrete outcome.",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Na4 threatens the queen on b6"
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Na4 threatens the queen on b6",
+        "missedNature": "positional",
+        "missedReason": "best move Be7 has no verified immediate material, mating, promotion, or forcing-threat outcome"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:eTscGjLx:ply40",
+      "fen": "2r2rk1/q3bppp/Np2b3/1P1pPp2/3P4/nQ3N2/3B1PPP/2R2RK1 w - - 0 21",
+      "best": "Ra1",
+      "played": "Bb4",
+      "cpLoss": 136,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Qxe7 wins the bishop on e7. Missed tactical resource: missed best line Nxd2 wins the knight on d2",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Qxe7 wins the bishop on e7",
+          "Missed: missed best line Nxd2 wins the knight on d2",
+          "Missed: quiet Ra1 is tactically motivated: missed best line Ra1 threatens the knight on a3"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Qxe7 wins the bishop on e7",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Nxd2 wins the knight on d2"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The available evidence does not establish a root tactical cause. Later line events, a large evaluation loss or an unproved threat do not establish one; the decision may be positional or an unproved tactic.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:eTscGjLx:ply59",
+      "fen": "r3r1k1/1q1b1p2/1pN3pp/1P1pPp2/3P3P/2Q3P1/5P2/R4RK1 b - - 0 30",
+      "best": "Kh7",
+      "played": "Rxa1",
+      "cpLoss": 20,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation wins about 4 points of material within 8 plies. Quiet best move Kh7 is tactically motivated because it prevents that concrete outcome.",
+        "tacticalSignals": [
+          "Allowed: opponent refutation wins about 4 points of material within 8 plies",
+          "Allowed: opponent refutation Rxa1 wins the rook on a1",
+          "Allowed: opponent refutation Ne7+, creating a fork: check plus attack on the pawn at d5",
+          "Allowed: opponent refutation beginning Rxa1 forms a concrete sequence with 5 forcing moves"
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation wins about 4 points of material within 8 plies",
+        "missedNature": "positional",
+        "missedReason": "best move Kh7 has no verified immediate material, mating, promotion, or forcing-threat outcome"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The supplied evaluations do not establish a meaningful loss for this move. A tactic in the position alone is not a mistake explanation.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:eTscGjLx:ply80",
+      "fen": "6Q1/4qp2/7p/1p1pPp1k/3P4/6P1/5PK1/8 w - - 6 41",
+      "best": "f3",
+      "played": "f3",
+      "cpLoss": 0,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Qg6, forking the queen at g8 and the pawn at g3. Missed tactical resource: missed best line Qe8 threatens the pawn on b5",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Qg6, forking the queen at g8 and the pawn at g3",
+          "Allowed: opponent refutation Qe6, forking the queen at e7 and the pawn at e5",
+          "Allowed: opponent refutation Qg6 threatens the queen on g8",
+          "Allowed: opponent refutation Qe6 threatens the queen on e7",
+          "Missed: missed best line Qe8 threatens the pawn on b5",
+          "Missed: missed best line begins with quiet f3, which may be tactically motivated because the verified line wins a pawn within 8 plies"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Qg6, forking the queen at g8 and the pawn at g3",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Qe8 threatens the pawn on b5"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:BkwHTU3l:ply8",
+      "fen": "rnbqk2r/ppp1bppp/4pn2/3p2B1/2PP4/5N2/PP2PPPP/RN1QKB1R w KQkq - 4 5",
+      "best": "Nc3",
+      "played": "e3",
+      "cpLoss": 0,
+      "before": {
+        "nature": "tactical",
+        "confidence": "medium",
+        "reason": "Allowed tactical resource: quiet h6 is tactically motivated: opponent refutation h6 threatens the bishop on g5. Quiet best move Nc3 is tactically motivated because it prevents that concrete outcome.",
+        "tacticalSignals": [
+          "Allowed: quiet h6 is tactically motivated: opponent refutation h6 threatens the bishop on g5"
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "quiet h6 is tactically motivated: opponent refutation h6 threatens the bishop on g5",
+        "missedNature": "positional",
+        "missedReason": "best move Nc3 has no verified immediate material, mating, promotion, or forcing-threat outcome"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The supplied evaluations do not establish a meaningful loss for this move. A tactic in the position alone is not a mistake explanation.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:BkwHTU3l:ply21",
+      "fen": "rnbq1rk1/pp3pp1/4pN1p/8/2Bp4/4PN2/PP3PPP/R2QK2R b KQ - 0 11",
+      "best": "Qxf6",
+      "played": "Qxf6",
+      "cpLoss": 5,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Qxd4, forking the queen at f6 and the pawn at a7. Missed tactical resource: missed best line Qxf6 wins the knight on f6",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Qxd4, forking the queen at f6 and the pawn at a7",
+          "Allowed: opponent refutation Nxd4 wins the queen on d4",
+          "Allowed: opponent refutation wins a pawn within 8 plies",
+          "Missed: missed best line Qxf6 wins the knight on f6",
+          "Missed: missed best line wins about 2 points of material within 8 plies",
+          "Missed: missed best line Qxd4 threatens the bishop on c4"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Qxd4, forking the queen at f6 and the pawn at a7",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Qxf6 wins the knight on f6"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:BkwHTU3l:ply40",
+      "fen": "2r2rk1/p2R1pp1/4pq1p/Q3N3/2p2P2/4P3/PP4PP/2R3K1 w - - 0 21",
+      "best": "Qd2",
+      "played": "Rxc4",
+      "cpLoss": 76,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Rxc4 threatens the pawn on f4. Missed tactical resource: missed best line Qxc3 wins the rook on c3",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Rxc4 threatens the pawn on f4",
+          "Allowed: opponent refutation Rc8 threatens the knight on c4",
+          "Allowed: opponent refutation g5 threatens the pawn on f4",
+          "Missed: missed best line Qxc3 wins the rook on c3",
+          "Missed: missed best line begins with quiet Qd2, which may be tactically motivated because the verified line wins a pawn within 8 plies"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Rxc4 threatens the pawn on f4",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Qxc3 wins the rook on c3"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The available evidence does not establish a root tactical cause. Later line events, a large evaluation loss or an unproved threat do not establish one; the decision may be positional or an unproved tactic.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:BkwHTU3l:ply59",
+      "fen": "5rk1/Q1RR1pp1/4p2p/8/4KP2/3rP3/P1q3PP/8 b - - 1 30",
+      "best": "Rxd7+",
+      "played": "f5+",
+      "cpLoss": 521,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Missed tactical resource: missed best line Rxa7 wins the queen on a7",
+        "tacticalSignals": [
+          "Missed: missed best line Rxa7 wins the queen on a7",
+          "Missed: missed best line Rxd7+, creating a fork: check plus attack on the rook at c7",
+          "Missed: missed best line wins about 5 points of material within 8 plies",
+          "Missed: missed best line Rxd7+ wins the rook on d7",
+          "Missed: missed best line Rxd7+ threatens the rook on c7",
+          "Missed: best line begins with immediate check Rxd7+ and contains 3 forcing moves within 8 plies"
+        ],
+        "aspect": "missed",
+        "allowedNature": "positional",
+        "allowedReason": "opponent refutation has no verified immediate material, mating, promotion, or forcing-threat outcome",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Rxa7 wins the queen on a7"
+      },
+      "after": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "The better move had this tactic: Rxd7+ wins the loose rook on d7.",
+        "tacticalSignals": [
+          "Missed: Hanging Piece. Rxd7+ wins the loose rook on d7."
+        ],
+        "aspect": "missed",
+        "allowedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedNature": "tactical",
+        "missedReason": "Rxd7+ wins the loose rook on d7."
+      },
+      "motifHeadline": "What you missed: Hanging Piece"
+    },
+    {
+      "id": "context:oD1ADLSC:ply8",
+      "fen": "r1bqkb1r/pppp1ppp/2n2n2/8/3NP3/8/PPP2PPP/RNBQKB1R w KQkq - 1 5",
+      "best": "Nxc6",
+      "played": "Bb5",
+      "cpLoss": 50,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Ne6 threatens the queen on d4. Missed tactical resource: missed best line Nxc6, forking the queen at d8 and the pawn at a7",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Ne6 threatens the queen on d4",
+          "Allowed: opponent refutation Nxd4 threatens the bishop on b5",
+          "Allowed: opponent refutation beginning Nxe4 forms a concrete sequence with 4 forcing moves",
+          "Allowed: opponent refutation wins a pawn within 8 plies",
+          "Missed: missed best line Nxc6, forking the queen at d8 and the pawn at a7",
+          "Missed: missed best line Nxc6 threatens the queen on d8",
+          "Missed: missed best line exd5 threatens the pawn on c6",
+          "Missed: best line beginning Nxc6 forms a concrete sequence with 4 forcing moves",
+          "Missed: missed best line wins a pawn within 8 plies"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Ne6 threatens the queen on d4",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Nxc6, forking the queen at d8 and the pawn at a7"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The available evidence does not establish a root tactical cause. Later line events, a large evaluation loss or an unproved threat do not establish one; the decision may be positional or an unproved tactic.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:oD1ADLSC:ply21",
+      "fen": "r1bq1rk1/ppp1bppp/2p5/4P3/2nN4/2N1B3/PP3PPP/R2Q1RK1 b - - 1 11",
+      "best": "Nxe5",
+      "played": "Nxe3",
+      "cpLoss": 36,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation fxe3 wins the knight on e3. Missed tactical resource: missed best line Nxe3, forking the rook at d1 and the rook at f1",
+        "tacticalSignals": [
+          "Allowed: opponent refutation fxe3 wins the knight on e3",
+          "Allowed: opponent refutation wins about 2 points of material within 8 plies",
+          "Allowed: opponent refutation Qf3 threatens the pawn on c6",
+          "Allowed: opponent refutation Qg3 threatens the bishop on g5",
+          "Missed: missed best line Nxe3, forking the rook at d1 and the rook at f1",
+          "Missed: missed best line Nxe3 threatens the rook on d1",
+          "Missed: missed best line Bd6 threatens the pawn on h2",
+          "Missed: missed best line wins a pawn within 8 plies"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation fxe3 wins the knight on e3",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Nxe3, forking the rook at d1 and the rook at f1"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The available evidence does not establish a root tactical cause. Later line events, a large evaluation loss or an unproved threat do not establish one; the decision may be positional or an unproved tactic.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:oD1ADLSC:ply40",
+      "fen": "r5k1/ppp2ppp/2p5/5q2/8/8/PP2Q1PP/3R2K1 w - - 0 21",
+      "best": "Qe7",
+      "played": "Rf1",
+      "cpLoss": 153,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent can play f5-c2, forking the queen at e2 and the pawn at b2. Missed tactical resource: quiet Qe7 is tactically motivated: missed best line Qe7 threatens the pawn on c7",
+        "tacticalSignals": [
+          "Allowed: opponent can play f5-c2, forking the queen at e2 and the pawn at b2",
+          "Allowed: opponent refutation begins with immediate check Qc5+, but the supplied line does not verify a concrete follow-up",
+          "Missed: quiet Qe7 is tactically motivated: missed best line Qe7 threatens the pawn on c7",
+          "Missed: missed best line Qxc7 threatens the pawn on b7",
+          "Missed: missed best line begins with quiet Qe7, which may be tactically motivated because the verified line wins a pawn within 8 plies"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent can play f5-c2, forking the queen at e2 and the pawn at b2",
+        "missedNature": "tactical",
+        "missedReason": "quiet Qe7 is tactically motivated: missed best line Qe7 threatens the pawn on c7"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The available evidence does not establish a root tactical cause. Later line events, a large evaluation loss or an unproved threat do not establish one; the decision may be positional or an unproved tactic.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:oD1ADLSC:ply59",
+      "fen": "5rqk/pp1Q2pp/2p5/8/8/7P/6P1/1R5K b - - 5 30",
+      "best": "Rf7",
+      "played": "Qd5",
+      "cpLoss": 166,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Rd1 threatens the queen on d5. Missed tactical resource: quiet Rf7 is tactically motivated: missed best line Rf7 threatens the queen on d7",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Rd1 threatens the queen on d5",
+          "Allowed: opponent refutation Qxb7 threatens the pawn on a7",
+          "Allowed: opponent refutation Qe7 threatens the rook on f8",
+          "Allowed: opponent refutation wins a pawn within 8 plies",
+          "Missed: quiet Rf7 is tactically motivated: missed best line Rf7 threatens the queen on d7"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Rd1 threatens the queen on d5",
+        "missedNature": "tactical",
+        "missedReason": "quiet Rf7 is tactically motivated: missed best line Rf7 threatens the queen on d7"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The available evidence does not establish a root tactical cause. Later line events, a large evaluation loss or an unproved threat do not establish one; the decision may be positional or an unproved tactic.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:oD1ADLSC:ply80",
+      "fen": "8/5r1k/p5pp/8/1R2Q3/7P/5qPK/8 w - - 0 41",
+      "best": "Qe5",
+      "played": "Ra4",
+      "cpLoss": 5,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Qb5, forking the queen at e5 and the rook at a4. Missed tactical resource: missed best line Ra4 threatens the pawn on a6",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Qb5, forking the queen at e5 and the rook at a4",
+          "Allowed: opponent refutation Qxe5+, creating a fork: check plus attack on the rook at e4",
+          "Allowed: opponent refutation Qb5 threatens the queen on e5",
+          "Allowed: opponent refutation Qxe5+ threatens the rook on e4",
+          "Allowed: opponent refutation begins with quiet Qb6, which is tactically motivated because it prepares the concrete continuation Qxe5+",
+          "Missed: missed best line Ra4 threatens the pawn on a6",
+          "Missed: missed best line Qxf6 threatens the rook on f7"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Qb5, forking the queen at e5 and the rook at a4",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Ra4 threatens the pawn on a6"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The supplied evaluations do not establish a meaningful loss for this move. A tactic in the position alone is not a mistake explanation.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:oD1ADLSC:ply99",
+      "fen": "8/r7/5kpp/8/8/p6P/R5PK/8 b - - 3 50",
+      "best": "Ke5",
+      "played": "Ke5",
+      "cpLoss": 0,
+      "before": {
+        "nature": "positional",
+        "confidence": "high",
+        "reason": "Best move Ke5 has no verified material or mating outcome and no immediate evaluation-relevant forcing threat. Across the verified tactical window, positional considerations such as structure, activity, king safety, space, exchanges, or plans therefore determine the remaining decision.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "positional",
+        "allowedReason": "opponent refutation has no verified immediate material, mating, promotion, or forcing-threat outcome",
+        "missedNature": "positional",
+        "missedReason": "best move Ke5 has no verified immediate material, mating, promotion, or forcing-threat outcome"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:TRKE6TxS:ply7",
+      "fen": "rnbqkb1r/ppp2ppp/3p1n2/8/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 4",
+      "best": "Nxe4",
+      "played": "Nxe4",
+      "cpLoss": 3,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Bd3 threatens the knight on e4.",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Bd3 threatens the knight on e4",
+          "Missed: missed best line wins a pawn within 8 plies"
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Bd3 threatens the knight on e4",
+        "missedNature": "positional",
+        "missedReason": "missed best line wins a pawn within 8 plies"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:TRKE6TxS:ply22",
+      "fen": "r2qk2r/pp2bppp/2p1b3/4p3/8/2PBB3/PPPQ1PPP/R4RK1 w kq - 0 12",
+      "best": "a4",
+      "played": "Rad1",
+      "cpLoss": 18,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Bxc4, forking the queen at e2 and the pawn at a2. Quiet best move a4 is tactically motivated because it prevents that concrete outcome.",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Bxc4, forking the queen at e2 and the pawn at a2",
+          "Allowed: opponent refutation Bxc4 threatens the queen on e2",
+          "Allowed: opponent refutation Qa5 threatens the pawn on a2"
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Bxc4, forking the queen at e2 and the pawn at a2",
+        "missedNature": "positional",
+        "missedReason": "best move a4 has no verified immediate material, mating, promotion, or forcing-threat outcome"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The supplied evaluations do not establish a meaningful loss for this move. A tactic in the position alone is not a mistake explanation.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:TRKE6TxS:ply41",
+      "fen": "5k2/1p3ppp/2p1b3/b1B1p3/2P5/5P2/PPP1B1PP/6K1 b - - 2 21",
+      "best": "Ke8",
+      "played": "Ke8",
+      "cpLoss": 15,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation b4 threatens the bishop on a5. Missed tactical resource: missed best line Bf5 threatens the pawn on c2",
+        "tacticalSignals": [
+          "Allowed: opponent refutation b4 threatens the bishop on a5",
+          "Allowed: quiet Bd6 is tactically motivated: opponent refutation Bd6 threatens the pawn on e5",
+          "Allowed: opponent refutation Bd3 threatens the bishop on f5",
+          "Missed: missed best line Bf5 threatens the pawn on c2"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation b4 threatens the bishop on a5",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Bf5 threatens the pawn on c2"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:TRKE6TxS:ply60",
+      "fen": "8/1p6/2pkb3/P3p1p1/1PP2p1p/2K2P1P/2P1B1P1/8 w - - 0 31",
+      "best": "c5+",
+      "played": "c5+",
+      "cpLoss": 0,
+      "before": {
+        "nature": "positional",
+        "confidence": "low",
+        "reason": "Best move c5+ has no verified material or mating outcome and no immediate evaluation-relevant forcing threat. Across the verified tactical window, positional considerations such as structure, activity, king safety, space, exchanges, or plans therefore determine the remaining decision. Concrete activity or a sharp evaluation swing remains, so the positional label is provisional rather than proof that no deeper tactic exists.",
+        "tacticalSignals": [
+          "Missed: best line begins with immediate check c5+, but the supplied line does not verify a concrete follow-up"
+        ],
+        "aspect": "both",
+        "allowedNature": "positional",
+        "allowedReason": "opponent refutation has no verified immediate material, mating, promotion, or forcing-threat outcome",
+        "missedNature": "positional",
+        "missedReason": "best line begins with immediate check c5+, but the supplied line does not verify a concrete follow-up"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:TRKE6TxS:ply81",
+      "fen": "8/1p6/P1p5/1PP1k3/2P1P2p/7p/6p1/6K1 b - - 0 41",
+      "best": "bxa6",
+      "played": "bxa6",
+      "cpLoss": 0,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation wins about 6 points of material within 8 plies. Missed tactical resource: missed best line bxa6 threatens the pawn on b5",
+        "tacticalSignals": [
+          "Allowed: opponent refutation wins about 6 points of material within 8 plies",
+          "Allowed: opponent refutation Qa3+, creating a fork: check plus attack on the pawn at h3",
+          "Allowed: opponent refutation beginning bxa6 reaches promotion within 5 plies",
+          "Allowed: opponent refutation Qa3+ threatens the pawn on h3",
+          "Missed: missed best line bxa6 threatens the pawn on b5",
+          "Missed: best line beginning bxa6 forms a concrete sequence with 4 forcing moves"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation wins about 6 points of material within 8 plies",
+        "missedNature": "tactical",
+        "missedReason": "missed best line bxa6 threatens the pawn on b5"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:Gectvn7R:ply7",
+      "fen": "rnbqkb1r/pp2pppp/2p2n2/3p4/2PP4/4P2P/PP3PP1/RNBQKBNR b KQkq - 0 4",
+      "best": "Bf5",
+      "played": "e6",
+      "cpLoss": 17,
+      "before": {
+        "nature": "positional",
+        "confidence": "high",
+        "reason": "Best move Bf5 has no verified material or mating outcome and no immediate evaluation-relevant forcing threat. Across the verified tactical window, positional considerations such as structure, activity, king safety, space, exchanges, or plans therefore determine the remaining decision.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "positional",
+        "allowedReason": "opponent refutation has no verified immediate material, mating, promotion, or forcing-threat outcome",
+        "missedNature": "positional",
+        "missedReason": "best move Bf5 has no verified immediate material, mating, promotion, or forcing-threat outcome"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The supplied evaluations do not establish a meaningful loss for this move. A tactic in the position alone is not a mistake explanation.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:Gectvn7R:ply22",
+      "fen": "r1bqk2r/p4ppp/1bn1pn2/3p4/1P6/P3PN1P/1B3PP1/RN1QKB1R w KQkq - 0 12",
+      "best": "Nc3",
+      "played": "Bb5",
+      "cpLoss": 37,
+      "before": {
+        "nature": "tactical",
+        "confidence": "medium",
+        "reason": "Allowed tactical resource: opponent refutation a6 threatens the bishop on b5. Missed tactical resource: missed best line Nxb6, forking the rook at a8 and the bishop at d7",
+        "tacticalSignals": [
+          "Allowed: opponent refutation a6 threatens the bishop on b5",
+          "Missed: missed best line Nxb6, forking the rook at a8 and the bishop at d7",
+          "Missed: missed best line Nxb6 threatens the rook on a8",
+          "Missed: missed best line Rc1 threatens the knight on c6"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation a6 threatens the bishop on b5",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Nxb6, forking the rook at a8 and the bishop at d7"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The available evidence does not establish a root tactical cause. Later line events, a large evaluation loss or an unproved threat do not establish one; the decision may be positional or an unproved tactic.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:Gectvn7R:ply41",
+      "fen": "r4rk1/1b3ppp/p3pn2/3pb3/1P6/PQ2PN1P/4BPP1/5RK1 b - - 5 21",
+      "best": "Bd6",
+      "played": "Bd6",
+      "cpLoss": 0,
+      "before": {
+        "nature": "positional",
+        "confidence": "high",
+        "reason": "Best move Bd6 has no verified material or mating outcome and no immediate evaluation-relevant forcing threat. Across the verified tactical window, positional considerations such as structure, activity, king safety, space, exchanges, or plans therefore determine the remaining decision.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "positional",
+        "allowedReason": "opponent refutation has no verified immediate material, mating, promotion, or forcing-threat outcome",
+        "missedNature": "positional",
+        "missedReason": "best move Bd6 has no verified immediate material, mating, promotion, or forcing-threat outcome"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:Gectvn7R:ply60",
+      "fen": "2r3k1/5ppp/3b4/1p1p4/1Pr5/PQ4PP/5P2/4R1K1 w - - 1 31",
+      "best": "Qf3",
+      "played": "Rd1",
+      "cpLoss": 51,
+      "before": {
+        "nature": "tactical",
+        "confidence": "medium",
+        "reason": "Allowed tactical resource: opponent refutation Rc4 threatens the pawn on b4. Missed tactical resource: missed best line Qd5, forking the rook at c4 and the bishop at d6",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Rc4 threatens the pawn on b4",
+          "Missed: missed best line Qd5, forking the rook at c4 and the bishop at d6",
+          "Missed: quiet Qf3 is tactically motivated: missed best line Qf3 threatens the pawn on d5",
+          "Missed: missed best line Qd5 threatens the bishop on d6",
+          "Missed: missed best line Re4 threatens the pawn on d4"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Rc4 threatens the pawn on b4",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Qd5, forking the rook at c4 and the bishop at d6"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The available evidence does not establish a root tactical cause. Later line events, a large evaluation loss or an unproved threat do not establish one; the decision may be positional or an unproved tactic.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:Gectvn7R:ply81",
+      "fen": "6k1/3Q1pp1/7p/6b1/PP3P2/3p1KPP/2r5/8 b - - 2 41",
+      "best": "Bf6",
+      "played": "Bf6",
+      "cpLoss": 5,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Qd7 threatens the pawn on d3. Missed tactical resource: missed best line Rc4 threatens the pawn on b4",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Qd7 threatens the pawn on d3",
+          "Allowed: opponent refutation begins with immediate check Qe8+, but the supplied line does not verify a concrete follow-up",
+          "Missed: missed best line Rc4 threatens the pawn on b4",
+          "Missed: missed best line Ra3 threatens the pawn on a4"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Qd7 threatens the pawn on d3",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Rc4 threatens the pawn on b4"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:Gectvn7R:ply100",
+      "fen": "2k5/5p2/2K4p/1P3p2/P5P1/2b4P/8/8 w - - 0 51",
+      "best": "gxf5",
+      "played": "gxf5",
+      "cpLoss": 0,
+      "before": {
+        "nature": "tactical",
+        "confidence": "medium",
+        "reason": "Missed tactical resource: best line beginning gxf5 forms a concrete sequence with 3 forcing moves",
+        "tacticalSignals": [
+          "Missed: best line beginning gxf5 forms a concrete sequence with 3 forcing moves",
+          "Missed: missed best line wins a pawn within 7 plies"
+        ],
+        "aspect": "missed",
+        "allowedNature": "positional",
+        "allowedReason": "opponent refutation has no verified immediate material, mating, promotion, or forcing-threat outcome",
+        "missedNature": "tactical",
+        "missedReason": "best line beginning gxf5 forms a concrete sequence with 3 forcing moves"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:ZFgq8VzD:ply7",
+      "fen": "rnbqkbnr/pppp1ppp/8/8/4P3/2N5/PP3PPP/R1BQKBNR b KQkq - 0 4",
+      "best": "Bc5",
+      "played": "Bb4",
+      "cpLoss": 10,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation bxc3 wins the bishop on c3. Quiet best move Bc5 is tactically motivated because it prevents that concrete outcome.",
+        "tacticalSignals": [
+          "Allowed: opponent refutation bxc3 wins the bishop on c3",
+          "Allowed: opponent refutation Qb3 threatens the bishop on b4"
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation bxc3 wins the bishop on c3",
+        "missedNature": "positional",
+        "missedReason": "best move Bc5 has no verified immediate material, mating, promotion, or forcing-threat outcome"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The supplied evaluations do not establish a meaningful loss for this move. A tactic in the position alone is not a mistake explanation.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:ZFgq8VzD:ply22",
+      "fen": "rnbqk1r1/ppp2p2/3p1n2/6B1/2B1P2P/2b5/PP3PP1/R2QK2R w KQq - 0 12",
+      "best": "bxc3",
+      "played": "bxc3",
+      "cpLoss": 6,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Qe5, forking the queen at d4 and the bishop at g5. Missed tactical resource: missed best line bxc3 wins the bishop on c3",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Qe5, forking the queen at d4 and the bishop at g5",
+          "Allowed: opponent refutation Qxd4+, creating a fork: check plus attack on the bishop at c4",
+          "Allowed: quiet Qe7 is tactically motivated: opponent refutation Qe7 threatens the pawn on e4",
+          "Allowed: opponent refutation Qe5 threatens the bishop on g5",
+          "Allowed: opponent refutation Qxd4+ threatens the bishop on c4",
+          "Allowed: opponent refutation begins with quiet Qe7, which is tactically motivated because it prepares the concrete continuation Qxd4+",
+          "Missed: missed best line bxc3 wins the bishop on c3",
+          "Missed: missed best line Qa4+, creating a fork: check plus attack on the pawn at a7",
+          "Missed: missed best line Qb3 threatens the pawn on b7",
+          "Missed: best line beginning bxc3 forms a concrete sequence with 3 forcing moves"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Qe5, forking the queen at d4 and the bishop at g5",
+        "missedNature": "tactical",
+        "missedReason": "missed best line bxc3 wins the bishop on c3"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:ZFgq8VzD:ply41",
+      "fen": "6r1/p1Qnqk2/5n2/6B1/4P2P/2P2P2/Pr4P1/R4RK1 b - - 2 21",
+      "best": "Qc5+",
+      "played": "Qc5+",
+      "cpLoss": 0,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Rxa1 wins the rook on a1. Missed tactical resource: missed best line Nxc5 wins the queen on c5",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Rxa1 wins the rook on a1",
+          "Allowed: opponent refutation Rab1 threatens the rook on b2",
+          "Allowed: opponent refutation Ra1 threatens the rook on a2",
+          "Allowed: opponent refutation Rxa1 threatens the pawn on a7",
+          "Missed: missed best line Nxc5 wins the queen on c5",
+          "Missed: missed best line Qc5+, creating a fork: check plus attack on the queen at c7",
+          "Missed: missed best line Qc5+ threatens the queen on c7",
+          "Missed: missed best line Nxc5 threatens the pawn on e4",
+          "Missed: best line begins with immediate check Qc5+ and contains 4 forcing moves within 8 plies"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Rxa1 wins the rook on a1",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Nxc5 wins the queen on c5"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:ZFgq8VzD:ply60",
+      "fen": "8/B4k2/8/7n/4PnKP/5P2/P5r1/R7 w - - 0 31",
+      "best": "Kf5",
+      "played": "Kf5",
+      "cpLoss": 0,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation quiet Ng6 is tactically motivated because it creates the immediate mate threat h5-g7. Quiet best move Kf5 is tactically motivated because it prevents that concrete outcome.",
+        "tacticalSignals": [
+          "Allowed: opponent refutation quiet Ng6 is tactically motivated because it creates the immediate mate threat h5-g7",
+          "Allowed: opponent refutation Nxh4+, creating a fork: check plus attack on the pawn at f3",
+          "Allowed: quiet Ng6 is tactically motivated: opponent refutation Ng6 threatens the pawn on h4",
+          "Allowed: opponent refutation Nxh4+ threatens the pawn on f3",
+          "Allowed: opponent refutation begins with quiet Ng6, which may be tactically motivated because the verified line wins a pawn within 8 plies",
+          "Allowed: opponent refutation begins with quiet Ng6, which is tactically motivated because it prepares the concrete continuation Nxh4+"
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation quiet Ng6 is tactically motivated because it creates the immediate mate threat h5-g7",
+        "missedNature": "positional",
+        "missedReason": "best move Kf5 has no verified immediate material, mating, promotion, or forcing-threat outcome"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": "Tactical danger in the position"
+    },
+    {
+      "id": "context:C9q6jvtW:ply7",
+      "fen": "rnbqkbnr/pp2pppp/2p5/8/3PN3/8/PPP2PPP/R1BQKBNR b KQkq - 0 4",
+      "best": "Nf6",
+      "played": "Nf6",
+      "cpLoss": 3,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Qxe7+, creating a fork: check plus attack on the bishop at d6. Missed tactical resource: missed best line exf6 wins the knight on f6",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Qxe7+, creating a fork: check plus attack on the bishop at d6",
+          "Allowed: opponent refutation Nxf6+, creating a fork: check plus attack on the pawn at h7",
+          "Allowed: opponent refutation Qxe7+ threatens the bishop on d6",
+          "Allowed: opponent refutation begins with immediate check Nxf6+ and contains 5 forcing moves within 8 plies",
+          "Missed: missed best line exf6 wins the knight on f6",
+          "Missed: quiet Nf6 is tactically motivated: missed best line Nf6 threatens the knight on e4"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Qxe7+, creating a fork: check plus attack on the bishop at d6",
+        "missedNature": "tactical",
+        "missedReason": "missed best line exf6 wins the knight on f6"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:C9q6jvtW:ply22",
+      "fen": "r2q1rk1/pp1nbppp/4bp2/8/3pB3/4BN2/PPP2PPP/R2QR1K1 w - - 0 12",
+      "best": "Nxd4",
+      "played": "Bxd4",
+      "cpLoss": 139,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation f5 threatens the bishop on e4.",
+        "tacticalSignals": [
+          "Allowed: opponent refutation f5 threatens the bishop on e4",
+          "Allowed: opponent refutation Nxd3 threatens the rook on e1",
+          "Allowed: opponent refutation Qxd3 threatens the pawn on c2",
+          "Missed: missed best line wins a pawn within 8 plies"
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation f5 threatens the bishop on e4",
+        "missedNature": "positional",
+        "missedReason": "missed best line wins a pawn within 8 plies"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The available evidence does not establish a root tactical cause. Later line events, a large evaluation loss or an unproved threat do not establish one; the decision may be positional or an unproved tactic.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:C9q6jvtW:ply41",
+      "fen": "1rr3k1/5ppp/2B1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 b - - 0 21",
+      "best": "Rxc6",
+      "played": "fxg4",
+      "cpLoss": 269,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Rxd8+, creating a fork: check plus attack on the rook at b8. Missed tactical resource: missed best line wins about 4 points of material within 8 plies",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Rxd8+, creating a fork: check plus attack on the rook at b8",
+          "Allowed: opponent refutation Rxd8+ threatens the rook on b8",
+          "Allowed: opponent refutation begins with quiet Be4, which is tactically motivated because it prepares the concrete continuation Rxd8+",
+          "Missed: missed best line wins about 4 points of material within 8 plies",
+          "Missed: missed best line Rxc6 wins the bishop on c6",
+          "Missed: missed best line Rxc6 threatens the pawn on c2"
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Rxd8+, creating a fork: check plus attack on the rook at b8",
+        "missedNature": "tactical",
+        "missedReason": "missed best line wins about 4 points of material within 8 plies"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The better move and played move have comparable immediate captures. Their tactical difference is not established by those captures alone.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": "Capture in the better line"
+    },
+    {
+      "id": "context:C9q6jvtW:ply60",
+      "fen": "r7/1r3kp1/8/P6p/1P4p1/3P4/5PPP/R2R2K1 w - - 1 31",
+      "best": "Ra4",
+      "played": "Rdb1",
+      "cpLoss": 14,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation Rb7 threatens the pawn on b4. Quiet best move Ra4 is tactically motivated because it prevents that concrete outcome.",
+        "tacticalSignals": [
+          "Allowed: opponent refutation Rb7 threatens the pawn on b4",
+          "Allowed: opponent refutation Rd8 threatens the pawn on d3"
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation Rb7 threatens the pawn on b4",
+        "missedNature": "positional",
+        "missedReason": "best move Ra4 has no verified immediate material, mating, promotion, or forcing-threat outcome"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The supplied evaluations do not establish a meaningful loss for this move. A tactic in the position alone is not a mistake explanation.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:C9q6jvtW:ply81",
+      "fen": "r7/P7/1r6/RPk5/3P2p1/2K4p/5P1P/1R6 b - - 0 41",
+      "best": "Kd6",
+      "played": "Kd5",
+      "cpLoss": 51,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Missed tactical resource: missed best line Rf6 threatens the pawn on f2",
+        "tacticalSignals": [
+          "Missed: missed best line Rf6 threatens the pawn on f2"
+        ],
+        "aspect": "missed",
+        "allowedNature": "positional",
+        "allowedReason": "opponent refutation has no verified immediate material, mating, promotion, or forcing-threat outcome",
+        "missedNature": "tactical",
+        "missedReason": "missed best line Rf6 threatens the pawn on f2"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The available evidence does not establish a root tactical cause. Later line events, a large evaluation loss or an unproved threat do not establish one; the decision may be positional or an unproved tactic.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    },
+    {
+      "id": "context:C9q6jvtW:ply100",
+      "fen": "8/k7/3r4/1P3K2/3P1P2/8/7P/1R6 w - - 4 51",
+      "best": "Ke5",
+      "played": "b6+",
+      "cpLoss": 57,
+      "before": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Allowed tactical resource: opponent refutation begins with quiet Kb7, which is tactically motivated because the verified line wins about 2 points of material within 8 plies. Quiet best move Ke5 is tactically motivated because it prevents that concrete outcome.",
+        "tacticalSignals": [
+          "Allowed: opponent refutation begins with quiet Kb7, which is tactically motivated because the verified line wins about 2 points of material within 8 plies"
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "opponent refutation begins with quiet Kb7, which is tactically motivated because the verified line wins about 2 points of material within 8 plies",
+        "missedNature": "positional",
+        "missedReason": "best move Ke5 has no verified immediate material, mating, promotion, or forcing-threat outcome"
+      },
+      "after": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The available evidence does not establish a root tactical cause. Later line events, a large evaluation loss or an unproved threat do not establish one; the decision may be positional or an unproved tactic.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "motifHeadline": null
+    }
+  ],
+  "causal": [
+    {
+      "name": "The real Kf1 best defence does not cause the existing mate",
+      "nature": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The played move is the supplied best move. A tactic in this position is not evidence of a mistake by that move.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "mateIn3",
+      "source": "allowed"
+    },
+    {
+      "name": "The real Bh3 mistake misses Qxc6+'s mate, not just the knight",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "The better move had this tactic: Qxc6+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxc6+ Qd7 Qxa8+ Qc8 Qxc8#. The exact continuation depends on the defence.",
+        "tacticalSignals": [
+          "Missed: Forcing Mate. Qxc6+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxc6+ Qd7 Qxa8+ Qc8 Qxc8#. The exact continuation depends on the defence."
+        ],
+        "aspect": "missed",
+        "allowedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedNature": "tactical",
+        "missedReason": "Qxc6+ starts a forced mating attack. Every legal defence permits mate within 3 moves; one verified line is Qxc6+ Qd7 Qxa8+ Qc8 Qxc8#. The exact continuation depends on the defence."
+      },
+      "primary": "mateIn3",
+      "source": "missed"
+    },
+    {
+      "name": "Pushed too early instead of removing the promotion-path defender (MJZcU)",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "The better move had this tactic: Rxe4 removes the knight on e4, which controlled d2. The passed pawns on c3 and d4 can advance. All 21 legal replies permit a verified local material gain or mate, including recaptures and checking defences; one line is Rxe4 fxe4 c2 Rd7+ Ke6 Rc7 d3 Rc8 d2 Re8+ Kd6 e5+ Kc6 Re6+ Kc5 Rc6+ Kxc6 e6 c1=Q e7 Qe1.",
+        "tacticalSignals": [
+          "Missed: Promotion Combination. Rxe4 removes the knight on e4, which controlled d2. The passed pawns on c3 and d4 can advance. All 21 legal replies permit a verified local material gain or mate, including recaptures and checking defences; one line is Rxe4 fxe4 c2 Rd7+ Ke6 Rc7 d3 Rc8 d2 Re8+ Kd6 e5+ Kc6 Re6+ Kc5 Rc6+ Kxc6 e6 c1=Q e7 Qe1."
+        ],
+        "aspect": "missed",
+        "allowedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedNature": "tactical",
+        "missedReason": "Rxe4 removes the knight on e4, which controlled d2. The passed pawns on c3 and d4 can advance. All 21 legal replies permit a verified local material gain or mate, including recaptures and checking defences; one line is Rxe4 fxe4 c2 Rd7+ Ke6 Rc7 d3 Rc8 d2 Re8+ Kd6 e5+ Kc6 Re6+ Kc5 Rc6+ Kxc6 e6 c1=Q e7 Qe1."
+      },
+      "primary": "promotionCombination",
+      "source": "missed"
+    },
+    {
+      "name": "Left the queen behind the discovered checking capture",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Your move allowed this tactic: Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check. g6 makes the immediate reply Bxh7+ illegal.",
+        "tacticalSignals": [
+          "Allowed: Discovered Attack. Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check. g6 makes the immediate reply Bxh7+ illegal."
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "Bxh7+ vacates e4, uncovering the rook on e1 against the queen on e8. The moving bishop gives check, so the opponent cannot simply ignore the exposed attack. Every legal reply concedes material. Captures and interpositions are included in this check. g6 makes the immediate reply Bxh7+ illegal.",
+        "missedNature": "unknown",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "discoveredAttack",
+      "source": "allowed"
+    },
+    {
+      "name": "A different reply wins the same queen after the better move",
+      "nature": {
+        "nature": "unknown",
+        "confidence": "low",
+        "reason": "The opponent's tactical danger also exists after the better move. It is not an established cause of this mistake.",
+        "tacticalSignals": [],
+        "aspect": "both",
+        "allowedNature": "unknown",
+        "missedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "pin",
+      "source": "allowed"
+    },
+    {
+      "name": "Ignored double-check mate instead of making a king escape",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Your move allowed this tactic: Bb5# vacates e2, uncovering the rook on e1 against the king on e8. Both pieces give check. There is no legal defence: checkmate. Rg8+ makes the immediate reply Bb5# illegal.",
+        "tacticalSignals": [
+          "Allowed: Double Check. Bb5# vacates e2, uncovering the rook on e1 against the king on e8. Both pieces give check. There is no legal defence: checkmate. Rg8+ makes the immediate reply Bb5# illegal."
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "Bb5# vacates e2, uncovering the rook on e1 against the king on e8. Both pieces give check. There is no legal defence: checkmate. Rg8+ makes the immediate reply Bb5# illegal.",
+        "missedNature": "unknown",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "doubleCheck",
+      "source": "allowed"
+    },
+    {
+      "name": "Failed to unpin the knight",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "medium",
+        "reason": "Your move allowed this tactic: d6 exploits the knight on e7, pinned to the king on e8 by the rook on e1. Every non-checking reply allows material loss. Checking replies remain, so the capture is a threat, not a guaranteed immediate win. After Kd7, Kxd6 answers d6; a profitable immediate follow-up capture of the knight on e7 is no longer forced.",
+        "tacticalSignals": [
+          "Allowed: Pin. d6 exploits the knight on e7, pinned to the king on e8 by the rook on e1. Every non-checking reply allows material loss. Checking replies remain, so the capture is a threat, not a guaranteed immediate win. After Kd7, Kxd6 answers d6; a profitable immediate follow-up capture of the knight on e7 is no longer forced."
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "d6 exploits the knight on e7, pinned to the king on e8 by the rook on e1. Every non-checking reply allows material loss. Checking replies remain, so the capture is a threat, not a guaranteed immediate win. After Kd7, Kxd6 answers d6; a profitable immediate follow-up capture of the knight on e7 is no longer forced.",
+        "missedNature": "unknown",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "pin",
+      "source": "allowed"
+    },
+    {
+      "name": "Allowed a king-queen skewer instead of preserving the queen",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Your move allowed this tactic: Bd3+ skewers the king on f5 and the queen on h7. No legal reply saves the rear target without conceding material. After Kf4, Qxd3 answers Bd3; a profitable immediate follow-up capture of the queen on h7 is no longer forced.",
+        "tacticalSignals": [
+          "Allowed: Skewer. Bd3+ skewers the king on f5 and the queen on h7. No legal reply saves the rear target without conceding material. After Kf4, Qxd3 answers Bd3; a profitable immediate follow-up capture of the queen on h7 is no longer forced."
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "Bd3+ skewers the king on f5 and the queen on h7. No legal reply saves the rear target without conceding material. After Kf4, Qxd3 answers Bd3; a profitable immediate follow-up capture of the queen on h7 is no longer forced.",
+        "missedNature": "unknown",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "skewer",
+      "source": "allowed"
+    },
+    {
+      "name": "Allowed checking defender removal and lost the queen",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Your move allowed this tactic: gxf6+ removes the knight on f6 that defended the queen on d5, with check. Every legal reply allows a profitable capture of that target. Qxd1+ makes the immediate reply gxf6+ illegal. You also missed a tactical opportunity (Hanging Piece): d5d1 wins the loose rook on d1.",
+        "tacticalSignals": [
+          "Allowed: Removing the Defender. gxf6+ removes the knight on f6 that defended the queen on d5, with check. Every legal reply allows a profitable capture of that target. Qxd1+ makes the immediate reply gxf6+ illegal.",
+          "Missed: Hanging Piece. d5d1 wins the loose rook on d1."
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "gxf6+ removes the knight on f6 that defended the queen on d5, with check. Every legal reply allows a profitable capture of that target. Qxd1+ makes the immediate reply gxf6+ illegal.",
+        "missedNature": "tactical",
+        "missedReason": "d5d1 wins the loose rook on d1."
+      },
+      "primary": "capturingDefender",
+      "source": "allowed"
+    },
+    {
+      "name": "Missed quiet mate while leaving the queen attacked",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "The better move had this tactic: Qh2 is a quiet mating preparation. All 4 legal Black replies allow forced mate within two more moves; for example, h5 Kxg6 h4 Qb8#. Your move also allowed an opponent tactic (Hanging Piece): g6h5 wins the loose queen on h5. Qh2 makes the immediate reply gxh5 illegal.",
+        "tacticalSignals": [
+          "Missed: Mating Preparation. Qh2 is a quiet mating preparation. All 4 legal Black replies allow forced mate within two more moves; for example, h5 Kxg6 h4 Qb8#.",
+          "Allowed: Hanging Piece. g6h5 wins the loose queen on h5. Qh2 makes the immediate reply gxh5 illegal."
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "g6h5 wins the loose queen on h5. Qh2 makes the immediate reply gxh5 illegal.",
+        "missedNature": "tactical",
+        "missedReason": "Qh2 is a quiet mating preparation. All 4 legal Black replies allow forced mate within two more moves; for example, h5 Kxg6 h4 Qb8#."
+      },
+      "primary": "mateIn3",
+      "source": "missed"
+    },
+    {
+      "name": "Missed the quiet rook preparation for mate or a queen skewer",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "medium",
+        "reason": "The better move had this tactic: Rb6 threatens Rh7+, leading to mate or winning the queen on e1. After Qe4, the short continuation is verified: Rh7+ Qxh7 Rb7+ Kd6 Rxh7. Other replies can avoid this particular route; it is a threat, not a forced reply sequence.",
+        "tacticalSignals": [
+          "Missed: Quiet Preparation. Rb6 threatens Rh7+, leading to mate or winning the queen on e1. After Qe4, the short continuation is verified: Rh7+ Qxh7 Rb7+ Kd6 Rxh7. Other replies can avoid this particular route; it is a threat, not a forced reply sequence."
+        ],
+        "aspect": "missed",
+        "allowedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedNature": "tactical",
+        "missedReason": "Rb6 threatens Rh7+, leading to mate or winning the queen on e1. After Qe4, the short continuation is verified: Rh7+ Qxh7 Rb7+ Kd6 Rxh7. Other replies can avoid this particular route; it is a threat, not a forced reply sequence."
+      },
+      "primary": "tacticalPreparation",
+      "source": "missed"
+    },
+    {
+      "name": "Recaptured the rook before taking the queen with check",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "The better move had this tactic: Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures. Your move also allowed an opponent tactic (Hanging Piece): d2g5 wins the loose bishop on g5. Bxd2+ makes the immediate reply Qxg5 illegal.",
+        "tacticalSignals": [
+          "Missed: Intermediate Check. Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures.",
+          "Allowed: Hanging Piece. d2g5 wins the loose bishop on g5. Bxd2+ makes the immediate reply Qxg5 illegal."
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "d2g5 wins the loose bishop on g5. Bxd2+ makes the immediate reply Qxg5 illegal.",
+        "missedNature": "tactical",
+        "missedReason": "Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures."
+      },
+      "primary": "intermezzo",
+      "source": "missed"
+    },
+    {
+      "name": "Recaptured the bishop before taking the knight with check",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "The better move had this tactic: Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures.",
+        "tacticalSignals": [
+          "Missed: Intermediate Check. Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures."
+        ],
+        "aspect": "missed",
+        "allowedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedNature": "tactical",
+        "missedReason": "Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures."
+      },
+      "primary": "intermezzo",
+      "source": "missed"
+    },
+    {
+      "name": "Allowed a checking queen capture before the rook recapture",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Your move allowed this tactic: Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures. Qxg5 makes the immediate reply Bxd2+ illegal.",
+        "tacticalSignals": [
+          "Allowed: Intermediate Check. Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures. Qxg5 makes the immediate reply Bxd2+ illegal."
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "Bxd2+ takes the queen with check before Rxh8. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Rxh8 first allows Qxg5, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures. Qxg5 makes the immediate reply Bxd2+ illegal.",
+        "missedNature": "unknown",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "intermezzo",
+      "source": "allowed"
+    },
+    {
+      "name": "Allowed an intermediate knight capture before the bishop recapture",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Your move allowed this tactic: Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures. Nxd5 makes the immediate reply Nxe7+ illegal.",
+        "tacticalSignals": [
+          "Allowed: Intermediate Check. Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures. Nxd5 makes the immediate reply Nxe7+ illegal."
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "Nxe7+ takes the knight with check before fxe3. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing fxe3 first allows Bxd5, preventing an immediate profitable capture of that knight. The move order matters, not just the two captures. Nxd5 makes the immediate reply Nxe7+ illegal.",
+        "missedNature": "unknown",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "intermezzo",
+      "source": "allowed"
+    },
+    {
+      "name": "b6 permits the f7 fork",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Your move allowed this tactic: e5f7 forks the queen on d8 and rook on h8. The bishop on c4 protects f7, so the king cannot capture the knight. The line continues with f7d8, winning the queen. After O-O, Nxf7 no longer has two profitable fork targets.",
+        "tacticalSignals": [
+          "Allowed: Fork. e5f7 forks the queen on d8 and rook on h8. The bishop on c4 protects f7, so the king cannot capture the knight. The line continues with f7d8, winning the queen. After O-O, Nxf7 no longer has two profitable fork targets."
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "e5f7 forks the queen on d8 and rook on h8. The bishop on c4 protects f7, so the king cannot capture the knight. The line continues with f7d8, winning the queen. After O-O, Nxf7 no longer has two profitable fork targets.",
+        "missedNature": "unknown",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "fork",
+      "source": "allowed"
+    },
+    {
+      "name": "The real Ke8 mistake allows a mating attack with quiet preparation",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Your move allowed this tactic: f7+ starts a forced mating attack. Every legal defence permits mate within 7 moves; one verified line is f7+ Ke7 fxg8=B g5 Bc4 g4 Qf7+ Kd6 Ne4+ Kc6 Qd5+ Kb6 Qb5#. The exact continuation depends on the defence. Kxf6 makes the immediate reply f7+ illegal.",
+        "tacticalSignals": [
+          "Allowed: Forcing Mate. f7+ starts a forced mating attack. Every legal defence permits mate within 7 moves; one verified line is f7+ Ke7 fxg8=B g5 Bc4 g4 Qf7+ Kd6 Ne4+ Kc6 Qd5+ Kb6 Qb5#. The exact continuation depends on the defence. Kxf6 makes the immediate reply f7+ illegal."
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "f7+ starts a forced mating attack. Every legal defence permits mate within 7 moves; one verified line is f7+ Ke7 fxg8=B g5 Bc4 g4 Qf7+ Kd6 Ne4+ Kc6 Qd5+ Kb6 Qb5#. The exact continuation depends on the defence. Kxf6 makes the immediate reply f7+ illegal.",
+        "missedNature": "unknown",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "mateIn7",
+      "source": "allowed"
+    },
+    {
+      "name": "The real Rc5 mistake permits a checking fork preparation",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Your move allowed this tactic: Rb1+ prepares a checking fork. After Kf2, Nd3+ forks the king on f2 and rook on c5. Blocking with Rc1 instead allows Rxc1+, winning the blocking piece. All 2 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position. After Ra5, Kf2 answers Rb1+ without permitting a checking fork or capture of the rook on a5 on the next move. This prevents this immediate preparation, not every possible later attack.",
+        "tacticalSignals": [
+          "Allowed: Fork Preparation. Rb1+ prepares a checking fork. After Kf2, Nd3+ forks the king on f2 and rook on c5. Blocking with Rc1 instead allows Rxc1+, winning the blocking piece. All 2 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position. After Ra5, Kf2 answers Rb1+ without permitting a checking fork or capture of the rook on a5 on the next move. This prevents this immediate preparation, not every possible later attack."
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "Rb1+ prepares a checking fork. After Kf2, Nd3+ forks the king on f2 and rook on c5. Blocking with Rc1 instead allows Rxc1+, winning the blocking piece. All 2 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position. After Ra5, Kf2 answers Rb1+ without permitting a checking fork or capture of the rook on a5 on the next move. This prevents this immediate preparation, not every possible later attack.",
+        "missedNature": "unknown",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "forkPreparation",
+      "source": "allowed"
+    },
+    {
+      "name": "The real g6 mistake permits Nd7's double threat",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Your move allowed this tactic: Nd7 attacks the rook on b6 and threatens Nf6+, a checking fork of the queen on h5 and king on g8. After Kg7, Nxb6 wins material; after Rc6, Nf6+ uses the fork instead. All 35 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played. After Bg6, Rbxa6 answers Nd7 with a countercapture. Including that captured material and legal recaptures, the immediate threats cannot force a pawn's worth of material gain. The immediate checks have concrete answers: Nf6+ gxf6. This prevents this local winning double threat, not every possible later combination or positional loss.",
+        "tacticalSignals": [
+          "Allowed: Double Threat. Nd7 attacks the rook on b6 and threatens Nf6+, a checking fork of the queen on h5 and king on g8. After Kg7, Nxb6 wins material; after Rc6, Nf6+ uses the fork instead. All 35 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played. After Bg6, Rbxa6 answers Nd7 with a countercapture. Including that captured material and legal recaptures, the immediate threats cannot force a pawn's worth of material gain. The immediate checks have concrete answers: Nf6+ gxf6. This prevents this local winning double threat, not every possible later combination or positional loss."
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "Nd7 attacks the rook on b6 and threatens Nf6+, a checking fork of the queen on h5 and king on g8. After Kg7, Nxb6 wins material; after Rc6, Nf6+ uses the fork instead. All 35 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played. After Bg6, Rbxa6 answers Nd7 with a countercapture. Including that captured material and legal recaptures, the immediate threats cannot force a pawn's worth of material gain. The immediate checks have concrete answers: Nf6+ gxf6. This prevents this local winning double threat, not every possible later combination or positional loss.",
+        "missedNature": "unknown",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "doubleThreat",
+      "source": "allowed"
+    },
+    {
+      "name": "The real Re2 mistake allows a forcing checking attack",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Your move allowed this tactic: Qf1+ starts a checking attack that wins material or mates against every legal reply. After Kd2, Bf4+ Re3 Bxe3+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check. After Kc1, Qf1 is not check and Rxf1 captures the attacking queen on f1. Legal immediate replies, recaptures and one countercheck cannot erase the local material gain. This refutes this checking sequence, not every possible later attack.",
+        "tacticalSignals": [
+          "Allowed: Forcing Attack. Qf1+ starts a checking attack that wins material or mates against every legal reply. After Kd2, Bf4+ Re3 Bxe3+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check. After Kc1, Qf1 is not check and Rxf1 captures the attacking queen on f1. Legal immediate replies, recaptures and one countercheck cannot erase the local material gain. This refutes this checking sequence, not every possible later attack."
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "Qf1+ starts a checking attack that wins material or mates against every legal reply. After Kd2, Bf4+ Re3 Bxe3+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check. After Kc1, Qf1 is not check and Rxf1 captures the attacking queen on f1. Legal immediate replies, recaptures and one countercheck cannot erase the local material gain. This refutes this checking sequence, not every possible later attack.",
+        "missedNature": "unknown",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "forcingAttack",
+      "source": "allowed"
+    },
+    {
+      "name": "Be7 hangs the bishop while also missing the checking attack",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Your move allowed this tactic: d7e7 wins the loose bishop on e7. Qf1+ makes the immediate reply Qxe7 illegal. You also missed a tactical opportunity (Forcing Attack): Qf1+ starts a checking attack that wins material or mates against every legal reply. After Kd2, Bf4+ Re3 Bxe3+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+        "tacticalSignals": [
+          "Allowed: Hanging Piece. d7e7 wins the loose bishop on e7. Qf1+ makes the immediate reply Qxe7 illegal.",
+          "Missed: Forcing Attack. Qf1+ starts a checking attack that wins material or mates against every legal reply. After Kd2, Bf4+ Re3 Bxe3+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check."
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "d7e7 wins the loose bishop on e7. Qf1+ makes the immediate reply Qxe7 illegal.",
+        "missedNature": "tactical",
+        "missedReason": "Qf1+ starts a checking attack that wins material or mates against every legal reply. After Kd2, Bf4+ Re3 Bxe3+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check."
+      },
+      "primary": "hangingPiece",
+      "source": "allowed"
+    },
+    {
+      "name": "An irrelevant pawn move misses the forcing checking attack",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "The better move had this tactic: Qf1+ starts a checking attack that wins material or mates against every legal reply. After Kd2, Bf4+ Re3 Bxe3+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+        "tacticalSignals": [
+          "Missed: Forcing Attack. Qf1+ starts a checking attack that wins material or mates against every legal reply. After Kd2, Bf4+ Re3 Bxe3+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check."
+        ],
+        "aspect": "missed",
+        "allowedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedNature": "tactical",
+        "missedReason": "Qf1+ starts a checking attack that wins material or mates against every legal reply. After Kd2, Bf4+ Re3 Bxe3+ wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check."
+      },
+      "primary": "forcingAttack",
+      "source": "missed"
+    },
+    {
+      "name": "A quiet king move misses Nd7's double threat",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "The better move had this tactic: Nd7 attacks the rook on b6 and threatens Nf6+, a checking fork of the queen on h5 and king on g8. After Kg7, Nxb6 wins material; after Rc6, Nf6+ uses the fork instead. All 35 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played.",
+        "tacticalSignals": [
+          "Missed: Double Threat. Nd7 attacks the rook on b6 and threatens Nf6+, a checking fork of the queen on h5 and king on g8. After Kg7, Nxb6 wins material; after Rc6, Nf6+ uses the fork instead. All 35 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played."
+        ],
+        "aspect": "missed",
+        "allowedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedNature": "tactical",
+        "missedReason": "Nd7 attacks the rook on b6 and threatens Nf6+, a checking fork of the queen on h5 and king on g8. After Kg7, Nxb6 wins material; after Rc6, Nf6+ uses the fork instead. All 35 legal replies allow a verified material gain, including captures and counterchecks. This is a double threat now; the fork occurs on the next move only if that branch is played."
+      },
+      "primary": "doubleThreat",
+      "source": "missed"
+    },
+    {
+      "name": "Playing Nd3 too early misses the checking preparation",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "The better move had this tactic: Rb1+ prepares a checking fork. After Kf2, Nd3+ forks the king on f2 and rook on c5. Blocking with Rc1 instead allows Rxc1+, winning the blocking piece. All 2 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position.",
+        "tacticalSignals": [
+          "Missed: Fork Preparation. Rb1+ prepares a checking fork. After Kf2, Nd3+ forks the king on f2 and rook on c5. Blocking with Rc1 instead allows Rxc1+, winning the blocking piece. All 2 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position."
+        ],
+        "aspect": "missed",
+        "allowedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedNature": "tactical",
+        "missedReason": "Rb1+ prepares a checking fork. After Kf2, Nd3+ forks the king on f2 and rook on c5. Blocking with Rc1 instead allows Rxc1+, winning the blocking piece. All 2 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position."
+      },
+      "primary": "forkPreparation",
+      "source": "missed"
+    },
+    {
+      "name": "Retreating the bishop misses the checking clearance",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "The better move had this tactic: Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory.",
+        "tacticalSignals": [
+          "Missed: Clearance. Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory."
+        ],
+        "aspect": "missed",
+        "allowedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedNature": "tactical",
+        "missedReason": "Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory."
+      },
+      "primary": "clearance",
+      "source": "missed"
+    },
+    {
+      "name": "The real Qxd4 mistake allows the checking clearance",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Your move allowed this tactic: Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory. After Kf8, Bh7 is not check, so Ke7 lets the king escape before the cleared slider routes are used. Each of the 5 newly opened routes has a legal defence against the immediate captures and checking continuation. This prevents this forcing clearance, not every possible later quiet combination.",
+        "tacticalSignals": [
+          "Allowed: Clearance. Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory. After Kf8, Bh7 is not check, so Ke7 lets the king escape before the cleared slider routes are used. Each of the 5 newly opened routes has a legal defence against the immediate captures and checking continuation. This prevents this forcing clearance, not every possible later quiet combination."
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "Bh7+ clears d3 for the queen: Kf8 is met by Qf3; Kh8 is met by Qh3. Every legal reply allows a verified quiet preparation followed by mate or material gain, with at most four checking moves before the payoff. The routes depend on the defence; no single reply is compulsory. After Kf8, Bh7 is not check, so Ke7 lets the king escape before the cleared slider routes are used. Each of the 5 newly opened routes has a legal defence against the immediate captures and checking continuation. This prevents this forcing clearance, not every possible later quiet combination.",
+        "missedNature": "unknown",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "clearance",
+      "source": "allowed"
+    },
+    {
+      "name": "Developing the bishop misses the overloaded-queen discovery",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "The better move had this tactic: Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including exchanges and up to two checking counterattacks; immediate losses elsewhere on the board, mate and promotion replies are checked.",
+        "tacticalSignals": [
+          "Missed: Discovered Attack. Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including exchanges and up to two checking counterattacks; immediate losses elsewhere on the board, mate and promotion replies are checked."
+        ],
+        "aspect": "missed",
+        "allowedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedNature": "tactical",
+        "missedReason": "Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including exchanges and up to two checking counterattacks; immediate losses elsewhere on the board, mate and promotion replies are checked."
+      },
+      "primary": "discoveredAttack",
+      "source": "missed"
+    },
+    {
+      "name": "The real Nxd4 mistake allows the overloaded-queen discovery",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Your move allowed this tactic: Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including exchanges and up to two checking counterattacks; immediate losses elsewhere on the board, mate and promotion replies are checked. After Nh4, Ne5 no longer uncovers an attack on an enemy piece. Qb3 answers the remaining immediate threats; legal captures, a defender exchange and checking forks do not force a local material gain. This prevents this discovered-attack mechanism, not every possible later combination.",
+        "tacticalSignals": [
+          "Allowed: Discovered Attack. Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including exchanges and up to two checking counterattacks; immediate losses elsewhere on the board, mate and promotion replies are checked. After Nh4, Ne5 no longer uncovers an attack on an enemy piece. Qb3 answers the remaining immediate threats; legal captures, a defender exchange and checking forks do not force a local material gain. This prevents this discovered-attack mechanism, not every possible later combination."
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "Ne5 vacates d7, uncovering the rook on d8 against the knight on d4. The knight on e5 also attacks the queen on d3 and the bishop on c4. The shared defence cannot save all these targets: after Qc3, Qxc3 removes the defender. Every legal reply permits a local material gain, including exchanges and up to two checking counterattacks; immediate losses elsewhere on the board, mate and promotion replies are checked. After Nh4, Ne5 no longer uncovers an attack on an enemy piece. Qb3 answers the remaining immediate threats; legal captures, a defender exchange and checking forks do not force a local material gain. This prevents this discovered-attack mechanism, not every possible later combination.",
+        "missedNature": "unknown",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "discoveredAttack",
+      "source": "allowed"
+    },
+    {
+      "name": "Taking a pawn misses the promotion-backed knight fork",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "The better move had this tactic: Nd5+ forks the knight on b6 and king on f6. The knight on b6 also guards c8: capturing the forking piece allows promotion (Nxd5 c8=Q). Every legal reply concedes material on the fork targets or through this pawn's promotion; legal recaptures are included.",
+        "tacticalSignals": [
+          "Missed: Fork. Nd5+ forks the knight on b6 and king on f6. The knight on b6 also guards c8: capturing the forking piece allows promotion (Nxd5 c8=Q). Every legal reply concedes material on the fork targets or through this pawn's promotion; legal recaptures are included."
+        ],
+        "aspect": "missed",
+        "allowedNature": "unknown",
+        "allowedReason": "No independently established opponent cause.",
+        "missedNature": "tactical",
+        "missedReason": "Nd5+ forks the knight on b6 and king on f6. The knight on b6 also guards c8: capturing the forking piece allows promotion (Nxd5 c8=Q). Every legal reply concedes material on the fork targets or through this pawn's promotion; legal recaptures are included."
+      },
+      "primary": "fork",
+      "source": "missed"
+    },
+    {
+      "name": "Moving onto f6 allows the promotion-backed fork",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "Your move allowed this tactic: Nd5+ forks the knight on b6 and king on f6. The knight on b6 also guards c8: capturing the forking piece allows promotion (Nxd5 c8=Q). Every legal reply concedes material on the fork targets or through this pawn's promotion; legal recaptures are included. After Nc8, Nd5 no longer has two profitable fork targets.",
+        "tacticalSignals": [
+          "Allowed: Fork. Nd5+ forks the knight on b6 and king on f6. The knight on b6 also guards c8: capturing the forking piece allows promotion (Nxd5 c8=Q). Every legal reply concedes material on the fork targets or through this pawn's promotion; legal recaptures are included. After Nc8, Nd5 no longer has two profitable fork targets."
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "Nd5+ forks the knight on b6 and king on f6. The knight on b6 also guards c8: capturing the forking piece allows promotion (Nxd5 c8=Q). Every legal reply concedes material on the fork targets or through this pawn's promotion; legal recaptures are included. After Nc8, Nd5 no longer has two profitable fork targets.",
+        "missedNature": "unknown",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "fork",
+      "source": "allowed"
+    },
+    {
+      "name": "Missed queen while the knight is already attacked",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "high",
+        "reason": "The better move had this tactic: g5e4 wins the loose queen on e4. Your move also allowed an opponent tactic (Fork Preparation): Qb4+ prepares a checking fork. After Ka1, Qa5+ forks the king on a1 and knight on g5. All 4 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position. Nxe4 makes the immediate reply Qb4+ illegal.",
+        "tacticalSignals": [
+          "Missed: Hanging Piece. g5e4 wins the loose queen on e4.",
+          "Allowed: Fork Preparation. Qb4+ prepares a checking fork. After Ka1, Qa5+ forks the king on a1 and knight on g5. All 4 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position. Nxe4 makes the immediate reply Qb4+ illegal."
+        ],
+        "aspect": "both",
+        "allowedNature": "tactical",
+        "allowedReason": "Qb4+ prepares a checking fork. After Ka1, Qa5+ forks the king on a1 and knight on g5. All 4 legal replies allow a verified gain; captures, interpositions and legal recaptures are included. The fork belongs to the next move, not this board position. Nxe4 makes the immediate reply Qb4+ illegal.",
+        "missedNature": "tactical",
+        "missedReason": "g5e4 wins the loose queen on e4."
+      },
+      "primary": "hangingPiece",
+      "source": "missed"
+    },
+    {
+      "name": "Failed to create a back-rank escape",
+      "nature": {
+        "nature": "tactical",
+        "confidence": "medium",
+        "reason": "Your move allowed this tactic: Re8# is checkmate (Back Rank Mate): the king is in check and there is no legal reply. After g5, Kg7 is a legal answer to Re8+; it is no longer mate.",
+        "tacticalSignals": [
+          "Allowed: Back Rank Mate. Re8# is checkmate (Back Rank Mate): the king is in check and there is no legal reply. After g5, Kg7 is a legal answer to Re8+; it is no longer mate."
+        ],
+        "aspect": "allowed",
+        "allowedNature": "tactical",
+        "allowedReason": "Re8# is checkmate (Back Rank Mate): the king is in check and there is no legal reply. After g5, Kg7 is a legal answer to Re8+; it is no longer mate.",
+        "missedNature": "unknown",
+        "missedReason": "No independently established missed root opportunity."
+      },
+      "primary": "backRankMate",
+      "source": "allowed"
+    }
+  ]
+}

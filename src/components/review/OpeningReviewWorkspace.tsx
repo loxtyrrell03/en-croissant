@@ -6472,8 +6472,8 @@ function MistakeReviewGameInfoPanel({
   return (
     <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
       <Stack gap={expanded ? "xs" : 6}>
-        <Group justify="space-between" align="flex-start" gap="xs" wrap="nowrap">
-          <Stack gap={2} miw={0}>
+        <Group justify="space-between" align="flex-start" gap="xs" wrap="wrap">
+          <Stack gap={2} miw={0} style={{ flex: "1 1 12rem" }}>
             <Text size="xs" fw={700}>
               Game information
             </Text>
@@ -6495,7 +6495,7 @@ function MistakeReviewGameInfoPanel({
                   size="xs"
                   color={tacticalMotifColor(motif.id)}
                   variant={motif.source === "allowed" ? "filled" : "light"}
-                  styles={motif.alternativeCapture ? { root: { height: "auto", maxWidth: "100%" }, label: { whiteSpace: "normal", overflowWrap: "anywhere", lineHeight: 1.4, textAlign: "center" } } : undefined}
+                  styles={{ root: { height: "auto", maxWidth: "100%" }, label: { whiteSpace: "normal", overflowWrap: "anywhere", lineHeight: 1.4, textAlign: "center" } }}
                 >
                   {tacticalMotifPerspective(motif)}{motif.alternativeCapture ? "" : ` · ${motif.label}`}
                 </Badge>
@@ -6503,7 +6503,8 @@ function MistakeReviewGameInfoPanel({
             ))}
             {nature && natureLabel && (
               <Tooltip label={`${natureLabel}, ${natureConfidence ?? "unknown"} confidence`}>
-                <Badge size="xs" color={mistakeReviewNatureColor(nature)} variant="light">
+                <Badge size="xs" color={mistakeReviewNatureColor(nature)} variant="light"
+                  styles={{ root: { height: "auto", maxWidth: "100%" }, label: { whiteSpace: "normal", overflowWrap: "anywhere", lineHeight: 1.4, textAlign: "center" } }}>
                   {natureLabel}
                 </Badge>
               </Tooltip>
@@ -6555,7 +6556,7 @@ function MistakeReviewGameInfoPanel({
           </Stack>
         )}
         {!expanded && (
-          <SimpleGrid cols={3} spacing={6}>
+          <SimpleGrid cols={{ base: 1, xs: 3 }} spacing={6}>
             <ReviewDetail label="Played" value={formatMistakeReviewGameDate(mistake.date)} />
             <ReviewDetail label="Time control" value={formatMistakeReviewTimeControl(mistake)} />
             <ReviewDetail
@@ -6565,7 +6566,7 @@ function MistakeReviewGameInfoPanel({
           </SimpleGrid>
         )}
         {expanded && (
-          <SimpleGrid cols={2} spacing="xs">
+          <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="xs">
             <ReviewDetail label="Played" value={formatMistakeReviewGameDate(mistake.date)} />
             <ReviewDetail label="Time control" value={formatMistakeReviewTimeControl(mistake)} />
             <ReviewDetail label="Opponent" value={opponentName} />
@@ -6934,7 +6935,7 @@ function normalizeMistakeReviewName(value?: string | null) {
 function getStoredMistakeReviewNature(position: Position | null | undefined) {
   const metadata = position?.mistakeReview;
   const candidate = metadata?.nature ?? metadata?.mistakeNature ?? metadata?.summary?.nature;
-  return candidate === "tactical" || candidate === "positional" ? candidate : null;
+  return candidate === "tactical" || candidate === "positional" || candidate === "unknown" ? candidate : null;
 }
 
 function getStoredMistakeReviewNatureConfidence(position: Position | null | undefined) {

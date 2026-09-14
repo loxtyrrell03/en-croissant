@@ -164,16 +164,16 @@ export const positionSchema = z.object({
             enginePath: z.string().optional(),
             engineSettings: engineSettingsSchema.optional(),
             phase: z.enum(["opening", "middlegame", "endgame"]).optional(),
-            nature: z.enum(["tactical", "positional"]).optional(),
-            mistakeNature: z.enum(["tactical", "positional"]).optional(),
+            nature: z.enum(["tactical", "positional", "unknown"]).optional(),
+            mistakeNature: z.enum(["tactical", "positional", "unknown"]).optional(),
             category: z.string().optional(),
             natureConfidence: z.enum(["high", "medium", "low"]).optional(),
             natureReason: z.string().optional(),
             tacticalSignals: z.array(z.string()).optional(),
             natureAspect: z.enum(["allowed", "missed", "both"]).optional(),
-            allowedNature: z.enum(["tactical", "positional"]).optional(),
+            allowedNature: z.enum(["tactical", "positional", "unknown"]).optional(),
             allowedNatureReason: z.string().optional(),
-            missedNature: z.enum(["tactical", "positional"]).optional(),
+            missedNature: z.enum(["tactical", "positional", "unknown"]).optional(),
             missedNatureReason: z.string().optional(),
             natureClassifierVersion: z.number().optional(),
             allowedMotifs: z.array(tacticalMotifEvidenceSchema).optional(),
@@ -325,16 +325,16 @@ export type Position = {
         enginePath?: string;
         engineSettings?: EngineSettings;
         phase?: "opening" | "middlegame" | "endgame";
-        nature?: "tactical" | "positional";
-        mistakeNature?: "tactical" | "positional";
+        nature?: "tactical" | "positional" | "unknown";
+        mistakeNature?: "tactical" | "positional" | "unknown";
         category?: string;
         natureConfidence?: "high" | "medium" | "low";
         natureReason?: string;
         tacticalSignals?: string[];
         natureAspect?: "allowed" | "missed" | "both";
-        allowedNature?: "tactical" | "positional";
+        allowedNature?: "tactical" | "positional" | "unknown";
         allowedNatureReason?: string;
-        missedNature?: "tactical" | "positional";
+        missedNature?: "tactical" | "positional" | "unknown";
         missedNatureReason?: string;
         natureClassifierVersion?: number;
         allowedMotifs?: TacticalMotifEvidence[];

@@ -18957,15 +18957,15 @@ function isConditionalMaterial(motif) {
 function isAlternativeCapture(motif) {
 	return motif?.source === "missed" && motif.id === "hangingPiece" && motif.ply === 1 && motif.alternativeCapture === true;
 }
-function isImmediateLesson(motif) {
+function isImmediateTacticalLesson(motif) {
 	return Boolean(motif && !isAlternativeCapture(motif) && motif.ply === 1 && motif.confidence !== "low" && ((motif.value ?? 0) >= 100 || motif.id === "perpetualCheck" || motif.verifiedCombination === true && motif.confidence === "high" && (motif.value ?? 0) > 0 && ["fork", "forkPreparation"].includes(motif.id)));
 }
 function buildMistakeReviewTacticalExplanation(input) {
 	const explanation = chooseMistakeReviewTacticalExplanation(input);
 	if (!explanation) return null;
-	if (!isImmediateLesson(explanation.primary)) return explanation;
+	if (!isImmediateTacticalLesson(explanation.primary)) return explanation;
 	const primaryMissed = explanation.primary.source === "missed";
-	const secondary = selectImportantTacticalMotifs((primaryMissed ? input.allowedMotifs : input.missedMotifs).filter((motif) => isImmediateLesson(motif) && (!primaryMissed || motif.comparison === "prevented" || motif.comparison === "reduced")), 1)[0];
+	const secondary = selectImportantTacticalMotifs((primaryMissed ? input.allowedMotifs : input.missedMotifs).filter((motif) => isImmediateTacticalLesson(motif) && (!primaryMissed || motif.comparison === "prevented" || motif.comparison === "reduced")), 1)[0];
 	if (!secondary) return explanation;
 	const introduction = primaryMissed ? secondary.comparison === "reduced" ? `Your move also made an existing opponent tactic more costly (${secondary.label})` : `Your move also allowed an opponent tactic (${secondary.label})` : `You also missed a tactical opportunity (${secondary.label})`;
 	return {
@@ -18979,7 +18979,7 @@ function chooseMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs })
 	const missed = selectImportantTacticalMotifs(missedMotifs, 1)[0];
 	if (!allowed && !missed) return null;
 	const allowedRootOverConditional = allowed?.ply === 1 && (isConditionalMaterial(missed) || isAlternativeCapture(missed));
-	if (missed && !allowedRootOverConditional && (!allowed || !allowed.comparison && isImmediateLesson(missed) || allowed.comparison === "persists" || missed.ply === 1 && isConditionalMaterial(allowed) || (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))) {
+	if (missed && !allowedRootOverConditional && (!allowed || !allowed.comparison && isImmediateTacticalLesson(missed) || allowed.comparison === "persists" || missed.ply === 1 && isConditionalMaterial(allowed) || (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))) {
 		if (isAlternativeCapture(missed)) return {
 			title: "Capture in the better line",
 			text: missed.comparisonEvidence ?? "Both moves have comparable immediate captures. The capture alone is not a verified explanation of why the move was worse.",

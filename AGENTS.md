@@ -25,6 +25,8 @@ Adopted as cross-repository user guidance on 2026-09-08. Project-specific archit
 
 ## Shared product synchronization
 
+- On 2026-09-14, desktop mistake nature v4 replaces separate SAN/PV-shape heuristics with the adapter-106 root-cause proofs. Opponent causes require prevented/reduced comparisons; missed lessons must be immediate and supported. Same-best moves, comparable captures, existing danger and conditional later motifs cannot establish a mistake cause. Exact winning/drawing zugzwangs keep zero-material lessons. Missing proof is Unclassified; quiet legal windows support only Likely positional. Schema, idle migration, counts, filters and both desktop readers preserve the new state; review badges/header/details wrap on narrow screens. The 45 fixed public game-context audit changes 39 tactical labels to one established root capture and 44 abstentions, not 44 correct negatives; thirty frozen causes retain their primary explanations and two existing-danger controls abstain. Verification: 80 fresh engine searches, 2,178 selected tests, 97 final focused tests, 36 React/Chrome renderer groups, type/lint/builds and six service/cache checks. All 246 private and twenty rare full motif results remain identical to adapter 106; live pipeline 111 and worker bytes are unchanged. See benchmarks/tactical-relevance/mistake-nature-review.md for receipts, the discovered-check primary follow-up and coverage limits. No owner restart, installation or deployment; paid data stays private.
+
 - On 2026-09-14, adapter 106 / live pipeline 111 makes quiet/checking preparations account for all friendly-piece liabilities and answer a post-payoff countercheck before accepting material. Fresh engine review exposed mate-in-one and mate-in-two witnesses in a real double threat; safer fork/queen-capture answers preserve its primary lesson and actual-ply secondary fork. Connected allied captures of moved original victims are allowed, and stronger proved branches outrank the first available exchange. Four constructed certificates are withheld in both colours, not declared non-tactical positions; a fifth retains its genuine combination through an allied recapture. All 246 private primary lists and 32 priorities remain; two continuation results change and the other 244 full results are stable. All twenty rare primary lists remain, with one real double-threat full result changed. Verification: 127 final fresh engine searches, 2,123 selected tests, 1,407 production-controller inputs, 81 cold-HTTP cases, twelve existing React/Chrome renderer groups, builds, type/lint and four service/two cache tests. Public worker median/p95/max is 65/212/821 ms over 899 inputs excluding engine/UI; cold startup ranges to 2,014 ms in this run, not a native guarantee. See benchmarks/tactical-relevance/preparation-safety-review.md and private-course-review.md. The one-countercheck safety horizon does not certify longer king hunts/perpetuals; connected capture-choice, nature, broader accuracy and native gaps remain. No owner app/package/service restart, installation or deployment; paid data stays private.
 
 - On 2026-09-12, adapter 78 / live pipeline 83 restores the overloaded-queen discovery through connected capture/retention proofs, not the old queen-hanging witness. All 52 defences use 3,878 of the unchanged 8,192 operations; capture-first evasions, sufficient-bound stopping and colour-stable ordering preserve bounded work. Leaves debit all friendly pieces and check immediate mate/promotion replies. Seventy-two final fresh engine searches support the selected branch/leaf moves; 18,230 legal moves across 589 reached course positions validate check nomination. All 138 course source/live results and prior noise removals remain unchanged; the separate missing course discovery remains unproved. All 32 frozen priorities now match, with the former expected failures restored to ordinary passing tests. Verification: 1,253 selected tests, 348 controller-worker inputs, lint, builds, three service tests and two dev-cache scenarios pass. Public worker median/p95/max is 82/241/626 ms excluding engine/UI; cold HTTP first/next startup is 8,464/70 ms. See benchmarks/tactical-relevance/private-course-review.md for precise proof bounds and private evidence. The unrelated OTB type error, broader quiet/rare/causal gaps and native verification remain open. No app/package/service was restarted or deployed.
@@ -3303,19 +3305,18 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
 
 - Mistake Review scans games for mistakes and saves them as spaced-repetition
   cards.
-- Desktop Mistake Review now keeps its v3 tactical/positional nature classifier
-  and separately stores versioned `allowedMotifs` and `missedMotifs` evidence
-  from the vendored Chess Mistake Trainer v54 detector, including the
-  DOM-free named-mate module. Old decks migrate only while practice is idle;
-  motif filters are available from the idle focused-training panel, while
-  per-card motif badges and evidence stay hidden until answer/reveal. The
-  vendor and sync boundary is `src/utils/tacticalMotifs/siteClassifier`, with
-  En Croissant input adaptation in `mistakeReviewAdapter.ts`. This feature is
-  intentionally desktop-only: the phone companion and Outpost do not expose
-  Mistake Review, so there is no corresponding surface to port. Focused motif
-  and Mistake Review tests pass 45/45, and touched TypeScript files pass oxlint
-  plus oxfmt checks; the full TypeScript check and production Vite build also
-  pass.
+- Desktop mistake nature v4 uses independently audited root motifs and causal
+  comparisons through `tacticalMotifs/mistakeNature.ts`, not SAN/PV-shape proof.
+  `unknown` is a persistent Unclassified state; `positional` is displayed as a
+  provisional Likely positional estimate. Update the nature migration version
+  when changing its semantics. Old decks migrate while practice is idle and
+  yield every two changed cards. Nature/motif metadata are separate; root
+  explanations and actual-ply timelines remain distinct. Desktop motif filters
+  are available from idle focused training and per-card lessons wait for reveal.
+  The vendor boundary is `tacticalMotifs/siteClassifier`; independent auditing
+  and priority selection live in `mistakeReviewAdapter.ts`. The phone/shared
+  review path uses those motifs and explanations, but not the desktop nature
+  classifier. See the current milestone review for verification and limitations.
 - Local scans and online selected-game scans both create normal review decks.
 - Analysis settings include single Stockfish pass or layered fast/deep
   confirmation, severity filters, win-probability drop thresholds, and time

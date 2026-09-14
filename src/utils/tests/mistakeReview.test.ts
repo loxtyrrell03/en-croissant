@@ -599,7 +599,7 @@ describe("mistake review helpers", () => {
         ).toBe("middlegame");
     });
 
-    test("classifies tactical and positional mistake nature from engine line shape", () => {
+    test("does not classify either nature from notation without a board", () => {
         const tactical = classifyMistakeReviewNature({
             bestMoveSan: "Nxe5+",
             bestMoveUci: "f3e5",
@@ -617,15 +617,14 @@ describe("mistake review helpers", () => {
             winProbabilityDrop: 5,
         });
 
-        expect(tactical.nature).toBe("tactical");
-        expect(tactical.aspect).toBe("missed");
-        expect(tactical.confidence).toBe("high");
-        expect(tactical.reason).toContain("Nxe5+");
-        expect(positional.nature).toBe("positional");
-        expect(positional.confidence).toBe("medium");
+        expect(tactical.nature).toBe("unknown");
+        expect(tactical.confidence).toBe("low");
+        expect(tactical.reason).toContain("notation alone");
+        expect(positional.nature).toBe("unknown");
+        expect(positional.confidence).toBe("low");
     });
 
-    test("recognizes quiet moves that are tactically motivated", () => {
+    test("does not certify the geometric quiet fork refuted by Qd4+ and Qxe5", () => {
         const quietFork = classifyMistakeReviewNature({
             fen: "k7/3q1r2/8/8/8/5N2/8/K7 w - - 0 1",
             bestMoveSan: "Ne5",
@@ -637,13 +636,11 @@ describe("mistake review helpers", () => {
             winProbabilityDrop: 8,
         });
 
-        expect(quietFork.nature).toBe("tactical");
-        expect(quietFork.confidence).toBe("high");
-        expect(quietFork.reason).toContain("tactically motivated");
-        expect(quietFork.reason).toContain("forking");
+        expect(quietFork.nature).toBe("unknown");
+        expect(quietFork.confidence).toBe("low");
     });
 
-    test("recognizes quiet tactical ideas whose payoff is later in the line", () => {
+    test("notation ending in mate is not an independent proof", () => {
         const quietMateThreat = classifyMistakeReviewNature({
             bestMoveSan: "Qh5",
             playedMoveSan: "a3",
@@ -652,13 +649,11 @@ describe("mistake review helpers", () => {
             winProbabilityDrop: 8,
         });
 
-        expect(quietMateThreat.nature).toBe("tactical");
-        expect(quietMateThreat.confidence).toBe("high");
-        expect(quietMateThreat.reason).toContain("tactically motivated");
-        expect(quietMateThreat.reason).toContain("mate");
+        expect(quietMateThreat.nature).toBe("unknown");
+        expect(quietMateThreat.confidence).toBe("low");
     });
 
-    test("recognizes a quiet move that creates an immediate mate threat on the board", () => {
+    test("a quiet mate threat needs an independent all-defence proof", () => {
         const quietMateThreat = classifyMistakeReviewNature({
             fen: "5bkb/5ppp/8/8/8/8/2B5/3Q2K1 w - - 0 1",
             bestMoveSan: "Qh5",
@@ -670,10 +665,8 @@ describe("mistake review helpers", () => {
             winProbabilityDrop: 8,
         });
 
-        expect(quietMateThreat.nature).toBe("tactical");
-        expect(quietMateThreat.confidence).toBe("high");
-        expect(quietMateThreat.reason).toContain("tactically motivated");
-        expect(quietMateThreat.reason).toContain("immediate mate threat");
+        expect(quietMateThreat.nature).toBe("unknown");
+        expect(quietMateThreat.confidence).toBe("low");
     });
 
     test("does not treat a routine exchange sequence as tactical by notation alone", () => {
@@ -685,9 +678,9 @@ describe("mistake review helpers", () => {
             winProbabilityDrop: 5,
         });
 
-        expect(routineExchange.nature).toBe("positional");
-        expect(routineExchange.confidence).toBe("medium");
-        expect(routineExchange.reason).toContain("no verified material or mating outcome");
+        expect(routineExchange.nature).toBe("unknown");
+        expect(routineExchange.confidence).toBe("low");
+        expect(routineExchange.reason).toContain("notation alone");
     });
 
     test("does not treat an isolated check as proof of a tactic", () => {
@@ -699,12 +692,10 @@ describe("mistake review helpers", () => {
             winProbabilityDrop: 4,
         });
 
-        expect(incidentalCheck.nature).toBe("positional");
+        expect(incidentalCheck.nature).toBe("unknown");
         expect(incidentalCheck.confidence).toBe("low");
-        expect(incidentalCheck.reason).toContain("positional label is provisional");
-        expect(incidentalCheck.tacticalSignals).toEqual([
-            expect.stringContaining("does not verify a concrete follow-up"),
-        ]);
+        expect(incidentalCheck.reason).toContain("notation alone");
+        expect(incidentalCheck.tacticalSignals).toEqual([]);
     });
 
     test("does not infer tactics from the size of a quiet evaluation loss", () => {
@@ -716,12 +707,12 @@ describe("mistake review helpers", () => {
             winProbabilityDrop: 16,
         });
 
-        expect(severePositionalError.nature).toBe("positional");
+        expect(severePositionalError.nature).toBe("unknown");
         expect(severePositionalError.confidence).toBe("low");
-        expect(severePositionalError.reason).toContain("positional label is provisional");
+        expect(severePositionalError.reason).toContain("notation alone");
     });
 
-    test("assigns strong positional confidence only to verified quiet lines", () => {
+    test("quiet legal lines support a provisional positional estimate, not certainty", () => {
         const verifiedPositional = classifyMistakeReviewNature({
             fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
             bestMoveSan: "Nf3",
@@ -738,8 +729,8 @@ describe("mistake review helpers", () => {
         });
 
         expect(verifiedPositional.nature).toBe("positional");
-        expect(verifiedPositional.confidence).toBe("high");
-        expect(verifiedPositional.reason).toContain("verified tactical window");
+        expect(verifiedPositional.confidence).toBe("medium");
+        expect(verifiedPositional.reason).toContain("not proof that no deeper tactic exists");
     });
 
     test("does not award high positional confidence when a supplied UCI line breaks", () => {
@@ -758,17 +749,17 @@ describe("mistake review helpers", () => {
             reachedDepth: 18,
         });
 
-        expect(incompleteVerification.nature).toBe("positional");
-        expect(incompleteVerification.confidence).toBe("medium");
-        expect(incompleteVerification.reason).toContain("supplied engine line");
+        expect(incompleteVerification.nature).toBe("unknown");
+        expect(incompleteVerification.confidence).toBe("low");
+        expect(incompleteVerification.reason).toContain("does not establish a root tactical cause");
     });
 
     test("keeps incomplete evidence provisional instead of claiming positional certainty", () => {
         const incomplete = classifyMistakeReviewNature({});
 
-        expect(incomplete.nature).toBe("positional");
+        expect(incomplete.nature).toBe("unknown");
         expect(incomplete.confidence).toBe("low");
-        expect(incomplete.reason).toContain("Insufficient engine-line evidence");
+        expect(incomplete.reason).toContain("missing or invalid");
     });
 
     test("classifies immediate material hangs as tactical even with quiet engine text", () => {
@@ -780,6 +771,7 @@ describe("mistake review helpers", () => {
             bestMoveUci: "e1d2",
             pvSan: ["Kd2", "Kd7", "Ke3"],
             pvUci: ["e1d2", "e8d7", "d2e3"],
+            refutationUci: ["h6g5"],
             cpLoss: 120,
             winProbabilityDrop: 6,
         });
@@ -787,7 +779,7 @@ describe("mistake review helpers", () => {
         expect(hangingPiece.nature).toBe("tactical");
         expect(hangingPiece.aspect).toBe("allowed");
         expect(hangingPiece.confidence).toBe("high");
-        expect(hangingPiece.reason).toContain("capturable by a pawn");
+        expect(hangingPiece.reason).toContain("hxg5");
     });
 
     test("classifies short fork threats after the blunder as tactical", () => {
@@ -799,6 +791,7 @@ describe("mistake review helpers", () => {
             bestMoveUci: "e1d1",
             pvSan: ["Kd1", "Nc2", "Kc1"],
             pvUci: ["e1d1", "b4c2", "d1c1"],
+            refutationUci: ["b4c2"],
             cpLoss: 130,
             winProbabilityDrop: 7,
         });
@@ -837,14 +830,14 @@ describe("mistake review helpers", () => {
         expect(allowed.nature).toBe("tactical");
         expect(allowed.aspect).toBe("allowed");
         expect(allowed.allowedNature).toBe("tactical");
-        expect(allowed.missedNature).toBe("positional");
-        expect(allowed.reason).toContain("tactically motivated");
+        expect(allowed.missedNature).toBe("unknown");
+        expect(allowed.reason).toContain("Your move allowed this tactic");
         expect(missed.nature).toBe("tactical");
         expect(missed.aspect).toBe("missed");
         expect(missed.missedNature).toBe("tactical");
     });
 
-    test("nature training batches tactical and positional cards", () => {
+    test("nature training separates unclassified cards from stored tactical and positional cards", () => {
         const now = new Date("2026-04-26T12:00:00Z");
         const tacticalDue = position({
             reviewKey: "tactical-due",
@@ -895,17 +888,15 @@ describe("mistake review helpers", () => {
             includeScheduled: true,
         });
 
-        expect(getMistakeReviewNature(tacticalFresh)).toBe("tactical");
+        expect(getMistakeReviewNature(tacticalFresh)).toBe("unknown");
         expect(getMistakeReviewNature(positional)).toBe("positional");
-        expect(counts.tactical).toEqual({ total: 3, due: 1 });
+        expect(counts.tactical).toEqual({ total: 2, due: 1 });
         expect(counts.positional).toEqual({ total: 1, due: 0 });
-        expect(tacticalBatch.map((item) => item.reviewKey)).toEqual([
-            "tactical-due",
-            "tactical-fresh",
-        ]);
+        expect(counts.unknown).toEqual({ total: 1, due: 0 });
+        expect(getMistakeReviewNatureBatch(positions, "unknown", { now }).map(p => p.reviewKey)).toEqual(["tactical-fresh"]);
+        expect(tacticalBatch.map((item) => item.reviewKey)).toEqual(["tactical-due"]);
         expect(tacticalFullBatch.map((item) => item.reviewKey)).toEqual([
             "tactical-due",
-            "tactical-fresh",
             "tactical-scheduled",
         ]);
     });
@@ -928,7 +919,7 @@ describe("mistake review helpers", () => {
         const migrated = firstMigration.deck.positions[0].mistakeReview!;
 
         expect(firstMigration.updatedCount).toBe(1);
-        expect(migrated.nature).toBe("tactical");
+        expect(migrated.nature).toBe("unknown");
         expect(migrated.natureClassifierVersion).toBeDefined();
 
         const secondMigration = await migrateMistakeReviewDeckNatureClassifications(

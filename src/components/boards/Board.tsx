@@ -277,7 +277,7 @@ function getStoredMistakeReviewNatureForBoard(
   metadata: ReviewPosition["mistakeReview"] | undefined,
 ) {
   const candidate = metadata?.nature ?? metadata?.mistakeNature ?? metadata?.summary?.nature;
-  return candidate === "tactical" || candidate === "positional" ? candidate : null;
+  return candidate === "tactical" || candidate === "positional" || candidate === "unknown" ? candidate : null;
 }
 
 function getStoredMistakeReviewNatureConfidenceForBoard(
@@ -2330,6 +2330,7 @@ function Board({
                           <Badge
                             color={mistakeReviewNatureColor(mistakeReviewNature)}
                             variant="light"
+                            styles={{ root: { height: "auto", maxWidth: "100%" }, label: { whiteSpace: "normal", overflowWrap: "anywhere", lineHeight: 1.4, textAlign: "center" } }}
                             title={`${mistakeReviewNatureLabel(mistakeReviewNature)}, ${
                               mistakeReviewNatureConfidence ?? "unknown"
                             } confidence`}

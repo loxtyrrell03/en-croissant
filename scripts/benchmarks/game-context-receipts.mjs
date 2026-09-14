@@ -6,9 +6,12 @@ import { makeFen, parseFen } from "chessops/fen";
 import { parseUci } from "chessops/util";
 
 const [mode, input, output] = process.argv.slice(2);
-assert(["contexts", "capture-choice"].includes(mode));
+assert(["contexts", "nature-contexts", "nature-controls", "capture-choice"].includes(mode));
 const sample = JSON.parse(
-  readFileSync("benchmarks/tactical-relevance/quiet-game-context-development.json", "utf8"),
+  readFileSync(
+    mode === "nature-controls" ? "benchmarks/tactical-relevance/nature-countercheck-controls.json" : `benchmarks/tactical-relevance/${mode === "nature-contexts" ? "nature" : "quiet-game"}-context-development.json`,
+    "utf8",
+  ),
 );
 const bytes = readFileSync(input),
   report = JSON.parse(bytes);
@@ -20,12 +23,22 @@ const after = (fen, uci) => {
   pos.play(move);
   return makeFen(pos.toSetup());
 };
-if (mode === "contexts") {
+if (mode === "nature-controls") {
+  for (const row of sample.cases) {
+    let position = row.fen;
+    allowed.add(position);
+    for (const move of row.moves) {
+      position = after(position, move);
+      allowed.add(position);
+    }
+  }
+  assert.equal(report.searches.length, 8);
+} else if (mode === "contexts" || mode === "nature-contexts") {
   for (const row of sample.cases) {
     allowed.add(row.fen);
     allowed.add(after(row.fen, row.sourceUci[0]));
   }
-  assert.equal(report.searches.length, 63);
+  assert.equal(report.searches.length, sample.cases.length * 3);
 } else {
   const row = sample.cases.find((row) => row.id === "context:C9q6jvtW:ply41");
   assert(row);
