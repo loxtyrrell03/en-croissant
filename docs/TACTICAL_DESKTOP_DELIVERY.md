@@ -1,4 +1,33 @@
-# Tactical desktop delivery — 2026-09-14
+# Tactical desktop delivery — 2026-09-15
+
+## Current package: adapter 110 / live pipeline 115
+
+Source commit `0598d8ef` is now packaged in the standalone executable, including
+the recovered quiet piece-piece fork and its allowed/missed mistake lessons.
+The build uses detached clean checkout `en-tactical-desktop-0598d8ef`, excluding
+the primary checkout's unrelated unfinished work and subsequent classifier drafts.
+The frontend passes with 8,861 modules; the native release build passes with
+22 existing unused-code warnings. No app was running or restarted.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,141,312 bytes;
+  SHA-256 `4bffd5a0bc9086c1282f344134db72804046cf430b42706ca03391ae04eab58a`.
+- Worker: `liveTactics.worker-BUo7O0lE.js`; SHA-256
+  `9be4e7e2fe6c4a1c08767e1d9bb6901260855f827d08a0a658194d6494a423bb`.
+  Clean-package bytes match the production-controller-tested artifact. The x64
+  PE executable contains its asset key and its native dependency receipt points
+  at this clean frontend.
+- Previous adapter-109 executable backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter110/en-croissant-fork.exe`,
+  SHA-256 `c564b5d336dbd1145b78adf63ff6957daeaee05f41affe863028900fe1aa42ab`.
+
+The existing Dev App shortcut still uses the primary checkout's live-source
+workflow; neither shortcut nor debug launch mode was replaced. No games,
+settings, engines, owner data or phone service changed. These are build/linkage
+checks, not native-window interaction or startup-latency proof. The latest cold
+HTTP run reaches 19,719 ms startup under load, despite passing its bound; see
+`benchmarks/tactical-relevance/chesscom-recall-review.md` for evidence and gaps.
+
+## Previous package: adapter 109 / live pipeline 114
 
 All committed classifier improvements through `d2e56e77` are present in the
 normal En Croissant source checkout and the rebuilt standalone desktop binary:
