@@ -17747,11 +17747,12 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		const piece = steps[0].after.board.get(square);
 		return sum + (piece.color === attacker ? 1 : -1) * VALUE[piece.role];
 	}, 0);
-	const onlyDrawingCapture = typeof rootCp === "number" && Math.abs(rootCp) <= 50 && filtered.every((motif) => motif.id === "hangingPiece" && motif.ply === 1);
-	const perpetual = (!filtered.length || onlyDrawingCapture) && rootMaterial <= -100 && !(typeof rootCp === "number" && rootCp > 100) ? provePerpetualCheck(steps) : null;
+	const drawingMaterialContext = typeof rootCp === "number" && Math.abs(rootCp) <= 50 && !pawnEnding && !filtered.some((motif) => motif.value === 1e4 || MATE.test(motif.id) || ["zugzwang", "drawingCapture"].includes(motif.id));
+	const onlyDrawingCapture = drawingMaterialContext && filtered.every((motif) => motif.id === "hangingPiece" && motif.ply === 1);
+	const perpetual = (!filtered.length || drawingMaterialContext) && rootMaterial <= -100 && !(typeof rootCp === "number" && rootCp > 100) ? provePerpetualCheck(steps) : null;
 	if (perpetual) {
 		if (onlyDrawingCapture) filtered.splice(0);
-		filtered.push({
+		filtered.unshift({
 			id: "perpetualCheck",
 			label: "Perpetual Check",
 			source: proposals[0]?.source ?? "available",
@@ -18944,7 +18945,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 111;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 112;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

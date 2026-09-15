@@ -11,6 +11,7 @@ import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
+import { perpetualMaterialCases, perpetualMaterialLine } from "./fixtures/perpetualMaterial";
 import { reflectMixedForkFen, reflectMixedForkMove } from "./fixtures/mixedTargetFork";
 import { directThreatFen, directThreatLine, directThreatControls } from "./fixtures/directThreatRelevance";
 import { tablebaseCases } from "./fixtures/tablebaseRelevance";
@@ -94,6 +95,19 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
         vi.unstubAllGlobals();
     }
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("saving perpetuals preserve their material mechanisms through the production controller", async () => {
+    for (const row of perpetualMaterialCases) for (const reflected of [false, true]) {
+        const moves = "move" in row ? [row.move] : perpetualMaterialLine;
+        const pvUci = reflected ? moves.map(reflectMixedForkMove) : moves;
+        const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci, variations: [{ pvUci, cp: row.cp }], depth: 16, engineName: "Control" };
+        const { scan } = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(row.expected === null || scan.motifs[0]?.id === row.expected).toBe(true);
+        expect(scan.motifs.some(m => m.id === "perpetualCheck")).toBe(row.expected === "perpetualCheck");
+    }
+}, 30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("quiet piece forks and countercheck escapes survive the production controller", async () => {
     for (const row of quietPieceForkCases) for (const reflected of [false,true]) {

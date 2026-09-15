@@ -12043,26 +12043,32 @@ export function auditTacticalMotifs(
         filtered.splice(filtered.indexOf(quietCause), 1);
         filtered.unshift(quietCause);
     }
-    // Do not displace an independently verified winning mechanism with a draw.
-    // A lone capture in an engine-equal position with material still missing
-    // may instead be the entry to a perpetual. A draw is not a material gain.
+    // A verified local material gain is not a won game: a checking fork can
+    // remove a piece on the way to a saving perpetual. An equal root estimate
+    // nominates this comparison; only the independent all-defence cycle proves
+    // the resource. Never displace an established mate or exact won ending.
     const rootMaterial = [...steps[0].after.board.occupied].reduce((sum, square) => {
         const piece = steps[0].after.board.get(square)!;
         return sum + (piece.color === attacker ? 1 : -1) * VALUE[piece.role];
     }, 0);
-    const onlyDrawingCapture =
+    const drawingMaterialContext =
         typeof rootCp === "number" &&
         Math.abs(rootCp) <= 50 &&
+        !pawnEnding &&
+        !filtered.some((motif) =>
+            motif.value === 10000 || MATE.test(motif.id) ||
+            ["zugzwang", "drawingCapture"].includes(motif.id));
+    const onlyDrawingCapture = drawingMaterialContext &&
         filtered.every((motif) => motif.id === "hangingPiece" && motif.ply === 1);
     const perpetual =
-        (!filtered.length || onlyDrawingCapture) &&
+        (!filtered.length || drawingMaterialContext) &&
         rootMaterial <= -100 &&
         !(typeof rootCp === "number" && rootCp > 100)
             ? provePerpetualCheck(steps)
             : null;
     if (perpetual) {
         if (onlyDrawingCapture) filtered.splice(0);
-        filtered.push({
+        filtered.unshift({
             id: "perpetualCheck",
             label: "Perpetual Check",
             source: proposals[0]?.source ?? "available",

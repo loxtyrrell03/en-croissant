@@ -15,6 +15,7 @@ import { captureGainLiabilityCases } from "../src/utils/tests/fixtures/captureGa
 import { castlingAliasCases } from "../src/utils/tests/fixtures/castlingRelevance.ts";
 import { quietPieceForkCases, quietPieceForkMove } from "../src/utils/tests/fixtures/quietPieceFork.ts";
 import { discoveryTrapCases } from "../src/utils/tests/fixtures/discoveryTrap.ts";
+import { perpetualMaterialCases, perpetualMaterialLine } from "../src/utils/tests/fixtures/perpetualMaterial.ts";
 import {
   matingInterferenceCases,
   reflectMatingInterference,
@@ -29,10 +30,11 @@ const discoveryMode = process.argv.includes("--discovery");
 const liabilityMode = process.argv.includes("--liability");
 const quietForkMode = process.argv.includes("--quiet-fork");
 const discoveryTrapMode = process.argv.includes("--discovery-trap");
+const perpetualMode = process.argv.includes("--perpetual-material");
 const root = process.cwd(),
   output = resolve(
     root,
-    discoveryTrapMode ? "tmp/tactical-discovery-trap-adapter111" : quietForkMode ? "tmp/tactical-quiet-fork-adapter110" : liabilityMode ? "tmp/tactical-liability-adapter108" : discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
+    perpetualMode ? "tmp/tactical-perpetual-material-adapter112" : discoveryTrapMode ? "tmp/tactical-discovery-trap-adapter111" : quietForkMode ? "tmp/tactical-quiet-fork-adapter110" : liabilityMode ? "tmp/tactical-liability-adapter108" : discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
       ? "tmp/tactical-quiet-mate-adapter104"
       : interferenceMode
         ? "tmp/tactical-interference-adapter104"
@@ -48,7 +50,9 @@ const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
 const cases = (
-  discoveryTrapMode
+  perpetualMode
+    ? perpetualMaterialCases.filter(row => row.id === "saving-fork" || row.id === "positive-position-not-saving").map(row => ({ ...row, pvUci: perpetualMaterialLine, variations: [{ pvUci: perpetualMaterialLine, cp: row.cp }] }))
+    : discoveryTrapMode
     ? discoveryTrapCases.filter(row=>row.positive || row.id==="queen-b4-escape").map(row=>({...row,pvUci:row.positive?["e2e4","c4c6","f1b5"]:["e2e4"]}))
     : quietForkMode
     ? quietPieceForkCases.filter(row=>row.positive || row.id==="no-answer-to-countercheck").map(row=>({...row,pvUci:row.positive?[quietPieceForkMove,"c4a6","e5g4"]:[quietPieceForkMove]}))
@@ -171,7 +175,25 @@ try {
           index,
           scale,
         });
-        if (discoveryTrapMode) {
+        if (perpetualMode) {
+          const saving = row.expected === "perpetualCheck";
+          await page.getByText(saving ? "Perpetual Check found" : "Fork found", { exact: true }).waitFor();
+          const button = page.getByRole("button", { name: /^Show .* on board$/ });
+          await button.focus(); await page.keyboard.press("Enter");
+          const preview = await page.evaluate(() => window.fixture.last);
+          assert.equal(preview.motifs[0].id, row.expected);
+          assert(preview.arrows.every(arrow => arrow.ply === 1));
+          if (saving) assert.deepEqual(preview.arrows.map(a => a.from + a.to), ["b7g7", "g7g8"]);
+          await page.locator("summary").focus(); await page.keyboard.press("Enter");
+          const first = (await page.locator('[data-tactical-ply="1"]').innerText()).toLowerCase();
+          assert(first.includes("fork"));
+          assert.equal(first.includes("perpetual check"), saving);
+          if (width === 360 && scale === 2) {
+            await page.screenshot({ path: resolve(output, `${row.id}.png`), fullPage: true });
+            await page.locator(".mantine-ScrollArea-viewport").evaluate(element => { element.scrollTop = 0; });
+            await page.screenshot({ path: resolve(output, `${row.id}-root.png`), fullPage: true });
+          }
+        } else if (discoveryTrapMode) {
           if (row.positive) {
             await page.getByText("Discovered Attack found",{exact:true}).waitFor();
             const button=page.getByRole("button",{name:/^Show .* on board$/});
