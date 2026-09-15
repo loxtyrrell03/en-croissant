@@ -1,6 +1,36 @@
-# Tactical desktop delivery — 2026-09-15
+# Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 112 / live pipeline 117
+## Current package: adapter 113 / live pipeline 118
+
+Source `1a41738d` is packaged in the standalone executable, including the
+engine-supported alternative capture cause, separate review line, persisted
+candidate evidence and native after-move MultiPV wiring. The clean detached
+checkout `en-tactical-desktop-1a41738d` excludes unrelated primary-checkout work.
+Its 8,861-module frontend and TypeScript check pass; the native release build
+takes 2m02s and retains 22 existing warnings. The generated route tree has no
+semantic diff.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,084,992 bytes;
+  SHA-256 `1f1e8d065e92843bbfbe9cf6faf34c0f3679358e3aa7dabcaa547cd990dd6b14`.
+- Worker: `liveTactics.worker-HqjXhabb.js`; SHA-256
+  `59e7055611d2338881179740fbc6190dffffa5beb170e55c42de7d8e366f98d6`.
+  Clean-package worker bytes match the tested artifact. The x64 PE contains
+  both this worker's key and `OpeningReviewWorkspace-CiSsHlvL.js`; its native
+  dependency receipt identifies both assets and the clean checkout.
+- Previous adapter-112 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter113/en-croissant-fork.exe`,
+  SHA-256 `6b50d35fbdb1fb282d3b86da10110b77fb027cb8efbfd8d169d3352e83a7fe06`.
+
+No owner app was running before or after the build; none was launched/restarted.
+The Dev App shortcut remains on the primary source workflow. No owner games,
+settings, engine installation or phone service changed. Single-line legacy reviews
+need new analysis to supply alternatives; their stored history/progress is preserved.
+This is source/package linkage, not native interaction or latency certification.
+The phone/backend source integration is committed but no phone runtime was deployed.
+See `benchmarks/tactical-relevance/alternative-capture-review.md` for the verified
+one-position recovery, negative controls and broader recall/missed-alternative gaps.
+
+## Previous package: adapter 112 / live pipeline 117
 
 Source `e85dc534` is packaged in the standalone executable. The saved-perpetual
 priority fix, retained secondary fork and missed-draw explanation are included.
