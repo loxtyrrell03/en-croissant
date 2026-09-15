@@ -11804,9 +11804,9 @@ function winningTargets(pos, from, side, includePawns = false) {
 	});
 }
 var mixedTargetForkCache = /* @__PURE__ */ new Map();
-/** A pawn can be the material payoff of a genuine quiet fork of a piece. Require
-* a complete named-target proof, including allied recaptures of a moving
-* victim and off-square liabilities. Mere pressure on a pawn is insufficient.
+/** Quiet forks may need an allied capture to answer a target's countercheck.
+* A pawn may also be the payoff of a fork of a piece. Require a complete
+* named-target proof, including moved victims and off-square liabilities.
 * Prefer a sufficient pair instead of drawing every incidental pawn attack. */
 function proveMixedTargetFork(step, nodeLimit = 8192, onAttempt) {
 	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || step.capture || step.after.isCheck() || step.after.isEnd() || step.move.promotion || defenderCanClaimFiftyMoveDraw(step.after)) return null;
@@ -11824,8 +11824,8 @@ function computeMixedTargetFork(step, nodeLimit, onAttempt) {
 	const targets = winningTargets(step.after, step.move.to, side, true);
 	const pawns = targets.filter((to) => step.after.board.get(to).role === "pawn");
 	const pieces = targets.filter((to) => step.after.board.get(to).role !== "king" && VALUE[step.after.board.get(to).role] >= VALUE.knight);
-	if (!pawns.length || !pieces.length) return null;
-	const subsets = pieces.flatMap((piece) => pawns.map((pawn) => [piece, pawn]));
+	if (!pieces.length || pieces.length + pawns.length < 2) return null;
+	const subsets = [...pieces.flatMap((piece, index) => pieces.slice(index + 1).map((other) => [piece, other])), ...pieces.flatMap((piece) => pawns.map((pawn) => [piece, pawn]))];
 	if (pieces.length + pawns.length > 2) subsets.push([...pieces, ...pawns]);
 	const allowance = Math.floor(nodeLimit / subsets.length);
 	if (allowance < 1) return null;
@@ -17520,6 +17520,15 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		if (m.id === "tacticalPreparation" && m.confidence === "medium" && m.ply === 1 && quietAttack && tacticalPreparation?.threat[0] === quietAttack.threatSan) return false;
 		if (m.id === "forcingAttack" && m.label === "Mating Attack" && m.ply === 1 && (preparation || quietMate)) return false;
 		if (incidentalMatingMechanisms.has(m.id) && m.ply === 1) return false;
+		if (m.id === "fork" && m.ply) {
+			const interference = candidates.find((other) => other.id === "interference" && other.ply === m.ply && other.moveUci === m.moveUci && other.confidence === "high" && (other.value ?? 0) >= (m.value ?? Infinity));
+			if (interference) {
+				const step = steps[m.ply - 1];
+				const fork = proveMixedTargetFork(step);
+				const cut = interferenceProof(step, interference.source);
+				if (fork && cut?.attacksDefender && (cut.motif.value ?? 0) >= fork.gain && fork.targets.every((to) => to === cut.defender || to === cut.target)) return false;
+			}
+		}
 		if (m.id === "attacking_undefended_piece" && m.ply) {
 			const discovery = candidates.find((other) => DISCOVERED_THEMES.has(other.id) && other.ply === m.ply && other.moveUci === m.moveUci && other.confidence === "high" && (other.value ?? 0) >= (m.value ?? Infinity) && (other.value ?? 1e4) < 1e4);
 			if (discovery) {
@@ -18830,7 +18839,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 109;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 110;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

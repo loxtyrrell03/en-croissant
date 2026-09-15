@@ -527,6 +527,79 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
+    test.skipIf(
+        !process.env.TACTICAL_RECALL_SAMPLE || !process.env.TACTICAL_RECALL_REPORT ||
+        (!engine && !process.env.TACTICAL_RECALL_REPLAY),
+    )("audit every ply of frozen owner games for tactical recall", async () => {
+        const { privateReportPath } = await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
+        const output = privateReportPath(process.env.TACTICAL_RECALL_REPORT!);
+        expect(existsSync(output)).toBe(false);
+        const sample = JSON.parse(readFileSync(process.env.TACTICAL_RECALL_SAMPLE!, "utf8")) as {
+            sourceSha256: string;
+            games: { id: string; startFen: string; moves: string[] }[];
+            cases: { id: string; game: string; ply: number; fen: string; afterFen: string;
+                playedMoveUci: string; previousFen?: string; previousMoveUci?: string; sourceUci: string[] }[];
+        };
+        expect(new Set(sample.cases.map(row => row.id)).size).toBe(sample.cases.length);
+        for (const game of sample.games) {
+            const steps = replayTacticalLine(game.startFen, game.moves);
+            expect(steps).toHaveLength(game.moves.length);
+            const rows = sample.cases.filter(row => row.game === game.id);
+            expect(rows).toHaveLength(steps.length);
+            rows.forEach((row, i) => {
+                expect(row.ply).toBe(i);
+                expect(row.fen).toBe(makeFen(steps[i].before.toSetup()));
+                expect(row.afterFen).toBe(makeFen(steps[i].after.toSetup()));
+                expect(row.playedMoveUci).toBe(steps[i].uci);
+            });
+        }
+        const cache = new Map<string, JudgementEngineLine[]>();
+        if (process.env.TACTICAL_RECALL_REPLAY) {
+            const baseline = JSON.parse(readFileSync(process.env.TACTICAL_RECALL_REPLAY, "utf8"));
+            if (baseline.sourceSha256 !== sample.sourceSha256 || baseline.completed !== sample.cases.length)
+                throw new Error("Incomplete or mismatched frozen recall inputs");
+            for (const row of baseline.results) {
+                cache.set(row.fen, row.before);
+                if (row.after.length) cache.set(row.afterFen, row.after);
+            }
+        }
+        let freshSearches = 0;
+        const search = async (fen: string) => {
+            if (Chess.fromSetup(parseFen(fen).unwrap()).unwrap().isEnd()) return [];
+            if (!cache.has(fen)) {
+                if (process.env.TACTICAL_RECALL_REPLAY) throw new Error(`Missing frozen engine input ${fen}`);
+                cache.set(fen, [...(await analyse(engine, fen)).values()].sort((a, b) => a.multipv - b.multipv));
+                freshSearches++;
+            }
+            const lines = cache.get(fen)!;
+            expect(lines[0]?.depth).toBe(16);
+            return lines;
+        };
+        const results = [];
+        for (const row of sample.cases) {
+            const before = await search(row.fen), after = await search(row.afterFen);
+            const started = performance.now();
+            const scan = buildLiveTacticalScan({ ...row, ...before[0], variations: before, engineName: "Stockfish 18" });
+            const source = classifyPositionTacticalMotifs({ fen: row.fen, pvUci: row.sourceUci });
+            const score = (line: JudgementEngineLine) => line.cp ?? Math.sign(line.mate ?? 0) * 10000;
+            const side = Chess.fromSetup(parseFen(row.fen).unwrap()).unwrap().turn === "white" ? 1 : -1;
+            const classification = after.length ? classifyMistakeReviewMotifs({
+                fen: row.fen, playedMoveUci: row.playedMoveUci, bestMoveUci: before[0].pvUci[0],
+                pvUci: before[0].pvUci, refutationUci: after[0].pvUci,
+                cpBefore: score(before[0]) * side, cpAfter: -score(after[0]) * side,
+                cpLoss: Math.max(0, score(before[0]) + score(after[0])),
+            }) : null;
+            results.push({ ...row, before, after, scan, source, classification,
+                explanation: classification ? buildMistakeReviewTacticalExplanation(classification) : null,
+                terminalReviewOmitted: after.length === 0, classificationMs: performance.now() - started });
+            writeFileSync(output, JSON.stringify({
+                scope: "All plies of fixed owner games, not filtered by output. Source and engine lines differ. Mate sentinels are not literal centipawn losses. Terminal actual moves omit causal review, not the root scan. Development audit, not accuracy certification.",
+                sourceSha256: sample.sourceSha256, requested: sample.cases.length, completed: results.length,
+                freshSearches, replayFrom: process.env.TACTICAL_RECALL_REPLAY ?? null, results,
+            }, null, 2), { flag: results.length === 1 ? "wx" : "w" });
+        }
+        expect(results).toHaveLength(sample.cases.length);
+    }, 600000);
     test.skipIf(!engine || !process.env.TACTICAL_CASTLING_AUDIT)("restricted castling accepts both legal notations without unrestricted fallback", async () => {
         for (const side of ["w", "b"]) {
             const rank = side === "w" ? "1" : "8";

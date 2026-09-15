@@ -9,6 +9,8 @@ import { makeUci } from "chessops/util";
 import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
+import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
+import { reflectMixedForkFen, reflectMixedForkMove } from "./fixtures/mixedTargetFork";
 import { directThreatFen, directThreatLine, directThreatControls } from "./fixtures/directThreatRelevance";
 import { tablebaseCases } from "./fixtures/tablebaseRelevance";
 import { drawingCaptureEvidenceCases } from "./fixtures/drawingCaptureEvidence";
@@ -91,6 +93,33 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
         vi.unstubAllGlobals();
     }
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("quiet piece forks and countercheck escapes survive the production controller", async () => {
+    for (const row of quietPieceForkCases) for (const reflected of [false,true]) {
+        const input={fen:reflected?reflectMixedForkFen(row.fen):row.fen,
+            pvUci:[reflected?reflectMixedForkMove(quietPieceForkMove):quietPieceForkMove],depth:16,engineName:"Control"};
+        const {scan}=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(scan.motifs.some(m=>m.id==="fork")).toBe(row.positive);
+    }
+},30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_RECALL_REPLAY)("all owner-game positions retain the actual compiled scan and history", async()=>{
+    const baseline=JSON.parse(readFileSync(process.env.TACTICAL_RECALL_REPLAY!,"utf8"));
+    expect(baseline.completed).toBe(baseline.requested);
+    const cases=[];
+    for(const row of baseline.results) {
+        const input={fen:row.fen,...row.before[0],variations:row.before,engineName:"Stockfish 18",
+            previousFen:row.previousFen,previousMoveUci:row.previousMoveUci};
+        const result=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        cases.push({id:row.id,...result});
+    }
+    if(process.env.TACTICAL_RECALL_WORKER_REPORT) {
+        const {privateReportPath}=await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
+        writeFileSync(privateReportPath(process.env.TACTICAL_RECALL_WORKER_REPORT),JSON.stringify({cases},null,2),{flag:"wx"});
+    }
+},120000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("saving captures and drawn-exchange controls survive the actual worker", async () => {
     const report = [];
