@@ -1,6 +1,32 @@
 # Tactical desktop delivery — 2026-09-15
 
-## Current package: adapter 110 / live pipeline 115
+## Current package: adapter 111 / live pipeline 116
+
+Source `6a330d56` is packaged in the standalone executable, including the prior
+fork recovery and the two discovered queen-attack opportunities found in the
+owner-game audit. The build uses detached clean checkout
+`en-tactical-desktop-6a330d56`, with no unrelated primary-worktree changes.
+The frontend passes with 8,861 modules; the native release build passes with
+22 existing unused-code warnings. The generated route tree has no semantic diff.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,145,408 bytes;
+  SHA-256 `e43ea2ee6d7f41268e88c529fa43f08d22bc5a1bf118c991800d6e62382606c7`.
+- Worker: `liveTactics.worker-1lM6yZng.js`; SHA-256
+  `5c5513ce796a1c6aed3676f1d1993b1e69d21d65193b696229c3303a241c2ba5`.
+  Clean-package bytes match the final tested artifact; the x64 PE contains its
+  asset key, and the native dependency receipt identifies the clean frontend.
+- Previous adapter-110 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter111/en-croissant-fork.exe`,
+  SHA-256 `4bffd5a0bc9086c1282f344134db72804046cf430b42706ca03391ae04eab58a`.
+
+The Dev App shortcut remains on its original primary live-source workflow.
+No owner app was running, launched or restarted. No settings, games, engine
+installation, owner data or phone service changed. This is package/linkage
+verification, not native interaction or startup certification. See
+`benchmarks/tactical-relevance/discovery-recall-review.md` for the 217-position
+audit, 2,254 source checks, compiled-worker/browser receipts and remaining gaps.
+
+## Previous package: adapter 110 / live pipeline 115
 
 Source commit `0598d8ef` is now packaged in the standalone executable, including
 the recovered quiet piece-piece fork and its allowed/missed mistake lessons.
