@@ -27,6 +27,7 @@ import {
     winningRecaptureEvidence,
     contextualCaptureObservation,
     tacticalCaptureGain,
+    proveAlternativeCaptureCause,
     normalizeMatingPayoffs,
     normalizeContinuingTactics,
     replayTacticalLine,
@@ -42,6 +43,7 @@ import type {
     PositionTacticalMotifClassification,
     TacticalMotifEvidence,
     TacticalMotifSource,
+    TacticalReplyCandidate,
 } from "./types";
 
 export type {
@@ -64,6 +66,7 @@ export type MistakeReviewMotifInput = {
     pvUci?: string[] | null;
     refutationSan?: string[] | null;
     refutationUci?: string[] | null;
+    refutationCandidates?: TacticalReplyCandidate[] | null;
     cpLoss?: number | null;
     cpBefore?: number | null;
     cpAfter?: number | null;
@@ -123,7 +126,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 112;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 113;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -1306,6 +1309,7 @@ function cacheKey(input: MistakeReviewMotifInput) {
         input.cpLoss ?? null,
         input.cpBefore ?? null,
         input.cpAfter ?? null,
+        input.refutationCandidates ?? null,
     ]);
 }
 
@@ -1483,6 +1487,34 @@ export function classifyMistakeReviewMotifs(
     compared.missedMotifs = selectRootConnectedLessons(
         fen, bestLine, compared.missedMotifs, compared.missedTimeline ?? [],
     );
+    // An engine's preferred reply can be a harder combination than the simple
+    // piece loss that explains the move. Keep a verified alternate reply OUT
+    // of the preferred line's timeline, with its own board/move provenance.
+    if (!playedTheBestMove && playedMoveUci && bestMoveUci &&
+        typeof input.cpLoss === "number" && Number.isFinite(input.cpLoss) && input.cpLoss > 20 &&
+        !compared.allowedMotifs.some(m => isImmediateTacticalLesson(m) &&
+            (m.comparison === "prevented" || m.comparison === "reduced"))) {
+        const positionKey = (value: string) => value.trim().split(/\s+/).slice(0, 4).join(" ");
+        const candidates = (input.refutationCandidates ?? []).slice(0, 3).filter(candidate =>
+            candidate.depth >= 14 && Number.isFinite(candidate.depth) &&
+            candidate.cp !== null && Number.isFinite(candidate.cp) &&
+            positionKey(candidate.fen) === positionKey(fenAfterPlayedMove ?? "") &&
+            candidate.pvUci.length > 0 && candidate.pvUci.length <= 128 &&
+            replayTacticalLine(candidate.fen, candidate.pvUci).length === candidate.pvUci.length);
+        const principal = candidates.find(candidate => candidate.pvUci[0] === refutationLine[0]);
+        // Do not turn arbitrary legal captures into causes. Keep only engine
+        // alternatives preserving at least half the measured mistake swing,
+        // and within one pawn of the preferred reply. No score proves a motif.
+        const nominated = principal ? candidates.filter(candidate =>
+            candidate.depth >= principal.depth && candidate.cp! <= principal.cp! &&
+            principal.cp! - candidate.cp! <= Math.min(100, input.cpLoss! / 2),
+        ).map(candidate => candidate.pvUci[0]) : [];
+        const alternative = nominated.length > 1
+            ? proveAlternativeCaptureCause(fen, playedMoveUci, bestMoveUci, nominated, refutationLine[0])
+            : null;
+        if (alternative) compared.allowedMotifs = [alternative,
+            ...compared.allowedMotifs.map(m => ({ ...m, relevance: "secondary" as const }))];
+    }
     if (!input.tablebaseEvidence) motifCache.set(key, compared);
     if (motifCache.size > MOTIF_CACHE_LIMIT) {
         const oldestKey = motifCache.keys().next().value;

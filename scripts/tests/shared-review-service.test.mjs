@@ -3,9 +3,61 @@ import assert from "node:assert/strict";
 import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve, sep } from "node:path";
-import { SharedReviewService, engineLine } from "../generated/shared-review-service.js";
+import { SharedReviewService, engineLine, BackgroundEngine } from "../generated/shared-review-service.js";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("real background engine retains rank one and three side-correct candidates", {skip:!process.env.TACTICAL_JUDGEMENT_ENGINE}, async()=>{
+  const engine=new BackgroundEngine(process.env.TACTICAL_JUDGEMENT_ENGINE);
+  try {
+    for(const fen of ["4kb2/8/8/4q3/4P3/1PPP1P2/P7/RN1QK3 w Q - 0 1","4kb2/8/8/4q3/4P3/NPPP1P2/P7/R2QK3 b Q - 1 1"]){
+      const line=await engine.analyze(fen,3);
+      assert.equal(line.depth,16); assert.equal(line.multipv,1);
+      assert.equal(line.tacticalCandidates.length,3);
+      assert.deepEqual(line.tacticalCandidates[0].pvUci,line.uciMoves);
+      assert.equal(line.tacticalCandidates[0].cp,line.score.value*(fen.split(" ")[1]==="b"?-1:1));
+      for(const candidate of line.tacticalCandidates){
+        assert.equal(candidate.fen,fen);assert.equal(candidate.depth,16);
+        assert.equal(engineLine(fen,16,{type:"cp",value:0},candidate.pvUci).uciMoves.length,candidate.pvUci.length);
+      }
+    }
+  } finally {engine.close();}
+});
+
+test("separate capture cause survives same-search candidates, shared deck and reload", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-shared-review-alternative-"));
+  const fen = "4kb2/8/8/4q3/4P3/1PPP1P2/P7/RN1QK3 w Q - 0 1";
+  const after = "4kb2/8/8/4q3/4P3/NPPP1P2/P7/R2QK3 b Q - 1 1";
+  // Constructed board; scores exercise nomination, not an engine-strength claim.
+  const options = {root, documentsRoot:join(root,"documents"), engineConfigPath:join(root,"engine.json"),
+    fetchGames:async()=>[], lookup:async(board)=>{
+      assert.ok(board===fen || board===after);
+      return {depth:16,pvs:board===fen ? [{cp:-320,moves:"b1d2"}] : [{cp:-640,moves:"e5c3"},{cp:-600,moves:"f8a3"}]};
+    }};
+  let service;
+  try {
+    await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+    await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,url:"https://example.test/alternative",
+      pgn:`[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.16"]\n[SetUp "1"]\n[FEN "${fen}"]\n[Result "0-1"]\n\n1. Na3 0-1`}]}));
+    service = new SharedReviewService(options); await service.initialize(false); await service.run();
+    assert.equal(service.snapshot().error,null);
+    const card=service.snapshot().cards[0];
+    assert.ok(card); assert.match(card.explanation,/Bxa3 wins the loose knight/);
+    assert.equal(card.alternativeReply.moveUci,"f8a3");
+    assert.equal(card.refutationCandidates[1].cp,600);
+    assert.equal(card.refutationUci[0],"e5c3");
+    assert.ok(!card.refutationTimeline.some(m=>m.alternativeLine));
+    const review=(await service.deck()).positions[0].mistakeReview;
+    assert.equal(review.allowedMotifs[0].alternativeLine.fen,after);
+    assert.deepEqual(review.refutationCandidates,card.refutationCandidates);
+    service.close(); service=new SharedReviewService(options); await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].alternativeReply,card.alternativeReply);
+  } finally {
+    service?.close(); const target=resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-"));
+    await rm(target,{recursive:true,force:true});
+  }
+});
 
 test("comparable capture qualifications survive the built service, shared deck and reload", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-capture-choice-"));

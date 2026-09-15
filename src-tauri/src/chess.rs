@@ -953,6 +953,39 @@ pub enum MistakeReviewSeverity {
 
 #[derive(Clone, Debug, Serialize, Type)]
 #[serde(rename_all = "camelCase")]
+pub struct MistakeReviewReplyCandidate {
+    pub fen: String,
+    pub pv_uci: Vec<String>,
+    pub cp: Option<i32>,
+    pub depth: u32,
+}
+
+fn mistake_review_reply_candidates(
+    fen: &str,
+    lines: &[BestMoves],
+) -> Vec<MistakeReviewReplyCandidate> {
+    let sign = if fen.split_whitespace().nth(1) == Some("b") {
+        -1
+    } else {
+        1
+    };
+    lines
+        .iter()
+        .take(3)
+        .map(|line| MistakeReviewReplyCandidate {
+            fen: fen.to_string(),
+            pv_uci: line.uci_moves.clone(),
+            cp: match line.score.value {
+                ScoreValue::Cp(cp) => Some(cp * sign),
+                ScoreValue::Mate(_) => None,
+            },
+            depth: line.depth,
+        })
+        .collect()
+}
+
+#[derive(Clone, Debug, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub struct MistakeReviewScanResult {
     pub review_key: String,
     pub fen: String,
@@ -968,6 +1001,8 @@ pub struct MistakeReviewScanResult {
     pub pv_uci: Vec<String>,
     pub refutation_san: Vec<String>,
     pub refutation_uci: Vec<String>,
+    #[specta(optional)]
+    pub refutation_candidates: Vec<MistakeReviewReplyCandidate>,
     pub severity: MistakeReviewSeverity,
     pub cp_loss: i32,
     pub win_probability_drop: f64,
@@ -1505,7 +1540,7 @@ pub async fn scan_mistake_review(
                         &mut reader,
                         &fen_after,
                         deep_depth,
-                        1,
+                        multi_pv.min(3),
                         &engine_options,
                         Some(&cancel_flag),
                     )
@@ -1622,6 +1657,10 @@ pub async fn scan_mistake_review(
                         pv_uci: deep_best.uci_moves.clone(),
                         refutation_san: deep_after_best.san_moves.clone(),
                         refutation_uci: deep_after_best.uci_moves.clone(),
+                        refutation_candidates: mistake_review_reply_candidates(
+                            &fen_after,
+                            &deep_after,
+                        ),
                         severity,
                         cp_loss,
                         win_probability_drop,
@@ -2814,6 +2853,7 @@ mod mistake_review_tests {
             pv_uci: vec!["g1f3".to_string()],
             refutation_san: vec!["Nf6".to_string()],
             refutation_uci: vec!["g8f6".to_string()],
+            refutation_candidates: vec![],
             severity: MistakeReviewSeverity::Mistake,
             cp_loss,
             win_probability_drop: 8.0,
@@ -3186,6 +3226,55 @@ mod tests {
         ));
         assert_eq!(latest_depth, 16);
         assert_eq!(latest_best_moves[0].uci_moves.len(), 3);
+    }
+
+    #[test]
+    fn tactical_reply_candidates_preserve_board_depth_and_side_to_move_scores() {
+        let mut line = BestMoves {
+            depth: 16,
+            uci_moves: vec!["f8a3".to_string()],
+            ..BestMoves::default()
+        };
+        line.score.value = ScoreValue::Cp(-644);
+        let fen = "4k3/8/8/8/8/N7/8/4K3 b - - 0 1";
+        let result = mistake_review_reply_candidates(fen, &[line.clone()]);
+        let wire = serde_json::to_value(&result).unwrap();
+        assert_eq!(wire[0]["fen"], fen);
+        assert_eq!(wire[0]["cp"], 644);
+        assert_eq!(wire[0]["depth"], 16);
+        assert_eq!(wire[0]["pvUci"][0], "f8a3");
+        line.score.value = ScoreValue::Mate(-3);
+        assert!(mistake_review_reply_candidates(fen, &[line.clone()])[0]
+            .cp
+            .is_none());
+        assert_eq!(
+            mistake_review_reply_candidates(fen, &[line.clone(), line.clone(), line.clone(), line])
+                .len(),
+            3
+        );
+    }
+
+    #[test]
+    fn tactical_reply_candidates_match_the_desktop_binding() {
+        let options = specta_typescript::Typescript::default()
+            .bigint(specta_typescript::BigIntExportBehavior::BigInt);
+        let exports = [
+            specta_typescript::export::<MistakeReviewReplyCandidate>(&options).unwrap(),
+            specta_typescript::export::<MistakeReviewScanResult>(&options).unwrap(),
+        ];
+        let bindings = include_str!("../../src/bindings/generated.ts");
+        for exported in exports {
+            let prefix = exported.split(" = ").next().unwrap();
+            let start = bindings.find(prefix).unwrap();
+            let binding = bindings[start..].split("\nexport type ").next().unwrap();
+            assert_eq!(
+                exported
+                    .trim_end_matches(';')
+                    .split_whitespace()
+                    .collect::<Vec<_>>(),
+                binding.split_whitespace().collect::<Vec<_>>()
+            );
+        }
     }
 
     #[test]

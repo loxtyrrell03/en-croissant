@@ -11,10 +11,11 @@ const require = createRequire(process.env.TACTICAL_QA_DEPENDENCIES || import.met
 const { chromium } = require("playwright");
 const natureMode = process.argv.includes("--nature");
 const discoveryMode = process.argv.includes("--discovery");
+const alternativeMode = process.argv.includes("--alternative");
 const root = process.cwd(),
   output = resolve(
     root,
-    discoveryMode ? "tmp/mistake-discovery-adapter107" : natureMode ? "tmp/mistake-nature-v4" : "tmp/tactical-capture-choice-adapter105",
+    alternativeMode ? "tmp/mistake-alternative-adapter113" : discoveryMode ? "tmp/mistake-discovery-adapter107" : natureMode ? "tmp/mistake-nature-v4" : "tmp/tactical-capture-choice-adapter105",
   );
 await mkdir(output, { recursive: true });
 const relative = (name) =>
@@ -31,10 +32,12 @@ import{TacticalAuditGameInfoPanel}from'@/components/review/OpeningReviewWorkspac
 import{classifyMistakeReviewMotifs}from'@/utils/tacticalMotifs/mistakeReviewAdapter';
 import{classifyMistakeReviewNature,migrateMistakeReviewDeckNatureClassifications,migrateMistakeReviewDeckMotifClassifications}from'@/utils/mistakeReview';
 import{positionSchema}from'@/components/files/opening';
+import{alternativeCaptureInput}from'@/utils/tests/fixtures/alternativeCapture';
 const input={fen:'1rr3k1/5ppp/2B1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 b - - 0 21',bestMoveUci:'c8c6',playedMoveUci:'f5g4',pvUci:['c8c6','g4e5','c6c2'],pvSan:['Rxc6','Ne5','Rxc2'],refutationUci:['c6e4','c8c5','a2a4'],refutationSan:['Be4','Rc5','a4']};
 const review={...input,...classifyMistakeReviewMotifs(input),playerColor:'black',playerName:'Public game example',opponent:'Opponent',severity:'mistake'};
 const position={fen:input.fen,sideToMove:'black',answer:'Rxc6',answerUci:'c8c6',card:{},mistakeReview:review};
 const samples={
+alternative:alternativeCaptureInput,
 discovery:{fen:'5rk1/Q1RR1pp1/4p2p/8/4KP2/3rP3/P1q3PP/8 b - - 1 30',bestMoveUci:'d3d7',bestMoveSan:'Rxd7+',playedMoveUci:'f7f5',playedMoveSan:'f5+',pvUci:['d3d7','c7c2','d7a7'],refutationUci:['e4f3'],cpLoss:521},
 capture:{...input,cpLoss:269},
 quiet:{fen:'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',bestMoveUci:'g1f3',bestMoveSan:'Nf3',playedMoveUci:'h2h3',playedMoveSan:'h3',pvUci:['g1f3','g8f6','g2g3','g7g6'],refutationUci:['g8f6','g1f3','g7g6','g2g3'],cpLoss:60,reachedDepth:18},
@@ -43,8 +46,8 @@ fork:{fen:'4k3/8/8/8/1n6/8/8/R3K2R b KQ - 0 1',bestMoveUci:'b4c2',bestMoveSan:'N
 window.fixture={};function App(){const[scale,setScale]=useState(1),[reveal,setReveal]=useState(true),[epoch,setEpoch]=useState(0),[value,setValue]=useState(position);
 window.fixture.select=async(s,r,restore,which='capture')=>{
 const data=samples[which],nature=classifyMistakeReviewNature(data);
-const value={...position,fen:data.fen,answer:data.bestMoveSan??'Rxc6',answerUci:data.bestMoveUci,mistakeReview:{...review,...data,...classifyMistakeReviewMotifs(data),nature:nature.nature,natureConfidence:nature.confidence,natureReason:nature.reason,natureAspect:nature.aspect,allowedNature:nature.allowedNature,missedNature:nature.missedNature,tacticalSignals:nature.tacticalSignals,natureClassifierVersion:4}};
-if(restore){value.mistakeReview=positionSchema.shape.mistakeReview.parse(JSON.parse(JSON.stringify({...value.mistakeReview,nature:'tactical',natureClassifierVersion:which==='discovery'?4:3,...(which==='discovery'?{motifClassifierVersion:'site-55.adapter-106',natureReason:'Rxd7+ wins the loose rook on d7.'}:{})})));const migrated=which==='discovery'?await migrateMistakeReviewDeckMotifClassifications({positions:[value]}):await migrateMistakeReviewDeckNatureClassifications({positions:[value]});value.mistakeReview=migrated.deck.positions[0].mistakeReview;}
+const value={...position,fen:data.fen,sideToMove:data.fen.split(' ')[1]==='w'?'white':'black',answer:data.bestMoveSan??'Rxc6',answerUci:data.bestMoveUci,mistakeReview:{...review,...data,playerColor:data.fen.split(' ')[1]==='w'?'white':'black',...classifyMistakeReviewMotifs(data),nature:nature.nature,natureConfidence:nature.confidence,natureReason:nature.reason,natureAspect:nature.aspect,allowedNature:nature.allowedNature,missedNature:nature.missedNature,tacticalSignals:nature.tacticalSignals,natureClassifierVersion:4}};
+if(restore){value.mistakeReview=positionSchema.shape.mistakeReview.parse(JSON.parse(JSON.stringify({...value.mistakeReview,nature:'tactical',natureClassifierVersion:which==='discovery'?4:3,...(which==='discovery'||which==='alternative'?{motifClassifierVersion:'site-55.adapter-106',natureReason:'Old explanation'}:{})})));const migrated=which==='discovery'||which==='alternative'?await migrateMistakeReviewDeckMotifClassifications({positions:[value]}):await migrateMistakeReviewDeckNatureClassifications({positions:[value]});value.mistakeReview=migrated.deck.positions[0].mistakeReview;}
 flushSync(()=>{setScale(s);setReveal(r);setEpoch(v=>v+1);setValue(value)});
 };
 return <MantineProvider forceColorScheme="dark" theme={{scale}}><main style={{padding:12,boxSizing:'border-box',width:'100%'}}><TacticalAuditGameInfoPanel key={epoch} position={value} revealAnswer={reveal}/></main></MantineProvider>}
@@ -124,7 +127,7 @@ try {
     await page.screenshot({ path: resolve(output, "failed-render.png"), fullPage: true });
     throw error;
   }
-  for (const which of discoveryMode ? ["discovery"] : natureMode ? ["capture", "quiet", "fork"] : ["capture"])
+  for (const which of alternativeMode ? ["alternative"] : discoveryMode ? ["discovery"] : natureMode ? ["capture", "quiet", "fork"] : ["capture"])
     for (const width of [1100, 760, 360])
       for (const scale of [1, 2])
         for (const restore of [false, true]) {
@@ -151,6 +154,13 @@ try {
             const text = await page.locator("main").innerText();
             assert(text.includes("Rxc6 captures the bishop on c6; fxg4 captures the knight on g4"));
             assert.equal(await page.getByText("Capture choice", { exact: true }).count(), 2);
+          } else if (which === "alternative") {
+            assert((await page.locator("main").innerText()).includes("Bxa3 wins the loose knight on a3"));
+            await page.getByText("Separate tactical reply", { exact: true }).click();
+            const detail = page.locator("details").filter({has: page.getByText("Separate tactical reply", {exact:true})});
+            assert((await detail.innerText()).includes("Bxa3"));
+            assert(!(await detail.innerText()).includes("Qxc3"));
+            assert.equal(await page.getByText("Opponent's refutation, move by move", {exact:true}).count(), 0);
           } else if (which === "discovery") {
             await page.getByText("What you missed: Discovered Check", { exact: true }).waitFor();
             assert((await page.locator("main").innerText()).includes("cannot recapture on d7"));
@@ -202,6 +212,7 @@ try {
             !(await page.locator("main").innerText()).includes("What you missed"),
             "No missed-theme answer before reveal",
           );
+          assert(!(await page.locator("main").innerText()).includes("Separate tactical reply"), "No alternative reply before reveal");
           checks.push({ which, width, scale, restore, passed: true });
         }
   assert.deepEqual(errors, []);

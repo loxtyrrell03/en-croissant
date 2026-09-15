@@ -14,6 +14,8 @@ import {
     reviewScanKey,
     reviewPlayerColor,
     type PhoneReviewCard,
+    type ReviewEngineLine,
+    withTacticalReplyCandidates,
 } from "../src/web/mistakeReview";
 import { sharedReviewDeck, mergeSharedProgress, SHARED_REVIEW_FILE } from "../src/web/sharedReview";
 import type { WebEngineLine, WebGame } from "../src/web/model";
@@ -314,7 +316,7 @@ export class SharedReviewService {
                         this.status.currentPly = i + 1;
                         const best = await this.evaluate(move.fenBefore);
                         if (move.uci === best.uciMoves[0]) continue;
-                        const reply = await this.evaluate(move.fenAfter);
+                        const reply = await this.evaluate(move.fenAfter, true);
                         const card = createPhoneReviewCard(game, i, player, best, reply);
                         if (card) cards.push(card);
                     }
@@ -401,7 +403,7 @@ export class SharedReviewService {
         this.status.lastCheckedAt = Date.now();
         this.status.discoveryError = errors.join("; ") || null;
     }
-    private async evaluate(fen: string): Promise<WebEngineLine> {
+    private async evaluate(fen: string, alternatives = false): Promise<ReviewEngineLine> {
         const outcome = positionFromFen(fen)[0]?.outcome();
         if (outcome)
             return engineLine(
@@ -419,7 +421,7 @@ export class SharedReviewService {
             | undefined;
         if (cached) return JSON.parse(cached.line);
         const cloud = await this.options.lookup(fen);
-        let line: WebEngineLine | undefined;
+        let line: ReviewEngineLine | undefined;
         if (
             cloud?.depth >= 16 &&
             cloud.pvs?.[0]?.moves &&
@@ -435,11 +437,20 @@ export class SharedReviewService {
                 pv.moves.split(/\s+/),
             );
             line.source = "lichess-cloud";
+            const alternatives = cloud.pvs.slice(0, 3).flatMap((candidate: {cp?: number; mate?: number; moves?: string}, index: number) => {
+                if (!candidate.moves || (!Number.isFinite(candidate.cp) && !Number.isFinite(candidate.mate))) return [];
+                const result = engineLine(fen, cloud.depth,
+                    Number.isFinite(candidate.cp) ? {type: "cp", value: candidate.cp!} : {type: "mate", value: candidate.mate!},
+                    candidate.moves.split(/\s+/));
+                if (result.uciMoves.length !== candidate.moves.trim().split(/\s+/).length) return [];
+                return [{...result, source: "lichess-cloud" as const, multipv: index + 1}];
+            });
+            if (alternatives[0]?.multipv === 1) line = withTacticalReplyCandidates(fen, alternatives);
             if (!line.uciMoves.length) line = undefined;
         }
         if (!line) {
             if (!this.engine) this.engine = new BackgroundEngine(this.enginePath);
-            line = await this.engine.analyze(fen);
+            line = await this.engine.analyze(fen, alternatives ? 3 : 1);
         }
         if (line.depth < 14) throw new Error("Engine did not reach the required review depth.");
         this.cache!.prepare("INSERT OR REPLACE INTO evaluations VALUES (?, ?)").run(
@@ -485,7 +496,7 @@ export function engineLine(
 
 // A single low-priority CPU thread, separate from interactive phone/desktop engines.
 // It is started only for a stored-evaluation miss and exits after each bounded batch.
-class BackgroundEngine {
+export class BackgroundEngine {
     private child: ChildProcessWithoutNullStreams;
     private waiting: { line: (line: string) => void; reject: (e: Error) => void } | undefined;
     private ready: Promise<void>;
@@ -541,16 +552,19 @@ class BackgroundEngine {
             this.child.stdin.write(`${command}\n`);
         });
     }
-    async analyze(fen: string) {
+    async analyze(fen: string, multipv = 1) {
         await this.ready;
-        let best: WebEngineLine | undefined;
-        return this.exchange<WebEngineLine>(`position fen ${fen}\ngo depth 16`, (l) => {
+        const count = Math.max(1, Math.min(3, Math.trunc(multipv)));
+        const lines = new Map<number, WebEngineLine>();
+        return this.exchange<ReviewEngineLine>(`setoption name MultiPV value ${count}\nposition fen ${fen}\ngo depth 16`, (l) => {
             if (l.startsWith("info ") && !/\b(?:lowerbound|upperbound)\b/.test(l)) {
                 const score = l.match(/\bscore (cp|mate) (-?\d+)/),
                     depth = l.match(/\bdepth (\d+)/),
                     pv = l.match(/\bpv (.+)/);
-                if (score && depth && pv)
-                    best = engineLine(
+                if (score && depth && pv) {
+                    const rank = Number(l.match(/\bmultipv (\d+)/)?.[1] ?? 1);
+                    if (rank < 1 || rank > 3) return null;
+                    const line = engineLine(
                         fen,
                         Number(depth[1]),
                         {
@@ -559,13 +573,16 @@ class BackgroundEngine {
                         },
                         pv[1].trim().split(/\s+/),
                     );
+                    if (line.uciMoves.length === pv[1].trim().split(/\s+/).length)
+                        lines.set(rank, {...line, multipv: rank});
+                }
             }
             if (l.startsWith("bestmove")) {
-                if (!best) {
+                if (!lines.has(1)) {
                     // Terminal positions have no PV; exact mate/stalemate is supplied by chessops below.
                     throw new Error("Engine returned no evaluation.");
                 }
-                return { result: best };
+                return { result: withTacticalReplyCandidates(fen, [...lines.values()]) };
             }
             return null;
         });

@@ -22,7 +22,8 @@ import {
     MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
 } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { classifyProvedMistakeNature } from "@/utils/tacticalMotifs/mistakeNature";
-import type { TacticalMotifEvidence } from "@/utils/tacticalMotifs/types";
+import type { TacticalMotifEvidence, TacticalReplyCandidate } from "@/utils/tacticalMotifs/types";
+import { tacticalReplyCandidatesSchema } from "@/components/files/opening";
 import { isSharedReviewPath } from "@/web/sharedReview";
 import { selectDailyReview, type PhoneReviewCard } from "@/web/mistakeReview";
 
@@ -726,6 +727,7 @@ export function createMistakeReviewPosition(
             pvUci: result.pvUci,
             refutationSan: result.refutationSan,
             refutationUci: result.refutationUci,
+            refutationCandidates: result.refutationCandidates ?? undefined,
             severity: result.severity,
             cpLoss: result.cpLoss,
             winProbabilityDrop: result.winProbabilityDrop,
@@ -1596,6 +1598,7 @@ function getMistakeReviewMotifInput(position: Position) {
         pvUci: metadata?.pvUci,
         refutationSan: metadata?.refutationSan,
         refutationUci: metadata?.refutationUci,
+        refutationCandidates: metadata?.refutationCandidates,
         cpLoss: metadata?.cpLoss,
         cpBefore: metadata?.cpBefore,
         cpAfter: metadata?.cpAfter,
@@ -1690,6 +1693,7 @@ function classifyMistakeReviewNatureFromText(
         pvUci: normalizeMistakeReviewMoveList(metadata?.pvUci),
         refutationSan: normalizeMistakeReviewMoveList(metadata?.refutationSan),
         refutationUci: normalizeMistakeReviewMoveList(metadata?.refutationUci),
+        refutationCandidates: metadata?.refutationCandidates,
         cpLoss: metadata?.cpLoss ?? position.engine?.lossCp,
         cpBefore: metadata?.cpBefore,
         cpAfter: metadata?.cpAfter,
@@ -1806,6 +1810,7 @@ export function classifyMistakeReviewNature(
               pvUci?: string[] | null;
               refutationSan?: string[] | null;
               refutationUci?: string[] | null;
+              refutationCandidates?: TacticalReplyCandidate[] | null;
               cpLoss?: number | null;
               cpBefore?: number | null;
               cpAfter?: number | null;
@@ -1832,6 +1837,7 @@ function computeMistakeReviewNature(input: Parameters<typeof classifyMistakeRevi
     const text = (value: unknown) => typeof value === "string" ? value : undefined;
     const number = (value: unknown) => typeof value === "number" && Number.isFinite(value) ? value : undefined;
     const moves = (value: unknown) => Array.isArray(value) ? value.filter((move): move is string => typeof move === "string") : undefined;
+    const candidates = tacticalReplyCandidatesSchema.safeParse(field("refutationCandidates") ?? metadata?.refutationCandidates);
     return classifyProvedMistakeNature({
         fen: text(field("fen")),
         bestMoveSan: text(field("bestMoveSan") ?? metadata?.bestMoveSan ?? field("answer")),
@@ -1842,6 +1848,7 @@ function computeMistakeReviewNature(input: Parameters<typeof classifyMistakeRevi
         pvUci: moves(field("pvUci") ?? metadata?.pvUci),
         refutationSan: moves(field("refutationSan") ?? metadata?.refutationSan),
         refutationUci: moves(field("refutationUci") ?? metadata?.refutationUci),
+        refutationCandidates: candidates.success ? candidates.data : undefined,
         cpLoss: number(field("cpLoss") ?? metadata?.cpLoss),
         cpBefore: number(field("cpBefore") ?? metadata?.cpBefore),
         cpAfter: number(field("cpAfter") ?? metadata?.cpAfter),
@@ -1864,6 +1871,7 @@ function getMistakeReviewNatureClassificationCacheKey(
               pvUci?: string[] | null;
               refutationSan?: string[] | null;
               refutationUci?: string[] | null;
+              refutationCandidates?: TacticalReplyCandidate[] | null;
               cpLoss?: number | null;
               cpBefore?: number | null;
               cpAfter?: number | null;
@@ -1887,6 +1895,7 @@ function getMistakeReviewNatureClassificationCacheKey(
         list(field("pvUci") ?? metadata?.pvUci),
         list(field("refutationSan") ?? metadata?.refutationSan),
         list(field("refutationUci") ?? metadata?.refutationUci),
+        field("refutationCandidates") ?? metadata?.refutationCandidates ?? null,
         field("cpLoss") ?? metadata?.cpLoss ?? "",
         field("cpBefore") ?? metadata?.cpBefore ?? "",
         field("cpAfter") ?? metadata?.cpAfter ?? "",

@@ -1,4 +1,4 @@
-import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLineExplanation";
+import { TacticalLineExplanation, TacticalAlternativeExplanation } from "@/components/panels/tactics/TacticalLineExplanation";
 import {
   ActionIcon,
   Alert,
@@ -6539,6 +6539,7 @@ function MistakeReviewGameInfoPanel({
         )}
         {revealAnswer && revealedMotifs.length > 0 && (
           <Stack gap={4}>
+            <TacticalAlternativeExplanation motifs={revealedMotifs} />
             <TacticalLineExplanation
               title="Opponent's refutation, move by move"
               moves={

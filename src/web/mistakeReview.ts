@@ -1,5 +1,5 @@
 import type { WebColor, WebEngineLine, WebEngineScore, WebGame } from "./model";
-import type { TacticalMotifEvidence } from "@/utils/tacticalMotifs/types";
+import type { TacticalMotifEvidence, TacticalReplyCandidate, MistakeReviewMotifClassification } from "@/utils/tacticalMotifs/types";
 import { normalizeWebFen } from "./pgn";
 import {
     buildMistakeReviewTacticalExplanation,
@@ -7,6 +7,17 @@ import {
 } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 
 export const PHONE_REVIEW_VERSION = 1;
+export type ReviewEngineLine = WebEngineLine & { tacticalCandidates?: TacticalReplyCandidate[] };
+
+export function withTacticalReplyCandidates(fen: string, lines: WebEngineLine[]): ReviewEngineLine {
+    const ordered = [...lines].sort((a, b) => a.multipv - b.multipv).slice(0, 3);
+    if (!ordered[0]) throw new Error("No engine reply was supplied.");
+    const sign = fen.split(" ")[1] === "b" ? -1 : 1;
+    return {...ordered[0], tacticalCandidates: ordered.map(line => ({
+        fen, pvUci: line.uciMoves, depth: line.depth,
+        cp: line.score.type === "cp" ? line.score.value * sign : null,
+    }))};
+}
 export const DAILY_REVIEW_LIMIT = 5;
 const DAY = 86_400_000;
 export type PhoneReviewCard = {
@@ -26,6 +37,11 @@ export type PhoneReviewCard = {
     refutation: string[];
     bestTimeline?: TacticalMotifEvidence[];
     refutationTimeline?: TacticalMotifEvidence[];
+    playedUci?: string;
+    refutationUci?: string[];
+    refutationCandidates?: TacticalReplyCandidate[];
+    alternativeReply?: TacticalMotifEvidence;
+    tacticalClassification?: MistakeReviewMotifClassification;
     before: number;
     after: number;
     drop: number;
@@ -106,7 +122,7 @@ export function createPhoneReviewCard(
     index: number,
     player: string,
     best: WebEngineLine,
-    reply: WebEngineLine,
+    reply: ReviewEngineLine,
     now = Date.now(),
 ): PhoneReviewCard | null {
     const move = game.moves[index],
@@ -133,6 +149,7 @@ export function createPhoneReviewCard(
         playedMoveSan: move.san,
         pvUci: best.uciMoves,
         refutationUci: reply.uciMoves,
+        refutationCandidates: reply.tacticalCandidates,
         cpBefore,
         cpAfter,
         cpLoss: cpBefore - cpAfter,
@@ -156,6 +173,11 @@ export function createPhoneReviewCard(
         pv: best.uciMoves.slice(0, 8),
         pvSan: best.sanMoves.slice(0, 8),
         refutation: reply.sanMoves.slice(0, 6),
+        playedUci: move.uci,
+        refutationUci: reply.uciMoves,
+        refutationCandidates: reply.tacticalCandidates,
+        alternativeReply: motifs.allowedMotifs.find(motif => motif.alternativeLine),
+        tacticalClassification: motifs,
         bestTimeline: motifs.missedTimeline?.filter((m) => (m.ply ?? 0) <= 8),
         refutationTimeline: motifs.allowedTimeline?.filter((m) => (m.ply ?? 0) <= 6),
         before,

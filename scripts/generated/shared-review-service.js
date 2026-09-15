@@ -10239,6 +10239,87 @@ function captureGainEvidence(step, gain) {
 		evidence: compensated ? `${step.san} takes the ${victim?.role ?? "piece"} on ${makeSquare(step.move.to)}, but concedes material elsewhere. The checked exchanges gain at least ${Number((gain / 100).toFixed(1))} ${gain === 100 ? "pawn" : "pawns"}.` : `${step.san} wins the loose ${victim?.role ?? "piece"} on ${makeSquare(step.move.to)}.`
 	};
 }
+/** Recover a concrete capture cause even when the preferred engine reply is
+* a different, unexplained move. The better board must avoid every profitable
+* immediate capture of the SAME victim, not merely stop this one attacker.
+* The victim must also have been safe from immediate exchanges before the
+* mistake. A better move giving check does not make an old loose pawn a newly
+* caused loss. The changed-turn board is only a static exposure comparison.
+* These are local exchange/king-safety bounds, not full-position evaluations. */
+function proveAlternativeCaptureCause(fen, playedMove, bestMove, nominatedReplies, principalReply, nodeLimit = 8192) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
+	const played = replayTacticalLine(fen, [playedMove])[0];
+	const better = replayTacticalLine(fen, [bestMove])[0];
+	if (!played || !better || played.after.isEnd() || better.after.isEnd() || makeFen(played.after.toSetup()) === makeFen(better.after.toSetup())) return null;
+	const pos = played.after, budget = { nodes: nodeLimit };
+	const previous = withTurn(played.before, pos.turn);
+	const previousCaptures = legalMoves(previous).filter((move) => capturedValue(previous, move) > 0);
+	const betterCaptures = legalMoves(better.after).filter((move) => capturedValue(better.after, move) > 0);
+	const safeFromImmediateCapture = (board, captures, target) => {
+		for (const other of captures.filter((reply) => reply.to === target)) {
+			if (--budget.nodes < 0) throw new Error("Capture-cause budget exhausted");
+			if (other.promotion) return false;
+			const after = board.clone();
+			after.play(other);
+			if (capturedValue(board, other) - exchange(after, target, budget) > 0) return false;
+		}
+		return true;
+	};
+	const relative = (square) => pos.turn === "white" ? square : square ^ 56;
+	const candidates = legalMoves(pos).filter((move) => !move.promotion && pos.board.get(move.to)?.color === played.before.turn && makeUci(move) !== principalReply && nominatedReplies.includes(makeUci(move))).sort((a, b) => capturedValue(pos, b) - capturedValue(pos, a) || relative(a.from) - relative(b.from) || relative(a.to) - relative(b.to));
+	let strongest = null;
+	try {
+		for (const move of candidates) {
+			if (--budget.nodes < 0) break;
+			if (capturedValue(pos, move) <= (strongest?.value ?? 0)) continue;
+			const victim = pos.board.get(move.to);
+			const original = relocatedSquare(played, move.to, true);
+			const target = original === void 0 ? void 0 : relocatedSquare(better, original);
+			const otherVictim = target === void 0 ? void 0 : better.after.board.get(target);
+			const originalVictim = original === void 0 ? void 0 : played.before.board.get(original);
+			if (original === void 0 || target === void 0 || originalVictim?.color !== victim.color || originalVictim.role !== victim.role || otherVictim?.color !== victim.color || otherVictim.role !== victim.role) continue;
+			if (!safeFromImmediateCapture(previous, previousCaptures, original) || !safeFromImmediateCapture(better.after, betterCaptures, target)) continue;
+			const gain = preparationCaptureGain(pos, move, budget);
+			if (gain === null || gain < 100 || gain <= (strongest?.value ?? 0)) continue;
+			const after = pos.clone();
+			after.play(move);
+			if (after.isEnd()) continue;
+			const uci = makeUci(move), san = makeSan(pos, move);
+			const step = {
+				before: pos,
+				after,
+				move,
+				uci,
+				san,
+				capture: capturedValue(pos, move),
+				balance: gain
+			};
+			const motif = {
+				id: "hangingPiece",
+				source: "allowed",
+				confidence: "high",
+				relevance: "primary",
+				ply: 1,
+				moveUci: uci,
+				actor: pos.turn,
+				...captureGainEvidence(step, gain)
+			};
+			const contextual = filterCompensatedRootCaptures(makeFen(pos.toSetup()), [uci], [motif], fen, playedMove)[0];
+			if (!contextual || (contextual.value ?? 0) < 100) continue;
+			strongest = {
+				...contextual,
+				comparison: "prevented",
+				comparisonEvidence: `${san} is an alternative reply. ${better.san} instead keeps that ${victim.role}${target === move.to ? "" : ` on ${makeSquare(target)}`} safe from immediate capture.`,
+				alternativeLine: {
+					fen: makeFen(pos.toSetup()),
+					uci: [uci],
+					san: [san]
+				}
+			};
+		}
+	} catch {}
+	return strongest;
+}
 function withTurn(pos, turn) {
 	const copy = pos.clone();
 	copy.turn = turn;
@@ -18945,7 +19026,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 112;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 113;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -19637,7 +19718,8 @@ function cacheKey(input) {
 		(input.refutationSan ?? []).map((move) => String(move).trim()).join(" "),
 		input.cpLoss ?? null,
 		input.cpBefore ?? null,
-		input.cpAfter ?? null
+		input.cpAfter ?? null,
+		input.refutationCandidates ?? null
 	]);
 }
 function classifyMistakeReviewMotifs(input) {
@@ -19707,6 +19789,17 @@ function classifyMistakeReviewMotifs(input) {
 	compared.allowedMotifs = selectRootConnectedLessons(fenAfterPlayedMove ?? "", refutationLine, compared.allowedMotifs, compared.allowedTimeline ?? []);
 	if (compared.missedTimeline) compared.missedTimeline = compared.missedTimeline.filter((m) => m.id !== "drawingCapture" || m.ply !== 1 || playedEndgameOutcome === 1);
 	compared.missedMotifs = selectRootConnectedLessons(fen, bestLine, compared.missedMotifs, compared.missedTimeline ?? []);
+	if (!playedTheBestMove && playedMoveUci && bestMoveUci && typeof input.cpLoss === "number" && Number.isFinite(input.cpLoss) && input.cpLoss > 20 && !compared.allowedMotifs.some((m) => isImmediateTacticalLesson(m) && (m.comparison === "prevented" || m.comparison === "reduced"))) {
+		const positionKey = (value) => value.trim().split(/\s+/).slice(0, 4).join(" ");
+		const candidates = (input.refutationCandidates ?? []).slice(0, 3).filter((candidate) => candidate.depth >= 14 && Number.isFinite(candidate.depth) && candidate.cp !== null && Number.isFinite(candidate.cp) && positionKey(candidate.fen) === positionKey(fenAfterPlayedMove ?? "") && candidate.pvUci.length > 0 && candidate.pvUci.length <= 128 && replayTacticalLine(candidate.fen, candidate.pvUci).length === candidate.pvUci.length);
+		const principal = candidates.find((candidate) => candidate.pvUci[0] === refutationLine[0]);
+		const nominated = principal ? candidates.filter((candidate) => candidate.depth >= principal.depth && candidate.cp <= principal.cp && principal.cp - candidate.cp <= Math.min(100, input.cpLoss / 2)).map((candidate) => candidate.pvUci[0]) : [];
+		const alternative = nominated.length > 1 ? proveAlternativeCaptureCause(fen, playedMoveUci, bestMoveUci, nominated, refutationLine[0]) : null;
+		if (alternative) compared.allowedMotifs = [alternative, ...compared.allowedMotifs.map((m) => ({
+			...m,
+			relevance: "secondary"
+		}))];
+	}
 	if (!input.tablebaseEvidence) motifCache.set(key, compared);
 	if (motifCache.size > MOTIF_CACHE_LIMIT) {
 		const oldestKey = motifCache.keys().next().value;
@@ -19719,6 +19812,20 @@ function tacticalMotifLabel(idInput) {
 	const label = THEME_LABELS[id];
 	if (label) return label;
 	return id.replace(/[_-]+/g, " ").replace(/([a-z\d])([A-Z])/g, "$1 $2").replace(/\b\w/g, (letter) => letter.toUpperCase()) || "Tactical motif";
+}
+function withTacticalReplyCandidates(fen, lines) {
+	const ordered = [...lines].sort((a, b) => a.multipv - b.multipv).slice(0, 3);
+	if (!ordered[0]) throw new Error("No engine reply was supplied.");
+	const sign = fen.split(" ")[1] === "b" ? -1 : 1;
+	return {
+		...ordered[0],
+		tacticalCandidates: ordered.map((line) => ({
+			fen,
+			pvUci: line.uciMoves,
+			depth: line.depth,
+			cp: line.score.type === "cp" ? line.score.value * sign : null
+		}))
+	};
 }
 var DAY = 864e5;
 function playerKey(name) {
@@ -19768,6 +19875,7 @@ function createPhoneReviewCard(game, index, player, best, reply, now = Date.now(
 		playedMoveSan: move.san,
 		pvUci: best.uciMoves,
 		refutationUci: reply.uciMoves,
+		refutationCandidates: reply.tacticalCandidates,
 		cpBefore,
 		cpAfter,
 		cpLoss: cpBefore - cpAfter,
@@ -19791,6 +19899,11 @@ function createPhoneReviewCard(game, index, player, best, reply, now = Date.now(
 		pv: best.uciMoves.slice(0, 8),
 		pvSan: best.sanMoves.slice(0, 8),
 		refutation: reply.sanMoves.slice(0, 6),
+		playedUci: move.uci,
+		refutationUci: reply.uciMoves,
+		refutationCandidates: reply.tacticalCandidates,
+		alternativeReply: motifs.allowedMotifs.find((motif) => motif.alternativeLine),
+		tacticalClassification: motifs,
 		bestTimeline: motifs.missedTimeline?.filter((m) => (m.ply ?? 0) <= 8),
 		refutationTimeline: motifs.allowedTimeline?.filter((m) => (m.ply ?? 0) <= 6),
 		before,
@@ -20563,14 +20676,18 @@ function sharedReviewDeck(cards, enginePath = "", now = Date.now()) {
 				...c.lastReviewed ? { last_review: new Date(c.lastReviewed) } : {}
 			},
 			mistakeReview: {
+				...c.tacticalClassification,
 				playerName: c.player,
 				playerColor: c.color,
 				playedMoveSan: c.played,
+				playedMoveUci: c.playedUci,
 				bestMoveSan: c.bestSan,
 				bestMoveUci: c.best,
 				pvSan: c.pvSan,
 				pvUci: c.pv,
 				refutationSan: c.refutation,
+				refutationUci: c.refutationUci,
+				refutationCandidates: c.refutationCandidates,
 				winProbabilityDrop: c.drop,
 				cpBefore: chanceCp(c.before),
 				cpAfter: chanceCp(c.after),
@@ -20861,7 +20978,7 @@ var SharedReviewService = class {
 						this.status.currentPly = i + 1;
 						const best = await this.evaluate(move.fenBefore);
 						if (move.uci === best.uciMoves[0]) continue;
-						const reply = await this.evaluate(move.fenAfter);
+						const reply = await this.evaluate(move.fenAfter, true);
 						const card = createPhoneReviewCard(game, i, player, best, reply);
 						if (card) cards.push(card);
 					}
@@ -20937,7 +21054,7 @@ var SharedReviewService = class {
 		this.status.lastCheckedAt = Date.now();
 		this.status.discoveryError = errors.join("; ") || null;
 	}
-	async evaluate(fen) {
+	async evaluate(fen, alternatives = false) {
 		const outcome = positionFromFen(fen)[0]?.outcome();
 		if (outcome) return engineLine(fen, 99, {
 			type: "cp",
@@ -20958,11 +21075,28 @@ var SharedReviewService = class {
 				value: pv.mate
 			}, pv.moves.split(/\s+/));
 			line.source = "lichess-cloud";
+			const alternatives = cloud.pvs.slice(0, 3).flatMap((candidate, index) => {
+				if (!candidate.moves || !Number.isFinite(candidate.cp) && !Number.isFinite(candidate.mate)) return [];
+				const result = engineLine(fen, cloud.depth, Number.isFinite(candidate.cp) ? {
+					type: "cp",
+					value: candidate.cp
+				} : {
+					type: "mate",
+					value: candidate.mate
+				}, candidate.moves.split(/\s+/));
+				if (result.uciMoves.length !== candidate.moves.trim().split(/\s+/).length) return [];
+				return [{
+					...result,
+					source: "lichess-cloud",
+					multipv: index + 1
+				}];
+			});
+			if (alternatives[0]?.multipv === 1) line = withTacticalReplyCandidates(fen, alternatives);
 			if (!line.uciMoves.length) line = void 0;
 		}
 		if (!line) {
 			if (!this.engine) this.engine = new BackgroundEngine(this.enginePath);
-			line = await this.engine.analyze(fen);
+			line = await this.engine.analyze(fen, alternatives ? 3 : 1);
 		}
 		if (line.depth < 14) throw new Error("Engine did not reach the required review depth.");
 		this.cache.prepare("INSERT OR REPLACE INTO evaluations VALUES (?, ?)").run(key, JSON.stringify(line));
@@ -21043,20 +21177,29 @@ var BackgroundEngine = class {
 			this.child.stdin.write(`${command}\n`);
 		});
 	}
-	async analyze(fen) {
+	async analyze(fen, multipv = 1) {
 		await this.ready;
-		let best;
-		return this.exchange(`position fen ${fen}\ngo depth 16`, (l) => {
+		const count = Math.max(1, Math.min(3, Math.trunc(multipv)));
+		const lines = /* @__PURE__ */ new Map();
+		return this.exchange(`setoption name MultiPV value ${count}\nposition fen ${fen}\ngo depth 16`, (l) => {
 			if (l.startsWith("info ") && !/\b(?:lowerbound|upperbound)\b/.test(l)) {
 				const score = l.match(/\bscore (cp|mate) (-?\d+)/), depth = l.match(/\bdepth (\d+)/), pv = l.match(/\bpv (.+)/);
-				if (score && depth && pv) best = engineLine(fen, Number(depth[1]), {
-					type: score[1],
-					value: Number(score[2]) * (fen.split(" ")[1] === "b" ? -1 : 1)
-				}, pv[1].trim().split(/\s+/));
+				if (score && depth && pv) {
+					const rank = Number(l.match(/\bmultipv (\d+)/)?.[1] ?? 1);
+					if (rank < 1 || rank > 3) return null;
+					const line = engineLine(fen, Number(depth[1]), {
+						type: score[1],
+						value: Number(score[2]) * (fen.split(" ")[1] === "b" ? -1 : 1)
+					}, pv[1].trim().split(/\s+/));
+					if (line.uciMoves.length === pv[1].trim().split(/\s+/).length) lines.set(rank, {
+						...line,
+						multipv: rank
+					});
+				}
 			}
 			if (l.startsWith("bestmove")) {
-				if (!best) throw new Error("Engine returned no evaluation.");
-				return { result: best };
+				if (!lines.has(1)) throw new Error("Engine returned no evaluation.");
+				return { result: withTacticalReplyCandidates(fen, [...lines.values()]) };
 			}
 			return null;
 		});
@@ -21067,4 +21210,4 @@ var BackgroundEngine = class {
 	}
 };
 //#endregion
-export { SharedReviewService, engineLine };
+export { BackgroundEngine, SharedReviewService, engineLine };

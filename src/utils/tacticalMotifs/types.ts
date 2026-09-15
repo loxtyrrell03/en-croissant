@@ -1,6 +1,15 @@
 export type TacticalMotifConfidence = "high" | "medium" | "low";
 export type TacticalMotifSource = "allowed" | "missed" | "available";
 
+/** Same-search alternatives, scored for the side to move on this exact board.
+ * Engine scores nominate candidates; they are not tactical proof. */
+export type TacticalReplyCandidate = {
+    fen: string;
+    pvUci: string[];
+    cp: number | null;
+    depth: number;
+};
+
 export type TacticalMotifEvidence = {
     id: string;
     label: string;
@@ -23,6 +32,9 @@ export type TacticalMotifEvidence = {
      * exchange alternative in the played move. Not a proof of equal overall
      * value or safety, and not itself an established cause of the mistake. */
     alternativeCapture?: true;
+    /** A separately verified reply, not an event in the supplied engine PV.
+     * Keep its board and moves together; never merge it into the PV timeline. */
+    alternativeLine?: { fen: string; uci: string[]; san: string[] };
 };
 
 export type MistakeReviewMotifClassification = {

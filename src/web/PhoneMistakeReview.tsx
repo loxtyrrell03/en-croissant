@@ -1,4 +1,4 @@
-import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLineExplanation";
+import { TacticalLineExplanation, TacticalAlternativeExplanation } from "@/components/panels/tactics/TacticalLineExplanation";
 import {
   Alert,
   Badge,
@@ -30,6 +30,7 @@ import {
   selectGameReviewCards,
   type PhoneReviewCard,
   type PhoneReviewState,
+  withTacticalReplyCandidates,
 } from "./mistakeReview";
 import classes from "./WebApp.module.css";
 import type { DrawShape } from "@lichess-org/chessground/draw";
@@ -196,11 +197,11 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
             total: candidates.length,
             text: `Game ${completed + 1}/${candidates.length} · move ${Math.ceil((i + 1) / 2)}`,
           });
-          const analyze = async (fen: string): Promise<WebEngineLine> => {
+          const analyze = async (fen: string, multipv = 1): Promise<WebEngineLine> => {
             const lines = await analyzeWithWebStockfish18({
               fen,
               depth: 14,
-              multipv: 1,
+              multipv,
               preferStoredEvaluation: true,
               minimumStoredDepth: 14,
               signal: abort.signal,
@@ -209,7 +210,7 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
               throw new Error(
                 "The engine did not finish this position. Completed games are saved; retry to resume.",
               );
-            return lines[0];
+            return withTacticalReplyCandidates(fen, lines);
           };
           const best = await analyze(m.fenBefore);
           if (best.uciMoves[0] === m.uci || reviewChance(reviewCp(best.score, color)) < 15)
@@ -231,7 +232,7 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
               uciMoves: [],
               sanMoves: [],
             };
-          else reply = await analyze(m.fenAfter);
+          else reply = await analyze(m.fenAfter, 3);
           const next = createPhoneReviewCard(game, i, player, best, reply);
           if (next) collected.push(next);
         }
@@ -563,6 +564,7 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
                   <details>
                     <summary>Why this mattered</summary>
                     <Text size="sm">{card.explanation}</Text>
+                    <TacticalAlternativeExplanation motifs={card.alternativeReply ? [card.alternativeReply] : []} />
                     <TacticalLineExplanation
                       title="Better line, move by move"
                       moves={card.pvSan}

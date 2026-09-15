@@ -7,7 +7,7 @@ import type { PracticeData } from "@/state/atoms";
 import type { Annotation } from "@/utils/annotation";
 import { engineSettingsSchema, type EngineSettings } from "@/utils/engines";
 import { isPrefix } from "@/utils/misc";
-import type { TacticalMotifEvidence } from "@/utils/tacticalMotifs/types";
+import type { TacticalMotifEvidence, TacticalReplyCandidate } from "@/utils/tacticalMotifs/types";
 import { type TreeNode, treeIterator } from "@/utils/treeReducer";
 
 const REVIEW_DAY_MS = 24 * 60 * 60 * 1000;
@@ -20,6 +20,13 @@ const REPERTOIRE_FIRST_GOOD_MINUTES = 30;
 const REPERTOIRE_SECOND_GOOD_MINUTES = 4 * 60;
 const REPERTOIRE_FIRST_EASY_MINUTES = 2 * 60;
 const REPERTOIRE_SECOND_EASY_MINUTES = 12 * 60;
+
+export const tacticalReplyCandidatesSchema = z.array(z.object({
+    fen: z.string(),
+    pvUci: z.array(z.string()).max(128),
+    cp: z.number().finite().nullable(),
+    depth: z.number().int().nonnegative(),
+})).max(3);
 
 const tacticalMotifEvidenceSchema = z.object({
     id: z.string(),
@@ -36,6 +43,7 @@ const tacticalMotifEvidenceSchema = z.object({
     comparison: z.enum(["prevented", "persists", "reduced"]).optional(),
     comparisonEvidence: z.string().optional(),
     alternativeCapture: z.literal(true).optional(),
+    alternativeLine: z.object({fen: z.string(), uci: z.array(z.string()).min(1).max(128), san: z.array(z.string()).min(1).max(128)}).optional(),
 });
 
 type Sm2CardFields = {
@@ -140,6 +148,7 @@ export const positionSchema = z.object({
             pvUci: z.array(z.string()).optional(),
             refutationSan: z.array(z.string()).optional(),
             refutationUci: z.array(z.string()).optional(),
+            refutationCandidates: tacticalReplyCandidatesSchema.optional(),
             severity: z
                 .enum(["best", "good", "okay", "inaccuracy", "mistake", "blunder"])
                 .optional(),
@@ -302,6 +311,7 @@ export type Position = {
         pvUci?: string[];
         refutationSan?: string[];
         refutationUci?: string[];
+        refutationCandidates?: TacticalReplyCandidate[];
         severity?: "best" | "good" | "okay" | "inaccuracy" | "mistake" | "blunder";
         cpLoss?: number;
         winProbabilityDrop?: number;

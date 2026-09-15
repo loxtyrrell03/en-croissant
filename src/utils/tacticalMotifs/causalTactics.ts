@@ -704,6 +704,85 @@ function captureGainEvidence(step: TacticalReplayStep, gain: number) {
     };
 }
 
+/** Recover a concrete capture cause even when the preferred engine reply is
+ * a different, unexplained move. The better board must avoid every profitable
+ * immediate capture of the SAME victim, not merely stop this one attacker.
+ * The victim must also have been safe from immediate exchanges before the
+ * mistake. A better move giving check does not make an old loose pawn a newly
+ * caused loss. The changed-turn board is only a static exposure comparison.
+ * These are local exchange/king-safety bounds, not full-position evaluations. */
+export function proveAlternativeCaptureCause(
+    fen: string,
+    playedMove: string,
+    bestMove: string,
+    nominatedReplies: readonly string[],
+    principalReply?: string,
+    nodeLimit = 8192,
+): TacticalMotifEvidence | null {
+    if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
+    const played = replayTacticalLine(fen, [playedMove])[0];
+    const better = replayTacticalLine(fen, [bestMove])[0];
+    if (!played || !better || played.after.isEnd() || better.after.isEnd() ||
+        makeFen(played.after.toSetup()) === makeFen(better.after.toSetup())) return null;
+    const pos = played.after, budget = { nodes: nodeLimit };
+    const previous = withTurn(played.before, pos.turn);
+    const previousCaptures = legalMoves(previous).filter(move => capturedValue(previous, move) > 0);
+    const betterCaptures = legalMoves(better.after).filter(move => capturedValue(better.after, move) > 0);
+    const safeFromImmediateCapture = (board: Chess, captures: NormalMove[], target: Square) => {
+        for (const other of captures.filter(reply => reply.to === target)) {
+            if (--budget.nodes < 0) throw new Error("Capture-cause budget exhausted");
+            if (other.promotion) return false;
+            const after = board.clone(); after.play(other);
+            if (capturedValue(board, other) - exchange(after, target, budget) > 0) return false;
+        }
+        return true;
+    };
+    const relative = (square: Square) => pos.turn === "white" ? square : square ^ 56;
+    const candidates = legalMoves(pos).filter(move =>
+        !move.promotion && pos.board.get(move.to)?.color === played.before.turn &&
+        makeUci(move) !== principalReply && nominatedReplies.includes(makeUci(move))).sort((a, b) =>
+            capturedValue(pos, b) - capturedValue(pos, a) ||
+            relative(a.from) - relative(b.from) || relative(a.to) - relative(b.to));
+    let strongest: TacticalMotifEvidence | null = null;
+    try {
+        for (const move of candidates) {
+            if (--budget.nodes < 0) break;
+            if (capturedValue(pos, move) <= (strongest?.value ?? 0)) continue;
+            const victim = pos.board.get(move.to)!;
+            const original = relocatedSquare(played, move.to, true);
+            const target = original === undefined ? undefined : relocatedSquare(better, original);
+            const otherVictim = target === undefined ? undefined : better.after.board.get(target);
+            const originalVictim = original === undefined ? undefined : played.before.board.get(original);
+            if (original === undefined || target === undefined ||
+                originalVictim?.color !== victim.color || originalVictim.role !== victim.role ||
+                otherVictim?.color !== victim.color || otherVictim.role !== victim.role)
+                continue;
+            // All legal capturers matter. A changed attacker is not prevention.
+            if (!safeFromImmediateCapture(previous, previousCaptures, original) ||
+                !safeFromImmediateCapture(better.after, betterCaptures, target)) continue;
+            const gain = preparationCaptureGain(pos, move, budget);
+            if (gain === null || gain < 100 || gain <= (strongest?.value ?? 0)) continue;
+            const after = pos.clone(); after.play(move);
+            if (after.isEnd()) continue; // Mate and terminal drawing resources have dedicated lessons.
+            const uci = makeUci(move), san = makeSan(pos, move);
+            const step: TacticalReplayStep = { before: pos, after, move, uci, san, capture: capturedValue(pos, move), balance: gain };
+            const motif: TacticalMotifEvidence = {
+                id: "hangingPiece", source: "allowed", confidence: "high", relevance: "primary",
+                ply: 1, moveUci: uci, actor: pos.turn, ...captureGainEvidence(step, gain),
+            };
+            const contextual = filterCompensatedRootCaptures(makeFen(pos.toSetup()), [uci], [motif], fen, playedMove)[0];
+            if (!contextual || (contextual.value ?? 0) < 100) continue;
+            strongest = {
+                ...contextual,
+                comparison: "prevented",
+                comparisonEvidence: `${san} is an alternative reply. ${better.san} instead keeps that ${victim.role}${target === move.to ? "" : ` on ${makeSquare(target)}`} safe from immediate capture.`,
+                alternativeLine: { fen: makeFen(pos.toSetup()), uci: [uci], san: [san] },
+            };
+        }
+    } catch { /* Keep an already complete witness; unfinished candidates supply no evidence. */ }
+    return strongest;
+}
+
 function withTurn(pos: Chess, turn: Color) {
     const copy = pos.clone();
     copy.turn = turn;

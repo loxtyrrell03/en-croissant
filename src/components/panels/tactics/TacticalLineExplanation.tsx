@@ -8,22 +8,24 @@ export function TacticalLineExplanation({
   moves,
   motifs,
   title = "Tactics through the line",
+  intro = "Labels focus on the connected tactical sequence. Later moves depend on the replies shown; a quiet pause ends the tactical labels, not the engine line.",
 }: {
   moves: string[];
   motifs: TacticalMotifEvidence[];
   title?: string;
+  intro?: string;
 }) {
-  if (!moves.length || !motifs.length) return null;
+  const lineMotifs = motifs.filter(motif => !motif.alternativeLine);
+  if (!moves.length || !lineMotifs.length) return null;
   return (
     <details>
       <summary style={{ cursor: "pointer", fontSize: "0.8rem" }}>{title}</summary>
       <Stack gap={6} mt="xs">
         <Text size="xs" c="dimmed">
-          Labels focus on the connected tactical sequence. Later moves depend on the replies shown;
-          a quiet pause ends the tactical labels, not the engine line.
+          {intro}
         </Text>
         {moves.map((move, index) => {
-          const here = motifs.filter((motif) => motif.ply === index + 1);
+          const here = lineMotifs.filter((motif) => motif.ply === index + 1);
           return (
             <Stack key={`${index}:${move}`} gap={2} data-tactical-ply={index + 1}>
               <Group gap={6}>
@@ -59,4 +61,12 @@ export function TacticalLineExplanation({
       </Stack>
     </details>
   );
+}
+
+/** Separate branch provenance must never become a badge on the preferred PV. */
+export function TacticalAlternativeExplanation({ motifs }: { motifs: TacticalMotifEvidence[] }) {
+  const alternative = motifs.find(motif => motif.alternativeLine);
+  if (!alternative?.alternativeLine) return null;
+  const { alternativeLine, ...motif } = alternative;
+  return <TacticalLineExplanation title="Separate tactical reply" intro="This reply is separate from the main engine line." moves={alternativeLine.san} motifs={[motif]} />;
 }
