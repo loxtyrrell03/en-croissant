@@ -4,6 +4,7 @@ import { Worker } from "node:worker_threads";
 import test from "node:test";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
 import { quietPieceForkCases, quietPieceForkMove } from "../../src/utils/tests/fixtures/quietPieceFork.ts";
+import { discoveryTrapCases } from "../../src/utils/tests/fixtures/discoveryTrap.ts";
 import { directThreatFen, directThreatLine } from "../../src/utils/tests/fixtures/directThreatRelevance.ts";
 import { tablebaseCases } from "../../src/utils/tests/fixtures/tablebaseRelevance.ts";
 import { directMaterialPayoffCases, reflectPayoff } from "../../src/utils/tests/fixtures/directMaterialPayoff.ts";
@@ -93,6 +94,7 @@ test(
     const { matingInterferenceCases, reflectMatingInterference } = await import("../../src/utils/tests/fixtures/matingInterference.ts");
     const cases = [
       ...quietPieceForkCases.map(row=>({name:`quiet piece fork: ${row.id}`,fen:row.fen,pvUci:[quietPieceForkMove],expectedPrimary:row.positive?["fork"]:[]})),
+      ...discoveryTrapCases.map(row=>({name:`discovered trap: ${row.id}`,fen:row.fen,pvUci:["e2e4"],expectedPrimary:row.positive?["discoveredAttack"]:[]})),
       ...matingInterferenceCases.filter(row => row.id !== "already-blocked-defence").flatMap(row => [row, { ...reflectMatingInterference(row), id: `${row.id}:black` }]).map(row => ({ name: `mating interference: ${row.id}`, fen: row.fen, pvUci: [row.move], expectedPrimary: row.expected || row.id.startsWith("extra-diagonal-defender") ? ["mateIn3"] : [], expectedTimeline: row.expected ? { id: "interference", ply: 1, actor: row.id.endsWith(":black") ? "black" : "white" } : undefined })),
       ...JSON.parse(readFileSync("benchmarks/tactical-relevance/quiet-mate-development.json", "utf8")).cases.flatMap(row => [1, row.bestLine.length].map(length => ({
         name: `quiet mate: ${row.id}:${length}`, fen: row.startFen, pvUci: row.bestLine.slice(0, length),

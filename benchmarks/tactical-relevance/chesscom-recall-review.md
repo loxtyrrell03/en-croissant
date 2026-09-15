@@ -1,5 +1,9 @@
 # Whole-game recall audit — adapter 110 / live pipeline 115
 
+The subsequent `discovery-recall-review.md` records two recovered discovered
+attacks in this same frozen sample, including the e-pawn opportunity left open
+below. This document preserves the earlier fork milestone's evidence and limits.
+
 ## Selection and chess judgement
 
 The frozen September archive sample contains the owner's latest three standard

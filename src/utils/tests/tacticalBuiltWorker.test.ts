@@ -10,6 +10,7 @@ import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
+import { discoveryTrapCases } from "./fixtures/discoveryTrap";
 import { reflectMixedForkFen, reflectMixedForkMove } from "./fixtures/mixedTargetFork";
 import { directThreatFen, directThreatLine, directThreatControls } from "./fixtures/directThreatRelevance";
 import { tablebaseCases } from "./fixtures/tablebaseRelevance";
@@ -103,6 +104,16 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("quiet piece forks and counterch
         expect(scan.motifs.some(m=>m.id==="fork")).toBe(row.positive);
     }
 },30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("discovered traps and safe queen flights survive the production controller", async () => {
+    for (const row of discoveryTrapCases) for (const reflected of [false, true]) {
+        const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci: [reflected ? reflectMixedForkMove("e2e4") : "e2e4"], depth: 16, engineName: "Control" };
+        const { scan } = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(scan.motifs.some(m => m.id === "discoveredAttack")).toBe(row.positive);
+    }
+}, 30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_RECALL_REPLAY)("all owner-game positions retain the actual compiled scan and history", async()=>{
     const baseline=JSON.parse(readFileSync(process.env.TACTICAL_RECALL_REPLAY!,"utf8"));

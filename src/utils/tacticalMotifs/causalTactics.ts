@@ -5362,6 +5362,121 @@ export function proveDiscoveredMaterial(
     return proof;
 }
 
+type DiscoveredTrapProof = {
+    gain: number;
+    ray: RevealedRay;
+    visits: number;
+    branches: { replyUci: string; answerUci: string; gain: number;
+        pinReplies?: { replyUci: string; answerUci: string; gain: number }[] }[];
+};
+const discoveredTrapCache = new Map<string, DiscoveredTrapProof | null>();
+
+/** Catch the SAME newly revealed victim after every defence, possibly by
+ * pinning it to its king after a flight. Allies can capture that victim;
+ * unrelated loose pieces, pawn gains and PV endpoints cannot fund this proof.
+ * One pinning tempo, all friendly liabilities and countercheck answers share
+ * a fixed budget. This is a local material proof, not a full game evaluation. */
+export function proveDiscoveredTrap(
+    root: TacticalReplayStep,
+    nodeLimit = 4096,
+    onFailure?: (reason: string) => void,
+): DiscoveredTrapProof | null {
+    if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture ||
+        root.move.promotion || root.after.isCheck() || root.after.isEnd() ||
+        defenderCanClaimFiftyMoveDraw(root.after)) return null;
+    const rays = revealedRays(root).filter(ray => {
+        const role = root.after.board.get(ray.target)!.role;
+        return role !== "king" && VALUE[role] >= VALUE.knight;
+    });
+    if (!rays.length) return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    const cacheable = nodeLimit === 4096 && !onFailure;
+    if (cacheable && discoveredTrapCache.has(key)) return discoveredTrapCache.get(key)!;
+    const budget = { nodes: nodeLimit }, side = root.before.turn;
+    const debit = (pos: Chess, move: NormalMove) =>
+        capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--budget.nodes < 0) throw new Error("Discovered trap budget exhausted");
+        const next = pos.clone();
+        next.play(move);
+        return next;
+    };
+    const capture = (pos: Chess, target: Square, balance: number) => {
+        if (pos.isEnd() || pos.board.get(target)?.color !== opposite(side)) return null;
+        let best: { answerUci: string; gain: number } | null = null;
+        for (const move of recoveryMoves(pos, side)) {
+            if (move.to !== target || !capturedValue(pos, move)) continue;
+            if (--budget.nodes < 0) throw new Error("Discovered trap budget exhausted");
+            const gain = preparationCaptureGain(pos, move, budget);
+            if (gain !== null && balance + gain >= 100 && (!best || balance + gain > best.gain))
+                best = { answerUci: makeUci(move), gain: balance + gain };
+        }
+        return best;
+    };
+    let result: DiscoveredTrapProof | null = null;
+    try {
+        for (const ray of rays) {
+            // Do not credit opening a line for a piece that could already
+            // have been won immediately before that line opened.
+            if (legalMoves(root.before).some(move => move.to === ray.target &&
+                capturedValue(root.before, move) && tacticalExchangeGain(root.before, move) >= 100))
+                continue;
+            const branches: DiscoveredTrapProof["branches"] = [];
+            let minimum = Infinity;
+            for (const reply of recoveryMoves(root.after, side)) {
+                const pos = visit(root.after, reply);
+                const target = reply.from === ray.target ? reply.to : ray.target;
+                const balance = -debit(root.after, reply);
+                let answer: Omit<DiscoveredTrapProof["branches"][number], "replyUci"> | null =
+                    capture(pos, target, balance);
+                if (!answer && !pos.isCheck() && reply.from === ray.target &&
+                    pos.board.get(ray.from)?.color === side) {
+                    for (const move of legalMoves(pos)) {
+                        if (move.from !== ray.from || capturedValue(pos, move) || move.promotion) continue;
+                        const pinned = visit(pos, move);
+                        if (pinned.isEnd() || defenderCanClaimFiftyMoveDraw(pinned) ||
+                            !rayTactics(pinned, side).some(pin => pin.kind === "pin" &&
+                                pin.pinner === move.to && pin.front === target &&
+                                pinned.board.get(pin.rear)?.role === "king")) continue;
+                        const pinReplies: NonNullable<DiscoveredTrapProof["branches"][number]["pinReplies"]> = [];
+                        const defences = recoveryMoves(pinned, side);
+                        for (const defence of defences) {
+                            const next = visit(pinned, defence);
+                            const victim = defence.from === target ? defence.to : target;
+                            const win = capture(next, victim, balance - debit(pinned, defence));
+                            if (!win) break;
+                            pinReplies.push({ replyUci: makeUci(defence), ...win });
+                        }
+                        if (defences.length && pinReplies.length === defences.length) {
+                            answer = { answerUci: makeUci(move),
+                                gain: Math.min(...pinReplies.map(branch => branch.gain)), pinReplies };
+                            break;
+                        }
+                    }
+                }
+                if (!answer) {
+                    onFailure?.(`Unproved victim flight/defence ${makeSan(root.after, reply)}`);
+                    break;
+                }
+                minimum = Math.min(minimum, answer.gain);
+                branches.push({ replyUci: makeUci(reply), ...answer });
+            }
+            if (branches.length === legalMoves(root.after).length && Number.isFinite(minimum)) {
+                result = { ray, gain: minimum, visits: nodeLimit - budget.nodes, branches };
+                break;
+            }
+        }
+    } catch (error) {
+        onFailure?.(error instanceof Error ? error.message : "Incomplete discovered trap");
+    }
+    if (cacheable) {
+        discoveredTrapCache.set(key, result);
+        if (discoveredTrapCache.size > 128)
+            discoveredTrapCache.delete(discoveredTrapCache.keys().next().value!);
+    }
+    return result;
+}
+
 type ExchangeDiscoveryProof = {
     gain: number;
     example: string[];
@@ -5743,7 +5858,9 @@ function discoveredEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
         ? proveCheckingDiscovery(step) : null;
     const captureRetention = !mate && directGain === null && !exchange && !checking && kingRay
         ? proveDiscoveredCapture(step) : null;
-    const gain = directGain ?? exchange?.gain ?? checking?.gain ?? captureRetention?.gain ?? null;
+    const trapped = !mate && directGain === null && !exchange && !checking && !captureRetention
+        ? proveDiscoveredTrap(step) : null;
+    const gain = directGain ?? exchange?.gain ?? checking?.gain ?? captureRetention?.gain ?? trapped?.gain ?? null;
     if (!mate && gain === null) return null;
     // When the only newly opened ray gives check, an independently proved
     // intermediate capture can already explain the same material gain and
@@ -5814,7 +5931,7 @@ function discoveredEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
     const label =
         id === "doubleCheck" ? "Double Check" : kingRay ? "Discovered Check" : "Discovered Attack";
     const materialRays = rays.filter((ray) => step.after.board.get(ray.target)?.role !== "pawn");
-    const describedRays = kingRay
+    const describedRays = trapped ? [trapped.ray] : kingRay
         ? [kingRay]
         : (materialRays.length ? materialRays : rays).slice(0, 2);
     const opened = describedRays.map(
@@ -5831,7 +5948,7 @@ function discoveredEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
     // targets rather than append incidental pawn pressure to every check.
     const profitableTargets =
         !kingRay && !exchange ? winningTargets(step.after, step.move.to, step.before.turn) : null;
-    const supportingTargets = profitableTargets
+    const supportingTargets = trapped ? [] : profitableTargets
         ? moverTargets.filter((to) => profitableTargets.includes(to))
         : moverTargets;
     const accompaniment =
@@ -5843,6 +5960,9 @@ function discoveredEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
             : "");
     const captureReply = captureRetention?.branches.find(branch =>
         parseSan(step.after, branch.reply)?.to === captureRetention.ray.from);
+    const pinBranch = trapped?.branches.find(branch => branch.pinReplies);
+    const pinLine = pinBranch ? replayTacticalLine(makeFen(step.after.toSetup()),
+        [pinBranch.replyUci, pinBranch.answerUci]) : [];
     const consequence = mate
         ? step.after.isCheckmate()
             ? "There is no legal defence: checkmate."
@@ -5853,6 +5973,8 @@ function discoveredEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
           ? `Every legal answer permits a verified material gain through the checking attack: ${checking.branches.map(branch => `${branch.reply} ${branch.line.join(" ")}`).join("; ")}. The branches differ; later checks belong to their actual moves. Initial captures, recaptures and immediate losses elsewhere are included, with at most five further checks before the material payoff.`
         : exchange
           ? `The shared defence cannot save all these targets: after ${exchange.example[0]}, ${exchange.example[1]} removes the defender. Every legal reply permits a local material gain, including exchanges and up to two checking counterattacks; immediate losses elsewhere on the board, mate and promotion replies are checked.`
+        : trapped
+          ? `The attacked ${step.after.board.get(trapped.ray.target)!.role} cannot escape without a verified material loss.${pinLine.length === 2 ? ` After ${pinLine[0].san}, ${pinLine[1].san} pins that same piece to its king; every defence still loses material.` : " Allied pieces cover its escape squares."} Captures, losses elsewhere and immediate counterchecks are included; this is a local material gain, not a claim that the whole game is won.`
           : `Every legal ${kingRay ? "answer to the discovered check" : "reply"} ${immediateEnough ? "concedes material" : "allows material gain or a short forced mate, including checking answers to countercaptures"}. Captures and interpositions are included in this check.`;
     const motif: TacticalMotifEvidence = {
         id,
@@ -5864,7 +5986,9 @@ function discoveredEvidence(steps: TacticalReplayStep[], source: TacticalMotifEv
         evidence: `${action}${accompaniment} ${id === "doubleCheck" ? "Both pieces give check. " : ""}${consequence}`,
         value: mate ? 10000 : (gain ?? undefined),
     };
-    return { motif, rays, targets, checkingContinuation: Boolean(checking), captureRetention };
+    return { motif, rays: trapped ? [trapped.ray] : rays,
+        targets: trapped ? [trapped.ray.target] : targets,
+        checkingContinuation: Boolean(checking), captureRetention, trapped };
 }
 
 type RayTactic = { kind: "pin" | "skewer"; pinner: Square; front: Square; rear: Square };
@@ -7160,11 +7284,12 @@ export function tacticalBoardEvidence(
     if (DISCOVERED_THEMES.has(motif.id)) {
         const rays = revealedRays(step);
         if (!rays.length) return null;
-        const retention = (motif.value ?? 10000) < 10000
-            ? discoveredEvidence([step], motif.source)?.captureRetention : null;
-        if (retention) return {
+        const discovery = (motif.value ?? 10000) < 10000
+            ? discoveredEvidence([step], motif.source) : null;
+        const provedRay = discovery?.captureRetention?.ray ?? discovery?.trapped?.ray;
+        if (provedRay) return {
             square: makeSquare(step.move.to),
-            arrows: [{ from: makeSquare(retention.ray.from), to: makeSquare(retention.ray.target) }],
+            arrows: [{ from: makeSquare(provedRay.from), to: makeSquare(provedRay.target) }],
         };
         const mover = step.after.board.get(step.move.to)!;
         const threats = attacks(mover, step.move.to, step.after.board.occupied).intersect(

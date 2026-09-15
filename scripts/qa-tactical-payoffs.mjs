@@ -14,6 +14,7 @@ import { directMaterialPayoffCases } from "../src/utils/tests/fixtures/directMat
 import { captureGainLiabilityCases } from "../src/utils/tests/fixtures/captureGainLiability.ts";
 import { castlingAliasCases } from "../src/utils/tests/fixtures/castlingRelevance.ts";
 import { quietPieceForkCases, quietPieceForkMove } from "../src/utils/tests/fixtures/quietPieceFork.ts";
+import { discoveryTrapCases } from "../src/utils/tests/fixtures/discoveryTrap.ts";
 import {
   matingInterferenceCases,
   reflectMatingInterference,
@@ -27,10 +28,11 @@ const quietMateMode = process.argv.includes("--quiet-mate");
 const discoveryMode = process.argv.includes("--discovery");
 const liabilityMode = process.argv.includes("--liability");
 const quietForkMode = process.argv.includes("--quiet-fork");
+const discoveryTrapMode = process.argv.includes("--discovery-trap");
 const root = process.cwd(),
   output = resolve(
     root,
-    quietForkMode ? "tmp/tactical-quiet-fork-adapter110" : liabilityMode ? "tmp/tactical-liability-adapter108" : discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
+    discoveryTrapMode ? "tmp/tactical-discovery-trap-adapter111" : quietForkMode ? "tmp/tactical-quiet-fork-adapter110" : liabilityMode ? "tmp/tactical-liability-adapter108" : discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
       ? "tmp/tactical-quiet-mate-adapter104"
       : interferenceMode
         ? "tmp/tactical-interference-adapter104"
@@ -46,7 +48,9 @@ const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
 const cases = (
-  quietForkMode
+  discoveryTrapMode
+    ? discoveryTrapCases.filter(row=>row.positive || row.id==="queen-b4-escape").map(row=>({...row,pvUci:row.positive?["e2e4","c4c6","f1b5"]:["e2e4"]}))
+    : quietForkMode
     ? quietPieceForkCases.filter(row=>row.positive || row.id==="no-answer-to-countercheck").map(row=>({...row,pvUci:row.positive?[quietPieceForkMove,"c4a6","e5g4"]:[quietPieceForkMove]}))
     : liabilityMode
     ? [
@@ -167,7 +171,24 @@ try {
           index,
           scale,
         });
-        if (quietForkMode) {
+        if (discoveryTrapMode) {
+          if (row.positive) {
+            await page.getByText("Discovered Attack found",{exact:true}).waitFor();
+            const button=page.getByRole("button",{name:/^Show .* on board$/});
+            await button.focus(); await page.keyboard.press("Enter");
+            const preview=await page.evaluate(()=>window.fixture.last);
+            assert.equal(preview.motifs[0].id,"discoveredAttack");
+            assert(preview.arrows.some(arrow=>arrow.from==="f1"&&arrow.to==="c4"));
+            assert(!preview.arrows.some(arrow=>arrow.from==="b5"));
+            await page.locator("summary").focus(); await page.keyboard.press("Enter");
+            assert((await page.locator('[data-tactical-ply="1"]').innerText()).toLowerCase().includes("discovered attack"));
+            assert((await page.locator('[data-tactical-ply="3"]').innerText()).toLowerCase().includes("pin"));
+          } else {
+            await page.getByText("No tactical theme verified",{exact:true}).waitFor();
+            assert.equal(await page.locator("[data-tactical-candidate]").count(),0);
+          }
+          if(width===360&&scale===2) await page.screenshot({path:resolve(output,`${row.id}.png`),fullPage:true});
+        } else if (quietForkMode) {
           if (row.positive) {
             await page.getByText("Fork found",{exact:true}).waitFor();
             const button=page.getByRole("button",{name:/^Show .* on board$/});
