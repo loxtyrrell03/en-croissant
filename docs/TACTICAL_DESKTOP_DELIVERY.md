@@ -1,6 +1,32 @@
 # Tactical desktop delivery — 2026-09-15
 
-## Current package: adapter 111 / live pipeline 116
+## Current package: adapter 112 / live pipeline 117
+
+Source `e85dc534` is packaged in the standalone executable. The saved-perpetual
+priority fix, retained secondary fork and missed-draw explanation are included.
+The detached clean checkout `en-tactical-desktop-e85dc534` excludes unrelated
+primary-worktree work. Its 8,861-module frontend and native release build pass;
+the native build takes 1m59s and retains 22 existing unused-code warnings.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,145,408 bytes;
+  SHA-256 `6b50d35fbdb1fb282d3b86da10110b77fb027cb8efbfd8d169d3352e83a7fe06`.
+- Worker: `liveTactics.worker-TZ9L-rPZ.js`, 526,890 bytes; SHA-256
+  `2d8f138c274437062ef17bdf031f276b11c52a6e841d975943ff6859cb1fad5d`.
+  Clean frontend bytes match the tested production worker. The x64 executable
+  contains its asset key; the native dependency receipt identifies this clean
+  checkout and asset. The generated route tree has no semantic diff.
+- Previous adapter-111 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter112/en-croissant-fork.exe`,
+  SHA-256 `e43ea2ee6d7f41268e88c529fa43f08d22bc5a1bf118c991800d6e62382606c7`.
+
+No owner app was running, launched or restarted. The Dev App shortcut remains
+on the primary live-source workflow. No settings, games, engine installation,
+owner data or phone service changed. This verifies package/linkage, not native
+interaction or startup reliability. See
+`benchmarks/tactical-relevance/perpetual-priority-review.md`; non-preferred
+capture causes and broader recall remain open.
+
+## Previous package: adapter 111 / live pipeline 116
 
 Source `6a330d56` is packaged in the standalone executable, including the prior
 fork recovery and the two discovered queen-attack opportunities found in the
