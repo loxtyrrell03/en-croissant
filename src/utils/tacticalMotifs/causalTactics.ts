@@ -2101,6 +2101,115 @@ export function preservesVerifiedMate(steps: TacticalReplayStep[]) {
         proveCheckingMate(steps));
 }
 
+export type MateAvoidanceStrategy = {
+    start: string;
+    attacker: Color;
+    nodes: Record<string, {
+        fen: string;
+        remaining: number;
+        children?: { move: string; next: string }[];
+    }>;
+};
+
+/** A positive defence to this mating entry, not failure to find a mate.
+ * Capture its initiating piece, then cover EVERY legal attacking move within
+ * the claimed mate distance (including quiet moves, checks and promotions).
+ * The defender chooses a legal answer at each turn. This certifies only the
+ * same entry and finite horizon; longer/different attacks remain unassessed. */
+export function proveCapturableMatingEntryDefence(
+    root: TacticalReplayStep,
+    maxMoves: number,
+    nodeLimit = 32768,
+    includeStrategy = false,
+): { defence: string; move: string; maxMoves: number; visits: number; strategy?: MateAvoidanceStrategy } | null {
+    if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 ||
+        !Number.isSafeInteger(maxMoves) || maxMoves < 2 || maxMoves > 4 ||
+        root.after.isEnd() || root.move.promotion) return null;
+    const attacker = root.before.turn;
+    const piece = root.after.board.get(root.move.to);
+    if (!piece || piece.color !== attacker || piece.role === "king") return null;
+    let nodes = 0;
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (++nodes > nodeLimit) throw new Error("Mate defence budget exhausted");
+        const next = pos.clone();
+        next.play(move);
+        return next;
+    };
+    const key = (pos: Chess, remaining: number) => `${makeFen(pos.toSetup())}:${remaining}`;
+    const ordered = (pos: Chess) => {
+        const flip = attacker === "white" ? 0 : 56;
+        return legalMoves(pos).sort((a, b) =>
+            capturedValue(pos, b) - capturedValue(pos, a) ||
+            (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip) ||
+            String(a.promotion ?? "").localeCompare(String(b.promotion ?? "")));
+    };
+    const memo = new Map<string, boolean>();
+    const choices = new Map<string, NormalMove>();
+    const avoids = (pos: Chess, remaining: number): boolean => {
+        if (pos.isCheckmate()) return pos.turn === attacker;
+        if (pos.isEnd() || !remaining) return true;
+        const id = key(pos, remaining);
+        if (memo.has(id)) return memo.get(id)!;
+        let answer = pos.turn === attacker;
+        if (pos.turn === attacker) {
+            for (const move of ordered(pos)) {
+                // Only a checking move can mate on the final attacking ply.
+                // Every earlier attacking move is visited, including quiet ones.
+                if (remaining === 1 && !mayGiveCheck(pos, move)) continue;
+                if (!avoids(visit(pos, move), remaining - 1)) {
+                    answer = false;
+                    break;
+                }
+            }
+        } else {
+            for (const move of ordered(pos)) {
+                if (avoids(visit(pos, move), remaining)) {
+                    choices.set(id, move);
+                    answer = true;
+                    break;
+                }
+            }
+        }
+        memo.set(id, answer);
+        return answer;
+    };
+    const exportStrategy = (start: Chess): MateAvoidanceStrategy => {
+        const graph: MateAvoidanceStrategy["nodes"] = {};
+        const collect = (pos: Chess, remaining: number): string => {
+            const id = key(pos, remaining);
+            if (graph[id]) return id;
+            const node: MateAvoidanceStrategy["nodes"][string] = {
+                fen: makeFen(pos.toSetup()), remaining,
+            };
+            graph[id] = node;
+            // A final attacking ply is independently checked by replaying ALL
+            // legal moves in the certificate validator, not trusting nomination.
+            if (pos.isEnd() || !remaining || (pos.turn === attacker && remaining === 1)) return id;
+            const moves = pos.turn === attacker ? ordered(pos) : [choices.get(id)!];
+            node.children = moves.map(move => {
+                const next = pos.clone();
+                next.play(move);
+                return { move: makeUci(move), next: collect(next, remaining - Number(pos.turn === attacker)) };
+            });
+            return id;
+        };
+        return { start: collect(start, maxMoves - 1), attacker, nodes: graph };
+    };
+    try {
+        for (const capture of ordered(root.after)) {
+            if (capture.to !== root.move.to || !capturedValue(root.after, capture) ||
+                tacticalExchangeGain(root.after, capture) - root.capture < MIN_TACTICAL_CAPTURE_GAIN) continue;
+            const next = visit(root.after, capture);
+            if (!avoids(next, maxMoves - 1)) continue;
+            return { defence: makeSan(root.after, capture), move: makeUci(capture), maxMoves, visits: nodes,
+                ...(includeStrategy ? { strategy: exportStrategy(next) } : {}) };
+        }
+    } catch {
+        // Budget exhaustion and incomplete strategy are unknown, not safety.
+    }
+    return null;
+}
+
 /** One terminal event is one lesson. Conflicting legacy pattern names are
  * not independent tactics; use factual Checkmate until taxonomy is resolved.
  * A root mating preparation is not the terminal event and remains separate. */
@@ -13848,13 +13957,12 @@ export function compareBestLineTacticalDefence(
             alternativeMate &&
             motif.ply === 1 &&
             /^mateIn\d+$/.test(motif.id) &&
-            motif.value === 10000 &&
-            Number(alternativeMate.id.slice(6)) <= Number(motif.id.slice(6))
+            motif.value === 10000
         ) {
             return {
                 ...motif,
                 comparison: "persists" as const,
-                comparisonEvidence: `Even after ${better[0].san}, ${better[1].san} still permits a verified forced mate within ${Number(alternativeMate.id.slice(6))} moves. The better move does not remove this mating danger.`,
+                comparisonEvidence: `Even after ${better[0].san}, ${better[1].san} still permits a verified forced mate within ${Number(alternativeMate.id.slice(6))} moves. The choice can change the route or speed of mate, but the better move does not remove the forced-mate outcome.`,
             };
         }
         const proof = materialLesson(attackSteps, motif);
@@ -14149,6 +14257,13 @@ export function compareImmediateTacticalDefence(
             } else {
                 comparison = "persists";
                 comparisonEvidence = `The same immediate mate remains after ${bestSan}.`;
+            }
+        } else if (/^mateIn\d+$/.test(motif.id) && motif.value === 10000) {
+            const distance = Number(motif.id.slice(6));
+            const defence = proveCapturableMatingEntryDefence(alternative, distance);
+            if (defence) {
+                comparison = "prevented";
+                comparisonEvidence = `After ${bestSan}, ${defence.defence} captures the piece entering with ${alternative.san}. Against every legal attacking continuation, the defender has replies avoiding mate within the claimed ${distance}-move window. This stops this specific mating entry; it does not establish a drawn or winning position, or rule out longer or different attacks.`;
             }
         } else if (["hangingPiece", "attackingF2F7"].includes(motif.id)) {
             const gain = tacticalCaptureGain(step);

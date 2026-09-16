@@ -11508,6 +11508,94 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeS
 function preservesVerifiedMate(steps) {
 	return !!steps[0] && !!(proveShortCheckingMate(steps[0]) || proveQuietMateThreat(steps[0]) || proveMateWithinThree(steps) || proveCheckingMate(steps));
 }
+/** A positive defence to this mating entry, not failure to find a mate.
+* Capture its initiating piece, then cover EVERY legal attacking move within
+* the claimed mate distance (including quiet moves, checks and promotions).
+* The defender chooses a legal answer at each turn. This certifies only the
+* same entry and finite horizon; longer/different attacks remain unassessed. */
+function proveCapturableMatingEntryDefence(root, maxMoves, nodeLimit = 32768, includeStrategy = false) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !Number.isSafeInteger(maxMoves) || maxMoves < 2 || maxMoves > 4 || root.after.isEnd() || root.move.promotion) return null;
+	const attacker = root.before.turn;
+	const piece = root.after.board.get(root.move.to);
+	if (!piece || piece.color !== attacker || piece.role === "king") return null;
+	let nodes = 0;
+	const visit = (pos, move) => {
+		if (++nodes > nodeLimit) throw new Error("Mate defence budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const key = (pos, remaining) => `${makeFen(pos.toSetup())}:${remaining}`;
+	const ordered = (pos) => {
+		const flip = attacker === "white" ? 0 : 56;
+		return legalMoves(pos).sort((a, b) => capturedValue(pos, b) - capturedValue(pos, a) || (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip) || String(a.promotion ?? "").localeCompare(String(b.promotion ?? "")));
+	};
+	const memo = /* @__PURE__ */ new Map();
+	const choices = /* @__PURE__ */ new Map();
+	const avoids = (pos, remaining) => {
+		if (pos.isCheckmate()) return pos.turn === attacker;
+		if (pos.isEnd() || !remaining) return true;
+		const id = key(pos, remaining);
+		if (memo.has(id)) return memo.get(id);
+		let answer = pos.turn === attacker;
+		if (pos.turn === attacker) for (const move of ordered(pos)) {
+			if (remaining === 1 && !mayGiveCheck(pos, move)) continue;
+			if (!avoids(visit(pos, move), remaining - 1)) {
+				answer = false;
+				break;
+			}
+		}
+		else for (const move of ordered(pos)) if (avoids(visit(pos, move), remaining)) {
+			choices.set(id, move);
+			answer = true;
+			break;
+		}
+		memo.set(id, answer);
+		return answer;
+	};
+	const exportStrategy = (start) => {
+		const graph = {};
+		const collect = (pos, remaining) => {
+			const id = key(pos, remaining);
+			if (graph[id]) return id;
+			const node = {
+				fen: makeFen(pos.toSetup()),
+				remaining
+			};
+			graph[id] = node;
+			if (pos.isEnd() || !remaining || pos.turn === attacker && remaining === 1) return id;
+			node.children = (pos.turn === attacker ? ordered(pos) : [choices.get(id)]).map((move) => {
+				const next = pos.clone();
+				next.play(move);
+				return {
+					move: makeUci(move),
+					next: collect(next, remaining - Number(pos.turn === attacker))
+				};
+			});
+			return id;
+		};
+		return {
+			start: collect(start, maxMoves - 1),
+			attacker,
+			nodes: graph
+		};
+	};
+	try {
+		for (const capture of ordered(root.after)) {
+			if (capture.to !== root.move.to || !capturedValue(root.after, capture) || tacticalExchangeGain(root.after, capture) - root.capture < MIN_TACTICAL_CAPTURE_GAIN) continue;
+			const next = visit(root.after, capture);
+			if (!avoids(next, maxMoves - 1)) continue;
+			return {
+				defence: makeSan(root.after, capture),
+				move: makeUci(capture),
+				maxMoves,
+				visits: nodes,
+				...includeStrategy ? { strategy: exportStrategy(next) } : {}
+			};
+		}
+	} catch {}
+	return null;
+}
 /** One terminal event is one lesson. Conflicting legacy pattern names are
 * not independent tactics; use factual Checkmate until taxonomy is resolved.
 * A root mating preparation is not the terminal event and remains separate. */
@@ -19375,10 +19463,10 @@ function compareBestLineTacticalDefence(fen, playedMove, actualLine, bestLine, m
 	const alternatives = alternativeMotifs.map((m) => materialLesson(alternativeSteps, m)).filter((proof) => proof !== null);
 	if (!alternatives.length && !alternativeMate) return motifs;
 	return motifs.map((motif) => {
-		if (alternativeMate && motif.ply === 1 && /^mateIn\d+$/.test(motif.id) && motif.value === 1e4 && Number(alternativeMate.id.slice(6)) <= Number(motif.id.slice(6))) return {
+		if (alternativeMate && motif.ply === 1 && /^mateIn\d+$/.test(motif.id) && motif.value === 1e4) return {
 			...motif,
 			comparison: "persists",
-			comparisonEvidence: `Even after ${better[0].san}, ${better[1].san} still permits a verified forced mate within ${Number(alternativeMate.id.slice(6))} moves. The better move does not remove this mating danger.`
+			comparisonEvidence: `Even after ${better[0].san}, ${better[1].san} still permits a verified forced mate within ${Number(alternativeMate.id.slice(6))} moves. The choice can change the route or speed of mate, but the better move does not remove the forced-mate outcome.`
 		};
 		const proof = materialLesson(attackSteps, motif);
 		if (!proof) return motif;
@@ -19574,7 +19662,14 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 			comparison = "persists";
 			comparisonEvidence = `The same immediate mate remains after ${bestSan}.`;
 		}
-		else if (["hangingPiece", "attackingF2F7"].includes(motif.id)) {
+		else if (/^mateIn\d+$/.test(motif.id) && motif.value === 1e4) {
+			const distance = Number(motif.id.slice(6));
+			const defence = proveCapturableMatingEntryDefence(alternative, distance);
+			if (defence) {
+				comparison = "prevented";
+				comparisonEvidence = `After ${bestSan}, ${defence.defence} captures the piece entering with ${alternative.san}. Against every legal attacking continuation, the defender has replies avoiding mate within the claimed ${distance}-move window. This stops this specific mating entry; it does not establish a drawn or winning position, or rule out longer or different attacks.`;
+			}
+		} else if (["hangingPiece", "attackingF2F7"].includes(motif.id)) {
 			const gain = tacticalCaptureGain(step);
 			const otherGain = tacticalCaptureGain(alternative);
 			const otherExchange = tacticalExchangeGain(alternative.before, alternative.move);
@@ -20197,7 +20292,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 130;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 131;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

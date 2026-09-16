@@ -7,8 +7,47 @@ import { SharedReviewService, engineLine, BackgroundEngine } from "../generated/
 import { Chess } from "chessops/chess";
 import { INITIAL_FEN, makeFen, parseFen } from "chessops/fen";
 import { parseUci } from "chessops/util";
+import { matingEntryDefence } from "../../src/utils/tests/fixtures/matingEntryDefence.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("a verified mating-entry defence survives generated review, deck storage and reload", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-shared-review-mate-defence-"));
+  const input = matingEntryDefence;
+  const position = Chess.fromSetup(parseFen(input.fen).unwrap()).unwrap();
+  position.play(parseUci(input.playedMoveUci));
+  const after = makeFen(position.toSetup());
+  let service;
+  const options = { root, documentsRoot: join(root, "documents"), engineConfigPath: join(root, "engine.json"),
+    fetchGames: async () => [], lookup: async fen => {
+      assert.ok(fen === input.fen || fen === after);
+      return {depth: 16, pvs: fen === input.fen
+        ? [{cp: -400, moves: input.pvUci.join(" ")}]
+        // Stored/cloud scores are White-relative, unlike raw UCI replies.
+        : [{mate: -4, moves: input.refutationUci.join(" ")}]};
+    }};
+  try {
+    await writeFile(join(root, "config.json"), JSON.stringify({accounts: {chesscom: "Tester"}}));
+    await writeFile(join(root, "games.json"), JSON.stringify({games: [{source: "chesscom", end: 1789387200,
+      url: "https://example.test/mate-defence", pgn: `[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.16"]\n[SetUp "1"]\n[FEN "${input.fen}"]\n[Result "0-1"]\n\n1. f4 0-1`}]}));
+    service = new SharedReviewService(options); await service.initialize(false); await service.run();
+    assert.equal(service.snapshot().error, null);
+    const card = service.snapshot().cards[0]; assert.ok(card);
+    const motif = card.tacticalClassification.allowedMotifs[0];
+    assert.equal(motif.id, "mateIn4"); assert.equal(motif.comparison, "prevented");
+    assert.match(motif.comparisonEvidence, /Nxe2/);
+    assert.match(motif.comparisonEvidence, /longer or different attacks/);
+    assert.match(card.explanation, /captures the piece/);
+    const metadata = (await service.deck()).positions[0].mistakeReview;
+    assert.deepEqual(metadata.allowedMotifs, card.tacticalClassification.allowedMotifs);
+    service.close(); service = new SharedReviewService(options); await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification, card.tacticalClassification);
+  } finally {
+    service?.close(); const target = resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir()) + sep) && target.includes("en-shared-review-mate-defence-"));
+    await rm(target, {recursive: true, force: true});
+  }
+});
 
 test("complete history survives the actual generated background service, saved deck and reload", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-history-"));
