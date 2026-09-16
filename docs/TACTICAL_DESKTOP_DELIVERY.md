@@ -1,6 +1,38 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 114 / live pipeline 119
+## Current package: adapter 115 / live pipeline 120
+
+Source `6770a3af` is packaged in the standalone executable, including newly
+exposed pawn lessons, retained-opportunity checks, stronger-alternative priority
+and preceding-position persistence. The detached checkout
+`en-tactical-desktop-6770a3af` excludes unrelated primary-worktree edits.
+TypeScript, the 8,861-module frontend and native release build pass; the latter
+takes 2m39s with 22 existing warnings. The clean checkout also passes 42 focused
+source/UI/schema checks, with the one optional owner-data check skipped there
+(it passed in the primary checkout). Generated route-tree output has no semantic
+diff; the separately rebuilt shared service differs only in module-path comments.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,115,712 bytes;
+  SHA-256 `c935c42580b7c16d12b8e869ced2922b5ac926981d5720b01bbe6c40b3ddd687`.
+- Worker: `liveTactics.worker-U6gi6U4r.js`; SHA-256
+  `4f4a22dbba1f7cec5bfef1393f66e0fef365e7d4d563f40d320e3f9ee2424f87`.
+  Its bytes match the tested artifact. The x64 PE contains this asset key and
+  `OpeningReviewWorkspace-D4wPE5ZJ.js`; its dependency receipt identifies both
+  assets and the clean checkout.
+- Previous adapter-114 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter115/en-croissant-fork.exe`,
+  SHA-256 `e1e69cae61dd95a89c20599e1cc71962eb63f8fabd29dd68a4abef779680d3f4`.
+
+No app was running before or after the build; none was launched/restarted.
+The Dev App shortcut still invokes the existing `encroissant-native` live-source
+workflow. Owner games, settings, engines and phone services are unchanged.
+Phone/backend source is committed but not deployed to the phone runtime.
+This is source/package linkage, not native interaction or startup certification.
+See `benchmarks/tactical-relevance/pawn-exposure-review.md` for the nine changed
+owner contexts, one public castling-response recovery, rejected noisy drafts,
+verification receipts and remaining older-pawn/combination/accuracy gaps.
+
+## Previous package: adapter 114 / live pipeline 119
 
 Source `81e1fdff` is packaged in the standalone executable, including missed
 alternative opportunities, separate review branches and preserved before-search
