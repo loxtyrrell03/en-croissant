@@ -11,6 +11,9 @@ evidence; broader persistent-pawn recall is still unresolved.
 The later [checking-exchange review](checking-exchange-review.md) also recovers
 one owner-game pawn capture through equal-interposition and protected-retreat
 proofs; it does not reinstate the rejected broad pawn-admission rule.
+The [remaining owner-recall audit](remaining-owner-recall-review.md) separately
+checks the still-missing pawn and a larger checking/promotion combination;
+neither removing nomination nor increasing the old checking budget resolves them.
 
 ## Question tested
 
