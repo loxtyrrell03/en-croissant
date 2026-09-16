@@ -31,6 +31,7 @@ import { matingCheckEvasionCases } from "./fixtures/matingCheckEvasion";
 import { settledRootExchangeCases } from "./fixtures/settledRootExchange";
 import { captureMatingGuardCases } from "./fixtures/captureMatingGuard";
 import { immediateAlternativeInputs } from "./fixtures/immediateTacticalAlternative";
+import { kingDefenderRemovalCases } from "./fixtures/kingDefenderRemoval";
 import { discoveredPinPriorityFen, discoveredPinPriorityLine, discoveredPinPriorityControls } from "./fixtures/discoveredPinPriority";
 import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "./fixtures/checkingPawnFollowup";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
@@ -118,6 +119,29 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
         vi.unstubAllGlobals();
     }
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("king-safe defender removals survive the production controller", async () => {
+    for (const row of kingDefenderRemovalCases) for (const reflected of [false, true]) {
+        const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci: [reflected ? reflectMixedForkMove(row.move) : row.move],
+            engineName: "Constructed king-capture guard", depth: 16 };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(!row.positive || result.scan.motifs[0]?.id === "capturingDefender").toBe(true);
+        expect(!row.positive || result.scan.arrows.every(arrow => arrow.ply === 1)).toBe(true);
+    }
+    for (const reflected of [false, true]) {
+        const line = ["h6d6", "c7d6", "g3f4"];
+        const input = {fen: reflected ? reflectMixedForkFen(kingDefenderRemovalCases[0].fen) : kingDefenderRemovalCases[0].fen,
+            pvUci: reflected ? line.map(reflectMixedForkMove) : line,
+            engineName: "Constructed accepted guard removal", depth: 16};
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.variations[0].timeline).toContainEqual(expect.objectContaining({
+            label: "Defender Removal Payoff", ply: 3, value: undefined,
+        }));
+    }
+}, 30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("capturable counterchecks preserve checking combinations in the compiled worker", async () => {
     for (const row of countercheckCaptureCases) for (const reflected of [false, true]) {

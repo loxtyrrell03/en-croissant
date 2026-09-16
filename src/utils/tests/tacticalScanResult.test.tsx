@@ -16,6 +16,7 @@ import { matingCheckEvasionFen, matingCheckEvasionLine } from "./fixtures/mating
 import { settledRootExchangeCases } from "./fixtures/settledRootExchange";
 import { captureMatingGuardCases } from "./fixtures/captureMatingGuard";
 import { immediateAlternativeInputs } from "./fixtures/immediateTacticalAlternative";
+import { kingDefenderRemovalCases } from "./fixtures/kingDefenderRemoval";
 import {
   buildLiveTacticalScan,
   previewLiveTacticalVariation,
@@ -40,6 +41,22 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a king-safe defender removal explains legality and draws its current relationships", () => {
+  const row = kingDefenderRemovalCases[0];
+  const value = buildLiveTacticalScan({ fen: row.fen, pvUci: [row.move, "c7d6", "g3f4"],
+    depth: 16, engineName: "Constructed king-capture guard" });
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Removing the Defender found");
+  expect(element.textContent).toContain("king could not legally take");
+  expect(element.textContent).toContain("Kxd6, Kxf4");
+  expect(element.textContent).not.toContain("No tactical theme verified");
+  expect(value.arrows.map(arrow => arrow.from + arrow.to)).toEqual(["h6d6", "d6f4", "g3f4"]);
+  expect(value.arrows.every(arrow => arrow.ply === 1)).toBe(true);
+  expect(value.variations[0].timeline).toContainEqual(expect.objectContaining({
+    label: "Defender Removal Payoff", ply: 3, moveUci: "g3f4", value: undefined,
+  }));
+});
 
 test("a capture-led mating attack keeps its later exchange off the starting board", () => {
   const value = buildLiveTacticalScan({fen: captureMatingGuardCases[0].fen,

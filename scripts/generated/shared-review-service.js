@@ -10046,6 +10046,13 @@ function winningRecaptureEvidence(steps, index, motif, settledExchange) {
 			value: branch.gain,
 			evidence: `${step.san} wins the ${step.before.board.get(step.move.to).role} after ${checking.san} forced the ${checking.before.board.get(proof.guard).role} away from its guarding square with ${previous.san}. This is the payoff of the earlier deflection, not an additional material gain.`
 		};
+		const removal = matching ? proveKingCaptureDefenderRemoval(checking) : null;
+		if (removal?.branches.find((item) => item.replyUci === previous.uci && item.answerUci === step.uci && step.move.from === removal.capturer)) return {
+			...motif,
+			label: "Defender Removal Payoff",
+			value: void 0,
+			evidence: `${step.san} collects the ${step.before.board.get(step.move.to).role} after ${checking.san} removed its guard. This is the payoff of that verified combination, including any material given back with ${previous.san}, not an additional free-piece gain.`
+		};
 		if ((matching ? proveMatingDeflection(checking) : null)?.declined.find((item) => item.directPayoff && item.reply === previous.san && item.answer === step.san)) return {
 			...motif,
 			label: "Deflection Payoff",
@@ -15971,6 +15978,100 @@ function proveCombinedDefenderRemoval(root, nodeLimit = 8192, onFailure) {
 	}
 	return proof;
 }
+var kingDefenderRemovalCache = /* @__PURE__ */ new Map();
+/** Removing a king's capture guard changes legality, not a losing SEE value.
+* Require the exact removed guard to be the obstruction, then cover all real
+* replies. Taking the offered piece must allow the connected king capture;
+* declining may preserve material already taken, never invent a future gain.
+* Leaves check every friendly liability and answer immediate counterchecks. */
+function proveKingCaptureDefenderRemoval(root, nodeLimit = 4096, onFailure) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !root.capture || root.move.promotion || root.before.isCheck() || root.after.isEnd() || root.before.board.get(root.move.from)?.role === "king") return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (!onFailure && nodeLimit === 4096 && kingDefenderRemovalCache.has(key)) return kingDefenderRemovalCache.get(key);
+	const side = root.before.turn;
+	const king = root.before.board.kingOf(side);
+	const guard = root.before.board.get(root.move.to);
+	if (king === void 0 || !guard || guard.color === side || guard.role === "king") return null;
+	const withoutGuard = root.before.clone();
+	withoutGuard.board.take(root.move.to);
+	const afterProbe = withTurn(root.after, side);
+	const budget = { nodes: nodeLimit };
+	const visit = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("King defender removal budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	let proof = null;
+	try {
+		for (const target of attacks(guard, root.move.to, root.before.board.occupied).intersect(root.before.board[guard.color])) {
+			if (root.before.board.get(target)?.role === "king") continue;
+			const capture = {
+				from: king,
+				to: target
+			};
+			if (root.before.isLegal(capture) || !withoutGuard.isLegal(capture) || !afterProbe.isLegal(capture)) continue;
+			const branches = [];
+			let complete = true, accepted = false;
+			for (const reply of recoveryMoves(root.after, side)) {
+				if (reply.promotion) {
+					complete = false;
+					break;
+				}
+				const next = visit(root.after, reply);
+				if (next.isEnd()) {
+					complete = false;
+					break;
+				}
+				const balance = root.capture - capturedValue(root.after, reply);
+				const victim = reply.from === target ? reply.to : target;
+				const takesOffer = reply.to === root.move.to && capturedValue(root.after, reply) > 0;
+				let selected = null;
+				for (const answer of recoveryMoves(next, side)) {
+					if (answer.promotion) continue;
+					const takes = capturedValue(next, answer);
+					if (!(answer.from === king && answer.to === victim && takes > 0) && !(!takes && !takesOffer && balance >= MIN_TACTICAL_CAPTURE_GAIN)) continue;
+					const counterchecks = [];
+					const gain = preparationCaptureGain(next, answer, budget, void 0, counterchecks);
+					if (gain === null || balance + gain < MIN_TACTICAL_CAPTURE_GAIN) continue;
+					selected = {
+						replyUci: makeUci(reply),
+						replySan: makeSan(root.after, reply),
+						answerUci: makeUci(answer),
+						answerSan: makeSan(next, answer),
+						gain: balance + gain,
+						counterchecks
+					};
+					break;
+				}
+				if (!selected) {
+					onFailure?.(`Unproved reply ${makeSan(root.after, reply)}`);
+					complete = false;
+					break;
+				}
+				accepted ||= takesOffer;
+				branches.push(selected);
+			}
+			if (!complete || !accepted || !branches.length) continue;
+			const gain = Math.min(...branches.map((branch) => branch.gain));
+			if (tacticalExchangeGain(root.before, root.move) >= gain) continue;
+			proof = {
+				target,
+				capturer: king,
+				gain,
+				branches
+			};
+			break;
+		}
+	} catch (error) {
+		onFailure?.(error instanceof Error ? error.message : "Incomplete king defender removal");
+	}
+	if (!onFailure && nodeLimit === 4096) {
+		kingDefenderRemovalCache.set(key, proof);
+		if (kingDefenderRemovalCache.size > 128) kingDefenderRemovalCache.delete(kingDefenderRemovalCache.keys().next().value);
+	}
+	return proof;
+}
 function capturedDefenderProof(step, source) {
 	const defender = step.before.board.get(step.move.to);
 	if (!defender || defender.color === step.before.turn || defender.role === "king") return null;
@@ -16023,6 +16124,29 @@ function capturedDefenderProof(step, source) {
 				moveUci: step.uci,
 				value: gain,
 				evidence: `${step.san} removes the ${defender.role} on ${makeSquare(step.move.to)} that defended the ${victim.role} on ${makeSquare(target)}${step.after.isCheck() ? ", with check" : ""}. ${directGain !== null ? "Every legal reply allows a profitable capture of that target." : `${additionalTargets.length ? `It also attacks ${additionalTargets.map((to) => `the ${step.after.board.get(to).role} on ${makeSquare(to)}`).join(" and ")}. ` : ""}${relatedRays.length ? `Moving the defended piece exposes ${relatedRays.map((ray) => `the ${step.after.board.get(ray.rear).role} on ${makeSquare(ray.rear)}`).join(" and ")}. ` : ""}The short combination wins material against every legal reply, including a checking counterattack; captures and exposed attacking pieces are accounted for.`}`
+			}
+		};
+	}
+	const kingRemoval = proveKingCaptureDefenderRemoval(step);
+	if (kingRemoval) {
+		const victim = step.before.board.get(kingRemoval.target);
+		const accepted = kingRemoval.branches.find((branch) => parseUci(branch.replyUci)?.to === step.move.to);
+		const declined = kingRemoval.branches.find((branch) => parseUci(branch.replyUci)?.to !== step.move.to);
+		return {
+			target: kingRemoval.target,
+			targets: [kingRemoval.target],
+			capturers: [kingRemoval.capturer, step.move.to],
+			gain: kingRemoval.gain,
+			extended: true,
+			motif: {
+				id: "capturingDefender",
+				label: "Removing the Defender",
+				source,
+				confidence: "high",
+				ply: 1,
+				moveUci: step.uci,
+				value: kingRemoval.gain,
+				evidence: `${step.san} removes the ${defender.role} on ${makeSquare(step.move.to)} guarding the ${victim.role} on ${makeSquare(kingRemoval.target)}. The king could not legally take that ${victim.role} before; after ${accepted.replySan}, ${accepted.answerSan} is safe.${declined ? ` Declining with ${declined.replySan} allows ${declined.answerSan}, retaining material instead.` : ""} Every legal reply retains a checked material gain, including the offered piece, other friendly-piece losses and immediate counterchecks.`
 			}
 		};
 	}
@@ -20497,7 +20621,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 140;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 141;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

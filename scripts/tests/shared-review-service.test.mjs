@@ -11,8 +11,54 @@ import { matingEntryDefence } from "../../src/utils/tests/fixtures/matingEntryDe
 import { checkingForkCaptureFen } from "../../src/utils/tests/fixtures/checkingForkCaptureDefence.ts";
 import { shortMatingThreatCases } from "../../src/utils/tests/fixtures/shortMatingThreat.ts";
 import { matingCheckEvasionFen, matingCheckEvasionLine } from "../../src/utils/tests/fixtures/matingCheckEvasion.ts";
+import { kingDefenderRemovalCases } from "../../src/utils/tests/fixtures/kingDefenderRemoval.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("king-safe defender removal survives generated mistake review, storage and reload", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-shared-review-king-removal-"));
+  const {fen} = kingDefenderRemovalCases[0];
+  const position = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
+  position.play(parseUci("a1b1"));
+  const after = makeFen(position.toSetup());
+  const options = {root, documentsRoot: join(root, "documents"), engineConfigPath: join(root, "engine.json"),
+    fetchGames: async () => [], lookup: async requested => {
+      assert.ok(requested === fen || requested === after);
+      // Synthetic score loss exercises persistence; real move strength and
+      // selected defensive answers have separate fresh engine receipts.
+      return {depth: 16, pvs: requested === fen
+        ? [{cp: 400, moves: "h6d6 c7d6 g3f4"}] : [{cp: 0, moves: "f4f8"}]};
+    }};
+  let service;
+  try {
+    await writeFile(join(root, "config.json"), JSON.stringify({accounts: {chesscom: "Tester"}}));
+    await writeFile(join(root, "games.json"), JSON.stringify({games: [{source: "chesscom", end: 1789387200,
+      url: "https://example.test/king-removal", pgn: `[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.16"]\n[SetUp "1"]\n[FEN "${fen}"]\n[Result "1/2-1/2"]\n\n1. Rab1 1/2-1/2`}]}));
+    service = new SharedReviewService(options); await service.initialize(false); await service.run();
+    assert.equal(service.snapshot().error, null);
+    const card = service.snapshot().cards[0]; assert.ok(card);
+    assert.equal(card.tacticalClassification.missedMotifs[0].id, "capturingDefender");
+    assert.equal(card.tacticalClassification.missedMotifs[0].ply, 1);
+    assert.match(card.explanation, /Removing the Defender|removes the bishop/);
+    assert.match(card.explanation, /could not legally take/);
+    assert.deepEqual((await service.deck()).positions[0].mistakeReview.missedMotifs,
+      card.tacticalClassification.missedMotifs);
+    const payoff = card.tacticalClassification.missedTimeline.find(m => m.label === "Defender Removal Payoff");
+    assert.ok(payoff); assert.equal(payoff.ply, 3); assert.equal(payoff.value, undefined);
+    service.close(); service = new SharedReviewService(options); await service.initialize(false);
+    // JSON persistence omits undefined optional fields. The contextual payoff
+    // must keep its label and ply without acquiring a second profit value.
+    const saved = service.snapshot().cards[0].tacticalClassification;
+    assert.deepEqual(saved, JSON.parse(JSON.stringify(card.tacticalClassification)));
+    const savedPayoff = saved.missedTimeline.find(m => m.label === "Defender Removal Payoff");
+    assert.ok(savedPayoff); assert.equal(savedPayoff.ply, 3); assert.equal(savedPayoff.value, undefined);
+    assert.equal((await service.deck()).positions[0].reason, card.explanation);
+  } finally {
+    service?.close(); const target = resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir()) + sep) && target.includes("en-shared-review-king-removal-"));
+    await rm(target, {recursive: true, force: true});
+  }
+});
 
 test("settled exchanges keep the full queen loss through generated review and reload", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-settled-exchange-"));
