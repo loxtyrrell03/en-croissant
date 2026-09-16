@@ -712,6 +712,80 @@ function captureGainEvidence(step: TacticalReplayStep, gain: number) {
     };
 }
 
+type CheckingPawnRetention = {
+    gain: number;
+    visits: number;
+    branches: { replyUci: string; answerUci: string; gain: number }[];
+};
+const checkingPawnRetentionCache = new Map<string, CheckingPawnRetention | null>();
+
+/** A checking pawn capture can be useful even when the pawn was already loose.
+ * Check itself is not retention: after EVERY evasion a connected capture must
+ * retain the gain with a further positive local return. A neutral liquidation
+ * (notably a queen trade ending an attack) or an arbitrary quiet retreat needs
+ * a deeper positional/counterplay comparison and cannot certify retention here.
+ * Leaves include
+ * all immediate friendly liabilities and the existing countercheck horizon;
+ * this is a bounded material lesson, not a whole-position winning claim. */
+export function proveCheckingPawnRetention(steps: TacticalReplayStep[], nodeLimit = 8192): CheckingPawnRetention | null {
+    const [root, nominatedReply, nominatedCapture] = steps;
+    if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 ||
+        root.capture !== VALUE.pawn || root.move.promotion ||
+        root.before.board.get(root.move.to)?.role !== "pawn" ||
+        !root.after.isCheck() || root.after.isEnd() ||
+        !nominatedReply || !nominatedCapture || nominatedCapture.capture < VALUE.knight ||
+        nominatedCapture.move.promotion ||
+        defenderCanClaimFiftyMoveDraw(root.after)) return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}:${nominatedReply.uci}:${nominatedCapture.uci}`;
+    if (nodeLimit === 8192 && checkingPawnRetentionCache.has(key))
+        return checkingPawnRetentionCache.get(key)!;
+    const budget = { nodes: nodeLimit };
+    const compute = (): CheckingPawnRetention | null => {
+        const direct = preparationCaptureGain(root.before, root.move, budget);
+        if (direct === null || direct < VALUE.pawn) return null;
+        const targets = new Set(legalMoves(root.before)
+            .filter(move => capturedValue(root.before, move) > 0)
+            .map(move => move.to));
+        const branches: CheckingPawnRetention["branches"] = [];
+        let minimum = Math.min(VALUE.pawn, direct);
+        for (const reply of legalMoves(root.after)) {
+            if (--budget.nodes < 0) return null;
+            const after = root.after.clone(); after.play(reply);
+            if (after.isEnd() || defenderCanClaimFiftyMoveDraw(after)) return null;
+            const balance = root.capture - capturedValue(root.after, reply) -
+                (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0);
+            const available = new Set([...targets].map(square => square === reply.from ? reply.to : square));
+            available.add(reply.to);
+            const answers = legalMoves(after).filter(move => !move.promotion &&
+                capturedValue(after, move) > 0 && (move.from === root.move.to || available.has(move.to)) &&
+                (makeUci(reply) !== nominatedReply.uci || makeUci(move) === nominatedCapture.uci));
+            answers.sort((a, b) => capturedValue(after, b) - capturedValue(after, a) ||
+                (a.from ^ (root.before.turn === "white" ? 0 : 56)) - (b.from ^ (root.before.turn === "white" ? 0 : 56)) ||
+                (a.to ^ (root.before.turn === "white" ? 0 : 56)) - (b.to ^ (root.before.turn === "white" ? 0 : 56)));
+            let branch: CheckingPawnRetention["branches"][number] | undefined;
+            for (const answer of answers) {
+                if (--budget.nodes < 0) return null;
+                const gain = preparationCaptureGain(after, answer, budget);
+                if (gain === null || gain <= 0 || balance + gain < VALUE.pawn) continue;
+                branch = { replyUci: makeUci(reply), answerUci: makeUci(answer), gain: balance + gain };
+                break;
+            }
+            if (!branch) return null;
+            branches.push(branch);
+            minimum = Math.min(minimum, branch.gain);
+        }
+        return branches.length ? { gain: minimum, visits: nodeLimit - budget.nodes, branches } : null;
+    };
+    let proof: CheckingPawnRetention | null = null;
+    try { proof = compute(); } catch { /* Exhaustion cannot certify retention. */ }
+    if (nodeLimit === 8192) {
+        checkingPawnRetentionCache.set(key, proof);
+        if (checkingPawnRetentionCache.size > 256)
+            checkingPawnRetentionCache.delete(checkingPawnRetentionCache.keys().next().value!);
+    }
+    return proof;
+}
+
 /** A bare pawn capture is often exchange recovery rather than a tactical
  * oversight. Admit the newly exposed pawn only with replay-matching history:
  * the same pawn had no profitable legal capture before the previous move.
@@ -11890,8 +11964,14 @@ export function auditTacticalMotifs(
     // mapped the label to a later, unrelated capture.
     const root = steps[0];
     const directGain = root.capture ? Math.max(0, tacticalCaptureGain(root) ?? 0) : 0;
+    // The supplied line nominates an actual piece-capture continuation, not
+    // a quiet king attack which happens to offer inferior pawn liquidation.
+    // Its material value is still established separately over every evasion.
+    const checkingPawn = Number.isFinite(rootCp) && directGain >= VALUE.pawn && root.capture === VALUE.pawn
+        ? proveCheckingPawnRetention(steps) : null;
     if (
-        (root.capture >= 320 || isNewlyExposedPawnCapture(root, context?.previousFen, context?.previousMoveUci)) &&
+        (root.capture >= 320 || isNewlyExposedPawnCapture(root, context?.previousFen, context?.previousMoveUci) ||
+            checkingPawn) &&
         directGain >= MIN_TACTICAL_CAPTURE_GAIN &&
         !candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)
     ) {
@@ -11900,6 +11980,10 @@ export function auditTacticalMotifs(
             candidates.push({
                 id: "hangingPiece",
                 ...captureGainEvidence(root, directGain),
+                ...(checkingPawn ? {
+                    value: checkingPawn.gain,
+                    evidence: `${root.san} takes the pawn on ${makeSquare(root.move.to)} with check and keeps a profitable follow-up capture available against every reply. The checked exchanges retain at least a pawn.`,
+                } : {}),
                 source: proposals[0]?.source ?? "available",
                 confidence: "high",
                 ply: 1,
@@ -12976,6 +13060,17 @@ export function compareImmediateTacticalDefence(
     const bestSan = better[0].san;
     return motifs.map((motif) => {
         if (motif.ply !== 1 || motif.moveUci !== reply) return motif;
+        // A pawn-for-pawn exchange, even on different squares, cannot by
+        // itself explain a material-loss mistake. Keep the position lesson
+        // neutral; this does not prove the choices positionally equivalent.
+        // Larger captures may instead miss retaining BOTH pieces through a
+        // combination, so do not generalize this to every capture credit.
+        if (motif.id === "hangingPiece" && motif.label === "Hanging Pawn" &&
+            actual[0].capture === VALUE.pawn && !actual[0].move.promotion &&
+            step.capture === VALUE.pawn && (motif.value ?? Infinity) <= VALUE.pawn) {
+            return { ...motif, comparison: undefined,
+                comparisonEvidence: `${actual[0].san} also gains material. The verified reply capture alone does not establish a net material loss after accounting for that gain.` };
+        }
         let comparison: TacticalMotifEvidence["comparison"];
         let comparisonEvidence = "";
         if (motif.id === "drawingCapture") {

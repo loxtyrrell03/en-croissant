@@ -5,6 +5,7 @@ import {
     replayTacticalLine,
     tacticalCaptureGain,
     tacticalExchangeGain,
+    proveCheckingPawnRetention,
 } from "../tacticalMotifs/causalTactics";
 import { classifyPositionTacticalMotifs } from "../tacticalMotifs/mistakeReviewAdapter";
 
@@ -42,6 +43,7 @@ test.skipIf(!process.env.TACTICAL_RECALL_REPLAY || !process.env.TACTICAL_CAPTURE
                         exchange: tacticalExchangeGain(step.before, step.move),
                         retained: tacticalCaptureGain(step),
                         intermediate,
+                        checkingPawnRetention: proveCheckingPawnRetention(replayTacticalLine(fen, line.pvUci)),
                         result,
                     });
                 }

@@ -13,6 +13,7 @@ import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
 import { forkLocalValueCases } from "./fixtures/forkLocalValue";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
+import { checkingPawnRetentionCases } from "./fixtures/checkingPawnRetention";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
 import { perpetualMaterialCases, perpetualMaterialLine } from "./fixtures/perpetualMaterial";
 import { reflectMixedForkFen, reflectMixedForkMove } from "./fixtures/mixedTargetFork";
@@ -98,6 +99,18 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
         vi.unstubAllGlobals();
     }
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("checking pawn recall and contrary continuations use the production controller", async () => {
+    for (const row of checkingPawnRetentionCases) for (const reflected of [false, true]) {
+        const fen = reflected ? reflectMixedForkFen(row.fen) : row.fen;
+        const line = reflected ? row.pvUci.map(reflectMixedForkMove) : row.pvUci;
+        const input = { fen, pvUci: line, variations: [{pvUci: line, cp: 0, depth: 16}], depth: 16, engineName: "Constructed checking-pawn controls" };
+        const { scan } = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(scan.motifs[0]?.label ?? null).toBe(row.positive ? "Hanging Pawn" : null);
+        expect(scan.arrows.map(a => a.ply)).toEqual(row.positive ? [1] : []);
+    }
+}, 30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("fork values stay local through the production controller", async () => {
     for (const row of forkLocalValueCases) for (const reflected of [false, true]) {
@@ -189,7 +202,17 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_RECALL_R
     for(const row of baseline.results) {
         const input={fen:row.fen,...row.before[0],variations:row.before,engineName:"Stockfish 18",
             previousFen:row.previousFen,previousMoveUci:row.previousMoveUci};
-        const result=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        let result;
+        try { result=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input); }
+        catch (error) {
+            // Keep the exact failing input identity and completed timings when
+            // a controller deadline fails; a later passing replay is separate.
+            if (process.env.TACTICAL_RECALL_WORKER_REPORT) {
+                const {privateReportPath}=await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
+                writeFileSync(privateReportPath(process.env.TACTICAL_RECALL_WORKER_REPORT),JSON.stringify({cases,failedId:row.id,error:String(error)},null,2),{flag:"wx"});
+            }
+            throw new Error(`Owner worker input ${row.id} failed`, {cause:error});
+        }
         expect(result.scan).toEqual(buildLiveTacticalScan(input));
         expect(result.scan).toEqual(row.scan);
         cases.push({id:row.id,...result});

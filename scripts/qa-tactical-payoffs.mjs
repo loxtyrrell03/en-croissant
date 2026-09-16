@@ -18,6 +18,7 @@ import { discoveryTrapCases } from "../src/utils/tests/fixtures/discoveryTrap.ts
 import { perpetualMaterialCases, perpetualMaterialLine } from "../src/utils/tests/fixtures/perpetualMaterial.ts";
 import { compensatedCaptureInput } from "../src/utils/tests/fixtures/compensatedCapture.ts";
 import { forkLocalValueCases } from "../src/utils/tests/fixtures/forkLocalValue.ts";
+import { checkingPawnRetentionCases } from "../src/utils/tests/fixtures/checkingPawnRetention.ts";
 import {
   matingInterferenceCases,
   reflectMatingInterference,
@@ -36,10 +37,11 @@ const perpetualMode = process.argv.includes("--perpetual-material");
 const pawnMode = process.argv.includes("--pawn");
 const compensatedMode = process.argv.includes("--compensated");
 const forkValueMode = process.argv.includes("--fork-value");
+const checkingPawnMode = process.argv.includes("--checking-pawn");
 const root = process.cwd(),
   output = resolve(
     root,
-    forkValueMode ? "tmp/tactical-fork-value-adapter117" : compensatedMode ? "tmp/tactical-compensated-adapter116" : pawnMode ? "tmp/tactical-pawn-adapter115" : perpetualMode ? "tmp/tactical-perpetual-material-adapter112" : discoveryTrapMode ? "tmp/tactical-discovery-trap-adapter111" : quietForkMode ? "tmp/tactical-quiet-fork-adapter110" : liabilityMode ? "tmp/tactical-liability-adapter108" : discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
+    checkingPawnMode ? "tmp/tactical-checking-pawn-adapter118" : forkValueMode ? "tmp/tactical-fork-value-adapter117" : compensatedMode ? "tmp/tactical-compensated-adapter116" : pawnMode ? "tmp/tactical-pawn-adapter115" : perpetualMode ? "tmp/tactical-perpetual-material-adapter112" : discoveryTrapMode ? "tmp/tactical-discovery-trap-adapter111" : quietForkMode ? "tmp/tactical-quiet-fork-adapter110" : liabilityMode ? "tmp/tactical-liability-adapter108" : discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
       ? "tmp/tactical-quiet-mate-adapter104"
       : interferenceMode
         ? "tmp/tactical-interference-adapter104"
@@ -55,7 +57,10 @@ const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
 const cases = (
-  forkValueMode
+  checkingPawnMode
+    ? checkingPawnRetentionCases.filter(row => row.id === "retained" || row.id === "bishop-liability")
+        .map(row => ({...row, variations:[{pvUci:row.pvUci,cp:0,depth:16}]}))
+    : forkValueMode
     ? forkLocalValueCases.filter(row => row.id === "root-only" || row.id === "later-pawn")
     : compensatedMode
     ? [{...compensatedCaptureInput,id:"compensated-capture",expectedLabel:"Material Gain"}]
@@ -189,7 +194,21 @@ try {
           index,
           scale,
         });
-        if (forkValueMode) {
+        if (checkingPawnMode) {
+          await page.waitForFunction(() => window.fixture.scan !== null);
+          const scan = await page.evaluate(() => window.fixture.scan);
+          assert.equal(scan.motifs[0]?.label ?? null, row.positive ? "Hanging Pawn" : null);
+          if (row.positive) {
+            await page.getByText("Hanging Pawn found", {exact:true}).waitFor();
+            const button = page.getByRole("button", {name:/^Show .* on board$/});
+            await button.focus(); await page.keyboard.press("Enter");
+            const preview = await page.evaluate(() => window.fixture.last);
+            assert.deepEqual(preview.arrows.map(a => a.from + a.to), ["c7c6"]);
+            assert.equal(preview.labels[0].text, "Hanging Pawn");
+            assert((await page.locator("main").innerText()).includes("with check"));
+          } else assert.equal(scan.arrows.length, 0);
+          if (width === 360 && scale === 2) await page.screenshot({path:resolve(output,`${row.id}.png`),fullPage:true});
+        } else if (forkValueMode) {
           await page.getByText("Fork found", {exact:true}).waitFor();
           const button = page.getByRole("button", {name:/^Show .* on board$/});
           await button.focus(); await page.keyboard.press("Enter");
