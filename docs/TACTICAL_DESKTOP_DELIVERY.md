@@ -1,6 +1,44 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 135 / live pipeline 141
+## Current package: adapter 136 / live pipeline 142
+
+Source `3dc161ce` is packaged from the clean detached checkout
+`en-tactical-desktop-3dc161ce`. It includes the safe-counterchecker-capture
+correction: the real ...Rb6+ / ...Qd2+ opportunities and their allowed/missed
+mistake explanations are no longer withheld merely because an opponent can
+give away another piece with check. All-proof defence coverage, local material
+accounting and existing deadlines remain. See
+`benchmarks/tactical-relevance/countercheck-capture-review.md` for the 382 fresh
+engine searches, contrary controls, 720-context comparison and remaining gaps.
+
+The clean checkout passes TypeScript, 164 focused tests (eight optional skips),
+twelve generated-service checks (one optional engine skip), the 43-module
+shared-review build and 8,863-module frontend. Native release compilation
+passes in 1m26s with 22 existing warnings. Generated review differences are
+source-region path comments only; the route-tree difference is line endings
+only, explicitly checked against committed code.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,063,488 bytes;
+  SHA-256 `1966e794b4781b549dbe9b35d3012cd5821eb811b2e74381d995bb605c1a78bf`.
+- Worker: `liveTactics.worker-C_l_V99-.js`, 569,911 bytes; SHA-256
+  `2ff9ca9a1101fab5e7cd5ecc67535e44da3c16512c37db2de771bae8fcce59e8`.
+  Clean bytes match the 732-input tested artifact. The x64 executable embeds
+  this worker, `TacticalClassifierPanel-Dj8RiQyk.js` and
+  `OpeningReviewWorkspace-BTqDWe-d.js`; normalized native dependency paths
+  identify these exact clean-checkout assets.
+- Previous pipeline-141 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline142/en-croissant-fork.exe`,
+  SHA-256 `2f5731b03e27e051ba9a09ca32c445657de51e4d66e1cfb46a5864804ab1c838`.
+
+No app was running before or after the build, and none was launched/restarted.
+The Dev App shortcut still invokes the unchanged primary-checkout
+`encroissant-native` workflow. Owner games, settings, engines and phone services
+are unchanged. This is clean package/linkage verification, not native-window
+interaction or load-sensitive startup certification. Broader recall, long
+quiet attacks, endgame explanations, strongest-certificate selection and
+automatic extra review candidates remain open.
+
+## Previous package: adapter 135 / live pipeline 141
 
 Source `9d028302` is packaged from the clean detached checkout
 `en-tactical-desktop-9d028302`. It includes both the checking-fork capture-defence

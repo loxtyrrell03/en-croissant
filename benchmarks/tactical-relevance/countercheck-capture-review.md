@@ -90,6 +90,11 @@ deadlines. Worker `liveTactics.worker-C_l_V99-.js` has SHA-256
 `2ff9ca9a1101fab5e7cd5ecc67535e44da3c16512c37db2de771bae8fcce59e8`.
 Clean desktop delivery is recorded separately in `docs/TACTICAL_DESKTOP_DELIVERY.md`;
 this is not native-window interaction or load-sensitive startup certification.
+Source `3dc161ce` is now included in the standalone executable from its clean
+committed checkout. Worker bytes match the tested artifact, and the native
+asset/dependency receipt identifies the matching live and mistake-review UI.
+The prior executable is backed up; no app was launched/restarted or owner data
+changed. The existing Dev App shortcut remains unchanged.
 
 Private receipts remain under `Documents/OnCrescent Tactical Benchmarks/`:
 `checking-attack-recall-selected-{draft,probes,engine}-20260916.json`,
