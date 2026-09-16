@@ -1,6 +1,38 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 117 / live pipeline 122
+## Current package: adapter 118 / live pipeline 123
+
+Source `1f7360b7` is packaged in the standalone executable, including checking
+pawn-capture retention, the pawn-trade cause safeguard and root-only pawn
+annotations. The detached checkout `en-tactical-desktop-1f7360b7` excludes
+unrelated primary-worktree edits. TypeScript, 66 focused checks (six optional
+checks skipped), the 8,861-module frontend and native release build pass.
+The new owner primary/secondary assertion separately passes in the primary
+checkout. The native build takes 1m55s with 22 existing warnings; the generated
+route tree has no semantic diff.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,119,808 bytes;
+  SHA-256 `5d93956743cada5da4fbd3283d0f027f3ccf0469322e8ad9ce7877ea932b552b`.
+- Worker: `liveTactics.worker-BdohyW0V.js`; SHA-256
+  `5974b93fd233a35da77719de828583d27f6d7bff6c4d9747213c84e9117ed962`.
+  Its bytes match the tested immutable artifact. The x64 executable contains
+  this asset key and `OpeningReviewWorkspace-39IblU-8.js`; the native dependency
+  receipt identifies both assets and the clean checkout.
+- Previous adapter-117 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter118/en-croissant-fork.exe`,
+  SHA-256 `6d8026418e78a87aa3659ca511362e3765baffa3c104146aa66b1f0459391cc4`.
+
+No app was running before or after the build, and none was launched/restarted.
+The Dev App shortcut still invokes the primary checkout's existing
+`encroissant-native` workflow. Owner games, settings, engines and phone services
+are unchanged. This is source/package linkage proof, not native interaction or
+startup certification. The passing cold run does not erase earlier startup
+failures or the concurrent three-second worker timeout. See
+`benchmarks/tactical-relevance/checking-pawn-recall-review.md` for the one new
+owner opportunity, its preserved larger primary cause and remaining quiet
+retention, broader recall/accuracy and native reliability gaps.
+
+## Previous package: adapter 117 / live pipeline 122
 
 Source `ce4f97ff` is packaged in the standalone executable, including local
 fork values, compensation-aware recaptures and conditional continuation recall.

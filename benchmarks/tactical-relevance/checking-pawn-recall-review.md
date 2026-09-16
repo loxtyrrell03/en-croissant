@@ -129,3 +129,13 @@ Desktop packaging is recorded separately in `docs/TACTICAL_DESKTOP_DELIVERY.md`.
 No owner application or phone service was restarted during this source work.
 Quiet fork repairs, broader recall/primary accuracy, a representative independent
 benchmark, automatic larger-ending review and native reliability remain open.
+
+A subsequent board/history review found five apparent missing non-pawn capture
+contexts were normal recaptures, not newly free pieces. The private capture
+diagnostic omits previous-move context and must not be read as a live false-negative
+count. Two older checking-pawn opportunities remain genuinely unexplained:
+one retains the pawn through a neutral queen trade, the other needs quiet
+continuation play. The distinct later queen-winning move must keep priority.
+The private `recapture-versus-recall-review-20260916.md` records these judgements
+and the separate neutral-comparison wording follow-up; no new engine searches
+or general accuracy claims are implied.
