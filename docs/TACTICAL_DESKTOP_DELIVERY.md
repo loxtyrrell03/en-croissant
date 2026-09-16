@@ -1,6 +1,36 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 116 / live pipeline 121
+## Current package: adapter 117 / live pipeline 122
+
+Source `ce4f97ff` is packaged in the standalone executable, including local
+fork values, compensation-aware recaptures and conditional continuation recall.
+The detached checkout `en-tactical-desktop-ce4f97ff` excludes unrelated primary
+worktree edits. TypeScript, 99 focused checks (six optional checks skipped),
+the 8,861-module frontend and native release build pass. The native build takes
+2m04s and retains 22 existing warnings; the generated route tree has no semantic
+diff.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,119,808 bytes;
+  SHA-256 `6d8026418e78a87aa3659ca511362e3765baffa3c104146aa66b1f0459391cc4`.
+- Worker: `liveTactics.worker-CRchPKBW.js`; SHA-256
+  `7ae22015a697010ec556bb5e551d045595199fd30d823df9cc315d452109fc2b`.
+  Its bytes match the broadly tested worker. The x64 executable contains this
+  asset key and `OpeningReviewWorkspace-BPlZOrkM.js`; the dependency receipt
+  identifies both assets and the clean checkout.
+- Previous adapter-116 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter117/en-croissant-fork.exe`,
+  SHA-256 `96038be598eef8e84e6a02dde0df9e8ee0a5ffcc76038b04e7a341845d4cd466`.
+
+No app was running before or after the build, and none was launched/restarted.
+The unchanged Dev App shortcut still uses the primary live-source workflow.
+Owner games, settings, engines and phone services are unchanged. This is package
+and linkage verification, not native interaction or startup certification.
+The final cold-development check still timed out; warm-cache HTTP success does
+not resolve that fault. Quiet fork repairs, broader recall and accuracy remain
+open. See `benchmarks/tactical-relevance/fork-local-value-review.md` for the
+owner-game evidence, contrary controls and exact verification scope.
+
+## Previous package: adapter 116 / live pipeline 121
 
 Source `346be881` is packaged in the standalone executable, including the
 compensated-capture recovery and equal-exchange comparison correction. The
