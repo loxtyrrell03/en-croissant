@@ -3191,7 +3191,12 @@ function persistentPawnExchangeContext(history, fen, move) {
 			to
 		})) boundary = index;
 	}
-	const start = victimCapture === null ? boundary ?? 0 : Math.min(boundary ?? 0, victimCapture);
+	let start = victimCapture === null ? boundary ?? 0 : Math.min(boundary ?? 0, victimCapture);
+	while (start > 0) {
+		const current = verified.frames[start], previous = verified.frames[start - 1];
+		if (!current.capture || !previous.capture || current.move.to !== previous.move.to) break;
+		start--;
+	}
 	return {
 		balance: verified.frames.slice(start).reduce((sum, frame) => sum + (frame.before.turn === side ? 1 : -1) * (frame.capture + frame.promotionGain), 0),
 		episodePlies: verified.frames.length - start
@@ -20346,7 +20351,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 134;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 135;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

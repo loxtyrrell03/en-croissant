@@ -24,6 +24,7 @@ import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixed
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
 import { checkingPawnRetentionCases } from "./fixtures/checkingPawnRetention";
 import { checkingPawnHistoryCases } from "./fixtures/checkingPawnHistory";
+import { settledPawnHistoryCases } from "./fixtures/settledPawnHistory";
 import { discoveredPinPriorityFen, discoveredPinPriorityLine, discoveredPinPriorityControls } from "./fixtures/discoveredPinPriority";
 import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "./fixtures/checkingPawnFollowup";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
@@ -111,6 +112,17 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
         vi.unstubAllGlobals();
     }
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("settled capture chains preserve real pawn opportunities in the compiled worker", async () => {
+    for (const row of settledPawnHistoryCases) {
+        const input = {...row, depth: 16, engineName: "Constructed history, synthetic selection score",
+            variations: [{pvUci: row.pvUci, depth: 16, cp: 100}]};
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.map(m => m.label)).toEqual(row.positive ? ["Hanging Pawn"] : []);
+        expect(result.scan.arrows.every(arrow => arrow.ply === 1)).toBe(true);
+    }
+}, 30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("revealed pins retain their discovery headline in the production controller", async () => {
     for (const row of [{fen: discoveredPinPriorityFen, expected: true}, ...discoveredPinPriorityControls.map(row => ({...row, expected: false}))]) {

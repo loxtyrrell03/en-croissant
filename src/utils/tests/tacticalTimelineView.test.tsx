@@ -13,6 +13,17 @@ import { matingMechanismExamples } from "./fixtures/matingMechanismRelevance";
 import { promotionCounterplayBase, promotionCounterplayEngineLine } from "./fixtures/promotionCounterplay";
 import { directMaterialPayoffCases } from "./fixtures/directMaterialPayoff";
 import { discoveredPinPriorityFen, discoveredPinPriorityLine } from "./fixtures/discoveredPinPriority";
+import { settledPawnHistoryCases } from "./fixtures/settledPawnHistory";
+
+test("a later pawn opportunity does not display the historical knight trade as its payoff", () => {
+  const row = settledPawnHistoryCases[0];
+  const result = classifyPositionTacticalMotifs({...row, rootCp: 100});
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={["Qxd4"]} motifs={result.timeline ?? []} /></MantineProvider>);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Hanging Pawn");
+  expect(container.textContent).not.toContain("knight");
+  expect(result.motifs[0]).toMatchObject({value: 100, ply: 1});
+});
 
 test("a revealed pin explains the discovery first and keeps the supporting pin at the same move", () => {
   const result = classifyPositionTacticalMotifs({fen: discoveredPinPriorityFen, pvUci: discoveredPinPriorityLine});

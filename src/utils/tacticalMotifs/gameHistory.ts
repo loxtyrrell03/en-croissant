@@ -255,10 +255,20 @@ export function persistentPawnExchangeContext(
         )
             boundary = index;
     }
-    const start =
+    let start =
         victimCapture === null
             ? (boundary ?? 0)
             : Math.min(boundary ?? 0, victimCapture);
+    // A pawn's old capture may have completed an exchange rather than won a
+    // piece. Include the contiguous same-square capture chain before the
+    // boundary: Nxd4 exd4 must not leave a fictitious knight debt against a
+    // later Qxd4. Unrelated earlier captures and quiet moves do not qualify.
+    while (start > 0) {
+        const current = verified.frames[start], previous = verified.frames[start - 1];
+        if (!current.capture || !previous.capture ||
+            current.move.to !== previous.move.to) break;
+        start--;
+    }
     const balance = verified.frames
         .slice(start)
         .reduce(
