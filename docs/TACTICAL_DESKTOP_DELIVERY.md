@@ -1,6 +1,38 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 125 / live pipeline 130
+## Current package: adapter 126 / live pipeline 131
+
+Source `61ebad71` is packaged in the standalone executable, including longer
+mates beginning with quiet moves/check evasions/nonchecking captures, correct
+root-only arrows, and the shared missed/existing-danger explanations. The
+detached checkout `en-tactical-desktop-61ebad71` excludes unrelated primary
+worktree changes. TypeScript, 59 focused checks (eight optional skips), the
+42-module shared-review build, 8,861-module frontend and native release build
+pass. Native compilation takes 1m28s with 22 existing warnings. The generated
+route tree has no semantic diff; shared-review regeneration differs only in
+dependency-path comments, confirmed by comparison after removing comments.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,128,000 bytes;
+  SHA-256 `d98080325ca0f602808c9cbaa0fe5eb1fca6429e15bf481d493a36115e714d73`.
+- Worker: `liveTactics.worker-DHYTdyl-.js`; SHA-256
+  `a8a24cd1c1e7ba23b6c83611a2bb47736e2cc78879a3c40722165ea772d68a78`.
+  Clean frontend bytes match the immutable controller-tested artifact. The x64
+  executable embeds this asset key and `OpeningReviewWorkspace-CZjy-mgf.js`;
+  the dependency receipt identifies both assets and the clean checkout.
+- Previous adapter-125 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter126/en-croissant-fork.exe`,
+  SHA-256 `1e480ef265140e4297744383f9cb2b289eb845ff5986b311242f52f020251d63`.
+
+No app was running before or after the build, and none was launched/restarted.
+The Dev App shortcut was read back unchanged and still invokes the primary
+checkout's `encroissant-native` workflow. Owner data, settings, engines and
+phone services are untouched. This is package/linkage proof, not native-window
+interaction or stable startup certification. See
+`benchmarks/tactical-relevance/quiet-root-mate-recall-review.md` for the complete
+defensive-tree checks, contrary engine distances, restored lessons, the next
+checking-pawn/quiet-attack audit and remaining recall/primary-selection gaps.
+
+## Previous package: adapter 125 / live pipeline 130
 
 Source `ee91a454` is packaged in the standalone executable, including pawn
 exposure after capturing defenders, compensation-aware missed/neutral review,

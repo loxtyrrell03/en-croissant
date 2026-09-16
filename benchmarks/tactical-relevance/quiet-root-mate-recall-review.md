@@ -159,3 +159,16 @@ Source/worker/browser checks do not establish native-window behaviour or solve
 historical load-sensitive startup failures. Broader recall, primary-theme
 selection and a representative independently judged accuracy benchmark remain
 open. Owner data and phone services are unchanged.
+
+## Subsequent checking-pawn audit
+
+Eighteen additional fresh searches inspect the next owner Bc4+/Nxe5+/Qxc7+
+decision and all legal replies. Nxe5+ has only Ke6 (Qd5#) and Kg7, where a quiet
+Nxc7 or a checking queen exchange preserves a strong engine evaluation but
+still lacks a complete root pawn-retention explanation. Bc4+'s critical Kg7
+branch instead needs a quiet queen move. Importantly, Qxc7+ is **already** a
+Hanging Pawn alternative in the frozen live scan: checking only the principal
+headline had hidden that distinction. No new capture recovery or missed
+accusation is claimed; the played Nxc7 also captures a pawn. These findings
+do not change adapter 126. Private initial/reviewed notes and the 18-search
+receipt are `third-checking-pawn-*-20260916` under the private directory.
