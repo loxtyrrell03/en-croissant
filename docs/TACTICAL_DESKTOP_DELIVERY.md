@@ -1,6 +1,38 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 129 / live pipeline 134
+## Current package: adapter 130 / live pipeline 135
+
+Source `02dce36a` is packaged in the standalone executable, including
+branch-dependent quiet mating setups, short nonchecking capture mates,
+equivalent played-mate protection and root-only mating annotations. The detached
+checkout `en-tactical-desktop-02dce36a` excludes unrelated primary-worktree changes.
+TypeScript, 100 focused checks (eight optional skips), the 43-module shared-review
+build, 8,862-module frontend and native release build pass. Native compilation
+takes 1m30s with 22 existing warnings. Generated route-tree output differs only
+in line endings; generated-service differences are comments only, checked
+against committed source.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,062,464 bytes;
+  SHA-256 `3b3803b0b703cb803358fc0654e8ec88b4cd16cfdfad67c9a4ce075b7c16f409`.
+- Worker: `liveTactics.worker-DkX1bBKr.js`; SHA-256
+  `67c8f3a00cda31919c9375b2117727f09b2cd67981d3f75cefde9841f35a50cf`.
+  The clean frontend worker is byte-identical to the tested immutable artifact.
+  The x64 executable embeds its key and `OpeningReviewWorkspace-BOVo1EIC.js`;
+  the dependency receipt identifies both assets and the clean checkout.
+- Previous adapter-129 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter130/en-croissant-fork.exe`,
+  SHA-256 `d10775cf7ecb96f58bc42cbe557546b4abc69923068bbefde3a814b527f0285e`.
+
+No app was running before or after the build, and none was launched/restarted.
+The Dev App shortcut was read back unchanged and still invokes the primary
+checkout's `encroissant-native` workflow. Games, settings, engines and phone
+services remain unchanged. This is package/linkage proof, not native-window
+interaction or startup reliability certification. See
+`benchmarks/tactical-relevance/branch-quiet-mate-recall-review.md` for the
+recovered owner mate, independently verified played alternatives, exact replay
+differences and remaining quiet/nomination/primary-selection gaps.
+
+## Previous package: adapter 129 / live pipeline 134
 
 Source `369b23bd` is packaged in the standalone executable, including checking
 attacks that force pawn concessions and exchange-context protection against
