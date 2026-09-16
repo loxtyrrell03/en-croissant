@@ -81,6 +81,7 @@ export function sharedReviewDeck(
                 bestCandidates: c.bestCandidates,
                 previousFen: c.previousFen,
                 previousMoveUci: c.previousMoveUci,
+                tacticalHistory: c.tacticalHistory,
                 winProbabilityDrop: c.drop,
                 cpBefore: chanceCp(c.before),
                 cpAfter: chanceCp(c.after),

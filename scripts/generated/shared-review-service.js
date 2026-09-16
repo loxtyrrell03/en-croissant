@@ -3050,6 +3050,153 @@ function parseWebPgnStartSeconds(headers) {
 	const timestamp = Date.UTC(Number(dateMatch[1]), Number(dateMatch[2]) - 1, Number(dateMatch[3]), Number(timeMatch[1]), Number(timeMatch[2]), Number(timeMatch[3] ?? "0"));
 	return Number.isFinite(timestamp) ? timestamp / 1e3 : null;
 }
+var values = {
+	pawn: 100,
+	knight: 320,
+	bishop: 330,
+	rook: 500,
+	queen: 900,
+	king: 0
+};
+var originalCounts = {
+	pawn: 8,
+	knight: 2,
+	bishop: 2,
+	rook: 2,
+	queen: 1,
+	king: 1
+};
+var historyCache = /* @__PURE__ */ new Map();
+/** Preserve the complete supplied line. Never trim it into a seemingly complete
+* recent history: that can hide a gambit or sacrifice before the cutoff. */
+function tacticalGameHistory(fen, moves) {
+	if (typeof fen !== "string" || !fen || moves.length > 1024 || moves.some((move) => typeof move !== "string" || !/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(move))) return void 0;
+	return {
+		fen,
+		moves: [...moves]
+	};
+}
+function appendTacticalHistory(history, move) {
+	return history && move ? tacticalGameHistory(history.fen, [...history.moves, move]) : void 0;
+}
+/** The origin must have every original man: with eight pawns and the original
+* piece counts per colour, no earlier capture/promotion debt can be hidden.
+* This also accepts complete-material Chess960/analysis starts. A shortened
+* history beginning after a gambit capture fails even if it replays perfectly.
+* Arbitrary reduced-material FEN origins remain unknown for this new rule. */
+function verifiedTacticalHistory(history, targetFen) {
+	if (!history || !Array.isArray(history.moves) || !tacticalGameHistory(history.fen, history.moves)) return null;
+	const key = JSON.stringify([history.fen, history.moves]);
+	let result = historyCache.get(key);
+	if (result === void 0) {
+		result = null;
+		try {
+			let position = Chess.fromSetup(parseFen$1(history.fen).unwrap()).unwrap();
+			if (["white", "black"].every((color) => Object.entries(originalCounts).every(([role, count]) => position.board[color].intersect(position.board[role]).size() === count))) {
+				let locations = Array.from({ length: 64 }, (_, id) => position.board.has(id) ? id : -1);
+				const frames = [];
+				let legal = true;
+				for (const uci of history.moves) {
+					const move = parseUci(uci);
+					if (!move || !("from" in move) || !position.isLegal(move)) {
+						legal = false;
+						break;
+					}
+					const piece = position.board.get(move.from);
+					const movedId = locations.indexOf(move.from);
+					if (movedId < 0) {
+						legal = false;
+						break;
+					}
+					const nextLocations = [...locations];
+					const castle = castlingSide(position, move);
+					let capture = 0;
+					if (castle) {
+						const rookFrom = position.castles.rook[position.turn][castle];
+						if (rookFrom === void 0) {
+							legal = false;
+							break;
+						}
+						const rookId = locations.indexOf(rookFrom);
+						if (rookId < 0) {
+							legal = false;
+							break;
+						}
+						nextLocations[movedId] = kingCastlesTo(position.turn, castle);
+						nextLocations[rookId] = rookCastlesTo(position.turn, castle);
+					} else {
+						const captureSquare = piece.role === "pawn" && move.to === position.epSquare ? move.to + (position.turn === "white" ? -8 : 8) : move.to;
+						const victim = position.board.get(captureSquare);
+						if (victim) {
+							const victimId = locations.indexOf(captureSquare);
+							if (victimId < 0 || victim.color === piece.color) {
+								legal = false;
+								break;
+							}
+							capture = values[victim.role];
+							nextLocations[victimId] = -1;
+						}
+						nextLocations[movedId] = move.to;
+					}
+					frames.push({
+						before: position,
+						locations,
+						move,
+						movedId,
+						capture,
+						promotionGain: move.promotion ? values[move.promotion] - 100 : 0
+					});
+					position = position.clone();
+					position.play(move);
+					locations = nextLocations;
+				}
+				if (legal) result = {
+					frames,
+					position,
+					locations
+				};
+			}
+		} catch {}
+		historyCache.set(key, result);
+		if (historyCache.size > 8) historyCache.delete(historyCache.keys().next().value);
+	}
+	try {
+		const target = Chess.fromSetup(parseFen$1(targetFen).unwrap()).unwrap();
+		return result && makeFen(result.position.toSetup()) === makeFen(target.toSetup()) ? result : null;
+	} catch {
+		return null;
+	}
+}
+/** Return recent exchange context for this exact capturer and pawn. The local
+* safety/profit proof remains the caller's responsibility; historical material
+* cannot certify a current capture or increase its value. */
+function persistentPawnExchangeContext(history, fen, move) {
+	const verified = verifiedTacticalHistory(history, fen);
+	if (!verified || !verified.position.isLegal(move)) return null;
+	const side = verified.position.turn;
+	const attacker = verified.position.board.get(move.from);
+	const victim = verified.position.board.get(move.to);
+	if (!attacker || victim?.role !== "pawn" || victim.color === side || move.promotion) return null;
+	const attackerId = verified.locations.indexOf(move.from), victimId = verified.locations.indexOf(move.to);
+	if (attackerId < 0 || victimId < 0) return null;
+	let boundary = null, victimCapture = null;
+	for (let index = verified.frames.length - 1; index >= 0; index--) {
+		const frame = verified.frames[index];
+		if (victimCapture === null && frame.movedId === victimId && frame.capture) victimCapture = index;
+		if (boundary !== null || frame.before.turn !== side) continue;
+		const from = frame.locations[attackerId], to = frame.locations[victimId];
+		if (from < 0 || to < 0) return null;
+		if (frame.before.board.get(from)?.role !== attacker.role || !frame.before.isLegal({
+			from,
+			to
+		})) boundary = index;
+	}
+	const start = victimCapture === null ? boundary ?? 0 : Math.min(boundary ?? 0, victimCapture);
+	return {
+		balance: verified.frames.slice(start).reduce((sum, frame) => sum + (frame.before.turn === side ? 1 : -1) * (frame.capture + frame.promotionGain), 0),
+		episodePlies: verified.frames.length - start
+	};
+}
 //#endregion
 //#region src/utils/tacticalMotifs/kpkBitbase.ts
 var KPK_STATES = 1536 * 64 * 2;
@@ -10238,6 +10385,22 @@ function captureGainEvidence(step, gain) {
 		label: compensated ? "Material Gain" : victim?.role === "pawn" ? "Hanging Pawn" : "Hanging Piece",
 		value: gain,
 		evidence: compensated ? `${step.san} takes the ${victim?.role ?? "piece"} on ${makeSquare(step.move.to)}, but concedes material elsewhere. The checked exchanges gain at least ${Number((gain / 100).toFixed(1))} ${gain === 100 ? "pawn" : "pawns"}.` : `${step.san} wins the loose ${victim?.role ?? "piece"} on ${makeSquare(step.move.to)}.`
+	};
+}
+/** A pawn need not have been exposed by the very last move. Admit a current
+* safe capture when complete capture-free-origin history distinguishes it from
+* returning a gambit/trade. History controls relevance only: the displayed gain
+* remains position-local and cannot inherit earlier material or PV payoffs. */
+function provePersistentPawnCapture(root, history) {
+	if (!root || root.capture !== VALUE.pawn || root.move.promotion || root.after.isCheck() || root.after.isEnd()) return null;
+	const context = persistentPawnExchangeContext(history, makeFen(root.before.toSetup()), root.move);
+	if (!context) return null;
+	const gain = tacticalCaptureGain(root);
+	if (gain === null || gain < MIN_TACTICAL_CAPTURE_GAIN || gain + context.balance < MIN_TACTICAL_CAPTURE_GAIN) return null;
+	return {
+		gain,
+		exchangeBalance: context.balance,
+		episodePlies: context.episodePlies
 	};
 }
 var costlyPawnRecaptureCache = /* @__PURE__ */ new Map();
@@ -18563,7 +18726,8 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	const priorPawnContext = root.capture === VALUE.pawn && context?.previousFen && context.previousMoveUci ? replayTacticalLine(context.previousFen, [context.previousMoveUci])[0] : null;
 	const costlyPawn = directGain >= VALUE.pawn && priorPawnContext && !priorPawnContext.capture && !priorPawnContext.move.promotion && makeFen(priorPawnContext.after.toSetup()) === makeFen(root.before.toSetup()) ? proveCostlyPawnRecapture(root) : null;
 	const exposedPawn = isNewlyExposedPawnCapture(root, context?.previousFen, context?.previousMoveUci);
-	if ((root.capture >= 320 || exposedPawn || checkingPawn || costlyPawn) && directGain >= MIN_TACTICAL_CAPTURE_GAIN && !candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)) {
+	const persistentPawn = !exposedPawn && !costlyPawn && Number.isFinite(rootCp) && Math.abs(rootCp) < 9e3 ? provePersistentPawnCapture(root, context?.tacticalHistory) : null;
+	if ((root.capture >= 320 || exposedPawn || checkingPawn || costlyPawn || persistentPawn) && directGain >= MIN_TACTICAL_CAPTURE_GAIN && !candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)) {
 		if (root.before.board.get(root.move.to)) candidates.push({
 			id: "hangingPiece",
 			...captureGainEvidence(root, directGain),
@@ -19983,7 +20147,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 127;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 128;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -20498,7 +20662,8 @@ function classifyPositionTacticalMotifs(input) {
 	const motifs = filterCompensatedRootCaptures(fen, bestLine, auditTacticalMotifs(fen, bestLine, toMotifEvidence(detail, "available", input.pvSan), input.rootCp, {
 		previousFen: input.previousFen,
 		previousMoveUci: cleanUci(input.previousMoveUci),
-		tablebaseEvidence: input.tablebaseEvidence
+		tablebaseEvidence: input.tablebaseEvidence,
+		tacticalHistory: input.tacticalHistory
 	}), input.previousFen, cleanUci(input.previousMoveUci));
 	const timeline = selectContinuationLessons(filterCompensatedRootCaptures(fen, bestLine, buildTacticalTimeline(fen, bestLine, "available", motifs, input.pvSan, input.tablebaseEvidence), input.previousFen, cleanUci(input.previousMoveUci)), motifs);
 	return {
@@ -20714,7 +20879,8 @@ function cacheKey(input) {
 		input.refutationCandidates ?? null,
 		input.bestCandidates ?? null,
 		input.previousFen ?? null,
-		input.previousMoveUci ?? null
+		input.previousMoveUci ?? null,
+		input.tacticalHistory ?? null
 	]);
 }
 /** Same-board engine nominations, not tactical certificates. A full legal PV
@@ -20769,7 +20935,8 @@ function classifyMistakeReviewMotifs(input) {
 		allowedMotifs: filterCompensatedRootCaptures(fenAfterPlayedMove ?? "", refutationLine, auditTacticalMotifs(fenAfterPlayedMove ?? "", refutationLine, toMotifEvidence(allowedDetail, "allowed", input.refutationSan), typeof input.cpAfter === "number" ? input.cpAfter * (fenSide(fenAfterPlayedMove ?? "") === "w" ? 1 : -1) : void 0, {
 			previousFen: fen,
 			previousMoveUci: playedMoveUci,
-			tablebaseEvidence: input.tablebaseEvidence
+			tablebaseEvidence: input.tablebaseEvidence,
+			tacticalHistory: appendTacticalHistory(input.tacticalHistory, playedMoveUci)
 		}), fen, playedMoveUci).map((m) => ({
 			...m,
 			source: "allowed"
@@ -20777,7 +20944,8 @@ function classifyMistakeReviewMotifs(input) {
 		missedMotifs: playedTheBestMove ? [] : auditTacticalMotifs(fen, bestLine, toMotifEvidence(missedDetail, "missed", input.pvSan), typeof input.cpBefore === "number" ? input.cpBefore * (fenSide(fen) === "w" ? 1 : -1) : void 0, {
 			previousFen: input.previousFen,
 			previousMoveUci: cleanUci(input.previousMoveUci),
-			tablebaseEvidence: input.tablebaseEvidence
+			tablebaseEvidence: input.tablebaseEvidence,
+			tacticalHistory: input.tacticalHistory
 		}).map((m) => ({
 			...m,
 			source: "missed"
@@ -20809,6 +20977,7 @@ function classifyMistakeReviewMotifs(input) {
 			rootCp: candidate.cp,
 			previousFen: input.previousFen,
 			previousMoveUci: input.previousMoveUci,
+			tacticalHistory: input.tacticalHistory,
 			tablebaseEvidence: input.tablebaseEvidence
 		}).motifs.map((motif) => ({
 			...motif,
@@ -20910,10 +21079,12 @@ function createPhoneReviewCard(game, index, player, best, reply, now = Date.now(
 	const cpBefore = reviewCp(best.score, color), cpAfter = reviewCp(reply.score, color);
 	const before = reviewChance(cpBefore), after = reviewChance(cpAfter);
 	if (!usefulReviewSwing(before, after)) return null;
+	const tacticalHistory = tacticalGameHistory(game.moves[0]?.fenBefore ?? "", game.moves.slice(0, index).map((entry) => entry.uci));
 	const motifs = classifyMistakeReviewMotifs({
 		fen: move.fenBefore,
 		previousFen: game.moves[index - 1]?.fenBefore,
 		previousMoveUci: game.moves[index - 1]?.uci ?? void 0,
+		tacticalHistory,
 		bestMoveUci: best.uciMoves[0],
 		bestMoveSan: best.sanMoves[0],
 		playedMoveUci: move.uci,
@@ -20952,6 +21123,7 @@ function createPhoneReviewCard(game, index, player, best, reply, now = Date.now(
 		alternativeReply: motifs.allowedMotifs.find((motif) => motif.alternativeLine),
 		previousFen: game.moves[index - 1]?.fenBefore,
 		previousMoveUci: game.moves[index - 1]?.uci ?? void 0,
+		tacticalHistory,
 		tacticalClassification: motifs,
 		bestTimeline: motifs.missedTimeline?.filter((m) => (m.ply ?? 0) <= 8),
 		refutationTimeline: motifs.allowedTimeline?.filter((m) => (m.ply ?? 0) <= 6),
@@ -21745,6 +21917,7 @@ function sharedReviewDeck(cards, enginePath = "", now = Date.now()) {
 				bestCandidates: c.bestCandidates,
 				previousFen: c.previousFen,
 				previousMoveUci: c.previousMoveUci,
+				tacticalHistory: c.tacticalHistory,
 				winProbabilityDrop: c.drop,
 				cpBefore: chanceCp(c.before),
 				cpAfter: chanceCp(c.after),

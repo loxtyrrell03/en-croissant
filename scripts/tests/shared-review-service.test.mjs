@@ -4,8 +4,44 @@ import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve, sep } from "node:path";
 import { SharedReviewService, engineLine, BackgroundEngine } from "../generated/shared-review-service.js";
+import { Chess } from "chessops/chess";
+import { INITIAL_FEN, makeFen, parseFen } from "chessops/fen";
+import { parseUci } from "chessops/util";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("complete history survives the actual generated background service, saved deck and reload", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-shared-review-history-"));
+  const moves = ["e2e4", "e7e5", "g1f3", "b8c6", "a2a3", "g8f6", "f1c4", "f8e7", "d2d3"];
+  const position = Chess.fromSetup(parseFen(INITIAL_FEN).unwrap()).unwrap();
+  const lines = new Map();
+  for (const [index, uci] of moves.entries()) {
+    lines.set(makeFen(position.toSetup()), {depth:16,pvs:[{cp:index===7?-150:0,moves:index===7?"f6e4":uci}]});
+    const move = parseUci(uci); assert.ok(move && position.isLegal(move)); position.play(move);
+  }
+  const options = {root, documentsRoot:join(root,"documents"), engineConfigPath:join(root,"engine.json"),
+    fetchGames:async()=>[], lookup:async(fen)=>{assert.ok(lines.has(fen));return lines.get(fen);}};
+  let service;
+  try {
+    await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+    await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,url:"https://example.test/history",
+      pgn:'[White "Opponent"]\n[Black "Tester"]\n[Date "2026.09.16"]\n[Result "1-0"]\n\n1. e4 e5 2. Nf3 Nc6 3. a3 Nf6 4. Bc4 Be7 5. d3 1-0'}]}));
+    service = new SharedReviewService(options); await service.initialize(false); await service.run();
+    assert.equal(service.snapshot().error,null);
+    const cards = service.snapshot().cards; assert.equal(cards.length,1);
+    assert.match(cards[0].explanation,/Hanging Pawn/);
+    const history = {fen:INITIAL_FEN,moves:moves.slice(0,7)};
+    assert.deepEqual(cards[0].tacticalHistory,history);
+    assert.deepEqual((await service.deck()).positions[0].mistakeReview.tacticalHistory,history);
+    service.close(); service = new SharedReviewService(options); await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalHistory,history);
+    assert.deepEqual((await service.deck()).positions[0].mistakeReview.tacticalHistory,history);
+  } finally {
+    service?.close(); const target = resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-"));
+    await rm(target,{recursive:true,force:true});
+  }
+});
 
 test("a compensated missed capture survives shared-review storage with its actual local bound", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-compensated-"));

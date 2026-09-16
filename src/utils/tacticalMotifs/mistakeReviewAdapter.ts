@@ -40,6 +40,7 @@ import {
     xRaySupportEvidence,
 } from "./causalTactics";
 import { qualifyComparableCaptureChoice } from "./captureChoice";
+import { appendTacticalHistory, type TacticalGameHistory } from "./gameHistory";
 import type {
     MistakeReviewMotifClassification,
     PositionTacticalMotifClassification,
@@ -62,6 +63,7 @@ export type MistakeReviewMotifInput = {
     fen?: string | null;
     previousFen?: string | null;
     previousMoveUci?: string | null;
+    tacticalHistory?: TacticalGameHistory | null;
     bestMoveSan?: string | null;
     bestMoveUci?: string | null;
     playedMoveSan?: string | null;
@@ -86,6 +88,7 @@ export type PositionTacticalMotifInput = {
     pvSan?: string[] | null;
     previousFen?: string | null;
     previousMoveUci?: string | null;
+    tacticalHistory?: TacticalGameHistory | null;
     /** Engine evaluation from this position's side to move. */
     rootCp?: number | null;
 };
@@ -131,7 +134,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 127;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 128;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -894,7 +897,7 @@ export function classifyPositionTacticalMotifs(
             bestLine,
             toMotifEvidence(detail, "available", input.pvSan),
             input.rootCp,
-            { previousFen: input.previousFen, previousMoveUci: cleanUci(input.previousMoveUci), tablebaseEvidence: input.tablebaseEvidence },
+            { previousFen: input.previousFen, previousMoveUci: cleanUci(input.previousMoveUci), tablebaseEvidence: input.tablebaseEvidence, tacticalHistory: input.tacticalHistory },
         ),
         input.previousFen,
         cleanUci(input.previousMoveUci),
@@ -1340,6 +1343,7 @@ function cacheKey(input: MistakeReviewMotifInput) {
         input.bestCandidates ?? null,
         input.previousFen ?? null,
         input.previousMoveUci ?? null,
+        input.tacticalHistory ?? null,
     ]);
 }
 
@@ -1446,7 +1450,8 @@ export function classifyMistakeReviewMotifs(
                 typeof input.cpAfter === "number"
                     ? input.cpAfter * (fenSide(fenAfterPlayedMove ?? "") === "w" ? 1 : -1)
                     : undefined,
-                { previousFen: fen, previousMoveUci: playedMoveUci, tablebaseEvidence: input.tablebaseEvidence },
+                { previousFen: fen, previousMoveUci: playedMoveUci, tablebaseEvidence: input.tablebaseEvidence,
+                    tacticalHistory: appendTacticalHistory(input.tacticalHistory, playedMoveUci) },
             ),
             fen,
             playedMoveUci,
@@ -1460,7 +1465,7 @@ export function classifyMistakeReviewMotifs(
                   typeof input.cpBefore === "number"
                       ? input.cpBefore * (fenSide(fen) === "w" ? 1 : -1)
                       : undefined,
-                  { previousFen: input.previousFen, previousMoveUci: cleanUci(input.previousMoveUci), tablebaseEvidence: input.tablebaseEvidence },
+                  { previousFen: input.previousFen, previousMoveUci: cleanUci(input.previousMoveUci), tablebaseEvidence: input.tablebaseEvidence, tacticalHistory: input.tacticalHistory },
               ).map((m) => ({ ...m, source: "missed" as const })),
         motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
     } satisfies MistakeReviewMotifClassification;
@@ -1561,6 +1566,7 @@ export function classifyMistakeReviewMotifs(
             const result = classifyPositionTacticalMotifs({
                 fen, pvUci: candidate.pvUci, rootCp: candidate.cp,
                 previousFen: input.previousFen, previousMoveUci: input.previousMoveUci,
+                tacticalHistory: input.tacticalHistory,
                 tablebaseEvidence: input.tablebaseEvidence,
             });
             const motifs = qualifyComparableCaptureChoice(fen, move, playedMoveUci,

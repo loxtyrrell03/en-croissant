@@ -8,6 +8,7 @@ import type { Annotation } from "@/utils/annotation";
 import { engineSettingsSchema, type EngineSettings } from "@/utils/engines";
 import { isPrefix } from "@/utils/misc";
 import type { TacticalMotifEvidence, TacticalReplyCandidate } from "@/utils/tacticalMotifs/types";
+import { MAX_TACTICAL_HISTORY_PLIES, type TacticalGameHistory } from "@/utils/tacticalMotifs/gameHistory";
 import { type TreeNode, treeIterator } from "@/utils/treeReducer";
 
 const REVIEW_DAY_MS = 24 * 60 * 60 * 1000;
@@ -27,6 +28,11 @@ export const tacticalReplyCandidatesSchema = z.array(z.object({
     cp: z.number().finite().nullable(),
     depth: z.number().int().nonnegative(),
 })).max(3);
+
+export const tacticalGameHistorySchema = z.object({
+    fen: z.string(),
+    moves: z.array(z.string().regex(/^[a-h][1-8][a-h][1-8][qrbn]?$/)).max(MAX_TACTICAL_HISTORY_PLIES),
+});
 
 const tacticalMotifEvidenceSchema = z.object({
     id: z.string(),
@@ -152,6 +158,7 @@ export const positionSchema = z.object({
             bestCandidates: tacticalReplyCandidatesSchema.optional(),
             previousFen: z.string().optional(),
             previousMoveUci: z.string().optional(),
+            tacticalHistory: tacticalGameHistorySchema.optional(),
             severity: z
                 .enum(["best", "good", "okay", "inaccuracy", "mistake", "blunder"])
                 .optional(),
@@ -318,6 +325,7 @@ export type Position = {
         bestCandidates?: TacticalReplyCandidate[];
         previousFen?: string;
         previousMoveUci?: string;
+        tacticalHistory?: TacticalGameHistory;
         severity?: "best" | "good" | "okay" | "inaccuracy" | "mistake" | "blunder";
         cpLoss?: number;
         winProbabilityDrop?: number;

@@ -6,6 +6,7 @@ import type { Color, NormalMove, Role, Square } from "chessops/types";
 import { kingCastlesTo, makeSquare, makeUci, opposite, parseUci } from "chessops/util";
 import type { TacticalMotifEvidence } from "./types";
 import { probeKingPawnEndgame, proveKpkZugzwang } from "./kpkBitbase";
+import { persistentPawnExchangeContext, type TacticalGameHistory } from "./gameHistory";
 import { proveDrawingCapture, drawingCaptureEvidence, proveTablebaseZugzwang, tablebaseZugzwangEvidence, verifiedTablebasePosition, type TablebaseEvidence } from "./tablebaseEvidence";
 
 const VALUE: Record<Role, number> = {
@@ -710,6 +711,19 @@ function captureGainEvidence(step: TacticalReplayStep, gain: number) {
             ? `${step.san} takes the ${victim?.role ?? "piece"} on ${makeSquare(step.move.to)}, but concedes material elsewhere. The checked exchanges gain at least ${Number((gain / 100).toFixed(1))} ${gain === 100 ? "pawn" : "pawns"}.`
             : `${step.san} wins the loose ${victim?.role ?? "piece"} on ${makeSquare(step.move.to)}.`,
     };
+}
+
+/** A pawn need not have been exposed by the very last move. Admit a current
+ * safe capture when complete capture-free-origin history distinguishes it from
+ * returning a gambit/trade. History controls relevance only: the displayed gain
+ * remains position-local and cannot inherit earlier material or PV payoffs. */
+export function provePersistentPawnCapture(root: TacticalReplayStep, history: TacticalGameHistory | null | undefined) {
+    if (!root || root.capture !== VALUE.pawn || root.move.promotion || root.after.isCheck() || root.after.isEnd()) return null;
+    const context = persistentPawnExchangeContext(history, makeFen(root.before.toSetup()), root.move);
+    if (!context) return null;
+    const gain = tacticalCaptureGain(root);
+    if (gain === null || gain < MIN_TACTICAL_CAPTURE_GAIN || gain + context.balance < MIN_TACTICAL_CAPTURE_GAIN) return null;
+    return { gain, exchangeBalance: context.balance, episodePlies: context.episodePlies };
 }
 
 type CostlyPawnRecaptureProof = {
@@ -11940,7 +11954,7 @@ export function auditTacticalMotifs(
     line: string[],
     proposals: TacticalMotifEvidence[],
     rootCp?: number | null,
-    context?: { previousFen?: string | null; previousMoveUci?: string | null; tablebaseEvidence?: TablebaseEvidence | null },
+    context?: { previousFen?: string | null; previousMoveUci?: string | null; tablebaseEvidence?: TablebaseEvidence | null; tacticalHistory?: TacticalGameHistory | null },
 ) {
     const steps = replayTacticalLine(fen, line);
     if (!steps.length) return [];
@@ -12726,9 +12740,14 @@ export function auditTacticalMotifs(
         makeFen(priorPawnContext.after.toSetup()) === makeFen(root.before.toSetup())
         ? proveCostlyPawnRecapture(root) : null;
     const exposedPawn = isNewlyExposedPawnCapture(root, context?.previousFen, context?.previousMoveUci);
+    // Live mate scores have no finite cp; native review encodes mate in the
+    // +/-9000..10000 range. Do not replace an unproved long mating attack or
+    // a delaying check with a new generic pawn headline.
+    const persistentPawn = !exposedPawn && !costlyPawn && Number.isFinite(rootCp) && Math.abs(rootCp!) < 9000
+        ? provePersistentPawnCapture(root, context?.tacticalHistory) : null;
     if (
         (root.capture >= 320 || exposedPawn ||
-            checkingPawn || costlyPawn) &&
+            checkingPawn || costlyPawn || persistentPawn) &&
         directGain >= MIN_TACTICAL_CAPTURE_GAIN &&
         !candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)
     ) {

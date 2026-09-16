@@ -1,6 +1,7 @@
 import type { WebColor, WebEngineLine, WebEngineScore, WebGame } from "./model";
 import type { TacticalMotifEvidence, TacticalReplyCandidate, MistakeReviewMotifClassification } from "@/utils/tacticalMotifs/types";
 import { normalizeWebFen } from "./pgn";
+import { tacticalGameHistory, type TacticalGameHistory } from "@/utils/tacticalMotifs/gameHistory";
 import {
     buildMistakeReviewTacticalExplanation,
     classifyMistakeReviewMotifs,
@@ -48,6 +49,7 @@ export type PhoneReviewCard = {
     bestCandidates?: TacticalReplyCandidate[];
     previousFen?: string;
     previousMoveUci?: string;
+    tacticalHistory?: TacticalGameHistory;
     alternativeReply?: TacticalMotifEvidence;
     tacticalClassification?: MistakeReviewMotifClassification;
     before: number;
@@ -149,10 +151,12 @@ export function createPhoneReviewCard(
     const before = reviewChance(cpBefore),
         after = reviewChance(cpAfter);
     if (!usefulReviewSwing(before, after)) return null;
+    const tacticalHistory = tacticalGameHistory(game.moves[0]?.fenBefore ?? "", game.moves.slice(0, index).map(entry => entry.uci));
     const motifs = classifyMistakeReviewMotifs({
         fen: move.fenBefore,
         previousFen: game.moves[index - 1]?.fenBefore,
         previousMoveUci: game.moves[index - 1]?.uci ?? undefined,
+        tacticalHistory,
         bestMoveUci: best.uciMoves[0],
         bestMoveSan: best.sanMoves[0],
         playedMoveUci: move.uci,
@@ -191,6 +195,7 @@ export function createPhoneReviewCard(
         alternativeReply: motifs.allowedMotifs.find(motif => motif.alternativeLine),
         previousFen: game.moves[index - 1]?.fenBefore,
         previousMoveUci: game.moves[index - 1]?.uci ?? undefined,
+        tacticalHistory,
         tacticalClassification: motifs,
         bestTimeline: motifs.missedTimeline?.filter((m) => (m.ply ?? 0) <= 8),
         refutationTimeline: motifs.allowedTimeline?.filter((m) => (m.ply ?? 0) <= 6),

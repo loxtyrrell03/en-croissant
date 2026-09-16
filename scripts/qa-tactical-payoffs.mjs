@@ -20,6 +20,7 @@ import { compensatedCaptureInput } from "../src/utils/tests/fixtures/compensated
 import { forkLocalValueCases } from "../src/utils/tests/fixtures/forkLocalValue.ts";
 import { checkingPawnRetentionCases } from "../src/utils/tests/fixtures/checkingPawnRetention.ts";
 import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "../src/utils/tests/fixtures/checkingPawnFollowup.ts";
+import { persistentPawnCases } from "../src/utils/tests/fixtures/persistentPawnCapture.ts";
 import { quietRootMateCases } from "../src/utils/tests/fixtures/quietRootMate.ts";
 import {
   matingInterferenceCases,
@@ -41,10 +42,12 @@ const compensatedMode = process.argv.includes("--compensated");
 const forkValueMode = process.argv.includes("--fork-value");
 const checkingPawnMode = process.argv.includes("--checking-pawn");
 const pawnFollowupMode = process.argv.includes("--pawn-followup");
+const persistentPawnMode = process.argv.includes("--persistent-pawn");
 const quietRootMateMode = process.argv.includes("--quiet-root-mate");
 const root = process.cwd(),
   output = resolve(
     root,
+    persistentPawnMode ? "tmp/tactical-persistent-pawn-adapter128" :
     pawnFollowupMode ? "tmp/tactical-pawn-followup-adapter127" :
     quietRootMateMode ? "tmp/tactical-quiet-root-mate-adapter126" :
     checkingPawnMode ? "tmp/tactical-checking-pawn-adapter118" : forkValueMode ? "tmp/tactical-fork-value-adapter117" : compensatedMode ? "tmp/tactical-compensated-adapter116" : pawnMode ? "tmp/tactical-pawn-adapter115" : perpetualMode ? "tmp/tactical-perpetual-material-adapter112" : discoveryTrapMode ? "tmp/tactical-discovery-trap-adapter111" : quietForkMode ? "tmp/tactical-quiet-fork-adapter110" : liabilityMode ? "tmp/tactical-liability-adapter108" : discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
@@ -63,6 +66,7 @@ const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
 const cases = (
+  persistentPawnMode ? persistentPawnCases :
   pawnFollowupMode ? checkingPawnFollowupCases.filter(row => row.positive || row.id === "mating-counterplay")
     .map(row => ({...row,pvUci:checkingPawnFollowupLine,variations:[{pvUci:checkingPawnFollowupLine,cp:0,depth:16}]})) :
   quietRootMateMode ? quietRootMateCases.slice(0, 4) :
@@ -221,7 +225,7 @@ try {
             await page.locator(".mantine-ScrollArea-viewport").evaluate(element => { element.scrollTop = 0; });
             await page.screenshot({ path: resolve(output, `${row.id}.png`), fullPage: true });
           }
-        } else if (checkingPawnMode || pawnFollowupMode) {
+        } else if (checkingPawnMode || pawnFollowupMode || persistentPawnMode) {
           await page.waitForFunction(() => window.fixture.scan !== null);
           const scan = await page.evaluate(() => window.fixture.scan);
           assert.equal(scan.motifs[0]?.label ?? null, row.positive ? "Hanging Pawn" : null);
@@ -230,9 +234,9 @@ try {
             const button = page.getByRole("button", {name:/^Show .* on board$/});
             await button.focus(); await page.keyboard.press("Enter");
             const preview = await page.evaluate(() => window.fixture.last);
-            assert.deepEqual(preview.arrows.map(a => a.from + a.to), ["c7c6"]);
+            assert.deepEqual(preview.arrows.map(a => a.from + a.to), persistentPawnMode ? [row.pvUci[0]] : ["c7c6"]);
             assert.equal(preview.labels[0].text, "Hanging Pawn");
-            assert((await page.locator("main").innerText()).includes("with check"));
+            if (!persistentPawnMode) assert((await page.locator("main").innerText()).includes("with check"));
           } else assert.equal(scan.arrows.length, 0);
           if (width === 360 && scale === 2) await page.screenshot({path:resolve(output,`${row.id}.png`),fullPage:true});
         } else if (forkValueMode) {

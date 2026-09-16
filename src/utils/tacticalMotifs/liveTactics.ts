@@ -152,7 +152,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 132;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 133;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {
@@ -211,6 +211,7 @@ export type LiveTacticalScan = {
 };
 
 export type LiveTacticalScanInput = {
+    tacticalHistory?: import("./gameHistory").TacticalGameHistory | null;
     tablebaseEvidence?: import("./tablebaseEvidence").TablebaseEvidence | null;
     fen: string;
     pvUci: string[];
@@ -331,6 +332,7 @@ function buildLiveTacticalVariation(
         pvSan: variation.pvSan,
         previousFen: input.previousFen,
         previousMoveUci: input.previousMoveUci,
+        tacticalHistory: input.tacticalHistory,
         rootCp: variation.cp,
         tablebaseEvidence: input.tablebaseEvidence,
     });
@@ -708,6 +710,7 @@ export function getLiveTacticalScanCacheKey({
     multipv = LIVE_TACTICAL_SCAN_MULTIPV,
     previousFen,
     previousMoveUci,
+    tacticalHistory,
 }: {
     fen: string;
     engineId: string;
@@ -715,6 +718,7 @@ export function getLiveTacticalScanCacheKey({
     multipv?: number;
     previousFen?: string | null;
     previousMoveUci?: string | null;
+    tacticalHistory?: import("./gameHistory").TacticalGameHistory | null;
 }) {
     return JSON.stringify([
         LIVE_TACTICAL_SCAN_PIPELINE_VERSION,
@@ -725,5 +729,6 @@ export function getLiveTacticalScanCacheKey({
         multipv,
         previousFen ?? "",
         previousMoveUci ?? "",
+        tacticalHistory ?? null,
     ]);
 }

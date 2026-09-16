@@ -6,6 +6,7 @@ import { makeFen, parseFen } from "chessops/fen";
 import { makeSan, parseSan } from "chessops/san";
 import { makeUci, parseUci } from "chessops/util";
 import { buildLiveTacticalScan } from "@/utils/tacticalMotifs/liveTactics";
+import { tacticalGameHistory } from "@/utils/tacticalMotifs/gameHistory";
 import {
     counterCaptureMaterialDefence,
     clearanceKingDefence,
@@ -578,21 +579,25 @@ describe("expert tactical judgement with fresh engine lines", () => {
         const results = [];
         for (const row of sample.cases) {
             const before = await search(row.fen), after = await search(row.afterFen);
+            const game = sample.games.find(game => game.id === row.game)!;
+            const tacticalHistory = tacticalGameHistory(game.startFen, game.moves.slice(0, row.ply));
+            expect(tacticalHistory).toBeDefined();
             const started = performance.now();
-            const scan = buildLiveTacticalScan({ ...row, ...before[0], variations: before, engineName: "Stockfish 18" });
+            const scan = buildLiveTacticalScan({ ...row, ...before[0], tacticalHistory, variations: before, engineName: "Stockfish 18" });
             const source = classifyPositionTacticalMotifs({ fen: row.fen, pvUci: row.sourceUci });
             const score = (line: JudgementEngineLine) => line.cp ?? Math.sign(line.mate ?? 0) * 10000;
             const side = Chess.fromSetup(parseFen(row.fen).unwrap()).unwrap().turn === "white" ? 1 : -1;
             const classification = after.length ? classifyMistakeReviewMotifs({
                 fen: row.fen, playedMoveUci: row.playedMoveUci, bestMoveUci: before[0].pvUci[0],
                 previousFen: row.previousFen, previousMoveUci: row.previousMoveUci,
+                tacticalHistory,
                 pvUci: before[0].pvUci, refutationUci: after[0].pvUci,
                 refutationCandidates: after.slice(0, 3).map(line => ({fen: row.afterFen, pvUci: line.pvUci, cp: line.cp, depth: line.depth})),
                 bestCandidates: before.slice(0, 3).map(line => ({fen: row.fen, pvUci: line.pvUci, cp: line.cp, depth: line.depth})),
                 cpBefore: score(before[0]) * side, cpAfter: -score(after[0]) * side,
                 cpLoss: Math.max(0, score(before[0]) + score(after[0])),
             }) : null;
-            results.push({ ...row, before, after, scan, source, classification,
+            results.push({ ...row, tacticalHistory, before, after, scan, source, classification,
                 explanation: classification ? buildMistakeReviewTacticalExplanation(classification) : null,
                 terminalReviewOmitted: after.length === 0, classificationMs: performance.now() - started });
             writeFileSync(output, JSON.stringify({

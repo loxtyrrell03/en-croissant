@@ -23,7 +23,8 @@ import {
 } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { classifyProvedMistakeNature } from "@/utils/tacticalMotifs/mistakeNature";
 import type { TacticalMotifEvidence, TacticalReplyCandidate } from "@/utils/tacticalMotifs/types";
-import { tacticalReplyCandidatesSchema } from "@/components/files/opening";
+import { tacticalReplyCandidatesSchema, tacticalGameHistorySchema } from "@/components/files/opening";
+import type { TacticalGameHistory } from "@/utils/tacticalMotifs/gameHistory";
 import { isSharedReviewPath } from "@/web/sharedReview";
 import { selectDailyReview, type PhoneReviewCard } from "@/web/mistakeReview";
 
@@ -731,6 +732,7 @@ export function createMistakeReviewPosition(
             bestCandidates: result.bestCandidates ?? undefined,
             previousFen: result.previousFen ?? undefined,
             previousMoveUci: result.previousMoveUci ?? undefined,
+            tacticalHistory: result.tacticalHistory ?? undefined,
             severity: result.severity,
             cpLoss: result.cpLoss,
             winProbabilityDrop: result.winProbabilityDrop,
@@ -1605,6 +1607,7 @@ function getMistakeReviewMotifInput(position: Position) {
         bestCandidates: metadata?.bestCandidates,
         previousFen: metadata?.previousFen,
         previousMoveUci: metadata?.previousMoveUci,
+        tacticalHistory: metadata?.tacticalHistory,
         cpLoss: metadata?.cpLoss,
         cpBefore: metadata?.cpBefore,
         cpAfter: metadata?.cpAfter,
@@ -1703,6 +1706,7 @@ function classifyMistakeReviewNatureFromText(
         bestCandidates: metadata?.bestCandidates,
         previousFen: metadata?.previousFen,
         previousMoveUci: metadata?.previousMoveUci,
+        tacticalHistory: metadata?.tacticalHistory,
         cpLoss: metadata?.cpLoss ?? position.engine?.lossCp,
         cpBefore: metadata?.cpBefore,
         cpAfter: metadata?.cpAfter,
@@ -1823,6 +1827,7 @@ export function classifyMistakeReviewNature(
               bestCandidates?: TacticalReplyCandidate[] | null;
               previousFen?: string | null;
               previousMoveUci?: string | null;
+              tacticalHistory?: TacticalGameHistory | null;
               cpLoss?: number | null;
               cpBefore?: number | null;
               cpAfter?: number | null;
@@ -1851,6 +1856,7 @@ function computeMistakeReviewNature(input: Parameters<typeof classifyMistakeRevi
     const moves = (value: unknown) => Array.isArray(value) ? value.filter((move): move is string => typeof move === "string") : undefined;
     const candidates = tacticalReplyCandidatesSchema.safeParse(field("refutationCandidates") ?? metadata?.refutationCandidates);
     const bestCandidates = tacticalReplyCandidatesSchema.safeParse(field("bestCandidates") ?? metadata?.bestCandidates);
+    const history = tacticalGameHistorySchema.safeParse(field("tacticalHistory") ?? metadata?.tacticalHistory);
     return classifyProvedMistakeNature({
         fen: text(field("fen")),
         bestMoveSan: text(field("bestMoveSan") ?? metadata?.bestMoveSan ?? field("answer")),
@@ -1865,6 +1871,7 @@ function computeMistakeReviewNature(input: Parameters<typeof classifyMistakeRevi
         bestCandidates: bestCandidates.success ? bestCandidates.data : undefined,
         previousFen: text(field("previousFen") ?? metadata?.previousFen),
         previousMoveUci: text(field("previousMoveUci") ?? metadata?.previousMoveUci),
+        tacticalHistory: history.success ? history.data : undefined,
         cpLoss: number(field("cpLoss") ?? metadata?.cpLoss),
         cpBefore: number(field("cpBefore") ?? metadata?.cpBefore),
         cpAfter: number(field("cpAfter") ?? metadata?.cpAfter),
@@ -1891,6 +1898,7 @@ function getMistakeReviewNatureClassificationCacheKey(
               bestCandidates?: TacticalReplyCandidate[] | null;
               previousFen?: string | null;
               previousMoveUci?: string | null;
+              tacticalHistory?: TacticalGameHistory | null;
               cpLoss?: number | null;
               cpBefore?: number | null;
               cpAfter?: number | null;
@@ -1918,6 +1926,7 @@ function getMistakeReviewNatureClassificationCacheKey(
         field("bestCandidates") ?? metadata?.bestCandidates ?? null,
         field("previousFen") ?? metadata?.previousFen ?? null,
         field("previousMoveUci") ?? metadata?.previousMoveUci ?? null,
+        field("tacticalHistory") ?? metadata?.tacticalHistory ?? null,
         field("cpLoss") ?? metadata?.cpLoss ?? "",
         field("cpBefore") ?? metadata?.cpBefore ?? "",
         field("cpAfter") ?? metadata?.cpAfter ?? "",

@@ -36,6 +36,7 @@ import {
   type LiveTacticalScanInput,
 } from "@/utils/tacticalMotifs/liveTactics";
 import { classifyLiveTacticsInWorker } from "@/utils/tacticalMotifs/liveTacticsWorker";
+import { tacticalHistoryAtPath, type TacticalGameHistory } from "@/utils/tacticalMotifs/gameHistory";
 
 const TACTICAL_SCAN_DEPTH = 16;
 const TACTICAL_SCAN_DEBOUNCE_MS = 120;
@@ -109,8 +110,15 @@ function TacticalClassifierPanel({
         lastMoveSan: node.san,
         previousFen: parent?.fen ?? null,
         previousMoveUci: node.move ? makeUci(node.move) : null,
+        // A primitive keeps useShallow stable on unrelated tree updates.
+        historyKey: JSON.stringify(tacticalHistoryAtPath(tree.root, tree.position)),
       };
     }),
+  );
+
+  const tacticalHistory = useMemo<TacticalGameHistory | undefined>(
+    () => position.historyKey ? JSON.parse(position.historyKey) : undefined,
+    [position.historyKey],
   );
 
   const localEngines = useMemo(
@@ -131,9 +139,10 @@ function TacticalClassifierPanel({
             multipv: LIVE_TACTICAL_SCAN_MULTIPV,
             previousFen: position.previousFen,
             previousMoveUci: position.previousMoveUci,
+            tacticalHistory,
           })
         : "",
-    [position.fen, position.previousFen, position.previousMoveUci, selectedEngine],
+    [position.fen, position.previousFen, position.previousMoveUci, selectedEngine, tacticalHistory],
   );
 
   useEffect(() => {
@@ -260,6 +269,7 @@ function TacticalClassifierPanel({
         depth: bestLine.depth || TACTICAL_SCAN_DEPTH,
         previousFen: position.previousFen,
         previousMoveUci: position.previousMoveUci,
+        tacticalHistory,
         variations: usableLines.map((line) => ({
           multipv: line.multipv,
           depth: line.depth,
@@ -435,6 +445,7 @@ function TacticalClassifierPanel({
     refreshRevision,
     scanCacheKey,
     selectedEngine,
+    tacticalHistory,
   ]);
 
   return (

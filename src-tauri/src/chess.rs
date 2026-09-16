@@ -986,6 +986,22 @@ fn mistake_review_reply_candidates(
 
 #[derive(Clone, Debug, Serialize, Type)]
 #[serde(rename_all = "camelCase")]
+pub struct MistakeReviewGameHistory {
+    pub fen: String,
+    pub moves: Vec<String>,
+}
+
+fn mistake_review_game_history(fen: &str, moves: &[String]) -> Option<MistakeReviewGameHistory> {
+    // Keep in sync with MAX_TACTICAL_HISTORY_PLIES. Never retain just a recent
+    // suffix: it could hide the earlier capture in a gambit or delayed recapture.
+    (moves.len() <= 1024).then(|| MistakeReviewGameHistory {
+        fen: fen.to_string(),
+        moves: moves.to_vec(),
+    })
+}
+
+#[derive(Clone, Debug, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub struct MistakeReviewScanResult {
     pub review_key: String,
     pub fen: String,
@@ -1009,6 +1025,8 @@ pub struct MistakeReviewScanResult {
     pub previous_fen: Option<String>,
     #[specta(optional)]
     pub previous_move_uci: Option<String>,
+    #[specta(optional)]
+    pub tactical_history: Option<MistakeReviewGameHistory>,
     pub severity: MistakeReviewSeverity,
     pub cp_loss: i32,
     pub win_probability_drop: f64,
@@ -1330,6 +1348,8 @@ pub async fn scan_mistake_review(
         let move_sans = collect_mistake_review_move_sans(game.fen.as_deref(), &move_entries)?;
         let mut ply = 0u32;
         let mut previous_position: Option<(String, String)> = None;
+        let history_fen = Fen::from_position(chess.clone(), EnPassantMode::Legal).to_string();
+        let mut history_moves = Vec::new();
 
         for entry in move_entries {
             let Some(mv) = decode_move(entry.byte, &chess) else {
@@ -1344,6 +1364,7 @@ pub async fn scan_mistake_review(
             // preceding root remains accurate for both colours and custom FENs.
             let previous_context =
                 previous_position.replace((fen_before.clone(), played_move_uci.clone()));
+            history_moves.push(played_move_uci.clone());
             let played_move_san = SanPlus::from_move(chess.clone(), &mv).to_string();
             let mut after = chess.clone();
             after.play_unchecked(&mv);
@@ -1669,6 +1690,10 @@ pub async fn scan_mistake_review(
                         best_candidates: mistake_review_reply_candidates(&fen_before, &deep_before),
                         previous_fen: previous_context.as_ref().map(|(fen, _)| fen.clone()),
                         previous_move_uci: previous_context.as_ref().map(|(_, uci)| uci.clone()),
+                        tactical_history: mistake_review_game_history(
+                            &history_fen,
+                            &history_moves[..history_moves.len() - 1],
+                        ),
                         refutation_san: deep_after_best.san_moves.clone(),
                         refutation_uci: deep_after_best.uci_moves.clone(),
                         refutation_candidates: mistake_review_reply_candidates(
@@ -2870,6 +2895,7 @@ mod mistake_review_tests {
             refutation_candidates: vec![],
             best_candidates: vec![],
             previous_fen: None,
+            tactical_history: None,
             previous_move_uci: None,
             severity: MistakeReviewSeverity::Mistake,
             cp_loss,
@@ -2903,6 +2929,25 @@ mod mistake_review_tests {
             occurrence_count: 1,
             game_ids: vec![game_id],
         }
+    }
+
+    #[test]
+    fn tactical_game_history_keeps_the_origin_and_entire_prefix_or_nothing() {
+        let moves = ["e2e4", "d7d5", "e4d5", "d8d5", "b1c3"].map(str::to_string);
+        let prefix = mistake_review_game_history("custom origin", &moves[..4]).unwrap();
+        assert_eq!(prefix.fen, "custom origin");
+        assert_eq!(prefix.moves, moves[..4]);
+        assert!(mistake_review_game_history("origin", &vec![String::new(); 1024]).is_some());
+        assert!(mistake_review_game_history("origin", &vec![String::new(); 1025]).is_none());
+        let mut result = scan_result("history", 150, 1);
+        assert!(serde_json::to_value(&result).unwrap()["tacticalHistory"].is_null());
+        result.tactical_history = Some(prefix);
+        let wire = serde_json::to_value(&result).unwrap();
+        assert_eq!(wire["tacticalHistory"]["fen"], "custom origin");
+        assert_eq!(
+            wire["tacticalHistory"]["moves"],
+            serde_json::json!(moves[..4])
+        );
     }
 
     #[test]
@@ -3287,6 +3332,7 @@ mod tests {
         let options = specta_typescript::Typescript::default()
             .bigint(specta_typescript::BigIntExportBehavior::BigInt);
         let exports = [
+            specta_typescript::export::<MistakeReviewGameHistory>(&options).unwrap(),
             specta_typescript::export::<MistakeReviewReplyCandidate>(&options).unwrap(),
             specta_typescript::export::<MistakeReviewScanResult>(&options).unwrap(),
         ];

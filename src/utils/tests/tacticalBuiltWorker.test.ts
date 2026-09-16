@@ -332,13 +332,23 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("exposed pawns and more importan
     }
 },30000);
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("complete pawn histories survive the compiled worker boundary", async () => {
+    const { persistentPawnCases } = await import("./fixtures/persistentPawnCapture");
+    for (const row of persistentPawnCases) {
+        const input = { ...row, depth: 16, engineName: "Constructed" };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.map(m => m.label)).toEqual(row.positive ? ["Hanging Pawn"] : []);
+    }
+}, 30000);
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_RECALL_REPLAY)("all owner-game positions retain the actual compiled scan and history", async()=>{
     const baseline=JSON.parse(readFileSync(process.env.TACTICAL_RECALL_REPLAY!,"utf8"));
     expect(baseline.completed).toBe(baseline.requested);
     const cases=[];
     for(const row of baseline.results) {
         const input={fen:row.fen,...row.before[0],variations:row.before,engineName:"Stockfish 18",
-            previousFen:row.previousFen,previousMoveUci:row.previousMoveUci};
+            previousFen:row.previousFen,previousMoveUci:row.previousMoveUci,tacticalHistory:row.tacticalHistory};
         let result;
         try { result=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input); }
         catch (error) {

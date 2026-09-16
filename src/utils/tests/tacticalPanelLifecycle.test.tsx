@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   killEngine: vi.fn(),
   stopEngine: vi.fn(),
   classify: vi.fn(),
+  tree: null as any,
   position: {
     fen: "rnbqk2r/p1ppbppp/1p3n2/4N3/2B5/4P3/PPPP1PPP/RNBQK2R w KQkq - 0 5",
     lastMoveSan: "b6",
@@ -23,7 +24,7 @@ vi.mock("@/state/atoms", () => ({ activeTabAtom: "tab", enginesAtom: "engines" }
 vi.mock("jotai", () => ({
   useAtomValue: (atom: string) => (atom === "engines" ? mocks.engines : "board"),
 }));
-vi.mock("zustand", () => ({ useStore: () => mocks.position }));
+vi.mock("zustand", () => ({ useStore: (_store: unknown, selector: (tree: any) => unknown) => mocks.tree ? selector(mocks.tree) : mocks.position }));
 vi.mock("@/components/common/TreeStateContext", async () => ({
   TreeStateContext: (await import("react")).createContext(null),
 }));
@@ -52,6 +53,7 @@ const dispose = vi.fn();
 beforeEach(() => {
   vi.useFakeTimers();
   vi.clearAllMocks();
+  mocks.tree = null;
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.stubGlobal(
     "ResizeObserver",
@@ -116,6 +118,33 @@ function emit(depth: number, progress = (depth / 16) * 100, uciMoves = ["e5f7", 
     },
   });
 }
+
+test("the real panel selector sends the complete selected history, excluding future moves", async () => {
+  const { persistentPawnCases } = await import("./fixtures/persistentPawnCapture");
+  const { parseUci } = await import("chessops/util");
+  const { makeFen } = await import("chessops/fen");
+  const { replayTacticalLine } = await import("../tacticalMotifs/causalTactics");
+  const row = persistentPawnCases[0];
+  const steps = replayTacticalLine(row.tacticalHistory.fen, row.tacticalHistory.moves);
+  const origin: any = { fen: row.tacticalHistory.fen, move: null, san: null, children: [] };
+  let node = origin;
+  for (const step of steps) {
+    const child = { fen: makeFen(step.after.toSetup()), move: step.move, san: step.san, children: [] };
+    node.children.push(child);
+    node = child;
+  }
+  // An unselected continuation must not leak into past exchange accounting.
+  node.children.push({ fen: "unused", move: parseUci("f6e4"), san: "Nxe4", children: [] });
+  mocks.tree = { root: origin, position: steps.map(() => 0), currentNode: () => node };
+  mocks.getBestMoves.mockResolvedValue([100, [{ depth: 16, multipv: 1,
+    uciMoves: row.pvUci, sanMoves: ["Nxe4"], score: { value: { type: "cp", value: -100 }, wdl: null } }]]);
+  await start();
+  const input = mocks.classify.mock.calls[0][0];
+  expect(input.tacticalHistory).toEqual(row.tacticalHistory);
+  expect(input.previousFen).toBe(row.previousFen);
+  expect(input.previousMoveUci).toBe(row.previousMoveUci);
+  expect(buildLiveTacticalScan(input).motifs.map(m => m.label)).toEqual(["Hanging Pawn"]);
+});
 
 test("cold startup does not consume the search allowance", async () => {
   mocks.getBestMoves.mockImplementation(() => new Promise(() => {}));
