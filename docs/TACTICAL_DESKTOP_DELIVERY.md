@@ -1,6 +1,38 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 120 / live pipeline 125
+## Current package: adapter 121 / live pipeline 126
+
+Source `ecf6ba07` is packaged in the standalone executable, including mixed
+checking combinations, connected mating support and legal promotion-fork
+captures. The detached checkout `en-tactical-desktop-ecf6ba07` excludes unrelated
+primary-worktree changes. TypeScript, 45 focused checks (four optional skips),
+the 42-module shared-review build, 8,861-module frontend and native release build
+pass. The native build takes 1m56s with 22 existing warnings. Generated route-tree
+output has no semantic diff; shared-service regeneration differs only in
+dependency-path comments.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,123,904 bytes;
+  SHA-256 `8778c6b51ee87228814f941e23e7411d9a568d00b3706516821b7d326f5a1277`.
+- Worker: `liveTactics.worker-Fyhu5jbD.js`; SHA-256
+  `0cb427bfad528fb1a9846b2732ea2dd22945e8312682b80974cc1c37edc4e224`.
+  Clean frontend bytes match the tested immutable artifact. The x64 executable
+  embeds this key and `OpeningReviewWorkspace-BkbuI4op.js`; the native dependency
+  receipt identifies both clean-checkout assets.
+- Previous adapter-120 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter121/en-croissant-fork.exe`,
+  SHA-256 `e16c771be2a993b1e94dbe0884a664359126e1f918fa8a70191597d9439c627a`.
+
+No app was running before or after the build, and none was launched/restarted.
+The Dev App shortcut was read back and still invokes the primary checkout's
+existing `encroissant-native` workflow. Owner data, settings, engines and phone
+services are unchanged. This verifies source/package linkage, not native-window
+interaction or startup reliability. The passing cold-HTTP run does not erase
+earlier twenty-second failures. See
+`benchmarks/tactical-relevance/checking-combination-recall-review.md` for the
+owner opportunity, preserved mate priority, public recoveries, fresh engine
+witnesses, contrary controls and remaining recall/primary-selection gaps.
+
+## Previous package: adapter 120 / live pipeline 125
 
 Source `d94e7767` is packaged in the standalone executable, including the
 checking-pawn retention through equal interpositions and protected retreats.
