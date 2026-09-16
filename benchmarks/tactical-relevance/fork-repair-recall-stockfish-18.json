@@ -1,0 +1,347 @@
+{
+  "scope": "Five fresh Stockfish 18 depth-16 held searches in one previously sampled public real-game position. Full-position scores are side to move, not local material values or an accuracy estimate. The root remains a classifier coverage gap.",
+  "sourceGameUrl": "https://lichess.org/heingGcp/black#64",
+  "searches": [
+    {
+      "id": "tA2XR:root",
+      "fen": "4r1k1/6p1/7p/ppnNq1P1/4r3/1QP1P3/PP6/2K2N1R w - - 3 33",
+      "moves": [],
+      "searchMove": "d5f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f6",
+            "g8h8",
+            "b3f7",
+            "c5d3",
+            "c1b1",
+            "e5g5",
+            "f6e8",
+            "h8h7",
+            "e8d6",
+            "e4g4",
+            "h1h5"
+          ],
+          "pvSan": [
+            "Nf6+",
+            "Kh8",
+            "Qf7",
+            "Nd3+",
+            "Kb1",
+            "Qxg5",
+            "Nxe8",
+            "Kh7",
+            "Nd6",
+            "Rg4",
+            "Rh5"
+          ],
+          "cp": 244,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-118"
+      }
+    },
+    {
+      "id": "tA2XR:repair",
+      "fen": "4r2k/6p1/5N1p/ppn1q1P1/4r3/1QP1P3/PP6/2K2N1R w - - 5 34",
+      "moves": [
+        "d5f6",
+        "g8h8"
+      ],
+      "searchMove": "b3f7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "b3f7",
+            "e5g5",
+            "f6e8",
+            "e4e3",
+            "f7g7",
+            "g5g7",
+            "e8g7",
+            "e3e2",
+            "g7f5",
+            "c5d3",
+            "c1d1",
+            "e2b2",
+            "h1h6",
+            "h8g8",
+            "h6g6",
+            "g8f7",
+            "g6g3",
+            "d3f2",
+            "d1c1",
+            "b2a2",
+            "g3f3",
+            "b5b4",
+            "c1b1",
+            "a2a3",
+            "f5g3",
+            "f7g7",
+            "f3f2",
+            "a3c3"
+          ],
+          "pvSan": [
+            "Qf7",
+            "Qxg5",
+            "Nxe8",
+            "Rxe3",
+            "Qxg7+",
+            "Qxg7",
+            "Nxg7",
+            "Re2",
+            "Nf5",
+            "Nd3+",
+            "Kd1",
+            "Rxb2",
+            "Rxh6+",
+            "Kg8",
+            "Rg6+",
+            "Kf7",
+            "Rg3",
+            "Nf2+",
+            "Kc1",
+            "Rxa2",
+            "Rf3",
+            "b4",
+            "Kb1",
+            "Ra3",
+            "N5g3+",
+            "Kg7",
+            "Rxf2",
+            "Rxc3"
+          ],
+          "cp": 194,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "tacticalPreparation",
+            "label": "Quiet Preparation",
+            "source": "available",
+            "confidence": "medium",
+            "ply": 1,
+            "moveUci": "b3f7",
+            "value": 400,
+            "evidence": "Qf7 threatens Rxh6+, leading to mate or winning the rook on e8. After Qxg5, the short continuation is verified: Nxe8. Other replies can avoid this particular route; it is a threat, not a forced reply sequence.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "tacticalPreparation",
+            "label": "Quiet Preparation",
+            "source": "available",
+            "confidence": "medium",
+            "ply": 1,
+            "moveUci": "b3f7",
+            "value": 400,
+            "evidence": "Qf7 threatens Rxh6+, leading to mate or winning the rook on e8. After Qxg5, the short continuation is verified: Nxe8. Other replies can avoid this particular route; it is a threat, not a forced reply sequence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Nxe8 wins the loose rook on e8.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f6e8",
+            "value": 500,
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Winning Recapture",
+            "value": 220,
+            "evidence": "Qxg7 takes the queen on g7 in exchange for the pawn just captured there. After allowing for that trade and immediate counterplay, the checked local gain is at least 2.2 pawns; this is the payoff, not a newly hanging piece.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 6,
+            "moveUci": "g5g7",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-118"
+      }
+    },
+    {
+      "id": "tA2XR:capture",
+      "fen": "4r2k/6p1/5N1p/ppn1q1P1/4r3/1QP1P3/PP6/2K2N1R w - - 5 34",
+      "moves": [
+        "d5f6",
+        "g8h8"
+      ],
+      "searchMove": "f6e4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f6e4",
+            "c5b3",
+            "a2b3",
+            "e5e4",
+            "h1g1",
+            "h6h5",
+            "g5g6",
+            "h8g8",
+            "c3c4",
+            "h5h4",
+            "f1d2",
+            "e4e3",
+            "g1d1",
+            "h4h3"
+          ],
+          "pvSan": [
+            "Nxe4",
+            "Nxb3+",
+            "axb3",
+            "Qxe4",
+            "Rg1",
+            "h5",
+            "g6",
+            "Kg8",
+            "c4",
+            "h4",
+            "Nd2",
+            "Qxe3",
+            "Rd1",
+            "h3"
+          ],
+          "cp": -661,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "intermezzo",
+            "label": "Intermediate Check",
+            "source": "available",
+            "confidence": "high",
+            "ply": 2,
+            "moveUci": "c5b3",
+            "value": 800,
+            "evidence": "Nxb3+ takes the queen with check before Qxe4. Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing Qxe4 first allows Qd1, preventing an immediate profitable capture of that queen. The move order matters, not just the two captures.",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-118"
+      }
+    },
+    {
+      "id": "tA2XR:take-knight",
+      "fen": "4r2k/5Qp1/5N1p/ppn1q1P1/4r3/2P1P3/PP6/2K2N1R b - - 6 34",
+      "moves": [
+        "d5f6",
+        "g8h8",
+        "b3f7"
+      ],
+      "searchMove": "g7f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "g7f6",
+            "h1h6"
+          ],
+          "pvSan": [
+            "gxf6",
+            "Rxh6#"
+          ],
+          "cp": null,
+          "mate": -1
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 2,
+            "moveUci": "h1h6",
+            "value": 10000,
+            "evidence": "Rxh6# is checkmate: the king is in check and there is no legal reply.",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-118"
+      }
+    },
+    {
+      "id": "tA2XR:mating-answer",
+      "fen": "4r2k/5Q2/5p1p/ppn1q1P1/4r3/2P1P3/PP6/2K2N1R w - - 0 35",
+      "moves": [
+        "d5f6",
+        "g8h8",
+        "b3f7",
+        "g7f6"
+      ],
+      "searchMove": "h1h6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h1h6"
+          ],
+          "pvSan": [
+            "Rxh6#"
+          ],
+          "cp": null,
+          "mate": 1
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxh6# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "h1h6",
+            "relevance": "primary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxh6# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "h1h6",
+            "relevance": "primary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-118"
+      }
+    }
+  ]
+}
