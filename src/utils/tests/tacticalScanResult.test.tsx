@@ -8,6 +8,7 @@ import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtu
 import { mixedForkFen, mixedForkLine } from "./fixtures/mixedTargetFork";
 import { directThreatFen, directThreatLine } from "./fixtures/directThreatRelevance";
 import { pawnExposureAlternateInput } from "./fixtures/pawnExposure";
+import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
 import {
   buildLiveTacticalScan,
   previewLiveTacticalVariation,
@@ -32,6 +33,15 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a compensated capture displays the retained gain rather than a free knight", () => {
+  const value = buildLiveTacticalScan(compensatedCaptureInput);
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Material Gain found");
+  expect(element.textContent).toContain("0.9 pawns");
+  expect(element.textContent).not.toContain("Hanging Piece found");
+  expect(value.arrows.some(arrow => arrow.from === "c3" && arrow.to === "d5")).toBe(true);
+});
 
 test("a stronger capture alternative explains its priority without claiming an engine repetition", () => {
   const value = buildLiveTacticalScan(pawnExposureAlternateInput);

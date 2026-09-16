@@ -9,6 +9,7 @@ import { makeUci } from "chessops/util";
 import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { pawnExposureInput, pawnExposureAlternateInput } from "./fixtures/pawnExposure";
+import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
@@ -127,6 +128,19 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("discovered traps and safe queen
         const { scan } = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
         expect(scan).toEqual(buildLiveTacticalScan(input));
         expect(scan.motifs.some(m => m.id === "discoveredAttack")).toBe(row.positive);
+    }
+}, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("compensated captures survive the production controller without free-piece claims", async () => {
+    for (const [fen, expected] of [
+        [compensatedCaptureInput.fen, true],
+        [compensatedCaptureInput.fen.replace("2N2N2", "2N5"), false],
+        [compensatedCaptureInput.fen.replace("P5PP", "Pb4PP"), false],
+    ] as const) {
+        const request = {...compensatedCaptureInput, fen, pvUci: ["c3d5"]};
+        const {scan} = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, request);
+        expect(scan).toEqual(buildLiveTacticalScan(request));
+        expect(scan.motifs.some(m => m.label === "Material Gain" && m.value === 90)).toBe(expected);
     }
 }, 30000);
 

@@ -7,6 +7,35 @@ import { SharedReviewService, engineLine, BackgroundEngine } from "../generated/
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
 
+test("a compensated missed capture survives shared-review storage with its actual local bound", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-shared-review-compensated-"));
+  const fen = "r5k1/p5pp/5p2/3n2B1/8/2N2N2/P5PP/R5K1 w - - 0 1";
+  const after = "r5k1/p5pp/5p2/3n2B1/4N3/5N2/P5PP/R5K1 b - - 1 1";
+  const options = {root, documentsRoot:join(root,"documents"), engineConfigPath:join(root,"engine.json"),
+    fetchGames:async()=>[], lookup:async(board)=>{
+      assert.ok(board === fen || board === after);
+      // Synthetic nomination scores exercise persistence, not chess strength.
+      return {depth:16,pvs:board===fen ? [{cp:150,moves:"c3d5 f6g5 f3g5"}] : [{cp:0,moves:"d5e7"}]};
+    }};
+  let service;
+  try {
+    await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+    await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,url:"https://example.test/compensated",
+      pgn:`[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.16"]\n[SetUp "1"]\n[FEN "${fen}"]\n[Result "0-1"]\n\n1. Ne4 0-1`}]}));
+    service = new SharedReviewService(options); await service.initialize(false); await service.run();
+    assert.equal(service.snapshot().error,null);
+    const card = service.snapshot().cards[0]; assert.ok(card);
+    assert.match(card.explanation,/Material Gain/); assert.match(card.explanation,/0.9 pawns/);
+    assert.equal(card.tacticalClassification.missedMotifs[0].value,90);
+    service.close(); service = new SharedReviewService(options); await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification,card.tacticalClassification);
+  } finally {
+    service?.close(); const target = resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-"));
+    await rm(target,{recursive:true,force:true});
+  }
+});
+
 test("new pawn exposure retains the preceding board through background review and reload", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-pawn-"));
   const previous = "r5k1/p3p1pp/8/8/3P4/8/P5PP/R5K1 b - - 0 1";

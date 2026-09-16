@@ -16,6 +16,10 @@ const VALUE: Record<Role, number> = {
     queen: 900,
     king: 20000,
 };
+// A pawn won while exchanging bishop for knight is still a meaningful gain.
+// Keep the actual 90 cp local bound; do not round it up to a pawn, accept a
+// bare 10 cp minor-piece exchange, or relax the capture/counterplay proof.
+export const MIN_TACTICAL_CAPTURE_GAIN = VALUE.pawn - (VALUE.bishop - VALUE.knight);
 const MECHANISMS = new Set([
     "promotionCombination",
     "forcingAttack",
@@ -821,7 +825,7 @@ export function proveAlternativeCaptureCause(
             if (!safeFromImmediateCapture(previous, previousCaptures, original) ||
                 !safeFromImmediateCapture(better.after, betterCaptures, target)) continue;
             const gain = preparationCaptureGain(pos, move, budget);
-            if (gain === null || gain < 100 || gain <= (strongest?.value ?? 0)) continue;
+            if (gain === null || gain < MIN_TACTICAL_CAPTURE_GAIN || gain <= (strongest?.value ?? 0)) continue;
             const after = pos.clone(); after.play(move);
             if (after.isEnd()) continue; // Mate and terminal drawing resources have dedicated lessons.
             const uci = makeUci(move), san = makeSan(pos, move);
@@ -831,7 +835,7 @@ export function proveAlternativeCaptureCause(
                 ply: 1, moveUci: uci, actor: pos.turn, ...captureGainEvidence(step, gain),
             };
             const contextual = filterCompensatedRootCaptures(makeFen(pos.toSetup()), [uci], [motif], fen, playedMove)[0];
-            if (!contextual || (contextual.value ?? 0) < 100) continue;
+            if (!contextual || (contextual.value ?? 0) < MIN_TACTICAL_CAPTURE_GAIN) continue;
             strongest = {
                 ...contextual,
                 comparison: "prevented",
@@ -11658,7 +11662,7 @@ export function auditTacticalMotifs(
             if (sound) proposal = { ...proposal, value: gain! };
         } else if (proposal.id === "hangingPiece") {
             const gain = tacticalCaptureGain(step);
-            sound = step.capture >= 320 && gain !== null && gain >= 100;
+            sound = step.capture >= 320 && gain !== null && gain >= MIN_TACTICAL_CAPTURE_GAIN;
             if (sound) proposal = { ...proposal, ...captureGainEvidence(step, gain!) };
         }
         else if (proposal.id === "attacking_undefended_piece") {
@@ -11774,7 +11778,7 @@ export function auditTacticalMotifs(
     const directGain = root.capture ? Math.max(0, tacticalCaptureGain(root) ?? 0) : 0;
     if (
         (root.capture >= 320 || isNewlyExposedPawnCapture(root, context?.previousFen, context?.previousMoveUci)) &&
-        directGain >= 100 &&
+        directGain >= MIN_TACTICAL_CAPTURE_GAIN &&
         !candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)
     ) {
         const victim = root.before.board.get(root.move.to);
@@ -11810,11 +11814,12 @@ export function auditTacticalMotifs(
             evidence: `${root.san} is checkmate: the king is in check and there is no legal reply.`,
         });
     }
+    const captureThreshold = Math.max(MIN_TACTICAL_CAPTURE_GAIN, Math.min(VALUE.pawn, directGain));
     const countercapture = candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)
-        ? compensatedLooseCapture(root)
+        ? compensatedLooseCapture(root, captureThreshold)
         : null;
     const matingCompensation = !countercapture && candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)
-        ? proveMatingCaptureCompensation(root)
+        ? proveMatingCaptureCompensation(root, 8192, captureThreshold)
         : null;
     const normalizedCandidates = normalizeMatingPayoffs(
         steps,
@@ -12675,7 +12680,7 @@ function materialLesson(steps: TacticalReplayStep[], motif: TacticalMotifEvidenc
         return victim && victim.color === opposite(step.before.turn) && victim.role !== "king";
     });
     return gain !== null &&
-        gain >= (motif.id === "fork" ? 70 : 100) &&
+        gain >= (motif.id === "fork" ? 70 : motif.id === "hangingPiece" ? MIN_TACTICAL_CAPTURE_GAIN : 100) &&
         gain < 10000 &&
         targets.length
         ? { targets, gain }
@@ -12759,7 +12764,15 @@ export function compareBestLineTacticalDefence(
         }
         const proof = materialLesson(attackSteps, motif);
         if (!proof) return motif;
-        const actualGain = Math.max(proof.gain, observedTargetGain(attackSteps, proof.targets));
+        // Both reply proofs start AFTER the user's choice. Credit material
+        // taken by that choice before comparing their net losses: Nxc6 Qxc6
+        // is an exchange, not evidence that an otherwise loose knight is lost
+        // under both moves. A lower alternative bound still cannot prove safety.
+        const choiceCredit = (step: TacticalReplayStep) => step.capture +
+            (step.move.promotion ? VALUE[step.move.promotion] - VALUE.pawn : 0);
+        const actualGain = Math.max(proof.gain, observedTargetGain(attackSteps, proof.targets)) -
+            choiceCredit(actual[0]);
+        if (actualGain <= 0) return motif;
         const mapped: Square[] = [];
         for (const square of proof.targets) {
             const original = relocatedSquare(actual[0], square, true);
@@ -12780,7 +12793,7 @@ export function compareBestLineTacticalDefence(
         if (
             !alternatives.some(
                 (other) =>
-                    other.gain >= actualGain &&
+                    other.gain - choiceCredit(better[0]) >= actualGain &&
                     [...other.targets].sort((a, b) => a - b).join(",") === identity,
             )
         )
@@ -13330,6 +13343,7 @@ export function counterCaptureMaterialDefence(
     previousCaptureCost = 0,
     captureOffsetMode = false,
     onProof?: (audit: CountercaptureDefenceAudit) => void,
+    minimumGain = 100,
 ): { defence: string; defenceUci: string; checkingDefences: string[] } | null {
     if (
         !Number.isSafeInteger(nodeLimit) ||
@@ -13338,6 +13352,7 @@ export function counterCaptureMaterialDefence(
         (captureOffsetMode && (!root.capture || previousCaptureCost !== 0)) ||
         !Number.isSafeInteger(previousCaptureCost) ||
         previousCaptureCost < 0 ||
+        !Number.isSafeInteger(minimumGain) || minimumGain <= 0 ||
         root.move.promotion ||
         root.after.isCheck() ||
         root.after.isEnd()
@@ -13363,7 +13378,7 @@ export function counterCaptureMaterialDefence(
     const delta = (pos: Chess, move: NormalMove) =>
         capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
     const safe = (pos: Chess, balance: number, rounds: number): string[] | null => {
-        if (pos.isEnd() || balance >= 100) return null;
+        if (pos.isEnd() || balance >= minimumGain) return null;
         const witnesses: string[] = [];
         for (const move of legalMoves(pos)) {
             const next = visit(pos, move);
@@ -13377,7 +13392,7 @@ export function counterCaptureMaterialDefence(
                 for (const reply of legalMoves(next)) {
                     const after = visit(next, reply);
                     const remaining = balance - delta(next, reply);
-                    if (after.isCheck() || after.isEnd() || remaining >= 100) continue;
+                    if (after.isCheck() || after.isEnd() || remaining >= minimumGain) continue;
                     let resolved = true;
                     for (const recovery of legalMoves(after)) {
                         const leaf = visit(after, recovery);
@@ -13387,7 +13402,7 @@ export function counterCaptureMaterialDefence(
                         }
                         if (!delta(after, recovery)) continue;
                         const gain = tacticalExchangeGain(after, recovery);
-                        if (gain <= -VALUE.king || remaining + gain >= 100) {
+                        if (gain <= -VALUE.king || remaining + gain >= minimumGain) {
                             resolved = false;
                             break;
                         }
@@ -13404,7 +13419,7 @@ export function counterCaptureMaterialDefence(
             }
             if (!rounds) {
                 const gain = tacticalExchangeGain(pos, move);
-                if (gain <= -VALUE.king || balance + gain >= 100) return null;
+                if (gain <= -VALUE.king || balance + gain >= minimumGain) return null;
                 continue;
             }
             // In the equal-recapture mode, an uncapturable return of the
@@ -13413,7 +13428,7 @@ export function counterCaptureMaterialDefence(
             if (
                 (previousCaptureCost || captureOffsetMode) &&
                 !next.isCheck() &&
-                balance + capture < 100
+                balance + capture < minimumGain
             )
                 continue;
             let answered = false;
@@ -13475,10 +13490,11 @@ const matingCaptureCompensationCache = new Map<string, MatingCaptureCompensation
  * the material back. This refutes a free-piece claim, not the move's overall
  * soundness, and cannot invent a defensive/only-move lesson. No PV nominates
  * the recapture, replies or material bound. */
-export function proveMatingCaptureCompensation(root: TacticalReplayStep, nodeLimit = 8192): MatingCaptureCompensation | null {
+export function proveMatingCaptureCompensation(root: TacticalReplayStep, nodeLimit = 8192, minimumGain = 100): MatingCaptureCompensation | null {
     if (!root || root.capture < VALUE.knight || root.move.promotion || root.before.isCheck() || root.after.isCheck() || root.after.isEnd() ||
-        !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
-    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+        !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 ||
+        !Number.isSafeInteger(minimumGain) || minimumGain <= 0) return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}:${minimumGain}`;
     if (nodeLimit === 8192 && matingCaptureCompensationCache.has(key)) return matingCaptureCompensationCache.get(key)!;
     const budget = { nodes: nodeLimit };
     const visit = (pos: Chess, move: NormalMove) => {
@@ -13495,7 +13511,7 @@ export function proveMatingCaptureCompensation(root: TacticalReplayStep, nodeLim
                 capture: capturedValue(root.after, reply), balance: 0,
             }, nodeLimit, undefined, budget);
             if (budget.nodes < 0) return null;
-            if (compensation && root.capture - compensation.gain < 100) {
+            if (compensation && root.capture - compensation.gain < minimumGain) {
                 proof = { replySan: makeSan(root.after, reply), replyUci: makeUci(reply), compensation, visits: nodeLimit - budget.nodes };
                 break;
             }
@@ -13511,7 +13527,7 @@ export function proveMatingCaptureCompensation(root: TacticalReplayStep, nodeLim
 /** A free-piece headline must not count only the first capture when a
  * concrete off-square countercapture removes that gain. This is a positive
  * bounded defence, not an inference from an engine score or a failed attack. */
-function compensatedLooseCapture(root: TacticalReplayStep) {
+function compensatedLooseCapture(root: TacticalReplayStep, minimumGain = 100) {
     if (!root.capture || root.move.promotion || root.after.isCheck() || root.after.isEnd())
         return null;
     if (
@@ -13520,9 +13536,9 @@ function compensatedLooseCapture(root: TacticalReplayStep) {
         )
     )
         return null;
-    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}:${minimumGain}`;
     if (compensatedLooseCaptureCache.has(key)) return compensatedLooseCaptureCache.get(key)!;
-    const proof = counterCaptureMaterialDefence(root, 8192, 0, true);
+    const proof = counterCaptureMaterialDefence(root, 8192, 0, true, undefined, minimumGain);
     compensatedLooseCaptureCache.set(key, proof);
     if (compensatedLooseCaptureCache.size > 256)
         compensatedLooseCaptureCache.delete(compensatedLooseCaptureCache.keys().next().value!);

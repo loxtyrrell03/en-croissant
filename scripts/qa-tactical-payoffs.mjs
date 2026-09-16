@@ -16,6 +16,7 @@ import { castlingAliasCases } from "../src/utils/tests/fixtures/castlingRelevanc
 import { quietPieceForkCases, quietPieceForkMove } from "../src/utils/tests/fixtures/quietPieceFork.ts";
 import { discoveryTrapCases } from "../src/utils/tests/fixtures/discoveryTrap.ts";
 import { perpetualMaterialCases, perpetualMaterialLine } from "../src/utils/tests/fixtures/perpetualMaterial.ts";
+import { compensatedCaptureInput } from "../src/utils/tests/fixtures/compensatedCapture.ts";
 import {
   matingInterferenceCases,
   reflectMatingInterference,
@@ -32,10 +33,11 @@ const quietForkMode = process.argv.includes("--quiet-fork");
 const discoveryTrapMode = process.argv.includes("--discovery-trap");
 const perpetualMode = process.argv.includes("--perpetual-material");
 const pawnMode = process.argv.includes("--pawn");
+const compensatedMode = process.argv.includes("--compensated");
 const root = process.cwd(),
   output = resolve(
     root,
-    pawnMode ? "tmp/tactical-pawn-adapter115" : perpetualMode ? "tmp/tactical-perpetual-material-adapter112" : discoveryTrapMode ? "tmp/tactical-discovery-trap-adapter111" : quietForkMode ? "tmp/tactical-quiet-fork-adapter110" : liabilityMode ? "tmp/tactical-liability-adapter108" : discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
+    compensatedMode ? "tmp/tactical-compensated-adapter116" : pawnMode ? "tmp/tactical-pawn-adapter115" : perpetualMode ? "tmp/tactical-perpetual-material-adapter112" : discoveryTrapMode ? "tmp/tactical-discovery-trap-adapter111" : quietForkMode ? "tmp/tactical-quiet-fork-adapter110" : liabilityMode ? "tmp/tactical-liability-adapter108" : discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
       ? "tmp/tactical-quiet-mate-adapter104"
       : interferenceMode
         ? "tmp/tactical-interference-adapter104"
@@ -51,7 +53,9 @@ const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
 const cases = (
-  pawnMode
+  compensatedMode
+    ? [{...compensatedCaptureInput,id:"compensated-capture",expectedLabel:"Material Gain"}]
+    : pawnMode
     ? [
       {id:"exposed-pawn",fen:"r5k1/p5pp/8/4p3/3P4/8/P5PP/R5K1 w - - 0 2",previousFen:"r5k1/p3p1pp/8/8/3P4/8/P5PP/R5K1 b - - 0 1",previousMoveUci:"e7e5",pvUci:["d4e5"],expectedLabel:"Hanging Pawn"},
       {id:"stronger-piece",fen:"4kb2/8/8/4q3/4P3/NPPP1P2/P7/R2QK3 b Q - 1 1",previousFen:"4kb2/8/8/4q3/4P3/1PPP1P2/P7/RN1QK3 w Q - 0 1",previousMoveUci:"b1a3",pvUci:["e5c3"],variations:[{multipv:1,depth:16,cp:640,pvUci:["e5c3"]},{multipv:2,depth:16,cp:600,pvUci:["f8a3"]}],expectedLabel:"Hanging Piece"},
@@ -181,7 +185,18 @@ try {
           index,
           scale,
         });
-        if (pawnMode) {
+        if (compensatedMode) {
+          await page.getByText("Material Gain found", {exact:true}).waitFor();
+          assert((await page.locator("main").innerText()).includes("0.9 pawns"));
+          const button = page.getByRole("button", {name:/^Show .* on board$/});
+          await button.focus(); await page.keyboard.press("Enter");
+          const preview = await page.evaluate(() => window.fixture.last);
+          assert.equal(preview.motifs[0].value, 90);
+          assert(preview.arrows.some(arrow => arrow.from === "c3" && arrow.to === "d5"));
+          await page.locator("summary").focus(); await page.keyboard.press("Enter");
+          assert((await page.locator('[data-tactical-ply="1"]').innerText()).toLowerCase().includes("material gain"));
+          if (width === 360 && scale === 2) await page.screenshot({path:resolve(output,"compensated.png"),fullPage:true});
+        } else if (pawnMode) {
           await page.getByText(`${row.expectedLabel} found`, {exact:true}).waitFor();
           const button = page.getByRole("button", {name:/^Show .* on board$/}).first();
           await button.focus(); await page.keyboard.press("Enter");

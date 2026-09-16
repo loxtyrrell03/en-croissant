@@ -7,6 +7,7 @@ import { quietPieceForkCases, quietPieceForkMove } from "../../src/utils/tests/f
 import { discoveryTrapCases } from "../../src/utils/tests/fixtures/discoveryTrap.ts";
 import { perpetualMaterialCases, perpetualMaterialLine } from "../../src/utils/tests/fixtures/perpetualMaterial.ts";
 import { directThreatFen, directThreatLine } from "../../src/utils/tests/fixtures/directThreatRelevance.ts";
+import { compensatedCaptureInput } from "../../src/utils/tests/fixtures/compensatedCapture.ts";
 import { tablebaseCases } from "../../src/utils/tests/fixtures/tablebaseRelevance.ts";
 import { directMaterialPayoffCases, reflectPayoff } from "../../src/utils/tests/fixtures/directMaterialPayoff.ts";
 import {
@@ -94,6 +95,9 @@ test(
     const { castlingAliasCases } = await import("../../src/utils/tests/fixtures/castlingRelevance.ts");
     const { matingInterferenceCases, reflectMatingInterference } = await import("../../src/utils/tests/fixtures/matingInterference.ts");
     const cases = [
+      {name:"compensated capture retains its sub-pawn bound",...compensatedCaptureInput,expectedPrimary:["hangingPiece"]},
+      {name:"missing recapture cannot fund a gain",...compensatedCaptureInput,fen:compensatedCaptureInput.fen.replace("2N2N2","2N5"),pvUci:["c3d5"],expectedPrimary:[]},
+      {name:"off-square rook loss prevents a material headline",...compensatedCaptureInput,fen:compensatedCaptureInput.fen.replace("P5PP","Pb4PP"),pvUci:["c3d5"],expectedPrimary:[]},
       {name:"newly exposed pawn",fen:"r5k1/p5pp/8/4p3/3P4/8/P5PP/R5K1 w - - 0 2",previousFen:"r5k1/p3p1pp/8/8/3P4/8/P5PP/R5K1 b - - 0 1",previousMoveUci:"e7e5",pvUci:["d4e5"],expectedPrimary:["hangingPiece"]},
       {name:"history-free pawn capture stays unclassified",fen:"r5k1/p5pp/8/4p3/3P4/8/P5PP/R5K1 w - - 0 2",pvUci:["d4e5"],expectedPrimary:[]},
       {name:"piece gain leads over pawn gain",fen:"4kb2/8/8/4q3/4P3/NPPP1P2/P7/R2QK3 b Q - 1 1",previousFen:"4kb2/8/8/4q3/4P3/1PPP1P2/P7/RN1QK3 w Q - 0 1",previousMoveUci:"b1a3",pvUci:["e5c3"],variations:[{multipv:1,depth:16,cp:640,pvUci:["e5c3"]},{multipv:2,depth:16,cp:600,pvUci:["f8a3"]}],expectedPrimary:["hangingPiece"],expectedLabels:["hangingPiece"],expectedArrows:[["f8","a3"]]},

@@ -29,6 +29,7 @@ import {
     tacticalCaptureGain,
     proveAlternativeCaptureCause,
     pawnOpportunityRemainsAfterReply,
+    MIN_TACTICAL_CAPTURE_GAIN,
     normalizeMatingPayoffs,
     normalizeContinuingTactics,
     replayTacticalLine,
@@ -130,7 +131,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 115;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 116;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -727,6 +728,8 @@ export function isImmediateTacticalLesson(motif: TacticalMotifEvidence | undefin
         motif.ply === 1 &&
         motif.confidence !== "low" &&
         ((motif.value ?? 0) >= 100 ||
+            (motif.id === "hangingPiece" && motif.label === "Material Gain" &&
+                motif.confidence === "high" && (motif.value ?? 0) >= MIN_TACTICAL_CAPTURE_GAIN) ||
             motif.id === "perpetualCheck" ||
             (motif.id === "drawingCapture" && motif.confidence === "high") ||
             (motif.verifiedCombination === true &&
@@ -1195,11 +1198,12 @@ export function buildTacticalTimeline(
             },
         );
         for (const motif of candidates.filter((m) => m.ply === 1)) {
-            // A hypothetical later pawn exposure is not another tactical
-            // lesson. Independently linked interference/pin/etc. payoffs
-            // above remain; the new generic pawn fallback is for the board
-            // actually being analysed, not collecting incidental PV gains.
-            if (index > 0 && motif.id === "hangingPiece" && motif.label === "Hanging Pawn") continue;
+            // Small generic gains are useful on the board being analysed,
+            // not as incidental badges collected along a hypothetical PV.
+            // Independently connected interference/pin/etc. payoffs above
+            // remain, including contextual captures without an invented gain.
+            if (index > 0 && motif.id === "hangingPiece" &&
+                (motif.label === "Hanging Pawn" || (motif.value ?? Infinity) < 100)) continue;
             if (
                 motif.id === "perpetualCheck" &&
                 [...evidence.values()].some(
