@@ -14956,7 +14956,7 @@ function provePinnedCapture(step, nodeLimit = 4096) {
 	const victim = step.before.board.get(step.move.to);
 	if (!step.capture || step.move.promotion || !victim || victim.color === step.before.turn) return null;
 	const ray = pinRestrictsCapture(step);
-	if (!ray) return null;
+	if (!ray) return proveRelativePinnedCapture(step, nodeLimit);
 	let immediate;
 	try {
 		immediate = participantCaptureGain(step.before, step.move, [...step.before.board[step.before.turn], step.move.to], { nodes: nodeLimit }) ?? -VALUE.king;
@@ -14996,6 +14996,110 @@ function provePinnedCapture(step, nodeLimit = 4096) {
 		victim: victim.role,
 		compensation: combination?.compensation
 	};
+}
+var relativePinnedCaptureCache = /* @__PURE__ */ new Map();
+/** A relative pin does not make the recapture illegal. Establish its concrete
+* rear-piece loss, then retain material against every legal alternative. The
+* supplied PV cannot fund this explanation with later unrelated captures. */
+function proveRelativePinnedCapture(step, nodeLimit = 4096, onFailure) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !step.capture || step.move.promotion || step.after.isEnd() || defenderCanClaimFiftyMoveDraw(step.after)) return null;
+	const key = `${makeFen(step.before.toSetup())}:${step.uci}`;
+	if (!onFailure && nodeLimit === 4096 && relativePinnedCaptureCache.has(key)) return relativePinnedCaptureCache.get(key);
+	const side = step.before.turn;
+	const victim = step.before.board.get(step.move.to);
+	if (!victim || victim.color === side) return null;
+	const budget = { nodes: nodeLimit };
+	const visit = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("Relative pin budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	let result = null;
+	try {
+		for (const ray of rayTactics(step.after, side)) {
+			const rear = step.after.board.get(ray.rear);
+			if (ray.kind !== "pin" || rear.role === "king") continue;
+			if (VALUE[rear.role] - VALUE[step.after.board.get(ray.front).role] < VALUE.pawn) continue;
+			const recapture = {
+				from: ray.front,
+				to: step.move.to
+			};
+			if (!step.after.isLegal(recapture) || tacticalExchangeGain(step.after, recapture) < step.capture) continue;
+			const accepted = visit(step.after, recapture);
+			const punishment = {
+				from: ray.pinner,
+				to: ray.rear
+			};
+			if (!accepted.isLegal(punishment)) continue;
+			const balance = step.capture - capturedValue(step.after, recapture);
+			const defensiveDecisions = [];
+			const payoff = preparationCaptureGain(accepted, punishment, budget, void 0, defensiveDecisions);
+			if (payoff === null || balance + payoff < 100) continue;
+			let minimum = Infinity;
+			const branches = [];
+			for (const reply of recoveryMoves(step.after, side)) {
+				const next = visit(step.after, reply);
+				if (next.isEnd()) {
+					onFailure?.(`Terminal defence ${makeSan(step.after, reply)}`);
+					break;
+				}
+				const remaining = step.capture - capturedValue(step.after, reply) - (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0);
+				const targets = new Set([ray.front, ray.rear].map((target) => target === reply.from ? reply.to : target));
+				if (reply.to === step.move.to || reply.to === ray.pinner) targets.add(reply.to);
+				const responder = next.board.get(reply.to);
+				let best = null;
+				for (const answer of recoveryMoves(next, side).sort((a, b) => capturedValue(next, b) - capturedValue(next, a))) {
+					const capture = capturedValue(next, answer);
+					const related = capture > 0 && targets.has(answer.to);
+					const flight = !capture && !answer.promotion && (answer.from === step.move.to || responder && attacks(responder, reply.to, next.board.occupied).has(answer.from) || next.isCheck() && next.board.get(answer.from)?.role === "king");
+					if (!related && !flight) continue;
+					if (answer.promotion) continue;
+					const decisions = [];
+					const gain = preparationCaptureGain(next, answer, budget, void 0, decisions);
+					if (gain === null || remaining + gain < 100) continue;
+					best = {
+						move: answer,
+						gain: remaining + gain
+					};
+					defensiveDecisions.push(...decisions);
+					break;
+				}
+				if (!best) {
+					onFailure?.(`Unproved defence ${makeSan(step.after, reply)}`);
+					break;
+				}
+				minimum = Math.min(minimum, best.gain);
+				branches.push({
+					replyUci: makeUci(reply),
+					answerUci: makeUci(best.move),
+					gain: best.gain
+				});
+			}
+			if (branches.length !== legalMoves(step.after).length || !Number.isFinite(minimum)) continue;
+			result = {
+				gain: minimum,
+				ray,
+				victim: victim.role,
+				relative: {
+					recapture: makeSan(step.after, recapture),
+					punishment: makeSan(accepted, punishment),
+					rear: rear.role
+				},
+				branches,
+				defensiveDecisions,
+				visits: nodeLimit - budget.nodes
+			};
+			break;
+		}
+	} catch {
+		onFailure?.("Relative pin proof budget exhausted");
+	}
+	if (!onFailure && nodeLimit === 4096) {
+		relativePinnedCaptureCache.set(key, result);
+		if (relativePinnedCaptureCache.size > 128) relativePinnedCaptureCache.delete(relativePinnedCaptureCache.keys().next().value);
+	}
+	return result;
 }
 var pinnedCaptureCombinationCache = /* @__PURE__ */ new Map();
 function pinnedCaptureCombination(step, pinned, nodeLimit) {
@@ -15091,6 +15195,7 @@ function pinnedCaptureEvidence(step, source) {
 	const proof = provePinnedCapture(step);
 	if (!proof) return null;
 	const { ray } = proof;
+	const relative = "relative" in proof ? proof.relative : null;
 	return {
 		id: "pin",
 		label: "Pin",
@@ -15099,7 +15204,7 @@ function pinnedCaptureEvidence(step, source) {
 		ply: 1,
 		moveUci: step.uci,
 		value: proof.gain,
-		evidence: `${step.san} wins the ${proof.victim} on ${makeSquare(step.move.to)} by exploiting a pin. The ${step.after.board.get(ray.front).role} on ${makeSquare(ray.front)} cannot recapture on ${makeSquare(step.move.to)} because it would expose the king on ${makeSquare(ray.rear)} to the ${step.after.board.get(ray.pinner).role} on ${makeSquare(ray.pinner)}.${proof.compensation ? ` One alternative, ${proof.compensation.reply}, permits ${proof.compensation.answer}${proof.compensation.victim && proof.compensation.target !== void 0 ? `, taking the ${proof.compensation.victim} on ${makeSquare(proof.compensation.target)}` : ""}.` : ""}`
+		evidence: relative ? `${step.san} exploits the ${step.after.board.get(ray.front).role} on ${makeSquare(ray.front)}, pinned to the ${relative.rear} on ${makeSquare(ray.rear)}. Recapturing with ${relative.recapture} is legal but permits ${relative.punishment}, taking that ${relative.rear}; declining the exchange still concedes material. The gain accounts for the pieces given back, not a free ${relative.rear}.` : `${step.san} wins the ${proof.victim} on ${makeSquare(step.move.to)} by exploiting a pin. The ${step.after.board.get(ray.front).role} on ${makeSquare(ray.front)} cannot recapture on ${makeSquare(step.move.to)} because it would expose the king on ${makeSquare(ray.rear)} to the ${step.after.board.get(ray.pinner).role} on ${makeSquare(ray.pinner)}.${proof.compensation ? ` One alternative, ${proof.compensation.reply}, permits ${proof.compensation.answer}${proof.compensation.victim && proof.compensation.target !== void 0 ? `, taking the ${proof.compensation.victim} on ${makeSquare(proof.compensation.target)}` : ""}.` : ""}`
 	};
 }
 function rayMaterialEvidence(step, source, allowCheckingReplies = false) {
@@ -15470,7 +15575,7 @@ function discoveryCaptureGain(pos, move, required, budget, onMate) {
 * Every countercheck needs a material-retaining legal answer that permits no
 * immediate mate or promotion. This is a one-evasion local safety horizon,
 * not a proof against longer king hunts or perpetual-check sequences. */
-function preparationCaptureGain(pos, move, budget, matingLiabilityThreshold) {
+function preparationCaptureGain(pos, move, budget, matingLiabilityThreshold, defensiveDecisions) {
 	const side = pos.turn;
 	const delta = (board, action) => capturedValue(board, action) + (action.promotion ? VALUE[action.promotion] - VALUE.pawn : 0);
 	let minimum = matingLiabilityThreshold === void 0 ? participantCaptureGain(pos, move, [...pos.board[side], move.to], budget) : discoveryCaptureGain(pos, move, matingLiabilityThreshold, budget);
@@ -15484,6 +15589,7 @@ function preparationCaptureGain(pos, move, budget, matingLiabilityThreshold) {
 	const retain = (checked, balance) => {
 		if (checked.isEnd()) return null;
 		let best = -Infinity;
+		let selected;
 		const answers = recoveryMoves(checked, side).sort((a, b) => capturedValue(checked, b) - capturedValue(checked, a));
 		for (const answer of answers) {
 			if (answer.promotion) continue;
@@ -15491,8 +15597,13 @@ function preparationCaptureGain(pos, move, budget, matingLiabilityThreshold) {
 			if (gain === null || balance + gain <= best) continue;
 			if (!noImmediateTerminalRefutation(checked, answer, budget)) continue;
 			best = Math.max(best, balance + gain);
+			selected = answer;
 			if (best >= minimum) break;
 		}
+		if (selected) defensiveDecisions?.push({
+			fen: makeFen(checked.toSetup()),
+			moveUci: makeUci(selected)
+		});
 		return Number.isFinite(best) ? best : null;
 	};
 	const leaf = visit(pos, move);
@@ -18378,6 +18489,16 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	const specificMate = normalizedCandidates.find((m) => /Mate$/.test(m.id));
 	const fork = candidates.find((m) => m.id === "fork");
 	const filtered = normalizedCandidates.filter((m) => {
+		if (["pin", "deflection"].includes(m.id) && m.ply && candidates.some((other) => other.id === (m.id === "pin" ? "deflection" : "pin") && other.ply === m.ply && other.moveUci === m.moveUci)) {
+			const step = steps[m.ply - 1];
+			const pin = proveRelativePinnedCapture(step);
+			const deflection = pin && proveCaptureDeflection(step);
+			if (pin && deflection && deflection.accepted.length && deflection.accepted.every((branch) => branch.mode === "ray" && branch.receiver === pin.ray.front && branch.from === pin.ray.pinner && branch.target === pin.ray.rear)) {
+				const attacksRear = attacks(step.after.board.get(step.move.to), step.move.to, step.after.board.occupied).has(pin.ray.rear) && !attacks(step.before.board.get(step.move.from), step.move.from, step.before.board.occupied).has(pin.ray.rear);
+				if (m.id === "deflection" && !attacksRear && deflection.gain <= pin.gain) return false;
+				if (m.id === "pin" && attacksRear && pin.gain <= deflection.gain) return false;
+			}
+		}
 		if (m.id === "tacticalPreparation" && m.confidence === "medium" && m.ply === 1 && quietAttack && tacticalPreparation?.threat[0] === quietAttack.threatSan) return false;
 		if (m.id === "forcingAttack" && m.label === "Mating Attack" && m.ply === 1 && (preparation || quietMate)) return false;
 		if (incidentalMatingMechanisms.has(m.id) && m.ply === 1) return false;
@@ -18649,6 +18770,11 @@ function normalizeDirectMaterialPayoffs(steps, motifs) {
 				})));
 			} else {
 				label = previous.id === "pin" ? "Pin Payoff" : "Skewer Payoff";
+				const capturePin = previous.id === "pin" ? proveRelativePinnedCapture(first) : null;
+				if (capturePin) pairs.push({
+					from: capturePin.ray.pinner,
+					target: capturePin.ray.rear
+				});
 				for (const ray of relevantRayTactics(first).filter((ray) => ray.kind === previous.id)) {
 					const proof = rayMaterialProof(first, ray);
 					if (proof.kind !== "proven" && proof.kind !== "forcing") continue;
@@ -18714,32 +18840,41 @@ function compareMaterialCause(actual, better, motif) {
 	if (!alternative) return null;
 	let targets = [], capturers = [], gain = null;
 	let conditional = false;
-	if (motif.id === "pin" || motif.id === "skewer") for (const ray of relevantRayTactics(step).filter((r) => r.kind === motif.id)) {
-		const proof = rayMaterialProof(step, ray);
-		if (proof.kind !== "proven" && proof.kind !== "forcing") continue;
-		if ("checkingLine" in proof || "blockingProof" in proof) {
-			const sameRay = relevantRayTactics(alternative).find((other) => other.kind === ray.kind && other.pinner === ray.pinner && other.front === ray.front && other.rear === ray.rear && [
-				ray.pinner,
-				ray.front,
-				ray.rear
-			].every((square) => {
-				const piece = step.after.board.get(square);
-				const otherPiece = alternative.after.board.get(square);
-				return piece?.role === otherPiece?.role && piece?.color === otherPiece?.color;
-			}));
-			const otherProof = sameRay ? rayMaterialProof(alternative, sameRay) : null;
-			return otherProof?.kind === "proven" && otherProof.gain >= proof.gain ? {
+	if (motif.id === "pin" || motif.id === "skewer") {
+		const capture = motif.id === "pin" ? proveRelativePinnedCapture(step) : null;
+		if (capture) {
+			const other = proveRelativePinnedCapture(alternative);
+			return other && other.ray.pinner === capture.ray.pinner && other.ray.front === capture.ray.front && other.ray.rear === capture.ray.rear && other.gain >= capture.gain ? {
 				comparison: "persists",
-				comparisonEvidence: `After ${better[0].san}, the same ${alternative.san} skewer still has a verified continuation against every legal defence, including blocks.`
+				comparisonEvidence: `After ${better[0].san}, ${alternative.san} still exploits the same relative pin and retains material against every legal reply.`
 			} : null;
 		}
-		targets = [ray.front, ray.rear];
-		capturers = [ray.pinner, step.move.to];
-		gain = proof.gain;
-		conditional = proof.kind === "forcing";
-		break;
-	}
-	else if (motif.id === "capturingDefender") {
+		for (const ray of relevantRayTactics(step).filter((r) => r.kind === motif.id)) {
+			const proof = rayMaterialProof(step, ray);
+			if (proof.kind !== "proven" && proof.kind !== "forcing") continue;
+			if ("checkingLine" in proof || "blockingProof" in proof) {
+				const sameRay = relevantRayTactics(alternative).find((other) => other.kind === ray.kind && other.pinner === ray.pinner && other.front === ray.front && other.rear === ray.rear && [
+					ray.pinner,
+					ray.front,
+					ray.rear
+				].every((square) => {
+					const piece = step.after.board.get(square);
+					const otherPiece = alternative.after.board.get(square);
+					return piece?.role === otherPiece?.role && piece?.color === otherPiece?.color;
+				}));
+				const otherProof = sameRay ? rayMaterialProof(alternative, sameRay) : null;
+				return otherProof?.kind === "proven" && otherProof.gain >= proof.gain ? {
+					comparison: "persists",
+					comparisonEvidence: `After ${better[0].san}, the same ${alternative.san} skewer still has a verified continuation against every legal defence, including blocks.`
+				} : null;
+			}
+			targets = [ray.front, ray.rear];
+			capturers = [ray.pinner, step.move.to];
+			gain = proof.gain;
+			conditional = proof.kind === "forcing";
+			break;
+		}
+	} else if (motif.id === "capturingDefender") {
 		const proof = capturedDefenderProof(step, motif.source);
 		if (proof) {
 			if (proof.extended) return null;
@@ -18959,7 +19094,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 	const bestSan = better[0].san;
 	return motifs.map((motif) => {
 		if (motif.ply !== 1 || motif.moveUci !== reply) return motif;
-		if (motif.id === "hangingPiece" && motif.label === "Hanging Pawn" && actual[0].capture === VALUE.pawn && !actual[0].move.promotion && step.capture === VALUE.pawn && (motif.value ?? Infinity) <= VALUE.pawn) return {
+		if ((motif.id === "hangingPiece" && motif.label === "Hanging Pawn" || motif.id === "pin" && proveRelativePinnedCapture(step)) && actual[0].capture === VALUE.pawn && !actual[0].move.promotion && step.capture === VALUE.pawn && (motif.value ?? Infinity) <= VALUE.pawn) return {
 			...motif,
 			comparison: void 0,
 			comparisonEvidence: `${actual[0].san} also gains material. The verified reply capture alone does not establish a net material loss after accounting for that gain.`
@@ -19710,7 +19845,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 122;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 123;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

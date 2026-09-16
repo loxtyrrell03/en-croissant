@@ -12,6 +12,7 @@ import { forkLocalValueCases } from "../../src/utils/tests/fixtures/forkLocalVal
 import { forkRepairCases } from "../../src/utils/tests/fixtures/forkRepair.ts";
 import { checkingExchangeCases } from "../../src/utils/tests/fixtures/checkingExchangeRetention.ts";
 import { checkingAlliedRetentionCases, checkingAlliedRetentionLine } from "../../src/utils/tests/fixtures/checkingAlliedRetention.ts";
+import { relativePinnedCaptureCases } from "../../src/utils/tests/fixtures/relativePinnedCapture.ts";
 import { checkingCombinationCases, promotionCaptureForkCases } from "../../src/utils/tests/fixtures/checkingCombinationRecall.ts";
 import { checkingPawnRetentionCases } from "../../src/utils/tests/fixtures/checkingPawnRetention.ts";
 import { tablebaseCases } from "../../src/utils/tests/fixtures/tablebaseRelevance.ts";
@@ -120,6 +121,7 @@ test(
           variations: [{ pvUci, cp: row.cp }], expectedPrimary: row.expected ? [row.expected] : [] };
       }),
       ...quietPieceForkCases.map(row=>({name:`quiet piece fork: ${row.id}`,fen:row.fen,pvUci:[quietPieceForkMove],expectedPrimary:row.positive?["fork"]:[]})),
+      ...relativePinnedCaptureCases.map(row=>({name:`relative pin: ${row.id}`,fen:row.fen,pvUci:[row.move],expectedPrimary:row.positive?["pin"]:undefined})),
       ...discoveryTrapCases.map(row=>({name:`discovered trap: ${row.id}`,fen:row.fen,pvUci:["e2e4"],expectedPrimary:row.positive?["discoveredAttack"]:[]})),
       ...matingInterferenceCases.filter(row => row.id !== "already-blocked-defence").flatMap(row => [row, { ...reflectMatingInterference(row), id: `${row.id}:black` }]).map(row => ({ name: `mating interference: ${row.id}`, fen: row.fen, pvUci: [row.move], expectedPrimary: row.expected || row.id.startsWith("extra-diagonal-defender") ? ["mateIn3"] : [], expectedTimeline: row.expected ? { id: "interference", ply: 1, actor: row.id.endsWith(":black") ? "black" : "white" } : undefined })),
       ...JSON.parse(readFileSync("benchmarks/tactical-relevance/quiet-mate-development.json", "utf8")).cases.flatMap(row => [1, row.bestLine.length].map(length => ({

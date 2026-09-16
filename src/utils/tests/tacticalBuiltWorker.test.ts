@@ -14,6 +14,7 @@ import { forkLocalValueCases } from "./fixtures/forkLocalValue";
 import { forkRepairCases } from "./fixtures/forkRepair";
 import { checkingExchangeCases } from "./fixtures/checkingExchangeRetention";
 import { checkingAlliedRetentionCases, checkingAlliedRetentionLine } from "./fixtures/checkingAlliedRetention";
+import { relativePinnedCaptureCases } from "./fixtures/relativePinnedCapture";
 import { checkingCombinationCases, promotionCaptureForkCases } from "./fixtures/checkingCombinationRecall";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
@@ -103,6 +104,19 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
         vi.unstubAllGlobals();
     }
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("relative pin captures survive the production controller", async () => {
+    for (const row of relativePinnedCaptureCases) for (const reflected of [false, true]) {
+        const fen = reflected ? reflectMixedForkFen(row.fen) : row.fen;
+        const pvUci = [reflected ? reflectMixedForkMove(row.move) : row.move];
+        const input = { fen, pvUci, depth: 16, engineName: "Constructed" };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        if (!row.positive) continue;
+        expect(result.scan.motifs[0]).toMatchObject({ id: "pin", ply: 1 });
+        expect(result.scan.arrows.every(arrow => arrow.ply === 1)).toBe(true);
+    }
+}, 60000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("allied checking retention survives the production controller", async () => {
     for (const row of checkingAlliedRetentionCases) for (const reflected of [false, true]) {
