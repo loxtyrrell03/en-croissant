@@ -1,6 +1,45 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 131 / live pipeline 136
+## Current package: adapter 131 / live pipeline 137
+
+Source `fc992a83` is packaged in the standalone executable. The live Tactics
+tab now checks bounded additional root moves outside the normal three lines,
+using native legal `searchMoves`, search-tagged events, separately scored
+worker inputs and position-correct previews. Optional failure retains the main
+result and states incomplete coverage. Motif proofs remain adapter 131.
+
+The detached checkout `en-tactical-desktop-fc992a83` excludes unrelated local
+changes. TypeScript, 114 focused checks (one optional private replay skipped),
+the 8,863-module frontend and native release build pass. Native compilation
+takes 1m24s with 22 existing warnings. The generated route-tree difference is
+line endings only. The native five-test selection, including four real-engine
+searches, passed before packaging; no app/window was launched for testing.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,063,488 bytes;
+  SHA-256 `5300018b58db08bb9627d0bf35000dc0ab7902d3ad38ca732aaeda0a4416d066`.
+- Worker: `liveTactics.worker-DbhzHW8n.js`, 567,599 bytes; SHA-256
+  `4a7526e8cc31eb14b6f5c074b1d8afb103fe625d3efbae3d6ab82779847373f5`.
+  Clean worker bytes match the tested artifact. The x64 executable embeds its
+  asset key and `TacticalClassifierPanel-CsBqTOLp.js`; normalized dependency
+  paths identify those exact clean-checkout files. `searchMoves` is present
+  in the native binary. The initial dependency-path assertion did not normalize
+  `src-tauri/../dist`; normalization plus explicit asset checks resolves it.
+- Previous pipeline-136 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline137/en-croissant-fork.exe`,
+  SHA-256 `a985b40fd927c46a57725a9c2acd5438e060934ca5a6dd6c2ea9622bacb1ad9f`.
+
+No app was running before replacement or after the build; none was started or
+restarted. The existing Dev App shortcut still invokes the unchanged primary
+checkout workflow. Owner games, settings, engines and phone services were not
+changed. See `benchmarks/tactical-relevance/targeted-candidate-live-review.md`
+for the 152 fresh benchmark searches, 92-context comparison, recovered fork/
+discovery and pawn options, rejected inferior alternative and proof limits.
+The owner actually played Ng5 in the knight position: live detection is not a
+claim that this move was missed. This is package/linkage verification, not
+native-window interaction or cold-start reliability certification. Automatic
+mistake-review candidate acquisition and broader accuracy remain open.
+
+## Previous package: adapter 131 / live pipeline 136
 
 Source `94b7c9e4` is packaged in the standalone executable, including positive
 capture defences to specific mating entries and preservation of an existing
