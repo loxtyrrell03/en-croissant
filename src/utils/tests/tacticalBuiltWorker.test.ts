@@ -11,6 +11,7 @@ import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { pawnExposureInput, pawnExposureAlternateInput } from "./fixtures/pawnExposure";
 import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
 import { forkLocalValueCases } from "./fixtures/forkLocalValue";
+import { forkRepairCases } from "./fixtures/forkRepair";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
 import { checkingPawnRetentionCases } from "./fixtures/checkingPawnRetention";
@@ -109,6 +110,17 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("checking pawn recall and contra
         expect(scan).toEqual(buildLiveTacticalScan(input));
         expect(scan.motifs[0]?.label ?? null).toBe(row.positive ? "Hanging Pawn" : null);
         expect(scan.arrows.map(a => a.ply)).toEqual(row.positive ? [1] : []);
+    }
+}, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("quiet fork repairs and contrary controls survive the production controller", async () => {
+    for (const row of forkRepairCases) for (const reflected of [false, true]) {
+        const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci: reflected ? row.pvUci.map(reflectMixedForkMove) : row.pvUci,
+            depth: 16, engineName: "Real-game repair and constructed controls" };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.find(motif => motif.id === "fork")?.value ?? null).toBe(row.positive ? 100 : null);
     }
 }, 30000);
 

@@ -4,6 +4,11 @@ Classifier **118 / live pipeline 123 is unchanged** by this audit. A broader
 root-pawn admission draft was tried and withdrawn. The existing desktop package
 remains the one documented in `docs/TACTICAL_DESKTOP_DELIVERY.md`.
 
+The subsequent [fork-repair review](fork-repair-review.md) recovers tA2XR with
+an independently checked allied repair, countercheck handling and mating
+support. This audit preserves the earlier rejected pawn rule and missing-fork
+evidence; broader persistent-pawn recall is still unresolved.
+
 ## Question tested
 
 The old-pawn gate conflates two different questions: whether a material

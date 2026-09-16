@@ -12081,7 +12081,7 @@ function computeMixedTargetFork(step, nodeLimit, onAttempt) {
 /** A fork must survive the opponent's choice, including capturing the forker,
 * a checking counterattack, or one move that protects both targets. */
 function establishedFork(step) {
-	return immediateFork(step) || proveRecaptureBackedFork(step) !== null || proveExchangeForPawnFork(step) !== null || provePromotionBackedFork(step) !== null || proveMateBackedFork(step) !== null || proveDiscoveryBackedFork(step) !== null || proveQuietPawnFork(step) !== null;
+	return immediateFork(step) || proveRecaptureBackedFork(step) !== null || proveExchangeForPawnFork(step) !== null || provePromotionBackedFork(step) !== null || proveMateBackedFork(step) !== null || proveDiscoveryBackedFork(step) !== null || proveQuietPawnFork(step) !== null || proveRepairedFork(step) !== null;
 }
 function verifiedFork(step) {
 	return establishedFork(step) || proveMixedTargetFork(step) !== null;
@@ -13242,6 +13242,220 @@ function computeImmediateFork(step) {
 }
 function immediateFork(step) {
 	return proveImmediateFork(step) !== null;
+}
+var repairedForkCache = /* @__PURE__ */ new Map();
+/** A checking fork can need one allied repair before collecting a target.
+* Nominate an actually threatened ally, not a PV endpoint. Its quiet repair
+* must support the forker and attack an original fork victim; checks by that
+* ally are also candidates. Every subsequent defence, including one checking
+* counterattack, needs a connected capture or a checking mate within two.
+* One further newly created mating threat and one equal major-piece exchange
+* can support collection. The entire search shares one budget, including
+* safety and mating leaves; it does not settle longer quiet counterplay. */
+function proveRepairedFork(root, nodeLimit = 8192, onFailure) {
+	if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture || root.move.promotion || !root.after.isCheck() || root.after.isEnd() || defenderCanClaimFiftyMoveDraw(root.after)) return null;
+	const side = root.before.turn;
+	const targets = winningTargets(root.after, root.move.to, side);
+	const material = targets.filter((square) => root.after.board.get(square)?.role !== "king");
+	if (targets.length < 2 || !material.length) return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	const cacheable = nodeLimit === 8192 && !onFailure;
+	if (cacheable && repairedForkCache.has(key)) return repairedForkCache.get(key);
+	const role = root.after.board.get(root.move.to).role;
+	const minimumGain = ["knight", "bishop"].includes(role) && material.every((square) => VALUE[root.after.board.get(square).role] >= VALUE.rook) ? VALUE.rook - VALUE.bishop - VALUE.pawn : 100;
+	const budget = { nodes: nodeLimit };
+	const visit = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("Fork repair budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const delta = (pos, move) => capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+	const prepend = (pos, move, kind, answer) => ({
+		...answer,
+		line: [makeSan(pos, move), ...answer.line],
+		decisions: [{
+			fen: makeFen(pos.toSetup()),
+			moveUci: makeUci(move),
+			kind
+		}, ...answer.decisions]
+	});
+	const matingAnswer = (pos, remaining) => {
+		const checks = [];
+		for (const move of recoveryMoves(pos, side)) {
+			if (!mayGiveCheck(pos, move)) continue;
+			const next = visit(pos, move);
+			if (next.isCheckmate()) return prepend(pos, move, "mate", {
+				gain: 1e4,
+				line: [],
+				decisions: []
+			});
+			if (remaining > 1 && next.isCheck() && !defenderCanClaimFiftyMoveDraw(next)) checks.push({
+				move,
+				next
+			});
+		}
+		for (const { move, next } of checks) {
+			const decisions = [];
+			let example = null;
+			let complete = true;
+			for (const reply of recoveryMoves(next, side)) {
+				const mate = matingAnswer(visit(next, reply), remaining - 1);
+				if (!mate) {
+					complete = false;
+					break;
+				}
+				example ??= [makeSan(next, reply), ...mate.line];
+				decisions.push(...mate.decisions);
+			}
+			if (complete && example) return prepend(pos, move, "mate", {
+				gain: 1e4,
+				line: example,
+				decisions
+			});
+		}
+		return null;
+	};
+	const answer = (pos, victims, pieces, balance, evasion, support, exchange) => {
+		if (pos.isEnd()) return null;
+		const moves = recoveryMoves(pos, side);
+		const mate = matingAnswer(pos, 2);
+		if (mate) return mate;
+		const captures = moves.slice().sort((a, b) => VALUE[pos.board.get(a.from).role] - VALUE[pos.board.get(b.from).role] || capturedValue(pos, b) - capturedValue(pos, a));
+		for (const move of captures) {
+			if (!victims.includes(move.to) || !capturedValue(pos, move) || VALUE[pos.board.get(move.from).role] > capturedValue(pos, move)) continue;
+			const gain = preparationCaptureGain(pos, move, budget);
+			if (gain !== null && balance + gain >= minimumGain) return prepend(pos, move, "capture", {
+				gain: balance + gain,
+				line: [],
+				decisions: []
+			});
+		}
+		if (exchange) for (const move of captures) {
+			if (!victims.includes(move.to) || capturedValue(pos, move) < VALUE.rook || capturedValue(pos, move) !== VALUE[pos.board.get(move.from).role] || tacticalExchangeGain(pos, move) < 0) continue;
+			const continuation = defend(visit(pos, move), victims.filter((square) => square !== move.to), [...new Set([...pieces.map((square) => square === move.from ? move.to : square), move.to])], balance + delta(pos, move), evasion, support, exchange - 1);
+			if (continuation) return prepend(pos, move, "capture", continuation);
+		}
+		if (support && !pos.isCheck()) for (const move of captures) {
+			if (move.promotion || pos.board.get(move.from)?.role === "king") continue;
+			const next = visit(pos, move);
+			if (next.isCheck() || next.isEnd()) continue;
+			const threat = matingAnswer(withTurn(next, side), 1);
+			if (!threat) continue;
+			const mateMove = parseUci(threat.decisions[0].moveUci);
+			if (!mateMove || !("from" in mateMove)) continue;
+			const premature = {
+				...mateMove,
+				from: mateMove.from === move.to ? move.from : mateMove.from
+			};
+			if (pos.isLegal(premature) && visit(pos, premature).isCheckmate()) continue;
+			const continuation = defend(next, victims.filter((square) => square !== move.to), [...new Set([...pieces.map((square) => square === move.from ? move.to : square), move.to])], balance + delta(pos, move), evasion, support - 1, exchange);
+			if (continuation) return prepend(pos, move, "support", continuation);
+		}
+		if (!evasion || !pos.isCheck()) return null;
+		const evasions = moves.map((move) => {
+			const next = visit(pos, move);
+			let checks = 0;
+			for (const reply of recoveryMoves(next, side)) if (mayGiveCheck(next, reply) && visit(next, reply).isCheck()) checks++;
+			return {
+				move,
+				next,
+				checks
+			};
+		}).sort((a, b) => a.checks - b.checks);
+		for (const { move, next } of evasions) {
+			const continuation = defend(next, victims.filter((square) => square !== move.to), [...new Set(pieces.map((square) => square === move.from ? move.to : square))], balance + delta(pos, move), evasion - 1, support, exchange);
+			if (continuation) return prepend(pos, move, "evasion", continuation);
+		}
+		return null;
+	};
+	const defend = (pos, victims, pieces, balance, evasion, support, exchange) => {
+		if (pos.isEnd() || defenderCanClaimFiftyMoveDraw(pos)) return null;
+		let gain = Infinity;
+		let example = [];
+		const decisions = [];
+		for (const reply of recoveryMoves(pos, side)) {
+			const next = visit(pos, reply);
+			const movedVictims = victims.map((square) => square === reply.from ? reply.to : square);
+			const remainingPieces = pieces.filter((square) => square !== reply.to);
+			if (next.isCheck()) movedVictims.push(...next.ctx().checkers);
+			const counterattacker = next.board.get(reply.to);
+			if (counterattacker?.role !== "king" && counterattacker && [...next.board[side]].some((square) => attacks(counterattacker, reply.to, next.board.occupied).has(square))) movedVictims.push(reply.to);
+			if (capturedValue(pos, reply) && pieces.includes(reply.to)) {
+				movedVictims.push(reply.to);
+				remainingPieces.push(...legalMoves(next).filter((move) => move.to === reply.to).map((move) => move.from));
+			}
+			const branch = answer(next, [...new Set(movedVictims)], [...new Set(remainingPieces)], balance - delta(pos, reply), evasion, support, exchange);
+			if (!branch) {
+				onFailure?.(`Unproved repair defence ${makeSan(pos, reply)} at ${makeFen(pos.toSetup())}`);
+				return null;
+			}
+			gain = Math.min(gain, branch.gain);
+			if (branch.line.length + 1 > example.length) example = [makeSan(pos, reply), ...branch.line];
+			decisions.push(...branch.decisions);
+		}
+		return Number.isFinite(gain) ? {
+			gain,
+			line: example,
+			decisions
+		} : null;
+	};
+	let proof = null;
+	try {
+		const branches = [];
+		const decisions = [];
+		let usedRepair = false;
+		for (const reply of recoveryMoves(root.after, side)) {
+			const pos = visit(root.after, reply);
+			if (pos.board.get(root.move.to)?.color !== side || pos.isCheck()) throw new Error("Checking fork needs an unsupported initial defence");
+			const victims = material.map((square) => square === reply.from ? reply.to : square);
+			const balance = -delta(root.after, reply);
+			let found = answer(pos, victims, [root.move.to], balance, 0, 0, 0);
+			if (!found) {
+				const probe = withTurn(pos, opposite(side));
+				const threatened = /* @__PURE__ */ new Set();
+				for (const capture of recoveryMoves(probe, side)) {
+					if (capture.to === root.move.to || capturedValue(probe, capture) < VALUE.knight) continue;
+					if (--budget.nodes < 0) throw new Error("Fork repair nomination exhausted");
+					if (tacticalExchangeGain(probe, capture) >= 100) threatened.add(capture.to);
+				}
+				const candidates = recoveryMoves(pos, side).filter((move) => threatened.has(move.from) && !capturedValue(pos, move) && !move.promotion);
+				candidates.sort((a, b) => Number(mayGiveCheck(pos, b)) - Number(mayGiveCheck(pos, a)));
+				for (const repair of candidates) {
+					const next = visit(pos, repair);
+					const reach = attacks(next.board.get(repair.to), repair.to, next.board.occupied);
+					if (!next.isCheck() && (!reach.has(root.move.to) || !victims.some((square) => reach.has(square)))) continue;
+					const continuation = defend(next, victims, [root.move.to, repair.to], balance, 1, 1, 1);
+					if (!continuation) continue;
+					found = prepend(pos, repair, "repair", continuation);
+					usedRepair = true;
+					break;
+				}
+			}
+			if (!found) throw new Error(`Unproved initial fork reply ${makeSan(root.after, reply)}`);
+			branches.push({
+				replyUci: makeUci(reply),
+				line: found.line,
+				gain: found.gain
+			});
+			decisions.push(...found.decisions);
+		}
+		const gain = Math.min(...branches.map((branch) => branch.gain));
+		if (usedRepair && branches.length && gain >= minimumGain && gain < 1e4) proof = {
+			gain,
+			targets,
+			branches,
+			decisions,
+			visits: nodeLimit - budget.nodes
+		};
+	} catch (error) {
+		onFailure?.(error instanceof Error ? error.message : String(error));
+	}
+	if (cacheable) {
+		repairedForkCache.set(key, proof);
+		if (repairedForkCache.size > 256) repairedForkCache.delete(repairedForkCache.keys().next().value);
+	}
+	return proof;
 }
 /** A material fork may be protected by a forced mating reply rather than by
 * an ordinary recapture. Only a complete all-defence certificate can use it. */
@@ -17725,6 +17939,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 			const discovery = sound && !immediateFork(step) ? proveDiscoveryBackedFork(step) : null;
 			const pawn = sound && !immediateFork(step) ? proveQuietPawnFork(step) : null;
 			const mixed = sound && !establishedFork(step) ? proveMixedTargetFork(step) : null;
+			const repaired = sound && !immediate && !mating && !exchange && !promotion && !recapture && !discovery && !pawn && !mixed ? proveRepairedFork(step) : null;
 			if (mating) proposal = {
 				...proposal,
 				value: mating.gain,
@@ -17764,6 +17979,18 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 					...proposal,
 					value: mixed.gain,
 					evidence: `${step.san} forks the ${roles}. Every legal reply concedes at least ${mixed.gain / 100} pawn${mixed.gain === 100 ? "" : "s"} of material on these targets, including captures of the attacker and attempts to defend several targets at once.${pins}`
+				};
+			} else if (repaired) {
+				if (proposal.ply === 1 && (checkingMate || quietMate || preparation)) continue;
+				const replies = repaired.branches.map((branch) => {
+					const move = parseUci(branch.replyUci);
+					return `After ${makeSan(step.after, move)}, ${branch.line[0]} preserves the threat`;
+				});
+				proposal = {
+					...proposal,
+					value: repaired.gain,
+					verifiedCombination: true,
+					evidence: `${step.san} forks the ${repaired.targets.map((square) => `${step.after.board.get(square).role} on ${makeSquare(square)}`).join(" and ")}. An attacked ally must be saved before collecting a target. ${replies.join("; ")}. The checked continuations retain at least ${repaired.gain / 100} pawn${repaired.gain === 100 ? "" : "s"} locally or force mate, including counterchecks and supporting mating threats. These are alternative continuations, not a forced mate or a full-position evaluation.`
 				};
 			} else if (pawn) {
 				const branch = pawn.branches.find((candidate) => candidate.line.length > 1) ?? pawn.branches[0];
@@ -18656,6 +18883,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 				comparisonEvidence = `The same capture still wins material after ${bestSan}.`;
 			}
 		} else if (motif.id === "fork") {
+			if (proveRepairedFork(step)) return motif;
 			const mixed = !establishedFork(step) && proveMixedTargetFork(step);
 			if (mixed) {
 				const other = proveMixedTargetFork(alternative);
@@ -19266,7 +19494,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 118;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 119;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
