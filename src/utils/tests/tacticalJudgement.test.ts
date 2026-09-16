@@ -438,26 +438,29 @@ type JudgementEngineLine = {
     mate: number | null;
 };
 
-async function analyse(engine: string, fen: string, searchMove?: string, depth = 16, multipv = 3) {
+async function analyse(engine: string, fen: string, searchMove?: string, depth = 16, multipv = 3, searchMoves?: string[]) {
     if (!Number.isInteger(depth) || depth < 1 || depth > 24)
         throw new Error("Invalid judgement depth");
-    if (!Number.isInteger(multipv) || multipv < 1 || multipv > 3)
+    if (!Number.isInteger(multipv) || multipv < 1 || multipv > 6)
         throw new Error("Invalid MultiPV");
     // Stockfish may ignore an illegal searchmoves entry and silently return
     // its unrestricted best move. Never certify that as the requested control.
     const position = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
-    let wireSearchMove = searchMove;
-    if (searchMove) {
-        const move = parseUci(searchMove);
+    if (searchMoves && (!searchMoves.length || searchMoves.length > 8 || new Set(searchMoves).size !== searchMoves.length))
+        throw new Error("Invalid restricted candidate list");
+    const requestedMoves = searchMoves ?? (searchMove ? [searchMove] : []);
+    const wireMoves = requestedMoves.map(requested => {
+        const move = parseUci(requested);
         if (!move || !position.isLegal(move))
-            throw new Error(`Illegal restricted move: ${searchMove}`);
+            throw new Error(`Illegal restricted move: ${requested}`);
         // chessops SAN uses king-to-rook castling; standard UCI uses the
         // king's destination. Never send the rook square and accept an
         // unrestricted fallback as a castling control.
         const castle = castlingSide(position, move);
         if (castle && "from" in move)
-            wireSearchMove = makeUci({ from: move.from, to: (move.from & 56) + (castle === "h" ? 6 : 2) });
-    }
+            return makeUci({ from: move.from, to: (move.from & 56) + (castle === "h" ? 6 : 2) });
+        return requested;
+    });
     const child = spawn(engine, [], { windowsHide: true, stdio: "pipe" });
     const lines = new Map<number, JudgementEngineLine>();
     return new Promise<typeof lines>((resolve, reject) => {
@@ -481,20 +484,20 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
                     );
                 if (row === "readyok")
                     child.stdin.write(
-                        `position fen ${fen}\ngo depth ${depth}${wireSearchMove ? ` searchmoves ${wireSearchMove}` : ""}\n`,
+                        `position fen ${fen}\ngo depth ${depth}${wireMoves.length ? ` searchmoves ${wireMoves.join(" ")}` : ""}\n`,
                     );
                 const match = row.match(
                     /info depth (\d+).* multipv (\d+).* score (cp|mate) (-?\d+).* pv (.+)/,
                 );
                 if (match) {
                     const pvUci = match[5].trim().split(/\s+/);
-                    if (wireSearchMove && pvUci[0] !== wireSearchMove) {
+                    if (wireMoves.length && !wireMoves.includes(pvUci[0])) {
                         clearTimeout(timer);
                         child.kill();
                         reject(new Error(`Engine ignored restricted move: ${searchMove}`));
                         return;
                     }
-                    if (searchMove) pvUci[0] = searchMove;
+                    if (wireMoves.length) pvUci[0] = requestedMoves[wireMoves.indexOf(pvUci[0])];
                     const pos = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
                     const pvSan = pvUci.map((uci) => {
                         const move = parseUci(uci)!;
@@ -525,6 +528,72 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
         child.stdin.write("uci\n");
     });
 }
+
+test.skipIf(!process.env.TACTICAL_JUDGEMENT_ENGINE || !process.env.TACTICAL_CANDIDATE_WIDTH_REPORT)(
+    "compare bounded candidate widths with fresh complete engine searches",
+    async () => {
+        const { privateReportPath } = await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
+        const output = privateReportPath(process.env.TACTICAL_CANDIDATE_WIDTH_REPORT!);
+        expect(existsSync(output)).toBe(false);
+        const inputs = cases.map(row => ({ id: row.name, fen: row.fen, why: row.why }));
+        if (process.env.TACTICAL_CANDIDATE_WIDTH_REPLAY) {
+            const replay = JSON.parse(readFileSync(process.env.TACTICAL_CANDIDATE_WIDTH_REPLAY, "utf8"));
+            const row = replay.results.find((r: any) => r.id === process.env.TACTICAL_CANDIDATE_WIDTH_CASE);
+            if (!row) throw new Error("Missing exact private candidate-width case");
+            inputs.push({id: row.id, fen: row.fen, why: "Previously reviewed private candidate omission; not a held-out judgement."});
+        }
+        const searches: any[] = [];
+        for (const input of inputs) for (const width of [3, 6]) {
+            const started = performance.now();
+            const lines = [...(await analyse(process.env.TACTICAL_JUDGEMENT_ENGINE!, input.fen, undefined, 16, width)).values()]
+                .sort((a,b)=>a.multipv-b.multipv);
+            const engineMs = performance.now()-started;
+            const computeStarted = performance.now();
+            const scan = buildLiveTacticalScan({fen: input.fen, depth:16, engineName:"Stockfish 18", pvUci:lines[0].pvUci, variations:lines});
+            searches.push({...input,width,engineMs,computeMs:performance.now()-computeStarted,lines,scan});
+            writeFileSync(output,JSON.stringify({scope:"Fresh width comparison; process startup plus depth-16 search timings, not native UI latency or an accuracy estimate.",searches},null,2),{flag:searches.length===1?"wx":"w"});
+            expect(lines.every(line=>line.depth===16)).toBe(true);
+        }
+        console.log(searches.map(row=>({id:row.id,width:row.width,engineMs:Math.round(row.engineMs),computeMs:Math.round(row.computeMs),roots:row.lines.map((line:any)=>line.pvSan[0]),themes:row.scan.variations.map((line:any)=>line.motifs.map((m:any)=>m.id))})));
+    }, 180000,
+);
+
+test.skipIf(!process.env.TACTICAL_JUDGEMENT_ENGINE || !process.env.TACTICAL_TARGETED_CANDIDATE_REPORT)(
+    "compare targeted root nominations with the existing three-line scan",
+    async () => {
+        const { privateReportPath } = await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
+        const { nominateTacticalCandidateMoves } = await import("../tacticalMotifs/tacticalCandidateMoves");
+        const { tacticalCandidateDiscoveryFen } = await import("./fixtures/tacticalCandidateDiscovery");
+        const output = privateReportPath(process.env.TACTICAL_TARGETED_CANDIDATE_REPORT!);
+        expect(existsSync(output)).toBe(false);
+        const inputs = cases.map(row => ({id:row.name,fen:row.fen,why:row.why}));
+        inputs.push({id:"Constructed discovery candidates",fen:tacticalCandidateDiscoveryFen,why:"Ng5 opens Bc4 against Qf7, pinned to Kg8; Nxc7 also attacks the two rooks. Both need compensation-aware verification and separate engine assessment."});
+        if (process.env.TACTICAL_CANDIDATE_WIDTH_REPLAY) {
+            const replay=JSON.parse(readFileSync(process.env.TACTICAL_CANDIDATE_WIDTH_REPLAY,"utf8"));
+            const row=replay.results.find((r:any)=>r.id===process.env.TACTICAL_CANDIDATE_WIDTH_CASE);
+            if (!row) throw new Error("Missing exact private targeted-candidate case");
+            inputs.push({id:row.id,fen:row.fen,why:"Previously reviewed private candidate omission, not a holdout."});
+        }
+        const results:any[]=[];
+        const selected=process.env.TACTICAL_TARGETED_CANDIDATE_ID ? inputs.filter(row=>row.id===process.env.TACTICAL_TARGETED_CANDIDATE_ID) : inputs;
+        expect(selected.length).toBeGreaterThan(0);
+        for (const input of selected) {
+            const start=performance.now();
+            const main=[...(await analyse(process.env.TACTICAL_JUDGEMENT_ENGINE!,input.fen)).values()].sort((a,b)=>a.multipv-b.multipv);
+            const mainMs=performance.now()-start;
+            const nominatedAt=performance.now();
+            const nominations=nominateTacticalCandidateMoves(input.fen,main.map(line=>line.pvUci[0]));
+            const nominationMs=performance.now()-nominatedAt;
+            const probesAt=performance.now();
+            const extra=nominations.length?[...(await analyse(process.env.TACTICAL_JUDGEMENT_ENGINE!,input.fen,undefined,16,2,nominations.map(c=>c.moveUci))).values()].sort((a,b)=>a.multipv-b.multipv):[];
+            const extraMs=performance.now()-probesAt;
+            const trials=extra.map(line=>({line,scan:buildLiveTacticalScan({fen:input.fen,depth:16,engineName:"Stockfish 18: independently restricted candidate",pvUci:main[0].pvUci,variations:[main[0],{...line,multipv:2}]})}));
+            results.push({...input,main,mainMs,nominations,nominationMs,extraMs,trials});
+            writeFileSync(output,JSON.stringify({scope:"Targeted search prototype; nominations are not findings and probe candidates are not unrestricted engine ranks. Not integrated into the live panel.",results},null,2),{flag:results.length===1?"wx":"w"});
+        }
+        console.log(results.map(row=>({id:row.id,mainMs:Math.round(row.mainMs),extraMs:Math.round(row.extraMs),nominationMs:Math.round(row.nominationMs),nominations:row.nominations.map((c:any)=>c.moveUci),extra:row.trials.map((trial:any)=>({move:trial.line.pvSan[0],cp:trial.line.cp,mate:trial.line.mate,accepted:trial.scan.variations.length>1,themes:trial.scan.variations[1]?.motifs.map((m:any)=>m.id)}))})));
+    },180000,
+);
 
 describe("expert tactical judgement with fresh engine lines", () => {
     const engine = process.env.TACTICAL_JUDGEMENT_ENGINE ?? "";
