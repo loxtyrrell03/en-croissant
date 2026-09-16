@@ -121,3 +121,30 @@ deployment is implied by these checks.
 Broader recall, quiet preparations, primary-theme judgement, full-position
 compensation, earlier repetition history and load-sensitive native startup
 remain open. This milestone does not complete the user's accuracy goal.
+
+## Follow-up: the missing defensive explanation
+
+After desktop delivery, nine fresh private depth-16 searches examine the move
+preceding the recovered mate. The played move allows mate in four. The suggested
+knight development instead guards the rook's entry square: the same rook check
+can be captured by the knight, and a rook recapture with check can be answered
+by the king. That recapture is an illustrative legal branch, not forced play;
+the unrestricted engine continuation after the first capture chooses a quiet
+knight move instead.
+
+The better move still leaves the defender materially worse (-389 cp in the
+held search), while the same rook attack after that defence gives the defender
+a winning engine estimate. These finite-depth scores corroborate a concrete
+refutation of this particular entry; they do not prove the absence of every
+longer mate. The current comparison intentionally remains unconfirmed.
+`compareImmediateTacticalDefence` handles terminal mates, but has no general
+positive capture-defence comparison for longer mating roots. Its existing
+`checkingAttackerCaptureEscape` helper also excludes an entry that still gives
+check and only covers a bounded king-flight continuation. Simply treating a
+failed mate search as prevention would restore false causal explanations.
+
+Private receipts `branch-mate-cause-probes-20260916.json` and
+`branch-mate-cause-engine-20260916.json` retain all nine legal probes and completed
+searches. This is a verified next causal-coverage target, not a further classifier
+fix, nine newly discovered tactics, or an accuracy score. Source and desktop
+remain adapter 130 / pipeline 135; the opt-in decision audit passes.
