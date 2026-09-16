@@ -112,3 +112,29 @@ Desktop packaging is recorded separately in `docs/TACTICAL_DESKTOP_DELIVERY.md`.
 No owner app or phone service was started/restarted, no browser automation ran,
 and owner data/settings are unchanged. Native interaction and load-sensitive
 startup remain unverified. This milestone does not complete the recall goal.
+
+## Next recall boundary: a verified move excluded before classification
+
+A post-source diagnostic reuses the already-reviewed quiet knight discovery/pin
+from the August sample and its frozen depth-16 held-move search. The held move
+scores +74 cp versus +139 for the principal move, within the existing 80-cp
+alternative tolerance; it is nevertheless absent from the three actual engine
+candidates. The current classifier recognises Pin and Discovered Attack from
+the root move alone and from its held engine continuation.
+
+The diagnostic confirms that appending this verified line as a fourth supplied
+candidate still discards it: `buildLiveTacticalScan` slices the list to three
+before classification. Substituting it into an admitted slot recognises the
+themes. That substitution is a diagnostic constructed list, **not** a fresh
+engine rank, new score, production fix, or justification to borrow a later
+line's score. The earlier played continuation's generic Quiet Preparation
+headline also remains a primary-specificity question.
+
+Private receipt `adapter131-candidate-boundary-audit-20260916.json` preserves the
+original, appended, substituted and root-only outputs. The diagnostic passes
+after correcting its initial use of the mistake-review wrapper instead of the
+position classifier. No new engine searches or production edits are involved.
+The next useful recall work must nominate and independently assess relevant
+moves outside the first three engine choices without claiming that a locally
+proved gain guarantees a sound full position or increasing scan latency
+unboundedly. Merely weakening theme proofs would not fix this missing input.

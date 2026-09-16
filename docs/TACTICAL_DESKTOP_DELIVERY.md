@@ -1,6 +1,43 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 130 / live pipeline 135
+## Current package: adapter 131 / live pipeline 136
+
+Source `94b7c9e4` is packaged in the standalone executable, including positive
+capture defences to specific mating entries and preservation of an existing
+forced-mate outcome when the better move changes its route or speed. The
+detached checkout `en-tactical-desktop-94b7c9e4` excludes unrelated primary
+worktree changes. TypeScript, 133 focused checks (three optional skips), eleven
+generated-service checks (one optional engine skip), the 43-module review build,
+8,862-module frontend and native release build pass. Native compilation takes
+1m45s with 22 existing warnings. Generated route-tree differences are line
+endings only; generated-service differences are comments only, checked against
+the committed source.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,062,976 bytes;
+  SHA-256 `a985b40fd927c46a57725a9c2acd5438e060934ca5a6dd6c2ea9622bacb1ad9f`.
+- Worker: `liveTactics.worker-CEJiJO1k.js`; SHA-256
+  `d0062685dac0a459b7ec449ed79f3cc479d8a09020cf0d5625735ee5bb7ca882`.
+  The clean worker is byte-identical to the tested immutable artifact. Its only
+  change from adapter 130 is the version digit; the new cause comparisons are
+  in review code. The x64 executable embeds its key and
+  `OpeningReviewWorkspace-CBa5gWyh.js`; the dependency receipt identifies both
+  assets and the clean checkout.
+- Previous adapter-130 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter131/en-croissant-fork.exe`,
+  SHA-256 `3b3803b0b703cb803358fc0654e8ec88b4cd16cfdfad67c9a4ce075b7c16f409`.
+
+No app was running before or after the build, and none was launched/restarted.
+The Dev App shortcut was read back unchanged and still invokes the primary
+checkout's `encroissant-native` workflow. Games, settings, engines and phone
+services remain unchanged. This is package/linkage proof, not native-window
+interaction or startup reliability certification. See
+`benchmarks/tactical-relevance/mating-entry-defence-review.md` for exact finite
+proof scope, adverse witness scores, the three new owner comparisons and four
+existing-mate qualifications. Its follow-up locates a separate live-candidate
+omission; it is not fixed by this package. Broader recall and primary-theme
+accuracy remain open.
+
+## Previous package: adapter 130 / live pipeline 135
 
 Source `02dce36a` is packaged in the standalone executable, including
 branch-dependent quiet mating setups, short nonchecking capture mates,
