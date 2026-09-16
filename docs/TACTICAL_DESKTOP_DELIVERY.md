@@ -1,6 +1,37 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 119 / live pipeline 124
+## Current package: adapter 120 / live pipeline 125
+
+Source `d94e7767` is packaged in the standalone executable, including the
+checking-pawn retention through equal interpositions and protected retreats.
+The detached checkout `en-tactical-desktop-d94e7767` excludes unrelated
+primary-worktree edits. TypeScript, 28 focused checks (six optional skips),
+the 42-module shared-review build, the 8,861-module frontend and the native
+release build pass. The native build takes 2m10s and retains 22 existing
+warnings. Generated route-tree output has no semantic diff; shared-service
+regeneration differs only in dependency-path comments.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,123,904 bytes;
+  SHA-256 `e16c771be2a993b1e94dbe0884a664359126e1f918fa8a70191597d9439c627a`.
+- Worker: `liveTactics.worker-BUcz8DBd.js`; SHA-256
+  `30f58c5f02826c7a24c0fe3a35c1e70acea4d1ac0542476454b9df2f70828621`.
+  Clean frontend bytes match the tested immutable artifact. The x64 executable
+  embeds this key and `OpeningReviewWorkspace-DvmSXxWT.js`; the native
+  dependency receipt identifies both clean-checkout assets.
+- Previous adapter-119 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter120/en-croissant-fork.exe`,
+  SHA-256 `15c25956234cfb7674f8d5cc3a932c22e07e5762491cc527d093ae20a7bffba6`.
+
+No app was running before or after the build, and none was launched/restarted.
+The Dev App shortcut still invokes the primary checkout's existing
+`encroissant-native` workflow. Owner data, settings, engines and phone services
+are unchanged. This verifies source/package linkage, not native interaction or
+startup reliability. The recorded cold HTTP failure and variable warm startup
+remain unresolved. See `benchmarks/tactical-relevance/checking-exchange-review.md`
+for the one recovered owner opportunity, contrary witnesses, local proof bounds
+and remaining pawn/quiet-combination/primary-selection gaps.
+
+## Previous package: adapter 119 / live pipeline 124
 
 Source `68e9e4d5` is packaged in the standalone executable, including the
 checking-fork allied repair and mating-support proof. The detached checkout
