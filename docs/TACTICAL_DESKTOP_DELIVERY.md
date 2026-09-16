@@ -1,6 +1,37 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 131 / live pipeline 137
+## Current package: adapter 132 / live pipeline 138
+
+Source `94e0fb12` was built from the clean detached checkout
+`en-tactical-desktop-94e0fb12`. It includes complete-history checking pawn
+opportunities, while keeping an opponent's conditional self-interference at
+its actual ply and preserving the larger queen-loss mistake cause. The
+8,863-module frontend, 43-module shared-review build, TypeScript, 42 focused
+checks (two optional skips) and native release build pass. Native compilation
+took 1m27s with 22 existing warnings.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,063,488 bytes;
+  SHA-256 `0489d067389b35a7637ea1374ec9e0a9a19d6e41dcfc16bf0123d3379fa0679a`.
+- Worker: `liveTactics.worker-C6kdskMe.js`, 567,770 bytes; SHA-256
+  `39afac49fbbf613951b74852967b35b5546f96cec13ac75ecae52b2f3bfdb6be`.
+  Its bytes match the tested worker. Executable asset keys and normalized
+  dependency paths identify this worker, `TacticalClassifierPanel-QHcd12pB.js`
+  and `OpeningReviewWorkspace-DlCZFSpa.js` in the clean checkout.
+- Previous pipeline-137 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline138/en-croissant-fork.exe`,
+  SHA-256 `5300018b58db08bb9627d0bf35000dc0ab7902d3ad38ca732aaeda0a4416d066`.
+
+The production controller passes 540 inputs: 512 owner contexts, twenty prior
+rare-theme cases and eight constructed history cases. One owner result gains
+a separate pawn option, not a new principal live headline or changed primary
+mistake cause. See `benchmarks/tactical-relevance/checking-history-recall-review.md`.
+The executable and backup identities were rechecked before the next milestone.
+
+No app was running or restarted. The Dev App shortcut, games, settings, engines
+and phone services are unchanged. This is clean package/linkage verification,
+not native-window interaction, cold-start reliability or broad accuracy proof.
+
+## Previous package: adapter 131 / live pipeline 137
 
 Source `fc992a83` is packaged in the standalone executable. The live Tactics
 tab now checks bounded additional root moves outside the normal three lines,

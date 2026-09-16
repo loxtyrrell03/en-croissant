@@ -24,6 +24,7 @@ import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixed
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
 import { checkingPawnRetentionCases } from "./fixtures/checkingPawnRetention";
 import { checkingPawnHistoryCases } from "./fixtures/checkingPawnHistory";
+import { discoveredPinPriorityFen, discoveredPinPriorityLine, discoveredPinPriorityControls } from "./fixtures/discoveredPinPriority";
 import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "./fixtures/checkingPawnFollowup";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
 import { perpetualMaterialCases, perpetualMaterialLine } from "./fixtures/perpetualMaterial";
@@ -110,6 +111,20 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
         vi.unstubAllGlobals();
     }
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("revealed pins retain their discovery headline in the production controller", async () => {
+    for (const row of [{fen: discoveredPinPriorityFen, expected: true}, ...discoveredPinPriorityControls.map(row => ({...row, expected: false}))]) {
+        for (const reflected of [false, true]) {
+            const input = {fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+                pvUci: reflected ? discoveredPinPriorityLine.map(reflectMixedForkMove) : discoveredPinPriorityLine,
+                depth: 16, engineName: "Constructed local mechanism, not an engine recommendation"};
+            const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+            expect(result.scan).toEqual(buildLiveTacticalScan(input));
+            const discovery = result.scan.motifs.find(m => m.id === "discoveredAttack" && m.confidence === "high");
+            expect(discovery ? [result.scan.motifs[0].id, discovery.value] : null).toEqual(row.expected ? ["discoveredAttack", 250] : null);
+        }
+    }
+});
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("checking pawn history retains capture lessons without creating forks in the production controller", async () => {
     for (const input of checkingPawnHistoryCases) {

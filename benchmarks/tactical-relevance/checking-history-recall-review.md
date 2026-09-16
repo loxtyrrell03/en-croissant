@@ -69,8 +69,20 @@ The first whole-game diagnostic accidentally supplied history to the historicall
 context-free source lane; it is retained as a draft, not used for the one-row
 differential. The final replay restores the original source inputs exactly.
 
-Compiled-controller and clean desktop delivery receipts are recorded with the
-delivery milestone in `docs/TACTICAL_DESKTOP_DELIVERY.md`.
+The final compiled production controller passes all **540 inputs**: 512 owner
+contexts, twenty existing rare-theme cases and eight constructed history cases.
+Every owner scan matches the final source replay. Owner computation/transfer
+median/p95/max is **88/296/1,259 ms**; maximum Node-bridge startup is 39 ms.
+These exclude Stockfish, HTTP loading and native UI, and do not resolve previous
+load-sensitive startup failures. The receipt is
+`checking-history-worker-final-20260916.json`.
+
+An initial worker assertion incorrectly forbade every fork in the recovery
+controls; the Damiano-style example has a genuine separate king/rook fork and
+now explicitly checks that it survives. An early owner-worker invocation also
+preceded completion of its input report; it produced no owner parity result.
+The final run uses the completed 512-input report and passes. Clean desktop
+delivery is recorded separately in `docs/TACTICAL_DESKTOP_DELIVERY.md`.
 
 ## Limits
 

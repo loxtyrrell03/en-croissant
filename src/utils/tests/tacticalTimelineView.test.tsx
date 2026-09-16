@@ -12,6 +12,19 @@ import { promotionClearanceFen, promotionClearanceLine } from "./fixtures/promot
 import { matingMechanismExamples } from "./fixtures/matingMechanismRelevance";
 import { promotionCounterplayBase, promotionCounterplayEngineLine } from "./fixtures/promotionCounterplay";
 import { directMaterialPayoffCases } from "./fixtures/directMaterialPayoff";
+import { discoveredPinPriorityFen, discoveredPinPriorityLine } from "./fixtures/discoveredPinPriority";
+
+test("a revealed pin explains the discovery first and keeps the supporting pin at the same move", () => {
+  const result = classifyPositionTacticalMotifs({fen: discoveredPinPriorityFen, pvUci: discoveredPinPriorityLine});
+  const container = document.createElement("div");
+  container.innerHTML = renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={replayTacticalLine(discoveredPinPriorityFen, discoveredPinPriorityLine).map(step => step.san)} motifs={result.timeline ?? []} /></MantineProvider>);
+  const root = container.querySelector('[data-tactical-ply="1"]')!.textContent!;
+  expect(root).toContain("Discovered Attack");
+  expect(root).toContain("Pin");
+  expect(root.indexOf("Discovered Attack")).toBeLessThan(root.indexOf("Pin"));
+  expect(container.textContent).not.toContain("Quiet Preparation");
+  expect(container.querySelector("details")?.hasAttribute("open")).toBe(false);
+});
 
 test("the better-line timeline preserves a comparable capture's qualified meaning", () => {
   const result = classifyMistakeReviewMotifs({ fen: "1rr3k1/5ppp/2B1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 b - - 0 21",

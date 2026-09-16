@@ -12188,6 +12188,7 @@ export function auditTacticalMotifs(
         settled = -VALUE.king;
     }
     const candidates: TacticalMotifEvidence[] = [];
+    const discoveries = new Map<number, NonNullable<ReturnType<typeof discoveredEvidence>>>();
     const xRaySupport = xRaySupportEvidence(steps[0], proposals[0]?.source ?? "available");
     // A separately proved mate stays the headline. Its conditional exchange
     // support is added at the actual move by the timeline, without a mate
@@ -12406,7 +12407,10 @@ export function auditTacticalMotifs(
             episode.slice(index),
             proposals[0]?.source ?? "available",
         );
-        if (discovery) candidates.push({ ...discovery.motif, ply: index + 1 });
+        if (discovery) {
+            discoveries.set(index + 1, discovery);
+            candidates.push({ ...discovery.motif, ply: index + 1 });
+        }
         const deflection = deflectionEvidence(
             episode.slice(index),
             proposals[0]?.source ?? "available",
@@ -13069,6 +13073,18 @@ export function auditTacticalMotifs(
             // over a PV-conditioned route with a larger nominal payoff.
             if (m.id === "tacticalPreparation" && m.confidence === "medium" && m.ply === 1 &&
                 quietAttack && tacticalPreparation?.threat[0] === quietAttack.threatSan) return false;
+            // A new, independently proved attack on the preparation's actual
+            // victim is already the specific first-move explanation. Do not
+            // let a longer supplied PV replace it with a generic preparation
+            // badge. A different target, greater gain or mate stays separate.
+            if (m.id === "tacticalPreparation" && m.label === "Quiet Preparation" &&
+                m.ply === 1 && tacticalPreparation) {
+                const discovery = discoveries.get(1);
+                if (discovery && discovery.motif.confidence === "high" &&
+                    (discovery.motif.value ?? 0) >= tacticalPreparation.gain &&
+                    (discovery.motif.value ?? 10000) < 10000 &&
+                    discovery.rays.some(ray => ray.target === tacticalPreparation.target)) return false;
+            }
             if (m.id === "forcingAttack" && m.label === "Mating Attack" && m.ply === 1 &&
                 (preparation || quietMate)) return false;
             if (incidentalMatingMechanisms.has(m.id) && m.ply === 1) return false;
@@ -13345,6 +13361,26 @@ export function auditTacticalMotifs(
             ["fork", "discoveredCheck", "discoveredAttack", "doubleCheck"].includes(other.id) &&
             other.confidence === "high" && other.ply === m.ply && other.moveUci === m.moveUci &&
             other.value !== undefined && other.value < 10000 && other.value >= m.value! + VALUE.pawn)));
+    // Revealing an attack can also create its absolute pin. When the same
+    // independently proved discovery covers every named pin ray and at least
+    // its gain, teach the initiating discovery first and keep the pin as
+    // support. Existing pins and unrelated victims keep their normal rank.
+    for (const motif of filtered) {
+        if (motif.id !== "pin" || motif.confidence !== "high" || !motif.ply ||
+            motif.value === undefined || motif.value >= 10000) continue;
+        const discovery = discoveries.get(motif.ply);
+        if (!discovery || (discovery.motif.value ?? 0) < motif.value ||
+            (discovery.motif.value ?? 10000) >= 10000 ||
+            !filtered.some(other => other.id === discovery.motif.id &&
+                other.ply === motif.ply && other.moveUci === motif.moveUci)) continue;
+        const step = steps[motif.ply - 1];
+        const rays = relevantRayTactics(step).filter(ray => ray.kind === "pin");
+        if (rays.length && rays.every(ray =>
+            step.after.board.get(ray.rear)?.role === "king" &&
+            discovery.rays.some(opened => opened.from === ray.pinner && opened.target === ray.front))) {
+            smallerRays.add(motif);
+        }
+    }
     filtered.sort((a, b) => {
             // A proved material side-effect does not explain an independent
             // forced mate. Only mechanisms with their own mating evidence

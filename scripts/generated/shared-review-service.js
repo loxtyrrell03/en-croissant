@@ -18310,6 +18310,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		settled = -VALUE.king;
 	}
 	const candidates = [];
+	const discoveries = /* @__PURE__ */ new Map();
 	const xRaySupport = xRaySupportEvidence(steps[0], proposals[0]?.source ?? "available");
 	if (xRaySupport?.value !== void 0) candidates.push(xRaySupport);
 	const pawnEnding = proveKpkEntry(steps[0]);
@@ -18496,10 +18497,13 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 			evidence: intermediate.evidence
 		});
 		const discovery = discoveredEvidence(episode.slice(index), proposals[0]?.source ?? "available");
-		if (discovery) candidates.push({
-			...discovery.motif,
-			ply: index + 1
-		});
+		if (discovery) {
+			discoveries.set(index + 1, discovery);
+			candidates.push({
+				...discovery.motif,
+				ply: index + 1
+			});
+		}
 		const deflection = deflectionEvidence(episode.slice(index), proposals[0]?.source ?? "available");
 		if (deflection) candidates.push({
 			...deflection,
@@ -18942,6 +18946,10 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 			}
 		}
 		if (m.id === "tacticalPreparation" && m.confidence === "medium" && m.ply === 1 && quietAttack && tacticalPreparation?.threat[0] === quietAttack.threatSan) return false;
+		if (m.id === "tacticalPreparation" && m.label === "Quiet Preparation" && m.ply === 1 && tacticalPreparation) {
+			const discovery = discoveries.get(1);
+			if (discovery && discovery.motif.confidence === "high" && (discovery.motif.value ?? 0) >= tacticalPreparation.gain && (discovery.motif.value ?? 1e4) < 1e4 && discovery.rays.some((ray) => ray.target === tacticalPreparation.target)) return false;
+		}
 		if (m.id === "forcingAttack" && m.label === "Mating Attack" && m.ply === 1 && (preparation || quietMate)) return false;
 		if (incidentalMatingMechanisms.has(m.id) && m.ply === 1) return false;
 		if (m.id === "fork" && m.ply) {
@@ -19048,6 +19056,14 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		"discoveredAttack",
 		"doubleCheck"
 	].includes(other.id) && other.confidence === "high" && other.ply === m.ply && other.moveUci === m.moveUci && other.value !== void 0 && other.value < 1e4 && other.value >= m.value + VALUE.pawn)));
+	for (const motif of filtered) {
+		if (motif.id !== "pin" || motif.confidence !== "high" || !motif.ply || motif.value === void 0 || motif.value >= 1e4) continue;
+		const discovery = discoveries.get(motif.ply);
+		if (!discovery || (discovery.motif.value ?? 0) < motif.value || (discovery.motif.value ?? 1e4) >= 1e4 || !filtered.some((other) => other.id === discovery.motif.id && other.ply === motif.ply && other.moveUci === motif.moveUci)) continue;
+		const step = steps[motif.ply - 1];
+		const rays = relevantRayTactics(step).filter((ray) => ray.kind === "pin");
+		if (rays.length && rays.every((ray) => step.after.board.get(ray.rear)?.role === "king" && discovery.rays.some((opened) => opened.from === ray.pinner && opened.target === ray.front))) smallerRays.add(motif);
+	}
 	filtered.sort((a, b) => {
 		const matingPriority = (m) => mate && (m.value === 1e4 || MATE.test(m.id)) ? 0 : 1;
 		const rootMatingPriority = (m) => checkingMate && m.ply === 1 && (m.value === 1e4 || MATE.test(m.id)) ? 0 : 1;
@@ -20294,7 +20310,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 132;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 133;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
