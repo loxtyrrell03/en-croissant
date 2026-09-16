@@ -1,6 +1,38 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 126 / live pipeline 131
+## Current package: adapter 127 / live pipeline 132
+
+Source `f042025e` is packaged in the standalone executable, including checking
+pawn gains before already-profitable pawn follow-ups, countercheck safeguards,
+root-only arrows and compensation-aware mistake explanations. The detached
+checkout `en-tactical-desktop-f042025e` excludes unrelated primary-worktree
+changes. TypeScript, 77 focused checks (six optional skips), the 42-module
+shared-review build, 8,861-module frontend and native release build pass.
+Native compilation takes 1m25s with 22 existing warnings. Generated route-tree
+output has no semantic diff; shared-service regeneration differs only in line
+comments, verified by comparison after removing those comments.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,128,000 bytes;
+  SHA-256 `68f024bc865df8cc96725c2e2040d769551aaded6bd3846e17f033f9e3854777`.
+- Worker: `liveTactics.worker-DA5cyGw5.js`; SHA-256
+  `3c8e9879a527b60d1747002a0642dd622868c77f87882d135657534dc8c7d3f8`.
+  The clean frontend worker is byte-identical to the tested immutable artifact.
+  The x64 executable embeds its key and `OpeningReviewWorkspace-DOpP3yJ2.js`;
+  the dependency receipt identifies both assets and the clean source checkout.
+- Previous adapter-126 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter127/en-croissant-fork.exe`,
+  SHA-256 `d98080325ca0f602808c9cbaa0fe5eb1fca6429e15bf481d493a36115e714d73`.
+
+No app was running before or after the build, and none was launched/restarted.
+The Dev App shortcut was read back unchanged and still invokes the primary
+checkout's `encroissant-native` workflow. Games, settings, engines and phone
+services remain unchanged. This is package/linkage proof, not native-window
+interaction or startup reliability certification. See
+`benchmarks/tactical-relevance/pawn-followup-recall-review.md` for the recovered
+owner alternative, rejected king-attack liquidation, exact replay differences
+and the still-unproved quiet/persistent-pawn/primary-selection cases.
+
+## Previous package: adapter 126 / live pipeline 131
 
 Source `61ebad71` is packaged in the standalone executable, including longer
 mates beginning with quiet moves/check evasions/nonchecking captures, correct
