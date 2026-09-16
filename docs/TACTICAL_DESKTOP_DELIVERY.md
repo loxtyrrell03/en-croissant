@@ -1,6 +1,38 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 128 / live pipeline 133
+## Current package: adapter 129 / live pipeline 134
+
+Source `369b23bd` is packaged in the standalone executable, including checking
+attacks that force pawn concessions and exchange-context protection against
+labelling sacrificed-material recovery as a new win. The detached checkout
+`en-tactical-desktop-369b23bd` excludes unrelated primary-worktree changes.
+TypeScript, 72 focused checks (five optional skips), the 43-module shared-review
+build, 8,862-module frontend and native release build pass. Native compilation
+takes 1m30s with 22 existing warnings. The generated route tree differs only
+in line endings; generated-service differences are comments only, checked
+against committed source.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,062,464 bytes;
+  SHA-256 `d10775cf7ecb96f58bc42cbe557546b4abc69923068bbefde3a814b527f0285e`.
+- Worker: `liveTactics.worker-GnPjnVQC.js`; SHA-256
+  `d21e42f308083a98e0a0eefa6fdb099a53ed8195cc145f3a1ed9066b0ff5346e`.
+  The clean frontend worker is byte-identical to the tested immutable artifact.
+  The x64 executable embeds its key and `OpeningReviewWorkspace-BIN1g7Fu.js`;
+  the dependency receipt identifies both assets and the clean checkout.
+- Previous adapter-128 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter129/en-croissant-fork.exe`,
+  SHA-256 `8508bec0c4fe5a6e271a1138a9e49a034d26a6fcbbf99a6322cc8303cc6c106f`.
+
+No app was running before or after the build, and none was launched/restarted.
+The Dev App shortcut was read back unchanged and still invokes the primary
+checkout's `encroissant-native` workflow. Games, settings, engines and phone
+services remain unchanged. This is package/linkage proof, not native-window
+interaction or startup reliability certification. See
+`benchmarks/tactical-relevance/checking-pawn-preparation-review.md` for the
+recovered owner tactic, corrected public non-mating control, contrary
+judgements and remaining quiet/long-preparation and primary-selection gaps.
+
+## Previous package: adapter 128 / live pipeline 133
 
 Source `718f461e` is packaged in the standalone executable, including complete
 game-history transport and older pawn-opportunity recall in live and mistake
