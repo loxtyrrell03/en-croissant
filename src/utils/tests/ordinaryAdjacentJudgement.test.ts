@@ -49,9 +49,9 @@ function classify(id: string) {
     });
 }
 
-test("an unproved opening attack retains its conditional queen-for-bishop recapture", () => {
+test("the opening attack explains its root while retaining the actual queen-for-bishop recapture", () => {
     const result = classify("ordinary-2:ply14");
-    expect(result.motifs.some(motif => motif.id === "forcingAttack" && motif.ply === 1)).toBe(false);
+    expect(result.motifs[0]).toMatchObject({ id: "forcingAttack", ply: 1, value: 720 });
     expect(result.timeline).toContainEqual(
         expect.objectContaining({
             id: "hangingPiece",

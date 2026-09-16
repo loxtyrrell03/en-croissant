@@ -1,0 +1,3590 @@
+{
+  "scope": "Public constructed and real-game roots and selected decision witnesses. Finite-depth full-position estimates, not local bounds or accuracy scores. Owner and paid course positions excluded.",
+  "engine": "Stockfish 18",
+  "searches": [
+    {
+      "id": "connected-king-attack:root",
+      "fen": "2kr1b1r/p5p1/2p2P2/1p4Bp/Q3R1b1/7P/6PK/R7 w - - 0 1",
+      "move": "a4a6",
+      "cp": null,
+      "mate": 7,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-0",
+      "fen": "3r1b1r/p2k2p1/Q1p2P2/1p4Bp/4R1b1/7P/6PK/R7 w - - 2 2",
+      "move": "a6b7",
+      "cp": 1415,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-1",
+      "fen": "3r1b1r/pQ4p1/2pk1P2/1p4Bp/4R1b1/7P/6PK/R7 w - - 4 3",
+      "move": "e4d4",
+      "cp": 1035,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-2",
+      "fen": "3r1b1r/pQ4p1/2p2P2/1p2k1Bp/3R2b1/7P/6PK/R7 w - - 6 4",
+      "move": "d4d8",
+      "cp": 970,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-3",
+      "fen": "3r1b1r/pQ4p1/2p2P2/1pk3Bp/3R2b1/7P/6PK/R7 w - - 6 4",
+      "move": "b7a7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-4",
+      "fen": "3r1b1r/pQ4p1/2p1kP2/1p4Bp/3R2b1/7P/6PK/R7 w - - 6 4",
+      "move": "d4d8",
+      "cp": 1064,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-5",
+      "fen": "3R3r/pQ4p1/2pbkP2/1p4Bp/6b1/7P/6PK/R7 w - - 1 5",
+      "move": "d8d6",
+      "cp": 1138,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-6",
+      "fen": "3r1b1r/p1k3p1/Q1p2P2/1p4Bp/4R1b1/7P/6PK/R7 w - - 2 2",
+      "move": "a6a5",
+      "cp": null,
+      "mate": 9,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-7",
+      "fen": "3r1b1r/p5p1/2pk1P2/Qp4Bp/4R1b1/7P/6PK/R7 w - - 4 3",
+      "move": "a5d8",
+      "cp": null,
+      "mate": 3,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-8",
+      "fen": "3r1b1r/p2k2p1/2p2P2/Qp4Bp/4R1b1/7P/6PK/R7 w - - 4 3",
+      "move": "a5d8",
+      "cp": null,
+      "mate": 15,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-9",
+      "fen": "3k1b1r/p5p1/2p2P2/1p4Bp/4R1b1/7P/6PK/R7 w - - 0 4",
+      "move": "f6g7",
+      "cp": 1071,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-10",
+      "fen": "3k3r/p3b1P1/2p5/1p4Bp/4R1b1/7P/6PK/R7 w - - 1 5",
+      "move": "g7h8q",
+      "cp": null,
+      "mate": 5,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-11",
+      "fen": "5b1r/p2k2P1/2p5/1p4Bp/4R1b1/7P/6PK/R7 w - - 1 5",
+      "move": "g7h8q",
+      "cp": null,
+      "mate": 8,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-12",
+      "fen": "7Q/p2k4/2pb4/1p4Bp/4R1b1/7P/6PK/R7 w - - 1 6",
+      "move": "h2h1",
+      "cp": null,
+      "mate": 8,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-13",
+      "fen": "5b1r/p1k3P1/2p5/1p4Bp/4R1b1/7P/6PK/R7 w - - 1 5",
+      "move": "g7h8q",
+      "cp": 1181,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-14",
+      "fen": "7Q/p1k5/2pb4/1p4Bp/4R1b1/7P/6PK/R7 w - - 1 6",
+      "move": "h2h1",
+      "cp": 958,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-15",
+      "fen": "2k2b1r/p5P1/2p5/1p4Bp/4R1b1/7P/6PK/R7 w - - 1 5",
+      "move": "g7h8q",
+      "cp": null,
+      "mate": 7,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-16",
+      "fen": "3r1b1r/pk4p1/2p2P2/Qp4Bp/4R1b1/7P/6PK/R7 w - - 4 3",
+      "move": "a5d8",
+      "cp": 975,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-17",
+      "fen": "3Q3r/pk4p1/2pb1P2/1p4Bp/4R1b1/7P/6PK/R7 w - - 1 4",
+      "move": "d8d6",
+      "cp": null,
+      "mate": 5,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-18",
+      "fen": "2kr1b1r/p5p1/2p2P2/Qp4Bp/4R1b1/7P/6PK/R7 w - - 4 3",
+      "move": "a5d8",
+      "cp": 1189,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-19",
+      "fen": "3Q1b1r/pk4p1/2p2P2/1p4Bp/4R1b1/7P/6PK/R7 w - - 1 4",
+      "move": "e4e7",
+      "cp": null,
+      "mate": 8,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-20",
+      "fen": "3Q3r/pk2b1p1/2p2P2/1p4Bp/6b1/7P/6PK/R7 w - - 0 5",
+      "move": "d8h8",
+      "cp": 808,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-21",
+      "fen": "7Q/pk4p1/2pb1P2/1p4Bp/6b1/7P/6PK/R7 w - - 1 6",
+      "move": "h2h1",
+      "cp": 743,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-22",
+      "fen": "3Q1b1r/pk1bR1p1/2p2P2/1p4Bp/8/7P/6PK/R7 w - - 3 5",
+      "move": "e7d7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-23",
+      "fen": "1k1r1b1r/p5p1/2p2P2/Qp4Bp/4R1b1/7P/6PK/R7 w - - 4 3",
+      "move": "a5d8",
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-24",
+      "fen": "1k1r1b1r/p5p1/Q1p2P2/1p4Bp/4R1b1/7P/6PK/R7 w - - 2 2",
+      "move": "a6a7",
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-25",
+      "fen": "2kr1b1r/Q5p1/2p2P2/1p4Bp/4R1b1/7P/6PK/R7 w - - 1 3",
+      "move": "a7a8",
+      "cp": null,
+      "mate": 5,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-26",
+      "fen": "Q2r1b1r/3k2p1/2p2P2/1p4Bp/4R1b1/7P/6PK/R7 w - - 3 4",
+      "move": "a1a7",
+      "cp": null,
+      "mate": 4,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-27",
+      "fen": "Q2r1b1r/R5p1/2pk1P2/1p4Bp/4R1b1/7P/6PK/8 w - - 5 5",
+      "move": "a8d8",
+      "cp": null,
+      "mate": 3,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-28",
+      "fen": "Q2r1b1r/2k3p1/2p2P2/1p4Bp/4R1b1/7P/6PK/R7 w - - 3 4",
+      "move": "a1a7",
+      "cp": null,
+      "mate": 4,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-29",
+      "fen": "Q2r1b1r/R5p1/1kp2P2/1p4Bp/4R1b1/7P/6PK/8 w - - 5 5",
+      "move": "g5e3",
+      "cp": null,
+      "mate": 3,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-30",
+      "fen": "Q2r1b1r/R5p1/1k3P2/1pp4p/4R1b1/4B2P/6PK/8 w - - 0 6",
+      "move": "a8b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-31",
+      "fen": "Q2r3r/R5p1/1kp2P2/1pb4p/4R1b1/4B2P/6PK/8 w - - 7 6",
+      "move": "a7b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-32",
+      "fen": "Q4b1r/R5p1/1kp2P2/1p5p/3rR1b1/4B2P/6PK/8 w - - 7 6",
+      "move": "e3d4",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-33",
+      "fen": "3r1b1r/p1k3p1/Q1p2P2/1p4Bp/4R1b1/7P/6PK/R7 w - - 2 2",
+      "move": null,
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-34",
+      "fen": "3r1b1r/p2k2p1/Q1p2P2/1p4Bp/4R1b1/7P/6PK/R7 w - - 2 2",
+      "move": null,
+      "cp": null,
+      "mate": 4,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:decision-35",
+      "fen": "1k1r1b1r/p5p1/Q1p2P2/1p4Bp/4R1b1/7P/6PK/R7 w - - 2 2",
+      "move": null,
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "blocked-check:root",
+      "fen": "2kr1b1r/pp4p1/2p2P2/1p4Bp/Q3R1b1/7P/6PK/R7 w - - 0 1",
+      "move": "a4a6",
+      "cp": -349,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "capturable-queen:root",
+      "fen": "2kr1b1r/p5p1/1rp2P2/1p4Bp/Q3R1b1/7P/6PK/R7 w - - 0 1",
+      "move": "a4a6",
+      "cp": -510,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "checking-promotion-fork:root",
+      "fen": "3k1b1r/6p1/5P2/6B1/8/8/6K1/8 w - - 0 1",
+      "move": "f6g7",
+      "cp": 608,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "checking-promotion-fork:decision-0",
+      "fen": "5b1r/2k3P1/8/6B1/8/8/6K1/8 w - - 1 2",
+      "move": "g7h8q",
+      "cp": 662,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "checking-promotion-fork:decision-1",
+      "fen": "5b1r/3k2P1/8/6B1/8/8/6K1/8 w - - 1 2",
+      "move": "g7h8q",
+      "cp": 652,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "checking-promotion-fork:decision-2",
+      "fen": "2k2b1r/6P1/8/6B1/8/8/6K1/8 w - - 1 2",
+      "move": "g7h8q",
+      "cp": 731,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "checking-promotion-fork:decision-3",
+      "fen": "4kb1r/6P1/8/6B1/8/8/6K1/8 w - - 1 2",
+      "move": "g7h8q",
+      "cp": 789,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "checking-promotion-fork:decision-4",
+      "fen": "3k3r/4b1P1/8/6B1/8/8/6K1/8 w - - 1 2",
+      "move": "g7h8q",
+      "cp": 725,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "capturable-pawn:root",
+      "fen": "2k2b1r/6p1/5P2/6B1/8/8/6K1/8 w - - 0 1",
+      "move": "f6g7",
+      "cp": -323,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "promotion-stalemate:root",
+      "fen": "k1r5/8/1P6/1K6/8/8/8/8 w - - 0 1",
+      "move": "b6b7",
+      "cp": null,
+      "mate": -11,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:root",
+      "fen": "2kr1b1r/p5p1/2p2P2/1p4Bp/Q3R1b1/8/5PPP/R5K1 w - - 0 1",
+      "move": "a4a6",
+      "cp": null,
+      "mate": 7,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-0",
+      "fen": "3r1b1r/p2k2p1/Q1p2P2/1p4Bp/4R1b1/8/5PPP/R5K1 w - - 2 2",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 10,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-1",
+      "fen": "3r1b1r/pQ4p1/2pk1P2/1p4Bp/4R1b1/8/5PPP/R5K1 w - - 4 3",
+      "move": "e4d4",
+      "cp": 1298,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-2",
+      "fen": "3r1b1r/pQ4p1/2p2P2/1p2k1Bp/3R2b1/8/5PPP/R5K1 w - - 6 4",
+      "move": "d4d8",
+      "cp": 1050,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-3",
+      "fen": "3r1b1r/pQ4p1/2p2P2/1pk3Bp/3R2b1/8/5PPP/R5K1 w - - 6 4",
+      "move": "b7a7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-4",
+      "fen": "3r1b1r/pQ4p1/2p1kP2/1p4Bp/3R2b1/8/5PPP/R5K1 w - - 6 4",
+      "move": "d4d8",
+      "cp": 1282,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-5",
+      "fen": "3r1b1r/p1k3p1/Q1p2P2/1p4Bp/4R1b1/8/5PPP/R5K1 w - - 2 2",
+      "move": "a6a5",
+      "cp": null,
+      "mate": 8,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-6",
+      "fen": "3r1b1r/p5p1/2pk1P2/Qp4Bp/4R1b1/8/5PPP/R5K1 w - - 4 3",
+      "move": "a5d8",
+      "cp": null,
+      "mate": 3,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-7",
+      "fen": "3r1b1r/p2k2p1/2p2P2/Qp4Bp/4R1b1/8/5PPP/R5K1 w - - 4 3",
+      "move": "a5d8",
+      "cp": null,
+      "mate": 10,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-8",
+      "fen": "3k1b1r/p5p1/2p2P2/1p4Bp/4R1b1/8/5PPP/R5K1 w - - 0 4",
+      "move": "f6g7",
+      "cp": 1407,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-9",
+      "fen": "3k3r/p3b1P1/2p5/1p4Bp/4R1b1/8/5PPP/R5K1 w - - 1 5",
+      "move": "g7h8q",
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-10",
+      "fen": "5b1r/p2k2P1/2p5/1p4Bp/4R1b1/8/5PPP/R5K1 w - - 1 5",
+      "move": "g7h8q",
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-11",
+      "fen": "5b1r/p1k3P1/2p5/1p4Bp/4R1b1/8/5PPP/R5K1 w - - 1 5",
+      "move": "g7h8q",
+      "cp": null,
+      "mate": 8,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-12",
+      "fen": "2k2b1r/p5P1/2p5/1p4Bp/4R1b1/8/5PPP/R5K1 w - - 1 5",
+      "move": "g7h8q",
+      "cp": null,
+      "mate": 7,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-13",
+      "fen": "3r1b1r/pk4p1/2p2P2/Qp4Bp/4R1b1/8/5PPP/R5K1 w - - 4 3",
+      "move": "a5d8",
+      "cp": 972,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-14",
+      "fen": "2kr1b1r/p5p1/2p2P2/Qp4Bp/4R1b1/8/5PPP/R5K1 w - - 4 3",
+      "move": "a5d8",
+      "cp": null,
+      "mate": 11,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-15",
+      "fen": "3Q1b1r/pk4p1/2p2P2/1p4Bp/4R1b1/8/5PPP/R5K1 w - - 1 4",
+      "move": "e4e7",
+      "cp": null,
+      "mate": 8,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-16",
+      "fen": "3Q3r/pk2b1p1/2p2P2/1p4Bp/6b1/8/5PPP/R5K1 w - - 0 5",
+      "move": "d8h8",
+      "cp": 842,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-17",
+      "fen": "3Q1b1r/pk1bR1p1/2p2P2/1p4Bp/8/8/5PPP/R5K1 w - - 3 5",
+      "move": "e7d7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-18",
+      "fen": "1k1r1b1r/p5p1/2p2P2/Qp4Bp/4R1b1/8/5PPP/R5K1 w - - 4 3",
+      "move": "a5d8",
+      "cp": null,
+      "mate": 8,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-19",
+      "fen": "1k1r1b1r/p5p1/Q1p2P2/1p4Bp/4R1b1/8/5PPP/R5K1 w - - 2 2",
+      "move": "g5f4",
+      "cp": null,
+      "mate": 7,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-20",
+      "fen": "1k1r3r/p5p1/Q1pb1P2/1p5p/4RBb1/8/5PPP/R5K1 w - - 4 3",
+      "move": "e4e7",
+      "cp": null,
+      "mate": 4,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-21",
+      "fen": "1k1r3r/p3R1p1/Q1p2P2/1p5p/5bb1/8/5PPP/R5K1 w - - 0 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-22",
+      "fen": "1k1r3r/p3R3/Q1pb1p2/1p5p/5Bb1/8/5PPP/R5K1 w - - 0 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-23",
+      "fen": "1k1r3r/p3R1p1/Q1pb1P2/1p5p/5B2/8/5PPP/R2b2K1 w - - 6 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-24",
+      "fen": "1k1r3r/p3R1p1/Q1pb1P2/1p5p/5B2/8/4bPPP/R5K1 w - - 6 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-25",
+      "fen": "1k1r3r/p3R1p1/Q1pb1P2/1p5p/5B2/5b2/5PPP/R5K1 w - - 6 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-26",
+      "fen": "1k1r3r/p3R1p1/Q1pb1P2/1p5p/5B2/7b/5PPP/R5K1 w - - 6 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-27",
+      "fen": "1k1r3r/p3R1p1/Q1pb1P2/1p3b1p/5B2/8/5PPP/R5K1 w - - 6 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-28",
+      "fen": "1k1r3r/p3R1p1/Q1pbbP2/1p5p/5B2/8/5PPP/R5K1 w - - 6 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-29",
+      "fen": "1k1r3r/p2bR1p1/Q1pb1P2/1p5p/5B2/8/5PPP/R5K1 w - - 6 4",
+      "move": "f4d6",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-30",
+      "fen": "1kbr3r/p3R1p1/Q1pb1P2/1p5p/5B2/8/5PPP/R5K1 w - - 6 4",
+      "move": "a6a7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-31",
+      "fen": "1k1r3r/p3R1p1/Q1pb1P2/7p/1p3Bb1/8/5PPP/R5K1 w - - 0 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-32",
+      "fen": "1k1r3r/p3R1p1/Q1pb1P2/1p6/5Bbp/8/5PPP/R5K1 w - - 0 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-33",
+      "fen": "1k1r3r/p3R1p1/Q2b1P2/1pp4p/5Bb1/8/5PPP/R5K1 w - - 0 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-34",
+      "fen": "1k1r3r/p3R1p1/Q1p2P2/1p2b2p/5Bb1/8/5PPP/R5K1 w - - 6 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-35",
+      "fen": "1k1r3r/p1b1R1p1/Q1p2P2/1p5p/5Bb1/8/5PPP/R5K1 w - - 6 4",
+      "move": "f4c7",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-36",
+      "fen": "1k1r3r/p3R3/Q1pb1P2/1p4pp/5Bb1/8/5PPP/R5K1 w - - 0 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-37",
+      "fen": "1k1r3r/p3R3/Q1pb1Pp1/1p5p/5Bb1/8/5PPP/R5K1 w - - 0 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-38",
+      "fen": "k2r3r/p3R1p1/Q1pb1P2/1p5p/5Bb1/8/5PPP/R5K1 w - - 6 4",
+      "move": "a6a7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-39",
+      "fen": "1k5r/p2rR1p1/Q1pb1P2/1p5p/5Bb1/8/5PPP/R5K1 w - - 6 4",
+      "move": "f4d6",
+      "cp": null,
+      "mate": 3,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-40",
+      "fen": "1k5r/p3R1p1/Q1pr1P2/1p5p/6b1/8/5PPP/R5K1 w - - 0 5",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-41",
+      "fen": "1k5r/p1r1R1p1/Q1pB1P2/1p5p/6b1/8/5PPP/R5K1 w - - 1 5",
+      "move": "d6c7",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-42",
+      "fen": "k6r/p2rR1p1/Q1pB1P2/1p5p/6b1/8/5PPP/R5K1 w - - 1 5",
+      "move": "e7d7",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-43",
+      "fen": "1kr4r/p3R1p1/Q1pb1P2/1p5p/5Bb1/8/5PPP/R5K1 w - - 6 4",
+      "move": "a6a7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-44",
+      "fen": "1k2r2r/p3R1p1/Q1pb1P2/1p5p/5Bb1/8/5PPP/R5K1 w - - 6 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-45",
+      "fen": "1k3r1r/p3R1p1/Q1pb1P2/1p5p/5Bb1/8/5PPP/R5K1 w - - 6 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-46",
+      "fen": "1k4rr/p3R1p1/Q1pb1P2/1p5p/5Bb1/8/5PPP/R5K1 w - - 6 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-47",
+      "fen": "1k1r4/p3R1p1/Q1pb1P1r/1p5p/5Bb1/8/5PPP/R5K1 w - - 6 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-48",
+      "fen": "1k1r4/p3R1pr/Q1pb1P2/1p5p/5Bb1/8/5PPP/R5K1 w - - 6 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-49",
+      "fen": "1k1rr3/p3R1p1/Q1pb1P2/1p5p/5Bb1/8/5PPP/R5K1 w - - 6 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-50",
+      "fen": "1k1r1r2/p3R1p1/Q1pb1P2/1p5p/5Bb1/8/5PPP/R5K1 w - - 6 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-51",
+      "fen": "1k1r2r1/p3R1p1/Q1pb1P2/1p5p/5Bb1/8/5PPP/R5K1 w - - 6 4",
+      "move": "a6b7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-52",
+      "fen": "1k3b1r/p5p1/Q1pr1P2/1p5p/4RBb1/8/5PPP/R5K1 w - - 4 3",
+      "move": "e4e8",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-53",
+      "fen": "1kb1Rb1r/p5p1/Q1pr1P2/1p5p/5B2/8/5PPP/R5K1 w - - 6 4",
+      "move": "a6c8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-54",
+      "fen": "4Rb1r/p1k3p1/Q1pr1P2/1p5p/5Bb1/8/5PPP/R5K1 w - - 6 4",
+      "move": "a6a7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-55",
+      "fen": "k2r1b1r/p5p1/Q1p2P2/1p5p/4RBb1/8/5PPP/R5K1 w - - 4 3",
+      "move": "a6c6",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-56",
+      "fen": "3r1b1r/p1k3p1/Q1p2P2/1p4Bp/4R1b1/8/5PPP/R5K1 w - - 2 2",
+      "move": null,
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-57",
+      "fen": "3r1b1r/p2k2p1/Q1p2P2/1p4Bp/4R1b1/8/5PPP/R5K1 w - - 2 2",
+      "move": null,
+      "cp": null,
+      "mate": 5,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:decision-58",
+      "fen": "1k1r1b1r/p5p1/Q1p2P2/1p4Bp/4R1b1/8/5PPP/R5K1 w - - 2 2",
+      "move": null,
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:root",
+      "fen": "rnbq1bnr/pppp1kpp/5P2/8/8/2N5/PP2QPPP/R1B1KBNR w KQ - 1 8",
+      "move": "e2h5",
+      "cp": 729,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:decision-0",
+      "fen": "rnbq1bnr/pppp2pp/5k2/7Q/8/2N5/PP3PPP/R1B1KBNR w KQ - 0 9",
+      "move": "h5g5",
+      "cp": 851,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:decision-1",
+      "fen": "rnbq1bnr/pppp2pp/4k3/6Q1/8/2N5/PP3PPP/R1B1KBNR w KQ - 2 10",
+      "move": "g5d8",
+      "cp": 933,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:decision-2",
+      "fen": "rnbq1bnr/pppp1kpp/8/6Q1/8/2N5/PP3PPP/R1B1KBNR w KQ - 2 10",
+      "move": "g5d8",
+      "cp": 801,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:decision-3",
+      "fen": "rnbq1bnr/pppp2pp/4kP2/7Q/8/2N5/PP3PPP/R1B1KBNR w KQ - 3 9",
+      "move": "h5d5",
+      "cp": null,
+      "mate": 5,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:decision-4",
+      "fen": "rnbq1bnr/pppp2pp/5k2/3Q4/8/2N5/PP3PPP/R1B1KBNR w KQ - 0 10",
+      "move": "c1g5",
+      "cp": null,
+      "mate": 4,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:decision-5",
+      "fen": "rnbq1bnr/pppp2pp/6k1/3Q2B1/8/2N5/PP3PPP/R3KBNR w KQ - 2 11",
+      "move": "g5d8",
+      "cp": 1114,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:decision-6",
+      "fen": "rnbq1bnr/pppp1k1p/5Pp1/7Q/8/2N5/PP3PPP/R1B1KBNR w KQ - 0 9",
+      "move": "h5d5",
+      "cp": 696,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:decision-7",
+      "fen": "rnbq1bnr/pppp3p/5kp1/3Q4/8/2N5/PP3PPP/R1B1KBNR w KQ - 0 10",
+      "move": "c1g5",
+      "cp": 727,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:decision-8",
+      "fen": "rnbq1bnr/pppp2kp/6p1/3Q2B1/8/2N5/PP3PPP/R3KBNR w KQ - 2 11",
+      "move": "g5d8",
+      "cp": 705,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:decision-9",
+      "fen": "rnbqkbnr/pppp3p/5Pp1/3Q4/8/2N5/PP3PPP/R1B1KBNR w KQ - 2 10",
+      "move": "f6f7",
+      "cp": 899,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:decision-10",
+      "fen": "rnbq1bnr/ppppkP1p/6p1/3Q4/8/2N5/PP3PPP/R1B1KBNR w KQ - 1 11",
+      "move": "f7g8q",
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:decision-11",
+      "fen": "rnbq1bnr/pppp2pp/4kP2/7Q/8/2N5/PP3PPP/R1B1KBNR w KQ - 3 9",
+      "move": null,
+      "cp": null,
+      "mate": 5,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:decision-12",
+      "fen": "rnbq1bnr/pppp2pp/5k2/7Q/8/2N5/PP3PPP/R1B1KBNR w KQ - 0 9",
+      "move": null,
+      "cp": 1008,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:decision-13",
+      "fen": "rnbq1bnr/pppp1k1p/5Pp1/7Q/8/2N5/PP3PPP/R1B1KBNR w KQ - 0 9",
+      "move": null,
+      "cp": 741,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:root",
+      "fen": "5rk1/Q1RR1pp1/4pq1p/4N3/5P2/4P3/Pr4PP/6K1 b - - 1 23",
+      "move": "f6h4",
+      "cp": null,
+      "mate": 4,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-0",
+      "fen": "5rk1/Q1R2Rp1/4p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 0 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-1",
+      "fen": "5rk1/Q1RR1Np1/4p2p/8/5P1q/4P3/Pr4PP/6K1 b - - 0 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-2",
+      "fen": "Q4rk1/2RR1pp1/4p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-3",
+      "fen": "1Q3rk1/2RR1pp1/4p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-4",
+      "fen": "5rk1/1QRR1pp1/4p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-5",
+      "fen": "5rk1/2RR1pp1/Q3p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4f2",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-6",
+      "fen": "5rk1/2RR1pp1/Q3p2p/4N3/5P2/4P3/Pr3qPP/7K b - - 5 25",
+      "move": "f2g2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-7",
+      "fen": "5rk1/2RR1pp1/1Q2p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-8",
+      "fen": "5rk1/2RR1pp1/4p2p/Q3N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4f2",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-9",
+      "fen": "5rk1/2RR1pp1/4p2p/Q3N3/5P2/4P3/Pr3qPP/7K b - - 5 25",
+      "move": "f2g2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-10",
+      "fen": "5rk1/2RR1pp1/4p2p/2Q1N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-11",
+      "fen": "5rk1/2RR1pp1/4p2p/4N3/Q4P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-12",
+      "fen": "5rk1/2RR1pp1/4p2p/4N3/3Q1P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-13",
+      "fen": "5rk1/2RR1pp1/4p2p/4N3/5P1q/Q3P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-14",
+      "fen": "2R2rk1/Q2R1pp1/4p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-15",
+      "fen": "5rk1/QR1R1pp1/4p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-16",
+      "fen": "5rk1/Q2R1pp1/2R1p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-17",
+      "fen": "5rk1/Q2R1pp1/4p2p/2R1N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-18",
+      "fen": "5rk1/Q2R1pp1/4p2p/4N3/2R2P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-19",
+      "fen": "5rk1/Q2R1pp1/4p2p/4N3/5P1q/2R1P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-20",
+      "fen": "5rk1/Q2R1pp1/4p2p/4N3/5P1q/4P3/PrR3PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-21",
+      "fen": "5rk1/Q2R1pp1/4p2p/4N3/5P1q/4P3/Pr4PP/2R3K1 b - - 3 24",
+      "move": "h4f2",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-22",
+      "fen": "5rk1/Q2R1pp1/4p2p/4N3/5P2/4P3/Pr3qPP/2R4K b - - 5 25",
+      "move": "f2g2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-23",
+      "fen": "3R1rk1/Q1R2pp1/4p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-24",
+      "fen": "5rk1/Q1R1Rpp1/4p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-25",
+      "fen": "5rk1/Q1R2pp1/3Rp2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-26",
+      "fen": "5rk1/Q1R2pp1/4p2p/3RN3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-27",
+      "fen": "5rk1/Q1R2pp1/4p2p/4N3/3R1P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-28",
+      "fen": "5rk1/Q1R2pp1/4p2p/4N3/5P1q/3RP3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-29",
+      "fen": "5rk1/Q1R2pp1/4p2p/4N3/5P1q/4P3/Pr1R2PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-30",
+      "fen": "5rk1/Q1R2pp1/4p2p/4N3/5P1q/4P3/Pr4PP/3R2K1 b - - 3 24",
+      "move": "h4f2",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-31",
+      "fen": "5rk1/Q1R2pp1/4p2p/4N3/5P2/4P3/Pr3qPP/3R3K b - - 5 25",
+      "move": "f2g2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-32",
+      "fen": "5rk1/Q1RR1pp1/2N1p2p/8/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-33",
+      "fen": "5rk1/Q1RR1pp1/4p1Np/8/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-34",
+      "fen": "5rk1/Q1RR1pp1/4p2p/8/2N2P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-35",
+      "fen": "5rk1/Q1RR1pp1/4p2p/8/5PNq/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-36",
+      "fen": "5rk1/Q1RR1pp1/4p2p/8/5P1q/3NP3/Pr4PP/6K1 b - - 3 24",
+      "move": "b2b1",
+      "cp": null,
+      "mate": 3,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-37",
+      "fen": "5rk1/Q2R1pp1/4p2p/8/5P1q/3NP3/P5PP/1rR3K1 b - - 5 25",
+      "move": "b1c1",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-38",
+      "fen": "5rk1/Q2R1pp1/4p2p/8/5P1q/4P3/P5PP/2N3K1 b - - 0 26",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-39",
+      "fen": "5rk1/Q2R1pp1/4p2p/8/5P1q/4P3/P5PP/2r1N1K1 b - - 1 26",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-40",
+      "fen": "5rk1/Q1RR1pp1/4p2p/8/5P1q/4P3/P5PP/1rN3K1 b - - 5 25",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-41",
+      "fen": "5rk1/Q1RR1pp1/4p2p/8/5P1q/4P3/P5PP/1r2N1K1 b - - 5 25",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-42",
+      "fen": "5rk1/Q1RR1pp1/4p2p/8/5P1q/4PN2/Pr4PP/6K1 b - - 3 24",
+      "move": "h4f2",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-43",
+      "fen": "5rk1/Q1RR1pp1/4p2p/8/5P2/4PN2/Pr3qPP/7K b - - 5 25",
+      "move": "f2g2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-44",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4NP2/7q/4P3/Pr4PP/6K1 b - - 0 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-45",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/4PP1q/8/Pr4PP/6K1 b - - 0 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-46",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/P4P1q/4P3/1r4PP/6K1 b - - 0 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-47",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/5P1q/P3P3/1r4PP/6K1 b - - 0 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-48",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/5PPq/4P3/Pr5P/6K1 b - - 0 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-49",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/5P1q/4P1P1/Pr5P/6K1 b - - 0 24",
+      "move": "h4h2",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-50",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/5P1q/4P2P/Pr4P1/6K1 b - - 0 24",
+      "move": "h4f2",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-51",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/5P2/4P2P/Pr3qPK/8 b - - 2 25",
+      "move": "f2g2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-52",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/5P2/4P2P/Pr3qP1/7K b - - 2 25",
+      "move": "f2g2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-53",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/5P1q/4P3/Pr4PP/5K2 b - - 3 24",
+      "move": "h4f2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-54",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/5P1q/4P3/Pr4PP/7K b - - 3 24",
+      "move": "h4e1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-55",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/5P1q/4P3/Pr4PP/5K2 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-56",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/5P1q/4P3/Pr4PP/7K b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-57",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/5P1q/P3P3/1r4PP/6K1 b - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-58",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/P4P1q/4P3/1r4PP/6K1 b - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-59",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/5P1q/4P1P1/Pr5P/6K1 b - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-60",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/5PPq/4P3/Pr5P/6K1 b - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-61",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/5P1q/4P2P/Pr4P1/6K1 b - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-62",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4N3/4PP1q/8/Pr4PP/6K1 b - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-63",
+      "fen": "5rk1/Q1RR1pp1/4p2p/4NP2/7q/4P3/Pr4PP/6K1 b - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-64",
+      "fen": "5rk1/Q1RR1pp1/4p2p/8/5P1q/3NP3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 3,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-65",
+      "fen": "5rk1/Q1RR1pp1/4p2p/8/5P1q/4PN2/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-66",
+      "fen": "5rk1/Q1RR1pp1/4p2p/8/2N2P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-67",
+      "fen": "5rk1/Q1RR1pp1/4p2p/8/5PNq/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-68",
+      "fen": "5rk1/Q1RR1pp1/2N1p2p/8/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-69",
+      "fen": "5rk1/Q1RR1pp1/4p1Np/8/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-70",
+      "fen": "5rk1/Q1RR1Np1/4p2p/8/5P1q/4P3/Pr4PP/6K1 b - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-71",
+      "fen": "5rk1/2RR1pp1/4p2p/4N3/5P1q/Q3P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-72",
+      "fen": "5rk1/2RR1pp1/4p2p/4N3/Q4P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-73",
+      "fen": "5rk1/2RR1pp1/4p2p/4N3/3Q1P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-74",
+      "fen": "5rk1/2RR1pp1/4p2p/Q3N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-75",
+      "fen": "5rk1/2RR1pp1/4p2p/2Q1N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-76",
+      "fen": "5rk1/2RR1pp1/Q3p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-77",
+      "fen": "5rk1/2RR1pp1/1Q2p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-78",
+      "fen": "5rk1/1QRR1pp1/4p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-79",
+      "fen": "Q4rk1/2RR1pp1/4p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-80",
+      "fen": "1Q3rk1/2RR1pp1/4p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-81",
+      "fen": "5rk1/Q2R1pp1/4p2p/4N3/5P1q/4P3/Pr4PP/2R3K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-82",
+      "fen": "5rk1/Q2R1pp1/4p2p/4N3/5P1q/4P3/PrR3PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-83",
+      "fen": "5rk1/Q2R1pp1/4p2p/4N3/5P1q/2R1P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-84",
+      "fen": "5rk1/Q2R1pp1/4p2p/4N3/2R2P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-85",
+      "fen": "5rk1/Q2R1pp1/4p2p/2R1N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-86",
+      "fen": "5rk1/Q2R1pp1/2R1p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-87",
+      "fen": "5rk1/QR1R1pp1/4p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-88",
+      "fen": "2R2rk1/Q2R1pp1/4p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-89",
+      "fen": "5rk1/Q1R2pp1/4p2p/4N3/5P1q/4P3/Pr4PP/3R2K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-90",
+      "fen": "5rk1/Q1R2pp1/4p2p/4N3/5P1q/4P3/Pr1R2PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-91",
+      "fen": "5rk1/Q1R2pp1/4p2p/4N3/5P1q/3RP3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-92",
+      "fen": "5rk1/Q1R2pp1/4p2p/4N3/3R1P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-93",
+      "fen": "5rk1/Q1R2pp1/4p2p/3RN3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-94",
+      "fen": "5rk1/Q1R2pp1/3Rp2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-95",
+      "fen": "5rk1/Q1R1Rpp1/4p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-96",
+      "fen": "5rk1/Q1R2Rp1/4p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:decision-97",
+      "fen": "3R1rk1/Q1R2pp1/4p2p/4N3/5P1q/4P3/Pr4PP/6K1 b - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply18:root",
+      "fen": "rnbqkbnr/pppp3p/5Pp1/3Q4/8/2N5/PP3PPP/R1B1KBNR w KQ - 2 10",
+      "move": "f6f7",
+      "cp": 899,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply18:decision-0",
+      "fen": "rnbq1bnr/ppppkP1p/6p1/3Q4/8/2N5/PP3PPP/R1B1KBNR w KQ - 1 11",
+      "move": "f7g8q",
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply18:decision-1",
+      "fen": "rnbq1bnr/ppppkP1p/6p1/3Q4/8/2N5/PP3PPP/R1B1KBNR w KQ - 1 11",
+      "move": null,
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:root",
+      "fen": "r7/6pk/7p/q3r1B1/1P4bP/2P2p2/P5P1/2KR1B1R b - - 0 1",
+      "move": "a5a3",
+      "cp": null,
+      "mate": 7,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-0",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/q1P2p2/P2K2P1/3R1B1R b - - 2 2",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 12,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-1",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/2PK1p2/Pq4P1/3R1B1R b - - 4 3",
+      "move": "e5d5",
+      "cp": 1015,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-2",
+      "fen": "r7/6pk/7p/3r2B1/1P2K1bP/2P2p2/Pq4P1/3R1B1R b - - 6 4",
+      "move": "d5d1",
+      "cp": 982,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-3",
+      "fen": "r7/6pk/7p/3r2B1/1PK3bP/2P2p2/Pq4P1/3R1B1R b - - 6 4",
+      "move": "b2a2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-4",
+      "fen": "r7/6pk/7p/3r2B1/1P4bP/2P1Kp2/Pq4P1/3R1B1R b - - 6 4",
+      "move": "d5d1",
+      "cp": 1042,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-5",
+      "fen": "r7/6pk/7p/6B1/1P4bP/2PBKp2/Pq4P1/3r3R b - - 1 5",
+      "move": "d1d3",
+      "cp": null,
+      "mate": 8,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-6",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/q1P2p2/P1K3P1/3R1B1R b - - 2 2",
+      "move": "a3a4",
+      "cp": null,
+      "mate": 10,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-7",
+      "fen": "r7/6pk/7p/4r1B1/qP4bP/2PK1p2/P5P1/3R1B1R b - - 4 3",
+      "move": "a4d1",
+      "cp": null,
+      "mate": 3,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-8",
+      "fen": "r7/6pk/7p/4r1B1/qP4bP/2P2p2/P2K2P1/3R1B1R b - - 4 3",
+      "move": "a4d1",
+      "cp": 1300,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-9",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/2P2p2/P5P1/3K1B1R b - - 0 4",
+      "move": "f3g2",
+      "cp": 1139,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-10",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/2P5/P3B1p1/3K3R b - - 1 5",
+      "move": "g2h1q",
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-11",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/2P5/P2K2p1/5B1R b - - 1 5",
+      "move": "g2h1q",
+      "cp": null,
+      "mate": 9,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-12",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/2PB4/P2K4/7q b - - 1 6",
+      "move": "h7h8",
+      "cp": null,
+      "mate": 8,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-13",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/2P5/P1K3p1/5B1R b - - 1 5",
+      "move": "g2h1q",
+      "cp": 1011,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-14",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/2PB4/P1K5/7q b - - 1 6",
+      "move": "h7h8",
+      "cp": 1007,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-15",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/2P5/P5p1/2K2B1R b - - 1 5",
+      "move": "g2h1q",
+      "cp": null,
+      "mate": 8,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-16",
+      "fen": "r7/6pk/7p/4r1B1/qP4bP/2P2p2/PK4P1/3R1B1R b - - 4 3",
+      "move": "a4d1",
+      "cp": null,
+      "mate": 10,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-17",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/2PB1p2/PK4P1/3q3R b - - 1 4",
+      "move": "d1d3",
+      "cp": null,
+      "mate": 8,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-18",
+      "fen": "r7/6pk/7p/4r1B1/qP4bP/2P2p2/P5P1/2KR1B1R b - - 4 3",
+      "move": "a4d1",
+      "cp": 1150,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-19",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/2P2p2/PK4P1/3q1B1R b - - 1 4",
+      "move": "e5e2",
+      "cp": null,
+      "mate": 5,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-20",
+      "fen": "r7/6pk/7p/6B1/1P4bP/2P2p2/PK2B1P1/3q3R b - - 0 5",
+      "move": "d1h1",
+      "cp": 893,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-21",
+      "fen": "r7/6pk/7p/6B1/1P4bP/2PB1p2/PK4P1/7q b - - 1 6",
+      "move": "h7h8",
+      "cp": 717,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-22",
+      "fen": "r7/6pk/7p/8/1P4bP/2P2p2/PK1Br1P1/3q1B1R b - - 3 5",
+      "move": "e2d2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-23",
+      "fen": "r7/6pk/7p/4r1B1/qP4bP/2P2p2/P5P1/1K1R1B1R b - - 4 3",
+      "move": "a4d1",
+      "cp": null,
+      "mate": 10,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-24",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/q1P2p2/P5P1/1K1R1B1R b - - 2 2",
+      "move": "a3a2",
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-25",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/2P2p2/q5P1/2KR1B1R b - - 1 3",
+      "move": "a2a1",
+      "cp": null,
+      "mate": 5,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-26",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/2P2p2/3K2P1/q2R1B1R b - - 3 4",
+      "move": "a8a2",
+      "cp": null,
+      "mate": 4,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-27",
+      "fen": "8/6pk/7p/4r1B1/1P4bP/2PK1p2/r5P1/q2R1B1R b - - 5 5",
+      "move": "a1d1",
+      "cp": null,
+      "mate": 3,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-28",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/2P2p2/2K3P1/q2R1B1R b - - 3 4",
+      "move": "a8a2",
+      "cp": null,
+      "mate": 4,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-29",
+      "fen": "8/6pk/7p/4r1B1/1P4bP/1KP2p2/r5P1/q2R1B1R b - - 5 5",
+      "move": "g4e6",
+      "cp": null,
+      "mate": 3,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-30",
+      "fen": "8/6pk/4b2p/4r1B1/1PP4P/1K3p2/r5P1/q2R1B1R b - - 0 6",
+      "move": "a1b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-31",
+      "fen": "8/6pk/4b2p/4r1B1/1PB4P/1KP2p2/r5P1/q2R3R b - - 7 6",
+      "move": "a2b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-32",
+      "fen": "8/6pk/4b2p/3Rr1B1/1P5P/1KP2p2/r5P1/q4B1R b - - 7 6",
+      "move": "e6d5",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-33",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/q1P2p2/P5P1/1K1R1B1R b - - 2 2",
+      "move": null,
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-34",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/q1P2p2/P1K3P1/3R1B1R b - - 2 2",
+      "move": null,
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "connected-king-attack:reflected:decision-35",
+      "fen": "r7/6pk/7p/4r1B1/1P4bP/q1P2p2/P2K2P1/3R1B1R b - - 2 2",
+      "move": null,
+      "cp": null,
+      "mate": 4,
+      "depth": 16
+    },
+    {
+      "id": "blocked-check:reflected:root",
+      "fen": "r7/6pk/7p/q3r1B1/1P4bP/2P2p2/PP4P1/2KR1B1R b - - 0 1",
+      "move": "a5a3",
+      "cp": -373,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "capturable-queen:reflected:root",
+      "fen": "r7/6pk/7p/q3r1B1/1P4bP/1RP2p2/P5P1/2KR1B1R b - - 0 1",
+      "move": "a5a3",
+      "cp": -520,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "checking-promotion-fork:reflected:root",
+      "fen": "8/6k1/8/8/6b1/5p2/6P1/3K1B1R b - - 0 1",
+      "move": "f3g2",
+      "cp": 584,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "checking-promotion-fork:reflected:decision-0",
+      "fen": "8/6k1/8/8/6b1/8/6p1/2K2B1R b - - 1 2",
+      "move": "g2h1q",
+      "cp": 707,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "checking-promotion-fork:reflected:decision-1",
+      "fen": "8/6k1/8/8/6b1/8/6p1/4KB1R b - - 1 2",
+      "move": "g2h1q",
+      "cp": 884,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "checking-promotion-fork:reflected:decision-2",
+      "fen": "8/6k1/8/8/6b1/8/2K3p1/5B1R b - - 1 2",
+      "move": "g2h1q",
+      "cp": 613,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "checking-promotion-fork:reflected:decision-3",
+      "fen": "8/6k1/8/8/6b1/8/3K2p1/5B1R b - - 1 2",
+      "move": "g2h1q",
+      "cp": 626,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "checking-promotion-fork:reflected:decision-4",
+      "fen": "8/6k1/8/8/6b1/8/4B1p1/3K3R b - - 1 2",
+      "move": "g2h1q",
+      "cp": 711,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "capturable-pawn:reflected:root",
+      "fen": "8/6k1/8/8/6b1/5p2/6P1/2K2B1R b - - 0 1",
+      "move": "f3g2",
+      "cp": -332,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "promotion-stalemate:reflected:root",
+      "fen": "8/8/8/8/1k6/1p6/8/K1R5 b - - 0 1",
+      "move": "b3b2",
+      "cp": -620,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:root",
+      "fen": "r5k1/5ppp/8/q3r1B1/1P4bP/2P2p2/P5P1/2KR1B1R b - - 0 1",
+      "move": "a5a3",
+      "cp": null,
+      "mate": 7,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-0",
+      "fen": "r5k1/5ppp/8/4r1B1/1P4bP/q1P2p2/P2K2P1/3R1B1R b - - 2 2",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-1",
+      "fen": "r5k1/5ppp/8/4r1B1/1P4bP/2PK1p2/Pq4P1/3R1B1R b - - 4 3",
+      "move": "e5d5",
+      "cp": 1146,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-2",
+      "fen": "r5k1/5ppp/8/3r2B1/1P2K1bP/2P2p2/Pq4P1/3R1B1R b - - 6 4",
+      "move": "d5d1",
+      "cp": 1059,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-3",
+      "fen": "r5k1/5ppp/8/3r2B1/1PK3bP/2P2p2/Pq4P1/3R1B1R b - - 6 4",
+      "move": "b2a2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-4",
+      "fen": "r5k1/5ppp/8/3r2B1/1P4bP/2P1Kp2/Pq4P1/3R1B1R b - - 6 4",
+      "move": "d5d1",
+      "cp": 1394,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-5",
+      "fen": "r5k1/5ppp/8/4r1B1/1P4bP/q1P2p2/P1K3P1/3R1B1R b - - 2 2",
+      "move": "a3a4",
+      "cp": null,
+      "mate": 10,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-6",
+      "fen": "r5k1/5ppp/8/4r1B1/qP4bP/2PK1p2/P5P1/3R1B1R b - - 4 3",
+      "move": "a4d1",
+      "cp": null,
+      "mate": 3,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-7",
+      "fen": "r5k1/5ppp/8/4r1B1/qP4bP/2P2p2/P2K2P1/3R1B1R b - - 4 3",
+      "move": "a4d1",
+      "cp": 1182,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-8",
+      "fen": "r5k1/5ppp/8/4r1B1/1P4bP/2P2p2/P5P1/3K1B1R b - - 0 4",
+      "move": "f3g2",
+      "cp": null,
+      "mate": 9,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-9",
+      "fen": "r5k1/5ppp/8/4r1B1/1P4bP/2P5/P3B1p1/3K3R b - - 1 5",
+      "move": "g2h1q",
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-10",
+      "fen": "r5k1/5ppp/8/4r1B1/1P4bP/2P5/P2K2p1/5B1R b - - 1 5",
+      "move": "g2h1q",
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-11",
+      "fen": "r5k1/5ppp/8/4r1B1/1P4bP/2P5/P1K3p1/5B1R b - - 1 5",
+      "move": "g2h1q",
+      "cp": null,
+      "mate": 8,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-12",
+      "fen": "r5k1/5ppp/8/4r1B1/1P4bP/2P5/P5p1/2K2B1R b - - 1 5",
+      "move": "g2h1q",
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-13",
+      "fen": "r5k1/5ppp/8/4r1B1/qP4bP/2P2p2/PK4P1/3R1B1R b - - 4 3",
+      "move": "a4d1",
+      "cp": 1369,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-14",
+      "fen": "r5k1/5ppp/8/4r1B1/qP4bP/2P2p2/P5P1/2KR1B1R b - - 4 3",
+      "move": "a4d1",
+      "cp": 1125,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-15",
+      "fen": "r5k1/5ppp/8/4r1B1/1P4bP/2P2p2/PK4P1/3q1B1R b - - 1 4",
+      "move": "e5e2",
+      "cp": null,
+      "mate": 8,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-16",
+      "fen": "r5k1/5ppp/8/6B1/1P4bP/2P2p2/PK2B1P1/3q3R b - - 0 5",
+      "move": "d1h1",
+      "cp": 807,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-17",
+      "fen": "r5k1/5ppp/8/8/1P4bP/2P2p2/PK1Br1P1/3q1B1R b - - 3 5",
+      "move": "e2d2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-18",
+      "fen": "r5k1/5ppp/8/4r1B1/qP4bP/2P2p2/P5P1/1K1R1B1R b - - 4 3",
+      "move": "a4d1",
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-19",
+      "fen": "r5k1/5ppp/8/4r1B1/1P4bP/q1P2p2/P5P1/1K1R1B1R b - - 2 2",
+      "move": "g4f5",
+      "cp": null,
+      "mate": 7,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-20",
+      "fen": "r5k1/5ppp/8/4rbB1/1P5P/q1PB1p2/P5P1/1K1R3R b - - 4 3",
+      "move": "e5e2",
+      "cp": null,
+      "mate": 4,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-21",
+      "fen": "r5k1/5ppp/8/5BB1/1P5P/q1P2p2/P3r1P1/1K1R3R b - - 0 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-22",
+      "fen": "r5k1/5ppp/8/5bB1/1P5P/q1PB1P2/P3r3/1K1R3R b - - 0 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-23",
+      "fen": "r2B2k1/5ppp/8/5b2/1P5P/q1PB1p2/P3r1P1/1K1R3R b - - 6 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-24",
+      "fen": "r5k1/4Bppp/8/5b2/1P5P/q1PB1p2/P3r1P1/1K1R3R b - - 6 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-25",
+      "fen": "r5k1/5ppp/5B2/5b2/1P5P/q1PB1p2/P3r1P1/1K1R3R b - - 6 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-26",
+      "fen": "r5k1/5ppp/7B/5b2/1P5P/q1PB1p2/P3r1P1/1K1R3R b - - 6 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-27",
+      "fen": "r5k1/5ppp/8/5b2/1P3B1P/q1PB1p2/P3r1P1/1K1R3R b - - 6 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-28",
+      "fen": "r5k1/5ppp/8/5b2/1P5P/q1PBBp2/P3r1P1/1K1R3R b - - 6 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-29",
+      "fen": "r5k1/5ppp/8/5b2/1P5P/q1PB1p2/P2Br1P1/1K1R3R b - - 6 4",
+      "move": "f5d3",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-30",
+      "fen": "r5k1/5ppp/8/5b2/1P5P/q1PB1p2/P3r1P1/1KBR3R b - - 6 4",
+      "move": "a3a2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-31",
+      "fen": "r5k1/5ppp/8/1P3bB1/7P/q1PB1p2/P3r1P1/1K1R3R b - - 0 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-32",
+      "fen": "r5k1/5ppp/8/5bBP/1P6/q1PB1p2/P3r1P1/1K1R3R b - - 0 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-33",
+      "fen": "r5k1/5ppp/8/5bB1/1PP4P/q2B1p2/P3r1P1/1K1R3R b - - 0 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-34",
+      "fen": "r5k1/5ppp/8/5bB1/1P2B2P/q1P2p2/P3r1P1/1K1R3R b - - 6 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-35",
+      "fen": "r5k1/5ppp/8/5bB1/1P5P/q1P2p2/P1B1r1P1/1K1R3R b - - 6 4",
+      "move": "f5c2",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-36",
+      "fen": "r5k1/5ppp/8/5bB1/1P4PP/q1PB1p2/P3r3/1K1R3R b - - 0 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-37",
+      "fen": "r5k1/5ppp/8/5bB1/1P5P/q1PB1pP1/P3r3/1K1R3R b - - 0 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-38",
+      "fen": "r5k1/5ppp/8/5bB1/1P5P/q1PB1p2/P3r1P1/K2R3R b - - 6 4",
+      "move": "a3a2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-39",
+      "fen": "r5k1/5ppp/8/5bB1/1P5P/q1PB1p2/P2Rr1P1/1K5R b - - 6 4",
+      "move": "f5d3",
+      "cp": null,
+      "mate": 3,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-40",
+      "fen": "r5k1/5ppp/8/6B1/1P5P/q1PR1p2/P3r1P1/1K5R b - - 0 5",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-41",
+      "fen": "r5k1/5ppp/8/6B1/1P5P/q1Pb1p2/P1R1r1P1/1K5R b - - 1 5",
+      "move": "d3c2",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-42",
+      "fen": "r5k1/5ppp/8/6B1/1P5P/q1Pb1p2/P2Rr1P1/K6R b - - 1 5",
+      "move": "e2d2",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-43",
+      "fen": "r5k1/5ppp/8/5bB1/1P5P/q1PB1p2/P3r1P1/1KR4R b - - 6 4",
+      "move": "a3a2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-44",
+      "fen": "r5k1/5ppp/8/5bB1/1P5P/q1PB1p2/P3r1P1/1K2R2R b - - 6 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-45",
+      "fen": "r5k1/5ppp/8/5bB1/1P5P/q1PB1p2/P3r1P1/1K3R1R b - - 6 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-46",
+      "fen": "r5k1/5ppp/8/5bB1/1P5P/q1PB1p2/P3r1P1/1K4RR b - - 6 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-47",
+      "fen": "r5k1/5ppp/8/5bB1/1P5P/q1PB1p1R/P3r1P1/1K1R4 b - - 6 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-48",
+      "fen": "r5k1/5ppp/8/5bB1/1P5P/q1PB1p2/P3r1PR/1K1R4 b - - 6 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-49",
+      "fen": "r5k1/5ppp/8/5bB1/1P5P/q1PB1p2/P3r1P1/1K1RR3 b - - 6 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-50",
+      "fen": "r5k1/5ppp/8/5bB1/1P5P/q1PB1p2/P3r1P1/1K1R1R2 b - - 6 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-51",
+      "fen": "r5k1/5ppp/8/5bB1/1P5P/q1PB1p2/P3r1P1/1K1R2R1 b - - 6 4",
+      "move": "a3b2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-52",
+      "fen": "r5k1/5ppp/8/4rbB1/1P5P/q1PR1p2/P5P1/1K3B1R b - - 4 3",
+      "move": "e5e1",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-53",
+      "fen": "r5k1/5ppp/8/5b2/1P5P/q1PR1p2/P5P1/1KB1rB1R b - - 6 4",
+      "move": "a3c1",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-54",
+      "fen": "r5k1/5ppp/8/5bB1/1P5P/q1PR1p2/P1K3P1/4rB1R b - - 6 4",
+      "move": "a3a2",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-55",
+      "fen": "r5k1/5ppp/8/4rbB1/1P5P/q1P2p2/P5P1/K2R1B1R b - - 4 3",
+      "move": "a3c3",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-56",
+      "fen": "r5k1/5ppp/8/4r1B1/1P4bP/q1P2p2/P5P1/1K1R1B1R b - - 2 2",
+      "move": null,
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-57",
+      "fen": "r5k1/5ppp/8/4r1B1/1P4bP/q1P2p2/P1K3P1/3R1B1R b - - 2 2",
+      "move": null,
+      "cp": null,
+      "mate": 6,
+      "depth": 16
+    },
+    {
+      "id": "shielded-king:reflected:decision-58",
+      "fen": "r5k1/5ppp/8/4r1B1/1P4bP/q1P2p2/P2K2P1/3R1B1R b - - 2 2",
+      "move": null,
+      "cp": null,
+      "mate": 4,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:reflected:root",
+      "fen": "r1b1kbnr/pp2qppp/2n5/8/8/5p2/PPPP1KPP/RNBQ1BNR b kq - 1 8",
+      "move": "e7h4",
+      "cp": 714,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:reflected:decision-0",
+      "fen": "r1b1kbnr/pp3ppp/2n5/8/7q/5K2/PPPP2PP/RNBQ1BNR b kq - 0 9",
+      "move": "h4g4",
+      "cp": 887,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:reflected:decision-1",
+      "fen": "r1b1kbnr/pp3ppp/2n5/8/6q1/4K3/PPPP2PP/RNBQ1BNR b kq - 2 10",
+      "move": "g4d1",
+      "cp": 918,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:reflected:decision-2",
+      "fen": "r1b1kbnr/pp3ppp/2n5/8/6q1/8/PPPP1KPP/RNBQ1BNR b kq - 2 10",
+      "move": "g4d1",
+      "cp": 791,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:reflected:decision-3",
+      "fen": "r1b1kbnr/pp3ppp/2n5/8/7q/4Kp2/PPPP2PP/RNBQ1BNR b kq - 3 9",
+      "move": "h4d4",
+      "cp": null,
+      "mate": 5,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:reflected:decision-4",
+      "fen": "r1b1kbnr/pp3ppp/2n5/8/3q4/5K2/PPPP2PP/RNBQ1BNR b kq - 0 10",
+      "move": "c8g4",
+      "cp": null,
+      "mate": 4,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:reflected:decision-5",
+      "fen": "r3kbnr/pp3ppp/2n5/8/3q2b1/6K1/PPPP2PP/RNBQ1BNR b kq - 2 11",
+      "move": "g4d1",
+      "cp": 1193,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:reflected:decision-6",
+      "fen": "r1b1kbnr/pp3ppp/2n5/8/7q/5pP1/PPPP1K1P/RNBQ1BNR b kq - 0 9",
+      "move": "h4d4",
+      "cp": 703,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:reflected:decision-7",
+      "fen": "r1b1kbnr/pp3ppp/2n5/8/3q4/5KP1/PPPP3P/RNBQ1BNR b kq - 0 10",
+      "move": "c8g4",
+      "cp": 709,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:reflected:decision-8",
+      "fen": "r3kbnr/pp3ppp/2n5/8/3q2b1/6P1/PPPP2KP/RNBQ1BNR b kq - 2 11",
+      "move": "g4d1",
+      "cp": 740,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:reflected:decision-9",
+      "fen": "r1b1kbnr/pp3ppp/2n5/8/3q4/5pP1/PPPP3P/RNBQKBNR b kq - 2 10",
+      "move": "f3f2",
+      "cp": 1090,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:reflected:decision-10",
+      "fen": "r1b1kbnr/pp3ppp/2n5/8/3q4/6P1/PPPPKp1P/RNBQ1BNR b kq - 1 11",
+      "move": "f2g1q",
+      "cp": null,
+      "mate": 8,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:reflected:decision-11",
+      "fen": "r1b1kbnr/pp3ppp/2n5/8/7q/4Kp2/PPPP2PP/RNBQ1BNR b kq - 3 9",
+      "move": null,
+      "cp": null,
+      "mate": 5,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:reflected:decision-12",
+      "fen": "r1b1kbnr/pp3ppp/2n5/8/7q/5K2/PPPP2PP/RNBQ1BNR b kq - 0 9",
+      "move": null,
+      "cp": 1000,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply14:reflected:decision-13",
+      "fen": "r1b1kbnr/pp3ppp/2n5/8/7q/5pP1/PPPP1K1P/RNBQ1BNR b kq - 0 9",
+      "move": null,
+      "cp": 722,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:root",
+      "fen": "6k1/pR4pp/4p3/5p2/4n3/4PQ1P/q1rr1PP1/5RK1 w - - 1 23",
+      "move": "f3h5",
+      "cp": null,
+      "mate": 4,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-0",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/4P2P/q1r2rP1/5RK1 w - - 0 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-1",
+      "fen": "6k1/pR4pp/4p3/5p1Q/8/4P2P/q1rr1nP1/5RK1 w - - 0 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-2",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/4P2P/2rr1PP1/q4RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-3",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/4P2P/2rr1PP1/1q3RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-4",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/4P2P/1qrr1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-5",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/q3P2P/2rr1PP1/5RK1 w - - 3 24",
+      "move": "h5f7",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-6",
+      "fen": "7k/pR3Qpp/4p3/5p2/4n3/q3P2P/2rr1PP1/5RK1 w - - 5 25",
+      "move": "f7g7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-7",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/1q2P2P/2rr1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-8",
+      "fen": "6k1/pR4pp/4p3/5p1Q/q3n3/4P2P/2rr1PP1/5RK1 w - - 3 24",
+      "move": "h5f7",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-9",
+      "fen": "7k/pR3Qpp/4p3/5p2/q3n3/4P2P/2rr1PP1/5RK1 w - - 5 25",
+      "move": "f7g7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-10",
+      "fen": "6k1/pR4pp/4p3/5p1Q/2q1n3/4P2P/2rr1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-11",
+      "fen": "6k1/pR4pp/4p3/q4p1Q/4n3/4P2P/2rr1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-12",
+      "fen": "6k1/pR4pp/4p3/3q1p1Q/4n3/4P2P/2rr1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-13",
+      "fen": "6k1/pR4pp/q3p3/5p1Q/4n3/4P2P/2rr1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-14",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/4P2P/q2r1PP1/2r2RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-15",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/4P2P/qr1r1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-16",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/2r1P2P/q2r1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-17",
+      "fen": "6k1/pR4pp/4p3/5p1Q/2r1n3/4P2P/q2r1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-18",
+      "fen": "6k1/pR4pp/4p3/2r2p1Q/4n3/4P2P/q2r1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-19",
+      "fen": "6k1/pR4pp/2r1p3/5p1Q/4n3/4P2P/q2r1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-20",
+      "fen": "6k1/pRr3pp/4p3/5p1Q/4n3/4P2P/q2r1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-21",
+      "fen": "2r3k1/pR4pp/4p3/5p1Q/4n3/4P2P/q2r1PP1/5RK1 w - - 3 24",
+      "move": "h5f7",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-22",
+      "fen": "2r4k/pR3Qpp/4p3/5p2/4n3/4P2P/q2r1PP1/5RK1 w - - 5 25",
+      "move": "f7g7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-23",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/4P2P/q1r2PP1/3r1RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-24",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/4P2P/q1r1rPP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-25",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/3rP2P/q1r2PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-26",
+      "fen": "6k1/pR4pp/4p3/5p1Q/3rn3/4P2P/q1r2PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-27",
+      "fen": "6k1/pR4pp/4p3/3r1p1Q/4n3/4P2P/q1r2PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-28",
+      "fen": "6k1/pR4pp/3rp3/5p1Q/4n3/4P2P/q1r2PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-29",
+      "fen": "6k1/pR1r2pp/4p3/5p1Q/4n3/4P2P/q1r2PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-30",
+      "fen": "3r2k1/pR4pp/4p3/5p1Q/4n3/4P2P/q1r2PP1/5RK1 w - - 3 24",
+      "move": "h5f7",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-31",
+      "fen": "3r3k/pR3Qpp/4p3/5p2/4n3/4P2P/q1r2PP1/5RK1 w - - 5 25",
+      "move": "f7g7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-32",
+      "fen": "6k1/pR4pp/4p3/5p1Q/8/2n1P2P/q1rr1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-33",
+      "fen": "6k1/pR4pp/4p3/5p1Q/8/4P1nP/q1rr1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-34",
+      "fen": "6k1/pR4pp/4p3/2n2p1Q/8/4P2P/q1rr1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-35",
+      "fen": "6k1/pR4pp/4p3/5pnQ/8/4P2P/q1rr1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-36",
+      "fen": "6k1/pR4pp/3np3/5p1Q/8/4P2P/q1rr1PP1/5RK1 w - - 3 24",
+      "move": "b7b8",
+      "cp": null,
+      "mate": 3,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-37",
+      "fen": "1Rr3k1/p5pp/3np3/5p1Q/8/4P2P/q2r1PP1/5RK1 w - - 5 25",
+      "move": "b8c8",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-38",
+      "fen": "2n3k1/p5pp/4p3/5p1Q/8/4P2P/q2r1PP1/5RK1 w - - 0 26",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-39",
+      "fen": "2R1n1k1/p5pp/4p3/5p1Q/8/4P2P/q2r1PP1/5RK1 w - - 1 26",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-40",
+      "fen": "1Rn3k1/p5pp/4p3/5p1Q/8/4P2P/q1rr1PP1/5RK1 w - - 5 25",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-41",
+      "fen": "1R2n1k1/p5pp/4p3/5p1Q/8/4P2P/q1rr1PP1/5RK1 w - - 5 25",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-42",
+      "fen": "6k1/pR4pp/4pn2/5p1Q/8/4P2P/q1rr1PP1/5RK1 w - - 3 24",
+      "move": "h5f7",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-43",
+      "fen": "7k/pR3Qpp/4pn2/5p2/8/4P2P/q1rr1PP1/5RK1 w - - 5 25",
+      "move": "f7g7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-44",
+      "fen": "6k1/pR4pp/4p3/7Q/4np2/4P2P/q1rr1PP1/5RK1 w - - 0 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-45",
+      "fen": "6k1/pR4pp/8/4pp1Q/4n3/4P2P/q1rr1PP1/5RK1 w - - 0 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-46",
+      "fen": "6k1/1R4pp/4p3/p4p1Q/4n3/4P2P/q1rr1PP1/5RK1 w - - 0 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-47",
+      "fen": "6k1/1R4pp/p3p3/5p1Q/4n3/4P2P/q1rr1PP1/5RK1 w - - 0 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-48",
+      "fen": "6k1/pR5p/4p3/5ppQ/4n3/4P2P/q1rr1PP1/5RK1 w - - 0 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-49",
+      "fen": "6k1/pR5p/4p1p1/5p1Q/4n3/4P2P/q1rr1PP1/5RK1 w - - 0 24",
+      "move": "h5h7",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-50",
+      "fen": "6k1/pR4p1/4p2p/5p1Q/4n3/4P2P/q1rr1PP1/5RK1 w - - 0 24",
+      "move": "h5f7",
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-51",
+      "fen": "8/pR3Qpk/4p2p/5p2/4n3/4P2P/q1rr1PP1/5RK1 w - - 2 25",
+      "move": "f7g7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-52",
+      "fen": "7k/pR3Qp1/4p2p/5p2/4n3/4P2P/q1rr1PP1/5RK1 w - - 2 25",
+      "move": "f7g7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-53",
+      "fen": "5k2/pR4pp/4p3/5p1Q/4n3/4P2P/q1rr1PP1/5RK1 w - - 3 24",
+      "move": "h5f7",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-54",
+      "fen": "7k/pR4pp/4p3/5p1Q/4n3/4P2P/q1rr1PP1/5RK1 w - - 3 24",
+      "move": "h5e8",
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-55",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/4P2P/2rr1PP1/q4RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-56",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/4P2P/2rr1PP1/1q3RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-57",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/4P2P/1qrr1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-58",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/q3P2P/2rr1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-59",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/1q2P2P/2rr1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-60",
+      "fen": "6k1/pR4pp/4p3/5p1Q/q3n3/4P2P/2rr1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-61",
+      "fen": "6k1/pR4pp/4p3/5p1Q/2q1n3/4P2P/2rr1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-62",
+      "fen": "6k1/pR4pp/4p3/q4p1Q/4n3/4P2P/2rr1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-63",
+      "fen": "6k1/pR4pp/4p3/3q1p1Q/4n3/4P2P/2rr1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-64",
+      "fen": "6k1/pR4pp/q3p3/5p1Q/4n3/4P2P/2rr1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-65",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/4P2P/q2r1PP1/2r2RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-66",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/4P2P/qr1r1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-67",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/2r1P2P/q2r1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-68",
+      "fen": "6k1/pR4pp/4p3/5p1Q/2r1n3/4P2P/q2r1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-69",
+      "fen": "6k1/pR4pp/4p3/2r2p1Q/4n3/4P2P/q2r1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-70",
+      "fen": "6k1/pR4pp/2r1p3/5p1Q/4n3/4P2P/q2r1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-71",
+      "fen": "6k1/pRr3pp/4p3/5p1Q/4n3/4P2P/q2r1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-72",
+      "fen": "2r3k1/pR4pp/4p3/5p1Q/4n3/4P2P/q2r1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-73",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/4P2P/q1r2PP1/3r1RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-74",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/4P2P/q1r1rPP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-75",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/4P2P/q1r2rP1/5RK1 w - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-76",
+      "fen": "6k1/pR4pp/4p3/5p1Q/4n3/3rP2P/q1r2PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-77",
+      "fen": "6k1/pR4pp/4p3/5p1Q/3rn3/4P2P/q1r2PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-78",
+      "fen": "6k1/pR4pp/4p3/3r1p1Q/4n3/4P2P/q1r2PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-79",
+      "fen": "6k1/pR4pp/3rp3/5p1Q/4n3/4P2P/q1r2PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-80",
+      "fen": "6k1/pR1r2pp/4p3/5p1Q/4n3/4P2P/q1r2PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-81",
+      "fen": "3r2k1/pR4pp/4p3/5p1Q/4n3/4P2P/q1r2PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-82",
+      "fen": "6k1/pR4pp/4p3/5p1Q/8/4P2P/q1rr1nP1/5RK1 w - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-83",
+      "fen": "6k1/pR4pp/4p3/5p1Q/8/2n1P2P/q1rr1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-84",
+      "fen": "6k1/pR4pp/4p3/5p1Q/8/4P1nP/q1rr1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-85",
+      "fen": "6k1/pR4pp/4p3/2n2p1Q/8/4P2P/q1rr1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-86",
+      "fen": "6k1/pR4pp/4p3/5pnQ/8/4P2P/q1rr1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-87",
+      "fen": "6k1/pR4pp/3np3/5p1Q/8/4P2P/q1rr1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 3,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-88",
+      "fen": "6k1/pR4pp/4pn2/5p1Q/8/4P2P/q1rr1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-89",
+      "fen": "6k1/pR4pp/4p3/7Q/4np2/4P2P/q1rr1PP1/5RK1 w - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-90",
+      "fen": "6k1/pR4pp/8/4pp1Q/4n3/4P2P/q1rr1PP1/5RK1 w - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-91",
+      "fen": "6k1/1R4pp/4p3/p4p1Q/4n3/4P2P/q1rr1PP1/5RK1 w - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-92",
+      "fen": "6k1/1R4pp/p3p3/5p1Q/4n3/4P2P/q1rr1PP1/5RK1 w - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-93",
+      "fen": "6k1/pR5p/4p3/5ppQ/4n3/4P2P/q1rr1PP1/5RK1 w - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-94",
+      "fen": "6k1/pR5p/4p1p1/5p1Q/4n3/4P2P/q1rr1PP1/5RK1 w - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-95",
+      "fen": "6k1/pR4p1/4p2p/5p1Q/4n3/4P2P/q1rr1PP1/5RK1 w - - 0 24",
+      "move": null,
+      "cp": null,
+      "mate": 2,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-96",
+      "fen": "5k2/pR4pp/4p3/5p1Q/4n3/4P2P/q1rr1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "lichess:0rcU4:reflected:decision-97",
+      "fen": "7k/pR4pp/4p3/5p1Q/4n3/4P2P/q1rr1PP1/5RK1 w - - 3 24",
+      "move": null,
+      "cp": null,
+      "mate": 1,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply18:reflected:root",
+      "fen": "r1b1kbnr/pp3ppp/2n5/8/3q4/5pP1/PPPP3P/RNBQKBNR b kq - 2 10",
+      "move": "f3f2",
+      "cp": 1090,
+      "mate": null,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply18:reflected:decision-0",
+      "fen": "r1b1kbnr/pp3ppp/2n5/8/3q4/6P1/PPPPKp1P/RNBQ1BNR b kq - 1 11",
+      "move": "f2g1q",
+      "cp": null,
+      "mate": 8,
+      "depth": 16
+    },
+    {
+      "id": "ordinary-2:ply18:reflected:decision-1",
+      "fen": "r1b1kbnr/pp3ppp/2n5/8/3q4/6P1/PPPPKp1P/RNBQ1BNR b kq - 1 11",
+      "move": null,
+      "cp": null,
+      "mate": 8,
+      "depth": 16
+    }
+  ]
+}

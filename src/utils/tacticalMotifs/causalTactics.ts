@@ -2309,6 +2309,43 @@ type MixedCheckingAttackProof = {
 };
 const mixedCheckingAttackCache = new Map<string, MixedCheckingAttackProof | null>();
 
+const checkingCombinationCache = new Map<string, (MixedCheckingAttackProof & { visits: number }) | null>();
+
+/** A non-sacrificial opening check can still lead to a mixed combination.
+ * The supplied line only nominates a short checking route to a piece capture.
+ * All replies are checked independently, including promotion captures and one
+ * quiet mating setup exploiting an absolute pin. New allies join with check. */
+export function proveCheckingCombination(
+    steps: TacticalReplayStep[],
+    nodeLimit = 32768,
+    onFailure?: (reason: string) => void,
+): (MixedCheckingAttackProof & { visits: number }) | null {
+    const root = steps[0];
+    if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture ||
+        root.move.promotion || root.before.isCheck() || !root.after.isCheck() || root.after.isEnd() ||
+        !root.after.ctx().checkers.has(root.move.to)) return null;
+    const payoff = steps.findIndex((step, index) => index >= 2 && index <= 8 &&
+        step.before.turn === root.before.turn && step.capture >= VALUE.knight);
+    if (payoff < 0 || steps.slice(0, payoff).some(step =>
+        step.before.turn === root.before.turn && !step.after.isCheck())) return null;
+    const hints = steps.slice(0, payoff + 1).filter(step => step.before.turn === root.before.turn).map(step => step.uci);
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}:${hints}`;
+    if (!onFailure && nodeLimit === 32768 && checkingCombinationCache.has(key))
+        return checkingCombinationCache.get(key)!;
+    const budget = { nodes: nodeLimit };
+    const result = computeMixedCheckingAttack(root, nodeLimit, undefined, {
+        active: [root.move.to], minimumGain: 300, budget, onFailure,
+        checkingCombination: { hints },
+    });
+    const proof = result ? { ...result, visits: nodeLimit - budget.nodes } : null;
+    if (!onFailure && nodeLimit === 32768) {
+        checkingCombinationCache.set(key, proof);
+        if (checkingCombinationCache.size > 128)
+            checkingCombinationCache.delete(checkingCombinationCache.keys().next().value!);
+    }
+    return proof;
+}
+
 /** A checking offer may have different material victims in different replies.
  * No supplied PV nominates a victim or supplies a leaf evaluation. This local
  * proof is deliberately separate from the single-target causal comparison. */
@@ -2451,6 +2488,7 @@ function computeMixedCheckingAttack(
         minimumGain: number;
         budget: ProofBudget;
         onFailure?: (reason: string) => void;
+        checkingCombination?: { hints: string[] };
     },
 ): MixedCheckingAttackProof | null {
     if (
@@ -2537,6 +2575,7 @@ function computeMixedCheckingAttack(
         return null;
     };
     const attackCache = new Map<string, Win | null>();
+    const combinationLeafCache = new Map<string, Win | null>();
     const provedAttacks = new Map<string, { checks: number; win: Win }>();
     const attack = (pos: Chess, balance: number, checks: number, active?: Square[]): Win | null => {
         if (!discovery) return computeAttack(pos, balance, checks, active);
@@ -2572,62 +2611,104 @@ function computeMixedCheckingAttack(
         const moves = ordered(pos).filter((move) =>
             !active || active.includes(move.from) || pos.isCheck() || restoresMateThreat(move) ||
             // A new participant must join the same forcing king attack with
-            // check. Unrelated quiet captures cannot fund this discovery.
-            (discovery && mayGiveCheck(pos, move) && visit(pos, move).isCheck()),
+            // check. Unrelated quiet captures cannot fund the preparation.
+            ((discovery || quiet) && mayGiveCheck(pos, move) && visit(pos, move).isCheck()),
         );
-        // Prefer an available mate over longer optional sacrifices.
-        for (const move of moves) {
-            if (move.promotion) continue;
-            if (visit(pos, move).isCheckmate())
-                return {
-                    gain: 10000,
-                    line: [makeSan(pos, move)],
-                    decisions: [decision(pos, move)],
-                };
-        }
-        for (const move of moves) {
-            if (move.promotion || !capturedValue(pos, move)) continue;
-            const next = visit(pos, move);
-            if (next.isEnd()) continue;
-            let gain = participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
-            if (gain === null || balance + gain < minimumGain) continue;
-            const countercheckAnswers: MixedCheckingAttackProof["decisions"] = [];
-            let safe = true;
-            for (const resource of ordered(next)) {
-                const reply = visit(next, resource);
-                if ((resource.promotion && !quiet?.captureThreat) || reply.isCheckmate()) {
-                    safe = false;
-                    break;
-                }
-                if (reply.isCheck() || resource.promotion) {
-                    const retained = answerCountercheck(
-                        reply,
-                        balance + capturedValue(pos, move) - capturedValue(next, resource) -
-                            (resource.promotion ? VALUE[resource.promotion] - VALUE.pawn : 0),
-                    );
-                    if (retained === null) {
+        // These leaves do not depend on the remaining checking depth. Reuse
+        // them only for the exact board, balance and connected participants;
+        // iterative checking searches must not repeatedly re-prove a setup.
+        const leafKey = discovery?.checkingCombination
+            ? `${makeFen(pos.toSetup())}:${balance}:${active?.slice().sort((a, b) => a - b)}` : undefined;
+        const findLeaf = (): Win | null => {
+            // Prefer an available mate over longer optional sacrifices.
+            for (const move of moves) {
+                if (move.promotion)
+                    continue;
+                if (visit(pos, move).isCheckmate())
+                    return {
+                        gain: 10000,
+                        line: [makeSan(pos, move)],
+                        decisions: [decision(pos, move)],
+                    };
+            }
+            for (const move of moves) {
+                if ((move.promotion && !discovery?.checkingCombination) || !capturedValue(pos, move))
+                    continue;
+                const next = visit(pos, move);
+                if (next.isEnd())
+                    continue;
+                let gain = participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+                if (gain === null || balance + gain < minimumGain)
+                    continue;
+                const countercheckAnswers: MixedCheckingAttackProof["decisions"] = [];
+                let safe = true;
+                for (const resource of ordered(next)) {
+                    const reply = visit(next, resource);
+                    if ((resource.promotion && !quiet?.captureThreat) || reply.isCheckmate()) {
                         safe = false;
                         break;
                     }
-                    gain = Math.min(gain, retained.gain - balance);
-                    countercheckAnswers.push(retained.decision);
+                    if (reply.isCheck() || resource.promotion) {
+                        const retained = answerCountercheck(reply, balance + capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0) - capturedValue(next, resource) -
+                            (resource.promotion ? VALUE[resource.promotion] - VALUE.pawn : 0));
+                        if (retained === null) {
+                            safe = false;
+                            break;
+                        }
+                        gain = Math.min(gain, retained.gain - balance);
+                        countercheckAnswers.push(retained.decision);
+                    }
+                }
+                if (!safe)
+                    continue;
+                if (gain !== null && balance + gain >= minimumGain)
+                    return {
+                        gain: balance + gain,
+                        line: [makeSan(pos, move)],
+                        decisions: [decision(pos, move), ...countercheckAnswers],
+                    };
+            }
+            // A defending interposition can leave an absolute pin that supports
+            // a new mating threat. Only an existing attacking participant may
+            // furnish that threat; unrelated quiet captures cannot fund the root.
+            if (discovery?.checkingCombination && !pos.isCheck() && active &&
+                rayTactics(pos, side).some(ray => ray.kind === "pin" && pos.board.get(ray.rear)?.role === "king")) {
+                for (const setup of ordered(pos)) {
+                    if (setup.promotion || capturedValue(pos, setup) ||
+                        !["rook", "queen", "bishop", "knight"].includes(pos.board.get(setup.from)!.role))
+                        continue;
+                    const prepared = visit(pos, setup);
+                    if (prepared.isCheck() || prepared.isEnd())
+                        continue;
+                    const probe = withTurn(prepared, side);
+                    const participants = active.map(square => square === setup.from ? setup.to : square);
+                    if (!ordered(probe).some(threat => participants.includes(threat.from) &&
+                        mayGiveCheck(probe, threat) && visit(probe, threat).isCheckmate()))
+                        continue;
+                    const step: TacticalReplayStep = { before: pos, after: prepared, move: setup,
+                        uci: makeUci(setup), san: makeSan(pos, setup), capture: 0, balance: 0 };
+                    const support = proveMatingThreatAttack(step, nodeLimit, undefined, false, budget);
+                    if (!support || !participants.includes(support.threat.from) || balance + support.gain < minimumGain)
+                        continue;
+                    const example = support.branches.reduce((a, b) => a.gain <= b.gain ? a : b);
+                    return { gain: balance + support.gain, line: [step.san, example.reply, ...example.line],
+                        decisions: [decision(pos, setup), ...support.decisions] };
                 }
             }
-            if (!safe) continue;
-            if (gain !== null && balance + gain >= minimumGain)
-                return {
-                    gain: balance + gain,
-                    line: [makeSan(pos, move)],
-                    decisions: [decision(pos, move), ...countercheckAnswers],
-                };
-        }
+            return null;
+        };
+        const leaf = leafKey && combinationLeafCache.has(leafKey) ? combinationLeafCache.get(leafKey)! : findLeaf();
+        if (leafKey) combinationLeafCache.set(leafKey, leaf);
+        if (leaf) return leaf;
         if (!checks) return null;
         const forcingMoves = discovery ? moves
             .filter(move => !move.promotion && mayGiveCheck(pos, move))
             .map(move => ({ move, next: visit(pos, move) }))
             .filter(entry => entry.next.isCheck())
             .map(entry => ({ ...entry, replies: legalMoves(entry.next).length, safe: tacticalExchangeGain(pos, entry.move) >= 0 }))
-            .sort((a, b) => Number(b.safe) - Number(a.safe) || a.replies - b.replies)
+            .sort((a, b) => Number(Boolean(discovery.checkingCombination?.hints.includes(makeUci(b.move)))) -
+                Number(Boolean(discovery.checkingCombination?.hints.includes(makeUci(a.move)))) ||
+                Number(b.safe) - Number(a.safe) || a.replies - b.replies)
             .map(entry => entry.move) : moves;
         for (const move of forcingMoves) {
             if (move.promotion) continue;
@@ -2637,7 +2718,7 @@ function computeMixedCheckingAttack(
                 next,
                 balance + capturedValue(pos, move),
                 checks - 1,
-                discovery && active
+                (discovery || quiet) && active
                     ? [...new Set([...(moved(active, move) ?? []), move.to])]
                     : moved(active, move),
             );
@@ -5099,6 +5180,7 @@ function computeImmediateFork(step: TacticalReplayStep): ImmediateForkProof | nu
         if (exchange <= -VALUE.king) return null;
         const leaf = pos.clone();
         leaf.play(move);
+        if (move.promotion && leaf.isEnd() && !leaf.isCheckmate()) return null;
         let liability = 0;
         // A material exchange into a drawn ending can be a saving fork.
         // Do not mistake terminal draws for a mating refutation.
@@ -5145,21 +5227,25 @@ function computeImmediateFork(step: TacticalReplayStep): ImmediateForkProof | nu
         }
         if (next.board.get(step.move.to)?.color !== side || next.isCheck()) return null;
         let strongest: ImmediateForkProof["branches"][number] | null = null;
+        const captures = legalMoves(next).filter(move => move.from === step.move.to && capturedValue(next, move));
         for (const target of new Set([...targets, reply.to])) {
             // The target must still be the original enemy piece, not the checking
             // king that moved onto an old target square.
             const victim = next.board.get(target);
             if (!victim || victim.color === side || victim.role === "king") continue;
-            const capture = { from: step.move.to, to: target };
-            if (!next.isLegal(capture)) continue;
-            const retained = captureBound(next, capture);
-            if (retained === null) continue;
-            const captureGain = step.capture - Math.max(0, replyGain) + retained;
-            const gain = captureGain + promotionCredit;
-            // Keep the established capture threshold: promotion value alone
-            // does not turn an otherwise unprofitable geometry into a fork.
-            if (captureGain >= 100 && (!strongest || gain > strongest.gain))
-                strongest = { replyUci: makeUci(reply), captureUci: makeUci(capture), gain };
+            // A seventh-rank pawn must choose an actual promotion piece when
+            // collecting a victim. A promotion-less synthetic move is illegal
+            // and used to discard otherwise verified forks entirely.
+            for (const capture of captures.filter(move => move.to === target)) {
+                const retained = captureBound(next, capture);
+                if (retained === null) continue;
+                const captureGain = step.capture - Math.max(0, replyGain) + retained;
+                const gain = captureGain + promotionCredit;
+                // Keep the established capture threshold: promotion value alone
+                // does not turn an otherwise unprofitable geometry into a fork.
+                if (captureGain >= 100 && (!strongest || gain > strongest.gain))
+                    strongest = { replyUci: makeUci(reply), captureUci: makeUci(capture), gain };
+            }
         }
         if (!strongest) return null;
         branches.push(strongest);
@@ -11613,7 +11699,9 @@ export function auditTacticalMotifs(
         !mate && !checkingAttack && !verifiedFork(steps[0])
             ? proveMixedCheckingAttack(steps[0])
             : null;
-    const forcingAttack = checkingAttack ?? mixedCheckingAttack;
+    const checkingCombination = !mate && !checkingAttack && !mixedCheckingAttack && !verifiedFork(steps[0])
+        ? proveCheckingCombination(steps) : null;
+    const forcingAttack = checkingAttack ?? mixedCheckingAttack ?? checkingCombination;
     if (forcingAttack) {
         const material =
             forcingAttack.branches.find(

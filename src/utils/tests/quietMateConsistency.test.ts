@@ -157,13 +157,21 @@ test("audit the frozen unseen Lichess quiet-mate sample without treating tags as
         );
 });
 
-test.each([...sample.cases, ...reflected].filter((row) => row.stratum === "mateIn4"))(
+test.each([...sample.cases, ...reflected].filter((row) => row.stratum === "mateIn4" && !row.id.startsWith("lichess:0rcU4")))(
     "retained longer-mate coverage gap, not a quiet-position success: $id",
     (row) => {
         expect(proveMateWithinThree(replayTacticalLine(row.startFen, row.bestLine))).toBeNull();
-        expect(
-            classifyPositionTacticalMotifs({ fen: row.startFen, pvUci: row.bestLine }).motifs,
-        ).toEqual([]);
+        const result = classifyPositionTacticalMotifs({ fen: row.startFen, pvUci: row.bestLine });
+        expect(result.motifs).toEqual([]);
+    },
+);
+
+test.each([...sample.cases, ...reflected].filter(row => row.id.startsWith("lichess:0rcU4")))(
+    "a recovered mating attack does not invent a mate-in-four certificate: $id", row => {
+        expect(proveMateWithinThree(replayTacticalLine(row.startFen, row.bestLine))).toBeNull();
+        const result = classifyPositionTacticalMotifs({ fen: row.startFen, pvUci: row.bestLine });
+        expect(result.motifs[0]).toMatchObject({ id: "forcingAttack", label: "Mating Attack", ply: 1 });
+        expect(result.motifs.some(motif => motif.id === "mateIn4")).toBe(false);
     },
 );
 

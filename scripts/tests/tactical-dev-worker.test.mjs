@@ -11,6 +11,7 @@ import { compensatedCaptureInput } from "../../src/utils/tests/fixtures/compensa
 import { forkLocalValueCases } from "../../src/utils/tests/fixtures/forkLocalValue.ts";
 import { forkRepairCases } from "../../src/utils/tests/fixtures/forkRepair.ts";
 import { checkingExchangeCases } from "../../src/utils/tests/fixtures/checkingExchangeRetention.ts";
+import { checkingCombinationCases, promotionCaptureForkCases } from "../../src/utils/tests/fixtures/checkingCombinationRecall.ts";
 import { checkingPawnRetentionCases } from "../../src/utils/tests/fixtures/checkingPawnRetention.ts";
 import { tablebaseCases } from "../../src/utils/tests/fixtures/tablebaseRelevance.ts";
 import { directMaterialPayoffCases, reflectPayoff } from "../../src/utils/tests/fixtures/directMaterialPayoff.ts";
@@ -103,6 +104,8 @@ test(
       ...forkLocalValueCases.map(row => ({...row,name:`local fork value: ${row.id}`,expectedPrimary:row.gain === null ? [] : ["fork"]})),
       ...forkRepairCases.map(row => ({...row,name:`quiet fork repair: ${row.id}`,expectedPrimary:row.positive ? ["fork"] : []})),
       ...checkingExchangeCases.map(row => ({...row,name:`checking exchange: ${row.id}`,variations:[{pvUci:row.pvUci,cp:0,depth:16}],expectedPrimary:row.positive ? ["hangingPiece"] : []})),
+      ...checkingCombinationCases.map(row => ({...row,name:`checking combination: ${row.id}`,expectedPrimary:row.positive ? ["forcingAttack"] : []})),
+      ...promotionCaptureForkCases.map(row => ({...row,name:`promotion capture fork: ${row.id}`,expectedPrimary:row.positive ? ["fork"] : []})),
       {name:"compensated capture retains its sub-pawn bound",...compensatedCaptureInput,expectedPrimary:["hangingPiece"]},
       {name:"missing recapture cannot fund a gain",...compensatedCaptureInput,fen:compensatedCaptureInput.fen.replace("2N2N2","2N5"),pvUci:["c3d5"],expectedPrimary:[]},
       {name:"off-square rook loss prevents a material headline",...compensatedCaptureInput,fen:compensatedCaptureInput.fen.replace("P5PP","Pb4PP"),pvUci:["c3d5"],expectedPrimary:[]},
@@ -119,8 +122,8 @@ test(
       ...matingInterferenceCases.filter(row => row.id !== "already-blocked-defence").flatMap(row => [row, { ...reflectMatingInterference(row), id: `${row.id}:black` }]).map(row => ({ name: `mating interference: ${row.id}`, fen: row.fen, pvUci: [row.move], expectedPrimary: row.expected || row.id.startsWith("extra-diagonal-defender") ? ["mateIn3"] : [], expectedTimeline: row.expected ? { id: "interference", ply: 1, actor: row.id.endsWith(":black") ? "black" : "white" } : undefined })),
       ...JSON.parse(readFileSync("benchmarks/tactical-relevance/quiet-mate-development.json", "utf8")).cases.flatMap(row => [1, row.bestLine.length].map(length => ({
         name: `quiet mate: ${row.id}:${length}`, fen: row.startFen, pvUci: row.bestLine.slice(0, length),
-        expectedPrimary: row.stratum === "mateIn2" ? ["mateThreat"] : row.stratum === "mateIn3" ? ["mateIn3"] : [],
-        expectedArrows: row.stratum !== "mateIn4" ? [[row.bestLine[0].slice(0, 2), row.bestLine[0].slice(2, 4)]] : [],
+        expectedPrimary: row.stratum === "mateIn2" ? ["mateThreat"] : row.stratum === "mateIn3" ? ["mateIn3"] : row.id === "lichess:0rcU4" ? ["forcingAttack"] : [],
+        expectedArrows: row.stratum !== "mateIn4" ? [[row.bestLine[0].slice(0, 2), row.bestLine[0].slice(2, 4)]] : row.id === "lichess:0rcU4" ? undefined : [],
       }))),
       ...castlingAliasCases.map(row => ({ name: `castling: ${row.id}`, fen: row.fen, pvUci: row.pvUci, expectedPrimary: row.mate ? ["mateIn1"] : row.id.includes("check-not-mate") ? [] : undefined, expectedArrows: row.mate ? [[row.pvUci[0].slice(0, 2), row.kingTo], [row.rookFrom, row.rookTo]] : undefined, expectedSquare: row.mate ? row.kingTo : undefined })),
       ...[...directMaterialPayoffCases, ...directMaterialPayoffCases.map(reflectPayoff)].map(row => ({ name: `direct payoff: ${row.id}`, fen: row.fen, pvUci: row.pvUci, expectedPrimary: [row.theme], expectedPayoff: row.label })),

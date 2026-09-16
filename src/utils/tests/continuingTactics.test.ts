@@ -14,12 +14,13 @@ const ordinary = JSON.parse(
 const fen: string = ordinary.fen;
 const line: string[] = ordinary.after[0].pvUci;
 
-test("the proved mating attack does not advertise its independently irrelevant rook fork", () => {
+test("mate keeps its promotion fork but not the independently irrelevant later rook forks", () => {
     const result = classifyPositionTacticalMotifs({ fen, pvUci: line });
     expect(result.motifs[0].id).toBe("mateIn7");
     expect(
         result.timeline?.filter((motif) => motif.id === "fork").map((motif) => motif.ply),
-    ).toEqual([]);
+    ).toEqual([1]);
+    expect(result.timeline?.find(motif => motif.id === "fork")?.evidence).toContain("knight on g8");
     expect(result.timeline?.some((motif) => motif.ply === 13 && /mate/i.test(motif.id))).toBe(true);
 });
 

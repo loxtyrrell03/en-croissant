@@ -13,6 +13,7 @@ import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
 import { forkLocalValueCases } from "./fixtures/forkLocalValue";
 import { forkRepairCases } from "./fixtures/forkRepair";
 import { checkingExchangeCases } from "./fixtures/checkingExchangeRetention";
+import { checkingCombinationCases, promotionCaptureForkCases } from "./fixtures/checkingCombinationRecall";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
 import { checkingPawnRetentionCases } from "./fixtures/checkingPawnRetention";
@@ -101,6 +102,19 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
         vi.unstubAllGlobals();
     }
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("mixed checking attacks and promotion forks survive the production controller", async () => {
+    for (const [kind, rows] of [["forcingAttack", checkingCombinationCases], ["fork", promotionCaptureForkCases]] as const)
+        for (const row of rows) for (const reflected of [false, true]) {
+            const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+                pvUci: reflected ? row.pvUci.map(reflectMixedForkMove) : row.pvUci,
+                depth: 16, engineName: "Constructed checking-combination controls" };
+            const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+            expect(result.scan).toEqual(buildLiveTacticalScan(input));
+            expect(result.scan.motifs[0]?.id ?? null).toBe(row.positive ? kind : null);
+            expect(result.scan.arrows.every(arrow => arrow.ply === 1)).toBe(true);
+        }
+}, 30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("checking pawn recall and contrary continuations use the production controller", async () => {
     for (const row of checkingPawnRetentionCases) for (const reflected of [false, true]) {
@@ -1225,7 +1239,8 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             }
             if (item.id.startsWith("quiet-mate:") || item.id.startsWith("quiet-mate-engine:")) {
                 const mateIn2 = /06PHz|0XwFD|0iAUN/.test(item.id), mateIn3 = /0IJ6I|09Cf3|0hHGN/.test(item.id);
-                if (JSON.stringify(result.scan.motifs.map(m => m.id)) !== JSON.stringify(mateIn2 ? ["mateThreat"] : mateIn3 ? ["mateIn3"] : []))
+                const matingAttack = item.id.includes("0rcU4");
+                if (JSON.stringify(result.scan.motifs.map(m => m.id)) !== JSON.stringify(mateIn2 ? ["mateThreat"] : mateIn3 ? ["mateIn3"] : matingAttack ? ["forcingAttack"] : []))
                     throw new Error(`Quiet mating primary or retained coverage gap changed: ${item.id}`);
                 if (item.id.includes("0hHGN") && result.scan.variations[0].timeline.some(m => m.id === "fork" && m.ply === 1))
                     throw new Error(`Mate-backed material fork noise: ${item.id}`);
