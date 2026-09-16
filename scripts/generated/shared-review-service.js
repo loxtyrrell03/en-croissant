@@ -10243,21 +10243,66 @@ function captureGainEvidence(step, gain) {
 var checkingPawnRetentionCache = /* @__PURE__ */ new Map();
 /** A checking pawn capture can be useful even when the pawn was already loose.
 * Check itself is not retention: after EVERY evasion a connected capture must
-* retain the gain with a further positive local return. A neutral liquidation
-* (notably a queen trade ending an attack) or an arbitrary quiet retreat needs
-* a deeper positional/counterplay comparison and cannot certify retention here.
+* retain the gain with a further positive local return, or exchange the
+* checking piece for a same-role piece interposed on its checking ray.
+* That exchange preserves the already captured pawn; it does not win a second
+* piece. An unrelated neutral liquidation (notably abandoning a king attack)
+* cannot certify retention here. A nominated equal interposition can support
+* quiet checker retreats against other evasions, but every countercheck must
+* be answerable by a capture or block, not merely a quiet king flight.
 * Leaves include
 * all immediate friendly liabilities and the existing countercheck horizon;
 * this is a bounded material lesson, not a whole-position winning claim. */
-function proveCheckingPawnRetention(steps, nodeLimit = 8192) {
+function proveCheckingPawnRetention(steps, nodeLimit = 8192, onTrace) {
 	const [root, nominatedReply, nominatedCapture] = steps;
 	if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture !== VALUE.pawn || root.move.promotion || root.before.board.get(root.move.to)?.role !== "pawn" || !root.after.isCheck() || root.after.isEnd() || !nominatedReply || !nominatedCapture || nominatedCapture.capture < VALUE.knight || nominatedCapture.move.promotion || defenderCanClaimFiftyMoveDraw(root.after)) return null;
 	const key = `${makeFen(root.before.toSetup())}:${root.uci}:${nominatedReply.uci}:${nominatedCapture.uci}`;
-	if (nodeLimit === 8192 && checkingPawnRetentionCache.has(key)) return checkingPawnRetentionCache.get(key);
+	if (nodeLimit === 8192 && !onTrace && checkingPawnRetentionCache.has(key)) return checkingPawnRetentionCache.get(key);
 	const budget = { nodes: nodeLimit };
-	const compute = () => {
+	const compute = (expanded) => {
 		const direct = preparationCaptureGain(root.before, root.move, budget);
+		onTrace?.(`Root gain ${direct}`);
 		if (direct === null || direct < VALUE.pawn) return null;
+		const king = root.after.board.kingOf(root.after.turn);
+		const equalInterposition = (pos, reply, answer) => {
+			if (king === void 0 || answer.from !== root.move.to || answer.to !== reply.to || root.after.board.get(root.move.to)?.role !== root.after.board.get(reply.from)?.role || !between(root.move.to, king).has(reply.to)) return false;
+			if (--budget.nodes < 0) throw new Error("Checking exchange budget exhausted");
+			const next = pos.clone();
+			next.play(answer);
+			for (const recapture of legalMoves(next)) {
+				if (recapture.to !== answer.to || !capturedValue(next, recapture)) continue;
+				if (--budget.nodes < 0) throw new Error("Checking exchange budget exhausted");
+				const end = next.clone();
+				end.play(recapture);
+				if (end.isEnd() && !end.isCheckmate()) return false;
+			}
+			return true;
+		};
+		const exchangeNomination = expanded && equalInterposition(nominatedCapture.before, nominatedReply.move, nominatedCapture.move) && preparationCaptureGain(nominatedCapture.before, nominatedCapture.move, budget) === 0;
+		const retainsWithoutKingFlight = (pos, move, balance) => {
+			if (--budget.nodes < 0) return false;
+			const next = pos.clone();
+			next.play(move);
+			for (const check of legalMoves(next)) {
+				if (!mayGiveCheck(next, check)) continue;
+				if (--budget.nodes < 0) return false;
+				const checked = next.clone();
+				checked.play(check);
+				if (!checked.isCheck()) continue;
+				const remaining = balance + capturedValue(pos, move) - capturedValue(next, check) - (check.promotion ? VALUE[check.promotion] - VALUE.pawn : 0);
+				let answered = false;
+				for (const block of recoveryMoves(checked, root.before.turn)) {
+					if (checked.board.get(block.from)?.role === "king" && !checked.ctx().checkers.has(block.to) || block.promotion) continue;
+					const retained = preparationCaptureGain(checked, block, budget);
+					if (retained !== null && remaining + retained >= VALUE.pawn) {
+						answered = true;
+						break;
+					}
+				}
+				if (!answered) return false;
+			}
+			return true;
+		};
 		const targets = new Set(legalMoves(root.before).filter((move) => capturedValue(root.before, move) > 0).map((move) => move.to));
 		const branches = [];
 		let minimum = Math.min(VALUE.pawn, direct);
@@ -10275,15 +10320,40 @@ function proveCheckingPawnRetention(steps, nodeLimit = 8192) {
 			for (const answer of answers) {
 				if (--budget.nodes < 0) return null;
 				const gain = preparationCaptureGain(after, answer, budget);
-				if (gain === null || gain <= 0 || balance + gain < VALUE.pawn) continue;
+				onTrace?.(`${makeSan(root.after, reply)} ${makeSan(after, answer)}: gain ${gain}, balance ${balance}`);
+				const retainedByExchange = expanded && gain === 0 && equalInterposition(after, reply, answer);
+				if (gain === null || gain < 0 || gain === 0 && !retainedByExchange || balance + gain < VALUE.pawn) continue;
+				if (expanded && !retainsWithoutKingFlight(after, answer, balance)) continue;
 				branch = {
 					replyUci: makeUci(reply),
 					answerUci: makeUci(answer),
-					gain: balance + gain
+					gain: balance + gain,
+					...retainedByExchange ? { retainedByExchange: true } : {}
 				};
 				break;
 			}
-			if (!branch) return null;
+			if (!branch && exchangeNomination && makeUci(reply) !== nominatedReply.uci) for (const retreat of legalMoves(after)) {
+				if (retreat.from !== root.move.to || retreat.promotion || capturedValue(after, retreat)) continue;
+				if (--budget.nodes < 0) return null;
+				const next = after.clone();
+				next.play(retreat);
+				if (next.isCheck() || next.isEnd()) continue;
+				const gain = preparationCaptureGain(after, retreat, budget);
+				onTrace?.(`${makeSan(root.after, reply)} ${makeSan(after, retreat)} retreat: gain ${gain}, balance ${balance}`);
+				if (gain === null || balance + gain < VALUE.pawn) continue;
+				if (!retainsWithoutKingFlight(after, retreat, balance)) continue;
+				branch = {
+					replyUci: makeUci(reply),
+					answerUci: makeUci(retreat),
+					gain: balance + gain,
+					retainedByRetreat: true
+				};
+				break;
+			}
+			if (!branch) {
+				onTrace?.(`No answer to ${makeSan(root.after, reply)}`);
+				return null;
+			}
 			branches.push(branch);
 			minimum = Math.min(minimum, branch.gain);
 		}
@@ -10295,9 +10365,11 @@ function proveCheckingPawnRetention(steps, nodeLimit = 8192) {
 	};
 	let proof = null;
 	try {
-		proof = compute();
-	} catch {}
-	if (nodeLimit === 8192) {
+		proof = compute(false) ?? (budget.nodes > 0 ? compute(true) : null);
+	} catch (error) {
+		onTrace?.(String(error));
+	}
+	if (nodeLimit === 8192 && !onTrace) {
 		checkingPawnRetentionCache.set(key, proof);
 		if (checkingPawnRetentionCache.size > 256) checkingPawnRetentionCache.delete(checkingPawnRetentionCache.keys().next().value);
 	}
@@ -18109,7 +18181,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 			...captureGainEvidence(root, directGain),
 			...checkingPawn ? {
 				value: checkingPawn.gain,
-				evidence: `${root.san} takes the pawn on ${makeSquare(root.move.to)} with check and keeps a profitable follow-up capture available against every reply. The checked exchanges retain at least a pawn.`
+				evidence: checkingPawn.branches.some((branch) => branch.retainedByExchange) ? `${root.san} takes the pawn on ${makeSquare(root.move.to)} with check. Exchanging the checking piece for an equal interposing piece keeps that pawn; other replies permit a checked retreat or follow-up capture. These continuations retain at least a pawn, not an extra piece.` : `${root.san} takes the pawn on ${makeSquare(root.move.to)} with check and keeps a profitable follow-up capture available against every reply. The checked exchanges retain at least a pawn.`
 			} : {},
 			source: proposals[0]?.source ?? "available",
 			confidence: "high",
@@ -19494,7 +19566,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 119;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 120;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

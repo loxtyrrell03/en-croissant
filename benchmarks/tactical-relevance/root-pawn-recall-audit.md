@@ -8,6 +8,9 @@ The subsequent [fork-repair review](fork-repair-review.md) recovers tA2XR with
 an independently checked allied repair, countercheck handling and mating
 support. This audit preserves the earlier rejected pawn rule and missing-fork
 evidence; broader persistent-pawn recall is still unresolved.
+The later [checking-exchange review](checking-exchange-review.md) also recovers
+one owner-game pawn capture through equal-interposition and protected-retreat
+proofs; it does not reinstate the rejected broad pawn-admission rule.
 
 ## Question tested
 

@@ -12,6 +12,7 @@ import { pawnExposureInput, pawnExposureAlternateInput } from "./fixtures/pawnEx
 import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
 import { forkLocalValueCases } from "./fixtures/forkLocalValue";
 import { forkRepairCases } from "./fixtures/forkRepair";
+import { checkingExchangeCases } from "./fixtures/checkingExchangeRetention";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
 import { checkingPawnRetentionCases } from "./fixtures/checkingPawnRetention";
@@ -121,6 +122,18 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("quiet fork repairs and contrary
         const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
         expect(result.scan).toEqual(buildLiveTacticalScan(input));
         expect(result.scan.motifs.find(motif => motif.id === "fork")?.value ?? null).toBe(row.positive ? 100 : null);
+    }
+}, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("equal checking exchanges retain pawns without mating or drawn-trade ghosts", async () => {
+    for (const row of checkingExchangeCases) for (const reflected of [false, true]) {
+        const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci: reflected ? row.pvUci.map(reflectMixedForkMove) : row.pvUci,
+            depth: 16, engineName: "Constructed exchange-retention controls" };
+        const request = { ...input, variations: [{ pvUci: input.pvUci, cp: 0, depth: 16 }] };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, request);
+        expect(result.scan).toEqual(buildLiveTacticalScan(request));
+        expect(result.scan.motifs.some(motif => motif.label === "Hanging Pawn")).toBe(row.positive);
     }
 }, 30000);
 
