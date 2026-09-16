@@ -167,7 +167,6 @@ test.each([
     "ordinary-1:ply8",
     "ordinary-1:ply13",
     "ordinary-1:ply23",
-    "ordinary-1:ply33",
     "ordinary-1:ply38",
     "ordinary-1:ply43",
     "ordinary-2:ply8",
@@ -183,6 +182,22 @@ test.each([
     "ordinary-3:ply23",
 ])("an audited ordinary root stays free of speculative tactical headlines: %s", (id) => {
     expect(frozenScan(id).motifs).toEqual([]);
+});
+
+test("a quiet principal move does not hide the verified bishop capture in a close alternative", () => {
+    // The earlier empty assertion described the castling PV, not all choices.
+    // Bxd8's existing 230cp local certificate includes compensation. Black is
+    // still losing overall; neither the capture nor its local value says otherwise.
+    const scan = frozenScan("ordinary-1:ply33");
+    expect(scan.variations[0].lineSan[0]).toBe("O-O");
+    expect(scan.variations[0].motifs).toEqual([]);
+    expect(scan.preferredReason).toBe("tactical-alternative");
+    expect(scan.preferredMultipv).toBe(2);
+    expect(scan.motifs).toEqual([expect.objectContaining({
+        id: "hangingPiece", label: "Material Gain", value: 230, ply: 1, moveUci: "e7d8",
+    })]);
+    expect(scan.motifs[0].evidence).toContain("concedes material elsewhere");
+    expect(scan.labels[0].text).toBe("Material Gain");
 });
 
 test.each([

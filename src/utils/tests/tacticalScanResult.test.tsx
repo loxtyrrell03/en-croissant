@@ -15,6 +15,7 @@ import { shortMatingThreatCases } from "./fixtures/shortMatingThreat";
 import { matingCheckEvasionFen, matingCheckEvasionLine } from "./fixtures/matingCheckEvasion";
 import { settledRootExchangeCases } from "./fixtures/settledRootExchange";
 import { captureMatingGuardCases } from "./fixtures/captureMatingGuard";
+import { immediateAlternativeInputs } from "./fixtures/immediateTacticalAlternative";
 import {
   buildLiveTacticalScan,
   previewLiveTacticalVariation,
@@ -86,6 +87,36 @@ test("a short mating threat explains the root without promising an unavoidable m
   expect(element.textContent).not.toContain("No verified immediate theme");
   expect(element.textContent).not.toContain("Stopping the mate concedes");
   expect(value.arrows.map(a => a.from + a.to)).toEqual(["g1g3", "g3h3"]);
+});
+
+test("an ordinary alternative is on board initially, with honest provenance and a usable main-line switch", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} });
+  vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  const value = buildLiveTacticalScan(immediateAlternativeInputs[0]);
+  const element = document.createElement("div");
+  document.body.append(element);
+  const root = createRoot(element);
+  const onPreviewChange = vi.fn();
+  try {
+    await act(async () => root.render(<MantineProvider env="test"><TacticalScanResult scan={value} lastMoveSan={null} onPreviewChange={onPreviewChange} /></MantineProvider>));
+    expect(element.textContent).toContain("Fork found");
+    expect(element.textContent).toContain("close-scoring alternative");
+    expect(element.textContent).toContain("Engine's first choice");
+    expect(element.textContent).not.toContain("Additional option");
+    expect(element.textContent).not.toContain("No tactical theme verified");
+    expect(element.querySelector('[aria-label="Show Nxf7 on board"]')?.getAttribute("aria-pressed")).toBe("true");
+    const main = [...element.querySelectorAll("button")].find(b => b.textContent === "Show main line")!;
+    await act(async () => main.click());
+    expect(onPreviewChange.mock.lastCall?.[0]).toMatchObject({ motifs: [], arrows: [], labels: [], lineUci: ["h2h3"] });
+    const restore = [...element.querySelectorAll("button")].find(b => b.textContent === "Restore immediate option")!;
+    await act(async () => restore.click());
+    expect(onPreviewChange.mock.lastCall?.[0].arrows).toEqual(value.arrows);
+    expect(onPreviewChange.mock.lastCall?.[0].lineUci).toEqual(["e5f7"]);
+  } finally {
+    await act(async () => root.unmount());
+    element.remove();
+  }
 });
 
 test("a targeted preview explains its provenance and keeps the original main line available", () => {

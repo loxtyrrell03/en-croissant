@@ -30,6 +30,7 @@ import { shortMatingThreatCases } from "./fixtures/shortMatingThreat";
 import { matingCheckEvasionCases } from "./fixtures/matingCheckEvasion";
 import { settledRootExchangeCases } from "./fixtures/settledRootExchange";
 import { captureMatingGuardCases } from "./fixtures/captureMatingGuard";
+import { immediateAlternativeInputs } from "./fixtures/immediateTacticalAlternative";
 import { discoveredPinPriorityFen, discoveredPinPriorityLine, discoveredPinPriorityControls } from "./fixtures/discoveredPinPriority";
 import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "./fixtures/checkingPawnFollowup";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
@@ -501,6 +502,19 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("complete pawn histories survive
         const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
         expect(result.scan).toEqual(buildLiveTacticalScan(input));
         expect(result.scan.motifs.map(m => m.label)).toEqual(row.positive ? ["Hanging Pawn"] : []);
+    }
+}, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("ordinary immediate alternatives retain their preview and engine provenance in the worker", async () => {
+    for (const input of immediateAlternativeInputs) for (const close of [true, false]) {
+        const variations = input.variations!.map((v, i) => ({ ...v, ...(i && !close ? { cp: 200 } : {}) }));
+        // The second constructed root starts at +250; use a >80cp gap there too.
+        if (!close) variations[0].cp = 450;
+        const candidate = { ...input, variations };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, candidate);
+        expect(result.scan).toEqual(buildLiveTacticalScan(candidate));
+        expect(result.scan.preferredReason).toBe(close ? "tactical-alternative" : undefined);
+        expect(result.scan.variations.every(v => v.origin === undefined)).toBe(true);
     }
 }, 30000);
 

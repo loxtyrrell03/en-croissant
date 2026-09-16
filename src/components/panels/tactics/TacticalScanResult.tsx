@@ -40,7 +40,7 @@ export function TacticalScanResult({
         Number(b.multipv === scan.preferredMultipv) - Number(a.multipv === scan.preferredMultipv),
     );
   const principalLine = scan.lineSan.length > 0 ? scan.lineSan : scan.lineUci;
-  const quietMain = scan.preferredReason === "additional-tactical-option"
+  const quietMain = (scan.preferredReason === "additional-tactical-option" || scan.preferredReason === "tactical-alternative")
     ? scan.variations.find(v => v.multipv === 1 && !v.motifs.length && !v.timeline.length)
     : undefined;
   const principal =
@@ -93,6 +93,8 @@ export function TacticalScanResult({
                   ? "Showing a strong alternative with a clearer material-winning lesson. The engine's first choice is still listed below."
                   : scan.preferredReason === "additional-tactical-option"
                     ? "This separately checked alternative has an immediate tactical idea. It is not the engine's first choice."
+                  : scan.preferredReason === "tactical-alternative"
+                    ? "This close-scoring alternative has a verified immediate tactic. The engine's first choice is still listed below."
                   : "The engine's first line repeats this position before reaching the same tactic. Showing its separately analysed immediate alternative."}
               </Text>
             )}

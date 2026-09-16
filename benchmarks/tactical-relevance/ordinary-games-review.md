@@ -29,7 +29,7 @@ In particular, a quiet reply can follow an opponent's tactical mistake.
 | ordinary-1:ply18 | Qxa6 wins the bishop just placed on a6; Hanging Piece is concrete. |
 | ordinary-1:ply23 | Quiet live root for Black. Adapter 30 corrects the preceding Bh3 lesson: Qxc6+ has an independently verified mate-in-three proof and leads with Forcing Mate. The loose knight is a smaller gain, not the primary missed outcome or a capture worth the mate score. |
 | ordinary-1:ply28 | Qxd8# is the immediate lesson. Mate already existed before Qd8, so it is existing danger, not newly caused by that choice. Slower mating alternatives and their incidental bishop skewer are noise. |
-| ordinary-1:ply33 | Quiet live root for Black. White missed a stronger checking continuation; its long mating outcome is not yet the main local lesson. |
+| ordinary-1:ply33 | Castling remains an unthemed first engine line. Pipeline 147 now previews the already verified, close-scored Bxd8 alternative as compensated Material Gain; Black is still losing overall. See immediate-alternative-review.md for the corrected selection assertion and contrary fresh score. White's missed checking continuation is separate. |
 | ordinary-1:ply38 | Quiet: Nd4 improves the knight; a large material advantage does not itself create a tactical theme. |
 | ordinary-1:ply43 | Quiet: hxg6 takes a pawn, not a significant loose-piece tactic. |
 | ordinary-2:ply8 | Quiet: e5 gains a development tempo against Nf6; the later queen/knight exchanges are speculative continuations. |

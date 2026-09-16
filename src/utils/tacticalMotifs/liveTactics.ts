@@ -152,7 +152,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 146;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 147;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 export const LIVE_TACTICAL_EXTRA_CANDIDATES = 2;
 
@@ -211,7 +211,7 @@ export type LiveTacticalScan = {
     /** A separately analysed immediate alternative chosen for teaching priority.
      * Engine ranks/lines remain intact; this only selects the initial preview. */
     preferredMultipv?: number;
-    preferredReason?: "larger-material-lesson" | "additional-tactical-option";
+    preferredReason?: "larger-material-lesson" | "additional-tactical-option" | "tactical-alternative";
 };
 
 export type LiveTacticalScanInput = {
@@ -568,10 +568,10 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
         viableInputs,
     );
     const materialAlternative = strongerAlternativeToPawnCapture(enginePrimary, variations, viableInputs);
+    const tacticalAlternative = immediateAlternativeToEmptyLine(enginePrimary, variations, viableInputs);
     const additional = enginePrimary.motifs.length === 0 ? variations.find(v =>
-        v.origin === "targeted" && v.motifs[0]?.confidence === "high" && v.motifs[0]?.ply === 1 &&
-        v.motifs[0]?.moveUci === v.lineUci[0]) : undefined;
-    const primary = immediate ?? materialAlternative ?? additional ?? enginePrimary;
+        v.origin === "targeted" && hasImmediateTacticalOpportunity(v)) : undefined;
+    const primary = immediate ?? materialAlternative ?? tacticalAlternative ?? additional ?? enginePrimary;
     const motifs = primary.motifs.slice(0, 1);
     const publicVariations = variations.map<LiveTacticalVariation>(
         ({ motifClassifierVersion: _version, ...variation }) => variation,
@@ -599,8 +599,40 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
         ...(input.supplementalSearchIncomplete ? { supplementalSearchIncomplete: true } : {}),
         ...(immediate ? { preferredMultipv: immediate.multipv } : materialAlternative ? {
             preferredMultipv: materialAlternative.multipv, preferredReason: "larger-material-lesson" as const,
+        } : tacticalAlternative ? {
+            preferredMultipv: tacticalAlternative.multipv, preferredReason: "tactical-alternative" as const,
         } : additional ? {preferredMultipv: additional.multipv, preferredReason: "additional-tactical-option" as const} : {}),
     };
+}
+
+function hasImmediateTacticalOpportunity(variation: LiveTacticalVariation) {
+    const theme = variation.motifs[0];
+    return theme?.confidence === "high" && theme.ply === 1 && theme.moveUci === variation.lineUci[0] &&
+        // Compensation-only countercaptures explain a response to an existing
+        // tactic; they are not a new material opportunity in either lane.
+        (theme.id !== "hangingPiece" || (theme.value ?? 0) > 0);
+}
+
+/** An empty first line must not hide an already verified immediate option
+ * from the same MultiPV search. Keep the original ranks, proofs and timelines;
+ * select only a close, equally deep candidate, not a distant weaker win or a
+ * future PV motif. Mate scores are not comparable using this cp margin. */
+function immediateAlternativeToEmptyLine(
+    principal: ClassifiedLiveTacticalVariation,
+    variations: ClassifiedLiveTacticalVariation[],
+    inputs: LiveTacticalVariationInput[],
+) {
+    if (principal.motifs.length) return null;
+    const score = (line: ClassifiedLiveTacticalVariation) => inputs.find((v, i) => (v.multipv ?? i + 1) === line.multipv);
+    const first = score(principal);
+    if (first?.mate != null || !Number.isFinite(first?.cp) || !Number.isInteger(first?.depth) || first!.depth! < 14) return null;
+    return variations.filter(candidate => {
+        const input = score(candidate);
+        return candidate !== principal && !candidate.origin && input?.mate == null &&
+            Number.isFinite(input?.cp) && input!.cp! >= first!.cp! - 80 &&
+            Number.isInteger(input?.depth) && input!.depth! >= first!.depth! &&
+            hasImmediateTacticalOpportunity(candidate);
+    }).sort((a, b) => a.multipv - b.multipv)[0] ?? null;
 }
 
 /** A generic pawn label must not bury a close-scored, independently checked

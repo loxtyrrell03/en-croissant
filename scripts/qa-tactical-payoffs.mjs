@@ -22,6 +22,7 @@ import { checkingPawnRetentionCases } from "../src/utils/tests/fixtures/checking
 import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "../src/utils/tests/fixtures/checkingPawnFollowup.ts";
 import { persistentPawnCases } from "../src/utils/tests/fixtures/persistentPawnCapture.ts";
 import { quietRootMateCases } from "../src/utils/tests/fixtures/quietRootMate.ts";
+import { immediateAlternativeInputs } from "../src/utils/tests/fixtures/immediateTacticalAlternative.ts";
 import {
   matingInterferenceCases,
   reflectMatingInterference,
@@ -44,9 +45,11 @@ const checkingPawnMode = process.argv.includes("--checking-pawn");
 const pawnFollowupMode = process.argv.includes("--pawn-followup");
 const persistentPawnMode = process.argv.includes("--persistent-pawn");
 const quietRootMateMode = process.argv.includes("--quiet-root-mate");
+const immediateAlternativeMode = process.argv.includes("--immediate-alternative");
 const root = process.cwd(),
   output = resolve(
     root,
+    immediateAlternativeMode ? "tmp/tactical-immediate-alternative-pipeline147" :
     persistentPawnMode ? "tmp/tactical-persistent-pawn-adapter128" :
     pawnFollowupMode ? "tmp/tactical-pawn-followup-adapter127" :
     quietRootMateMode ? "tmp/tactical-quiet-root-mate-adapter126" :
@@ -66,6 +69,7 @@ const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
 const cases = (
+  immediateAlternativeMode ? immediateAlternativeInputs.map((row, i) => ({...row, id:`alternative-${i}`, expectedLabel:i ? "Hanging Piece" : "Fork"})) :
   persistentPawnMode ? persistentPawnCases :
   pawnFollowupMode ? checkingPawnFollowupCases.filter(row => row.positive || row.id === "mating-counterplay")
     .map(row => ({...row,pvUci:checkingPawnFollowupLine,variations:[{pvUci:checkingPawnFollowupLine,cp:0,depth:16}]})) :
@@ -208,7 +212,31 @@ try {
           index,
           scale,
         });
-        if (quietRootMateMode) {
+        if (immediateAlternativeMode) {
+          await page.getByText(`${row.expectedLabel} found`, {exact:true}).waitFor();
+          await page.getByText("Engine's first choice", {exact:true}).waitFor();
+          const scan = await page.evaluate(() => window.fixture.scan);
+          assert.equal(scan.preferredReason, "tactical-alternative");
+          assert.equal(scan.preferredMultipv, row.variations.at(-1).multipv);
+          assert(scan.variations.every(v => !v.origin));
+          assert(!(await page.locator("main").innerText()).includes("Additional option"));
+          const button = page.getByRole("button", {name:/^Show .* on board$/});
+          assert.equal(await button.getAttribute("aria-pressed"), "true");
+          await page.getByRole("button", {name:"Show main line",exact:true}).focus();
+          await page.keyboard.press("Enter");
+          const main = await page.evaluate(() => window.fixture.last);
+          assert.deepEqual(main.arrows, []); assert.deepEqual(main.labels, []);
+          assert.deepEqual(main.lineUci, row.pvUci);
+          await page.getByRole("button", {name:"Restore immediate option",exact:true}).focus();
+          await page.keyboard.press("Enter");
+          const restored = await page.evaluate(() => window.fixture.last);
+          assert.deepEqual(restored.arrows, scan.arrows);
+          assert.deepEqual(restored.labels, scan.labels);
+          if (width === 360 && scale === 2) {
+            await page.locator(".mantine-ScrollArea-viewport").evaluate(element => {element.scrollTop=0});
+            await page.screenshot({path:resolve(output,`${row.id}.png`),fullPage:true});
+          }
+        } else if (quietRootMateMode) {
           await page.waitForFunction(() => window.fixture.scan !== null);
           const scan = await page.evaluate(() => window.fixture.scan);
           assert.equal(scan.motifs.some(m => m.id === "mateIn4"), row.positive);
