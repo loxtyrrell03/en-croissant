@@ -63,7 +63,7 @@ test.each(discoveredPinPriorityControls)("contrary defence: $name", ({ fen }) =>
 });
 
 test("a local queen-for-two-minors gain cannot recommend the losing stripped-down ending", () => {
-    // Fresh Stockfish 18 depth-16 held searches: Nf4 +412, Ng5 -506.
+    // Fresh Stockfish 18 depth-16 searches: best Nf4 +412, held Ng5 -506.
     // The local 250-cp mechanism is real, but removing the other pieces has
     // made its resulting pawn ending lost. It is not a sound live alternative.
     const scan = buildLiveTacticalScan({

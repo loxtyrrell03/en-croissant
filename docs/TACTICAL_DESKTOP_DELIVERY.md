@@ -1,6 +1,39 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 132 / live pipeline 138
+## Current package: adapter 133 / live pipeline 139
+
+Source `f5e066f5` is packaged from the clean detached checkout
+`en-tactical-desktop-f5e066f5`. Discovered attacks now lead over their revealed
+absolute pins and redundant same-target preparation labels, while keeping the
+pin as support. This improves the explanation of an existing tactic, not root
+recall. See `benchmarks/tactical-relevance/discovered-pin-priority-review.md`.
+
+The clean checkout passes TypeScript, 59 focused source/renderer checks (three
+optional skips), the 43-module generated review build, the 8,863-module frontend
+and native release compilation. Native compilation took 1m25s with 22 existing
+warnings. Generated review differences are path comments only; generated route
+tree differences are line endings only, checked against the committed files.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,063,488 bytes;
+  SHA-256 `435640e68ea3417ff413e767bedc64c289f0aefad2103fb6188b3327c0948f3a`.
+- Worker: `liveTactics.worker-C8z0Tbnr.js`, 568,884 bytes; SHA-256
+  `410c3f61e9f7070d06ea81371aa7b827b281b720b819a019649b44c9d3f14446`.
+  Clean worker bytes match the artifact tested on 610 controller inputs. The
+  executable is x64 and embeds this worker, `TacticalClassifierPanel-B89L5ttR.js`
+  and `OpeningReviewWorkspace-CdPY9K7Q.js`; normalized dependency paths identify
+  these exact assets in the clean checkout.
+- Previous pipeline-138 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline139/en-croissant-fork.exe`,
+  SHA-256 `0489d067389b35a7637ea1374ec9e0a9a19d6e41dcfc16bf0123d3379fa0679a`.
+
+No app was running before replacement or after compilation, and none was
+launched/restarted. The Dev App shortcut still uses the primary checkout's
+unchanged `encroissant-native` workflow. Owner games/settings and phone services
+remain untouched. This proves package/linkage, not native-window interaction or
+load-sensitive startup reliability. Broader recall, automatic review candidate
+acquisition and primary-theme coverage remain open.
+
+## Previous package: adapter 132 / live pipeline 138
 
 Source `94e0fb12` was built from the clean detached checkout
 `en-tactical-desktop-94e0fb12`. It includes complete-history checking pawn
