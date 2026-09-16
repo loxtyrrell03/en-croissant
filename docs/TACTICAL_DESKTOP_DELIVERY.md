@@ -1,6 +1,46 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 139 / live pipeline 145
+## Current package: adapter 140 / live pipeline 146
+
+Source `457355f7` is packaged from the clean detached checkout
+`en-tactical-desktop-457355f7`. It recovers capture-led mating attacks where
+defending against mate concedes an exchange or additional pawn, with a legal
+recapture of an essential mating guard. The owner actually played the recovered
+Rxc3; it is not described as a missed move. Two additional actual-ply attacks
+are retained without replacing their existing main lessons. See
+`benchmarks/tactical-relevance/capture-mating-guard-review.md` for the exact
+five-context differential, contrary controls, 563 engine searches and limits.
+
+The clean checkout passes TypeScript, 75 focused source/rendered/lifecycle
+checks (four optional skips), fifteen generated-service checks (one optional
+engine skip), the 43-module shared-review and 8,863-module frontend builds.
+Native release compilation passes in 1m27s with 22 existing warnings. Generated
+review differences are source-region comments only; route-tree differences
+are line endings only, checked against the committed sources.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,063,488 bytes;
+  SHA-256 `acef8b78ba0afed878ec0511d7c7fc697acc7a17ed09a958c53bf18a98bba581`.
+- Worker: `liveTactics.worker-D8llfFHh.js`, 573,699 bytes; SHA-256
+  `1e52d239175bce1b520d96cd31769592f8016493a708e0a1bd5264047c83b616`.
+  Clean bytes match the artifact tested on 1,536 production-controller inputs.
+  The x64 executable embeds this worker, `TacticalClassifierPanel-BQSCALFf.js`
+  and `OpeningReviewWorkspace-qV7JLrL2.js`; normalized native dependency paths
+  identify those exact assets in the clean checkout.
+- Previous pipeline-145 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline146/en-croissant-fork.exe`,
+  SHA-256 `b3c628cb348b034c8e24f724a7193b88efdc018a236752b97b5aebc761e7887b`.
+
+No app was running before or after compilation; none was launched/restarted.
+The Dev App shortcut still invokes the primary checkout's unchanged
+`encroissant-native` workflow. Games, settings, engines and phone services
+remain untouched. This proves source/package linkage, not native-window
+interaction. The forced-cold development HTTP audit still failed at its
+20-second startup deadline; no startup reliability fix is claimed. The wider
+utility suite's two store failures reproduce in the previous clean source.
+Broader recall, history/compensation relevance, primary specificity and longer
+counterplay remain open; the overall goal stays active.
+
+## Previous package: adapter 139 / live pipeline 145
 
 Source `1daac633` is packaged from the clean detached checkout
 `en-tactical-desktop-1daac633`. It recovers additional material after an exactly
