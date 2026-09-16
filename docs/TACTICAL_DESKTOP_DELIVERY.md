@@ -1,6 +1,37 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 122 / live pipeline 127
+## Current package: adapter 123 / live pipeline 128
+
+Source `1d5c662c` is packaged in the standalone executable, including relative-pin
+captures, connected defensive escapes and compensation-aware missed/neutral
+review. The detached checkout `en-tactical-desktop-1d5c662c` excludes unrelated
+primary-worktree changes. TypeScript, 21 focused checks (fourteen optional skips),
+the 42-module shared-review build, 8,861-module frontend and native release build
+pass. Native compilation takes 1m54s with 22 existing warnings. Generated route
+tree output has no semantic diff; shared-service differences are dependency-path
+comments only, confirmed by comparison after removing those comments.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,128,000 bytes;
+  SHA-256 `324c2d21a88a843145306719bffa9d7ab6000d0f62659e8d329703a509b23a6f`.
+- Worker: `liveTactics.worker-DoedAu-J.js`; SHA-256
+  `25b250721e582e5c1e0b803ebc14e77784ca1849d3ee5a680f2cc8d89469aa1a`.
+  Clean frontend bytes match the tested immutable artifact. The x64 executable
+  embeds this key and `OpeningReviewWorkspace-vwrsA-JN.js`; its dependency
+  receipt identifies both clean-checkout assets.
+- Previous adapter-122 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter123/en-croissant-fork.exe`,
+  SHA-256 `88d8cb65d48ae32720b2a27a6a70c3da779d4f0498d93b59946d34754a76505f`.
+
+No app was running before or after the build, and none was launched/restarted.
+The Dev App shortcut was read back unchanged and still invokes the primary
+checkout's `encroissant-native` workflow. Games, settings, engines and phone
+services remain unchanged. This is package/linkage proof, not native-window
+interaction or reliable startup certification. See
+`benchmarks/tactical-relevance/relative-pin-recall-review.md` for the recovered
+owner opportunity, neutral pawn-trade context, contrary controls and continuing
+recall/primary-selection/reliability limits.
+
+## Previous package: adapter 122 / live pipeline 127
 
 Source `8f53a21d` is packaged in the standalone executable, including checking
 pawn retention through allied support and checked king evasions. The clean
