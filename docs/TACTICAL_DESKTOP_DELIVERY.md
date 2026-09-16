@@ -1,6 +1,36 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 123 / live pipeline 128
+## Current package: adapter 124 / live pipeline 129
+
+Source `e013ba21` is packaged in the standalone executable, including older
+pawn opportunities with verified costly recaptures and history-sensitive
+compensation safeguards. The detached checkout `en-tactical-desktop-e013ba21`
+excludes unrelated primary-worktree changes. TypeScript, 33 focused checks
+(four optional skips), the 42-module shared-review build, 8,861-module frontend
+and native release build pass. Native compilation takes 2m00s with 22 existing
+warnings. Generated route-tree output has no semantic diff; shared-service
+differences are dependency-path comments only.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,128,000 bytes;
+  SHA-256 `35f5fcf743f2c618c646f1ab52ad2cfb7c6194b74a07246b676d66d66b13da76`.
+- Worker: `liveTactics.worker-olkEdZhN.js`; SHA-256
+  `2a208dcdd3f35c3fe5830db92c7bfb35db563f66cdf861db32357d4a818f3452`.
+  Clean frontend bytes match the tested immutable artifact. The x64 executable
+  embeds this key and `OpeningReviewWorkspace-DiM1fAdK.js`; its dependency
+  receipt identifies both clean-checkout assets.
+- Previous adapter-123 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter124/en-croissant-fork.exe`,
+  SHA-256 `324c2d21a88a843145306719bffa9d7ab6000d0f62659e8d329703a509b23a6f`.
+
+No app was running before or after the build, and none was launched/restarted.
+The Dev App shortcut was read back unchanged and still invokes the primary
+checkout's `encroissant-native` workflow. Games, settings, engines and phone
+services remain unchanged. This is package/linkage proof, not native-window
+interaction or reliable startup certification. See
+`benchmarks/tactical-relevance/costly-pawn-recall-review.md` for the eight-game
+audit, recovered opportunity, contrary controls and continuing recall limits.
+
+## Previous package: adapter 123 / live pipeline 128
 
 Source `1d5c662c` is packaged in the standalone executable, including relative-pin
 captures, connected defensive escapes and compensation-aware missed/neutral
