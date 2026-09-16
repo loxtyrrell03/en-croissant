@@ -1,6 +1,33 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 115 / live pipeline 120
+## Current package: adapter 116 / live pipeline 121
+
+Source `346be881` is packaged in the standalone executable, including the
+compensated-capture recovery and equal-exchange comparison correction. The
+detached checkout `en-tactical-desktop-346be881` excludes unrelated primary
+worktree changes. TypeScript, 35 focused checks (one optional owner-data check
+skipped), the 8,861-module frontend and native release build pass. The owner
+check separately passes in the primary checkout; the native build takes 2m04s
+with 22 existing warnings.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,115,712 bytes;
+  SHA-256 `96038be598eef8e84e6a02dde0df9e8ee0a5ffcc76038b04e7a341845d4cd466`.
+- Worker: `liveTactics.worker-DJBk11YE.js`; SHA-256
+  `be1ffcea2ae93523cc8fe1fc45dce1b8aba075177e4a081955a08327d026c247`.
+  Its bytes match the tested worker. The x64 executable contains this asset key
+  and `OpeningReviewWorkspace-yz8GoRN3.js`; the dependency receipt identifies
+  both assets and the clean checkout.
+- Previous adapter-115 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter116/en-croissant-fork.exe`,
+  SHA-256 `c935c42580b7c16d12b8e869ced2922b5ac926981d5720b01bbe6c40b3ddd687`.
+
+No app was running before or after the build, and none was launched/restarted.
+The Dev App shortcut, owner games/settings/engines and phone runtime are
+unchanged. This is package/linkage verification, not native interaction or
+startup certification. See `benchmarks/tactical-relevance/compensated-capture-review.md`
+for the real-game recovery, rejected noise and remaining broader recall gaps.
+
+## Previous package: adapter 115 / live pipeline 120
 
 Source `6770a3af` is packaged in the standalone executable, including newly
 exposed pawn lessons, retained-opportunity checks, stronger-alternative priority
