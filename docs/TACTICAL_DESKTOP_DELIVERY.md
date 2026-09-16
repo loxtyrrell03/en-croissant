@@ -1,6 +1,43 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 138 / live pipeline 144
+## Current package: adapter 139 / live pipeline 145
+
+Source `1daac633` is packaged from the clean detached checkout
+`en-tactical-desktop-1daac633`. It recovers additional material after an exactly
+settled exchange without charging earlier losses twice. Three owner principal
+captures and one alternative pawn are recovered, an existing queen-loss value
+is corrected, and best-play dangers remain neutral. See
+`benchmarks/tactical-relevance/settled-root-exchange-review.md` for the nine
+changed contexts, 167 fresh engine searches, contrary controls and limits.
+
+The clean checkout passes TypeScript, seventy focused source/rendered/history
+checks (seven optional skips), fifteen generated-service checks (one optional
+engine skip), the 43-module shared-review and 8,863-module frontend builds.
+Native release compilation passes in 1m26s with 22 existing warnings. Generated
+review differences are source-region path comments only; route-tree changes
+are line endings only, checked against committed code.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,063,488 bytes;
+  SHA-256 `b3c628cb348b034c8e24f724a7193b88efdc018a236752b97b5aebc761e7887b`.
+- Worker: `liveTactics.worker-CtpnimVe.js`, 572,655 bytes; SHA-256
+  `0a2472e653fc0244170377bae6e19852fde5fa9b1e37db4191d7ca1166a2afc8`.
+  Clean bytes match the artifact tested on 1,540 production-controller inputs.
+  The x64 executable embeds this worker, `TacticalClassifierPanel-CrZxitsn.js`
+  and `OpeningReviewWorkspace-D3WbJZI_.js`; normalized native dependency paths
+  identify these exact assets in the clean checkout.
+- Previous pipeline-144 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline145/en-croissant-fork.exe`,
+  SHA-256 `e2cba4993c173f8bac1a50dbf6a4a3f8c43bbed37562582b6a2ee80d37892a4e`.
+
+No app was running before or after compilation; none was launched/restarted.
+The Dev App shortcut still invokes the primary checkout's unchanged
+`encroissant-native` workflow. Owner games, settings, engines and phone services
+remain untouched. This proves source/package linkage, not native-window
+interaction or cold-start reliability. Incomplete/interrupted exchange history,
+longer counterplay, broader recall, primary specificity and automatic review
+candidate coverage remain open. The overall goal stays active.
+
+## Previous package: adapter 138 / live pipeline 144
 
 Source `621bc0bc` is packaged from the clean detached checkout
 `en-tactical-desktop-621bc0bc`. It recovers the owner's missed Qe5+ mate through
