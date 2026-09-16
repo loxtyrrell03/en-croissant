@@ -1,6 +1,40 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 127 / live pipeline 132
+## Current package: adapter 128 / live pipeline 133
+
+Source `718f461e` is packaged in the standalone executable, including complete
+game-history transport and older pawn-opportunity recall in live and mistake
+review paths. The detached checkout `en-tactical-desktop-718f461e` excludes
+unrelated primary-worktree changes. TypeScript, 67 focused checks (three optional
+skips), the 43-module shared-review build, 8,862-module frontend and native release
+build pass. Native compilation takes 1m29s with 22 existing warnings. Generated
+route-tree output differs only in line endings; generated-service differences
+are comments only, checked against the committed source.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,062,976 bytes;
+  SHA-256 `8508bec0c4fe5a6e271a1138a9e49a034d26a6fcbbf99a6322cc8303cc6c106f`.
+- Worker: `liveTactics.worker-Bu9tBM3T.js`; SHA-256
+  `00399ed7454504fde61f54aa77925c101921baaeb9873e2851ba76b77d770941`.
+  The clean frontend worker is byte-identical to the tested immutable artifact.
+  The x64 executable embeds its key, `OpeningReviewWorkspace-By5cJCUA.js` and
+  the native `tacticalHistory` wire field; the dependency receipt identifies
+  the assets and clean checkout.
+- Previous adapter-127 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter128/en-croissant-fork.exe`,
+  SHA-256 `68f024bc865df8cc96725c2e2040d769551aaded6bd3846e17f033f9e3854777`.
+
+No app was running before or after the build, and none was launched/restarted.
+The Dev App shortcut was read back unchanged and still invokes the primary
+checkout's `encroissant-native` workflow. Games, settings, engines and phone
+services remain unchanged. This is package/linkage proof, not native-window
+interaction or startup reliability certification. See
+`benchmarks/tactical-relevance/persistent-pawn-recall-review.md` for the six
+changed principal owner headlines, eleven newly explained candidates, exchange
+controls, positional-compensation distinctions and complete-history limits.
+Cold-worker startup still took nearly eight seconds in this milestone's check;
+historical startup failures and broader recall/primary-theme gaps remain open.
+
+## Previous package: adapter 127 / live pipeline 132
 
 Source `f042025e` is packaged in the standalone executable, including checking
 pawn gains before already-profitable pawn follow-ups, countercheck safeguards,
