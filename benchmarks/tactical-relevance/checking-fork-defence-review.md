@@ -110,8 +110,10 @@ is not a full-position win or proof of the best instructional headline. The
 44-position August targeted replay used seventy fresh searches and is still
 overlapping regression material.
 
-Clean desktop delivery remains separate; no native-window or cold-start
-reliability claim follows from source or package checks. Automatic targeted candidate acquisition in mistake
+This fix is included in the subsequent clean adapter-135 desktop package from
+`9d028302`; see `docs/TACTICAL_DESKTOP_DELIVERY.md` for hashes and recovery.
+No native-window or cold-start reliability claim follows from source or package
+checks. Automatic targeted candidate acquisition in mistake
 review, broader recall/primary selection and the historical startup delays
 remain open. Paid course data and owner-game reports stay outside Git.
 

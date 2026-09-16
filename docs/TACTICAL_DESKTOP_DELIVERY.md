@@ -1,6 +1,44 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 133 / live pipeline 139
+## Current package: adapter 135 / live pipeline 141
+
+Source `9d028302` is packaged from the clean detached checkout
+`en-tactical-desktop-9d028302`. It includes both the checking-fork capture-defence
+comparison (`1c4f41cf`) and the complete same-square exchange-history correction.
+One real missed fork cause and one later loose-pawn opportunity are recovered;
+the larger queen-loss explanation retains priority over the pawn alternative.
+See `checking-fork-defence-review.md` and `settled-pawn-history-review.md` under
+`benchmarks/tactical-relevance/` for exact sample scope and limitations.
+
+The clean checkout passes TypeScript, 113 focused source/renderer checks (four
+optional skips), twelve generated-service checks (one optional engine skip),
+the 43-module generated review build, 8,863-module frontend and native release
+compilation. Native compilation takes 1m24s with 22 existing warnings. Generated
+review differences are path comments only and the route-tree difference is line
+endings only, checked against the committed sources.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,063,488 bytes;
+  SHA-256 `2f5731b03e27e051ba9a09ca32c445657de51e4d66e1cfb46a5864804ab1c838`.
+- Worker: `liveTactics.worker-6cQZL8Rw.js`, 569,027 bytes; SHA-256
+  `3347a7b94495e5b221bdb72e1683c83da42676466e073b4d9b5322c50e69c912`.
+  Clean worker bytes match the artifact tested on 724 controller inputs. The
+  x64 executable embeds this worker, `TacticalClassifierPanel-O2Z8RtrL.js` and
+  `OpeningReviewWorkspace-GYbilRn5.js`; normalized dependency paths identify
+  these exact assets in the clean checkout.
+- Previous pipeline-139 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline141/en-croissant-fork.exe`,
+  SHA-256 `435640e68ea3417ff413e767bedc64c289f0aefad2103fb6188b3327c0948f3a`.
+  Pipeline 140 was source-verified, then included in this package rather than
+  delivered as a separate intermediate executable.
+
+No app was running before replacement or after compilation; none was launched
+or restarted. The Dev App shortcut still invokes the primary checkout's
+unchanged `encroissant-native` workflow. Games, settings, engines and phone
+services remain untouched. This verifies package linkage, not native-window
+interaction or load-sensitive startup reliability. Broader recall, automatic
+review candidate acquisition and primary-theme coverage remain open.
+
+## Previous package: adapter 133 / live pipeline 139
 
 Source `f5e066f5` is packaged from the clean detached checkout
 `en-tactical-desktop-f5e066f5`. Discovered attacks now lead over their revealed

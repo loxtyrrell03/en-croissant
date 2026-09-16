@@ -61,7 +61,15 @@ Unchanged results and abstentions are not assumed correct.
 The 13-file focused source/render/review selection passes 219 checks with
 seventeen optional skips. TypeScript and the generated 43-module service build
 pass; twelve generated-service tests pass with one optional engine test skipped.
-Compiled-worker and clean desktop delivery are recorded after completion.
+The compiled worker/controller passes 720 owner inputs plus four constructed
+history controls, matching source output. Owner compute/transfer median/p95/max
+is 84/322/1,385 ms, with maximum startup 85 ms; engine searches, HTTP startup and
+native UI are excluded. The two worker groups complete in 167.16 seconds with
+unchanged production deadlines. This is package parity, not new chess judgement
+or a native latency guarantee. Both this correction and adapter 134's fork
+comparison are delivered in the clean desktop package from `9d028302`; see
+`docs/TACTICAL_DESKTOP_DELIVERY.md` for hashes, backup and native verification
+boundaries. No app was launched or restarted, and owner data is unchanged.
 
 Broader pawn-history relevance, long attacks, endgame explanations, automatic
 review acquisition of extra candidates and native startup reliability remain
