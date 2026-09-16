@@ -55,7 +55,8 @@ function auditedCases() {
 test.each(cases)("a real quiet mating attack survives root-only and full input: $id", (row) => {
     for (const pvUci of [row.moves.slice(0, 1), row.moves]) {
         const result = classifyPositionTacticalMotifs({ fen: row.fen, pvUci });
-        expect(result.motifs[0]).toMatchObject({ label: "Mating Attack", ply: 1, value: row.gain });
+        const exactMate = row.id.startsWith("lichess:0QPvf") && pvUci.length > 1;
+        expect(result.motifs[0]).toMatchObject({ label: exactMate ? "Forcing Mate" : "Mating Attack", ply: 1, value: exactMate ? 10000 : row.gain });
     }
 });
 

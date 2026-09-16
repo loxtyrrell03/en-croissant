@@ -13,6 +13,15 @@ def verify_case(row):
     if not proof or not proof.get("strategy"):
         return None
     board = chess.Board(row["fen"])
+    if row.get("tacticalHistory"):
+        history = row["tacticalHistory"]
+        replay = chess.Board(history["fen"])
+        for uci in history["moves"]:
+            move = replay.parse_uci(uci)
+            assert move in replay.legal_moves
+            replay.push(move)
+        assert replay.fen(en_passant="legal") == board.fen(en_passant="legal"), row.get("id")
+        board = replay
     root = board.parse_uci(row["pvUci"][0])
     assert root in board.legal_moves and not board.is_game_over()
     board.push(root)

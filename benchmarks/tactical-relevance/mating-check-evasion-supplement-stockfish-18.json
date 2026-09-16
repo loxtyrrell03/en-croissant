@@ -1,0 +1,2872 @@
+{
+  "scope": "Constructed and reused public development decisions. Not independent puzzle counts or an accuracy score.",
+  "engine": "Stockfish 18, depth 16, held root moves",
+  "searches": [
+    {
+      "id": "rook-net-capturable-queen:false:root",
+      "fen": "2Q3qk/p5pp/2pn4/8/8/7P/5rP1/1R5K w - - 3 33",
+      "searchMove": "b1b8",
+      "depth": 16,
+      "cp": -919,
+      "mate": null,
+      "pvUci": [
+        "b1b8",
+        "f2f1",
+        "h1h2",
+        "g8c8",
+        "b8c8",
+        "d6c8",
+        "g2g3",
+        "h8g8",
+        "h2g2",
+        "f1f8",
+        "h3h4",
+        "g8f7",
+        "g2h3",
+        "f7e6",
+        "h4h5"
+      ]
+    },
+    {
+      "id": "rook-net-capturable-queen:true:root",
+      "fen": "1r5k/5Rp1/7p/8/8/2PN4/P5PP/2q3QK b - - 3 33",
+      "searchMove": "b8b1",
+      "depth": 16,
+      "cp": -857,
+      "mate": null,
+      "pvUci": [
+        "b8b1",
+        "f7f8",
+        "h8h7",
+        "g1c1",
+        "b1c1",
+        "d3c1",
+        "g7g5",
+        "h1g1",
+        "g5g4",
+        "g1f2",
+        "g4g3",
+        "h2g3",
+        "h6h5",
+        "f8f4",
+        "h7h6"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:67",
+      "fen": "1RQ3qk/p5pp/2p5/8/r7/7P/6PK/8 w - - 7 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:68",
+      "fen": "1RQ3qk/p5pp/2p5/r7/8/7P/6PK/8 w - - 7 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:69",
+      "fen": "1RQ3qk/p5pp/r1p5/8/8/7P/6PK/8 w - - 7 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:85",
+      "fen": "1RQ3qk/p5pp/2p5/8/2r5/7P/6PK/8 w - - 7 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:86",
+      "fen": "1RQ3qk/p5pp/2p5/2r5/8/7P/6PK/8 w - - 7 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:98",
+      "fen": "1RQ3qk/p5pp/2p5/8/8/7P/3r2P1/7K w - - 5 34",
+      "searchMove": "h1h2",
+      "certificateMateWithin": 3,
+      "depth": 16,
+      "cp": null,
+      "mate": 3,
+      "pvUci": [
+        "h1h2",
+        "g8c8",
+        "b8c8",
+        "d2d8",
+        "c8d8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:104",
+      "fen": "1RQr2qk/p5pp/2p5/8/8/7P/6PK/8 w - - 7 35",
+      "searchMove": "c8d8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "c8d8",
+        "g8d8",
+        "b8d8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:105",
+      "fen": "1R1Q2qk/p5pp/8/2p5/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "d8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:106",
+      "fen": "1R1Q2qk/6pp/2p5/p7/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "d8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:107",
+      "fen": "1R1Q2qk/6pp/p1p5/8/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "d8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:108",
+      "fen": "1R1Q2qk/p6p/2p5/6p1/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "d8d4",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d8d4"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:109",
+      "fen": "1R1Q2qk/p6p/2p3p1/8/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "d8d4",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d8d4"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:110",
+      "fen": "1R1Q2qk/p5p1/2p5/7p/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "d8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:111",
+      "fen": "1R1Q2qk/p5p1/2p4p/8/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "d8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:112",
+      "fen": "1R1q3k/p5pp/2p5/8/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "b8d8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "b8d8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:113",
+      "fen": "1R1Qq2k/p5pp/2p5/8/8/7P/6PK/8 w - - 1 36",
+      "searchMove": "d8e8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d8e8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:114",
+      "fen": "1R1Q1q1k/p5pp/2p5/8/8/7P/6PK/8 w - - 1 36",
+      "searchMove": "d8f8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d8f8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:115",
+      "fen": "1RQ3qk/p5pp/8/2p5/8/7P/3r2PK/8 w - - 0 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:116",
+      "fen": "1RQ3qk/6pp/2p5/p7/8/7P/3r2PK/8 w - - 0 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:117",
+      "fen": "1RQ3qk/6pp/p1p5/8/8/7P/3r2PK/8 w - - 0 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:118",
+      "fen": "1RQ3qk/p6p/2p5/6p1/8/7P/3r2PK/8 w - - 0 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:119",
+      "fen": "1RQ3qk/p6p/2p3p1/8/8/7P/3r2PK/8 w - - 0 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:120",
+      "fen": "1RQ3qk/p5p1/2p5/7p/8/7P/3r2PK/8 w - - 0 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:121",
+      "fen": "1RQ3qk/p5p1/2p4p/8/8/7P/3r2PK/8 w - - 0 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:122",
+      "fen": "1Rq4k/p5pp/2p5/8/8/7P/3r2PK/8 w - - 0 35",
+      "searchMove": "b8c8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "b8c8",
+        "d2d8",
+        "c8d8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:123",
+      "fen": "2Rr3k/p5pp/2p5/8/8/7P/6PK/8 w - - 1 36",
+      "searchMove": "c8d8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8d8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:124",
+      "fen": "1RQq3k/p5pp/2p5/8/8/7P/3r2PK/8 w - - 7 35",
+      "searchMove": "c8d8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "c8d8",
+        "d2d8",
+        "b8d8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:125",
+      "fen": "1R1r3k/p5pp/2p5/8/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "b8d8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "b8d8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:126",
+      "fen": "1RQ1q2k/p5pp/2p5/8/8/7P/3r2PK/8 w - - 7 35",
+      "searchMove": "c8e8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8e8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:127",
+      "fen": "1RQ2q1k/p5pp/2p5/8/8/7P/3r2PK/8 w - - 7 35",
+      "searchMove": "c8f8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8f8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:128",
+      "fen": "1RQ3qk/p5pp/2p5/8/8/7P/4r1P1/7K w - - 5 34",
+      "searchMove": "h1h2",
+      "certificateMateWithin": 3,
+      "depth": 16,
+      "cp": null,
+      "mate": 3,
+      "pvUci": [
+        "h1h2",
+        "g8c8",
+        "b8c8",
+        "e2e8",
+        "c8e8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:134",
+      "fen": "1RQ1r1qk/p5pp/2p5/8/8/7P/6PK/8 w - - 7 35",
+      "searchMove": "c8e8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "c8e8",
+        "g8e8",
+        "b8e8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:135",
+      "fen": "1R2Q1qk/p5pp/8/2p5/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "e8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "e8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:136",
+      "fen": "1R2Q1qk/6pp/2p5/p7/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "e8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "e8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:137",
+      "fen": "1R2Q1qk/6pp/p1p5/8/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "e8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "e8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:138",
+      "fen": "1R2Q1qk/p6p/2p5/6p1/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "e8e5",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "e8e5"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:139",
+      "fen": "1R2Q1qk/p6p/2p3p1/8/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "e8e5",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "e8e5"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:140",
+      "fen": "1R2Q1qk/p5p1/2p5/7p/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "e8h5",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "e8h5"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:141",
+      "fen": "1R2Q1qk/p5p1/2p4p/8/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "e8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "e8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:142",
+      "fen": "1R2q2k/p5pp/2p5/8/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "b8e8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "b8e8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:143",
+      "fen": "1R2Qq1k/p5pp/2p5/8/8/7P/6PK/8 w - - 1 36",
+      "searchMove": "e8f8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "e8f8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:144",
+      "fen": "1RQ3qk/p5pp/8/2p5/8/7P/4r1PK/8 w - - 0 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:145",
+      "fen": "1RQ3qk/6pp/2p5/p7/8/7P/4r1PK/8 w - - 0 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:146",
+      "fen": "1RQ3qk/6pp/p1p5/8/8/7P/4r1PK/8 w - - 0 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:147",
+      "fen": "1RQ3qk/p6p/2p5/6p1/8/7P/4r1PK/8 w - - 0 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:148",
+      "fen": "1RQ3qk/p6p/2p3p1/8/8/7P/4r1PK/8 w - - 0 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:149",
+      "fen": "1RQ3qk/p5p1/2p5/7p/8/7P/4r1PK/8 w - - 0 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:150",
+      "fen": "1RQ3qk/p5p1/2p4p/8/8/7P/4r1PK/8 w - - 0 35",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:151",
+      "fen": "1Rq4k/p5pp/2p5/8/8/7P/4r1PK/8 w - - 0 35",
+      "searchMove": "b8c8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "b8c8",
+        "e2e8",
+        "c8e8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:152",
+      "fen": "2R1r2k/p5pp/2p5/8/8/7P/6PK/8 w - - 1 36",
+      "searchMove": "c8e8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8e8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:153",
+      "fen": "1RQq3k/p5pp/2p5/8/8/7P/4r1PK/8 w - - 7 35",
+      "searchMove": "c8d8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "c8d8",
+        "e2e8",
+        "d8e8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:154",
+      "fen": "1R1Qr2k/p5pp/2p5/8/8/7P/6PK/8 w - - 1 36",
+      "searchMove": "d8e8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d8e8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:155",
+      "fen": "1RQ1q2k/p5pp/2p5/8/8/7P/4r1PK/8 w - - 7 35",
+      "searchMove": "c8e8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "c8e8",
+        "e2e8",
+        "b8e8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:156",
+      "fen": "1R2r2k/p5pp/2p5/8/8/7P/6PK/8 w - - 0 36",
+      "searchMove": "b8e8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "b8e8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:157",
+      "fen": "1RQ2q1k/p5pp/2p5/8/8/7P/4r1PK/8 w - - 7 35",
+      "searchMove": "c8f8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8f8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:158",
+      "fen": "1RQ3qk/p5pp/2p5/8/8/7P/6r1/7K w - - 0 34",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 3,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:188",
+      "fen": "1RQ3qk/p5pp/2p5/8/6r1/7P/6PK/8 w - - 7 35",
+      "searchMove": "h2h1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "h2h1",
+        "g8c8",
+        "b8c8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:189",
+      "fen": "1RQ3qk/p5pp/2p5/8/8/7P/6r1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:190",
+      "fen": "1RQ3qk/p5pp/2p5/8/8/6rP/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:191",
+      "fen": "1RQ3qk/p5pp/2p5/8/r7/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:192",
+      "fen": "1RQ3qk/p5pp/2p5/8/1r6/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:193",
+      "fen": "1RQ3qk/p5pp/2p5/8/2r5/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:194",
+      "fen": "1RQ3qk/p5pp/2p5/8/3r4/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:195",
+      "fen": "1RQ3qk/p5pp/2p5/8/4r3/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:196",
+      "fen": "1RQ3qk/p5pp/2p5/8/5r2/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:197",
+      "fen": "1RQ3qk/p5pp/2p5/8/7r/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:198",
+      "fen": "1RQ3qk/p5pp/2p5/6r1/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:199",
+      "fen": "1RQ3qk/p5pp/2p3r1/8/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:200",
+      "fen": "1RQ3qk/p5pp/8/2p5/6r1/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:201",
+      "fen": "1RQ3qk/6pp/2p5/p7/6r1/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:202",
+      "fen": "1RQ3qk/6pp/p1p5/8/6r1/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:203",
+      "fen": "1RQ3qk/p6p/2p5/6p1/6r1/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:204",
+      "fen": "1RQ3qk/p6p/2p3p1/8/6r1/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:205",
+      "fen": "1RQ3qk/p5p1/2p5/7p/6r1/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:206",
+      "fen": "1RQ3qk/p5p1/2p4p/8/6r1/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:207",
+      "fen": "1Rq4k/p5pp/2p5/8/6r1/7P/6P1/7K w - - 0 36",
+      "searchMove": "b8c8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "b8c8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:208",
+      "fen": "1RQq3k/p5pp/2p5/8/6r1/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8d8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8d8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:209",
+      "fen": "1RQ1q2k/p5pp/2p5/8/6r1/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8e8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8e8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:210",
+      "fen": "1RQ2q1k/p5pp/2p5/8/6r1/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8f8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8f8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:225",
+      "fen": "1RQ3qk/p5pp/2p5/6r1/8/7P/6PK/8 w - - 7 35",
+      "searchMove": "h2h1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "h2h1",
+        "g8c8",
+        "b8c8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:226",
+      "fen": "1RQ3qk/p5pp/2p5/8/6r1/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:227",
+      "fen": "1RQ3qk/p5pp/2p5/r7/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:228",
+      "fen": "1RQ3qk/p5pp/2p5/1r6/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:229",
+      "fen": "1RQ3qk/p5pp/2p5/2r5/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:230",
+      "fen": "1RQ3qk/p5pp/2p5/3r4/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:231",
+      "fen": "1RQ3qk/p5pp/2p5/4r3/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:232",
+      "fen": "1RQ3qk/p5pp/2p5/5r2/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:233",
+      "fen": "1RQ3qk/p5pp/2p5/7r/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:234",
+      "fen": "1RQ3qk/p5pp/8/2p3r1/8/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:235",
+      "fen": "1RQ3qk/6pp/2p5/p5r1/8/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:236",
+      "fen": "1RQ3qk/6pp/p1p5/6r1/8/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:237",
+      "fen": "1RQ3qk/p6p/2p3p1/6r1/8/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:238",
+      "fen": "1RQ3qk/p5p1/2p5/6rp/8/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:239",
+      "fen": "1RQ3qk/p5p1/2p4p/6r1/8/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:240",
+      "fen": "1Rq4k/p5pp/2p5/6r1/8/7P/6P1/7K w - - 0 36",
+      "searchMove": "b8c8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "b8c8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:241",
+      "fen": "1RQq3k/p5pp/2p5/6r1/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8d8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8d8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:242",
+      "fen": "1RQ1q2k/p5pp/2p5/6r1/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8e8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8e8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:243",
+      "fen": "1RQ2q1k/p5pp/2p5/6r1/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8f8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8f8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:258",
+      "fen": "1RQ3qk/p5pp/2p3r1/8/8/7P/6PK/8 w - - 7 35",
+      "searchMove": "h2h1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "h2h1",
+        "g8c8",
+        "b8c8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:259",
+      "fen": "1RQ3qk/p5pp/6r1/2p5/8/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:260",
+      "fen": "1RQ3qk/p5pp/2pr4/8/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:261",
+      "fen": "1RQ3qk/p5pp/2p1r3/8/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:262",
+      "fen": "1RQ3qk/p5pp/2p2r2/8/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:263",
+      "fen": "1RQ3qk/p5pp/2p4r/8/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:264",
+      "fen": "1RQ3qk/6pp/2p3r1/p7/8/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:265",
+      "fen": "1RQ3qk/6pp/p1p3r1/8/8/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:266",
+      "fen": "1RQ3qk/p5p1/2p3r1/7p/8/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:267",
+      "fen": "1RQ3qk/p5p1/2p3rp/8/8/7P/6P1/7K w - - 0 36",
+      "searchMove": "c8g8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:268",
+      "fen": "1Rq4k/p5pp/2p3r1/8/8/7P/6P1/7K w - - 0 36",
+      "searchMove": "b8c8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "b8c8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:269",
+      "fen": "1RQq3k/p5pp/2p3r1/8/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8d8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8d8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:270",
+      "fen": "1RQ1q2k/p5pp/2p3r1/8/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8e8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8e8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:271",
+      "fen": "1RQ2q1k/p5pp/2p3r1/8/8/7P/6P1/7K w - - 9 36",
+      "searchMove": "c8f8",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c8f8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:298",
+      "fen": "1R3Qqk/p5pp/8/2p5/8/7P/6P1/7K w - - 0 35",
+      "searchMove": "f8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "f8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:299",
+      "fen": "1R3Qqk/6pp/2p5/p7/8/7P/6P1/7K w - - 0 35",
+      "searchMove": "f8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "f8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:false:answer:300",
+      "fen": "1R3Qqk/6pp/p1p5/8/8/7P/6P1/7K w - - 0 35",
+      "searchMove": "f8g8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "f8g8"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:146",
+      "fen": "7k/6p1/7p/8/8/P1P5/6PP/1r3qQK b - - 0 35",
+      "searchMove": "f1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "f1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:147",
+      "fen": "7k/6p1/7p/8/P7/2P5/6PP/1r3qQK b - - 0 35",
+      "searchMove": "f1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "f1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:152",
+      "fen": "7k/6p1/7p/8/2P5/8/P5PP/1r3qQK b - - 0 35",
+      "searchMove": "f1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "f1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:202",
+      "fen": "8/6pk/7p/8/8/2P3R1/P5PP/1rq3QK b - - 7 35",
+      "searchMove": "h7h8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "h7h8",
+        "g1c1",
+        "b1c1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:203",
+      "fen": "7k/6p1/7p/8/8/2P3R1/P5PP/1rQ4K b - - 0 36",
+      "searchMove": "b1c1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "b1c1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:204",
+      "fen": "7k/6p1/7p/8/8/2P3R1/P5PP/1rqQ3K b - - 9 36",
+      "searchMove": "c1d1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1d1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:205",
+      "fen": "7k/6p1/7p/8/8/2P3R1/P5PP/1rq1Q2K b - - 9 36",
+      "searchMove": "c1e1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1e1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:206",
+      "fen": "7k/6p1/7p/8/8/2P3R1/P5PP/1rq2Q1K b - - 9 36",
+      "searchMove": "c1f1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1f1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:207",
+      "fen": "7k/6p1/7p/8/8/P1P3R1/6PP/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:208",
+      "fen": "7k/6p1/7p/8/P7/2P3R1/6PP/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:209",
+      "fen": "7k/6p1/7p/8/8/2P3RP/P5P1/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:210",
+      "fen": "7k/6p1/7p/8/7P/2P3R1/P5P1/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:211",
+      "fen": "7k/6p1/7p/8/2P5/6R1/P5PP/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:212",
+      "fen": "7k/6p1/7p/8/8/2PR4/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:213",
+      "fen": "7k/6p1/7p/8/8/2P1R3/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:214",
+      "fen": "7k/6p1/7p/8/8/2P2R2/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:215",
+      "fen": "7k/6p1/7p/8/8/2P4R/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:216",
+      "fen": "7k/6p1/7p/8/6R1/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:217",
+      "fen": "7k/6p1/7p/6R1/8/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:218",
+      "fen": "7k/6p1/6Rp/8/8/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:219",
+      "fen": "7k/6R1/7p/8/8/2P5/P5PP/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:233",
+      "fen": "8/6pk/7p/8/R7/2P5/P5PP/1rq3QK b - - 7 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:235",
+      "fen": "8/6pk/7p/8/2R5/2P5/P5PP/1rq3QK b - - 7 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:238",
+      "fen": "8/6pk/7p/8/6R1/2P5/P5PP/1rq3QK b - - 7 35",
+      "searchMove": "h7h8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "h7h8",
+        "g1c1",
+        "b1c1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:239",
+      "fen": "7k/6p1/7p/8/6R1/2P5/P5PP/1rQ4K b - - 0 36",
+      "searchMove": "b1c1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "b1c1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:240",
+      "fen": "7k/6p1/7p/8/6R1/2P5/P5PP/1rqQ3K b - - 9 36",
+      "searchMove": "c1d1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1d1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:241",
+      "fen": "7k/6p1/7p/8/6R1/2P5/P5PP/1rq1Q2K b - - 9 36",
+      "searchMove": "c1e1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1e1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:242",
+      "fen": "7k/6p1/7p/8/6R1/2P5/P5PP/1rq2Q1K b - - 9 36",
+      "searchMove": "c1f1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1f1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:243",
+      "fen": "7k/6p1/7p/8/6R1/P1P5/6PP/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:244",
+      "fen": "7k/6p1/7p/8/P5R1/2P5/6PP/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:245",
+      "fen": "7k/6p1/7p/8/6R1/2P3P1/P6P/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:246",
+      "fen": "7k/6p1/7p/8/6R1/2P4P/P5P1/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:247",
+      "fen": "7k/6p1/7p/8/6RP/2P5/P5P1/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:248",
+      "fen": "7k/6p1/7p/8/2P3R1/8/P5PP/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:249",
+      "fen": "7k/6p1/7p/8/8/2P3R1/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:250",
+      "fen": "7k/6p1/7p/8/R7/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:251",
+      "fen": "7k/6p1/7p/8/1R6/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:252",
+      "fen": "7k/6p1/7p/8/2R5/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:253",
+      "fen": "7k/6p1/7p/8/3R4/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:254",
+      "fen": "7k/6p1/7p/8/4R3/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:255",
+      "fen": "7k/6p1/7p/8/5R2/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:256",
+      "fen": "7k/6p1/7p/8/7R/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:270",
+      "fen": "8/6pk/7p/R7/8/2P5/P5PP/1rq3QK b - - 7 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:272",
+      "fen": "8/6pk/7p/2R5/8/2P5/P5PP/1rq3QK b - - 7 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:275",
+      "fen": "8/6pk/7p/6R1/8/2P5/P5PP/1rq3QK b - - 7 35",
+      "searchMove": "h7h8",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "h7h8",
+        "g1c1",
+        "b1c1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:276",
+      "fen": "7k/6p1/7p/6R1/8/2P5/P5PP/1rQ4K b - - 0 36",
+      "searchMove": "b1c1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "b1c1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:277",
+      "fen": "7k/6p1/7p/6R1/8/2P5/P5PP/1rqQ3K b - - 9 36",
+      "searchMove": "c1d1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1d1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:278",
+      "fen": "7k/6p1/7p/6R1/8/2P5/P5PP/1rq1Q2K b - - 9 36",
+      "searchMove": "c1e1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1e1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:279",
+      "fen": "7k/6p1/7p/6R1/8/2P5/P5PP/1rq2Q1K b - - 9 36",
+      "searchMove": "c1f1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1f1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:280",
+      "fen": "7k/6p1/7p/6R1/8/P1P5/6PP/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:281",
+      "fen": "7k/6p1/7p/6R1/P7/2P5/6PP/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:282",
+      "fen": "7k/6p1/7p/6R1/8/2P3P1/P6P/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:283",
+      "fen": "7k/6p1/7p/6R1/6P1/2P5/P6P/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:284",
+      "fen": "7k/6p1/7p/6R1/8/2P4P/P5P1/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:285",
+      "fen": "7k/6p1/7p/6R1/7P/2P5/P5P1/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:286",
+      "fen": "7k/6p1/7p/6R1/2P5/8/P5PP/1rq3QK b - - 0 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:287",
+      "fen": "7k/6p1/7p/R7/8/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:288",
+      "fen": "7k/6p1/7p/1R6/8/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:289",
+      "fen": "7k/6p1/7p/2R5/8/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:290",
+      "fen": "7k/6p1/7p/3R4/8/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:291",
+      "fen": "7k/6p1/7p/4R3/8/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:292",
+      "fen": "7k/6p1/7p/5R2/8/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:293",
+      "fen": "7k/6p1/7p/7R/8/2P5/P5PP/1rq3QK b - - 9 36",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:337",
+      "fen": "8/6pk/7p/8/8/R1P5/P5PP/1rq3QK b - - 7 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:369",
+      "fen": "7k/3R2p1/7p/8/8/2P5/P5PP/1rq3QK b - - 5 34",
+      "searchMove": "h8h7",
+      "certificateMateWithin": 3,
+      "depth": 16,
+      "cp": null,
+      "mate": 3,
+      "pvUci": [
+        "h8h7",
+        "g1c1",
+        "b1c1",
+        "d7d1",
+        "c1d1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:370",
+      "fen": "8/3R2pk/7p/8/8/2P5/P5PP/1rQ4K b - - 0 35",
+      "searchMove": "b1c1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "b1c1",
+        "d7d1",
+        "c1d1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:371",
+      "fen": "8/6pk/7p/8/8/2P5/P5PP/2rR3K b - - 1 36",
+      "searchMove": "c1d1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1d1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:372",
+      "fen": "8/3R2pk/7p/8/8/2P5/P5PP/1rqQ3K b - - 7 35",
+      "searchMove": "c1d1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "c1d1",
+        "d7d1",
+        "b1d1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:373",
+      "fen": "8/6pk/7p/8/8/2P5/P5PP/1r1R3K b - - 0 36",
+      "searchMove": "b1d1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "b1d1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:374",
+      "fen": "8/3R2pk/7p/8/8/2P5/P5PP/1rq1Q2K b - - 7 35",
+      "searchMove": "c1e1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1e1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:375",
+      "fen": "8/3R2pk/7p/8/8/2P5/P5PP/1rq2Q1K b - - 7 35",
+      "searchMove": "c1f1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1f1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:376",
+      "fen": "8/3R2pk/7p/8/8/P1P5/6PP/1rq3QK b - - 0 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:377",
+      "fen": "8/3R2pk/7p/8/P7/2P5/6PP/1rq3QK b - - 0 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:378",
+      "fen": "8/3R2pk/7p/8/8/2P3P1/P6P/1rq3QK b - - 0 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:379",
+      "fen": "8/3R2pk/7p/8/6P1/2P5/P6P/1rq3QK b - - 0 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:380",
+      "fen": "8/3R2pk/7p/8/8/2P4P/P5P1/1rq3QK b - - 0 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:381",
+      "fen": "8/3R2pk/7p/8/7P/2P5/P5P1/1rq3QK b - - 0 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:382",
+      "fen": "8/3R2pk/7p/8/2P5/8/P5PP/1rq3QK b - - 0 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:383",
+      "fen": "8/6pk/7p/8/8/2P5/P5PP/1rqR2QK b - - 7 35",
+      "searchMove": "c1d1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "c1d1",
+        "g1d1",
+        "b1d1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:384",
+      "fen": "8/6pk/7p/8/8/2P5/P5PP/1r1Q3K b - - 0 36",
+      "searchMove": "b1d1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "b1d1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:385",
+      "fen": "8/6pk/7p/8/8/2P5/P5PP/1r1qQ2K b - - 1 36",
+      "searchMove": "d1e1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d1e1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:386",
+      "fen": "8/6pk/7p/8/8/2P5/P5PP/1r1q1Q1K b - - 1 36",
+      "searchMove": "d1f1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d1f1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:387",
+      "fen": "8/6pk/7p/8/8/P1P5/6PP/1r1q2QK b - - 0 36",
+      "searchMove": "d1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:388",
+      "fen": "8/6pk/7p/8/P7/2P5/6PP/1r1q2QK b - - 0 36",
+      "searchMove": "d1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:389",
+      "fen": "8/6pk/7p/8/8/2P3P1/P6P/1r1q2QK b - - 0 36",
+      "searchMove": "d1d5",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d1d5"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:390",
+      "fen": "8/6pk/7p/8/6P1/2P5/P6P/1r1q2QK b - - 0 36",
+      "searchMove": "d1d5",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d1d5"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:391",
+      "fen": "8/6pk/7p/8/8/2P4P/P5P1/1r1q2QK b - - 0 36",
+      "searchMove": "d1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:392",
+      "fen": "8/6pk/7p/8/7P/2P5/P5P1/1r1q2QK b - - 0 36",
+      "searchMove": "d1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:393",
+      "fen": "8/6pk/7p/8/2P5/8/P5PP/1r1q2QK b - - 0 36",
+      "searchMove": "d1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:395",
+      "fen": "7k/4R1p1/7p/8/8/2P5/P5PP/1rq3QK b - - 5 34",
+      "searchMove": "h8h7",
+      "certificateMateWithin": 3,
+      "depth": 16,
+      "cp": null,
+      "mate": 3,
+      "pvUci": [
+        "h8h7",
+        "g1c1",
+        "b1c1",
+        "e7e1",
+        "c1e1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:396",
+      "fen": "8/4R1pk/7p/8/8/2P5/P5PP/1rQ4K b - - 0 35",
+      "searchMove": "b1c1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "b1c1",
+        "e7e1",
+        "c1e1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:397",
+      "fen": "8/6pk/7p/8/8/2P5/P5PP/2r1R2K b - - 1 36",
+      "searchMove": "c1e1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1e1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:398",
+      "fen": "8/4R1pk/7p/8/8/2P5/P5PP/1rqQ3K b - - 7 35",
+      "searchMove": "c1d1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "c1d1",
+        "e7e1",
+        "d1e1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:399",
+      "fen": "8/6pk/7p/8/8/2P5/P5PP/1r1qR2K b - - 1 36",
+      "searchMove": "d1e1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "d1e1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:400",
+      "fen": "8/4R1pk/7p/8/8/2P5/P5PP/1rq1Q2K b - - 7 35",
+      "searchMove": "c1e1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "c1e1",
+        "e7e1",
+        "b1e1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:401",
+      "fen": "8/6pk/7p/8/8/2P5/P5PP/1r2R2K b - - 0 36",
+      "searchMove": "b1e1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "b1e1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:402",
+      "fen": "8/4R1pk/7p/8/8/2P5/P5PP/1rq2Q1K b - - 7 35",
+      "searchMove": "c1f1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1f1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:403",
+      "fen": "8/4R1pk/7p/8/8/P1P5/6PP/1rq3QK b - - 0 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:404",
+      "fen": "8/4R1pk/7p/8/P7/2P5/6PP/1rq3QK b - - 0 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:405",
+      "fen": "8/4R1pk/7p/8/8/2P3P1/P6P/1rq3QK b - - 0 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:406",
+      "fen": "8/4R1pk/7p/8/6P1/2P5/P6P/1rq3QK b - - 0 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:407",
+      "fen": "8/4R1pk/7p/8/8/2P4P/P5P1/1rq3QK b - - 0 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:408",
+      "fen": "8/4R1pk/7p/8/7P/2P5/P5P1/1rq3QK b - - 0 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:409",
+      "fen": "8/4R1pk/7p/8/2P5/8/P5PP/1rq3QK b - - 0 35",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:410",
+      "fen": "8/6pk/7p/8/8/2P5/P5PP/1rq1R1QK b - - 7 35",
+      "searchMove": "c1e1",
+      "certificateMateWithin": 2,
+      "depth": 16,
+      "cp": null,
+      "mate": 2,
+      "pvUci": [
+        "c1e1",
+        "g1e1",
+        "b1e1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:411",
+      "fen": "8/6pk/7p/8/8/2P5/P5PP/1r2Q2K b - - 0 36",
+      "searchMove": "b1e1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "b1e1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:412",
+      "fen": "8/6pk/7p/8/8/2P5/P5PP/1r2qQ1K b - - 1 36",
+      "searchMove": "e1f1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "e1f1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:413",
+      "fen": "8/6pk/7p/8/8/P1P5/6PP/1r2q1QK b - - 0 36",
+      "searchMove": "e1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "e1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:414",
+      "fen": "8/6pk/7p/8/P7/2P5/6PP/1r2q1QK b - - 0 36",
+      "searchMove": "e1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "e1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:415",
+      "fen": "8/6pk/7p/8/8/2P3P1/P6P/1r2q1QK b - - 0 36",
+      "searchMove": "e1e4",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "e1e4"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:416",
+      "fen": "8/6pk/7p/8/6P1/2P5/P6P/1r2q1QK b - - 0 36",
+      "searchMove": "e1e4",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "e1e4"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:417",
+      "fen": "8/6pk/7p/8/8/2P4P/P5P1/1r2q1QK b - - 0 36",
+      "searchMove": "e1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "e1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:418",
+      "fen": "8/6pk/7p/8/7P/2P5/P5P1/1r2q1QK b - - 0 36",
+      "searchMove": "e1h4",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "e1h4"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:419",
+      "fen": "8/6pk/7p/8/2P5/8/P5PP/1r2q1QK b - - 0 36",
+      "searchMove": "e1g1",
+      "certificateMateWithin": 1,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "e1g1"
+      ]
+    },
+    {
+      "id": "lichess:0QPvf-engine:true:answer:421",
+      "fen": "7k/6R1/7p/8/8/2P5/P5PP/1rq3QK b - - 0 34",
+      "searchMove": "c1g1",
+      "certificateMateWithin": 3,
+      "depth": 16,
+      "cp": null,
+      "mate": 1,
+      "pvUci": [
+        "c1g1"
+      ]
+    }
+  ]
+}

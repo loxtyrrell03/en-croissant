@@ -12,6 +12,7 @@ import { directThreatFen, directThreatLine } from "./fixtures/directThreatReleva
 import { pawnExposureAlternateInput } from "./fixtures/pawnExposure";
 import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
 import { shortMatingThreatCases } from "./fixtures/shortMatingThreat";
+import { matingCheckEvasionFen, matingCheckEvasionLine } from "./fixtures/matingCheckEvasion";
 import {
   buildLiveTacticalScan,
   previewLiveTacticalVariation,
@@ -36,6 +37,16 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a proved mate through counterchecks names the root without drawing future captures", () => {
+  const value = buildLiveTacticalScan({fen: matingCheckEvasionFen, pvUci: matingCheckEvasionLine, depth: 16, engineName: "Constructed mating proof"});
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Forcing Mate found");
+  expect(element.textContent).toContain("Every legal defence permits mate within 7 moves");
+  expect(element.textContent).not.toContain("No verified immediate theme");
+  expect(value.arrows.map(a => a.from + a.to)).toEqual(["e4e5"]);
+  expect(value.variations[0].timeline).toContainEqual(expect.objectContaining({id: "mateIn1", ply: 13}));
+});
 
 test("a short mating threat explains the root without promising an unavoidable mate", () => {
   const row = shortMatingThreatCases[0];

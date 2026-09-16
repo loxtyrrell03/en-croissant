@@ -27,6 +27,7 @@ import { checkingPawnHistoryCases } from "./fixtures/checkingPawnHistory";
 import { settledPawnHistoryCases } from "./fixtures/settledPawnHistory";
 import { countercheckCaptureCases, countercheckCaptureLine } from "./fixtures/checkingCountercheckCapture";
 import { shortMatingThreatCases } from "./fixtures/shortMatingThreat";
+import { matingCheckEvasionCases } from "./fixtures/matingCheckEvasion";
 import { discoveredPinPriorityFen, discoveredPinPriorityLine, discoveredPinPriorityControls } from "./fixtures/discoveredPinPriority";
 import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "./fixtures/checkingPawnFollowup";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
@@ -136,6 +137,18 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("settled capture chains preserve
         expect(result.scan).toEqual(buildLiveTacticalScan(input));
         expect(result.scan.motifs.map(m => m.label)).toEqual(row.positive ? ["Hanging Pawn"] : []);
         expect(result.scan.arrows.every(arrow => arrow.ply === 1)).toBe(true);
+    }
+}, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("mating check evasions retain exact certificates in the production controller", async () => {
+    for (const row of matingCheckEvasionCases) for (const reflected of [false, true]) {
+        const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci: reflected ? row.pvUci.map(reflectMixedForkMove) : row.pvUci,
+            engineName: "Constructed mating proof", depth: 16 };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.some(m => m.id === "mateIn7")).toBe(row.positive);
+        expect(!row.positive || JSON.stringify(result.scan.arrows.map(a => a.from + a.to)) === JSON.stringify([input.pvUci[0]])).toBe(true);
     }
 }, 30000);
 
@@ -1476,7 +1489,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             }
             if (item.id.startsWith("quiet-mate:") || item.id.startsWith("quiet-mate-engine:")) {
                 const mateIn2 = /06PHz|0XwFD|0iAUN/.test(item.id), mateIn3 = /0IJ6I|09Cf3|0hHGN/.test(item.id);
-                const matingAttack = item.id.includes("0rcU4"), newAttack = /0z5nl|0QPvf/.test(item.id);
+                const matingAttack = /0rcU4|0QPvf/.test(item.id), newAttack = item.id.includes("0z5nl");
                 if (JSON.stringify(result.scan.motifs.map(m => m.id)) !== JSON.stringify(mateIn2 ? ["mateThreat"] : mateIn3 ? ["mateIn3"] : matingAttack ? [item.input.pvUci.length >= 7 ? "mateIn4" : "forcingAttack"] : newAttack ? ["forcingAttack"] : []))
                     throw new Error(`Quiet mating primary or retained coverage gap changed: ${item.id}`);
                 if (item.id.includes("0hHGN") && result.scan.variations[0].timeline.some(m => m.id === "fork" && m.ply === 1))

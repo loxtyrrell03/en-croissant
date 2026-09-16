@@ -10,8 +10,43 @@ import { parseUci } from "chessops/util";
 import { matingEntryDefence } from "../../src/utils/tests/fixtures/matingEntryDefence.ts";
 import { checkingForkCaptureFen } from "../../src/utils/tests/fixtures/checkingForkCaptureDefence.ts";
 import { shortMatingThreatCases } from "../../src/utils/tests/fixtures/shortMatingThreat.ts";
+import { matingCheckEvasionFen, matingCheckEvasionLine } from "../../src/utils/tests/fixtures/matingCheckEvasion.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("a missed mating attack with defensive check evasions survives generated review and storage", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-shared-review-mating-evasion-"));
+  const position = Chess.fromSetup(parseFen(matingCheckEvasionFen).unwrap()).unwrap();
+  position.play(parseUci("e4a8"));
+  const after = makeFen(position.toSetup());
+  const options = {root, documentsRoot: join(root, "documents"), engineConfigPath: join(root, "engine.json"),
+    fetchGames: async () => [], lookup: async fen => {
+      assert.ok(fen === matingCheckEvasionFen || fen === after);
+      // Controlled nomination evidence tests wiring. Fresh engine receipts and
+      // an independent complete strategy check validate the actual chess.
+      return {depth: 16, pvs: fen === matingCheckEvasionFen
+        ? [{mate: -7, moves: matingCheckEvasionLine.join(" ")}] : [{cp: 0, moves: "b8a8"}]};
+    }};
+  let service;
+  try {
+    await writeFile(join(root, "config.json"), JSON.stringify({accounts: {chesscom: "Tester"}}));
+    await writeFile(join(root, "games.json"), JSON.stringify({games: [{source: "chesscom", end: 1789387200,
+      url: "https://example.test/mating-evasion", pgn: `[White "Opponent"]\n[Black "Tester"]\n[Date "2026.09.16"]\n[SetUp "1"]\n[FEN "${matingCheckEvasionFen}"]\n[Result "1/2-1/2"]\n\n1... Qxa8+ 1/2-1/2`}]}));
+    service = new SharedReviewService(options); await service.initialize(false); await service.run();
+    assert.equal(service.snapshot().error, null);
+    const card = service.snapshot().cards[0]; assert.ok(card);
+    assert.equal(card.tacticalClassification.missedMotifs[0].id, "mateIn7");
+    assert.equal(card.tacticalClassification.allowedMotifs.length, 0);
+    assert.deepEqual((await service.deck()).positions[0].mistakeReview.missedMotifs,
+      card.tacticalClassification.missedMotifs);
+    service.close(); service = new SharedReviewService(options); await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification, card.tacticalClassification);
+  } finally {
+    service?.close(); const target = resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir()) + sep) && target.includes("en-shared-review-mating-evasion-"));
+    await rm(target, {recursive: true, force: true});
+  }
+});
 
 test("a missed short mating attack survives generated review, storage and reload", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-short-threat-"));

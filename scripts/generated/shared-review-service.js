@@ -11373,8 +11373,10 @@ function proveShortCheckingMate(root, nodeLimit = 4096) {
 }
 /** A PV ending in mate is only a nomination. All legal defences must
 * lose, including after a nonchecking first move. Besides checks, at most
-* two PV-nominated quiet attacking moves may be tried; each opens the full
-* legal defensive tree. Unknown/exhausted searches cannot certify the line. */
+* two PV-nominated quiet preparations may be tried. An economical fallback
+* separates actual check evasions from those free preparations, and can
+* independently nominate a quiet mate-in-two finish within the same shared
+* budget. Unknown/exhausted searches cannot certify the line. */
 function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeStrategy = false, onFailure) {
 	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
 	const root = steps[0];
@@ -11385,8 +11387,11 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeS
 	const hints = steps.slice(0, terminal + 1).filter((s) => s.before.turn === root.before.turn).map((s) => s.uci);
 	const quietHints = new Set(steps.slice(0, terminal + 1).filter((s) => s.before.turn === root.before.turn && !s.after.isCheck()).map((s) => s.uci));
 	let quietLimit = Math.min(2, quietHints.size);
+	const nominatedQuietEvasion = steps.slice(0, terminal + 1).some((step) => step.before.turn === root.before.turn && step.before.isCheck() && !step.after.isCheck());
+	let separateCheckEvasions = false;
+	let allowShortQuietFinish = false;
 	let branchQuietHints = quietHints;
-	const key = `${makeFen(root.after.toSetup())}:${maxMoves}:${hints}:${[...quietHints]}`;
+	const key = `${makeFen(root.after.toSetup())}:${maxMoves}:${hints}:${[...quietHints]}:${nominatedQuietEvasion}`;
 	if (!includeStrategy && !onFailure && nodeLimit === CHECKING_MATE_NODE_LIMIT && checkingMateCache.has(key)) return checkingMateCache.get(key);
 	let nodes = nodeLimit;
 	const visit = (pos, move) => {
@@ -11410,24 +11415,31 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeS
 		const cacheKey = `${makeFen(pos.toSetup())}:${remaining}:${quiet}`;
 		if (attackMemo.has(cacheKey)) return attackMemo.get(cacheKey);
 		const moves = orderedMoves(pos);
+		const shortQuietFinish = allowShortQuietFinish && quiet > 0 && remaining >= 2;
 		const expected = hints[maxMoves - remaining];
 		const king = pos.board.kingOf(opposite(pos.turn));
 		const discoveryRays = [...pos.board[pos.turn].intersect(pos.board.queen.union(pos.board.rook).union(pos.board.bishop))].map((square) => between(king, square));
-		moves.sort((a, b) => Number(makeUci(b) === expected) - Number(makeUci(a) === expected) || Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))));
+		moves.sort((a, b) => Number(makeUci(b) === expected) - Number(makeUci(a) === expected) || Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))) || (shortQuietFinish && !pos.isCheck() ? Number(mayGiveCheck(pos, b)) - Number(mayGiveCheck(pos, a)) : 0));
 		for (const move of moves) {
 			const piece = pos.board.get(move.from);
-			if (!branchQuietHints.has(makeUci(move)) && move.to !== pos.epSquare && !(piece.role === "king" && pos.board[pos.turn].has(move.to)) && !discoveryRays.some((ray) => ray.has(move.from)) && !attacks({
+			if (!shortQuietFinish && !(separateCheckEvasions && pos.isCheck()) && !branchQuietHints.has(makeUci(move)) && move.to !== pos.epSquare && !(piece.role === "king" && pos.board[pos.turn].has(move.to)) && !discoveryRays.some((ray) => ray.has(move.from)) && !attacks({
 				color: pos.turn,
 				role: move.promotion ?? piece.role
 			}, move.to, pos.board.occupied.without(move.from).with(move.to)).has(king)) continue;
 			const next = visit(pos, move);
 			const isQuiet = !next.isCheck();
-			if (isQuiet && (!quiet || !branchQuietHints.has(makeUci(move)))) continue;
-			const continuation = defend(next, remaining - 1, quiet - Number(isQuiet));
+			const isCheckEvasion = separateCheckEvasions && pos.isCheck();
+			const usesPreparation = isQuiet && !isCheckEvasion;
+			if (isQuiet && !isCheckEvasion && (!branchQuietHints.has(makeUci(move)) && !shortQuietFinish || !quiet)) continue;
+			const remainingAfter = shortQuietFinish && usesPreparation && !branchQuietHints.has(makeUci(move)) ? 1 : remaining - 1;
+			const continuation = defend(next, remainingAfter, quiet - Number(usesPreparation));
 			if (continuation) {
 				const line = [makeSan(pos, move), ...continuation];
 				attackMemo.set(cacheKey, line);
-				if (includeStrategy) choices.set(cacheKey, move);
+				if (includeStrategy) choices.set(cacheKey, {
+					move,
+					remainingAfter
+				});
 				return line;
 			}
 		}
@@ -11461,14 +11473,15 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeS
 		replies: legalMoves(pos).map((reply) => {
 			const afterReply = pos.clone();
 			afterReply.play(reply);
-			const answer = choices.get(`${makeFen(afterReply.toSetup())}:${remaining}:${quiet}`);
-			if (!answer) throw new Error("Missing certified mating answer");
+			const choice = choices.get(`${makeFen(afterReply.toSetup())}:${remaining}:${quiet}`);
+			if (!choice) throw new Error("Missing certified mating answer");
+			const answer = choice.move;
 			const next = afterReply.clone();
 			next.play(answer);
 			return {
 				move: makeUci(reply),
 				answer: makeUci(answer),
-				next: strategy(next, remaining - 1, quiet - Number(!next.isCheck()))
+				next: strategy(next, choice.remainingAfter, quiet - Number(!next.isCheck() && !(separateCheckEvasions && afterReply.isCheck())))
 			};
 		})
 	});
@@ -11483,6 +11496,24 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeS
 			if (!continuation && quietHints.size && nodes > 0) {
 				quietLimit = 2;
 				branchQuietHints = new Set(hints);
+				attackMemo.clear();
+				defendMemo.clear();
+				choices.clear();
+				failedRootReply = void 0;
+				continuation = defend(root.after, maxMoves - 1, quietLimit);
+			}
+			if (!continuation && nominatedQuietEvasion && nodes > 0) {
+				separateCheckEvasions = true;
+				quietLimit = 2;
+				branchQuietHints = new Set(hints);
+				attackMemo.clear();
+				defendMemo.clear();
+				choices.clear();
+				failedRootReply = void 0;
+				continuation = defend(root.after, maxMoves - 1, quietLimit);
+			}
+			if (!continuation && separateCheckEvasions && nodes > 0) {
+				allowShortQuietFinish = true;
 				attackMemo.clear();
 				defendMemo.clear();
 				choices.clear();
@@ -20408,7 +20439,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 137;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 138;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

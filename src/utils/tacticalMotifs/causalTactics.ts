@@ -1907,8 +1907,10 @@ export function proveShortCheckingMate(
 
 /** A PV ending in mate is only a nomination. All legal defences must
  * lose, including after a nonchecking first move. Besides checks, at most
- * two PV-nominated quiet attacking moves may be tried; each opens the full
- * legal defensive tree. Unknown/exhausted searches cannot certify the line. */
+ * two PV-nominated quiet preparations may be tried. An economical fallback
+ * separates actual check evasions from those free preparations, and can
+ * independently nominate a quiet mate-in-two finish within the same shared
+ * budget. Unknown/exhausted searches cannot certify the line. */
 export function proveCheckingMate(
     steps: TacticalReplayStep[],
     nodeLimit = CHECKING_MATE_NODE_LIMIT,
@@ -1941,6 +1943,10 @@ export function proveCheckingMate(
             .map((s) => s.uci),
     );
     let quietLimit = Math.min(2, quietHints.size);
+    const nominatedQuietEvasion = steps.slice(0, terminal + 1).some(step =>
+        step.before.turn === root.before.turn && step.before.isCheck() && !step.after.isCheck());
+    let separateCheckEvasions = false;
+    let allowShortQuietFinish = false;
     // A PV move's checking status is branch-dependent. A knight check in
     // the supplied line may be the quiet mating setup after a different
     // king reply. A line containing a quiet setup admits at most two quiet
@@ -1948,7 +1954,7 @@ export function proveCheckingMate(
     // nominated moves only; every defence and terminal mate is still checked
     // within the unchanged depth and shared operation budget.
     let branchQuietHints = quietHints;
-    const key = `${makeFen(root.after.toSetup())}:${maxMoves}:${hints}:${[...quietHints]}`;
+    const key = `${makeFen(root.after.toSetup())}:${maxMoves}:${hints}:${[...quietHints]}:${nominatedQuietEvasion}`;
     if (!includeStrategy && !onFailure && nodeLimit === CHECKING_MATE_NODE_LIMIT && checkingMateCache.has(key))
         return checkingMateCache.get(key)!;
     let nodes = nodeLimit;
@@ -1960,7 +1966,7 @@ export function proveCheckingMate(
     };
     const attackMemo = new Map<string, string[] | null>();
     const defendMemo = new Map<string, string[] | null>();
-    const choices = new Map<string, NormalMove>();
+    const choices = new Map<string, { move: NormalMove; remainingAfter: number }>();
     let failedRootReply: string | undefined;
     const orderedMoves = (pos: Chess) => {
         const moves = legalMoves(pos);
@@ -1976,6 +1982,7 @@ export function proveCheckingMate(
         const cacheKey = `${makeFen(pos.toSetup())}:${remaining}:${quiet}`;
         if (attackMemo.has(cacheKey)) return attackMemo.get(cacheKey)!;
         const moves = orderedMoves(pos);
+        const shortQuietFinish = allowShortQuietFinish && quiet > 0 && remaining >= 2;
         const expected = hints[maxMoves - remaining];
         const king = pos.board.kingOf(opposite(pos.turn))!;
         // A legal move can check directly or uncover a friendly slider.
@@ -1989,11 +1996,13 @@ export function proveCheckingMate(
         moves.sort(
             (a, b) =>
                 Number(makeUci(b) === expected) - Number(makeUci(a) === expected) ||
-                Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))),
+                Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))) ||
+                (shortQuietFinish && !pos.isCheck() ? Number(mayGiveCheck(pos, b)) - Number(mayGiveCheck(pos, a)) : 0),
         );
         for (const move of moves) {
             const piece = pos.board.get(move.from)!;
             if (
+                !shortQuietFinish && !(separateCheckEvasions && pos.isCheck()) &&
                 !branchQuietHints.has(makeUci(move)) &&
                 move.to !== pos.epSquare &&
                 !(piece.role === "king" && pos.board[pos.turn].has(move.to)) &&
@@ -2007,12 +2016,16 @@ export function proveCheckingMate(
                 continue;
             const next = visit(pos, move);
             const isQuiet = !next.isCheck();
-            if (isQuiet && (!quiet || !branchQuietHints.has(makeUci(move)))) continue;
-            const continuation = defend(next, remaining - 1, quiet - Number(isQuiet));
+            const isCheckEvasion = separateCheckEvasions && pos.isCheck();
+            const usesPreparation = isQuiet && !isCheckEvasion;
+            if (isQuiet && !isCheckEvasion && ((!branchQuietHints.has(makeUci(move)) && !shortQuietFinish) || !quiet)) continue;
+            const remainingAfter = shortQuietFinish && usesPreparation && !branchQuietHints.has(makeUci(move))
+                ? 1 : remaining - 1;
+            const continuation = defend(next, remainingAfter, quiet - Number(usesPreparation));
             if (continuation) {
                 const line = [makeSan(pos, move), ...continuation];
                 attackMemo.set(cacheKey, line);
-                if (includeStrategy) choices.set(cacheKey, move);
+                if (includeStrategy) choices.set(cacheKey, { move, remainingAfter });
                 return line;
             }
         }
@@ -2045,11 +2058,13 @@ export function proveCheckingMate(
         fen: makeFen(pos.toSetup()),
         replies: legalMoves(pos).map(reply => {
             const afterReply = pos.clone(); afterReply.play(reply);
-            const answer = choices.get(`${makeFen(afterReply.toSetup())}:${remaining}:${quiet}`);
-            if (!answer) throw new Error("Missing certified mating answer");
+            const choice = choices.get(`${makeFen(afterReply.toSetup())}:${remaining}:${quiet}`);
+            if (!choice) throw new Error("Missing certified mating answer");
+            const answer = choice.move;
             const next = afterReply.clone(); next.play(answer);
             return { move: makeUci(reply), answer: makeUci(answer),
-                next: strategy(next, remaining - 1, quiet - Number(!next.isCheck())) };
+                next: strategy(next, choice.remainingAfter, quiet - Number(!next.isCheck() &&
+                    !(separateCheckEvasions && afterReply.isCheck()))) };
         }),
     });
     try {
@@ -2065,6 +2080,36 @@ export function proveCheckingMate(
                 // a failed narrow search is not a failed expanded position.
                 quietLimit = 2;
                 branchQuietHints = new Set(hints);
+                attackMemo.clear();
+                defendMemo.clear();
+                choices.clear();
+                failedRootReply = undefined;
+                continuation = defend(root.after, maxMoves - 1, quietLimit);
+            }
+            if (!continuation && nominatedQuietEvasion && nodes > 0) {
+                // Answering a countercheck is not another free quiet attacking
+                // preparation. Only actual evasions gain legal alternatives;
+                // free quiet preparations still require PV nomination. Keep
+                // every legal defence, the same mate horizon and the remaining
+                // shared visit budget.
+                // Existing economical searches run first, so their certificates
+                // and chosen continuations do not change.
+                separateCheckEvasions = true;
+                quietLimit = 2;
+                branchQuietHints = new Set(hints);
+                attackMemo.clear();
+                defendMemo.clear();
+                choices.clear();
+                failedRootReply = undefined;
+                continuation = defend(root.after, maxMoves - 1, quietLimit);
+            }
+            if (!continuation && separateCheckEvasions && nodes > 0) {
+                // The nominated mating branch may end with a different piece
+                // on the same square. A two-move finish may nominate its own
+                // quiet move, but must still enumerate every reply and deliver
+                // mate next turn. This consumes the same quiet allowance and
+                // remaining shared budget, never a PV-funded payoff.
+                allowShortQuietFinish = true;
                 attackMemo.clear();
                 defendMemo.clear();
                 choices.clear();

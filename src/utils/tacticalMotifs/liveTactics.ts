@@ -152,7 +152,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 143;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 144;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 export const LIVE_TACTICAL_EXTRA_CANDIDATES = 2;
 

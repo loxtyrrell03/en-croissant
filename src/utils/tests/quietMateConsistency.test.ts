@@ -157,7 +157,7 @@ test("audit the frozen unseen Lichess quiet-mate sample without treating tags as
         );
 });
 
-test.each([...sample.cases, ...reflected].filter((row) => row.stratum === "mateIn4" && !row.id.startsWith("lichess:0rcU4")))(
+test.each([...sample.cases, ...reflected].filter((row) => row.stratum === "mateIn4" && !/^lichess:(0rcU4|0QPvf)/.test(row.id)))(
     "the new attack proof recovers a lesson without claiming the longer mate distance: $id",
     (row) => {
         expect(proveMateWithinThree(replayTacticalLine(row.startFen, row.bestLine))).toBeNull();
@@ -169,7 +169,7 @@ test.each([...sample.cases, ...reflected].filter((row) => row.stratum === "mateI
     },
 );
 
-test.each([...sample.cases, ...reflected].filter(row => row.id.startsWith("lichess:0rcU4")))(
+test.each([...sample.cases, ...reflected].filter(row => /^lichess:(0rcU4|0QPvf)/.test(row.id)))(
     "the longer all-defence proof upgrades the recovered mating attack: $id", row => {
         expect(proveMateWithinThree(replayTacticalLine(row.startFen, row.bestLine))).toBeNull();
         const result = classifyPositionTacticalMotifs({ fen: row.startFen, pvUci: row.bestLine });
