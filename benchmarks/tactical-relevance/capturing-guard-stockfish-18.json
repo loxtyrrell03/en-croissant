@@ -1,0 +1,917 @@
+{
+  "scope": "Constructed guard-capture controls only: sixteen fresh Stockfish 18 depth-16 root/held searches. First PV retained here; full private reports retain MultiPV. Scores describe the whole position, not the local pawn bound or classifier accuracy. The already-loose and checking controls remain coverage exclusions, not incorrect chess moves.",
+  "cases": [
+    {
+      "id": "pawn-guard",
+      "before": "r5k1/p5pp/3p4/2P1p3/8/5N2/P5PP/R5K1 b - - 0 1",
+      "previous": "d6c5",
+      "move": "f3e5",
+      "exposed": true,
+      "visible": true,
+      "fen": "r5k1/p5pp/8/2p1p3/8/5N2/P5PP/R5K1 w - - 0 2"
+    },
+    {
+      "id": "bishop-guard",
+      "before": "r5k1/p5pp/3b4/2P1p3/8/5N2/P4PPP/R5K1 b - - 0 1",
+      "previous": "d6c5",
+      "move": "f3e5",
+      "exposed": true,
+      "visible": true,
+      "fen": "r5k1/p5pp/8/2b1p3/8/5N2/P4PPP/R5K1 w - - 0 2"
+    },
+    {
+      "id": "remaining-guard",
+      "before": "r5k1/p5pp/3p1p2/2P1p3/8/5N2/P5PP/R5K1 b - - 0 1",
+      "previous": "d6c5",
+      "move": "f3e5",
+      "exposed": true,
+      "visible": false,
+      "fen": "r5k1/p5pp/5p2/2p1p3/8/5N2/P5PP/R5K1 w - - 0 2"
+    },
+    {
+      "id": "still-defends",
+      "before": "r5k1/p1P3pp/3b4/4p3/8/5N2/P5PP/R5K1 b - - 0 1",
+      "previous": "d6c7",
+      "move": "f3e5",
+      "exposed": false,
+      "visible": false,
+      "fen": "r5k1/p1b3pp/8/4p3/8/5N2/P5PP/R5K1 w - - 0 2"
+    },
+    {
+      "id": "already-loose",
+      "before": "r5k1/p5pp/1p6/2P1p3/8/5N2/P5PP/R5K1 b - - 0 1",
+      "previous": "b6c5",
+      "move": "f3e5",
+      "exposed": false,
+      "visible": false,
+      "fen": "r5k1/p5pp/8/2p1p3/8/5N2/P5PP/R5K1 w - - 0 2"
+    },
+    {
+      "id": "ordinary-recapture",
+      "before": "r5k1/p5pp/4p3/3P4/2P5/8/P5PP/R5K1 b - - 0 1",
+      "previous": "e6d5",
+      "move": "c4d5",
+      "exposed": false,
+      "visible": false,
+      "fen": "r5k1/p5pp/8/3p4/2P5/8/P5PP/R5K1 w - - 0 2"
+    },
+    {
+      "id": "off-square-rook",
+      "before": "1r4k1/p5pp/3p4/2P1p3/8/5N2/PR4PP/6K1 b - - 0 1",
+      "previous": "d6c5",
+      "move": "f3e5",
+      "exposed": true,
+      "visible": false,
+      "fen": "1r4k1/p5pp/8/2p1p3/8/5N2/PR4PP/6K1 w - - 0 2"
+    },
+    {
+      "id": "checking-needs-retention",
+      "before": "r7/p5pp/3p4/2P1p3/6k1/5N2/P5PP/R5K1 b - - 0 1",
+      "previous": "d6c5",
+      "move": "f3e5",
+      "exposed": false,
+      "visible": false,
+      "fen": "r7/p5pp/8/2p1p3/6k1/5N2/P5PP/R5K1 w - - 0 2"
+    }
+  ],
+  "searches": [
+    {
+      "id": "pawn-guard:root",
+      "fen": "r5k1/p5pp/8/2p1p3/8/5N2/P5PP/R5K1 w - - 0 2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a1c1",
+            "e5e4",
+            "f3e5",
+            "a8d8",
+            "c1c5",
+            "d8d1",
+            "g1f2",
+            "g8f8",
+            "c5c2",
+            "f8e7",
+            "e5c6",
+            "e7e6",
+            "c6a7",
+            "d1b1",
+            "f2e3",
+            "e6d5",
+            "a2a4",
+            "b1b3",
+            "e3e2",
+            "b3a3",
+            "a7b5",
+            "a3a4"
+          ],
+          "pvSan": [
+            "Rc1",
+            "e4",
+            "Ne5",
+            "Rd8",
+            "Rxc5",
+            "Rd1+",
+            "Kf2",
+            "Kf8",
+            "Rc2",
+            "Ke7",
+            "Nc6+",
+            "Ke6",
+            "Nxa7",
+            "Rb1",
+            "Ke3",
+            "Kd5",
+            "a4",
+            "Rb3+",
+            "Ke2",
+            "Ra3",
+            "Nb5",
+            "Rxa4"
+          ],
+          "cp": 424,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "pawn-guard:held",
+      "fen": "r5k1/p5pp/8/2p1p3/8/5N2/P5PP/R5K1 w - - 0 2",
+      "searchMove": "f3e5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f3e5",
+            "a8e8",
+            "e5c6",
+            "a7a6",
+            "g1f2",
+            "e8e6",
+            "c6a5",
+            "e6f6",
+            "f2g1",
+            "f6e6",
+            "a5c4",
+            "e6e2",
+            "a2a4",
+            "g8f7",
+            "a1c1"
+          ],
+          "pvSan": [
+            "Nxe5",
+            "Re8",
+            "Nc6",
+            "a6",
+            "Kf2",
+            "Re6",
+            "Na5",
+            "Rf6+",
+            "Kg1",
+            "Re6",
+            "Nc4",
+            "Re2",
+            "a4",
+            "Kf7",
+            "Rc1"
+          ],
+          "cp": 382,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "bishop-guard:root",
+      "fen": "r5k1/p5pp/8/2b1p3/8/5N2/P4PPP/R5K1 w - - 0 2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a1c1",
+            "c5d4",
+            "g2g3",
+            "a8b8",
+            "f3d4",
+            "e5d4",
+            "c1c2",
+            "b8b4",
+            "g1g2",
+            "b4a4",
+            "g2f3",
+            "g8f7",
+            "f3e4",
+            "h7h5",
+            "c2d2",
+            "g7g5",
+            "f2f4",
+            "g5f4",
+            "g3f4"
+          ],
+          "pvSan": [
+            "Rc1",
+            "Bd4",
+            "g3",
+            "Rb8",
+            "Nxd4",
+            "exd4",
+            "Rc2",
+            "Rb4",
+            "Kg2",
+            "Ra4",
+            "Kf3",
+            "Kf7",
+            "Ke4",
+            "h5",
+            "Rd2",
+            "g5",
+            "f4",
+            "gxf4",
+            "gxf4"
+          ],
+          "cp": 4,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "bishop-guard:held",
+      "fen": "r5k1/p5pp/8/2b1p3/8/5N2/P4PPP/R5K1 w - - 0 2",
+      "searchMove": "f3e5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f3e5",
+            "c5d4",
+            "a1e1",
+            "a8c8",
+            "e5f3",
+            "d4b6",
+            "g1f1",
+            "c8c2",
+            "e1e8",
+            "g8f7",
+            "e8e2",
+            "c2c1",
+            "e2e1",
+            "c1c2"
+          ],
+          "pvSan": [
+            "Nxe5",
+            "Bd4",
+            "Re1",
+            "Rc8",
+            "Nf3",
+            "Bb6",
+            "Kf1",
+            "Rc2",
+            "Re8+",
+            "Kf7",
+            "Re2",
+            "Rc1+",
+            "Re1",
+            "Rc2"
+          ],
+          "cp": 0,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "remaining-guard:root",
+      "fen": "r5k1/p5pp/5p2/2p1p3/8/5N2/P5PP/R5K1 w - - 0 2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a1c1",
+            "a8b8",
+            "c1c2",
+            "b8b4",
+            "g1f1",
+            "b4a4",
+            "f3d2",
+            "h7h5",
+            "d2b3",
+            "c5c4",
+            "b3c5",
+            "a4a5",
+            "c5e4",
+            "a5a6",
+            "e4d2",
+            "c4c3",
+            "d2b3",
+            "f6f5",
+            "f1e2",
+            "g8f7"
+          ],
+          "pvSan": [
+            "Rc1",
+            "Rb8",
+            "Rc2",
+            "Rb4",
+            "Kf1",
+            "Ra4",
+            "Nd2",
+            "h5",
+            "Nb3",
+            "c4",
+            "Nc5",
+            "Ra5",
+            "Ne4",
+            "Ra6",
+            "Nd2",
+            "c3",
+            "Nb3",
+            "f5",
+            "Ke2",
+            "Kf7"
+          ],
+          "cp": 79,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "remaining-guard:held",
+      "fen": "r5k1/p5pp/5p2/2p1p3/8/5N2/P5PP/R5K1 w - - 0 2",
+      "searchMove": "f3e5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f3e5",
+            "f6e5",
+            "a1e1",
+            "a8e8",
+            "e1c1",
+            "e8c8",
+            "c1e1",
+            "g8f7",
+            "e1e5",
+            "f7f6",
+            "e5e1",
+            "g7g6",
+            "g1f2",
+            "c8c6",
+            "e1b1",
+            "c6a6",
+            "b1b5",
+            "a6a2",
+            "f2f3"
+          ],
+          "pvSan": [
+            "Nxe5",
+            "fxe5",
+            "Re1",
+            "Re8",
+            "Rc1",
+            "Rc8",
+            "Re1",
+            "Kf7",
+            "Rxe5",
+            "Kf6",
+            "Re1",
+            "g6",
+            "Kf2",
+            "Rc6",
+            "Rb1",
+            "Ra6",
+            "Rb5",
+            "Rxa2+",
+            "Kf3"
+          ],
+          "cp": -230,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "still-defends:root",
+      "fen": "r5k1/p1b3pp/8/4p3/8/5N2/P5PP/R5K1 w - - 0 2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a1e1",
+            "a8e8",
+            "g2g3",
+            "g8f7",
+            "g1g2",
+            "h7h6",
+            "h2h4",
+            "f7g6",
+            "g3g4",
+            "e5e4",
+            "f3d2"
+          ],
+          "pvSan": [
+            "Re1",
+            "Re8",
+            "g3",
+            "Kf7",
+            "Kg2",
+            "h6",
+            "h4",
+            "Kg6",
+            "g4",
+            "e4",
+            "Nd2"
+          ],
+          "cp": -150,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "still-defends:held",
+      "fen": "r5k1/p1b3pp/8/4p3/8/5N2/P5PP/R5K1 w - - 0 2",
+      "searchMove": "f3e5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f3e5",
+            "c7e5",
+            "a1d1",
+            "e5c7",
+            "h2h4",
+            "c7b6",
+            "g1h2",
+            "a8d8",
+            "d1d8",
+            "b6d8",
+            "h2g3",
+            "g8f7",
+            "g3f3",
+            "h7h5",
+            "f3e3"
+          ],
+          "pvSan": [
+            "Nxe5",
+            "Bxe5",
+            "Rd1",
+            "Bc7",
+            "h4",
+            "Bb6+",
+            "Kh2",
+            "Rd8",
+            "Rxd8+",
+            "Bxd8",
+            "Kg3",
+            "Kf7",
+            "Kf3",
+            "h5",
+            "Ke3"
+          ],
+          "cp": -494,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "already-loose:root",
+      "fen": "r5k1/p5pp/8/2p1p3/8/5N2/P5PP/R5K1 w - - 0 2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a1c1",
+            "e5e4",
+            "f3e5",
+            "a8d8",
+            "c1c5",
+            "d8d1",
+            "g1f2",
+            "g8f8",
+            "c5c2",
+            "f8e7",
+            "e5c6",
+            "e7e6",
+            "c6a7",
+            "d1b1",
+            "f2e3",
+            "e6d5",
+            "a2a4",
+            "b1b3",
+            "e3e2",
+            "b3a3",
+            "a7b5",
+            "a3a4"
+          ],
+          "pvSan": [
+            "Rc1",
+            "e4",
+            "Ne5",
+            "Rd8",
+            "Rxc5",
+            "Rd1+",
+            "Kf2",
+            "Kf8",
+            "Rc2",
+            "Ke7",
+            "Nc6+",
+            "Ke6",
+            "Nxa7",
+            "Rb1",
+            "Ke3",
+            "Kd5",
+            "a4",
+            "Rb3+",
+            "Ke2",
+            "Ra3",
+            "Nb5",
+            "Rxa4"
+          ],
+          "cp": 424,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "already-loose:held",
+      "fen": "r5k1/p5pp/8/2p1p3/8/5N2/P5PP/R5K1 w - - 0 2",
+      "searchMove": "f3e5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f3e5",
+            "a8e8",
+            "e5c6",
+            "a7a6",
+            "g1f2",
+            "e8e6",
+            "c6a5",
+            "e6f6",
+            "f2g1",
+            "f6e6",
+            "a5c4",
+            "e6e2",
+            "a2a4",
+            "g8f7",
+            "a1c1"
+          ],
+          "pvSan": [
+            "Nxe5",
+            "Re8",
+            "Nc6",
+            "a6",
+            "Kf2",
+            "Re6",
+            "Na5",
+            "Rf6+",
+            "Kg1",
+            "Re6",
+            "Nc4",
+            "Re2",
+            "a4",
+            "Kf7",
+            "Rc1"
+          ],
+          "cp": 382,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "ordinary-recapture:root",
+      "fen": "r5k1/p5pp/8/3p4/2P5/8/P5PP/R5K1 w - - 0 2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c4d5",
+            "a8d8",
+            "a1d1",
+            "g8f7",
+            "g1f2",
+            "d8c8",
+            "d5d6",
+            "f7e6",
+            "d6d7",
+            "c8d8",
+            "f2e3",
+            "d8d7",
+            "d1d7",
+            "e6d7",
+            "g2g4"
+          ],
+          "pvSan": [
+            "cxd5",
+            "Rd8",
+            "Rd1",
+            "Kf7",
+            "Kf2",
+            "Rc8",
+            "d6",
+            "Ke6",
+            "d7",
+            "Rd8",
+            "Ke3",
+            "Rxd7",
+            "Rxd7",
+            "Kxd7",
+            "g4"
+          ],
+          "cp": 21,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "ordinary-recapture:held",
+      "fen": "r5k1/p5pp/8/3p4/2P5/8/P5PP/R5K1 w - - 0 2",
+      "searchMove": "c4d5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c4d5",
+            "a8d8",
+            "a1d1",
+            "g8f7",
+            "g1f2",
+            "f7e7",
+            "d1d4",
+            "d8d7",
+            "f2e3",
+            "e7d6",
+            "d4a4",
+            "d6d5",
+            "a4d4",
+            "d5e6",
+            "d4d7",
+            "e6d7",
+            "e3d4",
+            "d7d6",
+            "d4c4",
+            "d6c6",
+            "g2g4",
+            "g7g5"
+          ],
+          "pvSan": [
+            "cxd5",
+            "Rd8",
+            "Rd1",
+            "Kf7",
+            "Kf2",
+            "Ke7",
+            "Rd4",
+            "Rd7",
+            "Ke3",
+            "Kd6",
+            "Ra4",
+            "Kxd5",
+            "Rd4+",
+            "Ke6",
+            "Rxd7",
+            "Kxd7",
+            "Kd4",
+            "Kd6",
+            "Kc4",
+            "Kc6",
+            "g4",
+            "g5"
+          ],
+          "cp": 22,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "off-square-rook:root",
+      "fen": "1r4k1/p5pp/8/2p1p3/8/5N2/PR4PP/6K1 w - - 0 2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "b2b8",
+            "g8f7",
+            "f3e5",
+            "f7e6",
+            "e5f3",
+            "e6d5",
+            "g1f2",
+            "d5e4",
+            "f2e1",
+            "e4d3",
+            "b8c8",
+            "d3c4",
+            "e1d1",
+            "a7a5",
+            "f3e5",
+            "c4d5"
+          ],
+          "pvSan": [
+            "Rxb8+",
+            "Kf7",
+            "Nxe5+",
+            "Ke6",
+            "Nf3",
+            "Kd5",
+            "Kf2",
+            "Ke4",
+            "Ke1",
+            "Kd3",
+            "Rc8",
+            "Kc4",
+            "Kd1",
+            "a5",
+            "Ne5+",
+            "Kd5"
+          ],
+          "cp": 710,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "off-square-rook:held",
+      "fen": "1r4k1/p5pp/8/2p1p3/8/5N2/PR4PP/6K1 w - - 0 2",
+      "searchMove": "f3e5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f3e5",
+            "b8b2",
+            "a2a3",
+            "b2c2",
+            "e5c6",
+            "a7a6",
+            "g1f1",
+            "c2a2",
+            "c6e5",
+            "g7g5",
+            "e5c4",
+            "h7h6",
+            "c4e5",
+            "g8g7",
+            "e5c4",
+            "h6h5",
+            "c4d6",
+            "a2a3"
+          ],
+          "pvSan": [
+            "Nxe5",
+            "Rxb2",
+            "a3",
+            "Rc2",
+            "Nc6",
+            "a6",
+            "Kf1",
+            "Ra2",
+            "Ne5",
+            "g5",
+            "Nc4",
+            "h6",
+            "Ne5",
+            "Kg7",
+            "Nc4",
+            "h5",
+            "Nd6",
+            "Rxa3"
+          ],
+          "cp": -569,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "checking-needs-retention:root",
+      "fen": "r7/p5pp/8/2p1p3/6k1/5N2/P5PP/R5K1 w - - 0 2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "a1e1",
+            "a8b8",
+            "e1e4",
+            "g4f5",
+            "e4e5",
+            "f5f4",
+            "g1f2",
+            "b8b2",
+            "e5e2",
+            "b2e2",
+            "f2e2",
+            "f4e4",
+            "e2d2",
+            "e4d5",
+            "d2d3",
+            "c5c4",
+            "d3d2",
+            "d5e4",
+            "f3g5",
+            "e4f5",
+            "g5h3",
+            "f5e5",
+            "d2c3"
+          ],
+          "pvSan": [
+            "Re1",
+            "Rb8",
+            "Re4+",
+            "Kf5",
+            "Rxe5+",
+            "Kf4",
+            "Kf2",
+            "Rb2+",
+            "Re2",
+            "Rxe2+",
+            "Kxe2",
+            "Ke4",
+            "Kd2",
+            "Kd5",
+            "Kd3",
+            "c4+",
+            "Kd2",
+            "Ke4",
+            "Ng5+",
+            "Kf5",
+            "Nh3",
+            "Ke5",
+            "Kc3"
+          ],
+          "cp": 369,
+          "mate": null
+        }
+      ]
+    },
+    {
+      "id": "checking-needs-retention:held",
+      "fen": "r7/p5pp/8/2p1p3/6k1/5N2/P5PP/R5K1 w - - 0 2",
+      "searchMove": "f3e5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f3e5",
+            "g4f5",
+            "a1e1",
+            "f5e6",
+            "g1f1",
+            "e6d5",
+            "e5f3",
+            "a8b8",
+            "e1d1",
+            "d5e4",
+            "f1e2",
+            "b8b2",
+            "d1d2",
+            "b2b4",
+            "f3g5",
+            "e4f5",
+            "d2d5",
+            "f5f6",
+            "g5h7",
+            "f6g6",
+            "h7g5"
+          ],
+          "pvSan": [
+            "Nxe5+",
+            "Kf5",
+            "Re1",
+            "Ke6",
+            "Kf1",
+            "Kd5",
+            "Nf3",
+            "Rb8",
+            "Rd1+",
+            "Ke4",
+            "Ke2",
+            "Rb2+",
+            "Rd2",
+            "Rb4",
+            "Ng5+",
+            "Kf5",
+            "Rd5+",
+            "Kf6",
+            "Nxh7+",
+            "Kg6",
+            "Ng5"
+          ],
+          "cp": 335,
+          "mate": null
+        }
+      ]
+    }
+  ]
+}

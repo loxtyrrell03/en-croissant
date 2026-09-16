@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, expect, test, vi } from "vitest";
 import { TacticalScanResult } from "@/components/panels/tactics/TacticalScanResult";
+import { capturingPawnGuardInput } from "./fixtures/capturingPawnGuard";
 import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import { mixedForkFen, mixedForkLine } from "./fixtures/mixedTargetFork";
 import { directThreatFen, directThreatLine } from "./fixtures/directThreatRelevance";
@@ -33,6 +34,16 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a pawn exposed by a capturing defender shows the current capture and its explanation", () => {
+  const value = buildLiveTacticalScan({ ...capturingPawnGuardInput(), engineName: "Constructed guard exposure", depth: 16 });
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Hanging Pawn found");
+  expect(element.textContent).toContain("pawn defender away from d6");
+  expect(element.textContent).not.toContain("No verified immediate theme");
+  expect(value.arrows.some(arrow => arrow.from === "f3" && arrow.to === "e5")).toBe(true);
+  expect(value.arrows.every(arrow => arrow.ply === 1)).toBe(true);
+});
 
 test("a compensated capture displays the retained gain rather than a free knight", () => {
   const value = buildLiveTacticalScan(compensatedCaptureInput);

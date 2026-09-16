@@ -1033,11 +1033,26 @@ export function isNewlyExposedPawnCapture(
     const history = replayTacticalLine(previousFen, [previousMove]);
     const prior = history[0];
     if (!prior || makeFen(prior.after.toSetup()) !== makeFen(step.before.toSetup()) ||
-        prior.capture || prior.move.promotion) return false;
+        prior.move.promotion) return false;
     const original = relocatedSquare(prior, step.move.to, true);
     if (original === undefined || prior.before.board.get(original)?.role !== "pawn") return false;
     const board = withTurn(prior.before, step.before.turn), budget = { nodes: nodeLimit };
     try {
+        // Capturing the pawn which just captured is ordinary exchange recovery.
+        // A different, stationary pawn can nevertheless have lost its defender
+        // when that defender captured elsewhere. Require a real legal recapture
+        // by that very defender before it moved, and its absence afterwards.
+        // This historical probe nominates exposure, not the gain or a mistake
+        // cause: actual all-piece liabilities and capture credit remain separate.
+        if (prior.capture) {
+            // A checking pawn grab may only prolong a king hunt. It needs the
+            // separate checking-retention proof, not historical exposure alone.
+            if (step.after.isCheck() || original !== step.move.to || prior.move.to === original || !board.isLegal(step.move)) return false;
+            if (--budget.nodes < 0) return false;
+            const taken = board.clone(); taken.play(step.move);
+            if (!taken.isLegal({ from: prior.move.from, to: original }) ||
+                step.after.isLegal({ from: prior.move.to, to: original })) return false;
+        }
         for (const capture of legalMoves(board)) {
             if (--budget.nodes < 0) return false;
             if (capture.to !== original) continue;
@@ -12663,8 +12678,9 @@ export function auditTacticalMotifs(
         !priorPawnContext.capture && !priorPawnContext.move.promotion &&
         makeFen(priorPawnContext.after.toSetup()) === makeFen(root.before.toSetup())
         ? proveCostlyPawnRecapture(root) : null;
+    const exposedPawn = isNewlyExposedPawnCapture(root, context?.previousFen, context?.previousMoveUci);
     if (
-        (root.capture >= 320 || isNewlyExposedPawnCapture(root, context?.previousFen, context?.previousMoveUci) ||
+        (root.capture >= 320 || exposedPawn ||
             checkingPawn || costlyPawn) &&
         directGain >= MIN_TACTICAL_CAPTURE_GAIN &&
         !candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)
@@ -12674,6 +12690,9 @@ export function auditTacticalMotifs(
             candidates.push({
                 id: "hangingPiece",
                 ...captureGainEvidence(root, directGain),
+                ...(exposedPawn && priorPawnContext?.capture ? {
+                    evidence: `${captureGainEvidence(root, directGain).evidence} ${priorPawnContext.san} moved its ${priorPawnContext.before.board.get(priorPawnContext.move.from)!.role} defender away from ${makeSquare(priorPawnContext.move.from)}; the available capture is on a different pawn, not a recapture of that defender.`,
+                } : {}),
                 ...(costlyPawn ? { value: costlyPawn.gain, evidence: costlyPawnRecaptureEvidence(root, costlyPawn) } : {}),
                 ...(checkingPawn ? {
                     value: checkingPawn.gain,

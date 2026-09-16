@@ -10529,11 +10529,24 @@ function proveCheckingPawnRetention(steps, nodeLimit = 8192, onTrace) {
 function isNewlyExposedPawnCapture(step, previousFen, previousMove, nodeLimit = 4096) {
 	if (!previousFen || !previousMove || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || step.capture !== VALUE.pawn || step.move.promotion || step.before.board.get(step.move.to)?.role !== "pawn") return false;
 	const prior = replayTacticalLine(previousFen, [previousMove])[0];
-	if (!prior || makeFen(prior.after.toSetup()) !== makeFen(step.before.toSetup()) || prior.capture || prior.move.promotion) return false;
+	if (!prior || makeFen(prior.after.toSetup()) !== makeFen(step.before.toSetup()) || prior.move.promotion) return false;
 	const original = relocatedSquare(prior, step.move.to, true);
 	if (original === void 0 || prior.before.board.get(original)?.role !== "pawn") return false;
 	const board = withTurn(prior.before, step.before.turn), budget = { nodes: nodeLimit };
 	try {
+		if (prior.capture) {
+			if (step.after.isCheck() || original !== step.move.to || prior.move.to === original || !board.isLegal(step.move)) return false;
+			if (--budget.nodes < 0) return false;
+			const taken = board.clone();
+			taken.play(step.move);
+			if (!taken.isLegal({
+				from: prior.move.from,
+				to: original
+			}) || step.after.isLegal({
+				from: prior.move.to,
+				to: original
+			})) return false;
+		}
 		for (const capture of legalMoves(board)) {
 			if (--budget.nodes < 0) return false;
 			if (capture.to !== original) continue;
@@ -18506,10 +18519,12 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	const checkingPawn = Number.isFinite(rootCp) && directGain >= VALUE.pawn && root.capture === VALUE.pawn ? proveCheckingPawnRetention(steps) : null;
 	const priorPawnContext = root.capture === VALUE.pawn && context?.previousFen && context.previousMoveUci ? replayTacticalLine(context.previousFen, [context.previousMoveUci])[0] : null;
 	const costlyPawn = directGain >= VALUE.pawn && priorPawnContext && !priorPawnContext.capture && !priorPawnContext.move.promotion && makeFen(priorPawnContext.after.toSetup()) === makeFen(root.before.toSetup()) ? proveCostlyPawnRecapture(root) : null;
-	if ((root.capture >= 320 || isNewlyExposedPawnCapture(root, context?.previousFen, context?.previousMoveUci) || checkingPawn || costlyPawn) && directGain >= MIN_TACTICAL_CAPTURE_GAIN && !candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)) {
+	const exposedPawn = isNewlyExposedPawnCapture(root, context?.previousFen, context?.previousMoveUci);
+	if ((root.capture >= 320 || exposedPawn || checkingPawn || costlyPawn) && directGain >= MIN_TACTICAL_CAPTURE_GAIN && !candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)) {
 		if (root.before.board.get(root.move.to)) candidates.push({
 			id: "hangingPiece",
 			...captureGainEvidence(root, directGain),
+			...exposedPawn && priorPawnContext?.capture ? { evidence: `${captureGainEvidence(root, directGain).evidence} ${priorPawnContext.san} moved its ${priorPawnContext.before.board.get(priorPawnContext.move.from).role} defender away from ${makeSquare(priorPawnContext.move.from)}; the available capture is on a different pawn, not a recapture of that defender.` } : {},
 			...costlyPawn ? {
 				value: costlyPawn.gain,
 				evidence: costlyPawnRecaptureEvidence(root, costlyPawn)
@@ -19925,7 +19940,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 124;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 125;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

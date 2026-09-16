@@ -16,6 +16,7 @@ import { checkingExchangeCases } from "./fixtures/checkingExchangeRetention";
 import { checkingAlliedRetentionCases, checkingAlliedRetentionLine } from "./fixtures/checkingAlliedRetention";
 import { relativePinnedCaptureCases } from "./fixtures/relativePinnedCapture";
 import { costlyPawnRecaptureCases, costlyPawnRecaptureInput } from "./fixtures/costlyPawnRecapture";
+import { capturingPawnGuardCases, capturingPawnGuardInput } from "./fixtures/capturingPawnGuard";
 import { checkingCombinationCases, promotionCaptureForkCases } from "./fixtures/checkingCombinationRecall";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
@@ -118,6 +119,21 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("costly pawn recaptures survive 
         expect(scan).toEqual(buildLiveTacticalScan(input));
         if (!row.positive) continue;
         expect(scan.motifs[0]).toMatchObject({ id: "hangingPiece", value: 100, ply: 1 });
+    }
+}, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("captures by pawn guards retain exposure and compensation through the production controller", async () => {
+    for (const row of capturingPawnGuardCases) for (const reflected of [false, true]) {
+        const context = capturingPawnGuardInput(row);
+        const previousFen = reflected ? reflectMixedForkFen(context.previousFen) : context.previousFen;
+        const previousMoveUci = reflected ? reflectMixedForkMove(context.previousMoveUci) : context.previousMoveUci;
+        const fen = makeFen(replayTacticalLine(previousFen, [previousMoveUci])[0].after.toSetup());
+        const pvUci = reflected ? context.pvUci.map(reflectMixedForkMove) : context.pvUci;
+        const input = { fen, previousFen, previousMoveUci, pvUci, depth: 16, engineName: "Constructed" };
+        const { scan } = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(scan.motifs.map(m => m.label)).toEqual(row.visible ? ["Hanging Pawn"] : []);
+        expect(scan.arrows.every(arrow => arrow.ply === 1)).toBe(true);
     }
 }, 30000);
 
