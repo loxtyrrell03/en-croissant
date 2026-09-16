@@ -10,6 +10,7 @@ import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { pawnExposureInput, pawnExposureAlternateInput } from "./fixtures/pawnExposure";
 import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
+import { forkLocalValueCases } from "./fixtures/forkLocalValue";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
@@ -98,6 +99,33 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
     }
 }
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("fork values stay local through the production controller", async () => {
+    for (const row of forkLocalValueCases) for (const reflected of [false, true]) {
+        const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci: reflected ? row.pvUci.map(reflectMixedForkMove) : row.pvUci,
+            depth: 16, engineName: "Constructed fork controls" };
+        const { scan } = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        const fork = scan.motifs.find(motif => motif.id === "fork");
+        expect(fork?.value ?? null).toBe(row.gain);
+    }
+}, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("recapture values retain compensation through the production controller", async () => {
+    for (const reflected of [false, true]) for (const [previous, expected] of [
+        ["r5k1/8/3q4/3B3R/8/8/8/R5K1 b - - 0 1", null],
+        ["6k1/8/3q4/3B3R/8/8/8/R5K1 b - - 0 1", 570],
+    ] as const) {
+        const previousFen = reflected ? reflectMixedForkFen(previous) : previous;
+        const moves = reflected ? ["d6d5", "h5d5"].map(reflectMixedForkMove) : ["d6d5", "h5d5"];
+        const root = replayTacticalLine(previousFen, moves)[0];
+        const input = { fen: makeFen(root.after.toSetup()), previousFen, previousMoveUci: moves[0], pvUci: [moves[1]], depth: 16, engineName: "Constructed recapture controls" };
+        const { scan } = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(scan.motifs.find(m => m.id === "hangingPiece")?.value ?? null).toBe(expected);
+    }
+}, 30000);
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("saving perpetuals preserve their material mechanisms through the production controller", async () => {
     for (const row of perpetualMaterialCases) for (const reflected of [false, true]) {
         const moves = "move" in row ? [row.move] : perpetualMaterialLine;
@@ -163,6 +191,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_RECALL_R
             previousFen:row.previousFen,previousMoveUci:row.previousMoveUci};
         const result=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
         expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan).toEqual(row.scan);
         cases.push({id:row.id,...result});
     }
     if(process.env.TACTICAL_RECALL_WORKER_REPORT) {

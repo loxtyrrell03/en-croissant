@@ -131,7 +131,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 116;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 117;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -974,6 +974,11 @@ function selectContinuationLessons(
     return timeline.filter(
         (motif) =>
             motif.id !== "hangingPiece" ||
+            // A substantial, independently checked recapture is useful at
+            // its actual ply even when the opening attack is not proved.
+            // It stays in the bounded conditional timeline, never supplies
+            // a missing root cause, and does not admit routine pawn trades.
+            (motif.label === "Winning Recapture" && (motif.value ?? 0) >= 320) ||
             timeline.some(
                 (prior) =>
                     prior.id !== "hangingPiece" &&

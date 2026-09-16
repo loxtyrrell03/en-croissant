@@ -8,6 +8,7 @@ import { discoveryTrapCases } from "../../src/utils/tests/fixtures/discoveryTrap
 import { perpetualMaterialCases, perpetualMaterialLine } from "../../src/utils/tests/fixtures/perpetualMaterial.ts";
 import { directThreatFen, directThreatLine } from "../../src/utils/tests/fixtures/directThreatRelevance.ts";
 import { compensatedCaptureInput } from "../../src/utils/tests/fixtures/compensatedCapture.ts";
+import { forkLocalValueCases } from "../../src/utils/tests/fixtures/forkLocalValue.ts";
 import { tablebaseCases } from "../../src/utils/tests/fixtures/tablebaseRelevance.ts";
 import { directMaterialPayoffCases, reflectPayoff } from "../../src/utils/tests/fixtures/directMaterialPayoff.ts";
 import {
@@ -95,6 +96,7 @@ test(
     const { castlingAliasCases } = await import("../../src/utils/tests/fixtures/castlingRelevance.ts");
     const { matingInterferenceCases, reflectMatingInterference } = await import("../../src/utils/tests/fixtures/matingInterference.ts");
     const cases = [
+      ...forkLocalValueCases.map(row => ({...row,name:`local fork value: ${row.id}`,expectedPrimary:row.gain === null ? [] : ["fork"]})),
       {name:"compensated capture retains its sub-pawn bound",...compensatedCaptureInput,expectedPrimary:["hangingPiece"]},
       {name:"missing recapture cannot fund a gain",...compensatedCaptureInput,fen:compensatedCaptureInput.fen.replace("2N2N2","2N5"),pvUci:["c3d5"],expectedPrimary:[]},
       {name:"off-square rook loss prevents a material headline",...compensatedCaptureInput,fen:compensatedCaptureInput.fen.replace("P5PP","Pb4PP"),pvUci:["c3d5"],expectedPrimary:[]},

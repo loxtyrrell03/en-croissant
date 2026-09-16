@@ -344,8 +344,12 @@ export function winningRecaptureEvidence(
         step.move.promotion
     )
         return motif;
-    const gain = tacticalExchangeGain(step.before, step.move);
-    if (gain <= -VALUE.king || gain - previous.capture < 100) return null;
+    // A same-square recapture is not isolated from the rest of the board.
+    // Debit immediate off-square losses and counterchecks before subtracting
+    // the piece just traded; otherwise a queen sacrifice winning a rook
+    // elsewhere is misleadingly presented as a free queen-for-minor gain.
+    const gain = tacticalCaptureGain(step);
+    if (gain === null || gain - previous.capture < 100) return null;
     // Same-square SEE cannot see a checking fork, compensation elsewhere,
     // or mate after accepting a sacrifice. Only independent legal proofs
     // may remove the gain label; neither a sacrifice tag nor a PV endpoint
@@ -370,7 +374,7 @@ export function winningRecaptureEvidence(
         ...motif,
         label: "Winning Recapture",
         value: gain - previous.capture,
-        evidence: `${step.san} wins the ${victim.role} on ${makeSquare(step.move.to)} in exchange for the ${traded.role} just captured there. The settled local exchange gains ${(gain - previous.capture) / 100} pawns of material; this is the payoff, not a newly hanging piece.`,
+        evidence: `${step.san} takes the ${victim.role} on ${makeSquare(step.move.to)} in exchange for the ${traded.role} just captured there. After allowing for that trade and immediate counterplay, the checked local gain is at least ${(gain - previous.capture) / 100} pawns; this is the payoff, not a newly hanging piece.`,
     };
 }
 
@@ -2062,7 +2066,10 @@ export function proveCheckingMaterialAttack(
                 }
                 if (!safe) continue;
             }
-            const gain = participantCaptureGain(pos, move, [...pieces, move.to], budget);
+            // A rejected fork must not reappear as a checking attack funded
+            // by the same capture while an unrelated friendly queen falls.
+            const gain = participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+            if (!checkingSkewer && !noImmediateTerminalRefutation(pos, move, budget)) continue;
             if (gain !== null && balance + gain >= 100)
                 return { gain: balance + gain, line: [makeSan(pos, move)] };
         }
@@ -2118,7 +2125,7 @@ export function proveCheckingMaterialAttack(
                       ? []
                       : [root.move.to],
             );
-            if (!win) throw new Error("Unproved checking attack reply");
+            if (!win) throw new Error(`Unproved checking attack reply: ${makeSan(root.after, reply)}`);
             branches.push({ reply: makeSan(root.after, reply), ...win });
         }
         const gain = Math.min(...branches.map((branch) => branch.gain));
@@ -2781,6 +2788,32 @@ export function normalizePromotionClearanceTimeline(steps: TacticalReplayStep[],
         if (!reply || makeFen(steps[index + 1].after.toSetup()) !== reply.next.fen) break;
         replies.set(index + 1, reply.next); node = reply.next;
     }
+    // The complete clearance certificate can fund a later fork whose capture
+    // deliberately permits a countercapture before promotion. A standalone
+    // local-exchange proof must not borrow that future promotion, but neither
+    // should its abstention erase this already verified, exact-branch lesson.
+    const contextualForks: TacticalMotifEvidence[] = [];
+    for (const [index, current] of nodes) {
+        const step = steps[index], targets = winningTargets(step.after, step.move.to, root.before.turn);
+        if (!step.after.isCheck() || targets.length < 2 || current.gain === null ||
+            !current.replies?.length || motifs.some(m => m.id === "fork" && m.ply === index + 1)) continue;
+        const forkCaptureInEveryBranch = current.replies.every(reply => {
+            const answer = replayTacticalLine(reply.next.fen, [reply.next.moveUci])[0];
+            return answer && answer.move.from === step.move.to && answer.capture > 0 &&
+                targets.includes(answer.move.to);
+        });
+        if (!forkCaptureInEveryBranch) continue;
+        const gain = current.gain - (step.balance - step.capture);
+        if (gain <= 0) continue;
+        contextualForks.push({ id: "fork", label: "Fork", source: motifs[0]?.source ?? "available",
+            confidence: "high", relevance: "secondary", ply: index + 1, moveUci: step.uci,
+            value: gain, verifiedCombination: true, evidence: "" });
+    }
+    if (contextualForks.length) motifs = [
+        ...motifs.filter(m => !(m.id === "forcingAttack" && contextualForks.some(fork =>
+            fork.ply === m.ply && (fork.value ?? 0) >= (m.value ?? Infinity)))),
+        ...contextualForks,
+    ].sort((a, b) => (a.ply ?? 0) - (b.ply ?? 0));
     return motifs.flatMap(motif => {
         const index = (motif.ply ?? 0) - 1, step = steps[index], current = nodes.get(index);
         if (!step || motif.relevance === "primary") return [motif];
@@ -4877,38 +4910,114 @@ export function proveCheckingForkPreparation(
     return proof;
 }
 
-function immediateFork(step: TacticalReplayStep) {
+type ImmediateForkProof = {
+    gain: number;
+    targets: Square[];
+    branches: { replyUci: string; captureUci?: string; gain: number }[];
+};
+const immediateForkCache = new Map<string, ImmediateForkProof | null>();
+
+/** Obtain the ordinary fork's gain from its defensive replies, not material
+ * accumulated elsewhere in a PV. Selected captures must also survive an
+ * immediate mating reply and off-square material liabilities. This is still
+ * local, not whole-position evaluation. */
+export function proveImmediateFork(step: TacticalReplayStep): ImmediateForkProof | null {
+    const key = `${makeFen(step.before.toSetup())}:${step.uci}:${step.capture}`;
+    if (immediateForkCache.has(key)) return immediateForkCache.get(key)!;
+    let proof: ImmediateForkProof | null = null;
+    try { proof = computeImmediateFork(step); }
+    catch { /* Exhaustion cannot certify a material payoff. */ }
+    immediateForkCache.set(key, proof);
+    if (immediateForkCache.size > 256)
+        immediateForkCache.delete(immediateForkCache.keys().next().value!);
+    return proof;
+}
+
+function computeImmediateFork(step: TacticalReplayStep): ImmediateForkProof | null {
     const side = step.before.turn;
+    const promotionCredit = step.move.promotion ? VALUE[step.move.promotion] - VALUE.pawn : 0;
     const targets = winningTargets(step.after, step.move.to, side);
-    if (targets.length < 2) return false;
+    if (targets.length < 2) return null;
     const replies = legalMoves(step.after);
-    if (!replies.length) return false;
-    return replies.every((reply) => {
+    if (!replies.length) return null;
+    const branches: ImmediateForkProof["branches"] = [];
+    const budget: ProofBudget = { nodes: 4096 };
+    const captureBound = (pos: Chess, move: NormalMove): number | null => {
+        if (--budget.nodes < 0) throw new Error("Immediate fork leaf budget exhausted");
+        const exchange = tacticalExchangeGain(pos, move);
+        if (exchange <= -VALUE.king) return null;
+        const leaf = pos.clone();
+        leaf.play(move);
+        let liability = 0;
+        // A material exchange into a drawn ending can be a saving fork.
+        // Do not mistake terminal draws for a mating refutation.
+        for (const reply of legalMoves(leaf)) {
+            if (reply.to !== move.to && (capturedValue(leaf, reply) || reply.promotion)) {
+                if (--budget.nodes < 0) throw new Error("Immediate fork leaf budget exhausted");
+                const loss = tacticalExchangeGain(leaf, reply);
+                if (loss <= -VALUE.king) return null;
+                liability = Math.max(liability, loss);
+            }
+            if (!mayGiveCheck(leaf, reply)) continue;
+            if (--budget.nodes < 0) throw new Error("Immediate fork leaf budget exhausted");
+            const after = leaf.clone();
+            after.play(reply);
+            if (after.isCheckmate()) return null;
+        }
+        const delta = capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+        return Math.min(exchange, delta - liability);
+    };
+    for (const reply of replies) {
         // Capturing the forker with a queen can itself lose material after the
         // legal recapture; such a losing defence does not refute the fork.
-        const replyGain = capturedValue(step.after, reply)
+        const replyGain = capturedValue(step.after, reply) || reply.promotion
             ? tacticalExchangeGain(step.after, reply)
             : 0;
-        if (replyGain <= -VALUE.king) return false;
-        if (replyGain <= -100) return true;
+        if (replyGain <= -VALUE.king) return null;
         const next = step.after.clone();
         next.play(reply);
-        if (next.board.get(step.move.to)?.color !== side || next.isCheck()) return false;
-        return [...targets, reply.to].some((target) => {
+        if (replyGain <= -100) {
+            const replyCredit = capturedValue(step.after, reply) +
+                (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0);
+            let strongest: ImmediateForkProof["branches"][number] | null = null;
+            for (const capture of legalMoves(next)) {
+                if (capture.to !== reply.to || !capturedValue(next, capture)) continue;
+                const retained = captureBound(next, capture);
+                if (retained === null) continue;
+                const gain = step.capture + promotionCredit - replyCredit + retained;
+                if (gain >= 100 && (!strongest || gain > strongest.gain))
+                    strongest = { replyUci: makeUci(reply), captureUci: makeUci(capture), gain };
+            }
+            if (!strongest) return null;
+            branches.push(strongest);
+            continue;
+        }
+        if (next.board.get(step.move.to)?.color !== side || next.isCheck()) return null;
+        let strongest: ImmediateForkProof["branches"][number] | null = null;
+        for (const target of new Set([...targets, reply.to])) {
             // The target must still be the original enemy piece, not the checking
             // king that moved onto an old target square.
             const victim = next.board.get(target);
-            return (
-                victim &&
-                victim.color !== side &&
-                victim.role !== "king" &&
-                step.capture -
-                    Math.max(0, replyGain) +
-                    tacticalExchangeGain(next, { from: step.move.to, to: target }) >=
-                    100
-            );
-        });
-    });
+            if (!victim || victim.color === side || victim.role === "king") continue;
+            const capture = { from: step.move.to, to: target };
+            if (!next.isLegal(capture)) continue;
+            const retained = captureBound(next, capture);
+            if (retained === null) continue;
+            const captureGain = step.capture - Math.max(0, replyGain) + retained;
+            const gain = captureGain + promotionCredit;
+            // Keep the established capture threshold: promotion value alone
+            // does not turn an otherwise unprofitable geometry into a fork.
+            if (captureGain >= 100 && (!strongest || gain > strongest.gain))
+                strongest = { replyUci: makeUci(reply), captureUci: makeUci(capture), gain };
+        }
+        if (!strongest) return null;
+        branches.push(strongest);
+    }
+    return { gain: Math.min(...branches.map(branch => branch.gain)), targets, branches };
+}
+
+function immediateFork(step: TacticalReplayStep) {
+    return proveImmediateFork(step) !== null;
 }
 
 /** A material fork may be protected by a forced mating reply rather than by
@@ -4961,9 +5070,12 @@ export function proveExchangeForPawnFork(step: TacticalReplayStep, nodeLimit = 4
     )
         return null;
     const proof = materialThreatProof(step, targets, [step.move.to], [], true, undefined, {
-        minimumGain: VALUE.rook - VALUE[role] - VALUE.pawn,
+        // The defensive exchange may take the other minor rather than the
+        // forker. Keep that bishop/knight difference, not a false zero result.
+        minimumGain: VALUE.rook - Math.max(VALUE.knight, VALUE.bishop) - VALUE.pawn,
         mateAnswerMoves: 4,
         mateNodeLimit: nodeLimit,
+        allPiecesAtLeaf: true,
     });
     return proof.kind === "proven" && proof.complete ? { ...proof, targets } : null;
 }
@@ -11579,6 +11691,8 @@ export function auditTacticalMotifs(
         if (MATE.test(proposal.id)) sound = mate;
         else if (proposal.id === "fork") {
             sound = verifiedFork(step);
+            const immediate = sound ? proveImmediateFork(step) : null;
+            if (immediate) proposal = { ...proposal, value: immediate.gain };
             const mating = sound && !immediateFork(step) ? proveMateBackedFork(step) : null;
             // This proof borrows a mating continuation to rescue the fork.
             // If the initiating move already has an independent all-defence

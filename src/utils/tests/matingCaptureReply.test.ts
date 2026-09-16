@@ -6,6 +6,7 @@ import {
     proveMatingCaptureReply,
     replayTacticalLine,
     winningRecaptureEvidence,
+    tacticalCaptureGain,
 } from "../tacticalMotifs/causalTactics";
 import {
     classifyPositionTacticalMotifs,
@@ -50,18 +51,18 @@ test.each([0, 1, -1, NaN, Infinity, 1.5])("budget %s cannot borrow a cached mate
     expect(proveMatingCaptureReply(step, budget)).toBeNull();
 });
 
-test("a legal capture of the checker refutes the cooperative mating line", () => {
+test("refuting one cooperative mate does not prove the rook recapture wins material", () => {
     const position = fen.replace("4NpP1", "4NbP1");
     const steps = replayTacticalLine(position, line);
     expect(steps).toHaveLength(5);
     expect(steps[4].after.isCheckmate()).toBe(true);
     expect(replayTacticalLine(position, [...line.slice(0, 3), "f5h3"])).toHaveLength(4);
     expect(proveMatingCaptureReply(steps[1])).toBeNull();
-    expect(winningRecaptureEvidence(steps, 1, nomination)).toMatchObject({
-        id: "hangingPiece",
-        label: "Winning Recapture",
-        value: 400,
-    });
+    // Bxf5+ still collects the other bishop; the old 400-cp claim ignored
+    // it. Fresh engine review also finds a different longer mate here.
+    expect(replayTacticalLine(position, [...line.slice(0, 2), "e6f5"])).toHaveLength(3);
+    expect(tacticalCaptureGain(steps[1])).toBe(170);
+    expect(winningRecaptureEvidence(steps, 1, nomination)).toBeNull();
 });
 
 test("root and timeline agree without needing future PV moves for the capture proof", () => {

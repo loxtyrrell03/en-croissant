@@ -31,12 +31,17 @@ older-pawn coverage question. One also falls outside the baseline top three
 candidates, which is a separate nomination limit. The first sample's unresolved
 checking pawn capture remains open.
 
-The audit also finds a concrete **unfixed value defect**: an ordinary later fork
+The audit also finds a concrete **value defect, unfixed at this milestone**: an ordinary later fork
 can inherit earlier/future PV material totals, while the same reached board
 with a different suffix produces a different value. The legacy proposal is
 checked for fork existence but not always replaced with a position-local gain.
 The follow-up should retain the genuine fork, correct its value, and recheck
 primary selection; deleting the theme would worsen the current recall goal.
+
+The subsequent [local fork-value review](fork-local-value-review.md) records
+that correction, compensation-aware continuation recall, contrary witnesses
+and still-missing quiet fork preparations. This document preserves the original
+adapter-116 findings rather than treating the later changes as baseline results.
 
 There are 21 immediate-root outputs, one continuation-only output and 100
 empty outputs. These are **coverage counts, not accuracy counts**. The selected

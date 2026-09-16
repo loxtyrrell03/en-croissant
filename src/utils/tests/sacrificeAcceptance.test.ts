@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { makeFen } from "chessops/fen";
 import { expect, test } from "vitest";
-import { replayTacticalLine, winningRecaptureEvidence } from "../tacticalMotifs/causalTactics";
+import { replayTacticalLine, winningRecaptureEvidence, tacticalCaptureGain } from "../tacticalMotifs/causalTactics";
 import {
     classifyPositionTacticalMotifs,
     classifyMistakeReviewMotifs,
@@ -33,23 +33,37 @@ test("wrong history cannot erase a material label using another position's sacri
     const root = replayTacticalLine(fen, line)[0];
     const result = classifyPositionTacticalMotifs({
         fen: makeFen(root.after.toSetup()),
-        previousFen: fen.replace("5qpr", "5qpb"),
+        // Changing only the captured h5 victim still reaches the exact same
+        // board, so that is valid alternative history, not a mismatch.
+        previousFen: fen.replace("5qpr", "5qnb"),
         previousMoveUci: line[0],
         pvUci: [line[1]],
     });
-    expect(result.motifs.some((m) => m.ply === 1 && m.id === "hangingPiece")).toBe(true);
+    const noHistory = classifyPositionTacticalMotifs({ fen: makeFen(root.after.toSetup()), pvUci: [line[1]] });
+    expect(result).toEqual(noHistory);
 });
 
-test("an unsound offer cannot hide behind its cooperative continuation", () => {
-    const position = fen.replace("5qpr", "5qpb");
+test("an unsound offer without fork compensation remains a profitable recapture", () => {
+    const position = fen.replace("5qpr", "5qpb").replace("4N3", "8");
     const steps = replayTacticalLine(position, line);
     const result = classifyPositionTacticalMotifs({
         fen: makeFen(steps[0].after.toSetup()),
         previousFen: position,
         previousMoveUci: line[0],
-        pvUci: line.slice(1),
+        pvUci: [line[1]],
     });
     expect(result.motifs[0]).toMatchObject({ id: "hangingPiece", label: "Winning Recapture" });
+});
+
+test("a winning pawn ending is not a queen-for-bishop material windfall", () => {
+    const position = fen.replace("5qpr", "5qpb");
+    const steps = replayTacticalLine(position, ["h1h5", "g6h5", "e4g3", "h5g4", "g3f5", "g4f5"]);
+    expect(steps).toHaveLength(6);
+    // Black wins the resulting pawn ending, but the exchange returns the
+    // queen and gains the knight: it is not the old 570-cp local profit.
+    expect(steps[5].balance).toBe(10);
+    expect(tacticalCaptureGain(steps[1])).toBe(320);
+    expect(winningRecaptureEvidence(steps, 1, { id: "hangingPiece", label: "Hanging Piece", source: "available", confidence: "high", ply: 2, moveUci: line[1], evidence: "" })).toBeNull();
 });
 
 test("a recapture allowing immediate smothered mate cannot claim a material win", () => {

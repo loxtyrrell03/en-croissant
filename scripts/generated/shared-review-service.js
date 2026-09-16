@@ -9957,8 +9957,8 @@ function winningRecaptureEvidence(steps, index, motif) {
 	}
 	if (motif.id === "hangingPiece" && step?.capture && previous?.capture && proveMatingDeflection(previous)?.declined.some((branch) => branch.reply === step.san)) return null;
 	if (motif.id !== "hangingPiece" || !step?.capture || !previous?.capture || previous.move.to !== step.move.to || previous.move.promotion || step.move.promotion) return motif;
-	const gain = tacticalExchangeGain(step.before, step.move);
-	if (gain <= -VALUE.king || gain - previous.capture < 100) return null;
+	const gain = tacticalCaptureGain(step);
+	if (gain === null || gain - previous.capture < 100) return null;
 	if (proveMatingCaptureReply(step) || proveMateBackedFork(previous) || proveRecaptureBackedFork(previous) || proveCaptureForkPreparation(previous) || proveCaptureDiscoveryPreparation(previous) || proveCaptureDeflection(previous) || proveDiscoveryAttraction(previous) || provePinnedCapture(previous) || capturedDefenderProof(previous, motif.source)) return null;
 	const victim = step.before.board.get(step.move.to);
 	const traded = previous.before.board.get(previous.move.to);
@@ -9967,7 +9967,7 @@ function winningRecaptureEvidence(steps, index, motif) {
 		...motif,
 		label: "Winning Recapture",
 		value: gain - previous.capture,
-		evidence: `${step.san} wins the ${victim.role} on ${makeSquare(step.move.to)} in exchange for the ${traded.role} just captured there. The settled local exchange gains ${(gain - previous.capture) / 100} pawns of material; this is the payoff, not a newly hanging piece.`
+		evidence: `${step.san} takes the ${victim.role} on ${makeSquare(step.move.to)} in exchange for the ${traded.role} just captured there. After allowing for that trade and immediate counterplay, the checked local gain is at least ${(gain - previous.capture) / 100} pawns; this is the payoff, not a newly hanging piece.`
 	};
 }
 /** The displayed king evasion need not be the first witness selected at the
@@ -11231,7 +11231,8 @@ function proveCheckingMaterialAttack(steps, nodeLimit = 16384) {
 				}
 				if (!safe) continue;
 			}
-			const gain = participantCaptureGain(pos, move, [...pieces, move.to], budget);
+			const gain = participantCaptureGain(pos, move, [...pos.board[side], move.to], budget);
+			if (!checkingSkewer && !noImmediateTerminalRefutation(pos, move, budget)) continue;
 			if (gain !== null && balance + gain >= 100) return {
 				gain: balance + gain,
 				line: [makeSan(pos, move)]
@@ -11271,7 +11272,7 @@ function proveCheckingMaterialAttack(steps, nodeLimit = 16384) {
 		const branches = [];
 		for (const reply of orderedMoves(root.after)) {
 			const win = attack(visit(root.after, reply), reply.from === target ? reply.to : target, -delta(root.after, reply), 3, checkingSkewer ? [...root.after.board[side]].filter((sq) => sq !== reply.to) : reply.to === root.move.to ? [] : [root.move.to]);
-			if (!win) throw new Error("Unproved checking attack reply");
+			if (!win) throw new Error(`Unproved checking attack reply: ${makeSan(root.after, reply)}`);
 			branches.push({
 				reply: makeSan(root.after, reply),
 				...win
@@ -11790,6 +11791,30 @@ function normalizePromotionClearanceTimeline(steps, motifs) {
 		replies.set(index + 1, reply.next);
 		node = reply.next;
 	}
+	const contextualForks = [];
+	for (const [index, current] of nodes) {
+		const step = steps[index], targets = winningTargets(step.after, step.move.to, root.before.turn);
+		if (!step.after.isCheck() || targets.length < 2 || current.gain === null || !current.replies?.length || motifs.some((m) => m.id === "fork" && m.ply === index + 1)) continue;
+		if (!current.replies.every((reply) => {
+			const answer = replayTacticalLine(reply.next.fen, [reply.next.moveUci])[0];
+			return answer && answer.move.from === step.move.to && answer.capture > 0 && targets.includes(answer.move.to);
+		})) continue;
+		const gain = current.gain - (step.balance - step.capture);
+		if (gain <= 0) continue;
+		contextualForks.push({
+			id: "fork",
+			label: "Fork",
+			source: motifs[0]?.source ?? "available",
+			confidence: "high",
+			relevance: "secondary",
+			ply: index + 1,
+			moveUci: step.uci,
+			value: gain,
+			verifiedCombination: true,
+			evidence: ""
+		});
+	}
+	if (contextualForks.length) motifs = [...motifs.filter((m) => !(m.id === "forcingAttack" && contextualForks.some((fork) => fork.ply === m.ply && (fork.value ?? 0) >= (m.value ?? Infinity)))), ...contextualForks].sort((a, b) => (a.ply ?? 0) - (b.ply ?? 0));
 	return motifs.flatMap((motif) => {
 		const index = (motif.ply ?? 0) - 1, step = steps[index], current = nodes.get(index);
 		if (!step || motif.relevance === "primary") return [motif];
@@ -13052,27 +13077,108 @@ function proveCheckingForkPreparation(root, nodeLimit = 4096, onFailure) {
 	}
 	return proof;
 }
-function immediateFork(step) {
+var immediateForkCache = /* @__PURE__ */ new Map();
+/** Obtain the ordinary fork's gain from its defensive replies, not material
+* accumulated elsewhere in a PV. Selected captures must also survive an
+* immediate mating reply and off-square material liabilities. This is still
+* local, not whole-position evaluation. */
+function proveImmediateFork(step) {
+	const key = `${makeFen(step.before.toSetup())}:${step.uci}:${step.capture}`;
+	if (immediateForkCache.has(key)) return immediateForkCache.get(key);
+	let proof = null;
+	try {
+		proof = computeImmediateFork(step);
+	} catch {}
+	immediateForkCache.set(key, proof);
+	if (immediateForkCache.size > 256) immediateForkCache.delete(immediateForkCache.keys().next().value);
+	return proof;
+}
+function computeImmediateFork(step) {
 	const side = step.before.turn;
+	const promotionCredit = step.move.promotion ? VALUE[step.move.promotion] - VALUE.pawn : 0;
 	const targets = winningTargets(step.after, step.move.to, side);
-	if (targets.length < 2) return false;
+	if (targets.length < 2) return null;
 	const replies = legalMoves(step.after);
-	if (!replies.length) return false;
-	return replies.every((reply) => {
-		const replyGain = capturedValue(step.after, reply) ? tacticalExchangeGain(step.after, reply) : 0;
-		if (replyGain <= -VALUE.king) return false;
-		if (replyGain <= -100) return true;
+	if (!replies.length) return null;
+	const branches = [];
+	const budget = { nodes: 4096 };
+	const captureBound = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("Immediate fork leaf budget exhausted");
+		const exchange = tacticalExchangeGain(pos, move);
+		if (exchange <= -VALUE.king) return null;
+		const leaf = pos.clone();
+		leaf.play(move);
+		let liability = 0;
+		for (const reply of legalMoves(leaf)) {
+			if (reply.to !== move.to && (capturedValue(leaf, reply) || reply.promotion)) {
+				if (--budget.nodes < 0) throw new Error("Immediate fork leaf budget exhausted");
+				const loss = tacticalExchangeGain(leaf, reply);
+				if (loss <= -VALUE.king) return null;
+				liability = Math.max(liability, loss);
+			}
+			if (!mayGiveCheck(leaf, reply)) continue;
+			if (--budget.nodes < 0) throw new Error("Immediate fork leaf budget exhausted");
+			const after = leaf.clone();
+			after.play(reply);
+			if (after.isCheckmate()) return null;
+		}
+		const delta = capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+		return Math.min(exchange, delta - liability);
+	};
+	for (const reply of replies) {
+		const replyGain = capturedValue(step.after, reply) || reply.promotion ? tacticalExchangeGain(step.after, reply) : 0;
+		if (replyGain <= -VALUE.king) return null;
 		const next = step.after.clone();
 		next.play(reply);
-		if (next.board.get(step.move.to)?.color !== side || next.isCheck()) return false;
-		return [...targets, reply.to].some((target) => {
+		if (replyGain <= -100) {
+			const replyCredit = capturedValue(step.after, reply) + (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0);
+			let strongest = null;
+			for (const capture of legalMoves(next)) {
+				if (capture.to !== reply.to || !capturedValue(next, capture)) continue;
+				const retained = captureBound(next, capture);
+				if (retained === null) continue;
+				const gain = step.capture + promotionCredit - replyCredit + retained;
+				if (gain >= 100 && (!strongest || gain > strongest.gain)) strongest = {
+					replyUci: makeUci(reply),
+					captureUci: makeUci(capture),
+					gain
+				};
+			}
+			if (!strongest) return null;
+			branches.push(strongest);
+			continue;
+		}
+		if (next.board.get(step.move.to)?.color !== side || next.isCheck()) return null;
+		let strongest = null;
+		for (const target of new Set([...targets, reply.to])) {
 			const victim = next.board.get(target);
-			return victim && victim.color !== side && victim.role !== "king" && step.capture - Math.max(0, replyGain) + tacticalExchangeGain(next, {
+			if (!victim || victim.color === side || victim.role === "king") continue;
+			const capture = {
 				from: step.move.to,
 				to: target
-			}) >= 100;
-		});
-	});
+			};
+			if (!next.isLegal(capture)) continue;
+			const retained = captureBound(next, capture);
+			if (retained === null) continue;
+			const captureGain = step.capture - Math.max(0, replyGain) + retained;
+			const gain = captureGain + promotionCredit;
+			if (captureGain >= 100 && (!strongest || gain > strongest.gain)) strongest = {
+				replyUci: makeUci(reply),
+				captureUci: makeUci(capture),
+				gain
+			};
+		}
+		if (!strongest) return null;
+		branches.push(strongest);
+	}
+	return {
+		gain: Math.min(...branches.map((branch) => branch.gain)),
+		targets,
+		branches
+	};
+}
+function immediateFork(step) {
+	return proveImmediateFork(step) !== null;
 }
 /** A material fork may be protected by a forced mating reply rather than by
 * an ordinary recapture. Only a complete all-defence certificate can use it. */
@@ -13107,9 +13213,10 @@ function proveExchangeForPawnFork(step, nodeLimit = 4096) {
 	const material = targets.filter((target) => step.after.board.get(target)?.role !== "king");
 	if (!material.length || material.some((target) => VALUE[step.after.board.get(target).role] < VALUE.rook)) return null;
 	const proof = materialThreatProof(step, targets, [step.move.to], [], true, void 0, {
-		minimumGain: VALUE.rook - VALUE[role] - VALUE.pawn,
+		minimumGain: VALUE.rook - Math.max(VALUE.knight, VALUE.bishop) - VALUE.pawn,
 		mateAnswerMoves: 4,
-		mateNodeLimit: nodeLimit
+		mateNodeLimit: nodeLimit,
+		allPiecesAtLeaf: true
 	});
 	return proof.kind === "proven" && proof.complete ? {
 		...proof,
@@ -17542,6 +17649,11 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		if (MATE.test(proposal.id)) sound = mate;
 		else if (proposal.id === "fork") {
 			sound = verifiedFork(step);
+			const immediate = sound ? proveImmediateFork(step) : null;
+			if (immediate) proposal = {
+				...proposal,
+				value: immediate.gain
+			};
 			const mating = sound && !immediateFork(step) ? proveMateBackedFork(step) : null;
 			if (mating && proposal.ply === 1 && (checkingMate || quietMate || preparation)) continue;
 			const exchange = sound && !immediateFork(step) ? proveExchangeForPawnFork(step) : null;
@@ -19081,7 +19193,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 116;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 117;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -19646,7 +19758,7 @@ function selectRootConnectedLessons(fen, line, motifs, timeline) {
 * actual ply, as do their subsequent capture payoffs. */
 function selectContinuationLessons(timeline, rootMotifs) {
 	if (rootMotifs.some((motif) => motif.ply === 1)) return timeline;
-	return timeline.filter((motif) => motif.id !== "hangingPiece" || timeline.some((prior) => prior.id !== "hangingPiece" && prior.actor === motif.actor && prior.ply !== null && motif.ply !== null && prior.ply <= motif.ply));
+	return timeline.filter((motif) => motif.id !== "hangingPiece" || motif.label === "Winning Recapture" && (motif.value ?? 0) >= 320 || timeline.some((prior) => prior.id !== "hangingPiece" && prior.actor === motif.actor && prior.ply !== null && motif.ply !== null && prior.ply <= motif.ply));
 }
 /** Each row is assessed in its own legal position. Root causes stay separate
 * so later repetitions and opponent counterplay cannot replace the lesson. */

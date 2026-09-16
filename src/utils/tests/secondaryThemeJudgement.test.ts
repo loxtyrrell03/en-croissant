@@ -31,7 +31,7 @@ test("frozen engine and source inputs retain unrelated judgements across the ful
             key === "motifClassifierVersion" ? undefined : entry && typeof entry === "object" && !Array.isArray(entry)
                 ? Object.fromEntries(Object.entries(entry).sort(([a], [b]) => a.localeCompare(b))) : entry,
         );
-    const changed = new Set(["lichess:qQG5v", "lichess:sKDBG", "lichess:xxDaj", "lichess:SD5oo", "lichess:qn2Fy", "lichess:j8Up4", "lichess:S9vEb", "lichess:DBBd9", "lichess:J3vOR"]);
+    const changed = new Set(["lichess:qQG5v", "lichess:sKDBG", "lichess:xxDaj", "lichess:SD5oo", "lichess:qn2Fy", "lichess:j8Up4", "lichess:S9vEb", "lichess:DBBd9", "lichess:J3vOR", "lichess:R13Ct"]);
     const cases = receipt.cases.map((r: any) => {
         const sourceResult = classifyPositionTacticalMotifs({
             fen: r.fen,
@@ -61,12 +61,17 @@ test("frozen engine and source inputs retain unrelated judgements across the ful
         );
         return { ...r, sourceResult, scan };
     });
+    // ...Kxf7 retains its capture lesson, but Nxd6+ Qxd6 trades a
+    // 320 knight for a 330 bishop: debit that available counterplay.
+    const recapture = cases.find((row: any) => row.id === "lichess:R13Ct")!;
+    expect(recapture.sourceResult.motifs[0]).toMatchObject({ id: "hangingPiece", label: "Winning Recapture", value: 210 });
+    expect(recapture.scan.motifs[0]).toMatchObject({ id: "hangingPiece", value: 210 });
     if (process.env.TACTICAL_SECONDARY_FINAL_REPORT)
         writeFileSync(
             process.env.TACTICAL_SECONDARY_FINAL_REPORT,
             JSON.stringify(
                 {
-                    scope: "Exact engine/source-input replay. Nine changed explanations reviewed across adapters 92 through 94; unchanged/empty outputs are not accuracy successes.",
+                    scope: "Exact engine/source-input replay. Mechanism changes were reviewed across adapters 92 through 94; adapter 117 additionally debits R13Ct's minor-piece counterexchange. Unchanged/empty outputs are not accuracy successes.",
                     cases,
                 },
                 null,

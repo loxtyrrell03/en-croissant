@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { expect, test } from "vitest";
 import { makeFen } from "chessops/fen";
-import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
+import { replayTacticalLine, tacticalCaptureGain } from "../tacticalMotifs/causalTactics";
 import { classifyPositionTacticalMotifs } from "../tacticalMotifs/mistakeReviewAdapter";
 
 const games = JSON.parse(
@@ -49,16 +49,16 @@ function classify(id: string) {
     });
 }
 
-test("the checking attack retains its queen-for-bishop recapture payoff", () => {
+test("an unproved opening attack retains its conditional queen-for-bishop recapture", () => {
     const result = classify("ordinary-2:ply14");
-    expect(result.motifs[0]).toMatchObject({ id: "forcingAttack", ply: 1 });
+    expect(result.motifs.some(motif => motif.id === "forcingAttack" && motif.ply === 1)).toBe(false);
     expect(result.timeline).toContainEqual(
         expect.objectContaining({
             id: "hangingPiece",
             ply: 7,
             moveUci: "h5d5",
             label: "Winning Recapture",
-            value: 570,
+            value: 470,
         }),
     );
     expect(result.timeline!.find((m) => m.ply === 7)?.evidence).toContain("bishop");
@@ -76,7 +76,7 @@ test("colour reflection retains the queen-for-bishop payoff", () => {
             id: "hangingPiece",
             label: "Winning Recapture",
             ply: 7,
-            value: 570,
+            value: 470,
         }),
     );
 });
@@ -93,8 +93,20 @@ test("viewing the payoff as a new root preserves the trade context", () => {
     expect(result.motifs[0]).toMatchObject({
         id: "hangingPiece",
         label: "Winning Recapture",
-        value: 570,
+        value: 470,
     });
+});
+
+test("the queen-for-bishop payoff also concedes the f6 pawn", () => {
+    const row = rows.find((row) => row.id === "ordinary-2:ply14")!;
+    const line = [...row.after[0].pvUci.slice(0, 7), "f7f6"];
+    const replay = replayTacticalLine(row.fen, line);
+    expect(replay).toHaveLength(8);
+    expect(replay[5].capture).toBe(330);
+    expect(replay[6].capture).toBe(900);
+    expect(replay[7].capture).toBe(100);
+    expect(tacticalCaptureGain(replay[6])).toBe(800);
+    expect(replay[7].balance - replay[4].balance).toBe(470);
 });
 
 test("subtracts the earlier loss and the recapturing piece's liability", () => {

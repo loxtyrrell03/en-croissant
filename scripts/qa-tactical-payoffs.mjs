@@ -17,6 +17,7 @@ import { quietPieceForkCases, quietPieceForkMove } from "../src/utils/tests/fixt
 import { discoveryTrapCases } from "../src/utils/tests/fixtures/discoveryTrap.ts";
 import { perpetualMaterialCases, perpetualMaterialLine } from "../src/utils/tests/fixtures/perpetualMaterial.ts";
 import { compensatedCaptureInput } from "../src/utils/tests/fixtures/compensatedCapture.ts";
+import { forkLocalValueCases } from "../src/utils/tests/fixtures/forkLocalValue.ts";
 import {
   matingInterferenceCases,
   reflectMatingInterference,
@@ -34,10 +35,11 @@ const discoveryTrapMode = process.argv.includes("--discovery-trap");
 const perpetualMode = process.argv.includes("--perpetual-material");
 const pawnMode = process.argv.includes("--pawn");
 const compensatedMode = process.argv.includes("--compensated");
+const forkValueMode = process.argv.includes("--fork-value");
 const root = process.cwd(),
   output = resolve(
     root,
-    compensatedMode ? "tmp/tactical-compensated-adapter116" : pawnMode ? "tmp/tactical-pawn-adapter115" : perpetualMode ? "tmp/tactical-perpetual-material-adapter112" : discoveryTrapMode ? "tmp/tactical-discovery-trap-adapter111" : quietForkMode ? "tmp/tactical-quiet-fork-adapter110" : liabilityMode ? "tmp/tactical-liability-adapter108" : discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
+    forkValueMode ? "tmp/tactical-fork-value-adapter117" : compensatedMode ? "tmp/tactical-compensated-adapter116" : pawnMode ? "tmp/tactical-pawn-adapter115" : perpetualMode ? "tmp/tactical-perpetual-material-adapter112" : discoveryTrapMode ? "tmp/tactical-discovery-trap-adapter111" : quietForkMode ? "tmp/tactical-quiet-fork-adapter110" : liabilityMode ? "tmp/tactical-liability-adapter108" : discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
       ? "tmp/tactical-quiet-mate-adapter104"
       : interferenceMode
         ? "tmp/tactical-interference-adapter104"
@@ -53,7 +55,9 @@ const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
 const cases = (
-  compensatedMode
+  forkValueMode
+    ? forkLocalValueCases.filter(row => row.id === "root-only" || row.id === "later-pawn")
+    : compensatedMode
     ? [{...compensatedCaptureInput,id:"compensated-capture",expectedLabel:"Material Gain"}]
     : pawnMode
     ? [
@@ -185,7 +189,18 @@ try {
           index,
           scale,
         });
-        if (compensatedMode) {
+        if (forkValueMode) {
+          await page.getByText("Fork found", {exact:true}).waitFor();
+          const button = page.getByRole("button", {name:/^Show .* on board$/});
+          await button.focus(); await page.keyboard.press("Enter");
+          const preview = await page.evaluate(() => window.fixture.last);
+          assert.equal(preview.motifs[0].value, 320);
+          for (const to of ["e4", "e8"]) assert(preview.arrows.some(arrow => arrow.from === "a4" && arrow.to === to));
+          assert(!preview.arrows.some(arrow => arrow.to === "h7"));
+          await page.locator("summary").focus(); await page.keyboard.press("Enter");
+          assert((await page.locator('[data-tactical-ply="1"]').innerText()).toLowerCase().includes("fork"));
+          if(width === 360 && scale === 2) await page.screenshot({path:resolve(output,`${row.id}.png`),fullPage:true});
+        } else if (compensatedMode) {
           await page.getByText("Material Gain found", {exact:true}).waitFor();
           assert((await page.locator("main").innerText()).includes("0.9 pawns"));
           const button = page.getByRole("button", {name:/^Show .* on board$/});

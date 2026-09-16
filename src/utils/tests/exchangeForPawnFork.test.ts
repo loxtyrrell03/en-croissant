@@ -68,7 +68,7 @@ test.skipIf(!process.env.TACTICAL_PRIVATE_PGN_SAMPLE)(
 );
 
 test.each([
-    [knight, "e5f7", 80, "Qxd4"],
+    [knight, "e5f7", 70, "Qxd4"],
     [bishop, "g5f6", 70, "Qxh3"],
 ] as const)(
     "a complete major-piece fork keeps its exchange-for-pawn value",
@@ -84,6 +84,13 @@ test("the actual recapture line has only an 80 cp local balance", () => {
     const steps = replayTacticalLine(knight, ["e5f7", "d8d4", "f7h8", "d4h8"]);
     expect(steps).toHaveLength(4);
     expect(steps[3].balance).toBe(80);
+});
+
+test("taking the other minor lowers the guaranteed fork balance to 70 cp", () => {
+    const steps = replayTacticalLine(knight, ["e5f7", "d8d4", "f7h8", "d4c4"]);
+    expect(steps).toHaveLength(4);
+    expect(steps[3].balance).toBe(70);
+    expect(proveExchangeForPawnFork(steps[0])?.gain).toBe(70);
 });
 
 test("a checking queen countercapture refutes the immediate fork", () => {
@@ -110,7 +117,7 @@ test("the live board shows the two actual fork targets", () => {
         depth: 16,
         engineName: "Constructed",
     });
-    expect(scan.motifs[0]).toMatchObject({ id: "fork", value: 80 });
+    expect(scan.motifs[0]).toMatchObject({ id: "fork", value: 70 });
     expect(scan.arrows.map((a) => a.from + a.to)).toEqual(
         expect.arrayContaining(["e5f7", "f7d8", "f7h8"]),
     );
@@ -124,7 +131,7 @@ test("mistake review retains the missed fork rather than dropping its smaller ne
         pvUci: ["e5f7", "d8d4", "f7h8", "d4h8"],
         refutationUci: [],
     });
-    expect(result.missedMotifs[0]).toMatchObject({ id: "fork", value: 80 });
+    expect(result.missedMotifs[0]).toMatchObject({ id: "fork", value: 70 });
 });
 
 test("an unchanged exchange-for-pawn fork is existing danger, not a newly created tactic", () => {
@@ -137,7 +144,7 @@ test("an unchanged exchange-for-pawn fork is existing danger, not a newly create
     });
     expect(result.allowedMotifs[0]).toMatchObject({
         id: "fork",
-        value: 80,
+        value: 70,
         comparison: "persists",
     });
 });
@@ -149,7 +156,7 @@ test("a larger independently proved interference remains ahead of its smaller fo
 });
 
 test.each([
-    [knight, "e5f7", 80],
+    [knight, "e5f7", 70],
     [bishop, "g5f6", 70],
 ] as const)("colour reflection preserves the exchange fork", (fen, root, value) => {
     const swap = (value: string) =>

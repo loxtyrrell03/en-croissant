@@ -101,12 +101,12 @@ test("an exchange-for-pawn fork is also proof-backed, not an incidental small ga
         fen: "3qk2r/8/8/4N3/2BP4/8/PPP2PPP/R4RK1 w k - 0 1",
         pvUci: ["e5f7"],
     });
-    expect(result.motifs[0]).toMatchObject({ id: "fork", value: 80, verifiedCombination: true });
+    expect(result.motifs[0]).toMatchObject({ id: "fork", value: 70, verifiedCombination: true });
     const explanation = buildMistakeReviewTacticalExplanation({
         allowedMotifs: [opponent],
         missedMotifs: [{ ...result.motifs[0], source: "missed" }],
     });
-    expect(explanation?.secondary).toMatchObject({ id: "fork", value: 80 });
+    expect(explanation?.secondary).toMatchObject({ id: "fork", value: 70 });
 });
 
 test("a supplied marker cannot turn an ordinary geometric fork into a proved combination", () => {
