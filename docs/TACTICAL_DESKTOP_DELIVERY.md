@@ -1,6 +1,38 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 124 / live pipeline 129
+## Current package: adapter 125 / live pipeline 130
+
+Source `ee91a454` is packaged in the standalone executable, including pawn
+exposure after capturing defenders, compensation-aware missed/neutral review,
+and the safeguard against labelling mate-delaying checks as pawn wins. The
+detached checkout `en-tactical-desktop-ee91a454` excludes unrelated primary
+changes. TypeScript, 71 focused checks (seven optional skips), the 42-module
+shared-review build, 8,861-module frontend and native release build pass. Native
+compilation takes 1m59s with 22 existing warnings. Generated route-tree output
+has no semantic diff; shared-service differences are dependency-path comments
+only, confirmed by comparison after removing those comments.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,128,000 bytes;
+  SHA-256 `1e480ef265140e4297744383f9cb2b289eb845ff5986b311242f52f020251d63`.
+- Worker: `liveTactics.worker-D1ItMGOG.js`; SHA-256
+  `6795ea6cd166f4523e4b14d163f9b6af5c97d82aad0d523c45c19b91fa247357`.
+  Clean frontend bytes match the tested immutable artifact. The x64 executable
+  embeds this key and `OpeningReviewWorkspace-CP6oFigK.js`; its dependency
+  receipt identifies both clean-checkout assets.
+- Previous adapter-124 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter125/en-croissant-fork.exe`,
+  SHA-256 `35f5fcf743f2c618c646f1ab52ad2cfb7c6194b74a07246b676d66d66b13da76`.
+
+No app was running before or after the build, and none was launched/restarted.
+The Dev App shortcut was read back unchanged and still invokes the primary
+checkout's `encroissant-native` workflow. Games, settings, engines and phone
+services remain unchanged. This is package/linkage proof, not native-window
+interaction or reliable startup certification. See
+`benchmarks/tactical-relevance/capturing-guard-recall-review.md` for the two
+recovered owner opportunities, rejected delaying-check draft, subsequent quiet
+move audit and continuing recall/primary-selection limits.
+
+## Previous package: adapter 124 / live pipeline 129
 
 Source `e013ba21` is packaged in the standalone executable, including older
 pawn opportunities with verified costly recaptures and history-sensitive

@@ -96,3 +96,20 @@ Desktop package delivery is recorded separately in
 `docs/TACTICAL_DESKTOP_DELIVERY.md`. Older/history-free pawn opportunities,
 longer quiet preparations, primary-theme selection, native interaction and
 load-sensitive reliability remain open. No owner data or phone service changes.
+
+## Subsequent quiet-move review
+
+Eight additional fresh searches examine the next apparently empty owner **Bg5**
+root. Its queen-winning PV is not forced: ...Qd7 and ...Nf6 allow ordinary dxe4
+recovery, while ...Qd6 permits Nxe4. Held Bg5 is +538 cp versus +500 for the
+immediate recapture. These finite-depth estimates and queen-saving defences do
+not establish a missed forced queen win. A useful intermediate tempo may still
+be explainable, but no new tactic is certified merely to fill the empty result.
+The premature Nxe5 option has separate ...Qd4 counterplay (+275 cp), so it is
+not treated as an equivalent harmless pawn capture at this later position.
+
+This audit changes the next priority, not the classifier: the still-unexplained
+Nb5 queen/c7 preparation is a stronger next candidate than a speculative
+queen-winning Bg5 headline. Private initial judgement, requests, fresh results
+and reviewed conclusions are `third-bg5-{initial,probes,engine,reviewed}-20260916`.
+These eight searches are additional to the 28 source-milestone searches above.
