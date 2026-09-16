@@ -3202,6 +3202,26 @@ function persistentPawnExchangeContext(history, fen, move) {
 		episodePlies: verified.frames.length - start
 	};
 }
+/** A contiguous equal exchange before another capture has already settled its
+* losses. Require complete replay-matching history; never borrow an earlier
+* surplus, cross a quiet move or infer that a truncated window had no debt. */
+function settledRootCaptureExchange(history, fen, move, previousFen, previousMove) {
+	const verified = verifiedTacticalHistory(history, fen);
+	if (!verified || !verified.position.isLegal(move)) return null;
+	const last = verified.frames.at(-1);
+	if (!last || makeFen(last.before.toSetup()) !== previousFen || makeUci(last.move) !== previousMove) return null;
+	let start = verified.frames.length;
+	while (start > 0) {
+		const frame = verified.frames[start - 1];
+		if (!frame.capture || frame.move.to !== move.to || frame.move.promotion || !frame.before.board.get(frame.move.to)) break;
+		start--;
+	}
+	const chain = verified.frames.slice(start);
+	if (chain.length < 2 || chain.length % 2 !== 0) return null;
+	const side = verified.position.turn;
+	if (chain.reduce((sum, frame) => sum + (frame.before.turn === side ? 1 : -1) * frame.capture, 0) !== 0) return null;
+	return chain.map((frame) => makeUci(frame.move));
+}
 //#endregion
 //#region src/utils/tacticalMotifs/kpkBitbase.ts
 var KPK_STATES = 1536 * 64 * 2;
@@ -10005,8 +10025,9 @@ function isCompensatedContinuationCapture(steps, index) {
 }
 /** A profitable recapture is an exchange payoff, not a newly hung piece.
 * Subtract the immediately preceding loss from the settled local capture;
-* do not borrow earlier gains, future PV play or promotion bookkeeping. */
-function winningRecaptureEvidence(steps, index, motif) {
+* complete root history may establish that an equal trade already settled
+* that loss. Never borrow earlier surplus, future PV play or promotion credit. */
+function winningRecaptureEvidence(steps, index, motif, settledExchange) {
 	const step = steps[index], previous = steps[index - 1];
 	if (motif.id === "hangingPiece" && step?.capture && index >= 2) {
 		const checking = steps[index - 2];
@@ -10110,16 +10131,17 @@ function winningRecaptureEvidence(steps, index, motif) {
 	if (motif.id === "hangingPiece" && step?.capture && previous?.capture && proveMatingDeflection(previous)?.declined.some((branch) => branch.reply === step.san)) return null;
 	if (motif.id !== "hangingPiece" || !step?.capture || !previous?.capture || previous.move.to !== step.move.to || previous.move.promotion || step.move.promotion) return motif;
 	const gain = tacticalCaptureGain(step);
-	if (gain === null || gain - previous.capture < 100) return null;
+	const debit = settledExchange ? 0 : previous.capture;
+	if (gain === null || gain - debit < 100) return null;
 	if (proveMatingCaptureReply(step) || proveMateBackedFork(previous) || proveRecaptureBackedFork(previous) || proveCaptureForkPreparation(previous) || proveCaptureDiscoveryPreparation(previous) || proveCaptureDeflection(previous) || proveDiscoveryAttraction(previous) || provePinnedCapture(previous) || capturedDefenderProof(previous, motif.source)) return null;
 	const victim = step.before.board.get(step.move.to);
 	const traded = previous.before.board.get(previous.move.to);
 	if (!victim || !traded) return motif;
 	return {
 		...motif,
-		label: "Winning Recapture",
-		value: gain - previous.capture,
-		evidence: `${step.san} takes the ${victim.role} on ${makeSquare(step.move.to)} in exchange for the ${traded.role} just captured there. After allowing for that trade and immediate counterplay, the checked local gain is at least ${(gain - previous.capture) / 100} pawns; this is the payoff, not a newly hanging piece.`
+		label: settledExchange && step.capture === VALUE.pawn ? "Hanging Pawn" : "Winning Recapture",
+		value: gain - debit,
+		evidence: settledExchange ? `${step.san} takes the ${victim.role} on ${makeSquare(step.move.to)} after an equal exchange on that square has already settled the earlier losses. After allowing for current counterplay, this capture gains at least ${gain / 100} ${gain === 100 ? "pawn" : "pawns"}; the earlier trades add no extra profit.` : `${step.san} takes the ${victim.role} on ${makeSquare(step.move.to)} in exchange for the ${traded.role} just captured there. After allowing for that trade and immediate counterplay, the checked local gain is at least ${(gain - previous.capture) / 100} pawns; this is the payoff, not a newly hanging piece.`
 	};
 }
 /** The displayed king evasion need not be the first witness selected at the
@@ -10152,12 +10174,13 @@ function provesDelayedForkAcceptance(offer, check, evasion, acceptance) {
 /** Apply the same exchange context at a newly viewed root as inside a PV.
 * Only trusted, replay-matching history can turn a loose-piece label into
 * an ordinary recapture; other real mechanisms and mating payoffs remain. */
-function filterCompensatedRootCaptures(fen, line, motifs, previousFen, previousMove) {
+function filterCompensatedRootCaptures(fen, line, motifs, previousFen, previousMove, tacticalHistory) {
 	if (!previousFen || !previousMove || !line.length) return motifs;
 	const history = replayTacticalLine(previousFen, [previousMove, line[0]]);
 	const root = replayTacticalLine(fen, [line[0]])[0];
 	if (!root || history.length !== 2 || makeFen(history[0].after.toSetup()) !== makeFen(root.before.toSetup())) return motifs;
-	const compensated = isCompensatedContinuationCapture(history, 1);
+	const settled = root.capture > 0 && motifs.some((m) => m.id === "hangingPiece" && m.ply === 1) ? settledRootCaptureExchange(tacticalHistory, fen, root.move, previousFen, previousMove) : null;
+	const compensated = !settled && isCompensatedContinuationCapture(history, 1);
 	return motifs.flatMap((motif) => {
 		if (compensated && motif.id === "hangingPiece" && motif.ply === 1) return [];
 		if (motif.id === "forcingAttack" && motif.ply === 1 && history[0].capture >= VALUE.knight && (motif.value ?? Infinity) < VALUE.knight) {
@@ -10170,7 +10193,7 @@ function filterCompensatedRootCaptures(fen, line, motifs, previousFen, previousM
 				if (target === history[0].move.to && root.before.board.get(target)?.role === "pawn") return [];
 			}
 		}
-		const contextual = motif.ply === 1 ? winningRecaptureEvidence(history, 1, motif) : motif;
+		const contextual = motif.ply === 1 ? winningRecaptureEvidence(history, 1, motif, Boolean(settled)) : motif;
 		return contextual ? [contextual] : [];
 	});
 }
@@ -18991,7 +19014,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 			moveUci: root.uci,
 			evidence: `${root.san} captures material.`
 		};
-		candidates.push(...filterCompensatedRootCaptures(fen, line, [observed], context.previousFen, context.previousMoveUci).filter((m) => m.label === "Countercapture"));
+		candidates.push(...filterCompensatedRootCaptures(fen, line, [observed], context.previousFen, context.previousMoveUci, context.tacticalHistory).filter((m) => m.label === "Countercapture"));
 	}
 	if (root.after.isCheckmate() && !candidates.some((m) => MATE.test(m.id) && m.ply === 1)) candidates.push({
 		id: "mateIn1",
@@ -19007,10 +19030,10 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	const countercapture = candidates.some((m) => m.id === "hangingPiece" && m.ply === 1) ? compensatedLooseCapture(root, captureThreshold) : null;
 	const matingCompensation = !countercapture && candidates.some((m) => m.id === "hangingPiece" && m.ply === 1) ? proveMatingCaptureCompensation(root, 8192, captureThreshold) : null;
 	const normalizedCandidates = normalizeMatingPayoffs(steps, candidates.flatMap((m) => {
-		if (m.id === "forcingAttack" && m.ply === 1) return filterCompensatedRootCaptures(fen, line, [m], context?.previousFen, context?.previousMoveUci);
+		if (m.id === "forcingAttack" && m.ply === 1) return filterCompensatedRootCaptures(fen, line, [m], context?.previousFen, context?.previousMoveUci, context?.tacticalHistory);
 		if (matingCompensation && m.id === "hangingPiece" && m.ply === 1) return [];
 		if (!countercapture || m.id !== "hangingPiece" || m.ply !== 1) return [m];
-		return filterCompensatedRootCaptures(fen, line, [m], context?.previousFen, context?.previousMoveUci).filter((entry) => entry.label === "Countercapture");
+		return filterCompensatedRootCaptures(fen, line, [m], context?.previousFen, context?.previousMoveUci, context?.tacticalHistory).filter((entry) => entry.label === "Countercapture");
 	}));
 	const incidentalMatingMechanisms = /* @__PURE__ */ new Set();
 	for (const kind of ["fork", "skewer"]) {
@@ -20439,7 +20462,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 138;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 139;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -20956,8 +20979,8 @@ function classifyPositionTacticalMotifs(input) {
 		previousMoveUci: cleanUci(input.previousMoveUci),
 		tablebaseEvidence: input.tablebaseEvidence,
 		tacticalHistory: input.tacticalHistory
-	}), input.previousFen, cleanUci(input.previousMoveUci));
-	const timeline = selectContinuationLessons(filterCompensatedRootCaptures(fen, bestLine, buildTacticalTimeline(fen, bestLine, "available", motifs, input.pvSan, input.tablebaseEvidence), input.previousFen, cleanUci(input.previousMoveUci)), motifs);
+	}), input.previousFen, cleanUci(input.previousMoveUci), input.tacticalHistory);
+	const timeline = selectContinuationLessons(filterCompensatedRootCaptures(fen, bestLine, buildTacticalTimeline(fen, bestLine, "available", motifs, input.pvSan, input.tablebaseEvidence), input.previousFen, cleanUci(input.previousMoveUci), input.tacticalHistory), motifs);
 	return {
 		motifs: selectRootConnectedLessons(fen, bestLine, motifs, timeline),
 		...motifs.length || timeline.length ? { timeline } : {},
@@ -21240,7 +21263,7 @@ function classifyMistakeReviewMotifs(input) {
 			previousMoveUci: playedMoveUci,
 			tablebaseEvidence: input.tablebaseEvidence,
 			tacticalHistory: appendTacticalHistory(input.tacticalHistory, playedMoveUci)
-		}), fen, playedMoveUci).map((m) => ({
+		}), fen, playedMoveUci, appendTacticalHistory(input.tacticalHistory, playedMoveUci)).map((m) => ({
 			...m,
 			source: "allowed"
 		})),
@@ -21263,7 +21286,7 @@ function classifyMistakeReviewMotifs(input) {
 	const compared = {
 		...classification,
 		allowedMotifs,
-		...refutationLine.length && fenAfterPlayedMove ? { allowedTimeline: selectContinuationLessons(filterCompensatedRootCaptures(fenAfterPlayedMove ?? "", refutationLine, buildTacticalTimeline(fenAfterPlayedMove ?? "", refutationLine, "allowed", allowedMotifs, input.refutationSan, input.tablebaseEvidence), fen, playedMoveUci), allowedMotifs) } : {},
+		...refutationLine.length && fenAfterPlayedMove ? { allowedTimeline: selectContinuationLessons(filterCompensatedRootCaptures(fenAfterPlayedMove ?? "", refutationLine, buildTacticalTimeline(fenAfterPlayedMove ?? "", refutationLine, "allowed", allowedMotifs, input.refutationSan, input.tablebaseEvidence), fen, playedMoveUci, appendTacticalHistory(input.tacticalHistory, playedMoveUci)), allowedMotifs) } : {},
 		...!playedTheBestMove && bestLine.length ? { missedTimeline: selectContinuationLessons(buildTacticalTimeline(fen, bestLine, "missed", classification.missedMotifs, input.pvSan, input.tablebaseEvidence), classification.missedMotifs) } : {}
 	};
 	compared.allowedMotifs = selectRootConnectedLessons(fenAfterPlayedMove ?? "", refutationLine, compared.allowedMotifs, compared.allowedTimeline ?? []);

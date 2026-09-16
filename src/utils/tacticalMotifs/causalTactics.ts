@@ -6,7 +6,7 @@ import type { Color, NormalMove, Role, Square } from "chessops/types";
 import { kingCastlesTo, makeSquare, makeUci, opposite, parseUci } from "chessops/util";
 import type { TacticalMotifEvidence } from "./types";
 import { probeKingPawnEndgame, proveKpkZugzwang } from "./kpkBitbase";
-import { persistentPawnExchangeContext, type TacticalGameHistory } from "./gameHistory";
+import { persistentPawnExchangeContext, settledRootCaptureExchange, type TacticalGameHistory } from "./gameHistory";
 import { proveDrawingCapture, drawingCaptureEvidence, proveTablebaseZugzwang, tablebaseZugzwangEvidence, verifiedTablebasePosition, type TablebaseEvidence } from "./tablebaseEvidence";
 
 const VALUE: Record<Role, number> = {
@@ -144,11 +144,13 @@ export function isCompensatedContinuationCapture(steps: TacticalReplayStep[], in
 
 /** A profitable recapture is an exchange payoff, not a newly hung piece.
  * Subtract the immediately preceding loss from the settled local capture;
- * do not borrow earlier gains, future PV play or promotion bookkeeping. */
+ * complete root history may establish that an equal trade already settled
+ * that loss. Never borrow earlier surplus, future PV play or promotion credit. */
 export function winningRecaptureEvidence(
     steps: TacticalReplayStep[],
     index: number,
     motif: TacticalMotifEvidence,
+    settledExchange?: boolean,
 ): TacticalMotifEvidence | null {
     const step = steps[index],
         previous = steps[index - 1];
@@ -350,7 +352,8 @@ export function winningRecaptureEvidence(
     // the piece just traded; otherwise a queen sacrifice winning a rook
     // elsewhere is misleadingly presented as a free queen-for-minor gain.
     const gain = tacticalCaptureGain(step);
-    if (gain === null || gain - previous.capture < 100) return null;
+    const debit = settledExchange ? 0 : previous.capture;
+    if (gain === null || gain - debit < 100) return null;
     // Same-square SEE cannot see a checking fork, compensation elsewhere,
     // or mate after accepting a sacrifice. Only independent legal proofs
     // may remove the gain label; neither a sacrifice tag nor a PV endpoint
@@ -373,9 +376,11 @@ export function winningRecaptureEvidence(
     if (!victim || !traded) return motif;
     return {
         ...motif,
-        label: "Winning Recapture",
-        value: gain - previous.capture,
-        evidence: `${step.san} takes the ${victim.role} on ${makeSquare(step.move.to)} in exchange for the ${traded.role} just captured there. After allowing for that trade and immediate counterplay, the checked local gain is at least ${(gain - previous.capture) / 100} pawns; this is the payoff, not a newly hanging piece.`,
+        label: settledExchange && step.capture === VALUE.pawn ? "Hanging Pawn" : "Winning Recapture",
+        value: gain - debit,
+        evidence: settledExchange
+            ? `${step.san} takes the ${victim.role} on ${makeSquare(step.move.to)} after an equal exchange on that square has already settled the earlier losses. After allowing for current counterplay, this capture gains at least ${gain / 100} ${gain === 100 ? "pawn" : "pawns"}; the earlier trades add no extra profit.`
+            : `${step.san} takes the ${victim.role} on ${makeSquare(step.move.to)} in exchange for the ${traded.role} just captured there. After allowing for that trade and immediate counterplay, the checked local gain is at least ${(gain - previous.capture) / 100} pawns; this is the payoff, not a newly hanging piece.`,
     };
 }
 
@@ -441,6 +446,7 @@ export function filterCompensatedRootCaptures(
     motifs: TacticalMotifEvidence[],
     previousFen?: string | null,
     previousMove?: string | null,
+    tacticalHistory?: TacticalGameHistory | null,
 ) {
     if (!previousFen || !previousMove || !line.length) return motifs;
     const history = replayTacticalLine(previousFen, [previousMove, line[0]]);
@@ -451,7 +457,9 @@ export function filterCompensatedRootCaptures(
         makeFen(history[0].after.toSetup()) !== makeFen(root.before.toSetup())
     )
         return motifs;
-    const compensated = isCompensatedContinuationCapture(history, 1);
+    const settled = root.capture > 0 && motifs.some(m => m.id === "hangingPiece" && m.ply === 1)
+        ? settledRootCaptureExchange(tacticalHistory, fen, root.move, previousFen, previousMove) : null;
+    const compensated = !settled && isCompensatedContinuationCapture(history, 1);
     return motifs.flatMap((motif) => {
         if (compensated && motif.id === "hangingPiece" && motif.ply === 1) return [];
         // A newly supported pawn preparation must not turn recovering part of
@@ -471,7 +479,7 @@ export function filterCompensatedRootCaptures(
                 if (target === history[0].move.to && root.before.board.get(target)?.role === "pawn") return [];
             }
         }
-        const contextual = motif.ply === 1 ? winningRecaptureEvidence(history, 1, motif) : motif;
+        const contextual = motif.ply === 1 ? winningRecaptureEvidence(history, 1, motif, Boolean(settled)) : motif;
         return contextual ? [contextual] : [];
     });
 }
@@ -13068,7 +13076,7 @@ export function auditTacticalMotifs(
             ply: 1, moveUci: root.uci, evidence: `${root.san} captures material.`,
         };
         candidates.push(...filterCompensatedRootCaptures(fen, line, [observed],
-            context.previousFen, context.previousMoveUci).filter(m => m.label === "Countercapture"));
+            context.previousFen, context.previousMoveUci, context.tacticalHistory).filter(m => m.label === "Countercapture"));
     }
     if (root.after.isCheckmate() && !candidates.some((m) => MATE.test(m.id) && m.ply === 1)) {
         candidates.push({
@@ -13093,7 +13101,7 @@ export function auditTacticalMotifs(
         steps,
         candidates.flatMap((m) => {
             if (m.id === "forcingAttack" && m.ply === 1)
-                return filterCompensatedRootCaptures(fen, line, [m], context?.previousFen, context?.previousMoveUci);
+                return filterCompensatedRootCaptures(fen, line, [m], context?.previousFen, context?.previousMoveUci, context?.tacticalHistory);
             if (matingCompensation && m.id === "hangingPiece" && m.ply === 1) return [];
             if (!countercapture || m.id !== "hangingPiece" || m.ply !== 1) return [m];
             // A proved compensation capture is still useful in a combination's
@@ -13105,6 +13113,7 @@ export function auditTacticalMotifs(
                 [m],
                 context?.previousFen,
                 context?.previousMoveUci,
+                context?.tacticalHistory,
             ).filter((entry) => entry.label === "Countercapture");
         }),
     );

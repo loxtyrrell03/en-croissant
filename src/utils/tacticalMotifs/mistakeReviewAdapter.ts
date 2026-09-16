@@ -135,7 +135,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 138;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 139;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -902,6 +902,7 @@ export function classifyPositionTacticalMotifs(
         ),
         input.previousFen,
         cleanUci(input.previousMoveUci),
+        input.tacticalHistory,
     );
     // A missing root certificate must not erase independently checked later
     // events. The timeline retains its quiet/terminal relevance boundaries;
@@ -913,6 +914,7 @@ export function classifyPositionTacticalMotifs(
             buildTacticalTimeline(fen, bestLine, "available", motifs, input.pvSan, input.tablebaseEvidence),
             input.previousFen,
             cleanUci(input.previousMoveUci),
+            input.tacticalHistory,
         ),
         motifs,
     );
@@ -1464,6 +1466,7 @@ export function classifyMistakeReviewMotifs(
             ),
             fen,
             playedMoveUci,
+            appendTacticalHistory(input.tacticalHistory, playedMoveUci),
         ).map((m) => ({ ...m, source: "allowed" as const })),
         missedMotifs: playedTheBestMove
             ? []
@@ -1526,6 +1529,7 @@ export function classifyMistakeReviewMotifs(
                           ),
                           fen,
                           playedMoveUci,
+                          appendTacticalHistory(input.tacticalHistory, playedMoveUci),
                       ),
                       allowedMotifs,
                   ),

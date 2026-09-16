@@ -280,3 +280,34 @@ export function persistentPawnExchangeContext(
         );
     return { balance, episodePlies: verified.frames.length - start };
 }
+
+/** A contiguous equal exchange before another capture has already settled its
+ * losses. Require complete replay-matching history; never borrow an earlier
+ * surplus, cross a quiet move or infer that a truncated window had no debt. */
+export function settledRootCaptureExchange(
+    history: TacticalGameHistory | null | undefined,
+    fen: string,
+    move: NormalMove,
+    previousFen: string,
+    previousMove: string,
+) {
+    const verified = verifiedTacticalHistory(history, fen);
+    if (!verified || !verified.position.isLegal(move)) return null;
+    const last = verified.frames.at(-1);
+    if (!last || makeFen(last.before.toSetup()) !== previousFen ||
+        makeUci(last.move) !== previousMove) return null;
+    let start = verified.frames.length;
+    while (start > 0) {
+        const frame = verified.frames[start - 1];
+        if (!frame.capture || frame.move.to !== move.to || frame.move.promotion ||
+            !frame.before.board.get(frame.move.to)) break;
+        start--;
+    }
+    const chain = verified.frames.slice(start);
+    if (chain.length < 2 || chain.length % 2 !== 0) return null;
+    const side = verified.position.turn;
+    const balance = chain.reduce((sum, frame) =>
+        sum + (frame.before.turn === side ? 1 : -1) * frame.capture, 0);
+    if (balance !== 0) return null;
+    return chain.map(frame => makeUci(frame.move));
+}

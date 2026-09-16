@@ -13,6 +13,7 @@ import { pawnExposureAlternateInput } from "./fixtures/pawnExposure";
 import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
 import { shortMatingThreatCases } from "./fixtures/shortMatingThreat";
 import { matingCheckEvasionFen, matingCheckEvasionLine } from "./fixtures/matingCheckEvasion";
+import { settledRootExchangeCases } from "./fixtures/settledRootExchange";
 import {
   buildLiveTacticalScan,
   previewLiveTacticalVariation,
@@ -37,6 +38,18 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a pawn after a settled exchange is visible without adding future capture badges", () => {
+  const row = settledRootExchangeCases[0];
+  const value = buildLiveTacticalScan({ ...row, depth: 16, engineName: "Constructed exchange",
+    variations: [{ depth: 16, pvUci: row.pvUci, cp: 100 }] });
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Hanging Pawn found");
+  expect(element.textContent).toContain("already settled the earlier losses");
+  expect(element.textContent).toContain("at least 1 pawn;");
+  expect(value.variations[0].timeline).toHaveLength(1);
+  expect(value.arrows.map(a => a.from + a.to)).toEqual(["c6d4"]);
+});
 
 test("a proved mate through counterchecks names the root without drawing future captures", () => {
   const value = buildLiveTacticalScan({fen: matingCheckEvasionFen, pvUci: matingCheckEvasionLine, depth: 16, engineName: "Constructed mating proof"});

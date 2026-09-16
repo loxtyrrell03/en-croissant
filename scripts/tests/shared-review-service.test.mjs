@@ -14,6 +14,48 @@ import { matingCheckEvasionFen, matingCheckEvasionLine } from "../../src/utils/t
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
 
+test("settled exchanges keep the full queen loss through generated review and reload", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-shared-review-settled-exchange-"));
+  // Public constructed complete-material origin. Synthetic scores exercise
+  // storage/wiring, not the independently recorded strength of these moves.
+  const origin = "rnbrq1k1/ppp1ppbp/1n4pp/8/3B1P2/6N1/PPP1PPPP/RNBQ2KR b - - 0 1";
+  const position = Chess.fromSetup(parseFen(origin).unwrap()).unwrap();
+  position.play(parseUci("g7d4"));
+  const before = makeFen(position.toSetup());
+  assert.ok(position.isLegal(parseUci("d1e1")));
+  position.play(parseUci("d1d4"));
+  const after = makeFen(position.toSetup());
+  const options = {root, documentsRoot: join(root, "documents"), engineConfigPath: join(root, "engine.json"),
+    fetchGames: async () => [], lookup: async fen => {
+      assert.ok(fen === before || fen === after);
+      return {depth: 16, pvs: fen === before
+        ? [{cp: 0, moves: "d1e1"}] : [{cp: -720, moves: "d8d4"}]};
+    }};
+  let service;
+  try {
+    await writeFile(join(root, "config.json"), JSON.stringify({accounts: {chesscom: "Tester"}}));
+    await writeFile(join(root, "games.json"), JSON.stringify({games: [{source: "chesscom", end: 1789387200,
+      url: "https://example.test/settled-exchange", pgn: `[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.16"]\n[SetUp "1"]\n[FEN "${origin}"]\n[Result "0-1"]\n\n1... Bxd4 2. Qxd4 0-1`}]}));
+    service = new SharedReviewService(options); await service.initialize(false); await service.run();
+    assert.equal(service.snapshot().error, null);
+    const card = service.snapshot().cards[0]; assert.ok(card);
+    assert.deepEqual(card.tacticalHistory, {fen: origin, moves: ["g7d4"]});
+    const capture = card.tacticalClassification.allowedMotifs.find(m => m.moveUci === "d8d4");
+    assert.equal(capture?.value, 900);
+    assert.equal(capture?.comparison, "prevented");
+    assert.match(card.explanation, /earlier losses.*9 pawns/);
+    assert.deepEqual((await service.deck()).positions[0].mistakeReview.allowedMotifs,
+      card.tacticalClassification.allowedMotifs);
+    service.close(); service = new SharedReviewService(options); await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification, card.tacticalClassification);
+    assert.equal((await service.deck()).positions[0].reason, card.explanation);
+  } finally {
+    service?.close(); const target = resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir()) + sep) && target.includes("en-shared-review-settled-exchange-"));
+    await rm(target, {recursive: true, force: true});
+  }
+});
+
 test("a missed mating attack with defensive check evasions survives generated review and storage", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-mating-evasion-"));
   const position = Chess.fromSetup(parseFen(matingCheckEvasionFen).unwrap()).unwrap();

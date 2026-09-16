@@ -28,6 +28,7 @@ import { settledPawnHistoryCases } from "./fixtures/settledPawnHistory";
 import { countercheckCaptureCases, countercheckCaptureLine } from "./fixtures/checkingCountercheckCapture";
 import { shortMatingThreatCases } from "./fixtures/shortMatingThreat";
 import { matingCheckEvasionCases } from "./fixtures/matingCheckEvasion";
+import { settledRootExchangeCases } from "./fixtures/settledRootExchange";
 import { discoveredPinPriorityFen, discoveredPinPriorityLine, discoveredPinPriorityControls } from "./fixtures/discoveredPinPriority";
 import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "./fixtures/checkingPawnFollowup";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
@@ -137,6 +138,16 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("settled capture chains preserve
         expect(result.scan).toEqual(buildLiveTacticalScan(input));
         expect(result.scan.motifs.map(m => m.label)).toEqual(row.positive ? ["Hanging Pawn"] : []);
         expect(result.scan.arrows.every(arrow => arrow.ply === 1)).toBe(true);
+    }
+}, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("settled root exchange gains survive the production controller", async () => {
+    for (const row of settledRootExchangeCases) {
+        const input = { ...row, depth: 16, engineName: "Constructed exchange, synthetic selection score",
+            variations: [{ depth: 16, pvUci: row.pvUci, cp: 100 }] };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.find(m => m.id === "hangingPiece")?.value ?? null).toBe(row.gain);
     }
 }, 30000);
 
