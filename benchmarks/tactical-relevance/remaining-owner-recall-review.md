@@ -1,5 +1,10 @@
 # Remaining owner-game recall: quiet retention and mixed checking attacks
 
+Subsequent work recovers the mixed checking attack in
+`checking-combination-recall-review.md` and the quiet pawn retention in
+`allied-retention-review.md`. The findings below preserve their earlier missing
+state and the evidence that motivated those changes, not current omissions.
+
 Adapter **120 / live pipeline 125** is unchanged by this audit and is now in
 the standalone desktop package. This continues the same six-game owner sample,
 not a replacement corpus or an accuracy benchmark. The two examples were chosen

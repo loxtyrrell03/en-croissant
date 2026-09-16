@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { expect, test } from "vitest";
 import { makeFen } from "chessops/fen";
 import { makeUci } from "chessops/util";
-import { between } from "chessops/attacks";
+import { attacks, between } from "chessops/attacks";
 import {
     proveCheckingPawnRetention,
     proveCheckingMaterialAttack,
@@ -13,98 +13,210 @@ import {
 // in the repository, and replacing a nomination is diagnostic, not certification
 // that the alternative is optimal or that the whole position is winning.
 test.skipIf(
-    !process.env.TACTICAL_RECALL_REPLAY || !process.env.TACTICAL_EXCHANGE_NOMINATION_REPORT,
-)("inspect legal equal-checker exchanges independently of the nominated PV", async () => {
-    const { privateReportPath } =
-        await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
-    const output = privateReportPath(process.env.TACTICAL_EXCHANGE_NOMINATION_REPORT!);
-    const report = JSON.parse(readFileSync(process.env.TACTICAL_RECALL_REPLAY!, "utf8"));
-    const row = report.results.find((r: any) => r.game === report.results[0].game && r.ply === 42);
-    const root = replayTacticalLine(row.fen, row.before[0].pvUci)[0];
-    const checker = root.after.board.get(root.move.to)!;
-    const king = root.after.board.kingOf(root.after.turn)!;
-    const variants: any[] = [];
-    for (const [from, destinations] of root.after.allDests()) {
-        if (root.after.board.get(from)?.role !== checker.role) continue;
-        for (const to of destinations) {
-            if (!between(root.move.to, king).has(to)) continue;
-            const next = root.after.clone();
-            next.play({ from, to });
-            const capture = { from: root.move.to, to };
-            if (!next.isLegal(capture)) continue;
-            const line = [root.uci, makeUci({ from, to }), makeUci(capture)];
-            const steps = replayTacticalLine(row.fen, line);
-            expect(steps).toHaveLength(3);
-            const trace: string[] = [];
-            const proof = proveCheckingPawnRetention(steps, 8192, (message) => trace.push(message));
-            variants.push({ line, proof, trace });
-        }
-    }
-    expect(variants.length).toBeGreaterThan(0);
-    const probes: any[] = [
-        { id: `${row.id}:root-best`, fen: row.fen },
-        { id: `${row.id}:root-held`, fen: row.fen, searchMove: root.uci },
-    ];
-    for (const [from, destinations] of root.after.allDests()) {
-        for (const to of destinations) {
-            const next = root.after.clone();
-            next.play({ from, to });
-            probes.push({
-                id: `${row.id}:reply-${makeUci({ from, to })}-best`,
-                fen: makeFen(next.toSetup()),
-            });
-        }
-    }
-    for (const [i, variant] of variants.entries()) {
-        const position = replayTacticalLine(row.fen, variant.line.slice(0, 2)).at(-1)!.after;
-        probes.push(
-            { id: `${row.id}:exchange-${i}-best`, fen: makeFen(position.toSetup()) },
-            {
-                id: `${row.id}:exchange-${i}-held`,
-                fen: makeFen(position.toSetup()),
-                searchMove: variant.line[2],
-            },
+    !process.env.TACTICAL_RECALL_REPLAY ||
+        !process.env.TACTICAL_EXCHANGE_NOMINATION_REPORT,
+)(
+    "inspect legal equal-checker exchanges independently of the nominated PV",
+    async () => {
+        const { privateReportPath } =
+            await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
+        const output = privateReportPath(
+            process.env.TACTICAL_EXCHANGE_NOMINATION_REPORT!,
         );
-        for (const [j, branch] of (variant.proof?.branches ?? []).entries()) {
-            const position = replayTacticalLine(row.fen, [root.uci, branch.replyUci]).at(-1)!.after;
-            probes.push({
-                id: `${row.id}:variant-${i}-branch-${j}`,
-                fen: makeFen(position.toSetup()),
-                searchMove: branch.answerUci,
-            });
+        const report = JSON.parse(
+            readFileSync(process.env.TACTICAL_RECALL_REPLAY!, "utf8"),
+        );
+        const row = report.results.find(
+            (r: any) => r.game === report.results[0].game && r.ply === 42,
+        );
+        const root = replayTacticalLine(row.fen, row.before[0].pvUci)[0];
+        const checker = root.after.board.get(root.move.to)!;
+        const king = root.after.board.kingOf(root.after.turn)!;
+        const variants: any[] = [];
+        for (const [from, destinations] of root.after.allDests()) {
+            if (root.after.board.get(from)?.role !== checker.role) continue;
+            for (const to of destinations) {
+                if (!between(root.move.to, king).has(to)) continue;
+                const next = root.after.clone();
+                next.play({ from, to });
+                const capture = { from: root.move.to, to };
+                if (!next.isLegal(capture)) continue;
+                const line = [
+                    root.uci,
+                    makeUci({ from, to }),
+                    makeUci(capture),
+                ];
+                const steps = replayTacticalLine(row.fen, line);
+                expect(steps).toHaveLength(3);
+                const trace: string[] = [];
+                const proof = proveCheckingPawnRetention(
+                    steps,
+                    8192,
+                    (message) => trace.push(message),
+                );
+                variants.push({ line, proof, trace });
+            }
         }
-    }
-    writeFileSync(
-        output,
-        JSON.stringify(
-            {
-                id: row.id,
-                fen: row.fen,
-                originalLine: row.before[0].pvUci,
-                originalProof: proveCheckingPawnRetention(
-                    replayTacticalLine(row.fen, row.before[0].pvUci),
-                ),
-                variants,
-                samplePath:
-                    process.env.TACTICAL_RECALL_SAMPLE ?? process.env.TACTICAL_RECALL_REPLAY,
-                probes,
-            },
-            null,
-            2,
-        ) + "\n",
-        { flag: "wx" },
-    );
-});
+        expect(variants.length).toBeGreaterThan(0);
+        const probes: any[] = [
+            { id: `${row.id}:root-best`, fen: row.fen },
+            { id: `${row.id}:root-held`, fen: row.fen, searchMove: root.uci },
+        ];
+        for (const [from, destinations] of root.after.allDests()) {
+            for (const to of destinations) {
+                const next = root.after.clone();
+                next.play({ from, to });
+                probes.push({
+                    id: `${row.id}:reply-${makeUci({ from, to })}-best`,
+                    fen: makeFen(next.toSetup()),
+                });
+            }
+        }
+        for (const [i, variant] of variants.entries()) {
+            const position = replayTacticalLine(
+                row.fen,
+                variant.line.slice(0, 2),
+            ).at(-1)!.after;
+            probes.push(
+                {
+                    id: `${row.id}:exchange-${i}-best`,
+                    fen: makeFen(position.toSetup()),
+                },
+                {
+                    id: `${row.id}:exchange-${i}-held`,
+                    fen: makeFen(position.toSetup()),
+                    searchMove: variant.line[2],
+                },
+            );
+            for (const [j, branch] of (
+                variant.proof?.branches ?? []
+            ).entries()) {
+                const position = replayTacticalLine(row.fen, [
+                    root.uci,
+                    branch.replyUci,
+                ]).at(-1)!.after;
+                probes.push({
+                    id: `${row.id}:variant-${i}-branch-${j}`,
+                    fen: makeFen(position.toSetup()),
+                    searchMove: branch.answerUci,
+                });
+            }
+            for (const [j, decision] of (
+                variant.proof?.defensiveDecisions ?? []
+            ).entries()) {
+                probes.push({
+                    id: `${row.id}:variant-${i}-safety-${j}`,
+                    fen: decision.fen,
+                    searchMove: decision.moveUci,
+                });
+            }
+        }
+        // Inspect quiet allied support of the actual interposer, including every
+        // legal countercheck. A good root estimate alone cannot validate the
+        // selected king-safety witness.
+        const supportCases: any[] = [];
+        for (const [from, destinations] of root.after.allDests()) {
+            for (const to of destinations) {
+                if (!between(root.move.to, king).has(to)) continue;
+                const reply = { from, to },
+                    after = root.after.clone();
+                after.play(reply);
+                for (const [supportFrom, supportDests] of after.allDests()) {
+                    const piece = after.board.get(supportFrom)!;
+                    if (
+                        supportFrom === root.move.to ||
+                        piece.role === "king" ||
+                        piece.role === "pawn" ||
+                        attacks(piece, supportFrom, after.board.occupied).has(
+                            to,
+                        )
+                    )
+                        continue;
+                    for (const supportTo of supportDests) {
+                        if (after.board.get(supportTo)) continue;
+                        const support = { from: supportFrom, to: supportTo };
+                        const next = after.clone();
+                        next.play(support);
+                        if (
+                            next.isCheck() ||
+                            !attacks(piece, supportTo, next.board.occupied).has(
+                                to,
+                            )
+                        )
+                            continue;
+                        const id = `${row.id}:support-${makeUci(reply)}-${makeUci(support)}`;
+                        probes.push({
+                            id,
+                            fen: makeFen(after.toSetup()),
+                            searchMove: makeUci(support),
+                        });
+                        const checks: any[] = [];
+                        for (const [checkFrom, checkDests] of next.allDests()) {
+                            for (const checkTo of checkDests) {
+                                const check = { from: checkFrom, to: checkTo };
+                                const checked = next.clone();
+                                checked.play(check);
+                                if (!checked.isCheck()) continue;
+                                const fen = makeFen(checked.toSetup());
+                                checks.push({ uci: makeUci(check), fen });
+                                probes.push({
+                                    id: `${id}:check-${makeUci(check)}`,
+                                    fen,
+                                });
+                            }
+                        }
+                        supportCases.push({
+                            reply: makeUci(reply),
+                            support: makeUci(support),
+                            checks,
+                        });
+                    }
+                }
+            }
+        }
+        writeFileSync(
+            output,
+            JSON.stringify(
+                {
+                    id: row.id,
+                    fen: row.fen,
+                    originalLine: row.before[0].pvUci,
+                    originalProof: proveCheckingPawnRetention(
+                        replayTacticalLine(row.fen, row.before[0].pvUci),
+                    ),
+                    variants,
+                    supportCases,
+                    samplePath:
+                        process.env.TACTICAL_RECALL_SAMPLE ??
+                        process.env.TACTICAL_RECALL_REPLAY,
+                    probes,
+                },
+                null,
+                2,
+            ) + "\n",
+            { flag: "wx" },
+        );
+    },
+);
 
-test.skipIf(!process.env.TACTICAL_RECALL_REPLAY || !process.env.TACTICAL_CHECKING_GAP_REPORT)(
+test.skipIf(
+    !process.env.TACTICAL_RECALL_REPLAY ||
+        !process.env.TACTICAL_CHECKING_GAP_REPORT,
+)(
     "inspect the unexplained queen-checking attack in the second owner sample",
     async () => {
         const { privateReportPath } =
             await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
-        const output = privateReportPath(process.env.TACTICAL_CHECKING_GAP_REPORT!);
-        const report = JSON.parse(readFileSync(process.env.TACTICAL_RECALL_REPLAY!, "utf8"));
+        const output = privateReportPath(
+            process.env.TACTICAL_CHECKING_GAP_REPORT!,
+        );
+        const report = JSON.parse(
+            readFileSync(process.env.TACTICAL_RECALL_REPLAY!, "utf8"),
+        );
         const games = [...new Set(report.results.map((row: any) => row.game))];
-        const row = report.results.find((r: any) => r.game === games[2] && r.ply === 29);
+        const row = report.results.find(
+            (r: any) => r.game === games[2] && r.ply === 29,
+        );
         expect(row.after[0].pvSan[0]).toBe("Qa6+");
         const steps = replayTacticalLine(row.afterFen, row.after[0].pvUci);
         expect(steps).toHaveLength(row.after[0].pvUci.length);
@@ -116,9 +228,17 @@ test.skipIf(!process.env.TACTICAL_RECALL_REPLAY || !process.env.TACTICAL_CHECKIN
         });
         const probes: any[] = [
             { id: `${row.id}:before-best`, fen: row.fen },
-            { id: `${row.id}:before-played`, fen: row.fen, searchMove: row.playedMoveUci },
+            {
+                id: `${row.id}:before-played`,
+                fen: row.fen,
+                searchMove: row.playedMoveUci,
+            },
             { id: `${row.id}:after-best`, fen: row.afterFen },
-            { id: `${row.id}:after-held`, fen: row.afterFen, searchMove: root.uci },
+            {
+                id: `${row.id}:after-held`,
+                fen: row.afterFen,
+                searchMove: root.uci,
+            },
         ];
         for (const [from, destinations] of root.after.allDests()) {
             for (const to of destinations) {
@@ -176,7 +296,7 @@ test.skipIf(!process.env.TACTICAL_RECALL_REPLAY || !process.env.TACTICAL_CHECKIN
 test("owner gap audit reports cannot be written into this checkout", async () => {
     const { privateReportPath } =
         await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
-    expect(() => privateReportPath(`${process.cwd()}/owner-gap-report.json`)).toThrow(
-        "Private benchmark reports must stay outside the checkout",
-    );
+    expect(() =>
+        privateReportPath(`${process.cwd()}/owner-gap-report.json`),
+    ).toThrow("Private benchmark reports must stay outside the checkout");
 });

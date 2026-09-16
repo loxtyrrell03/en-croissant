@@ -715,7 +715,8 @@ function captureGainEvidence(step: TacticalReplayStep, gain: number) {
 type CheckingPawnRetention = {
     gain: number;
     visits: number;
-    branches: { replyUci: string; answerUci: string; gain: number; retainedByExchange?: true; retainedByRetreat?: true }[];
+    defensiveDecisions?: { fen: string; moveUci: string }[];
+    branches: { replyUci: string; answerUci: string; gain: number; retainedByExchange?: true; retainedByRetreat?: true; retainedBySupport?: true }[];
 };
 const checkingPawnRetentionCache = new Map<string, CheckingPawnRetention | null>();
 
@@ -726,18 +727,22 @@ const checkingPawnRetentionCache = new Map<string, CheckingPawnRetention | null>
  * That exchange preserves the already captured pawn; it does not win a second
  * piece. An unrelated neutral liquidation (notably abandoning a king attack)
  * cannot certify retention here. A nominated equal interposition can support
- * quiet checker retreats against other evasions, but every countercheck must
- * be answerable by a capture or block, not merely a quiet king flight.
+ * quiet checker retreats against other evasions. Connected reinforcement of
+ * an interposer and profitable captures may also retain through checked king
+ * flights: all checks must end in a safe capture/block or an identical-board
+ * cycle within six further evasions. Exhaustion is unknown, not king safety.
  * Leaves include
  * all immediate friendly liabilities and the existing countercheck horizon;
  * this is a bounded material lesson, not a whole-position winning claim. */
 export function proveCheckingPawnRetention(steps: TacticalReplayStep[], nodeLimit = 8192, onTrace?: (reason: string) => void): CheckingPawnRetention | null {
     const [root, nominatedReply, nominatedCapture] = steps;
+    const checkingContinuation = !!root && !!nominatedCapture && !nominatedCapture.capture &&
+        nominatedCapture.move.from === root.move.to && nominatedCapture.after.isCheck();
     if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 ||
         root.capture !== VALUE.pawn || root.move.promotion ||
         root.before.board.get(root.move.to)?.role !== "pawn" ||
         !root.after.isCheck() || root.after.isEnd() ||
-        !nominatedReply || !nominatedCapture || nominatedCapture.capture < VALUE.knight ||
+        !nominatedReply || !nominatedCapture || (nominatedCapture.capture < VALUE.knight && !checkingContinuation) ||
         nominatedCapture.move.promotion ||
         defenderCanClaimFiftyMoveDraw(root.after)) return null;
     const key = `${makeFen(root.before.toSetup())}:${root.uci}:${nominatedReply.uci}:${nominatedCapture.uci}`;
@@ -765,17 +770,30 @@ export function proveCheckingPawnRetention(steps: TacticalReplayStep[], nodeLimi
             }
             return true;
         };
-        // Only the engine-nominated exchange of the actual checker licenses
-        // retreat-based retention against OTHER evasions. An unrelated queen
+        // A checking continuation may nominate the same legal interposition,
+        // but the equal exchange is verified independently. An unrelated queen
         // liquidation during a rook attack does not qualify.
-        const exchangeNomination = expanded && equalInterposition(nominatedCapture.before, nominatedReply.move, nominatedCapture.move) &&
-            preparationCaptureGain(nominatedCapture.before, nominatedCapture.move, budget) === 0;
-        const retainsWithoutKingFlight = (pos: Chess, move: NormalMove, balance: number) => {
-            if (--budget.nodes < 0) return false;
+        const exchangeMove = checkingContinuation
+            ? { from: root.move.to, to: nominatedReply.move.to }
+            : nominatedCapture.move;
+        const exchangeNomination = expanded && nominatedCapture.before.isLegal(exchangeMove) &&
+            equalInterposition(nominatedCapture.before, nominatedReply.move, exchangeMove) &&
+            preparationCaptureGain(nominatedCapture.before, exchangeMove, budget) === 0;
+        if (checkingContinuation && !exchangeNomination) return null;
+        const retainCounterchecks = (pos: Chess, move: NormalMove, balance: number,
+            flightDepth = 0, path = new Set<string>(), allowFlights = flightDepth > 0): NonNullable<CheckingPawnRetention["defensiveDecisions"]> | null => {
+            if (--budget.nodes < 0) return null;
             const next = pos.clone(); next.play(move);
+            const nextBalance = balance + capturedValue(pos, move);
+            const key = `${makeFen(next.toSetup()).split(" ").slice(0, 4).join(" ")}:${nextBalance}`;
+            // Only an identical board/turn/material balance closes a checking
+            // cycle. This retains material, not a claim that repetition wins.
+            if (path.has(key)) return [];
+            const nextPath = new Set(path); nextPath.add(key);
+            const decisions: NonNullable<CheckingPawnRetention["defensiveDecisions"]> = [];
             for (const check of legalMoves(next)) {
                 if (!mayGiveCheck(next, check)) continue;
-                if (--budget.nodes < 0) return false;
+                if (--budget.nodes < 0) return null;
                 const checked = next.clone(); checked.play(check);
                 if (!checked.isCheck()) continue;
                 const remaining = balance + capturedValue(pos, move) - capturedValue(next, check) -
@@ -785,16 +803,49 @@ export function proveCheckingPawnRetention(steps: TacticalReplayStep[], nodeLimi
                     if ((checked.board.get(block.from)?.role === "king" &&
                         !checked.ctx().checkers.has(block.to)) || block.promotion) continue;
                     const retained = preparationCaptureGain(checked, block, budget);
-                    if (retained !== null && remaining + retained >= VALUE.pawn) { answered = true; break; }
+                    if (retained !== null && remaining + retained >= VALUE.pawn) {
+                        // A block during a king walk cannot stop the safety
+                        // search just before another checking deflection. It
+                        // may release the pinned interposer and lose our rook.
+                        const continued = (flightDepth > 0 || nextPath.size > 1) && !capturedValue(checked, block)
+                            ? flightDepth > 0
+                                ? retainCounterchecks(checked, block, remaining, flightDepth - 1, nextPath, allowFlights)
+                                : null
+                            : [];
+                        if (!continued) continue;
+                        decisions.push({ fen: makeFen(checked.toSetup()), moveUci: makeUci(block) });
+                        decisions.push(...continued);
+                        answered = true; break;
+                    }
                 }
-                if (!answered) return false;
+                if (!answered && allowFlights && flightDepth > 0) {
+                    // Prefer returning to the sheltered original king square
+                    // over extending a king walk. Every choice still needs the
+                    // same complete countercheck search; this only orders it.
+                    const originalKing = root.before.board.kingOf(root.before.turn)!;
+                    const distance = (square: Square) => Math.abs((square & 7) - (originalKing & 7)) +
+                        Math.abs((square >> 3) - (originalKing >> 3));
+                    const flights = recoveryMoves(checked, root.before.turn).sort((a, b) => distance(a.to) - distance(b.to));
+                    for (const flight of flights) {
+                        if (checked.board.get(flight.from)?.role !== "king" || capturedValue(checked, flight)) continue;
+                        const retained = preparationCaptureGain(checked, flight, budget);
+                        if (retained === null || remaining + retained < VALUE.pawn) continue;
+                        const continuation = retainCounterchecks(checked, flight, remaining, flightDepth - 1, nextPath);
+                        if (continuation) {
+                            decisions.push({ fen: makeFen(checked.toSetup()), moveUci: makeUci(flight) }, ...continuation);
+                            answered = true; break;
+                        }
+                    }
+                }
+                if (!answered) { onTrace?.(`${makeSan(pos, move)} has no checked retention against ${makeSan(next, check)}`); return null; }
             }
-            return true;
+            return decisions;
         };
         const targets = new Set(legalMoves(root.before)
             .filter(move => capturedValue(root.before, move) > 0)
             .map(move => move.to));
         const branches: CheckingPawnRetention["branches"] = [];
+        const defensiveDecisions: NonNullable<CheckingPawnRetention["defensiveDecisions"]> = [];
         let minimum = Math.min(VALUE.pawn, direct);
         for (const reply of legalMoves(root.after)) {
             if (--budget.nodes < 0) return null;
@@ -806,7 +857,7 @@ export function proveCheckingPawnRetention(steps: TacticalReplayStep[], nodeLimi
             available.add(reply.to);
             const answers = legalMoves(after).filter(move => !move.promotion &&
                 capturedValue(after, move) > 0 && (move.from === root.move.to || available.has(move.to)) &&
-                (makeUci(reply) !== nominatedReply.uci || makeUci(move) === nominatedCapture.uci));
+                (makeUci(reply) !== nominatedReply.uci || makeUci(move) === makeUci(exchangeMove)));
             answers.sort((a, b) => capturedValue(after, b) - capturedValue(after, a) ||
                 (a.from ^ (root.before.turn === "white" ? 0 : 56)) - (b.from ^ (root.before.turn === "white" ? 0 : 56)) ||
                 (a.to ^ (root.before.turn === "white" ? 0 : 56)) - (b.to ^ (root.before.turn === "white" ? 0 : 56)));
@@ -818,7 +869,9 @@ export function proveCheckingPawnRetention(steps: TacticalReplayStep[], nodeLimi
                 const retainedByExchange = expanded && gain === 0 && equalInterposition(after, reply, answer);
                 if (gain === null || gain < 0 || (gain === 0 && !retainedByExchange) ||
                     balance + gain < VALUE.pawn) continue;
-                if (expanded && !retainsWithoutKingFlight(after, answer, balance)) continue;
+                const safety = expanded ? retainCounterchecks(after, answer, balance, gain > 0 ? 6 : 0) : [];
+                if (!safety) continue;
+                defensiveDecisions.push(...safety);
                 branch = { replyUci: makeUci(reply), answerUci: makeUci(answer), gain: balance + gain,
                     ...(retainedByExchange ? { retainedByExchange: true as const } : {}) };
                 break;
@@ -836,9 +889,36 @@ export function proveCheckingPawnRetention(steps: TacticalReplayStep[], nodeLimi
                     // king into further checks. Require a material-retaining
                     // capture or block to every countercheck. The king may take
                     // the checker, but a quiet king walk cannot supply safety.
-                    if (!retainsWithoutKingFlight(after, retreat, balance)) continue;
+                    const safety = retainCounterchecks(after, retreat, balance, checkingContinuation ? 6 : 0, new Set(), false);
+                    if (!safety) continue;
+                    defensiveDecisions.push(...safety);
                     branch = { replyUci: makeUci(reply), answerUci: makeUci(retreat), gain: balance + gain,
                         retainedByRetreat: true };
+                    break;
+                }
+            }
+            // An allied piece can reinforce the checking ray by newly attacking
+            // its interposer. It is not permission for an arbitrary quiet move:
+            // the actual checker must still pin that interposer to the king.
+            if (!branch && exchangeNomination && king !== undefined &&
+                after.board.kingOf(opposite(after.turn)) === king &&
+                between(root.move.to, king).has(reply.to) &&
+                between(root.move.to, king).intersect(after.board.occupied).size() === 1) {
+                for (const support of legalMoves(after)) {
+                    if (support.from === root.move.to || support.promotion || capturedValue(after, support)) continue;
+                    const piece = after.board.get(support.from)!;
+                    if (piece.role === "king" || attacks(piece, support.from, after.board.occupied).has(reply.to)) continue;
+                    if (--budget.nodes < 0) return null;
+                    const next = after.clone(); next.play(support);
+                    if (next.isCheck() || next.isEnd() || !attacks(piece, support.to, next.board.occupied).has(reply.to)) continue;
+                    const gain = preparationCaptureGain(after, support, budget);
+                    onTrace?.(`${makeSan(root.after, reply)} ${makeSan(after, support)} support: gain ${gain}, balance ${balance}`);
+                    if (gain === null || balance + gain < VALUE.pawn) continue;
+                    const safety = retainCounterchecks(after, support, balance, 6);
+                    if (!safety) continue;
+                    defensiveDecisions.push(...safety);
+                    branch = { replyUci: makeUci(reply), answerUci: makeUci(support), gain: balance + gain,
+                        retainedBySupport: true };
                     break;
                 }
             }
@@ -846,7 +926,8 @@ export function proveCheckingPawnRetention(steps: TacticalReplayStep[], nodeLimi
             branches.push(branch);
             minimum = Math.min(minimum, branch.gain);
         }
-        return branches.length ? { gain: minimum, visits: nodeLimit - budget.nodes, branches } : null;
+        return branches.length ? { gain: minimum, visits: nodeLimit - budget.nodes, branches,
+            ...(defensiveDecisions.length ? { defensiveDecisions } : {}) } : null;
     };
     let proof: CheckingPawnRetention | null = null;
     // Preserve established positive-capture answers. Only an incomplete old
@@ -12397,7 +12478,7 @@ export function auditTacticalMotifs(
                 ...(checkingPawn ? {
                     value: checkingPawn.gain,
                     evidence: checkingPawn.branches.some(branch => branch.retainedByExchange)
-                        ? `${root.san} takes the pawn on ${makeSquare(root.move.to)} with check. Exchanging the checking piece for an equal interposing piece keeps that pawn; other replies permit a checked retreat or follow-up capture. These continuations retain at least a pawn, not an extra piece.`
+                        ? `${root.san} takes the pawn on ${makeSquare(root.move.to)} with check. Exchanging the checking piece for an equal interposing piece keeps that pawn; other replies permit ${checkingPawn.branches.some(branch => branch.retainedBySupport) ? "allied support, a checked retreat or a follow-up capture" : "a checked retreat or follow-up capture"}. These continuations retain at least a pawn, not an extra piece.`
                         : `${root.san} takes the pawn on ${makeSquare(root.move.to)} with check and keeps a profitable follow-up capture available against every reply. The checked exchanges retain at least a pawn.`,
                 } : {}),
                 source: proposals[0]?.source ?? "available",

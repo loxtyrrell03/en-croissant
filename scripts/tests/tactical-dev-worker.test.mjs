@@ -11,6 +11,7 @@ import { compensatedCaptureInput } from "../../src/utils/tests/fixtures/compensa
 import { forkLocalValueCases } from "../../src/utils/tests/fixtures/forkLocalValue.ts";
 import { forkRepairCases } from "../../src/utils/tests/fixtures/forkRepair.ts";
 import { checkingExchangeCases } from "../../src/utils/tests/fixtures/checkingExchangeRetention.ts";
+import { checkingAlliedRetentionCases, checkingAlliedRetentionLine } from "../../src/utils/tests/fixtures/checkingAlliedRetention.ts";
 import { checkingCombinationCases, promotionCaptureForkCases } from "../../src/utils/tests/fixtures/checkingCombinationRecall.ts";
 import { checkingPawnRetentionCases } from "../../src/utils/tests/fixtures/checkingPawnRetention.ts";
 import { tablebaseCases } from "../../src/utils/tests/fixtures/tablebaseRelevance.ts";
@@ -104,6 +105,7 @@ test(
       ...forkLocalValueCases.map(row => ({...row,name:`local fork value: ${row.id}`,expectedPrimary:row.gain === null ? [] : ["fork"]})),
       ...forkRepairCases.map(row => ({...row,name:`quiet fork repair: ${row.id}`,expectedPrimary:row.positive ? ["fork"] : []})),
       ...checkingExchangeCases.map(row => ({...row,name:`checking exchange: ${row.id}`,variations:[{pvUci:row.pvUci,cp:0,depth:16}],expectedPrimary:row.positive ? ["hangingPiece"] : []})),
+      ...checkingAlliedRetentionCases.map(row => ({...row,pvUci:checkingAlliedRetentionLine,name:`allied checking retention: ${row.id}`,variations:[{pvUci:checkingAlliedRetentionLine,cp:0,depth:16}],expectedPrimary:row.positive ? ["hangingPiece"] : []})),
       ...checkingCombinationCases.map(row => ({...row,name:`checking combination: ${row.id}`,expectedPrimary:row.positive ? ["forcingAttack"] : []})),
       ...promotionCaptureForkCases.map(row => ({...row,name:`promotion capture fork: ${row.id}`,expectedPrimary:row.positive ? ["fork"] : []})),
       {name:"compensated capture retains its sub-pawn bound",...compensatedCaptureInput,expectedPrimary:["hangingPiece"]},
