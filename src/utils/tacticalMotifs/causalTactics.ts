@@ -14315,6 +14315,19 @@ export function compareImmediateTacticalDefence(
                 comparisonEvidence = `The same capture still wins material after ${bestSan}.`;
             }
         } else if (motif.id === "fork") {
+            // Geometry can stay identical while a newly placed guard can take
+            // the checking forker. Require a positive retention witness, not
+            // merely failure to prove the alternative fork. Longer repaired,
+            // mating and promotion-backed combinations keep their own rules.
+            const originalFork = proveImmediateFork(step);
+            const choiceCredit = actual[0].capture + (actual[0].move.promotion
+                ? VALUE[actual[0].move.promotion] - VALUE.pawn : 0);
+            const captureDefence = originalFork && originalFork.gain - choiceCredit >= VALUE.pawn &&
+                proveCheckingForkCaptureDefence(alternative);
+            if (captureDefence) {
+                return { ...motif, comparison: "prevented" as const,
+                    comparisonEvidence: `After ${bestSan}, ${captureDefence.defence} answers ${alternative.san} and captures the forking ${alternative.after.board.get(alternative.move.to)!.role}. Including the fork's initial capture, legal recaptures, immediate losses elsewhere and one countercheck response, the defender retains a net material gain. This stops this immediate fork, not every possible later attack.` };
+            }
             // A quiet repair/mating-support certificate is not an immediate
             // exchange. Do not infer prevention from a failed short capture
             // comparison in the alternative position.
@@ -14392,6 +14405,36 @@ export function compareImmediateTacticalDefence(
         }
         return comparison ? { ...motif, comparison, comparisonEvidence } : motif;
     });
+}
+
+/** A checking fork can be met by a newly legal, materially safe capture of
+ * the forker. Debit what the fork already captured; a rook-for-knight trade
+ * cannot become a prevented fork. Shared capture safety includes all friendly
+ * liabilities, immediate mate/promotion and one countercheck response. This
+ * is a finite local defence, not a whole-position or long king-hunt verdict. */
+export function proveCheckingForkCaptureDefence(
+    root: TacticalReplayStep,
+    nodeLimit = 4096,
+): { defence: string; defenceUci: string; gain: number; visits: number;
+    decisions: { fen: string; moveUci: string }[] } | null {
+    if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 ||
+        root.move.promotion || !root.after.isCheck() || root.after.isEnd()) return null;
+    const forker = root.after.board.get(root.move.to);
+    if (!forker || forker.color !== root.before.turn || forker.role === "king" ||
+        winningTargets(root.after, root.move.to, root.before.turn).length < 2) return null;
+    const budget = { nodes: nodeLimit };
+    try {
+        for (const capture of recoveryMoves(root.after, root.after.turn)) {
+            if (--budget.nodes < 0) return null;
+            if (capture.to !== root.move.to || capture.promotion) continue;
+            const decisions: { fen: string; moveUci: string }[] = [];
+            const gain = preparationCaptureGain(root.after, capture, budget, undefined, decisions);
+            if (gain === null || gain - root.capture < VALUE.pawn) continue;
+            return { defence: makeSan(root.after, capture), defenceUci: makeUci(capture),
+                gain: gain - root.capture, visits: nodeLimit - budget.nodes, decisions };
+        }
+    } catch { /* Incomplete safety checks cannot establish a defence. */ }
+    return null;
 }
 
 /** Positive quiet defence to immediate material threats. Enumerate captures

@@ -454,7 +454,10 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_RECALL_R
         const {privateReportPath}=await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
         writeFileSync(privateReportPath(process.env.TACTICAL_RECALL_WORKER_REPORT),JSON.stringify({cases},null,2),{flag:"wx"});
     }
-},120000);
+// This batch also recomputes every source result. The growing whole-game
+// corpus needs a larger aggregate allowance, not a longer worker deadline:
+// runBuiltWorker still enforces the production startup/computation bounds.
+},300000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("saving captures and drawn-exchange controls survive the actual worker", async () => {
     const report = [];

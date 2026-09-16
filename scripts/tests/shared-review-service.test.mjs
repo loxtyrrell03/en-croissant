@@ -8,8 +8,46 @@ import { Chess } from "chessops/chess";
 import { INITIAL_FEN, makeFen, parseFen } from "chessops/fen";
 import { parseUci } from "chessops/util";
 import { matingEntryDefence } from "../../src/utils/tests/fixtures/matingEntryDefence.ts";
+import { checkingForkCaptureFen } from "../../src/utils/tests/fixtures/checkingForkCaptureDefence.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("a newly defended fork gains its cause in generated review and saved cards", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-shared-review-fork-guard-"));
+  const position = Chess.fromSetup(parseFen(checkingForkCaptureFen).unwrap()).unwrap();
+  position.play(parseUci("e7c5"));
+  const after = makeFen(position.toSetup());
+  const options = {root, documentsRoot: join(root, "documents"), engineConfigPath: join(root, "engine.json"),
+    fetchGames: async () => [], lookup: async fen => {
+      assert.ok(fen === checkingForkCaptureFen || fen === after);
+      // Synthetic nomination scores test storage/wiring, not the strength of
+      // this deliberately stripped-down position. Scores are White-relative.
+      return {depth: 16, pvs: fen === checkingForkCaptureFen
+        ? [{cp: 0, moves: "e7d6 d5e3"}]
+        : [{cp: 500, moves: "d5c7 e8d8 c7a8"}]};
+    }};
+  let service;
+  try {
+    await writeFile(join(root, "config.json"), JSON.stringify({accounts: {chesscom: "Tester"}}));
+    await writeFile(join(root, "games.json"), JSON.stringify({games: [{source: "chesscom", end: 1789387200,
+      url: "https://example.test/fork-guard", pgn: `[White "Opponent"]\n[Black "Tester"]\n[Date "2026.09.16"]\n[SetUp "1"]\n[FEN "${checkingForkCaptureFen}"]\n[Result "1-0"]\n\n1... Qc5 1-0`}]}));
+    service = new SharedReviewService(options); await service.initialize(false); await service.run();
+    assert.equal(service.snapshot().error, null);
+    const card = service.snapshot().cards[0]; assert.ok(card);
+    const fork = card.tacticalClassification.allowedMotifs.find(m => m.id === "fork");
+    assert.equal(fork?.comparison, "prevented");
+    assert.match(fork.comparisonEvidence, /Qxc7/);
+    assert.match(card.explanation, /captures the forking knight/);
+    assert.deepEqual((await service.deck()).positions[0].mistakeReview.allowedMotifs,
+      card.tacticalClassification.allowedMotifs);
+    service.close(); service = new SharedReviewService(options); await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification, card.tacticalClassification);
+  } finally {
+    service?.close(); const target = resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir()) + sep) && target.includes("en-shared-review-fork-guard-"));
+    await rm(target, {recursive: true, force: true});
+  }
+});
 
 test("a verified mating-entry defence survives generated review, deck storage and reload", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-mate-defence-"));

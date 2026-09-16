@@ -19699,6 +19699,14 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 				comparisonEvidence = `The same capture still wins material after ${bestSan}.`;
 			}
 		} else if (motif.id === "fork") {
+			const originalFork = proveImmediateFork(step);
+			const choiceCredit = actual[0].capture + (actual[0].move.promotion ? VALUE[actual[0].move.promotion] - VALUE.pawn : 0);
+			const captureDefence = originalFork && originalFork.gain - choiceCredit >= VALUE.pawn && proveCheckingForkCaptureDefence(alternative);
+			if (captureDefence) return {
+				...motif,
+				comparison: "prevented",
+				comparisonEvidence: `After ${bestSan}, ${captureDefence.defence} answers ${alternative.san} and captures the forking ${alternative.after.board.get(alternative.move.to).role}. Including the fork's initial capture, legal recaptures, immediate losses elsewhere and one countercheck response, the defender retains a net material gain. This stops this immediate fork, not every possible later attack.`
+			};
 			if (proveRepairedFork(step)) return motif;
 			const mixed = !establishedFork(step) && proveMixedTargetFork(step);
 			if (mixed) {
@@ -19764,6 +19772,34 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 			comparisonEvidence
 		} : motif;
 	});
+}
+/** A checking fork can be met by a newly legal, materially safe capture of
+* the forker. Debit what the fork already captured; a rook-for-knight trade
+* cannot become a prevented fork. Shared capture safety includes all friendly
+* liabilities, immediate mate/promotion and one countercheck response. This
+* is a finite local defence, not a whole-position or long king-hunt verdict. */
+function proveCheckingForkCaptureDefence(root, nodeLimit = 4096) {
+	if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.move.promotion || !root.after.isCheck() || root.after.isEnd()) return null;
+	const forker = root.after.board.get(root.move.to);
+	if (!forker || forker.color !== root.before.turn || forker.role === "king" || winningTargets(root.after, root.move.to, root.before.turn).length < 2) return null;
+	const budget = { nodes: nodeLimit };
+	try {
+		for (const capture of recoveryMoves(root.after, root.after.turn)) {
+			if (--budget.nodes < 0) return null;
+			if (capture.to !== root.move.to || capture.promotion) continue;
+			const decisions = [];
+			const gain = preparationCaptureGain(root.after, capture, budget, void 0, decisions);
+			if (gain === null || gain - root.capture < VALUE.pawn) continue;
+			return {
+				defence: makeSan(root.after, capture),
+				defenceUci: makeUci(capture),
+				gain: gain - root.capture,
+				visits: nodeLimit - budget.nodes,
+				decisions
+			};
+		}
+	} catch {}
+	return null;
 }
 /** Positive quiet defence to immediate material threats. Enumerate captures
 * through a defender exchange, with settled exchange leaves; checking forks
@@ -20310,7 +20346,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 133;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 134;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
