@@ -15,6 +15,7 @@ import { forkRepairCases } from "./fixtures/forkRepair";
 import { checkingExchangeCases } from "./fixtures/checkingExchangeRetention";
 import { checkingAlliedRetentionCases, checkingAlliedRetentionLine } from "./fixtures/checkingAlliedRetention";
 import { relativePinnedCaptureCases } from "./fixtures/relativePinnedCapture";
+import { costlyPawnRecaptureCases, costlyPawnRecaptureInput } from "./fixtures/costlyPawnRecapture";
 import { checkingCombinationCases, promotionCaptureForkCases } from "./fixtures/checkingCombinationRecall";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
@@ -104,6 +105,21 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
         vi.unstubAllGlobals();
     }
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("costly pawn recaptures survive the production controller", async () => {
+    for (const row of costlyPawnRecaptureCases) for (const reflected of [false, true]) {
+        const context = costlyPawnRecaptureInput(row);
+        const previousFen = reflected ? reflectMixedForkFen(context.previousFen) : context.previousFen;
+        const previousMoveUci = reflected ? reflectMixedForkMove(context.previousMoveUci) : context.previousMoveUci;
+        const fen = makeFen(replayTacticalLine(previousFen, [previousMoveUci])[0].after.toSetup());
+        const pvUci = reflected ? context.pvUci.map(reflectMixedForkMove) : context.pvUci;
+        const input = { fen, pvUci, previousFen, previousMoveUci, depth: 16, engineName: "Constructed" };
+        const { scan } = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        if (!row.positive) continue;
+        expect(scan.motifs[0]).toMatchObject({ id: "hangingPiece", value: 100, ply: 1 });
+    }
+}, 30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("relative pin captures survive the production controller", async () => {
     for (const row of relativePinnedCaptureCases) for (const reflected of [false, true]) {

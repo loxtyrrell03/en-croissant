@@ -90,3 +90,11 @@ test("a follow-up excludes frozen game IDs before selection, never classifier ou
   assert.throws(() => prepareChesscomRecallSample(raw, source, 2, [1]));
   assert.throws(() => prepareChesscomRecallSample(raw, source, 2, ["1", "2", "3", "4"]));
 });
+
+test("an exhausted archive reports the actual sample size without replacing games", () => {
+  const result = prepareChesscomRecallSample(JSON.stringify({games: [game(3), game(2), game(1)]}), source, 3, ["3"]);
+  assert.equal(result.requestedGameCount, 3);
+  assert.deepEqual(result.games.map(row => row.id), ["2", "1"]);
+  assert.match(result.scope, /^Latest 2 eligible standard games.*3 requested/);
+  assert.equal(result.cases.length, 6);
+});

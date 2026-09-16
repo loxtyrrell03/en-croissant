@@ -83,7 +83,8 @@ export function prepareChesscomRecallSample(raw, source, count = 3, excludedGame
       });
   }
   return {
-    scope: `Latest ${count} eligible standard games in the fixed archive, by end time, before any engine/classifier output; all plies retained. Only explicitly listed earlier games are excluded. No outcome, rating or tactical filter. A development sample, not an accuracy estimate. Headers and clocks omitted.`,
+    scope: `Latest ${games.length} eligible standard games in the fixed archive (${count} requested), by end time, before any engine/classifier output; all plies retained. Only explicitly listed earlier games are excluded. No outcome, rating or tactical filter. A development sample, not an accuracy estimate. Headers and clocks omitted.`,
+    requestedGameCount: count,
     excludedGameIds: [...excluded].sort(),
     source,
     sourceSha256: createHash("sha256").update(raw).digest("hex"),

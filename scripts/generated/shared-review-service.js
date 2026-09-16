@@ -10240,6 +10240,80 @@ function captureGainEvidence(step, gain) {
 		evidence: compensated ? `${step.san} takes the ${victim?.role ?? "piece"} on ${makeSquare(step.move.to)}, but concedes material elsewhere. The checked exchanges gain at least ${Number((gain / 100).toFixed(1))} ${gain === 100 ? "pawn" : "pawns"}.` : `${step.san} wins the loose ${victim?.role ?? "piece"} on ${makeSquare(step.move.to)}.`
 	};
 }
+var costlyPawnRecaptureCache = /* @__PURE__ */ new Map();
+/** An older pawn can still be tactically loose: its apparent defender would
+* have to trade a more valuable piece for the capturer. Require actual legal
+* recaptures, punish every one on the exchange square, and independently debit
+* off-square losses and counterchecks. This is not blanket admission of bare
+* pawn grabs, ordinary equal exchanges or incidental checking captures. */
+function proveCostlyPawnRecapture(root, nodeLimit = 4096) {
+	if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture !== VALUE.pawn || root.move.promotion || root.after.isCheck() || root.after.isEnd() || root.before.board.get(root.move.to)?.role !== "pawn") return null;
+	const attacker = root.before.board.get(root.move.from);
+	if (attacker.role === "king") return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (nodeLimit === 4096 && costlyPawnRecaptureCache.has(key)) return costlyPawnRecaptureCache.get(key);
+	const budget = { nodes: nodeLimit };
+	const compute = () => {
+		const replies = legalMoves(root.after).filter((reply) => reply.to === root.move.to);
+		if (!replies.length || replies.some((reply) => reply.promotion || VALUE[root.after.board.get(reply.from).role] < VALUE[attacker.role] + VALUE.pawn)) return null;
+		const defensiveDecisions = [];
+		const gain = preparationCaptureGain(root.before, root.move, budget, void 0, defensiveDecisions);
+		if (gain === null || gain < VALUE.pawn) return null;
+		const branches = [];
+		for (const reply of replies) {
+			if (--budget.nodes < 0) return null;
+			const next = root.after.clone();
+			next.play(reply);
+			let strongest = null;
+			for (const answer of legalMoves(next)) {
+				if (--budget.nodes < 0) return null;
+				if (answer.to !== root.move.to || answer.promotion) continue;
+				const decisions = [];
+				const recovered = preparationCaptureGain(next, answer, budget, void 0, decisions);
+				if (recovered === null || recovered - VALUE[attacker.role] < VALUE.pawn) continue;
+				const retained = root.capture - VALUE[attacker.role] + recovered;
+				if (!strongest || retained > strongest.gain) strongest = {
+					answerUci: makeUci(answer),
+					gain: retained,
+					decisions
+				};
+			}
+			if (!strongest) return null;
+			defensiveDecisions.push(...strongest.decisions);
+			branches.push({
+				replyUci: makeUci(reply),
+				answerUci: strongest.answerUci,
+				gain: strongest.gain
+			});
+		}
+		return {
+			gain,
+			branches,
+			defensiveDecisions,
+			visits: nodeLimit - budget.nodes
+		};
+	};
+	let proof = null;
+	try {
+		proof = compute();
+	} catch {}
+	if (nodeLimit === 4096) {
+		costlyPawnRecaptureCache.set(key, proof);
+		if (costlyPawnRecaptureCache.size > 128) costlyPawnRecaptureCache.delete(costlyPawnRecaptureCache.keys().next().value);
+	}
+	return proof;
+}
+function costlyPawnRecaptureEvidence(root, proof) {
+	const branch = proof.branches[0];
+	const steps = replayTacticalLine(makeFen(root.before.toSetup()), [
+		root.uci,
+		branch.replyUci,
+		branch.answerUci
+	]);
+	const attacker = root.before.board.get(root.move.from);
+	const defender = steps[1].before.board.get(steps[1].move.from);
+	return `${root.san} wins the pawn on ${makeSquare(root.move.to)}. Its apparent defence is too costly: ${steps[1].san} allows ${steps[2].san}, giving up the ${defender.role} for the ${attacker.role}. Every legal recapture has a checked losing exchange; the pawn gain also accounts for immediate counterplay. This is why recapturing fails, not a forced continuation.`;
+}
 var checkingPawnRetentionCache = /* @__PURE__ */ new Map();
 /** A checking pawn capture can be useful even when the pawn was already loose.
 * Check itself is not retention: after EVERY evasion a connected capture must
@@ -18430,10 +18504,16 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	const root = steps[0];
 	const directGain = root.capture ? Math.max(0, tacticalCaptureGain(root) ?? 0) : 0;
 	const checkingPawn = Number.isFinite(rootCp) && directGain >= VALUE.pawn && root.capture === VALUE.pawn ? proveCheckingPawnRetention(steps) : null;
-	if ((root.capture >= 320 || isNewlyExposedPawnCapture(root, context?.previousFen, context?.previousMoveUci) || checkingPawn) && directGain >= MIN_TACTICAL_CAPTURE_GAIN && !candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)) {
+	const priorPawnContext = root.capture === VALUE.pawn && context?.previousFen && context.previousMoveUci ? replayTacticalLine(context.previousFen, [context.previousMoveUci])[0] : null;
+	const costlyPawn = directGain >= VALUE.pawn && priorPawnContext && !priorPawnContext.capture && !priorPawnContext.move.promotion && makeFen(priorPawnContext.after.toSetup()) === makeFen(root.before.toSetup()) ? proveCostlyPawnRecapture(root) : null;
+	if ((root.capture >= 320 || isNewlyExposedPawnCapture(root, context?.previousFen, context?.previousMoveUci) || checkingPawn || costlyPawn) && directGain >= MIN_TACTICAL_CAPTURE_GAIN && !candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)) {
 		if (root.before.board.get(root.move.to)) candidates.push({
 			id: "hangingPiece",
 			...captureGainEvidence(root, directGain),
+			...costlyPawn ? {
+				value: costlyPawn.gain,
+				evidence: costlyPawnRecaptureEvidence(root, costlyPawn)
+			} : {},
 			...checkingPawn ? {
 				value: checkingPawn.gain,
 				evidence: checkingPawn.branches.some((branch) => branch.retainedByExchange) ? `${root.san} takes the pawn on ${makeSquare(root.move.to)} with check. Exchanging the checking piece for an equal interposing piece keeps that pawn; other replies permit ${checkingPawn.branches.some((branch) => branch.retainedBySupport) ? "allied support, a checked retreat or a follow-up capture" : "a checked retreat or follow-up capture"}. These continuations retain at least a pawn, not an extra piece.` : `${root.san} takes the pawn on ${makeSquare(root.move.to)} with check and keeps a profitable follow-up capture available against every reply. The checked exchanges retain at least a pawn.`
@@ -19845,7 +19925,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 123;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 124;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
