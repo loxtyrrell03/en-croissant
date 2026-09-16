@@ -1,6 +1,37 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 121 / live pipeline 126
+## Current package: adapter 122 / live pipeline 127
+
+Source `8f53a21d` is packaged in the standalone executable, including checking
+pawn retention through allied support and checked king evasions. The clean
+detached checkout `en-tactical-desktop-8f53a21d` excludes unrelated primary
+changes. TypeScript, 23 focused checks (seven optional skips), the 42-module
+shared-review build, 8,861-module frontend and native release build pass.
+Native compilation takes 1m57s with 22 existing warnings. Generated route-tree
+output has no semantic diff; shared-service differences are dependency-path
+comments only, confirmed by comparison after removing those comments.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,128,000 bytes;
+  SHA-256 `88d8cb65d48ae32720b2a27a6a70c3da779d4f0498d93b59946d34754a76505f`.
+- Worker: `liveTactics.worker-BwUL3JD0.js`; SHA-256
+  `5ad3965678a9c579fc51413fee9bad20a025f2a61434132f2633b13c2a548a86`.
+  Clean frontend bytes match the tested immutable artifact. The x64 executable
+  embeds this key and `OpeningReviewWorkspace-S9sW_4dL.js`; its dependency
+  receipt identifies the clean-checkout assets.
+- Previous adapter-121 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter122/en-croissant-fork.exe`,
+  SHA-256 `8778c6b51ee87228814f941e23e7411d9a568d00b3706516821b7d326f5a1277`.
+
+No app was running before or after the build, and none was launched/restarted.
+The Dev App shortcut was read back unchanged and still invokes the primary
+checkout's `encroissant-native` workflow. Games, settings, engines and phone
+services remain unchanged. This is package/linkage proof, not native-window
+interaction or startup certification. See
+`benchmarks/tactical-relevance/allied-retention-review.md` for the recovered
+owner opportunity, retained queen-loss priority, contrary mating witnesses,
+drawn material-retention branches and continuing recall/reliability limits.
+
+## Previous package: adapter 121 / live pipeline 126
 
 Source `ecf6ba07` is packaged in the standalone executable, including mixed
 checking combinations, connected mating support and legal promotion-fork
