@@ -167,11 +167,14 @@ test.each([...sample.cases, ...reflected].filter((row) => row.stratum === "mateI
 );
 
 test.each([...sample.cases, ...reflected].filter(row => row.id.startsWith("lichess:0rcU4")))(
-    "a recovered mating attack does not invent a mate-in-four certificate: $id", row => {
+    "the longer all-defence proof upgrades the recovered mating attack: $id", row => {
         expect(proveMateWithinThree(replayTacticalLine(row.startFen, row.bestLine))).toBeNull();
         const result = classifyPositionTacticalMotifs({ fen: row.startFen, pvUci: row.bestLine });
-        expect(result.motifs[0]).toMatchObject({ id: "forcingAttack", label: "Mating Attack", ply: 1 });
-        expect(result.motifs.some(motif => motif.id === "mateIn4")).toBe(false);
+        expect(result.motifs[0]).toMatchObject({ id: "mateIn4", label: "Forcing Mate", ply: 1 });
+        // Root-only input still uses the existing material-or-mate threat
+        // certificate; an absent full line cannot invent the longer distance.
+        const short = classifyPositionTacticalMotifs({ fen: row.startFen, pvUci: row.bestLine.slice(0, 1) });
+        expect(short.motifs.some(motif => motif.id === "mateIn4")).toBe(false);
     },
 );
 

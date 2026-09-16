@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, expect, test, vi } from "vitest";
 import { TacticalScanResult } from "@/components/panels/tactics/TacticalScanResult";
 import { capturingPawnGuardInput } from "./fixtures/capturingPawnGuard";
+import { quietRootMateCases } from "./fixtures/quietRootMate";
 import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import { mixedForkFen, mixedForkLine } from "./fixtures/mixedTargetFork";
 import { directThreatFen, directThreatLine } from "./fixtures/directThreatRelevance";
@@ -34,6 +35,17 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a nonchecking mating capture leads with mate and does not draw a future branch", () => {
+  const row = quietRootMateCases[1];
+  const value = buildLiveTacticalScan({ ...row, engineName: "Constructed quiet mate", depth: 16 });
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Forcing Mate found");
+  expect(element.textContent).toContain("Every legal defence permits mate within 4 moves");
+  expect(element.textContent).not.toContain("Hanging Piece found");
+  expect(value.arrows.map(arrow => `${arrow.from}${arrow.to}`)).toEqual(["f6h4"]);
+  expect(value.variations[0].timeline).toContainEqual(expect.objectContaining({ id: "mateIn1", ply: 7 }));
+});
 
 test("a pawn exposed by a capturing defender shows the current capture and its explanation", () => {
   const value = buildLiveTacticalScan({ ...capturingPawnGuardInput(), engineName: "Constructed guard exposure", depth: 16 });

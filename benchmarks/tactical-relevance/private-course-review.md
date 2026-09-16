@@ -1,6 +1,11 @@
 # Private tactical and positional course development audit
 
-## Current classifier: adapter 108 / live pipeline 113
+This page preserves the course milestones through adapter 108. Subsequent
+owner-game recall work is documented in the linked per-milestone reviews;
+[adapter 126's nonchecking mate review](quiet-root-mate-recall-review.md) records
+the later Qxc4 live-root recovery and the unchanged source-solution gap.
+
+## Latest milestone recorded here: adapter 108 / live pipeline 113
 
 The [capture-liability review](capture-liability-review.md) replaces same-square-only
 generic capture admission with bounded all-friendly-piece/countercheck accounting.

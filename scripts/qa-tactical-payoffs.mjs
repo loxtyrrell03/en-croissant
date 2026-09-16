@@ -19,6 +19,7 @@ import { perpetualMaterialCases, perpetualMaterialLine } from "../src/utils/test
 import { compensatedCaptureInput } from "../src/utils/tests/fixtures/compensatedCapture.ts";
 import { forkLocalValueCases } from "../src/utils/tests/fixtures/forkLocalValue.ts";
 import { checkingPawnRetentionCases } from "../src/utils/tests/fixtures/checkingPawnRetention.ts";
+import { quietRootMateCases } from "../src/utils/tests/fixtures/quietRootMate.ts";
 import {
   matingInterferenceCases,
   reflectMatingInterference,
@@ -38,9 +39,11 @@ const pawnMode = process.argv.includes("--pawn");
 const compensatedMode = process.argv.includes("--compensated");
 const forkValueMode = process.argv.includes("--fork-value");
 const checkingPawnMode = process.argv.includes("--checking-pawn");
+const quietRootMateMode = process.argv.includes("--quiet-root-mate");
 const root = process.cwd(),
   output = resolve(
     root,
+    quietRootMateMode ? "tmp/tactical-quiet-root-mate-adapter126" :
     checkingPawnMode ? "tmp/tactical-checking-pawn-adapter118" : forkValueMode ? "tmp/tactical-fork-value-adapter117" : compensatedMode ? "tmp/tactical-compensated-adapter116" : pawnMode ? "tmp/tactical-pawn-adapter115" : perpetualMode ? "tmp/tactical-perpetual-material-adapter112" : discoveryTrapMode ? "tmp/tactical-discovery-trap-adapter111" : quietForkMode ? "tmp/tactical-quiet-fork-adapter110" : liabilityMode ? "tmp/tactical-liability-adapter108" : discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
       ? "tmp/tactical-quiet-mate-adapter104"
       : interferenceMode
@@ -57,6 +60,7 @@ const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
 const cases = (
+  quietRootMateMode ? quietRootMateCases.slice(0, 4) :
   checkingPawnMode
     ? checkingPawnRetentionCases.filter(row => row.id === "retained" || row.id === "bishop-liability")
         .map(row => ({...row, variations:[{pvUci:row.pvUci,cp:0,depth:16}]}))
@@ -95,7 +99,8 @@ const cases = (
           fen: row.startFen,
           pvUci: row.bestLine.slice(0, length),
           expectedQuietMate:
-            row.stratum === "mateIn2" ? "mateThreat" : row.stratum === "mateIn3" ? "mateIn3" : null,
+            row.stratum === "mateIn2" ? "mateThreat" : row.stratum === "mateIn3" ? "mateIn3" :
+              row.id === "lichess:0rcU4" ? (length > 1 ? "mateIn4" : "forcingAttack") : null,
         })),
       )
     : interferenceMode
@@ -194,7 +199,24 @@ try {
           index,
           scale,
         });
-        if (checkingPawnMode) {
+        if (quietRootMateMode) {
+          await page.waitForFunction(() => window.fixture.scan !== null);
+          const scan = await page.evaluate(() => window.fixture.scan);
+          assert.equal(scan.motifs.some(m => m.id === "mateIn4"), row.positive);
+          if (row.positive) {
+            await page.getByText("Forcing Mate found", { exact: true }).waitFor();
+            const button = page.getByRole("button", { name: /^Show .* on board$/ });
+            await button.focus(); await page.keyboard.press("Enter");
+            const selected = await page.evaluate(() => window.fixture.last);
+            assert.deepEqual(selected.arrows.map(a => a.from + a.to), ["f6h4"]);
+            await page.locator("summary").focus(); await page.keyboard.press("Enter");
+            assert((await page.locator('[data-tactical-ply="7"]').innerText()).toLowerCase().includes("mate"));
+          }
+          if (width === 360 && scale === 2) {
+            await page.locator(".mantine-ScrollArea-viewport").evaluate(element => { element.scrollTop = 0; });
+            await page.screenshot({ path: resolve(output, `${row.id}.png`), fullPage: true });
+          }
+        } else if (checkingPawnMode) {
           await page.waitForFunction(() => window.fixture.scan !== null);
           const scan = await page.evaluate(() => window.fixture.scan);
           assert.equal(scan.motifs[0]?.label ?? null, row.positive ? "Hanging Pawn" : null);
@@ -353,8 +375,14 @@ try {
             labels: window.fixture.last?.labels,
           }));
           assert.equal(preview.main, row.expectedQuietMate);
-          assert.deepEqual(preview.arrows, [[row.pvUci[0].slice(0, 2), row.pvUci[0].slice(2, 4)]]);
-          assert.equal(preview.labels.length, 1);
+          assert.deepEqual(preview.arrows, [
+            [row.pvUci[0].slice(0, 2), row.pvUci[0].slice(2, 4)],
+            ...(row.expectedQuietMate === "forcingAttack" ? [["h4", "e1"]] : []),
+          ]);
+          if (row.expectedQuietMate === "mateIn4") {
+            assert.equal(preview.labels[0].text, "Forcing Mate");
+            assert(preview.labels.slice(1).every(label => label.text.startsWith("Later:")));
+          } else assert.equal(preview.labels.length, 1);
           assert.equal(await page.locator("[data-tactical-candidate]").count(), 1);
           await page.locator("summary").focus();
           await page.keyboard.press("Enter");

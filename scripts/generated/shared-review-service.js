@@ -11178,20 +11178,21 @@ function proveShortCheckingMate(root, nodeLimit = 4096) {
 	return proof;
 }
 /** A PV ending in mate is only a nomination. All legal defences must
-* lose. Besides checks, at most two PV-nominated quiet attacking moves may
-* be tried; each opens the full legal defensive tree. Unknown/exhausted
-* searches cannot certify the supplied line. */
-function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT) {
+* lose, including after a nonchecking first move. Besides checks, at most
+* two PV-nominated quiet attacking moves may be tried; each opens the full
+* legal defensive tree. Unknown/exhausted searches cannot certify the line. */
+function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeStrategy = false) {
 	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
 	const root = steps[0];
 	const terminal = steps.findIndex((step) => step.after.isEnd());
-	if (!root || !root.after.isCheck() || terminal < 0 || terminal > 12 || !steps[terminal].after.isCheckmate() || steps[terminal].before.turn !== root.before.turn) return null;
+	if (!root || terminal < 0 || terminal > 12 || !steps[terminal].after.isCheckmate() || steps[terminal].before.turn !== root.before.turn) return null;
+	if (!root.after.isCheck() && terminal < 6) return null;
 	const maxMoves = terminal / 2 + 1;
 	const hints = steps.slice(0, terminal + 1).filter((s) => s.before.turn === root.before.turn).map((s) => s.uci);
 	const quietHints = new Set(steps.slice(0, terminal + 1).filter((s) => s.before.turn === root.before.turn && !s.after.isCheck()).map((s) => s.uci));
 	const quietLimit = Math.min(2, quietHints.size);
 	const key = `${makeFen(root.after.toSetup())}:${maxMoves}:${hints}:${[...quietHints]}`;
-	if (nodeLimit === CHECKING_MATE_NODE_LIMIT && checkingMateCache.has(key)) return checkingMateCache.get(key);
+	if (!includeStrategy && nodeLimit === CHECKING_MATE_NODE_LIMIT && checkingMateCache.has(key)) return checkingMateCache.get(key);
 	let nodes = nodeLimit;
 	const visit = (pos, move) => {
 		if (--nodes < 0) throw new Error("Checking mate budget exhausted");
@@ -11201,11 +11202,18 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT) {
 	};
 	const attackMemo = /* @__PURE__ */ new Map();
 	const defendMemo = /* @__PURE__ */ new Map();
+	const choices = /* @__PURE__ */ new Map();
+	const orderedMoves = (pos) => {
+		const moves = legalMoves(pos);
+		if (root.after.isCheck()) return moves;
+		const flip = root.before.turn === "white" ? 0 : 56;
+		return moves.sort((a, b) => (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip) || String(a.promotion ?? "").localeCompare(String(b.promotion ?? "")));
+	};
 	const attack = (pos, remaining, quiet) => {
 		if (remaining <= 0 || pos.isInsufficientMaterial()) return null;
 		const cacheKey = `${makeFen(pos.toSetup())}:${remaining}:${quiet}`;
 		if (attackMemo.has(cacheKey)) return attackMemo.get(cacheKey);
-		const moves = legalMoves(pos);
+		const moves = orderedMoves(pos);
 		const expected = hints[maxMoves - remaining];
 		const king = pos.board.kingOf(opposite(pos.turn));
 		const discoveryRays = [...pos.board[pos.turn].intersect(pos.board.queen.union(pos.board.rook).union(pos.board.bishop))].map((square) => between(king, square));
@@ -11223,6 +11231,7 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT) {
 			if (continuation) {
 				const line = [makeSan(pos, move), ...continuation];
 				attackMemo.set(cacheKey, line);
+				if (includeStrategy) choices.set(cacheKey, move);
 				return line;
 			}
 		}
@@ -11233,7 +11242,7 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT) {
 		if (pos.isInsufficientMaterial() || defenderCanClaimFiftyMoveDraw(pos)) return null;
 		const cacheKey = `${makeFen(pos.toSetup())}:${remaining}:${quiet}`;
 		if (defendMemo.has(cacheKey)) return defendMemo.get(cacheKey);
-		const replies = legalMoves(pos);
+		const replies = orderedMoves(pos);
 		if (!replies.length) return pos.isCheck() ? [] : null;
 		if (remaining <= 0) return null;
 		let longest = null;
@@ -11250,6 +11259,22 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT) {
 		return longest;
 	};
 	let proof = null;
+	const strategy = (pos, remaining, quiet) => ({
+		fen: makeFen(pos.toSetup()),
+		replies: legalMoves(pos).map((reply) => {
+			const afterReply = pos.clone();
+			afterReply.play(reply);
+			const answer = choices.get(`${makeFen(afterReply.toSetup())}:${remaining}:${quiet}`);
+			if (!answer) throw new Error("Missing certified mating answer");
+			const next = afterReply.clone();
+			next.play(answer);
+			return {
+				move: makeUci(reply),
+				answer: makeUci(answer),
+				next: strategy(next, remaining - 1, quiet - Number(!next.isCheck()))
+			};
+		})
+	});
 	try {
 		if (root.after.isCheckmate() && nodeLimit > 0) proof = {
 			maxMoves: 1,
@@ -11261,11 +11286,15 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT) {
 			if (continuation) proof = {
 				maxMoves,
 				replyCount: legalMoves(root.after).length,
-				example: [root.san, ...continuation]
+				example: [root.san, ...continuation],
+				...includeStrategy ? {
+					strategy: strategy(root.after, maxMoves - 1, quietLimit),
+					visits: nodeLimit - nodes
+				} : {}
 			};
 		}
 	} catch {}
-	if (nodeLimit === CHECKING_MATE_NODE_LIMIT) {
+	if (!includeStrategy && nodeLimit === CHECKING_MATE_NODE_LIMIT) {
 		checkingMateCache.set(key, proof);
 		if (checkingMateCache.size > 128) checkingMateCache.delete(checkingMateCache.keys().next().value);
 	}
@@ -19940,7 +19969,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 125;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 126;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

@@ -4058,6 +4058,7 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     minCp?: number;
                     maxCp?: number;
                     mateWithin?: number;
+                    depth?: number;
                 }[];
             };
             const sample = JSON.parse(readFileSync(request.samplePath, "utf8"));
@@ -4071,8 +4072,10 @@ describe("expert tactical judgement with fresh engine lines", () => {
                 const replay = replayTacticalLine(originalFen, moves);
                 expect(replay).toHaveLength(moves.length);
                 const fen = replay.length ? makeFen(replay.at(-1)!.after.toSetup()) : originalFen;
-                const lines = [...(await analyse(engine, fen, probe.searchMove)).values()];
-                expect(lines[0].depth).toBe(16);
+                const depth = probe.depth ?? 16;
+                expect(Number.isSafeInteger(depth) && depth >= 1 && depth <= 24).toBe(true);
+                const lines = [...(await analyse(engine, fen, probe.searchMove, depth)).values()];
+                expect(lines[0].depth).toBe(depth);
                 const result = classifyPositionTacticalMotifs({
                     fen,
                     pvUci: lines[0].pvUci,

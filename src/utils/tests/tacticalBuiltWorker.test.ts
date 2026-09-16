@@ -17,6 +17,7 @@ import { checkingAlliedRetentionCases, checkingAlliedRetentionLine } from "./fix
 import { relativePinnedCaptureCases } from "./fixtures/relativePinnedCapture";
 import { costlyPawnRecaptureCases, costlyPawnRecaptureInput } from "./fixtures/costlyPawnRecapture";
 import { capturingPawnGuardCases, capturingPawnGuardInput } from "./fixtures/capturingPawnGuard";
+import { quietRootMateCases } from "./fixtures/quietRootMate";
 import { checkingCombinationCases, promotionCaptureForkCases } from "./fixtures/checkingCombinationRecall";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
@@ -149,6 +150,32 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("relative pin captures survive t
         expect(result.scan.arrows.every(arrow => arrow.ply === 1)).toBe(true);
     }
 }, 60000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("nonchecking root mates survive the production controller without ghost mates", async () => {
+    for (const row of quietRootMateCases) for (const reflected of [false, true]) {
+        const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci: reflected ? row.pvUci.map(reflectMixedForkMove) : row.pvUci,
+            depth: 16, engineName: "Public quiet-mate controls" };
+        const { scan } = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(scan.motifs.some(motif => motif.id === "mateIn4")).toBe(row.positive);
+    }
+}, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_QUIET_ROOT_PRIVATE_REPLAY)("the recovered course mate survives the production controller in both colours", async () => {
+    const report = JSON.parse(readFileSync(process.env.TACTICAL_QUIET_ROOT_PRIVATE_REPLAY!, "utf8"));
+    const row = report.results.flatMap((group: any) => group.cases).find((item: any) => item.id === "private-easy:153");
+    for (const reflected of [false, true]) {
+        const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci: reflected ? row.engineLines[0].pvUci.map(reflectMixedForkMove) : row.engineLines[0].pvUci,
+            depth: 16, engineName: "Private course root" };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs[0]).toMatchObject({ id: "mateIn6", ply: 1 });
+        expect(result.scan.arrows.every(arrow => arrow.ply === 1)).toBe(true);
+        expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+    }
+}, 30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("allied checking retention survives the production controller", async () => {
     for (const row of checkingAlliedRetentionCases) for (const reflected of [false, true]) {
@@ -1298,7 +1325,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
             if (item.id.startsWith("quiet-mate:") || item.id.startsWith("quiet-mate-engine:")) {
                 const mateIn2 = /06PHz|0XwFD|0iAUN/.test(item.id), mateIn3 = /0IJ6I|09Cf3|0hHGN/.test(item.id);
                 const matingAttack = item.id.includes("0rcU4");
-                if (JSON.stringify(result.scan.motifs.map(m => m.id)) !== JSON.stringify(mateIn2 ? ["mateThreat"] : mateIn3 ? ["mateIn3"] : matingAttack ? ["forcingAttack"] : []))
+                if (JSON.stringify(result.scan.motifs.map(m => m.id)) !== JSON.stringify(mateIn2 ? ["mateThreat"] : mateIn3 ? ["mateIn3"] : matingAttack ? [item.input.pvUci.length >= 7 ? "mateIn4" : "forcingAttack"] : []))
                     throw new Error(`Quiet mating primary or retained coverage gap changed: ${item.id}`);
                 if (item.id.includes("0hHGN") && result.scan.variations[0].timeline.some(m => m.id === "fork" && m.ply === 1))
                     throw new Error(`Mate-backed material fork noise: ${item.id}`);

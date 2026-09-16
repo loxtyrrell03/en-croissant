@@ -1769,7 +1769,13 @@ function quietPreparation(steps: TacticalReplayStep[]) {
         : null;
 }
 
-type CheckingMateProof = { maxMoves: number; replyCount: number; example: string[] };
+type MatingStrategy = {
+    fen: string;
+    replies: { move: string; answer: string; next: MatingStrategy }[];
+};
+type CheckingMateProof = { maxMoves: number; replyCount: number; example: string[];
+    /** Diagnostic only: independently replayable all-defence strategy. */
+    strategy?: MatingStrategy; visits?: number };
 const checkingMateCache = new Map<string, CheckingMateProof | null>();
 const CHECKING_MATE_NODE_LIMIT = 65536;
 
@@ -1853,25 +1859,28 @@ export function proveShortCheckingMate(
 }
 
 /** A PV ending in mate is only a nomination. All legal defences must
- * lose. Besides checks, at most two PV-nominated quiet attacking moves may
- * be tried; each opens the full legal defensive tree. Unknown/exhausted
- * searches cannot certify the supplied line. */
+ * lose, including after a nonchecking first move. Besides checks, at most
+ * two PV-nominated quiet attacking moves may be tried; each opens the full
+ * legal defensive tree. Unknown/exhausted searches cannot certify the line. */
 export function proveCheckingMate(
     steps: TacticalReplayStep[],
     nodeLimit = CHECKING_MATE_NODE_LIMIT,
+    includeStrategy = false,
 ): CheckingMateProof | null {
     if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
     const root = steps[0];
     const terminal = steps.findIndex((step) => step.after.isEnd());
     if (
         !root ||
-        !root.after.isCheck() ||
         terminal < 0 ||
         terminal > 12 ||
         !steps[terminal].after.isCheckmate() ||
         steps[terminal].before.turn !== root.before.turn
     )
         return null;
+    // The PV-independent short quiet-mate verifier owns those lessons and
+    // their Mating Preparation wording. This route fills the longer gap.
+    if (!root.after.isCheck() && terminal < 6) return null;
     const maxMoves = terminal / 2 + 1;
     const hints = steps
         .slice(0, terminal + 1)
@@ -1885,7 +1894,7 @@ export function proveCheckingMate(
     );
     const quietLimit = Math.min(2, quietHints.size);
     const key = `${makeFen(root.after.toSetup())}:${maxMoves}:${hints}:${[...quietHints]}`;
-    if (nodeLimit === CHECKING_MATE_NODE_LIMIT && checkingMateCache.has(key))
+    if (!includeStrategy && nodeLimit === CHECKING_MATE_NODE_LIMIT && checkingMateCache.has(key))
         return checkingMateCache.get(key)!;
     let nodes = nodeLimit;
     const visit = (pos: Chess, move: NormalMove) => {
@@ -1896,11 +1905,21 @@ export function proveCheckingMate(
     };
     const attackMemo = new Map<string, string[] | null>();
     const defendMemo = new Map<string, string[] | null>();
+    const choices = new Map<string, NormalMove>();
+    const orderedMoves = (pos: Chess) => {
+        const moves = legalMoves(pos);
+        if (root.after.isCheck()) return moves;
+        // The newly supported quiet roots use colour-stable tie breaking;
+        // reflecting a position must not consume a different search budget.
+        const flip = root.before.turn === "white" ? 0 : 56;
+        return moves.sort((a, b) => (a.from ^ flip) - (b.from ^ flip) ||
+            (a.to ^ flip) - (b.to ^ flip) || String(a.promotion ?? "").localeCompare(String(b.promotion ?? "")));
+    };
     const attack = (pos: Chess, remaining: number, quiet: number): string[] | null => {
         if (remaining <= 0 || pos.isInsufficientMaterial()) return null;
         const cacheKey = `${makeFen(pos.toSetup())}:${remaining}:${quiet}`;
         if (attackMemo.has(cacheKey)) return attackMemo.get(cacheKey)!;
-        const moves = legalMoves(pos);
+        const moves = orderedMoves(pos);
         const expected = hints[maxMoves - remaining];
         const king = pos.board.kingOf(opposite(pos.turn))!;
         // A legal move can check directly or uncover a friendly slider.
@@ -1937,6 +1956,7 @@ export function proveCheckingMate(
             if (continuation) {
                 const line = [makeSan(pos, move), ...continuation];
                 attackMemo.set(cacheKey, line);
+                if (includeStrategy) choices.set(cacheKey, move);
                 return line;
             }
         }
@@ -1947,7 +1967,7 @@ export function proveCheckingMate(
         if (pos.isInsufficientMaterial() || defenderCanClaimFiftyMoveDraw(pos)) return null;
         const cacheKey = `${makeFen(pos.toSetup())}:${remaining}:${quiet}`;
         if (defendMemo.has(cacheKey)) return defendMemo.get(cacheKey)!;
-        const replies = legalMoves(pos);
+        const replies = orderedMoves(pos);
         if (!replies.length) return pos.isCheck() ? [] : null;
         if (remaining <= 0) return null;
         let longest: string[] | null = null;
@@ -1964,6 +1984,17 @@ export function proveCheckingMate(
         return longest;
     };
     let proof: CheckingMateProof | null = null;
+    const strategy = (pos: Chess, remaining: number, quiet: number): MatingStrategy => ({
+        fen: makeFen(pos.toSetup()),
+        replies: legalMoves(pos).map(reply => {
+            const afterReply = pos.clone(); afterReply.play(reply);
+            const answer = choices.get(`${makeFen(afterReply.toSetup())}:${remaining}:${quiet}`);
+            if (!answer) throw new Error("Missing certified mating answer");
+            const next = afterReply.clone(); next.play(answer);
+            return { move: makeUci(reply), answer: makeUci(answer),
+                next: strategy(next, remaining - 1, quiet - Number(!next.isCheck())) };
+        }),
+    });
     try {
         if (root.after.isCheckmate() && nodeLimit > 0)
             proof = { maxMoves: 1, replyCount: 0, example: [root.san] };
@@ -1974,12 +2005,14 @@ export function proveCheckingMate(
                     maxMoves,
                     replyCount: legalMoves(root.after).length,
                     example: [root.san, ...continuation],
+                    ...(includeStrategy ? { strategy: strategy(root.after, maxMoves - 1, quietLimit),
+                        visits: nodeLimit - nodes } : {}),
                 };
         }
     } catch {
         /* An incomplete proof cannot certify the supplied continuation. */
     }
-    if (nodeLimit === CHECKING_MATE_NODE_LIMIT) {
+    if (!includeStrategy && nodeLimit === CHECKING_MATE_NODE_LIMIT) {
         checkingMateCache.set(key, proof);
         if (checkingMateCache.size > 128)
             checkingMateCache.delete(checkingMateCache.keys().next().value!);

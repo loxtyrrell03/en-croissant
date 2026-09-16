@@ -15,6 +15,7 @@ import { checkingAlliedRetentionCases, checkingAlliedRetentionLine } from "../..
 import { relativePinnedCaptureCases } from "../../src/utils/tests/fixtures/relativePinnedCapture.ts";
 import { costlyPawnRecaptureCases, costlyPawnRecaptureInput } from "../../src/utils/tests/fixtures/costlyPawnRecapture.ts";
 import { capturingPawnGuardCases, capturingPawnGuardInput } from "../../src/utils/tests/fixtures/capturingPawnGuard.ts";
+import { quietRootMateCases } from "../../src/utils/tests/fixtures/quietRootMate.ts";
 import { checkingCombinationCases, promotionCaptureForkCases } from "../../src/utils/tests/fixtures/checkingCombinationRecall.ts";
 import { checkingPawnRetentionCases } from "../../src/utils/tests/fixtures/checkingPawnRetention.ts";
 import { tablebaseCases } from "../../src/utils/tests/fixtures/tablebaseRelevance.ts";
@@ -126,11 +127,12 @@ test(
       ...relativePinnedCaptureCases.map(row=>({name:`relative pin: ${row.id}`,fen:row.fen,pvUci:[row.move],expectedPrimary:row.positive?["pin"]:undefined})),
       ...costlyPawnRecaptureCases.map(row=>({name:`costly pawn recapture: ${row.id}`,...costlyPawnRecaptureInput(row),expectedPrimary:row.positive?["hangingPiece"]:undefined})),
       ...capturingPawnGuardCases.map(row=>({name:`capturing pawn guard: ${row.id}`,...capturingPawnGuardInput(row),expectedPrimary:row.visible?["hangingPiece"]:[]})),
+      ...quietRootMateCases.map(row=>({name:`quiet root mate: ${row.id}`,fen:row.fen,pvUci:row.pvUci,expectedPrimary:row.positive?["mateIn4"]:undefined})),
       ...discoveryTrapCases.map(row=>({name:`discovered trap: ${row.id}`,fen:row.fen,pvUci:["e2e4"],expectedPrimary:row.positive?["discoveredAttack"]:[]})),
       ...matingInterferenceCases.filter(row => row.id !== "already-blocked-defence").flatMap(row => [row, { ...reflectMatingInterference(row), id: `${row.id}:black` }]).map(row => ({ name: `mating interference: ${row.id}`, fen: row.fen, pvUci: [row.move], expectedPrimary: row.expected || row.id.startsWith("extra-diagonal-defender") ? ["mateIn3"] : [], expectedTimeline: row.expected ? { id: "interference", ply: 1, actor: row.id.endsWith(":black") ? "black" : "white" } : undefined })),
       ...JSON.parse(readFileSync("benchmarks/tactical-relevance/quiet-mate-development.json", "utf8")).cases.flatMap(row => [1, row.bestLine.length].map(length => ({
         name: `quiet mate: ${row.id}:${length}`, fen: row.startFen, pvUci: row.bestLine.slice(0, length),
-        expectedPrimary: row.stratum === "mateIn2" ? ["mateThreat"] : row.stratum === "mateIn3" ? ["mateIn3"] : row.id === "lichess:0rcU4" ? ["forcingAttack"] : [],
+        expectedPrimary: row.stratum === "mateIn2" ? ["mateThreat"] : row.stratum === "mateIn3" ? ["mateIn3"] : row.id === "lichess:0rcU4" ? [length >= 7 ? "mateIn4" : "forcingAttack"] : [],
         expectedArrows: row.stratum !== "mateIn4" ? [[row.bestLine[0].slice(0, 2), row.bestLine[0].slice(2, 4)]] : row.id === "lichess:0rcU4" ? undefined : [],
       }))),
       ...castlingAliasCases.map(row => ({ name: `castling: ${row.id}`, fen: row.fen, pvUci: row.pvUci, expectedPrimary: row.mate ? ["mateIn1"] : row.id.includes("check-not-mate") ? [] : undefined, expectedArrows: row.mate ? [[row.pvUci[0].slice(0, 2), row.kingTo], [row.rookFrom, row.rookTo]] : undefined, expectedSquare: row.mate ? row.kingTo : undefined })),
