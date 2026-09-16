@@ -1,6 +1,39 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 118 / live pipeline 123
+## Current package: adapter 119 / live pipeline 124
+
+Source `68e9e4d5` is packaged in the standalone executable, including the
+checking-fork allied repair and mating-support proof. The detached checkout
+`en-tactical-desktop-68e9e4d5` excludes unrelated primary-worktree changes.
+TypeScript, 42 focused checks (four optional skips), the 8,861-module frontend
+and native release build pass. The native build takes 2m00s with 22 existing
+warnings. The generated route tree has no semantic diff, and shared-service
+regeneration differs only in dependency-path comments. The separate OTB service
+regeneration reflects its already-committed source's move-colour correction;
+no service is deployed by this desktop build.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,123,904 bytes;
+  SHA-256 `15c25956234cfb7674f8d5cc3a932c22e07e5762491cc527d093ae20a7bffba6`.
+- Worker: `liveTactics.worker-BzIG7cnk.js`; SHA-256
+  `3a7a215618b9ff3b2ea33f6e27b79943c9e232f5f6ef240f7b3e78126a87bf2f`.
+  Clean frontend bytes match the tested immutable worker. The x64 executable
+  embeds that asset key and `OpeningReviewWorkspace-BwbNibiV.js`; the native
+  dependency receipt identifies both clean-checkout frontend assets.
+- Previous adapter-118 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter119/en-croissant-fork.exe`,
+  SHA-256 `5d93956743cada5da4fbd3283d0f027f3ccf0469322e8ad9ce7877ea932b552b`.
+
+No app was running before or after the build, and none was launched/restarted.
+The Dev App shortcut still invokes the primary checkout's existing
+`encroissant-native` workflow. Owner data, settings, engines and phone services
+are unchanged. This is source/package linkage, not native interaction or startup
+certification. The forced-cold HTTP check still fails before loading the module;
+all 122 separate warm-cache cases passing does not resolve that failure. The
+new proof recovers one real root while another course fork needing a rook-saving
+tempo remains unproved. See `benchmarks/tactical-relevance/fork-repair-review.md`
+for engine witnesses, rejected drafts, broader recall/accuracy and proof limits.
+
+## Previous package: adapter 118 / live pipeline 123
 
 Source `1f7360b7` is packaged in the standalone executable, including checking
 pawn-capture retention, the pawn-trade cause safeguard and root-only pawn
