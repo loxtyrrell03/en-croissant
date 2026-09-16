@@ -20,6 +20,7 @@ import { checkingCombinationCases, promotionCaptureForkCases } from "../../src/u
 import { checkingPawnRetentionCases } from "../../src/utils/tests/fixtures/checkingPawnRetention.ts";
 import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "../../src/utils/tests/fixtures/checkingPawnFollowup.ts";
 import { persistentPawnCases } from "../../src/utils/tests/fixtures/persistentPawnCapture.ts";
+import { checkingPawnPreparationCases } from "../../src/utils/tests/fixtures/checkingPawnPreparation.ts";
 import { tablebaseCases } from "../../src/utils/tests/fixtures/tablebaseRelevance.ts";
 import { directMaterialPayoffCases, reflectPayoff } from "../../src/utils/tests/fixtures/directMaterialPayoff.ts";
 import {
@@ -107,6 +108,7 @@ test(
     const { castlingAliasCases } = await import("../../src/utils/tests/fixtures/castlingRelevance.ts");
     const { matingInterferenceCases, reflectMatingInterference } = await import("../../src/utils/tests/fixtures/matingInterference.ts");
     const cases = [
+      ...checkingPawnPreparationCases.map(row => ({...row,name:`checking pawn preparation: ${row.id}`,expectedPrimary:row.positive?["forcingAttack"]:[],expectedArrows:row.positive?[["h3","c8"],["c8","e8"]]:[]})),
       ...persistentPawnCases.map(row => ({...row,name:`persistent pawn: ${row.id}`,expectedPrimary:row.positive?["hangingPiece"]:[],expectedArrows:row.positive?[[row.pvUci[0].slice(0,2),row.pvUci[0].slice(2,4)]]:[]})),
       ...checkingPawnRetentionCases.map(row => ({...row,name:`checking pawn retention: ${row.id}`,variations:[{pvUci:row.pvUci,cp:0,depth:16}],expectedPrimary:row.positive?["hangingPiece"]:[],expectedArrows:row.positive?[["c7","c6"]]:[]})),
       ...checkingPawnFollowupCases.map(row => ({...row,name:`pawn follow-up: ${row.id}`,pvUci:checkingPawnFollowupLine,variations:[{pvUci:checkingPawnFollowupLine,cp:0,depth:16}],expectedPrimary:row.positive?["hangingPiece"]:[],expectedArrows:row.positive?[["c7","c6"]]:[]})),

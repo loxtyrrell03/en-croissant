@@ -1,0 +1,378 @@
+{
+  "scope": "Public constructed king-flight control derived from Lichess 49h84. Removing the h5 pawn refutes the mating mechanism but preserves a forcing pawn gain. Centipawns are side-to-move full-position engine estimates, not local material certificates. No accuracy score is inferred; no owner or paid-course position is included.",
+  "requested": 3,
+  "completed": 3,
+  "searches": [
+    {
+      "id": "king-flight:best",
+      "fen": "8/4R1p1/p4k2/1b1p1p2/1P4r1/2P3P1/3K4/4R3 w - - 2 49",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1e6",
+            "f6g5",
+            "e7g7",
+            "g5h5",
+            "g7g4",
+            "h5g4",
+            "d2e3",
+            "g4g5",
+            "e6d6",
+            "b5c4",
+            "d6d8",
+            "g5g6"
+          ],
+          "pvSan": [
+            "R1e6+",
+            "Kg5",
+            "Rxg7+",
+            "Kh5",
+            "Rxg4",
+            "Kxg4",
+            "Ke3",
+            "Kg5",
+            "Rd6",
+            "Bc4",
+            "Rd8",
+            "Kg6"
+          ],
+          "cp": 438,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "e1e3",
+            "g7g6",
+            "e7e6",
+            "f6g5",
+            "e6d6",
+            "b5c4",
+            "d2e1",
+            "g5h5",
+            "e1f2",
+            "g4e4",
+            "f2f3",
+            "g6g5",
+            "e3e4",
+            "d5e4",
+            "f3f2"
+          ],
+          "pvSan": [
+            "R1e3",
+            "g6",
+            "R7e6+",
+            "Kg5",
+            "Rd6",
+            "Bc4",
+            "Ke1",
+            "Kh5",
+            "Kf2",
+            "Re4",
+            "Kf3",
+            "g5",
+            "Rxe4",
+            "dxe4+",
+            "Kf2"
+          ],
+          "cp": 104,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "e1e5",
+            "g7g6",
+            "e7e6",
+            "f6f7",
+            "e6d6",
+            "g4g3",
+            "e5d5",
+            "f5f4",
+            "d5d4",
+            "g3g2",
+            "d2e1",
+            "g2e2",
+            "e1d1"
+          ],
+          "pvSan": [
+            "R1e5",
+            "g6",
+            "R7e6+",
+            "Kf7",
+            "Rd6",
+            "Rxg3",
+            "Rexd5",
+            "f4",
+            "Rd4",
+            "Rg2+",
+            "Ke1",
+            "Re2+",
+            "Kd1"
+          ],
+          "cp": 89,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "forcingAttack",
+            "label": "Forcing Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1e6",
+            "value": 100,
+            "evidence": "R1e6+ starts a checking attack that wins material or mates against every legal reply. After Kg5, Rxg7+ Kh5 Rxg4 wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "forcingAttack",
+            "label": "Forcing Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1e6",
+            "value": 100,
+            "evidence": "R1e6+ starts a checking attack that wins material or mates against every legal reply. After Kg5, Rxg7+ Kh5 Rxg4 wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "e7g7",
+            "value": 100,
+            "evidence": "Rxg7+ skewers the king on g5 and the rook on g4. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Skewer Payoff",
+            "source": "available",
+            "confidence": "high",
+            "ply": 5,
+            "moveUci": "g7g4",
+            "actor": "white",
+            "relevance": "secondary",
+            "evidence": "Rxg4 collects the rook on g4, the material payoff of the earlier skewer (Rxg7+)."
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-129"
+      }
+    },
+    {
+      "id": "king-flight:held",
+      "fen": "8/4R1p1/p4k2/1b1p1p2/1P4r1/2P3P1/3K4/4R3 w - - 2 49",
+      "searchMove": "e1e6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1e6",
+            "f6g5",
+            "e7g7",
+            "g5h5",
+            "g7g4",
+            "h5g4",
+            "d2e3",
+            "g4g5",
+            "e6e5",
+            "b5c4",
+            "e5e8",
+            "g5f6",
+            "e3f4",
+            "f6f7",
+            "e8d8",
+            "f7e6",
+            "d8f8",
+            "c4d3",
+            "f8e8",
+            "e6f6"
+          ],
+          "pvSan": [
+            "R1e6+",
+            "Kg5",
+            "Rxg7+",
+            "Kh5",
+            "Rxg4",
+            "Kxg4",
+            "Ke3",
+            "Kg5",
+            "Re5",
+            "Bc4",
+            "Re8",
+            "Kf6",
+            "Kf4",
+            "Kf7",
+            "Rd8",
+            "Ke6",
+            "Rf8",
+            "Bd3",
+            "Re8+",
+            "Kf6"
+          ],
+          "cp": 434,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "forcingAttack",
+            "label": "Forcing Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1e6",
+            "value": 100,
+            "evidence": "R1e6+ starts a checking attack that wins material or mates against every legal reply. After Kg5, Rxg7+ Kh5 Rxg4 wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "forcingAttack",
+            "label": "Forcing Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1e6",
+            "value": 100,
+            "evidence": "R1e6+ starts a checking attack that wins material or mates against every legal reply. After Kg5, Rxg7+ Kh5 Rxg4 wins material. The continuation depends on the defence; later pins and forks belong to their actual positions, not the opening check.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "e7g7",
+            "value": 100,
+            "evidence": "Rxg7+ skewers the king on g5 and the rook on g4. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Skewer Payoff",
+            "source": "available",
+            "confidence": "high",
+            "ply": 5,
+            "moveUci": "g7g4",
+            "actor": "white",
+            "relevance": "secondary",
+            "evidence": "Rxg4 collects the rook on g4, the material payoff of the earlier skewer (Rxg7+)."
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-129"
+      }
+    },
+    {
+      "id": "king-flight:answer0",
+      "fen": "8/4R1p1/p3R3/1b1p1pk1/1P4r1/2P3P1/3K4/8 w - - 4 50",
+      "searchMove": "e7g7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e7g7",
+            "g5h5",
+            "g7g4",
+            "h5g4",
+            "d2e3",
+            "b5c4",
+            "e6g6",
+            "g4h5",
+            "g6g7",
+            "h5h6",
+            "g7e7",
+            "h6g5",
+            "e7e8",
+            "c4b5",
+            "e8g8",
+            "g5f6",
+            "e3f4"
+          ],
+          "pvSan": [
+            "Rxg7+",
+            "Kh5",
+            "Rxg4",
+            "Kxg4",
+            "Ke3",
+            "Bc4",
+            "Rg6+",
+            "Kh5",
+            "Rg7",
+            "Kh6",
+            "Re7",
+            "Kg5",
+            "Re8",
+            "Bb5",
+            "Rg8+",
+            "Kf6",
+            "Kf4"
+          ],
+          "cp": 455,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e7g7",
+            "value": 100,
+            "evidence": "Rxg7+ skewers the king on g5 and the rook on g4. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e7g7",
+            "value": 100,
+            "evidence": "Rxg7+ skewers the king on g5 and the rook on g4. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Skewer Payoff",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "g7g4",
+            "actor": "white",
+            "relevance": "secondary",
+            "evidence": "Rxg4 collects the rook on g4, the material payoff of the earlier skewer (Rxg7+)."
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-129"
+      }
+    }
+  ]
+}

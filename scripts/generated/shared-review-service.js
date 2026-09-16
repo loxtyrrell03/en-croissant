@@ -10155,6 +10155,16 @@ function filterCompensatedRootCaptures(fen, line, motifs, previousFen, previousM
 	const compensated = isCompensatedContinuationCapture(history, 1);
 	return motifs.flatMap((motif) => {
 		if (compensated && motif.id === "hangingPiece" && motif.ply === 1) return [];
+		if (motif.id === "forcingAttack" && motif.ply === 1 && history[0].capture >= VALUE.knight && (motif.value ?? Infinity) < VALUE.knight) {
+			const steps = replayTacticalLine(fen, line);
+			const proof = proveCheckingCombination(steps);
+			if (proof?.pawnPayoff && proof.gain <= history[0].capture) {
+				const index = steps.findIndex((step, ply) => ply >= 2 && ply <= 6 && step.before.turn === root.before.turn && step.capture === VALUE.pawn);
+				let target = steps[index]?.move.to;
+				for (const step of steps.slice(1, index).reverse()) if (step.before.turn !== root.before.turn && step.move.to === target) target = step.move.from;
+				if (target === history[0].move.to && root.before.board.get(target)?.role === "pawn") return [];
+			}
+		}
 		const contextual = motif.ply === 1 ? winningRecaptureEvidence(history, 1, motif) : motif;
 		return contextual ? [contextual] : [];
 	});
@@ -11793,28 +11803,36 @@ function proveCheckingMaterialAttack(steps, nodeLimit = 16384) {
 var mixedCheckingAttackCache = /* @__PURE__ */ new Map();
 var checkingCombinationCache = /* @__PURE__ */ new Map();
 /** A non-sacrificial opening check can still lead to a mixed combination.
-* The supplied line only nominates a short checking route to a piece capture.
+* The supplied line only nominates a short checking route to a material capture.
 * All replies are checked independently, including promotion captures and one
-* quiet mating setup exploiting an absolute pin. New allies join with check. */
+* quiet mating setup exploiting an absolute pin. New allies join with check.
+* Preserve the stronger piece-capture route first; a short pawn payoff may
+* nominate a smaller, still independently proved concession. A longer king
+* attack cannot borrow an incidental pawn grab absent from its supplied line. */
 function proveCheckingCombination(steps, nodeLimit = 32768, onFailure) {
 	const root = steps[0];
 	if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture || root.move.promotion || root.before.isCheck() || !root.after.isCheck() || root.after.isEnd() || !root.after.ctx().checkers.has(root.move.to)) return null;
-	const payoff = steps.findIndex((step, index) => index >= 2 && index <= 8 && step.before.turn === root.before.turn && step.capture >= VALUE.knight);
-	if (payoff < 0 || steps.slice(0, payoff).some((step) => step.before.turn === root.before.turn && !step.after.isCheck())) return null;
+	const piecePayoff = steps.findIndex((step, index) => index >= 2 && index <= 8 && step.before.turn === root.before.turn && step.capture >= VALUE.knight);
+	const validRoute = (index) => index >= 0 && !steps.slice(0, index).some((step) => step.before.turn === root.before.turn && !step.after.isCheck());
+	const pawnPayoff = steps.findIndex((step, index) => index >= 2 && index <= 6 && step.before.turn === root.before.turn && step.capture === VALUE.pawn);
+	const payoff = validRoute(piecePayoff) ? piecePayoff : pawnPayoff;
+	if (!validRoute(payoff)) return null;
+	const minimumGain = payoff === piecePayoff ? 300 : VALUE.pawn;
 	const hints = steps.slice(0, payoff + 1).filter((step) => step.before.turn === root.before.turn).map((step) => step.uci);
-	const key = `${makeFen(root.before.toSetup())}:${root.uci}:${hints}`;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}:${hints}:${minimumGain}`;
 	if (!onFailure && nodeLimit === 32768 && checkingCombinationCache.has(key)) return checkingCombinationCache.get(key);
 	const budget = { nodes: nodeLimit };
 	const result = computeMixedCheckingAttack(root, nodeLimit, void 0, {
 		active: [root.move.to],
-		minimumGain: 300,
+		minimumGain,
 		budget,
 		onFailure,
 		checkingCombination: { hints }
 	});
 	const proof = result ? {
 		...result,
-		visits: nodeLimit - budget.nodes
+		visits: nodeLimit - budget.nodes,
+		...minimumGain === VALUE.pawn ? { pawnPayoff: true } : {}
 	} : null;
 	if (!onFailure && nodeLimit === 32768) {
 		checkingCombinationCache.set(key, proof);
@@ -18773,6 +18791,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	const countercapture = candidates.some((m) => m.id === "hangingPiece" && m.ply === 1) ? compensatedLooseCapture(root, captureThreshold) : null;
 	const matingCompensation = !countercapture && candidates.some((m) => m.id === "hangingPiece" && m.ply === 1) ? proveMatingCaptureCompensation(root, 8192, captureThreshold) : null;
 	const normalizedCandidates = normalizeMatingPayoffs(steps, candidates.flatMap((m) => {
+		if (m.id === "forcingAttack" && m.ply === 1) return filterCompensatedRootCaptures(fen, line, [m], context?.previousFen, context?.previousMoveUci);
 		if (matingCompensation && m.id === "hangingPiece" && m.ply === 1) return [];
 		if (!countercapture || m.id !== "hangingPiece" || m.ply !== 1) return [m];
 		return filterCompensatedRootCaptures(fen, line, [m], context?.previousFen, context?.previousMoveUci).filter((entry) => entry.label === "Countercapture");
@@ -20147,7 +20166,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 128;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 129;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

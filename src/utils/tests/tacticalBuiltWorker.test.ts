@@ -332,6 +332,18 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("exposed pawns and more importan
     }
 },30000);
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("checking pawn preparations survive the compiled worker boundary", async () => {
+    const { checkingPawnPreparationCases } = await import("./fixtures/checkingPawnPreparation");
+    for (const row of checkingPawnPreparationCases) for (const reflected of [false, true]) {
+        const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci: reflected ? row.pvUci.map(reflectMixedForkMove) : row.pvUci,
+            depth: 16, engineName: "Constructed" };
+        const { scan } = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(scan.motifs.map(m => m.id)).toEqual(row.positive ? ["forcingAttack"] : []);
+    }
+}, 30000);
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("complete pawn histories survive the compiled worker boundary", async () => {
     const { persistentPawnCases } = await import("./fixtures/persistentPawnCapture");
     for (const row of persistentPawnCases) {
