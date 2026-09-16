@@ -2,24 +2,30 @@
 // legal position, including quiet moves and the opponent's opportunities.
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { existsSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { PgnParser, startingPosition } from "chessops/pgn";
 import { makeFen } from "chessops/fen";
 import { parseSan, makeSan } from "chessops/san";
 import { makeUci } from "chessops/util";
 import { pathToFileURL } from "node:url";
 import { privateReportPath } from "./private-pgn-sample.mjs";
-export function prepareChesscomRecallSample(raw, source, count = 3) {
+export function prepareChesscomRecallSample(raw, source, count = 3, excludedGameIds = []) {
   const match = source.match(
     /^https:\/\/api\.chess\.com\/pub\/player\/([a-zA-Z0-9_-]+)\/games\/\d{4}\/\d{2}$/,
   );
   assert(match, "Use a fixed monthly Chess.com archive");
   assert(Number.isInteger(count) && count > 0 && count <= 10);
+  assert(
+    Array.isArray(excludedGameIds) &&
+      excludedGameIds.every((id) => typeof id === "string" && /^\d+$/.test(id)),
+    "Exclude only explicit game IDs from a frozen sample",
+  );
+  const excluded = new Set(excludedGameIds);
   const owner = match[1].toLowerCase(),
     archive = JSON.parse(raw);
   assert(Array.isArray(archive.games));
   const selected = archive.games
-    .filter((g) => g.rules === "chess")
+    .filter((g) => g.rules === "chess" && !excluded.has(g.url.split("/").at(-1)))
     .sort((a, b) => b.end_time - a.end_time || a.url.localeCompare(b.url))
     .slice(0, count);
   assert(
@@ -77,7 +83,8 @@ export function prepareChesscomRecallSample(raw, source, count = 3) {
       });
   }
   return {
-    scope: `Latest ${count} standard games in the fixed archive, by end time, before any engine/classifier output; all plies retained. No outcome, rating or tactical filter. A development sample, not an accuracy estimate. Headers and clocks omitted.`,
+    scope: `Latest ${count} eligible standard games in the fixed archive, by end time, before any engine/classifier output; all plies retained. Only explicitly listed earlier games are excluded. No outcome, rating or tactical filter. A development sample, not an accuracy estimate. Headers and clocks omitted.`,
+    excludedGameIds: [...excluded].sort(),
     source,
     sourceSha256: createHash("sha256").update(raw).digest("hex"),
     archiveGames: archive.games.length,
@@ -86,16 +93,30 @@ export function prepareChesscomRecallSample(raw, source, count = 3) {
   };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const [source, output, countText = "3"] = process.argv.slice(2);
+  const [source, output, countText = "3", earlierSamplePath] = process.argv.slice(2);
   assert(output, "Supply a new private output file");
   const target = privateReportPath(output);
   assert(!existsSync(target), "Do not overwrite the frozen sample");
   assert(
     /^https:\/\/api\.chess\.com\/pub\/player\/[a-zA-Z0-9_-]+\/games\/\d{4}\/\d{2}$/.test(source),
   );
+  let excludedGameIds = [];
+  if (earlierSamplePath) {
+    const earlier = JSON.parse(readFileSync(privateReportPath(earlierSamplePath), "utf8"));
+    assert(
+      earlier.source === source && Array.isArray(earlier.games),
+      "Earlier sample must use the same archive",
+    );
+    excludedGameIds = [...(earlier.excludedGameIds ?? []), ...earlier.games.map((game) => game.id)];
+  }
   const response = await fetch(source, { signal: AbortSignal.timeout(30000) });
   assert(response.ok, `Archive HTTP ${response.status}`);
-  const sample = prepareChesscomRecallSample(await response.text(), source, Number(countText));
+  const sample = prepareChesscomRecallSample(
+    await response.text(),
+    source,
+    Number(countText),
+    excludedGameIds,
+  );
   writeFileSync(target, JSON.stringify(sample, null, 2), { flag: "wx" });
   console.log(
     JSON.stringify({

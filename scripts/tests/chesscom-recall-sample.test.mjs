@@ -65,3 +65,28 @@ test("counts must be bounded integers and URLs must select a fixed archive", () 
     prepareChesscomRecallSample(JSON.stringify({ games: [game(1)] }), "https://example.com/"),
   );
 });
+
+test("a follow-up excludes frozen game IDs before selection, never classifier outcomes", () => {
+  const raw = JSON.stringify({ games: [game(4), game(3), game(2), game(1)] });
+  const first = prepareChesscomRecallSample(raw, source, 2);
+  const next = prepareChesscomRecallSample(
+    raw,
+    source,
+    2,
+    first.games.map((row) => row.id),
+  );
+  assert.deepEqual(
+    first.games.map((row) => row.id),
+    ["4", "3"],
+  );
+  assert.deepEqual(
+    next.games.map((row) => row.id),
+    ["2", "1"],
+  );
+  assert.deepEqual(next.excludedGameIds, ["3", "4"]);
+  assert.equal(next.cases.length, 6);
+  assert.equal(next.sourceSha256, first.sourceSha256);
+  assert.throws(() => prepareChesscomRecallSample(raw, source, 2, ["not-a-game-id"]));
+  assert.throws(() => prepareChesscomRecallSample(raw, source, 2, [1]));
+  assert.throws(() => prepareChesscomRecallSample(raw, source, 2, ["1", "2", "3", "4"]));
+});
