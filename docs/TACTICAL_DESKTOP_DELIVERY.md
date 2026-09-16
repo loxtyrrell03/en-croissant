@@ -1,6 +1,35 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 113 / live pipeline 118
+## Current package: adapter 114 / live pipeline 119
+
+Source `81e1fdff` is packaged in the standalone executable, including missed
+alternative opportunities, separate review branches and preserved before-search
+candidate evidence. The detached clean checkout `en-tactical-desktop-81e1fdff`
+excludes unrelated primary-checkout work. Its TypeScript check and 8,861-module
+frontend pass; the native release build takes 2m04s with 22 existing warnings.
+The generated route-tree change has no semantic diff.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,086,528 bytes;
+  SHA-256 `e1e69cae61dd95a89c20599e1cc71962eb63f8fabd29dd68a4abef779680d3f4`.
+- Worker: `liveTactics.worker-Drwm4Atf.js`; SHA-256
+  `8b70a99d6f091e56109bba06ba5c43374b79fc5799fa53dc5dc06a22eccc0034`.
+  Clean-package bytes match the tested artifact. The x64 PE contains this asset
+  key and `OpeningReviewWorkspace-AZ0ZRIaE.js`; its dependency receipt identifies
+  both assets and the clean checkout.
+- Previous adapter-113 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-adapter114/en-croissant-fork.exe`,
+  SHA-256 `1f1e8d065e92843bbfbe9cf6faf34c0f3679358e3aa7dabcaa547cd990dd6b14`.
+
+No app was running before or after the build; none was launched/restarted. The
+Dev App shortcut remains on the primary source workflow. Owner games, settings,
+engine installation and phone service are unchanged. Phone/backend source is
+committed but not deployed to the phone runtime. This is package/linkage proof,
+not native interaction or startup certification. Legacy single-line cards and
+alternative practice-answer acceptance retain their documented limits; see
+`benchmarks/tactical-relevance/missed-alternative-review.md` for the one recovered
+owner-game lesson, the rejected noisy draft and wider remaining gaps.
+
+## Previous package: adapter 113 / live pipeline 118
 
 Source `1a41738d` is packaged in the standalone executable, including the
 engine-supported alternative capture cause, separate review line, persisted
