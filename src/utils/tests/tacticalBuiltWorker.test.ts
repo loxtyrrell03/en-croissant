@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Worker as NodeWorker } from "node:worker_threads";
@@ -108,6 +109,30 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
         vi.unstubAllGlobals();
     }
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_TARGETED_REPLAY)("targeted candidate scans survive the compiled production controller", async () => {
+    const report = JSON.parse(readFileSync(process.env.TACTICAL_TARGETED_REPLAY!, "utf8"));
+    expect(report.results.length).toBeGreaterThan(0);
+    const observed = [];
+    for (const row of report.results) {
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, row.scanInput);
+        expect(result.scan).toEqual(buildLiveTacticalScan(row.scanInput));
+        expect(result.scan).toEqual(row.scan);
+        expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+        observed.push({ id: row.id, startupMs: result.startupMs, classificationMs: result.classificationMs,
+            primary: result.scan.motifs.map(m => m.id), extra: result.scan.variations.filter(v => v.origin === "targeted").map(v => v.motifs.map(m => m.id)) });
+    }
+    if (process.env.TACTICAL_TARGETED_WORKER_REPORT) {
+        const { privateReportPath } = await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
+        writeFileSync(privateReportPath(process.env.TACTICAL_TARGETED_WORKER_REPORT), JSON.stringify({
+            scope: "Actual compiled worker/controller parity; timings exclude engine, HTTP loading and native UI.",
+            workerSha256: createHash("sha256").update(readFileSync(process.env.TACTICAL_BUILT_WORKER!)).digest("hex"),
+            replayFrom: process.env.TACTICAL_TARGETED_REPLAY, cases: observed,
+        }, null, 2), {flag:"wx"});
+    }
+    console.log({ count: observed.length, maxStartupMs: Math.max(...observed.map(r => r.startupMs)),
+        maxClassificationMs: Math.max(...observed.map(r => r.classificationMs)) });
+}, 120000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("costly pawn recaptures survive the production controller", async () => {
     for (const row of costlyPawnRecaptureCases) for (const reflected of [false, true]) {

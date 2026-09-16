@@ -40,6 +40,9 @@ export function TacticalScanResult({
         Number(b.multipv === scan.preferredMultipv) - Number(a.multipv === scan.preferredMultipv),
     );
   const principalLine = scan.lineSan.length > 0 ? scan.lineSan : scan.lineUci;
+  const quietMain = scan.preferredReason === "additional-tactical-option"
+    ? scan.variations.find(v => v.multipv === 1 && !v.motifs.length && !v.timeline.length)
+    : undefined;
   const principal =
     scan.variations.find((variation) => variation.multipv === scan.preferredMultipv) ??
     scan.variations.find((variation) => variation.multipv === 1) ??
@@ -57,6 +60,11 @@ export function TacticalScanResult({
   return (
     <ScrollArea flex={1} offsetScrollbars>
       <Stack gap="sm" aria-live="polite">
+        {scan.supplementalSearchIncomplete && (
+          <Text size="sm" c="dimmed">
+            Main analysis is ready. The additional candidate check was incomplete, so some tactical options may be missing.
+          </Text>
+        )}
         {scan.motifs.length > 0 ? (
           <Alert
             color="orange"
@@ -83,6 +91,8 @@ export function TacticalScanResult({
               <Text size="sm" mt="xs">
                 {scan.preferredReason === "larger-material-lesson"
                   ? "Showing a strong alternative with a clearer material-winning lesson. The engine's first choice is still listed below."
+                  : scan.preferredReason === "additional-tactical-option"
+                    ? "This separately checked alternative has an immediate tactical idea. It is not the engine's first choice."
                   : "The engine's first line repeats this position before reaching the same tactic. Showing its separately analysed immediate alternative."}
               </Text>
             )}
@@ -149,7 +159,7 @@ export function TacticalScanResult({
                     )}
                   </Group>
                   <Badge variant="light">
-                    {variation.multipv === 1 ? "Main line" : "Alternative"}
+                    {variation.origin === "targeted" ? "Additional option" : variation.multipv === 1 ? "Main line" : "Alternative"}
                   </Badge>
                   {onPreviewChange && variation.motifs.length > 0 && (
                     <Button
@@ -191,17 +201,22 @@ export function TacticalScanResult({
           );
         })}
 
-        {tacticalVariations.length === 0 && principalLine.length > 0 && (
+        {(tacticalVariations.length === 0 || quietMain) && principalLine.length > 0 && (
           <Paper withBorder p="sm" radius="md">
             <Stack gap={6}>
               <Text fw={700} size="sm">
-                Engine line
+                {quietMain ? "Engine's first choice" : "Engine line"}
               </Text>
               <Box>
                 <Code style={{ whiteSpace: "normal", lineHeight: 1.7 }}>
-                  {principalLine.join("  ")}
+                  {(quietMain ? (quietMain.lineSan.length ? quietMain.lineSan : quietMain.lineUci) : principalLine).join("  ")}
                 </Code>
               </Box>
+              {quietMain && onPreviewChange && (
+                <Button size="compact-xs" variant="subtle" onClick={() => preview(quietMain.multipv)}>
+                  Show main line
+                </Button>
+              )}
             </Stack>
           </Paper>
         )}

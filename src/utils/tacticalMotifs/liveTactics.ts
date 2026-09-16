@@ -152,8 +152,9 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 136;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 137;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
+export const LIVE_TACTICAL_EXTRA_CANDIDATES = 2;
 
 export type LiveTacticalBoardArrow = {
     from: string;
@@ -172,6 +173,7 @@ export type LiveTacticalBoardLabel = {
 };
 
 export type LiveTacticalVariation = {
+    origin?: "targeted";
     multipv: number;
     depth: number;
     motifs: TacticalMotifEvidence[];
@@ -183,6 +185,7 @@ export type LiveTacticalVariation = {
 };
 
 export type LiveTacticalVariationInput = {
+    origin?: "targeted";
     multipv?: number;
     depth?: number;
     pvUci: string[];
@@ -193,6 +196,7 @@ export type LiveTacticalVariationInput = {
 };
 
 export type LiveTacticalScan = {
+    supplementalSearchIncomplete?: boolean;
     fen: string;
     side: "white" | "black";
     engineName: string;
@@ -207,7 +211,7 @@ export type LiveTacticalScan = {
     /** A separately analysed immediate alternative chosen for teaching priority.
      * Engine ranks/lines remain intact; this only selects the initial preview. */
     preferredMultipv?: number;
-    preferredReason?: "larger-material-lesson";
+    preferredReason?: "larger-material-lesson" | "additional-tactical-option";
 };
 
 export type LiveTacticalScanInput = {
@@ -221,6 +225,9 @@ export type LiveTacticalScanInput = {
     previousFen?: string | null;
     previousMoveUci?: string | null;
     variations?: LiveTacticalVariationInput[] | null;
+    /** Separately searched legal roots, not ranks four/five of the main search. */
+    supplementalVariations?: LiveTacticalVariationInput[] | null;
+    supplementalSearchIncomplete?: boolean;
 };
 
 export function selectLiveTacticalScanLine(lines: BestMoves[] | null | undefined) {
@@ -443,6 +450,7 @@ function buildLiveTacticalVariation(
 
     return {
         multipv: variation.multipv ?? fallbackMultipv,
+        ...(variation.origin ? {origin: variation.origin} : {}),
         depth: variation.depth ?? input.depth,
         motifs,
         timeline: classification.timeline ?? motifs,
@@ -496,7 +504,7 @@ function aggregateVariationLabels(variations: ClassifiedLiveTacticalVariation[])
 }
 
 export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTacticalScan {
-    const candidateInputs =
+    const mainInputs =
         input.variations && input.variations.length > 0
             ? input.variations.slice(0, LIVE_TACTICAL_SCAN_MULTIPV)
             : [
@@ -507,7 +515,18 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
                       pvSan: input.pvSan,
                   },
               ];
-    const best = candidateInputs.find((v) => (v.multipv ?? 1) === 1) ?? candidateInputs[0];
+    const best = mainInputs.find((v) => (v.multipv ?? 1) === 1) ?? mainInputs[0];
+    const roots = new Set(mainInputs.map(v => v.pvUci[0]));
+    const hasScore = (v: LiveTacticalVariationInput) =>
+        v.mate != null ? Number.isInteger(v.mate) && v.mate !== 0 : Number.isFinite(v.cp);
+    const supplemental = (input.supplementalVariations ?? []).filter(v => {
+        const root = v.pvUci[0];
+        if (!root || roots.has(root) || !Number.isInteger(v.depth) || v.depth! < Math.max(16, best.depth ?? input.depth)) return false;
+        if (!hasScore(best) || !hasScore(v) || replayTacticalLine(input.fen, [root]).length !== 1) return false;
+        roots.add(root);
+        return true;
+    }).slice(0, LIVE_TACTICAL_EXTRA_CANDIDATES).map((v, i) => ({...v, multipv: LIVE_TACTICAL_SCAN_MULTIPV + i + 1, origin: "targeted" as const}));
+    const candidateInputs = [...mainInputs, ...supplemental];
     const viableInputs = candidateInputs.filter((candidate) => {
         if (candidate === best) return true;
         // An immediate finish does not need longer alternative mating stories.
@@ -520,17 +539,28 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
         // or a close choice. A losing alternative cannot donate tactical tags.
         return candidate.cp >= best.cp - 80 || (best.cp >= 200 && candidate.cp >= 200);
     });
-    const variations = viableInputs.map((variation, index) =>
+    const classifiedVariations = viableInputs.map((variation, index) =>
         buildLiveTacticalVariation(input, variation, index + 1),
     );
     const enginePrimary =
-        variations.find((variation) => variation.multipv === 1) ??
-        variations[0] ??
+        classifiedVariations.find((variation) => variation.multipv === 1) ??
+        classifiedVariations[0] ??
         buildLiveTacticalVariation(
             input,
             { multipv: 1, depth: input.depth, pvUci: input.pvUci, pvSan: input.pvSan },
             1,
         );
+    // Extra searches recover missing ideas, not a menu of substantially weaker
+    // winning moves beside an already verified immediate lesson. Preserve the
+    // existing main-search alternatives and the broad winning-outcome admission
+    // when the principal line has no immediate high-confidence explanation.
+    const principalIsImmediate = enginePrimary.motifs.some(m =>
+        m.confidence === "high" && m.ply === 1 && m.moveUci === enginePrimary.lineUci[0]);
+    const variations = classifiedVariations.filter(variation => {
+        if (!principalIsImmediate || variation.origin !== "targeted") return true;
+        const candidate = viableInputs.find(v => v.multipv === variation.multipv);
+        return best.mate != null || candidate?.mate != null || best.cp == null || candidate?.cp == null || candidate.cp >= best.cp - 80;
+    });
     const immediate = immediateAlternativeAfterCycle(
         input.fen,
         enginePrimary,
@@ -538,7 +568,10 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
         viableInputs,
     );
     const materialAlternative = strongerAlternativeToPawnCapture(enginePrimary, variations, viableInputs);
-    const primary = immediate ?? materialAlternative ?? enginePrimary;
+    const additional = enginePrimary.motifs.length === 0 ? variations.find(v =>
+        v.origin === "targeted" && v.motifs[0]?.confidence === "high" && v.motifs[0]?.ply === 1 &&
+        v.motifs[0]?.moveUci === v.lineUci[0]) : undefined;
+    const primary = immediate ?? materialAlternative ?? additional ?? enginePrimary;
     const motifs = primary.motifs.slice(0, 1);
     const publicVariations = variations.map<LiveTacticalVariation>(
         ({ motifClassifierVersion: _version, ...variation }) => variation,
@@ -563,9 +596,10 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
         ]),
         variations: publicVariations,
         motifClassifierVersion: primary.motifClassifierVersion,
+        ...(input.supplementalSearchIncomplete ? { supplementalSearchIncomplete: true } : {}),
         ...(immediate ? { preferredMultipv: immediate.multipv } : materialAlternative ? {
             preferredMultipv: materialAlternative.multipv, preferredReason: "larger-material-lesson" as const,
-        } : {}),
+        } : additional ? {preferredMultipv: additional.multipv, preferredReason: "additional-tactical-option" as const} : {}),
     };
 }
 

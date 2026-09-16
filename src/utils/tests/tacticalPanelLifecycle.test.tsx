@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   killEngine: vi.fn(),
   stopEngine: vi.fn(),
   classify: vi.fn(),
+  nominate: vi.fn(),
   tree: null as any,
   position: {
     fen: "rnbqk2r/p1ppbppp/1p3n2/4N3/2B5/4P3/PPPP1PPP/RNBQK2R w KQkq - 0 5",
@@ -37,6 +38,9 @@ vi.mock("@/utils/engines", () => ({
 vi.mock("../tacticalMotifs/liveTacticsWorker", () => ({
   classifyLiveTacticsInWorker: mocks.classify,
 }));
+vi.mock("../tacticalMotifs/tacticalCandidateMoves", () => ({
+  nominateTacticalCandidateMoves: mocks.nominate,
+}));
 vi.mock("@/components/panels/tactics/TacticalScanResult", () => ({
   TacticalScanResult: () => <div>Verified result</div>,
 }));
@@ -53,6 +57,7 @@ const dispose = vi.fn();
 beforeEach(() => {
   vi.useFakeTimers();
   vi.clearAllMocks();
+  mocks.nominate.mockReturnValue([]);
   mocks.tree = null;
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.stubGlobal(
@@ -98,7 +103,7 @@ beforeEach(() => {
   onScanChange = vi.fn();
 });
 
-function emit(depth: number, progress = (depth / 16) * 100, uciMoves = ["e5f7", "d8e8", "f7h8"]) {
+function emit(depth: number, progress = (depth / 16) * 100, uciMoves = ["e5f7", "d8e8", "f7h8"], searchMoves?: string[]) {
   mocks.listen.mock.calls[0][0]({
     payload: {
       engine: mocks.engines[0].id,
@@ -106,6 +111,7 @@ function emit(depth: number, progress = (depth / 16) * 100, uciMoves = ["e5f7", 
       fen: mocks.position.fen,
       moves: [],
       progress,
+      searchMoves,
       bestLines: [
         {
           depth,
@@ -118,6 +124,110 @@ function emit(depth: number, progress = (depth / 16) * 100, uciMoves = ["e5f7", 
     },
   });
 }
+
+test("the real nominator drives a separate owned search and preserves the main line", async () => {
+  const actual = await vi.importActual<typeof import("../tacticalMotifs/tacticalCandidateMoves")>("../tacticalMotifs/tacticalCandidateMoves");
+  mocks.nominate.mockImplementation(actual.nominateTacticalCandidateMoves);
+  mocks.getBestMoves.mockResolvedValueOnce(mocks.getBestMoves.getMockImplementation()!());
+  mocks.getBestMoves.mockImplementation(() => new Promise(() => {}));
+  await start();
+  const [engine, tab, mode, options] = mocks.getBestMoves.mock.calls[1];
+  expect([engine, tab, mode]).toEqual(mocks.getBestMoves.mock.calls[0].slice(0, 3));
+  expect(options.searchMoves).toContain("c4f7");
+  expect(options.searchMoves).not.toContain("e5f7");
+  expect(options.extraOptions).toContainEqual({ name: "MultiPV", value: "2" });
+  expect(mocks.classify).not.toHaveBeenCalled();
+  expect(mocks.killEngine).not.toHaveBeenCalled();
+  await act(async () => emit(16, 100, ["c4f7", "e8f8"], options.searchMoves));
+  const input = mocks.classify.mock.calls[0][0];
+  expect(input.variations[0].pvUci[0]).toBe("e5f7");
+  expect(input.supplementalVariations[0]).toMatchObject({ pvUci: ["c4f7", "e8f8"], cp: 400, depth: 16 });
+  expect(input.supplementalSearchIncomplete).toBe(false);
+  expect(mocks.killEngine).toHaveBeenCalledTimes(1);
+});
+
+test("late same-board main events cannot impersonate targeted evidence", async () => {
+  mocks.nominate.mockReturnValue([{ moveUci: "c4f7", priority: 1 }]);
+  mocks.getBestMoves.mockResolvedValueOnce(mocks.getBestMoves.getMockImplementation()!());
+  mocks.getBestMoves.mockResolvedValue(null); // Reused native processes reply through events.
+  await start();
+  await act(async () => {
+    emit(16, 100, ["c4f7"]); // Nominated move, but from the old search.
+    emit(16, 100, ["c4f7"], ["e5f7"]); // Different restricted search.
+    emit(16, 100, ["e5f7"], ["c4f7"]); // Engine ignored the restriction.
+  });
+  expect(mocks.classify).not.toHaveBeenCalled();
+  await act(async () => emit(16, 100, ["c4f7"], ["c4f7"]));
+  expect(mocks.classify).toHaveBeenCalledTimes(1);
+});
+
+test("optional candidate work does not restart the original six-second clock", async () => {
+  mocks.nominate.mockReturnValue([{ moveUci: "c4f7", priority: 1 }]);
+  mocks.getBestMoves.mockImplementation(() => new Promise(() => {}));
+  await start();
+  await act(async () => {
+    emit(8);
+    await vi.advanceTimersByTimeAsync(5500);
+    emit(16, 100);
+    emit(15, 99, ["c4f7"], ["c4f7"]);
+    await vi.advanceTimersByTimeAsync(499);
+  });
+  expect(mocks.classify).not.toHaveBeenCalled();
+  await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+  expect(mocks.classify.mock.calls[0][0]).toMatchObject({ depth: 16, supplementalVariations: [], supplementalSearchIncomplete: true });
+  expect(mocks.getBestMoves).toHaveBeenCalledTimes(2);
+});
+
+test("an optional search failure keeps the usable main result without a red error", async () => {
+  mocks.nominate.mockReturnValue([{ moveUci: "c4f7", priority: 1 }]);
+  mocks.getBestMoves.mockResolvedValueOnce(mocks.getBestMoves.getMockImplementation()!());
+  mocks.getBestMoves.mockRejectedValue(new Error("Restricted search unavailable"));
+  await start();
+  expect(mocks.classify.mock.calls[0][0].variations[0].pvUci[0]).toBe("e5f7");
+  expect(mocks.classify.mock.calls[0][0].supplementalSearchIncomplete).toBe(true);
+  expect(container.textContent).not.toContain("Tactical scan failed");
+});
+
+test("time-limited main fallback does not launch optional work", async () => {
+  mocks.nominate.mockReturnValue([{ moveUci: "c4f7", priority: 1 }]);
+  mocks.getBestMoves.mockImplementation(() => new Promise(() => {}));
+  await start();
+  await act(async () => { emit(10); await vi.advanceTimersByTimeAsync(6000); });
+  expect(mocks.getBestMoves).toHaveBeenCalledTimes(1);
+  expect(mocks.nominate).not.toHaveBeenCalled();
+});
+
+test("Black's supplemental scores use the same root-side orientation as its main search", async () => {
+  const { reflectMixedForkFen, reflectMixedForkMove } = await import("./fixtures/mixedTargetFork");
+  const original = mocks.position.fen;
+  try {
+    mocks.position.fen = reflectMixedForkFen(original);
+    const extraMove = reflectMixedForkMove("c4f7");
+    mocks.nominate.mockReturnValue([{ moveUci: extraMove, priority: 1 }]);
+    const line = (move: string, cp: number) => ({ depth: 16, multipv: 1, uciMoves: [move], sanMoves: [], score: { value: { type: "cp", value: cp }, wdl: null } });
+    mocks.getBestMoves.mockResolvedValueOnce([100, [line(reflectMixedForkMove("e5f7"), -450)]]);
+    mocks.getBestMoves.mockResolvedValue([100, [line(extraMove, -400)]]);
+    await start();
+    const input = mocks.classify.mock.calls[0][0];
+    expect(input.variations[0].cp).toBe(450);
+    expect(input.supplementalVariations[0].cp).toBe(400);
+    expect(input.supplementalVariations[0].pvUci).toEqual([extraMove]);
+  } finally { mocks.position.fen = original; }
+});
+
+test("cancelling a targeted search releases its engine and discards its late result", async () => {
+  mocks.nominate.mockReturnValue([{ moveUci: "c4f7", priority: 1 }]);
+  mocks.getBestMoves.mockResolvedValueOnce(mocks.getBestMoves.getMockImplementation()!());
+  let resolveProbe!: (value: any) => void;
+  mocks.getBestMoves.mockImplementation(() => new Promise(resolve => { resolveProbe = resolve; }));
+  await start();
+  await act(async () => root.render(null));
+  onScanChange.mockClear();
+  await act(async () => resolveProbe([100, [{ depth: 16, multipv: 1, uciMoves: ["c4f7"], sanMoves: [], score: { value: { type: "cp", value: 400 } } }]]));
+  expect(mocks.killEngine).toHaveBeenCalledTimes(1);
+  expect(mocks.classify).not.toHaveBeenCalled();
+  expect(onScanChange).not.toHaveBeenCalled();
+});
 
 test("the real panel selector sends the complete selected history, excluding future moves", async () => {
   const { persistentPawnCases } = await import("./fixtures/persistentPawnCapture");

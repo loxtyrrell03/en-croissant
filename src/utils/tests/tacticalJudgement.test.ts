@@ -566,13 +566,24 @@ test.skipIf(!process.env.TACTICAL_JUDGEMENT_ENGINE || !process.env.TACTICAL_TARG
         const { tacticalCandidateDiscoveryFen } = await import("./fixtures/tacticalCandidateDiscovery");
         const output = privateReportPath(process.env.TACTICAL_TARGETED_CANDIDATE_REPORT!);
         expect(existsSync(output)).toBe(false);
-        const inputs = cases.map(row => ({id:row.name,fen:row.fen,why:row.why}));
+        let inputs: {id:string;fen:string;why:string;tacticalHistory?: {fen:string;moves:string[]};previousFen?:string;previousMoveUci?:string}[] = cases.map(row => ({id:row.name,fen:row.fen,why:row.why}));
         inputs.push({id:"Constructed discovery candidates",fen:tacticalCandidateDiscoveryFen,why:"Ng5 opens Bc4 against Qf7, pinned to Kg8; Nxc7 also attacks the two rooks. Both need compensation-aware verification and separate engine assessment."});
         if (process.env.TACTICAL_CANDIDATE_WIDTH_REPLAY) {
             const replay=JSON.parse(readFileSync(process.env.TACTICAL_CANDIDATE_WIDTH_REPLAY,"utf8"));
             const row=replay.results.find((r:any)=>r.id===process.env.TACTICAL_CANDIDATE_WIDTH_CASE);
             if (!row) throw new Error("Missing exact private targeted-candidate case");
             inputs.push({id:row.id,fen:row.fen,why:"Previously reviewed private candidate omission, not a holdout."});
+        }
+        if (process.env.TACTICAL_TARGETED_GAME_REPLAY) {
+            const replay = JSON.parse(readFileSync(process.env.TACTICAL_TARGETED_GAME_REPLAY, "utf8"));
+            if (replay.completed !== replay.results.length) throw new Error("Incomplete owner-game replay");
+            inputs = replay.results.map((row:any) => {
+                const history = row.tacticalHistory;
+                const steps = history ? replayTacticalLine(history.fen, history.moves) : [];
+                const last = steps.at(-1);
+                return { id:row.id, fen:row.fen, why:"Complete previously frozen owner-game sample; new searches, not a held-out accuracy set.",
+                    tacticalHistory:history, previousFen:last ? makeFen(last.before.toSetup()) : undefined, previousMoveUci:last?.uci };
+            });
         }
         const results:any[]=[];
         const selected=process.env.TACTICAL_TARGETED_CANDIDATE_ID ? inputs.filter(row=>row.id===process.env.TACTICAL_TARGETED_CANDIDATE_ID) : inputs;
@@ -588,11 +599,17 @@ test.skipIf(!process.env.TACTICAL_JUDGEMENT_ENGINE || !process.env.TACTICAL_TARG
             const extra=nominations.length?[...(await analyse(process.env.TACTICAL_JUDGEMENT_ENGINE!,input.fen,undefined,16,2,nominations.map(c=>c.moveUci))).values()].sort((a,b)=>a.multipv-b.multipv):[];
             const extraMs=performance.now()-probesAt;
             const trials=extra.map(line=>({line,scan:buildLiveTacticalScan({fen:input.fen,depth:16,engineName:"Stockfish 18: independently restricted candidate",pvUci:main[0].pvUci,variations:[main[0],{...line,multipv:2}]})}));
-            results.push({...input,main,mainMs,nominations,nominationMs,extraMs,trials});
-            writeFileSync(output,JSON.stringify({scope:"Targeted search prototype; nominations are not findings and probe candidates are not unrestricted engine ranks. Not integrated into the live panel.",results},null,2),{flag:results.length===1?"wx":"w"});
+            const scanInput={fen:input.fen,depth:16,engineName:"Stockfish 18: targeted live candidates",pvUci:main[0].pvUci,variations:main,supplementalVariations:extra,
+                ...(input.tacticalHistory ? {tacticalHistory:input.tacticalHistory,previousFen:input.previousFen,previousMoveUci:input.previousMoveUci} : {})};
+            const classificationStart=performance.now();
+            const scan=buildLiveTacticalScan(scanInput);
+            const classificationMs = performance.now()-classificationStart;
+            const mainScan = buildLiveTacticalScan({...scanInput,supplementalVariations:[]});
+            results.push({...input,main,mainMs,nominations,nominationMs,extraMs,trials,scanInput,scan,mainScan,classificationMs});
+            writeFileSync(output,JSON.stringify({scope:"Fresh independently restricted searches through production supplemental classification. Nominations are not findings; extra candidates are not unrestricted engine ranks. Process/search timing is not native panel latency.",results},null,2),{flag:results.length===1?"wx":"w"});
         }
         console.log(results.map(row=>({id:row.id,mainMs:Math.round(row.mainMs),extraMs:Math.round(row.extraMs),nominationMs:Math.round(row.nominationMs),nominations:row.nominations.map((c:any)=>c.moveUci),extra:row.trials.map((trial:any)=>({move:trial.line.pvSan[0],cp:trial.line.cp,mate:trial.line.mate,accepted:trial.scan.variations.length>1,themes:trial.scan.variations[1]?.motifs.map((m:any)=>m.id)}))})));
-    },180000,
+    },600000,
 );
 
 describe("expert tactical judgement with fresh engine lines", () => {

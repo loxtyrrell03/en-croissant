@@ -31,12 +31,14 @@ import {
   hasUsableLiveTacticalFallback,
   isLiveTacticalScanTerminal,
   LIVE_TACTICAL_SCAN_MULTIPV,
+  LIVE_TACTICAL_EXTRA_CANDIDATES,
   selectLiveTacticalScanLines,
   type LiveTacticalScan,
   type LiveTacticalScanInput,
 } from "@/utils/tacticalMotifs/liveTactics";
 import { classifyLiveTacticsInWorker } from "@/utils/tacticalMotifs/liveTacticsWorker";
 import { tacticalHistoryAtPath, type TacticalGameHistory } from "@/utils/tacticalMotifs/gameHistory";
+import { nominateTacticalCandidateMoves } from "@/utils/tacticalMotifs/tacticalCandidateMoves";
 
 const TACTICAL_SCAN_DEPTH = 16;
 const TACTICAL_SCAN_DEBOUNCE_MS = 120;
@@ -203,6 +205,10 @@ function TacticalClassifierPanel({
     let cleanupTimeout: number | null = null;
     let scanTimeout: number | null = null;
     let latestLines: BestMoves[] = [];
+    let primaryLines: BestMoves[] | null = null;
+    let supplementalRoots: string[] = [];
+    let supplementalLines: BestMoves[] = [];
+    let supplementalComplete = false;
 
     setState({ status: "scanning", progress: 0, scan: null, error: null });
     onScanChange(null);
@@ -270,7 +276,16 @@ function TacticalClassifierPanel({
         previousFen: position.previousFen,
         previousMoveUci: position.previousMoveUci,
         tacticalHistory,
-        variations: usableLines.map((line) => ({
+        variations: usableLines.map(toVariation),
+        ...(primaryLines ? {
+          supplementalSearchIncomplete: !supplementalComplete,
+          supplementalVariations: selectLiveTacticalScanLines(
+            supplementalLines, LIVE_TACTICAL_EXTRA_CANDIDATES, TACTICAL_SCAN_DEPTH,
+          ).map(toVariation),
+        } : {}),
+      };
+      function toVariation(line: BestMoves) {
+        return {
           multipv: line.multipv,
           depth: line.depth,
           pvUci: line.uciMoves,
@@ -283,8 +298,8 @@ function TacticalClassifierPanel({
             line.score.value.type === "mate"
               ? line.score.value.value * (position.fen.split(" ")[1] === "b" ? -1 : 1)
               : null,
-        })),
-      };
+        };
+      }
       void classifyLiveTacticsInWorker(input, classificationController.signal, () => {
         if (isCurrentRequest())
           setState({ status: "classifying", progress: 99, scan: null, error: null });
@@ -319,14 +334,28 @@ function TacticalClassifierPanel({
       // Transport/process failure cannot invalidate an already delivered
       // snapshot. Keep the same minimum depth and legal worker verification
       // as the normal time-limited path; never turn worker failures into success.
-      if (finishScan(latestLines, TACTICAL_SCAN_FALLBACK_MIN_DEPTH)) return;
+      if (finishScan(primaryLines ?? latestLines, TACTICAL_SCAN_FALLBACK_MIN_DEPTH)) return;
       // A final event can be queued after a rejected stop/request. The existing
       // grace timer owns completion while stopping, including the error case.
       if (!stopping) failScan(caught);
     };
 
-    const receiveLines = (lines: BestMoves[], progress: number) => {
+    const receiveLines = (lines: BestMoves[], progress: number, supplemental = false) => {
       if (!isCurrentRequest() || classifying) return;
+      if (supplemental !== (primaryLines !== null)) return;
+      if (supplemental) {
+        const usable = selectLiveTacticalScanLines(
+          lines.filter(line => supplementalRoots.includes(line.uciMoves[0])),
+          LIVE_TACTICAL_EXTRA_CANDIDATES,
+          TACTICAL_SCAN_DEPTH,
+        );
+        if (usable.length) supplementalLines = usable;
+        if (isLiveTacticalScanTerminal(progress, usable, TACTICAL_SCAN_DEPTH)) {
+          supplementalComplete = true;
+          finishScan(primaryLines!, TACTICAL_SCAN_DEPTH);
+        }
+        return;
+      }
       if (!engineResponded && lines.some((line) => line.uciMoves.length > 0)) {
         engineResponded = true;
         clearScanTimeout();
@@ -345,12 +374,36 @@ function TacticalClassifierPanel({
       );
       const minimumDepth = stopping ? TACTICAL_SCAN_FALLBACK_MIN_DEPTH : TACTICAL_SCAN_DEPTH;
       if (isLiveTacticalScanTerminal(progress, latestLines, minimumDepth)) {
+        if (!stopping) {
+          const main = selectLiveTacticalScanLines(latestLines, LIVE_TACTICAL_SCAN_MULTIPV, TACTICAL_SCAN_DEPTH);
+          supplementalRoots = nominateTacticalCandidateMoves(
+            position.fen, main.map(line => line.uciMoves[0]),
+          ).map(candidate => candidate.moveUci);
+          if (supplementalRoots.length) {
+            primaryLines = main;
+            // Reuse this request's engine and remaining six-second allowance.
+            // Supplemental failure can never erase its usable main snapshot.
+            void getBestMoves(engine, requestTab, { t: "Depth", c: TACTICAL_SCAN_DEPTH }, {
+              fen: position.fen,
+              moves: [],
+              extraOptions: buildTacticalEngineOptions(engine.settings, LIVE_TACTICAL_EXTRA_CANDIDATES),
+              searchMoves: supplementalRoots,
+            }).then(result => {
+              if (result) receiveLines(result[1], result[0], true);
+            }).catch(handleEngineFailure);
+            return;
+          }
+        }
         finishScan(latestLines, minimumDepth);
       }
     };
 
     const handleScanTimeout = () => {
       if (!isCurrentRequest()) return;
+      if (primaryLines) {
+        finishScan(primaryLines, TACTICAL_SCAN_DEPTH);
+        return;
+      }
       if (
         hasUsableLiveTacticalFallback(latestLines, TACTICAL_SCAN_FALLBACK_MIN_DEPTH) &&
         finishScan(latestLines, TACTICAL_SCAN_FALLBACK_MIN_DEPTH)
@@ -394,7 +447,13 @@ function TacticalClassifierPanel({
               disposeListener();
               return;
             }
-            receiveLines(payload.bestLines, payload.progress);
+            // Same-board late main-search events are not targeted-search
+            // evidence, even if an old candidate happens to match a nomination.
+            const supplemental = primaryLines !== null;
+            if (supplemental
+              ? JSON.stringify(payload.searchMoves) !== JSON.stringify(supplementalRoots)
+              : (payload.searchMoves?.length ?? 0) > 0) return;
+            receiveLines(payload.bestLines, payload.progress, supplemental);
           });
 
           if (!isCurrentRequest()) {

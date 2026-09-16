@@ -1,7 +1,7 @@
-import { Chess } from "chessops/chess";
+import { Chess, castlingSide } from "chessops/chess";
 import { attacks } from "chessops/attacks";
 import { parseFen } from "chessops/fen";
-import { makeUci } from "chessops/util";
+import { kingCastlesTo, makeUci } from "chessops/util";
 import type { NormalMove } from "chessops/types";
 import { tacticalExchangeGain } from "./causalTactics";
 
@@ -45,7 +45,9 @@ export function nominateTacticalCandidateMoves(
                     : [undefined];
             for (const [promotionIndex, promotion] of promotions.entries()) {
                 const move: NormalMove = { from, to, ...(promotion ? { promotion } : {}) };
-                const moveUci = makeUci(move);
+                const castle = castlingSide(before, move);
+                const landing = castle ? {from, to: kingCastlesTo(side, castle)} : move;
+                const moveUci = makeUci(castle && castlingSide(before, landing) === castle && before.isLegal(landing) ? landing : move);
                 if (excluded.has(moveUci)) continue;
                 const after = before.clone();
                 after.play(move);

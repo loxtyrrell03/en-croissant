@@ -38,7 +38,8 @@ use crate::{
         MistakeReviewMoveEvalEntry, PositionQueryJs,
     },
     engine::{
-        parse_fen_and_apply_moves, BaseEngine, EngineLog, EngineOption, EngineReader, GoMode,
+        normalize_uci_search_moves, parse_fen_and_apply_moves, BaseEngine, EngineLog, EngineOption,
+        EngineReader, GoMode,
     },
     error::Error,
     progress::update_progress,
@@ -64,6 +65,7 @@ pub struct EngineProcess {
     // Number of `go` commands whose `bestmove` reply hasn't been consumed yet.
     // Anything above 1 means output currently read belongs to a superseded search.
     pending_gos: u32,
+    restricted_roots: Vec<String>,
 }
 
 impl EngineProcess {
@@ -86,6 +88,7 @@ impl EngineProcess {
                 idle_generation: 0,
                 start: Instant::now(),
                 pending_gos: 0,
+                restricted_roots: Vec::new(),
             },
             reader,
         ))
@@ -104,6 +107,12 @@ impl EngineProcess {
         let setup = fen.as_setup();
         let castling_mode = CastlingMode::detect(setup);
         let pos = parse_fen_and_apply_moves(&options.fen, &options.moves)?;
+        let restricted_roots = options
+            .search_moves
+            .as_ref()
+            .map(|roots| normalize_uci_search_moves(&options.fen, &options.moves, roots))
+            .transpose()?
+            .unwrap_or_default();
 
         if fen_changed {
             if castling_mode.is_chess960() {
@@ -120,7 +129,11 @@ impl EngineProcess {
             .map(|x| x.value.parse().unwrap_or(1))
             .unwrap_or(1);
 
-        self.real_multipv = multipv.min(pos.legal_moves().len() as u16);
+        self.real_multipv = multipv.min(if restricted_roots.is_empty() {
+            pos.legal_moves().len() as u16
+        } else {
+            restricted_roots.len() as u16
+        });
 
         for option in &options.extra_options {
             if !self.options.extra_options.contains(option) && option.name != "UCI_Chess960" {
@@ -132,6 +145,7 @@ impl EngineProcess {
             self.set_position(&options.fen, &options.moves).await?;
         }
         self.last_depth = 0;
+        self.restricted_roots = restricted_roots;
         self.options = options.clone();
         self.best_moves.clear();
         self.last_best_moves.clear();
@@ -147,7 +161,17 @@ impl EngineProcess {
 
     async fn go(&mut self, mode: &GoMode) -> Result<(), Error> {
         self.go_mode = mode.clone();
-        self.base.go(mode).await?;
+        if self.restricted_roots.is_empty() {
+            self.base.go(mode).await?;
+        } else {
+            self.base
+                .send(&format!(
+                    "{} searchmoves {}",
+                    mode.to_uci_string(),
+                    self.restricted_roots.join(" ")
+                ))
+                .await?;
+        }
         self.running = true;
         self.idle_generation = self.idle_generation.wrapping_add(1);
         self.start = Instant::now();
@@ -165,6 +189,14 @@ impl EngineProcess {
     /// Whether engine output currently being read belongs to the latest search.
     fn reading_latest_search(&self) -> bool {
         self.pending_gos <= 1
+    }
+
+    fn accepts_root(&self, line: &BestMoves) -> bool {
+        self.restricted_roots.is_empty()
+            || line
+                .uci_moves
+                .first()
+                .is_some_and(|root| self.restricted_roots.contains(root))
     }
 
     async fn stop(&mut self) -> Result<u64, Error> {
@@ -290,6 +322,8 @@ pub struct BestMovesPayload {
     pub fen: String,
     pub moves: Vec<String>,
     pub progress: f64,
+    #[specta(optional)]
+    pub search_moves: Option<Vec<String>>,
 }
 
 fn invert_score(score: Score) -> Score {
@@ -363,6 +397,9 @@ pub struct EngineOptions {
     pub fen: String,
     pub moves: Vec<String>,
     pub extra_options: Vec<EngineOption>,
+    #[serde(default)]
+    #[specta(optional)]
+    pub search_moves: Option<Vec<String>>,
 }
 
 #[tauri::command]
@@ -565,6 +602,11 @@ pub async fn get_best_moves(
                 }
                 match parse_uci_attrs(attrs, &proc.options.fen.parse()?, &proc.options.moves) {
                     Ok(best_moves) => {
+                        if !proc.accepts_root(&best_moves) {
+                            // An engine which ignores searchmoves must not
+                            // masquerade as an independently checked candidate.
+                            continue;
+                        }
                         if best_moves.score.lower_bound == Some(true)
                             || best_moves.score.upper_bound == Some(true)
                         {
@@ -616,6 +658,7 @@ pub async fn get_best_moves(
                                         tab: tab.clone(),
                                         fen: proc.options.fen.clone(),
                                         moves: proc.options.moves.clone(),
+                                        search_moves: proc.options.search_moves.clone(),
                                         progress,
                                     }
                                     .emit(&app)?;
@@ -639,6 +682,7 @@ pub async fn get_best_moves(
                         tab: tab.clone(),
                         fen: proc.options.fen.clone(),
                         moves: proc.options.moves.clone(),
+                        search_moves: proc.options.search_moves.clone(),
                         progress: 100.0,
                     }
                     .emit(&app)?;
@@ -788,6 +832,7 @@ pub async fn analyze_game(
             fen: options.fen.clone(),
             moves: moves.clone(),
             extra_options,
+            search_moves: None,
         })
         .await?;
 
@@ -2180,6 +2225,7 @@ async fn analyze_mistake_review_position(
         fen: fen.to_string(),
         moves: Vec::new(),
         extra_options,
+        search_moves: None,
     })
     .await?;
     proc.go(&GoMode::Depth(depth)).await?;
@@ -2869,6 +2915,108 @@ fn insert_mistake_review_result(
     existing.white_elo = latest.8;
     existing.black_elo = latest.9;
     existing.game_result = latest.10;
+}
+
+#[cfg(test)]
+mod tactical_search_move_tests {
+    use super::*;
+
+    #[test]
+    fn tactical_search_moves_wire_is_optional_and_preserves_provenance() {
+        let old = serde_json::json!({"fen":"start", "moves":[], "extraOptions":[]});
+        let options: EngineOptions = serde_json::from_value(old).unwrap();
+        assert_eq!(options.search_moves, None);
+        let json = serde_json::json!({"fen":"start", "moves":[], "extraOptions":[], "searchMoves":["e2e4"]});
+        let options: EngineOptions = serde_json::from_value(json.clone()).unwrap();
+        assert_eq!(options.search_moves, Some(vec!["e2e4".into()]));
+        let event = BestMovesPayload {
+            best_lines: vec![],
+            engine: "test".into(),
+            tab: "test".into(),
+            fen: "start".into(),
+            moves: vec![],
+            progress: 100.0,
+            search_moves: options.search_moves,
+        };
+        assert_eq!(
+            serde_json::to_value(event).unwrap()["searchMoves"],
+            json["searchMoves"]
+        );
+    }
+
+    #[tokio::test]
+    #[ignore = "Requires TACTICAL_NATIVE_ENGINE pointing to a local UCI engine"]
+    async fn tactical_search_moves_real_engine_reuses_process_and_completes_one_root() {
+        let path = std::env::var("TACTICAL_NATIVE_ENGINE").expect("Set TACTICAL_NATIVE_ENGINE");
+        let (mut proc, mut reader) = EngineProcess::new(path.into()).await.unwrap();
+        let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        for roots in [
+            None,
+            Some(vec!["e2e4".to_string()]),
+            Some(vec!["d2d4".to_string(), "g1f3".to_string()]),
+            None,
+        ] {
+            let expected = roots.as_ref().map_or(3, Vec::len);
+            proc.set_options(EngineOptions {
+                fen: fen.into(),
+                moves: vec![],
+                search_moves: roots.clone(),
+                extra_options: vec![
+                    EngineOption {
+                        name: "Threads".into(),
+                        value: "1".into(),
+                    },
+                    EngineOption {
+                        name: "Hash".into(),
+                        value: "32".into(),
+                    },
+                    EngineOption {
+                        name: "MultiPV".into(),
+                        value: "3".into(),
+                    },
+                ],
+            })
+            .await
+            .unwrap();
+            assert_eq!(proc.real_multipv as usize, expected);
+            proc.go(&GoMode::Depth(16)).await.unwrap();
+            let result = tokio::time::timeout(Duration::from_secs(15), async {
+                let mut final_lines = vec![];
+                while let Some(line) = reader.next_line().await.unwrap() {
+                    match parse_one(&line) {
+                        UciMessage::Info(attrs) => {
+                            if let Ok(parsed) = parse_uci_attrs(attrs, &fen.parse().unwrap(), &[]) {
+                                assert!(proc.accepts_root(&parsed));
+                                if let Some(lines) = proc.record_best_moves(parsed) {
+                                    final_lines = lines;
+                                }
+                            }
+                        }
+                        UciMessage::BestMove { .. } => {
+                            assert!(proc.note_bestmove());
+                            proc.mark_finished();
+                            break;
+                        }
+                        _ => {}
+                    }
+                }
+                final_lines
+            })
+            .await;
+            if result.is_err() {
+                proc.kill_sync();
+            }
+            let lines = result.expect("bounded restricted engine completion");
+            assert_eq!(lines.len(), expected);
+            assert!(lines.iter().all(|line| line.depth >= 16));
+            if roots.is_some() {
+                let mut foreign = lines[0].clone();
+                foreign.uci_moves = vec!["a2a3".into()];
+                assert!(!proc.accepts_root(&foreign));
+            }
+        }
+        proc.kill().await.unwrap();
+    }
 }
 
 #[cfg(test)]

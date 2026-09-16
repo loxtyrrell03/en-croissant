@@ -36,6 +36,23 @@ const markup = (value: LiveTacticalScan) =>
     </MantineProvider>,
   );
 
+test("a targeted preview explains its provenance and keeps the original main line available", () => {
+  // Synthetic scores test presentation, not an engine ranking of h3 above Nxf7.
+  const value = buildLiveTacticalScan({
+    fen: scan.fen, depth: 16, engineName: "Structural test", pvUci: ["h2h3"],
+    variations: [{ multipv: 1, depth: 16, pvUci: ["h2h3"], cp: 450 }],
+    supplementalVariations: [{ depth: 16, pvUci: ["e5f7"], cp: 400 }],
+  });
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Fork found");
+  expect(element.textContent).toContain("not the engine's first choice");
+  expect(element.textContent).toContain("Additional option");
+  expect(element.textContent).toContain("Engine's first choice");
+  expect(value.arrows.map(arrow => arrow.from + arrow.to)).toEqual(["e5f7", "f7d8", "f7h8"]);
+  expect(previewLiveTacticalVariation(value, 1).motifs).toEqual([]);
+  expect(markup({ ...value, supplementalSearchIncomplete: true })).toContain("additional candidate check was incomplete");
+});
+
 test("a nonchecking mating capture leads with mate and does not draw a future branch", () => {
   const row = quietRootMateCases[1];
   const value = buildLiveTacticalScan({ ...row, engineName: "Constructed quiet mate", depth: 16 });
@@ -490,6 +507,20 @@ test("Show on board switches one candidate at a time and resets for a new scan",
   expect(button().getAttribute("aria-pressed")).toBe("false");
   await render(scan);
   expect(button().getAttribute("aria-pressed")).toBe("false");
+  const targeted = buildLiveTacticalScan({
+    fen: scan.fen, depth: 16, engineName: "Structural test", pvUci: ["h2h3"],
+    variations: [{ multipv: 1, depth: 16, pvUci: ["h2h3"], cp: 450 }],
+    supplementalVariations: [{ depth: 16, pvUci: ["e5f7"], cp: 400 }],
+  });
+  await render(targeted);
+  const quietMain = [...container.querySelectorAll("button")].find(node => node.textContent === "Show main line")!;
+  await act(async () => quietMain.click());
+  expect(onPreviewChange.mock.lastCall?.[0].arrows).toEqual([]);
+  expect(onPreviewChange.mock.lastCall?.[0].lineUci).toEqual(["h2h3"]);
+  const restoreTargeted = [...container.querySelectorAll("button")].find(node => node.textContent === "Restore immediate option")!;
+  await act(async () => restoreTargeted.click());
+  expect(onPreviewChange.mock.lastCall?.[0].labels[0].text).toBe("Fork");
+  await render(scan);
   const clearance = buildLiveTacticalScan({
     fen: "8/8/2k1B3/2b4r/p7/Pp4B1/1P2bPP1/R1K1R3 b - - 3 34",
     pvUci: ["c5e3", "f2e3", "h5c5", "e6c4", "c5c4", "c1b1", "e2d3"],
