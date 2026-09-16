@@ -1003,6 +1003,8 @@ pub struct MistakeReviewScanResult {
     pub refutation_uci: Vec<String>,
     #[specta(optional)]
     pub refutation_candidates: Vec<MistakeReviewReplyCandidate>,
+    #[specta(optional)]
+    pub best_candidates: Vec<MistakeReviewReplyCandidate>,
     pub severity: MistakeReviewSeverity,
     pub cp_loss: i32,
     pub win_probability_drop: f64,
@@ -1655,6 +1657,7 @@ pub async fn scan_mistake_review(
                         best_move_uci,
                         pv_san: deep_best.san_moves.clone(),
                         pv_uci: deep_best.uci_moves.clone(),
+                        best_candidates: mistake_review_reply_candidates(&fen_before, &deep_before),
                         refutation_san: deep_after_best.san_moves.clone(),
                         refutation_uci: deep_after_best.uci_moves.clone(),
                         refutation_candidates: mistake_review_reply_candidates(
@@ -2854,6 +2857,7 @@ mod mistake_review_tests {
             refutation_san: vec!["Nf6".to_string()],
             refutation_uci: vec!["g8f6".to_string()],
             refutation_candidates: vec![],
+            best_candidates: vec![],
             severity: MistakeReviewSeverity::Mistake,
             cp_loss,
             win_probability_drop: 8.0,

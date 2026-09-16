@@ -78,6 +78,7 @@ export function sharedReviewDeck(
                 refutationSan: c.refutation,
                 refutationUci: c.refutationUci,
                 refutationCandidates: c.refutationCandidates,
+                bestCandidates: c.bestCandidates,
                 winProbabilityDrop: c.drop,
                 cpBefore: chanceCp(c.before),
                 cpAfter: chanceCp(c.after),

@@ -587,6 +587,7 @@ describe("expert tactical judgement with fresh engine lines", () => {
                 fen: row.fen, playedMoveUci: row.playedMoveUci, bestMoveUci: before[0].pvUci[0],
                 pvUci: before[0].pvUci, refutationUci: after[0].pvUci,
                 refutationCandidates: after.slice(0, 3).map(line => ({fen: row.afterFen, pvUci: line.pvUci, cp: line.cp, depth: line.depth})),
+                bestCandidates: before.slice(0, 3).map(line => ({fen: row.fen, pvUci: line.pvUci, cp: line.cp, depth: line.depth})),
                 cpBefore: score(before[0]) * side, cpAfter: -score(after[0]) * side,
                 cpLoss: Math.max(0, score(before[0]) + score(after[0])),
             }) : null;

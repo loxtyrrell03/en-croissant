@@ -4,16 +4,21 @@ import { normalizeWebFen } from "./pgn";
 import {
     buildMistakeReviewTacticalExplanation,
     classifyMistakeReviewMotifs,
+    isImmediateTacticalLesson,
 } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 
 export const PHONE_REVIEW_VERSION = 1;
-export type ReviewEngineLine = WebEngineLine & { tacticalCandidates?: TacticalReplyCandidate[] };
+export type ReviewEngineLine = WebEngineLine & {
+    tacticalCandidates?: TacticalReplyCandidate[];
+    /** Requested width, including searches with fewer legal root moves. */
+    tacticalCandidatesRequested?: number;
+};
 
-export function withTacticalReplyCandidates(fen: string, lines: WebEngineLine[]): ReviewEngineLine {
+export function withTacticalReplyCandidates(fen: string, lines: WebEngineLine[], requested?: number): ReviewEngineLine {
     const ordered = [...lines].sort((a, b) => a.multipv - b.multipv).slice(0, 3);
     if (!ordered[0]) throw new Error("No engine reply was supplied.");
     const sign = fen.split(" ")[1] === "b" ? -1 : 1;
-    return {...ordered[0], tacticalCandidates: ordered.map(line => ({
+    return {...ordered[0], tacticalCandidatesRequested: requested, tacticalCandidates: ordered.map(line => ({
         fen, pvUci: line.uciMoves, depth: line.depth,
         cp: line.score.type === "cp" ? line.score.value * sign : null,
     }))};
@@ -40,6 +45,7 @@ export type PhoneReviewCard = {
     playedUci?: string;
     refutationUci?: string[];
     refutationCandidates?: TacticalReplyCandidate[];
+    bestCandidates?: TacticalReplyCandidate[];
     alternativeReply?: TacticalMotifEvidence;
     tacticalClassification?: MistakeReviewMotifClassification;
     before: number;
@@ -121,7 +127,7 @@ export function createPhoneReviewCard(
     game: WebGame,
     index: number,
     player: string,
-    best: WebEngineLine,
+    best: ReviewEngineLine,
     reply: ReviewEngineLine,
     now = Date.now(),
 ): PhoneReviewCard | null {
@@ -150,6 +156,7 @@ export function createPhoneReviewCard(
         pvUci: best.uciMoves,
         refutationUci: reply.uciMoves,
         refutationCandidates: reply.tacticalCandidates,
+        bestCandidates: best.tacticalCandidates,
         cpBefore,
         cpAfter,
         cpLoss: cpBefore - cpAfter,
@@ -176,6 +183,7 @@ export function createPhoneReviewCard(
         playedUci: move.uci,
         refutationUci: reply.uciMoves,
         refutationCandidates: reply.tacticalCandidates,
+        bestCandidates: best.tacticalCandidates,
         alternativeReply: motifs.allowedMotifs.find(motif => motif.alternativeLine),
         tacticalClassification: motifs,
         bestTimeline: motifs.missedTimeline?.filter((m) => (m.ply ?? 0) <= 8),
@@ -191,6 +199,13 @@ export function createPhoneReviewCard(
         streak: 0,
         reviews: 0,
     };
+}
+/** Only an already selected mistake without a proved missed root needs the
+ * optional wider before-move search. Ordinary positions keep the cheap path. */
+export function needsMissedAlternativeSearch(card: PhoneReviewCard | null, best: ReviewEngineLine) {
+    return Boolean(card && (best.tacticalCandidatesRequested ?? 0) < 3 &&
+        (best.tacticalCandidates?.length ?? 0) < 3 &&
+        !card.tacticalClassification?.missedMotifs.some(isImmediateTacticalLesson));
 }
 export function selectGameReviewCards(cards: PhoneReviewCard[]) {
     const chosen: PhoneReviewCard[] = [];

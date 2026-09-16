@@ -7,6 +7,67 @@ import { SharedReviewService, engineLine, BackgroundEngine } from "../generated/
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
 
+test("explicit local candidate upgrade reuses cache identity and never repeats cloud lookup", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-shared-review-candidate-cache-"));
+  const fen = "4kb2/8/8/4q3/4P3/NPPP1P2/P7/R2QK3 b Q - 1 1";
+  let lookups = 0, searches = 0;
+  const service = new SharedReviewService({root, documentsRoot:join(root,"documents"),
+    engineConfigPath:join(root,"engine.json"), fetchGames:async()=>[],
+    lookup:async()=>{ lookups++; return {depth:16,pvs:[{cp:-200,moves:"e5c3"}]}; }});
+  try {
+    await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+    await service.initialize(false);
+    await service.evaluate(fen);
+    // Without a configured engine the usable legacy line remains available.
+    await service.evaluate(fen,true,true); assert.equal(lookups,1);
+    service.enginePath = "test-only-fake-engine";
+    service.engine = {close(){}, async analyze(board, width){
+      searches++; assert.equal(board,fen); assert.equal(width,3);
+      // Fewer returned lines must not cause repeated upgrades after a completed request.
+      return {...engineLine(fen,16,{type:"cp",value:-200},["e5c3"]),
+        tacticalCandidatesRequested:3,tacticalCandidates:[{fen,cp:200,depth:16,pvUci:["e5c3"]}]};
+    }};
+    await service.evaluate(fen,true); assert.equal(searches,0);
+    const upgraded = await service.evaluate(fen,true,true);
+    assert.equal(upgraded.tacticalCandidatesRequested,3);
+    await service.evaluate(fen,true,true); await service.evaluate(fen);
+    assert.equal(searches,1); assert.equal(lookups,1);
+  } finally {
+    service.close(); const target=resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-"));
+    await rm(target,{recursive:true,force:true});
+  }
+});
+
+test("missed alternative survives background selection, shared desktop deck and reload", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-shared-review-missed-alternative-"));
+  const fen = "4kb2/8/8/4q3/4P3/NPPP1P2/P7/R2QK3 b Q - 1 1";
+  const options = {root, documentsRoot:join(root,"documents"), engineConfigPath:join(root,"engine.json"),
+    fetchGames:async()=>[], lookup:async(board)=>({depth:16,pvs:board===fen
+      ? [{cp:-200,moves:"e5c3"},{cp:-160,moves:"f8a3"}] : [{cp:0,moves:"d3d4"}]})};
+  let service;
+  try {
+    await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+    await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,url:"https://example.test/missed-alternative",
+      pgn:`[White "Opponent"]\n[Black "Tester"]\n[Date "2026.09.16"]\n[SetUp "1"]\n[FEN "${fen}"]\n[Result "0-1"]\n\n1... Kf7 0-1`}]}));
+    service=new SharedReviewService(options); await service.initialize(false); await service.run();
+    assert.equal(service.snapshot().error,null);
+    const card=service.snapshot().cards[0]; assert.ok(card);
+    assert.match(card.explanation,/Another stronger move.*Bxa3/);
+    assert.equal(card.best,"e5c3"); assert.equal(card.bestCandidates[1].cp,160);
+    assert.equal(card.tacticalClassification.missedMotifs[0].alternativeLine.uci[0],"f8a3");
+    const metadata=(await service.deck()).positions[0].mistakeReview;
+    assert.deepEqual(metadata.bestCandidates,card.bestCandidates);
+    assert.ok(!metadata.missedTimeline.some(m=>m.alternativeLine));
+    service.close(); service=new SharedReviewService(options); await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification,card.tacticalClassification);
+  } finally {
+    service?.close(); const target=resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-"));
+    await rm(target,{recursive:true,force:true});
+  }
+});
+
 test("real background engine retains rank one and three side-correct candidates", {skip:!process.env.TACTICAL_JUDGEMENT_ENGINE}, async()=>{
   const engine=new BackgroundEngine(process.env.TACTICAL_JUDGEMENT_ENGINE);
   try {

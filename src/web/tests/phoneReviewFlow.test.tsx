@@ -7,6 +7,7 @@ import { createEmptyWebState } from "../storage";
 import { parsePgnDatabase, playUciMove } from "../pgn";
 import { reviewMistakeFrames } from "../reviewVisuals";
 import { emptyPhoneReview } from "../mistakeReview";
+import { analyzeWithWebStockfish18 } from "../stockfishEngine";
 vi.mock("../stockfishEngine", () => ({
   releaseWebPcEngine: vi.fn(async () => {}),
   analyzeWithWebStockfish18: vi.fn(async ({ fen }) => [
@@ -20,6 +21,7 @@ vi.mock("../stockfishEngine", () => ({
     },
   ]),
 }));
+const analysisMock = vi.mocked(analyzeWithWebStockfish18);
 it("scans imported games, saves cards, hides the answer, and completes a daily review", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.stubGlobal(
@@ -86,6 +88,10 @@ it("scans imported games, saves cards, hides the answer, and completes a daily r
     });
     expect(latest.mistakeReview!.scanned).toHaveLength(1);
     expect(latest.mistakeReview!.cards.length).toBeGreaterThan(0);
+    const upgrades = analysisMock.mock.calls
+      .map(([request]) => request).filter(request => request.preferStoredEvaluation === false);
+    expect(upgrades.length).toBeGreaterThan(0);
+    expect(upgrades.every(request => request.multipv === 3)).toBe(true);
     await act(async () => {
       button("Daily review").click();
     });

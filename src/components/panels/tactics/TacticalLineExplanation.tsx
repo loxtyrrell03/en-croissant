@@ -65,8 +65,14 @@ export function TacticalLineExplanation({
 
 /** Separate branch provenance must never become a badge on the preferred PV. */
 export function TacticalAlternativeExplanation({ motifs }: { motifs: TacticalMotifEvidence[] }) {
-  const alternative = motifs.find(motif => motif.alternativeLine);
-  if (!alternative?.alternativeLine) return null;
-  const { alternativeLine, ...motif } = alternative;
-  return <TacticalLineExplanation title="Separate tactical reply" intro="This reply is separate from the main engine line." moves={alternativeLine.san} motifs={[motif]} />;
+  const alternatives = ["allowed", "missed"].flatMap(source => {
+    const alternative = motifs.find(motif => motif.source === source && motif.alternativeLine);
+    if (!alternative?.alternativeLine) return [];
+    const { alternativeLine, ...motif } = alternative;
+    return [<TacticalLineExplanation key={source}
+      title={source === "missed" ? "Alternative move you missed" : "Separate tactical reply"}
+      intro={source === "missed" ? "Another stronger option, separate from the best-move line." : "This reply is separate from the main engine line."}
+      moves={alternativeLine.san} motifs={[motif]} />];
+  });
+  return <>{alternatives}</>;
 }

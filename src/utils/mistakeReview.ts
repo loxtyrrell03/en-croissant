@@ -728,6 +728,7 @@ export function createMistakeReviewPosition(
             refutationSan: result.refutationSan,
             refutationUci: result.refutationUci,
             refutationCandidates: result.refutationCandidates ?? undefined,
+            bestCandidates: result.bestCandidates ?? undefined,
             severity: result.severity,
             cpLoss: result.cpLoss,
             winProbabilityDrop: result.winProbabilityDrop,
@@ -1599,6 +1600,7 @@ function getMistakeReviewMotifInput(position: Position) {
         refutationSan: metadata?.refutationSan,
         refutationUci: metadata?.refutationUci,
         refutationCandidates: metadata?.refutationCandidates,
+        bestCandidates: metadata?.bestCandidates,
         cpLoss: metadata?.cpLoss,
         cpBefore: metadata?.cpBefore,
         cpAfter: metadata?.cpAfter,
@@ -1694,6 +1696,7 @@ function classifyMistakeReviewNatureFromText(
         refutationSan: normalizeMistakeReviewMoveList(metadata?.refutationSan),
         refutationUci: normalizeMistakeReviewMoveList(metadata?.refutationUci),
         refutationCandidates: metadata?.refutationCandidates,
+        bestCandidates: metadata?.bestCandidates,
         cpLoss: metadata?.cpLoss ?? position.engine?.lossCp,
         cpBefore: metadata?.cpBefore,
         cpAfter: metadata?.cpAfter,
@@ -1811,6 +1814,7 @@ export function classifyMistakeReviewNature(
               refutationSan?: string[] | null;
               refutationUci?: string[] | null;
               refutationCandidates?: TacticalReplyCandidate[] | null;
+              bestCandidates?: TacticalReplyCandidate[] | null;
               cpLoss?: number | null;
               cpBefore?: number | null;
               cpAfter?: number | null;
@@ -1838,6 +1842,7 @@ function computeMistakeReviewNature(input: Parameters<typeof classifyMistakeRevi
     const number = (value: unknown) => typeof value === "number" && Number.isFinite(value) ? value : undefined;
     const moves = (value: unknown) => Array.isArray(value) ? value.filter((move): move is string => typeof move === "string") : undefined;
     const candidates = tacticalReplyCandidatesSchema.safeParse(field("refutationCandidates") ?? metadata?.refutationCandidates);
+    const bestCandidates = tacticalReplyCandidatesSchema.safeParse(field("bestCandidates") ?? metadata?.bestCandidates);
     return classifyProvedMistakeNature({
         fen: text(field("fen")),
         bestMoveSan: text(field("bestMoveSan") ?? metadata?.bestMoveSan ?? field("answer")),
@@ -1849,6 +1854,7 @@ function computeMistakeReviewNature(input: Parameters<typeof classifyMistakeRevi
         refutationSan: moves(field("refutationSan") ?? metadata?.refutationSan),
         refutationUci: moves(field("refutationUci") ?? metadata?.refutationUci),
         refutationCandidates: candidates.success ? candidates.data : undefined,
+        bestCandidates: bestCandidates.success ? bestCandidates.data : undefined,
         cpLoss: number(field("cpLoss") ?? metadata?.cpLoss),
         cpBefore: number(field("cpBefore") ?? metadata?.cpBefore),
         cpAfter: number(field("cpAfter") ?? metadata?.cpAfter),
@@ -1872,6 +1878,7 @@ function getMistakeReviewNatureClassificationCacheKey(
               refutationSan?: string[] | null;
               refutationUci?: string[] | null;
               refutationCandidates?: TacticalReplyCandidate[] | null;
+              bestCandidates?: TacticalReplyCandidate[] | null;
               cpLoss?: number | null;
               cpBefore?: number | null;
               cpAfter?: number | null;
@@ -1896,6 +1903,7 @@ function getMistakeReviewNatureClassificationCacheKey(
         list(field("refutationSan") ?? metadata?.refutationSan),
         list(field("refutationUci") ?? metadata?.refutationUci),
         field("refutationCandidates") ?? metadata?.refutationCandidates ?? null,
+        field("bestCandidates") ?? metadata?.bestCandidates ?? null,
         field("cpLoss") ?? metadata?.cpLoss ?? "",
         field("cpBefore") ?? metadata?.cpBefore ?? "",
         field("cpAfter") ?? metadata?.cpAfter ?? "",

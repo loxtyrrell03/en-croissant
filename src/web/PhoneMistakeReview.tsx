@@ -31,6 +31,8 @@ import {
   type PhoneReviewCard,
   type PhoneReviewState,
   withTacticalReplyCandidates,
+  needsMissedAlternativeSearch,
+  type ReviewEngineLine,
 } from "./mistakeReview";
 import classes from "./WebApp.module.css";
 import type { DrawShape } from "@lichess-org/chessground/draw";
@@ -197,12 +199,12 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
             total: candidates.length,
             text: `Game ${completed + 1}/${candidates.length} · move ${Math.ceil((i + 1) / 2)}`,
           });
-          const analyze = async (fen: string, multipv = 1): Promise<WebEngineLine> => {
+          const analyze = async (fen: string, multipv = 1, fresh = false): Promise<ReviewEngineLine> => {
             const lines = await analyzeWithWebStockfish18({
               fen,
               depth: 14,
               multipv,
-              preferStoredEvaluation: true,
+              preferStoredEvaluation: !fresh,
               minimumStoredDepth: 14,
               signal: abort.signal,
             });
@@ -210,7 +212,7 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
               throw new Error(
                 "The engine did not finish this position. Completed games are saved; retry to resume.",
               );
-            return withTacticalReplyCandidates(fen, lines);
+            return withTacticalReplyCandidates(fen, lines, fresh ? multipv : undefined);
           };
           const best = await analyze(m.fenBefore);
           if (best.uciMoves[0] === m.uci || reviewChance(reviewCp(best.score, color)) < 15)
@@ -233,7 +235,11 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
               sanMoves: [],
             };
           else reply = await analyze(m.fenAfter, 3);
-          const next = createPhoneReviewCard(game, i, player, best, reply);
+          let next = createPhoneReviewCard(game, i, player, best, reply);
+          if (needsMissedAlternativeSearch(next, best)) {
+            const widerBest = await analyze(m.fenBefore, 3, true);
+            next = createPhoneReviewCard(game, i, player, widerBest, reply);
+          }
           if (next) collected.push(next);
         }
         if (abort.signal.aborted) return;
@@ -564,7 +570,9 @@ export default function PhoneMistakeReview({ state, onSave, onImport, renderBoar
                   <details>
                     <summary>Why this mattered</summary>
                     <Text size="sm">{card.explanation}</Text>
-                    <TacticalAlternativeExplanation motifs={card.alternativeReply ? [card.alternativeReply] : []} />
+                    <TacticalAlternativeExplanation motifs={card.tacticalClassification
+                      ? [...card.tacticalClassification.allowedMotifs, ...card.tacticalClassification.missedMotifs]
+                      : card.alternativeReply ? [card.alternativeReply] : []} />
                     <TacticalLineExplanation
                       title="Better line, move by move"
                       moves={card.pvSan}

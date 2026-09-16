@@ -32,7 +32,7 @@ export type TacticalMotifEvidence = {
      * exchange alternative in the played move. Not a proof of equal overall
      * value or safety, and not itself an established cause of the mistake. */
     alternativeCapture?: true;
-    /** A separately verified reply, not an event in the supplied engine PV.
+    /** A separately verified reply or missed option, not an event in the supplied engine PV.
      * Keep its board and moves together; never merge it into the PV timeline. */
     alternativeLine?: { fen: string; uci: string[]; san: string[] };
 };

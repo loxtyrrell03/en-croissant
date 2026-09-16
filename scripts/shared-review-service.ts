@@ -16,6 +16,7 @@ import {
     type PhoneReviewCard,
     type ReviewEngineLine,
     withTacticalReplyCandidates,
+    needsMissedAlternativeSearch,
 } from "../src/web/mistakeReview";
 import { sharedReviewDeck, mergeSharedProgress, SHARED_REVIEW_FILE } from "../src/web/sharedReview";
 import type { WebEngineLine, WebGame } from "../src/web/model";
@@ -317,7 +318,11 @@ export class SharedReviewService {
                         const best = await this.evaluate(move.fenBefore);
                         if (move.uci === best.uciMoves[0]) continue;
                         const reply = await this.evaluate(move.fenAfter, true);
-                        const card = createPhoneReviewCard(game, i, player, best, reply);
+                        let card = createPhoneReviewCard(game, i, player, best, reply);
+                        if (needsMissedAlternativeSearch(card, best)) {
+                            const widerBest = await this.evaluate(move.fenBefore, true, true);
+                            card = createPhoneReviewCard(game, i, player, widerBest, reply);
+                        }
                         if (card) cards.push(card);
                     }
                     await this.transact(async () => {
@@ -403,7 +408,7 @@ export class SharedReviewService {
         this.status.lastCheckedAt = Date.now();
         this.status.discoveryError = errors.join("; ") || null;
     }
-    private async evaluate(fen: string, alternatives = false): Promise<ReviewEngineLine> {
+    private async evaluate(fen: string, alternatives = false, refreshAlternatives = false): Promise<ReviewEngineLine> {
         const outcome = positionFromFen(fen)[0]?.outcome();
         if (outcome)
             return engineLine(
@@ -419,8 +424,13 @@ export class SharedReviewService {
         const cached = this.cache!.prepare("SELECT line FROM evaluations WHERE fen = ?").get(key) as
             | { line: string }
             | undefined;
-        if (cached) return JSON.parse(cached.line);
-        const cloud = await this.options.lookup(fen);
+        if (cached) {
+            const line: ReviewEngineLine = JSON.parse(cached.line);
+            if (!refreshAlternatives || (line.tacticalCandidatesRequested ?? 0) >= 3 ||
+                (line.tacticalCandidates?.length ?? 0) >= 3 || !this.enginePath) return line;
+        }
+        // A wider local retry must not repeat the same external lookup.
+        const cloud = cached ? undefined : await this.options.lookup(fen);
         let line: ReviewEngineLine | undefined;
         if (
             cloud?.depth >= 16 &&
@@ -448,7 +458,7 @@ export class SharedReviewService {
             if (alternatives[0]?.multipv === 1) line = withTacticalReplyCandidates(fen, alternatives);
             if (!line.uciMoves.length) line = undefined;
         }
-        if (!line) {
+        if (!line || (refreshAlternatives && (line.tacticalCandidates?.length ?? 0) < 3 && this.enginePath)) {
             if (!this.engine) this.engine = new BackgroundEngine(this.enginePath);
             line = await this.engine.analyze(fen, alternatives ? 3 : 1);
         }
@@ -582,7 +592,7 @@ export class BackgroundEngine {
                     // Terminal positions have no PV; exact mate/stalemate is supplied by chessops below.
                     throw new Error("Engine returned no evaluation.");
                 }
-                return { result: withTacticalReplyCandidates(fen, [...lines.values()]) };
+                return { result: withTacticalReplyCandidates(fen, [...lines.values()], Math.max(1, Math.min(3, multipv))) };
             }
             return null;
         });

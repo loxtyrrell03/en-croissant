@@ -19026,7 +19026,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 113;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 114;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -19472,7 +19472,7 @@ function chooseMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs })
 	const allowed = selectImportantTacticalMotifs(allowedMotifs, 1)[0];
 	const missed = selectImportantTacticalMotifs(missedMotifs, 1)[0];
 	if (!allowed && !missed) return null;
-	const allowedRootOverConditional = allowed?.ply === 1 && (isConditionalMaterial(missed) || isAlternativeCapture(missed));
+	const allowedRootOverConditional = allowed?.ply === 1 && (isConditionalMaterial(missed) || isAlternativeCapture(missed) || missed?.alternativeLine && isImmediateTacticalLesson(allowed) && (allowed.comparison === "prevented" || allowed.comparison === "reduced"));
 	if (missed && !allowedRootOverConditional && (!allowed || !allowed.comparison && isImmediateTacticalLesson(missed) || allowed.comparison === "persists" || missed.ply === 1 && isConditionalMaterial(allowed) || (missed.value ?? 0) > Math.max(100, (allowed.value ?? 0) * 1.5))) {
 		if (isAlternativeCapture(missed)) return {
 			title: "Capture in the better line",
@@ -19487,8 +19487,8 @@ function chooseMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs })
 			primary: missed
 		};
 		return {
-			title: `What you missed: ${missed.label}`,
-			text: `The better move had this tactic: ${missed.evidence}`,
+			title: `${missed.alternativeLine ? "Missed alternative" : "What you missed"}: ${missed.label}`,
+			text: `${missed.alternativeLine ? "Another stronger move had this tactic" : "The better move had this tactic"}: ${missed.evidence}`,
 			source: "missed",
 			primary: missed
 		};
@@ -19518,6 +19518,36 @@ function chooseMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs })
 		text: `The better move had this tactic: ${missed?.evidence ?? ""}`,
 		source: "missed",
 		primary: missed
+	};
+}
+function classifyPositionTacticalMotifs(input) {
+	const fen = String(input.fen ?? "").trim();
+	const bestLine = cleanUciLine(input.pvUci);
+	const bestMoveUci = bestLine[0] ?? null;
+	let detail = null;
+	if (fen && bestMoveUci && hasTacticalStart(fen, bestLine)) try {
+		detail = detectThemesDetailed({
+			fen,
+			side: fenSide(fen),
+			best: bestMoveUci,
+			bestLine,
+			_analysisMode: "engine-pv",
+			_prevFen: String(input.previousFen ?? "").trim() || null,
+			_prevPlayedMove: cleanUci(input.previousMoveUci)
+		});
+	} catch {
+		detail = null;
+	}
+	const motifs = filterCompensatedRootCaptures(fen, bestLine, auditTacticalMotifs(fen, bestLine, toMotifEvidence(detail, "available", input.pvSan), input.rootCp, {
+		previousFen: input.previousFen,
+		previousMoveUci: cleanUci(input.previousMoveUci),
+		tablebaseEvidence: input.tablebaseEvidence
+	}), input.previousFen, cleanUci(input.previousMoveUci));
+	const timeline = selectContinuationLessons(filterCompensatedRootCaptures(fen, bestLine, buildTacticalTimeline(fen, bestLine, "available", motifs, input.pvSan, input.tablebaseEvidence), input.previousFen, cleanUci(input.previousMoveUci)), motifs);
+	return {
+		motifs: selectRootConnectedLessons(fen, bestLine, motifs, timeline),
+		...motifs.length || timeline.length ? { timeline } : {},
+		motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION
 	};
 }
 /** A PV can switch initiative without two quiet plies: a counterattack may
@@ -19719,8 +19749,18 @@ function cacheKey(input) {
 		input.cpLoss ?? null,
 		input.cpBefore ?? null,
 		input.cpAfter ?? null,
-		input.refutationCandidates ?? null
+		input.refutationCandidates ?? null,
+		input.bestCandidates ?? null
 	]);
+}
+/** Same-board engine nominations, not tactical certificates. A full legal PV
+* and comparable search depth are required even though only its root is taught. */
+function nominatedAlternatives(fen, principalMove, candidates, maxGap) {
+	const key = (value) => value.trim().split(/\s+/).slice(0, 4).join(" ");
+	const valid = (candidates ?? []).slice(0, 3).filter((candidate) => Number.isInteger(candidate.depth) && candidate.depth >= 14 && candidate.cp !== null && Number.isFinite(candidate.cp) && key(candidate.fen) === key(fen) && candidate.pvUci.length > 0 && candidate.pvUci.length <= 128 && replayTacticalLine(candidate.fen, candidate.pvUci).length === candidate.pvUci.length);
+	const principal = valid.find((candidate) => candidate.pvUci[0] === principalMove);
+	if (!principal || maxGap < 0) return [];
+	return valid.filter((candidate, index) => valid.findIndex((other) => other.pvUci[0] === candidate.pvUci[0]) === index && candidate.pvUci[0] !== principalMove && candidate.depth >= principal.depth && candidate.cp <= principal.cp && principal.cp - candidate.cp <= maxGap).sort((a, b) => b.cp - a.cp);
 }
 function classifyMistakeReviewMotifs(input) {
 	const key = cacheKey(input);
@@ -19789,12 +19829,38 @@ function classifyMistakeReviewMotifs(input) {
 	compared.allowedMotifs = selectRootConnectedLessons(fenAfterPlayedMove ?? "", refutationLine, compared.allowedMotifs, compared.allowedTimeline ?? []);
 	if (compared.missedTimeline) compared.missedTimeline = compared.missedTimeline.filter((m) => m.id !== "drawingCapture" || m.ply !== 1 || playedEndgameOutcome === 1);
 	compared.missedMotifs = selectRootConnectedLessons(fen, bestLine, compared.missedMotifs, compared.missedTimeline ?? []);
+	if (!playedTheBestMove && fenAfterPlayedMove && playedMoveUci && bestMoveUci && typeof input.cpLoss === "number" && Number.isFinite(input.cpLoss) && !compared.missedMotifs.some(isImmediateTacticalLesson)) for (const candidate of nominatedAlternatives(fen, bestMoveUci, input.bestCandidates, Math.min(100, input.cpLoss - 50))) {
+		const move = candidate.pvUci[0];
+		if (move === playedMoveUci || deriveFenAfterMove(fen, move) === fenAfterPlayedMove) continue;
+		const primary = selectImportantTacticalMotifs(qualifyComparableCaptureChoice(fen, move, playedMoveUci, classifyPositionTacticalMotifs({
+			fen,
+			pvUci: candidate.pvUci,
+			rootCp: candidate.cp,
+			tablebaseEvidence: input.tablebaseEvidence
+		}).motifs.map((motif) => ({
+			...motif,
+			source: "missed"
+		}))).filter((motif) => motif.moveUci === move && motif.confidence === "high" && isImmediateTacticalLesson(motif) && (motif.id !== "drawingCapture" || playedEndgameOutcome === 1)), 1)[0];
+		if (!primary) continue;
+		const step = replayTacticalLine(fen, [move])[0];
+		if (!step) continue;
+		compared.missedMotifs = [{
+			...primary,
+			relevance: "primary",
+			alternativeLine: {
+				fen,
+				uci: [move],
+				san: [step.san]
+			}
+		}, ...compared.missedMotifs.map((motif) => ({
+			...motif,
+			relevance: "secondary"
+		}))];
+		break;
+	}
 	if (!playedTheBestMove && playedMoveUci && bestMoveUci && typeof input.cpLoss === "number" && Number.isFinite(input.cpLoss) && input.cpLoss > 20 && !compared.allowedMotifs.some((m) => isImmediateTacticalLesson(m) && (m.comparison === "prevented" || m.comparison === "reduced"))) {
-		const positionKey = (value) => value.trim().split(/\s+/).slice(0, 4).join(" ");
-		const candidates = (input.refutationCandidates ?? []).slice(0, 3).filter((candidate) => candidate.depth >= 14 && Number.isFinite(candidate.depth) && candidate.cp !== null && Number.isFinite(candidate.cp) && positionKey(candidate.fen) === positionKey(fenAfterPlayedMove ?? "") && candidate.pvUci.length > 0 && candidate.pvUci.length <= 128 && replayTacticalLine(candidate.fen, candidate.pvUci).length === candidate.pvUci.length);
-		const principal = candidates.find((candidate) => candidate.pvUci[0] === refutationLine[0]);
-		const nominated = principal ? candidates.filter((candidate) => candidate.depth >= principal.depth && candidate.cp <= principal.cp && principal.cp - candidate.cp <= Math.min(100, input.cpLoss / 2)).map((candidate) => candidate.pvUci[0]) : [];
-		const alternative = nominated.length > 1 ? proveAlternativeCaptureCause(fen, playedMoveUci, bestMoveUci, nominated, refutationLine[0]) : null;
+		const nominated = nominatedAlternatives(fenAfterPlayedMove ?? "", refutationLine[0], input.refutationCandidates, Math.min(100, input.cpLoss / 2)).map((candidate) => candidate.pvUci[0]);
+		const alternative = nominated.length ? proveAlternativeCaptureCause(fen, playedMoveUci, bestMoveUci, nominated, refutationLine[0]) : null;
 		if (alternative) compared.allowedMotifs = [alternative, ...compared.allowedMotifs.map((m) => ({
 			...m,
 			relevance: "secondary"
@@ -19813,12 +19879,13 @@ function tacticalMotifLabel(idInput) {
 	if (label) return label;
 	return id.replace(/[_-]+/g, " ").replace(/([a-z\d])([A-Z])/g, "$1 $2").replace(/\b\w/g, (letter) => letter.toUpperCase()) || "Tactical motif";
 }
-function withTacticalReplyCandidates(fen, lines) {
+function withTacticalReplyCandidates(fen, lines, requested) {
 	const ordered = [...lines].sort((a, b) => a.multipv - b.multipv).slice(0, 3);
 	if (!ordered[0]) throw new Error("No engine reply was supplied.");
 	const sign = fen.split(" ")[1] === "b" ? -1 : 1;
 	return {
 		...ordered[0],
+		tacticalCandidatesRequested: requested,
 		tacticalCandidates: ordered.map((line) => ({
 			fen,
 			pvUci: line.uciMoves,
@@ -19876,6 +19943,7 @@ function createPhoneReviewCard(game, index, player, best, reply, now = Date.now(
 		pvUci: best.uciMoves,
 		refutationUci: reply.uciMoves,
 		refutationCandidates: reply.tacticalCandidates,
+		bestCandidates: best.tacticalCandidates,
 		cpBefore,
 		cpAfter,
 		cpLoss: cpBefore - cpAfter,
@@ -19902,6 +19970,7 @@ function createPhoneReviewCard(game, index, player, best, reply, now = Date.now(
 		playedUci: move.uci,
 		refutationUci: reply.uciMoves,
 		refutationCandidates: reply.tacticalCandidates,
+		bestCandidates: best.tacticalCandidates,
 		alternativeReply: motifs.allowedMotifs.find((motif) => motif.alternativeLine),
 		tacticalClassification: motifs,
 		bestTimeline: motifs.missedTimeline?.filter((m) => (m.ply ?? 0) <= 8),
@@ -19915,6 +19984,11 @@ function createPhoneReviewCard(game, index, player, best, reply, now = Date.now(
 		streak: 0,
 		reviews: 0
 	};
+}
+/** Only an already selected mistake without a proved missed root needs the
+* optional wider before-move search. Ordinary positions keep the cheap path. */
+function needsMissedAlternativeSearch(card, best) {
+	return Boolean(card && (best.tacticalCandidatesRequested ?? 0) < 3 && (best.tacticalCandidates?.length ?? 0) < 3 && !card.tacticalClassification?.missedMotifs.some(isImmediateTacticalLesson));
 }
 function selectGameReviewCards(cards) {
 	const chosen = [];
@@ -20688,6 +20762,7 @@ function sharedReviewDeck(cards, enginePath = "", now = Date.now()) {
 				refutationSan: c.refutation,
 				refutationUci: c.refutationUci,
 				refutationCandidates: c.refutationCandidates,
+				bestCandidates: c.bestCandidates,
 				winProbabilityDrop: c.drop,
 				cpBefore: chanceCp(c.before),
 				cpAfter: chanceCp(c.after),
@@ -20979,7 +21054,11 @@ var SharedReviewService = class {
 						const best = await this.evaluate(move.fenBefore);
 						if (move.uci === best.uciMoves[0]) continue;
 						const reply = await this.evaluate(move.fenAfter, true);
-						const card = createPhoneReviewCard(game, i, player, best, reply);
+						let card = createPhoneReviewCard(game, i, player, best, reply);
+						if (needsMissedAlternativeSearch(card, best)) {
+							const widerBest = await this.evaluate(move.fenBefore, true, true);
+							card = createPhoneReviewCard(game, i, player, widerBest, reply);
+						}
 						if (card) cards.push(card);
 					}
 					await this.transact(async () => {
@@ -21054,7 +21133,7 @@ var SharedReviewService = class {
 		this.status.lastCheckedAt = Date.now();
 		this.status.discoveryError = errors.join("; ") || null;
 	}
-	async evaluate(fen, alternatives = false) {
+	async evaluate(fen, alternatives = false, refreshAlternatives = false) {
 		const outcome = positionFromFen(fen)[0]?.outcome();
 		if (outcome) return engineLine(fen, 99, {
 			type: "cp",
@@ -21062,8 +21141,11 @@ var SharedReviewService = class {
 		}, []);
 		const key = normalizeWebFen(fen);
 		const cached = this.cache.prepare("SELECT line FROM evaluations WHERE fen = ?").get(key);
-		if (cached) return JSON.parse(cached.line);
-		const cloud = await this.options.lookup(fen);
+		if (cached) {
+			const line = JSON.parse(cached.line);
+			if (!refreshAlternatives || (line.tacticalCandidatesRequested ?? 0) >= 3 || (line.tacticalCandidates?.length ?? 0) >= 3 || !this.enginePath) return line;
+		}
+		const cloud = cached ? void 0 : await this.options.lookup(fen);
 		let line;
 		if (cloud?.depth >= 16 && cloud.pvs?.[0]?.moves && (Number.isFinite(cloud.pvs[0].cp) || Number.isFinite(cloud.pvs[0].mate))) {
 			const pv = cloud.pvs[0];
@@ -21094,7 +21176,7 @@ var SharedReviewService = class {
 			if (alternatives[0]?.multipv === 1) line = withTacticalReplyCandidates(fen, alternatives);
 			if (!line.uciMoves.length) line = void 0;
 		}
-		if (!line) {
+		if (!line || refreshAlternatives && (line.tacticalCandidates?.length ?? 0) < 3 && this.enginePath) {
 			if (!this.engine) this.engine = new BackgroundEngine(this.enginePath);
 			line = await this.engine.analyze(fen, alternatives ? 3 : 1);
 		}
@@ -21199,7 +21281,7 @@ var BackgroundEngine = class {
 			}
 			if (l.startsWith("bestmove")) {
 				if (!lines.has(1)) throw new Error("Engine returned no evaluation.");
-				return { result: withTacticalReplyCandidates(fen, [...lines.values()]) };
+				return { result: withTacticalReplyCandidates(fen, [...lines.values()], Math.max(1, Math.min(3, multipv))) };
 			}
 			return null;
 		});
