@@ -158,11 +158,14 @@ test("audit the frozen unseen Lichess quiet-mate sample without treating tags as
 });
 
 test.each([...sample.cases, ...reflected].filter((row) => row.stratum === "mateIn4" && !row.id.startsWith("lichess:0rcU4")))(
-    "retained longer-mate coverage gap, not a quiet-position success: $id",
+    "the new attack proof recovers a lesson without claiming the longer mate distance: $id",
     (row) => {
         expect(proveMateWithinThree(replayTacticalLine(row.startFen, row.bestLine))).toBeNull();
         const result = classifyPositionTacticalMotifs({ fen: row.startFen, pvUci: row.bestLine });
-        expect(result.motifs).toEqual([]);
+        expect(result.motifs).toEqual([expect.objectContaining({
+            id: "forcingAttack", label: "Mating Attack", ply: 1,
+            value: row.id.startsWith("lichess:0z5nl") ? 100 : 500,
+        })]);
     },
 );
 

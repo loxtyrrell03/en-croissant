@@ -11,6 +11,7 @@ import { mixedForkFen, mixedForkLine } from "./fixtures/mixedTargetFork";
 import { directThreatFen, directThreatLine } from "./fixtures/directThreatRelevance";
 import { pawnExposureAlternateInput } from "./fixtures/pawnExposure";
 import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
+import { shortMatingThreatCases } from "./fixtures/shortMatingThreat";
 import {
   buildLiveTacticalScan,
   previewLiveTacticalVariation,
@@ -35,6 +36,18 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a short mating threat explains the root without promising an unavoidable mate", () => {
+  const row = shortMatingThreatCases[0];
+  const value = buildLiveTacticalScan({fen: row.fen, pvUci: [row.move], depth: 16, engineName: "Constructed threat"});
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Mating Attack found");
+  expect(element.textContent).toContain("mate in two if unanswered");
+  expect(element.textContent).toContain("not a forced-mate claim");
+  expect(element.textContent).not.toContain("No verified immediate theme");
+  expect(element.textContent).not.toContain("Stopping the mate concedes");
+  expect(value.arrows.map(a => a.from + a.to)).toEqual(["g1g3", "g3h3"]);
+});
 
 test("a targeted preview explains its provenance and keeps the original main line available", () => {
   // Synthetic scores test presentation, not an engine ranking of h3 above Nxf7.

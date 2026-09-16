@@ -11971,10 +11971,11 @@ function proveMixedCheckingAttack(root, nodeLimit = 32768) {
 	return proof;
 }
 var quietMatingAttackCache = /* @__PURE__ */ new Map();
-/** A new mate-in-one threat may force a material concession instead of mate.
+/** A new short mating threat may force a material concession instead of mate.
 * The pass position only nominates that threat. Every actual reply needs an
 * independent continuation by the prepared piece or its mating partner, with
-* at most three further checks. No PV supplies moves, targets or leaf values. */
+* at most three attacking continuations, including a legal check evasion or
+* the nominated threat move. No PV supplies moves, targets or leaf values. */
 function proveQuietMatingAttack(root, nodeLimit = 8192, onFailure) {
 	return proveMatingThreatAttack(root, nodeLimit, onFailure, false);
 }
@@ -12001,28 +12002,44 @@ function proveMatingThreatAttack(root, nodeLimit, onFailure, captureThreat, shar
 		const probe = withTurn(root.after, root.before.turn);
 		const flip = root.before.turn === "white" ? 0 : 56;
 		const threats = legalMoves(probe).sort((a, b) => (a.from ^ flip) - (b.from ^ flip) || (a.to ^ flip) - (b.to ^ flip));
-		for (const threat of threats) {
-			if (threat.promotion || !visit(probe, threat).isCheckmate()) continue;
+		const shortThreat = (pos, move) => {
+			if (move.promotion) return null;
+			const after = visit(pos, move);
+			if (after.isCheckmate()) return 1;
+			if (!after.isCheck() || after.isEnd() || defenderCanClaimFiftyMoveDraw(after)) return null;
+			for (const reply of legalMoves(after)) {
+				const next = visit(after, reply);
+				if (next.isEnd() || !legalMoves(next).some((answer) => mayGiveCheck(next, answer) && visit(next, answer).isCheckmate())) return null;
+			}
+			return 2;
+		};
+		const distances = sharedBudget ? [1] : [1, 2];
+		threatSearch: for (const distance of distances) for (const threat of threats) {
+			if (threat.promotion) continue;
+			if ((distance === 1 ? visit(probe, threat).isCheckmate() ? 1 : null : shortThreat(probe, threat)) !== distance) continue;
 			const premature = {
 				...threat,
 				from: threat.from === root.move.to ? root.move.from : threat.from
 			};
-			if (root.before.isLegal(premature) && visit(root.before, premature).isCheckmate()) continue;
+			if (root.before.isLegal(premature) && (distance === 1 ? visit(root.before, premature).isCheckmate() : shortThreat(root.before, premature))) continue;
 			const proof = computeMixedCheckingAttack(root, nodeLimit, {
 				active: [...new Set([root.move.to, threat.from])],
 				budget,
 				onFailure,
 				captureThreat,
-				threat
+				threat,
+				threatMateIn: distance,
+				allowCheckEvasion: !sharedBudget
 			});
 			if (proof) {
 				result = {
 					...proof,
 					threat,
 					threatSan: makeSan(probe, threat),
+					...distance === 2 ? { threatMateIn: 2 } : {},
 					visits: startingNodes - budget.nodes
 				};
-				break;
+				break threatSearch;
 			}
 		}
 	} catch (error) {
@@ -12241,7 +12258,8 @@ function computeMixedCheckingAttack(root, nodeLimit, quiet, discovery) {
 		for (const move of forcingMoves) {
 			if (move.promotion) continue;
 			const next = visit(pos, move);
-			if (!next.isCheck()) continue;
+			const resumesThreat = quiet?.threatMateIn === 2 && quiet.threat && move.from === quiet.threat.from && move.to === quiet.threat.to;
+			if (!next.isCheck() && !(quiet?.allowCheckEvasion && pos.isCheck()) && !resumesThreat) continue;
 			const win = defend(next, balance + capturedValue(pos, move), checks - 1, (discovery || quiet) && active ? [...new Set([...moved(active, move) ?? [], move.to])] : moved(active, move));
 			if (win) return {
 				gain: win.gain,
@@ -18417,7 +18435,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 			ply: 1,
 			moveUci: steps[0].uci,
 			value: quietAttack.gain,
-			evidence: `${steps[0].san} ${interference ? `cuts the ${interference.role}'s defensive route from ${makeSquare(interference.from)} to ${makeSquare(interference.to)}, creating the threat` : "creates the new threat"} ${quietAttack.threatSan}.${interference ? ` Without the blocker on ${makeSquare(steps[0].move.to)}, ${interference.defence} could answer that threat.` : ""} Stopping the mate concedes material: after ${material.reply}, ${material.line.join(" ")} wins material. All ${quietAttack.branches.length} legal replies allow a verified local material gain or mate, including captures and counterchecks. This proves a material concession, not a forced-mate claim; later mechanisms belong to their actual moves.`
+			evidence: `${steps[0].san} ${interference ? `cuts the ${interference.role}'s defensive route from ${makeSquare(interference.from)} to ${makeSquare(interference.to)}, creating the threat` : "creates the new threat"} ${quietAttack.threatSan}${quietAttack.threatMateIn === 2 ? " (mate in two if unanswered)" : ""}.${interference ? ` Without the blocker on ${makeSquare(steps[0].move.to)}, ${interference.defence} could answer that threat.` : ""} ${quietAttack.threatMateIn === 2 ? "The attack wins material or mates" : "Stopping the mate concedes material"}: after ${material.reply}, ${material.line.join(" ")} wins material. All ${quietAttack.branches.length} legal replies allow a verified local material gain or mate, including captures and counterchecks. This proves a material concession, not a forced-mate claim; later mechanisms belong to their actual moves.`
 		});
 	}
 	const doubleThreat = !mate && !verifiedFork(steps[0]) ? proveQuietDoubleThreat(steps[0]) : null;
@@ -20390,7 +20408,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 136;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 137;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

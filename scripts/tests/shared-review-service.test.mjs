@@ -9,8 +9,45 @@ import { INITIAL_FEN, makeFen, parseFen } from "chessops/fen";
 import { parseUci } from "chessops/util";
 import { matingEntryDefence } from "../../src/utils/tests/fixtures/matingEntryDefence.ts";
 import { checkingForkCaptureFen } from "../../src/utils/tests/fixtures/checkingForkCaptureDefence.ts";
+import { shortMatingThreatCases } from "../../src/utils/tests/fixtures/shortMatingThreat.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("a missed short mating attack survives generated review, storage and reload", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-shared-review-short-threat-"));
+  const input = shortMatingThreatCases[0];
+  const position = Chess.fromSetup(parseFen(input.fen).unwrap()).unwrap();
+  position.play(parseUci("e1f1"));
+  const after = makeFen(position.toSetup());
+  const options = {root, documentsRoot: join(root, "documents"), engineConfigPath: join(root, "engine.json"),
+    fetchGames: async () => [], lookup: async fen => {
+      assert.ok(fen === input.fen || fen === after);
+      // Synthetic nomination scores exercise the generated service and storage,
+      // not the independently recorded strength of this constructed position.
+      return {depth: 16, pvs: fen === input.fen
+        ? [{cp: 800, moves: input.move}] : [{cp: 200, moves: "f7f6"}]};
+    }};
+  let service;
+  try {
+    await writeFile(join(root, "config.json"), JSON.stringify({accounts: {chesscom: "Tester"}}));
+    await writeFile(join(root, "games.json"), JSON.stringify({games: [{source: "chesscom", end: 1789387200,
+      url: "https://example.test/short-threat", pgn: `[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.16"]\n[SetUp "1"]\n[FEN "${input.fen}"]\n[Result "0-1"]\n\n1. Kf1 0-1`}]}));
+    service = new SharedReviewService(options); await service.initialize(false); await service.run();
+    assert.equal(service.snapshot().error, null);
+    const card = service.snapshot().cards[0]; assert.ok(card);
+    const motif = card.tacticalClassification.missedMotifs.find(m => m.label === "Mating Attack");
+    assert.ok(motif); assert.equal(motif.ply, 1); assert.equal(motif.value, 130);
+    assert.match(motif.evidence, /mate in two if unanswered/);
+    assert.deepEqual((await service.deck()).positions[0].mistakeReview.missedMotifs,
+      card.tacticalClassification.missedMotifs);
+    service.close(); service = new SharedReviewService(options); await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification, card.tacticalClassification);
+  } finally {
+    service?.close(); const target = resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir()) + sep) && target.includes("en-shared-review-short-threat-"));
+    await rm(target, {recursive: true, force: true});
+  }
+});
 
 test("a newly defended fork gains its cause in generated review and saved cards", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-fork-guard-"));
