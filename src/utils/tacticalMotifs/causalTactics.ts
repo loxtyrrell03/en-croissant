@@ -2946,23 +2946,51 @@ function computeMixedCheckingAttack(
         fen: makeFen(pos.toSetup()),
         move: makeUci(move),
     });
-    // A material leaf cannot stop just before a forcing counterattack. A
-    // countercheck needs a concrete answer retaining the gain and leaving no
-    // further immediate check/promotion. Unknown longer king hunts abstain.
-    const answerCountercheck = (
-        pos: Chess,
-        balance: number,
-    ): { gain: number; decision: { fen: string; move: string } } | null => {
-        for (const answer of ordered(pos)) {
-            if (answer.promotion) continue;
-            const next = visit(pos, answer);
-            if (next.isCheckmate()) return { gain: 10000, decision: decision(pos, answer) };
+    // A material leaf cannot stop just before a forcing counterattack. After
+    // one countercheck answer, a further check is allowed only when its checker
+    // can be captured safely, with no further check/promotion. Merely being
+    // able to give away a rook with check must not refute a material gain.
+    const captureCounterchecker = (pos: Chess, balance: number):
+        { gain: number; decision: { fen: string; move: string } } | null => {
+        if (!pos.isCheck() || pos.isEnd()) return null;
+        const checkers = pos.ctx().checkers;
+        for (const capture of ordered(pos)) {
+            if (capture.promotion || !checkers.has(capture.to) || !capturedValue(pos, capture)) continue;
+            const next = visit(pos, capture);
+            if (next.isCheckmate()) return { gain: 10000, decision: decision(pos, capture) };
             if (next.isEnd()) continue;
             let safe = true;
             for (const response of ordered(next)) {
-                if (response.promotion || visit(next, response).isCheck()) {
-                    safe = false;
-                    break;
+                if (response.promotion || visit(next, response).isCheck()) { safe = false; break; }
+            }
+            if (!safe) continue;
+            const gain = participantCaptureGain(pos, capture, [...pos.board[side], capture.to], budget);
+            if (gain !== null && balance + gain >= minimumGain)
+                return { gain: balance + gain, decision: decision(pos, capture) };
+        }
+        return null;
+    };
+    const answerCountercheck = (
+        pos: Chess,
+        balance: number,
+    ): { gain: number; decisions: MixedCheckingAttackProof["decisions"] } | null => {
+        for (const answer of ordered(pos)) {
+            if (answer.promotion) continue;
+            const next = visit(pos, answer);
+            if (next.isCheckmate()) return { gain: 10000, decisions: [decision(pos, answer)] };
+            if (next.isEnd()) continue;
+            let safe = true;
+            let retainedGain = Infinity;
+            const captureAnswers: MixedCheckingAttackProof["decisions"] = [];
+            for (const response of ordered(next)) {
+                if (response.promotion) { safe = false; break; }
+                const checked = visit(next, response);
+                if (checked.isCheck()) {
+                    const retained = captureCounterchecker(checked,
+                        balance + capturedValue(pos, answer) - capturedValue(next, response));
+                    if (!retained) { safe = false; break; }
+                    retainedGain = Math.min(retainedGain, retained.gain);
+                    captureAnswers.push(retained.decision);
                 }
             }
             if (!safe) continue;
@@ -2973,7 +3001,8 @@ function computeMixedCheckingAttack(
                 budget,
             );
             if (gain !== null && balance + gain >= minimumGain)
-                return { gain: balance + gain, decision: decision(pos, answer) };
+                return { gain: Math.min(balance + gain, retainedGain),
+                    decisions: [decision(pos, answer), ...captureAnswers] };
         }
         return null;
     };
@@ -3059,7 +3088,7 @@ function computeMixedCheckingAttack(
                             break;
                         }
                         gain = Math.min(gain, retained.gain - balance);
-                        countercheckAnswers.push(retained.decision);
+                        countercheckAnswers.push(...retained.decisions);
                     }
                 }
                 if (!safe)

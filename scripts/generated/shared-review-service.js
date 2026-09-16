@@ -12057,13 +12057,15 @@ function computeMixedCheckingAttack(root, nodeLimit, quiet, discovery) {
 		fen: makeFen(pos.toSetup()),
 		move: makeUci(move)
 	});
-	const answerCountercheck = (pos, balance) => {
-		for (const answer of ordered(pos)) {
-			if (answer.promotion) continue;
-			const next = visit(pos, answer);
+	const captureCounterchecker = (pos, balance) => {
+		if (!pos.isCheck() || pos.isEnd()) return null;
+		const checkers = pos.ctx().checkers;
+		for (const capture of ordered(pos)) {
+			if (capture.promotion || !checkers.has(capture.to) || !capturedValue(pos, capture)) continue;
+			const next = visit(pos, capture);
 			if (next.isCheckmate()) return {
 				gain: 1e4,
-				decision: decision(pos, answer)
+				decision: decision(pos, capture)
 			};
 			if (next.isEnd()) continue;
 			let safe = true;
@@ -12072,10 +12074,47 @@ function computeMixedCheckingAttack(root, nodeLimit, quiet, discovery) {
 				break;
 			}
 			if (!safe) continue;
-			const gain = participantCaptureGain(pos, answer, [...pos.board[side], answer.to], budget);
+			const gain = participantCaptureGain(pos, capture, [...pos.board[side], capture.to], budget);
 			if (gain !== null && balance + gain >= minimumGain) return {
 				gain: balance + gain,
-				decision: decision(pos, answer)
+				decision: decision(pos, capture)
+			};
+		}
+		return null;
+	};
+	const answerCountercheck = (pos, balance) => {
+		for (const answer of ordered(pos)) {
+			if (answer.promotion) continue;
+			const next = visit(pos, answer);
+			if (next.isCheckmate()) return {
+				gain: 1e4,
+				decisions: [decision(pos, answer)]
+			};
+			if (next.isEnd()) continue;
+			let safe = true;
+			let retainedGain = Infinity;
+			const captureAnswers = [];
+			for (const response of ordered(next)) {
+				if (response.promotion) {
+					safe = false;
+					break;
+				}
+				const checked = visit(next, response);
+				if (checked.isCheck()) {
+					const retained = captureCounterchecker(checked, balance + capturedValue(pos, answer) - capturedValue(next, response));
+					if (!retained) {
+						safe = false;
+						break;
+					}
+					retainedGain = Math.min(retainedGain, retained.gain);
+					captureAnswers.push(retained.decision);
+				}
+			}
+			if (!safe) continue;
+			const gain = participantCaptureGain(pos, answer, [...pos.board[side], answer.to], budget);
+			if (gain !== null && balance + gain >= minimumGain) return {
+				gain: Math.min(balance + gain, retainedGain),
+				decisions: [decision(pos, answer), ...captureAnswers]
 			};
 		}
 		return null;
@@ -12141,7 +12180,7 @@ function computeMixedCheckingAttack(root, nodeLimit, quiet, discovery) {
 							break;
 						}
 						gain = Math.min(gain, retained.gain - balance);
-						countercheckAnswers.push(retained.decision);
+						countercheckAnswers.push(...retained.decisions);
 					}
 				}
 				if (!safe) continue;
@@ -20351,7 +20390,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 135;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 136;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

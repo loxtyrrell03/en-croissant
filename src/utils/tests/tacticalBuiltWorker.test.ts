@@ -25,6 +25,7 @@ import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFo
 import { checkingPawnRetentionCases } from "./fixtures/checkingPawnRetention";
 import { checkingPawnHistoryCases } from "./fixtures/checkingPawnHistory";
 import { settledPawnHistoryCases } from "./fixtures/settledPawnHistory";
+import { countercheckCaptureCases, countercheckCaptureLine } from "./fixtures/checkingCountercheckCapture";
 import { discoveredPinPriorityFen, discoveredPinPriorityLine, discoveredPinPriorityControls } from "./fixtures/discoveredPinPriority";
 import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "./fixtures/checkingPawnFollowup";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
@@ -112,6 +113,19 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
         vi.unstubAllGlobals();
     }
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("capturable counterchecks preserve checking combinations in the compiled worker", async () => {
+    for (const row of countercheckCaptureCases) for (const reflected of [false, true]) {
+        const input = {fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci: reflected ? countercheckCaptureLine.map(reflectMixedForkMove) : countercheckCaptureLine,
+            depth: 16, engineName: "Constructed checking-attack mechanism"};
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(!row.proved || (result.scan.motifs[0]?.id === "forcingAttack" && result.scan.motifs[0].ply === 1)).toBe(true);
+        expect(!row.proved || result.scan.arrows.every(arrow => arrow.ply === 1)).toBe(true);
+        expect(row.id !== "capturable-battery-rook" || !result.scan.motifs.some(m => m.id === "forcingAttack")).toBe(true);
+    }
+}, 30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("settled capture chains preserve real pawn opportunities in the compiled worker", async () => {
     for (const row of settledPawnHistoryCases) {
