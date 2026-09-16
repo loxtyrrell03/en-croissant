@@ -14,6 +14,7 @@ import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
 import { shortMatingThreatCases } from "./fixtures/shortMatingThreat";
 import { matingCheckEvasionFen, matingCheckEvasionLine } from "./fixtures/matingCheckEvasion";
 import { settledRootExchangeCases } from "./fixtures/settledRootExchange";
+import { captureMatingGuardCases } from "./fixtures/captureMatingGuard";
 import {
   buildLiveTacticalScan,
   previewLiveTacticalVariation,
@@ -38,6 +39,20 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a capture-led mating attack keeps its later exchange off the starting board", () => {
+  const value = buildLiveTacticalScan({fen: captureMatingGuardCases[0].fen,
+    pvUci: ["c8c3", "b7g7", "g8h8", "g7h7", "h8h7"],
+    depth: 16, engineName: "Constructed mating-guard concession"});
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Mating Attack found");
+  expect(element.textContent).toContain("new threat Rh3#");
+  expect(element.textContent).toContain("not a forced-mate claim");
+  expect(value.arrows.map(a => a.from + a.to)).toEqual(["c8c3", "c3h3"]);
+  expect(value.variations[0].timeline).toContainEqual(expect.objectContaining({
+    label: "Winning Recapture", moveUci: "h8h7", ply: 5,
+  }));
+});
 
 test("a pawn after a settled exchange is visible without adding future capture badges", () => {
   const row = settledRootExchangeCases[0];

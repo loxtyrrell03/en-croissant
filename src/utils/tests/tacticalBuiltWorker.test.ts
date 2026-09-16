@@ -29,6 +29,7 @@ import { countercheckCaptureCases, countercheckCaptureLine } from "./fixtures/ch
 import { shortMatingThreatCases } from "./fixtures/shortMatingThreat";
 import { matingCheckEvasionCases } from "./fixtures/matingCheckEvasion";
 import { settledRootExchangeCases } from "./fixtures/settledRootExchange";
+import { captureMatingGuardCases } from "./fixtures/captureMatingGuard";
 import { discoveredPinPriorityFen, discoveredPinPriorityLine, discoveredPinPriorityControls } from "./fixtures/discoveredPinPriority";
 import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "./fixtures/checkingPawnFollowup";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
@@ -148,6 +149,17 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("settled root exchange gains sur
         const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
         expect(result.scan).toEqual(buildLiveTacticalScan(input));
         expect(result.scan.motifs.find(m => m.id === "hangingPiece")?.value ?? null).toBe(row.gain);
+    }
+}, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("capture mating-guard concessions survive the production controller", async () => {
+    for (const row of captureMatingGuardCases) for (const reflected of [false, true]) {
+        const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci: [reflected ? reflectMixedForkMove("c8c3") : "c8c3"],
+            engineName: "Constructed mating-guard concession", depth: 16 };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.some(m => m.label === "Mating Attack")).toBe(row.positive);
     }
 }, 30000);
 

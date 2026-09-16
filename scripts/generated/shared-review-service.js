@@ -12068,6 +12068,7 @@ function proveMatingThreatAttack(root, nodeLimit, onFailure, captureThreat, shar
 			return 2;
 		};
 		const distances = sharedBudget ? [1] : [1, 2];
+		const guardFallbacks = [];
 		threatSearch: for (const distance of distances) for (const threat of threats) {
 			if (threat.promotion) continue;
 			if ((distance === 1 ? visit(probe, threat).isCheckmate() ? 1 : null : shortThreat(probe, threat)) !== distance) continue;
@@ -12076,8 +12077,9 @@ function proveMatingThreatAttack(root, nodeLimit, onFailure, captureThreat, shar
 				from: threat.from === root.move.to ? root.move.from : threat.from
 			};
 			if (root.before.isLegal(premature) && (distance === 1 ? visit(root.before, premature).isCheckmate() : shortThreat(root.before, premature))) continue;
+			const active = [...new Set([root.move.to, threat.from])];
 			const proof = computeMixedCheckingAttack(root, nodeLimit, {
-				active: [...new Set([root.move.to, threat.from])],
+				active,
 				budget,
 				onFailure,
 				captureThreat,
@@ -12094,6 +12096,31 @@ function proveMatingThreatAttack(root, nodeLimit, onFailure, captureThreat, shar
 					visits: startingNodes - budget.nodes
 				};
 				break threatSearch;
+			}
+			if (captureThreat && !sharedBudget && distance === 1) guardFallbacks.push({
+				threat,
+				active
+			});
+		}
+		if (!result) for (const { threat, active } of guardFallbacks) {
+			const proof = computeMixedCheckingAttack(root, nodeLimit, {
+				active,
+				budget,
+				onFailure,
+				captureThreat: true,
+				threat,
+				threatMateIn: 1,
+				allowCheckEvasion: true,
+				allowMatingGuardRecapture: true
+			});
+			if (proof) {
+				result = {
+					...proof,
+					threat,
+					threatSan: makeSan(probe, threat),
+					visits: startingNodes - budget.nodes
+				};
+				break;
 			}
 		}
 	} catch (error) {
@@ -12112,7 +12139,7 @@ function computeMixedCheckingAttack(root, nodeLimit, quiet, discovery) {
 	const replies = legalMoves(root.after);
 	if (!quiet && !discovery && !replies.some((move) => move.to === root.move.to && capturedValue(root.after, move))) return null;
 	const budget = quiet?.budget ?? discovery?.budget ?? { nodes: nodeLimit };
-	const minimumGain = discovery?.minimumGain ?? (quiet && !quiet.captureThreat ? Math.max(100, ...legalMoves(root.before).filter((move) => capturedValue(root.before, move)).map((move) => tacticalExchangeGain(root.before, move) + 1)) : 300);
+	const minimumGain = discovery?.minimumGain ?? (quiet && (!quiet.captureThreat || quiet.allowMatingGuardRecapture) ? Math.max(100, ...legalMoves(root.before).filter((move) => capturedValue(root.before, move)).map((move) => tacticalExchangeGain(root.before, move) + 1)) : 300);
 	const moved = (active, move) => active?.filter((square) => square !== move.to).map((square) => square === move.from ? move.to : square);
 	const ordered = (pos) => {
 		const flip = (side === "white" ? 0 : 56) ^ (discovery && root.after.board.kingOf(opposite(side)) % 8 < 4 ? 7 : 0);
@@ -12193,6 +12220,7 @@ function computeMixedCheckingAttack(root, nodeLimit, quiet, discovery) {
 	const attackCache = /* @__PURE__ */ new Map();
 	const combinationLeafCache = /* @__PURE__ */ new Map();
 	const provedAttacks = /* @__PURE__ */ new Map();
+	const sacrificedGuardReplies = /* @__PURE__ */ new Map();
 	const attack = (pos, balance, checks, active) => {
 		if (!discovery) return computeAttack(pos, balance, checks, active);
 		if (--budget.nodes < 0) throw new Error("Mixed checking attack budget exhausted");
@@ -12219,7 +12247,8 @@ function computeMixedCheckingAttack(root, nodeLimit, quiet, discovery) {
 			const probe = withTurn(visit(pos, move), side);
 			return probe.isLegal(threat) && visit(probe, threat).isCheckmate();
 		};
-		const moves = ordered(pos).filter((move) => !active || active.includes(move.from) || pos.isCheck() || restoresMateThreat(move) || (discovery || quiet) && mayGiveCheck(pos, move) && visit(pos, move).isCheck());
+		const sacrificedGuard = sacrificedGuardReplies.get(makeFen(pos.toSetup()));
+		const moves = ordered(pos).filter((move) => !active || active.includes(move.from) || pos.isCheck() || restoresMateThreat(move) || sacrificedGuard === move.to && capturedValue(pos, move) > 0 || (discovery || quiet) && mayGiveCheck(pos, move) && visit(pos, move).isCheck());
 		const leafKey = discovery?.checkingCombination ? `${makeFen(pos.toSetup())}:${balance}:${active?.slice().sort((a, b) => a - b)}` : void 0;
 		const findLeaf = () => {
 			for (const move of moves) {
@@ -12347,6 +12376,12 @@ function computeMixedCheckingAttack(root, nodeLimit, quiet, discovery) {
 		for (const reply of ordered(root.after)) {
 			if (reply.promotion && !quiet?.captureThreat) return null;
 			const next = visit(root.after, reply);
+			if (quiet?.allowMatingGuardRecapture && quiet.threat && root.after.board.get(reply.to)?.color === side) {
+				const unsupported = withTurn(root.after, side);
+				unsupported.board.take(reply.to);
+				unsupported.castles.discardRook(reply.to);
+				if ((!unsupported.isLegal(quiet.threat) || !visit(unsupported, quiet.threat).isCheckmate()) && (!next.isLegal(quiet.threat) || !visit(next, quiet.threat).isCheckmate())) sacrificedGuardReplies.set(makeFen(next.toSetup()), reply.to);
+			}
 			let win = null;
 			for (const checks of discovery ? [
 				0,
@@ -20462,7 +20497,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 139;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 140;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

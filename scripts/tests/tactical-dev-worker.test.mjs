@@ -22,6 +22,7 @@ import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "../../src/u
 import { persistentPawnCases } from "../../src/utils/tests/fixtures/persistentPawnCapture.ts";
 import { checkingPawnPreparationCases } from "../../src/utils/tests/fixtures/checkingPawnPreparation.ts";
 import { branchQuietMateCases, branchQuietMateChoice } from "../../src/utils/tests/fixtures/branchQuietMate.ts";
+import { captureMatingGuardCases } from "../../src/utils/tests/fixtures/captureMatingGuard.ts";
 import { tablebaseCases } from "../../src/utils/tests/fixtures/tablebaseRelevance.ts";
 import { directMaterialPayoffCases, reflectPayoff } from "../../src/utils/tests/fixtures/directMaterialPayoff.ts";
 import {
@@ -109,6 +110,10 @@ test(
     const { castlingAliasCases } = await import("../../src/utils/tests/fixtures/castlingRelevance.ts");
     const { matingInterferenceCases, reflectMatingInterference } = await import("../../src/utils/tests/fixtures/matingInterference.ts");
     const cases = [
+      ...captureMatingGuardCases.filter(row => row.positive).map(row => ({
+        name: `capture mating-guard concession: ${row.id}`, fen: row.fen, pvUci: ["c8c3"],
+        expectedPrimary: ["forcingAttack"], expectedArrows: [["c8", "c3"], ["c3", "h3"]],
+      })),
       ...branchQuietMateCases.map(row => ({...row,name:`branch-dependent mate: ${row.id}`,expectedPrimary:row.positive?["mateIn4"]:[],expectedArrows:row.positive?[["e7","e2"]]:[],expectedTerminalPly:row.positive?7:undefined})),
       { ...branchQuietMateChoice, name:"nonchecking capture mate", pvUci:branchQuietMateChoice.shortLine, expectedPrimary:["mateIn3"],expectedArrows:[["a7","b6"]],expectedTerminalPly:5 },
       ...checkingPawnPreparationCases.map(row => ({...row,name:`checking pawn preparation: ${row.id}`,expectedPrimary:row.positive?["forcingAttack"]:[],expectedArrows:row.positive?[["h3","c8"],["c8","e8"]]:[]})),

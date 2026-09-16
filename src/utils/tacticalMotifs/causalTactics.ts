@@ -2913,6 +2913,7 @@ function proveMatingThreatAttack(
         // budget. Keep their existing nomination scope so this new fallback
         // cannot consume the parent's previously sufficient proof budget.
         const distances: (1 | 2)[] = sharedBudget ? [1] : [1, 2];
+        const guardFallbacks: { threat: NormalMove; active: Square[] }[] = [];
         threatSearch: for (const distance of distances) for (const threat of threats) {
             if (threat.promotion) continue;
             const threatDistance = distance === 1
@@ -2945,6 +2946,23 @@ function proveMatingThreatAttack(
                 };
                 break threatSearch;
             }
+            if (captureThreat && !sharedBudget && distance === 1)
+                guardFallbacks.push({ threat, active });
+        }
+        // Keep all earlier successful strategies unchanged. A defender may
+        // sacrifice material to remove an essential mating guard. Its actual
+        // recapture is connected to this threat even when it does not restore
+        // mate, and an exchange can be worth less than a whole minor piece.
+        if (!result) for (const { threat, active } of guardFallbacks) {
+            const proof = computeMixedCheckingAttack(root, nodeLimit, {
+                active, budget, onFailure, captureThreat: true, threat,
+                threatMateIn: 1, allowCheckEvasion: true, allowMatingGuardRecapture: true,
+            });
+            if (proof) {
+                result = { ...proof, threat, threatSan: makeSan(probe, threat),
+                    visits: startingNodes - budget.nodes };
+                break;
+            }
         }
     } catch (error) {
         onFailure?.(error instanceof Error ? error.message : "Unproved quiet mating attack");
@@ -2968,6 +2986,7 @@ function computeMixedCheckingAttack(
         threat?: NormalMove;
         threatMateIn?: 1 | 2;
         allowCheckEvasion?: boolean;
+        allowMatingGuardRecapture?: boolean;
     },
     discovery?: {
         active: Square[];
@@ -3000,7 +3019,7 @@ function computeMixedCheckingAttack(
     // A new mating threat may force a pawn or exchange concession, not a
     // whole piece. Still demand more than any already available capture;
     // otherwise a weaker first proof can both add noise and hide a better one.
-    const minimumGain = discovery?.minimumGain ?? (quiet && !quiet.captureThreat
+    const minimumGain = discovery?.minimumGain ?? (quiet && (!quiet.captureThreat || quiet.allowMatingGuardRecapture)
         ? Math.max(100, ...legalMoves(root.before).filter(move => capturedValue(root.before, move))
             .map(move => tacticalExchangeGain(root.before, move) + 1))
         : 300);
@@ -3092,6 +3111,9 @@ function computeMixedCheckingAttack(
     const attackCache = new Map<string, Win | null>();
     const combinationLeafCache = new Map<string, Win | null>();
     const provedAttacks = new Map<string, { checks: number; win: Win }>();
+    // Exact first-defence positions only: an enemy wandering onto an old
+    // guard square later cannot become an unrelated funding capture.
+    const sacrificedGuardReplies = new Map<string, Square>();
     const attack = (pos: Chess, balance: number, checks: number, active?: Square[]): Win | null => {
         if (!discovery) return computeAttack(pos, balance, checks, active);
         if (--budget.nodes < 0) throw new Error("Mixed checking attack budget exhausted");
@@ -3123,8 +3145,10 @@ function computeMixedCheckingAttack(
             const probe = withTurn(after, side);
             return probe.isLegal(threat) && visit(probe, threat).isCheckmate();
         };
+        const sacrificedGuard = sacrificedGuardReplies.get(makeFen(pos.toSetup()));
         const moves = ordered(pos).filter((move) =>
             !active || active.includes(move.from) || pos.isCheck() || restoresMateThreat(move) ||
+            (sacrificedGuard === move.to && capturedValue(pos, move) > 0) ||
             // A new participant must join the same forcing king attack with
             // check. Unrelated quiet captures cannot fund the preparation.
             ((discovery || quiet) && mayGiveCheck(pos, move) && visit(pos, move).isCheck()),
@@ -3274,6 +3298,18 @@ function computeMixedCheckingAttack(
         for (const reply of ordered(root.after)) {
             if (reply.promotion && !quiet?.captureThreat) return null;
             const next = visit(root.after, reply);
+            if (quiet?.allowMatingGuardRecapture && quiet.threat &&
+                root.after.board.get(reply.to)?.color === side) {
+                const unsupported = withTurn(root.after, side);
+                unsupported.board.take(reply.to);
+                unsupported.castles.discardRook(reply.to);
+                // The captured ally was necessary for the nominated mate,
+                // and the actual capture really parries that same threat.
+                const withoutGuard = !unsupported.isLegal(quiet.threat) ||
+                    !visit(unsupported, quiet.threat).isCheckmate();
+                if (withoutGuard && (!next.isLegal(quiet.threat) || !visit(next, quiet.threat).isCheckmate()))
+                    sacrificedGuardReplies.set(makeFen(next.toSetup()), reply.to);
+            }
             let win: Win | null = null;
             // Search shorter checking routes first; one irrelevant king hunt
             // must not spend the entire budget before a short winning route.
