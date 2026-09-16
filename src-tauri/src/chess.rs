@@ -1005,6 +1005,10 @@ pub struct MistakeReviewScanResult {
     pub refutation_candidates: Vec<MistakeReviewReplyCandidate>,
     #[specta(optional)]
     pub best_candidates: Vec<MistakeReviewReplyCandidate>,
+    #[specta(optional)]
+    pub previous_fen: Option<String>,
+    #[specta(optional)]
+    pub previous_move_uci: Option<String>,
     pub severity: MistakeReviewSeverity,
     pub cp_loss: i32,
     pub win_probability_drop: f64,
@@ -1325,6 +1329,7 @@ pub async fn scan_mistake_review(
         let move_entries = collect_mainline_move_entries(&game.moves);
         let move_sans = collect_mistake_review_move_sans(game.fen.as_deref(), &move_entries)?;
         let mut ply = 0u32;
+        let mut previous_position: Option<(String, String)> = None;
 
         for entry in move_entries {
             let Some(mv) = decode_move(entry.byte, &chess) else {
@@ -1335,6 +1340,10 @@ pub async fn scan_mistake_review(
             let move_timing = clock_tracker.record_move(side_to_move, &entry.comments);
             let fen_before = Fen::from_position(chess.clone(), EnPassantMode::Legal).to_string();
             let played_move_uci = UciMove::from_move(&mv, CastlingMode::Standard).to_string();
+            // Record every move before any analysis/filter continuation. The
+            // preceding root remains accurate for both colours and custom FENs.
+            let previous_context =
+                previous_position.replace((fen_before.clone(), played_move_uci.clone()));
             let played_move_san = SanPlus::from_move(chess.clone(), &mv).to_string();
             let mut after = chess.clone();
             after.play_unchecked(&mv);
@@ -1658,6 +1667,8 @@ pub async fn scan_mistake_review(
                         pv_san: deep_best.san_moves.clone(),
                         pv_uci: deep_best.uci_moves.clone(),
                         best_candidates: mistake_review_reply_candidates(&fen_before, &deep_before),
+                        previous_fen: previous_context.as_ref().map(|(fen, _)| fen.clone()),
+                        previous_move_uci: previous_context.as_ref().map(|(_, uci)| uci.clone()),
                         refutation_san: deep_after_best.san_moves.clone(),
                         refutation_uci: deep_after_best.uci_moves.clone(),
                         refutation_candidates: mistake_review_reply_candidates(
@@ -2858,6 +2869,8 @@ mod mistake_review_tests {
             refutation_uci: vec!["g8f6".to_string()],
             refutation_candidates: vec![],
             best_candidates: vec![],
+            previous_fen: None,
+            previous_move_uci: None,
             severity: MistakeReviewSeverity::Mistake,
             cp_loss,
             win_probability_drop: 8.0,
@@ -2890,6 +2903,17 @@ mod mistake_review_tests {
             occurrence_count: 1,
             game_ids: vec![game_id],
         }
+    }
+
+    #[test]
+    fn tactical_reply_candidates_retain_optional_preceding_position() {
+        let mut result = scan_result("history", 150, 1);
+        assert!(serde_json::to_value(&result).unwrap()["previousFen"].is_null());
+        result.previous_fen = Some("r5k1/p3p1pp/8/8/3P4/8/P5PP/R5K1 b - - 0 1".to_string());
+        result.previous_move_uci = Some("e7e5".to_string());
+        let wire = serde_json::to_value(&result).unwrap();
+        assert_eq!(wire["previousFen"], result.previous_fen.unwrap());
+        assert_eq!(wire["previousMoveUci"], "e7e5");
     }
 
     #[test]

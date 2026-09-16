@@ -150,6 +150,8 @@ export const positionSchema = z.object({
             refutationUci: z.array(z.string()).optional(),
             refutationCandidates: tacticalReplyCandidatesSchema.optional(),
             bestCandidates: tacticalReplyCandidatesSchema.optional(),
+            previousFen: z.string().optional(),
+            previousMoveUci: z.string().optional(),
             severity: z
                 .enum(["best", "good", "okay", "inaccuracy", "mistake", "blunder"])
                 .optional(),
@@ -314,6 +316,8 @@ export type Position = {
         refutationUci?: string[];
         refutationCandidates?: TacticalReplyCandidate[];
         bestCandidates?: TacticalReplyCandidate[];
+        previousFen?: string;
+        previousMoveUci?: string;
         severity?: "best" | "good" | "okay" | "inaccuracy" | "mistake" | "blunder";
         cpLoss?: number;
         winProbabilityDrop?: number;

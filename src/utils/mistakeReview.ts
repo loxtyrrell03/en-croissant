@@ -729,6 +729,8 @@ export function createMistakeReviewPosition(
             refutationUci: result.refutationUci,
             refutationCandidates: result.refutationCandidates ?? undefined,
             bestCandidates: result.bestCandidates ?? undefined,
+            previousFen: result.previousFen ?? undefined,
+            previousMoveUci: result.previousMoveUci ?? undefined,
             severity: result.severity,
             cpLoss: result.cpLoss,
             winProbabilityDrop: result.winProbabilityDrop,
@@ -1601,6 +1603,8 @@ function getMistakeReviewMotifInput(position: Position) {
         refutationUci: metadata?.refutationUci,
         refutationCandidates: metadata?.refutationCandidates,
         bestCandidates: metadata?.bestCandidates,
+        previousFen: metadata?.previousFen,
+        previousMoveUci: metadata?.previousMoveUci,
         cpLoss: metadata?.cpLoss,
         cpBefore: metadata?.cpBefore,
         cpAfter: metadata?.cpAfter,
@@ -1697,6 +1701,8 @@ function classifyMistakeReviewNatureFromText(
         refutationUci: normalizeMistakeReviewMoveList(metadata?.refutationUci),
         refutationCandidates: metadata?.refutationCandidates,
         bestCandidates: metadata?.bestCandidates,
+        previousFen: metadata?.previousFen,
+        previousMoveUci: metadata?.previousMoveUci,
         cpLoss: metadata?.cpLoss ?? position.engine?.lossCp,
         cpBefore: metadata?.cpBefore,
         cpAfter: metadata?.cpAfter,
@@ -1815,6 +1821,8 @@ export function classifyMistakeReviewNature(
               refutationUci?: string[] | null;
               refutationCandidates?: TacticalReplyCandidate[] | null;
               bestCandidates?: TacticalReplyCandidate[] | null;
+              previousFen?: string | null;
+              previousMoveUci?: string | null;
               cpLoss?: number | null;
               cpBefore?: number | null;
               cpAfter?: number | null;
@@ -1855,6 +1863,8 @@ function computeMistakeReviewNature(input: Parameters<typeof classifyMistakeRevi
         refutationUci: moves(field("refutationUci") ?? metadata?.refutationUci),
         refutationCandidates: candidates.success ? candidates.data : undefined,
         bestCandidates: bestCandidates.success ? bestCandidates.data : undefined,
+        previousFen: text(field("previousFen") ?? metadata?.previousFen),
+        previousMoveUci: text(field("previousMoveUci") ?? metadata?.previousMoveUci),
         cpLoss: number(field("cpLoss") ?? metadata?.cpLoss),
         cpBefore: number(field("cpBefore") ?? metadata?.cpBefore),
         cpAfter: number(field("cpAfter") ?? metadata?.cpAfter),
@@ -1879,6 +1889,8 @@ function getMistakeReviewNatureClassificationCacheKey(
               refutationUci?: string[] | null;
               refutationCandidates?: TacticalReplyCandidate[] | null;
               bestCandidates?: TacticalReplyCandidate[] | null;
+              previousFen?: string | null;
+              previousMoveUci?: string | null;
               cpLoss?: number | null;
               cpBefore?: number | null;
               cpAfter?: number | null;
@@ -1904,6 +1916,8 @@ function getMistakeReviewNatureClassificationCacheKey(
         list(field("refutationUci") ?? metadata?.refutationUci),
         field("refutationCandidates") ?? metadata?.refutationCandidates ?? null,
         field("bestCandidates") ?? metadata?.bestCandidates ?? null,
+        field("previousFen") ?? metadata?.previousFen ?? null,
+        field("previousMoveUci") ?? metadata?.previousMoveUci ?? null,
         field("cpLoss") ?? metadata?.cpLoss ?? "",
         field("cpBefore") ?? metadata?.cpBefore ?? "",
         field("cpAfter") ?? metadata?.cpAfter ?? "",

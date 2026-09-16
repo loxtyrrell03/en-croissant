@@ -81,8 +81,9 @@ export function TacticalScanResult({
             )}
             {scan.preferredMultipv && (
               <Text size="sm" mt="xs">
-                The engine's first line repeats this position before reaching the same tactic.
-                Showing its separately analysed immediate alternative.
+                {scan.preferredReason === "larger-material-lesson"
+                  ? "Showing a strong alternative with a clearer material-winning lesson. The engine's first choice is still listed below."
+                  : "The engine's first line repeats this position before reaching the same tactic. Showing its separately analysed immediate alternative."}
               </Text>
             )}
           </Alert>

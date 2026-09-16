@@ -7,6 +7,37 @@ import { SharedReviewService, engineLine, BackgroundEngine } from "../generated/
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
 
+test("new pawn exposure retains the preceding board through background review and reload", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-shared-review-pawn-"));
+  const previous = "r5k1/p3p1pp/8/8/3P4/8/P5PP/R5K1 b - - 0 1";
+  const fen = "r5k1/p5pp/8/4p3/3P4/8/P5PP/R5K1 w - - 0 2";
+  const after = "r5k1/p5pp/8/4p3/3P4/8/P5PP/1R4K1 b - - 1 2";
+  const options = {root, documentsRoot:join(root,"documents"), engineConfigPath:join(root,"engine.json"),
+    fetchGames:async()=>[], lookup:async(board)=>{
+      assert.ok(board === fen || board === after);
+      return {depth:16,pvs:board===fen ? [{cp:150,moves:"d4e5"}] : [{cp:0,moves:"e5d4"}]};
+    }};
+  let service;
+  try {
+    await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+    await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,url:"https://example.test/pawn",
+      pgn:`[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.16"]\n[SetUp "1"]\n[FEN "${previous}"]\n[Result "0-1"]\n\n1... e5 2. Rb1 0-1`}]}));
+    service=new SharedReviewService(options); await service.initialize(false); await service.run();
+    assert.equal(service.snapshot().error,null);
+    const card=service.snapshot().cards[0]; assert.ok(card);
+    assert.match(card.explanation,/Hanging Pawn/);
+    assert.equal(card.previousFen,previous); assert.equal(card.previousMoveUci,"e7e5");
+    const metadata=(await service.deck()).positions[0].mistakeReview;
+    assert.equal(metadata.previousFen,previous); assert.equal(metadata.previousMoveUci,"e7e5");
+    service.close(); service=new SharedReviewService(options); await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification,card.tacticalClassification);
+  } finally {
+    service?.close(); const target=resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-"));
+    await rm(target,{recursive:true,force:true});
+  }
+});
+
 test("explicit local candidate upgrade reuses cache identity and never repeats cloud lookup", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-candidate-cache-"));
   const fen = "4kb2/8/8/4q3/4P3/NPPP1P2/P7/R2QK3 b Q - 1 1";

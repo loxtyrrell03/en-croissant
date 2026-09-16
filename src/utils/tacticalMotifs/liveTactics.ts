@@ -152,7 +152,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 119;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 120;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {
@@ -204,9 +204,10 @@ export type LiveTacticalScan = {
     labels: LiveTacticalBoardLabel[];
     variations: LiveTacticalVariation[];
     motifClassifierVersion: string;
-    /** A separately analysed immediate alternative to a closed root cycle.
+    /** A separately analysed immediate alternative chosen for teaching priority.
      * Engine ranks/lines remain intact; this only selects the initial preview. */
     preferredMultipv?: number;
+    preferredReason?: "larger-material-lesson";
 };
 
 export type LiveTacticalScanInput = {
@@ -531,7 +532,8 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
         variations,
         viableInputs,
     );
-    const primary = immediate ?? enginePrimary;
+    const materialAlternative = strongerAlternativeToPawnCapture(enginePrimary, variations, viableInputs);
+    const primary = immediate ?? materialAlternative ?? enginePrimary;
     const motifs = primary.motifs.slice(0, 1);
     const publicVariations = variations.map<LiveTacticalVariation>(
         ({ motifClassifierVersion: _version, ...variation }) => variation,
@@ -556,8 +558,33 @@ export function buildLiveTacticalScan(input: LiveTacticalScanInput): LiveTactica
         ]),
         variations: publicVariations,
         motifClassifierVersion: primary.motifClassifierVersion,
-        ...(immediate ? { preferredMultipv: immediate.multipv } : {}),
+        ...(immediate ? { preferredMultipv: immediate.multipv } : materialAlternative ? {
+            preferredMultipv: materialAlternative.multipv, preferredReason: "larger-material-lesson" as const,
+        } : {}),
     };
+}
+
+/** A generic pawn label must not bury a close-scored, independently checked
+ * piece-winning option. Retain both real lines and their original scores;
+ * this is teaching priority, not a claim that the alternative evaluates best. */
+function strongerAlternativeToPawnCapture(
+    principal: ClassifiedLiveTacticalVariation,
+    variations: ClassifiedLiveTacticalVariation[],
+    inputs: LiveTacticalVariationInput[],
+) {
+    const motif = principal.motifs[0];
+    if (motif?.id !== "hangingPiece" || motif.label !== "Hanging Pawn" || motif.ply !== 1) return null;
+    const score = (line: ClassifiedLiveTacticalVariation) => inputs.find((v, i) => (v.multipv ?? i + 1) === line.multipv);
+    const first = score(principal);
+    if (first?.mate != null || !Number.isFinite(first?.cp) || !Number.isInteger(first?.depth) || first!.depth! < 14) return null;
+    return variations.filter(candidate => {
+        const input = score(candidate), theme = candidate.motifs[0];
+        return candidate !== principal && input?.mate == null && Number.isFinite(input?.cp) &&
+            Number.isInteger(input?.depth) && input!.depth! >= first!.depth! &&
+            input!.cp! <= first!.cp! && input!.cp! >= first!.cp! - 100 &&
+            theme?.confidence === "high" && theme.ply === 1 && theme.moveUci === candidate.lineUci[0] &&
+            (theme.value ?? 0) >= (motif.value ?? 100) + 100 && (theme.value ?? 0) < 10000;
+    }).sort((a,b) => score(b)!.cp! - score(a)!.cp!)[0] ?? null;
 }
 
 /** Choose an existing, close-scored engine candidate, not a synthetic line

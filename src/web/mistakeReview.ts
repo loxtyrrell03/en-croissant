@@ -46,6 +46,8 @@ export type PhoneReviewCard = {
     refutationUci?: string[];
     refutationCandidates?: TacticalReplyCandidate[];
     bestCandidates?: TacticalReplyCandidate[];
+    previousFen?: string;
+    previousMoveUci?: string;
     alternativeReply?: TacticalMotifEvidence;
     tacticalClassification?: MistakeReviewMotifClassification;
     before: number;
@@ -149,6 +151,8 @@ export function createPhoneReviewCard(
     if (!usefulReviewSwing(before, after)) return null;
     const motifs = classifyMistakeReviewMotifs({
         fen: move.fenBefore,
+        previousFen: game.moves[index - 1]?.fenBefore,
+        previousMoveUci: game.moves[index - 1]?.uci ?? undefined,
         bestMoveUci: best.uciMoves[0],
         bestMoveSan: best.sanMoves[0],
         playedMoveUci: move.uci,
@@ -185,6 +189,8 @@ export function createPhoneReviewCard(
         refutationCandidates: reply.tacticalCandidates,
         bestCandidates: best.tacticalCandidates,
         alternativeReply: motifs.allowedMotifs.find(motif => motif.alternativeLine),
+        previousFen: game.moves[index - 1]?.fenBefore,
+        previousMoveUci: game.moves[index - 1]?.uci ?? undefined,
         tacticalClassification: motifs,
         bestTimeline: motifs.missedTimeline?.filter((m) => (m.ply ?? 0) <= 8),
         refutationTimeline: motifs.allowedTimeline?.filter((m) => (m.ply ?? 0) <= 6),

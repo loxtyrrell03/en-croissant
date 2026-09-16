@@ -585,6 +585,7 @@ describe("expert tactical judgement with fresh engine lines", () => {
             const side = Chess.fromSetup(parseFen(row.fen).unwrap()).unwrap().turn === "white" ? 1 : -1;
             const classification = after.length ? classifyMistakeReviewMotifs({
                 fen: row.fen, playedMoveUci: row.playedMoveUci, bestMoveUci: before[0].pvUci[0],
+                previousFen: row.previousFen, previousMoveUci: row.previousMoveUci,
                 pvUci: before[0].pvUci, refutationUci: after[0].pvUci,
                 refutationCandidates: after.slice(0, 3).map(line => ({fen: row.afterFen, pvUci: line.pvUci, cp: line.cp, depth: line.depth})),
                 bestCandidates: before.slice(0, 3).map(line => ({fen: row.fen, pvUci: line.pvUci, cp: line.cp, depth: line.depth})),

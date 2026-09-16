@@ -8,6 +8,7 @@ import { parseSan } from "chessops/san";
 import { makeUci } from "chessops/util";
 import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
+import { pawnExposureInput, pawnExposureAlternateInput } from "./fixtures/pawnExposure";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
@@ -128,6 +129,16 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("discovered traps and safe queen
         expect(scan.motifs.some(m => m.id === "discoveredAttack")).toBe(row.positive);
     }
 }, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("exposed pawns and more important alternatives survive the production controller", async () => {
+    for (const input of [pawnExposureInput, pawnExposureAlternateInput,
+        {...pawnExposureInput,previousFen:undefined,previousMoveUci:undefined}]) {
+        const request = {depth:16,engineName:"Constructed control",...input};
+        const {scan}=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,request);
+        expect(scan).toEqual(buildLiveTacticalScan(request));
+        expect(scan.motifs.map(m => m.label)).toEqual(!input.previousFen ? [] : ["variations" in input ? "Hanging Piece" : "Hanging Pawn"]);
+    }
+},30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_RECALL_REPLAY)("all owner-game positions retain the actual compiled scan and history", async()=>{
     const baseline=JSON.parse(readFileSync(process.env.TACTICAL_RECALL_REPLAY!,"utf8"));

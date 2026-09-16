@@ -696,12 +696,72 @@ function captureGainEvidence(step: TacticalReplayStep, gain: number) {
     const victim = step.before.board.get(step.move.to);
     const compensated = gain < step.capture;
     return {
-        label: compensated ? "Material Gain" : "Hanging Piece",
+        label: compensated ? "Material Gain" : victim?.role === "pawn" ? "Hanging Pawn" : "Hanging Piece",
         value: gain,
         evidence: compensated
             ? `${step.san} takes the ${victim?.role ?? "piece"} on ${makeSquare(step.move.to)}, but concedes material elsewhere. The checked exchanges gain at least ${Number((gain / 100).toFixed(1))} ${gain === 100 ? "pawn" : "pawns"}.`
             : `${step.san} wins the loose ${victim?.role ?? "piece"} on ${makeSquare(step.move.to)}.`,
     };
+}
+
+/** A bare pawn capture is often exchange recovery rather than a tactical
+ * oversight. Admit the newly exposed pawn only with replay-matching history:
+ * the same pawn had no profitable legal capture before the previous move.
+ * This is a static exposure comparison, not a playable pass or a certificate
+ * that no older pawn opportunity exists. The ordinary capture verifier still
+ * has to retain the gain and account for counterplay in the actual position. */
+export function isNewlyExposedPawnCapture(
+    step: TacticalReplayStep,
+    previousFen?: string | null,
+    previousMove?: string | null,
+    nodeLimit = 4096,
+) {
+    if (!previousFen || !previousMove || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 ||
+        step.capture !== VALUE.pawn || step.move.promotion ||
+        step.before.board.get(step.move.to)?.role !== "pawn") return false;
+    const history = replayTacticalLine(previousFen, [previousMove]);
+    const prior = history[0];
+    if (!prior || makeFen(prior.after.toSetup()) !== makeFen(step.before.toSetup()) ||
+        prior.capture || prior.move.promotion) return false;
+    const original = relocatedSquare(prior, step.move.to, true);
+    if (original === undefined || prior.before.board.get(original)?.role !== "pawn") return false;
+    const board = withTurn(prior.before, step.before.turn), budget = { nodes: nodeLimit };
+    try {
+        for (const capture of legalMoves(board)) {
+            if (--budget.nodes < 0) return false;
+            if (capture.to !== original) continue;
+            if (capture.promotion) return false;
+            const next = board.clone(); next.play(capture);
+            if (capturedValue(board, capture) - exchange(next, original, budget) > 0) return false;
+        }
+    } catch { return false; }
+    return true;
+}
+
+/** The preferred capture alone does not explain a missed opportunity if that
+ * very pawn can still be won after the played move and supplied legal reply.
+ * This withholds the accusation; it does not prove the two moves equivalent. */
+export function pawnOpportunityRemainsAfterReply(
+    fen: string, bestMove: string, playedMove: string, reply: string, nodeLimit = 4096,
+) {
+    if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return false;
+    const best = replayTacticalLine(fen, [bestMove])[0];
+    const actual = replayTacticalLine(fen, [playedMove, reply]);
+    if (!best || actual.length !== 2 || best.capture !== VALUE.pawn || best.move.promotion ||
+        actual[0].move.to === best.move.to || actual[1].move.from === best.move.to ||
+        best.before.board.get(best.move.to)?.role !== "pawn") return false;
+    const position = actual[1].after;
+    const victim = position.board.get(best.move.to);
+    if (position.isEnd() || victim?.role !== "pawn" || victim.color === position.turn) return false;
+    const budget = { nodes: nodeLimit };
+    try {
+        for (const take of legalMoves(position)) {
+            if (--budget.nodes < 0) return false;
+            if (take.to !== best.move.to || take.promotion) continue;
+            if ((preparationCaptureGain(position, take, budget) ?? 0) >= VALUE.pawn) return true;
+        }
+    } catch { return false; }
+    return false;
 }
 
 /** Recover a concrete capture cause even when the preferred engine reply is
@@ -11713,7 +11773,7 @@ export function auditTacticalMotifs(
     const root = steps[0];
     const directGain = root.capture ? Math.max(0, tacticalCaptureGain(root) ?? 0) : 0;
     if (
-        root.capture >= 320 &&
+        (root.capture >= 320 || isNewlyExposedPawnCapture(root, context?.previousFen, context?.previousMoveUci)) &&
         directGain >= 100 &&
         !candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)
     ) {
@@ -12031,6 +12091,11 @@ export function auditTacticalMotifs(
             // A mate tag or cooperating PV without this proof cannot hide it.
             if (m.id === "hangingPiece" && checkingMate && m.ply === 1) return false;
             if (m.id === "hangingPiece" && m.ply === 1 && xRaySupport?.value !== undefined) return false;
+            // The pawn taken while executing a proved same-move mechanism
+            // is not a second lesson competing with that mechanism.
+            if (m.id === "hangingPiece" && m.ply && steps[m.ply - 1]?.capture === VALUE.pawn &&
+                candidates.some(other => other.ply === m.ply && other.moveUci === m.moveUci &&
+                    (MECHANISMS.has(other.id) || ["trappedPiece", "attackingF2F7"].includes(other.id)))) return false;
             if (
                 m.id === "attacking_undefended_piece" &&
                 candidates.some(

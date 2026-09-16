@@ -7,6 +7,7 @@ import { TacticalScanResult } from "@/components/panels/tactics/TacticalScanResu
 import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import { mixedForkFen, mixedForkLine } from "./fixtures/mixedTargetFork";
 import { directThreatFen, directThreatLine } from "./fixtures/directThreatRelevance";
+import { pawnExposureAlternateInput } from "./fixtures/pawnExposure";
 import {
   buildLiveTacticalScan,
   previewLiveTacticalVariation,
@@ -31,6 +32,16 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a stronger capture alternative explains its priority without claiming an engine repetition", () => {
+  const value = buildLiveTacticalScan(pawnExposureAlternateInput);
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(value.preferredMultipv).toBe(2);
+  expect(element.textContent).toContain("Hanging Piece found");
+  expect(element.textContent).toContain("clearer material-winning lesson");
+  expect(element.textContent).not.toContain("repeats this position");
+  expect(value.variations.map(v => v.lineUci[0])).toEqual(["e5c3", "f8a3"]);
+});
 
 test("a discovery has one root lesson while promotion and the capture payoff remain later", () => {
   const value = buildLiveTacticalScan({ fen: directThreatFen, pvUci: directThreatLine, engineName: "Public counterfactual", depth: 16 });

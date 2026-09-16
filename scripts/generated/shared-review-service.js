@@ -10234,10 +10234,60 @@ function captureGainEvidence(step, gain) {
 	const victim = step.before.board.get(step.move.to);
 	const compensated = gain < step.capture;
 	return {
-		label: compensated ? "Material Gain" : "Hanging Piece",
+		label: compensated ? "Material Gain" : victim?.role === "pawn" ? "Hanging Pawn" : "Hanging Piece",
 		value: gain,
 		evidence: compensated ? `${step.san} takes the ${victim?.role ?? "piece"} on ${makeSquare(step.move.to)}, but concedes material elsewhere. The checked exchanges gain at least ${Number((gain / 100).toFixed(1))} ${gain === 100 ? "pawn" : "pawns"}.` : `${step.san} wins the loose ${victim?.role ?? "piece"} on ${makeSquare(step.move.to)}.`
 	};
+}
+/** A bare pawn capture is often exchange recovery rather than a tactical
+* oversight. Admit the newly exposed pawn only with replay-matching history:
+* the same pawn had no profitable legal capture before the previous move.
+* This is a static exposure comparison, not a playable pass or a certificate
+* that no older pawn opportunity exists. The ordinary capture verifier still
+* has to retain the gain and account for counterplay in the actual position. */
+function isNewlyExposedPawnCapture(step, previousFen, previousMove, nodeLimit = 4096) {
+	if (!previousFen || !previousMove || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || step.capture !== VALUE.pawn || step.move.promotion || step.before.board.get(step.move.to)?.role !== "pawn") return false;
+	const prior = replayTacticalLine(previousFen, [previousMove])[0];
+	if (!prior || makeFen(prior.after.toSetup()) !== makeFen(step.before.toSetup()) || prior.capture || prior.move.promotion) return false;
+	const original = relocatedSquare(prior, step.move.to, true);
+	if (original === void 0 || prior.before.board.get(original)?.role !== "pawn") return false;
+	const board = withTurn(prior.before, step.before.turn), budget = { nodes: nodeLimit };
+	try {
+		for (const capture of legalMoves(board)) {
+			if (--budget.nodes < 0) return false;
+			if (capture.to !== original) continue;
+			if (capture.promotion) return false;
+			const next = board.clone();
+			next.play(capture);
+			if (capturedValue(board, capture) - exchange(next, original, budget) > 0) return false;
+		}
+	} catch {
+		return false;
+	}
+	return true;
+}
+/** The preferred capture alone does not explain a missed opportunity if that
+* very pawn can still be won after the played move and supplied legal reply.
+* This withholds the accusation; it does not prove the two moves equivalent. */
+function pawnOpportunityRemainsAfterReply(fen, bestMove, playedMove, reply, nodeLimit = 4096) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return false;
+	const best = replayTacticalLine(fen, [bestMove])[0];
+	const actual = replayTacticalLine(fen, [playedMove, reply]);
+	if (!best || actual.length !== 2 || best.capture !== VALUE.pawn || best.move.promotion || actual[0].move.to === best.move.to || actual[1].move.from === best.move.to || best.before.board.get(best.move.to)?.role !== "pawn") return false;
+	const position = actual[1].after;
+	const victim = position.board.get(best.move.to);
+	if (position.isEnd() || victim?.role !== "pawn" || victim.color === position.turn) return false;
+	const budget = { nodes: nodeLimit };
+	try {
+		for (const take of legalMoves(position)) {
+			if (--budget.nodes < 0) return false;
+			if (take.to !== best.move.to || take.promotion) continue;
+			if ((preparationCaptureGain(position, take, budget) ?? 0) >= VALUE.pawn) return true;
+		}
+	} catch {
+		return false;
+	}
+	return false;
 }
 /** Recover a concrete capture cause even when the preferred engine reply is
 * a different, unexplained move. The better board must avoid every profitable
@@ -17649,7 +17699,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	}
 	const root = steps[0];
 	const directGain = root.capture ? Math.max(0, tacticalCaptureGain(root) ?? 0) : 0;
-	if (root.capture >= 320 && directGain >= 100 && !candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)) {
+	if ((root.capture >= 320 || isNewlyExposedPawnCapture(root, context?.previousFen, context?.previousMoveUci)) && directGain >= 100 && !candidates.some((m) => m.id === "hangingPiece" && m.ply === 1)) {
 		if (root.before.board.get(root.move.to)) candidates.push({
 			id: "hangingPiece",
 			...captureGainEvidence(root, directGain),
@@ -17796,6 +17846,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		if (m.id === "attacking_undefended_piece" && checkingMate && m.ply === 1) return false;
 		if (m.id === "hangingPiece" && checkingMate && m.ply === 1) return false;
 		if (m.id === "hangingPiece" && m.ply === 1 && xRaySupport?.value !== void 0) return false;
+		if (m.id === "hangingPiece" && m.ply && steps[m.ply - 1]?.capture === VALUE.pawn && candidates.some((other) => other.ply === m.ply && other.moveUci === m.moveUci && (MECHANISMS.has(other.id) || ["trappedPiece", "attackingF2F7"].includes(other.id)))) return false;
 		if (m.id === "attacking_undefended_piece" && candidates.some((other) => other.ply === m.ply && ["pin", "skewer"].includes(other.id))) return false;
 		if (m.id === "hangingPiece" && candidates.some((other) => other.ply === m.ply && ["capturingDefender", "intermezzo"].includes(other.id))) return false;
 		if (m.id === "sacrifice" && candidates.some((other) => MECHANISMS.has(other.id) && other.ply === m.ply)) return false;
@@ -19026,7 +19077,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 114;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 115;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -19597,6 +19648,10 @@ function selectContinuationLessons(timeline, rootMotifs) {
 * so later repetitions and opponent counterplay cannot replace the lesson. */
 function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine, tablebaseEvidence) {
 	const fullReplay = replayTacticalLine(fen, line);
+	if (rootMotifs.length && rootMotifs.every((motif) => motif.ply === 1 && motif.id === "hangingPiece" && motif.label === "Hanging Pawn")) return rootMotifs.map((motif) => ({
+		...motif,
+		actor: fullReplay[0]?.before.turn
+	}));
 	const provedPromotionOffer = rootMotifs.some((motif) => motif.id === "promotionCombination" && motif.ply === 1);
 	const promotionEpisode = provedPromotionOffer && fullReplay.slice(0, 17).some((step) => step.before.turn === fullReplay[0].before.turn && step.move.promotion);
 	const terminal = fullReplay.findIndex((step) => step.after.isEnd() || promotionEpisode && step.before.turn === fullReplay[0].before.turn && step.move.promotion);
@@ -19713,6 +19768,7 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine, tablebase
 			} : {}
 		});
 		for (const motif of candidates.filter((m) => m.ply === 1)) {
+			if (index > 0 && motif.id === "hangingPiece" && motif.label === "Hanging Pawn") continue;
 			if (motif.id === "perpetualCheck" && [...evidence.values()].some((previous) => previous.id === "perpetualCheck" && previous.actor === step.before.turn && (previous.ply ?? Infinity) < index + 1 && replay.slice(previous.ply, index + 1).every((entry) => entry.before.turn !== step.before.turn || entry.after.isCheck()))) continue;
 			if (motif.id === "forcingAttack" && [...evidence.values()].some((previous) => previous.id === "forcingAttack" && previous.actor === step.before.turn && (previous.ply ?? Infinity) < index + 1)) continue;
 			if (motif.label === "Forcing Mate" && [...evidence.values()].some((previous) => previous.actor === step.before.turn && (previous.ply ?? Infinity) < index + 1 && /^mateIn\d+$/.test(previous.id) && previous.value === 1e4 && !replay[(previous.ply ?? 0) - 1]?.after.isCheckmate())) continue;
@@ -19750,7 +19806,9 @@ function cacheKey(input) {
 		input.cpBefore ?? null,
 		input.cpAfter ?? null,
 		input.refutationCandidates ?? null,
-		input.bestCandidates ?? null
+		input.bestCandidates ?? null,
+		input.previousFen ?? null,
+		input.previousMoveUci ?? null
 	]);
 }
 /** Same-board engine nominations, not tactical certificates. A full legal PV
@@ -19810,12 +19868,17 @@ function classifyMistakeReviewMotifs(input) {
 			...m,
 			source: "allowed"
 		})),
-		missedMotifs: playedTheBestMove ? [] : auditTacticalMotifs(fen, bestLine, toMotifEvidence(missedDetail, "missed", input.pvSan), typeof input.cpBefore === "number" ? input.cpBefore * (fenSide(fen) === "w" ? 1 : -1) : void 0, { tablebaseEvidence: input.tablebaseEvidence }).map((m) => ({
+		missedMotifs: playedTheBestMove ? [] : auditTacticalMotifs(fen, bestLine, toMotifEvidence(missedDetail, "missed", input.pvSan), typeof input.cpBefore === "number" ? input.cpBefore * (fenSide(fen) === "w" ? 1 : -1) : void 0, {
+			previousFen: input.previousFen,
+			previousMoveUci: cleanUci(input.previousMoveUci),
+			tablebaseEvidence: input.tablebaseEvidence
+		}).map((m) => ({
 			...m,
 			source: "missed"
 		})),
 		motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION
 	};
+	classification.missedMotifs = classification.missedMotifs.filter((motif) => !(motif.id === "hangingPiece" && motif.label === "Hanging Pawn" && motif.ply === 1 && bestMoveUci && playedMoveUci && refutationLine[0] && pawnOpportunityRemainsAfterReply(fen, bestMoveUci, playedMoveUci, refutationLine[0])));
 	classification.missedMotifs = qualifyComparableCaptureChoice(fen, bestMoveUci, playedMoveUci, classification.missedMotifs);
 	const playedEndgameOutcome = verifiedTablebasePosition(fen, input.tablebaseEvidence)?.moves.find((move) => move.uci === playedMoveUci)?.outcome;
 	classification.missedMotifs = classification.missedMotifs.filter((m) => m.id !== "drawingCapture" || playedEndgameOutcome === 1);
@@ -19829,19 +19892,25 @@ function classifyMistakeReviewMotifs(input) {
 	compared.allowedMotifs = selectRootConnectedLessons(fenAfterPlayedMove ?? "", refutationLine, compared.allowedMotifs, compared.allowedTimeline ?? []);
 	if (compared.missedTimeline) compared.missedTimeline = compared.missedTimeline.filter((m) => m.id !== "drawingCapture" || m.ply !== 1 || playedEndgameOutcome === 1);
 	compared.missedMotifs = selectRootConnectedLessons(fen, bestLine, compared.missedMotifs, compared.missedTimeline ?? []);
-	if (!playedTheBestMove && fenAfterPlayedMove && playedMoveUci && bestMoveUci && typeof input.cpLoss === "number" && Number.isFinite(input.cpLoss) && !compared.missedMotifs.some(isImmediateTacticalLesson)) for (const candidate of nominatedAlternatives(fen, bestMoveUci, input.bestCandidates, Math.min(100, input.cpLoss - 50))) {
+	const genericPawn = (motif) => motif.id === "hangingPiece" && motif.label === "Hanging Pawn";
+	const missedRoots = compared.missedMotifs.filter(isImmediateTacticalLesson);
+	if (!playedTheBestMove && fenAfterPlayedMove && playedMoveUci && bestMoveUci && typeof input.cpLoss === "number" && Number.isFinite(input.cpLoss) && missedRoots.every(genericPawn)) for (const candidate of nominatedAlternatives(fen, bestMoveUci, input.bestCandidates, Math.min(100, input.cpLoss - 50))) {
 		const move = candidate.pvUci[0];
 		if (move === playedMoveUci || deriveFenAfterMove(fen, move) === fenAfterPlayedMove) continue;
 		const primary = selectImportantTacticalMotifs(qualifyComparableCaptureChoice(fen, move, playedMoveUci, classifyPositionTacticalMotifs({
 			fen,
 			pvUci: candidate.pvUci,
 			rootCp: candidate.cp,
+			previousFen: input.previousFen,
+			previousMoveUci: input.previousMoveUci,
 			tablebaseEvidence: input.tablebaseEvidence
 		}).motifs.map((motif) => ({
 			...motif,
 			source: "missed"
 		}))).filter((motif) => motif.moveUci === move && motif.confidence === "high" && isImmediateTacticalLesson(motif) && (motif.id !== "drawingCapture" || playedEndgameOutcome === 1)), 1)[0];
 		if (!primary) continue;
+		if (genericPawn(primary) && refutationLine[0] && pawnOpportunityRemainsAfterReply(fen, move, playedMoveUci, refutationLine[0])) continue;
+		if (missedRoots.length && (primary.value ?? 0) <= Math.max(...missedRoots.map((m) => m.value ?? 0))) continue;
 		const step = replayTacticalLine(fen, [move])[0];
 		if (!step) continue;
 		compared.missedMotifs = [{
@@ -19858,10 +19927,11 @@ function classifyMistakeReviewMotifs(input) {
 		}))];
 		break;
 	}
-	if (!playedTheBestMove && playedMoveUci && bestMoveUci && typeof input.cpLoss === "number" && Number.isFinite(input.cpLoss) && input.cpLoss > 20 && !compared.allowedMotifs.some((m) => isImmediateTacticalLesson(m) && (m.comparison === "prevented" || m.comparison === "reduced"))) {
+	const allowedRoots = compared.allowedMotifs.filter((m) => isImmediateTacticalLesson(m) && (m.comparison === "prevented" || m.comparison === "reduced"));
+	if (!playedTheBestMove && playedMoveUci && bestMoveUci && typeof input.cpLoss === "number" && Number.isFinite(input.cpLoss) && input.cpLoss > 20 && allowedRoots.every(genericPawn)) {
 		const nominated = nominatedAlternatives(fenAfterPlayedMove ?? "", refutationLine[0], input.refutationCandidates, Math.min(100, input.cpLoss / 2)).map((candidate) => candidate.pvUci[0]);
 		const alternative = nominated.length ? proveAlternativeCaptureCause(fen, playedMoveUci, bestMoveUci, nominated, refutationLine[0]) : null;
-		if (alternative) compared.allowedMotifs = [alternative, ...compared.allowedMotifs.map((m) => ({
+		if (alternative && (!allowedRoots.length || (alternative.value ?? 0) > Math.max(...allowedRoots.map((m) => m.value ?? 0)))) compared.allowedMotifs = [alternative, ...compared.allowedMotifs.map((m) => ({
 			...m,
 			relevance: "secondary"
 		}))];
@@ -19936,6 +20006,8 @@ function createPhoneReviewCard(game, index, player, best, reply, now = Date.now(
 	if (!usefulReviewSwing(before, after)) return null;
 	const motifs = classifyMistakeReviewMotifs({
 		fen: move.fenBefore,
+		previousFen: game.moves[index - 1]?.fenBefore,
+		previousMoveUci: game.moves[index - 1]?.uci ?? void 0,
 		bestMoveUci: best.uciMoves[0],
 		bestMoveSan: best.sanMoves[0],
 		playedMoveUci: move.uci,
@@ -19972,6 +20044,8 @@ function createPhoneReviewCard(game, index, player, best, reply, now = Date.now(
 		refutationCandidates: reply.tacticalCandidates,
 		bestCandidates: best.tacticalCandidates,
 		alternativeReply: motifs.allowedMotifs.find((motif) => motif.alternativeLine),
+		previousFen: game.moves[index - 1]?.fenBefore,
+		previousMoveUci: game.moves[index - 1]?.uci ?? void 0,
 		tacticalClassification: motifs,
 		bestTimeline: motifs.missedTimeline?.filter((m) => (m.ply ?? 0) <= 8),
 		refutationTimeline: motifs.allowedTimeline?.filter((m) => (m.ply ?? 0) <= 6),
@@ -20763,6 +20837,8 @@ function sharedReviewDeck(cards, enginePath = "", now = Date.now()) {
 				refutationUci: c.refutationUci,
 				refutationCandidates: c.refutationCandidates,
 				bestCandidates: c.bestCandidates,
+				previousFen: c.previousFen,
+				previousMoveUci: c.previousMoveUci,
 				winProbabilityDrop: c.drop,
 				cpBefore: chanceCp(c.before),
 				cpAfter: chanceCp(c.after),

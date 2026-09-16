@@ -31,10 +31,11 @@ const liabilityMode = process.argv.includes("--liability");
 const quietForkMode = process.argv.includes("--quiet-fork");
 const discoveryTrapMode = process.argv.includes("--discovery-trap");
 const perpetualMode = process.argv.includes("--perpetual-material");
+const pawnMode = process.argv.includes("--pawn");
 const root = process.cwd(),
   output = resolve(
     root,
-    perpetualMode ? "tmp/tactical-perpetual-material-adapter112" : discoveryTrapMode ? "tmp/tactical-discovery-trap-adapter111" : quietForkMode ? "tmp/tactical-quiet-fork-adapter110" : liabilityMode ? "tmp/tactical-liability-adapter108" : discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
+    pawnMode ? "tmp/tactical-pawn-adapter115" : perpetualMode ? "tmp/tactical-perpetual-material-adapter112" : discoveryTrapMode ? "tmp/tactical-discovery-trap-adapter111" : quietForkMode ? "tmp/tactical-quiet-fork-adapter110" : liabilityMode ? "tmp/tactical-liability-adapter108" : discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
       ? "tmp/tactical-quiet-mate-adapter104"
       : interferenceMode
         ? "tmp/tactical-interference-adapter104"
@@ -50,7 +51,12 @@ const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
 const cases = (
-  perpetualMode
+  pawnMode
+    ? [
+      {id:"exposed-pawn",fen:"r5k1/p5pp/8/4p3/3P4/8/P5PP/R5K1 w - - 0 2",previousFen:"r5k1/p3p1pp/8/8/3P4/8/P5PP/R5K1 b - - 0 1",previousMoveUci:"e7e5",pvUci:["d4e5"],expectedLabel:"Hanging Pawn"},
+      {id:"stronger-piece",fen:"4kb2/8/8/4q3/4P3/NPPP1P2/P7/R2QK3 b Q - 1 1",previousFen:"4kb2/8/8/4q3/4P3/1PPP1P2/P7/RN1QK3 w Q - 0 1",previousMoveUci:"b1a3",pvUci:["e5c3"],variations:[{multipv:1,depth:16,cp:640,pvUci:["e5c3"]},{multipv:2,depth:16,cp:600,pvUci:["f8a3"]}],expectedLabel:"Hanging Piece"},
+    ]
+    : perpetualMode
     ? perpetualMaterialCases.filter(row => row.id === "saving-fork" || row.id === "positive-position-not-saving").map(row => ({ ...row, pvUci: perpetualMaterialLine, variations: [{ pvUci: perpetualMaterialLine, cp: row.cp }] }))
     : discoveryTrapMode
     ? discoveryTrapCases.filter(row=>row.positive || row.id==="queen-b4-escape").map(row=>({...row,pvUci:row.positive?["e2e4","c4c6","f1b5"]:["e2e4"]}))
@@ -175,7 +181,25 @@ try {
           index,
           scale,
         });
-        if (perpetualMode) {
+        if (pawnMode) {
+          await page.getByText(`${row.expectedLabel} found`, {exact:true}).waitFor();
+          const button = page.getByRole("button", {name:/^Show .* on board$/}).first();
+          await button.focus(); await page.keyboard.press("Enter");
+          const preview = await page.evaluate(() => window.fixture.last);
+          assert.equal(preview.motifs[0].label, row.expectedLabel);
+          assert(preview.arrows.some(a => a.from + a.to === (row.id === "stronger-piece" ? "f8a3" : "d4e5")));
+          assert(preview.labels.some(label => label.text === row.expectedLabel));
+          if (row.id === "stronger-piece") {
+            await page.getByText(/clearer material-winning lesson/).waitFor();
+            assert(!(await page.locator("main").innerText()).includes("repeats this position"));
+            assert.equal((await page.evaluate(() => window.fixture.scan)).preferredMultipv, 2);
+          }
+          if (width === 360 && scale === 2) {
+            await page.screenshot({path:resolve(output,`${row.id}.png`),fullPage:true});
+            await page.locator(".mantine-ScrollArea-viewport").evaluate(element => { element.scrollTop = 0; });
+            await page.screenshot({path:resolve(output,`${row.id}-root.png`),fullPage:true});
+          }
+        } else if (perpetualMode) {
           const saving = row.expected === "perpetualCheck";
           await page.getByText(saving ? "Perpetual Check found" : "Fork found", { exact: true }).waitFor();
           const button = page.getByRole("button", { name: /^Show .* on board$/ });

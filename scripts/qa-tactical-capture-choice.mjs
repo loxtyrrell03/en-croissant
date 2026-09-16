@@ -13,10 +13,11 @@ const natureMode = process.argv.includes("--nature");
 const discoveryMode = process.argv.includes("--discovery");
 const alternativeMode = process.argv.includes("--alternative");
 const missedAlternativeMode = process.argv.includes("--missed-alternative");
+const pawnMode = process.argv.includes("--pawn");
 const root = process.cwd(),
   output = resolve(
     root,
-    missedAlternativeMode ? "tmp/mistake-alternative-adapter114" : alternativeMode ? "tmp/mistake-alternative-adapter113" : discoveryMode ? "tmp/mistake-discovery-adapter107" : natureMode ? "tmp/mistake-nature-v4" : "tmp/tactical-capture-choice-adapter105",
+    pawnMode ? "tmp/mistake-pawn-adapter115" : missedAlternativeMode ? "tmp/mistake-alternative-adapter114" : alternativeMode ? "tmp/mistake-alternative-adapter113" : discoveryMode ? "tmp/mistake-discovery-adapter107" : natureMode ? "tmp/mistake-nature-v4" : "tmp/tactical-capture-choice-adapter105",
   );
 await mkdir(output, { recursive: true });
 const relative = (name) =>
@@ -35,10 +36,12 @@ import{classifyMistakeReviewNature,migrateMistakeReviewDeckNatureClassifications
 import{positionSchema}from'@/components/files/opening';
 import{alternativeCaptureInput}from'@/utils/tests/fixtures/alternativeCapture';
 import{missedAlternativeInput}from'@/utils/tests/fixtures/missedAlternative';
+import{pawnExposureReviewInput}from'@/utils/tests/fixtures/pawnExposure';
 const input={fen:'1rr3k1/5ppp/2B1b3/5p2/6N1/1P6/P1P2PPP/R3R1K1 b - - 0 21',bestMoveUci:'c8c6',playedMoveUci:'f5g4',pvUci:['c8c6','g4e5','c6c2'],pvSan:['Rxc6','Ne5','Rxc2'],refutationUci:['c6e4','c8c5','a2a4'],refutationSan:['Be4','Rc5','a4']};
 const review={...input,...classifyMistakeReviewMotifs(input),playerColor:'black',playerName:'Public game example',opponent:'Opponent',severity:'mistake'};
 const position={fen:input.fen,sideToMove:'black',answer:'Rxc6',answerUci:'c8c6',card:{},mistakeReview:review};
 const samples={
+pawn:pawnExposureReviewInput,
 alternative:alternativeCaptureInput,
 missedAlternative:missedAlternativeInput,
 discovery:{fen:'5rk1/Q1RR1pp1/4p2p/8/4KP2/3rP3/P1q3PP/8 b - - 1 30',bestMoveUci:'d3d7',bestMoveSan:'Rxd7+',playedMoveUci:'f7f5',playedMoveSan:'f5+',pvUci:['d3d7','c7c2','d7a7'],refutationUci:['e4f3'],cpLoss:521},
@@ -50,7 +53,7 @@ window.fixture={};function App(){const[scale,setScale]=useState(1),[reveal,setRe
 window.fixture.select=async(s,r,restore,which='capture')=>{
 const data=samples[which],nature=classifyMistakeReviewNature(data);
 const value={...position,fen:data.fen,sideToMove:data.fen.split(' ')[1]==='w'?'white':'black',answer:data.bestMoveSan??'Rxc6',answerUci:data.bestMoveUci,mistakeReview:{...review,...data,playerColor:data.fen.split(' ')[1]==='w'?'white':'black',...classifyMistakeReviewMotifs(data),nature:nature.nature,natureConfidence:nature.confidence,natureReason:nature.reason,natureAspect:nature.aspect,allowedNature:nature.allowedNature,missedNature:nature.missedNature,tacticalSignals:nature.tacticalSignals,natureClassifierVersion:4}};
-if(restore){value.mistakeReview=positionSchema.shape.mistakeReview.parse(JSON.parse(JSON.stringify({...value.mistakeReview,nature:'tactical',natureClassifierVersion:which==='discovery'?4:3,...(which==='discovery'||which==='alternative'||which==='missedAlternative'?{motifClassifierVersion:'site-55.adapter-106',natureReason:'Old explanation'}:{})})));const migrated=which==='discovery'||which==='alternative'||which==='missedAlternative'?await migrateMistakeReviewDeckMotifClassifications({positions:[value]}):await migrateMistakeReviewDeckNatureClassifications({positions:[value]});value.mistakeReview=migrated.deck.positions[0].mistakeReview;}
+if(restore){value.mistakeReview=positionSchema.shape.mistakeReview.parse(JSON.parse(JSON.stringify({...value.mistakeReview,nature:'tactical',natureClassifierVersion:which==='discovery'?4:3,...(which==='discovery'||which==='alternative'||which==='missedAlternative'||which==='pawn'?{motifClassifierVersion:'site-55.adapter-106',natureReason:'Old explanation'}:{})})));const migrated=which==='discovery'||which==='alternative'||which==='missedAlternative'||which==='pawn'?await migrateMistakeReviewDeckMotifClassifications({positions:[value]}):await migrateMistakeReviewDeckNatureClassifications({positions:[value]});value.mistakeReview=migrated.deck.positions[0].mistakeReview;}
 flushSync(()=>{setScale(s);setReveal(r);setEpoch(v=>v+1);setValue(value)});
 };
 return <MantineProvider forceColorScheme="dark" theme={{scale}}><main style={{padding:12,boxSizing:'border-box',width:'100%'}}><TacticalAuditGameInfoPanel key={epoch} position={value} revealAnswer={reveal}/></main></MantineProvider>}
@@ -130,7 +133,7 @@ try {
     await page.screenshot({ path: resolve(output, "failed-render.png"), fullPage: true });
     throw error;
   }
-  for (const which of missedAlternativeMode ? ["missedAlternative", "alternative"] : alternativeMode ? ["alternative"] : discoveryMode ? ["discovery"] : natureMode ? ["capture", "quiet", "fork"] : ["capture"])
+  for (const which of pawnMode ? ["pawn"] : missedAlternativeMode ? ["missedAlternative", "alternative"] : alternativeMode ? ["alternative"] : discoveryMode ? ["discovery"] : natureMode ? ["capture", "quiet", "fork"] : ["capture"])
     for (const width of [1100, 760, 360])
       for (const scale of [1, 2])
         for (const restore of [false, true]) {
@@ -150,7 +153,10 @@ try {
                 ? "Likely positional"
                 : "Tactical";
           await page.getByText(natureLabel, { exact: true }).waitFor();
-          if (which === "capture") {
+          if (which === "pawn") {
+            await page.getByText("What you missed: Hanging Pawn", {exact:true}).waitFor();
+            assert((await page.locator("main").innerText()).includes("dxe5 wins the loose pawn on e5"));
+          } else if (which === "capture") {
             await page.getByText("Capture in the better line", { exact: true }).waitFor();
             assert(!(await page.locator("main").innerText()).includes("What you missed"));
             await page.getByText("Better move, move by move", { exact: true }).click();
@@ -169,7 +175,14 @@ try {
             const detail = page.locator("details").filter({has: page.getByText("Separate tactical reply", {exact:true})});
             assert((await detail.innerText()).includes("Bxa3"));
             assert(!(await detail.innerText()).includes("Qxc3"));
-            assert.equal(await page.getByText("Opponent's refutation, move by move", {exact:true}).count(), 0);
+            // The newly exposed c3 pawn now has its own principal-line
+            // explanation. It must stay separate from the stronger Bxa3.
+            const principalSummary = page.getByText("Opponent's refutation, move by move", {exact:true});
+            await principalSummary.click();
+            const principal = page.locator("details").filter({has:principalSummary});
+            assert((await principal.innerText()).includes("Qxc3"));
+            assert((await principal.innerText()).toLowerCase().includes("hanging pawn"));
+            assert(!(await principal.innerText()).includes("Bxa3"));
           } else if (which === "discovery") {
             await page.getByText("What you missed: Discovered Check", { exact: true }).waitFor();
             assert((await page.locator("main").innerText()).includes("cannot recapture on d7"));
