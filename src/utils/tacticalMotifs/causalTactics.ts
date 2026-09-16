@@ -803,18 +803,23 @@ const checkingPawnRetentionCache = new Map<string, CheckingPawnRetention | null>
  * an interposer and profitable captures may also retain through checked king
  * flights: all checks must end in a safe capture/block or an identical-board
  * cycle within six further evasions. Exhaustion is unknown, not king safety.
- * Leaves include
+ * A pawn follow-up can nominate this route when that capture was already
+ * profitable before the check: the checking capture inserts an extra gain
+ * before that opportunity. Newly created pawn threats in a king attack need
+ * their own attacking proof, not a material-only liquidation witness. These
+ * new nominations always use the countercheck-aware path. Leaves include
  * all immediate friendly liabilities and the existing countercheck horizon;
  * this is a bounded material lesson, not a whole-position winning claim. */
 export function proveCheckingPawnRetention(steps: TacticalReplayStep[], nodeLimit = 8192, onTrace?: (reason: string) => void): CheckingPawnRetention | null {
     const [root, nominatedReply, nominatedCapture] = steps;
     const checkingContinuation = !!root && !!nominatedCapture && !nominatedCapture.capture &&
         nominatedCapture.move.from === root.move.to && nominatedCapture.after.isCheck();
+    const pawnContinuation = nominatedCapture?.capture === VALUE.pawn;
     if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 ||
         root.capture !== VALUE.pawn || root.move.promotion ||
         root.before.board.get(root.move.to)?.role !== "pawn" ||
         !root.after.isCheck() || root.after.isEnd() ||
-        !nominatedReply || !nominatedCapture || (nominatedCapture.capture < VALUE.knight && !checkingContinuation) ||
+        !nominatedReply || !nominatedCapture || (nominatedCapture.capture < VALUE.pawn && !checkingContinuation) ||
         nominatedCapture.move.promotion ||
         defenderCanClaimFiftyMoveDraw(root.after)) return null;
     const key = `${makeFen(root.before.toSetup())}:${root.uci}:${nominatedReply.uci}:${nominatedCapture.uci}`;
@@ -825,6 +830,15 @@ export function proveCheckingPawnRetention(steps: TacticalReplayStep[], nodeLimi
         const direct = preparationCaptureGain(root.before, root.move, budget);
         onTrace?.(`Root gain ${direct}`);
         if (direct === null || direct < VALUE.pawn) return null;
+        if (pawnContinuation) {
+            const priorCapture = nominatedCapture.move.from === root.move.to
+                ? { ...nominatedCapture.move, from: root.move.from }
+                : nominatedCapture.move;
+            const priorGain = root.before.isLegal(priorCapture)
+                ? preparationCaptureGain(root.before, priorCapture, budget) : null;
+            onTrace?.(`Prior follow-up gain ${priorGain}`);
+            if (priorGain === null || priorGain < VALUE.pawn) return null;
+        }
         const king = root.after.board.kingOf(root.after.turn);
         const equalInterposition = (pos: Chess, reply: NormalMove, answer: NormalMove) => {
             if (king === undefined || answer.from !== root.move.to || answer.to !== reply.to ||
@@ -1002,10 +1016,10 @@ export function proveCheckingPawnRetention(steps: TacticalReplayStep[], nodeLimi
             ...(defensiveDecisions.length ? { defensiveDecisions } : {}) } : null;
     };
     let proof: CheckingPawnRetention | null = null;
-    // Preserve established positive-capture answers. Only an incomplete old
-    // proof tries exchange/retreat retention, with stronger countercheck safety
-    // on EVERY selected answer and the same shared operation budget.
-    try { proof = compute(false) ?? (budget.nodes > 0 ? compute(true) : null); }
+    // Newly admitted pawn follow-ups always check counterchecks on EVERY
+    // selected answer. Preserve the existing piece-payoff/exchange paths;
+    // all paths share the same operation budget.
+    try { proof = pawnContinuation ? compute(true) : compute(false) ?? (budget.nodes > 0 ? compute(true) : null); }
     catch (error) { onTrace?.(String(error)); /* Exhaustion cannot certify retention. */ }
     if (nodeLimit === 8192 && !onTrace) {
         checkingPawnRetentionCache.set(key, proof);
@@ -12696,7 +12710,7 @@ export function auditTacticalMotifs(
     // mapped the label to a later, unrelated capture.
     const root = steps[0];
     const directGain = root.capture ? Math.max(0, tacticalCaptureGain(root) ?? 0) : 0;
-    // The supplied line nominates an actual piece-capture continuation, not
+    // The supplied line nominates an actual profitable capture continuation, not
     // a quiet king attack which happens to offer inferior pawn liquidation.
     // Its material value is still established separately over every evasion.
     const checkingPawn = Number.isFinite(rootCp) && directGain >= VALUE.pawn && root.capture === VALUE.pawn

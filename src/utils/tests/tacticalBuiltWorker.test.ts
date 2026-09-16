@@ -22,6 +22,7 @@ import { checkingCombinationCases, promotionCaptureForkCases } from "./fixtures/
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
 import { checkingPawnRetentionCases } from "./fixtures/checkingPawnRetention";
+import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "./fixtures/checkingPawnFollowup";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
 import { perpetualMaterialCases, perpetualMaterialLine } from "./fixtures/perpetualMaterial";
 import { reflectMixedForkFen, reflectMixedForkMove } from "./fixtures/mixedTargetFork";
@@ -199,6 +200,18 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("mixed checking attacks and prom
             expect(result.scan.motifs[0]?.id ?? null).toBe(row.positive ? kind : null);
             expect(result.scan.arrows.every(arrow => arrow.ply === 1)).toBe(true);
         }
+}, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("pawn follow-ups and contrary continuations use the production controller", async () => {
+    for (const row of checkingPawnFollowupCases) for (const reflected of [false, true]) {
+        const fen = reflected ? reflectMixedForkFen(row.fen) : row.fen;
+        const pvUci = reflected ? checkingPawnFollowupLine.map(reflectMixedForkMove) : checkingPawnFollowupLine;
+        const input = { fen, pvUci, variations: [{ pvUci, cp: 0, depth: 16 }], depth: 16, engineName: "Constructed pawn follow-up" };
+        const { scan } = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(scan.motifs[0]?.label ?? null).toBe(row.positive ? "Hanging Pawn" : null);
+        expect(scan.arrows.map(arrow => arrow.ply)).toEqual(row.positive ? [1] : []);
+    }
 }, 30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("checking pawn recall and contrary continuations use the production controller", async () => {

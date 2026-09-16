@@ -18,6 +18,7 @@ import { capturingPawnGuardCases, capturingPawnGuardInput } from "../../src/util
 import { quietRootMateCases } from "../../src/utils/tests/fixtures/quietRootMate.ts";
 import { checkingCombinationCases, promotionCaptureForkCases } from "../../src/utils/tests/fixtures/checkingCombinationRecall.ts";
 import { checkingPawnRetentionCases } from "../../src/utils/tests/fixtures/checkingPawnRetention.ts";
+import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "../../src/utils/tests/fixtures/checkingPawnFollowup.ts";
 import { tablebaseCases } from "../../src/utils/tests/fixtures/tablebaseRelevance.ts";
 import { directMaterialPayoffCases, reflectPayoff } from "../../src/utils/tests/fixtures/directMaterialPayoff.ts";
 import {
@@ -106,6 +107,7 @@ test(
     const { matingInterferenceCases, reflectMatingInterference } = await import("../../src/utils/tests/fixtures/matingInterference.ts");
     const cases = [
       ...checkingPawnRetentionCases.map(row => ({...row,name:`checking pawn retention: ${row.id}`,variations:[{pvUci:row.pvUci,cp:0,depth:16}],expectedPrimary:row.positive?["hangingPiece"]:[],expectedArrows:row.positive?[["c7","c6"]]:[]})),
+      ...checkingPawnFollowupCases.map(row => ({...row,name:`pawn follow-up: ${row.id}`,pvUci:checkingPawnFollowupLine,variations:[{pvUci:checkingPawnFollowupLine,cp:0,depth:16}],expectedPrimary:row.positive?["hangingPiece"]:[],expectedArrows:row.positive?[["c7","c6"]]:[]})),
       ...forkLocalValueCases.map(row => ({...row,name:`local fork value: ${row.id}`,expectedPrimary:row.gain === null ? [] : ["fork"]})),
       ...forkRepairCases.map(row => ({...row,name:`quiet fork repair: ${row.id}`,expectedPrimary:row.positive ? ["fork"] : []})),
       ...checkingExchangeCases.map(row => ({...row,name:`checking exchange: ${row.id}`,variations:[{pvUci:row.pvUci,cp:0,depth:16}],expectedPrimary:row.positive ? ["hangingPiece"] : []})),

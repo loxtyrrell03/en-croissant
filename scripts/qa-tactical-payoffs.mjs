@@ -19,6 +19,7 @@ import { perpetualMaterialCases, perpetualMaterialLine } from "../src/utils/test
 import { compensatedCaptureInput } from "../src/utils/tests/fixtures/compensatedCapture.ts";
 import { forkLocalValueCases } from "../src/utils/tests/fixtures/forkLocalValue.ts";
 import { checkingPawnRetentionCases } from "../src/utils/tests/fixtures/checkingPawnRetention.ts";
+import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "../src/utils/tests/fixtures/checkingPawnFollowup.ts";
 import { quietRootMateCases } from "../src/utils/tests/fixtures/quietRootMate.ts";
 import {
   matingInterferenceCases,
@@ -39,10 +40,12 @@ const pawnMode = process.argv.includes("--pawn");
 const compensatedMode = process.argv.includes("--compensated");
 const forkValueMode = process.argv.includes("--fork-value");
 const checkingPawnMode = process.argv.includes("--checking-pawn");
+const pawnFollowupMode = process.argv.includes("--pawn-followup");
 const quietRootMateMode = process.argv.includes("--quiet-root-mate");
 const root = process.cwd(),
   output = resolve(
     root,
+    pawnFollowupMode ? "tmp/tactical-pawn-followup-adapter127" :
     quietRootMateMode ? "tmp/tactical-quiet-root-mate-adapter126" :
     checkingPawnMode ? "tmp/tactical-checking-pawn-adapter118" : forkValueMode ? "tmp/tactical-fork-value-adapter117" : compensatedMode ? "tmp/tactical-compensated-adapter116" : pawnMode ? "tmp/tactical-pawn-adapter115" : perpetualMode ? "tmp/tactical-perpetual-material-adapter112" : discoveryTrapMode ? "tmp/tactical-discovery-trap-adapter111" : quietForkMode ? "tmp/tactical-quiet-fork-adapter110" : liabilityMode ? "tmp/tactical-liability-adapter108" : discoveryMode ? "tmp/tactical-discovery-adapter107" : quietMateMode
       ? "tmp/tactical-quiet-mate-adapter104"
@@ -60,6 +63,8 @@ const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
 const cases = (
+  pawnFollowupMode ? checkingPawnFollowupCases.filter(row => row.positive || row.id === "mating-counterplay")
+    .map(row => ({...row,pvUci:checkingPawnFollowupLine,variations:[{pvUci:checkingPawnFollowupLine,cp:0,depth:16}]})) :
   quietRootMateMode ? quietRootMateCases.slice(0, 4) :
   checkingPawnMode
     ? checkingPawnRetentionCases.filter(row => row.id === "retained" || row.id === "bishop-liability")
@@ -216,7 +221,7 @@ try {
             await page.locator(".mantine-ScrollArea-viewport").evaluate(element => { element.scrollTop = 0; });
             await page.screenshot({ path: resolve(output, `${row.id}.png`), fullPage: true });
           }
-        } else if (checkingPawnMode) {
+        } else if (checkingPawnMode || pawnFollowupMode) {
           await page.waitForFunction(() => window.fixture.scan !== null);
           const scan = await page.evaluate(() => window.fixture.scan);
           assert.equal(scan.motifs[0]?.label ?? null, row.positive ? "Hanging Pawn" : null);

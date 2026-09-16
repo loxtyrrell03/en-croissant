@@ -10326,13 +10326,18 @@ var checkingPawnRetentionCache = /* @__PURE__ */ new Map();
 * an interposer and profitable captures may also retain through checked king
 * flights: all checks must end in a safe capture/block or an identical-board
 * cycle within six further evasions. Exhaustion is unknown, not king safety.
-* Leaves include
+* A pawn follow-up can nominate this route when that capture was already
+* profitable before the check: the checking capture inserts an extra gain
+* before that opportunity. Newly created pawn threats in a king attack need
+* their own attacking proof, not a material-only liquidation witness. These
+* new nominations always use the countercheck-aware path. Leaves include
 * all immediate friendly liabilities and the existing countercheck horizon;
 * this is a bounded material lesson, not a whole-position winning claim. */
 function proveCheckingPawnRetention(steps, nodeLimit = 8192, onTrace) {
 	const [root, nominatedReply, nominatedCapture] = steps;
 	const checkingContinuation = !!root && !!nominatedCapture && !nominatedCapture.capture && nominatedCapture.move.from === root.move.to && nominatedCapture.after.isCheck();
-	if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture !== VALUE.pawn || root.move.promotion || root.before.board.get(root.move.to)?.role !== "pawn" || !root.after.isCheck() || root.after.isEnd() || !nominatedReply || !nominatedCapture || nominatedCapture.capture < VALUE.knight && !checkingContinuation || nominatedCapture.move.promotion || defenderCanClaimFiftyMoveDraw(root.after)) return null;
+	const pawnContinuation = nominatedCapture?.capture === VALUE.pawn;
+	if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture !== VALUE.pawn || root.move.promotion || root.before.board.get(root.move.to)?.role !== "pawn" || !root.after.isCheck() || root.after.isEnd() || !nominatedReply || !nominatedCapture || nominatedCapture.capture < VALUE.pawn && !checkingContinuation || nominatedCapture.move.promotion || defenderCanClaimFiftyMoveDraw(root.after)) return null;
 	const key = `${makeFen(root.before.toSetup())}:${root.uci}:${nominatedReply.uci}:${nominatedCapture.uci}`;
 	if (nodeLimit === 8192 && !onTrace && checkingPawnRetentionCache.has(key)) return checkingPawnRetentionCache.get(key);
 	const budget = { nodes: nodeLimit };
@@ -10340,6 +10345,15 @@ function proveCheckingPawnRetention(steps, nodeLimit = 8192, onTrace) {
 		const direct = preparationCaptureGain(root.before, root.move, budget);
 		onTrace?.(`Root gain ${direct}`);
 		if (direct === null || direct < VALUE.pawn) return null;
+		if (pawnContinuation) {
+			const priorCapture = nominatedCapture.move.from === root.move.to ? {
+				...nominatedCapture.move,
+				from: root.move.from
+			} : nominatedCapture.move;
+			const priorGain = root.before.isLegal(priorCapture) ? preparationCaptureGain(root.before, priorCapture, budget) : null;
+			onTrace?.(`Prior follow-up gain ${priorGain}`);
+			if (priorGain === null || priorGain < VALUE.pawn) return null;
+		}
 		const king = root.after.board.kingOf(root.after.turn);
 		const equalInterposition = (pos, reply, answer) => {
 			if (king === void 0 || answer.from !== root.move.to || answer.to !== reply.to || root.after.board.get(root.move.to)?.role !== root.after.board.get(reply.from)?.role || !between(root.move.to, king).has(reply.to)) return false;
@@ -10510,7 +10524,7 @@ function proveCheckingPawnRetention(steps, nodeLimit = 8192, onTrace) {
 	};
 	let proof = null;
 	try {
-		proof = compute(false) ?? (budget.nodes > 0 ? compute(true) : null);
+		proof = pawnContinuation ? compute(true) : compute(false) ?? (budget.nodes > 0 ? compute(true) : null);
 	} catch (error) {
 		onTrace?.(String(error));
 	}
@@ -19969,7 +19983,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 126;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 127;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
