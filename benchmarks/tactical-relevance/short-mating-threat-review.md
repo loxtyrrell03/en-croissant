@@ -131,3 +131,9 @@ Clean desktop-package delivery is recorded separately in
 load-sensitive startup remain unverified. Broader recall, stronger witnesses,
 exact longer-mate outcomes and primary-theme specificity remain incomplete.
 No owner data, engine settings, shortcut or phone service changes here.
+
+Source `eac63588` is now in the clean standalone desktop executable. The native
+build passes, the worker hash matches the tested artifact, and embedded assets
+and normalized dependencies identify the clean live/review UI. The previous
+executable is backed up; no owner app was started or restarted. Exact identity
+and recovery are in the linked desktop delivery record.

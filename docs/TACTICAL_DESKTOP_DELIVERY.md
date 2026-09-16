@@ -1,6 +1,42 @@
 # Tactical desktop delivery — 2026-09-16
 
-## Current package: adapter 136 / live pipeline 142
+## Current package: adapter 137 / live pipeline 143
+
+Source `eac63588` is packaged from the clean detached checkout
+`en-tactical-desktop-eac63588`. It includes short mating-threat nomination and
+legal quiet check evasions, recovering the owner's Rg3 and two reused Lichess
+root explanations while preserving the previous ...Rb6+ certificate. See
+`benchmarks/tactical-relevance/short-mating-threat-review.md` for contrary
+controls, 1,218 fresh engine searches, exact game replays and remaining gaps.
+
+The clean checkout passes TypeScript, 155 focused source/rendered checks
+(seven optional skips), thirteen generated-service checks (one optional engine
+skip), the 43-module shared-review and 8,863-module frontend builds. Native
+release compilation passes in 1m41s with 22 existing warnings. Generated review
+differences are source-region path comments only; route-tree differences are
+line endings only, checked against the committed sources.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,063,488 bytes;
+  SHA-256 `d325af01e23f3a4b66faedc660c2be2b1be0ba6f76178b4586efad52351cf7b4`.
+- Worker: `liveTactics.worker-D9o_-k7_.js`, 570,751 bytes; SHA-256
+  `7e665f1de25536dbe5833ac8f1c967f87103e9c00092a3244f46c58cfa900b5c`.
+  Clean bytes match the 1,540-input tested artifact. The x64 executable embeds
+  this worker, `TacticalClassifierPanel-B8z6MESV.js` and
+  `OpeningReviewWorkspace-CnAgpD0q.js`; normalized native dependency paths
+  identify these exact clean-checkout assets.
+- Previous pipeline-142 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline143/en-croissant-fork.exe`,
+  SHA-256 `1966e794b4781b549dbe9b35d3012cd5821eb811b2e74381d995bb605c1a78bf`.
+
+No app was running before or after compilation, and none was launched/restarted.
+The Dev App shortcut still invokes the primary checkout's unchanged
+`encroissant-native` workflow. Owner games, settings, engines and phone services
+remain untouched. This is package/linkage verification, not native-window
+interaction or load-sensitive startup certification. Exact longer-mate
+outcomes, stronger continuation selection, broad recall and primary-theme
+accuracy remain open; the overall goal is not marked complete.
+
+## Previous package: adapter 136 / live pipeline 142
 
 Source `3dc161ce` is packaged from the clean detached checkout
 `en-tactical-desktop-3dc161ce`. It includes the safe-counterchecker-capture
