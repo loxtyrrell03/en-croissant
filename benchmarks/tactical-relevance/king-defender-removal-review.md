@@ -105,6 +105,15 @@ replay is `king-removal-owner141-payoff-final-20260917.json`. Clean desktop
 delivery is recorded separately in `docs/TACTICAL_DESKTOP_DELIVERY.md`;
 source and worker checks alone do not establish native-window behaviour.
 
+Eight additional exploratory decision searches, recorded separately under
+`june-followup-`, challenge two other empty owner-game results. An apparent
+pawn fork admits an e5/Ne4 checking-exchange branch that only trades a bishop
+for a knight; its favourable engine score mostly reflects an existing extra
+piece. No forced-pawn headline was added. A queen capture offers an exposed
+knight but retains a strong king attack; fresh later fork/trap labels do not
+prove that initial capture's mechanism. This remains a specific root-attack
+coverage question, not justification for weakening the free-pawn safety check.
+
 Longer king hunts, other history-sensitive captures, primary specificity,
 automatic review candidate coverage and native/cold-start reliability remain
 open. This is a concrete recall improvement, not comprehensive tactical

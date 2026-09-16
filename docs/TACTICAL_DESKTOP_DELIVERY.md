@@ -1,6 +1,42 @@
-# Tactical desktop delivery — 2026-09-16
+# Tactical desktop delivery — 2026-09-17
 
-## Current package: adapter 140 / live pipeline 147
+## Current package: adapter 141 / live pipeline 148
+
+Source `875c3c71` is packaged from the clean detached checkout
+`en-tactical-desktop-875c3c71`. It recovers a defender capture whose payoff is a
+formerly illegal king capture, with the same proof in live and missed/allowed
+review. The matched continuation says Defender Removal Payoff without counting
+another free rook. See `benchmarks/tactical-relevance/king-defender-removal-review.md`
+for the three-game audit, all-defence evidence, contrary controls and limits.
+
+Clean TypeScript, 115 focused source/React/history checks (one optional skip),
+sixteen generated-service checks (one optional engine skip), the 43-module
+review build and 8,863-module frontend build pass. Native release compilation
+passes in 1m25s with 22 existing warnings. Generated-review differences are
+source-region comments only; route-tree differences are line endings only,
+checked against committed sources after building.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,067,584 bytes;
+  SHA-256 `1171cdcb052dd29e4373d5dc25cd885335d5dc8d742ee6b6ed07906d991e5063`.
+- Worker: `liveTactics.worker-HfAA__UU.js`, 578,669 bytes; SHA-256
+  `d8b31033e9b7cecaa7edb69e01293567356e4d4bbc92d507d477e0c74337388a`.
+  Its clean bytes match the 1,764-input tested production artifact. The x64
+  executable embeds that worker, `TacticalClassifierPanel-C58QynPV.js` and
+  `OpeningReviewWorkspace-CQgJISN8.js`; normalized native dependency paths
+  identify those exact clean-checkout assets.
+- Previous pipeline-147 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline148/en-croissant-fork.exe`,
+  SHA-256 `9c7a7dc40f6a53dc42197b790d8dc6b059e726db6077fdd7319b5dc0f3e78e72`.
+
+No app was running before or after the build; none was launched or restarted.
+The Dev App shortcut still invokes the primary checkout's unchanged
+`encroissant-native` workflow. Owner games, settings, engines and phone services
+remain untouched. This proves source/package linkage, not native-window
+interaction or startup certification. Broader recall, primary specificity,
+longer counterplay and the prior cold-development timeout remain open. The
+two unrelated store-test failures remain explicitly recorded.
+
+## Previous package: adapter 140 / live pipeline 147
 
 Source `277634b1` is packaged from the clean detached checkout
 `en-tactical-desktop-277634b1`. It surfaces already verified immediate tactics
