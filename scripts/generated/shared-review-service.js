@@ -11368,7 +11368,7 @@ function proveShortCheckingMate(root, nodeLimit = 4096) {
 * lose, including after a nonchecking first move. Besides checks, at most
 * two PV-nominated quiet attacking moves may be tried; each opens the full
 * legal defensive tree. Unknown/exhausted searches cannot certify the line. */
-function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeStrategy = false) {
+function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeStrategy = false, onFailure) {
 	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
 	const root = steps[0];
 	const terminal = steps.findIndex((step) => step.after.isEnd());
@@ -11377,9 +11377,10 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeS
 	const maxMoves = terminal / 2 + 1;
 	const hints = steps.slice(0, terminal + 1).filter((s) => s.before.turn === root.before.turn).map((s) => s.uci);
 	const quietHints = new Set(steps.slice(0, terminal + 1).filter((s) => s.before.turn === root.before.turn && !s.after.isCheck()).map((s) => s.uci));
-	const quietLimit = Math.min(2, quietHints.size);
+	let quietLimit = Math.min(2, quietHints.size);
+	let branchQuietHints = quietHints;
 	const key = `${makeFen(root.after.toSetup())}:${maxMoves}:${hints}:${[...quietHints]}`;
-	if (!includeStrategy && nodeLimit === CHECKING_MATE_NODE_LIMIT && checkingMateCache.has(key)) return checkingMateCache.get(key);
+	if (!includeStrategy && !onFailure && nodeLimit === CHECKING_MATE_NODE_LIMIT && checkingMateCache.has(key)) return checkingMateCache.get(key);
 	let nodes = nodeLimit;
 	const visit = (pos, move) => {
 		if (--nodes < 0) throw new Error("Checking mate budget exhausted");
@@ -11390,6 +11391,7 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeS
 	const attackMemo = /* @__PURE__ */ new Map();
 	const defendMemo = /* @__PURE__ */ new Map();
 	const choices = /* @__PURE__ */ new Map();
+	let failedRootReply;
 	const orderedMoves = (pos) => {
 		const moves = legalMoves(pos);
 		if (root.after.isCheck()) return moves;
@@ -11407,13 +11409,13 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeS
 		moves.sort((a, b) => Number(makeUci(b) === expected) - Number(makeUci(a) === expected) || Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))));
 		for (const move of moves) {
 			const piece = pos.board.get(move.from);
-			if (!quietHints.has(makeUci(move)) && move.to !== pos.epSquare && !(piece.role === "king" && pos.board[pos.turn].has(move.to)) && !discoveryRays.some((ray) => ray.has(move.from)) && !attacks({
+			if (!branchQuietHints.has(makeUci(move)) && move.to !== pos.epSquare && !(piece.role === "king" && pos.board[pos.turn].has(move.to)) && !discoveryRays.some((ray) => ray.has(move.from)) && !attacks({
 				color: pos.turn,
 				role: move.promotion ?? piece.role
 			}, move.to, pos.board.occupied.without(move.from).with(move.to)).has(king)) continue;
 			const next = visit(pos, move);
 			const isQuiet = !next.isCheck();
-			if (isQuiet && (!quiet || !quietHints.has(makeUci(move)))) continue;
+			if (isQuiet && (!quiet || !branchQuietHints.has(makeUci(move)))) continue;
 			const continuation = defend(next, remaining - 1, quiet - Number(isQuiet));
 			if (continuation) {
 				const line = [makeSan(pos, move), ...continuation];
@@ -11436,6 +11438,7 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeS
 		for (const reply of replies) {
 			const continuation = attack(visit(pos, reply), remaining, quiet);
 			if (!continuation) {
+				if (pos === root.after) failedRootReply = makeSan(pos, reply);
 				defendMemo.set(cacheKey, null);
 				return null;
 			}
@@ -11469,7 +11472,16 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeS
 			example: [root.san]
 		};
 		else {
-			const continuation = defend(root.after, maxMoves - 1, quietLimit);
+			let continuation = defend(root.after, maxMoves - 1, quietLimit);
+			if (!continuation && quietHints.size && nodes > 0) {
+				quietLimit = 2;
+				branchQuietHints = new Set(hints);
+				attackMemo.clear();
+				defendMemo.clear();
+				choices.clear();
+				failedRootReply = void 0;
+				continuation = defend(root.after, maxMoves - 1, quietLimit);
+			}
 			if (continuation) proof = {
 				maxMoves,
 				replyCount: legalMoves(root.after).length,
@@ -11480,12 +11492,21 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeS
 				} : {}
 			};
 		}
-	} catch {}
-	if (!includeStrategy && nodeLimit === CHECKING_MATE_NODE_LIMIT) {
+	} catch (error) {
+		onFailure?.(String(error));
+	}
+	if (!proof && failedRootReply) onFailure?.(`Unproved root reply ${failedRootReply} after ${nodeLimit - nodes} visits`);
+	if (!includeStrategy && !onFailure && nodeLimit === CHECKING_MATE_NODE_LIMIT) {
 		checkingMateCache.set(key, proof);
 		if (checkingMateCache.size > 128) checkingMateCache.delete(checkingMateCache.keys().next().value);
 	}
 	return proof;
+}
+/** A different mating route is not a missed win. Every route here checks
+* all legal defensive replies; an engine mate score or cooperative line
+* alone cannot establish that the played move preserves mate. */
+function preservesVerifiedMate(steps) {
+	return !!steps[0] && !!(proveShortCheckingMate(steps[0]) || proveQuietMateThreat(steps[0]) || proveMateWithinThree(steps) || proveCheckingMate(steps));
 }
 /** One terminal event is one lesson. Conflicting legacy pattern names are
 * not independent tactics; use factual Checkmate until taxonomy is resolved.
@@ -18165,6 +18186,14 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		relevance: "primary"
 	}];
 	let checkingMate = proveShortCheckingMate(steps[0]) ?? (steps.length >= 3 ? proveCheckingMate(steps) : null);
+	if (!checkingMate && steps[0].capture && !steps[0].after.isCheck() && steps[4]?.after.isCheckmate()) {
+		const captureMate = proveMateWithinThree(steps);
+		if (captureMate) checkingMate = {
+			maxMoves: 3,
+			replyCount: captureMate.replyCount,
+			example: [steps[0].san, ...captureMate.example]
+		};
+	}
 	if (!checkingMate) {
 		const clearanceMate = proveMatingClearance(steps[0]);
 		if (clearanceMate) checkingMate = {
@@ -18810,6 +18839,8 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	const specificMate = normalizedCandidates.find((m) => /Mate$/.test(m.id));
 	const fork = candidates.find((m) => m.id === "fork");
 	const filtered = normalizedCandidates.filter((m) => {
+		if (m.ply === 1 && m.label === "Forcing Mate" && (quietMate || preparation && Number(m.id.slice(6)) >= 3)) return false;
+		if (m.ply === 1 && m.label === "Mating Preparation" && checkingMate && checkingMate.maxMoves < 3) return false;
 		if (["pin", "deflection"].includes(m.id) && m.ply && candidates.some((other) => other.id === (m.id === "pin" ? "deflection" : "pin") && other.ply === m.ply && other.moveUci === m.moveUci)) {
 			const step = steps[m.ply - 1];
 			const pin = proveRelativePinnedCapture(step);
@@ -20166,7 +20197,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 129;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 130;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -21029,6 +21060,15 @@ function classifyMistakeReviewMotifs(input) {
 			...m,
 			relevance: "secondary"
 		}))];
+	}
+	if (playedMoveUci && compared.missedMotifs.some((m) => m.ply === 1 && (/^mateIn\d+$/.test(m.id) || m.id === "mateThreat")) && preservesVerifiedMate(replayTacticalLine(fen, [playedMoveUci, ...refutationLine]))) {
+		compared.missedMotifs = [];
+		compared.missedTimeline = [];
+		compared.allowedMotifs = [];
+		compared.allowedTimeline = compared.allowedTimeline?.map((m) => ({
+			...m,
+			relevance: "secondary"
+		}));
 	}
 	if (!input.tablebaseEvidence) motifCache.set(key, compared);
 	if (motifCache.size > MOTIF_CACHE_LIMIT) {

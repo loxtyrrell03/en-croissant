@@ -152,7 +152,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 134;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 135;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 
 export type LiveTacticalBoardArrow = {
@@ -373,13 +373,14 @@ function buildLiveTacticalVariation(
         ? tacticalBoardEvidence(input.fen, lineUci, supporting, input.tablebaseEvidence)
         : null;
     const geometry = primaryGeometry ?? supportingGeometry;
-    // A root-proved quiet mate must not acquire arbitrary reply arrows just
-    // because this PV is longer. Specific same-ply geometry remains useful.
+    // A proved mate must not draw one arbitrary defensive branch over the
+    // starting board. Keep later moves/patterns in their actual-ply timeline;
+    // specific same-ply supporting geometry remains useful.
     const replay = replayTacticalLine(input.fen, lineUci);
-    const quietMate = ["Mating Preparation", "Mate Threat"].includes(motifs[0]?.label) ||
-        (motifs[0]?.label === "Forcing Mate" && motifs[0].ply === 1 && replay[0] && !replay[0].after.isCheck());
+    const matingLesson = ["Mating Preparation", "Mate Threat"].includes(motifs[0]?.label) ||
+        (motifs[0]?.label === "Forcing Mate" && motifs[0].ply === 1);
     const rootPawnCapture = motifs[0]?.id === "hangingPiece" && motifs[0].label === "Hanging Pawn" && motifs[0].ply === 1;
-    const prefixLimit = geometry || quietMate || rootPawnCapture ? Math.min(motifs[0].ply ?? 1, 6) : arrowLimit;
+    const prefixLimit = geometry || matingLesson || rootPawnCapture ? Math.min(motifs[0].ply ?? 1, 6) : arrowLimit;
     // Wire UCI may point at the original rook square. Draw the two actual
     // castling moves, never a king move into that corner (or an illegal tail).
     const arrows = replay.slice(0, prefixLimit).flatMap<LiveTacticalBoardArrow>((step, index) => {
@@ -406,7 +407,7 @@ function buildLiveTacticalVariation(
             )
                 arrows.push({ ...arrow, ply: motifs[0].ply ?? 1, role: "attacker" });
         }
-    const labels = motifs.slice(0, 3).map<LiveTacticalBoardLabel>((motif, index) => ({
+    const labels = motifs.filter(motif => !matingLesson || motif.ply === motifs[0].ply).slice(0, 3).map<LiveTacticalBoardLabel>((motif, index) => ({
         id: motif.id,
         text: liveTacticalMotifLabel(motif),
         color: tacticalMotifColor(motif.id),

@@ -332,6 +332,28 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("exposed pawns and more importan
     }
 },30000);
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("branch-dependent quiet mating moves survive the compiled worker boundary", async () => {
+    const { branchQuietMateCases, branchQuietMateChoice } = await import("./fixtures/branchQuietMate");
+    for (const row of branchQuietMateCases) for (const reflected of [false, true]) {
+        const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci: reflected ? row.pvUci.map(reflectMixedForkMove) : row.pvUci,
+            depth: 16, engineName: "Constructed" };
+        const { scan } = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(scan.motifs[0]?.id).toBe(row.positive ? "mateIn4" : undefined);
+        expect(scan.arrows.map(arrow => `${arrow.from}${arrow.to}`)).toEqual(row.positive ? [input.pvUci[0]] : []);
+    }
+    for (const reflected of [false,true]) {
+        const input = {fen:reflected?reflectMixedForkFen(branchQuietMateChoice.fen):branchQuietMateChoice.fen,
+            pvUci:reflected?branchQuietMateChoice.shortLine.map(reflectMixedForkMove):branchQuietMateChoice.shortLine,
+            depth:16,engineName:"Constructed"};
+        const {scan}=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(scan.motifs[0]?.id).toBe("mateIn3");
+        expect(scan.arrows.map(arrow=>`${arrow.from}${arrow.to}`)).toEqual([input.pvUci[0]]);
+    }
+}, 30000);
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("checking pawn preparations survive the compiled worker boundary", async () => {
     const { checkingPawnPreparationCases } = await import("./fixtures/checkingPawnPreparation");
     for (const row of checkingPawnPreparationCases) for (const reflected of [false, true]) {

@@ -1,0 +1,1233 @@
+{
+  "scope": "Constructed mating-role controls and colour reflections, not owner positions or an accuracy sample. Root and selected first answers only. Legal defensive trees are verified separately. Finite-depth longer mates in flight/countercheck controls refute no general tactic; they do not certify the supplied mate-in-four.",
+  "requested": 18,
+  "completed": 18,
+  "searches": [
+    {
+      "id": "checking-and-quiet-knight:false:root",
+      "fen": "4r3/4rk2/2n3p1/5n2/5P2/8/P4KPP/R6R b - - 0 1",
+      "searchMove": "e7e2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e7e2",
+            "f2f1",
+            "c6d4",
+            "g2g4",
+            "f5e3",
+            "f1g1",
+            "e2g2"
+          ],
+          "pvSan": [
+            "Re2+",
+            "Kf1",
+            "Ncd4",
+            "g4",
+            "Ne3+",
+            "Kg1",
+            "Rg2#"
+          ],
+          "cp": null,
+          "mate": 4
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e7e2",
+            "value": 10000,
+            "evidence": "Re2+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Re2+ Kf1 Ncd4 Rb1 Ne3+ Kg1 Rxg2#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rg2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "e2g2",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e7e2",
+            "value": 10000,
+            "evidence": "Re2+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Re2+ Kf1 Ncd4 Rb1 Ne3+ Kg1 Rxg2#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "value": 10000,
+            "ply": 3,
+            "moveUci": "c6d4",
+            "evidence": "Ncd4 is a quiet mating preparation. All 12 legal White replies allow forced mate within two more moves; for example, a4 Ne3+ Kg1 Rxg2#.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rg2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "e2g2",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "checking-and-quiet-knight:false:answer:f2f1",
+      "fen": "4r3/5k2/2n3p1/5n2/5P2/8/P3r1PP/R4K1R b - - 2 2",
+      "searchMove": "c6d4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c6d4",
+            "f1g1",
+            "f5e3",
+            "a2a3",
+            "e2g2"
+          ],
+          "pvSan": [
+            "Ncd4",
+            "Kg1",
+            "Ne3",
+            "a3",
+            "Rxg2#"
+          ],
+          "cp": null,
+          "mate": 3
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "value": 10000,
+            "ply": 1,
+            "moveUci": "c6d4",
+            "evidence": "Ncd4 is a quiet mating preparation. All 12 legal White replies allow forced mate within two more moves; for example, a4 Ne3+ Kg1 Rxg2#.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxg2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "e2g2",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "value": 10000,
+            "ply": 1,
+            "moveUci": "c6d4",
+            "evidence": "Ncd4 is a quiet mating preparation. All 12 legal White replies allow forced mate within two more moves; for example, a4 Ne3+ Kg1 Rxg2#.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "f5e3",
+            "evidence": "Ne3 threatens Rxg2#. All 12 legal White replies allow mate on the next move; for example, Rb1 Rxg2#.",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxg2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "e2g2",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "checking-and-quiet-knight:false:answer:f2g1",
+      "fen": "4r3/5k2/2n3p1/5n2/5P2/8/P3r1PP/R5KR b - - 2 2",
+      "searchMove": "f5e3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f5e3",
+            "a2a3",
+            "e2g2"
+          ],
+          "pvSan": [
+            "Ne3",
+            "a3",
+            "Rxg2#"
+          ],
+          "cp": null,
+          "mate": 2
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f5e3",
+            "evidence": "Ne3 threatens Rxg2#. All 12 legal White replies allow mate on the next move; for example, Rb1 Rxg2#.",
+            "relevance": "primary",
+            "value": 10000
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxg2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e2g2",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f5e3",
+            "evidence": "Ne3 threatens Rxg2#. All 12 legal White replies allow mate on the next move; for example, Rb1 Rxg2#.",
+            "relevance": "primary",
+            "value": 10000,
+            "actor": "black"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxg2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e2g2",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "checking-and-quiet-knight:false:answer:f2f3",
+      "fen": "4r3/5k2/2n3p1/5n2/5P2/5K2/P3r1PP/R6R b - - 2 2",
+      "searchMove": "e8e3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e8e3",
+            "f3g4",
+            "e2g2"
+          ],
+          "pvSan": [
+            "R8e3+",
+            "Kg4",
+            "Rxg2#"
+          ],
+          "cp": null,
+          "mate": 2
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn2",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e8e3",
+            "value": 10000,
+            "evidence": "R8e3+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is R8e3+ Kg4 Rxg2#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxg2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e2g2",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn2",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e8e3",
+            "value": 10000,
+            "evidence": "R8e3+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is R8e3+ Kg4 Rxg2#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "deflection",
+            "label": "Mating Deflection",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e8e3",
+            "value": 10000,
+            "evidence": "R8e3+ draws the king away from defending g2. After Kg4, Rxg2# is checkmate. Capturing on g2 first would allow the king to take that piece. Every legal reply allows this mating capture; this is the mechanism at this move, not a separate material win.",
+            "actor": "black",
+            "relevance": "secondary"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxg2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e2g2",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "checking-and-quiet-knight:true:root",
+      "fen": "r6r/p4kpp/8/5p2/5N2/2N3P1/4RK2/4R3 w - - 0 1",
+      "searchMove": "e2e7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e2e7",
+            "f7f8",
+            "c3d5",
+            "h7h6",
+            "f4e6",
+            "f8g8",
+            "e7g7"
+          ],
+          "pvSan": [
+            "Re7+",
+            "Kf8",
+            "Ncd5",
+            "h6",
+            "Ne6+",
+            "Kg8",
+            "Rxg7#"
+          ],
+          "cp": null,
+          "mate": 4
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e2e7",
+            "value": 10000,
+            "evidence": "Re7+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Re7+ Kf8 Ncd5 a5 Ne6+ Kg8 Rxg7#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxg7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "e7g7",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e2e7",
+            "value": 10000,
+            "evidence": "Re7+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Re7+ Kf8 Ncd5 a5 Ne6+ Kg8 Rxg7#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "value": 10000,
+            "ply": 3,
+            "moveUci": "c3d5",
+            "evidence": "Ncd5 is a quiet mating preparation. All 12 legal Black replies allow forced mate within two more moves; for example, a5 Ne6+ Kg8 Rxg7#.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxg7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "e7g7",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "checking-and-quiet-knight:true:answer:f7f6",
+      "fen": "r6r/p3R1pp/5k2/5p2/5N2/2N3P1/5K2/4R3 w - - 2 2",
+      "searchMove": "e1e6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e1e6",
+            "f6g5",
+            "e7g7"
+          ],
+          "pvSan": [
+            "R1e6+",
+            "Kg5",
+            "Rxg7#"
+          ],
+          "cp": null,
+          "mate": 2
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn2",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1e6",
+            "value": 10000,
+            "evidence": "R1e6+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is R1e6+ Kg5 Rxg7#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxg7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e7g7",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn2",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1e6",
+            "value": 10000,
+            "evidence": "R1e6+ starts a forced mating attack. Every legal defence permits mate within 2 moves; one verified line is R1e6+ Kg5 Rxg7#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "deflection",
+            "label": "Mating Deflection",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e1e6",
+            "value": 10000,
+            "evidence": "R1e6+ draws the king away from defending g7. After Kg5, Rxg7# is checkmate. Capturing on g7 first would allow the king to take that piece. Every legal reply allows this mating capture; this is the mechanism at this move, not a separate material win.",
+            "actor": "white",
+            "relevance": "secondary"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxg7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e7g7",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "checking-and-quiet-knight:true:answer:f7f8",
+      "fen": "r4k1r/p3R1pp/8/5p2/5N2/2N3P1/5K2/4R3 w - - 2 2",
+      "searchMove": "c3d5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c3d5",
+            "f8g8",
+            "f4e6",
+            "f5f4",
+            "e7g7"
+          ],
+          "pvSan": [
+            "Ncd5",
+            "Kg8",
+            "Ne6",
+            "f4",
+            "Rxg7#"
+          ],
+          "cp": null,
+          "mate": 3
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "value": 10000,
+            "ply": 1,
+            "moveUci": "c3d5",
+            "evidence": "Ncd5 is a quiet mating preparation. All 12 legal Black replies allow forced mate within two more moves; for example, a5 Ne6+ Kg8 Rxg7#.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxg7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "e7g7",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "value": 10000,
+            "ply": 1,
+            "moveUci": "c3d5",
+            "evidence": "Ncd5 is a quiet mating preparation. All 12 legal Black replies allow forced mate within two more moves; for example, a5 Ne6+ Kg8 Rxg7#.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 3,
+            "moveUci": "f4e6",
+            "evidence": "Ne6 threatens Rxg7#. All 12 legal Black replies allow mate on the next move; for example, f4 Rxg7#.",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxg7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 5,
+            "moveUci": "e7g7",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "checking-and-quiet-knight:true:answer:f7g8",
+      "fen": "r5kr/p3R1pp/8/5p2/5N2/2N3P1/5K2/4R3 w - - 2 2",
+      "searchMove": "f4e6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f4e6",
+            "f5f4",
+            "e7g7"
+          ],
+          "pvSan": [
+            "Ne6",
+            "f4",
+            "Rxg7#"
+          ],
+          "cp": null,
+          "mate": 2
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4e6",
+            "evidence": "Ne6 threatens Rxg7#. All 12 legal Black replies allow mate on the next move; for example, f4 Rxg7#.",
+            "relevance": "primary",
+            "value": 10000
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxg7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e7g7",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f4e6",
+            "evidence": "Ne6 threatens Rxg7#. All 12 legal Black replies allow mate on the next move; for example, f4 Rxg7#.",
+            "relevance": "primary",
+            "value": 10000,
+            "actor": "white"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxg7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "e7g7",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "capturable-checker:false:root",
+      "fen": "4r3/4rk2/2n3p1/5n2/5P2/8/P4KPP/R2B3R b - - 0 1",
+      "searchMove": "e7e2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e7e2",
+            "d1e2",
+            "e8e4",
+            "e2f3",
+            "e4f4",
+            "h1e1",
+            "f5d4",
+            "a1d1",
+            "f4f5",
+            "a2a4",
+            "f7f8",
+            "e1e3",
+            "f8g8",
+            "h2h3",
+            "f5f8",
+            "d1d2",
+            "g6g5"
+          ],
+          "pvSan": [
+            "Re2+",
+            "Bxe2",
+            "Re4",
+            "Bf3",
+            "Rxf4",
+            "Rhe1",
+            "Nfd4",
+            "Rad1",
+            "Rf5",
+            "a4",
+            "Kf8",
+            "Re3",
+            "Kg8",
+            "h3",
+            "Rf8",
+            "Rd2",
+            "g5"
+          ],
+          "cp": -476,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "capturable-checker:true:root",
+      "fen": "r2b3r/p4kpp/8/5p2/5N2/2N3P1/4RK2/4R3 w - - 0 1",
+      "searchMove": "e2e7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e2e7",
+            "d8e7",
+            "c3d5",
+            "h8e8",
+            "e1a1",
+            "e7d6",
+            "a1a6",
+            "d6f4",
+            "d5f4",
+            "f7f8",
+            "f2f3",
+            "a8b8",
+            "f4d5",
+            "b8b3",
+            "f3f4",
+            "b3b1"
+          ],
+          "pvSan": [
+            "Re7+",
+            "Bxe7",
+            "Ncd5",
+            "Rhe8",
+            "Ra1",
+            "Bd6",
+            "Ra6",
+            "Bxf4",
+            "Nxf4",
+            "Kf8",
+            "Kf3",
+            "Rab8",
+            "Nd5",
+            "Rb3+",
+            "Kf4",
+            "Rb1"
+          ],
+          "cp": -466,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "king-flight:false:root",
+      "fen": "4r3/4rk2/2n3p1/5n2/8/8/P4KPP/R6R b - - 0 1",
+      "searchMove": "e7e2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e7e2",
+            "f2f1",
+            "c6d4",
+            "f1g1",
+            "e2e1",
+            "a1e1",
+            "e8e1",
+            "g1f2",
+            "e1e2",
+            "f2g1",
+            "f5e3",
+            "a2a3",
+            "e2g2"
+          ],
+          "pvSan": [
+            "Re2+",
+            "Kf1",
+            "Ncd4",
+            "Kg1",
+            "Re1+",
+            "Rxe1",
+            "Rxe1+",
+            "Kf2",
+            "Re2+",
+            "Kg1",
+            "Ne3",
+            "a3",
+            "Rxg2#"
+          ],
+          "cp": null,
+          "mate": 7
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "king-flight:true:root",
+      "fen": "r6r/p4kpp/8/8/5N2/2N3P1/4RK2/4R3 w - - 0 1",
+      "searchMove": "e2e7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e2e7",
+            "f7f8",
+            "c3d5",
+            "f8g8",
+            "f4e6",
+            "a8f8",
+            "f2g1",
+            "f8f1",
+            "e1f1",
+            "g7g5",
+            "e7g7"
+          ],
+          "pvSan": [
+            "Re7+",
+            "Kf8",
+            "Ncd5",
+            "Kg8",
+            "Ne6",
+            "Rf8+",
+            "Kg1",
+            "Rf1+",
+            "Rxf1",
+            "g5",
+            "Rg7#"
+          ],
+          "cp": null,
+          "mate": 6
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "rook-countercheck:false:root",
+      "fen": "4r3/4rk2/2n3p1/5n2/5P2/8/5KPP/R6R b - - 0 1",
+      "searchMove": "e7e2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e7e2",
+            "f2f1",
+            "c6d4",
+            "a1a7",
+            "f7g8",
+            "a7e7",
+            "e8e7",
+            "g2g4",
+            "f5e3",
+            "f1g1",
+            "e2g2"
+          ],
+          "pvSan": [
+            "Re2+",
+            "Kf1",
+            "Ncd4",
+            "Ra7+",
+            "Kg8",
+            "Re7",
+            "R8xe7",
+            "g4",
+            "Ne3+",
+            "Kg1",
+            "Rg2#"
+          ],
+          "cp": null,
+          "mate": 6
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "rook-countercheck:true:root",
+      "fen": "r6r/5kpp/8/5p2/5N2/2N3P1/4RK2/4R3 w - - 0 1",
+      "searchMove": "e2e7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e2e7",
+            "f7f8",
+            "c3d5",
+            "a8a2",
+            "f2g1",
+            "a2g2",
+            "g1g2",
+            "f8g8",
+            "e7e8",
+            "g8f7",
+            "e1e7"
+          ],
+          "pvSan": [
+            "Re7+",
+            "Kf8",
+            "Ncd5",
+            "Ra2+",
+            "Kg1",
+            "Rg2+",
+            "Kxg2",
+            "Kg8",
+            "Re8+",
+            "Kf7",
+            "R1e7#"
+          ],
+          "cp": null,
+          "mate": 6
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "root-only:false:root",
+      "fen": "4r3/4rk2/2n3p1/5n2/5P2/8/P4KPP/R6R b - - 0 1",
+      "searchMove": "e7e2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e7e2",
+            "f2f1",
+            "c6d4",
+            "g2g4",
+            "f5e3",
+            "f1g1",
+            "e2g2"
+          ],
+          "pvSan": [
+            "Re2+",
+            "Kf1",
+            "Ncd4",
+            "g4",
+            "Ne3+",
+            "Kg1",
+            "Rg2#"
+          ],
+          "cp": null,
+          "mate": 4
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e7e2",
+            "value": 10000,
+            "evidence": "Re2+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Re2+ Kf1 Ncd4 Rb1 Ne3+ Kg1 Rxg2#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rg2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "e2g2",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e7e2",
+            "value": 10000,
+            "evidence": "Re2+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Re2+ Kf1 Ncd4 Rb1 Ne3+ Kg1 Rxg2#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "value": 10000,
+            "ply": 3,
+            "moveUci": "c6d4",
+            "evidence": "Ncd4 is a quiet mating preparation. All 12 legal White replies allow forced mate within two more moves; for example, a4 Ne3+ Kg1 Rxg2#.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rg2# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "e2g2",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "root-only:true:root",
+      "fen": "r6r/p4kpp/8/5p2/5N2/2N3P1/4RK2/4R3 w - - 0 1",
+      "searchMove": "e2e7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e2e7",
+            "f7f8",
+            "c3d5",
+            "h7h6",
+            "f4e6",
+            "f8g8",
+            "e7g7"
+          ],
+          "pvSan": [
+            "Re7+",
+            "Kf8",
+            "Ncd5",
+            "h6",
+            "Ne6+",
+            "Kg8",
+            "Rxg7#"
+          ],
+          "cp": null,
+          "mate": 4
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e2e7",
+            "value": 10000,
+            "evidence": "Re7+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Re7+ Kf8 Ncd5 a5 Ne6+ Kg8 Rxg7#. The exact continuation depends on the defence.",
+            "relevance": "primary"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxg7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "e7g7",
+            "relevance": "secondary",
+            "value": 10000
+          }
+        ],
+        "timeline": [
+          {
+            "id": "mateIn4",
+            "label": "Forcing Mate",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "e2e7",
+            "value": 10000,
+            "evidence": "Re7+ starts a forced mating attack. Every legal defence permits mate within 4 moves; one verified line is Re7+ Kf8 Ncd5 a5 Ne6+ Kg8 Rxg7#. The exact continuation depends on the defence.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "mateIn3",
+            "label": "Mating Preparation",
+            "source": "available",
+            "confidence": "high",
+            "value": 10000,
+            "ply": 3,
+            "moveUci": "c3d5",
+            "evidence": "Ncd5 is a quiet mating preparation. All 12 legal Black replies allow forced mate within two more moves; for example, a5 Ne6+ Kg8 Rxg7#.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "mateIn1",
+            "label": "Checkmate",
+            "confidence": "high",
+            "evidence": "Rxg7# is checkmate: the king is in check and there is no legal reply.",
+            "source": "available",
+            "ply": 7,
+            "moveUci": "e7g7",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "claim-before-mate:false:root",
+      "fen": "4r3/4rk2/2n3p1/5n2/5P2/8/P4KPP/R6R b - - 99 1",
+      "searchMove": "e7e2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e7e2"
+          ],
+          "pvSan": [
+            "Re2+"
+          ],
+          "cp": 0,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    },
+    {
+      "id": "claim-before-mate:true:root",
+      "fen": "r6r/p4kpp/8/5p2/5N2/2N3P1/4RK2/4R3 w - - 99 1",
+      "searchMove": "e2e7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "e2e7"
+          ],
+          "pvSan": [
+            "Re7+"
+          ],
+          "cp": 0,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-130"
+      }
+    }
+  ]
+}

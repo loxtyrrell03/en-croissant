@@ -1911,6 +1911,7 @@ export function proveCheckingMate(
     steps: TacticalReplayStep[],
     nodeLimit = CHECKING_MATE_NODE_LIMIT,
     includeStrategy = false,
+    onFailure?: (reason: string) => void,
 ): CheckingMateProof | null {
     if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
     const root = steps[0];
@@ -1937,9 +1938,16 @@ export function proveCheckingMate(
             .filter((s) => s.before.turn === root.before.turn && !s.after.isCheck())
             .map((s) => s.uci),
     );
-    const quietLimit = Math.min(2, quietHints.size);
+    let quietLimit = Math.min(2, quietHints.size);
+    // A PV move's checking status is branch-dependent. A knight check in
+    // the supplied line may be the quiet mating setup after a different
+    // king reply. A line containing a quiet setup admits at most two quiet
+    // moves per branch, even if the supplied branch only needs one. Reuse
+    // nominated moves only; every defence and terminal mate is still checked
+    // within the unchanged depth and shared operation budget.
+    let branchQuietHints = quietHints;
     const key = `${makeFen(root.after.toSetup())}:${maxMoves}:${hints}:${[...quietHints]}`;
-    if (!includeStrategy && nodeLimit === CHECKING_MATE_NODE_LIMIT && checkingMateCache.has(key))
+    if (!includeStrategy && !onFailure && nodeLimit === CHECKING_MATE_NODE_LIMIT && checkingMateCache.has(key))
         return checkingMateCache.get(key)!;
     let nodes = nodeLimit;
     const visit = (pos: Chess, move: NormalMove) => {
@@ -1951,6 +1959,7 @@ export function proveCheckingMate(
     const attackMemo = new Map<string, string[] | null>();
     const defendMemo = new Map<string, string[] | null>();
     const choices = new Map<string, NormalMove>();
+    let failedRootReply: string | undefined;
     const orderedMoves = (pos: Chess) => {
         const moves = legalMoves(pos);
         if (root.after.isCheck()) return moves;
@@ -1983,7 +1992,7 @@ export function proveCheckingMate(
         for (const move of moves) {
             const piece = pos.board.get(move.from)!;
             if (
-                !quietHints.has(makeUci(move)) &&
+                !branchQuietHints.has(makeUci(move)) &&
                 move.to !== pos.epSquare &&
                 !(piece.role === "king" && pos.board[pos.turn].has(move.to)) &&
                 !discoveryRays.some((ray) => ray.has(move.from)) &&
@@ -1996,7 +2005,7 @@ export function proveCheckingMate(
                 continue;
             const next = visit(pos, move);
             const isQuiet = !next.isCheck();
-            if (isQuiet && (!quiet || !quietHints.has(makeUci(move)))) continue;
+            if (isQuiet && (!quiet || !branchQuietHints.has(makeUci(move)))) continue;
             const continuation = defend(next, remaining - 1, quiet - Number(isQuiet));
             if (continuation) {
                 const line = [makeSan(pos, move), ...continuation];
@@ -2019,6 +2028,7 @@ export function proveCheckingMate(
         for (const reply of replies) {
             const continuation = attack(visit(pos, reply), remaining, quiet);
             if (!continuation) {
+                if (pos === root.after) failedRootReply = makeSan(pos, reply);
                 defendMemo.set(cacheKey, null);
                 return null;
             }
@@ -2044,7 +2054,21 @@ export function proveCheckingMate(
         if (root.after.isCheckmate() && nodeLimit > 0)
             proof = { maxMoves: 1, replyCount: 0, example: [root.san] };
         else {
-            const continuation = defend(root.after, maxMoves - 1, quietLimit);
+            let continuation = defend(root.after, maxMoves - 1, quietLimit);
+            if (!continuation && quietHints.size && nodes > 0) {
+                // Preserve the economical checking/known-quiet search first.
+                // Trying every branch-quiet hint immediately can spend the
+                // entire budget on irrelevant alternatives before an already
+                // supported mate. The fallback shares the remaining budget;
+                // a failed narrow search is not a failed expanded position.
+                quietLimit = 2;
+                branchQuietHints = new Set(hints);
+                attackMemo.clear();
+                defendMemo.clear();
+                choices.clear();
+                failedRootReply = undefined;
+                continuation = defend(root.after, maxMoves - 1, quietLimit);
+            }
             if (continuation)
                 proof = {
                     maxMoves,
@@ -2054,15 +2078,27 @@ export function proveCheckingMate(
                         visits: nodeLimit - nodes } : {}),
                 };
         }
-    } catch {
+    } catch (error) {
+        onFailure?.(String(error));
         /* An incomplete proof cannot certify the supplied continuation. */
     }
-    if (!includeStrategy && nodeLimit === CHECKING_MATE_NODE_LIMIT) {
+    if (!proof && failedRootReply)
+        onFailure?.(`Unproved root reply ${failedRootReply} after ${nodeLimit - nodes} visits`);
+    if (!includeStrategy && !onFailure && nodeLimit === CHECKING_MATE_NODE_LIMIT) {
         checkingMateCache.set(key, proof);
         if (checkingMateCache.size > 128)
             checkingMateCache.delete(checkingMateCache.keys().next().value!);
     }
     return proof;
+}
+
+/** A different mating route is not a missed win. Every route here checks
+ * all legal defensive replies; an engine mate score or cooperative line
+ * alone cannot establish that the played move preserves mate. */
+export function preservesVerifiedMate(steps: TacticalReplayStep[]) {
+    return !!steps[0] && !!(proveShortCheckingMate(steps[0]) ||
+        proveQuietMateThreat(steps[0]) || proveMateWithinThree(steps) ||
+        proveCheckingMate(steps));
 }
 
 /** One terminal event is one lesson. Conflicting legacy pattern names are
@@ -11992,6 +12028,10 @@ export function auditTacticalMotifs(
     if (drawing) return [{ ...drawing, relevance: "primary" as const }];
     let checkingMate =
         proveShortCheckingMate(steps[0]) ?? (steps.length >= 3 ? proveCheckingMate(steps) : null);
+    if (!checkingMate && steps[0].capture && !steps[0].after.isCheck() && steps[4]?.after.isCheckmate()) {
+        const captureMate = proveMateWithinThree(steps);
+        if (captureMate) checkingMate = { maxMoves: 3, replyCount: captureMate.replyCount, example: [steps[0].san, ...captureMate.example] };
+    }
     if (!checkingMate) {
         const clearanceMate = proveMatingClearance(steps[0]);
         if (clearanceMate) checkingMate = {
@@ -12883,6 +12923,13 @@ export function auditTacticalMotifs(
     const fork = candidates.find((m) => m.id === "fork");
     const filtered = normalizedCandidates
         .filter((m) => {
+            // Two independently proved distances for the same root are not
+            // two tactical themes. Keep the shorter quiet-mate certificate;
+            // the longer strategy remains useful internally, not as a badge.
+            if (m.ply === 1 && m.label === "Forcing Mate" &&
+                (quietMate || (preparation && Number(m.id.slice(6)) >= 3))) return false;
+            if (m.ply === 1 && m.label === "Mating Preparation" &&
+                checkingMate && checkingMate.maxMoves < 3) return false;
             // Recapturing away from an already pinned defender describes the
             // same mechanism as its capture offer. Prefer exploiting that pin
             // over a second, equal-value deflection badge on the same ray.

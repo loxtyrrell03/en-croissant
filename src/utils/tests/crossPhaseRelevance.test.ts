@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs";
+import assert from "node:assert/strict";
 import { makeFen, parseFen } from "chessops/fen";
 import { Chess } from "chessops/chess";
 import { makeUci, parseUci } from "chessops/util";
@@ -107,6 +108,12 @@ test("exact source and engine replay retains unrelated results across the twenty
                 if (pawn.value !== 10000) throw new Error("Unexpected frozen f7 material value");
                 pawn.value = 100;
             }
+            // The starting board explains Bxf7+, not the future king reply
+            // and Nd5#. The full mate line and actual-ply themes stay intact.
+            assert.deepEqual(before.scan.arrows.map((a: { ply: number }) => a.ply), [1, 2, 3]);
+            before.scan.arrows = before.scan.arrows.filter((a: { ply: number }) => a.ply === 1);
+            before.scan.variations[0].arrows = before.scan.variations[0].arrows.filter((a: { ply: number }) => a.ply === 1);
+            before.scan.variations[0].labels = before.scan.variations[0].labels.filter((label: { id: string }) => label.id !== "mateIn1");
         }
         expect({ id: row.id, result: clean(row.sourceResult), scan: clean(row.scan) }).toEqual({
             id: before.id,

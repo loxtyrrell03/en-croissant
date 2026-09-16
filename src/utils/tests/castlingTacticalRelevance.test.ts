@@ -8,6 +8,7 @@ import {
     proveQuietTacticalPreparation,
     proveExchangeDeflection,
     proveReinforcedPin,
+    proveMateWithinThree,
 } from "../tacticalMotifs/causalTactics";
 import {
     classifyPositionTacticalMotifs,
@@ -126,8 +127,10 @@ test.each([
     expect(() => classifyPositionTacticalMotifs({ fen: row.fen, pvUci: [row.uci] })).not.toThrow();
 });
 
-test("missing a castling mate keeps mate as the lesson, not a rook capture or corner-square fork", () => {
+test("a different verified mate is not missing the castling win", () => {
     const row = castlingCases[2];
+    expect(classifyPositionTacticalMotifs(row).motifs[0]).toMatchObject({id:"mateIn1",ply:1});
+    expect(proveMateWithinThree(replayTacticalLine(row.fen,["e2e3"]))?.replyCount).toBeGreaterThan(0);
     const result = classifyMistakeReviewMotifs({
         fen: row.fen,
         playedMoveUci: "e2e3",
@@ -135,8 +138,8 @@ test("missing a castling mate keeps mate as the lesson, not a rook capture or co
         pvUci: row.pvUci,
         refutationUci: ["f8f7"],
     });
-    expect(result.missedMotifs[0]).toMatchObject({ id: "mateIn1", ply: 1, source: "missed" });
-    expect(result.missedMotifs).toHaveLength(1);
+    expect(result.missedMotifs).toEqual([]);
+    expect(result.missedTimeline).toEqual([]);
 });
 
 // Eighteen games in both notations plus mistake/reply paths. The aggregate

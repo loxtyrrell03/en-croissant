@@ -31,6 +31,7 @@ import {
     pawnOpportunityRemainsAfterReply,
     MIN_TACTICAL_CAPTURE_GAIN,
     normalizeMatingPayoffs,
+    preservesVerifiedMate,
     normalizeContinuingTactics,
     replayTacticalLine,
     selfInterferenceEvidence,
@@ -134,7 +135,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 129;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 130;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -1604,6 +1605,20 @@ export function classifyMistakeReviewMotifs(
             : null;
         if (alternative && (!allowedRoots.length || (alternative.value ?? 0) > Math.max(...allowedRoots.map(m => m.value ?? 0)))) compared.allowedMotifs = [alternative,
             ...compared.allowedMotifs.map(m => ({ ...m, relevance: "secondary" as const }))];
+    }
+    if (playedMoveUci && compared.missedMotifs.some(m => m.ply === 1 &&
+        (/^mateIn\d+$/.test(m.id) || m.id === "mateThreat")) &&
+        preservesVerifiedMate(replayTacticalLine(fen, [playedMoveUci, ...refutationLine]))) {
+        // Winning by a different forced mate is not missing the win, even
+        // if the preferred engine route is shorter. Do not replace this
+        // evidence with a score threshold or leave a subordinate missed
+        // fork from that same mating line to manufacture an accusation.
+        compared.missedMotifs = [];
+        compared.missedTimeline = [];
+        // Material counterplay can remain an observed secondary event, but
+        // cannot explain a lost win when this move still forces checkmate.
+        compared.allowedMotifs = [];
+        compared.allowedTimeline = compared.allowedTimeline?.map(m => ({ ...m, relevance: "secondary" }));
     }
     if (!input.tablebaseEvidence) motifCache.set(key, compared);
     if (motifCache.size > MOTIF_CACHE_LIMIT) {
