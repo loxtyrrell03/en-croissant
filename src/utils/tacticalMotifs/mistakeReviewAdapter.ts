@@ -135,7 +135,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 131;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 132;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -1010,7 +1010,15 @@ export function buildTacticalTimeline(
     // later boards can be scanned independently when actually reached.
     if (rootMotifs.length && rootMotifs.every(motif => motif.ply === 1 &&
         motif.id === "hangingPiece" && motif.label === "Hanging Pawn")) {
-        return rootMotifs.map(motif => ({ ...motif, actor: fullReplay[0]?.before.turn }));
+        const timeline = rootMotifs.map(motif => ({ ...motif, actor: fullReplay[0]?.before.turn }));
+        // The actual check evasion can itself cut a defender's line. Retain
+        // that independently verified concession at ply 2, without turning
+        // one cooperative reply into a root fork or reopening the whole PV.
+        const reply = fullReplay[1];
+        const interference = reply?.before.isCheck() ? selfInterferenceEvidence(reply, source) : null;
+        if (interference) timeline.push({ ...interference, ply: 2,
+            actor: reply.before.turn, relevance: "secondary" });
+        return timeline;
     }
     const provedPromotionOffer = rootMotifs.some(
         (motif) => motif.id === "promotionCombination" && motif.ply === 1,

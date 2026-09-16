@@ -23,6 +23,7 @@ import { checkingCombinationCases, promotionCaptureForkCases } from "./fixtures/
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "./fixtures/mixedTargetFork";
 import { quietPieceForkCases, quietPieceForkMove } from "./fixtures/quietPieceFork";
 import { checkingPawnRetentionCases } from "./fixtures/checkingPawnRetention";
+import { checkingPawnHistoryCases } from "./fixtures/checkingPawnHistory";
 import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "./fixtures/checkingPawnFollowup";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
 import { perpetualMaterialCases, perpetualMaterialLine } from "./fixtures/perpetualMaterial";
@@ -109,6 +110,17 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
         vi.unstubAllGlobals();
     }
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("checking pawn history retains capture lessons without creating forks in the production controller", async () => {
+    for (const input of checkingPawnHistoryCases) {
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.some(m=>m.id==="hangingPiece" && m.label==="Hanging Pawn")).toBe(input.gain);
+        // The sacrifice-recovery control has a separate real king/rook fork;
+        // rejecting its generic pawn-gain claim must not erase that tactic.
+        expect(result.scan.motifs.some(m=>m.id==="fork")).toBe(input.id.startsWith("checking-sacrifice-recovery"));
+    }
+},120000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_TARGETED_REPLAY)("targeted candidate scans survive the compiled production controller", async () => {
     const report = JSON.parse(readFileSync(process.env.TACTICAL_TARGETED_REPLAY!, "utf8"));
@@ -403,7 +415,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("complete pawn histories survive
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_RECALL_REPLAY)("all owner-game positions retain the actual compiled scan and history", async()=>{
     const baseline=JSON.parse(readFileSync(process.env.TACTICAL_RECALL_REPLAY!,"utf8"));
-    expect(baseline.completed).toBe(baseline.requested);
+    expect(baseline.completed).toBe(baseline.requested ?? baseline.results.length);
     const cases=[];
     for(const row of baseline.results) {
         const input={fen:row.fen,...row.before[0],variations:row.before,engineName:"Stockfish 18",

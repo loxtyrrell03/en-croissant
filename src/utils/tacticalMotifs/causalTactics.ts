@@ -733,9 +733,11 @@ function captureGainEvidence(step: TacticalReplayStep, gain: number) {
 /** A pawn need not have been exposed by the very last move. Admit a current
  * safe capture when complete capture-free-origin history distinguishes it from
  * returning a gambit/trade. History controls relevance only: the displayed gain
- * remains position-local and cannot inherit earlier material or PV payoffs. */
+ * remains position-local and cannot inherit earlier material or PV payoffs.
+ * Giving check does not erase a separately established pawn gain. This is
+ * not proof of a fork on another piece in the illustrated check evasion. */
 export function provePersistentPawnCapture(root: TacticalReplayStep, history: TacticalGameHistory | null | undefined) {
-    if (!root || root.capture !== VALUE.pawn || root.move.promotion || root.after.isCheck() || root.after.isEnd()) return null;
+    if (!root || root.capture !== VALUE.pawn || root.move.promotion || root.after.isEnd()) return null;
     const context = persistentPawnExchangeContext(history, makeFen(root.before.toSetup()), root.move);
     if (!context) return null;
     const gain = tacticalCaptureGain(root);

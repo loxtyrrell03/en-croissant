@@ -10400,9 +10400,11 @@ function captureGainEvidence(step, gain) {
 /** A pawn need not have been exposed by the very last move. Admit a current
 * safe capture when complete capture-free-origin history distinguishes it from
 * returning a gambit/trade. History controls relevance only: the displayed gain
-* remains position-local and cannot inherit earlier material or PV payoffs. */
+* remains position-local and cannot inherit earlier material or PV payoffs.
+* Giving check does not erase a separately established pawn gain. This is
+* not proof of a fork on another piece in the illustrated check evasion. */
 function provePersistentPawnCapture(root, history) {
-	if (!root || root.capture !== VALUE.pawn || root.move.promotion || root.after.isCheck() || root.after.isEnd()) return null;
+	if (!root || root.capture !== VALUE.pawn || root.move.promotion || root.after.isEnd()) return null;
 	const context = persistentPawnExchangeContext(history, makeFen(root.before.toSetup()), root.move);
 	if (!context) return null;
 	const gain = tacticalCaptureGain(root);
@@ -20292,7 +20294,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 131;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 132;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -20864,10 +20866,21 @@ function selectContinuationLessons(timeline, rootMotifs) {
 * so later repetitions and opponent counterplay cannot replace the lesson. */
 function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine, tablebaseEvidence) {
 	const fullReplay = replayTacticalLine(fen, line);
-	if (rootMotifs.length && rootMotifs.every((motif) => motif.ply === 1 && motif.id === "hangingPiece" && motif.label === "Hanging Pawn")) return rootMotifs.map((motif) => ({
-		...motif,
-		actor: fullReplay[0]?.before.turn
-	}));
+	if (rootMotifs.length && rootMotifs.every((motif) => motif.ply === 1 && motif.id === "hangingPiece" && motif.label === "Hanging Pawn")) {
+		const timeline = rootMotifs.map((motif) => ({
+			...motif,
+			actor: fullReplay[0]?.before.turn
+		}));
+		const reply = fullReplay[1];
+		const interference = reply?.before.isCheck() ? selfInterferenceEvidence(reply, source) : null;
+		if (interference) timeline.push({
+			...interference,
+			ply: 2,
+			actor: reply.before.turn,
+			relevance: "secondary"
+		});
+		return timeline;
+	}
 	const provedPromotionOffer = rootMotifs.some((motif) => motif.id === "promotionCombination" && motif.ply === 1);
 	const promotionEpisode = provedPromotionOffer && fullReplay.slice(0, 17).some((step) => step.before.turn === fullReplay[0].before.turn && step.move.promotion);
 	const terminal = fullReplay.findIndex((step) => step.after.isEnd() || promotionEpisode && step.before.turn === fullReplay[0].before.turn && step.move.promotion);
