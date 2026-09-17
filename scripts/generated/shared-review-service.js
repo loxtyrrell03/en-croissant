@@ -3197,8 +3197,21 @@ function persistentPawnExchangeContext(history, fen, move) {
 		if (!current.capture || !previous.capture || current.move.to !== previous.move.to) break;
 		start--;
 	}
+	const episode = verified.frames.slice(start);
+	let pawnBalance = 0;
+	for (let index = 0; index < episode.length;) {
+		const first = episode[index];
+		let net = 0, pawns = 0;
+		do {
+			const frame = episode[index++];
+			const sign = frame.before.turn === side ? 1 : -1;
+			net += sign * (frame.capture + frame.promotionGain);
+			if (frame.capture === values.pawn) pawns += sign * values.pawn;
+		} while (first.capture && index < episode.length && episode[index].capture && episode[index].move.to === first.move.to);
+		pawnBalance += Math.sign(pawns) * Math.min(Math.abs(pawns), Math.max(0, Math.sign(pawns) * net));
+	}
 	return {
-		balance: verified.frames.slice(start).reduce((sum, frame) => sum + (frame.before.turn === side ? 1 : -1) * (frame.capture + frame.promotionGain), 0),
+		balance: victimCapture === null ? pawnBalance : episode.reduce((sum, frame) => sum + (frame.before.turn === side ? 1 : -1) * (frame.capture + frame.promotionGain), 0),
 		episodePlies: verified.frames.length - start
 	};
 }
@@ -21243,7 +21256,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 151;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 152;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

@@ -13,6 +13,7 @@ import { captureLiabilityInput } from "./fixtures/captureLiabilityRecovery";
 import { discoveryRecaptureInput,discoveryRecaptureFen } from "./fixtures/discoveryRecapture";
 import { forkExchangeRetentionInput,forkExchangeRetentionFen } from "./fixtures/forkExchangeRetention";
 import { captureExchangeRetentionInput } from "./fixtures/captureExchangeRetention";
+import { independentPawnHistoryInput } from "./fixtures/independentPawnHistory";
 import { captureMateCases } from "./fixtures/captureMate";
 import { immediatePromotionCases } from "./fixtures/immediatePromotion";
 import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "./fixtures/promotionCheckRetention";
@@ -599,6 +600,18 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("root-only capture mates survive
             : !result.scan.motifs.some(m => m.id.startsWith("mate"))).toBe(true);
     }
 }, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("independent pawn history survives the production controller",async()=>{
+    for(const reflected of [false,true]) for(const reciprocal of [false,true]) {
+        const original=independentPawnHistoryInput(reflected,reciprocal);
+        const input={...original,depth:16,
+            variations:[{pvUci:original.pvUci,cp:reciprocal?700:-700,depth:16}],engineName:"Constructed pawn history"};
+        const {scan}=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(scan.motifs.map(({label,value,ply})=>({label,value,ply}))).toEqual(
+            reciprocal?[]:[{label:"Hanging Pawn",value:100,ply:1}]);
+    }
+},30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("net exchange recaptures survive the production controller",async()=>{
     for(const reflected of [false,true]) for(const safe of [true,false]) {

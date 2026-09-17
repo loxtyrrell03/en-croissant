@@ -269,8 +269,29 @@ export function persistentPawnExchangeContext(
             current.move.to !== previous.move.to) break;
         start--;
     }
-    const balance = verified.frames
-        .slice(start)
+    const episode = verified.frames.slice(start);
+    // An untouched pawn cannot be the receiver of an earlier piece sacrifice.
+    // Keep pawn-for-pawn compensation, but neither unrelated piece gains nor
+    // losses finance/erase this pawn opportunity. A completed same-square
+    // piece exchange CAN settle its own pawn cost: Bxg4 Nxg4 must not leave a
+    // fictitious pawn debt when the bishop was exchanged for that pawn.
+    // Never borrow surplus beyond that chain's own pawn balance.
+    let pawnBalance = 0;
+    for (let index = 0; index < episode.length;) {
+        const first = episode[index];
+        let net = 0, pawns = 0;
+        do {
+            const frame = episode[index++];
+            const sign = frame.before.turn === side ? 1 : -1;
+            net += sign * (frame.capture + frame.promotionGain);
+            if (frame.capture === values.pawn) pawns += sign * values.pawn;
+        } while (first.capture && index < episode.length &&
+            episode[index].capture && episode[index].move.to === first.move.to);
+        pawnBalance += Math.sign(pawns) * Math.min(Math.abs(pawns), Math.max(0, Math.sign(pawns) * net));
+    }
+    // A pawn which has captured still needs the complete material ledger,
+    // including any piece it took. Current capture safety is proved separately.
+    const balance = victimCapture === null ? pawnBalance : episode
         .reduce(
             (sum, frame) =>
                 sum +

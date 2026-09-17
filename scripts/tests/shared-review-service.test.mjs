@@ -19,6 +19,47 @@ import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "../../
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
 
+test("independent pawn history survives generated review without accusing retained opportunities",async()=>{
+  for(const retained of [false,true]) {
+    const root=await mkdtemp(join(tmpdir(),"en-shared-review-independent-pawn-"));
+    const prefix="e2e3 e7e5 g1f3 b8c6 a2a3 g8f6 d1e2 c6d4 e2b5 d4b5 b1c3 a7a6".split(" ");
+    const moves=[...prefix,retained?"h2h3":"f3g1"];
+    const position=Chess.fromSetup(parseFen(INITIAL_FEN).unwrap()).unwrap();
+    const lines=new Map();let expectedFen="";
+    for(const [index,move] of moves.entries()) {
+      const fen=makeFen(position.toSetup());if(index===12)expectedFen=fen;
+      lines.set(fen,{cp:index===12?300:0,moves:index===12?"f3e5":move});
+      assert.ok(position.isLegal(parseUci(move)));position.play(parseUci(move));
+    }
+    lines.set(makeFen(position.toSetup()),{cp:0,moves:retained?"h7h6":"d7d6"});
+    const options={root,documentsRoot:join(root,"documents"),engineConfigPath:join(root,"engine.json"),
+      fetchGames:async()=>[],lookup:async fen=>{assert.ok(lines.has(fen));return {depth:16,pvs:[lines.get(fen)]};}};
+    let service;
+    try {
+      await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+      // Synthetic scores test shared history/review/storage, not the strength
+      // of this deliberately queen-down constructed opening.
+      await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,
+        url:`https://example.test/independent-pawn-${retained}`,pgn:`[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.17"]\n[Result "0-1"]\n\n1. e3 e5 2. Nf3 Nc6 3. a3 Nf6 4. Qe2 Nd4 5. Qb5 Nxb5 6. Nc3 a6 7. ${retained?"h3":"Ng1"} 0-1`}]}));
+      service=new SharedReviewService(options);await service.initialize(false);await service.run();
+      assert.equal(service.snapshot().error,null);
+      const card=service.snapshot().cards.find(card=>card.fen===expectedFen);assert.ok(card);
+      assert.deepEqual(card.tacticalHistory,{fen:INITIAL_FEN,moves:prefix});
+      const missed=card.tacticalClassification.missedMotifs;
+      if(retained)assert.deepEqual(missed,[]);
+      else {assert.equal(missed[0].label,"Hanging Pawn");assert.equal(missed[0].value,100);}
+      service.close();service=new SharedReviewService(options);await service.initialize(false);
+      assert.deepEqual(service.snapshot().cards.find(card=>card.fen===expectedFen).tacticalClassification,
+        JSON.parse(JSON.stringify(card.tacticalClassification)));
+      assert.ok((await service.deck()).positions.some(position=>position.fen===expectedFen));
+    } finally {
+      service?.close();const target=resolve(root);
+      assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-independent-pawn-"));
+      await rm(target,{recursive:true,force:true});
+    }
+  }
+});
+
 test("a missed exchange payoff keeps full history, net value and saved review wording",async()=>{
   const root=await mkdtemp(join(tmpdir(),"en-shared-review-exchange-retention-"));
   const moves="d2d4 b8c6 e2e3 e7e5 g1f3 d8f6 b1c3 f8e7 d1e2 e5d4 e3d4 c6d4 f3d4 a7a6".split(" ");

@@ -17,6 +17,17 @@ import { discoveredPinPriorityFen, discoveredPinPriorityLine } from "./fixtures/
 import { settledPawnHistoryCases } from "./fixtures/settledPawnHistory";
 import { forkCountercaptureFen, forkCountercaptureLine } from "./fixtures/forkCountercapture";
 import { captureExchangeRetentionInput } from "./fixtures/captureExchangeRetention";
+import { independentPawnHistoryInput } from "./fixtures/independentPawnHistory";
+
+test("an independent pawn opportunity does not present the historical queen loss as its payoff",()=>{
+  const input=independentPawnHistoryInput();
+  const live=classifyPositionTacticalMotifs({...input,rootCp:-700});
+  const container=document.createElement("div");
+  container.innerHTML=renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={["Nxe5"]} motifs={live.timeline??[]}/></MantineProvider>);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Hanging Pawn");
+  expect(container.textContent).not.toMatch(/queen|900|Fork/);
+  expect(live.motifs[0]).toMatchObject({value:100,ply:1});
+});
 
 test("a completed exchange shows its retained pawn rather than a free knight",()=>{
   const input=captureExchangeRetentionInput();

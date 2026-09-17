@@ -179,7 +179,7 @@ test("a settled bishop-for-knight trade does not erase a separate pawn gain or i
     const moves = ["d2d4", "b8c6", "g1f3", "d7d5", "b1c3", "e7e6", "e2e4", "f8b4", "h2h3", "b4c3", "b2c3"];
     const { fen } = reached(moves);
     const proof = provePersistentPawnCapture(replayTacticalLine(fen, ["d5e4"])[0], { fen: INITIAL_FEN, moves });
-    expect(proof).toMatchObject({ gain: 100, exchangeBalance: -10 });
+    expect(proof).toMatchObject({ gain: 100, exchangeBalance: 0 });
 });
 
 test("malformed, wrong-root, stale-clock, incomplete and overlong histories fail closed without slicing", () => {

@@ -1,0 +1,703 @@
+{
+  "scope": "Fresh Stockfish 18 development checks of constructed legal histories; not real games or an accuracy sample.",
+  "requested": 8,
+  "completed": 8,
+  "searches": [
+    {
+      "id": "constructed:false:false:best",
+      "fen": "r1bqkb1r/1ppp1ppp/p4n2/1n2p3/8/P1N1PN2/1PPP1PPP/R1B1KB1R w KQkq - 0 7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c3b5",
+            "a6b5",
+            "f3e5",
+            "c7c6",
+            "b2b4",
+            "d7d5",
+            "c1b2",
+            "h8g8",
+            "e1c1",
+            "f6e4",
+            "f2f3",
+            "e4d6",
+            "g2g3"
+          ],
+          "pvSan": [
+            "Nxb5",
+            "axb5",
+            "Nxe5",
+            "c6",
+            "b4",
+            "d5",
+            "Bb2",
+            "Rg8",
+            "O-O-O",
+            "Ne4",
+            "f3",
+            "Nd6",
+            "g3"
+          ],
+          "cp": -691,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "f1b5",
+            "a6b5",
+            "d2d4",
+            "e5e4",
+            "f3e5",
+            "d7d6",
+            "c1d2",
+            "c8e6",
+            "e1c1",
+            "d6e5",
+            "d4e5",
+            "f6d5",
+            "c3d5",
+            "d8d5"
+          ],
+          "pvSan": [
+            "Bxb5",
+            "axb5",
+            "d4",
+            "e4",
+            "Ne5",
+            "d6",
+            "Bd2",
+            "Be6",
+            "O-O-O",
+            "dxe5",
+            "dxe5",
+            "Nd5",
+            "Nxd5",
+            "Qxd5"
+          ],
+          "cp": -707,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "c3e2",
+            "d7d5",
+            "f3e5",
+            "c7c6",
+            "e2g3",
+            "f8d6",
+            "f2f4",
+            "d6e5",
+            "f4e5"
+          ],
+          "pvSan": [
+            "Ne2",
+            "d5",
+            "Nxe5",
+            "c6",
+            "Ng3",
+            "Bd6",
+            "f4",
+            "Bxe5",
+            "fxe5"
+          ],
+          "cp": -713,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 100,
+            "evidence": "Nxb5 takes the knight on b5, but concedes material elsewhere. The checked exchanges gain at least 1 pawn.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c3b5",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 100,
+            "evidence": "Nxb5 takes the knight on b5, but concedes material elsewhere. The checked exchanges gain at least 1 pawn.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "c3b5",
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-152"
+      }
+    },
+    {
+      "id": "constructed:false:false:held",
+      "fen": "r1bqkb1r/1ppp1ppp/p4n2/1n2p3/8/P1N1PN2/1PPP1PPP/R1B1KB1R w KQkq - 0 7",
+      "searchMove": "f3e5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f3e5",
+            "d7d6",
+            "e5d3",
+            "d6d5",
+            "c3b5",
+            "a6b5",
+            "b2b4",
+            "f8d6",
+            "c1b2",
+            "c7c6",
+            "b2d4",
+            "h7h5",
+            "d4b2",
+            "f6e4",
+            "b2g7",
+            "h8g8"
+          ],
+          "pvSan": [
+            "Nxe5",
+            "d6",
+            "Nd3",
+            "d5",
+            "Nxb5",
+            "axb5",
+            "b4",
+            "Bd6",
+            "Bb2",
+            "c6",
+            "Bd4",
+            "h5",
+            "Bb2",
+            "Ne4",
+            "Bxg7",
+            "Rg8"
+          ],
+          "cp": -692,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-152"
+      }
+    },
+    {
+      "id": "constructed:false:true:best",
+      "fen": "r1bqkb1r/1ppp1ppp/p4n2/1n2N3/4P3/P6P/1PPP1PP1/RNB1KB1R b KQkq - 0 7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "b5d4",
+            "f1d3",
+            "d7d5",
+            "c2c3",
+            "d4c6",
+            "e5c6",
+            "b7c6",
+            "e4d5",
+            "f8d6",
+            "e1g1",
+            "c6d5",
+            "f1e1",
+            "c8e6"
+          ],
+          "pvSan": [
+            "Nd4",
+            "Bd3",
+            "d5",
+            "c3",
+            "Nc6",
+            "Nxc6",
+            "bxc6",
+            "exd5",
+            "Bd6",
+            "O-O",
+            "cxd5",
+            "Re1+",
+            "Be6"
+          ],
+          "cp": 733,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "d7d5",
+            "f1b5",
+            "a6b5",
+            "d2d3",
+            "f8d6",
+            "c1f4",
+            "e8g8",
+            "b1c3",
+            "f8e8",
+            "e1c1",
+            "d6e5",
+            "f4e5",
+            "e8e5",
+            "c3d5",
+            "e5e8"
+          ],
+          "pvSan": [
+            "d5",
+            "Bxb5+",
+            "axb5",
+            "d3",
+            "Bd6",
+            "Bf4",
+            "O-O",
+            "Nc3",
+            "Re8",
+            "O-O-O",
+            "Bxe5",
+            "Bxe5",
+            "Rxe5",
+            "Nxd5",
+            "Re8"
+          ],
+          "cp": 714,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "c7c6",
+            "f1b5",
+            "a6b5",
+            "d2d4",
+            "d7d6",
+            "c1g5",
+            "d6e5",
+            "d4e5",
+            "c8e6",
+            "e1g1",
+            "f6e4",
+            "g5d8",
+            "a8d8",
+            "b1c3",
+            "e4c3"
+          ],
+          "pvSan": [
+            "c6",
+            "Bxb5",
+            "axb5",
+            "d4",
+            "d6",
+            "Bg5",
+            "dxe5",
+            "dxe5",
+            "Be6",
+            "O-O",
+            "Nxe4",
+            "Bxd8",
+            "Rxd8",
+            "Nc3",
+            "Nxc3"
+          ],
+          "cp": 702,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-152"
+      }
+    },
+    {
+      "id": "constructed:false:true:held",
+      "fen": "r1bqkb1r/1ppp1ppp/p4n2/1n2N3/4P3/P6P/1PPP1PP1/RNB1KB1R b KQkq - 0 7",
+      "searchMove": "f6e4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f6e4",
+            "f1b5",
+            "a6b5",
+            "d2d3",
+            "e4c5",
+            "c1e3",
+            "d7d5",
+            "b1c3",
+            "f7f6",
+            "e5g4",
+            "e8f7"
+          ],
+          "pvSan": [
+            "Nxe4",
+            "Bxb5",
+            "axb5",
+            "d3",
+            "Nc5",
+            "Be3",
+            "d5",
+            "Nc3",
+            "f6",
+            "Ng4",
+            "Kf7"
+          ],
+          "cp": 716,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-152"
+      }
+    },
+    {
+      "id": "constructed:true:false:best",
+      "fen": "r1b1kb1r/1ppp1ppp/p1n1pn2/8/1N2P3/P4N2/1PPP1PPP/R1BQKB1R b KQkq - 0 7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f8b4",
+            "a3b4",
+            "e6e5",
+            "d2d4",
+            "d7d6",
+            "f1e2",
+            "f6e4",
+            "e1g1",
+            "c8f5",
+            "f1e1",
+            "c6b4",
+            "a1a3"
+          ],
+          "pvSan": [
+            "Bxb4",
+            "axb4",
+            "e5",
+            "d4",
+            "d6",
+            "Be2",
+            "Nxe4",
+            "O-O",
+            "Bf5",
+            "Re1",
+            "Nxb4",
+            "Ra3"
+          ],
+          "cp": -695,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "c6b4",
+            "a3b4",
+            "b7b5",
+            "f1b5",
+            "c8b7",
+            "b5e2",
+            "b7e4",
+            "c2c3",
+            "e4b7",
+            "h1g1",
+            "e8c8",
+            "d2d3",
+            "f6d5"
+          ],
+          "pvSan": [
+            "Nxb4",
+            "axb4",
+            "b5",
+            "Bxb5",
+            "Bb7",
+            "Be2",
+            "Bxe4",
+            "c3",
+            "Bb7",
+            "Rg1",
+            "O-O-O",
+            "d3",
+            "Nd5"
+          ],
+          "cp": -703,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "b7b5",
+            "b4c6",
+            "d7c6",
+            "d2d3",
+            "c8b7",
+            "c1g5",
+            "c6c5",
+            "c2c4",
+            "b5c4"
+          ],
+          "pvSan": [
+            "b5",
+            "Nxc6",
+            "dxc6",
+            "d3",
+            "Bb7",
+            "Bg5",
+            "c5",
+            "c4",
+            "bxc4"
+          ],
+          "cp": -705,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 90,
+            "evidence": "Bxb4 takes the knight on b4, but concedes material elsewhere. The checked exchanges gain at least 0.9 pawns.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f8b4",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 90,
+            "evidence": "Bxb4 takes the knight on b4, but concedes material elsewhere. The checked exchanges gain at least 0.9 pawns.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f8b4",
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-152"
+      }
+    },
+    {
+      "id": "constructed:true:false:held",
+      "fen": "r1b1kb1r/1ppp1ppp/p1n1pn2/8/1N2P3/P4N2/1PPP1PPP/R1BQKB1R b KQkq - 0 7",
+      "searchMove": "f6e4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f6e4",
+            "b4c6",
+            "d7c6",
+            "d1e2",
+            "e4f6",
+            "d2d4",
+            "e6e5",
+            "f3e5",
+            "c8e6",
+            "h1g1",
+            "e8c8",
+            "c1e3",
+            "f6d7",
+            "e5d7",
+            "e6d7"
+          ],
+          "pvSan": [
+            "Nxe4",
+            "Nxc6",
+            "dxc6",
+            "Qe2",
+            "Nf6",
+            "d4",
+            "e5",
+            "Nxe5",
+            "Be6",
+            "Rg1",
+            "O-O-O",
+            "Be3",
+            "Nd7",
+            "Nxd7",
+            "Bxd7"
+          ],
+          "cp": -715,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-152"
+      }
+    },
+    {
+      "id": "constructed:true:true:best",
+      "fen": "rnb1kb1r/1ppp1pp1/p6p/4p3/1N2n3/P4N2/1PPP1PPP/R1BQKB1R w KQkq - 0 8",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "b4d5",
+            "f8d6",
+            "d2d4",
+            "c7c6",
+            "d5b6",
+            "e5d4",
+            "b6a8",
+            "e8g8",
+            "d1d4"
+          ],
+          "pvSan": [
+            "Nd5",
+            "Bd6",
+            "d4",
+            "c6",
+            "Nb6",
+            "exd4",
+            "Nxa8",
+            "O-O",
+            "Qxd4"
+          ],
+          "cp": 743,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "d2d4",
+            "f8b4",
+            "a3b4",
+            "d7d6",
+            "f1d3",
+            "b8c6",
+            "d3e4",
+            "d6d5",
+            "e4d3",
+            "e5e4",
+            "e1f1",
+            "e8g8",
+            "f3e5",
+            "e4d3",
+            "e5d3"
+          ],
+          "pvSan": [
+            "d4",
+            "Bxb4+",
+            "axb4",
+            "d6",
+            "Bd3",
+            "Nc6",
+            "Bxe4",
+            "d5",
+            "Bd3",
+            "e4",
+            "Kf1",
+            "O-O",
+            "Ne5",
+            "exd3",
+            "Nxd3"
+          ],
+          "cp": 724,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "f3e5",
+            "f8b4",
+            "a3b4",
+            "d7d6",
+            "d2d3",
+            "e4f6",
+            "e5f3",
+            "b8c6",
+            "c2c3",
+            "d6d5",
+            "d3d4",
+            "c8f5"
+          ],
+          "pvSan": [
+            "Nxe5",
+            "Bxb4",
+            "axb4",
+            "d6",
+            "d3",
+            "Nf6",
+            "Nf3",
+            "Nc6",
+            "c3",
+            "d5",
+            "d4",
+            "Bf5"
+          ],
+          "cp": 707,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-152"
+      }
+    },
+    {
+      "id": "constructed:true:true:held",
+      "fen": "rnb1kb1r/1ppp1pp1/p6p/4p3/1N2n3/P4N2/1PPP1PPP/R1BQKB1R w KQkq - 0 8",
+      "searchMove": "f3e5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f3e5",
+            "f8b4",
+            "a3b4",
+            "d7d6",
+            "d2d3",
+            "e4f6",
+            "e5c4",
+            "b8c6",
+            "f2f3"
+          ],
+          "pvSan": [
+            "Nxe5",
+            "Bxb4",
+            "axb4",
+            "d6",
+            "d3",
+            "Nf6",
+            "Nc4",
+            "Nc6",
+            "f3"
+          ],
+          "cp": 711,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-152"
+      }
+    }
+  ]
+}
