@@ -1,6 +1,38 @@
 # Tactical desktop delivery — 2026-09-17
 
-## Current package: adapter 141 / live pipeline 148
+## Current package: adapter 142 / live pipeline 149
+
+Source `a065a82f` is packaged from the clean detached checkout
+`en-tactical-desktop-a065a82f`. It recovers fork collections through connected
+countercaptures, with branch-matched payoff wording and quiet-fork prevention
+evidence. See `benchmarks/tactical-relevance/fork-countercapture-review.md` for
+the owner-game audit, contrary controls, bounded proofs and remaining misses.
+
+Clean TypeScript, 130 focused source/React checks (one optional skip), seventeen
+generated-service checks (one optional engine skip), the 43-module review build
+and 8,863-module frontend build pass. Native release compilation passes in
+1m24s with 22 existing warnings. Generated review differs only in source-region
+paths and the route tree only in line endings, checked against committed source.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,067,584 bytes;
+  SHA-256 `2f242354a84c71d6302bda8b92933fbeee6a06a81feabae0247e0a6edc414112`.
+- Worker: `liveTactics.worker-Cy6YTwLW.js`, 582,063 bytes; SHA-256
+  `464a0036dabfadc74db1d7013268cb3f49944959d4f136199625882063e59296`.
+  Its clean bytes match the 1,818-input tested production artifact. The x64
+  executable embeds that worker, `TacticalClassifierPanel-CUyx0J9D.js` and
+  `OpeningReviewWorkspace-BZkTMAZb.js`; native dependencies identify those
+  exact assets in the clean checkout.
+- Previous pipeline-148 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline149/en-croissant-fork.exe`,
+  SHA-256 `1171cdcb052dd29e4373d5dc25cd885335d5dc8d742ee6b6ed07906d991e5063`.
+
+No app was running before or after compilation; none was launched or restarted.
+The Dev App shortcut, owner data and phone services were not changed. This proves
+source/package linkage, not native-window interaction or cold-start reliability.
+The standalone wrong-collection cause, broader recall and primary specificity
+remain open. The two pre-existing store-test failures remain separately recorded.
+
+## Previous package: adapter 141 / live pipeline 148
 
 Source `875c3c71` is packaged from the clean detached checkout
 `en-tactical-desktop-875c3c71`. It recovers a defender capture whose payoff is a
