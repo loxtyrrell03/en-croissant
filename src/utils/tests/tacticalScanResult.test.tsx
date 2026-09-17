@@ -22,6 +22,7 @@ import { captureMateFen, captureMateLine } from "./fixtures/captureMate";
 import { immediatePromotionCases } from "./fixtures/immediatePromotion";
 import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "./fixtures/promotionCheckRetention";
 import { makeFen } from "chessops/fen";
+import { captureLiabilityInput } from "./fixtures/captureLiabilityRecovery";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 import {
   buildLiveTacticalScan,
@@ -47,6 +48,17 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a recovered pawn capture displays its counterattack without future defensive arrows", () => {
+  const value = buildLiveTacticalScan({...captureLiabilityInput(),depth:16,engineName:"Constructed capture"});
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Material Gain found");
+  expect(element.textContent).toContain("counterattack on the bishop on b5");
+  expect(element.textContent).not.toContain("No tactical theme verified");
+  expect(value.arrows.map(a=>a.from+a.to)).toEqual(["c6d4","d4b5"]);
+  expect(value.arrows.every(a=>a.ply===1)).toBe(true);
+  expect(value.motifs).toHaveLength(1);
+});
 
 test("the recovered mating finish displays the current checking entry, not a future quiet capture",()=>{
   const fen=makeFen(replayTacticalLine(quietMatingFinish.fen,[quietMatingFinish.playedMoveUci])[0].after.toSetup());

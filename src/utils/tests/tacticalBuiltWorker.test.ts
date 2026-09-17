@@ -9,6 +9,7 @@ import { parseSan } from "chessops/san";
 import { makeUci } from "chessops/util";
 import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
+import { captureLiabilityInput } from "./fixtures/captureLiabilityRecovery";
 import { captureMateCases } from "./fixtures/captureMate";
 import { immediatePromotionCases } from "./fixtures/immediatePromotion";
 import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "./fixtures/promotionCheckRetention";
@@ -595,6 +596,18 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("root-only capture mates survive
             : !result.scan.motifs.some(m => m.id.startsWith("mate"))).toBe(true);
     }
 }, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("liability-removing captures survive the production controller",async()=>{
+    for(const reflected of [false,true]) {
+        const input={...captureLiabilityInput(reflected),depth:16,engineName:"Constructed liability recovery"};
+        const result=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs[0]).toMatchObject({label:"Material Gain",value:100});
+        expect(result.scan.motifs).toHaveLength(1);
+        expect(result.scan.arrows).toHaveLength(2);
+        expect(result.scan.arrows.every(arrow=>arrow.ply===1)).toBe(true);
+    }
+},30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("standalone connected captures survive the production controller",async()=>{
     for(const reflected of [false,true]) for(const rootOnly of [false,true]) {

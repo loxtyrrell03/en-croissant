@@ -19,6 +19,37 @@ import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "../../
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
 
+test("a missed pawn counterattack retains preceding-move context in generated saved review",async()=>{
+  const root=await mkdtemp(join(tmpdir(),"en-shared-review-liability-capture-"));
+  const initial="r2qkb1r/pppb1ppp/2n2n2/1B1pp3/3PP3/P1N2N2/1PP2PPP/R1BQK2R w KQkq - 0 1";
+  const pos=Chess.fromSetup(parseFen(initial).unwrap()).unwrap();pos.play(parseUci("f3g5"));
+  const fen=makeFen(pos.toSetup());pos.play(parseUci("d8e7"));const after=makeFen(pos.toSetup());
+  const options={root,documentsRoot:join(root,"documents"),engineConfigPath:join(root,"engine.json"),
+    fetchGames:async()=>[],lookup:async requested=>{
+      assert.ok(requested===fen||requested===after);
+      // Controlled White-perspective scores test wiring, not chess strength.
+      return {depth:16,pvs:requested===fen?[{cp:-190,moves:"c6d4"}]:[{cp:20,moves:"e4d5"}]};
+    }};
+  let service;
+  try {
+    await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+    await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,
+      url:"https://example.test/liability-capture",pgn:`[White "Opponent"]\n[Black "Tester"]\n[Date "2026.09.17"]\n[SetUp "1"]\n[FEN "${initial}"]\n[Result "0-1"]\n\n1. Ng5 Qe7 0-1`}]}));
+    service=new SharedReviewService(options);await service.initialize(false);await service.run();
+    assert.equal(service.snapshot().error,null);const card=service.snapshot().cards[0];assert.ok(card);
+    assert.equal(card.tacticalClassification.missedMotifs[0].label,"Material Gain");
+    assert.equal(card.tacticalClassification.missedMotifs[0].value,100);
+    assert.match(card.explanation,/counterattack on the bishop on b5/);
+    service.close();service=new SharedReviewService(options);await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification,JSON.parse(JSON.stringify(card.tacticalClassification)));
+    assert.equal((await service.deck()).positions[0].reason,card.explanation);
+  } finally {
+    service?.close();const target=resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-liability-capture-"));
+    await rm(target,{recursive:true,force:true});
+  }
+});
+
 for (const row of [
   {id:"immediate",fen:missedPromotionFen,played:"h1g1",best:"a7a8q",reply:"b5a7",gain:800,
     beforeCp:800,afterCp:300,white:"Tester",black:"Opponent",san:"1. Kg1"},

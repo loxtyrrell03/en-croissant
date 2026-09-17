@@ -470,6 +470,36 @@ export function filterCompensatedRootCaptures(
     const compensated = !settled && isCompensatedContinuationCapture(history, 1);
     return motifs.flatMap((motif) => {
         if (compensated && motif.id === "hangingPiece" && motif.ply === 1) return [];
+        if (!settled && motif.id === "hangingPiece" && motif.ply === 1 &&
+            (motif.value ?? 0) >= MIN_TACTICAL_CAPTURE_GAIN && history[0].capture && !history[0].move.promotion &&
+            root.move.to !== history[0].move.to) {
+            const recovery = tacticalCaptureProof(root).counterattack;
+            let retained = motif.value ?? Infinity;
+            let includesPriorRecovery = false;
+            for (const leaf of recovery?.leaves ?? []) {
+                if (!leaf.lineUci) continue;
+                const branch = replayTacticalLine(makeFen(root.after.toSetup()), leaf.lineUci);
+                if (branch.length !== leaf.lineUci.length) continue;
+                let receiver: Square | undefined = history[0].move.to;
+                let recovered = false;
+                for (const step of branch) {
+                    if (step.move.to === receiver && step.capture) { recovered = true; receiver = undefined; break; }
+                    if (step.move.from === receiver) receiver = step.move.to;
+                }
+                if (recovered) {
+                    includesPriorRecovery = true;
+                    retained = Math.min(retained, leaf.gain - history[0].capture);
+                }
+            }
+            // A connected branch that merely recovers the just-captured piece
+            // cannot fund a new root win. Track the actual receiver through
+            // legal replies instead of guessing from a later matching square.
+            if (includesPriorRecovery && retained < MIN_TACTICAL_CAPTURE_GAIN) return [];
+            if (retained < (motif.value ?? Infinity)) motif = {
+                ...motif, value: retained,
+                evidence: `${root.san} retains at least ${retained / 100} pawns locally after including the piece just lost to ${history[0].san}. Recovering that exchange is not an additional free-piece gain.`,
+            };
+        }
         // A newly supported pawn preparation must not turn recovering part of
         // a just-sacrificed piece into a separate material-win headline. Keep
         // specific later mechanisms; only the generic small concession to the
@@ -732,8 +762,15 @@ export function proveCaptureCounterattack(
     let result: CaptureCounterattackProof | null = null;
     if (targets.length && budget.nodes > 0) {
         const leaves: MaterialRecoveryLeaf[] = [];
-        const gain = proveDefenderCombination(step, targets, [step.move.to], nodeLimit, budget,
+        let gain = proveDefenderCombination(step, targets, [step.move.to], nodeLimit, budget,
             1, true, MIN_TACTICAL_CAPTURE_GAIN, leaf => leaves.push(leaf), true);
+        if (gain === null && budget.nodes > 0) {
+            // Preserve established certificates. Only a failed connected proof
+            // may spend its remaining allowance on liability-removing captures.
+            leaves.length = 0;
+            gain = proveDefenderCombination(step, targets, [step.move.to], nodeLimit, budget,
+                1, true, MIN_TACTICAL_CAPTURE_GAIN, leaf => leaves.push(leaf), true, undefined, true);
+        }
         if (gain !== null && gain >= MIN_TACTICAL_CAPTURE_GAIN && leaves.some(leaf => !leaf.quiet))
             result = {gain, targets, leaves};
     }
@@ -9467,6 +9504,8 @@ const defenderCombinationCache = new Map<string, number | null>();
 type ProofBudget = { nodes: number };
 type MatingLiability = { replyUci: string; mate: string[] };
 type MaterialRecoveryLeaf = {
+    /** Exact post-root path for contextual liability-recovery accounting. */
+    lineUci?: string[];
     fen: string;
     moveUci: string;
     balance: number;
@@ -9716,6 +9755,8 @@ export function proveDefenderCombination(
     minimumGain = 90,
     onLeaf?: (leaf: MaterialRecoveryLeaf) => void,
     verifyCounterchecks = false,
+    onTrace?: (failure: { fen: string; replyUci: string; balance: number; evasion: number }) => void,
+    allowLiabilityRecovery = false,
 ): number | null {
     if (
         !Number.isSafeInteger(nodeLimit) ||
@@ -9726,11 +9767,12 @@ export function proveDefenderCombination(
         evasionLimit < 0
     )
         return null;
-    const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}:${evasionLimit}:${allPiecesAtLeaf}:${minimumGain}:${verifyCounterchecks}`;
-    if (!onLeaf && !sharedBudget && nodeLimit === 4096 && defenderCombinationCache.has(key))
+    const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}:${evasionLimit}:${allPiecesAtLeaf}:${minimumGain}:${verifyCounterchecks}:${allowLiabilityRecovery}`;
+    if (!onLeaf && !onTrace && !sharedBudget && nodeLimit === 4096 && defenderCombinationCache.has(key))
         return defenderCombinationCache.get(key)!;
     const side = step.before.turn;
     const budget = sharedBudget ?? { nodes: nodeLimit };
+    const recoverLiabilities = allowLiabilityRecovery && allPiecesAtLeaf && verifyCounterchecks;
     const delta = (pos: Chess, move: NormalMove) =>
         capturedValue(pos, move) + (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
     const visit = (pos: Chess, move: NormalMove) => {
@@ -9747,13 +9789,28 @@ export function proveDefenderCombination(
         balance: number,
         evasion: number,
         retained: boolean,
+        path: string[],
     ): number | null => {
         if (pos.isEnd()) return null;
+        // Retaining a capture can require removing an off-square attacker.
+        // Only a legal, profitable capture threat nominates that participant;
+        // arbitrary loose pieces elsewhere cannot finance the root. Allies may
+        // collect the original counterattack targets or remove these liabilities.
+        const liabilityTargets = new Set<Square>();
+        if (recoverLiabilities) {
+            const threatPosition = withTurn(pos, opposite(side));
+            for (const threat of legalMoves(threatPosition)) {
+                if (!capturedValue(threatPosition, threat)) continue;
+                if (--budget.nodes < 0) throw new Error("Capture liability nomination exhausted");
+                if (tacticalExchangeGain(threatPosition, threat) >= MIN_TACTICAL_CAPTURE_GAIN)
+                    liabilityTargets.add(threat.from);
+            }
+        }
         let best = -VALUE.king;
         for (const move of moves(pos)) {
             if (
-                !victims.includes(move.to) ||
-                !pieces.includes(move.from) ||
+                (!victims.includes(move.to) && !liabilityTargets.has(move.to)) ||
+                (!recoverLiabilities && !pieces.includes(move.from)) ||
                 !capturedValue(pos, move)
             )
                 continue;
@@ -9778,6 +9835,7 @@ export function proveDefenderCombination(
                         balance,
                         gain: best,
                         quiet: false,
+                        ...(recoverLiabilities ? {lineUci:[...path,makeUci(move)]} : {}),
                         ...(counterchecks.length ? {counterchecks} : {}),
                     });
                     return best;
@@ -9810,6 +9868,7 @@ export function proveDefenderCombination(
                         balance,
                         gain: balance + gain,
                         quiet: true,
+                        ...(recoverLiabilities ? {lineUci:[...path,makeUci(move)]} : {}),
                         ...(counterchecks.length ? {counterchecks} : {}),
                     });
                     return balance + gain;
@@ -9833,6 +9892,7 @@ export function proveDefenderCombination(
                 balance + delta(pos, move),
                 evasion - 1,
                 retained || capturedValue(pos, move) > 0,
+                [...path,makeUci(move)],
             );
             if (gain !== null) return gain;
         }
@@ -9845,6 +9905,7 @@ export function proveDefenderCombination(
         balance: number,
         evasion: number,
         retained = false,
+        path: string[] = [],
     ): number | null => {
         const replies = moves(pos);
         if (!replies.length) return null;
@@ -9868,8 +9929,12 @@ export function proveDefenderCombination(
                 balance - delta(pos, reply),
                 evasion,
                 retained,
+                [...path,makeUci(reply)],
             );
-            if (gain === null) return null;
+            if (gain === null) {
+                onTrace?.({ fen: makeFen(pos.toSetup()), replyUci: makeUci(reply), balance, evasion });
+                return null;
+            }
             minimum = Math.min(minimum, gain);
         }
         return minimum;
@@ -9887,7 +9952,7 @@ export function proveDefenderCombination(
     } catch {
         /* A bounded incomplete search is not a tactical proof. */
     }
-    if (!onLeaf && !sharedBudget && nodeLimit === 4096) {
+    if (!onLeaf && !onTrace && !sharedBudget && nodeLimit === 4096) {
         defenderCombinationCache.set(key, result);
         if (defenderCombinationCache.size > 256)
             defenderCombinationCache.delete(defenderCombinationCache.keys().next().value!);
@@ -13749,6 +13814,10 @@ export function auditTacticalMotifs(
             // not qualify, nor does a capture on a different ply.
             if (m.id === "hangingPiece" && m.ply) {
                 const step = steps[m.ply - 1];
+                const deflection = candidates.find(other => other.id === "deflection" &&
+                    other.ply === m.ply && other.moveUci === m.moveUci &&
+                    other.confidence === "high" && (other.value ?? 0) >= (m.value ?? Infinity));
+                if (step?.capture && deflection && proveCaptureDeflection(step)) return false;
                 const captureGain = step?.capture ? tacticalExchangeGain(step.before, step.move) : Infinity;
                 const discovery = candidates.find((other) =>
                     ["discoveredCheck", "doubleCheck"].includes(other.id) &&
