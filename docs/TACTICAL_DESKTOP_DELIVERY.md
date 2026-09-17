@@ -1,6 +1,41 @@
 # Tactical desktop delivery — 2026-09-17
 
-## Current package: adapter 147 / live pipeline 154
+## Current package: adapter 148 / live pipeline 155
+
+Source `1013cdfb` is packaged from clean detached checkout
+`en-tactical-desktop-1013cdfb`. Captures can retain their gain through verified
+replies that remove off-square attackers; previous-capture accounting prevents
+ordinary exchange recovery from becoming a new gain. See
+`benchmarks/tactical-relevance/liability-capture-recall-review.md` for the
+27-game comparison, fresh engine review, rejected drafts and proof limits.
+
+Clean TypeScript, 68 focused source/React checks (three optional skips),
+23 generated-service checks (one optional engine skip), the 43-module review
+build and frontend build pass. Native release compilation passes in 1m27s with
+22 existing warnings. Generated-review differences are source-region comments
+only; the route tree differs only in line endings. Unrelated dirty
+OTB/FIDE/phone/stats work was excluded.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,071,680 bytes;
+  SHA-256 `fa7254c3d8f0b2913fd49f3fb075db78b1b98e4fce9631e4b8afc84113d9d2e9`.
+- Worker: `liveTactics.worker-KAHpOqsu.js`, 592,540 bytes; SHA-256
+  `d2a28e6f4424f2010a4dca3ce71240f2e0281440adb51bf9c97b7ca4321fc50d`.
+  Clean bytes match the 2,139-input tested artifact. The x64 executable embeds
+  this worker, `TacticalClassifierPanel-BVcyHujB.js` and
+  `OpeningReviewWorkspace-D1pCFjgV.js`; exact native dependency paths identify
+  these assets in the clean checkout.
+- Previous pipeline-154 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline155/en-croissant-fork.exe`,
+  SHA-256 `84e99bcdcd5f5d3999fcd091690263224f25225907417d4ed37018851b8083fa`.
+
+No app was running before or after compilation; none was launched or restarted.
+The Dev App shortcut was read back unchanged and still launches the primary
+checkout's `encroissant-native` workflow. Owner data, settings, engines and phone
+services are unchanged. This verifies package linkage, not native interaction
+or load-sensitive startup. Later similar captures, quiet preparations and the
+known queen-ending promotion remain unfinished.
+
+## Previous package: adapter 147 / live pipeline 154
 
 Source `9cb1d9eb` is packaged from clean detached checkout
 `en-tactical-desktop-9cb1d9eb`. Quiet three-move mating finishes recover the

@@ -103,7 +103,10 @@ failed before exercising the worker and was corrected.
 
 The tested artifact is `liveTactics.worker-KAHpOqsu.js`, 592,540 bytes, SHA-256
 `d2a28e6f4424f2010a4dca3ce71240f2e0281440adb51bf9c97b7ca4321fc50d`.
-Clean desktop delivery is recorded separately in `docs/TACTICAL_DESKTOP_DELIVERY.md`.
+Source `1013cdfb` is packaged from a clean committed checkout; its worker bytes
+match this tested artifact. Clean source/React/service checks and frontend/native
+builds pass. `docs/TACTICAL_DESKTOP_DELIVERY.md` records the package identity
+and verified backup of the prior executable. No app was running or restarted.
 Broader recall, quiet preparations, longer combinations, the known queen-ending
 promotion and native interaction/load-sensitive startup remain unfinished.
 No owner data or phone service is changed by this milestone.
