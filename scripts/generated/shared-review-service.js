@@ -11581,7 +11581,7 @@ function proveShortCheckingMate(root, nodeLimit = 4096) {
 * lose, including after a nonchecking first move. Besides checks, at most
 * two PV-nominated quiet preparations may be tried. An economical fallback
 * separates actual check evasions from those free preparations, and can
-* independently nominate a quiet mate-in-two finish within the same shared
+* independently nominate a quiet mate-in-two/three finish within the same shared
 * budget. Unknown/exhausted searches cannot certify the line. */
 function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeStrategy = false, onFailure) {
 	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
@@ -11596,6 +11596,7 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeS
 	const nominatedQuietEvasion = steps.slice(0, terminal + 1).some((step) => step.before.turn === root.before.turn && step.before.isCheck() && !step.after.isCheck());
 	let separateCheckEvasions = false;
 	let allowShortQuietFinish = false;
+	let quietFinishMoves = 2;
 	let branchQuietHints = quietHints;
 	const key = `${makeFen(root.after.toSetup())}:${maxMoves}:${hints}:${[...quietHints]}:${nominatedQuietEvasion}`;
 	if (!includeStrategy && !onFailure && nodeLimit === CHECKING_MATE_NODE_LIMIT && checkingMateCache.has(key)) return checkingMateCache.get(key);
@@ -11637,7 +11638,7 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeS
 			const isCheckEvasion = separateCheckEvasions && pos.isCheck();
 			const usesPreparation = isQuiet && !isCheckEvasion;
 			if (isQuiet && !isCheckEvasion && (!branchQuietHints.has(makeUci(move)) && !shortQuietFinish || !quiet)) continue;
-			const remainingAfter = shortQuietFinish && usesPreparation && !branchQuietHints.has(makeUci(move)) ? 1 : remaining - 1;
+			const remainingAfter = shortQuietFinish && usesPreparation && !branchQuietHints.has(makeUci(move)) ? Math.min(quietFinishMoves - 1, remaining - 1) : remaining - 1;
 			const continuation = defend(next, remainingAfter, quiet - Number(usesPreparation));
 			if (continuation) {
 				const line = [makeSan(pos, move), ...continuation];
@@ -11726,6 +11727,14 @@ function proveCheckingMate(steps, nodeLimit = CHECKING_MATE_NODE_LIMIT, includeS
 				failedRootReply = void 0;
 				continuation = defend(root.after, maxMoves - 1, quietLimit);
 			}
+			if (!continuation && allowShortQuietFinish && nodes > 0) {
+				quietFinishMoves = 3;
+				attackMemo.clear();
+				defendMemo.clear();
+				choices.clear();
+				failedRootReply = void 0;
+				continuation = defend(root.after, maxMoves - 1, quietLimit);
+			}
 			if (continuation) proof = {
 				maxMoves,
 				replyCount: legalMoves(root.after).length,
@@ -11753,12 +11762,13 @@ function preservesVerifiedMate(steps) {
 	return !!steps[0] && !!(proveShortCheckingMate(steps[0]) || proveQuietMateThreat(steps[0]) || proveMateWithinThree(steps) || proveCheckingMate(steps));
 }
 /** A positive defence to this mating entry, not failure to find a mate.
-* Capture its initiating piece, then cover EVERY legal attacking move within
+* Capture its initiating piece or escape with the king, then cover EVERY legal attacking move within
 * the claimed mate distance (including quiet moves, checks and promotions).
 * The defender chooses a legal answer at each turn. This certifies only the
 * same entry and finite horizon; longer/different attacks remain unassessed. */
-function proveCapturableMatingEntryDefence(root, maxMoves, nodeLimit = 32768, includeStrategy = false) {
-	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !Number.isSafeInteger(maxMoves) || maxMoves < 2 || maxMoves > 4 || root.after.isEnd() || root.move.promotion) return null;
+function proveFiniteMatingEntryDefence(root, maxMoves, nodeLimit = 32768, includeStrategy = false, kind = "capture") {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !Number.isSafeInteger(maxMoves) || maxMoves < 2 || maxMoves > (kind === "capture" ? 4 : 5) || root.after.isEnd() || root.move.promotion) return null;
+	if (kind === "king-flight" && !root.after.isCheck()) return null;
 	const attacker = root.before.turn;
 	const piece = root.after.board.get(root.move.to);
 	if (!piece || piece.color !== attacker || piece.role === "king") return null;
@@ -11825,8 +11835,18 @@ function proveCapturableMatingEntryDefence(root, maxMoves, nodeLimit = 32768, in
 		};
 	};
 	try {
-		for (const capture of ordered(root.after)) {
-			if (capture.to !== root.move.to || !capturedValue(root.after, capture) || tacticalExchangeGain(root.after, capture) - root.capture < MIN_TACTICAL_CAPTURE_GAIN) continue;
+		const defences = ordered(root.after);
+		if (kind === "king-flight") {
+			const support = (move) => root.after.board.get(move.from)?.role === "king" ? [...attacks({
+				role: "king",
+				color: root.after.turn
+			}, move.to, root.after.board.occupied).intersect(root.after.board[root.after.turn])].reduce((sum, square) => sum + VALUE[root.after.board.get(square).role], 0) : 0;
+			defences.sort((a, b) => support(b) - support(a));
+		}
+		for (const capture of defences) {
+			if (kind === "capture") {
+				if (capture.to !== root.move.to || !capturedValue(root.after, capture) || tacticalExchangeGain(root.after, capture) - root.capture < MIN_TACTICAL_CAPTURE_GAIN) continue;
+			} else if (root.after.board.get(capture.from)?.role !== "king" || capturedValue(root.after, capture)) continue;
 			const next = visit(root.after, capture);
 			if (!avoids(next, maxMoves - 1)) continue;
 			return {
@@ -11839,6 +11859,12 @@ function proveCapturableMatingEntryDefence(root, maxMoves, nodeLimit = 32768, in
 		}
 	} catch {}
 	return null;
+}
+function proveCapturableMatingEntryDefence(root, maxMoves, nodeLimit = 32768, includeStrategy = false) {
+	return proveFiniteMatingEntryDefence(root, maxMoves, nodeLimit, includeStrategy, "capture");
+}
+function proveKingFlightMatingEntryDefence(root, maxMoves, nodeLimit = 32768, includeStrategy = false) {
+	return proveFiniteMatingEntryDefence(root, maxMoves, nodeLimit, includeStrategy, "king-flight");
 }
 /** One terminal event is one lesson. Conflicting legacy pattern names are
 * not independent tactics; use factual Checkmate until taxonomy is resolved.
@@ -20315,6 +20341,12 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 			if (defence) {
 				comparison = "prevented";
 				comparisonEvidence = `After ${bestSan}, ${defence.defence} captures the piece entering with ${alternative.san}. Against every legal attacking continuation, the defender has replies avoiding mate within the claimed ${distance}-move window. This stops this specific mating entry; it does not establish a drawn or winning position, or rule out longer or different attacks.`;
+			} else if (legalMoves(alternative.after).some((move) => alternative.after.board.get(move.from)?.role === "king" && !capturedValue(alternative.after, move) && !step.after.isLegal(move))) {
+				const flight = proveKingFlightMatingEntryDefence(alternative, distance);
+				if (flight && !step.after.isLegal(parseUci(flight.move))) {
+					comparison = "prevented";
+					comparisonEvidence = `After ${bestSan}, ${flight.defence} is a king escape from ${alternative.san} that is unavailable after the played move. Against every legal attacking continuation, the defender has replies avoiding mate within the claimed ${distance}-move window. This stops this specific mating entry, not longer or different attacks, and does not establish a drawn or winning position.`;
+				}
 			}
 		} else if (["hangingPiece", "attackingF2F7"].includes(motif.id)) {
 			const gain = tacticalCaptureGain(step);
@@ -20989,7 +21021,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 146;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 147;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

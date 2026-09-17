@@ -2096,7 +2096,7 @@ export function proveShortCheckingMate(
  * lose, including after a nonchecking first move. Besides checks, at most
  * two PV-nominated quiet preparations may be tried. An economical fallback
  * separates actual check evasions from those free preparations, and can
- * independently nominate a quiet mate-in-two finish within the same shared
+ * independently nominate a quiet mate-in-two/three finish within the same shared
  * budget. Unknown/exhausted searches cannot certify the line. */
 export function proveCheckingMate(
     steps: TacticalReplayStep[],
@@ -2134,6 +2134,7 @@ export function proveCheckingMate(
         step.before.turn === root.before.turn && step.before.isCheck() && !step.after.isCheck());
     let separateCheckEvasions = false;
     let allowShortQuietFinish = false;
+    let quietFinishMoves = 2;
     // A PV move's checking status is branch-dependent. A knight check in
     // the supplied line may be the quiet mating setup after a different
     // king reply. A line containing a quiet setup admits at most two quiet
@@ -2207,7 +2208,7 @@ export function proveCheckingMate(
             const usesPreparation = isQuiet && !isCheckEvasion;
             if (isQuiet && !isCheckEvasion && ((!branchQuietHints.has(makeUci(move)) && !shortQuietFinish) || !quiet)) continue;
             const remainingAfter = shortQuietFinish && usesPreparation && !branchQuietHints.has(makeUci(move))
-                ? 1 : remaining - 1;
+                ? Math.min(quietFinishMoves - 1, remaining - 1) : remaining - 1;
             const continuation = defend(next, remainingAfter, quiet - Number(usesPreparation));
             if (continuation) {
                 const line = [makeSan(pos, move), ...continuation];
@@ -2303,6 +2304,19 @@ export function proveCheckingMate(
                 failedRootReply = undefined;
                 continuation = defend(root.after, maxMoves - 1, quietLimit);
             }
+            if (!continuation && allowShortQuietFinish && nodes > 0) {
+                // A defensive rook can need a quiet capture before the check
+                // and final interposition capture. The mate-in-two finisher
+                // cannot certify this mate-in-three branch. Enumerate every
+                // reply in the larger finite finish, retaining the original
+                // overall mate horizon and the same remaining shared budget.
+                quietFinishMoves = 3;
+                attackMemo.clear();
+                defendMemo.clear();
+                choices.clear();
+                failedRootReply = undefined;
+                continuation = defend(root.after, maxMoves - 1, quietLimit);
+            }
             if (continuation)
                 proof = {
                     maxMoves,
@@ -2346,19 +2360,21 @@ export type MateAvoidanceStrategy = {
 };
 
 /** A positive defence to this mating entry, not failure to find a mate.
- * Capture its initiating piece, then cover EVERY legal attacking move within
+ * Capture its initiating piece or escape with the king, then cover EVERY legal attacking move within
  * the claimed mate distance (including quiet moves, checks and promotions).
  * The defender chooses a legal answer at each turn. This certifies only the
  * same entry and finite horizon; longer/different attacks remain unassessed. */
-export function proveCapturableMatingEntryDefence(
+function proveFiniteMatingEntryDefence(
     root: TacticalReplayStep,
     maxMoves: number,
     nodeLimit = 32768,
     includeStrategy = false,
+    kind: "capture" | "king-flight" = "capture",
 ): { defence: string; move: string; maxMoves: number; visits: number; strategy?: MateAvoidanceStrategy } | null {
     if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 ||
-        !Number.isSafeInteger(maxMoves) || maxMoves < 2 || maxMoves > 4 ||
+        !Number.isSafeInteger(maxMoves) || maxMoves < 2 || maxMoves > (kind === "capture" ? 4 : 5) ||
         root.after.isEnd() || root.move.promotion) return null;
+    if (kind === "king-flight" && !root.after.isCheck()) return null;
     const attacker = root.before.turn;
     const piece = root.after.board.get(root.move.to);
     if (!piece || piece.color !== attacker || piece.role === "king") return null;
@@ -2430,9 +2446,22 @@ export function proveCapturableMatingEntryDefence(
         return { start: collect(start, maxMoves - 1), attacker, nodes: graph };
     };
     try {
-        for (const capture of ordered(root.after)) {
-            if (capture.to !== root.move.to || !capturedValue(root.after, capture) ||
-                tacticalExchangeGain(root.after, capture) - root.capture < MIN_TACTICAL_CAPTURE_GAIN) continue;
+        const defences = ordered(root.after);
+        if (kind === "king-flight") {
+            // Prefer flights that keep allied material guarded. This only
+            // orders candidates: the complete finite defence is still required.
+            const support = (move: NormalMove) => root.after.board.get(move.from)?.role === "king"
+                ? [...attacks({role:"king",color:root.after.turn},move.to,root.after.board.occupied)
+                    .intersect(root.after.board[root.after.turn])]
+                    .reduce((sum,square)=>sum+VALUE[root.after.board.get(square)!.role],0) : 0;
+            defences.sort((a,b)=>support(b)-support(a));
+        }
+        for (const capture of defences) {
+            if (kind === "capture") {
+                if (capture.to !== root.move.to || !capturedValue(root.after, capture) ||
+                    tacticalExchangeGain(root.after, capture) - root.capture < MIN_TACTICAL_CAPTURE_GAIN) continue;
+            } else if (root.after.board.get(capture.from)?.role !== "king" ||
+                capturedValue(root.after, capture)) continue;
             const next = visit(root.after, capture);
             if (!avoids(next, maxMoves - 1)) continue;
             return { defence: makeSan(root.after, capture), move: makeUci(capture), maxMoves, visits: nodes,
@@ -2442,6 +2471,16 @@ export function proveCapturableMatingEntryDefence(
         // Budget exhaustion and incomplete strategy are unknown, not safety.
     }
     return null;
+}
+
+export function proveCapturableMatingEntryDefence(root: TacticalReplayStep, maxMoves: number,
+    nodeLimit = 32768, includeStrategy = false) {
+    return proveFiniteMatingEntryDefence(root, maxMoves, nodeLimit, includeStrategy, "capture");
+}
+
+export function proveKingFlightMatingEntryDefence(root: TacticalReplayStep, maxMoves: number,
+    nodeLimit = 32768, includeStrategy = false) {
+    return proveFiniteMatingEntryDefence(root, maxMoves, nodeLimit, includeStrategy, "king-flight");
 }
 
 /** One terminal event is one lesson. Conflicting legacy pattern names are
@@ -14928,6 +14967,14 @@ export function compareImmediateTacticalDefence(
             if (defence) {
                 comparison = "prevented";
                 comparisonEvidence = `After ${bestSan}, ${defence.defence} captures the piece entering with ${alternative.san}. Against every legal attacking continuation, the defender has replies avoiding mate within the claimed ${distance}-move window. This stops this specific mating entry; it does not establish a drawn or winning position, or rule out longer or different attacks.`;
+            } else if (legalMoves(alternative.after).some(move =>
+                alternative.after.board.get(move.from)?.role === "king" &&
+                !capturedValue(alternative.after, move) && !step.after.isLegal(move))) {
+                const flight = proveKingFlightMatingEntryDefence(alternative, distance);
+                if (flight && !step.after.isLegal(parseUci(flight.move)!)) {
+                    comparison = "prevented";
+                    comparisonEvidence = `After ${bestSan}, ${flight.defence} is a king escape from ${alternative.san} that is unavailable after the played move. Against every legal attacking continuation, the defender has replies avoiding mate within the claimed ${distance}-move window. This stops this specific mating entry, not longer or different attacks, and does not establish a drawn or winning position.`;
+                }
             }
         } else if (["hangingPiece", "attackingF2F7"].includes(motif.id)) {
             const gain = tacticalCaptureGain(step);

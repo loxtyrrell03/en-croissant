@@ -1,5 +1,9 @@
 # Promotion through continuing checks — adapter 146 / live pipeline 153
 
+The subsequent `quiet-mating-finish-review.md` recovers the constructed
+mate-in-five punishment left open below, retaining the missed promotion as
+secondary. The queen-ending promotion remains an explicit coverage gap.
+
 The real ...d1=Q omission retained in `immediate-promotion-review.md` is
 recovered. The older verifier required checking exchanges to settle too early;
 the new promotion-specific fallback follows every legal checking reply and

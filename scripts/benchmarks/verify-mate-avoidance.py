@@ -20,10 +20,19 @@ def verify(case):
     entry = chess.Move.from_uci(case["entry"])
     assert root.is_legal(entry)
     root.push(entry)
-    capture = chess.Move.from_uci(proof["move"])
-    assert root.is_legal(capture) and root.is_capture(capture)
-    assert capture.to_square == entry.to_square
-    root.push(capture)
+    defence = chess.Move.from_uci(proof["move"])
+    assert root.is_legal(defence)
+    assert case.get("kind", "capture") in ("capture", "king-flight")
+    if case.get("kind") == "king-flight":
+        assert root.is_check() and not root.is_capture(defence)
+        assert root.piece_at(defence.from_square).piece_type == chess.KING
+        actual = chess.Board(case["actualRootFen"])
+        assert actual.is_legal(entry)
+        actual.push(entry)
+        assert not actual.is_legal(defence)
+    else:
+        assert root.is_capture(defence) and defence.to_square == entry.to_square
+    root.push(defence)
     assert root.fen(en_passant="legal") == chess.Board(nodes[strategy["start"]]["fen"]).fen(en_passant="legal")
     assert nodes[strategy["start"]]["remaining"] == proof["maxMoves"] - 1
     seen = set()

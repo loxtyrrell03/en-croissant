@@ -11,7 +11,7 @@ import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { captureMateCases } from "./fixtures/captureMate";
 import { immediatePromotionCases } from "./fixtures/immediatePromotion";
-import { promotionCheckFen, promotionCheckMove } from "./fixtures/promotionCheckRetention";
+import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "./fixtures/promotionCheckRetention";
 import { pawnExposureInput, pawnExposureAlternateInput } from "./fixtures/pawnExposure";
 import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
 import { forkLocalValueCases } from "./fixtures/forkLocalValue";
@@ -571,6 +571,18 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("retained immediate promotions s
         expect(promotion?.value ?? null).toBe(row.gain);
     }
 }, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("quiet three-move mating finishes and contrary defences survive the production controller",async()=>{
+    const fen=makeFen(replayTacticalLine(quietMatingFinish.fen,[quietMatingFinish.playedMoveUci])[0].after.toSetup());
+    for(const reflected of [false,true]) for(const [name,root] of [["mate",fen],["capture",fen.replace("4RP2","3nRP2")],["draw",fen.replace(/ \d+ \d+$/," 99 38")]]) {
+        const input={fen:reflected?reflectMixedForkFen(root):root,
+            pvUci:reflected?quietMatingFinish.refutationUci.map(reflectMixedForkMove):quietMatingFinish.refutationUci,
+            depth:20,engineName:"Constructed quiet finish"};
+        const result=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.some(m=>m.ply===1&&m.id==="mateIn5")).toBe(name==="mate");
+    }
+},30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("root-only capture mates survive the production controller", async () => {
     for (const row of captureMateCases) for (const reflected of [false, true]) {

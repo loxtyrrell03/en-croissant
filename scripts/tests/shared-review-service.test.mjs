@@ -15,7 +15,7 @@ import { kingDefenderRemovalCases } from "../../src/utils/tests/fixtures/kingDef
 import { forkCountercaptureFen, forkCountercaptureLine } from "../../src/utils/tests/fixtures/forkCountercapture.ts";
 import { captureMateFen } from "../../src/utils/tests/fixtures/captureMate.ts";
 import { missedPromotionFen } from "../../src/utils/tests/fixtures/immediatePromotion.ts";
-import { promotionCheckFen, promotionCheckMove } from "../../src/utils/tests/fixtures/promotionCheckRetention.ts";
+import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "../../src/utils/tests/fixtures/promotionCheckRetention.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
 
@@ -26,6 +26,9 @@ for (const row of [
   // the separate engine audit finds the stronger Re7+ mate after Rh6.
   {id:"continuing checks",fen:promotionCheckFen,played:"f6h6",best:promotionCheckMove,reply:"g3d3",gain:300,
     beforeCp:-51,afterCp:609,white:"Opponent",black:"Tester",san:"37... Rh6"},
+  {id:"mate-first continuing checks",fen:promotionCheckFen,played:"f6h6",best:promotionCheckMove,
+    reply:quietMatingFinish.refutationUci.join(" "),gain:300,beforeCp:-51,afterMate:5,
+    white:"Opponent",black:"Tester",san:"37... Rh6"},
 ]) test(`a missed ${row.id} promotion survives generated review and saved deck reload`, async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-promotion-"));
   const fen = row.fen;
@@ -35,7 +38,7 @@ for (const row of [
     fetchGames: async () => [], lookup: async requested => {
       assert.ok(requested === fen || requested === after);
       // Controlled scores check wiring; separate engine searches judge chess.
-      return { depth: 16, pvs: requested === fen ? [{ cp: row.beforeCp, moves: row.best }] : [{ cp: row.afterCp, moves: row.reply }] };
+      return { depth: 16, pvs: requested === fen ? [{ cp: row.beforeCp, moves: row.best }] : [{ ...(row.afterMate?{mate:row.afterMate}:{cp:row.afterCp}), moves: row.reply }] };
     } };
   let service;
   try {
@@ -46,6 +49,12 @@ for (const row of [
     assert.equal(service.snapshot().error, null); const card = service.snapshot().cards[0]; assert.ok(card);
     assert.equal(card.tacticalClassification.missedMotifs[0].id, "promotion");
     assert.equal(card.tacticalClassification.missedMotifs[0].value, row.gain);
+    if(row.afterMate) {
+      assert.equal(card.tacticalClassification.allowedMotifs[0].id,"mateIn5");
+      assert.equal(card.tacticalClassification.allowedMotifs[0].comparison,"prevented");
+      assert.match(card.explanation,/Your move allowed this tactic/);
+      assert.match(card.explanation,/You also missed a tactical opportunity \(Promotion\)/);
+    }
     assert.match(card.explanation, /not the full-position evaluation/);
     service.close(); service = new SharedReviewService(options); await service.initialize(false);
     assert.deepEqual(service.snapshot().cards[0].tacticalClassification, JSON.parse(JSON.stringify(card.tacticalClassification)));

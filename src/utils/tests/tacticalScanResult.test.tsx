@@ -20,7 +20,7 @@ import { kingDefenderRemovalCases } from "./fixtures/kingDefenderRemoval";
 import { forkCountercaptureFen, forkCountercaptureLine } from "./fixtures/forkCountercapture";
 import { captureMateFen, captureMateLine } from "./fixtures/captureMate";
 import { immediatePromotionCases } from "./fixtures/immediatePromotion";
-import { promotionCheckFen, promotionCheckMove } from "./fixtures/promotionCheckRetention";
+import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "./fixtures/promotionCheckRetention";
 import { makeFen } from "chessops/fen";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 import {
@@ -47,6 +47,16 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("the recovered mating finish displays the current checking entry, not a future quiet capture",()=>{
+  const fen=makeFen(replayTacticalLine(quietMatingFinish.fen,[quietMatingFinish.playedMoveUci])[0].after.toSetup());
+  const scan=buildLiveTacticalScan({fen,pvUci:quietMatingFinish.refutationUci,depth:20,engineName:"Constructed alternative"});
+  const element=document.createElement("div");element.innerHTML=markup(scan);
+  expect(element.textContent).toContain("Forcing Mate found");
+  expect(element.textContent).toContain("within 5 moves");
+  expect(scan.arrows.map(a=>a.from+a.to)).toEqual(["e5e7"]);
+  expect(scan.variations[0].timeline).toContainEqual(expect.objectContaining({id:"underPromotion",ply:4}));
+});
 
 test.each([immediatePromotionCases[0], {id:"promotion through rook checks",fen:promotionCheckFen,move:promotionCheckMove,gain:300}])("$id renders a current promotion lesson without claiming a full-position score", (row) => {
   const value = buildLiveTacticalScan({ fen: row.fen, pvUci: [row.move], depth: 16, engineName: "Constructed promotion" });

@@ -7,6 +7,7 @@ import {
     provePromotionCheckRetention,
     proveImmediatePromotion,
     proveCheckingMate,
+    proveKingFlightMatingEntryDefence,
     replayTacticalLine,
 } from "../tacticalMotifs/causalTactics";
 import {
@@ -98,7 +99,7 @@ test("a constructed missed choice retains the recovered promotion lesson", () =>
     });
 });
 
-test.fails("known coverage gap: the stronger mating punishment should precede the missed promotion", () => {
+test("the stronger mating punishment precedes the missed promotion", () => {
     const result = classifyMistakeReviewMotifs({
         fen: ownerFen,
         bestMoveUci: "d2d1q",
@@ -116,15 +117,31 @@ test.fails("known coverage gap: the stronger mating punishment should precede th
             true,
             (reason) => reasons.push(reason),
         );
-        process.stdout.write(JSON.stringify({ mate: proof?.maxMoves ?? null, reasons }) + "\n");
+        process.stdout.write(
+            JSON.stringify({
+                mate: proof?.maxMoves ?? null,
+                visits: proof?.visits,
+                reasons,
+                result,
+                explanation: buildMistakeReviewTacticalExplanation(result),
+            }) + "\n",
+        );
+        const better = replayTacticalLine(ownerFen, ["d2d1q", "e5e7"])[1];
+        const flight = proveKingFlightMatingEntryDefence(better, 5);
+        process.stdout.write(JSON.stringify({ flight }) + "\n");
     }
-    // Fresh Stockfish finds mate in five after the constructed Rh6 mistake.
-    // The current bounded mating/causal verifier misses it; Promotion is a
-    // real missed resource, but not the complete or best primary explanation.
+    // A complete mate tree and an independently checked finite king-escape
+    // strategy establish the stronger punishment; promotion stays available
+    // as a separately missed resource rather than displacing mate.
     expect(buildMistakeReviewTacticalExplanation(result)?.primary).toMatchObject({
+        id: "mateIn5",
         label: "Forcing Mate",
         source: "allowed",
+        comparison: "prevented",
     });
+    expect(result.missedMotifs).toContainEqual(
+        expect.objectContaining({ id: "promotion", value: 300 }),
+    );
 });
 
 test.each(immediatePromotionCases)("retain existing promotion counterplay control: $id", (row) => {
