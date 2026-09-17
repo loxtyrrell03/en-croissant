@@ -1,6 +1,45 @@
 # Tactical desktop delivery — 2026-09-17
 
-## Current package: adapter 158 / live pipeline 165
+## Current package: adapter 159 / live pipeline 166
+
+Source `9b1b2e50` is packaged from clean detached checkout
+`en-tactical-desktop-9b1b2e50`. Promotion threats can now survive up to two
+checking defences through complete bounded reply trees, recovering the owner's
+...h2. Matching promotion payoffs stay at their actual ply without duplicate
+material or speculative starting-board arrows. The preceding move's causal
+comparison remains unproved. See
+`benchmarks/tactical-relevance/checking-promotion-review.md` for chess evidence.
+
+The clean worker is byte-identical to the artifact tested on all 2,153 current
+controller inputs: 808 public, 1,319 owner contexts, twenty retained promotion
+controls and six new checking-promotion controls. Clean TypeScript, 145 focused
+source/React checks (four conditional skips), 34 generated-service checks (one
+optional engine skip), the 43-module review build and 8,863-module frontend build
+pass. Native release compilation passes in 1m32s with 22 existing warnings.
+Generated-review differences are source-region comments only; the route tree
+diff is empty after line-ending normalization. Unrelated dirty OTB/FIDE/phone/
+stats changes were excluded.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,083,968 bytes;
+  SHA-256 `36bba9ae52e0580dfa2c9c19dd63adcbb30e2c5c9fc13bd20a99b5e44083d31e`.
+- Worker: `liveTactics.worker-CR1SSDqJ.js`, 620,826 bytes; SHA-256
+  `e7c5b99c51bf37dbc0151d21a18c46b851d4bbba9aeedcf87f5643e309e4b3e3`.
+  The x64 executable embeds that worker, `mistakeReviewAdapter-BYNB9ujv.js`,
+  `TacticalClassifierPanel-BGCjey1f.js` and `OpeningReviewWorkspace-RuEb372G.js`;
+  exact normalized native dependencies identify those four clean assets.
+- Previous pipeline-165 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline166/en-croissant-fork.exe`,
+  SHA-256 `a5b3869a285b49a8b21ed30358b2fe502255e21bce033afa0031d14bff705451`.
+
+The existing debug Dev App session was running and preserved; the standalone
+release was not running. No app was stopped, launched or restarted. The Dev App
+shortcut retains the primary checkout's `encroissant-native` workflow. Owner
+stores and phone services were untouched; existing reviews were not rescanned.
+The private `checking-promotion159-desktop-receipt-20260917.json` records identity
+and recovery. This verifies package linkage, not native interaction or startup
+reliability under load. Broader recall and primary-theme accuracy remain open.
+
+## Previous package: adapter 158 / live pipeline 165
 
 Source `dcbe0777` is packaged from clean detached checkout
 `en-tactical-desktop-dcbe0777`. Immediate promotion threats now require a

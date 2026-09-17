@@ -78,7 +78,16 @@ secondary to the supporting rook's larger loss.
   engine and native UI and are not a controlled speed-improvement claim.
 - Review and main-checkout frontend builds pass. The latter includes unrelated
   dirty work and is not the delivery source. Tested worker:
-  `liveTactics.worker-CR1SSDqJ.js`. Clean desktop delivery is recorded separately.
+  `liveTactics.worker-CR1SSDqJ.js`.
+
+Source `9b1b2e50` is now packaged from a clean committed checkout. Its worker
+matches the tested bytes, and exact native asset/dependency linkage identifies
+the classifier and review surfaces. Clean types, 145 focused source/React
+checks (four conditional skips), 34 service checks and review/frontend/native
+builds pass. The prior executable is backed up. The existing debug Dev App
+session was preserved, with no app restart or shortcut change. See
+`docs/TACTICAL_DESKTOP_DELIVERY.md` for hashes, recovery and delivery scope;
+this is not native-window interaction or latency proof.
 
 Authoritative private receipts use `checking-promotion159-` under
 `Documents/OnCrescent Tactical Benchmarks/`, dated `20260917`: `trees`, `engine`,
