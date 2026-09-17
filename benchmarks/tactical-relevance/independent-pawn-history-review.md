@@ -94,8 +94,12 @@ No runtime limit was increased.
 
 Tested artifact: `liveTactics.worker-CZXAGH3t.js`, 598,352 bytes, SHA-256
 `5a007e62968ac1561f71a4f21da88537e2da9dc095f45409e05bd2d5637bb7a4`.
-Clean desktop delivery is recorded in `docs/TACTICAL_DESKTOP_DELIVERY.md` when
-complete; this source milestone does not itself claim native interaction.
+Source `93e33b46` is packaged from a clean committed checkout. Clean types,
+93 focused source/React checks, 27 generated-service checks and review/frontend/
+native builds pass. The packaged worker matches the tested bytes; executable
+asset keys and exact native dependencies identify the clean tactical/review
+surfaces. `docs/TACTICAL_DESKTOP_DELIVERY.md` records identity and recovery.
+No app was running or restarted; package linkage is not native interaction proof.
 
 This is a relevance/accounting correction, not a complete history-based
 exchange or positional-compensation model. Quiet preparations, longer tactics,

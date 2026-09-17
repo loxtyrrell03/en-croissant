@@ -1,6 +1,42 @@
 # Tactical desktop delivery — 2026-09-17
 
-## Current package: adapter 151 / live pipeline 158
+## Current package: adapter 152 / live pipeline 159
+
+Source `93e33b46` is packaged from clean detached checkout
+`en-tactical-desktop-93e33b46`. Never-capturing pawn opportunities no longer
+inherit unrelated piece debt or credit; connected exchanges settle only their
+own pawn cost. Live, missed and persistent-danger review share this history.
+See `benchmarks/tactical-relevance/independent-pawn-history-review.md` for the
+27-game comparison, rejected draft, fresh engine evidence and coverage limits.
+
+Clean TypeScript, 93 focused source/React checks (nine optional skips),
+27 generated-service checks (one optional engine skip), the 43-module review
+build and 8,863-module frontend build pass. Native release compilation passes
+in 1m25s with 22 existing warnings. Generated-review differences are source-region
+comments only; the route tree differs only in line endings. Unrelated dirty
+OTB/FIDE/phone/stats changes were excluded.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,075,776 bytes;
+  SHA-256 `cd5b1a9b8f0a8dfd36b2deb7ed612e1f0f9079f938311d0ce08c73dbd6306de9`.
+- Worker: `liveTactics.worker-CZXAGH3t.js`, 598,352 bytes; SHA-256
+  `5a007e62968ac1561f71a4f21da88537e2da9dc095f45409e05bd2d5637bb7a4`.
+  Clean bytes match the 2,159-input tested artifact. The x64 executable embeds
+  this worker, `TacticalClassifierPanel-C6tqBmL9.js` and
+  `OpeningReviewWorkspace-BQvq7Uep.js`; normalized exact native dependency paths
+  identify these assets in the clean checkout.
+- Previous pipeline-158 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline159/en-croissant-fork.exe`,
+  SHA-256 `770f7ca8ed2a0b14c69f420b056287829913b1193158aaba83fe4b24d42ab8af`.
+
+No app was running before or after compilation; none was launched or restarted.
+The Dev App shortcut was read back unchanged and retains the primary checkout's
+`encroissant-native` workflow. Owner data, settings, engines and phone services
+are unchanged. This verifies package linkage, not native interaction or reliable
+startup under load. Capturing mixed-target combinations, longer history/quiet
+preparations, comparable-capture causes and the known queen-ending promotion
+remain unfinished. This does not complete the classifier goal.
+
+## Previous package: adapter 151 / live pipeline 158
 
 Source `42da64bd` is packaged from clean detached checkout
 `en-tactical-desktop-42da64bd`. Complete exchange history now preserves the
