@@ -21,6 +21,9 @@ export function reflectMixedForkFen(fen: string) {
         .join("/")
         .replace(/[a-zA-Z]/g, (c) => (c === c.toLowerCase() ? c.toUpperCase() : c.toLowerCase()));
     fields[1] = fields[1] === "w" ? "b" : "w";
-    // These fixtures have neither castling rights nor en passant.
+    const reflectedRights = fields[2].replace(/[a-zA-Z]/g,
+        (c) => c === c.toLowerCase() ? c.toUpperCase() : c.toLowerCase());
+    fields[2] = reflectedRights === "-" ? "-" : ["K", "Q", "k", "q"].filter(right => reflectedRights.includes(right)).join("");
+    if (fields[3] !== "-") fields[3] = reflectMixedForkMove(fields[3]);
     return fields.join(" ");
 }

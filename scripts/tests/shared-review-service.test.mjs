@@ -19,6 +19,37 @@ import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "../../
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
 
+test("a missed discovery survives generated review and saved deck reload",async()=>{
+  const root=await mkdtemp(join(tmpdir(),"en-shared-review-discovery-recapture-"));
+  // Constructed fixture, not an owner game. Scores deliberately test wiring.
+  const fen="2kr1b1r/pppbqp2/2n2npp/3pp2P/B2PP3/7N/PPP1NPP1/R1BQK2R b KQ - 1 1";
+  const pos=Chess.fromSetup(parseFen(fen).unwrap()).unwrap();pos.play(parseUci("c8b8"));
+  const after=makeFen(pos.toSetup());
+  const options={root,documentsRoot:join(root,"documents"),engineConfigPath:join(root,"engine.json"),
+    fetchGames:async()=>[],lookup:async requested=>{
+      assert.ok(requested===fen||requested===after);
+      return {depth:18,pvs:requested===fen?[{cp:-300,moves:"c6d4"}]:[{cp:50,moves:"e1g1"}]};
+    }};
+  let service;
+  try {
+    await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+    await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,
+      url:"https://example.test/discovery-recapture",pgn:`[White "Opponent"]\n[Black "Tester"]\n[Date "2026.09.17"]\n[SetUp "1"]\n[FEN "${fen}"]\n[Result "0-1"]\n\n1... Kb8 0-1`}]}));
+    service=new SharedReviewService(options);await service.initialize(false);await service.run();
+    assert.equal(service.snapshot().error,null);const card=service.snapshot().cards[0];assert.ok(card);
+    assert.equal(card.tacticalClassification.missedMotifs[0].id,"discoveredAttack");
+    assert.equal(card.tacticalClassification.missedMotifs[0].value,100);
+    assert.match(card.explanation,/uncovering the bishop on d7 against the bishop on a4/);
+    service.close();service=new SharedReviewService(options);await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification,JSON.parse(JSON.stringify(card.tacticalClassification)));
+    assert.equal((await service.deck()).positions[0].reason,card.explanation);
+  } finally {
+    service?.close();const target=resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-discovery-recapture-"));
+    await rm(target,{recursive:true,force:true});
+  }
+});
+
 test("a missed pawn counterattack retains preceding-move context in generated saved review",async()=>{
   const root=await mkdtemp(join(tmpdir(),"en-shared-review-liability-capture-"));
   const initial="r2qkb1r/pppb1ppp/2n2n2/1B1pp3/3PP3/P1N2N2/1PP2PPP/R1BQK2R w KQkq - 0 1";

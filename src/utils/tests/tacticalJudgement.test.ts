@@ -490,6 +490,7 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
             pending += String(chunk);
             const rows = pending.split(/\r?\n/);
             pending = rows.pop() ?? "";
+            try {
             for (const row of rows) {
                 if (row === "uciok")
                     child.stdin.write(
@@ -531,6 +532,11 @@ async function analyse(engine: string, fen: string, searchMove?: string, depth =
                 if (row.startsWith("bestmove ")) {
                     child.stdin.end("quit\n");
                 }
+            }
+            } catch (error) {
+                clearTimeout(timer);
+                child.kill();
+                reject(error);
             }
         });
         child.on("exit", (code) => {

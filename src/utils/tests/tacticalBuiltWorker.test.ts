@@ -10,6 +10,7 @@ import { makeUci } from "chessops/util";
 import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { captureLiabilityInput } from "./fixtures/captureLiabilityRecovery";
+import { discoveryRecaptureInput,discoveryRecaptureFen } from "./fixtures/discoveryRecapture";
 import { captureMateCases } from "./fixtures/captureMate";
 import { immediatePromotionCases } from "./fixtures/immediatePromotion";
 import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "./fixtures/promotionCheckRetention";
@@ -596,6 +597,26 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("root-only capture mates survive
             : !result.scan.motifs.some(m => m.id.startsWith("mate"))).toBe(true);
     }
 }, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("checking exchanges and pin-supported discoveries survive the production controller",async()=>{
+    for(const reflected of [false,true]) for(const rootOnly of [false,true]) {
+        const original=discoveryRecaptureInput(reflected);
+        const input={...original,pvUci:rootOnly?original.pvUci.slice(0,1):original.pvUci,
+            depth:18,engineName:"Constructed discovery recovery"};
+        const {scan}=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(scan.motifs[0]).toMatchObject({id:"discoveredAttack",value:100,ply:1});
+        expect(scan.arrows.every(arrow=>arrow.ply===1)).toBe(true);
+    }
+    for(const reflected of [false,true]) {
+        const control=discoveryRecaptureFen.replace("2kr1b1r","2k2b1r");
+        const input={fen:reflected?reflectMixedForkFen(control):control,
+            pvUci:[reflected?reflectMixedForkMove("c6d4"):"c6d4"],depth:18,engineName:"Missing support"};
+        const {scan}=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(scan.motifs.some(motif=>motif.id==="discoveredAttack")).toBe(false);
+    }
+},30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("liability-removing captures survive the production controller",async()=>{
     for(const reflected of [false,true]) {

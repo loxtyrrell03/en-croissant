@@ -5,6 +5,8 @@ import { expect, test } from "vitest";
 import {
     proveCaptureCounterattack,
     proveDefenderCombination,
+    proveDiscoveredMaterial,
+    proveExchangeDiscovery,
     replayTacticalLine,
     tacticalCaptureGain,
 } from "../tacticalMotifs/causalTactics";
@@ -29,9 +31,13 @@ test.skipIf(!process.env.TACTICAL_COUNTERPRESSURE_REPLAY || !process.env.TACTICA
             const targets = [...attacks(piece, root.move.to, root.after.board.occupied)
                 .intersect(root.after.board[opposite(root.before.turn)])]
                 .filter(sq => !["pawn", "king"].includes(root.after.board.get(sq)!.role) && !oldAttacks.has(sq));
+            const discoveryFailures: string[] = [];
+            const discovery = proveDiscoveredMaterial(root,4096,100,undefined,reason=>discoveryFailures.push(reason));
             return { id: row.id, fen: row.fen, root: root.uci, san: root.san, targets: targets.map(makeSquare),
+                discovery,discoveryFailures,exchangeDiscovery:proveExchangeDiscovery(root),
                 currentGain: tacticalCaptureGain(root), currentCounterattack: proveCaptureCounterattack(root),
-                trials: [false, true].flatMap(broadDiagnosis => [4096, 16384].map(limit => {
+                trials: ["connected", "liability-recovery", "all-targets"].flatMap(mode => [4096, 16384].map(limit => {
+                    const broadDiagnosis = mode === "all-targets";
                     const budget = { nodes: limit };
                     const leaves: any[] = [];
                     const failures: any[] = [];
@@ -40,8 +46,9 @@ test.skipIf(!process.env.TACTICAL_COUNTERPRESSURE_REPLAY || !process.env.TACTICA
                     const nominees = broadDiagnosis ? [...root.after.board[opposite(root.before.turn)]] : targets;
                     const collectors = broadDiagnosis ? [...root.after.board[root.before.turn]] : [root.move.to];
                     const gain = nominees.length ? proveDefenderCombination(root, nominees, collectors,
-                        limit, budget, 1, true, 90, leaf => leaves.push(leaf), true, failure => failures.push(failure)) : null;
-                    return {broadDiagnosis,limit,gain,visits:limit-budget.nodes,leaves,failures};
+                        limit, budget, 1, true, 90, leaf => leaves.push(leaf), true, failure => failures.push(failure),
+                        mode === "liability-recovery") : null;
+                    return {mode,broadDiagnosis,limit,gain,visits:limit-budget.nodes,leaves,failures};
                 })) };
         }));
         writeFileSync(path, JSON.stringify({scope:"Selected nomination diagnosis, not production admission or accuracy evidence.", cases},null,2), {flag:"wx"});

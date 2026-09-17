@@ -23,6 +23,7 @@ import { immediatePromotionCases } from "./fixtures/immediatePromotion";
 import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "./fixtures/promotionCheckRetention";
 import { makeFen } from "chessops/fen";
 import { captureLiabilityInput } from "./fixtures/captureLiabilityRecovery";
+import { discoveryRecaptureInput } from "./fixtures/discoveryRecapture";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 import {
   buildLiveTacticalScan,
@@ -48,6 +49,18 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a recovered discovery names the current battery, not a future recapture pin",()=>{
+  const value=buildLiveTacticalScan({...discoveryRecaptureInput(),depth:18,engineName:"Constructed discovery"});
+  const element=document.createElement("div"); element.innerHTML=markup(value);
+  expect(element.textContent).toContain("Discovered Attack found");
+  expect(element.textContent).toContain("uncovering the bishop on d7 against the bishop on a4");
+  expect(value.motifs).toHaveLength(1);
+  // Nd4 also attacks the knight on e2 now; the rook-file pin exists only
+  // after a checking exchange and must not appear on this starting board.
+  expect(value.arrows.map(arrow=>arrow.from+arrow.to)).toEqual(["c6d4","d7a4","d4e2"]);
+  expect(value.arrows.every(arrow=>arrow.ply===1)).toBe(true);
+});
 
 test("a recovered pawn capture displays its counterattack without future defensive arrows", () => {
   const value = buildLiveTacticalScan({...captureLiabilityInput(),depth:16,engineName:"Constructed capture"});
