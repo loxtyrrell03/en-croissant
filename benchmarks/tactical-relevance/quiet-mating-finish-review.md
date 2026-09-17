@@ -100,8 +100,11 @@ previous load-sensitive native/development startup failures.
 
 The tested worker is `liveTactics.worker-mAwbhSwL.js`, 590,484 bytes, SHA-256
 `282f8f15d38154b11498c8f1647b2599f58f620b166abb9dc8abc48db8b3f0b8`.
-Clean desktop packaging is recorded separately in `docs/TACTICAL_DESKTOP_DELIVERY.md`.
-No owner app, game, engine installation or phone service is changed by this audit.
+Source `9cb1d9eb` is also packaged from a clean committed checkout; its worker
+is byte-identical to the tested artifact. Clean source/React/service checks and
+frontend/native builds pass. `docs/TACTICAL_DESKTOP_DELIVERY.md` records package
+identity and the preserved prior executable. No owner app was running or
+restarted; games, settings, engine installations and phone services are unchanged.
 The public queen-ending promotion remains an explicit missed tactic. Broader
 quiet preparation, longer combinations, full causal coverage and native
 interaction/startup verification remain unfinished.

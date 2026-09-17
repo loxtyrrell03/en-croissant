@@ -1,6 +1,43 @@
 # Tactical desktop delivery — 2026-09-17
 
-## Current package: adapter 146 / live pipeline 153
+## Current package: adapter 147 / live pipeline 154
+
+Source `9cb1d9eb` is packaged from clean detached checkout
+`en-tactical-desktop-9cb1d9eb`. Quiet three-move mating finishes recover the
+previous constructed mate-in-five miss, and a finite king-flight comparison
+explains one existing owner-game mate without claiming that the better choice
+saves the already-lost game. The missed promotion remains secondary. See
+`benchmarks/tactical-relevance/quiet-mating-finish-review.md` for independent
+strategy verification, contrary controls, exact-input comparisons and limits.
+
+Clean TypeScript, 71 focused source/React passes plus the explicit expected
+queen-ending promotion coverage failure (five optional skips), 22 generated
+service checks (one optional engine skip), the 43-module review build and
+8,863-module frontend build pass. Native release compilation passes in 1m25s
+with 22 existing warnings. Generated-review differences are source-region
+comments only; the route tree differs only in line endings. Unrelated dirty
+OTB/FIDE/phone/stats work was excluded.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,071,680 bytes;
+  SHA-256 `84e99bcdcd5f5d3999fcd091690263224f25225907417d4ed37018851b8083fa`.
+- Worker: `liveTactics.worker-mAwbhSwL.js`, 590,484 bytes; SHA-256
+  `282f8f15d38154b11498c8f1647b2599f58f620b166abb9dc8abc48db8b3f0b8`.
+  Clean bytes match the 2,017-input tested artifact. The x64 executable embeds
+  this worker, `TacticalClassifierPanel-D7dkH-bq.js` and
+  `OpeningReviewWorkspace-DVNiq1dz.js`; exact native dependency paths identify
+  these assets in the clean checkout.
+- Previous pipeline-153 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline154/en-croissant-fork.exe`,
+  SHA-256 `0971449cf3c9a4624caf426a867f1f6ab7dc37339b311b49e1bdb9554f7fe128`.
+
+No app was running before or after compilation; none was launched or restarted.
+The Dev App shortcut was read back unchanged and still launches the primary
+checkout's `encroissant-native` workflow. Owner data, settings, engines and phone
+services are unchanged. This verifies package linkage, not native interaction
+or load-sensitive startup. Broader recall, quiet preparation and the known
+queen-ending promotion remain unfinished.
+
+## Previous package: adapter 146 / live pipeline 153
 
 Source `47602bc8` is packaged from clean detached checkout
 `en-tactical-desktop-47602bc8`. A promotion-specific checking-retention proof
