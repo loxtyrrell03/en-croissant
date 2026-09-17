@@ -102,13 +102,23 @@ rewritten and no automatic rescan of previously saved cards is claimed.
   and two development-cache checks pass.
 - All 246 private-course full results and twenty rare-theme full results are
   unchanged from adapter 154. Regression stability is not certified correctness.
-- Compiled controller passes 822 inputs: 808 existing public cases and fourteen
-  constructed/reflected offers. All prior public primary lists remain unchanged.
+- Compiled controller passes 2,141 inputs: 808 existing public cases, fourteen
+  constructed/reflected offers and all 1,319 owner contexts. The owner worker
+  matches the frozen final source replay; all prior public primary lists remain unchanged.
   Public computation/transfer median/p95/max is 43/208/1,101 ms; startup maximum
   is 37 ms (rounded up). Engine, development HTTP startup and native UI are not
   included, and these measurements do not resolve load-sensitive startup.
-  Full owner-worker and clean desktop delivery are separate checks. The
-  dirty-checkout frontend build is not a clean desktop package.
+  Owner computation/transfer median/p95/max is 98/435/2,212 ms, with startup
+  maximum 44 ms (rounded up). These also exclude engine and native UI and are
+  not an isolated performance-optimization experiment.
+- Source `b614387c` is packaged in the standalone desktop executable from a
+  clean detached checkout. Clean worker bytes match the tested artifact; exact
+  embedded keys and native dependency paths identify both live and review assets.
+  Clean types, 107 focused checks and review/frontend builds pass; the final
+  delivery recheck passes 62 directly affected source/React checks and thirty
+  service checks. Native release compilation passes with 22 existing warnings.
+  See `docs/TACTICAL_DESKTOP_DELIVERY.md` for hashes and the previous-copy backup.
+  No app was launched/restarted; package linkage is not native-window proof.
 
 Private receipts are under `Documents/OnCrescent Tactical Benchmarks/`, with
 `defensive-deflection-` and `defensive-deflection155-` prefixes and `20260917`

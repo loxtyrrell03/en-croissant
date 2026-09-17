@@ -1,6 +1,43 @@
 # Tactical desktop delivery — 2026-09-17
 
-## Current package: adapter 154 / live pipeline 161
+## Current package: adapter 155 / live pipeline 162
+
+Source `b614387c` is packaged from clean detached checkout
+`en-tactical-desktop-b614387c`. The real Rf6+ defensive deflection now explains
+removal of a perpetual-check resource without inventing a material win. Shared
+review supplies White-relative classifier scores correctly for Black players.
+The full 1,319-context owner replay changes two adjacent rows around that one
+mechanism. See `benchmarks/tactical-relevance/defensive-deflection-review.md`.
+
+The clean worker is byte-identical to the artifact tested on 2,141 controller
+inputs: 808 public cases, fourteen constructed/reflected controls and all 1,319
+owner contexts. Clean TypeScript and 107 focused checks pass; the final delivery
+recheck passes 62 directly affected source/React checks (two optional skips)
+and thirty generated-service checks (one optional engine skip). Review/frontend
+builds pass. Native release compilation passes in 1m27s with 22 existing warnings.
+Generated-review differences are source-region comments only, and the route
+tree differs only in line endings. Unrelated dirty work was excluded.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,075,776 bytes;
+  SHA-256 `20e2cfa5e81a561f12886d03df7c75e75fa526a0d9de6cfc1bb1cf1b1a23c65c`.
+- Worker: `liveTactics.worker-G_Fw_gVT.js`, 603,626 bytes; SHA-256
+  `196a66fc97a86e904fa82d4e41fd93d63d68d8382dbcd4f00da012beec94a3e8`.
+  The x64 executable embeds this worker, `mistakeReviewAdapter-2lWzqxJ9.js`,
+  `TacticalClassifierPanel-4oHv3lI5.js` and `OpeningReviewWorkspace-CZAgdGIj.js`;
+  normalized exact native dependencies identify the clean assets.
+- Previous pipeline-161 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline162/en-croissant-fork.exe`,
+  SHA-256 `e36999ea215f51a400fb6dfbb857cb6f5d54706c8cc7e2183827b6a0350c8ca0`.
+
+No app was running before or after compilation; none was launched or restarted.
+The Dev App shortcut was read back unchanged, retaining the primary checkout's
+`encroissant-native` workflow. Owner data and phone services remain unchanged;
+existing shared-review stores were not automatically rescanned. This verifies
+package linkage, not native interaction or startup reliability. Quiet pins,
+longer defensive exchanges/combinations, the known queen-ending promotion and
+broader recall/primary-theme accuracy remain open; the goal is not complete.
+
+## Previous package: adapter 154 / live pipeline 161
 
 Source `3b719cf5` is packaged from clean detached checkout
 `en-tactical-desktop-3b719cf5`. Mixed-target fork mistakes can now cite a
