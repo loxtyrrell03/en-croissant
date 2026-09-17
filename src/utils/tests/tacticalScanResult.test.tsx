@@ -8,6 +8,7 @@ import { capturingPawnGuardInput } from "./fixtures/capturingPawnGuard";
 import { quietRootMateCases } from "./fixtures/quietRootMate";
 import { counterplayFen, counterplayPreviousFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import { mixedForkFen, mixedForkLine } from "./fixtures/mixedTargetFork";
+import { defensiveDeflectionFen, defensiveDeflectionMove } from "./fixtures/defensiveDeflection";
 import { directThreatFen, directThreatLine } from "./fixtures/directThreatRelevance";
 import { pawnExposureAlternateInput } from "./fixtures/pawnExposure";
 import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
@@ -50,6 +51,18 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a defensive deflection explains the perpetual threat without a material-win badge",()=>{
+  const value=buildLiveTacticalScan({fen:defensiveDeflectionFen,pvUci:[defensiveDeflectionMove],
+    variations:[{pvUci:[defensiveDeflectionMove],cp:600}],depth:16,engineName:"Constructed defensive offer"});
+  const element=document.createElement("div");element.innerHTML=markup(value);
+  expect(element.textContent).toContain("Defensive Deflection found");
+  expect(element.textContent).toContain("not winning material");
+  expect(element.textContent).not.toContain("No tactical theme verified");
+  expect(value.motifs[0].value).toBe(0);
+  expect(value.arrows.map(a=>a.from+a.to)).toEqual(["f8f6","f6g6","g6h7"]);
+  expect(value.arrows.every(a=>a.ply===1)).toBe(true);
+});
 
 test("a recovered discovery names the current battery, not a future recapture pin",()=>{
   const value=buildLiveTacticalScan({...discoveryRecaptureInput(),depth:18,engineName:"Constructed discovery"});

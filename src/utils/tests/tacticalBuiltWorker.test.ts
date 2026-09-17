@@ -601,6 +601,20 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("root-only capture mates survive
     }
 }, 30000);
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("defensive deflections and contrary offers survive the production controller",async()=>{
+    const {defensiveDeflectionFen,defensiveDeflectionMove,defensiveDeflectionControls}=await import("./fixtures/defensiveDeflection");
+    for(const row of [{id:"proved",fen:defensiveDeflectionFen,move:defensiveDeflectionMove},...defensiveDeflectionControls])
+        for(const reflected of [false,true]){
+            const move=reflected?reflectMixedForkMove(row.move):row.move;
+            const input={fen:reflected?reflectMixedForkFen(row.fen):row.fen,pvUci:[move],
+                variations:[{pvUci:[move],cp:600}],depth:16,engineName:"Constructed defensive offer"};
+            const {scan}=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+            expect(scan).toEqual(buildLiveTacticalScan(input));
+            expect(scan.motifs.some(m=>m.id==="defensiveDeflection")).toBe(row.id==="proved");
+            expect(scan.arrows.every(a=>a.ply===1)).toBe(true);
+        }
+},30000);
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("mixed-fork cause comparisons preserve actual-board controller themes",async()=>{
     const {mixedForkCaptureDefenceFen,mixedForkCaptureDefenceControls}=await import("./fixtures/mixedForkCaptureDefence");
     for(const row of [{id:"safe-capture",fen:mixedForkCaptureDefenceFen},...mixedForkCaptureDefenceControls])

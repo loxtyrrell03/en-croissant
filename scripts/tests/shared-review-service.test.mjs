@@ -18,8 +18,41 @@ import { missedPromotionFen } from "../../src/utils/tests/fixtures/immediateProm
 import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "../../src/utils/tests/fixtures/promotionCheckRetention.ts";
 import { capturingMixedForkFen, capturingMixedForkLine } from "../../src/utils/tests/fixtures/capturingMixedTargetFork.ts";
 import { mixedForkCaptureDefenceFen } from "../../src/utils/tests/fixtures/mixedForkCaptureDefence.ts";
+import { defensiveDeflectionFen } from "../../src/utils/tests/fixtures/defensiveDeflection.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("a missed defensive deflection survives generated review beside the allowed perpetual",async()=>{
+  const root=await mkdtemp(join(tmpdir(),"en-shared-review-defensive-deflection-"));
+  const position=Chess.fromSetup(parseFen(defensiveDeflectionFen).unwrap()).unwrap();
+  assert.ok(position.isLegal(parseUci("b2b1")));position.play(parseUci("b2b1"));
+  const after=makeFen(position.toSetup());
+  const options={root,documentsRoot:join(root,"documents"),engineConfigPath:join(root,"engine.json"),
+    fetchGames:async()=>[],lookup:async fen=>{
+      assert.ok(fen===defensiveDeflectionFen||fen===after);
+      // Synthetic White-perspective scores exercise review wiring, not strength.
+      return {depth:16,pvs:fen===defensiveDeflectionFen?[{cp:-600,moves:"f8f6 g6f6 g8h7"}]:[{cp:0,moves:"h7g7 g8h8 g7h7 h8g8 h7g7"}]};
+    }};
+  let service;
+  try{
+    await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+    await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,
+      url:"https://example.test/defensive-deflection",pgn:`[White "Opponent"]\n[Black "Tester"]\n[Date "2026.09.17"]\n[SetUp "1"]\n[FEN "${defensiveDeflectionFen}"]\n[Result "1/2-1/2"]\n\n1... Rb1 1/2-1/2`}]}));
+    service=new SharedReviewService(options);await service.initialize(false);await service.run();
+    assert.equal(service.snapshot().error,null);const card=service.snapshot().cards[0];assert.ok(card,JSON.stringify(service.snapshot()));
+    assert.equal(card.tacticalClassification.allowedMotifs[0].id,"perpetualCheck");
+    assert.equal(card.tacticalClassification.missedMotifs[0].id,"defensiveDeflection");
+    assert.equal(card.tacticalClassification.missedMotifs[0].value,0);
+    assert.match(card.explanation,/not merely the immediate check/);
+    service.close();service=new SharedReviewService(options);await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification,JSON.parse(JSON.stringify(card.tacticalClassification)));
+    assert.ok((await service.deck()).positions.some(position=>position.fen===defensiveDeflectionFen));
+  }finally{
+    service?.close();const target=resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-defensive-deflection-"));
+    await rm(target,{recursive:true,force:true});
+  }
+});
 
 test("a prevented mixed fork survives generated mistake review and saved reload",async()=>{
   const root=await mkdtemp(join(tmpdir(),"en-shared-review-mixed-fork-cause-"));

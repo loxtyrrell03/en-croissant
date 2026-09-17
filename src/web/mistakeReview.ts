@@ -165,8 +165,11 @@ export function createPhoneReviewCard(
         refutationUci: reply.uciMoves,
         refutationCandidates: reply.tacticalCandidates,
         bestCandidates: best.tacticalCandidates,
-        cpBefore,
-        cpAfter,
+        // The card's chance estimates and loss are player-relative, but the
+        // shared motif adapter accepts absolute White-perspective scores.
+        // Passing Black-relative values here reverses engine-gated themes.
+        cpBefore: reviewCp(best.score, "white"),
+        cpAfter: reviewCp(reply.score, "white"),
         cpLoss: cpBefore - cpAfter,
         winProbabilityDrop: before - after,
         reachedDepth: Math.min(best.depth, reply.depth),

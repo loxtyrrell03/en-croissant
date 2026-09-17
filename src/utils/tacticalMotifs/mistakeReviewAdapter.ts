@@ -28,6 +28,8 @@ import {
     contextualCaptureObservation,
     tacticalCaptureGain,
     proveImmediatePromotion,
+    proveDefensiveDeflection,
+    provePerpetualCheck,
     proveAlternativeCaptureCause,
     pawnOpportunityRemainsAfterReply,
     MIN_TACTICAL_CAPTURE_GAIN,
@@ -77,6 +79,7 @@ export type MistakeReviewMotifInput = {
     refutationCandidates?: TacticalReplyCandidate[] | null;
     bestCandidates?: TacticalReplyCandidate[] | null;
     cpLoss?: number | null;
+    /** Absolute White-perspective evaluations, unlike player-relative cpLoss. */
     cpBefore?: number | null;
     cpAfter?: number | null;
     winProbabilityDrop?: number | null;
@@ -136,7 +139,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 154;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 155;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -592,6 +595,7 @@ function toMotifEvidence(
 
 const IMPORTANT_TACTICAL_THEME_IDS = new Set([
     "perpetualCheck",
+    "defensiveDeflection",
     "drawingCapture",
     "promotionCombination",
     "forcingAttack",
@@ -627,6 +631,7 @@ const IMPORTANT_TACTICAL_THEME_IDS = new Set([
 
 const MOTIF_IMPORTANCE: Record<string, number> = {
     perpetualCheck: 39,
+    defensiveDeflection: 40,
     drawingCapture: 40,
     backRankMate: 1,
     doubleCheck: 5,
@@ -736,6 +741,7 @@ export function isImmediateTacticalLesson(motif: TacticalMotifEvidence | undefin
             (motif.id === "hangingPiece" && motif.label === "Material Gain" &&
                 motif.confidence === "high" && (motif.value ?? 0) >= MIN_TACTICAL_CAPTURE_GAIN) ||
             motif.id === "perpetualCheck" ||
+            (motif.id === "defensiveDeflection" && motif.confidence === "high") ||
             (motif.id === "drawingCapture" && motif.confidence === "high") ||
             (motif.verifiedCombination === true &&
                 motif.confidence === "high" &&
@@ -1484,6 +1490,18 @@ export function classifyMistakeReviewMotifs(
         motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
     } satisfies MistakeReviewMotifClassification;
 
+    // A different sound defence is not a missed sacrifice. Require the actual
+    // reply to demonstrate the same rook/queen's all-defence checking resource.
+    const defensiveLessonMissed = (motif: TacticalMotifEvidence, move = bestMoveUci) => {
+        if (motif.id !== "defensiveDeflection") return true;
+        if (!move || !playedMoveUci || !refutationLine[0]) return false;
+        const defence = proveDefensiveDeflection(replayTacticalLine(fen, [move])[0]);
+        const actual = replayTacticalLine(fen, [playedMoveUci, refutationLine[0]]);
+        return Boolean(defence && actual.length === 2 && actual[1].move.from === defence.target &&
+            provePerpetualCheck([actual[1]], 4096, { onlyMovedChecker: true }));
+    };
+    classification.missedMotifs = classification.missedMotifs.filter(m => defensiveLessonMissed(m));
+
     classification.missedMotifs = classification.missedMotifs.filter(motif =>
         !(motif.id === "hangingPiece" && motif.label === "Hanging Pawn" && motif.ply === 1 &&
             bestMoveUci && playedMoveUci && refutationLine[0] &&
@@ -1579,7 +1597,7 @@ export function classifyMistakeReviewMotifs(
         compared.allowedTimeline ?? [],
     );
     if (compared.missedTimeline) compared.missedTimeline = compared.missedTimeline.filter(m =>
-        m.id !== "drawingCapture" || m.ply !== 1 || playedEndgameOutcome === 1);
+        (m.id !== "drawingCapture" || m.ply !== 1 || playedEndgameOutcome === 1) && defensiveLessonMissed(m));
     compared.missedMotifs = selectRootConnectedLessons(
         fen, bestLine, compared.missedMotifs, compared.missedTimeline ?? [],
     );
@@ -1608,7 +1626,7 @@ export function classifyMistakeReviewMotifs(
                 result.motifs.map(motif => ({ ...motif, source: "missed" as const })));
             const primary = selectImportantTacticalMotifs(motifs.filter(motif =>
                 motif.moveUci === move && motif.confidence === "high" && isImmediateTacticalLesson(motif) &&
-                (motif.id !== "drawingCapture" || playedEndgameOutcome === 1)), 1)[0];
+                (motif.id !== "drawingCapture" || playedEndgameOutcome === 1) && defensiveLessonMissed(motif, move)), 1)[0];
             if (!primary) continue;
             if (genericPawn(primary) && refutationLine[0] &&
                 pawnOpportunityRemainsAfterReply(fen, move, playedMoveUci, refutationLine[0])) continue;

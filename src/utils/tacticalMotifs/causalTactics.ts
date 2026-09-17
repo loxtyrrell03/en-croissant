@@ -626,6 +626,7 @@ const perpetualCheckCache = new Map<string, PerpetualCheckProof | null>();
 export function provePerpetualCheck(
     steps: TacticalReplayStep[],
     nodeLimit = 4096,
+    options?: { onlyMovedChecker?: boolean; budget?: ProofBudget },
 ): PerpetualCheckProof | null {
     const root = steps[0];
     if (
@@ -636,6 +637,7 @@ export function provePerpetualCheck(
         nodeLimit <= 0
     )
         return null;
+    if (options?.onlyMovedChecker && !root.after.ctx().checkers.has(root.move.to)) return null;
     const hints = steps
         .filter((s) => s.before.turn === root.before.turn && s.after.isCheck())
         .map((s) => s.uci);
@@ -643,10 +645,11 @@ export function provePerpetualCheck(
     // never a proof: legal king captures and every other evasion still count.
     hints.push(makeUci({ from: root.move.to, to: root.move.from }));
     const key = `${makeFen(root.before.toSetup())}:${root.uci}:${hints}`;
-    if (nodeLimit === 4096 && perpetualCheckCache.has(key)) return perpetualCheckCache.get(key)!;
-    let nodes = nodeLimit;
+    const cacheable = nodeLimit === 4096 && !options?.budget && !options?.onlyMovedChecker;
+    if (cacheable && perpetualCheckCache.has(key)) return perpetualCheckCache.get(key)!;
+    const budget = options?.budget ?? { nodes: nodeLimit };
     const visit = (pos: Chess, move: NormalMove) => {
-        if (--nodes < 0) throw new Error("Perpetual check budget exhausted");
+        if (--budget.nodes < 0) throw new Error("Perpetual check budget exhausted");
         const next = pos.clone();
         next.play(move);
         return next;
@@ -654,7 +657,7 @@ export function provePerpetualCheck(
     const positionKey = (pos: Chess) => makeFen(pos.toSetup()).split(" ").slice(0, 4).join(" ");
     type Proof = { line: string[]; cycle: string[] };
     const path = new Map<string, number>();
-    const defend = (pos: Chess, remaining: number, line: string[]): Proof | null => {
+    const defend = (pos: Chess, remaining: number, line: string[], checker: Square): Proof | null => {
         if (pos.isCheckmate()) return { line, cycle: [] };
         if (pos.isEnd() || !pos.isCheck()) return null;
         const position = positionKey(pos),
@@ -665,7 +668,7 @@ export function provePerpetualCheck(
         try {
             let example: Proof | null = null;
             for (const reply of legalMoves(pos)) {
-                const proof = attack(visit(pos, reply), remaining, [...line, makeSan(pos, reply)]);
+                const proof = attack(visit(pos, reply), remaining, [...line, makeSan(pos, reply)], checker);
                 if (!proof) return null;
                 if (!example || (!example.cycle.length && proof.cycle.length)) example = proof;
             }
@@ -674,10 +677,10 @@ export function provePerpetualCheck(
             path.delete(position);
         }
     };
-    const attack = (pos: Chess, remaining: number, line: string[]): Proof | null => {
+    const attack = (pos: Chess, remaining: number, line: string[], checker: Square): Proof | null => {
         if (pos.isEnd()) return null;
         const relative = (square: Square) => (root.before.turn === "white" ? square : square ^ 56);
-        const moves = legalMoves(pos).sort(
+        const moves = legalMoves(pos).filter(move => !options?.onlyMovedChecker || move.from === checker).sort(
             (a, b) =>
                 Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))) ||
                 relative(a.from) - relative(b.from) ||
@@ -685,23 +688,116 @@ export function provePerpetualCheck(
         );
         for (const move of moves) {
             const next = visit(pos, move);
-            if (!next.isCheck()) continue;
-            const proof = defend(next, remaining - 1, [...line, makeSan(pos, move)]);
+            if (!next.isCheck() || (options?.onlyMovedChecker && !next.ctx().checkers.has(move.to))) continue;
+            const proof = defend(next, remaining - 1, [...line, makeSan(pos, move)], move.to);
             if (proof) return proof;
         }
         return null;
     };
     let result: PerpetualCheckProof | null = null;
     try {
-        const proof = defend(root.after, 5, [root.san]);
+        const proof = defend(root.after, 5, [root.san], root.move.to);
         if (proof?.cycle.length) result = { ...proof, replyCount: legalMoves(root.after).length };
     } catch {
         /* Unknown/exhausted branches cannot establish a drawing resource. */
     }
-    if (nodeLimit === 4096) {
+    if (cacheable) {
         perpetualCheckCache.set(key, result);
         if (perpetualCheckCache.size > 128)
             perpetualCheckCache.delete(perpetualCheckCache.keys().next().value!);
+    }
+    return result;
+}
+
+type DefensiveDeflectionProof = {
+    target: Square;
+    guard: Square;
+    threat: string;
+    perpetual: PerpetualCheckProof;
+    branches: { replyUci: string; captureUci: string; fen: string; gain: number }[];
+    examinedMoves: number;
+};
+const defensiveDeflectionCache = new Map<string, DefensiveDeflectionProof | null>();
+
+/** A checking offer can be useful without winning material: it deflects the
+ * king guarding the opponent's last checking piece, then trades that piece
+ * off. The defensive purpose must be a positively proved same-piece perpetual
+ * on the unchanged board with the opponent to move. Every actual evasion must
+ * lose the guard and permit a liability-aware capture retaining a material
+ * advantage. This proves removal of that checking resource, NOT a won ending:
+ * live admission separately requires a sound, winning engine candidate. */
+export function proveDefensiveDeflection(root: TacticalReplayStep | undefined, nodeLimit = 8192): DefensiveDeflectionProof | null {
+    if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture || root.move.promotion ||
+        root.before.isCheck() || !root.after.isCheck() || root.after.isEnd() || defenderCanClaimFiftyMoveDraw(root.after))
+        return null;
+    const side = root.before.turn, opponent = opposite(side);
+    const pieces = [...root.before.board[opponent]].filter(square =>
+        !["pawn", "king"].includes(root.before.board.get(square)!.role));
+    if (pieces.length !== 1) return null;
+    const target = pieces[0], piece = root.before.board.get(target)!;
+    const guard = root.before.board.kingOf(opponent);
+    if (!["rook", "queen"].includes(piece.role) || guard === undefined ||
+        !attacks(root.before.board.get(guard)!, guard, root.before.board.occupied).has(target)) return null;
+    const material = [...root.before.board.occupied].reduce((sum, square) => {
+        const p = root.before.board.get(square)!;
+        return sum + (p.color === side ? 1 : -1) * VALUE[p.role];
+    }, 0);
+    if (material < 100) return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    if (nodeLimit === 8192 && defensiveDeflectionCache.has(key)) return defensiveDeflectionCache.get(key)!;
+    const budget = { nodes: nodeLimit };
+    const visit = (position: Chess, move: NormalMove) => {
+        if (--budget.nodes < 0) throw new Error("Defensive deflection budget exhausted");
+        const after = position.clone(); after.play(move); return after;
+    };
+    const prove = (): DefensiveDeflectionProof | null => {
+        const pass = withTurn(root.before, opponent);
+        let threat: TacticalReplayStep | undefined, perpetual: PerpetualCheckProof | null = null;
+        for (const move of legalMoves(pass)) {
+            if (move.from !== target || !mayGiveCheck(pass, move)) continue;
+            const after = visit(pass, move);
+            if (!after.isCheck()) continue;
+            const candidate = { before: pass, after, move, uci: makeUci(move), san: makeSan(pass, move), capture: capturedValue(pass, move), balance: 0 };
+            perpetual = provePerpetualCheck([candidate], nodeLimit, { onlyMovedChecker: true, budget });
+            if (perpetual) { threat = candidate; break; }
+            if (budget.nodes < 0) return null;
+        }
+        if (!threat || !perpetual) return null;
+        const branches: DefensiveDeflectionProof["branches"] = [];
+        let acceptsOffer = false;
+        for (const reply of legalMoves(root.after)) {
+            // A blocking/capturing non-king response is not a proved king
+            // deflection, even when the supplied PV happens to move the king.
+            if (reply.from !== guard) return null;
+            const after = visit(root.after, reply);
+            if (after.isEnd() || attacks(after.board.get(reply.to)!, reply.to, after.board.occupied).has(target)) return null;
+            acceptsOffer ||= reply.to === root.move.to && capturedValue(root.after, reply) > 0;
+            let selected: DefensiveDeflectionProof["branches"][number] | undefined;
+            for (const capture of legalMoves(after)) {
+                if (capture.to !== target || capture.promotion) continue;
+                const reached = visit(after, capture);
+                if (reached.isEnd()) continue;
+                // Do not claim the rook/queen threat is neutralized while an
+                // immediate promotion or new pawn check is still available.
+                if (legalMoves(reached).some(move => move.promotion ||
+                    (mayGiveCheck(reached, move) && visit(reached, move).isCheck()))) continue;
+                const gain = preparationCaptureGain(after, capture, budget);
+                if (gain === null || material + gain - capturedValue(root.after, reply) < 100) continue;
+                selected = { replyUci: makeUci(reply), captureUci: makeUci(capture),
+                    fen: makeFen(after.toSetup()), gain: gain - capturedValue(root.after, reply) };
+                break;
+            }
+            if (!selected) return null;
+            branches.push(selected);
+        }
+        return acceptsOffer && branches.length ? { target, guard, threat: threat.uci, perpetual, branches,
+            examinedMoves: nodeLimit - budget.nodes } : null;
+    };
+    let result: DefensiveDeflectionProof | null = null;
+    try { result = prove(); } catch { /* Exhaustion does not establish a defensive resource. */ }
+    if (nodeLimit === 8192) {
+        defensiveDeflectionCache.set(key, result);
+        if (defensiveDeflectionCache.size > 128) defensiveDeflectionCache.delete(defensiveDeflectionCache.keys().next().value!);
     }
     return result;
 }
@@ -8654,6 +8750,7 @@ export function tacticalBoardEvidence(
         !motif?.ply ||
         ![
             "perpetualCheck",
+            "defensiveDeflection",
             "drawingCapture",
             "hangingPiece",
             "zugzwang",
@@ -8680,6 +8777,14 @@ export function tacticalBoardEvidence(
         return null;
     const step = replayTacticalLine(fen, line.slice(0, motif.ply))[motif.ply - 1];
     if (!step) return null;
+    if (motif.id === "defensiveDeflection") {
+        const proof = proveDefensiveDeflection(step);
+        return proof ? { square: makeSquare(step.move.to), arrows: [
+            { from: makeSquare(step.move.from), to: makeSquare(step.move.to) },
+            { from: makeSquare(step.move.to), to: makeSquare(proof.guard) },
+            { from: makeSquare(proof.guard), to: makeSquare(proof.target) },
+        ] } : null;
+    }
     if (motif.id === "hangingPiece") {
         const proof = motif.label === "Material Gain" && tacticalCaptureProof(step).counterattack;
         return proof ? {square:makeSquare(step.move.to),arrows:[
@@ -14279,6 +14384,20 @@ export function auditTacticalMotifs(
             evidence: `${steps[0].san} can force at least a draw through repeated checks. Every legal defence was checked; one verified continuation is ${perpetual.line.join(" ")}. The cycle ${perpetual.cycle.join(" ")} returns to the same position and can be repeated until a draw is claimable. This is an available drawing resource, not a draw already claimed or a material win.`,
         });
     }
+    // A defensive trade is not a material-gain certificate. A winning engine
+    // candidate only nominates this purpose; the independent proof establishes
+    // the checking threat, every king deflection and capture of its exact rook
+    // or queen. No score alone creates a theme or proves the resulting ending.
+    const defensive = typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= 200 &&
+        !filtered.some(m => m.ply === 1) ? proveDefensiveDeflection(steps[0]) : null;
+    if (defensive) {
+        const root = steps[0], target = root.before.board.get(defensive.target)!;
+        filtered.unshift({
+            id: "defensiveDeflection", label: "Defensive Deflection", source: proposals[0]?.source ?? "available",
+            confidence: "high", ply: 1, moveUci: root.uci, value: 0,
+            evidence: `${root.san} drives the king away from defending the ${target.role} on ${makeSquare(defensive.target)}. Every legal reply allows that ${target.role} to be captured while retaining a material advantage. Without a response to the threat, it can force repeated checks (${defensive.perpetual.line.join(" ")}). The point is removing that checking resource, not winning material; this does not by itself prove the resulting ending is won.`,
+        });
+    }
     return filtered.map((motif, index) => ({
         ...motif,
         ...(/^mate(?:In\d+)?$/.test(motif.id) &&
@@ -14441,8 +14560,22 @@ export function normalizeContinuingTactics(
     const normalized = motifs
         .filter((motif) => !suppressed.has(motif))
         .map((motif) => replacements.get(motif) ?? motif);
-    return normalizeForkCollectionPayoffs(steps, normalizeCaptureCounterattackPayoffs(steps,
-        normalizeDirectMaterialPayoffs(steps, normalized)));
+    return normalizeDefensiveDeflectionPayoffs(steps, normalizeForkCollectionPayoffs(steps, normalizeCaptureCounterattackPayoffs(steps,
+        normalizeDirectMaterialPayoffs(steps, normalized))));
+}
+
+/** Removing the perpetual checker completes the defensive trade. Do not
+ * relabel that already matched capture as a fresh free rook/queen. */
+function normalizeDefensiveDeflectionPayoffs(steps: TacticalReplayStep[], motifs: TacticalMotifEvidence[]) {
+    return motifs.map(motif => {
+        if (motif.id !== "hangingPiece" || !motif.ply || motif.ply < 3 || motif.relevance === "primary") return motif;
+        const index = motif.ply - 1, root = steps[index - 2], reply = steps[index - 1], capture = steps[index];
+        if (!root || !reply || !capture || !motifs.some(m => m.id === "defensiveDeflection" &&
+            m.ply === index - 1 && m.moveUci === root.uci)) return motif;
+        const branch = proveDefensiveDeflection(root)?.branches.find(b => b.replyUci === reply.uci && b.captureUci === capture.uci);
+        return branch ? { ...motif, label: "Defensive Trade", value: undefined,
+            evidence: `${capture.san} removes the perpetual-checking ${capture.before.board.get(capture.move.to)!.role}, completing ${root.san}'s defensive deflection. The offer and possible recaptures are part of this trade, not a fresh material win.` } : motif;
+    });
 }
 
 /** Countercaptures within a certified capture are compensation, not fresh
@@ -15013,7 +15146,14 @@ export function compareImmediateTacticalDefence(
         }
         let comparison: TacticalMotifEvidence["comparison"];
         let comparisonEvidence = "";
-        if (motif.id === "drawingCapture") {
+        if (motif.id === "defensiveDeflection") {
+            // Removing this exact offer does not establish that a different
+            // move preserves the checking resource or changes the game outcome.
+        } else if (motif.id === "perpetualCheck" && proveDefensiveDeflection(better[0])?.target === step.move.from &&
+            provePerpetualCheck([step], 4096, { onlyMovedChecker: true })) {
+            comparison = "prevented";
+            comparisonEvidence = `${bestSan} deflects the king guarding the checking ${step.before.board.get(step.move.from)!.role}; every legal reply permits its capture. It removes this repeated-check resource, not merely the immediate check.`;
+        } else if (motif.id === "drawingCapture") {
             const exact = proveDrawingCapture(makeFen(step.before.toSetup()), step.uci, tablebaseEvidence);
             const original = verifiedTablebasePosition(fen, tablebaseEvidence);
             const bestChild = original?.moves.find(move => move.uci === bestMove)?.outcome ??

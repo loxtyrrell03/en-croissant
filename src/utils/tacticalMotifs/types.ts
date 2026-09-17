@@ -20,7 +20,8 @@ export type TacticalMotifEvidence = {
     moveUci: string | null;
     relevance?: "primary" | "secondary";
     /** Material payoff in centipawns; 10000 represents mate. A proved
-     * perpetual uses zero: a drawing resource is not a material gain. */
+     * perpetual or defensive deflection uses zero: preventing/forcing a
+     * checking resource is not a material-gain claim. */
     value?: number;
     /** Set by an all-defence compound or mating proof, never inferred from
      * a PV tag or score. A material residual may be smaller than a pawn. */
