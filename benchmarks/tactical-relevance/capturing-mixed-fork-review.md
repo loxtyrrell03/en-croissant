@@ -83,11 +83,25 @@ suffix. `owner153-final`, `private153` and `rare153` are authoritative replay
 results; `owner153-draft` predates the version bump but has the same decisions.
 The initial root diagnostic preserves the failed Qxe7+ capture-only proof.
 
-The production controller passes 836 inputs: 808 existing public cases, fourteen
-new reflected controls and fourteen retained pawn/exchange/fork controls. Owner
-controller replay and clean desktop delivery are recorded separately when complete.
+The production controller passes **2,155 inputs**: 808 existing public cases,
+all 1,319 owner contexts, fourteen new reflected controls and fourteen retained
+pawn/exchange/fork controls. All 808 public primary lists remain unchanged;
+every owner result matches the final source replay. Public computation/transfer
+median/p95/max is 43/206/1,106 ms; owner figures are 97/419/2,198 ms. Maximum
+startup is 36/41 ms respectively. These Node-host measurements exclude engine
+search, development HTTP startup and native UI, and are not a native latency
+guarantee. No classifier deadline was increased.
 Tested worker `liveTactics.worker-B9OEMdRu.js` is 598,595 bytes, SHA-256
 `286ef62c69856c79ab9267c789e07c592edda693045aa5891a2199e5dd88d75f`.
+
+The private `capturing-mixed-fork153-judgement-20260917.md` records the reviewed
+roles of all nine reached owner mechanisms and the contrary controls. Source
+`d8728295` is committed, pushed and packaged from a clean checkout. Clean types,
+82 focused source/React checks, 28 service checks and review/frontend/native
+builds pass. The native executable embeds the tested worker and the clean
+tactical/review assets, confirmed against exact dependency paths.
+`docs/TACTICAL_DESKTOP_DELIVERY.md` records identity and recovery. No app was
+running or restarted; this is package linkage, not native interaction proof.
 
 No owner data or phone service is changed. This is one recovered
 mechanism, not completion of broader recall, quiet preparations, long tactical
