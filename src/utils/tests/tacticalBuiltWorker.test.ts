@@ -743,6 +743,26 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("standalone connected captures s
     }
 },30000);
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_FORK_RAY_AUDIT_INPUT)("fork-ray preparation and contrary controls survive the actual compiled controller", async()=>{
+    const input = JSON.parse(readFileSync(process.env.TACTICAL_FORK_RAY_AUDIT_INPUT!,"utf8"));
+    expect(input.cases.length).toBeGreaterThan(0);
+    const cases = [];
+    for (const row of input.cases) {
+        const request = {fen:row.fen,pvUci:[row.move],depth:16,engineName:"Constructed input"};
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,request);
+        expect(result.scan).toEqual(row.scan);
+        expect(result.scan).toEqual(buildLiveTacticalScan(request));
+        const baseline = process.env.TACTICAL_FORK_RAY_BASELINE_WORKER && row.proof
+            ? await runBuiltWorker(process.env.TACTICAL_FORK_RAY_BASELINE_WORKER, request) : undefined;
+        if (baseline?.scan.motifs.some(m=>m.id==="forkPreparation")) throw new Error(`Baseline already explained ${row.id}`);
+        cases.push({id:row.id,...result, ...(baseline ? {baseline} : {})});
+    }
+    if (process.env.TACTICAL_FORK_RAY_WORKER_REPORT) {
+        const {privateReportPath}=await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
+        writeFileSync(privateReportPath(process.env.TACTICAL_FORK_RAY_WORKER_REPORT),JSON.stringify({cases},null,2),{flag:"wx"});
+    }
+},60000);
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_RECALL_REPLAY)("all owner-game positions retain the actual compiled scan and history", async()=>{
     const baseline=JSON.parse(readFileSync(process.env.TACTICAL_RECALL_REPLAY!,"utf8"));
     expect(baseline.completed).toBe(baseline.requested ?? baseline.results.length);

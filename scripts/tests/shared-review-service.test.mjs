@@ -19,8 +19,43 @@ import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "../../
 import { capturingMixedForkFen, capturingMixedForkLine } from "../../src/utils/tests/fixtures/capturingMixedTargetFork.ts";
 import { mixedForkCaptureDefenceFen } from "../../src/utils/tests/fixtures/mixedForkCaptureDefence.ts";
 import { defensiveDeflectionFen } from "../../src/utils/tests/fixtures/defensiveDeflection.ts";
+import { forkRayClearanceCases } from "../../src/utils/tests/fixtures/forkRayClearance.ts";
+import { reflectMixedForkFen, reflectMixedForkMove } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("a missed fork-ray preparation survives shared review beneath the larger queen loss",async()=>{
+  for(const reflected of [false,true]) {
+    const root=await mkdtemp(join(tmpdir(),"en-shared-review-fork-ray-"));
+    const fen=reflected?reflectMixedForkFen(forkRayClearanceCases[0].fen):forkRayClearanceCases[0].fen;
+    const flip=move=>reflected?reflectMixedForkMove(move):move;
+    const position=Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
+    assert.ok(position.isLegal(parseUci(flip("e2e5"))));position.play(parseUci(flip("e2e5")));
+    const after=makeFen(position.toSetup());
+    const options={root,documentsRoot:join(root,"documents"),engineConfigPath:join(root,"engine.json"),fetchGames:async()=>[],lookup:async key=>{
+      assert.ok(key===fen||key===after);
+      return {depth:16,pvs:key===fen?[{cp:reflected?450:-466,moves:["f7c4","d3c4","e2c2","b3b4","c2g6"].map(flip).join(" ")}]:[{cp:reflected?-315:301,moves:flip("g6e5")}]};
+    }};
+    let service;
+    try {
+      await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+      await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,url:`https://example.test/fork-ray-${reflected}`,
+        pgn:`[White "${reflected?"Tester":"Opponent"}"]\n[Black "${reflected?"Opponent":"Tester"}"]\n[Date "2026.09.17"]\n[SetUp "1"]\n[FEN "${fen}"]\n[Result "${reflected?"0-1":"1-0"}"]\n\n${reflected?"1. Qe4":"1... Qe5"} ${reflected?"0-1":"1-0"}`}]}));
+      service=new SharedReviewService(options);await service.initialize(false);await service.run();
+      assert.equal(service.snapshot().error,null);
+      const card=service.snapshot().cards[0];assert.ok(card);
+      assert.equal(card.tacticalClassification.allowedMotifs[0].id,"hangingPiece");
+      assert.equal(card.tacticalClassification.missedMotifs[0].id,"forkPreparation");
+      assert.match(card.explanation,/queen/);
+      service.close();service=new SharedReviewService(options);await service.initialize(false);
+      assert.deepEqual(service.snapshot().cards[0].tacticalClassification,JSON.parse(JSON.stringify(card.tacticalClassification)));
+    } finally {
+      service?.close();const target=resolve(root);
+      assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-fork-ray-"));
+      await rm(target,{recursive:true,force:true});
+    }
+  }
+});
 
 test("a missed defensive deflection survives generated review beside the allowed perpetual",async()=>{
   const root=await mkdtemp(join(tmpdir(),"en-shared-review-defensive-deflection-"));

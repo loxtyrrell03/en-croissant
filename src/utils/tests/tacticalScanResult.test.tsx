@@ -26,6 +26,7 @@ import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "./fixt
 import { makeFen } from "chessops/fen";
 import { captureLiabilityInput } from "./fixtures/captureLiabilityRecovery";
 import { discoveryRecaptureInput } from "./fixtures/discoveryRecapture";
+import { forkRayClearanceCases } from "./fixtures/forkRayClearance";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 import {
   buildLiveTacticalScan,
@@ -51,6 +52,17 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("ray preparation explains the blocker without drawing the future fork", () => {
+  const row = forkRayClearanceCases[0];
+  const value = buildLiveTacticalScan({fen:row.fen,pvUci:[row.move,"d3c4","e2c2","b3b4","c2g6"],depth:16,engineName:"Constructed offer"});
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Fork Preparation found");
+  expect(element.textContent).toContain("deflect the pawn from d3");
+  expect(element.textContent).toContain("The fork is a continuation");
+  expect(value.arrows.map(arrow=>arrow.from+arrow.to)).toEqual(["f7c4","c4b3"]);
+  expect(value.motifs.map(m=>m.id)).toEqual(["forkPreparation"]);
+});
 
 test("a defensive deflection explains the perpetual threat without a material-win badge",()=>{
   const value=buildLiveTacticalScan({fen:defensiveDeflectionFen,pvUci:[defensiveDeflectionMove],
