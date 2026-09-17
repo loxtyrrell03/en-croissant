@@ -1,6 +1,41 @@
 # Tactical desktop delivery — 2026-09-17
 
-## Current package: adapter 143 / live pipeline 150
+## Current package: adapter 144 / live pipeline 151
+
+Source `115a7a4e` is packaged from clean detached checkout
+`en-tactical-desktop-115a7a4e`. Nonchecking capture mates no longer require a
+mate-ending supplied line; independent short certificates precede longer
+engine-line nominations. Live scans, actual-ply details and missed/allowed
+review share the fix. See `benchmarks/tactical-relevance/capture-mate-recall-review.md`
+for the 1,000-context comparison, complete defensive trees, contrary finite-depth
+engine distances and the retained draft worker timeout.
+
+Clean TypeScript, 111 focused source/React checks (four optional skips), nineteen
+generated-service checks (one optional engine skip), the 43-module review build
+and 8,863-module frontend build pass. Native release compilation passes in 1m37s
+with 22 existing warnings. Post-build generated-review differences are only
+source-region paths; route-tree differences are line endings, checked against
+committed code. Unrelated dirty OTB/FIDE/phone/stats work was excluded.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,067,584 bytes;
+  SHA-256 `197baba218115d9cd96bbf8641316e634dd07ecbe2f29da58d3d3d8eed288698`.
+- Worker: `liveTactics.worker-CMhfomBf.js`, 586,592 bytes; SHA-256
+  `26a3c79a558221316ef976e92a1145f14af396a6d8c68dec8939c62f43611ca9`.
+  Clean bytes match the 1,838-input tested artifact. The x64 executable embeds
+  this worker, `TacticalClassifierPanel-DDAgzDGI.js` and
+  `OpeningReviewWorkspace-zrhrcVJm.js`; native dependency paths identify the exact
+  clean-checkout assets.
+- Previous pipeline-150 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline151/en-croissant-fork.exe`,
+  SHA-256 `0c1a752021057d7b1f31aa483441694311018e230bef38c4ae99c389585f4a85`.
+
+No app was running before or after compilation; none was launched or restarted.
+The existing Dev App workflow, owner data, settings and phone services were not
+changed. This establishes source/package delivery, not direct native-window
+interaction or startup reliability. Broader recall, longer combinations and
+automatic review candidate coverage remain unfinished.
+
+## Previous package: adapter 143 / live pipeline 150
 
 Source `55f73798` is packaged from the clean detached checkout
 `en-tactical-desktop-55f73798`. It adds standalone capture counterattacks and
