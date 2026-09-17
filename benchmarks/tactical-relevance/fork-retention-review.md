@@ -96,7 +96,13 @@ The worker is `liveTactics.worker-Cg-XvgHJ.js`, 597,454 bytes, SHA-256
 `971ca931ea9016acc9fbfb910bba6da5dcfe275cbfa7c8262d2b88e28ddca5ef`.
 The twenty-second startup and three-second computation limits are unchanged;
 controlled worker runs do not resolve native/load-sensitive startup failures.
-Clean desktop delivery follows separately.
+Source `c1f47735` is also packaged from a clean committed checkout. Clean
+types, 63 focused source/React checks, 25 generated-service checks and
+review/frontend/native builds pass. The packaged worker matches the tested
+bytes; exact embedded asset keys and native dependency paths identify the clean
+classifier and review UI. `docs/TACTICAL_DESKTOP_DELIVERY.md` records executable
+identity and backup. No app was running or restarted; this is package linkage,
+not native interaction or load-sensitive startup proof.
 
 ## Receipts and remaining work
 

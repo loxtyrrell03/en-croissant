@@ -1,5 +1,9 @@
 # Discovery recovery through connected exchanges
 
+The Nxf7 regression recorded below is subsequently repaired by adapter 150;
+see [the fork-retention follow-up](fork-retention-review.md). The remaining
+findings preserve this adapter-149 comparison, not a newer accuracy claim.
+
 Adapter **149 / live pipeline 156** extends discovery proofs through checking
 recaptures and captures which open a participating pin or support ray. The
 owner-game audit uses the same 1,319 contexts in 27 games as adapter 148,

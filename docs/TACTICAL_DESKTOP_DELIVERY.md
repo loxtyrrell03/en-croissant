@@ -1,6 +1,42 @@
 # Tactical desktop delivery — 2026-09-17
 
-## Current package: adapter 149 / live pipeline 156
+## Current package: adapter 150 / live pipeline 157
+
+Source `c1f47735` is packaged from clean detached checkout
+`en-tactical-desktop-c1f47735`. The owner Nxf7 fork retains its initial pawn
+through a break-even connected exchange, without demanding an extra gain or
+claiming a free rook. Missed/allowed review and current-ply annotations share
+the restored lesson. See `benchmarks/tactical-relevance/fork-retention-review.md`
+for the 27-game comparison, engine evidence, contrary controls and open gaps.
+
+Clean TypeScript, 63 focused source/React checks (five optional skips),
+25 generated-service checks (one optional engine skip), the 43-module review
+build and 8,863-module frontend build pass. Native release compilation passes
+in 1m26s with 22 existing warnings. Generated-review differences are source-region
+comments only; the route tree differs only in line endings. Unrelated dirty
+OTB/FIDE/phone/stats changes were excluded.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,075,776 bytes;
+  SHA-256 `a73991d15bc0279e36399cc983818e307cd06ad73e44644ae86145275c50d15d`.
+- Worker: `liveTactics.worker-Cg-XvgHJ.js`, 597,454 bytes; SHA-256
+  `971ca931ea9016acc9fbfb910bba6da5dcfe275cbfa7c8262d2b88e28ddca5ef`.
+  Clean bytes match the 2,151-input tested artifact. The x64 executable embeds
+  this worker, `TacticalClassifierPanel-CpU4NvHx.js` and
+  `OpeningReviewWorkspace-BMfw2RoK.js`; exact native dependency paths identify
+  those assets in the clean checkout.
+- Previous pipeline-156 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline157/en-croissant-fork.exe`,
+  SHA-256 `64687e2a2e3763eaf6e91e80e917e7c82e56cdb712b68e72109fb20c5744577f`.
+
+No app was running before or after compilation; none was launched or restarted.
+The Dev App shortcut was read back unchanged and retains the primary checkout's
+`encroissant-native` workflow. Owner data, settings, engines and phone services
+are unchanged. This verifies package linkage, not native interaction or reliable
+startup under load. Longer compensation timelines, comparable-capture causal
+qualification, quiet preparations and the known queen-ending promotion remain
+unfinished. This does not complete the classifier goal.
+
+## Previous package: adapter 149 / live pipeline 156
 
 Source `e8579cb1` is packaged from clean detached checkout
 `en-tactical-desktop-e8579cb1`. Discoveries can survive checking recaptures and
