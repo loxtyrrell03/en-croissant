@@ -77,7 +77,7 @@ previously recorded queen-ending promotion remain incomplete.
   Removing a reply fails the verifier. It does not verify retention arithmetic
   or independently solve the ending.
 - The final selected suite passes **2,879 tests** with 345 conditional skips.
-  Thirty opted-in source checks, 127 source/React checks (three skips),
+  Thirty opted-in source checks, 129 clean source/React checks (three skips),
   33 generated-service checks (one optional engine skip), two development-cache
   scenarios, TypeScript, scoped lint and review/frontend builds pass. The
   initial diagnostic engine request omitted an optional sample path; the
@@ -85,13 +85,33 @@ previously recorded queen-ending promotion remain incomplete.
 
 Authoritative private receipts use `promotion-threat158-` under
 `Documents/OnCrescent Tactical Benchmarks/`: `owner-final`, `tests-final2`,
-`public-engine-final2`, `owner-engine-final`, `private`, `rare`,
+`public-engine-final2`, `owner-engine-final`, `private-final`, `rare-final`,
 `public-probes-final4` and `owner-probes-final`, dated `20260917`.
 The earlier five-row draft differential preserves the rejected fork priority;
 it is not the final result. Paid and owner positions remain outside Git.
 
-Compiled-controller validation and clean desktop delivery are pending in this
-source milestone and will be recorded below and in
-`docs/TACTICAL_DESKTOP_DELIVERY.md`. Owner stores are not automatically rescanned;
+## Compiled replay and clean desktop delivery
+
+All 2,147 compiled-controller inputs pass: 808 public, twenty new constructed/
+reflected controls and 1,319 owner contexts. All 808 prior public primary lists
+remain unchanged; this is regression stability, not accuracy. Public computation/
+transfer median/p95/max is 43/212/1,120 ms; owner figures are 112/499/2,571 ms.
+Maximum worker startup is 100/89 ms respectively. These Node-host figures exclude
+engine search and native UI and are not a controlled speed comparison.
+
+Two earlier public batches hit the aggregate 120-second test limit, including
+an isolated retry. Neither produced a completed public receipt. The aggregate
+test now allows ten minutes for 808 fresh launches plus source comparisons and
+reports every hundred completed cases. Production startup/computation deadlines
+remain 20/3 seconds and are asserted for every case. The completed final run
+took 116 seconds in the test itself; it does not erase the earlier timeouts or
+certify native/load-sensitive startup. Final receipts are `owner-worker` and
+`public-worker-final3`, dated `20260917`, under the same private prefix.
+
+Source `dcbe0777` is built into the standalone executable from a clean detached
+checkout; its packaged worker matches the tested artifact byte-for-byte. Clean
+types, review/frontend builds and native compilation pass. Native compilation
+took 2m09s with 22 existing warnings. See `docs/TACTICAL_DESKTOP_DELIVERY.md` for
+hashes, asset linkage and backup. Owner stores are not automatically rescanned;
 no app or phone service has been restarted. Broader recall, primary-theme
 accuracy and native interaction/load-sensitive startup remain open.

@@ -1851,6 +1851,8 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 primary: result.scan.motifs.map((m) => m.id),
                 matchesSource: true,
             });
+            if (report.length % 100 === 0)
+                console.log(`Cold public worker replay: ${report.length}/${cases.length} inputs checked`);
         }
         expect(report).toHaveLength(808);
         for (const length of [1, promotionCounterplayLine.length]) expect(promotionEndingResults.get(`promotion-ending:real:${length}`)!.motifs[0]).toMatchObject({ id: "promotionCombination", value: 220 });
@@ -1951,7 +1953,9 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
                 ),
             );
     },
-    120000,
+    // This aggregate includes 808 fresh worker launches AND source comparisons.
+    // Each scan still uses and asserts the production startup/compute deadlines.
+    600000,
 );
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("capture liabilities and sound deflection payoffs survive the production worker", async () => {

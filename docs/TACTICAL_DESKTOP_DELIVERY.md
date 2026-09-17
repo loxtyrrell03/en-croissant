@@ -1,6 +1,46 @@
 # Tactical desktop delivery — 2026-09-17
 
-## Current package: adapter 157 / live pipeline 164
+## Current package: adapter 158 / live pipeline 165
+
+Source `dcbe0777` is packaged from clean detached checkout
+`en-tactical-desktop-dcbe0777`. Immediate promotion threats now require a
+retained promotion against every legal reply. The real ...f2 is recovered;
+existing danger and stronger initiating forks retain their explanatory roles.
+See `benchmarks/tactical-relevance/promotion-threat-review.md` for evidence,
+contrary controls and the still-missing longer checking-promotion preparation.
+
+All 2,147 compiled-controller inputs pass: 808 public, twenty new controls and
+1,319 owner contexts. Two earlier public attempts hit the aggregate 120-second
+test limit. The final replay passes with a ten-minute aggregate harness allowance;
+all individual production startup/computation limits remain 20/3 seconds.
+No individual scan deadline was relaxed. This is not native latency proof.
+Clean types, 129 source/React checks (three conditional skips), 33 generated
+service checks (one optional engine skip), the 43-module review build and
+8,863-module frontend build pass. Native release compilation passes in 2m09s
+with 22 existing warnings. Generated-review differences are source-region
+comments only; the route tree differs only by line endings. Unrelated dirty
+OTB/FIDE/phone/stats work was excluded.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,083,968 bytes;
+  SHA-256 `a5b3869a285b49a8b21ed30358b2fe502255e21bce033afa0031d14bff705451`.
+- Worker: `liveTactics.worker-B_bsBHTh.js`, 618,307 bytes; SHA-256
+  `cd81d6fa6be94904f659b0df1be78f7c433f6b6066e9a0a4803dbb4c2f2823c3`.
+  Clean worker bytes match the tested artifact. The x64 executable embeds it,
+  `mistakeReviewAdapter-BACDcpl-.js`, `TacticalClassifierPanel-Bj6OyFOX.js` and
+  `OpeningReviewWorkspace-DXGUAlki.js`; exact normalized native dependencies
+  identify those four clean assets.
+- Previous pipeline-164 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline165/en-croissant-fork.exe`,
+  SHA-256 `efef2ef2c0ac04a740fd2ba59c745bf26cd1dd3b56ba5d447db91e585852a0db`.
+
+No app was running before or after compilation; none was launched/restarted.
+The Dev App shortcut retains the primary checkout's `encroissant-native`
+workflow. Owner stores and phone services were untouched; existing reviews were
+not automatically rescanned. The private `promotion-threat158-desktop-receipt-20260917.json`
+records identity and recovery. This is package linkage, not native interaction
+or startup reliability. Broader recall/primary accuracy remains incomplete.
+
+## Previous package: adapter 157 / live pipeline 164
 
 Source `d482389e` is packaged from clean detached checkout
 `en-tactical-desktop-d482389e`. The original owner ...Bb4 quiet pin now has
