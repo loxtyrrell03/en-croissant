@@ -40,14 +40,24 @@ test("a later promotion cannot headline an earlier unproved exchange", () => {
         ]).some((m) => m.id === "promotion"),
     ).toBe(false);
 });
-test.each(["q", "r", "b", "n"])("the actual promotion remains classifiable: %s", (piece) => {
+test.each(["q", "r", "b", "n"])("promotion distinguishes retained material from a dead ending: %s", (piece) => {
     const position = makeFen(replayTacticalLine(fen, line)[4].before.toSetup());
     const result = classifyPositionTacticalMotifs({ fen: position, pvUci: ["a7a8" + piece] });
     expect(
         result.motifs.some(
             (m) => (m.id === "promotion" || m.id === "underPromotion") && m.ply === 1,
         ),
-    ).toBe(true);
+    ).toBe(piece === "q" || piece === "r");
+});
+
+test.each(["b", "n"])("a dead promotion stays an observation without a gain: %s", piece => {
+        const position = makeFen(replayTacticalLine(fen, line)[4].before.toSetup());
+        const result = classifyPositionTacticalMotifs({ fen: position, pvUci: ["a7a8" + piece] });
+        expect(replayTacticalLine(position, ["a7a8" + piece])[0].after.isInsufficientMaterial()).toBe(true);
+        expect(result.timeline).toContainEqual(expect.objectContaining({
+            id: "underPromotion", ply: 1, relevance: "secondary",
+        }));
+        expect(result.timeline?.find(m => m.id === "underPromotion")?.value).toBeUndefined();
 });
 test("a later underpromotion cannot relabel the preceding exchange", () => {
     const result = classifyPositionTacticalMotifs({ fen, pvUci: [...line.slice(0, 4), "a7a8n"] });

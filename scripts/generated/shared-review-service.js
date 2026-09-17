@@ -10463,6 +10463,32 @@ function tacticalCaptureProof(step, nodeLimit = 4096) {
 function tacticalCaptureGain(step, nodeLimit = 4096) {
 	return tacticalCaptureProof(step, nodeLimit).gain;
 }
+var immediatePromotionCache = /* @__PURE__ */ new Map();
+/** Promotion is a current material change, not the profit at a later PV endpoint.
+* Retain it only after checking legal exchanges, all friendly-piece liabilities,
+* terminal refutations and counterchecks within the existing capture budget.
+* This does not certify a won game or the necessity of underpromotion. */
+function proveImmediatePromotion(root, nodeLimit = 4096) {
+	if (!root?.move.promotion || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.after.isEnd()) return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (nodeLimit === 4096 && immediatePromotionCache.has(key)) return immediatePromotionCache.get(key);
+	const budget = { nodes: nodeLimit };
+	const counterchecks = [];
+	let result = null;
+	try {
+		const gain = preparationCaptureGain(root.before, root.move, budget, void 0, counterchecks, true);
+		if (gain !== null && gain >= VALUE.pawn) result = {
+			gain,
+			visits: nodeLimit - budget.nodes,
+			counterchecks
+		};
+	} catch {}
+	if (nodeLimit === 4096) {
+		immediatePromotionCache.set(key, result);
+		if (immediatePromotionCache.size > 128) immediatePromotionCache.delete(immediatePromotionCache.keys().next().value);
+	}
+	return result;
+}
 function captureGainEvidence(step, gain) {
 	const victim = step.before.board.get(step.move.to);
 	const counterattack = tacticalCaptureProof(step).counterattack;
@@ -18715,6 +18741,20 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		settled = -VALUE.king;
 	}
 	const candidates = [];
+	const immediatePromotion = proveImmediatePromotion(steps[0]);
+	if (immediatePromotion) {
+		const root = steps[0], role = root.move.promotion;
+		candidates.push({
+			id: role === "queen" ? "promotion" : "underPromotion",
+			label: role === "queen" ? "Promotion" : "Under-Promotion",
+			source: proposals[0]?.source ?? "available",
+			confidence: "high",
+			ply: 1,
+			moveUci: root.uci,
+			value: immediatePromotion.gain,
+			evidence: `${root.san} promotes the pawn to a ${role}. The checked local exchanges retain at least ${Number((immediatePromotion.gain / 100).toFixed(1))} pawns of material, including the pawn replaced, any captured piece, recaptures and losses elsewhere. This is not the full-position evaluation${role !== "queen" ? " or a claim that underpromotion is necessary" : ""}.`
+		});
+	}
 	const discoveries = /* @__PURE__ */ new Map();
 	const xRaySupport = xRaySupportEvidence(steps[0], proposals[0]?.source ?? "available");
 	if (xRaySupport?.value !== void 0) candidates.push(xRaySupport);
@@ -19049,17 +19089,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 			"intermezzo",
 			"clearance"
 		].includes(proposal.id)) continue;
-		if (proposal.id === "promotion" || proposal.id === "underPromotion") {
-			const index = episode.findIndex((s) => s.before.turn === attacker && s.move.promotion && (proposal.id !== "underPromotion" || s.move.promotion !== "queen"));
-			if (index !== 0) continue;
-			const promotion = episode[index];
-			proposal = {
-				...proposal,
-				ply: index + 1,
-				moveUci: promotion.uci,
-				evidence: `${promotion.san} promotes the pawn to a ${promotion.move.promotion}.`
-			};
-		}
+		if (proposal.id === "promotion" || proposal.id === "underPromotion") continue;
 		if (proposal.ply === 1 && defenderEvidence && proposal.id === "capturingDefender") continue;
 		if (proposal.ply === 1 && rayEvidence.some((m) => m.id === proposal.id)) continue;
 		if (preparation && proposal.id === "mateIn3") continue;
@@ -19484,7 +19514,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		const rootMatingPriority = (m) => checkingMate && m.ply === 1 && (m.value === 1e4 || MATE.test(m.id)) ? 0 : 1;
 		return matingPriority(a) - matingPriority(b) || rootMatingPriority(a) - rootMatingPriority(b) || causeRank(a, initialCaptureGain, smallerRays.has(a)) - causeRank(b, initialCaptureGain, smallerRays.has(b));
 	});
-	const immediateLoose = filtered.find((m) => m.id === "hangingPiece" && m.ply === 1);
+	const immediateLoose = filtered.find((m) => (m.id === "hangingPiece" || immediatePromotion && ["promotion", "underPromotion"].includes(m.id)) && m.ply === 1);
 	if (immediateLoose && !checkingMate && !filtered.some((m) => m.ply === 1 && (MECHANISMS.has(m.id) || trapIsMainCause(m, initialCaptureGain)))) {
 		filtered.splice(filtered.indexOf(immediateLoose), 1);
 		filtered.unshift(immediateLoose);
@@ -20068,6 +20098,17 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 			} else {
 				comparison = bestOutcome.win ? "persists" : "prevented";
 				comparisonEvidence = bestOutcome.win ? `Even after ${bestSan}, exact king-and-pawn analysis still gives ${proof.pawnSide} a won ending. The displayed zugzwang does not establish that this move caused the loss.` : `${bestSan} holds a drawn king-and-pawn ending against every legal continuation. After ${actual[0].san}, ${step.san} instead reaches a verified winning zugzwang.`;
+			}
+		} else if (["promotion", "underPromotion"].includes(motif.id)) {
+			const original = proveImmediatePromotion(step);
+			const other = alternative && proveImmediatePromotion(alternative);
+			const pawn = better[0].after.board.get(step.move.from);
+			if (original && other && other.gain >= original.gain) {
+				comparison = "persists";
+				comparisonEvidence = `After ${bestSan}, ${alternative.san} still promotes the same pawn with at least the same checked local material gain.`;
+			} else if (original && (!pawn || pawn.color !== step.before.turn || pawn.role !== "pawn")) {
+				comparison = "prevented";
+				comparisonEvidence = `${bestSan} removes the pawn on ${makeSquare(step.move.from)} before it can promote.`;
 			}
 		} else if (!alternative) {
 			comparison = "prevented";
@@ -20844,7 +20885,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 144;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 145;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -21662,6 +21703,13 @@ function classifyMistakeReviewMotifs(input) {
 	};
 	classification.missedMotifs = classification.missedMotifs.filter((motif) => !(motif.id === "hangingPiece" && motif.label === "Hanging Pawn" && motif.ply === 1 && bestMoveUci && playedMoveUci && refutationLine[0] && pawnOpportunityRemainsAfterReply(fen, bestMoveUci, playedMoveUci, refutationLine[0])));
 	classification.missedMotifs = qualifyComparableCaptureChoice(fen, bestMoveUci, playedMoveUci, classification.missedMotifs);
+	const playedPromotion = playedMoveUci?.length === 5 ? proveImmediatePromotion(replayTacticalLine(fen, [playedMoveUci])[0]) : null;
+	if (playedPromotion) classification.missedMotifs = classification.missedMotifs.filter((m) => !(["promotion", "underPromotion"].includes(m.id) && m.ply === 1 && m.value !== void 0 && playedPromotion.gain >= m.value));
+	if (bestMoveUci?.length === 5 && playedMoveUci && refutationLine[0]) {
+		const actual = replayTacticalLine(fen, [playedMoveUci, refutationLine[0]]);
+		const available = actual.length === 2 ? proveImmediatePromotion(replayTacticalLine(makeFen(actual[1].after.toSetup()), [bestMoveUci])[0]) : null;
+		if (available) classification.missedMotifs = classification.missedMotifs.filter((m) => !(["promotion", "underPromotion"].includes(m.id) && m.ply === 1 && m.value !== void 0 && available.gain >= m.value));
+	}
 	const playedEndgameOutcome = verifiedTablebasePosition(fen, input.tablebaseEvidence)?.moves.find((move) => move.uci === playedMoveUci)?.outcome;
 	classification.missedMotifs = classification.missedMotifs.filter((m) => m.id !== "drawingCapture" || playedEndgameOutcome === 1);
 	const allowedMotifs = compareBestLineTacticalDefence(fen, playedMoveUci, refutationLine, bestLine, compareImmediateTacticalDefence(fen, bestMoveUci, playedMoveUci, refutationLine[0], classification.allowedMotifs, input.tablebaseEvidence));

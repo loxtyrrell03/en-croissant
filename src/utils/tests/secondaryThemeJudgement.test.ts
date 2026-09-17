@@ -31,7 +31,7 @@ test("frozen engine and source inputs retain unrelated judgements across the ful
             key === "motifClassifierVersion" ? undefined : entry && typeof entry === "object" && !Array.isArray(entry)
                 ? Object.fromEntries(Object.entries(entry).sort(([a], [b]) => a.localeCompare(b))) : entry,
         );
-    const changed = new Set(["lichess:qQG5v", "lichess:sKDBG", "lichess:xxDaj", "lichess:SD5oo", "lichess:qn2Fy", "lichess:j8Up4", "lichess:S9vEb", "lichess:DBBd9", "lichess:J3vOR", "lichess:R13Ct"]);
+    const changed = new Set(["lichess:qQG5v", "lichess:sKDBG", "lichess:xxDaj", "lichess:SD5oo", "lichess:qn2Fy", "lichess:j8Up4", "lichess:S9vEb", "lichess:DBBd9", "lichess:J3vOR", "lichess:R13Ct", "lichess:oSj8l"]);
     const cases = receipt.cases.map((r: any) => {
         const sourceResult = classifyPositionTacticalMotifs({
             fen: r.fen,
@@ -66,6 +66,13 @@ test("frozen engine and source inputs retain unrelated judgements across the ful
     const recapture = cases.find((row: any) => row.id === "lichess:R13Ct")!;
     expect(recapture.sourceResult.motifs[0]).toMatchObject({ id: "hangingPiece", label: "Winning Recapture", value: 210 });
     expect(recapture.scan.motifs[0]).toMatchObject({ id: "hangingPiece", value: 210 });
+    // The fork includes the eventual queen collection; promotion itself earns
+    // only knight-minus-pawn, not a second copy of the whole combination.
+    const promotedFork = cases.find((row: any) => row.id === "lichess:oSj8l")!;
+    expect(promotedFork.sourceResult.motifs[0]).toMatchObject({ id: "fork", value: 1120, ply: 1 });
+    expect(promotedFork.sourceResult.motifs).toContainEqual(expect.objectContaining({
+        id: "underPromotion", value: 220, confidence: "high", relevance: "secondary", ply: 1,
+    }));
     if (process.env.TACTICAL_SECONDARY_FINAL_REPORT)
         writeFileSync(
             process.env.TACTICAL_SECONDARY_FINAL_REPORT,

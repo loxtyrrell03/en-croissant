@@ -775,6 +775,33 @@ export function tacticalCaptureGain(step: TacticalReplayStep, nodeLimit = 4096):
     return tacticalCaptureProof(step, nodeLimit).gain;
 }
 
+type ImmediatePromotionProof = { gain: number; visits: number; counterchecks: { fen: string; moveUci: string }[] };
+const immediatePromotionCache = new Map<string, ImmediatePromotionProof | null>();
+
+/** Promotion is a current material change, not the profit at a later PV endpoint.
+ * Retain it only after checking legal exchanges, all friendly-piece liabilities,
+ * terminal refutations and counterchecks within the existing capture budget.
+ * This does not certify a won game or the necessity of underpromotion. */
+export function proveImmediatePromotion(root: TacticalReplayStep, nodeLimit = 4096): ImmediatePromotionProof | null {
+    if (!root?.move.promotion || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 ||
+        root.after.isEnd()) return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    if (nodeLimit === 4096 && immediatePromotionCache.has(key)) return immediatePromotionCache.get(key)!;
+    const budget = { nodes: nodeLimit };
+    const counterchecks: ImmediatePromotionProof["counterchecks"] = [];
+    let result: ImmediatePromotionProof | null = null;
+    try {
+        const gain = preparationCaptureGain(root.before, root.move, budget, undefined, counterchecks, true);
+        if (gain !== null && gain >= VALUE.pawn)
+            result = { gain, visits: nodeLimit - budget.nodes, counterchecks };
+    } catch { /* Incomplete retention is not a promotion-win certificate. */ }
+    if (nodeLimit === 4096) {
+        immediatePromotionCache.set(key, result);
+        if (immediatePromotionCache.size > 128) immediatePromotionCache.delete(immediatePromotionCache.keys().next().value!);
+    }
+    return result;
+}
+
 function captureGainEvidence(step: TacticalReplayStep, gain: number) {
     const victim = step.before.board.get(step.move.to);
     const counterattack = tacticalCaptureProof(step).counterattack;
@@ -12606,6 +12633,17 @@ export function auditTacticalMotifs(
         settled = -VALUE.king;
     }
     const candidates: TacticalMotifEvidence[] = [];
+    const immediatePromotion = proveImmediatePromotion(steps[0]);
+    if (immediatePromotion) {
+        const root = steps[0], role = root.move.promotion!;
+        candidates.push({
+            id: role === "queen" ? "promotion" : "underPromotion",
+            label: role === "queen" ? "Promotion" : "Under-Promotion",
+            source: proposals[0]?.source ?? "available", confidence: "high", ply: 1,
+            moveUci: root.uci, value: immediatePromotion.gain,
+            evidence: `${root.san} promotes the pawn to a ${role}. The checked local exchanges retain at least ${Number((immediatePromotion.gain / 100).toFixed(1))} pawns of material, including the pawn replaced, any captured piece, recaptures and losses elsewhere. This is not the full-position evaluation${role !== "queen" ? " or a claim that underpromotion is necessary" : ""}.`,
+        });
+    }
     const discoveries = new Map<number, NonNullable<ReturnType<typeof discoveredEvidence>>>();
     const xRaySupport = xRaySupportEvidence(steps[0], proposals[0]?.source ?? "available");
     // A separately proved mate stays the headline. Its conditional exchange
@@ -13018,23 +13056,10 @@ export function auditTacticalMotifs(
         )
             continue;
         if (proposal.id === "promotion" || proposal.id === "underPromotion") {
-            const index = episode.findIndex(
-                (s) =>
-                    s.before.turn === attacker &&
-                    s.move.promotion &&
-                    (proposal.id !== "underPromotion" || s.move.promotion !== "queen"),
-            );
-            // A future promotion needs its own root preparation certificate;
-            // the PV endpoint alone cannot headline an earlier move. The
-            // independent per-ply classifier still names the actual promotion.
-            if (index !== 0) continue;
-            const promotion = episode[index];
-            proposal = {
-                ...proposal,
-                ply: index + 1,
-                moveUci: promotion.uci,
-                evidence: `${promotion.san} promotes the pawn to a ${promotion.move.promotion}.`,
-            };
+            // The independent root certificate above owns material claims.
+            // Actual later/sacrificed promotions remain timeline observations;
+            // neither a cooperative PV gain nor a mating sentinel funds them.
+            continue;
         }
         if (proposal.ply === 1 && defenderEvidence && proposal.id === "capturingDefender") continue;
         if (proposal.ply === 1 && rayEvidence.some((m) => m.id === proposal.id)) continue;
@@ -13823,7 +13848,8 @@ export function auditTacticalMotifs(
                 causeRank(a, initialCaptureGain, smallerRays.has(a)) - causeRank(b, initialCaptureGain, smallerRays.has(b))
             );
         });
-    const immediateLoose = filtered.find((m) => m.id === "hangingPiece" && m.ply === 1);
+    const immediateLoose = filtered.find((m) =>
+        (m.id === "hangingPiece" || (immediatePromotion && ["promotion", "underPromotion"].includes(m.id))) && m.ply === 1);
     if (
         immediateLoose &&
         !checkingMate &&
@@ -14647,6 +14673,19 @@ export function compareImmediateTacticalDefence(
                         : `${bestSan} holds a drawn king-and-pawn ending against every legal continuation. After ${actual[0].san}, ${step.san} instead reaches a verified winning zugzwang.`;
                 }
             }
+        } else if (["promotion", "underPromotion"].includes(motif.id)) {
+            const original = proveImmediatePromotion(step);
+            const other = alternative && proveImmediatePromotion(alternative);
+            const pawn = better[0].after.board.get(step.move.from);
+            if (original && other && other.gain >= original.gain) {
+                comparison = "persists";
+                comparisonEvidence = `After ${bestSan}, ${alternative!.san} still promotes the same pawn with at least the same checked local material gain.`;
+            } else if (original && (!pawn || pawn.color !== step.before.turn || pawn.role !== "pawn")) {
+                comparison = "prevented";
+                comparisonEvidence = `${bestSan} removes the pawn on ${makeSquare(step.move.from)} before it can promote.`;
+            }
+            // A check only delays promotion. Illegality at that one position
+            // does not establish that the better move stops the passed pawn.
         } else if (!alternative) {
             comparison = "prevented";
             comparisonEvidence = `${bestSan} makes the immediate reply ${step.san} illegal.`;

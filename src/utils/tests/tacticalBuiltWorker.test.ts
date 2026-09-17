@@ -10,6 +10,7 @@ import { makeUci } from "chessops/util";
 import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { captureMateCases } from "./fixtures/captureMate";
+import { immediatePromotionCases } from "./fixtures/immediatePromotion";
 import { pawnExposureInput, pawnExposureAlternateInput } from "./fixtures/pawnExposure";
 import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
 import { forkLocalValueCases } from "./fixtures/forkLocalValue";
@@ -558,6 +559,18 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("ordinary immediate alternatives
     }
 }, 30000);
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("retained immediate promotions survive the production controller", async () => {
+    for (const row of immediatePromotionCases) for (const reflected of [false, true]) {
+        const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci: [reflected ? reflectMixedForkMove(row.move) : row.move], depth: 16,
+            engineName: "Constructed promotion retention" };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        const promotion = result.scan.motifs.find(m => ["promotion", "underPromotion"].includes(m.id));
+        expect(promotion?.value ?? null).toBe(row.gain);
+    }
+}, 30000);
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("root-only capture mates survive the production controller", async () => {
     for (const row of captureMateCases) for (const reflected of [false, true]) {
         const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
@@ -625,7 +638,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_RECALL_R
 // This batch also recomputes every source result. The growing whole-game
 // corpus needs a larger aggregate allowance, not a longer worker deadline:
 // runBuiltWorker still enforces the production startup/computation bounds.
-},300000);
+},600000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("saving captures and drawn-exchange controls survive the actual worker", async () => {
     const report = [];

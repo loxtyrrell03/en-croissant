@@ -19,6 +19,7 @@ import { immediateAlternativeInputs } from "./fixtures/immediateTacticalAlternat
 import { kingDefenderRemovalCases } from "./fixtures/kingDefenderRemoval";
 import { forkCountercaptureFen, forkCountercaptureLine } from "./fixtures/forkCountercapture";
 import { captureMateFen, captureMateLine } from "./fixtures/captureMate";
+import { immediatePromotionCases } from "./fixtures/immediatePromotion";
 import { makeFen } from "chessops/fen";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 import {
@@ -45,6 +46,16 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("retained promotion renders a current lesson without claiming a full-position score", () => {
+  const row = immediatePromotionCases[0];
+  const value = buildLiveTacticalScan({ fen: row.fen, pvUci: [row.move], depth: 16, engineName: "Constructed promotion" });
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Promotion found");
+  expect(element.textContent).toContain("not the full-position evaluation");
+  expect(element.textContent).not.toContain("No tactical theme verified");
+  expect(value.arrows.map(a => a.from + a.to)).toEqual(["a7a8"]);
+});
 
 test("a capture's root-only mating lesson renders without invented continuation arrows", () => {
   const value = buildLiveTacticalScan({ fen: captureMateFen, pvUci: captureMateLine.slice(0, 1),

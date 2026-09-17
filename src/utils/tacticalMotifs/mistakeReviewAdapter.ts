@@ -27,6 +27,7 @@ import {
     winningRecaptureEvidence,
     contextualCaptureObservation,
     tacticalCaptureGain,
+    proveImmediatePromotion,
     proveAlternativeCaptureCause,
     pawnOpportunityRemainsAfterReply,
     MIN_TACTICAL_CAPTURE_GAIN,
@@ -135,7 +136,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 144;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 145;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -1489,6 +1490,25 @@ export function classifyMistakeReviewMotifs(
     classification.missedMotifs = qualifyComparableCaptureChoice(
         fen, bestMoveUci, playedMoveUci, classification.missedMotifs,
     );
+    // Another promotion retaining at least the same local material is not a
+    // missed generic promotion. It may still miss a separately proved mate or
+    // fork; equal local gains do not certify equivalent whole-position play.
+    const playedPromotion = playedMoveUci?.length === 5
+        ? proveImmediatePromotion(replayTacticalLine(fen, [playedMoveUci])[0]) : null;
+    if (playedPromotion) classification.missedMotifs = classification.missedMotifs.filter(m =>
+        !(["promotion", "underPromotion"].includes(m.id) && m.ply === 1 &&
+            m.value !== undefined && playedPromotion.gain >= m.value));
+    // Delaying a promotion is not missing its material if that same pawn can
+    // still safely promote after the supplied best reply. Other newly allowed
+    // tactics remain separate possible causes of the mistake.
+    if (bestMoveUci?.length === 5 && playedMoveUci && refutationLine[0]) {
+        const actual = replayTacticalLine(fen, [playedMoveUci, refutationLine[0]]);
+        const available = actual.length === 2
+            ? proveImmediatePromotion(replayTacticalLine(makeFen(actual[1].after.toSetup()), [bestMoveUci])[0]) : null;
+        if (available) classification.missedMotifs = classification.missedMotifs.filter(m =>
+            !(["promotion", "underPromotion"].includes(m.id) && m.ply === 1 &&
+                m.value !== undefined && available.gain >= m.value));
+    }
     // The nominated drawing capture is not missed if the played move also
     // holds the same exact draw (including an equivalent capture). A score
     // supplied by the caller cannot contradict the complete WDL evidence.
