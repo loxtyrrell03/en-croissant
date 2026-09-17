@@ -1771,8 +1771,8 @@ type MatePreparationProof = {
 };
 const preparationCache = new Map<string, MatePreparationProof | null>();
 
-/** A quiet mate-in-three is proved from the root, independent of PV length
- * or ordering. Other roots retain supplied-line nomination. Every defence is
+/** Quiet moves and nonchecking captures are proved from the root, independent
+ * of PV length or ordering. Other roots retain supplied-line nomination. Every defence is
  * covered, including quiet moves, counterchecks, castling and promotions.
  * Incomplete searches abstain under the existing shared operation cap. */
 export function proveMateWithinThree(
@@ -1783,9 +1783,10 @@ export function proveMateWithinThree(
     if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.after.isEnd() ||
         defenderCanClaimFiftyMoveDraw(root.after)) return null;
     const independentQuiet = !root.capture && !root.move.promotion && !root.before.isCheck() && !root.after.isCheck();
-    if (!independentQuiet && (!steps[4]?.after.isCheckmate() || steps[4].before.turn !== root.before.turn)) return null;
-    const hint = independentQuiet ? undefined : steps[2]?.uci;
-    const key = `${makeFen(root.after.toSetup())}:${independentQuiet ? "quiet" : hint}`;
+    const independent = independentQuiet || (root.capture > 0 && !root.move.promotion && !root.after.isCheck());
+    if (!independent && (!steps[4]?.after.isCheckmate() || steps[4].before.turn !== root.before.turn)) return null;
+    const hint = independent ? undefined : steps[2]?.uci;
+    const key = `${makeFen(root.after.toSetup())}:${independent ? "independent" : hint}`;
     if (nodeLimit === 16384 && preparationCache.has(key)) return preparationCache.get(key)!;
     let nodes = nodeLimit;
     const flip = root.before.turn === "white" ? 0 : 56;
@@ -12549,12 +12550,17 @@ export function auditTacticalMotifs(
     // The game ends here. Later PV events cannot compete with the exact
     // saving outcome or turn its captured material into a winning headline.
     if (drawing) return [{ ...drawing, relevance: "primary" as const }];
-    let checkingMate =
-        proveShortCheckingMate(steps[0]) ?? (steps.length >= 3 ? proveCheckingMate(steps) : null);
-    if (!checkingMate && steps[0].capture && !steps[0].after.isCheck() && steps[4]?.after.isCheckmate()) {
+    let checkingMate = proveShortCheckingMate(steps[0]);
+    if (!checkingMate && steps[0].capture && !steps[0].after.isCheck()) {
         const captureMate = proveMateWithinThree(steps);
-        if (captureMate) checkingMate = { maxMoves: 3, replyCount: captureMate.replyCount, example: [steps[0].san, ...captureMate.example] };
+        if (captureMate) checkingMate = {
+            maxMoves: captureMate.branches.some(branch => branch.replies) ? 3 : 2,
+            replyCount: captureMate.replyCount, example: [steps[0].san, ...captureMate.example],
+        };
     }
+    // A longer supplied line cannot replace a shorter independently proved
+    // capture mate or make its reported distance depend on PV truncation.
+    if (!checkingMate && steps.length >= 3) checkingMate = proveCheckingMate(steps);
     if (!checkingMate) {
         const clearanceMate = proveMatingClearance(steps[0]);
         if (clearanceMate) checkingMate = {

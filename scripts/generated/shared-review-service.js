@@ -11271,17 +11271,17 @@ function proveMateNextTurn(step, nodeLimit = QUIET_MATE_NODE_LIMIT, quietOnly = 
 	return proof;
 }
 var preparationCache = /* @__PURE__ */ new Map();
-/** A quiet mate-in-three is proved from the root, independent of PV length
-* or ordering. Other roots retain supplied-line nomination. Every defence is
+/** Quiet moves and nonchecking captures are proved from the root, independent
+* of PV length or ordering. Other roots retain supplied-line nomination. Every defence is
 * covered, including quiet moves, counterchecks, castling and promotions.
 * Incomplete searches abstain under the existing shared operation cap. */
 function proveMateWithinThree(steps, nodeLimit = 16384) {
 	const root = steps[0];
 	if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.after.isEnd() || defenderCanClaimFiftyMoveDraw(root.after)) return null;
-	const independentQuiet = !root.capture && !root.move.promotion && !root.before.isCheck() && !root.after.isCheck();
-	if (!independentQuiet && (!steps[4]?.after.isCheckmate() || steps[4].before.turn !== root.before.turn)) return null;
-	const hint = independentQuiet ? void 0 : steps[2]?.uci;
-	const key = `${makeFen(root.after.toSetup())}:${independentQuiet ? "quiet" : hint}`;
+	const independent = !root.capture && !root.move.promotion && !root.before.isCheck() && !root.after.isCheck() || root.capture > 0 && !root.move.promotion && !root.after.isCheck();
+	if (!independent && (!steps[4]?.after.isCheckmate() || steps[4].before.turn !== root.before.turn)) return null;
+	const hint = independent ? void 0 : steps[2]?.uci;
+	const key = `${makeFen(root.after.toSetup())}:${independent ? "independent" : hint}`;
 	if (nodeLimit === 16384 && preparationCache.has(key)) return preparationCache.get(key);
 	let nodes = nodeLimit;
 	const flip = root.before.turn === "white" ? 0 : 56;
@@ -18679,15 +18679,16 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		...drawing,
 		relevance: "primary"
 	}];
-	let checkingMate = proveShortCheckingMate(steps[0]) ?? (steps.length >= 3 ? proveCheckingMate(steps) : null);
-	if (!checkingMate && steps[0].capture && !steps[0].after.isCheck() && steps[4]?.after.isCheckmate()) {
+	let checkingMate = proveShortCheckingMate(steps[0]);
+	if (!checkingMate && steps[0].capture && !steps[0].after.isCheck()) {
 		const captureMate = proveMateWithinThree(steps);
 		if (captureMate) checkingMate = {
-			maxMoves: 3,
+			maxMoves: captureMate.branches.some((branch) => branch.replies) ? 3 : 2,
 			replyCount: captureMate.replyCount,
 			example: [steps[0].san, ...captureMate.example]
 		};
 	}
+	if (!checkingMate && steps.length >= 3) checkingMate = proveCheckingMate(steps);
 	if (!checkingMate) {
 		const clearanceMate = proveMatingClearance(steps[0]);
 		if (clearanceMate) checkingMate = {
@@ -20843,7 +20844,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 143;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 144;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

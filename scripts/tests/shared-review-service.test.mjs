@@ -13,8 +13,40 @@ import { shortMatingThreatCases } from "../../src/utils/tests/fixtures/shortMati
 import { matingCheckEvasionFen, matingCheckEvasionLine } from "../../src/utils/tests/fixtures/matingCheckEvasion.ts";
 import { kingDefenderRemovalCases } from "../../src/utils/tests/fixtures/kingDefenderRemoval.ts";
 import { forkCountercaptureFen, forkCountercaptureLine } from "../../src/utils/tests/fixtures/forkCountercapture.ts";
+import { captureMateFen } from "../../src/utils/tests/fixtures/captureMate.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("a root-only capture mate survives generated review and saved deck reload", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-shared-review-capture-mate-"));
+  const position = Chess.fromSetup(parseFen(captureMateFen).unwrap()).unwrap();
+  position.play(parseUci("h5h7"));
+  const after = makeFen(position.toSetup());
+  const options = { root, documentsRoot: join(root, "documents"), engineConfigPath: join(root, "engine.json"),
+    fetchGames: async () => [], lookup: async requested => {
+      assert.ok(requested === captureMateFen || requested === after);
+      // Controlled scores test service wiring, not independent chess strength.
+      return { depth: 16, pvs: requested === captureMateFen
+        ? [{ mate: 3, moves: "h5h2" }] : [{ cp: -500, moves: "h8h7" }] };
+    } };
+  let service;
+  try {
+    await writeFile(join(root, "config.json"), JSON.stringify({ accounts: { chesscom: "Tester" } }));
+    await writeFile(join(root, "games.json"), JSON.stringify({ games: [{ source: "chesscom", end: 1789387200,
+      url: "https://example.test/capture-mate", pgn: `[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.17"]\n[SetUp "1"]\n[FEN "${captureMateFen}"]\n[Result "0-1"]\n\n1. Qxh7+ 0-1` }] }));
+    service = new SharedReviewService(options); await service.initialize(false); await service.run();
+    assert.equal(service.snapshot().error, null);
+    const card = service.snapshot().cards[0]; assert.ok(card);
+    assert.equal(card.tacticalClassification.missedMotifs[0].id, "mateIn3");
+    assert.match(card.explanation, /Forcing Mate/);
+    service.close(); service = new SharedReviewService(options); await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification, JSON.parse(JSON.stringify(card.tacticalClassification)));
+  } finally {
+    service?.close(); const target = resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir()) + sep) && target.includes("en-shared-review-capture-mate-"));
+    await rm(target, { recursive: true, force: true });
+  }
+});
 
 test("a missed connected capture retains its mechanism and compensation after reload",async()=>{
   const root=await mkdtemp(join(tmpdir(),"en-shared-review-connected-capture-"));

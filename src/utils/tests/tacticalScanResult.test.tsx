@@ -18,6 +18,7 @@ import { captureMatingGuardCases } from "./fixtures/captureMatingGuard";
 import { immediateAlternativeInputs } from "./fixtures/immediateTacticalAlternative";
 import { kingDefenderRemovalCases } from "./fixtures/kingDefenderRemoval";
 import { forkCountercaptureFen, forkCountercaptureLine } from "./fixtures/forkCountercapture";
+import { captureMateFen, captureMateLine } from "./fixtures/captureMate";
 import { makeFen } from "chessops/fen";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 import {
@@ -44,6 +45,16 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a capture's root-only mating lesson renders without invented continuation arrows", () => {
+  const value = buildLiveTacticalScan({ fen: captureMateFen, pvUci: captureMateLine.slice(0, 1),
+    depth: 16, engineName: "Constructed capture mate" });
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Forcing Mate found");
+  expect(element.textContent).toContain("within 3 moves");
+  expect(element.textContent).not.toContain("Hanging Pawn");
+  expect(value.arrows.map(a => a.from + a.to)).toEqual(["h5h2"]);
+});
 
 test("a standalone capture explains its counterattack and draws only current relationships",()=>{
   const prefix=replayTacticalLine(forkCountercaptureFen,forkCountercaptureLine.slice(0,2));

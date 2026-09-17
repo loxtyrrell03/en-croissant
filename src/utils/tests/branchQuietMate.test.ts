@@ -166,6 +166,7 @@ test.each([false, true])(
         expect(preservesVerifiedMate(replayTacticalLine(fen, played))).toBe(true);
         const short = branchQuietMateChoice.shortLine.map(transform);
         expect(inspect(fen, short).proof?.maxMoves).toBe(3);
+        expect(classifyPositionTacticalMotifs({ fen, pvUci: played }).motifs[0]?.id).toBe("mateIn3");
         expect(preservesVerifiedMate(replayTacticalLine(fen, short))).toBe(true);
         expect(classifyPositionTacticalMotifs({ fen, pvUci: short }).motifs[0]).toMatchObject({
             id: "mateIn3",
@@ -183,9 +184,11 @@ test.each([false, true])(
         expect(result.missedMotifs).toEqual([]);
         expect(result.missedTimeline).toEqual([]);
         expect(buildMistakeReviewTacticalExplanation(result)).toBeNull();
-        // Missing evidence must not borrow a prior cached all-defence proof.
+        // The capture now supplies its own root-only all-defence certificate;
+        // it does not borrow the earlier PV-nominated four-move strategy.
+        expect(proveMateWithinThree(replayTacticalLine(fen, [played[0]]))).not.toBeNull();
         const incomplete = classifyMistakeReviewMotifs({ ...input, refutationUci: [] });
-        expect(incomplete.missedMotifs[0]?.id).toBe("mateIn2");
+        expect(incomplete.missedMotifs).toEqual([]);
         const defendedFen = reflected
             ? reflectMixedForkFen(branchQuietMateChoice.fen.replace("R4K1R", "R2B1K1R"))
             : branchQuietMateChoice.fen.replace("R4K1R", "R2B1K1R");

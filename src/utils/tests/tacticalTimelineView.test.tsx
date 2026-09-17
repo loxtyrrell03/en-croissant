@@ -1,5 +1,6 @@
 import { MantineProvider } from "@mantine/core";
 import { readFileSync } from "node:fs";
+import { makeFen } from "chessops/fen";
 import { renderToStaticMarkup } from "react-dom/server";
 import { expect, test } from "vitest";
 import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLineExplanation";
@@ -736,7 +737,12 @@ test("a declined mating deflection keeps its conditional explanation at the offe
   expect(offer.textContent).toContain("Accepting with gxf5 allows Bf7#");
   expect(offer.textContent).toContain("not a forced-mate claim");
   expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Bxg5");
-  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).not.toContain("Bf7#");
+  // The declined branch independently mates after Bxg5 too; this is no longer
+  // borrowed from the offer's hypothetical gxf5 acceptance.
+  const reached = makeFen(replayTacticalLine(fen, line.slice(0, 2)).at(-1)!.after.toSetup());
+  expect(classifyPositionTacticalMotifs({ fen: reached, pvUci: ["d2g5"] }).motifs[0]?.id).toBe("mateIn2");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Forcing Mate");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).not.toContain("Accepting with gxf5");
 });
 
 test("keeps the sacrifice acceptance visible without a misleading material-win badge", () => {

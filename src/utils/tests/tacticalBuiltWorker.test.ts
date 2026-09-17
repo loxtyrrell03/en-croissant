@@ -9,6 +9,7 @@ import { parseSan } from "chessops/san";
 import { makeUci } from "chessops/util";
 import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
+import { captureMateCases } from "./fixtures/captureMate";
 import { pawnExposureInput, pawnExposureAlternateInput } from "./fixtures/pawnExposure";
 import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
 import { forkLocalValueCases } from "./fixtures/forkLocalValue";
@@ -554,6 +555,18 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("ordinary immediate alternatives
         expect(result.scan).toEqual(buildLiveTacticalScan(candidate));
         expect(result.scan.preferredReason).toBe(close ? "tactical-alternative" : undefined);
         expect(result.scan.variations.every(v => v.origin === undefined)).toBe(true);
+    }
+}, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("root-only capture mates survive the production controller", async () => {
+    for (const row of captureMateCases) for (const reflected of [false, true]) {
+        const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci: [reflected ? reflectMixedForkMove(row.pvUci[0]) : row.pvUci[0]],
+            depth: 16, engineName: "Constructed capture mate" };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(row.mate ? result.scan.motifs[0]?.id === `mateIn${row.mate}` && result.scan.arrows.length === 1
+            : !result.scan.motifs.some(m => m.id.startsWith("mate"))).toBe(true);
     }
 }, 30000);
 
@@ -1570,7 +1583,11 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)(
         const promotionEndingResults = new Map<string, ReturnType<typeof buildLiveTacticalScan>>();
         for (const item of cases) {
             // A fresh worker never inherits the in-process proof caches.
-            const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, item.input);
+            const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, item.input).catch(error => {
+                if (process.env.TACTICAL_WORKER_REPORT) writeFileSync(`${process.env.TACTICAL_WORKER_REPORT}.failure.json`,
+                    JSON.stringify({ failedId: item.id, completed: report.length, error: String(error) }, null, 2) + "\n", { flag: "wx" });
+                throw new Error(`Production worker case ${item.id} failed: ${String(error)}`, { cause: error });
+            });
             const expected = buildLiveTacticalScan(item.input);
             expect({ id: item.id, scan: result.scan }).toEqual({ id: item.id, scan: expected });
             if (item.id.startsWith("tablebase:")) {
