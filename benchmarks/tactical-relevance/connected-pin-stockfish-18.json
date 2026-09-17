@@ -1,0 +1,6479 @@
+{
+  "scope": "Public constructed connected-pin decisions; private owner branches are excluded. Scores are side-to-move engine estimates, not local material bounds or independent puzzle counts.",
+  "searches": [
+    {
+      "id": "bishop-rook-battery:original:best",
+      "fen": "5r1k/5bpp/8/8/8/2Q2R2/8/7K b - - 0 1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f7d5",
+            "c3d3",
+            "d5f3",
+            "h1h2",
+            "f3h5",
+            "d3e4",
+            "h5g6",
+            "e4d5",
+            "h7h6",
+            "d5d6",
+            "f8f2",
+            "h2h1"
+          ],
+          "pvSan": [
+            "Bd5",
+            "Qd3",
+            "Bxf3+",
+            "Kh2",
+            "Bh5",
+            "Qe4",
+            "Bg6",
+            "Qd5",
+            "h6",
+            "Qd6",
+            "Rf2+",
+            "Kh1"
+          ],
+          "cp": 11,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "h8g8",
+            "c3d3",
+            "f8e8",
+            "h1g1",
+            "e8e5",
+            "d3d8",
+            "e5e8",
+            "d8d7",
+            "f7g6",
+            "f3f1",
+            "h7h6",
+            "d7d5",
+            "g8h7",
+            "d5f3"
+          ],
+          "pvSan": [
+            "Kg8",
+            "Qd3",
+            "Re8",
+            "Kg1",
+            "Re5",
+            "Qd8+",
+            "Re8",
+            "Qd7",
+            "Bg6",
+            "Rf1",
+            "h6",
+            "Qd5+",
+            "Kh7",
+            "Qf3"
+          ],
+          "cp": -340,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "h7h6",
+            "c3d3",
+            "h8g8",
+            "d3f5",
+            "g8h8",
+            "h1h2",
+            "h8g8",
+            "f3f1",
+            "g8h8",
+            "f5d7",
+            "h8g8",
+            "d7e7",
+            "f8c8",
+            "f1f7",
+            "c8c2",
+            "h2g3"
+          ],
+          "pvSan": [
+            "h6",
+            "Qd3",
+            "Kg8",
+            "Qf5",
+            "Kh8",
+            "Kh2",
+            "Kg8",
+            "Rf1",
+            "Kh8",
+            "Qd7",
+            "Kg8",
+            "Qe7",
+            "Rc8",
+            "Rxf7",
+            "Rc2+",
+            "Kg3"
+          ],
+          "cp": -405,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7d5",
+            "value": 500,
+            "verifiedCombination": true,
+            "evidence": "Bd5 pins the rook on f3 to its king on h1. Every legal defence concedes material in the checked continuations, but not always the pinned piece: Qxg7+ permits Kxg7. Captures, compensation and immediate counterplay are included; this is a local material bound, not a full-position evaluation.",
+            "relevance": "primary"
+          },
+          {
+            "id": "discoveredAttack",
+            "label": "Discovered Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7d5",
+            "evidence": "Bd5 vacates f7, uncovering the rook on f8 against the rook on f3. Every legal reply allows material gain or a short forced mate, including checking answers to countercaptures. Captures and interpositions are included in this check.",
+            "value": 170,
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7d5",
+            "value": 500,
+            "verifiedCombination": true,
+            "evidence": "Bd5 pins the rook on f3 to its king on h1. Every legal defence concedes material in the checked continuations, but not always the pinned piece: Qxg7+ permits Kxg7. Captures, compensation and immediate counterplay are included; this is a local material bound, not a full-position evaluation.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "discoveredAttack",
+            "label": "Discovered Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7d5",
+            "evidence": "Bd5 vacates f7, uncovering the rook on f8 against the rook on f3. Every legal reply allows material gain or a short forced mate, including checking answers to countercaptures. Captures and interpositions are included in this check.",
+            "value": 170,
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Pin Payoff",
+            "confidence": "high",
+            "evidence": "Bxf3+ collects the rook on f3, the material payoff of the earlier pin (Bd5). This continues Bd5's pin combination; its exchanges are already included in that lesson's material bound.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "d5f3",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:held",
+      "fen": "5r1k/5bpp/8/8/8/2Q2R2/8/7K b - - 0 1",
+      "searchMove": "f7d5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f7d5",
+            "c3c5",
+            "d5f3",
+            "h1h2",
+            "f8g8",
+            "c5e5",
+            "f3g4",
+            "e5d5",
+            "g8f8",
+            "d5c5",
+            "f8e8",
+            "c5c4"
+          ],
+          "pvSan": [
+            "Bd5",
+            "Qc5",
+            "Bxf3+",
+            "Kh2",
+            "Rg8",
+            "Qe5",
+            "Bg4",
+            "Qd5",
+            "Rf8",
+            "Qc5",
+            "Re8",
+            "Qc4"
+          ],
+          "cp": 0,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7d5",
+            "value": 500,
+            "verifiedCombination": true,
+            "evidence": "Bd5 pins the rook on f3 to its king on h1. Every legal defence concedes material in the checked continuations, but not always the pinned piece: Qxg7+ permits Kxg7. Captures, compensation and immediate counterplay are included; this is a local material bound, not a full-position evaluation.",
+            "relevance": "primary"
+          },
+          {
+            "id": "discoveredAttack",
+            "label": "Discovered Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7d5",
+            "evidence": "Bd5 vacates f7, uncovering the rook on f8 against the rook on f3. Every legal reply allows material gain or a short forced mate, including checking answers to countercaptures. Captures and interpositions are included in this check.",
+            "value": 170,
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7d5",
+            "value": 500,
+            "verifiedCombination": true,
+            "evidence": "Bd5 pins the rook on f3 to its king on h1. Every legal defence concedes material in the checked continuations, but not always the pinned piece: Qxg7+ permits Kxg7. Captures, compensation and immediate counterplay are included; this is a local material bound, not a full-position evaluation.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "discoveredAttack",
+            "label": "Discovered Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f7d5",
+            "evidence": "Bd5 vacates f7, uncovering the rook on f8 against the rook on f3. Every legal reply allows material gain or a short forced mate, including checking answers to countercaptures. Captures and interpositions are included in this check.",
+            "value": 170,
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Pin Payoff",
+            "confidence": "high",
+            "evidence": "Bxf3+ collects the rook on f3, the material payoff of the earlier pin (Bd5). This continues Bd5's pin combination; its exchanges are already included in that lesson's material bound.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "d5f3",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3c8:held",
+      "fen": "2Q2r1k/6pp/8/3b4/8/5R2/8/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1h2",
+            "f8c8",
+            "h2g1",
+            "c8c2",
+            "g1f1",
+            "h7h5",
+            "f1e1",
+            "h8g8",
+            "e1f1",
+            "f3b7",
+            "f1e1",
+            "b7c6",
+            "e1f1",
+            "h5h4",
+            "f1e1",
+            "g7g5",
+            "e1d1",
+            "c2c3",
+            "d1d2",
+            "c3c5",
+            "d2e3"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kh2",
+            "Rxc8",
+            "Kg1",
+            "Rc2",
+            "Kf1",
+            "h5",
+            "Ke1",
+            "Kg8",
+            "Kf1",
+            "Bb7",
+            "Ke1",
+            "Bc6",
+            "Kf1",
+            "h4",
+            "Ke1",
+            "g5",
+            "Kd1",
+            "Rc3",
+            "Kd2",
+            "Rc5",
+            "Ke3"
+          ],
+          "cp": 783,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxc8 wins the loose queen on c8.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f8c8",
+            "value": 900,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3c7:held",
+      "fen": "5r1k/2Q3pp/8/3b4/8/5R2/8/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1h2",
+            "f8g8",
+            "c7c2",
+            "f3h5",
+            "c2e4",
+            "g8f8",
+            "e4e5",
+            "h5f7",
+            "e5a5"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kh2",
+            "Rg8",
+            "Qc2",
+            "Bh5",
+            "Qe4",
+            "Rf8",
+            "Qe5",
+            "Bf7",
+            "Qa5"
+          ],
+          "cp": 10,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3g7:held",
+      "fen": "5r1k/6Qp/8/3b4/8/5R2/8/7K b - - 0 2",
+      "searchMove": "h8g7",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h8g7",
+            "h1g2",
+            "f8f3",
+            "g2g1",
+            "g7h8",
+            "g1g2",
+            "h7h5",
+            "g2g1",
+            "h8g8",
+            "g1h1",
+            "f3c3",
+            "h1g1",
+            "h5h4",
+            "g1f1",
+            "c3c1",
+            "f1e2"
+          ],
+          "pvSan": [
+            "Kxg7",
+            "Kg2",
+            "Rxf3",
+            "Kg1",
+            "Kh8",
+            "Kg2",
+            "h5",
+            "Kg1",
+            "Kg8",
+            "Kh1",
+            "Rc3+",
+            "Kg1",
+            "h4",
+            "Kf1",
+            "Rc1+",
+            "Ke2"
+          ],
+          "cp": 698,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "value": 900,
+            "evidence": "Kxg7 wins the loose queen on g7.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h8g7",
+            "relevance": "primary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxf3 wins the loose rook on f3.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f8f3",
+            "value": 500,
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "value": 900,
+            "evidence": "Kxg7 wins the loose queen on g7.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h8g7",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxf3 wins the loose rook on f3.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f8f3",
+            "value": 500,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3c6:held",
+      "fen": "5r1k/6pp/2Q5/3b4/8/5R2/8/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "c6f3",
+            "f8f3",
+            "h1g2",
+            "h7h5",
+            "g2h2",
+            "h8g8",
+            "h2g2",
+            "f3f7",
+            "g2h1",
+            "g8f8",
+            "h1g2",
+            "h5h4",
+            "g2g1",
+            "h4h3",
+            "g1h2",
+            "f7a7",
+            "h2g1"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Qxf3",
+            "Rxf3",
+            "Kg2",
+            "h5",
+            "Kh2",
+            "Kg8",
+            "Kg2",
+            "Rf7",
+            "Kh1",
+            "Kf8",
+            "Kg2",
+            "h4",
+            "Kg1",
+            "h3",
+            "Kh2",
+            "Ra7",
+            "Kg1"
+          ],
+          "cp": 655,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "Bxf3+ forks the king on h1 and queen on c6. The checked defences retain at least 10.7 pawns of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 1070,
+            "relevance": "primary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "value": 500,
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "Bxf3+ forks the king on h1 and queen on c6. The checked defences retain at least 10.7 pawns of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 1070,
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "value": 500,
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Winning Recapture",
+            "confidence": "high",
+            "evidence": "Rxf3 takes the queen on f3 in exchange for the bishop just captured there. After allowing for that trade and immediate counterplay, the checked local gain is at least 5.7 pawns; this is the payoff, not a newly hanging piece.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f8f3",
+            "value": 570,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3f6:held",
+      "fen": "5r1k/6pp/5Q2/3b4/8/5R2/8/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1h2",
+            "f8f6",
+            "h2g3",
+            "h8g8",
+            "g3h2",
+            "f3c6",
+            "h2h3",
+            "f6f1",
+            "h3h4",
+            "h7h6"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kh2",
+            "Rxf6",
+            "Kg3",
+            "Kg8",
+            "Kh2",
+            "Bc6",
+            "Kh3",
+            "Rf1",
+            "Kh4",
+            "h6"
+          ],
+          "cp": 714,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "xRayAttack",
+            "label": "X-Ray Support",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "evidence": "Bxf3+ uses the rook on f8 behind the opposing queen on f6. If Qxf3, that piece vacates the ray and allows Rxf3, preserving the material gain. This is support for the exchange on f3, not another attack at its eventual payoff.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "xRayAttack",
+            "label": "X-Ray Support",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "evidence": "Bxf3+ uses the rook on f8 behind the opposing queen on f6. If Qxf3, that piece vacates the ray and allows Rxf3, preserving the material gain. This is support for the exchange on f3, not another attack at its eventual payoff.",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxf6 wins the loose queen on f6.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f8f6",
+            "value": 900,
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3a5:held",
+      "fen": "5r1k/6pp/8/Q2b4/8/5R2/8/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1g1",
+            "h7h6",
+            "a5c5",
+            "f8f6",
+            "c5c8",
+            "h8h7",
+            "c8c2",
+            "h7g8",
+            "c2c8",
+            "g8f7",
+            "c8c4",
+            "f7f8"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kg1",
+            "h6",
+            "Qc5",
+            "Rf6",
+            "Qc8+",
+            "Kh7",
+            "Qc2+",
+            "Kg8",
+            "Qc8+",
+            "Kf7",
+            "Qc4+",
+            "Kf8"
+          ],
+          "cp": 19,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3c5:held",
+      "fen": "5r1k/6pp/8/2Qb4/8/5R2/8/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1g1",
+            "f8g8",
+            "c5f5",
+            "f3c6",
+            "f5d3",
+            "c6e8",
+            "d3f5",
+            "e8g6",
+            "f5d7",
+            "h7h6",
+            "d7e6",
+            "h8h7",
+            "e6e2",
+            "g8e8",
+            "e2d1",
+            "e8e5"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kg1",
+            "Rg8",
+            "Qf5",
+            "Bc6",
+            "Qd3",
+            "Be8",
+            "Qf5",
+            "Bg6",
+            "Qd7",
+            "h6",
+            "Qe6",
+            "Kh7",
+            "Qe2",
+            "Re8",
+            "Qd1",
+            "Re5"
+          ],
+          "cp": 27,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3e5:held",
+      "fen": "5r1k/6pp/8/3bQ3/8/5R2/8/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1h2",
+            "f3g4",
+            "e5g5",
+            "g4d1",
+            "g5d5",
+            "d1a4",
+            "d5e4",
+            "a4e8",
+            "e4b4",
+            "f8g8",
+            "b4b7"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kh2",
+            "Bg4",
+            "Qg5",
+            "Bd1",
+            "Qd5",
+            "Ba4",
+            "Qe4",
+            "Be8",
+            "Qb4",
+            "Rg8",
+            "Qb7"
+          ],
+          "cp": 3,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3b4:held",
+      "fen": "5r1k/6pp/8/3b4/1Q6/5R2/8/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1g1",
+            "f8g8",
+            "b4c4",
+            "f3h5",
+            "c4b5",
+            "h5e8",
+            "b5f5",
+            "e8g6",
+            "f5f3"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kg1",
+            "Rg8",
+            "Qc4",
+            "Bh5",
+            "Qb5",
+            "Be8",
+            "Qf5",
+            "Bg6",
+            "Qf3"
+          ],
+          "cp": 5,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3c4:held",
+      "fen": "5r1k/6pp/8/3b4/2Q5/5R2/8/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1h2",
+            "h7h6",
+            "c4a4",
+            "f8f5",
+            "a4d7",
+            "f5e5",
+            "d7a7",
+            "f3c6"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kh2",
+            "h6",
+            "Qa4",
+            "Rf5",
+            "Qd7",
+            "Re5",
+            "Qa7",
+            "Bc6"
+          ],
+          "cp": 2,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3d4:held",
+      "fen": "5r1k/6pp/8/3b4/3Q4/5R2/8/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1h2",
+            "h7h6",
+            "d4d3",
+            "f3c6",
+            "d3b1",
+            "f8f6",
+            "h2g3",
+            "c6f3"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kh2",
+            "h6",
+            "Qd3",
+            "Bc6",
+            "Qb1",
+            "Rf6",
+            "Kg3",
+            "Bf3"
+          ],
+          "cp": 14,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3a3:held",
+      "fen": "5r1k/6pp/8/3b4/8/Q4R2/8/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1h2",
+            "f8f6",
+            "a3d3",
+            "h7h6",
+            "d3d8",
+            "h8h7",
+            "d8d3",
+            "h7h8"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kh2",
+            "Rf6",
+            "Qd3",
+            "h6",
+            "Qd8+",
+            "Kh7",
+            "Qd3+",
+            "Kh8"
+          ],
+          "cp": 0,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3b3:held",
+      "fen": "5r1k/6pp/8/3b4/8/1Q3R2/8/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1h2",
+            "h7h5",
+            "b3a3",
+            "f8f6",
+            "a3a7",
+            "f3g4",
+            "a7b8",
+            "h8h7"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kh2",
+            "h5",
+            "Qa3",
+            "Rf6",
+            "Qa7",
+            "Bg4",
+            "Qb8+",
+            "Kh7"
+          ],
+          "cp": 17,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3d3:held",
+      "fen": "5r1k/6pp/8/3b4/8/3Q1R2/8/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1g1",
+            "f3h5",
+            "g1h2",
+            "h5g6"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kg1",
+            "Bh5",
+            "Kh2",
+            "Bg6"
+          ],
+          "cp": 38,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3e3:held",
+      "fen": "5r1k/6pp/8/3b4/8/4QR2/8/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1h2",
+            "h7h6",
+            "e3e7",
+            "f8b8",
+            "e7e6",
+            "b8b2",
+            "h2g3",
+            "f3b7",
+            "e6e7",
+            "b2b3",
+            "g3h2"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kh2",
+            "h6",
+            "Qe7",
+            "Rb8",
+            "Qe6",
+            "Rb2+",
+            "Kg3",
+            "Bb7",
+            "Qe7",
+            "Rb3+",
+            "Kh2"
+          ],
+          "cp": 3,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3b2:held",
+      "fen": "5r1k/6pp/8/3b4/8/5R2/1Q6/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1g1",
+            "f3d5",
+            "b2e5",
+            "d5g8",
+            "e5e4",
+            "f8b8",
+            "e4c2",
+            "b8a8",
+            "g1f1",
+            "a8f8",
+            "f1e1"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kg1",
+            "Bd5",
+            "Qe5",
+            "Bg8",
+            "Qe4",
+            "Rb8",
+            "Qc2",
+            "Ra8",
+            "Kf1",
+            "Rf8+",
+            "Ke1"
+          ],
+          "cp": 29,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3c2:held",
+      "fen": "5r1k/6pp/8/3b4/8/5R2/2Q5/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1g1",
+            "f3d5",
+            "c2c5",
+            "f8d8",
+            "c5e7",
+            "d8a8",
+            "e7c5",
+            "d5g8",
+            "c5d6",
+            "a8a1",
+            "g1f2",
+            "a1a2",
+            "f2g3",
+            "a2e2",
+            "d6d8"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kg1",
+            "Bd5",
+            "Qc5",
+            "Rd8",
+            "Qe7",
+            "Ra8",
+            "Qc5",
+            "Bg8",
+            "Qd6",
+            "Ra1+",
+            "Kf2",
+            "Ra2+",
+            "Kg3",
+            "Re2",
+            "Qd8"
+          ],
+          "cp": 23,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3d2:held",
+      "fen": "5r1k/6pp/8/3b4/8/5R2/3Q4/7K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1g1",
+            "f8g8",
+            "d2d7",
+            "h7h5",
+            "d7h3",
+            "f3g4",
+            "h3e3",
+            "g8a8",
+            "e3c3",
+            "g4d7"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kg1",
+            "Rg8",
+            "Qd7",
+            "h5",
+            "Qh3",
+            "Bg4",
+            "Qe3",
+            "Ra8",
+            "Qc3",
+            "Bd7"
+          ],
+          "cp": 3,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3a1:held",
+      "fen": "5r1k/6pp/8/3b4/8/5R2/8/Q6K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1h2",
+            "f3d5",
+            "a1a5",
+            "d5g8",
+            "a5e5",
+            "f8f2",
+            "h2g3",
+            "f2f6",
+            "g3g4",
+            "f6g6",
+            "g4f3"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kh2",
+            "Bd5",
+            "Qa5",
+            "Bg8",
+            "Qe5",
+            "Rf2+",
+            "Kg3",
+            "Rf6",
+            "Kg4",
+            "Rg6+",
+            "Kf3"
+          ],
+          "cp": 22,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3c1:held",
+      "fen": "5r1k/6pp/8/3b4/8/5R2/8/2Q4K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1h2",
+            "f8g8"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kh2",
+            "Rg8"
+          ],
+          "cp": 62,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:c3e1:held",
+      "fen": "5r1k/6pp/8/3b4/8/5R2/8/4Q2K b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "h1h2",
+            "f3d5",
+            "e1b4",
+            "f8f2",
+            "h2g3",
+            "f2g2",
+            "g3h3",
+            "g2g6",
+            "h3h2",
+            "d5e6",
+            "b4b8",
+            "e6g8",
+            "h2h3",
+            "g6e6"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kh2",
+            "Bd5",
+            "Qb4",
+            "Rf2+",
+            "Kg3",
+            "Rg2+",
+            "Kh3",
+            "Rg6",
+            "Kh2",
+            "Be6",
+            "Qb8+",
+            "Bg8",
+            "Kh3",
+            "Re6"
+          ],
+          "cp": 1,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:h1g2:held",
+      "fen": "5r1k/6pp/8/3b4/8/2Q2R2/6K1/8 b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "g2g1",
+            "f3d5",
+            "c3c5",
+            "f8d8",
+            "g1h2",
+            "d5g8",
+            "c5b4",
+            "d8d5",
+            "h2g1",
+            "d5f5",
+            "g1h2",
+            "f5f6",
+            "h2g1",
+            "f6h6",
+            "b4c5"
+          ],
+          "pvSan": [
+            "Bxf3+",
+            "Kg1",
+            "Bd5",
+            "Qc5",
+            "Rd8",
+            "Kh2",
+            "Bg8",
+            "Qb4",
+            "Rd5",
+            "Kg1",
+            "Rf5",
+            "Kh2",
+            "Rf6",
+            "Kg1",
+            "Rh6",
+            "Qc5"
+          ],
+          "cp": 28,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3+ wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:h1h2:held",
+      "fen": "5r1k/6pp/8/3b4/8/2Q2R2/7K/8 b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "c3a3",
+            "f8f6",
+            "a3e7",
+            "h7h6",
+            "e7d8",
+            "h8h7",
+            "d8d3",
+            "h7g8",
+            "d3d8",
+            "f6f8",
+            "d8d3",
+            "f3h5",
+            "d3d5",
+            "h5f7",
+            "d5b7"
+          ],
+          "pvSan": [
+            "Bxf3",
+            "Qa3",
+            "Rf6",
+            "Qe7",
+            "h6",
+            "Qd8+",
+            "Kh7",
+            "Qd3+",
+            "Kg8",
+            "Qd8+",
+            "Rf8",
+            "Qd3",
+            "Bh5",
+            "Qd5+",
+            "Bf7",
+            "Qb7"
+          ],
+          "cp": 8,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3 wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3 wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:original:reply:h1g1:held",
+      "fen": "5r1k/6pp/8/3b4/8/2Q2R2/8/6K1 b - - 2 2",
+      "searchMove": "d5f3",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d5f3",
+            "c3a3",
+            "f8f5",
+            "a3c1",
+            "f5f8",
+            "c1a3"
+          ],
+          "pvSan": [
+            "Bxf3",
+            "Qa3",
+            "Rf5",
+            "Qc1",
+            "Rf8",
+            "Qa3"
+          ],
+          "cp": 0,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3 wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf3 wins the loose rook on f3.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d5f3",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:best",
+      "fen": "7k/8/2q2r2/8/8/8/5BPP/5R1K w - - 0 1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f2d4",
+            "c6c4",
+            "d4f6",
+            "h8g8",
+            "f1b1",
+            "c4c5",
+            "b1g1",
+            "g8h7",
+            "f6a1",
+            "c5f2",
+            "h2h3",
+            "h7h6",
+            "a1h8",
+            "h6h7",
+            "h8e5",
+            "f2e3"
+          ],
+          "pvSan": [
+            "Bd4",
+            "Qc4",
+            "Bxf6+",
+            "Kg8",
+            "Rb1",
+            "Qc5",
+            "Rg1",
+            "Kh7",
+            "Ba1",
+            "Qf2",
+            "h3",
+            "Kh6",
+            "Bh8",
+            "Kh7",
+            "Be5",
+            "Qe3"
+          ],
+          "cp": 6,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "h1g1",
+            "c6d6",
+            "f1b1",
+            "h8g8",
+            "f2g3",
+            "d6d4",
+            "g1h1",
+            "f6f7",
+            "h2h3",
+            "g8h7",
+            "h1h2",
+            "d4c3"
+          ],
+          "pvSan": [
+            "Kg1",
+            "Qd6",
+            "Rb1",
+            "Kg8",
+            "Bg3",
+            "Qd4+",
+            "Kh1",
+            "Rf7",
+            "h3",
+            "Kh7",
+            "Kh2",
+            "Qc3"
+          ],
+          "cp": -349,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "h2h3",
+            "c6d6",
+            "h1g1",
+            "d6f4",
+            "g1h1",
+            "h8h7",
+            "h1g1",
+            "f6f7",
+            "f1d1",
+            "f4f2",
+            "g1h1",
+            "f2c2"
+          ],
+          "pvSan": [
+            "h3",
+            "Qd6",
+            "Kg1",
+            "Qf4",
+            "Kh1",
+            "Kh7",
+            "Kg1",
+            "Rf7",
+            "Rd1",
+            "Qxf2+",
+            "Kh1",
+            "Qc2"
+          ],
+          "cp": -412,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f2d4",
+            "value": 500,
+            "verifiedCombination": true,
+            "evidence": "Bd4 pins the rook on f6 to its king on h8. Every legal defence concedes material in the checked continuations, but not always the pinned piece: Qxg2+ permits Kxg2. Captures, compensation and immediate counterplay are included; this is a local material bound, not a full-position evaluation.",
+            "relevance": "primary"
+          },
+          {
+            "id": "discoveredAttack",
+            "label": "Discovered Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f2d4",
+            "evidence": "Bd4 vacates f2, uncovering the rook on f1 against the rook on f6. Every legal reply allows material gain or a short forced mate, including checking answers to countercaptures. Captures and interpositions are included in this check.",
+            "value": 170,
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f2d4",
+            "value": 500,
+            "verifiedCombination": true,
+            "evidence": "Bd4 pins the rook on f6 to its king on h8. Every legal defence concedes material in the checked continuations, but not always the pinned piece: Qxg2+ permits Kxg2. Captures, compensation and immediate counterplay are included; this is a local material bound, not a full-position evaluation.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "discoveredAttack",
+            "label": "Discovered Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f2d4",
+            "evidence": "Bd4 vacates f2, uncovering the rook on f1 against the rook on f6. Every legal reply allows material gain or a short forced mate, including checking answers to countercaptures. Captures and interpositions are included in this check.",
+            "value": 170,
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Pin Payoff",
+            "confidence": "high",
+            "evidence": "Bxf6+ collects the rook on f6, the material payoff of the earlier pin (Bd4). This continues Bd4's pin combination; its exchanges are already included in that lesson's material bound.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "d4f6",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:held",
+      "fen": "7k/8/2q2r2/8/8/8/5BPP/5R1K w - - 0 1",
+      "searchMove": "f2d4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f2d4",
+            "c6c4",
+            "d4f6",
+            "h8h7",
+            "f1g1",
+            "h7g6",
+            "f6e5",
+            "g6h5",
+            "e5g3",
+            "c4d3",
+            "g1c1",
+            "h5h6",
+            "g3f2",
+            "d3e2"
+          ],
+          "pvSan": [
+            "Bd4",
+            "Qc4",
+            "Bxf6+",
+            "Kh7",
+            "Rg1",
+            "Kg6",
+            "Be5",
+            "Kh5",
+            "Bg3",
+            "Qd3",
+            "Rc1",
+            "Kh6",
+            "Bf2",
+            "Qe2"
+          ],
+          "cp": 18,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f2d4",
+            "value": 500,
+            "verifiedCombination": true,
+            "evidence": "Bd4 pins the rook on f6 to its king on h8. Every legal defence concedes material in the checked continuations, but not always the pinned piece: Qxg2+ permits Kxg2. Captures, compensation and immediate counterplay are included; this is a local material bound, not a full-position evaluation.",
+            "relevance": "primary"
+          },
+          {
+            "id": "discoveredAttack",
+            "label": "Discovered Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f2d4",
+            "evidence": "Bd4 vacates f2, uncovering the rook on f1 against the rook on f6. Every legal reply allows material gain or a short forced mate, including checking answers to countercaptures. Captures and interpositions are included in this check.",
+            "value": 170,
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f2d4",
+            "value": 500,
+            "verifiedCombination": true,
+            "evidence": "Bd4 pins the rook on f6 to its king on h8. Every legal defence concedes material in the checked continuations, but not always the pinned piece: Qxg2+ permits Kxg2. Captures, compensation and immediate counterplay are included; this is a local material bound, not a full-position evaluation.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "discoveredAttack",
+            "label": "Discovered Attack",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "f2d4",
+            "evidence": "Bd4 vacates f2, uncovering the rook on f1 against the rook on f6. Every legal reply allows material gain or a short forced mate, including checking answers to countercaptures. Captures and interpositions are included in this check.",
+            "value": 170,
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Pin Payoff",
+            "confidence": "high",
+            "evidence": "Bxf6+ collects the rook on f6, the material payoff of the earlier pin (Bd4). This continues Bd4's pin combination; its exchanges are already included in that lesson's material bound.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "d4f6",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6c1:held",
+      "fen": "7k/8/5r2/8/3B4/8/6PP/2q2R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8h7",
+            "f1c1",
+            "h7h6",
+            "c1c6",
+            "h6h5",
+            "h1g1",
+            "h5h6",
+            "h2h4",
+            "h6h5",
+            "f6d8",
+            "h5g4",
+            "c6c5",
+            "g4g3",
+            "h4h5",
+            "g3f4",
+            "h5h6",
+            "f4g4"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kh7",
+            "Rxc1",
+            "Kh6",
+            "Rc6",
+            "Kh5",
+            "Kg1",
+            "Kh6",
+            "h4",
+            "Kh5",
+            "Bd8",
+            "Kg4",
+            "Rc5",
+            "Kg3",
+            "h5",
+            "Kf4",
+            "h6",
+            "Kg4"
+          ],
+          "cp": 1102,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxc1 wins the loose queen on c1.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f1c1",
+            "value": 900,
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6c2:held",
+      "fen": "7k/8/5r2/8/3B4/8/2q3PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8h7",
+            "f6g5",
+            "c2c5",
+            "h2h4",
+            "c5d4",
+            "f1c1",
+            "d4e5",
+            "c1g1",
+            "e5e4",
+            "g1a1",
+            "e4d4",
+            "a1b1",
+            "d4e5"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kh7",
+            "Bg5",
+            "Qc5",
+            "h4",
+            "Qd4",
+            "Rc1",
+            "Qe5",
+            "Rg1",
+            "Qe4",
+            "Ra1",
+            "Qd4",
+            "Rb1",
+            "Qe5"
+          ],
+          "cp": 0,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6g2:held",
+      "fen": "7k/8/5r2/8/3B4/8/6qP/5R1K w - - 0 2",
+      "searchMove": "h1g2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h1g2",
+            "h8g8",
+            "f1f6",
+            "g8g7",
+            "g2g1",
+            "g7g8",
+            "h2h4",
+            "g8g7",
+            "d4b2",
+            "g7g8",
+            "h4h5",
+            "g8g7"
+          ],
+          "pvSan": [
+            "Kxg2",
+            "Kg8",
+            "Rxf6",
+            "Kg7",
+            "Kg1",
+            "Kg8",
+            "h4",
+            "Kg7",
+            "Bb2",
+            "Kg8",
+            "h5",
+            "Kg7"
+          ],
+          "cp": 627,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "value": 900,
+            "evidence": "Kxg2 wins the loose queen on g2.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h1g2",
+            "relevance": "primary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxf6 wins the loose rook on f6.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f1f6",
+            "value": 500,
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "value": 900,
+            "evidence": "Kxg2 wins the loose queen on g2.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "h1g2",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Rxf6 wins the loose rook on f6.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f1f6",
+            "value": 500,
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6c3:held",
+      "fen": "7k/8/5r2/8/3B4/2q5/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8h7",
+            "f6c3",
+            "h7h6",
+            "f1f8",
+            "h6g5",
+            "h1g1",
+            "g5h6",
+            "f8h8",
+            "h6g6",
+            "h2h4",
+            "g6f5",
+            "c3d4",
+            "f5g4",
+            "d4b6",
+            "g4g3"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kh7",
+            "Bxc3",
+            "Kh6",
+            "Rf8",
+            "Kg5",
+            "Kg1",
+            "Kh6",
+            "Rh8+",
+            "Kg6",
+            "h4",
+            "Kf5",
+            "Bd4",
+            "Kg4",
+            "Bb6",
+            "Kg3"
+          ],
+          "cp": 716,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "Bxf6+ forks the queen on c3 and king on h8. The checked defences retain at least 10.7 pawns of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 1070,
+            "relevance": "primary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "fork",
+            "label": "Fork",
+            "confidence": "high",
+            "evidence": "Bxf6+ forks the queen on c3 and king on h8. The checked defences retain at least 10.7 pawns of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 1070,
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxc3 wins the loose queen on c3.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f6c3",
+            "value": 900,
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6f3:held",
+      "fen": "7k/8/5r2/8/3B4/5q2/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "f3f6",
+            "f1f6",
+            "h8g8",
+            "h2h4",
+            "g8h7",
+            "h1g1",
+            "h7g8",
+            "f6a6",
+            "g8g7",
+            "h4h5",
+            "g7g8",
+            "h5h6",
+            "g8h8",
+            "h6h7",
+            "h8h7",
+            "g1h1",
+            "h7g7",
+            "g2g3",
+            "g7h8"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Qxf6",
+            "Rxf6",
+            "Kg8",
+            "h4",
+            "Kh7",
+            "Kg1",
+            "Kg8",
+            "Ra6",
+            "Kg7",
+            "h5",
+            "Kg8",
+            "h6",
+            "Kh8",
+            "h7",
+            "Kxh7",
+            "Kh1",
+            "Kg7",
+            "g3",
+            "Kh8"
+          ],
+          "cp": 636,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "xRayAttack",
+            "label": "X-Ray Support",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "evidence": "Bxf6+ uses the rook on f1 behind the opposing queen on f3. If Qxf6, that piece vacates the ray and allows Rxf6, preserving the material gain. This is support for the exchange on f6, not another attack at its eventual payoff.",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "xRayAttack",
+            "label": "X-Ray Support",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "evidence": "Bxf6+ uses the rook on f1 behind the opposing queen on f3. If Qxf6, that piece vacates the ray and allows Rxf6, preserving the material gain. This is support for the exchange on f6, not another attack at its eventual payoff.",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Winning Recapture",
+            "confidence": "high",
+            "evidence": "Rxf6 takes the queen on f6 in exchange for the bishop just captured there. After allowing for that trade and immediate counterplay, the checked local gain is at least 5.7 pawns; this is the payoff, not a newly hanging piece.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "f1f6",
+            "value": 570,
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6a4:held",
+      "fen": "7k/8/5r2/8/q2B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8h7",
+            "f1g1",
+            "a4b4",
+            "f6e5",
+            "b4d2",
+            "e5g3",
+            "d2e3",
+            "g1e1",
+            "e3d2"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kh7",
+            "Rg1",
+            "Qb4",
+            "Be5",
+            "Qd2",
+            "Bg3",
+            "Qe3",
+            "Re1",
+            "Qd2"
+          ],
+          "cp": 41,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6c4:held",
+      "fen": "7k/8/5r2/8/2qB4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8h7",
+            "f1g1",
+            "c4f4",
+            "f6a1",
+            "f4f2"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kh7",
+            "Rg1",
+            "Qf4",
+            "Ba1",
+            "Qf2"
+          ],
+          "cp": 77,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6e4:held",
+      "fen": "7k/8/5r2/8/3Bq3/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8h7",
+            "h2h3",
+            "e4c2",
+            "f1a1",
+            "c2f2",
+            "f6e5",
+            "f2e3",
+            "e5d6",
+            "e3d4"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kh7",
+            "h3",
+            "Qc2",
+            "Ra1",
+            "Qf2",
+            "Be5",
+            "Qe3",
+            "Bd6",
+            "Qd4"
+          ],
+          "cp": 4,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6b5:held",
+      "fen": "7k/8/5r2/1q6/3B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8h7",
+            "f1a1",
+            "b5c5",
+            "a1g1",
+            "c5e3",
+            "f6h4",
+            "e3d4",
+            "h4g3",
+            "d4c3",
+            "g1b1",
+            "c3e3",
+            "b1d1",
+            "e3c3"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kh7",
+            "Ra1",
+            "Qc5",
+            "Rg1",
+            "Qe3",
+            "Bh4",
+            "Qd4",
+            "Bg3",
+            "Qc3",
+            "Rb1",
+            "Qe3",
+            "Rd1",
+            "Qc3"
+          ],
+          "cp": 15,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6c5:held",
+      "fen": "7k/8/5r2/2q5/3B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8h7",
+            "h2h3",
+            "h7g6",
+            "f6h4",
+            "c5d4",
+            "h4f2",
+            "d4b2",
+            "h1g1",
+            "b2e2"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kh7",
+            "h3",
+            "Kg6",
+            "Bh4",
+            "Qd4",
+            "Bf2",
+            "Qb2",
+            "Kg1",
+            "Qe2"
+          ],
+          "cp": 8,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6d5:held",
+      "fen": "7k/8/5r2/3q4/3B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8g8",
+            "f1g1",
+            "d5c4",
+            "f6e5",
+            "c4c5",
+            "e5g3",
+            "c5f8",
+            "g3h4",
+            "g8h7",
+            "h2h3",
+            "f8f4"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kg8",
+            "Rg1",
+            "Qc4",
+            "Be5",
+            "Qc5",
+            "Bg3",
+            "Qf8",
+            "Bh4",
+            "Kh7",
+            "h3",
+            "Qf4"
+          ],
+          "cp": 32,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6a6:held",
+      "fen": "7k/8/q4r2/8/3B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8h7",
+            "f1f3",
+            "a6b6",
+            "h2h4",
+            "b6b1",
+            "h1h2",
+            "b1b6",
+            "f6g5",
+            "b6c7",
+            "f3g3"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kh7",
+            "Rf3",
+            "Qb6",
+            "h4",
+            "Qb1+",
+            "Kh2",
+            "Qb6",
+            "Bg5",
+            "Qc7+",
+            "Rg3"
+          ],
+          "cp": 9,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6b6:held",
+      "fen": "7k/8/1q3r2/8/3B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8h7",
+            "h2h4",
+            "b6a6",
+            "f1f3",
+            "a6a2",
+            "f6g5",
+            "a2b1",
+            "h1h2",
+            "b1b8",
+            "h2g1",
+            "b8b6",
+            "g5e3",
+            "b6b1",
+            "f3f1",
+            "b1e4"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kh7",
+            "h4",
+            "Qa6",
+            "Rf3",
+            "Qa2",
+            "Bg5",
+            "Qb1+",
+            "Kh2",
+            "Qb8+",
+            "Kg1",
+            "Qb6+",
+            "Be3",
+            "Qb1+",
+            "Rf1",
+            "Qe4"
+          ],
+          "cp": 1,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6d6:held",
+      "fen": "7k/8/3q1r2/8/3B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8g8",
+            "h2h3",
+            "d6a6",
+            "f1f5",
+            "a6d3",
+            "f5f3",
+            "d3d6",
+            "f6c3",
+            "d6d1",
+            "h1h2",
+            "g8h7"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kg8",
+            "h3",
+            "Qa6",
+            "Rf5",
+            "Qd3",
+            "Rf3",
+            "Qd6",
+            "Bc3",
+            "Qd1+",
+            "Kh2",
+            "Kh7"
+          ],
+          "cp": 7,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6e6:held",
+      "fen": "7k/8/4qr2/8/3B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8h7",
+            "h2h3",
+            "e6e2",
+            "h1g1",
+            "e2e4",
+            "f6a1",
+            "e4e3",
+            "g1h2",
+            "e3e8",
+            "f1f4"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kh7",
+            "h3",
+            "Qe2",
+            "Kg1",
+            "Qe4",
+            "Ba1",
+            "Qe3+",
+            "Kh2",
+            "Qe8",
+            "Rf4"
+          ],
+          "cp": 3,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6b7:held",
+      "fen": "7k/1q6/5r2/8/3B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8h7",
+            "f1g1",
+            "b7b6",
+            "f6e7",
+            "b6h6",
+            "h2h3",
+            "h6b6",
+            "e7h4",
+            "b6d6",
+            "g1e1",
+            "d6f4"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kh7",
+            "Rg1",
+            "Qb6",
+            "Be7",
+            "Qh6",
+            "h3",
+            "Qb6",
+            "Bh4",
+            "Qd6",
+            "Re1",
+            "Qf4"
+          ],
+          "cp": 4,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6c7:held",
+      "fen": "7k/2q5/5r2/8/3B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8h7",
+            "f6g5",
+            "h7g6",
+            "h2h4",
+            "c7e5",
+            "f1f6",
+            "g6g7",
+            "f6b6",
+            "e5a1",
+            "h1h2"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kh7",
+            "Bg5",
+            "Kg6",
+            "h4",
+            "Qe5",
+            "Rf6+",
+            "Kg7",
+            "Rb6",
+            "Qa1+",
+            "Kh2"
+          ],
+          "cp": 2,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6d7:held",
+      "fen": "7k/3q4/5r2/8/3B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8h7",
+            "f1e1",
+            "d7d3",
+            "h2h3",
+            "d3d2",
+            "e1e7",
+            "h7h6",
+            "f6h4",
+            "d2f4"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kh7",
+            "Re1",
+            "Qd3",
+            "h3",
+            "Qd2",
+            "Re7+",
+            "Kh6",
+            "Bh4",
+            "Qf4"
+          ],
+          "cp": 7,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6a8:held",
+      "fen": "q6k/8/5r2/8/3B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8g8",
+            "h2h3",
+            "a8a4",
+            "f6c3",
+            "a4c4",
+            "f1f3",
+            "c4a4",
+            "f3g3",
+            "g8f7"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kg8",
+            "h3",
+            "Qa4",
+            "Bc3",
+            "Qc4",
+            "Rf3",
+            "Qa4",
+            "Rg3+",
+            "Kf7"
+          ],
+          "cp": 13,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6c8:held",
+      "fen": "2q4k/8/5r2/8/3B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8g8",
+            "f6d4",
+            "c8c4",
+            "f1d1",
+            "c4b3",
+            "d1a1"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kg8",
+            "Bd4",
+            "Qc4",
+            "Rd1",
+            "Qb3",
+            "Ra1"
+          ],
+          "cp": 81,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:c6e8:held",
+      "fen": "4q2k/8/5r2/8/3B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "h8g8",
+            "f6d4",
+            "e8a4",
+            "d4e3",
+            "a4c6",
+            "f1f3",
+            "c6c7"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kg8",
+            "Bd4",
+            "Qa4",
+            "Be3",
+            "Qc6",
+            "Rf3",
+            "Qc7"
+          ],
+          "cp": 23,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:h8g7:held",
+      "fen": "8/6k1/2q2r2/8/3B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "g7g6",
+            "h2h4",
+            "c6c4",
+            "f1f3",
+            "c4c1",
+            "h1h2",
+            "c1c7",
+            "h2h3",
+            "c7c8",
+            "g2g4",
+            "c8c6",
+            "h4h5",
+            "g6h7",
+            "h3g3"
+          ],
+          "pvSan": [
+            "Bxf6+",
+            "Kg6",
+            "h4",
+            "Qc4",
+            "Rf3",
+            "Qc1+",
+            "Kh2",
+            "Qc7+",
+            "Kh3",
+            "Qc8+",
+            "g4",
+            "Qc6",
+            "h5+",
+            "Kh7",
+            "Kg3"
+          ],
+          "cp": 3,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6+ wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:h8h7:held",
+      "fen": "8/7k/2q2r2/8/3B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "c6a6",
+            "f1f3",
+            "a6d6",
+            "h2h3",
+            "d6d1",
+            "h1h2",
+            "d1d6",
+            "h2g1",
+            "d6d1",
+            "f3f1",
+            "d1d3",
+            "f6h4",
+            "d3d4",
+            "h4f2",
+            "d4a4",
+            "f1c1"
+          ],
+          "pvSan": [
+            "Bxf6",
+            "Qa6",
+            "Rf3",
+            "Qd6",
+            "h3",
+            "Qd1+",
+            "Kh2",
+            "Qd6+",
+            "Kg1",
+            "Qd1+",
+            "Rf1",
+            "Qd3",
+            "Bh4",
+            "Qd4+",
+            "Bf2",
+            "Qa4",
+            "Rc1"
+          ],
+          "cp": 2,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6 wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6 wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "bishop-rook-battery:reflected:reply:h8g8:held",
+      "fen": "6k1/8/2q2r2/8/3B4/8/6PP/5R1K w - - 2 2",
+      "searchMove": "d4f6",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "d4f6",
+            "c6a6",
+            "h1g1",
+            "a6b6",
+            "g1h1",
+            "b6b5",
+            "h1g1"
+          ],
+          "pvSan": [
+            "Bxf6",
+            "Qa6",
+            "Kg1",
+            "Qb6+",
+            "Kh1",
+            "Qb5",
+            "Kg1"
+          ],
+          "cp": 0,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6 wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Hanging Piece",
+            "confidence": "high",
+            "evidence": "Bxf6 wins the loose rook on f6.",
+            "source": "available",
+            "ply": 1,
+            "moveUci": "d4f6",
+            "value": 500,
+            "relevance": "primary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "no-rook-support:original:best",
+      "fen": "7k/5bpp/8/8/8/2Q2R2/8/7K b - - 0 1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f7d5",
+            "c3c8",
+            "d5g8",
+            "f3f8",
+            "h7h6",
+            "c8e6",
+            "h8h7",
+            "e6g8",
+            "h7g6",
+            "g8f7",
+            "g6g5",
+            "f7g7",
+            "g5h4",
+            "g7h6",
+            "h4g4",
+            "h6f4",
+            "g4h5",
+            "f8f5",
+            "h5g6",
+            "f5g5",
+            "g6h6",
+            "f4h4"
+          ],
+          "pvSan": [
+            "Bd5",
+            "Qc8+",
+            "Bg8",
+            "Rf8",
+            "h6",
+            "Qe6",
+            "Kh7",
+            "Qxg8+",
+            "Kg6",
+            "Qf7+",
+            "Kg5",
+            "Qxg7+",
+            "Kh4",
+            "Qxh6+",
+            "Kg4",
+            "Qf4+",
+            "Kh5",
+            "Rf5+",
+            "Kg6",
+            "Rg5+",
+            "Kh6",
+            "Qh4#"
+          ],
+          "cp": null,
+          "mate": -11
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "f7g8",
+            "f3g3",
+            "g8d5",
+            "h1h2",
+            "d5g8",
+            "c3g7"
+          ],
+          "pvSan": [
+            "Bg8",
+            "Rg3",
+            "Bd5+",
+            "Kh2",
+            "Bg8",
+            "Qxg7#"
+          ],
+          "cp": null,
+          "mate": -3
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "f7b3",
+            "f3f8",
+            "b3g8",
+            "c3c4",
+            "h7h5",
+            "c4g8"
+          ],
+          "pvSan": [
+            "Bb3",
+            "Rf8+",
+            "Bg8",
+            "Qc4",
+            "h5",
+            "Qxg8#"
+          ],
+          "cp": null,
+          "mate": -3
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 4,
+            "moveUci": "f3f8",
+            "value": 330,
+            "evidence": "Rf8 exploits the bishop on g8, pinned to the king on h8 by the rook on f8. No legal reply avoids material loss in the immediate exchange.",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "no-rook-support:original:held",
+      "fen": "7k/5bpp/8/8/8/2Q2R2/8/7K b - - 0 1",
+      "searchMove": "f7d5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f7d5",
+            "c3c8",
+            "d5g8",
+            "f3f8",
+            "h7h6",
+            "f8g8",
+            "h8h7",
+            "g8f8",
+            "h6h5",
+            "f8h8",
+            "h7g6",
+            "c8e6",
+            "g6g5",
+            "h8f8",
+            "g5h4",
+            "e6e4",
+            "h4g5",
+            "e4f4",
+            "g5g6",
+            "f4f5",
+            "g6h6",
+            "f8h8"
+          ],
+          "pvSan": [
+            "Bd5",
+            "Qc8+",
+            "Bg8",
+            "Rf8",
+            "h6",
+            "Rxg8+",
+            "Kh7",
+            "Rf8",
+            "h5",
+            "Rh8+",
+            "Kg6",
+            "Qe6+",
+            "Kg5",
+            "Rf8",
+            "Kh4",
+            "Qe4+",
+            "Kg5",
+            "Qf4+",
+            "Kg6",
+            "Qf5+",
+            "Kh6",
+            "Rh8#"
+          ],
+          "cp": null,
+          "mate": -11
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 4,
+            "moveUci": "f3f8",
+            "value": 330,
+            "evidence": "Rf8 exploits the bishop on g8, pinned to the king on h8 by the rook on f8. No legal reply avoids material loss in the immediate exchange.",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "no-rook-support:reflected:best",
+      "fen": "7k/8/2q2r2/8/8/8/5BPP/7K w - - 0 1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f2d4",
+            "c6c1",
+            "d4g1",
+            "f6f1",
+            "h2h3",
+            "f1g1",
+            "h1h2",
+            "g1h1",
+            "h2g3",
+            "h1f1",
+            "g3h4",
+            "c1h6",
+            "h4g4",
+            "h6f4",
+            "g4h5",
+            "f4g3",
+            "h3h4",
+            "g3g2",
+            "h5h6",
+            "g2g7",
+            "h6h5",
+            "f1f5"
+          ],
+          "pvSan": [
+            "Bd4",
+            "Qc1+",
+            "Bg1",
+            "Rf1",
+            "h3",
+            "Rxg1+",
+            "Kh2",
+            "Rh1+",
+            "Kg3",
+            "Rf1",
+            "Kh4",
+            "Qh6+",
+            "Kg4",
+            "Qf4+",
+            "Kh5",
+            "Qg3",
+            "h4",
+            "Qxg2",
+            "Kh6",
+            "Qg7+",
+            "Kh5",
+            "Rf5#"
+          ],
+          "cp": null,
+          "mate": -11
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "f2g1",
+            "f6f1",
+            "h2h3",
+            "c6b6",
+            "h1h2",
+            "b6g1",
+            "h2g3",
+            "g1f2",
+            "g3g4",
+            "f2g2",
+            "g4h4",
+            "f1f4",
+            "h4h5",
+            "f4f5",
+            "h5h6",
+            "g2g5"
+          ],
+          "pvSan": [
+            "Bg1",
+            "Rf1",
+            "h3",
+            "Qb6",
+            "Kh2",
+            "Qxg1+",
+            "Kg3",
+            "Qf2+",
+            "Kg4",
+            "Qxg2+",
+            "Kh4",
+            "Rf4+",
+            "Kh5",
+            "Rf5+",
+            "Kh6",
+            "Qg5#"
+          ],
+          "cp": null,
+          "mate": -8
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "f2e3",
+            "f6f1",
+            "e3g1",
+            "c6b6",
+            "h2h3",
+            "b6g1"
+          ],
+          "pvSan": [
+            "Be3",
+            "Rf1+",
+            "Bg1",
+            "Qb6",
+            "h3",
+            "Qxg1#"
+          ],
+          "cp": null,
+          "mate": -3
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 4,
+            "moveUci": "f6f1",
+            "value": 330,
+            "evidence": "Rf1 exploits the bishop on g1, pinned to the king on h1 by the rook on f1. No legal reply avoids material loss in the immediate exchange.",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "no-rook-support:reflected:held",
+      "fen": "7k/8/2q2r2/8/8/8/5BPP/7K w - - 0 1",
+      "searchMove": "f2d4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f2d4",
+            "c6c1",
+            "d4g1",
+            "f6f1",
+            "h2h3",
+            "f1g1",
+            "h1h2",
+            "g1f1",
+            "h3h4",
+            "c1f4",
+            "g2g3",
+            "f4f3",
+            "h2h3",
+            "f1h1"
+          ],
+          "pvSan": [
+            "Bd4",
+            "Qc1+",
+            "Bg1",
+            "Rf1",
+            "h3",
+            "Rxg1+",
+            "Kh2",
+            "Rf1",
+            "h4",
+            "Qf4+",
+            "g3",
+            "Qf3",
+            "Kh3",
+            "Rh1#"
+          ],
+          "cp": null,
+          "mate": -7
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "pin",
+            "label": "Pin",
+            "source": "available",
+            "confidence": "high",
+            "ply": 4,
+            "moveUci": "f6f1",
+            "value": 330,
+            "evidence": "Rf1 exploits the bishop on g1, pinned to the king on h1 by the rook on f1. No legal reply avoids material loss in the immediate exchange.",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "king-off-ray:original:best",
+      "fen": "5r1k/5bpp/8/8/8/2Q2R2/7K/8 b - - 0 1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h8g8",
+            "c3c7",
+            "f7e6",
+            "f3f8",
+            "g8f8",
+            "c7f4",
+            "f8g8",
+            "f4e4",
+            "g8f7",
+            "e4h7",
+            "e6g4",
+            "h2g3",
+            "f7f8",
+            "g3g4"
+          ],
+          "pvSan": [
+            "Kg8",
+            "Qc7",
+            "Be6",
+            "Rxf8+",
+            "Kxf8",
+            "Qf4+",
+            "Kg8",
+            "Qe4",
+            "Kf7",
+            "Qxh7",
+            "Bg4",
+            "Kg3",
+            "Kf8",
+            "Kxg4"
+          ],
+          "cp": -394,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "h7h5",
+            "c3a3",
+            "f8e8",
+            "f3f7",
+            "h8g8",
+            "a3b3",
+            "e8e2",
+            "h2h3",
+            "e2e1",
+            "f7b7",
+            "g8h8",
+            "b7b8",
+            "h8h7"
+          ],
+          "pvSan": [
+            "h5",
+            "Qa3",
+            "Re8",
+            "Rxf7",
+            "Kg8",
+            "Qb3",
+            "Re2+",
+            "Kh3",
+            "Re1",
+            "Rb7+",
+            "Kh8",
+            "Rb8+",
+            "Kh7"
+          ],
+          "cp": -508,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "h7h6",
+            "c3a3",
+            "h8g8",
+            "a3e7",
+            "g7g5",
+            "f3f2",
+            "g5g4",
+            "e7f6",
+            "g8h7",
+            "f2b2",
+            "h6h5",
+            "b2b7",
+            "h7g8",
+            "b7d7",
+            "h5h4",
+            "f6g5",
+            "g8h7",
+            "g5h5",
+            "h7g7",
+            "h5g4",
+            "g7f6",
+            "g4h4",
+            "f6g7"
+          ],
+          "pvSan": [
+            "h6",
+            "Qa3",
+            "Kg8",
+            "Qe7",
+            "g5",
+            "Rf2",
+            "g4",
+            "Qf6",
+            "Kh7",
+            "Rb2",
+            "h5",
+            "Rb7",
+            "Kg8",
+            "Rd7",
+            "h4",
+            "Qg5+",
+            "Kh7",
+            "Qh5+",
+            "Kg7",
+            "Qxg4+",
+            "Kf6",
+            "Qxh4+",
+            "Kg7"
+          ],
+          "cp": -541,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "king-off-ray:original:held",
+      "fen": "5r1k/5bpp/8/8/8/2Q2R2/7K/8 b - - 0 1",
+      "searchMove": "f7d5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f7d5",
+            "f3f8",
+            "d5g8",
+            "c3d4",
+            "h7h6",
+            "d4d5",
+            "h8h7",
+            "d5g8",
+            "h7g6",
+            "g8f7",
+            "g6g5",
+            "f7g7",
+            "g5h5",
+            "f8f5",
+            "h5h4",
+            "g7d4"
+          ],
+          "pvSan": [
+            "Bd5",
+            "Rxf8+",
+            "Bg8",
+            "Qd4",
+            "h6",
+            "Qd5",
+            "Kh7",
+            "Qxg8+",
+            "Kg6",
+            "Qf7+",
+            "Kg5",
+            "Qxg7+",
+            "Kh5",
+            "Rf5+",
+            "Kh4",
+            "Qd4#"
+          ],
+          "cp": null,
+          "mate": -8
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "king-off-ray:reflected:best",
+      "fen": "8/7k/2q2r2/8/8/8/5BPP/5R1K w - - 0 1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h1g1",
+            "c6c2",
+            "f2e3",
+            "f6f1",
+            "g1f1",
+            "h7g6",
+            "g2g3",
+            "c2d3",
+            "f1f2",
+            "g6f5"
+          ],
+          "pvSan": [
+            "Kg1",
+            "Qc2",
+            "Be3",
+            "Rxf1+",
+            "Kxf1",
+            "Kg6",
+            "g3",
+            "Qd3+",
+            "Kf2",
+            "Kf5"
+          ],
+          "cp": -366,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "h2h3",
+            "c6b5",
+            "h1g1",
+            "b5e2",
+            "g2g3",
+            "e2f3",
+            "g1h2",
+            "f6f5",
+            "g3g4",
+            "f5f7",
+            "f1g1",
+            "f3f2",
+            "g1g2",
+            "f2f1"
+          ],
+          "pvSan": [
+            "h3",
+            "Qb5",
+            "Kg1",
+            "Qe2",
+            "g3",
+            "Qf3",
+            "Kh2",
+            "Rf5",
+            "g4",
+            "Rf7",
+            "Rg1",
+            "Qxf2+",
+            "Rg2",
+            "Qf1"
+          ],
+          "cp": -506,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "h2h4",
+            "c6c4",
+            "h1g1",
+            "c4e2",
+            "g2g3",
+            "f6f8",
+            "g1g2",
+            "e2f3",
+            "g2g1",
+            "f8f7",
+            "g1h2",
+            "f7b7",
+            "h2h3",
+            "b7b2",
+            "h4h5",
+            "b2e2",
+            "h3h2",
+            "e2f2",
+            "f1f2",
+            "f3f2",
+            "h2h3",
+            "f2f5",
+            "h3h2"
+          ],
+          "pvSan": [
+            "h4",
+            "Qc4",
+            "Kg1",
+            "Qe2",
+            "g3",
+            "Rf8",
+            "Kg2",
+            "Qf3+",
+            "Kg1",
+            "Rf7",
+            "Kh2",
+            "Rb7",
+            "Kh3",
+            "Rb2",
+            "h5",
+            "Re2",
+            "Kh2",
+            "Rxf2+",
+            "Rxf2",
+            "Qxf2+",
+            "Kh3",
+            "Qf5+",
+            "Kh2"
+          ],
+          "cp": -539,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "king-off-ray:reflected:held",
+      "fen": "8/7k/2q2r2/8/8/8/5BPP/5R1K w - - 0 1",
+      "searchMove": "f2d4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f2d4",
+            "f6f1",
+            "d4g1",
+            "c6d5",
+            "h2h3",
+            "d5d4",
+            "h1h2",
+            "d4g1",
+            "h2g3",
+            "g1d4",
+            "h3h4",
+            "d4f4",
+            "g3h3",
+            "f1h1"
+          ],
+          "pvSan": [
+            "Bd4",
+            "Rxf1+",
+            "Bg1",
+            "Qd5",
+            "h3",
+            "Qd4",
+            "Kh2",
+            "Qxg1+",
+            "Kg3",
+            "Qd4",
+            "h4",
+            "Qf4+",
+            "Kh3",
+            "Rh1#"
+          ],
+          "cp": null,
+          "mate": -7
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "capture-the-pinner:original:best",
+      "fen": "5r1k/5bpp/8/2Q5/8/5R2/8/7K b - - 0 1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h8g8",
+            "c5e7",
+            "h7h6",
+            "h1h2",
+            "g7g6",
+            "e7f6",
+            "g8h7",
+            "f3f2",
+            "h7g8",
+            "h2g3",
+            "g8h7",
+            "f2c2",
+            "h7g8",
+            "c2c7",
+            "g6g5",
+            "c7e7",
+            "g5g4",
+            "g3h4",
+            "h6h5",
+            "f6g5",
+            "g8h7"
+          ],
+          "pvSan": [
+            "Kg8",
+            "Qe7",
+            "h6",
+            "Kh2",
+            "g6",
+            "Qf6",
+            "Kh7",
+            "Rf2",
+            "Kg8",
+            "Kg3",
+            "Kh7",
+            "Rc2",
+            "Kg8",
+            "Rc7",
+            "g5",
+            "Re7",
+            "g4",
+            "Kh4",
+            "h5",
+            "Qg5+",
+            "Kh7"
+          ],
+          "cp": -508,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "f8b8",
+            "f3f7",
+            "h8g8",
+            "f7g7",
+            "g8g7",
+            "c5c7",
+            "g7f8",
+            "c7b8",
+            "f8f7",
+            "h1h2"
+          ],
+          "pvSan": [
+            "Rb8",
+            "Rxf7",
+            "Kg8",
+            "Rxg7+",
+            "Kxg7",
+            "Qc7+",
+            "Kf8",
+            "Qxb8+",
+            "Kf7",
+            "Kh2"
+          ],
+          "cp": -645,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "f8d8",
+            "f3f7",
+            "h8g8",
+            "f7g7",
+            "g8g7",
+            "c5e7",
+            "g7g6",
+            "e7d8",
+            "h7h5",
+            "d8d6",
+            "g6f5",
+            "d6d1",
+            "f5e4",
+            "h1h2",
+            "e4e3",
+            "h2g3",
+            "h5h4",
+            "g3h3",
+            "e3f2",
+            "d1b1"
+          ],
+          "pvSan": [
+            "Rd8",
+            "Rxf7",
+            "Kg8",
+            "Rxg7+",
+            "Kxg7",
+            "Qe7+",
+            "Kg6",
+            "Qxd8",
+            "h5",
+            "Qd6+",
+            "Kf5",
+            "Qd1",
+            "Ke4",
+            "Kh2",
+            "Ke3",
+            "Kg3",
+            "h4+",
+            "Kh3",
+            "Kf2",
+            "Qb1"
+          ],
+          "cp": -655,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "capture-the-pinner:original:held",
+      "fen": "5r1k/5bpp/8/2Q5/8/5R2/8/7K b - - 0 1",
+      "searchMove": "f7d5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f7d5",
+            "c5f8",
+            "d5g8",
+            "f3g3",
+            "g7g5",
+            "f8f6"
+          ],
+          "pvSan": [
+            "Bd5",
+            "Qxf8+",
+            "Bg8",
+            "Rg3",
+            "g5",
+            "Qf6#"
+          ],
+          "cp": null,
+          "mate": -3
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "timeline": [
+          {
+            "id": "mateThreat",
+            "label": "Mate Threat",
+            "source": "available",
+            "confidence": "high",
+            "ply": 4,
+            "moveUci": "f3g3",
+            "evidence": "Rg3 threatens Qxg7#. All 4 legal Black replies allow mate on the next move; for example, g5 Qf6#.",
+            "relevance": "secondary",
+            "value": 10000,
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "capture-the-pinner:reflected:best",
+      "fen": "7k/8/5r2/8/2q5/8/5BPP/5R1K w - - 0 1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h1g1",
+            "c4e2",
+            "g2g3",
+            "e2f3",
+            "h2h3",
+            "h8h7",
+            "g1h2",
+            "f6f5",
+            "h3h4",
+            "f5f7",
+            "f1c1",
+            "f3f2",
+            "h2h3",
+            "f2f5",
+            "h3h2",
+            "f5e4",
+            "h2h3",
+            "e4e2",
+            "c1c5",
+            "e2f3",
+            "c5e5",
+            "f3f1",
+            "h3h2"
+          ],
+          "pvSan": [
+            "Kg1",
+            "Qe2",
+            "g3",
+            "Qf3",
+            "h3",
+            "Kh7",
+            "Kh2",
+            "Rf5",
+            "h4",
+            "Rf7",
+            "Rc1",
+            "Qxf2+",
+            "Kh3",
+            "Qf5+",
+            "Kh2",
+            "Qe4",
+            "Kh3",
+            "Qe2",
+            "Rc5",
+            "Qf3",
+            "Re5",
+            "Qf1+",
+            "Kh2"
+          ],
+          "cp": -521,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "f1b1",
+            "f6f2",
+            "h1g1",
+            "c4c5",
+            "b1b5",
+            "f2g2",
+            "g1g2",
+            "c5b5",
+            "g2f3",
+            "h8h7",
+            "f3e4",
+            "h7g6",
+            "e4d4",
+            "g6h5",
+            "d4e4",
+            "b5g5"
+          ],
+          "pvSan": [
+            "Rb1",
+            "Rxf2",
+            "Kg1",
+            "Qc5",
+            "Rb5",
+            "Rxg2+",
+            "Kxg2",
+            "Qxb5",
+            "Kf3",
+            "Kh7",
+            "Ke4",
+            "Kg6",
+            "Kd4",
+            "Kh5",
+            "Ke4",
+            "Qg5"
+          ],
+          "cp": -654,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "f1d1",
+            "f6f2",
+            "h1g1",
+            "f2g2",
+            "g1g2",
+            "c4g4",
+            "g2f2",
+            "g4d1",
+            "f2e3",
+            "h8h7",
+            "e3e4",
+            "d1d8",
+            "e4f5",
+            "d8d6",
+            "h2h4",
+            "d6b8",
+            "f5e6",
+            "h7h6",
+            "e6d5"
+          ],
+          "pvSan": [
+            "Rd1",
+            "Rxf2",
+            "Kg1",
+            "Rxg2+",
+            "Kxg2",
+            "Qg4+",
+            "Kf2",
+            "Qxd1",
+            "Ke3",
+            "Kh7",
+            "Ke4",
+            "Qd8",
+            "Kf5",
+            "Qd6",
+            "h4",
+            "Qb8",
+            "Ke6",
+            "Kh6",
+            "Kd5"
+          ],
+          "cp": -680,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "capture-the-pinner:reflected:held",
+      "fen": "7k/8/5r2/8/2q5/8/5BPP/5R1K w - - 0 1",
+      "searchMove": "f2d4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f2d4",
+            "c4f1",
+            "d4g1",
+            "f1d1",
+            "h2h4",
+            "f6f1",
+            "h1h2",
+            "f1g1",
+            "h2g3",
+            "d1f1",
+            "g3g4",
+            "g1g2",
+            "g4h5",
+            "f1f7",
+            "h5h6",
+            "f7h7"
+          ],
+          "pvSan": [
+            "Bd4",
+            "Qxf1+",
+            "Bg1",
+            "Qd1",
+            "h4",
+            "Rf1",
+            "Kh2",
+            "Rxg1",
+            "Kg3",
+            "Qf1",
+            "Kg4",
+            "Rxg2+",
+            "Kh5",
+            "Qf7+",
+            "Kh6",
+            "Qh7#"
+          ],
+          "cp": null,
+          "mate": -8
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "extra-ray-blocker:original:best",
+      "fen": "5r1k/5bpp/8/8/4P3/2Q2R2/8/7K b - - 0 1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h8g8",
+            "c3c7",
+            "f7e6",
+            "f3f8",
+            "g8f8",
+            "c7d6",
+            "f8f7",
+            "h1h2",
+            "h7h5",
+            "d6b8",
+            "g7g6",
+            "b8a7",
+            "f7f8",
+            "a7f2",
+            "f8g8"
+          ],
+          "pvSan": [
+            "Kg8",
+            "Qc7",
+            "Be6",
+            "Rxf8+",
+            "Kxf8",
+            "Qd6+",
+            "Kf7",
+            "Kh2",
+            "h5",
+            "Qb8",
+            "g6",
+            "Qa7+",
+            "Kf8",
+            "Qf2+",
+            "Kg8"
+          ],
+          "cp": -462,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "h7h6",
+            "c3c7",
+            "h8g8",
+            "c7e7",
+            "g7g6",
+            "f3f2",
+            "g8g7",
+            "h1h2",
+            "g6g5",
+            "e7d6",
+            "g5g4",
+            "f2f5",
+            "f8a8"
+          ],
+          "pvSan": [
+            "h6",
+            "Qc7",
+            "Kg8",
+            "Qe7",
+            "g6",
+            "Rf2",
+            "Kg7",
+            "Kh2",
+            "g5",
+            "Qd6",
+            "g4",
+            "Rf5",
+            "Ra8"
+          ],
+          "cp": -542,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "h7h5",
+            "c3c7",
+            "h8g8",
+            "c7e7",
+            "h5h4",
+            "f3f1",
+            "g7g6",
+            "f1f2",
+            "g8g7",
+            "e7f6",
+            "g7h6",
+            "h1h2",
+            "h4h3",
+            "e4e5",
+            "h6h5",
+            "f6f3",
+            "h5g5"
+          ],
+          "pvSan": [
+            "h5",
+            "Qc7",
+            "Kg8",
+            "Qe7",
+            "h4",
+            "Rf1",
+            "g6",
+            "Rf2",
+            "Kg7",
+            "Qf6+",
+            "Kh6",
+            "Kh2",
+            "h3",
+            "e5",
+            "Kh5",
+            "Qf3+",
+            "Kg5"
+          ],
+          "cp": -570,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "extra-ray-blocker:original:held",
+      "fen": "5r1k/5bpp/8/8/4P3/2Q2R2/8/7K b - - 0 1",
+      "searchMove": "f7d5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f7d5",
+            "f3f8",
+            "d5g8",
+            "c3c4",
+            "h7h6",
+            "c4g8"
+          ],
+          "pvSan": [
+            "Bd5",
+            "Rxf8+",
+            "Bg8",
+            "Qc4",
+            "h6",
+            "Qxg8#"
+          ],
+          "cp": null,
+          "mate": -3
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "extra-ray-blocker:reflected:best",
+      "fen": "7k/8/2q2r2/4p3/8/8/5BPP/5R1K w - - 0 1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h1g1",
+            "c6c2",
+            "f2e3",
+            "f6f1",
+            "g1f1",
+            "c2d3",
+            "f1f2",
+            "d3f5",
+            "f2g1",
+            "f5e4",
+            "g1f2",
+            "h8h7",
+            "e3a7",
+            "e4f4",
+            "f2e2",
+            "f4h2",
+            "e2e1"
+          ],
+          "pvSan": [
+            "Kg1",
+            "Qc2",
+            "Be3",
+            "Rxf1+",
+            "Kxf1",
+            "Qd3+",
+            "Kf2",
+            "Qf5+",
+            "Kg1",
+            "Qe4",
+            "Kf2",
+            "Kh7",
+            "Ba7",
+            "Qf4+",
+            "Ke2",
+            "Qxh2",
+            "Ke1"
+          ],
+          "cp": -456,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "h2h3",
+            "c6c2",
+            "h1g1",
+            "c2e2",
+            "f1c1",
+            "e2f2",
+            "g1h1",
+            "f2f1",
+            "c1f1",
+            "f6f1",
+            "h1h2",
+            "h8g7",
+            "g2g4",
+            "f1f8",
+            "h2h1",
+            "g7g6"
+          ],
+          "pvSan": [
+            "h3",
+            "Qc2",
+            "Kg1",
+            "Qe2",
+            "Rc1",
+            "Qxf2+",
+            "Kh1",
+            "Qf1+",
+            "Rxf1",
+            "Rxf1+",
+            "Kh2",
+            "Kg7",
+            "g4",
+            "Rf8",
+            "Kh1",
+            "Kg6"
+          ],
+          "cp": -528,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "h2h4",
+            "c6c2",
+            "h1g1",
+            "c2e2",
+            "h4h5",
+            "f6f7",
+            "f1c1",
+            "e2f2",
+            "g1h1",
+            "f2h4",
+            "h1g1",
+            "h4d4",
+            "g1h1",
+            "h8h7",
+            "g2g3",
+            "d4e4",
+            "h1h2",
+            "e4e2",
+            "h2h3"
+          ],
+          "pvSan": [
+            "h4",
+            "Qc2",
+            "Kg1",
+            "Qe2",
+            "h5",
+            "Rf7",
+            "Rc1",
+            "Qxf2+",
+            "Kh1",
+            "Qh4+",
+            "Kg1",
+            "Qd4+",
+            "Kh1",
+            "Kh7",
+            "g3",
+            "Qe4+",
+            "Kh2",
+            "Qe2+",
+            "Kh3"
+          ],
+          "cp": -595,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "extra-ray-blocker:reflected:held",
+      "fen": "7k/8/2q2r2/4p3/8/8/5BPP/5R1K w - - 0 1",
+      "searchMove": "f2d4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "f2d4",
+            "f6f1",
+            "d4g1",
+            "c6c1",
+            "h2h3",
+            "f1g1",
+            "h1h2",
+            "g1h1",
+            "h2g3",
+            "c1f4"
+          ],
+          "pvSan": [
+            "Bd4",
+            "Rxf1+",
+            "Bg1",
+            "Qc1",
+            "h3",
+            "Rxg1+",
+            "Kh2",
+            "Rh1+",
+            "Kg3",
+            "Qf4#"
+          ],
+          "cp": null,
+          "mate": -5
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "ordinary-opening-pin:original:best",
+      "fen": "r1bqkbnr/ppp2ppp/2np4/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c2c3",
+            "f8e7",
+            "d1b3",
+            "g8h6",
+            "d2d4",
+            "e8g8",
+            "c1h6",
+            "g7h6",
+            "b1d2",
+            "e7f6",
+            "d4e5",
+            "c6e5",
+            "f3e5",
+            "f6e5",
+            "a2a4",
+            "c7c6"
+          ],
+          "pvSan": [
+            "c3",
+            "Be7",
+            "Qb3",
+            "Nh6",
+            "d4",
+            "O-O",
+            "Bxh6",
+            "gxh6",
+            "Nbd2",
+            "Bf6",
+            "dxe5",
+            "Nxe5",
+            "Nxe5",
+            "Bxe5",
+            "a4",
+            "c6"
+          ],
+          "cp": 59,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "d2d4",
+            "e5d4",
+            "f3d4",
+            "g8f6",
+            "b1c3",
+            "f8e7",
+            "e1g1",
+            "e8g8",
+            "a2a4",
+            "f8e8",
+            "c1f4",
+            "c6d4",
+            "d1d4",
+            "f6g4",
+            "d4d2",
+            "e7f6",
+            "f2f3",
+            "g4e5",
+            "c4e2",
+            "c7c6",
+            "a1d1"
+          ],
+          "pvSan": [
+            "d4",
+            "exd4",
+            "Nxd4",
+            "Nf6",
+            "Nc3",
+            "Be7",
+            "O-O",
+            "O-O",
+            "a4",
+            "Re8",
+            "Bf4",
+            "Nxd4",
+            "Qxd4",
+            "Ng4",
+            "Qd2",
+            "Bf6",
+            "f3",
+            "Ne5",
+            "Be2",
+            "c6",
+            "Rad1"
+          ],
+          "cp": 50,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "b1c3",
+            "f8e7",
+            "d2d4",
+            "e5d4",
+            "f3d4",
+            "g8f6",
+            "e1g1",
+            "e8g8",
+            "a2a4",
+            "f8e8",
+            "a4a5",
+            "h7h6",
+            "c1f4",
+            "e7f8",
+            "f1e1",
+            "c6d4",
+            "d1d4",
+            "c8e6",
+            "c4f1",
+            "c7c6",
+            "e1d1",
+            "d6d5",
+            "e4d5",
+            "f6d5",
+            "a5a6"
+          ],
+          "pvSan": [
+            "Nc3",
+            "Be7",
+            "d4",
+            "exd4",
+            "Nxd4",
+            "Nf6",
+            "O-O",
+            "O-O",
+            "a4",
+            "Re8",
+            "a5",
+            "h6",
+            "Bf4",
+            "Bf8",
+            "Re1",
+            "Nxd4",
+            "Qxd4",
+            "Be6",
+            "Bf1",
+            "c6",
+            "Red1",
+            "d5",
+            "exd5",
+            "Nxd5",
+            "a6"
+          ],
+          "cp": 45,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "ordinary-opening-pin:original:held",
+      "fen": "r1bqkbnr/ppp2ppp/2np4/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 4",
+      "searchMove": "c4b5",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c4b5",
+            "g8e7",
+            "c2c3",
+            "e7g6",
+            "d2d4",
+            "a7a6",
+            "b5a4",
+            "b7b5",
+            "a4b3",
+            "c6a5",
+            "b3c2",
+            "f8e7",
+            "a2a4",
+            "c8d7"
+          ],
+          "pvSan": [
+            "Bb5",
+            "Ne7",
+            "c3",
+            "Ng6",
+            "d4",
+            "a6",
+            "Ba4",
+            "b5",
+            "Bb3",
+            "Na5",
+            "Bc2",
+            "Be7",
+            "a4",
+            "Bd7"
+          ],
+          "cp": 31,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "ordinary-opening-pin:reflected:best",
+      "fen": "rnbqk2r/pppp1ppp/5n2/2b1p3/4P3/2NP4/PPP2PPP/R1BQKBNR b KQkq - 0 4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c7c6",
+            "h2h3",
+            "d7d5",
+            "g1f3",
+            "d8b6",
+            "d1d2",
+            "c5d6",
+            "d2d1",
+            "h7h6",
+            "f1e2",
+            "d5d4",
+            "c3b1",
+            "c8e6",
+            "a2a4",
+            "a7a5",
+            "e1g1",
+            "f6d7"
+          ],
+          "pvSan": [
+            "c6",
+            "h3",
+            "d5",
+            "Nf3",
+            "Qb6",
+            "Qd2",
+            "Bd6",
+            "Qd1",
+            "h6",
+            "Be2",
+            "d4",
+            "Nb1",
+            "Be6",
+            "a4",
+            "a5",
+            "O-O",
+            "Nfd7"
+          ],
+          "cp": 63,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "e8g8",
+            "f1e2",
+            "d7d5",
+            "e4d5",
+            "f6d5",
+            "g1f3",
+            "b8c6",
+            "e1g1",
+            "a7a5",
+            "f1e1",
+            "h7h6",
+            "h2h3",
+            "f8e8",
+            "c3d5",
+            "d8d5",
+            "e2f1",
+            "c8f5",
+            "c2c3"
+          ],
+          "pvSan": [
+            "O-O",
+            "Be2",
+            "d5",
+            "exd5",
+            "Nxd5",
+            "Nf3",
+            "Nc6",
+            "O-O",
+            "a5",
+            "Re1",
+            "h6",
+            "h3",
+            "Re8",
+            "Nxd5",
+            "Qxd5",
+            "Bf1",
+            "Bf5",
+            "c3"
+          ],
+          "cp": 53,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "b8c6",
+            "f1e2",
+            "d7d5",
+            "e4d5",
+            "f6d5",
+            "g1f3",
+            "e8g8",
+            "e1g1",
+            "a7a5",
+            "h2h3",
+            "c8f5",
+            "f1e1",
+            "a5a4",
+            "e2f1",
+            "f8e8",
+            "c3d5"
+          ],
+          "pvSan": [
+            "Nc6",
+            "Be2",
+            "d5",
+            "exd5",
+            "Nxd5",
+            "Nf3",
+            "O-O",
+            "O-O",
+            "a5",
+            "h3",
+            "Bf5",
+            "Re1",
+            "a4",
+            "Bf1",
+            "Re8",
+            "Nxd5"
+          ],
+          "cp": 45,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "ordinary-opening-pin:reflected:held",
+      "fen": "rnbqk2r/pppp1ppp/5n2/2b1p3/4P3/2NP4/PPP2PPP/R1BQKBNR b KQkq - 0 4",
+      "searchMove": "c5b4",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "c5b4",
+            "a2a3",
+            "b4c3",
+            "b2c3",
+            "d7d5",
+            "e4d5",
+            "d8d5",
+            "c3c4",
+            "d5d6",
+            "c1b2",
+            "e8g8",
+            "g1f3",
+            "f8e8",
+            "f1e2",
+            "b8c6",
+            "e1g1"
+          ],
+          "pvSan": [
+            "Bb4",
+            "a3",
+            "Bxc3+",
+            "bxc3",
+            "d5",
+            "exd5",
+            "Qxd5",
+            "c4",
+            "Qd6",
+            "Bb2",
+            "O-O",
+            "Nf3",
+            "Re8",
+            "Be2",
+            "Nc6",
+            "O-O"
+          ],
+          "cp": 26,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "review:false:played",
+      "fen": "5r1k/5bpp/8/8/8/2Q2R2/8/7K b - - 0 1",
+      "searchMove": "h8g8",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h8g8",
+            "h1h2",
+            "f8e8",
+            "f3f4",
+            "f7g6",
+            "f4b4",
+            "h7h6",
+            "h2g3",
+            "e8e4",
+            "b4b8",
+            "e4e8"
+          ],
+          "pvSan": [
+            "Kg8",
+            "Kh2",
+            "Re8",
+            "Rf4",
+            "Bg6",
+            "Rb4",
+            "h6",
+            "Kg3",
+            "Re4",
+            "Rb8+",
+            "Re8"
+          ],
+          "cp": -342,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "review:false:after",
+      "fen": "5rk1/5bpp/8/8/8/2Q2R2/8/7K w - - 1 2",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h1h2",
+            "f8e8",
+            "f3g3",
+            "f7g6",
+            "g3e3",
+            "e8e3",
+            "c3e3",
+            "g6f7",
+            "e3e1",
+            "h7h6",
+            "e1e7",
+            "f7c4",
+            "e7d7",
+            "g8h8"
+          ],
+          "pvSan": [
+            "Kh2",
+            "Re8",
+            "Rg3",
+            "Bg6",
+            "Re3",
+            "Rxe3",
+            "Qxe3",
+            "Bf7",
+            "Qe1",
+            "h6",
+            "Qe7",
+            "Bc4",
+            "Qd7",
+            "Kh8"
+          ],
+          "cp": 359,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "c3d4",
+            "f8e8",
+            "h1h2",
+            "e8e2",
+            "h2g1",
+            "e2e8",
+            "f3f2",
+            "h7h6",
+            "d4g4",
+            "e8e6",
+            "g4f5",
+            "e6g6",
+            "g1h2",
+            "g6f6",
+            "f5c8",
+            "g8h7",
+            "f2f6",
+            "g7f6",
+            "c8c2",
+            "h7g7",
+            "c2g2",
+            "g7h7",
+            "g2e2"
+          ],
+          "pvSan": [
+            "Qd4",
+            "Re8",
+            "Kh2",
+            "Re2+",
+            "Kg1",
+            "Re8",
+            "Rf2",
+            "h6",
+            "Qg4",
+            "Re6",
+            "Qf5",
+            "Rg6+",
+            "Kh2",
+            "Rf6",
+            "Qc8+",
+            "Kh7",
+            "Rxf6",
+            "gxf6",
+            "Qc2+",
+            "Kg7",
+            "Qg2+",
+            "Kh7",
+            "Qe2"
+          ],
+          "cp": 352,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "h1g1",
+            "f8e8",
+            "f3f2",
+            "f7g6",
+            "c3c4",
+            "g8h8",
+            "g1h2",
+            "e8d8",
+            "c4b4",
+            "h8g8",
+            "b4b6",
+            "d8e8",
+            "b6b5",
+            "h7h6",
+            "b5b6",
+            "g8h7",
+            "f2g2",
+            "g6f7",
+            "b6b1",
+            "h7h8"
+          ],
+          "pvSan": [
+            "Kg1",
+            "Re8",
+            "Rf2",
+            "Bg6",
+            "Qc4+",
+            "Kh8",
+            "Kh2",
+            "Rd8",
+            "Qb4",
+            "Kg8",
+            "Qb6",
+            "Re8",
+            "Qb5",
+            "h6",
+            "Qb6",
+            "Kh7",
+            "Rg2",
+            "Bf7",
+            "Qb1+",
+            "Kh8"
+          ],
+          "cp": 343,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "review:true:played",
+      "fen": "7k/8/2q2r2/8/8/8/5BPP/5R1K w - - 0 1",
+      "searchMove": "h1g1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h1g1",
+            "h8h7",
+            "f1e1",
+            "f6f7",
+            "f2d4",
+            "c6c4",
+            "d4b6",
+            "c4b4",
+            "b6f2",
+            "b4d2",
+            "f2g3",
+            "d2d4",
+            "g1h1",
+            "d4c5",
+            "e1b1",
+            "c5c4",
+            "h1g1",
+            "c4e2",
+            "b1e1",
+            "e2d2",
+            "e1b1",
+            "d2d4",
+            "g1h1"
+          ],
+          "pvSan": [
+            "Kg1",
+            "Kh7",
+            "Re1",
+            "Rf7",
+            "Bd4",
+            "Qc4",
+            "Bb6",
+            "Qb4",
+            "Bf2",
+            "Qd2",
+            "Bg3",
+            "Qd4+",
+            "Kh1",
+            "Qc5",
+            "Rb1",
+            "Qc4",
+            "Kg1",
+            "Qe2",
+            "Re1",
+            "Qd2",
+            "Rb1",
+            "Qd4+",
+            "Kh1"
+          ],
+          "cp": -381,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    },
+    {
+      "id": "review:true:after",
+      "fen": "7k/8/2q2r2/8/8/8/5BPP/5RK1 b - - 1 1",
+      "lines": [
+        {
+          "depth": 16,
+          "multipv": 1,
+          "pvUci": [
+            "h8h7",
+            "f2e3",
+            "f6f1",
+            "g1f1",
+            "c6c4",
+            "f1f2",
+            "h7g6",
+            "f2f3"
+          ],
+          "pvSan": [
+            "Kh7",
+            "Be3",
+            "Rxf1+",
+            "Kxf1",
+            "Qc4+",
+            "Kf2",
+            "Kg6",
+            "Kf3"
+          ],
+          "cp": 382,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 2,
+          "pvUci": [
+            "c6d5",
+            "f2e3",
+            "f6f1",
+            "g1f1",
+            "d5e4",
+            "f1f2",
+            "h8h7",
+            "h2h3",
+            "h7g6",
+            "g2g4",
+            "g6f7",
+            "e3a7",
+            "f7g8",
+            "f2g3"
+          ],
+          "pvSan": [
+            "Qd5",
+            "Be3",
+            "Rxf1+",
+            "Kxf1",
+            "Qe4",
+            "Kf2",
+            "Kh7",
+            "h3",
+            "Kg6",
+            "g4",
+            "Kf7",
+            "Ba7",
+            "Kg8",
+            "Kg3"
+          ],
+          "cp": 371,
+          "mate": null
+        },
+        {
+          "depth": 16,
+          "multipv": 3,
+          "pvUci": [
+            "c6c4",
+            "f1e1",
+            "h8h7",
+            "e1e7",
+            "h7g6",
+            "e7e1",
+            "c4b4",
+            "h2h3",
+            "b4c3",
+            "e1e4",
+            "c3c1",
+            "f2e1",
+            "f6f7",
+            "g1h2"
+          ],
+          "pvSan": [
+            "Qc4",
+            "Re1",
+            "Kh7",
+            "Re7+",
+            "Kg6",
+            "Re1",
+            "Qb4",
+            "h3",
+            "Qc3",
+            "Re4",
+            "Qc1+",
+            "Be1",
+            "Rf7",
+            "Kh2"
+          ],
+          "cp": 353,
+          "mate": null
+        }
+      ],
+      "result": {
+        "motifs": [],
+        "motifClassifierVersion": "site-55.adapter-157"
+      }
+    }
+  ]
+}

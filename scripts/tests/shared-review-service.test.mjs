@@ -20,9 +20,43 @@ import { capturingMixedForkFen, capturingMixedForkLine } from "../../src/utils/t
 import { mixedForkCaptureDefenceFen } from "../../src/utils/tests/fixtures/mixedForkCaptureDefence.ts";
 import { defensiveDeflectionFen } from "../../src/utils/tests/fixtures/defensiveDeflection.ts";
 import { forkRayClearanceCases } from "../../src/utils/tests/fixtures/forkRayClearance.ts";
+import { connectedPinCase } from "../../src/utils/tests/fixtures/connectedPin.ts";
 import { reflectMixedForkFen, reflectMixedForkMove } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("a missed saving pin is preserved by generated shared review in both colours", async()=>{
+  for(const reflected of [false,true]) {
+    const root=await mkdtemp(join(tmpdir(),"en-shared-review-connected-pin-"));
+    const fen=reflected?reflectMixedForkFen(connectedPinCase.fen):connectedPinCase.fen;
+    const flip=move=>reflected?reflectMixedForkMove(move):move;
+    const position=Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
+    assert.ok(position.isLegal(parseUci(flip("h8g8"))));position.play(parseUci(flip("h8g8")));
+    const after=makeFen(position.toSetup());
+    const options={root,documentsRoot:join(root,"documents"),engineConfigPath:join(root,"engine.json"),fetchGames:async()=>[],lookup:async key=>{
+      assert.ok(key===fen||key===after);
+      return {depth:16,pvs:key===fen?[{cp:0,moves:flip(connectedPinCase.move)}]:[{cp:reflected?-382:359,moves:flip("h1h2")}]};
+    }};
+    let service;
+    try {
+      await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+      await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,url:`https://example.test/connected-pin-${reflected}`,
+        pgn:`[White "${reflected?"Tester":"Opponent"}"]\n[Black "${reflected?"Opponent":"Tester"}"]\n[Date "2026.09.17"]\n[SetUp "1"]\n[FEN "${fen}"]\n[Result "${reflected?"0-1":"1-0"}"]\n\n${reflected?"1. Kg1":"1... Kg8"} ${reflected?"0-1":"1-0"}`}]}));
+      service=new SharedReviewService(options);await service.initialize(false);await service.run();
+      assert.equal(service.snapshot().error,null);
+      const card=service.snapshot().cards[0];assert.ok(card);
+      assert.equal(card.tacticalClassification.missedMotifs[0].id,"pin");
+      assert.equal(card.tacticalClassification.missedMotifs[0].value,500);
+      assert.match(card.explanation,/pin/i);
+      service.close();service=new SharedReviewService(options);await service.initialize(false);
+      assert.deepEqual(service.snapshot().cards[0].tacticalClassification,JSON.parse(JSON.stringify(card.tacticalClassification)));
+    } finally {
+      service?.close();const target=resolve(root);
+      assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-connected-pin-"));
+      await rm(target,{recursive:true,force:true});
+    }
+  }
+});
 
 test("a missed fork-ray preparation survives shared review beneath the larger queen loss",async()=>{
   for(const reflected of [false,true]) {

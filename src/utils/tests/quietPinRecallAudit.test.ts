@@ -6,6 +6,7 @@ import { expect, test } from "vitest";
 import {
     proveCaptureDeflection,
     proveCaptureForkPreparation,
+    proveConnectedPin,
     replayTacticalLine,
     tacticalCaptureGain,
     tacticalExchangeGain,
@@ -107,6 +108,11 @@ test.skipIf(
                 pvUci: [root.uci],
                 rootCp: row.before[0].cp,
             }),
+            connectedPin: (() => {
+                const failures: string[] = [];
+                const proof = proveConnectedPin(root, 32768, (reason) => failures.push(reason));
+                return { proof, failures };
+            })(),
             branches,
             unresolved: unresolved.map((b) => b.reply),
             continuations,
@@ -130,3 +136,40 @@ test.skipIf(
     },
     60000,
 );
+
+// Inspect the mechanisms available after the difficult replies, separately
+// from the original pin. A theme in this report does not prove that root.
+test.skipIf(
+    !process.env.TACTICAL_PIN_CONTINUATION_INPUT || !process.env.TACTICAL_PIN_CONTINUATION_REPORT,
+)("inspect connected answers to the quiet pin's exceptional replies", async () => {
+    const { privateReportPath } = await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
+    const output = privateReportPath(process.env.TACTICAL_PIN_CONTINUATION_REPORT!);
+    expect(existsSync(output)).toBe(false);
+    const input = JSON.parse(readFileSync(process.env.TACTICAL_PIN_CONTINUATION_INPUT!, "utf8"));
+    const searches = input.searches.filter((s: any) => s.id.includes(":reply:") && s.id.endsWith(":best"));
+    expect(searches.length).toBeGreaterThan(0);
+    const results = searches.map((search: any) => {
+        const first = search.lines[0];
+        const root = replayTacticalLine(search.fen, first.pvUci)[0];
+        expect(root).toBeDefined();
+        const candidates = [...root.before.allDests()].flatMap(([from, dests]) => [...dests].map((to) => ({ from, to })));
+        expect(candidates.some((m) => root.before.board.get(m.from)?.role === "pawn" && (m.to < 8 || m.to >= 56))).toBe(false);
+        return {
+            id: search.id, fen: search.fen,
+            supplied: search.lines.map((line: any) => ({
+                move: line.pvSan[0], cp: line.cp,
+                result: classifyPositionTacticalMotifs({ fen: search.fen, pvUci: line.pvUci, rootCp: line.cp }),
+            })),
+            immediate: candidates.map((move) => ({
+                move: makeUci(move), san: makeSan(root.before, move),
+                result: classifyPositionTacticalMotifs({ fen: search.fen, pvUci: [makeUci(move)] }),
+            })).filter((r) => r.result.motifs.length > 0),
+        };
+    });
+    writeFileSync(output, JSON.stringify({ scope: "Private branch diagnostic, not an original-root proof.", results }, null, 2), { flag: "wx" });
+    console.log(JSON.stringify(results.map((r: any) => ({
+        id: r.id,
+        supplied: r.supplied.map((s: any) => ({ move: s.move, motifs: s.result.motifs, evidence: s.result.evidence })),
+        immediate: r.immediate.map((s: any) => ({ move: s.san, motifs: s.result.motifs })),
+    }))));
+}, 120000);

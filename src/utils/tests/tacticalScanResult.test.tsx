@@ -27,6 +27,7 @@ import { makeFen } from "chessops/fen";
 import { captureLiabilityInput } from "./fixtures/captureLiabilityRecovery";
 import { discoveryRecaptureInput } from "./fixtures/discoveryRecapture";
 import { forkRayClearanceCases } from "./fixtures/forkRayClearance";
+import { connectedPinCase } from "./fixtures/connectedPin";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 import {
   buildLiveTacticalScan,
@@ -52,6 +53,16 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a connected pin is visible with its current ray and qualified material explanation", () => {
+  const value = buildLiveTacticalScan({fen:connectedPinCase.fen,pvUci:[connectedPinCase.move],depth:16,engineName:"Constructed pin"});
+  const element=document.createElement("div");element.innerHTML=markup(value);
+  expect(element.textContent).toContain("Pin found");
+  expect(element.textContent).toContain("not always the pinned piece");
+  expect(element.textContent).not.toContain("No tactical theme verified");
+  expect(value.arrows.map(a=>a.from+a.to)).toEqual(["f7d5","d5h1"]);
+  expect(value.labels[0]).toMatchObject({text:"Pin",square:"f3"});
+});
 
 test("ray preparation explains the blocker without drawing the future fork", () => {
   const row = forkRayClearanceCases[0];

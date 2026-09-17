@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs";
+import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -742,6 +743,27 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("standalone connected captures s
         expect(result.scan.motifs.some(m=>m.evidence.includes("with a counterattack on"))).toBe(false);
     }
 },30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_CONNECTED_PIN_AUDIT_INPUT)("connected pins and quiet controls survive the actual compiled controller", async()=>{
+    const input = JSON.parse(readFileSync(process.env.TACTICAL_CONNECTED_PIN_AUDIT_INPUT!,"utf8"));
+    const cases = [];
+    for (const row of input.cases) {
+        const request = {fen:row.fen,pvUci:[row.move],depth:16,engineName:"Recorded pin input"};
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,request);
+        expect(result.scan).toEqual(buildLiveTacticalScan(request));
+        expect(result.scan.motifs.some(m=>m.id==="pin")).toBe(row.expected);
+        if (row.expected) assert.ok(result.scan.arrows.some(a=>a.role!=="trigger"));
+        const baseline = process.env.TACTICAL_CONNECTED_PIN_BASELINE_WORKER && row.expected
+            ? await runBuiltWorker(process.env.TACTICAL_CONNECTED_PIN_BASELINE_WORKER,request) : undefined;
+        if (baseline && row.id.startsWith("owner-quiet-pin"))
+            assert.equal(baseline.scan.motifs.some(m=>m.id==="pin"), false);
+        cases.push({id:row.id,...result,...(baseline?{baseline}:{})});
+    }
+    if(process.env.TACTICAL_CONNECTED_PIN_WORKER_REPORT) {
+        const {privateReportPath}=await import("../../../scripts/benchmarks/private-pgn-sample.mjs");
+        writeFileSync(privateReportPath(process.env.TACTICAL_CONNECTED_PIN_WORKER_REPORT),JSON.stringify({cases},null,2),{flag:"wx"});
+    }
+},60000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_FORK_RAY_AUDIT_INPUT)("fork-ray preparation and contrary controls survive the actual compiled controller", async()=>{
     const input = JSON.parse(readFileSync(process.env.TACTICAL_FORK_RAY_AUDIT_INPUT!,"utf8"));
