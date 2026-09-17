@@ -80,7 +80,8 @@ for filename in sys.argv[1:]:
     with open(filename, encoding="utf-8") as source:
         report = json.load(source)
     for row in report["cases"]:
-        attempt = next((a for a in row["attempts"] if a["branches"]), None)
+        attempt = ({**row["threat"], "depth": 2} if row.get("threat") else
+                   next((a for a in row.get("attempts", []) if a["branches"]), None))
         if not attempt:
             continue
         result = verify(row, attempt)
@@ -89,7 +90,9 @@ for filename in sys.argv[1:]:
             broken = copy.deepcopy(attempt)
             branches = broken["branches"]
             if nested:
-                branches = next(b["branches"] for b in branches if b.get("branches"))
+                branches = next((b["branches"] for b in branches if b.get("branches")), None)
+                if branches is None:
+                    continue
             branches.pop()
             try:
                 verify(row, broken)

@@ -1,7 +1,9 @@
 # Checking defences before promotion: real-game recall audit
 
-This follows adapter 158 / pipeline 165. **Production classification is
-unchanged.** The packaged immediate-promotion improvement is recorded in
+This preserves the diagnostic milestone at adapter 158 / pipeline 165; production
+classification was unchanged at that milestone. The subsequent
+`checking-promotion-review.md` records its adapter-159 integration and validation.
+The packaged immediate-promotion improvement is recorded in
 `promotion-threat-review.md` and `docs/TACTICAL_DESKTOP_DELIVERY.md`.
 
 ## What was actually missing

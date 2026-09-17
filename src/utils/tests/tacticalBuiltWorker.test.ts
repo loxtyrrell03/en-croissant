@@ -18,6 +18,7 @@ import { independentPawnHistoryInput } from "./fixtures/independentPawnHistory";
 import { captureMateCases } from "./fixtures/captureMate";
 import { immediatePromotionCases } from "./fixtures/immediatePromotion";
 import { promotionThreatCases } from "./fixtures/promotionThreat";
+import { checkingPromotionThreatCases } from "./fixtures/checkingPromotionThreat";
 import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "./fixtures/promotionCheckRetention";
 import { pawnExposureInput, pawnExposureAlternateInput } from "./fixtures/pawnExposure";
 import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
@@ -130,6 +131,18 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
         vi.unstubAllGlobals();
     }
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("checking promotion preparations survive the actual worker",async()=>{
+    for(const row of checkingPromotionThreatCases)for(const reflected of[false,true]){
+        const fen=reflected?reflectMixedForkFen(row.fen):row.fen;
+        const move=reflected?reflectMixedForkMove(row.move):row.move;
+        const input={fen,pvUci:[move],depth:16,engineName:"Constructed"};
+        const result=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.find(m=>m.id==="promotionThreat")?.value??null).toBe(row.gain);
+        expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+    }
+});
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("connected fork countercaptures retain their exact production timeline", async () => {
     for (const row of forkCountercaptureCases) for (const reflected of [false,true]) {

@@ -45,7 +45,7 @@ test.each(cases)("$id: immediate promotion threats need every legal defence", (r
         const replay = replayTacticalLine(row.fen, [
             row.move,
             branch.replyUci,
-            branch.promotionUci,
+            branch.promotionUci!,
         ]);
         expect(replay).toHaveLength(3);
         expect(makeFen(replay[2].before.toSetup())).toBe(branch.fen);
@@ -245,7 +245,7 @@ test.skipIf(!process.env.TACTICAL_PAWN_PUSH_PROBES)(
 );
 
 test.skipIf(!process.env.TACTICAL_PAWN_PUSH_REPLAY)(
-    "owner promotion threat is recovered without claiming a forced promotion through check",
+    "owner promotion threats include checked preparations without claiming next-move promotion",
     () => {
         const replay = JSON.parse(readFileSync(process.env.TACTICAL_PAWN_PUSH_REPLAY!, "utf8"));
         const row = replay.results.find((r: any) => r.id === "recall:169988038936:ply91");
@@ -262,7 +262,7 @@ test.skipIf(!process.env.TACTICAL_PAWN_PUSH_REPLAY)(
         const delayed = replay.results.find((r: any) => r.id === "recall:169988038936:ply71");
         expect(
             provePromotionThreat(replayTacticalLine(delayed.fen, delayed.before[0].pvUci)[0]),
-        ).toBeNull();
+        ).toMatchObject({gain: 380});
         const fork = replay.results.find((r: any) => r.id === "recall:172652599758:ply22");
         const forkResult = classifyPositionTacticalMotifs({fen:fork.fen,pvUci:fork.before[0].pvUci});
         expect(forkResult.motifs[0]?.id).toBe("fork");

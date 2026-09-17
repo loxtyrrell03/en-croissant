@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { expect, test } from "vitest";
 import { TacticalLineExplanation } from "@/components/panels/tactics/TacticalLineExplanation";
 import { classifyPositionTacticalMotifs, classifyMistakeReviewMotifs } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
-import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
+import { replayTacticalLine, provePromotionThreat, promotionThreatContinuations } from "@/utils/tacticalMotifs/causalTactics";
 import { trappedRookFen, trappedRookLine } from "./fixtures/trapRelevance";
 import { counterplayFen, counterplayLine } from "./fixtures/tacticalCounterplay";
 import { interferenceExamples } from "./fixtures/interferenceRelevance";
@@ -20,6 +20,20 @@ import { captureExchangeRetentionInput } from "./fixtures/captureExchangeRetenti
 import { independentPawnHistoryInput } from "./fixtures/independentPawnHistory";
 import { capturingMixedForkFen, capturingMixedForkLine } from "./fixtures/capturingMixedTargetFork";
 import { promotionThreatCases } from "./fixtures/promotionThreat";
+import { checkingPromotionThreatFen } from "./fixtures/checkingPromotionThreat";
+
+test("promotion after two checking defences renders on the actual seventh ply",()=>{
+  const fen=checkingPromotionThreatFen;
+  const proof=provePromotionThreat(replayTacticalLine(fen,["h3h2"])[0])!;
+  const path=promotionThreatContinuations(proof).find(path=>path.length===6)!;
+  const line=["h3h2",...path], steps=replayTacticalLine(fen,line);
+  const result=classifyPositionTacticalMotifs({fen,pvUci:line});
+  const container=document.createElement("div");
+  container.innerHTML=renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={steps.map(s=>s.san)} motifs={result.timeline??[]}/></MantineProvider>);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Promotion Threat");
+  expect(container.querySelector('[data-tactical-ply="7"]')?.textContent).toContain("Promotion Payoff");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent??"").not.toContain("Promotion Payoff");
+});
 
 test("promotion threat and payoff render on their own plies without duplicate profit",()=>{
   const result=classifyPositionTacticalMotifs({fen:promotionThreatCases[0].fen,pvUci:["f6f7","a8b7","f7f8q"]});

@@ -23,6 +23,7 @@ import { forkExchangeRetentionInput } from "./fixtures/forkExchangeRetention";
 import { captureMateFen, captureMateLine } from "./fixtures/captureMate";
 import { immediatePromotionCases } from "./fixtures/immediatePromotion";
 import { promotionThreatCases } from "./fixtures/promotionThreat";
+import { checkingPromotionThreatFen } from "./fixtures/checkingPromotionThreat";
 import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "./fixtures/promotionCheckRetention";
 import { makeFen } from "chessops/fen";
 import { captureLiabilityInput } from "./fixtures/captureLiabilityRecovery";
@@ -54,6 +55,16 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a checked promotion preparation renders without claiming next-move queening",()=>{
+  const value=buildLiveTacticalScan({fen:checkingPromotionThreatFen,pvUci:["h3h2"],depth:16,engineName:"Constructed"});
+  const element=document.createElement("div");element.innerHTML=markup(value);
+  expect(element.textContent).toContain("Promotion Threat found");
+  expect(element.textContent).toContain("including legal answers to checking defences");
+  expect(element.textContent).toContain("not a guaranteed next-move promotion");
+  expect(value.arrows.map(a=>a.from+a.to)).toEqual(["h3h2","h2h1"]);
+  expect(value.labels).toHaveLength(1);
+});
 
 test("a promotion threat renders the pawn route without future queen attacks", () => {
   const value = buildLiveTacticalScan({fen:promotionThreatCases[0].fen,pvUci:["f6f7"],depth:16,engineName:"Constructed promotion threat"});

@@ -16,6 +16,7 @@ import { forkCountercaptureFen, forkCountercaptureLine } from "../../src/utils/t
 import { captureMateFen } from "../../src/utils/tests/fixtures/captureMate.ts";
 import { missedPromotionFen } from "../../src/utils/tests/fixtures/immediatePromotion.ts";
 import { missedPromotionThreatFen } from "../../src/utils/tests/fixtures/promotionThreat.ts";
+import { checkingPromotionThreatFen } from "../../src/utils/tests/fixtures/checkingPromotionThreat.ts";
 import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "../../src/utils/tests/fixtures/promotionCheckRetention.ts";
 import { capturingMixedForkFen, capturingMixedForkLine } from "../../src/utils/tests/fixtures/capturingMixedTargetFork.ts";
 import { mixedForkCaptureDefenceFen } from "../../src/utils/tests/fixtures/mixedForkCaptureDefence.ts";
@@ -25,6 +26,43 @@ import { connectedPinCase } from "../../src/utils/tests/fixtures/connectedPin.ts
 import { reflectMixedForkFen, reflectMixedForkMove } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("missed checked promotions remain secondary to a lost rook through generated review and reload",async()=>{
+  for(const reflected of[false,true]){
+    const root=await mkdtemp(join(tmpdir(),"en-shared-review-checked-promotion-"));
+    const fen=reflected?reflectMixedForkFen(checkingPromotionThreatFen):checkingPromotionThreatFen;
+    const flip=move=>reflected?reflectMixedForkMove(move):move;
+    const pos=Chess.fromSetup(parseFen(fen).unwrap()).unwrap();pos.play(parseUci(flip("e1a1")));
+    const after=makeFen(pos.toSetup());
+    const options={root,documentsRoot:join(root,"documents"),engineConfigPath:join(root,"engine.json"),
+      fetchGames:async()=>[],lookup:async requested=>{
+        assert.ok(requested===fen||requested===after);
+        // Deliberately controlled White-relative scores test service plumbing.
+        // Fresh engine audits separately check the actual chess decisions.
+        return{depth:16,pvs:requested===fen?[{cp:reflected?600:-600,moves:flip("h3h2")}]
+          :[{cp:reflected?-400:400,moves:flip("a7a1")}]};
+      }};
+    let service;
+    try{
+      await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+      await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,
+        url:`https://example.test/checked-promotion-${reflected}`,
+        pgn:`[White "${reflected?"Tester":"Opponent"}"]\n[Black "${reflected?"Opponent":"Tester"}"]\n[Date "2026.09.17"]\n[SetUp "1"]\n[FEN "${fen}"]\n[Result "${reflected?"0-1":"1-0"}"]\n\n${reflected?"1. Ra8":"1... Ra1"} ${reflected?"0-1":"1-0"}`}]}));
+      service=new SharedReviewService(options);await service.initialize(false);await service.run();
+      assert.equal(service.snapshot().error,null);
+      const card=service.snapshot().cards[0];assert.ok(card);
+      assert.ok(card.tacticalClassification.missedMotifs.some(m=>m.id==="promotionThreat"&&m.value===400));
+      assert.equal(card.tacticalClassification.allowedMotifs[0].id,"hangingPiece");
+      assert.match(card.explanation,/Promotion Threat/);
+      service.close();service=new SharedReviewService(options);await service.initialize(false);
+      assert.deepEqual(service.snapshot().cards[0].tacticalClassification,JSON.parse(JSON.stringify(card.tacticalClassification)));
+    }finally{
+      service?.close();const target=resolve(root);
+      assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-checked-promotion-"));
+      await rm(target,{recursive:true,force:true});
+    }
+  }
+});
 
 test("missed promotion threats survive generated review and saved reload in both colours", async () => {
   for (const reflected of [false, true]) {

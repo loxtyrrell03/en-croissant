@@ -29,6 +29,7 @@ import {
     tacticalCaptureGain,
     proveImmediatePromotion,
     provePromotionThreat,
+    promotionThreatContinuations,
     proveDefensiveDeflection,
     provePerpetualCheck,
     proveAlternativeCaptureCause,
@@ -140,7 +141,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 158;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 159;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -1017,9 +1018,14 @@ export function buildTacticalTimeline(
     tablebaseEvidence?: TablebaseEvidence | null,
 ) {
     const promotionThreat = rootMotifs.some(motif => motif.id === "promotionThreat" && motif.ply === 1);
-    // This certificate connects only the next promotion. Do not append a
-    // queen's distant engine-PV attacks to the original pawn-push lesson.
-    const fullReplay = replayTacticalLine(fen, line).slice(0, promotionThreat ? 3 : undefined);
+    const replayed = replayTacticalLine(fen, line);
+    const promotionProof = promotionThreat && replayed[0] ? provePromotionThreat(replayed[0]) : null;
+    // Extend only through an actual certificate-matching checking path. Other
+    // engine king moves/preparations cannot borrow this tree's later payoff.
+    const promotionEnd = promotionProof ? Math.max(3, ...promotionThreatContinuations(promotionProof)
+        .filter(path => path.every((move,index) => replayed[index + 1]?.uci === move))
+        .map(path => path.length + 1)) : 3;
+    const fullReplay = replayed.slice(0, promotionThreat ? promotionEnd : undefined);
     // Winning a newly exposed pawn proves that capture, not every later
     // combination in an engine continuation. Keep its lesson at the root;
     // later boards can be scanned independently when actually reached.

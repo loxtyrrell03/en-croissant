@@ -102,7 +102,7 @@ const THEME_PRIORITY = [
 ];
 
 const THEME_DESCRIPTIONS: Record<string, string> = {
-    promotionThreat: "The pawn threatens promotion next move; every legal defence still permits a verified material-retaining promotion.",
+    promotionThreat: "The pawn threatens promotion; the verified continuations retain material even after legal checking defences.",
     defensiveDeflection: "A checking offer drives the king away from guarding a piece that threatens perpetual check, allowing that piece to be removed.",
     drawingCapture: "Capturing the last mating material saves a draw; the other legal moves lose.",
     perpetualCheck:
@@ -158,7 +158,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 165;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 166;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 export const LIVE_TACTICAL_EXTRA_CANDIDATES = 2;
 
