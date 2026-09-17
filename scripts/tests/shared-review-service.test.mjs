@@ -12,8 +12,44 @@ import { checkingForkCaptureFen } from "../../src/utils/tests/fixtures/checkingF
 import { shortMatingThreatCases } from "../../src/utils/tests/fixtures/shortMatingThreat.ts";
 import { matingCheckEvasionFen, matingCheckEvasionLine } from "../../src/utils/tests/fixtures/matingCheckEvasion.ts";
 import { kingDefenderRemovalCases } from "../../src/utils/tests/fixtures/kingDefenderRemoval.ts";
+import { forkCountercaptureFen, forkCountercaptureLine } from "../../src/utils/tests/fixtures/forkCountercapture.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("connected fork countercaptures survive generated review and saved deck reload", async () => {
+  const root = await mkdtemp(join(tmpdir(), "en-shared-review-fork-collection-"));
+  const fen = forkCountercaptureFen;
+  const position = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
+  position.play(parseUci("e5g4"));
+  const after = makeFen(position.toSetup());
+  const options = {root, documentsRoot: join(root, "documents"), engineConfigPath: join(root, "engine.json"),
+    fetchGames: async () => [], lookup: async requested => {
+      assert.ok(requested === fen || requested === after);
+      // Synthetic scores exercise service integration, not move-strength validation.
+      return {depth:16,pvs:requested===fen ? [{cp:400,moves:forkCountercaptureLine.join(" ")}]
+        : [{cp:0,moves:"e7e6"}]};
+    }};
+  let service;
+  try {
+    await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+    await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,
+      url:"https://example.test/fork-collection",pgn:`[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.16"]\n[SetUp "1"]\n[FEN "${fen}"]\n[Result "1/2-1/2"]\n\n1. Ng4 1/2-1/2`}]}));
+    service=new SharedReviewService(options); await service.initialize(false); await service.run();
+    assert.equal(service.snapshot().error,null);
+    const card=service.snapshot().cards[0]; assert.ok(card);
+    assert.equal(card.tacticalClassification.missedMotifs[0].id,"fork");
+    assert.match(card.explanation,/connected follow-up/);
+    const payoff=card.tacticalClassification.missedTimeline.find(m=>m.label==="Fork Countercapture");
+    assert.ok(payoff); assert.equal(payoff.ply,5); assert.equal(payoff.value,undefined);
+    service.close(); service=new SharedReviewService(options); await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification,JSON.parse(JSON.stringify(card.tacticalClassification)));
+    assert.equal((await service.deck()).positions[0].reason,card.explanation);
+  } finally {
+    service?.close(); const target=resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-fork-collection-"));
+    await rm(target,{recursive:true,force:true});
+  }
+});
 
 test("king-safe defender removal survives generated mistake review, storage and reload", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-king-removal-"));

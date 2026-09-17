@@ -17,6 +17,7 @@ import { settledRootExchangeCases } from "./fixtures/settledRootExchange";
 import { captureMatingGuardCases } from "./fixtures/captureMatingGuard";
 import { immediateAlternativeInputs } from "./fixtures/immediateTacticalAlternative";
 import { kingDefenderRemovalCases } from "./fixtures/kingDefenderRemoval";
+import { forkCountercaptureFen, forkCountercaptureLine } from "./fixtures/forkCountercapture";
 import {
   buildLiveTacticalScan,
   previewLiveTacticalVariation,
@@ -41,6 +42,20 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a connected fork shows its current rook targets without two extra queen-win badges", () => {
+  const value=buildLiveTacticalScan({fen:forkCountercaptureFen,pvUci:forkCountercaptureLine,
+    depth:16,engineName:"Constructed fork collection"});
+  const element=document.createElement("div"); element.innerHTML=markup(value);
+  expect(element.textContent).toContain("Fork found");
+  expect(element.textContent).toContain("connected follow-up");
+  expect(element.textContent).not.toContain("No tactical theme verified");
+  expect(value.arrows.map(a=>a.from+a.to)).toEqual(["e5f7","f7d8","f7h8"]);
+  expect(value.arrows.every(a=>a.ply===1)).toBe(true);
+  expect(value.variations[0].timeline).toContainEqual(expect.objectContaining({
+    label:"Fork Countercapture",ply:5,value:undefined,
+  }));
+});
 
 test("a king-safe defender removal explains legality and draws its current relationships", () => {
   const row = kingDefenderRemovalCases[0];

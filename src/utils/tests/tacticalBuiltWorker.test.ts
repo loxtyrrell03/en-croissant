@@ -32,6 +32,7 @@ import { settledRootExchangeCases } from "./fixtures/settledRootExchange";
 import { captureMatingGuardCases } from "./fixtures/captureMatingGuard";
 import { immediateAlternativeInputs } from "./fixtures/immediateTacticalAlternative";
 import { kingDefenderRemovalCases } from "./fixtures/kingDefenderRemoval";
+import { forkCountercaptureCases } from "./fixtures/forkCountercapture";
 import { discoveredPinPriorityFen, discoveredPinPriorityLine, discoveredPinPriorityControls } from "./fixtures/discoveredPinPriority";
 import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "./fixtures/checkingPawnFollowup";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
@@ -119,6 +120,20 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
         vi.unstubAllGlobals();
     }
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("connected fork countercaptures retain their exact production timeline", async () => {
+    for (const row of forkCountercaptureCases) for (const reflected of [false,true]) {
+        const input = {fen:reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci:reflected ? row.pvUci.map(reflectMixedForkMove) : row.pvUci,
+            depth:16,engineName:"Constructed fork collection"};
+        const result=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.some(m=>m.id==="fork")).toBe(row.fork);
+        expect(!row.fork || result.scan.arrows.every(a=>a.ply===1)).toBe(true);
+        expect(row.id!=="countercapture" || result.scan.variations[0].timeline.some(
+            m=>m.label==="Fork Countercapture"&&m.ply===5&&m.value===undefined)).toBe(true);
+    }
+});
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("king-safe defender removals survive the production controller", async () => {
     for (const row of kingDefenderRemovalCases) for (const reflected of [false, true]) {

@@ -14,6 +14,19 @@ import { promotionCounterplayBase, promotionCounterplayEngineLine } from "./fixt
 import { directMaterialPayoffCases } from "./fixtures/directMaterialPayoff";
 import { discoveredPinPriorityFen, discoveredPinPriorityLine } from "./fixtures/discoveredPinPriority";
 import { settledPawnHistoryCases } from "./fixtures/settledPawnHistory";
+import { forkCountercaptureFen, forkCountercaptureLine } from "./fixtures/forkCountercapture";
+
+test("the fork's queen exchange is secondary compensation on the actual plies",()=>{
+  const result=classifyPositionTacticalMotifs({fen:forkCountercaptureFen,pvUci:forkCountercaptureLine});
+  const container=document.createElement("div");
+  container.innerHTML=renderToStaticMarkup(<MantineProvider><TacticalLineExplanation
+    moves={replayTacticalLine(forkCountercaptureFen,forkCountercaptureLine).map(s=>s.san)} motifs={result.timeline??[]} /></MantineProvider>);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Fork");
+  expect(container.querySelector('[data-tactical-ply="4"]')?.textContent).toContain("Countercapture");
+  expect(container.querySelector('[data-tactical-ply="5"]')?.textContent).toContain("Fork Countercapture");
+  expect(container.textContent).not.toContain("Material Gain");
+  expect(container.querySelector("details")?.hasAttribute("open")).toBe(false);
+});
 
 test("a later pawn opportunity does not display the historical knight trade as its payoff", () => {
   const row = settledPawnHistoryCases[0];

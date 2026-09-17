@@ -5706,7 +5706,7 @@ export function proveCheckingForkPreparation(
 type ImmediateForkProof = {
     gain: number;
     targets: Square[];
-    branches: { replyUci: string; captureUci?: string; gain: number }[];
+    branches: { replyUci: string; captureUci?: string; gain: number; collection?: MaterialRecoveryLeaf[] }[];
 };
 const immediateForkCache = new Map<string, ImmediateForkProof | null>();
 
@@ -5714,19 +5714,21 @@ const immediateForkCache = new Map<string, ImmediateForkProof | null>();
  * accumulated elsewhere in a PV. Selected captures must also survive an
  * immediate mating reply and off-square material liabilities. This is still
  * local, not whole-position evaluation. */
-export function proveImmediateFork(step: TacticalReplayStep): ImmediateForkProof | null {
+export function proveImmediateFork(step: TacticalReplayStep,
+    diagnostic?: (reason: string, replyUci?: string, remaining?: number) => void): ImmediateForkProof | null {
     const key = `${makeFen(step.before.toSetup())}:${step.uci}:${step.capture}`;
-    if (immediateForkCache.has(key)) return immediateForkCache.get(key)!;
+    if (!diagnostic && immediateForkCache.has(key)) return immediateForkCache.get(key)!;
     let proof: ImmediateForkProof | null = null;
-    try { proof = computeImmediateFork(step); }
-    catch { /* Exhaustion cannot certify a material payoff. */ }
+    try { proof = computeImmediateFork(step, diagnostic); }
+    catch { diagnostic?.("exhausted"); /* Exhaustion cannot certify a material payoff. */ }
     immediateForkCache.set(key, proof);
     if (immediateForkCache.size > 256)
         immediateForkCache.delete(immediateForkCache.keys().next().value!);
     return proof;
 }
 
-function computeImmediateFork(step: TacticalReplayStep): ImmediateForkProof | null {
+function computeImmediateFork(step: TacticalReplayStep,
+    diagnostic?: (reason: string, replyUci?: string, remaining?: number) => void): ImmediateForkProof | null {
     const side = step.before.turn;
     const promotionCredit = step.move.promotion ? VALUE[step.move.promotion] - VALUE.pawn : 0;
     const targets = winningTargets(step.after, step.move.to, side);
@@ -5786,7 +5788,10 @@ function computeImmediateFork(step: TacticalReplayStep): ImmediateForkProof | nu
             branches.push(strongest);
             continue;
         }
-        if (next.board.get(step.move.to)?.color !== side || next.isCheck()) return null;
+        if (next.board.get(step.move.to)?.color !== side || next.isCheck()) {
+            diagnostic?.("forker-captured-or-check",makeUci(reply),budget.nodes);
+            return null;
+        }
         let strongest: ImmediateForkProof["branches"][number] | null = null;
         const captures = legalMoves(next).filter(move => move.from === step.move.to && capturedValue(next, move));
         for (const target of new Set([...targets, reply.to])) {
@@ -5798,19 +5803,48 @@ function computeImmediateFork(step: TacticalReplayStep): ImmediateForkProof | nu
             // collecting a victim. A promotion-less synthetic move is illegal
             // and used to discard otherwise verified forks entirely.
             for (const capture of captures.filter(move => move.to === target)) {
-                const retained = captureBound(next, capture);
+                let retained = captureBound(next, capture);
+                let collection: MaterialRecoveryLeaf[] | undefined;
+                // Collecting a fork victim can itself attack another piece.
+                // A countercapture of an ally is not a complete refutation if
+                // that newly attacked piece can be collected in return. Prove
+                // every reply to the collection; never borrow a later PV gain.
+                const minimum = Math.max(MIN_TACTICAL_CAPTURE_GAIN,
+                    100 - step.capture + Math.max(0, replyGain));
+                if (retained === null || retained < minimum) {
+                    const after = next.clone();
+                    after.play(capture);
+                    const previousAttacks = attacks(next.board.get(capture.from)!, capture.from, next.board.occupied);
+                    const followTargets = winningTargets(after, capture.to, side)
+                        .filter(square => after.board.get(square)?.role !== "king" && !previousAttacks.has(square));
+                    if (followTargets.length && !capture.promotion && !after.isEnd()) {
+                        const leaves: MaterialRecoveryLeaf[] = [];
+                        const collected = proveDefenderCombination({before:next,after,move:capture,
+                            uci:makeUci(capture),san:makeSan(next,capture),capture:capturedValue(next,capture),balance:0},
+                            followTargets,[capture.to],4096,budget,1,true,minimum,leaf=>leaves.push(leaf),true);
+                        if (collected !== null && collected >= minimum && (retained === null || collected > retained)) {
+                            retained = collected;
+                            collection = leaves;
+                        }
+                    }
+                }
                 if (retained === null) continue;
                 const captureGain = step.capture - Math.max(0, replyGain) + retained;
                 const gain = captureGain + promotionCredit;
                 // Keep the established capture threshold: promotion value alone
                 // does not turn an otherwise unprofitable geometry into a fork.
                 if (captureGain >= 100 && (!strongest || gain > strongest.gain))
-                    strongest = { replyUci: makeUci(reply), captureUci: makeUci(capture), gain };
+                    strongest = { replyUci: makeUci(reply), captureUci: makeUci(capture), gain,
+                        ...(collection ? {collection} : {}) };
             }
         }
-        if (!strongest) return null;
+        if (!strongest) {
+            diagnostic?.("unproved-collection",makeUci(reply),budget.nodes);
+            return null;
+        }
         branches.push(strongest);
     }
+    diagnostic?.("proved",undefined,budget.nodes);
     return { gain: Math.min(...branches.map(branch => branch.gain)), targets, branches };
 }
 
@@ -9220,6 +9254,7 @@ type MaterialRecoveryLeaf = {
     balance: number;
     gain: number;
     quiet: boolean;
+    counterchecks?: { fen: string; moveUci: string }[];
     matingReplies?: MatingLiability[];
 };
 
@@ -9420,6 +9455,7 @@ export function proveDefenderCombination(
     allPiecesAtLeaf = false,
     minimumGain = 90,
     onLeaf?: (leaf: MaterialRecoveryLeaf) => void,
+    verifyCounterchecks = false,
 ): number | null {
     if (
         !Number.isSafeInteger(nodeLimit) ||
@@ -9430,7 +9466,7 @@ export function proveDefenderCombination(
         evasionLimit < 0
     )
         return null;
-    const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}:${evasionLimit}:${allPiecesAtLeaf}:${minimumGain}`;
+    const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}:${evasionLimit}:${allPiecesAtLeaf}:${minimumGain}:${verifyCounterchecks}`;
     if (!onLeaf && !sharedBudget && nodeLimit === 4096 && defenderCombinationCache.has(key))
         return defenderCombinationCache.get(key)!;
     const side = step.before.turn;
@@ -9461,7 +9497,8 @@ export function proveDefenderCombination(
                 !capturedValue(pos, move)
             )
                 continue;
-            const gain = participantCaptureGain(
+            const counterchecks: { fen: string; moveUci: string }[] = [];
+            const gain = verifyCounterchecks ? preparationCaptureGain(pos, move, budget, undefined, counterchecks) : participantCaptureGain(
                 pos,
                 move,
                 allPiecesAtLeaf ? [...pos.board[side], move.to] : pieces,
@@ -9481,6 +9518,7 @@ export function proveDefenderCombination(
                         balance,
                         gain: best,
                         quiet: false,
+                        ...(counterchecks.length ? {counterchecks} : {}),
                     });
                     return best;
                 }
@@ -9494,7 +9532,8 @@ export function proveDefenderCombination(
         if (retained && balance >= minimumGain && !pos.isCheck()) {
             for (const move of moves(pos)) {
                 if (capturedValue(pos, move) || move.promotion) continue;
-                const gain = participantCaptureGain(
+                const counterchecks: { fen: string; moveUci: string }[] = [];
+                const gain = verifyCounterchecks ? preparationCaptureGain(pos, move, budget, undefined, counterchecks) : participantCaptureGain(
                     pos,
                     move,
                     allPiecesAtLeaf ? [...pos.board[side], move.to] : pieces,
@@ -9511,6 +9550,7 @@ export function proveDefenderCombination(
                         balance,
                         gain: balance + gain,
                         quiet: true,
+                        ...(counterchecks.length ? {counterchecks} : {}),
                     });
                     return balance + gain;
                 }
@@ -12969,6 +13009,12 @@ export function auditTacticalMotifs(
             sound = verifiedFork(step);
             const immediate = sound ? proveImmediateFork(step) : null;
             if (immediate) proposal = { ...proposal, value: immediate.gain };
+            const collection = immediate?.branches.find(branch => branch.collection?.length);
+            if (immediate && collection?.captureUci) {
+                const line = replayTacticalLine(makeFen(step.after.toSetup()), [collection.replyUci, collection.captureUci]);
+                proposal = { ...proposal, verifiedCombination: true,
+                    evidence: `${step.san} forks the ${immediate.targets.map(square => `${step.after.board.get(square)!.role} on ${makeSquare(square)}`).join(" and ")}. After ${line[0].san}, ${line[1].san} collects a target and creates a connected follow-up attack. Countercaptures of an ally are included, rather than treating that ally as simply lost. Every legal defence retains a local material gain after compensation; this is not the full-position evaluation.` };
+            }
             const mating = sound && !immediateFork(step) ? proveMateBackedFork(step) : null;
             // This proof borrows a mating continuation to rescue the fork.
             // If the initiating move already has an independent all-defence
@@ -13894,7 +13940,35 @@ export function normalizeContinuingTactics(
     const normalized = motifs
         .filter((motif) => !suppressed.has(motif))
         .map((motif) => replacements.get(motif) ?? motif);
-    return normalizeDirectMaterialPayoffs(steps, normalized);
+    return normalizeForkCollectionPayoffs(steps, normalizeDirectMaterialPayoffs(steps, normalized));
+}
+
+/** The countercapture that preserves a fork is compensation within that
+ * combination, not two newly hanging queens. Only the exact certified branch
+ * and leaf may relabel those actual moves; another rook capture cannot borrow it. */
+function normalizeForkCollectionPayoffs(steps: TacticalReplayStep[], motifs: TacticalMotifEvidence[]) {
+    const replacements = new Map<number, { label: string; evidence: string }>();
+    for (const motif of motifs) {
+        if (motif.id !== "fork" || !motif.ply) continue;
+        const start = motif.ply - 1;
+        const root = steps[start], reply = steps[start + 1], capture = steps[start + 2];
+        const counter = steps[start + 3], recovery = steps[start + 4];
+        if (!root || !reply || !capture || !counter?.capture || !recovery?.capture) continue;
+        const branch = proveImmediateFork(root)?.branches.find(candidate =>
+            candidate.replyUci === reply.uci && candidate.captureUci === capture.uci);
+        const leaf = branch?.collection?.find(candidate => !candidate.quiet &&
+            candidate.fen === makeFen(recovery.before.toSetup()) && candidate.moveUci === recovery.uci);
+        if (!leaf || leaf.balance !== capture.capture - counter.capture) continue;
+        replacements.set(start + 4, {label:"Countercapture",
+            evidence:`${counter.san} takes material during the fork's connected exchange; ${recovery.san} answers it. This is compensation within the combination, not an independent material win.`});
+        replacements.set(start + 5, {label:"Fork Countercapture",
+            evidence:`${recovery.san} answers ${counter.san}, preserving the material gain from ${root.san}. The exchanged material is already included in the fork's value.`});
+    }
+    return motifs.map(motif => {
+        const replacement = motif.ply && replacements.get(motif.ply);
+        return replacement && motif.id === "hangingPiece" && motif.relevance !== "primary"
+            ? {...motif,...replacement,value:undefined} : motif;
+    });
 }
 
 /** A verified attack and its next-turn capture are one mechanism, not two
@@ -13931,6 +14005,10 @@ function normalizeDirectMaterialPayoffs(
             if (previous.id === "fork") {
                 label = "Fork Payoff";
                 if (!verifiedFork(first)) return [];
+                const immediate = proveImmediateFork(first);
+                if (immediate?.branches.some(branch => branch.collection?.length) &&
+                    !immediate.branches.some(branch => branch.replyUci === reply.uci && branch.captureUci === capture.uci))
+                    return [];
                 pairs.push(...winningTargets(first.after, first.move.to, first.before.turn)
                     .map(target => ({ from: first.move.to, target })));
             } else if (DISCOVERED_THEMES.has(previous.id)) {
@@ -14599,11 +14677,19 @@ export function compareImmediateTacticalDefence(
             const originalFork = proveImmediateFork(step);
             const choiceCredit = actual[0].capture + (actual[0].move.promotion
                 ? VALUE[actual[0].move.promotion] - VALUE.pawn : 0);
+            const extendedCollection = originalFork?.branches.some(branch => branch.collection?.length);
             const captureDefence = originalFork && originalFork.gain - choiceCredit >= VALUE.pawn &&
-                proveCheckingForkCaptureDefence(alternative);
+                (extendedCollection ? proveForkCaptureDefence(alternative) : proveCheckingForkCaptureDefence(alternative));
             if (captureDefence) {
                 return { ...motif, comparison: "prevented" as const,
                     comparisonEvidence: `After ${bestSan}, ${captureDefence.defence} answers ${alternative.san} and captures the forking ${alternative.after.board.get(alternative.move.to)!.role}. Including the fork's initial capture, legal recaptures, immediate losses elsewhere and one countercheck response, the defender retains a net material gain. This stops this immediate fork, not every possible later attack.` };
+            }
+            if (extendedCollection) {
+                const other = proveImmediateFork(alternative);
+                return other && other.targets.join(",") === originalFork!.targets.join(",") && other.gain >= originalFork!.gain
+                    ? { ...motif, comparison: "persists" as const,
+                        comparisonEvidence: `The same fork remains after ${bestSan}, including its connected countercapture continuations and at least the same local material bound.` }
+                    : motif;
             }
             // A quiet repair/mating-support certificate is not an immediate
             // exchange. Do not infer prevention from a failed short capture
@@ -14692,10 +14778,19 @@ export function compareImmediateTacticalDefence(
 export function proveCheckingForkCaptureDefence(
     root: TacticalReplayStep,
     nodeLimit = 4096,
+): ReturnType<typeof proveForkCaptureDefence> {
+    return root?.after.isCheck() ? proveForkCaptureDefence(root,nodeLimit) : null;
+}
+
+/** A quiet fork may have the same concrete capture defence. This does not
+ * refute a longer combination merely because its short exchange proof fails. */
+export function proveForkCaptureDefence(
+    root: TacticalReplayStep,
+    nodeLimit = 4096,
 ): { defence: string; defenceUci: string; gain: number; visits: number;
     decisions: { fen: string; moveUci: string }[] } | null {
     if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 ||
-        root.move.promotion || !root.after.isCheck() || root.after.isEnd()) return null;
+        root.move.promotion || root.after.isEnd()) return null;
     const forker = root.after.board.get(root.move.to);
     if (!forker || forker.color !== root.before.turn || forker.role === "king" ||
         winningTargets(root.after, root.move.to, root.before.turn).length < 2) return null;
