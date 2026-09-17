@@ -95,7 +95,29 @@ Private receipts use the `connected-pin157-` prefix under
 `Documents/OnCrescent Tactical Benchmarks/`. `decisions-final2`,
 `engine-final` plus `engine-supplement`, `owner-final`, `private`, `rare` and
 `tests-final2` dated `20260917` are authoritative over earlier drafts.
-Compiled-worker and clean desktop delivery evidence is recorded below once
-complete. Owner stores and phone services are not changed or automatically
+Compiled-worker and clean desktop delivery evidence is recorded below.
+Owner stores and phone services are not changed or automatically
 rescanned. Broader quiet/long combination recall, the known queen-ending
 promotion miss and primary-theme accuracy remain open.
+
+## Compiled controller and desktop handoff
+
+All **2,143 current compiled-controller inputs** pass: 808 public cases,
+sixteen pin/contrary-control inputs and all 1,319 owner contexts. Six retained
+adapter-156 comparisons include the original owner pin and its reflection,
+which lacked the recovered label. All 808 public primary lists remain unchanged.
+The owner replay compares both the frozen final source results and fresh
+classification, including full history and the changed alternative timelines.
+
+Public computation/transfer median/p95/max is **43/222/1,218 ms**; owner timings
+are **103/457/2,204 ms**. Startup maxima are 38/46 ms respectively. Engine search,
+development HTTP startup and native UI are excluded. This is not an isolated
+performance experiment or a native-startup reliability guarantee.
+
+Source `d482389e` is the committed clean desktop-build input. Its worker is
+byte-identical to the tested primary-checkout artifact. Clean TypeScript, the
+81 focused source/React checks (four conditional skips), 32 generated-service
+checks (one optional engine skip), 43-module review build and 8,863-module
+frontend build pass. Generated service differences are source-region comments
+only; the route tree differs only by line endings. Native delivery identities,
+backup and final status belong in `docs/TACTICAL_DESKTOP_DELIVERY.md`.

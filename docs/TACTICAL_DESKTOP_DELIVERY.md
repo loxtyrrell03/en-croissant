@@ -1,6 +1,46 @@
 # Tactical desktop delivery — 2026-09-17
 
-## Current package: adapter 156 / live pipeline 163
+## Current package: adapter 157 / live pipeline 164
+
+Source `d482389e` is packaged from clean detached checkout
+`en-tactical-desktop-d482389e`. The original owner ...Bb4 quiet pin now has
+connected answers to all 37 legal defences. The queen loss stays the primary
+mistake, with the missed pin secondary; two alternative timelines also gain
+more precise pin/payoff explanations. See
+`benchmarks/tactical-relevance/connected-pin-review.md` for chess evidence,
+contrary controls, finite proof bounds and unchanged-result scope.
+
+All 2,143 current compiled-controller inputs pass: 808 public, sixteen new
+pin/contrary-control inputs and 1,319 owner contexts. Six retained-worker
+comparisons include the previously empty owner pin in both colours. Clean
+TypeScript, 81 focused source/React checks (four conditional skips), 32 generated
+service checks (one optional engine skip), the 43-module review build and
+8,863-module frontend build pass. Native release compilation passes in 1m44s
+with 22 existing warnings. Generated-review differences are source-region
+comments only; the route tree differs only by line endings. Unrelated dirty
+OTB/FIDE/phone/stats work was excluded.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,079,872 bytes;
+  SHA-256 `efef2ef2c0ac04a740fd2ba59c745bf26cd1dd3b56ba5d447db91e585852a0db`.
+- Worker: `liveTactics.worker-Baa1kDUg.js`, 614,308 bytes; SHA-256
+  `c87176581a346515105581d529922d44cf412ff99f7e10f6305b912de416d001`.
+  Clean worker bytes match the tested artifact. The x64 executable embeds it,
+  `mistakeReviewAdapter-aHFX3JPC.js`, `TacticalClassifierPanel-DWxxnshr.js` and
+  `OpeningReviewWorkspace-C5Qpci1W.js`; normalized exact native dependency paths
+  identify these four clean assets.
+- Previous pipeline-163 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline164/en-croissant-fork.exe`,
+  SHA-256 `06ab08705001a1a7bd9bc31adf58ce4c109efc8350ebb4e3f7f323f9398c50ed`.
+
+No app was running before or after compilation; none was launched/restarted.
+The Dev App shortcut remains unchanged and uses the primary checkout's
+`encroissant-native` workflow. Owner stores and phone services were untouched;
+existing reviews were not automatically rescanned. This verifies package linkage,
+not native interaction or startup reliability under load. Broader quiet/long
+combinations, the known queen-ending promotion and primary-theme accuracy remain
+open; the goal is not complete.
+
+## Previous package: adapter 156 / live pipeline 163
 
 Source `63b91f64` is packaged from clean detached checkout
 `en-tactical-desktop-63b91f64`. Capture offers can now prepare checking forks
