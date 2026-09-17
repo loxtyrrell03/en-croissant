@@ -16,6 +16,38 @@ import { forkCountercaptureFen, forkCountercaptureLine } from "../../src/utils/t
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
 
+test("a missed connected capture retains its mechanism and compensation after reload",async()=>{
+  const root=await mkdtemp(join(tmpdir(),"en-shared-review-connected-capture-"));
+  const pos=Chess.fromSetup(parseFen(forkCountercaptureFen).unwrap()).unwrap();
+  for(const move of forkCountercaptureLine.slice(0,2))pos.play(parseUci(move));
+  const fen=makeFen(pos.toSetup());pos.play(parseUci("f7h8"));const after=makeFen(pos.toSetup());
+  const options={root,documentsRoot:join(root,"documents"),engineConfigPath:join(root,"engine.json"),
+    fetchGames:async()=>[],lookup:async requested=>{
+      assert.ok(requested===fen||requested===after);
+      // Controlled scores verify wiring; separate engine receipts judge chess.
+      return {depth:16,pvs:requested===fen?[{cp:500,moves:forkCountercaptureLine.slice(2).join(" ")}]:[{cp:-300,moves:"f8a3"}]};
+    }};
+  let service;
+  try{
+    await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+    await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,
+      url:"https://example.test/connected-capture",pgn:`[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.17"]\n[SetUp "1"]\n[FEN "${fen}"]\n[Result "0-1"]\n\n2. Nxh8 0-1`}]}));
+    service=new SharedReviewService(options);await service.initialize(false);await service.run();
+    assert.equal(service.snapshot().error,null);const card=service.snapshot().cards[0];assert.ok(card);
+    assert.equal(card.tacticalClassification.missedMotifs[0].label,"Material Gain");
+    assert.match(card.explanation,/counterattack on the queen/);
+    const payoff=card.tacticalClassification.missedTimeline.find(m=>m.label==="Countercapture Payoff");
+    assert.ok(payoff);assert.equal(payoff.ply,3);assert.equal(payoff.value,undefined);
+    service.close();service=new SharedReviewService(options);await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification,JSON.parse(JSON.stringify(card.tacticalClassification)));
+    assert.equal((await service.deck()).positions[0].reason,card.explanation);
+  }finally{
+    service?.close();const target=resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-connected-capture-"));
+    await rm(target,{recursive:true,force:true});
+  }
+});
+
 test("connected fork countercaptures survive generated review and saved deck reload", async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-fork-collection-"));
   const fen = forkCountercaptureFen;

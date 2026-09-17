@@ -10404,27 +10404,73 @@ function tacticalExchangeGain(pos, move) {
 		return -VALUE.king;
 	}
 }
-var tacticalCaptureGainCache = /* @__PURE__ */ new Map();
+var tacticalCaptureProofCache = /* @__PURE__ */ new Map();
+/** A capture may answer an off-square loss by newly attacking another victim.
+* The collecting piece, not an unrelated PV gain, must supply that threat.
+* All replies require connected capture or safe retention, including liabilities
+* and counterchecks. This is a local material certificate, not a free-piece claim. */
+function proveCaptureCounterattack(step, nodeLimit = 4096, sharedBudget) {
+	if (!step?.capture || step.move.promotion || step.after.isCheck() || step.after.isEnd() || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
+	const budget = sharedBudget ?? { nodes: nodeLimit };
+	const oldAttacks = attacks(step.before.board.get(step.move.from), step.move.from, step.before.board.occupied);
+	const targets = winningTargets(step.after, step.move.to, step.before.turn).filter((square) => step.after.board.get(square)?.role !== "king" && !oldAttacks.has(square));
+	let result = null;
+	if (targets.length && budget.nodes > 0) {
+		const leaves = [];
+		const gain = proveDefenderCombination(step, targets, [step.move.to], nodeLimit, budget, 1, true, MIN_TACTICAL_CAPTURE_GAIN, (leaf) => leaves.push(leaf), true);
+		if (gain !== null && gain >= MIN_TACTICAL_CAPTURE_GAIN && leaves.some((leaf) => !leaf.quiet)) result = {
+			gain,
+			targets,
+			leaves
+		};
+	}
+	return result;
+}
 /** A generic capture headline cannot ignore an off-square countercapture or
 * a checking reply. This is the same bounded, all-friendly-piece local leaf
 * used by preparations, not a replacement for same-square SEE inside proofs.
 * A failed leaf does not refute an independently certified combination. */
-function tacticalCaptureGain(step, nodeLimit = 4096) {
-	if (!step?.capture || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
+function tacticalCaptureProof(step, nodeLimit = 4096) {
+	if (!step?.capture || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return {
+		gain: null,
+		immediateGain: null
+	};
 	const key = `${makeFen(step.before.toSetup())}:${step.uci}`;
-	if (nodeLimit === 4096 && tacticalCaptureGainCache.has(key)) return tacticalCaptureGainCache.get(key);
+	if (nodeLimit === 4096 && tacticalCaptureProofCache.has(key)) return tacticalCaptureProofCache.get(key);
 	let gain = null;
+	let immediateGain = null;
+	let counterattack;
 	try {
-		gain = preparationCaptureGain(step.before, step.move, { nodes: nodeLimit });
+		const budget = { nodes: nodeLimit };
+		gain = preparationCaptureGain(step.before, step.move, budget);
+		immediateGain = gain;
+		if (gain === null || gain < MIN_TACTICAL_CAPTURE_GAIN) {
+			counterattack = proveCaptureCounterattack(step, nodeLimit, budget) ?? void 0;
+			if (counterattack) gain = counterattack.gain;
+		}
 	} catch {}
+	const result = {
+		gain,
+		immediateGain,
+		...counterattack ? { counterattack } : {}
+	};
 	if (nodeLimit === 4096) {
-		tacticalCaptureGainCache.set(key, gain);
-		if (tacticalCaptureGainCache.size > 256) tacticalCaptureGainCache.delete(tacticalCaptureGainCache.keys().next().value);
+		tacticalCaptureProofCache.set(key, result);
+		if (tacticalCaptureProofCache.size > 256) tacticalCaptureProofCache.delete(tacticalCaptureProofCache.keys().next().value);
 	}
-	return gain;
+	return result;
+}
+function tacticalCaptureGain(step, nodeLimit = 4096) {
+	return tacticalCaptureProof(step, nodeLimit).gain;
 }
 function captureGainEvidence(step, gain) {
 	const victim = step.before.board.get(step.move.to);
+	const counterattack = tacticalCaptureProof(step).counterattack;
+	if (counterattack?.gain === gain) return {
+		label: "Material Gain",
+		value: gain,
+		evidence: `${step.san} takes the ${victim?.role ?? "piece"} on ${makeSquare(step.move.to)} with a counterattack on ${counterattack.targets.map((to) => `the ${step.after.board.get(to).role} on ${makeSquare(to)}`).join(" and ")}. Against every legal reply, connected captures or a safe retreat retain at least ${Number((gain / 100).toFixed(1))} ${gain === 100 ? "pawn" : "pawns"} locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.`
+	};
 	const compensated = gain < step.capture;
 	return {
 		label: compensated ? "Material Gain" : victim?.role === "pawn" ? "Hanging Pawn" : "Hanging Piece",
@@ -16305,8 +16351,10 @@ function discoveryCaptureGain(pos, move, required, budget, onMate) {
 /** A quiet/checking preparation cannot stop immediately before a king hunt.
 * Every countercheck needs a material-retaining legal answer that permits no
 * immediate mate or promotion. This is a one-evasion local safety horizon,
-* not a proof against longer king hunts or perpetual-check sequences. */
-function preparationCaptureGain(pos, move, budget, matingLiabilityThreshold, defensiveDecisions) {
+* not a proof against longer king hunts or perpetual-check sequences. Connected
+* collections additionally require a second check to end in a safe checker
+* capture when settleCounterchecks is enabled, inside the same budget. */
+function preparationCaptureGain(pos, move, budget, matingLiabilityThreshold, defensiveDecisions, settleCounterchecks = false) {
 	const side = pos.turn;
 	const delta = (board, action) => capturedValue(board, action) + (action.promotion ? VALUE[action.promotion] - VALUE.pawn : 0);
 	let minimum = matingLiabilityThreshold === void 0 ? participantCaptureGain(pos, move, [...pos.board[side], move.to], budget) : discoveryCaptureGain(pos, move, matingLiabilityThreshold, budget);
@@ -16321,20 +16369,63 @@ function preparationCaptureGain(pos, move, budget, matingLiabilityThreshold, def
 		if (checked.isEnd()) return null;
 		let best = -Infinity;
 		let selected;
+		let selectedCaptures = [];
 		const answers = recoveryMoves(checked, side).sort((a, b) => capturedValue(checked, b) - capturedValue(checked, a));
 		for (const answer of answers) {
 			if (answer.promotion) continue;
 			const gain = matingLiabilityThreshold === void 0 ? participantCaptureGain(checked, answer, [...checked.board[side], answer.to], budget) : discoveryCaptureGain(checked, answer, minimum - balance, budget);
 			if (gain === null || balance + gain <= best) continue;
 			if (!noImmediateTerminalRefutation(checked, answer, budget)) continue;
-			best = Math.max(best, balance + gain);
+			let retained = balance + gain;
+			const captures = [];
+			if (settleCounterchecks) {
+				const after = visit(checked, answer);
+				for (const response of recoveryMoves(after, side)) {
+					if (response.promotion) {
+						retained = -Infinity;
+						break;
+					}
+					if (!mayGiveCheck(after, response)) continue;
+					const again = visit(after, response);
+					if (!again.isCheck()) continue;
+					const checkers = again.ctx().checkers;
+					let captureGain = -Infinity;
+					let captureDecision;
+					for (const capture of recoveryMoves(again, side)) {
+						if (capture.promotion || !checkers.has(capture.to) || !capturedValue(again, capture)) continue;
+						const settled = visit(again, capture);
+						if (settled.isEnd() && !settled.isCheckmate()) continue;
+						if (recoveryMoves(settled, side).some((reply) => reply.promotion || mayGiveCheck(settled, reply) && visit(settled, reply).isCheck())) continue;
+						const earned = participantCaptureGain(again, capture, [...again.board[side], capture.to], budget);
+						if (earned === null) continue;
+						const value = balance + delta(checked, answer) - delta(after, response) + earned;
+						if (value > captureGain) {
+							captureGain = value;
+							captureDecision = {
+								fen: makeFen(again.toSetup()),
+								moveUci: makeUci(capture)
+							};
+						}
+						if (captureGain >= retained) break;
+					}
+					if (!captureDecision) {
+						retained = -Infinity;
+						break;
+					}
+					retained = Math.min(retained, captureGain);
+					captures.push(captureDecision);
+				}
+			}
+			if (retained <= best) continue;
+			best = retained;
 			selected = answer;
+			selectedCaptures = captures;
 			if (best >= minimum) break;
 		}
 		if (selected) defensiveDecisions?.push({
 			fen: makeFen(checked.toSetup()),
 			moveUci: makeUci(selected)
-		});
+		}, ...selectedCaptures);
 		return Number.isFinite(best) ? best : null;
 	};
 	const leaf = visit(pos, move);
@@ -16390,7 +16481,7 @@ function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sh
 		for (const move of moves(pos)) {
 			if (!victims.includes(move.to) || !pieces.includes(move.from) || !capturedValue(pos, move)) continue;
 			const counterchecks = [];
-			const gain = verifyCounterchecks ? preparationCaptureGain(pos, move, budget, void 0, counterchecks) : participantCaptureGain(pos, move, allPiecesAtLeaf ? [...pos.board[side], move.to] : pieces, budget);
+			const gain = verifyCounterchecks ? preparationCaptureGain(pos, move, budget, void 0, counterchecks, true) : participantCaptureGain(pos, move, allPiecesAtLeaf ? [...pos.board[side], move.to] : pieces, budget);
 			if (gain !== null && (!allPiecesAtLeaf || balance + gain < minimumGain || noImmediateTerminalRefutation(pos, move, budget))) {
 				best = Math.max(best, balance + gain);
 				if (allPiecesAtLeaf && best >= minimumGain) {
@@ -16410,7 +16501,7 @@ function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sh
 		if (retained && balance >= minimumGain && !pos.isCheck()) for (const move of moves(pos)) {
 			if (capturedValue(pos, move) || move.promotion) continue;
 			const counterchecks = [];
-			const gain = verifyCounterchecks ? preparationCaptureGain(pos, move, budget, void 0, counterchecks) : participantCaptureGain(pos, move, allPiecesAtLeaf ? [...pos.board[side], move.to] : pieces, budget);
+			const gain = verifyCounterchecks ? preparationCaptureGain(pos, move, budget, void 0, counterchecks, true) : participantCaptureGain(pos, move, allPiecesAtLeaf ? [...pos.board[side], move.to] : pieces, budget);
 			if (gain !== null && balance + gain >= minimumGain && (!allPiecesAtLeaf || noImmediateTerminalRefutation(pos, move, budget))) {
 				onLeaf?.({
 					fen: makeFen(pos.toSetup()),
@@ -19185,6 +19276,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	}
 	const root = steps[0];
 	const directGain = root.capture ? Math.max(0, tacticalCaptureGain(root) ?? 0) : 0;
+	const initialCaptureGain = root.capture ? Math.max(0, tacticalCaptureProof(root).immediateGain ?? 0) : 0;
 	const checkingPawn = Number.isFinite(rootCp) && directGain >= VALUE.pawn && root.capture === VALUE.pawn ? proveCheckingPawnRetention(steps) : null;
 	const priorPawnContext = root.capture === VALUE.pawn && context?.previousFen && context.previousMoveUci ? replayTacticalLine(context.previousFen, [context.previousMoveUci])[0] : null;
 	const costlyPawn = directGain >= VALUE.pawn && priorPawnContext && !priorPawnContext.capture && !priorPawnContext.move.promotion && makeFen(priorPawnContext.after.toSetup()) === makeFen(root.before.toSetup()) ? proveCostlyPawnRecapture(root) : null;
@@ -19389,10 +19481,10 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	filtered.sort((a, b) => {
 		const matingPriority = (m) => mate && (m.value === 1e4 || MATE.test(m.id)) ? 0 : 1;
 		const rootMatingPriority = (m) => checkingMate && m.ply === 1 && (m.value === 1e4 || MATE.test(m.id)) ? 0 : 1;
-		return matingPriority(a) - matingPriority(b) || rootMatingPriority(a) - rootMatingPriority(b) || causeRank(a, directGain, smallerRays.has(a)) - causeRank(b, directGain, smallerRays.has(b));
+		return matingPriority(a) - matingPriority(b) || rootMatingPriority(a) - rootMatingPriority(b) || causeRank(a, initialCaptureGain, smallerRays.has(a)) - causeRank(b, initialCaptureGain, smallerRays.has(b));
 	});
 	const immediateLoose = filtered.find((m) => m.id === "hangingPiece" && m.ply === 1);
-	if (immediateLoose && !checkingMate && !filtered.some((m) => m.ply === 1 && (MECHANISMS.has(m.id) || trapIsMainCause(m, directGain)))) {
+	if (immediateLoose && !checkingMate && !filtered.some((m) => m.ply === 1 && (MECHANISMS.has(m.id) || trapIsMainCause(m, initialCaptureGain)))) {
 		filtered.splice(filtered.indexOf(immediateLoose), 1);
 		filtered.unshift(immediateLoose);
 	}
@@ -19509,7 +19601,36 @@ function normalizeContinuingTactics(steps, motifs) {
 		});
 		suppressed.add(motif);
 	}
-	return normalizeForkCollectionPayoffs(steps, normalizeDirectMaterialPayoffs(steps, motifs.filter((motif) => !suppressed.has(motif)).map((motif) => replacements.get(motif) ?? motif)));
+	return normalizeForkCollectionPayoffs(steps, normalizeCaptureCounterattackPayoffs(steps, normalizeDirectMaterialPayoffs(steps, motifs.filter((motif) => !suppressed.has(motif)).map((motif) => replacements.get(motif) ?? motif))));
+}
+/** Countercaptures within a certified capture are compensation, not fresh
+* profits. Only the actual matching reply/answer receives the contextual role. */
+function normalizeCaptureCounterattackPayoffs(steps, motifs) {
+	const replacements = /* @__PURE__ */ new Map();
+	for (const motif of motifs) {
+		if (motif.id !== "hangingPiece" || !motif.ply) continue;
+		const start = motif.ply - 1;
+		const root = steps[start], reply = steps[start + 1], answer = steps[start + 2];
+		if (!root?.capture || motif.moveUci !== root.uci || !reply?.capture || !answer?.capture) continue;
+		const leaf = tacticalCaptureProof(root).counterattack?.leaves.find((candidate) => !candidate.quiet && candidate.fen === makeFen(answer.before.toSetup()) && candidate.moveUci === answer.uci);
+		if (!leaf || leaf.balance !== root.capture - reply.capture) continue;
+		replacements.set(start + 2, {
+			label: "Countercapture",
+			evidence: `${reply.san} takes material during ${root.san}'s connected exchange; ${answer.san} answers it. This is compensation, not an independent material win.`
+		});
+		replacements.set(start + 3, {
+			label: "Countercapture Payoff",
+			evidence: `${answer.san} answers ${reply.san}, preserving the gain from ${root.san}. These exchanged pieces are already included in that capture's value.`
+		});
+	}
+	return motifs.map((motif) => {
+		const replacement = motif.ply && replacements.get(motif.ply);
+		return replacement && motif.id === "hangingPiece" && motif.relevance !== "primary" ? {
+			...motif,
+			...replacement,
+			value: void 0
+		} : motif;
+	});
 }
 /** The countercapture that preserves a fork is compensation within that
 * combination, not two newly hanging queens. Only the exact certified branch
@@ -19521,8 +19642,15 @@ function normalizeForkCollectionPayoffs(steps, motifs) {
 		const start = motif.ply - 1;
 		const root = steps[start], reply = steps[start + 1], capture = steps[start + 2];
 		const counter = steps[start + 3], recovery = steps[start + 4];
-		if (!root || !reply || !capture || !counter?.capture || !recovery?.capture) continue;
-		const leaf = (proveImmediateFork(root)?.branches.find((candidate) => candidate.replyUci === reply.uci && candidate.captureUci === capture.uci))?.collection?.find((candidate) => !candidate.quiet && candidate.fen === makeFen(recovery.before.toSetup()) && candidate.moveUci === recovery.uci);
+		if (!root || !reply || !capture) continue;
+		const branch = proveImmediateFork(root)?.branches.find((candidate) => candidate.replyUci === reply.uci && candidate.captureUci === capture.uci);
+		if (!branch?.collection?.length) continue;
+		replacements.set(start + 3, {
+			label: "Fork Payoff",
+			evidence: `${capture.san} collects a fork target and creates the connected counterattack that preserves ${root.san}'s gain. Its exchanges are already included in the fork's value.`
+		});
+		if (!counter?.capture || !recovery?.capture) continue;
+		const leaf = branch?.collection?.find((candidate) => !candidate.quiet && candidate.fen === makeFen(recovery.before.toSetup()) && candidate.moveUci === recovery.uci);
 		if (!leaf || leaf.balance !== capture.capture - counter.capture) continue;
 		replacements.set(start + 4, {
 			label: "Countercapture",
@@ -19746,7 +19874,7 @@ function materialLesson(steps, motif) {
 	let targets = [];
 	let gain = null;
 	if (["hangingPiece", "attackingF2F7"].includes(motif.id) && step.capture) {
-		targets = [step.move.to];
+		targets = [step.move.to, ...tacticalCaptureProof(step).counterattack?.targets ?? []];
 		gain = tacticalCaptureGain(step);
 	} else if (["pin", "skewer"].includes(motif.id)) for (const ray of relevantRayTactics(step).filter((r) => r.kind === motif.id)) {
 		const proof = rayMaterialProof(step, ray);
@@ -20046,7 +20174,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 			const gain = tacticalCaptureGain(step);
 			const otherGain = tacticalCaptureGain(alternative);
 			const otherExchange = tacticalExchangeGain(alternative.before, alternative.move);
-			if (gain !== null && gain > 0 && otherExchange > -VALUE.king && otherExchange <= 0) {
+			if (gain !== null && gain > 0 && !tacticalCaptureProof(step).counterattack && !tacticalCaptureProof(alternative).counterattack && otherExchange > -VALUE.king && otherExchange <= 0) {
 				comparison = "prevented";
 				comparisonEvidence = `After ${bestSan}, ${alternative.san} no longer wins material in the same-square exchange.`;
 			} else if (gain !== null && gain > 0 && otherGain !== null && otherGain >= gain) {
@@ -20715,7 +20843,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 142;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 143;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

@@ -712,30 +712,76 @@ export function tacticalExchangeGain(pos: Chess, move: NormalMove) {
     }
 }
 
-const tacticalCaptureGainCache = new Map<string, number | null>();
+type CaptureCounterattackProof = { gain: number; targets: Square[]; leaves: MaterialRecoveryLeaf[] };
+type TacticalCaptureProof = { gain: number | null; immediateGain: number | null; counterattack?: CaptureCounterattackProof };
+const tacticalCaptureProofCache = new Map<string, TacticalCaptureProof>();
+
+/** A capture may answer an off-square loss by newly attacking another victim.
+ * The collecting piece, not an unrelated PV gain, must supply that threat.
+ * All replies require connected capture or safe retention, including liabilities
+ * and counterchecks. This is a local material certificate, not a free-piece claim. */
+export function proveCaptureCounterattack(
+    step: TacticalReplayStep, nodeLimit = 4096, sharedBudget?: ProofBudget,
+): CaptureCounterattackProof | null {
+    if (!step?.capture || step.move.promotion || step.after.isCheck() || step.after.isEnd() ||
+        !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
+    const budget = sharedBudget ?? { nodes: nodeLimit };
+    const oldAttacks = attacks(step.before.board.get(step.move.from)!, step.move.from, step.before.board.occupied);
+    const targets = winningTargets(step.after, step.move.to, step.before.turn)
+        .filter(square => step.after.board.get(square)?.role !== "king" && !oldAttacks.has(square));
+    let result: CaptureCounterattackProof | null = null;
+    if (targets.length && budget.nodes > 0) {
+        const leaves: MaterialRecoveryLeaf[] = [];
+        const gain = proveDefenderCombination(step, targets, [step.move.to], nodeLimit, budget,
+            1, true, MIN_TACTICAL_CAPTURE_GAIN, leaf => leaves.push(leaf), true);
+        if (gain !== null && gain >= MIN_TACTICAL_CAPTURE_GAIN && leaves.some(leaf => !leaf.quiet))
+            result = {gain, targets, leaves};
+    }
+    return result;
+}
 
 /** A generic capture headline cannot ignore an off-square countercapture or
  * a checking reply. This is the same bounded, all-friendly-piece local leaf
  * used by preparations, not a replacement for same-square SEE inside proofs.
  * A failed leaf does not refute an independently certified combination. */
-export function tacticalCaptureGain(step: TacticalReplayStep, nodeLimit = 4096): number | null {
-    if (!step?.capture || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
+function tacticalCaptureProof(step: TacticalReplayStep, nodeLimit = 4096): TacticalCaptureProof {
+    if (!step?.capture || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return {gain:null,immediateGain:null};
     const key = `${makeFen(step.before.toSetup())}:${step.uci}`;
-    if (nodeLimit === 4096 && tacticalCaptureGainCache.has(key))
-        return tacticalCaptureGainCache.get(key)!;
+    if (nodeLimit === 4096 && tacticalCaptureProofCache.has(key))
+        return tacticalCaptureProofCache.get(key)!;
     let gain: number | null = null;
-    try { gain = preparationCaptureGain(step.before, step.move, { nodes: nodeLimit }); }
-    catch { /* An exhausted local proof does not certify a free piece. */ }
-    if (nodeLimit === 4096) {
-        tacticalCaptureGainCache.set(key, gain);
-        if (tacticalCaptureGainCache.size > 256)
-            tacticalCaptureGainCache.delete(tacticalCaptureGainCache.keys().next().value!);
+    let immediateGain: number | null = null;
+    let counterattack: CaptureCounterattackProof | undefined;
+    try {
+        const budget = { nodes: nodeLimit };
+        gain = preparationCaptureGain(step.before, step.move, budget);
+        immediateGain = gain;
+        if (gain === null || gain < MIN_TACTICAL_CAPTURE_GAIN) {
+            counterattack = proveCaptureCounterattack(step, nodeLimit, budget) ?? undefined;
+            if (counterattack) gain = counterattack.gain;
+        }
     }
-    return gain;
+    catch { /* An exhausted local proof does not certify a free piece. */ }
+    const result = {gain, immediateGain, ...(counterattack ? {counterattack} : {})};
+    if (nodeLimit === 4096) {
+        tacticalCaptureProofCache.set(key, result);
+        if (tacticalCaptureProofCache.size > 256)
+            tacticalCaptureProofCache.delete(tacticalCaptureProofCache.keys().next().value!);
+    }
+    return result;
+}
+
+export function tacticalCaptureGain(step: TacticalReplayStep, nodeLimit = 4096): number | null {
+    return tacticalCaptureProof(step, nodeLimit).gain;
 }
 
 function captureGainEvidence(step: TacticalReplayStep, gain: number) {
     const victim = step.before.board.get(step.move.to);
+    const counterattack = tacticalCaptureProof(step).counterattack;
+    if (counterattack?.gain === gain) return {
+        label: "Material Gain", value: gain,
+        evidence: `${step.san} takes the ${victim?.role ?? "piece"} on ${makeSquare(step.move.to)} with a counterattack on ${counterattack.targets.map(to => `the ${step.after.board.get(to)!.role} on ${makeSquare(to)}`).join(" and ")}. Against every legal reply, connected captures or a safe retreat retain at least ${Number((gain / 100).toFixed(1))} ${gain === 100 ? "pawn" : "pawns"} locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.`,
+    };
     const compensated = gain < step.capture;
     return {
         label: compensated ? "Material Gain" : victim?.role === "pawn" ? "Hanging Pawn" : "Hanging Piece",
@@ -8316,6 +8362,7 @@ export function tacticalBoardEvidence(
         ![
             "perpetualCheck",
             "drawingCapture",
+            "hangingPiece",
             "zugzwang",
             "promotionCombination",
             "forcingAttack",
@@ -8340,6 +8387,13 @@ export function tacticalBoardEvidence(
         return null;
     const step = replayTacticalLine(fen, line.slice(0, motif.ply))[motif.ply - 1];
     if (!step) return null;
+    if (motif.id === "hangingPiece") {
+        const proof = motif.label === "Material Gain" && tacticalCaptureProof(step).counterattack;
+        return proof ? {square:makeSquare(step.move.to),arrows:[
+            {from:makeSquare(step.move.from),to:makeSquare(step.move.to)},
+            ...proof.targets.map(to=>({from:makeSquare(step.move.to),to:makeSquare(to)})),
+        ]} : null;
+    }
     if (motif.id === "drawingCapture") {
         return proveDrawingCapture(makeFen(step.before.toSetup()), step.uci, tablebaseEvidence)
             ? { square: makeSquare(step.move.to), arrows: [{ from: makeSquare(step.move.from), to: makeSquare(step.move.to) }] }
@@ -9366,9 +9420,11 @@ function discoveryCaptureGain(
 /** A quiet/checking preparation cannot stop immediately before a king hunt.
  * Every countercheck needs a material-retaining legal answer that permits no
  * immediate mate or promotion. This is a one-evasion local safety horizon,
- * not a proof against longer king hunts or perpetual-check sequences. */
+ * not a proof against longer king hunts or perpetual-check sequences. Connected
+ * collections additionally require a second check to end in a safe checker
+ * capture when settleCounterchecks is enabled, inside the same budget. */
 function preparationCaptureGain(pos: Chess, move: NormalMove, budget: ProofBudget, matingLiabilityThreshold?: number,
-    defensiveDecisions?: { fen: string; moveUci: string }[]): number | null {
+    defensiveDecisions?: { fen: string; moveUci: string }[], settleCounterchecks = false): number | null {
     const side = pos.turn;
     const delta = (board: Chess, action: NormalMove) =>
         capturedValue(board, action) + (action.promotion ? VALUE[action.promotion] - VALUE.pawn : 0);
@@ -9386,6 +9442,7 @@ function preparationCaptureGain(pos: Chess, move: NormalMove, budget: ProofBudge
         if (checked.isEnd()) return null;
         let best = -Infinity;
         let selected: NormalMove | undefined;
+        let selectedCaptures: { fen: string; moveUci: string }[] = [];
         const answers = recoveryMoves(checked, side).sort(
             (a, b) => capturedValue(checked, b) - capturedValue(checked, a),
         );
@@ -9396,11 +9453,50 @@ function preparationCaptureGain(pos: Chess, move: NormalMove, budget: ProofBudge
                 : discoveryCaptureGain(checked, answer, minimum! - balance, budget);
             if (gain === null || balance + gain <= best) continue;
             if (!noImmediateTerminalRefutation(checked, answer, budget)) continue;
-            best = Math.max(best, balance + gain);
+            let retained = balance + gain;
+            const captures: { fen: string; moveUci: string }[] = [];
+            if (settleCounterchecks) {
+                // A connected collection must not end at the first king flight
+                // in a losing check sequence. A second check needs an actual
+                // checker capture ending the sequence, not another arbitrary
+                // flight. Harmless donated checkers therefore do not erase a
+                // valid gain. This shares the enclosing proof's work budget.
+                const after = visit(checked, answer);
+                for (const response of recoveryMoves(after, side)) {
+                    if (response.promotion) { retained = -Infinity; break; }
+                    if (!mayGiveCheck(after, response)) continue;
+                    const again = visit(after, response);
+                    if (!again.isCheck()) continue;
+                    const checkers = again.ctx().checkers;
+                    let captureGain = -Infinity;
+                    let captureDecision: { fen: string; moveUci: string } | undefined;
+                    for (const capture of recoveryMoves(again, side)) {
+                        if (capture.promotion || !checkers.has(capture.to) || !capturedValue(again, capture)) continue;
+                        const settled = visit(again, capture);
+                        if (settled.isEnd() && !settled.isCheckmate()) continue;
+                        if (recoveryMoves(settled, side).some(reply => reply.promotion ||
+                            (mayGiveCheck(settled, reply) && visit(settled, reply).isCheck()))) continue;
+                        const earned = participantCaptureGain(again, capture, [...again.board[side], capture.to], budget);
+                        if (earned === null) continue;
+                        const value = balance + delta(checked, answer) - delta(after, response) + earned;
+                        if (value > captureGain) {
+                            captureGain = value;
+                            captureDecision = { fen: makeFen(again.toSetup()), moveUci: makeUci(capture) };
+                        }
+                        if (captureGain >= retained) break;
+                    }
+                    if (!captureDecision) { retained = -Infinity; break; }
+                    retained = Math.min(retained, captureGain);
+                    captures.push(captureDecision);
+                }
+            }
+            if (retained <= best) continue;
+            best = retained;
             selected = answer;
+            selectedCaptures = captures;
             if (best >= minimum!) break;
         }
-        if (selected) defensiveDecisions?.push({ fen: makeFen(checked.toSetup()), moveUci: makeUci(selected) });
+        if (selected) defensiveDecisions?.push({ fen: makeFen(checked.toSetup()), moveUci: makeUci(selected) }, ...selectedCaptures);
         return Number.isFinite(best) ? best : null;
     };
     const leaf = visit(pos, move);
@@ -9498,7 +9594,7 @@ export function proveDefenderCombination(
             )
                 continue;
             const counterchecks: { fen: string; moveUci: string }[] = [];
-            const gain = verifyCounterchecks ? preparationCaptureGain(pos, move, budget, undefined, counterchecks) : participantCaptureGain(
+            const gain = verifyCounterchecks ? preparationCaptureGain(pos, move, budget, undefined, counterchecks, true) : participantCaptureGain(
                 pos,
                 move,
                 allPiecesAtLeaf ? [...pos.board[side], move.to] : pieces,
@@ -9533,7 +9629,7 @@ export function proveDefenderCombination(
             for (const move of moves(pos)) {
                 if (capturedValue(pos, move) || move.promotion) continue;
                 const counterchecks: { fen: string; moveUci: string }[] = [];
-                const gain = verifyCounterchecks ? preparationCaptureGain(pos, move, budget, undefined, counterchecks) : participantCaptureGain(
+                const gain = verifyCounterchecks ? preparationCaptureGain(pos, move, budget, undefined, counterchecks, true) : participantCaptureGain(
                     pos,
                     move,
                     allPiecesAtLeaf ? [...pos.board[side], move.to] : pieces,
@@ -13228,6 +13324,9 @@ export function auditTacticalMotifs(
     // mapped the label to a later, unrelated capture.
     const root = steps[0];
     const directGain = root.capture ? Math.max(0, tacticalCaptureGain(root) ?? 0) : 0;
+    // A connected counterattack includes the later victim. It must not be
+    // counted as an already-earned capture when ranking that victim's trap.
+    const initialCaptureGain = root.capture ? Math.max(0, tacticalCaptureProof(root).immediateGain ?? 0) : 0;
     // The supplied line nominates an actual profitable capture continuation, not
     // a quiet king attack which happens to offer inferior pawn liquidation.
     // Its material value is still established separately over every evasion.
@@ -13715,7 +13814,7 @@ export function auditTacticalMotifs(
             return (
                 matingPriority(a) - matingPriority(b) ||
                 rootMatingPriority(a) - rootMatingPriority(b) ||
-                causeRank(a, directGain, smallerRays.has(a)) - causeRank(b, directGain, smallerRays.has(b))
+                causeRank(a, initialCaptureGain, smallerRays.has(a)) - causeRank(b, initialCaptureGain, smallerRays.has(b))
             );
         });
     const immediateLoose = filtered.find((m) => m.id === "hangingPiece" && m.ply === 1);
@@ -13723,7 +13822,7 @@ export function auditTacticalMotifs(
         immediateLoose &&
         !checkingMate &&
         !filtered.some(
-            (m) => m.ply === 1 && (MECHANISMS.has(m.id) || trapIsMainCause(m, directGain)),
+            (m) => m.ply === 1 && (MECHANISMS.has(m.id) || trapIsMainCause(m, initialCaptureGain)),
         )
     ) {
         filtered.splice(filtered.indexOf(immediateLoose), 1);
@@ -13940,7 +14039,33 @@ export function normalizeContinuingTactics(
     const normalized = motifs
         .filter((motif) => !suppressed.has(motif))
         .map((motif) => replacements.get(motif) ?? motif);
-    return normalizeForkCollectionPayoffs(steps, normalizeDirectMaterialPayoffs(steps, normalized));
+    return normalizeForkCollectionPayoffs(steps, normalizeCaptureCounterattackPayoffs(steps,
+        normalizeDirectMaterialPayoffs(steps, normalized)));
+}
+
+/** Countercaptures within a certified capture are compensation, not fresh
+ * profits. Only the actual matching reply/answer receives the contextual role. */
+function normalizeCaptureCounterattackPayoffs(steps: TacticalReplayStep[], motifs: TacticalMotifEvidence[]) {
+    const replacements = new Map<number, {label:string; evidence:string}>();
+    for (const motif of motifs) {
+        if (motif.id !== "hangingPiece" || !motif.ply) continue;
+        const start = motif.ply - 1;
+        const root = steps[start], reply = steps[start + 1], answer = steps[start + 2];
+        if (!root?.capture || motif.moveUci !== root.uci || !reply?.capture || !answer?.capture) continue;
+        const proof = tacticalCaptureProof(root).counterattack;
+        const leaf = proof?.leaves.find(candidate => !candidate.quiet &&
+            candidate.fen === makeFen(answer.before.toSetup()) && candidate.moveUci === answer.uci);
+        if (!leaf || leaf.balance !== root.capture - reply.capture) continue;
+        replacements.set(start + 2, {label:"Countercapture",
+            evidence:`${reply.san} takes material during ${root.san}'s connected exchange; ${answer.san} answers it. This is compensation, not an independent material win.`});
+        replacements.set(start + 3, {label:"Countercapture Payoff",
+            evidence:`${answer.san} answers ${reply.san}, preserving the gain from ${root.san}. These exchanged pieces are already included in that capture's value.`});
+    }
+    return motifs.map(motif => {
+        const replacement = motif.ply && replacements.get(motif.ply);
+        return replacement && motif.id === "hangingPiece" && motif.relevance !== "primary"
+            ? {...motif,...replacement,value:undefined} : motif;
+    });
 }
 
 /** The countercapture that preserves a fork is compensation within that
@@ -13953,9 +14078,13 @@ function normalizeForkCollectionPayoffs(steps: TacticalReplayStep[], motifs: Tac
         const start = motif.ply - 1;
         const root = steps[start], reply = steps[start + 1], capture = steps[start + 2];
         const counter = steps[start + 3], recovery = steps[start + 4];
-        if (!root || !reply || !capture || !counter?.capture || !recovery?.capture) continue;
+        if (!root || !reply || !capture) continue;
         const branch = proveImmediateFork(root)?.branches.find(candidate =>
             candidate.replyUci === reply.uci && candidate.captureUci === capture.uci);
+        if (!branch?.collection?.length) continue;
+        replacements.set(start + 3, {label:"Fork Payoff",
+            evidence:`${capture.san} collects a fork target and creates the connected counterattack that preserves ${root.san}'s gain. Its exchanges are already included in the fork's value.`});
+        if (!counter?.capture || !recovery?.capture) continue;
         const leaf = branch?.collection?.find(candidate => !candidate.quiet &&
             candidate.fen === makeFen(recovery.before.toSetup()) && candidate.moveUci === recovery.uci);
         if (!leaf || leaf.balance !== capture.capture - counter.capture) continue;
@@ -14219,7 +14348,7 @@ function materialLesson(steps: TacticalReplayStep[], motif: TacticalMotifEvidenc
     let targets: Square[] = [];
     let gain: number | null = null;
     if (["hangingPiece", "attackingF2F7"].includes(motif.id) && step.capture) {
-        targets = [step.move.to];
+        targets = [step.move.to, ...(tacticalCaptureProof(step).counterattack?.targets ?? [])];
         gain = tacticalCaptureGain(step);
     } else if (["pin", "skewer"].includes(motif.id)) {
         for (const ray of relevantRayTactics(step).filter((r) => r.kind === motif.id)) {
@@ -14662,7 +14791,8 @@ export function compareImmediateTacticalDefence(
             const gain = tacticalCaptureGain(step);
             const otherGain = tacticalCaptureGain(alternative);
             const otherExchange = tacticalExchangeGain(alternative.before, alternative.move);
-            if (gain !== null && gain > 0 && otherExchange > -VALUE.king && otherExchange <= 0) {
+            if (gain !== null && gain > 0 && !tacticalCaptureProof(step).counterattack &&
+                !tacticalCaptureProof(alternative).counterattack && otherExchange > -VALUE.king && otherExchange <= 0) {
                 comparison = "prevented";
                 comparisonEvidence = `After ${bestSan}, ${alternative.san} no longer wins material in the same-square exchange.`;
             } else if (gain !== null && gain > 0 && otherGain !== null && otherGain >= gain) {

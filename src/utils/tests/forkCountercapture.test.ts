@@ -31,7 +31,7 @@ test.each([false, true])(
             : forkCountercaptureLine;
         const steps = replayTacticalLine(fen, moves);
         expect(steps).toHaveLength(5);
-        expect(tacticalCaptureGain(steps[2])).toBeLessThan(0);
+        expect(tacticalCaptureGain(steps[2])).toBe(180);
         const diagnostics: [string, string?, number?][] = [];
         const proof = proveImmediateFork(steps[0], (...args) => diagnostics.push(args));
         expect(proof?.gain).toBeGreaterThanOrEqual(190);

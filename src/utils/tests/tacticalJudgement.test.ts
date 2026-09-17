@@ -7,6 +7,7 @@ import { makeSan, parseSan } from "chessops/san";
 import { makeUci, parseUci } from "chessops/util";
 import { buildLiveTacticalScan } from "@/utils/tacticalMotifs/liveTactics";
 import { tacticalGameHistory } from "@/utils/tacticalMotifs/gameHistory";
+import { engineOutcomeSign } from "./fixtures/engineOutcome";
 import {
     counterCaptureMaterialDefence,
     clearanceKingDefence,
@@ -31,6 +32,18 @@ import {
 // Deliberately judged as positions, not by agreement with puzzle tags. The
 // quiet controls matter as much as the combinations. Run explicitly with
 // TACTICAL_JUDGEMENT_ENGINE set to a local UCI engine; no engine starts in CI.
+test.each([
+    [{ cp: 310, mate: null }, 1],
+    [{ cp: -273, mate: null }, -1],
+    [{ cp: 0, mate: null }, 0],
+    [{ cp: null, mate: 3 }, 1],
+    [{ cp: null, mate: -5 }, -1],
+    [{ cp: null, mate: -4 }, -1],
+    [{ cp: null, mate: null }, null],
+    [{ cp: NaN, mate: null }, null],
+] as const)("engine outcome audit retains mate signs (%j)", (line, sign) => {
+    expect(engineOutcomeSign(line)).toBe(sign);
+});
 const cases = [
     {
         name: "Initial position",
@@ -4149,6 +4162,7 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     minCp?: number;
                     maxCp?: number;
                     mateWithin?: number;
+                    expectedSign?: -1 | 0 | 1;
                     depth?: number;
                 }[];
             };
@@ -4201,11 +4215,14 @@ describe("expert tactical judgement with fresh engine lines", () => {
                         (lines[0].mate !== null &&
                             Math.sign(lines[0].mate) === Math.sign(probe.mateWithin) &&
                             Math.abs(lines[0].mate) <= Math.abs(probe.mateWithin)),
+                    expectedSign: probe.expectedSign === undefined ||
+                        engineOutcomeSign(lines[0]) === probe.expectedSign,
                 }).toEqual({
                     id: probe.id,
                     aboveMinimum: true,
                     belowMaximum: true,
                     mateWithinBound: true,
+                    expectedSign: true,
                 });
             }
             expect(searches).toHaveLength(request.probes.length);

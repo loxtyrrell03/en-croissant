@@ -151,13 +151,13 @@ test.skipIf(!process.env.TACTICAL_QUIET_FORK_INPUT || !process.env.TACTICAL_QUIE
             { flag: "wx" },
         );
         if (process.env.TACTICAL_FORK_COLLECTION_PROBES) {
-            const probes: any[] = [{ id: "root", fen: row.fen, searchMove: root.uci }];
+            const probes: any[] = [{ id: "root", fen: row.fen, searchMove: root.uci, expectedSign: 1 }];
             const seen = new Set<string>();
             const add = (id: string, fen: string, searchMove: string) => {
                 const key = `${fen}:${searchMove}`;
                 if (!seen.has(key)) {
                     seen.add(key);
-                    probes.push({ id, fen, searchMove, minCp: 0 });
+                    probes.push({ id, fen, searchMove, expectedSign: 1 });
                 }
             };
             if (!immediate) throw new Error("A complete fork certificate is required for engine probes");

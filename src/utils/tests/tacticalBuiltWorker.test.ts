@@ -32,7 +32,7 @@ import { settledRootExchangeCases } from "./fixtures/settledRootExchange";
 import { captureMatingGuardCases } from "./fixtures/captureMatingGuard";
 import { immediateAlternativeInputs } from "./fixtures/immediateTacticalAlternative";
 import { kingDefenderRemovalCases } from "./fixtures/kingDefenderRemoval";
-import { forkCountercaptureCases } from "./fixtures/forkCountercapture";
+import { forkCountercaptureCases, forkCountercaptureFen, forkCountercaptureLine } from "./fixtures/forkCountercapture";
 import { discoveredPinPriorityFen, discoveredPinPriorityLine, discoveredPinPriorityControls } from "./fixtures/discoveredPinPriority";
 import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "./fixtures/checkingPawnFollowup";
 import { discoveryTrapCases } from "./fixtures/discoveryTrap";
@@ -556,6 +556,32 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("ordinary immediate alternatives
         expect(result.scan.variations.every(v => v.origin === undefined)).toBe(true);
     }
 }, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("standalone connected captures survive the production controller",async()=>{
+    for(const reflected of [false,true]) for(const rootOnly of [false,true]) {
+        const line=reflected?forkCountercaptureLine.map(reflectMixedForkMove):forkCountercaptureLine;
+        const origin=reflected?reflectMixedForkFen(forkCountercaptureFen):forkCountercaptureFen;
+        const prefix=replayTacticalLine(origin,line.slice(0,2));
+        const fen=makeFen(prefix[1].after.toSetup());
+        const input={fen,pvUci:rootOnly?[line[2]]:line.slice(2),depth:16,engineName:"Constructed capture"};
+        const result=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs[0]).toMatchObject({label:"Material Gain",value:180});
+        expect(result.scan.arrows).toHaveLength(2);
+    }
+    for(const reflected of [false,true]) for(const control of ["wrong-rook","missing-queen","checking-flight"]) {
+        const original=control==="missing-queen"?forkCountercaptureFen.replace("1q2pppp","q3pppp"):
+            control==="checking-flight"?forkCountercaptureFen.replace("Q1PPP3","Q3P3"):forkCountercaptureFen;
+        const line=reflected?forkCountercaptureLine.map(reflectMixedForkMove):forkCountercaptureLine;
+        const prefix=replayTacticalLine(reflected?reflectMixedForkFen(original):original,line.slice(0,2));
+        const move=control==="wrong-rook"?"f7h8":"f7d8";
+        const input={fen:makeFen(prefix[1].after.toSetup()),pvUci:[reflected?reflectMixedForkMove(move):move],
+            depth:16,engineName:"Constructed unavailable counterattack"};
+        const result=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.some(m=>m.evidence.includes("with a counterattack on"))).toBe(false);
+    }
+},30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_RECALL_REPLAY)("all owner-game positions retain the actual compiled scan and history", async()=>{
     const baseline=JSON.parse(readFileSync(process.env.TACTICAL_RECALL_REPLAY!,"utf8"));

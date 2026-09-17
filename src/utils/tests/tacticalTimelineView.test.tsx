@@ -22,6 +22,7 @@ test("the fork's queen exchange is secondary compensation on the actual plies",(
   container.innerHTML=renderToStaticMarkup(<MantineProvider><TacticalLineExplanation
     moves={replayTacticalLine(forkCountercaptureFen,forkCountercaptureLine).map(s=>s.san)} motifs={result.timeline??[]} /></MantineProvider>);
   expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Fork");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Fork Payoff");
   expect(container.querySelector('[data-tactical-ply="4"]')?.textContent).toContain("Countercapture");
   expect(container.querySelector('[data-tactical-ply="5"]')?.textContent).toContain("Fork Countercapture");
   expect(container.textContent).not.toContain("Material Gain");

@@ -18,6 +18,8 @@ import { captureMatingGuardCases } from "./fixtures/captureMatingGuard";
 import { immediateAlternativeInputs } from "./fixtures/immediateTacticalAlternative";
 import { kingDefenderRemovalCases } from "./fixtures/kingDefenderRemoval";
 import { forkCountercaptureFen, forkCountercaptureLine } from "./fixtures/forkCountercapture";
+import { makeFen } from "chessops/fen";
+import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 import {
   buildLiveTacticalScan,
   previewLiveTacticalVariation,
@@ -42,6 +44,19 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a standalone capture explains its counterattack and draws only current relationships",()=>{
+  const prefix=replayTacticalLine(forkCountercaptureFen,forkCountercaptureLine.slice(0,2));
+  const value=buildLiveTacticalScan({fen:makeFen(prefix[1].after.toSetup()),pvUci:forkCountercaptureLine.slice(2),
+    engineName:"Constructed capture",depth:16});
+  const element=document.createElement("div");element.innerHTML=markup(value);
+  expect(element.textContent).toContain("Material Gain found");
+  expect(element.textContent).toContain("counterattack on the queen on b7");
+  expect(element.textContent).not.toContain("No tactical theme verified");
+  expect(value.arrows.map(a=>a.from+a.to)).toEqual(["f7d8","d8b7"]);
+  expect(value.arrows.every(a=>a.ply===1)).toBe(true);
+  expect(value.variations[0].timeline).toContainEqual(expect.objectContaining({label:"Countercapture Payoff",ply:3,value:undefined}));
+});
 
 test("a connected fork shows its current rook targets without two extra queen-win badges", () => {
   const value=buildLiveTacticalScan({fen:forkCountercaptureFen,pvUci:forkCountercaptureLine,
