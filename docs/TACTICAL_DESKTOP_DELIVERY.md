@@ -1,6 +1,43 @@
 # Tactical desktop delivery — 2026-09-17
 
-## Current package: adapter 150 / live pipeline 157
+## Current package: adapter 151 / live pipeline 158
+
+Source `42da64bd` is packaged from clean detached checkout
+`en-tactical-desktop-42da64bd`. Complete exchange history now preserves the
+initial pawn gain in a final recapture, and missed review shares the live
+compensation filter. Existing exchange payoffs do not falsely establish that
+avoiding the last recapture prevents the earlier loss. See
+`benchmarks/tactical-relevance/capture-exchange-retention-review.md` for the
+27-game comparison, fresh engine counterexamples and remaining coverage gaps.
+
+Clean TypeScript, 76 focused source/React checks (nine optional skips),
+26 generated-service checks (one optional engine skip), the 43-module review
+build and 8,863-module frontend build pass. Native release compilation passes
+in 1m44s with 22 existing warnings. Generated-review differences are source-region
+comments only; the route tree differs only in line endings. Unrelated dirty
+OTB/FIDE/phone/stats changes were excluded.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,075,776 bytes;
+  SHA-256 `770f7ca8ed2a0b14c69f420b056287829913b1193158aaba83fe4b24d42ab8af`.
+- Worker: `liveTactics.worker-jAKfyxhU.js`, 597,912 bytes; SHA-256
+  `7c049199a252f8c14973f5afd923803e032a0f68bb87010db51b58b2aa337e37`.
+  Clean bytes match the 2,155-input tested artifact. The x64 executable embeds
+  this worker, `TacticalClassifierPanel-ubEg4Vw9.js` and
+  `OpeningReviewWorkspace-K42WGnUT.js`; normalized exact native dependency paths
+  identify those assets in the clean checkout.
+- Previous pipeline-157 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline158/en-croissant-fork.exe`,
+  SHA-256 `a73991d15bc0279e36399cc983818e307cd06ad73e44644ae86145275c50d15d`.
+
+No app was running before or after compilation; none was launched or restarted.
+The Dev App shortcut remains unchanged and retains the primary checkout's
+`encroissant-native` workflow. Owner data, settings, engines and phone services
+are unchanged. This verifies package linkage, not native interaction or reliable
+startup under load. Independent persistent-pawn opportunities, longer exchange
+context, comparable-capture causes, quiet preparations and the known queen-ending
+promotion remain unfinished. This does not complete the classifier goal.
+
+## Previous package: adapter 150 / live pipeline 157
 
 Source `c1f47735` is packaged from clean detached checkout
 `en-tactical-desktop-c1f47735`. The owner Nxf7 fork retains its initial pawn

@@ -83,8 +83,21 @@ controls. All prior public primary lists remain unchanged. Public computation/
 transfer median/p95/max is 44/213/1,143 ms, with startup max 45 ms; engine search
 and native UI are excluded. Artifact `liveTactics.worker-jAKfyxhU.js` has SHA-256
 `7c049199a252f8c14973f5afd923803e032a0f68bb87010db51b58b2aa337e37`.
-The full owner compiled-worker and clean desktop delivery runs are separate
-from this source milestone and are recorded on completion.
+The complete compiled-controller check passes **2,155 inputs**: 808 public,
+1,319 owner contexts, four new exchange controls and 24 retained fork/discovery/
+capture controls. Every owner output matches source and the frozen final replay.
+Owner computation/transfer median/p95/max is 96/427/2,174 ms, with startup max
+39 ms. These controlled Node-host figures exclude engine search, development
+HTTP startup and native UI; they do not resolve load-sensitive native failures.
+Private worker receipts are `capture-exchange-public-worker151-final-20260917.json`
+and `capture-exchange-owner-worker151-final-20260917.json`.
+Source `42da64bd` is also packaged from a clean committed checkout. Clean types,
+76 focused source/React checks, 26 service checks and review/frontend/native
+builds pass. The packaged worker matches the tested bytes; embedded asset keys
+and exact normalized native dependencies identify the clean worker and both
+tactical/review surfaces. `docs/TACTICAL_DESKTOP_DELIVERY.md` records executable
+identity and recovery. No app was running or restarted; native interaction and
+startup reliability are not claimed.
 Broader quiet/long-combination recall, comparable-capture causal proof, larger
 endgame review evidence, the known queen-ending promotion, independently
 adjudicated accuracy and native/load-sensitive reliability remain open. This
