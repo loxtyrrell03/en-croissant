@@ -136,7 +136,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 150;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 151;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -1471,7 +1471,7 @@ export function classifyMistakeReviewMotifs(
         ).map((m) => ({ ...m, source: "allowed" as const })),
         missedMotifs: playedTheBestMove
             ? []
-            : auditTacticalMotifs(
+            : filterCompensatedRootCaptures(fen, bestLine, auditTacticalMotifs(
                   fen,
                   bestLine,
                   toMotifEvidence(missedDetail, "missed", input.pvSan),
@@ -1479,7 +1479,8 @@ export function classifyMistakeReviewMotifs(
                       ? input.cpBefore * (fenSide(fen) === "w" ? 1 : -1)
                       : undefined,
                   { previousFen: input.previousFen, previousMoveUci: cleanUci(input.previousMoveUci), tablebaseEvidence: input.tablebaseEvidence, tacticalHistory: input.tacticalHistory },
-              ).map((m) => ({ ...m, source: "missed" as const })),
+              ), input.previousFen, cleanUci(input.previousMoveUci), input.tacticalHistory)
+                .map((m) => ({ ...m, source: "missed" as const })),
         motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
     } satisfies MistakeReviewMotifClassification;
 
@@ -1528,6 +1529,7 @@ export function classifyMistakeReviewMotifs(
             refutationLine[0],
             classification.allowedMotifs,
             input.tablebaseEvidence,
+            input.tacticalHistory,
         ),
     );
     const compared: MistakeReviewMotifClassification = {
@@ -1558,14 +1560,14 @@ export function classifyMistakeReviewMotifs(
         ...(!playedTheBestMove && bestLine.length
             ? {
                   missedTimeline: selectContinuationLessons(
-                      buildTacticalTimeline(
+                      filterCompensatedRootCaptures(fen, bestLine, buildTacticalTimeline(
                           fen,
                           bestLine,
                           "missed",
                           classification.missedMotifs,
                           input.pvSan,
                           input.tablebaseEvidence,
-                      ),
+                      ), input.previousFen, cleanUci(input.previousMoveUci), input.tacticalHistory),
                       classification.missedMotifs,
                   ),
               }

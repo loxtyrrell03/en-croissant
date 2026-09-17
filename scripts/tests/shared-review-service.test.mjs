@@ -19,6 +19,47 @@ import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "../../
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
 
+test("a missed exchange payoff keeps full history, net value and saved review wording",async()=>{
+  const root=await mkdtemp(join(tmpdir(),"en-shared-review-exchange-retention-"));
+  const moves="d2d4 b8c6 e2e3 e7e5 g1f3 d8f6 b1c3 f8e7 d1e2 e5d4 e3d4 c6d4 f3d4 a7a6".split(" ");
+  const pos=Chess.fromSetup(parseFen(INITIAL_FEN).unwrap()).unwrap();
+  const lines=new Map();
+  let expectedFen="";
+  for(const [index,move] of moves.entries()){
+    const fen=makeFen(pos.toSetup());
+    if(index===13)expectedFen=fen;
+    lines.set(fen,{cp:index===13?-300:0,moves:index===13?"f6d4":move});
+    assert.ok(pos.isLegal(parseUci(move)));pos.play(parseUci(move));
+  }
+  lines.set(makeFen(pos.toSetup()),{cp:0,moves:"c3b5"});
+  const options={root,documentsRoot:join(root,"documents"),engineConfigPath:join(root,"engine.json"),
+    fetchGames:async()=>[],lookup:async fen=>{
+      assert.ok(lines.has(fen));return {depth:18,pvs:[lines.get(fen)]};
+    }};
+  let service;
+  try {
+    await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+    // Synthetic scores exercise history propagation/storage, not chess strength.
+    await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,
+      url:"https://example.test/exchange-retention",pgn:'[White "Opponent"]\n[Black "Tester"]\n[Date "2026.09.17"]\n[Result "0-1"]\n\n1. d4 Nc6 2. e3 e5 3. Nf3 Qf6 4. Nc3 Be7 5. Qe2 exd4 6. exd4 Nxd4 7. Nxd4 a6 0-1'}]}));
+    service=new SharedReviewService(options);await service.initialize(false);await service.run();
+    assert.equal(service.snapshot().error,null);
+    const card=service.snapshot().cards.find(card=>card.fen===expectedFen);assert.ok(card);
+    assert.deepEqual(card.tacticalHistory,{fen:INITIAL_FEN,moves:moves.slice(0,13)});
+    assert.equal(card.tacticalClassification.missedMotifs[0].label,"Winning Recapture");
+    assert.equal(card.tacticalClassification.missedMotifs[0].value,100);
+    assert.match(card.explanation,/completes the exchange.*1 pawn of net material/);
+    service.close();service=new SharedReviewService(options);await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards.find(card=>card.fen===expectedFen).tacticalClassification,
+      JSON.parse(JSON.stringify(card.tacticalClassification)));
+    assert.ok((await service.deck()).positions.some(position=>position.reason===card.explanation));
+  } finally {
+    service?.close();const target=resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-exchange-retention-"));
+    await rm(target,{recursive:true,force:true});
+  }
+});
+
 test("a missed fork retains only the initial pawn through saved review and reload",async()=>{
   const root=await mkdtemp(join(tmpdir(),"en-shared-review-fork-retention-"));
   // Constructed a6 variant. These controlled scores test wiring, not chess strength.

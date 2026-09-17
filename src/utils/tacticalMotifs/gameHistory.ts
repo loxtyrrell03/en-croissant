@@ -281,10 +281,10 @@ export function persistentPawnExchangeContext(
     return { balance, episodePlies: verified.frames.length - start };
 }
 
-/** A contiguous equal exchange before another capture has already settled its
- * losses. Require complete replay-matching history; never borrow an earlier
- * surplus, cross a quiet move or infer that a truncated window had no debt. */
-export function settledRootCaptureExchange(
+/** Account for every capture in the uninterrupted exchange ending at this
+ * root. Earlier captures can settle part of the last loss, but a prior surplus
+ * must never finance current profit. The caller still proves current safety. */
+export function rootCaptureExchangeContext(
     history: TacticalGameHistory | null | undefined,
     fen: string,
     move: NormalMove,
@@ -292,7 +292,8 @@ export function settledRootCaptureExchange(
     previousMove: string,
 ) {
     const verified = verifiedTacticalHistory(history, fen);
-    if (!verified || !verified.position.isLegal(move)) return null;
+    if (!verified || !verified.position.isLegal(move) || move.promotion ||
+        !verified.position.board.get(move.to)) return null;
     const last = verified.frames.at(-1);
     if (!last || makeFen(last.before.toSetup()) !== previousFen ||
         makeUci(last.move) !== previousMove) return null;
@@ -308,6 +309,18 @@ export function settledRootCaptureExchange(
     const side = verified.position.turn;
     const balance = chain.reduce((sum, frame) =>
         sum + (frame.before.turn === side ? 1 : -1) * frame.capture, 0);
-    if (balance !== 0) return null;
-    return chain.map(frame => makeUci(frame.move));
+    if (balance > 0 || -balance >= last.capture) return null;
+    return { moves: chain.map(frame => makeUci(frame.move)), debit: -balance };
+}
+
+/** Retain the exact-settlement contract for consumers that require zero debt. */
+export function settledRootCaptureExchange(
+    history: TacticalGameHistory | null | undefined,
+    fen: string,
+    move: NormalMove,
+    previousFen: string,
+    previousMove: string,
+) {
+    const context = rootCaptureExchangeContext(history, fen, move, previousFen, previousMove);
+    return context?.debit === 0 ? context.moves : null;
 }

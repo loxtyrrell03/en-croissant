@@ -16,6 +16,20 @@ import { directMaterialPayoffCases } from "./fixtures/directMaterialPayoff";
 import { discoveredPinPriorityFen, discoveredPinPriorityLine } from "./fixtures/discoveredPinPriority";
 import { settledPawnHistoryCases } from "./fixtures/settledPawnHistory";
 import { forkCountercaptureFen, forkCountercaptureLine } from "./fixtures/forkCountercapture";
+import { captureExchangeRetentionInput } from "./fixtures/captureExchangeRetention";
+
+test("a completed exchange shows its retained pawn rather than a free knight",()=>{
+  const input=captureExchangeRetentionInput();
+  const live=classifyPositionTacticalMotifs(input);
+  const missed=classifyMistakeReviewMotifs({...input,bestMoveUci:input.pvUci[0],playedMoveUci:"a7a6"});
+  for(const motifs of [live.timeline??[],missed.missedTimeline??[]]){
+    const container=document.createElement("div");
+    container.innerHTML=renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={["Qxd4"]} motifs={motifs}/></MantineProvider>);
+    expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Winning Recapture");
+    expect(container.textContent).toContain("1 pawn of net material");
+    expect(container.textContent).not.toContain("Hanging Piece");
+  }
+});
 
 test("the fork's queen exchange is secondary compensation on the actual plies",()=>{
   const result=classifyPositionTacticalMotifs({fen:forkCountercaptureFen,pvUci:forkCountercaptureLine});

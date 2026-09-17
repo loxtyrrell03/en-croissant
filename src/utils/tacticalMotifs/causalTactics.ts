@@ -6,7 +6,7 @@ import type { Color, NormalMove, Role, Square } from "chessops/types";
 import { kingCastlesTo, makeSquare, makeUci, opposite, parseUci } from "chessops/util";
 import type { TacticalMotifEvidence } from "./types";
 import { probeKingPawnEndgame, proveKpkZugzwang } from "./kpkBitbase";
-import { persistentPawnExchangeContext, settledRootCaptureExchange, type TacticalGameHistory } from "./gameHistory";
+import { appendTacticalHistory, persistentPawnExchangeContext, rootCaptureExchangeContext, type TacticalGameHistory } from "./gameHistory";
 import { proveDrawingCapture, drawingCaptureEvidence, proveTablebaseZugzwang, tablebaseZugzwangEvidence, verifiedTablebasePosition, type TablebaseEvidence } from "./tablebaseEvidence";
 
 const VALUE: Record<Role, number> = {
@@ -151,6 +151,7 @@ export function winningRecaptureEvidence(
     index: number,
     motif: TacticalMotifEvidence,
     settledExchange?: boolean,
+    exchangeDebit?: number,
 ): TacticalMotifEvidence | null {
     const step = steps[index],
         previous = steps[index - 1];
@@ -360,7 +361,7 @@ export function winningRecaptureEvidence(
     // the piece just traded; otherwise a queen sacrifice winning a rook
     // elsewhere is misleadingly presented as a free queen-for-minor gain.
     const gain = tacticalCaptureGain(step);
-    const debit = settledExchange ? 0 : previous.capture;
+    const debit = settledExchange ? 0 : (exchangeDebit ?? previous.capture);
     if (gain === null || gain - debit < 100) return null;
     // Same-square SEE cannot see a checking fork, compensation elsewhere,
     // or mate after accepting a sacrifice. Only independent legal proofs
@@ -388,7 +389,9 @@ export function winningRecaptureEvidence(
         value: gain - debit,
         evidence: settledExchange
             ? `${step.san} takes the ${victim.role} on ${makeSquare(step.move.to)} after an equal exchange on that square has already settled the earlier losses. After allowing for current counterplay, this capture gains at least ${gain / 100} ${gain === 100 ? "pawn" : "pawns"}; the earlier trades add no extra profit.`
-            : `${step.san} takes the ${victim.role} on ${makeSquare(step.move.to)} in exchange for the ${traded.role} just captured there. After allowing for that trade and immediate counterplay, the checked local gain is at least ${(gain - previous.capture) / 100} pawns; this is the payoff, not a newly hanging piece.`,
+            : exchangeDebit !== undefined
+                ? `${step.san} completes the exchange on ${makeSquare(step.move.to)}, retaining at least ${(gain - debit) / 100} ${gain - debit === 100 ? "pawn" : "pawns"} of net material after all captures and current counterplay. Earlier captures are included; the ${victim.role} is not an extra free piece.`
+                : `${step.san} takes the ${victim.role} on ${makeSquare(step.move.to)} in exchange for the ${traded.role} just captured there. After allowing for that trade and immediate counterplay, the checked local gain is at least ${(gain - previous.capture) / 100} pawns; this is the payoff, not a newly hanging piece.`,
     };
 }
 
@@ -465,12 +468,12 @@ export function filterCompensatedRootCaptures(
         makeFen(history[0].after.toSetup()) !== makeFen(root.before.toSetup())
     )
         return motifs;
-    const settled = root.capture > 0 && motifs.some(m => m.id === "hangingPiece" && m.ply === 1)
-        ? settledRootCaptureExchange(tacticalHistory, fen, root.move, previousFen, previousMove) : null;
-    const compensated = !settled && isCompensatedContinuationCapture(history, 1);
+    const exchange = root.capture > 0 && motifs.some(m => m.id === "hangingPiece" && m.ply === 1)
+        ? rootCaptureExchangeContext(tacticalHistory, fen, root.move, previousFen, previousMove) : null;
+    const compensated = !exchange && isCompensatedContinuationCapture(history, 1);
     return motifs.flatMap((motif) => {
         if (compensated && motif.id === "hangingPiece" && motif.ply === 1) return [];
-        if (!settled && motif.id === "hangingPiece" && motif.ply === 1 &&
+        if (!exchange && motif.id === "hangingPiece" && motif.ply === 1 &&
             (motif.value ?? 0) >= MIN_TACTICAL_CAPTURE_GAIN && history[0].capture && !history[0].move.promotion &&
             root.move.to !== history[0].move.to) {
             const recovery = tacticalCaptureProof(root).counterattack;
@@ -517,7 +520,7 @@ export function filterCompensatedRootCaptures(
                 if (target === history[0].move.to && root.before.board.get(target)?.role === "pawn") return [];
             }
         }
-        const contextual = motif.ply === 1 ? winningRecaptureEvidence(history, 1, motif, Boolean(settled)) : motif;
+        const contextual = motif.ply === 1 ? winningRecaptureEvidence(history, 1, motif, exchange?.debit === 0, exchange?.debit) : motif;
         return contextual ? [contextual] : [];
     });
 }
@@ -14960,6 +14963,7 @@ export function compareImmediateTacticalDefence(
     reply: string | undefined,
     motifs: TacticalMotifEvidence[],
     tablebaseEvidence?: TablebaseEvidence | null,
+    tacticalHistory?: TacticalGameHistory | null,
 ) {
     if (!bestMove || !playedMove || !reply) return motifs;
     const actual = replayTacticalLine(fen, [playedMove, reply]);
@@ -14978,8 +14982,17 @@ export function compareImmediateTacticalDefence(
     const step = actual[1];
     const alternative = better[1];
     const bestSan = better[0].san;
+    const exchange = rootCaptureExchangeContext(appendTacticalHistory(tacticalHistory, playedMove),
+        makeFen(step.before.toSetup()), step.move, fen, playedMove);
     return motifs.map((motif) => {
         if (motif.ply !== 1 || motif.moveUci !== reply) return motif;
+        // The profit belongs to the complete earlier exchange, not necessarily
+        // to the last choice to trade. Avoiding that recapture may leave the
+        // same pawn already lost; illegality alone cannot prove prevention.
+        if (motif.id === "hangingPiece" && exchange && exchange.debit > 0) {
+            return { ...motif, comparison: undefined,
+                comparisonEvidence: `${step.san} completes an existing exchange. Avoiding this recapture with ${bestSan} does not by itself prove that the earlier material loss was prevented; a separate comparison of the exchange outcomes is still needed.` };
+        }
         // A pawn-for-pawn exchange, even on different squares, cannot by
         // itself explain a material-loss mistake. Keep the position lesson
         // neutral; this does not prove the choices positionally equivalent.

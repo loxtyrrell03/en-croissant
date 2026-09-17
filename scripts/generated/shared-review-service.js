@@ -3202,12 +3202,12 @@ function persistentPawnExchangeContext(history, fen, move) {
 		episodePlies: verified.frames.length - start
 	};
 }
-/** A contiguous equal exchange before another capture has already settled its
-* losses. Require complete replay-matching history; never borrow an earlier
-* surplus, cross a quiet move or infer that a truncated window had no debt. */
-function settledRootCaptureExchange(history, fen, move, previousFen, previousMove) {
+/** Account for every capture in the uninterrupted exchange ending at this
+* root. Earlier captures can settle part of the last loss, but a prior surplus
+* must never finance current profit. The caller still proves current safety. */
+function rootCaptureExchangeContext(history, fen, move, previousFen, previousMove) {
 	const verified = verifiedTacticalHistory(history, fen);
-	if (!verified || !verified.position.isLegal(move)) return null;
+	if (!verified || !verified.position.isLegal(move) || move.promotion || !verified.position.board.get(move.to)) return null;
 	const last = verified.frames.at(-1);
 	if (!last || makeFen(last.before.toSetup()) !== previousFen || makeUci(last.move) !== previousMove) return null;
 	let start = verified.frames.length;
@@ -3219,8 +3219,12 @@ function settledRootCaptureExchange(history, fen, move, previousFen, previousMov
 	const chain = verified.frames.slice(start);
 	if (chain.length < 2 || chain.length % 2 !== 0) return null;
 	const side = verified.position.turn;
-	if (chain.reduce((sum, frame) => sum + (frame.before.turn === side ? 1 : -1) * frame.capture, 0) !== 0) return null;
-	return chain.map((frame) => makeUci(frame.move));
+	const balance = chain.reduce((sum, frame) => sum + (frame.before.turn === side ? 1 : -1) * frame.capture, 0);
+	if (balance > 0 || -balance >= last.capture) return null;
+	return {
+		moves: chain.map((frame) => makeUci(frame.move)),
+		debit: -balance
+	};
 }
 //#endregion
 //#region src/utils/tacticalMotifs/kpkBitbase.ts
@@ -10027,7 +10031,7 @@ function isCompensatedContinuationCapture(steps, index) {
 * Subtract the immediately preceding loss from the settled local capture;
 * complete root history may establish that an equal trade already settled
 * that loss. Never borrow earlier surplus, future PV play or promotion credit. */
-function winningRecaptureEvidence(steps, index, motif, settledExchange) {
+function winningRecaptureEvidence(steps, index, motif, settledExchange, exchangeDebit) {
 	const step = steps[index], previous = steps[index - 1];
 	if (motif.id === "hangingPiece" && step?.capture && index >= 2) {
 		const checking = steps[index - 2];
@@ -10138,7 +10142,7 @@ function winningRecaptureEvidence(steps, index, motif, settledExchange) {
 	if (motif.id === "hangingPiece" && step?.capture && previous?.capture && proveMatingDeflection(previous)?.declined.some((branch) => branch.reply === step.san)) return null;
 	if (motif.id !== "hangingPiece" || !step?.capture || !previous?.capture || previous.move.to !== step.move.to || previous.move.promotion || step.move.promotion) return motif;
 	const gain = tacticalCaptureGain(step);
-	const debit = settledExchange ? 0 : previous.capture;
+	const debit = settledExchange ? 0 : exchangeDebit ?? previous.capture;
 	if (gain === null || gain - debit < 100) return null;
 	if (proveMatingCaptureReply(step) || proveMateBackedFork(previous) || proveRecaptureBackedFork(previous) || proveCaptureForkPreparation(previous) || proveCaptureDiscoveryPreparation(previous) || proveCaptureDeflection(previous) || proveDiscoveryAttraction(previous) || provePinnedCapture(previous) || capturedDefenderProof(previous, motif.source)) return null;
 	const victim = step.before.board.get(step.move.to);
@@ -10148,7 +10152,7 @@ function winningRecaptureEvidence(steps, index, motif, settledExchange) {
 		...motif,
 		label: settledExchange && step.capture === VALUE.pawn ? "Hanging Pawn" : "Winning Recapture",
 		value: gain - debit,
-		evidence: settledExchange ? `${step.san} takes the ${victim.role} on ${makeSquare(step.move.to)} after an equal exchange on that square has already settled the earlier losses. After allowing for current counterplay, this capture gains at least ${gain / 100} ${gain === 100 ? "pawn" : "pawns"}; the earlier trades add no extra profit.` : `${step.san} takes the ${victim.role} on ${makeSquare(step.move.to)} in exchange for the ${traded.role} just captured there. After allowing for that trade and immediate counterplay, the checked local gain is at least ${(gain - previous.capture) / 100} pawns; this is the payoff, not a newly hanging piece.`
+		evidence: settledExchange ? `${step.san} takes the ${victim.role} on ${makeSquare(step.move.to)} after an equal exchange on that square has already settled the earlier losses. After allowing for current counterplay, this capture gains at least ${gain / 100} ${gain === 100 ? "pawn" : "pawns"}; the earlier trades add no extra profit.` : exchangeDebit !== void 0 ? `${step.san} completes the exchange on ${makeSquare(step.move.to)}, retaining at least ${(gain - debit) / 100} ${gain - debit === 100 ? "pawn" : "pawns"} of net material after all captures and current counterplay. Earlier captures are included; the ${victim.role} is not an extra free piece.` : `${step.san} takes the ${victim.role} on ${makeSquare(step.move.to)} in exchange for the ${traded.role} just captured there. After allowing for that trade and immediate counterplay, the checked local gain is at least ${(gain - previous.capture) / 100} pawns; this is the payoff, not a newly hanging piece.`
 	};
 }
 /** The displayed king evasion need not be the first witness selected at the
@@ -10186,11 +10190,11 @@ function filterCompensatedRootCaptures(fen, line, motifs, previousFen, previousM
 	const history = replayTacticalLine(previousFen, [previousMove, line[0]]);
 	const root = replayTacticalLine(fen, [line[0]])[0];
 	if (!root || history.length !== 2 || makeFen(history[0].after.toSetup()) !== makeFen(root.before.toSetup())) return motifs;
-	const settled = root.capture > 0 && motifs.some((m) => m.id === "hangingPiece" && m.ply === 1) ? settledRootCaptureExchange(tacticalHistory, fen, root.move, previousFen, previousMove) : null;
-	const compensated = !settled && isCompensatedContinuationCapture(history, 1);
+	const exchange = root.capture > 0 && motifs.some((m) => m.id === "hangingPiece" && m.ply === 1) ? rootCaptureExchangeContext(tacticalHistory, fen, root.move, previousFen, previousMove) : null;
+	const compensated = !exchange && isCompensatedContinuationCapture(history, 1);
 	return motifs.flatMap((motif) => {
 		if (compensated && motif.id === "hangingPiece" && motif.ply === 1) return [];
-		if (!settled && motif.id === "hangingPiece" && motif.ply === 1 && (motif.value ?? 0) >= MIN_TACTICAL_CAPTURE_GAIN && history[0].capture && !history[0].move.promotion && root.move.to !== history[0].move.to) {
+		if (!exchange && motif.id === "hangingPiece" && motif.ply === 1 && (motif.value ?? 0) >= MIN_TACTICAL_CAPTURE_GAIN && history[0].capture && !history[0].move.promotion && root.move.to !== history[0].move.to) {
 			const recovery = tacticalCaptureProof(root).counterattack;
 			let retained = motif.value ?? Infinity;
 			let includesPriorRecovery = false;
@@ -10230,7 +10234,7 @@ function filterCompensatedRootCaptures(fen, line, motifs, previousFen, previousM
 				if (target === history[0].move.to && root.before.board.get(target)?.role === "pawn") return [];
 			}
 		}
-		const contextual = motif.ply === 1 ? winningRecaptureEvidence(history, 1, motif, Boolean(settled)) : motif;
+		const contextual = motif.ply === 1 ? winningRecaptureEvidence(history, 1, motif, exchange?.debit === 0, exchange?.debit) : motif;
 		return contextual ? [contextual] : [];
 	});
 }
@@ -20393,7 +20397,7 @@ function checkingDiscoveryExchange(step) {
 /** Compare the same immediate reply after the played and best moves. We only
 * make a causal statement where legality/geometry/exchange provides a witness;
 * replaying the old full PV after a different move would assume bad defence. */
-function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motifs, tablebaseEvidence) {
+function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motifs, tablebaseEvidence, tacticalHistory) {
 	if (!bestMove || !playedMove || !reply) return motifs;
 	const actual = replayTacticalLine(fen, [playedMove, reply]);
 	const better = replayTacticalLine(fen, [bestMove, reply]);
@@ -20406,8 +20410,14 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 	const step = actual[1];
 	const alternative = better[1];
 	const bestSan = better[0].san;
+	const exchange = rootCaptureExchangeContext(appendTacticalHistory(tacticalHistory, playedMove), makeFen(step.before.toSetup()), step.move, fen, playedMove);
 	return motifs.map((motif) => {
 		if (motif.ply !== 1 || motif.moveUci !== reply) return motif;
+		if (motif.id === "hangingPiece" && exchange && exchange.debit > 0) return {
+			...motif,
+			comparison: void 0,
+			comparisonEvidence: `${step.san} completes an existing exchange. Avoiding this recapture with ${bestSan} does not by itself prove that the earlier material loss was prevented; a separate comparison of the exchange outcomes is still needed.`
+		};
 		if ((motif.id === "hangingPiece" && motif.label === "Hanging Pawn" || motif.id === "pin" && proveRelativePinnedCapture(step)) && actual[0].capture === VALUE.pawn && !actual[0].move.promotion && step.capture === VALUE.pawn && (motif.value ?? Infinity) <= VALUE.pawn) return {
 			...motif,
 			comparison: void 0,
@@ -21233,7 +21243,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 150;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 151;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -22038,12 +22048,12 @@ function classifyMistakeReviewMotifs(input) {
 			...m,
 			source: "allowed"
 		})),
-		missedMotifs: playedTheBestMove ? [] : auditTacticalMotifs(fen, bestLine, toMotifEvidence(missedDetail, "missed", input.pvSan), typeof input.cpBefore === "number" ? input.cpBefore * (fenSide(fen) === "w" ? 1 : -1) : void 0, {
+		missedMotifs: playedTheBestMove ? [] : filterCompensatedRootCaptures(fen, bestLine, auditTacticalMotifs(fen, bestLine, toMotifEvidence(missedDetail, "missed", input.pvSan), typeof input.cpBefore === "number" ? input.cpBefore * (fenSide(fen) === "w" ? 1 : -1) : void 0, {
 			previousFen: input.previousFen,
 			previousMoveUci: cleanUci(input.previousMoveUci),
 			tablebaseEvidence: input.tablebaseEvidence,
 			tacticalHistory: input.tacticalHistory
-		}).map((m) => ({
+		}), input.previousFen, cleanUci(input.previousMoveUci), input.tacticalHistory).map((m) => ({
 			...m,
 			source: "missed"
 		})),
@@ -22060,12 +22070,12 @@ function classifyMistakeReviewMotifs(input) {
 	}
 	const playedEndgameOutcome = verifiedTablebasePosition(fen, input.tablebaseEvidence)?.moves.find((move) => move.uci === playedMoveUci)?.outcome;
 	classification.missedMotifs = classification.missedMotifs.filter((m) => m.id !== "drawingCapture" || playedEndgameOutcome === 1);
-	const allowedMotifs = compareBestLineTacticalDefence(fen, playedMoveUci, refutationLine, bestLine, compareImmediateTacticalDefence(fen, bestMoveUci, playedMoveUci, refutationLine[0], classification.allowedMotifs, input.tablebaseEvidence));
+	const allowedMotifs = compareBestLineTacticalDefence(fen, playedMoveUci, refutationLine, bestLine, compareImmediateTacticalDefence(fen, bestMoveUci, playedMoveUci, refutationLine[0], classification.allowedMotifs, input.tablebaseEvidence, input.tacticalHistory));
 	const compared = {
 		...classification,
 		allowedMotifs,
 		...refutationLine.length && fenAfterPlayedMove ? { allowedTimeline: selectContinuationLessons(filterCompensatedRootCaptures(fenAfterPlayedMove ?? "", refutationLine, buildTacticalTimeline(fenAfterPlayedMove ?? "", refutationLine, "allowed", allowedMotifs, input.refutationSan, input.tablebaseEvidence), fen, playedMoveUci, appendTacticalHistory(input.tacticalHistory, playedMoveUci)), allowedMotifs) } : {},
-		...!playedTheBestMove && bestLine.length ? { missedTimeline: selectContinuationLessons(buildTacticalTimeline(fen, bestLine, "missed", classification.missedMotifs, input.pvSan, input.tablebaseEvidence), classification.missedMotifs) } : {}
+		...!playedTheBestMove && bestLine.length ? { missedTimeline: selectContinuationLessons(filterCompensatedRootCaptures(fen, bestLine, buildTacticalTimeline(fen, bestLine, "missed", classification.missedMotifs, input.pvSan, input.tablebaseEvidence), input.previousFen, cleanUci(input.previousMoveUci), input.tacticalHistory), classification.missedMotifs) } : {}
 	};
 	compared.allowedMotifs = selectRootConnectedLessons(fenAfterPlayedMove ?? "", refutationLine, compared.allowedMotifs, compared.allowedTimeline ?? []);
 	if (compared.missedTimeline) compared.missedTimeline = compared.missedTimeline.filter((m) => m.id !== "drawingCapture" || m.ply !== 1 || playedEndgameOutcome === 1);

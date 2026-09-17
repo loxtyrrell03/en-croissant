@@ -12,6 +12,7 @@ import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { captureLiabilityInput } from "./fixtures/captureLiabilityRecovery";
 import { discoveryRecaptureInput,discoveryRecaptureFen } from "./fixtures/discoveryRecapture";
 import { forkExchangeRetentionInput,forkExchangeRetentionFen } from "./fixtures/forkExchangeRetention";
+import { captureExchangeRetentionInput } from "./fixtures/captureExchangeRetention";
 import { captureMateCases } from "./fixtures/captureMate";
 import { immediatePromotionCases } from "./fixtures/immediatePromotion";
 import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "./fixtures/promotionCheckRetention";
@@ -598,6 +599,16 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("root-only capture mates survive
             : !result.scan.motifs.some(m => m.id.startsWith("mate"))).toBe(true);
     }
 }, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("net exchange recaptures survive the production controller",async()=>{
+    for(const reflected of [false,true]) for(const safe of [true,false]) {
+        const input={...captureExchangeRetentionInput(reflected,safe),depth:18,rootCp:100,engineName:"Constructed exchange"};
+        const {scan}=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(scan.motifs.map(({label,value,ply})=>({label,value,ply}))).toEqual(
+            safe?[{label:"Winning Recapture",value:100,ply:1}]:[]);
+    }
+},30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("break-even fork collections survive the production controller",async()=>{
     for(const reflected of [false,true]) for(const rootOnly of [false,true]) {
