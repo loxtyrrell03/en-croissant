@@ -111,9 +111,12 @@ runs do not resolve earlier load-sensitive startup failures.
 
 The tested worker is `liveTactics.worker-Dy5Sbb7i.js`, 597,227 bytes, SHA-256
 `e0ca08fea0e4c0375d881f336f0c7948cf5709fce9a700c0093f802a78633809`.
-Clean native delivery is recorded separately in
-`docs/TACTICAL_DESKTOP_DELIVERY.md`; source/worker verification alone does not
-establish native-window interaction or startup reliability.
+Source `e8579cb1` is also packaged from a clean committed checkout, with the
+same tested worker bytes. Clean source/React/service checks and frontend/native
+builds pass. `docs/TACTICAL_DESKTOP_DELIVERY.md` records the exact package,
+dependency linkage and previous-executable backup. No owner app was running
+or restarted. This establishes package delivery, not native-window interaction
+or startup reliability.
 
 ## Private receipts and remaining work
 

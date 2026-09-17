@@ -1,6 +1,43 @@
 # Tactical desktop delivery — 2026-09-17
 
-## Current package: adapter 148 / live pipeline 155
+## Current package: adapter 149 / live pipeline 156
+
+Source `e8579cb1` is packaged from clean detached checkout
+`en-tactical-desktop-e8579cb1`. Discoveries can survive checking recaptures and
+connected pin/support clearances. Countercheck leaves account for sequential
+piece losses; sufficient fork exchanges retain their existing gain without
+claiming an extra free piece. See
+`benchmarks/tactical-relevance/discovery-recapture-review.md` for the 27-game
+comparison, engine evidence, rejected drafts and remaining Nxf7/cause gaps.
+
+Clean TypeScript, 55 focused source/React checks (four optional skips),
+24 generated-service checks (one optional engine skip), the 43-module review
+build and 8,863-module frontend build pass. Native release compilation passes
+in 1m30s with 22 existing warnings. Generated-review differences are source-region
+comments only; the route tree differs only in line endings. Unrelated dirty
+OTB/FIDE/phone/stats changes were excluded.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,075,776 bytes;
+  SHA-256 `64687e2a2e3763eaf6e91e80e917e7c82e56cdb712b68e72109fb20c5744577f`.
+- Worker: `liveTactics.worker-Dy5Sbb7i.js`, 597,227 bytes; SHA-256
+  `e0ca08fea0e4c0375d881f336f0c7948cf5709fce9a700c0093f802a78633809`.
+  Clean bytes match the 2,145-input tested artifact. The x64 executable embeds
+  this worker, `TacticalClassifierPanel-CP7T4Dxm.js` and
+  `OpeningReviewWorkspace-CwwCyKva.js`; exact native dependency paths identify
+  those assets in the clean checkout.
+- Previous pipeline-155 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline156/en-croissant-fork.exe`,
+  SHA-256 `fa7254c3d8f0b2913fd49f3fb075db78b1b98e4fce9631e4b8afc84113d9d2e9`.
+
+No app was running before or after compilation; none was launched or restarted.
+The Dev App shortcut was read back unchanged and retains the primary checkout's
+`encroissant-native` workflow. Owner data, settings, engines and phone services
+are unchanged. This verifies package linkage, not native interaction or reliable
+startup under load. The fuller Nxf7 fork explanation, comparable-capture causal
+qualification, later similar discoveries, quiet preparations and the known
+queen-ending promotion remain unfinished. This does not complete the goal.
+
+## Previous package: adapter 148 / live pipeline 155
 
 Source `1013cdfb` is packaged from clean detached checkout
 `en-tactical-desktop-1013cdfb`. Captures can retain their gain through verified
