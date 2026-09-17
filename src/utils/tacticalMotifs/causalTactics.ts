@@ -6057,7 +6057,10 @@ function computeImmediateFork(step: TacticalReplayStep,
                 // that newly attacked piece can be collected in return. Prove
                 // every reply to the collection; never borrow a later PV gain.
                 const requiredGain = 100 - step.capture + Math.max(0, replyGain);
-                const minimum = Math.max(MIN_TACTICAL_CAPTURE_GAIN, requiredGain);
+                // The collection can break even when the initiating fork has
+                // already taken a pawn. Its actual capture/exchanges still need
+                // all-defence retention; the overall fork must retain 100 cp.
+                const minimum = Math.max(0, requiredGain);
                 // An equal collection can already retain the pawn taken by
                 // the fork. Do not exhaust its shared budget trying to prove
                 // an unnecessary extra gain before accepting that sound bound.
@@ -9907,7 +9910,8 @@ export function proveDefenderCombination(
         !Number.isSafeInteger(nodeLimit) ||
         nodeLimit <= 0 ||
         !Number.isSafeInteger(minimumGain) ||
-        minimumGain <= 0 ||
+        minimumGain < 0 ||
+        (minimumGain === 0 && (!step.capture || !allPiecesAtLeaf || !verifyCounterchecks)) ||
         !Number.isSafeInteger(evasionLimit) ||
         evasionLimit < 0
     )
@@ -13483,9 +13487,12 @@ export function auditTacticalMotifs(
             const immediate = sound ? proveImmediateFork(step) : null;
             if (immediate) proposal = { ...proposal, value: immediate.gain };
             const collection = immediate?.branches.find(branch => branch.collection?.length);
-            if (immediate && step.capture > 0 && immediate.gain <= step.capture && !collection) {
+            const leastForkVictim = immediate ? Math.min(...immediate.targets
+                .filter(square => step.after.board.get(square)?.role !== "king")
+                .map(square => VALUE[step.after.board.get(square)!.role])) : Infinity;
+            if (immediate && !collection && immediate.gain < step.capture + leastForkVictim) {
                 proposal = { ...proposal,
-                    evidence: `${step.san} forks the ${immediate.targets.map(square => `${step.after.board.get(square)!.role} on ${makeSquare(square)}`).join(" and ")}. The checked defences retain at least ${immediate.gain / 100} pawn${immediate.gain === 100 ? "" : "s"} of local material gain after the initial capture and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.` };
+                    evidence: `${step.san} forks the ${immediate.targets.map(square => `${step.after.board.get(square)!.role} on ${makeSquare(square)}`).join(" and ")}. The checked defences retain at least ${immediate.gain / 100} pawn${immediate.gain === 100 ? "" : "s"} of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.` };
             }
             if (immediate && collection?.captureUci) {
                 const line = replayTacticalLine(makeFen(step.after.toSetup()), [collection.replyUci, collection.captureUci]);

@@ -97,12 +97,26 @@ test.skipIf(!process.env.TACTICAL_DISCOVERY_OWNER_FORK_REPORT)("inspect owner fo
         const fork=proveImmediateFork(root,(reason,replyUci,remaining)=>failures.push({reason,replyUci,remaining}));
         const failure=failures.find(f=>f.replyUci);
         const trials:any[]=[];
+        const collections:any[]=[];
         if(failure){
             const defence=replayTacticalLine(row.fen,[root.uci,failure.replyUci])[1];
             const pos=defence.after;
             const attacker=pos.board.get(defence.move.to)!;
             const threatened=attacks(attacker,defence.move.to,pos.board.occupied).intersect(pos.board[root.before.turn]);
             const targets=[...attacks(pos.board.get(root.move.to)!,root.move.to,pos.board.occupied).intersect(pos.board[opposite(root.before.turn)])];
+            for(const to of pos.dests(root.move.to)){
+                if(pos.board.get(to)?.color!==opposite(root.before.turn))continue;
+                const capture=replayTacticalLine(makeFen(pos.toSetup()),[makeUci({from:root.move.to,to})])[0];
+                const follow=[...attacks(capture.after.board.get(to)!,to,capture.after.board.occupied)
+                    .intersect(capture.after.board[opposite(root.before.turn)])
+                    .diff(attacks(pos.board.get(root.move.to)!,root.move.to,pos.board.occupied))];
+                for(const limit of [4096,16384]){
+                    const budget={nodes:limit},leaves:any[]=[],trace:any[]=[];
+                    const gain=proveDefenderCombination(capture,follow,[to],limit,budget,1,true,90,
+                        leaf=>leaves.push(leaf),true,f=>trace.push(f));
+                    collections.push({uci:capture.uci,follow,gain,visits:limit-budget.nodes,limit,leaves,trace});
+                }
+            }
             for(const [from,dests] of pos.allDests()) for(const to of dests){
                 if(!threatened.has(from)||pos.board.get(to)||from===root.move.to)continue;
                 const repair=replayTacticalLine(makeFen(pos.toSetup()),[makeUci({from,to})])[0];
@@ -113,7 +127,7 @@ test.skipIf(!process.env.TACTICAL_DISCOVERY_OWNER_FORK_REPORT)("inspect owner fo
                 trials.push({uci:repair.uci,gain,visits:4096-budget.nodes,leaves,trace});
             }
         }
-        return {id:row.id,fen:row.fen,uci:root.uci,fork,failures,trials};
+        return {id:row.id,fen:row.fen,uci:root.uci,fork,failures,trials,collections};
     });
     expect(cases).toHaveLength(ids.length);
     writeFileSync(output,JSON.stringify({cases},null,2),{flag:"wx"});

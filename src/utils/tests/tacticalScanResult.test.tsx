@@ -18,6 +18,7 @@ import { captureMatingGuardCases } from "./fixtures/captureMatingGuard";
 import { immediateAlternativeInputs } from "./fixtures/immediateTacticalAlternative";
 import { kingDefenderRemovalCases } from "./fixtures/kingDefenderRemoval";
 import { forkCountercaptureFen, forkCountercaptureLine } from "./fixtures/forkCountercapture";
+import { forkExchangeRetentionInput } from "./fixtures/forkExchangeRetention";
 import { captureMateFen, captureMateLine } from "./fixtures/captureMate";
 import { immediatePromotionCases } from "./fixtures/immediatePromotion";
 import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "./fixtures/promotionCheckRetention";
@@ -128,6 +129,19 @@ test("a connected fork shows its current rook targets without two extra queen-wi
   expect(value.variations[0].timeline).toContainEqual(expect.objectContaining({
     label:"Fork Countercapture",ply:5,value:undefined,
   }));
+});
+
+test("a pawn-retaining fork renders its current targets without claiming a free rook",()=>{
+  const input=forkExchangeRetentionInput();
+  const value=buildLiveTacticalScan({...input,depth:18,engineName:"Constructed retained exchange"});
+  const element=document.createElement("div");element.innerHTML=markup(value);
+  expect(element.textContent).toContain("Fork found");
+  expect(element.textContent).toContain("after compensation");
+  expect(element.textContent).not.toContain("winning the rook");
+  expect(value.motifs[0]).toMatchObject({id:"fork",value:100});
+  expect(value.motifs).toHaveLength(1);
+  expect(value.arrows.map(a=>a.from+a.to)).toEqual(["e5f7","f7d8","f7h8"]);
+  expect(value.arrows.every(a=>a.ply===1)).toBe(true);
 });
 
 test("a king-safe defender removal explains legality and draws its current relationships", () => {

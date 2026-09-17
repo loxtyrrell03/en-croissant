@@ -14259,7 +14259,7 @@ function computeImmediateFork(step, diagnostic) {
 				let retained = captureBound(next, capture);
 				let collection;
 				const requiredGain = 100 - step.capture + Math.max(0, replyGain);
-				const minimum = Math.max(MIN_TACTICAL_CAPTURE_GAIN, requiredGain);
+				const minimum = Math.max(0, requiredGain);
 				if (retained === null || retained < requiredGain) {
 					const after = next.clone();
 					after.play(capture);
@@ -16803,7 +16803,7 @@ function participantCaptureGain(pos, move, pieces, budget, liabilities) {
 * One checking counterattack may be answered; never follow a cooperative PV.
 * Exchange leaves also debit an off-square capture of an attacking piece. */
 function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sharedBudget, evasionLimit = 1, allPiecesAtLeaf = false, minimumGain = 90, onLeaf, verifyCounterchecks = false, onTrace, allowLiabilityRecovery = false) {
-	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !Number.isSafeInteger(minimumGain) || minimumGain <= 0 || !Number.isSafeInteger(evasionLimit) || evasionLimit < 0) return null;
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !Number.isSafeInteger(minimumGain) || minimumGain < 0 || minimumGain === 0 && (!step.capture || !allPiecesAtLeaf || !verifyCounterchecks) || !Number.isSafeInteger(evasionLimit) || evasionLimit < 0) return null;
 	const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}:${evasionLimit}:${allPiecesAtLeaf}:${minimumGain}:${verifyCounterchecks}:${allowLiabilityRecovery}`;
 	if (!onLeaf && !onTrace && !sharedBudget && nodeLimit === 4096 && defenderCombinationCache.has(key)) return defenderCombinationCache.get(key);
 	const side = step.before.turn;
@@ -19463,9 +19463,10 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 				value: immediate.gain
 			};
 			const collection = immediate?.branches.find((branch) => branch.collection?.length);
-			if (immediate && step.capture > 0 && immediate.gain <= step.capture && !collection) proposal = {
+			const leastForkVictim = immediate ? Math.min(...immediate.targets.filter((square) => step.after.board.get(square)?.role !== "king").map((square) => VALUE[step.after.board.get(square).role])) : Infinity;
+			if (immediate && !collection && immediate.gain < step.capture + leastForkVictim) proposal = {
 				...proposal,
-				evidence: `${step.san} forks the ${immediate.targets.map((square) => `${step.after.board.get(square).role} on ${makeSquare(square)}`).join(" and ")}. The checked defences retain at least ${immediate.gain / 100} pawn${immediate.gain === 100 ? "" : "s"} of local material gain after the initial capture and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.`
+				evidence: `${step.san} forks the ${immediate.targets.map((square) => `${step.after.board.get(square).role} on ${makeSquare(square)}`).join(" and ")}. The checked defences retain at least ${immediate.gain / 100} pawn${immediate.gain === 100 ? "" : "s"} of local material gain after captures and exchanges. A defence can exchange pieces instead of losing a forked piece outright; this is not an extra free-piece claim.`
 			};
 			if (immediate && collection?.captureUci) {
 				const line = replayTacticalLine(makeFen(step.after.toSetup()), [collection.replyUci, collection.captureUci]);
@@ -21232,7 +21233,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 149;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 150;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

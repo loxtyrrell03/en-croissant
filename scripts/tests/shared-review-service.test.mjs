@@ -19,6 +19,37 @@ import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "../../
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
 
+test("a missed fork retains only the initial pawn through saved review and reload",async()=>{
+  const root=await mkdtemp(join(tmpdir(),"en-shared-review-fork-retention-"));
+  // Constructed a6 variant. These controlled scores test wiring, not chess strength.
+  const fen="2kr1bnr/1qp1pppp/pp6/n2pN3/3P2P1/Q1NPP2P/PP1B1P2/R3K2R w KQ - 0 1";
+  const pos=Chess.fromSetup(parseFen(fen).unwrap()).unwrap();pos.play(parseUci("a1c1"));
+  const after=makeFen(pos.toSetup());
+  const options={root,documentsRoot:join(root,"documents"),engineConfigPath:join(root,"engine.json"),
+    fetchGames:async()=>[],lookup:async requested=>{
+      assert.ok(requested===fen||requested===after);
+      return {depth:18,pvs:requested===fen?[{cp:400,moves:"e5f7"}]:[{cp:50,moves:"e7e6"}]};
+    }};
+  let service;
+  try {
+    await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+    await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,
+      url:"https://example.test/fork-retention",pgn:`[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.17"]\n[SetUp "1"]\n[FEN "${fen}"]\n[Result "1-0"]\n\n1. Rc1 1-0`}]}));
+    service=new SharedReviewService(options);await service.initialize(false);await service.run();
+    assert.equal(service.snapshot().error,null);const card=service.snapshot().cards[0];assert.ok(card);
+    assert.equal(card.tacticalClassification.missedMotifs[0].id,"fork");
+    assert.equal(card.tacticalClassification.missedMotifs[0].value,100);
+    assert.match(card.explanation,/forks the rook on d8 and rook on h8/);
+    service.close();service=new SharedReviewService(options);await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification,JSON.parse(JSON.stringify(card.tacticalClassification)));
+    assert.equal((await service.deck()).positions[0].reason,card.explanation);
+  } finally {
+    service?.close();const target=resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-fork-retention-"));
+    await rm(target,{recursive:true,force:true});
+  }
+});
+
 test("a missed discovery survives generated review and saved deck reload",async()=>{
   const root=await mkdtemp(join(tmpdir(),"en-shared-review-discovery-recapture-"));
   // Constructed fixture, not an owner game. Scores deliberately test wiring.
