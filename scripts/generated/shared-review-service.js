@@ -20619,6 +20619,12 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 			if (proveRepairedFork(step)) return motif;
 			const mixed = !establishedFork(step) && proveMixedTargetFork(step);
 			if (mixed) {
+				const captureDefence = mixed.gain - choiceCredit >= VALUE.pawn && proveTacticalAttackerCaptureDefence(alternative);
+				if (captureDefence) return {
+					...motif,
+					comparison: "prevented",
+					comparisonEvidence: `After ${bestSan}, ${captureDefence.defence} answers ${alternative.san} and captures the forking ${alternative.after.board.get(alternative.move.to).role}.${choiceCredit ? ` The original fork still costs material after crediting the material taken by ${actual[0].san}.` : ""} The defensive proof includes the fork's initial capture, legal recaptures, immediate losses elsewhere and one countercheck response. This stops this immediate fork, not every possible later attack.`
+				};
 				const other = proveMixedTargetFork(alternative);
 				if (other && other.targets.join(",") === mixed.targets.join(",") && other.gain >= mixed.gain) return {
 					...motif,
@@ -20695,9 +20701,18 @@ function proveCheckingForkCaptureDefence(root, nodeLimit = 4096) {
 /** A quiet fork may have the same concrete capture defence. This does not
 * refute a longer combination merely because its short exchange proof fails. */
 function proveForkCaptureDefence(root, nodeLimit = 4096) {
+	if (!root || winningTargets(root.after, root.move.to, root.before.turn).length < 2) return null;
+	return proveTacticalAttackerCaptureDefence(root, nodeLimit);
+}
+/** Positively establish a safe capture of a tactical attacker. This helper
+* does not establish that the original move was a tactic or caused a mistake;
+* callers must supply that separate proof and account for choice compensation.
+* Unlike fork geometry, its capture witness remains meaningful when a better
+* move relocates a target or makes its recapture legal. */
+function proveTacticalAttackerCaptureDefence(root, nodeLimit = 4096) {
 	if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.move.promotion || root.after.isEnd()) return null;
 	const forker = root.after.board.get(root.move.to);
-	if (!forker || forker.color !== root.before.turn || forker.role === "king" || winningTargets(root.after, root.move.to, root.before.turn).length < 2) return null;
+	if (!forker || forker.color !== root.before.turn || forker.role === "king") return null;
 	const budget = { nodes: nodeLimit };
 	try {
 		for (const capture of recoveryMoves(root.after, root.after.turn)) {
@@ -21262,7 +21277,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 153;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 154;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

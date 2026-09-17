@@ -601,6 +601,22 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("root-only capture mates survive
     }
 }, 30000);
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("mixed-fork cause comparisons preserve actual-board controller themes",async()=>{
+    const {mixedForkCaptureDefenceFen,mixedForkCaptureDefenceControls}=await import("./fixtures/mixedForkCaptureDefence");
+    for(const row of [{id:"safe-capture",fen:mixedForkCaptureDefenceFen},...mixedForkCaptureDefenceControls])
+        for(const reflected of [false,true]){
+            const previousFen=reflected?reflectMixedForkFen(row.fen):row.fen;
+            const previousMoveUci=reflected?reflectMixedForkMove("d7c7"):"d7c7";
+            const step=replayTacticalLine(previousFen,[previousMoveUci])[0];
+            const input={fen:makeFen(step.after.toSetup()),previousFen,previousMoveUci,
+                pvUci:[reflected?reflectMixedForkMove("g5g2"):"g5g2"],depth:16,engineName:"Constructed fork cause"};
+            const {scan}=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+            expect(scan).toEqual(buildLiveTacticalScan(input));
+            expect(scan.motifs[0]?.id).toBe("fork");
+            expect(scan.arrows.every(arrow=>arrow.ply===1)).toBe(true);
+        }
+},30000);
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("capturing mixed-target forks survive the production controller",async()=>{
     const {capturingMixedForkCases}=await import("./fixtures/capturingMixedTargetFork");
     const {reflectMixedForkFen,reflectMixedForkMove}=await import("./fixtures/mixedTargetFork");

@@ -17,8 +17,40 @@ import { captureMateFen } from "../../src/utils/tests/fixtures/captureMate.ts";
 import { missedPromotionFen } from "../../src/utils/tests/fixtures/immediatePromotion.ts";
 import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "../../src/utils/tests/fixtures/promotionCheckRetention.ts";
 import { capturingMixedForkFen, capturingMixedForkLine } from "../../src/utils/tests/fixtures/capturingMixedTargetFork.ts";
+import { mixedForkCaptureDefenceFen } from "../../src/utils/tests/fixtures/mixedForkCaptureDefence.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("a prevented mixed fork survives generated mistake review and saved reload",async()=>{
+  const root=await mkdtemp(join(tmpdir(),"en-shared-review-mixed-fork-cause-"));
+  const position=Chess.fromSetup(parseFen(mixedForkCaptureDefenceFen).unwrap()).unwrap();
+  assert.ok(position.isLegal(parseUci("d7c7")));position.play(parseUci("d7c7"));
+  const after=makeFen(position.toSetup());
+  const options={root,documentsRoot:join(root,"documents"),engineConfigPath:join(root,"engine.json"),
+    fetchGames:async()=>[],lookup:async fen=>{
+      assert.ok(fen===mixedForkCaptureDefenceFen||fen===after);
+      // Synthetic White-perspective scores test review wiring, not move strength.
+      return {depth:16,pvs:fen===mixedForkCaptureDefenceFen?[{cp:300,moves:"e1g1"}]:[{cp:-300,moves:"g5g2 h1f1 g2e4"}]};
+    }};
+  let service;
+  try{
+    await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+    await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,
+      url:"https://example.test/mixed-fork-cause",pgn:`[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.17"]\n[SetUp "1"]\n[FEN "${mixedForkCaptureDefenceFen}"]\n[Result "0-1"]\n\n1. Qxc7 0-1`}]}));
+    service=new SharedReviewService(options);await service.initialize(false);await service.run();
+    assert.equal(service.snapshot().error,null);const card=service.snapshot().cards[0];assert.ok(card,JSON.stringify(service.snapshot()));
+    const motif=card.tacticalClassification.allowedMotifs[0];
+    assert.equal(motif.id,"fork");assert.equal(motif.comparison,"prevented");
+    assert.match(motif.comparisonEvidence,/After O-O, Kxg2/);
+    service.close();service=new SharedReviewService(options);await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification,JSON.parse(JSON.stringify(card.tacticalClassification)));
+    assert.ok((await service.deck()).positions.some(position=>position.fen===mixedForkCaptureDefenceFen));
+  }finally{
+    service?.close();const target=resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-mixed-fork-cause-"));
+    await rm(target,{recursive:true,force:true});
+  }
+});
 
 test("a missed capturing mixed-target fork survives generated review and saved deck reload",async()=>{
   const root=await mkdtemp(join(tmpdir(),"en-shared-review-capture-fork-"));
