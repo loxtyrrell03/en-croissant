@@ -11,6 +11,7 @@ import { expect, test, vi } from "vitest";
 import { replayTacticalLine } from "../tacticalMotifs/causalTactics";
 import { captureMateCases } from "./fixtures/captureMate";
 import { immediatePromotionCases } from "./fixtures/immediatePromotion";
+import { promotionCheckFen, promotionCheckMove } from "./fixtures/promotionCheckRetention";
 import { pawnExposureInput, pawnExposureAlternateInput } from "./fixtures/pawnExposure";
 import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
 import { forkLocalValueCases } from "./fixtures/forkLocalValue";
@@ -560,7 +561,7 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("ordinary immediate alternatives
 }, 30000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("retained immediate promotions survive the production controller", async () => {
-    for (const row of immediatePromotionCases) for (const reflected of [false, true]) {
+    for (const row of [...immediatePromotionCases, {id:"real checking retention",fen:promotionCheckFen,move:promotionCheckMove,gain:300}]) for (const reflected of [false, true]) {
         const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
             pvUci: [reflected ? reflectMixedForkMove(row.move) : row.move], depth: 16,
             engineName: "Constructed promotion retention" };

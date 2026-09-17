@@ -778,15 +778,104 @@ export function tacticalCaptureGain(step: TacticalReplayStep, nodeLimit = 4096):
 type ImmediatePromotionProof = { gain: number; visits: number; counterchecks: { fen: string; moveUci: string }[] };
 const immediatePromotionCache = new Map<string, ImmediatePromotionProof | null>();
 
+/** A promotion can retain material through harmless checking cycles. Requiring
+ * every second checker to be captured misses those resources. Instead verify
+ * every checking reply, choose a legal material-retaining evasion, and finish
+ * only when checks stop or the identical checking position repeats. Repetition
+ * preserves material, not a win: no whole-position outcome is inferred. */
+export function provePromotionCheckRetention(root: TacticalReplayStep, nodeLimit = 16384, trace?: (message: string) => void) {
+    if (!root?.move.promotion || root.after.isEnd() ||
+        !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0) return null;
+    const budget = { nodes: nodeLimit };
+    const side = root.before.turn;
+    const delta = (pos: Chess, move: NormalMove) => capturedValue(pos, move) +
+        (move.promotion ? VALUE[move.promotion] - VALUE.pawn : 0);
+    type Result = { gain: number; counterchecks: { fen: string; moveUci: string }[]; cycles: number };
+    const path = new Set<string>();
+    const independent = new Map<string, Result>();
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--budget.nodes < 0) throw Error("Promotion checking retention exhausted");
+        const next = pos.clone(); next.play(move); return next;
+    };
+    const defend = (pos: Chess, balance: number, ceiling: number, remaining: number,
+        promotedSquare: Square): Result | null => {
+        if (pos.isCheckmate()) return { gain: ceiling, counterchecks: [], cycles: 0 };
+        if (pos.isEnd()) return null;
+        if (pos.board.get(promotedSquare)?.color !== side ||
+            pos.board.get(promotedSquare)?.role !== root.move.promotion) return null;
+        const key = `${makeFen(pos.toSetup()).split(" ").slice(0, 4).join(" ")}:${promotedSquare}`;
+        if (path.has(key)) return { gain: ceiling, counterchecks: [], cycles: 1 };
+        if (!remaining) return null;
+        const memoKey = `${key}:${balance}:${ceiling}:${remaining}`;
+        const cached = independent.get(memoKey);
+        if (cached) return cached;
+        path.add(key);
+        try {
+            let gain = ceiling, cycles = 0;
+            const counterchecks: Result["counterchecks"] = [];
+            for (const check of recoveryMoves(pos, side)) {
+                if (check.promotion) return null;
+                // This fallback certifies retaining the newly promoted piece.
+                // Do not fund it with queen-for-rook liquidation: positive
+                // arithmetic can disguise an independently losing rook ending.
+                if (check.to === promotedSquare && capturedValue(pos, check)) return null;
+                if (!mayGiveCheck(pos, check)) continue;
+                const checked = visit(pos, check);
+                if (!checked.isCheck()) continue;
+                if (checked.isEnd()) return null;
+                let selected: Result | null = null;
+                const answers = recoveryMoves(checked, side).sort((a, b) =>
+                    capturedValue(checked, b) - capturedValue(checked, a) ||
+                    Number(mayGiveCheck(checked, b)) - Number(mayGiveCheck(checked, a)));
+                for (const answer of answers) {
+                    if (answer.promotion) continue;
+                    const earned = participantCaptureGain(checked, answer,
+                        [...checked.board[side], answer.to], budget);
+                    const nextBalance = balance - delta(pos, check);
+                    if (earned === null || nextBalance + earned < VALUE.pawn ||
+                        !noImmediateTerminalRefutation(checked, answer, budget)) continue;
+                    const proof = defend(visit(checked, answer), nextBalance + delta(checked, answer),
+                        Math.min(gain, nextBalance + earned), remaining - 1,
+                        answer.from === promotedSquare ? answer.to : promotedSquare);
+                    if (!proof) continue;
+                    selected = { ...proof, counterchecks: [
+                        { fen: makeFen(checked.toSetup()), moveUci: makeUci(answer) }, ...proof.counterchecks,
+                    ] };
+                    break;
+                }
+                if (!selected) return null;
+                gain = Math.min(gain, selected.gain);
+                cycles += selected.cycles;
+                counterchecks.push(...selected.counterchecks);
+            }
+            const result = { gain, counterchecks, cycles };
+            // A cycle-free strategy does not depend on this branch's ancestors.
+            // Cycle-closing results must never be reused on another path.
+            if (!cycles) independent.set(memoKey, result);
+            return result;
+        } finally { path.delete(key); }
+    };
+    try {
+        const gain = participantCaptureGain(root.before, root.move,
+            [...root.before.board[side], root.move.to], budget);
+        if (gain === null || gain < VALUE.pawn ||
+            !noImmediateTerminalRefutation(root.before, root.move, budget)) return null;
+        const proof = defend(root.after, delta(root.before, root.move), gain, 8, root.move.to);
+        trace?.(`visits:${nodeLimit-budget.nodes},gain:${gain},complete:${Boolean(proof)}`);
+        return proof ? { ...proof, visits: nodeLimit - budget.nodes } : null;
+    } catch (error) { trace?.(String(error)); return null; }
+}
+
 /** Promotion is a current material change, not the profit at a later PV endpoint.
  * Retain it only after checking legal exchanges, all friendly-piece liabilities,
- * terminal refutations and counterchecks within the existing capture budget.
+ * terminal refutations and counterchecks within a shared 16,384-operation
+ * promotion budget. Ordinary capture budgets and worker deadlines are unchanged.
  * This does not certify a won game or the necessity of underpromotion. */
-export function proveImmediatePromotion(root: TacticalReplayStep, nodeLimit = 4096): ImmediatePromotionProof | null {
+export function proveImmediatePromotion(root: TacticalReplayStep, nodeLimit = 16384): ImmediatePromotionProof | null {
     if (!root?.move.promotion || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 ||
         root.after.isEnd()) return null;
     const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
-    if (nodeLimit === 4096 && immediatePromotionCache.has(key)) return immediatePromotionCache.get(key)!;
+    if (nodeLimit === 16384 && immediatePromotionCache.has(key)) return immediatePromotionCache.get(key)!;
     const budget = { nodes: nodeLimit };
     const counterchecks: ImmediatePromotionProof["counterchecks"] = [];
     let result: ImmediatePromotionProof | null = null;
@@ -794,8 +883,16 @@ export function proveImmediatePromotion(root: TacticalReplayStep, nodeLimit = 40
         const gain = preparationCaptureGain(root.before, root.move, budget, undefined, counterchecks, true);
         if (gain !== null && gain >= VALUE.pawn)
             result = { gain, visits: nodeLimit - budget.nodes, counterchecks };
+        else if (budget.nodes > 0) {
+            const continuation = provePromotionCheckRetention(root, budget.nodes);
+            if (continuation) result = {
+                gain: continuation.gain,
+                visits: nodeLimit - budget.nodes + continuation.visits,
+                counterchecks: continuation.counterchecks,
+            };
+        }
     } catch { /* Incomplete retention is not a promotion-win certificate. */ }
-    if (nodeLimit === 4096) {
+    if (nodeLimit === 16384) {
         immediatePromotionCache.set(key, result);
         if (immediatePromotionCache.size > 128) immediatePromotionCache.delete(immediatePromotionCache.keys().next().value!);
     }

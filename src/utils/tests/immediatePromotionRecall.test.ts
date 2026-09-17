@@ -144,12 +144,13 @@ test("capturing the promoting pawn establishes an allowed promotion cause", () =
     });
 });
 
-test.fails("known coverage gap: retain a real promotion through continuing rook checks", () => {
+test("retain a real promotion through independently checked continuing rook checks", () => {
     const fen = "8/7k/5r2/4RP2/8/6R1/PK1p3P/8 b - - 0 37";
     // Fresh depth-20 analysis finds d1=Q approximately equal, not refuted.
-    // This is a known missing certificate, NOT a correct negative position.
+    // The local lower bound includes possible rook compensation; it is not
+    // the approximately equal full-position evaluation or a won-game claim.
     expect(proveImmediatePromotion(replayTacticalLine(fen, ["d2d1q"])[0])).toMatchObject({
-        gain: expect.any(Number),
+        gain: 300,
     });
 });
 

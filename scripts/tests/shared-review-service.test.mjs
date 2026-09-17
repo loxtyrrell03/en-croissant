@@ -15,29 +15,37 @@ import { kingDefenderRemovalCases } from "../../src/utils/tests/fixtures/kingDef
 import { forkCountercaptureFen, forkCountercaptureLine } from "../../src/utils/tests/fixtures/forkCountercapture.ts";
 import { captureMateFen } from "../../src/utils/tests/fixtures/captureMate.ts";
 import { missedPromotionFen } from "../../src/utils/tests/fixtures/immediatePromotion.ts";
+import { promotionCheckFen, promotionCheckMove } from "../../src/utils/tests/fixtures/promotionCheckRetention.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
 
-test("a missed immediate promotion survives generated review and saved deck reload", async () => {
+for (const row of [
+  {id:"immediate",fen:missedPromotionFen,played:"h1g1",best:"a7a8q",reply:"b5a7",gain:800,
+    beforeCp:800,afterCp:300,white:"Tester",black:"Opponent",san:"1. Kg1"},
+  // Constructed missed choice at the real promotion root. Rd3 is winning, but
+  // the separate engine audit finds the stronger Re7+ mate after Rh6.
+  {id:"continuing checks",fen:promotionCheckFen,played:"f6h6",best:promotionCheckMove,reply:"g3d3",gain:300,
+    beforeCp:-51,afterCp:609,white:"Opponent",black:"Tester",san:"37... Rh6"},
+]) test(`a missed ${row.id} promotion survives generated review and saved deck reload`, async () => {
   const root = await mkdtemp(join(tmpdir(), "en-shared-review-promotion-"));
-  const fen = missedPromotionFen;
-  const position = Chess.fromSetup(parseFen(fen).unwrap()).unwrap(); position.play(parseUci("h1g1"));
+  const fen = row.fen;
+  const position = Chess.fromSetup(parseFen(fen).unwrap()).unwrap(); position.play(parseUci(row.played));
   const after = makeFen(position.toSetup());
   const options = { root, documentsRoot: join(root, "documents"), engineConfigPath: join(root, "engine.json"),
     fetchGames: async () => [], lookup: async requested => {
       assert.ok(requested === fen || requested === after);
       // Controlled scores check wiring; separate engine searches judge chess.
-      return { depth: 16, pvs: requested === fen ? [{ cp: 800, moves: "a7a8q" }] : [{ cp: 300, moves: "b5a7" }] };
+      return { depth: 16, pvs: requested === fen ? [{ cp: row.beforeCp, moves: row.best }] : [{ cp: row.afterCp, moves: row.reply }] };
     } };
   let service;
   try {
     await writeFile(join(root, "config.json"), JSON.stringify({ accounts: { chesscom: "Tester" } }));
     await writeFile(join(root, "games.json"), JSON.stringify({ games: [{ source: "chesscom", end: 1789387200,
-      url: "https://example.test/promotion", pgn: `[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.17"]\n[SetUp "1"]\n[FEN "${fen}"]\n[Result "0-1"]\n\n1. Kg1 0-1` }] }));
+      url: "https://example.test/promotion", pgn: `[White "${row.white}"]\n[Black "${row.black}"]\n[Date "2026.09.17"]\n[SetUp "1"]\n[FEN "${fen}"]\n[Result "0-1"]\n\n${row.san} 0-1` }] }));
     service = new SharedReviewService(options); await service.initialize(false); await service.run();
     assert.equal(service.snapshot().error, null); const card = service.snapshot().cards[0]; assert.ok(card);
     assert.equal(card.tacticalClassification.missedMotifs[0].id, "promotion");
-    assert.equal(card.tacticalClassification.missedMotifs[0].value, 800);
+    assert.equal(card.tacticalClassification.missedMotifs[0].value, row.gain);
     assert.match(card.explanation, /not the full-position evaluation/);
     service.close(); service = new SharedReviewService(options); await service.initialize(false);
     assert.deepEqual(service.snapshot().cards[0].tacticalClassification, JSON.parse(JSON.stringify(card.tacticalClassification)));

@@ -20,6 +20,7 @@ import { kingDefenderRemovalCases } from "./fixtures/kingDefenderRemoval";
 import { forkCountercaptureFen, forkCountercaptureLine } from "./fixtures/forkCountercapture";
 import { captureMateFen, captureMateLine } from "./fixtures/captureMate";
 import { immediatePromotionCases } from "./fixtures/immediatePromotion";
+import { promotionCheckFen, promotionCheckMove } from "./fixtures/promotionCheckRetention";
 import { makeFen } from "chessops/fen";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 import {
@@ -47,14 +48,14 @@ const markup = (value: LiveTacticalScan) =>
     </MantineProvider>,
   );
 
-test("retained promotion renders a current lesson without claiming a full-position score", () => {
-  const row = immediatePromotionCases[0];
+test.each([immediatePromotionCases[0], {id:"promotion through rook checks",fen:promotionCheckFen,move:promotionCheckMove,gain:300}])("$id renders a current promotion lesson without claiming a full-position score", (row) => {
   const value = buildLiveTacticalScan({ fen: row.fen, pvUci: [row.move], depth: 16, engineName: "Constructed promotion" });
   const element = document.createElement("div"); element.innerHTML = markup(value);
   expect(element.textContent).toContain("Promotion found");
   expect(element.textContent).toContain("not the full-position evaluation");
   expect(element.textContent).not.toContain("No tactical theme verified");
-  expect(value.arrows.map(a => a.from + a.to)).toEqual(["a7a8"]);
+  expect(value.arrows.map(a => a.from + a.to)).toEqual([row.move.slice(0,4)]);
+  expect(value.motifs[0].value).toBe(row.gain);
 });
 
 test("a capture's root-only mating lesson renders without invented continuation arrows", () => {
