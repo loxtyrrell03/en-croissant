@@ -28,6 +28,7 @@ import {
     contextualCaptureObservation,
     tacticalCaptureGain,
     proveImmediatePromotion,
+    provePromotionThreat,
     proveDefensiveDeflection,
     provePerpetualCheck,
     proveAlternativeCaptureCause,
@@ -139,7 +140,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 157;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 158;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -594,6 +595,7 @@ function toMotifEvidence(
 }
 
 const IMPORTANT_TACTICAL_THEME_IDS = new Set([
+    "promotionThreat",
     "perpetualCheck",
     "defensiveDeflection",
     "drawingCapture",
@@ -630,6 +632,7 @@ const IMPORTANT_TACTICAL_THEME_IDS = new Set([
 ]);
 
 const MOTIF_IMPORTANCE: Record<string, number> = {
+    promotionThreat: 36,
     perpetualCheck: 39,
     defensiveDeflection: 40,
     drawingCapture: 40,
@@ -1013,7 +1016,10 @@ export function buildTacticalTimeline(
     sanLine?: string[] | null,
     tablebaseEvidence?: TablebaseEvidence | null,
 ) {
-    const fullReplay = replayTacticalLine(fen, line);
+    const promotionThreat = rootMotifs.some(motif => motif.id === "promotionThreat" && motif.ply === 1);
+    // This certificate connects only the next promotion. Do not append a
+    // queen's distant engine-PV attacks to the original pawn-push lesson.
+    const fullReplay = replayTacticalLine(fen, line).slice(0, promotionThreat ? 3 : undefined);
     // Winning a newly exposed pawn proves that capture, not every later
     // combination in an engine continuation. Keep its lesson at the root;
     // later boards can be scanned independently when actually reached.
@@ -1080,6 +1086,7 @@ export function buildTacticalTimeline(
     let quietPlies = 0;
     let connectedPlies = replay.length;
     const provedForcingEpisode =
+        promotionThreat ||
         clearanceEpisode !== null ||
         rootMotifs.some(
             (motif) =>
@@ -1527,6 +1534,18 @@ export function classifyMistakeReviewMotifs(
         if (available) classification.missedMotifs = classification.missedMotifs.filter(m =>
             !(["promotion", "underPromotion"].includes(m.id) && m.ply === 1 &&
                 m.value !== undefined && available.gain >= m.value));
+    }
+    // Do not call a different retained promotion threat, or a pawn push that
+    // remains available after the actual reply, a missed generic promotion.
+    if (classification.missedMotifs.some(m => m.id === "promotionThreat" && m.ply === 1) && playedMoveUci) {
+        const playedRoot = replayTacticalLine(fen, [playedMoveUci])[0];
+        const played = provePromotionThreat(playedRoot) ?? proveImmediatePromotion(playedRoot);
+        const actual = replayTacticalLine(fen, [playedMoveUci, ...refutationLine.slice(0, 1)]);
+        const delayed = actual.length === 2 && bestMoveUci
+            ? provePromotionThreat(replayTacticalLine(makeFen(actual[1].after.toSetup()), [bestMoveUci])[0]) : null;
+        classification.missedMotifs = classification.missedMotifs.filter(m =>
+            !(m.id === "promotionThreat" && m.ply === 1 && m.value !== undefined &&
+                ((played && played.gain >= m.value) || (delayed && delayed.gain >= m.value))));
     }
     // The nominated drawing capture is not missed if the played move also
     // holds the same exact draw (including an equivalent capture). A score

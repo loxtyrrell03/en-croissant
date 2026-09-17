@@ -19,6 +19,16 @@ import { forkCountercaptureFen, forkCountercaptureLine } from "./fixtures/forkCo
 import { captureExchangeRetentionInput } from "./fixtures/captureExchangeRetention";
 import { independentPawnHistoryInput } from "./fixtures/independentPawnHistory";
 import { capturingMixedForkFen, capturingMixedForkLine } from "./fixtures/capturingMixedTargetFork";
+import { promotionThreatCases } from "./fixtures/promotionThreat";
+
+test("promotion threat and payoff render on their own plies without duplicate profit",()=>{
+  const result=classifyPositionTacticalMotifs({fen:promotionThreatCases[0].fen,pvUci:["f6f7","a8b7","f7f8q"]});
+  const container=document.createElement("div");
+  container.innerHTML=renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={["f7","Kb7","f8=Q"]} motifs={result.timeline??[]}/></MantineProvider>);
+  expect(container.querySelector('[data-tactical-ply="1"]')?.textContent).toContain("Promotion Threat");
+  expect(container.querySelector('[data-tactical-ply="3"]')?.textContent).toContain("Promotion Payoff");
+  expect(result.timeline?.find(m=>m.id==="promotion")?.value).toBeUndefined();
+});
 
 test("a capturing mixed-target fork explains its entry credit at the actual move",()=>{
   const result=classifyPositionTacticalMotifs({fen:capturingMixedForkFen,pvUci:capturingMixedForkLine});

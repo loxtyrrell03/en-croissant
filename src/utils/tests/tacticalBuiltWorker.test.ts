@@ -17,6 +17,7 @@ import { captureExchangeRetentionInput } from "./fixtures/captureExchangeRetenti
 import { independentPawnHistoryInput } from "./fixtures/independentPawnHistory";
 import { captureMateCases } from "./fixtures/captureMate";
 import { immediatePromotionCases } from "./fixtures/immediatePromotion";
+import { promotionThreatCases } from "./fixtures/promotionThreat";
 import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "./fixtures/promotionCheckRetention";
 import { pawnExposureInput, pawnExposureAlternateInput } from "./fixtures/pawnExposure";
 import { compensatedCaptureInput } from "./fixtures/compensatedCapture";
@@ -179,6 +180,18 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("capturable counterchecks preser
         expect(row.id !== "capturable-battery-rook" || !result.scan.motifs.some(m => m.id === "forcingAttack")).toBe(true);
     }
 }, 30000);
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("promotion threats and contrary defences survive the production controller", async () => {
+    for (const row of promotionThreatCases) for (const reflected of [false, true]) {
+        const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen,
+            pvUci: [reflected ? reflectMixedForkMove(row.move) : row.move], depth: 16,
+            engineName: "Constructed promotion threat" };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.find(m => m.id === "promotionThreat")?.value ?? null).toBe(row.gain);
+        expect(result.scan.arrows.every(arrow => arrow.ply === 1)).toBe(true);
+    }
+}, 60000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("settled capture chains preserve real pawn opportunities in the compiled worker", async () => {
     for (const row of settledPawnHistoryCases) {

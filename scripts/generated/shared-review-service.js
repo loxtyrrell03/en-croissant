@@ -9939,6 +9939,7 @@ var VALUE = {
 };
 var MIN_TACTICAL_CAPTURE_GAIN = VALUE.pawn - (VALUE.bishop - VALUE.knight);
 var MECHANISMS = new Set([
+	"promotionThreat",
 	"promotionCombination",
 	"forcingAttack",
 	"doubleThreat",
@@ -10619,6 +10620,64 @@ function tacticalCaptureGain(step, nodeLimit = 4096) {
 	return tacticalCaptureProof(step, nodeLimit).gain;
 }
 var immediatePromotionCache = /* @__PURE__ */ new Map();
+var promotionThreatCache = /* @__PURE__ */ new Map();
+/** A penultimate-rank push threatens promotion now, not merely somewhere in a
+* supplied PV. Every legal reply must allow this same pawn to promote with a
+* positive retained gain. Checks, blocks, pawn captures and counterpromotions
+* are real defences; a checking reply cannot be skipped to reach the payoff.
+* This is a bounded material certificate, not an exact won-ending claim. */
+function provePromotionThreat(root, nodeLimit = 32768) {
+	if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture || root.move.promotion || root.after.isEnd() || root.before.board.get(root.move.from)?.role !== "pawn" || Math.floor(root.move.to / 8) !== (root.before.turn === "white" ? 6 : 1)) return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	if (nodeLimit === 32768 && promotionThreatCache.has(key)) return promotionThreatCache.get(key);
+	let remaining = nodeLimit;
+	const branches = [];
+	let result = null;
+	const prove = () => {
+		const replies = legalMoves(root.after);
+		if (!replies.length) return null;
+		for (const reply of replies) {
+			if (--remaining < 0) return null;
+			const debt = capturedValue(root.after, reply) + (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0);
+			const next = root.after.clone();
+			next.play(reply);
+			const pawn = next.board.get(root.move.to);
+			if (next.isEnd() || next.halfmoves >= 100 || pawn?.role !== "pawn" || pawn.color !== root.before.turn) return null;
+			const fen = makeFen(next.toSetup());
+			let selected = null;
+			for (const move of legalMoves(next)) {
+				if (move.from !== root.move.to || !move.promotion) continue;
+				if (remaining <= 0) return null;
+				const allowance = Math.min(4096, remaining);
+				const proof = proveImmediatePromotion(replayTacticalLine(fen, [makeUci(move)])[0], allowance);
+				remaining -= proof ? proof.visits : allowance;
+				if (!proof || proof.gain - debt < VALUE.pawn) continue;
+				selected = {
+					replyUci: makeUci(reply),
+					promotionUci: makeUci(move),
+					fen,
+					gain: proof.gain - debt
+				};
+				break;
+			}
+			if (!selected) return null;
+			branches.push(selected);
+		}
+		return {
+			gain: Math.min(...branches.map((branch) => branch.gain)),
+			visits: nodeLimit - remaining,
+			branches
+		};
+	};
+	try {
+		result = prove();
+	} catch {}
+	if (nodeLimit === 32768) {
+		promotionThreatCache.set(key, result);
+		if (promotionThreatCache.size > 128) promotionThreatCache.delete(promotionThreatCache.keys().next().value);
+	}
+	return result;
+}
 /** A promotion can retain material through harmless checking cycles. Requiring
 * every second checker to be captured misses those resources. Instead verify
 * every checking reply, choose a legal material-retaining evasion, and finish
@@ -19389,6 +19448,7 @@ function trapIsMainCause(motif, directGain) {
 }
 function causeRank(motif, directGain = 0, smallerRay = false) {
 	return (MECHANISMS.has(motif.id) || trapIsMainCause(motif, directGain) ? 0 : MATE.test(motif.id) ? 1 : 2) * 1e3 + (motif.ply ?? 100) * 20 + (smallerRay ? 19 : Math.max(0, [
+		"promotionThreat",
 		"promotionCombination",
 		"deflection",
 		"capturingDefender",
@@ -19437,10 +19497,11 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		};
 	}
 	const promotionCombination = provePromotionCombination(steps[0]);
+	const promotionThreat = !checkingMate ? provePromotionThreat(steps[0]) : null;
 	const promotionPly = steps.findIndex((step) => step.before.turn === steps[0].before.turn && step.move.promotion);
 	const clearanceEnd = forcingClearanceEpisodeLength(steps);
 	const exactZugzwang = tablebaseZugzwangEvidence(fen, steps[0].uci, context?.tablebaseEvidence, proposals[0]?.source ?? "available");
-	const end = checkingMate && steps.some((step) => step.after.isCheckmate()) ? steps.findIndex((step) => step.after.isCheckmate()) + 1 : clearanceEnd !== null ? clearanceEnd : promotionCombination && promotionPly >= 0 && promotionPly <= 16 ? promotionPly + 1 : Math.max(exactZugzwang ? 1 : 0, episodeEnd(steps, allowConditional));
+	const end = checkingMate && steps.some((step) => step.after.isCheckmate()) ? steps.findIndex((step) => step.after.isCheckmate()) + 1 : clearanceEnd !== null ? clearanceEnd : promotionCombination && promotionPly >= 0 && promotionPly <= 16 ? promotionPly + 1 : Math.max(exactZugzwang || promotionThreat ? 1 : 0, episodeEnd(steps, allowConditional));
 	if (!end) return [];
 	const episode = steps.slice(0, end);
 	const attacker = steps[0].before.turn;
@@ -19454,6 +19515,17 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 		settled = -VALUE.king;
 	}
 	const candidates = [];
+	if (promotionThreat) candidates.push({
+		id: "promotionThreat",
+		label: "Promotion Threat",
+		source: proposals[0]?.source ?? "available",
+		confidence: "high",
+		ply: 1,
+		moveUci: steps[0].uci,
+		value: promotionThreat.gain,
+		verifiedCombination: true,
+		evidence: `${steps[0].san} threatens to promote the pawn on the next move. Every one of the ${promotionThreat.branches.length} legal replies permits a verified promotion of this pawn, retaining at least ${Number((promotionThreat.gain / 100).toFixed(1))} pawns of local material after captures, compensation and immediate counterplay. This is a promotion threat, not a full-position evaluation or a forced-mate claim.`
+	});
 	const immediatePromotion = proveImmediatePromotion(steps[0]);
 	if (immediatePromotion) {
 		const root = steps[0], role = root.move.promotion;
@@ -20106,6 +20178,12 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	const specificMate = normalizedCandidates.find((m) => /Mate$/.test(m.id));
 	const fork = candidates.find((m) => m.id === "fork");
 	const filtered = normalizedCandidates.filter((m) => {
+		if (m.id === "promotionThreat" && m.ply === 1 && promotionThreat && normalizedCandidates.some((other) => other.id === "fork" && other.ply === 1 && other.confidence === "high" && (other.value ?? 0) >= promotionThreat.gain) && promotionThreat.branches.every((branch) => {
+			const move = parseUci(branch.promotionUci);
+			if (!move || !("from" in move)) return false;
+			const target = steps[0].after.board.get(move.to);
+			return target?.color === opposite(attacker) && target.role !== "king" && attacks(steps[0].after.board.get(steps[0].move.to), steps[0].move.to, steps[0].after.board.occupied).has(move.to);
+		})) return false;
 		if (m.ply === 1 && m.label === "Forcing Mate" && (quietMate || preparation && Number(m.id.slice(6)) >= 3)) return false;
 		if (m.ply === 1 && m.label === "Mating Preparation" && checkingMate && checkingMate.maxMoves < 3) return false;
 		if (["pin", "deflection"].includes(m.id) && m.ply && candidates.some((other) => other.id === (m.id === "pin" ? "deflection" : "pin") && other.ply === m.ply && other.moveUci === m.moveUci)) {
@@ -20325,6 +20403,21 @@ function normalizeContinuingTactics(steps, motifs) {
 	const keptForks = [];
 	const suppressed = /* @__PURE__ */ new Set();
 	const replacements = /* @__PURE__ */ new Map();
+	for (const motif of ordered) {
+		if (motif.id !== "promotionThreat" || !motif.ply) continue;
+		const index = motif.ply - 1, root = steps[index], reply = steps[index + 1], payoff = steps[index + 2];
+		if (!root || !reply || !payoff) continue;
+		if (!provePromotionThreat(root)?.branches.some((branch) => branch.replyUci === reply.uci && branch.promotionUci === payoff.uci)) continue;
+		for (const later of ordered) {
+			if (later.ply !== index + 3 || later.moveUci !== payoff.uci || !["promotion", "underPromotion"].includes(later.id)) continue;
+			replacements.set(later, {
+				...later,
+				label: "Promotion Payoff",
+				value: void 0,
+				evidence: `${payoff.san} completes the promotion threatened by ${root.san}, after ${reply.san}. This material is already included in the earlier threat, not an additional gain.`
+			});
+		}
+	}
 	const targetCache = /* @__PURE__ */ new Map();
 	const targetsAt = (index, from) => {
 		const key = `${index}:${from}`;
@@ -20888,6 +20981,17 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 			} else {
 				comparison = bestOutcome.win ? "persists" : "prevented";
 				comparisonEvidence = bestOutcome.win ? `Even after ${bestSan}, exact king-and-pawn analysis still gives ${proof.pawnSide} a won ending. The displayed zugzwang does not establish that this move caused the loss.` : `${bestSan} holds a drawn king-and-pawn ending against every legal continuation. After ${actual[0].san}, ${step.san} instead reaches a verified winning zugzwang.`;
+			}
+		} else if (motif.id === "promotionThreat") {
+			const original = provePromotionThreat(step);
+			const other = alternative && provePromotionThreat(alternative);
+			const pawn = better[0].after.board.get(step.move.from);
+			if (original && other && other.gain >= original.gain) {
+				comparison = "persists";
+				comparisonEvidence = `After ${bestSan}, ${alternative.san} still threatens promotion of the same pawn with at least the same checked local material gain.`;
+			} else if (original && (!pawn || pawn.color !== step.before.turn || pawn.role !== "pawn")) {
+				comparison = "prevented";
+				comparisonEvidence = `${bestSan} removes the pawn on ${makeSquare(step.move.from)} before it can make this promotion threat.`;
 			}
 		} else if (["promotion", "underPromotion"].includes(motif.id)) {
 			const original = proveImmediatePromotion(step);
@@ -21698,7 +21802,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 157;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 158;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -22029,6 +22133,7 @@ function toMotifEvidence(detailInput, source, sanLineInput) {
 	});
 }
 var IMPORTANT_TACTICAL_THEME_IDS = new Set([
+	"promotionThreat",
 	"perpetualCheck",
 	"defensiveDeflection",
 	"drawingCapture",
@@ -22064,6 +22169,7 @@ var IMPORTANT_TACTICAL_THEME_IDS = new Set([
 	"attackingF2F7"
 ]);
 var MOTIF_IMPORTANCE = {
+	promotionThreat: 36,
 	perpetualCheck: 39,
 	defensiveDeflection: 40,
 	drawingCapture: 40,
@@ -22271,7 +22377,8 @@ function selectContinuationLessons(timeline, rootMotifs) {
 /** Each row is assessed in its own legal position. Root causes stay separate
 * so later repetitions and opponent counterplay cannot replace the lesson. */
 function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine, tablebaseEvidence) {
-	const fullReplay = replayTacticalLine(fen, line);
+	const promotionThreat = rootMotifs.some((motif) => motif.id === "promotionThreat" && motif.ply === 1);
+	const fullReplay = replayTacticalLine(fen, line).slice(0, promotionThreat ? 3 : void 0);
 	if (rootMotifs.length && rootMotifs.every((motif) => motif.ply === 1 && motif.id === "hangingPiece" && motif.label === "Hanging Pawn")) {
 		const timeline = rootMotifs.map((motif) => ({
 			...motif,
@@ -22309,7 +22416,7 @@ function buildTacticalTimeline(fen, line, source, rootMotifs, sanLine, tablebase
 	}
 	let quietPlies = 0;
 	let connectedPlies = replay.length;
-	const provedForcingEpisode = clearanceEpisode !== null || rootMotifs.some((motif) => motif.ply === 1 && (motif.label === "Forcing Mate" && motif.value === 1e4 || motif.id === "promotionCombination" && promotionEpisode));
+	const provedForcingEpisode = promotionThreat || clearanceEpisode !== null || rootMotifs.some((motif) => motif.ply === 1 && (motif.label === "Forcing Mate" && motif.value === 1e4 || motif.id === "promotionCombination" && promotionEpisode));
 	for (let index = 0; index < replay.length; index++) {
 		const step = replay[index];
 		if (!rootMotifs.length) {
@@ -22532,6 +22639,13 @@ function classifyMistakeReviewMotifs(input) {
 		const actual = replayTacticalLine(fen, [playedMoveUci, refutationLine[0]]);
 		const available = actual.length === 2 ? proveImmediatePromotion(replayTacticalLine(makeFen(actual[1].after.toSetup()), [bestMoveUci])[0]) : null;
 		if (available) classification.missedMotifs = classification.missedMotifs.filter((m) => !(["promotion", "underPromotion"].includes(m.id) && m.ply === 1 && m.value !== void 0 && available.gain >= m.value));
+	}
+	if (classification.missedMotifs.some((m) => m.id === "promotionThreat" && m.ply === 1) && playedMoveUci) {
+		const playedRoot = replayTacticalLine(fen, [playedMoveUci])[0];
+		const played = provePromotionThreat(playedRoot) ?? proveImmediatePromotion(playedRoot);
+		const actual = replayTacticalLine(fen, [playedMoveUci, ...refutationLine.slice(0, 1)]);
+		const delayed = actual.length === 2 && bestMoveUci ? provePromotionThreat(replayTacticalLine(makeFen(actual[1].after.toSetup()), [bestMoveUci])[0]) : null;
+		classification.missedMotifs = classification.missedMotifs.filter((m) => !(m.id === "promotionThreat" && m.ply === 1 && m.value !== void 0 && (played && played.gain >= m.value || delayed && delayed.gain >= m.value)));
 	}
 	const playedEndgameOutcome = verifiedTablebasePosition(fen, input.tablebaseEvidence)?.moves.find((move) => move.uci === playedMoveUci)?.outcome;
 	classification.missedMotifs = classification.missedMotifs.filter((m) => m.id !== "drawingCapture" || playedEndgameOutcome === 1);

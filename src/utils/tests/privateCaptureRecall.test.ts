@@ -6,7 +6,9 @@ import {
     tacticalCaptureGain,
     tacticalExchangeGain,
     proveCheckingPawnRetention,
+    provePersistentPawnCapture,
 } from "../tacticalMotifs/causalTactics";
+import { persistentPawnExchangeContext } from "../tacticalMotifs/gameHistory";
 import { classifyPositionTacticalMotifs } from "../tacticalMotifs/mistakeReviewAdapter";
 
 test.skipIf(!process.env.TACTICAL_RECALL_REPLAY || !process.env.TACTICAL_CAPTURE_RECALL_REPORT)(
@@ -18,8 +20,11 @@ test.skipIf(!process.env.TACTICAL_RECALL_REPLAY || !process.env.TACTICAL_CAPTURE
         expect(existsSync(output)).toBe(false);
         const sample = JSON.parse(readFileSync(process.env.TACTICAL_RECALL_REPLAY!, "utf8"));
         expect(sample.completed).toBe(sample.requested);
+        const ids: string[] = JSON.parse(process.env.TACTICAL_CAPTURE_RECALL_IDS ?? "[]");
+        const rows = ids.length ? sample.results.filter((row: any) => ids.includes(row.id)) : sample.results;
+        if (ids.length && rows.length !== ids.length) throw new Error("Missing selected capture contexts");
         const cases = [];
-        for (const row of sample.results)
+        for (const row of rows)
             for (const phase of ["before", "after"] as const) {
                 const fen = phase === "before" ? row.fen : row.afterFen;
                 for (const line of row[phase]) {
@@ -44,6 +49,10 @@ test.skipIf(!process.env.TACTICAL_RECALL_REPLAY || !process.env.TACTICAL_CAPTURE
                         retained: tacticalCaptureGain(step),
                         intermediate,
                         checkingPawnRetention: proveCheckingPawnRetention(replayTacticalLine(fen, line.pvUci)),
+                        ...(phase === "before" ? {
+                            pawnHistory: persistentPawnExchangeContext(row.tacticalHistory, fen, step.move),
+                            persistentPawn: provePersistentPawnCapture(step, row.tacticalHistory),
+                        } : {}),
                         result,
                     });
                 }
@@ -54,7 +63,7 @@ test.skipIf(!process.env.TACTICAL_RECALL_REPLAY || !process.env.TACTICAL_CAPTURE
                 {
                     scope: "All nominated captures, both root phases, of the fixed owner-game development sample. Positive bounded material gain is not whole-position safety or an accuracy label.",
                     sourceSha256: sample.sourceSha256,
-                    positions: sample.results.length,
+                    positions: rows.length,
                     cases,
                 },
                 null,

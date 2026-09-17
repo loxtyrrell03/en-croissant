@@ -22,6 +22,7 @@ import { forkCountercaptureFen, forkCountercaptureLine } from "./fixtures/forkCo
 import { forkExchangeRetentionInput } from "./fixtures/forkExchangeRetention";
 import { captureMateFen, captureMateLine } from "./fixtures/captureMate";
 import { immediatePromotionCases } from "./fixtures/immediatePromotion";
+import { promotionThreatCases } from "./fixtures/promotionThreat";
 import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "./fixtures/promotionCheckRetention";
 import { makeFen } from "chessops/fen";
 import { captureLiabilityInput } from "./fixtures/captureLiabilityRecovery";
@@ -53,6 +54,16 @@ const markup = (value: LiveTacticalScan) =>
       <TacticalScanResult scan={value} lastMoveSan="b6" />
     </MantineProvider>,
   );
+
+test("a promotion threat renders the pawn route without future queen attacks", () => {
+  const value = buildLiveTacticalScan({fen:promotionThreatCases[0].fen,pvUci:["f6f7"],depth:16,engineName:"Constructed promotion threat"});
+  const element=document.createElement("div");element.innerHTML=markup(value);
+  expect(element.textContent).toContain("Promotion Threat found");
+  expect(element.textContent).toContain("promote the pawn on the next move");
+  expect(element.textContent).not.toContain("No tactical theme verified");
+  expect(value.arrows.map(a=>a.from+a.to)).toEqual(["f6f7","f7f8"]);
+  expect(value.labels[0]).toMatchObject({text:"Promotion Threat",square:"f7"});
+});
 
 test("a connected pin is visible with its current ray and qualified material explanation", () => {
   const value = buildLiveTacticalScan({fen:connectedPinCase.fen,pvUci:[connectedPinCase.move],depth:16,engineName:"Constructed pin"});

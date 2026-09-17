@@ -4158,7 +4158,7 @@ describe("expert tactical judgement with fresh engine lines", () => {
             const request = JSON.parse(
                 readFileSync(process.env.TACTICAL_PRIVATE_PROBES!, "utf8"),
             ) as {
-                samplePath: string;
+                samplePath?: string;
                 probes: {
                     id: string;
                     caseId?: string;
@@ -4172,7 +4172,7 @@ describe("expert tactical judgement with fresh engine lines", () => {
                     depth?: number;
                 }[];
             };
-            const sample = JSON.parse(readFileSync(request.samplePath, "utf8"));
+            const sample = request.samplePath ? JSON.parse(readFileSync(request.samplePath, "utf8")) : { cases: [] };
             const searches = [];
             for (const probe of request.probes) {
                 const originalFen =
