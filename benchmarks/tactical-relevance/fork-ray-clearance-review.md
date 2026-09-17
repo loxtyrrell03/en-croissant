@@ -70,13 +70,19 @@ this certificate does not establish a non-tactical or losing position.
   source/React checks pass 109 tests (two skips); 31 generated-service checks
   pass (one optional engine skip). Types and builds pass. Scoped lint has no
   errors; the new diagnostic's conditional assertions have seven warnings.
-  An earlier parallel selection hit one secondary-sample test timeout; the
-  isolated test and final full selection pass without changing that assertion.
+  An earlier parallel selection reported one secondary-sample failure after
+  5.37 seconds; the isolated test and final full selection pass without changing
+  that assertion. The retained JSON stack alone does not identify its cause.
 - The compiled controller passes 808 existing public inputs plus twenty new
   constructed/reflected inputs and the reached owner alternative. Three checks
   against the retained adapter-155 worker reproduce the former empty outputs.
-  The full owner compiled replay and clean desktop delivery are recorded separately
-  after completion. No native interaction or startup-under-load claim is made.
+  All 1,319 owner contexts also pass the compiled controller, for 2,148 current
+  inputs total plus the three old-worker comparisons. Public compute/transfer
+  median/p95/max is 44/209/1,119 ms; owner timings are 104/457/2,336 ms. Startup
+  maxima are 43/54 ms respectively. Engine search, development HTTP startup and
+  native UI are excluded; this is not an isolated performance experiment.
+  Clean desktop delivery is recorded in `docs/TACTICAL_DESKTOP_DELIVERY.md`.
+  No native interaction or startup-under-load claim is made.
 
 Private receipts are under `Documents/OnCrescent Tactical Benchmarks/`, prefixed
 `fork-ray-` and dated `20260917`. The `decisions156-final`, `engine156-final`,
