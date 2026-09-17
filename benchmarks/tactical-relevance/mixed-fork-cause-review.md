@@ -85,6 +85,11 @@ Private receipts under `Documents/OnCrescent Tactical Benchmarks/` use
 `mixed-fork-cause-`, `mixed-fork-cause154-` and `remaining-root154-` prefixes
 with the `20260917` suffix. The private judgement note records actual FENs and
 the five selected contexts. Owner and paid-course positions remain outside Git.
-Desktop packaging is recorded separately in `docs/TACTICAL_DESKTOP_DELIVERY.md`.
+Source `3b719cf5` is committed, pushed and packaged from a clean checkout;
+clean types, 101 focused source/React checks, 29 service checks and frontend/
+review/native builds pass. Exact embedded asset keys and normalized dependency
+paths identify the clean classifier and review. Desktop identity and recovery
+are recorded separately in `docs/TACTICAL_DESKTOP_DELIVERY.md`. No app was
+running or restarted; this is package linkage, not native interaction proof.
 Long/quiet combinations, broader recall, the queen-ending promotion, representative
 independently judged accuracy and native reliability remain open.

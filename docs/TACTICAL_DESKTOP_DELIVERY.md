@@ -1,6 +1,44 @@
 # Tactical desktop delivery — 2026-09-17
 
-## Current package: adapter 153 / live pipeline 160
+## Current package: adapter 154 / live pipeline 161
+
+Source `3b719cf5` is packaged from clean detached checkout
+`en-tactical-desktop-3b719cf5`. Mixed-target fork mistakes can now cite a
+positively verified capture of the attacker after the better move, including
+entry material, played-choice credit and friendly-piece liabilities. The
+owner Qxc7 example gains its O-O / Kxg2 defensive explanation. The full
+1,319-context replay changes only that review; live root classifications are
+unchanged. See `benchmarks/tactical-relevance/mixed-fork-cause-review.md`.
+
+Clean TypeScript, 101 focused source/React checks (nine optional skips),
+29 generated-service checks (one optional engine skip), the 43-module review
+build and 8,863-module frontend build pass. Native release compilation passes
+in 1m25s with 22 existing warnings. Generated-review differences are source-region
+comments only; the route tree differs only in line endings. Unrelated dirty
+OTB/FIDE/phone/stats work was excluded.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,075,776 bytes;
+  SHA-256 `e36999ea215f51a400fb6dfbb857cb6f5d54706c8cc7e2183827b6a0350c8ca0`.
+- Worker: `liveTactics.worker-Dh7K6dPP.js`, 598,595 bytes; SHA-256
+  `ea49b1a65847c0006f5b6941bfab47b44c089fe9f4ea70bf56b66da6d39af384`.
+  Clean bytes match the 832-input tested artifact. The x64 executable embeds
+  this worker, `mistakeReviewAdapter-Bz3G87O7.js`,
+  `TacticalClassifierPanel-CLNRldzs.js` and `OpeningReviewWorkspace-BrjDOVqY.js`;
+  normalized exact native dependencies identify these assets in the clean checkout.
+- Previous pipeline-160 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline161/en-croissant-fork.exe`,
+  SHA-256 `924bb21a1f2c96410d5a5f2b29d017c0e93ca4f41680d11b58d09c07074da89e`.
+
+No app was running before or after compilation; none was launched or restarted.
+The Dev App shortcut is unchanged and retains the primary checkout's
+`encroissant-native` workflow. Owner data, settings, engines and phone services
+remain unchanged. This verifies package linkage, not native interaction or
+reliable startup under load. It recovers one mistake cause, not a new live root
+or completion of the classifier's conservative-recall goal. The audited defensive
+rook deflection, quiet pin continuation, broader quiet/long combinations and
+queen-ending promotion remain unfinished.
+
+## Previous package: adapter 153 / live pipeline 160
 
 Source `d8728295` is packaged from clean detached checkout
 `en-tactical-desktop-d8728295`. Nonchecking capture forks now prove additional
