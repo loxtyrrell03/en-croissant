@@ -1,6 +1,41 @@
 # Tactical desktop delivery — 2026-09-17
 
-## Current package: adapter 145 / live pipeline 152
+## Current package: adapter 146 / live pipeline 153
+
+Source `47602bc8` is packaged from clean detached checkout
+`en-tactical-desktop-47602bc8`. A promotion-specific checking-retention proof
+recovers the real ...d1=Q omission while rejecting the draft's losing queen
+liquidations. See `benchmarks/tactical-relevance/promotion-check-retention-review.md`
+for the same-input game audit, independent verifier, finite proof boundaries,
+and remaining queen-ending and stronger-mating-cause coverage failures.
+
+Clean TypeScript, 84 focused source/React passes plus two explicit expected
+coverage failures (three optional skips), 21 generated-service tests (one
+optional engine skip), review and frontend builds pass. Native release
+compilation passes in 1m25s with 22 existing warnings. Generated-review changes
+are region-path comments only; the generated route tree differs only in line
+endings. Unrelated dirty OTB/FIDE/phone/stats work was excluded.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,071,680 bytes;
+  SHA-256 `0971449cf3c9a4624caf426a867f1f6ab7dc37339b311b49e1bdb9554f7fe128`.
+- Worker: `liveTactics.worker-YO-E50T4.js`, 590,353 bytes; SHA-256
+  `5eb435402967018b73466c0ff19169fae240dc21d3439f7e1e0d36ded5d34a40`.
+  Clean bytes match the 2,011-input tested artifact. The x64 executable embeds
+  this worker, `TacticalClassifierPanel-lo87hnSW.js` and
+  `OpeningReviewWorkspace-B9Klpedk.js`; exact native dependency paths identify
+  these assets in the clean checkout.
+- Previous pipeline-152 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline153/en-croissant-fork.exe`,
+  SHA-256 `0e1b1cece1021ce40b311640c81850507f0a361305f49d970fa4290bbdac6929`.
+
+No app was running before or after compilation; none was launched or restarted.
+The Dev App shortcut remains on the primary checkout's `encroissant-native`
+workflow. Owner data, settings, engines and phone services are unchanged.
+This verifies source/package linkage, not native-window interaction or
+load-sensitive startup reliability. Broader recall and primary-cause coverage
+remain unfinished.
+
+## Previous package: adapter 145 / live pipeline 152
 
 Source `a1920cce` is packaged from clean detached checkout
 `en-tactical-desktop-a1920cce`. Immediate promotions use local retention values

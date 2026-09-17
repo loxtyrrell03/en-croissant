@@ -83,7 +83,8 @@ All 2,011 production-controller inputs pass: 808 public cases, 22 promotion
 controls including the real recovery/reflection, and all 1,181 owner contexts.
 Each owner result matches both source and its frozen final replay. Public
 classification/transfer median/p95/max is 43/203/1,098 ms, excluding engine and
-native UI. Clean desktop delivery is recorded separately after completion.
+native UI; owner median/p95/max is 92/328/1,493 ms. These are controlled-run
+timings, not an overall speedup or a native reliability guarantee.
 Worker `liveTactics.worker-YO-E50T4.js` is 590,353 bytes, SHA-256
 `5eb435402967018b73466c0ff19169fae240dc21d3439f7e1e0d36ded5d34a40`.
 These checks do not resolve native interaction or load-sensitive startup.
@@ -98,6 +99,10 @@ receipts dated `20260917` include `probes146-retained`,
 `probes146-safe` strategy are not the final proof. Paid course/game identities
 and full owner replay reports stay outside Git.
 
-Broader recall, quiet preparation, the queen-ending promotion and stronger
-mating cause remain open. No owner app, data or phone service is restarted by
-these tests; native packaging is a separate delivery step.
+Source `47602bc8` is also delivered in the standalone desktop executable from
+a clean committed checkout; worker bytes match this tested artifact. Clean
+source/React/service checks and frontend/native builds pass. See
+`docs/TACTICAL_DESKTOP_DELIVERY.md` for hashes and the preserved prior package.
+No owner app was running or restarted; owner data and phone services are
+unchanged. Broader recall, quiet preparation, the queen-ending promotion,
+stronger mating cause and native interaction/startup reliability remain open.
