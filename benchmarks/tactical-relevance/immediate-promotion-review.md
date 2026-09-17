@@ -76,6 +76,14 @@ not a correct negative or an accuracy improvement; an explicit `test.fails`
 records the missing certificate. Broadening that proof without accepting king
 hunts or perpetuals remains follow-up work.
 
+The final 808-input public comparison changes one headline:
+`secondary-probe:i2SLh:after-queening` no longer gets a generic promotion-gain
+certificate. Its recorded ...d1=Q is Black's best move in a worse queen ending
+after Qxc6, so this withdrawal is also not counted as a correct negative. The
+other 807 public primary-ID lists are unchanged. Promotion through continuing
+checks and races needs broader retention coverage, not a rule equating a
+negative full-position score with a bad or irrelevant promotion.
+
 Other reviewed omissions remain open: a pin attack needing ...Bb4+ and castling
 before collection; a quiet knight-fork preparation; and a pawn push whose engine
 line forces promotion/mate. One tempting ...Rh2+ pawn-win judgement was rejected
@@ -120,6 +128,8 @@ final nine-search causal audit uses a legal nonchecking knight continuation.
   `1ab6ea8f383ac9f03f5319f098ba61c2687e4be1ff0f659fb753bb3db02db20d`.
   These controlled production-import checks do not resolve earlier cold
   development/native-load failures or demonstrate an overall speedup.
+  Public classification/transfer median/p95/max is 43/202/1,147 ms over 808
+  inputs, excluding engine/native UI.
 
 Private receipts under `Documents/OnCrescent Tactical Benchmarks/`:
 `chesscom-june-next-three-20260917.json`,
