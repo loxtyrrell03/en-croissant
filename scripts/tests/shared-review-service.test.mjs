@@ -16,8 +16,40 @@ import { forkCountercaptureFen, forkCountercaptureLine } from "../../src/utils/t
 import { captureMateFen } from "../../src/utils/tests/fixtures/captureMate.ts";
 import { missedPromotionFen } from "../../src/utils/tests/fixtures/immediatePromotion.ts";
 import { promotionCheckFen, promotionCheckMove, quietMatingFinish } from "../../src/utils/tests/fixtures/promotionCheckRetention.ts";
+import { capturingMixedForkFen, capturingMixedForkLine } from "../../src/utils/tests/fixtures/capturingMixedTargetFork.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("a missed capturing mixed-target fork survives generated review and saved deck reload",async()=>{
+  const root=await mkdtemp(join(tmpdir(),"en-shared-review-capture-fork-"));
+  const position=Chess.fromSetup(parseFen(capturingMixedForkFen).unwrap()).unwrap();
+  assert.ok(position.isLegal(parseUci("g5h5")));position.play(parseUci("g5h5"));
+  const after=makeFen(position.toSetup());
+  const options={root,documentsRoot:join(root,"documents"),engineConfigPath:join(root,"engine.json"),
+    fetchGames:async()=>[],lookup:async fen=>{
+      assert.ok(fen===capturingMixedForkFen||fen===after);
+      // Synthetic score loss exercises service wiring, not a chess judgement.
+      return {depth:16,pvs:fen===capturingMixedForkFen?[{cp:-300,moves:capturingMixedForkLine.join(" ")}]:[{cp:0,moves:"g2g3"}]};
+    }};
+  let service;
+  try{
+    await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+    await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",end:1789387200,
+      url:"https://example.test/capture-fork",pgn:`[White "Opponent"]\n[Black "Tester"]\n[Date "2026.09.17"]\n[SetUp "1"]\n[FEN "${capturingMixedForkFen}"]\n[Result "0-1"]\n\n1... Qh5 0-1`}]}));
+    service=new SharedReviewService(options);await service.initialize(false);await service.run();
+    assert.equal(service.snapshot().error,null);const card=service.snapshot().cards[0];assert.ok(card,JSON.stringify(service.snapshot()));
+    const motif=card.tacticalClassification.missedMotifs[0];
+    assert.equal(motif.id,"fork");assert.equal(motif.value,200);assert.equal(motif.ply,1);
+    assert.match(motif.evidence,/including the initial capture/);
+    service.close();service=new SharedReviewService(options);await service.initialize(false);
+    assert.deepEqual(service.snapshot().cards[0].tacticalClassification,JSON.parse(JSON.stringify(card.tacticalClassification)));
+    assert.ok((await service.deck()).positions.some(position=>position.fen===capturingMixedForkFen));
+  }finally{
+    service?.close();const target=resolve(root);
+    assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-capture-fork-"));
+    await rm(target,{recursive:true,force:true});
+  }
+});
 
 test("independent pawn history survives generated review without accusing retained opportunities",async()=>{
   for(const retained of [false,true]) {

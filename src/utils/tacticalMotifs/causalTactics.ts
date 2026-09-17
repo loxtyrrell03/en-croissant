@@ -4037,10 +4037,11 @@ type MixedTargetForkProof = Extract<MaterialThreatProof, { kind: "proven" }> & {
 };
 const mixedTargetForkCache = new Map<string, MixedTargetForkProof | null>();
 
-/** Quiet forks may need an allied capture to answer a target's countercheck.
+/** Nonchecking forks may need an allied capture to answer a countercheck.
  * A pawn may also be the payoff of a fork of a piece. Require a complete
  * named-target proof, including moved victims and off-square liabilities.
- * Prefer a sufficient pair instead of drawing every incidental pawn attack. */
+ * Capturing entries must win beyond their initial capture: that capture alone
+ * cannot finance a meaningless fork. Prefer a sufficient target pair. */
 export function proveMixedTargetFork(
     step: TacticalReplayStep,
     nodeLimit = 8192,
@@ -4049,7 +4050,6 @@ export function proveMixedTargetFork(
     if (
         !Number.isSafeInteger(nodeLimit) ||
         nodeLimit <= 0 ||
-        step.capture ||
         step.after.isCheck() ||
         step.after.isEnd() ||
         step.move.promotion ||
@@ -4098,6 +4098,8 @@ function computeMixedTargetFork(
             false,
             undefined,
             {
+                minimumGain: step.capture + 100,
+                countercheckCaptures: true,
                 allPiecesAtLeaf: true,
                 rayMaterialOnly: true,
                 rejectCaptureMate: true,
@@ -4106,7 +4108,7 @@ function computeMixedTargetFork(
             },
         );
         onAttempt?.(pair, proof);
-        if (proof.kind === "proven" && proof.complete && proof.gain >= 100 && proof.gain < 10000) {
+        if (proof.kind === "proven" && proof.complete && proof.gain >= step.capture + 100 && proof.gain < 10000) {
             const supports = new Map<string, { ray: RayTactic; target: Square }>();
             for (const branch of proof.captureBranches ?? []) {
                 const line = replayTacticalLine(makeFen(step.after.toSetup()), [
@@ -7758,6 +7760,9 @@ type MaterialProofOptions = {
     rayMaterialOnly?: boolean;
     rejectCaptureMate?: boolean;
     captureWitnesses?: boolean;
+    // A defender may abandon the targets to countercheck. Only the actual
+    // checker may substitute for a named victim, never an unrelated loose piece.
+    countercheckCaptures?: boolean;
 };
 function materialThreatGain(step: TacticalReplayStep, targets: Square[], capturers: Square[]) {
     const proof = materialThreatProof(step, targets, capturers);
@@ -7788,7 +7793,7 @@ function materialThreatProof(
     promotionFrom?: Square,
     options: MaterialProofOptions = {},
 ) {
-    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}:${Boolean(options.rayMaterialOnly)}:${Boolean(options.rejectCaptureMate)}:${Boolean(options.captureWitnesses)}`;
+    const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}:${Boolean(options.rayMaterialOnly)}:${Boolean(options.rejectCaptureMate)}:${Boolean(options.captureWitnesses)}:${Boolean(options.countercheckCaptures)}`;
     if (materialProofCache.has(key)) return materialProofCache.get(key)!;
     const proof = computeMaterialThreatGain(
         step,
@@ -7876,6 +7881,7 @@ function computeMaterialThreatGain(
         // A forced block on the newly uncovered checking ray can itself be
         // the material target. Do not include arbitrary pieces elsewhere.
         if (interpositions.includes(reply.to)) replyTargets.push(reply.to);
+        if (options.countercheckCaptures) replyTargets.push(...next.ctx().checkers);
         for (const target of new Set(replyTargets)) {
             if (next.board.get(target)?.color !== opposite(step.before.turn)) continue;
             for (const from of availableCapturers) {
@@ -13558,7 +13564,7 @@ export function auditTacticalMotifs(
                 const roles = names.length === 2 ? names.join(" and ") : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
                 const pins = mixed.supportingPins.map(({ ray, target }) => ` The ${step.after.board.get(ray.front)!.role} on ${makeSquare(ray.front)} cannot recapture on ${makeSquare(target)} because the ${step.after.board.get(ray.pinner)!.role} on ${makeSquare(ray.pinner)} pins it to its king on ${makeSquare(ray.rear)}.`).join("");
                 proposal = { ...proposal, value: mixed.gain,
-                    evidence: `${step.san} forks the ${roles}. Every legal reply concedes at least ${mixed.gain / 100} pawn${mixed.gain === 100 ? "" : "s"} of material on these targets, including captures of the attacker and attempts to defend several targets at once.${pins}` };
+                    evidence: `${step.san} forks the ${roles}. Every legal reply concedes at least ${mixed.gain / 100} pawn${mixed.gain === 100 ? "" : "s"} of local material${step.capture ? ", including the initial capture" : ""}. The proof checks captures of the attacker, attempts to defend several targets at once, and legal captures of sacrificing countercheckers.${pins}` };
             } else if (repaired) {
                 // Independently forced mate still outranks a fork whose proof
                 // uses some mating replies to retain the material threat.
@@ -15258,11 +15264,15 @@ export function compareImmediateTacticalDefence(
                 if (other && other.targets.join(",") === mixed.targets.join(",") && other.gain >= mixed.gain)
                     return { ...motif, comparison: "persists" as const,
                         comparisonEvidence: `The same piece-and-pawn fork remains after ${bestSan}, with at least the same verified local gain.` };
+                // A capturing fork's bound includes its entry capture. A failed
+                // target proof alone cannot compare that credit with material
+                // already taken by the player's alternative move.
+                if (step.capture) return motif;
                 // An exhausted proof or different fork cannot establish prevention.
                 if (other) return motif;
                 const counter = materialThreatProof(alternative, mixed.targets,
                     [...alternative.after.board[alternative.before.turn]], [], false, undefined,
-                    { allPiecesAtLeaf: true, rayMaterialOnly: true, rejectCaptureMate: true, mateNodeLimit: 8192 });
+                    { allPiecesAtLeaf: true, rayMaterialOnly: true, rejectCaptureMate: true, mateNodeLimit: 8192, countercheckCaptures: true });
                 return counter.kind === "refuted" && !counter.checking
                     ? { ...motif, comparison: "prevented" as const,
                         comparisonEvidence: `After ${bestSan}, ${counter.defence} answers ${alternative.san} without conceding the same immediate fork-target gain. This compares the concrete target captures, not the full position's evaluation.` }

@@ -231,7 +231,7 @@ test.skipIf(
     const input = JSON.parse(readFileSync(process.env.TACTICAL_MIXED_FORK_PRIVATE_INPUT!, "utf8"));
     const step = replayTacticalLine(input.fen, input.pvUci)[input.index];
     const proof = proveMixedTargetFork(step);
-    expect(proof).toMatchObject({ complete: true, gain: 100 });
+    expect(proof).toMatchObject({ complete: true, gain: input.expectedGain ?? 100 });
     const fen = makeFen(step.before.toSetup());
     const probes = [
         { id: "private-mixed:root", fen, searchMove: step.uci },

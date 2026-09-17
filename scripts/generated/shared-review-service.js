@@ -13073,12 +13073,13 @@ function winningTargets(pos, from, side, includePawns = false) {
 	});
 }
 var mixedTargetForkCache = /* @__PURE__ */ new Map();
-/** Quiet forks may need an allied capture to answer a target's countercheck.
+/** Nonchecking forks may need an allied capture to answer a countercheck.
 * A pawn may also be the payoff of a fork of a piece. Require a complete
 * named-target proof, including moved victims and off-square liabilities.
-* Prefer a sufficient pair instead of drawing every incidental pawn attack. */
+* Capturing entries must win beyond their initial capture: that capture alone
+* cannot finance a meaningless fork. Prefer a sufficient target pair. */
 function proveMixedTargetFork(step, nodeLimit = 8192, onAttempt) {
-	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || step.capture || step.after.isCheck() || step.after.isEnd() || step.move.promotion || defenderCanClaimFiftyMoveDraw(step.after)) return null;
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || step.after.isCheck() || step.after.isEnd() || step.move.promotion || defenderCanClaimFiftyMoveDraw(step.after)) return null;
 	const key = `${makeFen(step.before.toSetup())}:${step.uci}`;
 	if (!onAttempt && nodeLimit === 8192 && mixedTargetForkCache.has(key)) return mixedTargetForkCache.get(key);
 	const result = computeMixedTargetFork(step, nodeLimit, onAttempt);
@@ -13100,6 +13101,8 @@ function computeMixedTargetFork(step, nodeLimit, onAttempt) {
 	if (allowance < 1) return null;
 	for (const pair of subsets) {
 		const proof = materialThreatProof(step, pair, [...step.after.board[side]], [], false, void 0, {
+			minimumGain: step.capture + 100,
+			countercheckCaptures: true,
 			allPiecesAtLeaf: true,
 			rayMaterialOnly: true,
 			rejectCaptureMate: true,
@@ -13107,7 +13110,7 @@ function computeMixedTargetFork(step, nodeLimit, onAttempt) {
 			captureWitnesses: true
 		});
 		onAttempt?.(pair, proof);
-		if (proof.kind === "proven" && proof.complete && proof.gain >= 100 && proof.gain < 1e4) {
+		if (proof.kind === "proven" && proof.complete && proof.gain >= step.capture + 100 && proof.gain < 1e4) {
 			const supports = /* @__PURE__ */ new Map();
 			for (const branch of proof.captureBranches ?? []) {
 				const line = replayTacticalLine(makeFen(step.after.toSetup()), [branch.replyUci, branch.answerUci]);
@@ -15561,7 +15564,7 @@ function proveDirectMaterialThreat(step) {
 	} : null;
 }
 function materialThreatProof(step, targets, capturers, interpositions = [], allowMateAnswer = false, promotionFrom, options = {}) {
-	const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}:${Boolean(options.rayMaterialOnly)}:${Boolean(options.rejectCaptureMate)}:${Boolean(options.captureWitnesses)}`;
+	const key = `${makeFen(step.after.toSetup())}:${step.capture}:${step.move.promotion}:${targets}:${capturers}:${interpositions}:${allowMateAnswer}:${promotionFrom}:${options.minimumGain ?? 100}:${options.mateAnswerMoves ?? 1}:${options.mateNodeLimit ?? 4096}:${Boolean(options.allPiecesAtLeaf)}:${Boolean(options.rayMaterialOnly)}:${Boolean(options.rejectCaptureMate)}:${Boolean(options.captureWitnesses)}:${Boolean(options.countercheckCaptures)}`;
 	if (materialProofCache.has(key)) return materialProofCache.get(key);
 	const proof = computeMaterialThreatGain(step, targets, capturers, interpositions, allowMateAnswer, promotionFrom, options);
 	materialProofCache.set(key, proof);
@@ -15627,6 +15630,7 @@ function computeMaterialThreatGain(step, targets, capturers, interpositions, all
 			return victim && victim.role !== "king";
 		}).map((original) => reply.from === original ? reply.to : original);
 		if (interpositions.includes(reply.to)) replyTargets.push(reply.to);
+		if (options.countercheckCaptures) replyTargets.push(...next.ctx().checkers);
 		for (const target of new Set(replyTargets)) {
 			if (next.board.get(target)?.color !== opposite(step.before.turn)) continue;
 			for (const from of availableCapturers) {
@@ -19540,7 +19544,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 				proposal = {
 					...proposal,
 					value: mixed.gain,
-					evidence: `${step.san} forks the ${roles}. Every legal reply concedes at least ${mixed.gain / 100} pawn${mixed.gain === 100 ? "" : "s"} of material on these targets, including captures of the attacker and attempts to defend several targets at once.${pins}`
+					evidence: `${step.san} forks the ${roles}. Every legal reply concedes at least ${mixed.gain / 100} pawn${mixed.gain === 100 ? "" : "s"} of local material${step.capture ? ", including the initial capture" : ""}. The proof checks captures of the attacker, attempts to defend several targets at once, and legal captures of sacrificing countercheckers.${pins}`
 				};
 			} else if (repaired) {
 				if (proposal.ply === 1 && (checkingMate || quietMate || preparation)) continue;
@@ -20621,12 +20625,14 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 					comparison: "persists",
 					comparisonEvidence: `The same piece-and-pawn fork remains after ${bestSan}, with at least the same verified local gain.`
 				};
+				if (step.capture) return motif;
 				if (other) return motif;
 				const counter = materialThreatProof(alternative, mixed.targets, [...alternative.after.board[alternative.before.turn]], [], false, void 0, {
 					allPiecesAtLeaf: true,
 					rayMaterialOnly: true,
 					rejectCaptureMate: true,
-					mateNodeLimit: 8192
+					mateNodeLimit: 8192,
+					countercheckCaptures: true
 				});
 				return counter.kind === "refuted" && !counter.checking ? {
 					...motif,
@@ -21256,7 +21262,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 152;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 153;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

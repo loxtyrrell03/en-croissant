@@ -601,6 +601,18 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("root-only capture mates survive
     }
 }, 30000);
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("capturing mixed-target forks survive the production controller",async()=>{
+    const {capturingMixedForkCases}=await import("./fixtures/capturingMixedTargetFork");
+    const {reflectMixedForkFen,reflectMixedForkMove}=await import("./fixtures/mixedTargetFork");
+    for(const row of capturingMixedForkCases)for(const reflected of [false,true]){
+        const input={fen:reflected?reflectMixedForkFen(row.fen):row.fen,
+            pvUci:[reflected?reflectMixedForkMove("g5g2"):"g5g2"],depth:16,engineName:"Constructed capture fork"};
+        const {scan}=await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        expect(scan).toEqual(buildLiveTacticalScan(input));
+        expect(scan.motifs.filter(m=>m.id==="fork").map(m=>m.value)).toEqual(row.gain===null?[]:[row.gain]);
+    }
+},30000);
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("independent pawn history survives the production controller",async()=>{
     for(const reflected of [false,true]) for(const reciprocal of [false,true]) {
         const original=independentPawnHistoryInput(reflected,reciprocal);

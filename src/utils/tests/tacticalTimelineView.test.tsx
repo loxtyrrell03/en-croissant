@@ -18,6 +18,19 @@ import { settledPawnHistoryCases } from "./fixtures/settledPawnHistory";
 import { forkCountercaptureFen, forkCountercaptureLine } from "./fixtures/forkCountercapture";
 import { captureExchangeRetentionInput } from "./fixtures/captureExchangeRetention";
 import { independentPawnHistoryInput } from "./fixtures/independentPawnHistory";
+import { capturingMixedForkFen, capturingMixedForkLine } from "./fixtures/capturingMixedTargetFork";
+
+test("a capturing mixed-target fork explains its entry credit at the actual move",()=>{
+  const result=classifyPositionTacticalMotifs({fen:capturingMixedForkFen,pvUci:capturingMixedForkLine});
+  const container=document.createElement("div");
+  container.innerHTML=renderToStaticMarkup(<MantineProvider><TacticalLineExplanation moves={["Qxg2","Rf1","Qxe4+","Kd1"]} motifs={result.timeline??[]}/></MantineProvider>);
+  const root=container.querySelector('[data-tactical-ply="1"]')?.textContent;
+  expect(root).toContain("Fork");
+  expect(root).toContain("rook on h1 and pawn on e4");
+  expect(root).toContain("including the initial capture");
+  expect(root).not.toContain("free rook");
+  expect(result.motifs[0]).toMatchObject({id:"fork",value:200,ply:1});
+});
 
 test("an independent pawn opportunity does not present the historical queen loss as its payoff",()=>{
   const input=independentPawnHistoryInput();
