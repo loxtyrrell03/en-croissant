@@ -10362,7 +10362,7 @@ function provePerpetualCheck(steps, nodeLimit = 4096, options) {
 		to: root.move.from
 	}));
 	const key = `${makeFen(root.before.toSetup())}:${root.uci}:${hints}`;
-	const cacheable = nodeLimit === 4096 && !options?.budget && !options?.onlyMovedChecker;
+	const cacheable = nodeLimit === 4096 && !options?.budget && !options?.onlyMovedChecker && !options?.captureStrategy;
 	if (cacheable && perpetualCheckCache.has(key)) return perpetualCheckCache.get(key);
 	const budget = options?.budget ?? { nodes: nodeLimit };
 	const visit = (pos, move) => {
@@ -10376,24 +10376,45 @@ function provePerpetualCheck(steps, nodeLimit = 4096, options) {
 	const defend = (pos, remaining, line, checker) => {
 		if (pos.isCheckmate()) return {
 			line,
-			cycle: []
+			cycle: [],
+			...options?.captureStrategy ? { strategy: {
+				fen: makeFen(pos.toSetup()),
+				terminal: "mate"
+			} } : {}
 		};
 		if (pos.isEnd() || !pos.isCheck()) return null;
 		const position = positionKey(pos), previous = path.get(position);
 		if (previous !== void 0) return {
 			line,
-			cycle: line.slice(previous)
+			cycle: line.slice(previous),
+			...options?.captureStrategy ? { strategy: {
+				fen: makeFen(pos.toSetup()),
+				terminal: "cycle"
+			} } : {}
 		};
 		if (!remaining) return null;
 		path.set(position, line.length);
 		try {
 			let example = null;
+			const witnesses = [];
 			for (const reply of legalMoves(pos)) {
 				const proof = attack(visit(pos, reply), remaining, [...line, makeSan(pos, reply)], checker);
 				if (!proof) return null;
+				if (proof.strategy) witnesses.push({
+					replyUci: makeUci(reply),
+					checkUci: proof.checkUci,
+					next: proof.strategy
+				});
 				if (!example || !example.cycle.length && proof.cycle.length) example = proof;
 			}
-			return example;
+			return example && {
+				line: example.line,
+				cycle: example.cycle,
+				...options?.captureStrategy ? { strategy: {
+					fen: makeFen(pos.toSetup()),
+					replies: witnesses
+				} } : {}
+			};
 		} finally {
 			path.delete(position);
 		}
@@ -10402,21 +10423,49 @@ function provePerpetualCheck(steps, nodeLimit = 4096, options) {
 		if (pos.isEnd()) return null;
 		const relative = (square) => root.before.turn === "white" ? square : square ^ 56;
 		const moves = legalMoves(pos).filter((move) => !options?.onlyMovedChecker || move.from === checker).sort((a, b) => Number(hints.includes(makeUci(b))) - Number(hints.includes(makeUci(a))) || relative(a.from) - relative(b.from) || relative(a.to) - relative(b.to));
+		const checks = [];
 		for (const move of moves) {
+			if (!mayGiveCheck(pos, move)) continue;
 			const next = visit(pos, move);
 			if (!next.isCheck() || options?.onlyMovedChecker && !next.ctx().checkers.has(move.to)) continue;
+			if (next.isCheckmate() || path.has(positionKey(next))) {
+				const proof = defend(next, remaining - 1, [...line, makeSan(pos, move)], move.to);
+				if (proof) return {
+					...proof,
+					checkUci: makeUci(move)
+				};
+			}
+			checks.push({
+				move,
+				next
+			});
+		}
+		for (const { move, next } of checks) {
 			const proof = defend(next, remaining - 1, [...line, makeSan(pos, move)], move.to);
-			if (proof) return proof;
+			if (proof) return {
+				...proof,
+				checkUci: makeUci(move)
+			};
 		}
 		return null;
 	};
 	let result = null;
 	try {
-		const proof = defend(root.after, 5, [root.san], root.move.to);
-		if (proof?.cycle.length) result = {
-			...proof,
-			replyCount: legalMoves(root.after).length
-		};
+		for (const remaining of [
+			2,
+			3,
+			4,
+			5
+		]) {
+			const proof = defend(root.after, remaining, [root.san], root.move.to);
+			if (proof?.cycle.length) {
+				result = {
+					...proof,
+					replyCount: legalMoves(root.after).length
+				};
+				break;
+			}
+		}
 	} catch {}
 	if (cacheable) {
 		perpetualCheckCache.set(key, result);
@@ -21951,7 +22000,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 160;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 161;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -22799,6 +22848,15 @@ function classifyMistakeReviewMotifs(input) {
 		return Boolean(defence && actual.length === 2 && actual[1].move.from === defence.target && provePerpetualCheck([actual[1]], 4096, { onlyMovedChecker: true }));
 	};
 	classification.missedMotifs = classification.missedMotifs.filter((m) => defensiveLessonMissed(m));
+	let playedPerpetual;
+	const drawingResourceMissed = (motif) => {
+		if (motif.id !== "perpetualCheck") return true;
+		const side = fenSide(fen) === "w" ? 1 : -1;
+		if (typeof input.cpAfter !== "number" || !Number.isFinite(input.cpAfter) || input.cpAfter * side >= -50 || typeof input.cpLoss !== "number" || !Number.isFinite(input.cpLoss) || input.cpLoss < 50 || !playedMoveUci) return false;
+		playedPerpetual ??= Boolean(provePerpetualCheck(replayTacticalLine(fen, [playedMoveUci, ...refutationLine])));
+		return !playedPerpetual;
+	};
+	classification.missedMotifs = classification.missedMotifs.filter(drawingResourceMissed);
 	classification.missedMotifs = classification.missedMotifs.filter((motif) => !(motif.id === "hangingPiece" && motif.label === "Hanging Pawn" && motif.ply === 1 && bestMoveUci && playedMoveUci && refutationLine[0] && pawnOpportunityRemainsAfterReply(fen, bestMoveUci, playedMoveUci, refutationLine[0])));
 	classification.missedMotifs = qualifyComparableCaptureChoice(fen, bestMoveUci, playedMoveUci, classification.missedMotifs);
 	const playedPromotion = playedMoveUci?.length === 5 ? proveImmediatePromotion(replayTacticalLine(fen, [playedMoveUci])[0]) : null;
@@ -22825,7 +22883,7 @@ function classifyMistakeReviewMotifs(input) {
 		...!playedTheBestMove && bestLine.length ? { missedTimeline: selectContinuationLessons(filterCompensatedRootCaptures(fen, bestLine, buildTacticalTimeline(fen, bestLine, "missed", classification.missedMotifs, input.pvSan, input.tablebaseEvidence), input.previousFen, cleanUci(input.previousMoveUci), input.tacticalHistory), classification.missedMotifs) } : {}
 	};
 	compared.allowedMotifs = selectRootConnectedLessons(fenAfterPlayedMove ?? "", refutationLine, compared.allowedMotifs, compared.allowedTimeline ?? []);
-	if (compared.missedTimeline) compared.missedTimeline = compared.missedTimeline.filter((m) => (m.id !== "drawingCapture" || m.ply !== 1 || playedEndgameOutcome === 1) && defensiveLessonMissed(m));
+	if (compared.missedTimeline) compared.missedTimeline = compared.missedTimeline.filter((m) => (m.id !== "drawingCapture" || m.ply !== 1 || playedEndgameOutcome === 1) && defensiveLessonMissed(m) && drawingResourceMissed(m));
 	compared.missedMotifs = selectRootConnectedLessons(fen, bestLine, compared.missedMotifs, compared.missedTimeline ?? []);
 	const genericPawn = (motif) => motif.id === "hangingPiece" && motif.label === "Hanging Pawn";
 	const missedRoots = compared.missedMotifs.filter(isImmediateTacticalLesson);
@@ -22843,7 +22901,7 @@ function classifyMistakeReviewMotifs(input) {
 		}).motifs.map((motif) => ({
 			...motif,
 			source: "missed"
-		}))).filter((motif) => motif.moveUci === move && motif.confidence === "high" && isImmediateTacticalLesson(motif) && (motif.id !== "drawingCapture" || playedEndgameOutcome === 1) && defensiveLessonMissed(motif, move)), 1)[0];
+		}))).filter(drawingResourceMissed).filter((motif) => motif.moveUci === move && motif.confidence === "high" && isImmediateTacticalLesson(motif) && (motif.id !== "drawingCapture" || playedEndgameOutcome === 1) && defensiveLessonMissed(motif, move)), 1)[0];
 		if (!primary) continue;
 		if (genericPawn(primary) && refutationLine[0] && pawnOpportunityRemainsAfterReply(fen, move, playedMoveUci, refutationLine[0])) continue;
 		if (missedRoots.length && (primary.value ?? 0) <= Math.max(...missedRoots.map((m) => m.value ?? 0))) continue;

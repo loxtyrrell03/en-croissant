@@ -141,7 +141,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 160;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 161;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -1530,6 +1530,24 @@ export function classifyMistakeReviewMotifs(
     };
     classification.missedMotifs = classification.missedMotifs.filter(m => defensiveLessonMissed(m));
 
+    // Establishing one drawing resource does not show that a different move
+    // missed the draw. Equal/unknown/non-losing actual evaluations cannot
+    // nominate that accusation, and an independently verified played cycle
+    // overrides contrary score metadata. Scores only qualify relevance; the
+    // better move's all-defence proof still establishes the actual resource.
+    let playedPerpetual: boolean | undefined;
+    const drawingResourceMissed = (motif: TacticalMotifEvidence) => {
+        if (motif.id !== "perpetualCheck") return true;
+        const side = fenSide(fen) === "w" ? 1 : -1;
+        if (typeof input.cpAfter !== "number" || !Number.isFinite(input.cpAfter) ||
+            input.cpAfter * side >= -50 || typeof input.cpLoss !== "number" ||
+            !Number.isFinite(input.cpLoss) || input.cpLoss < 50 || !playedMoveUci) return false;
+        playedPerpetual ??= Boolean(provePerpetualCheck(replayTacticalLine(fen,
+            [playedMoveUci, ...refutationLine])));
+        return !playedPerpetual;
+    };
+    classification.missedMotifs = classification.missedMotifs.filter(drawingResourceMissed);
+
     classification.missedMotifs = classification.missedMotifs.filter(motif =>
         !(motif.id === "hangingPiece" && motif.label === "Hanging Pawn" && motif.ply === 1 &&
             bestMoveUci && playedMoveUci && refutationLine[0] &&
@@ -1637,7 +1655,8 @@ export function classifyMistakeReviewMotifs(
         compared.allowedTimeline ?? [],
     );
     if (compared.missedTimeline) compared.missedTimeline = compared.missedTimeline.filter(m =>
-        (m.id !== "drawingCapture" || m.ply !== 1 || playedEndgameOutcome === 1) && defensiveLessonMissed(m));
+        (m.id !== "drawingCapture" || m.ply !== 1 || playedEndgameOutcome === 1) &&
+        defensiveLessonMissed(m) && drawingResourceMissed(m));
     compared.missedMotifs = selectRootConnectedLessons(
         fen, bestLine, compared.missedMotifs, compared.missedTimeline ?? [],
     );
@@ -1663,7 +1682,8 @@ export function classifyMistakeReviewMotifs(
                 tablebaseEvidence: input.tablebaseEvidence,
             });
             const motifs = qualifyComparableCaptureChoice(fen, move, playedMoveUci,
-                result.motifs.map(motif => ({ ...motif, source: "missed" as const })));
+                result.motifs.map(motif => ({ ...motif, source: "missed" as const })))
+                .filter(drawingResourceMissed);
             const primary = selectImportantTacticalMotifs(motifs.filter(motif =>
                 motif.moveUci === move && motif.confidence === "high" && isImmediateTacticalLesson(motif) &&
                 (motif.id !== "drawingCapture" || playedEndgameOutcome === 1) && defensiveLessonMissed(motif, move)), 1)[0];

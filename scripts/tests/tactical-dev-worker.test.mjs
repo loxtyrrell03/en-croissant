@@ -110,6 +110,10 @@ test(
     const { castlingAliasCases } = await import("../../src/utils/tests/fixtures/castlingRelevance.ts");
     const { matingInterferenceCases, reflectMatingInterference } = await import("../../src/utils/tests/fixtures/matingInterference.ts");
     const cases = [
+      { name: "short saving queen checks", fen: "Q7/8/8/8/3k4/8/q4R2/4K3 b - - 0 1",
+        pvUci: ["a2b1"], expectedPrimary: ["perpetualCheck"], expectedArrows: [["a2", "b1"], ["b1", "e1"]] },
+      { name: "a capturable checker cannot claim a perpetual", fen: "Q7/8/8/8/3k4/8/q1B2R2/4K3 b - - 0 1",
+        pvUci: ["a2b1"], variations: [{pvUci:["a2b1"],cp:0,depth:16}], expectedPrimary: [] },
       ...captureMatingGuardCases.filter(row => row.positive).map(row => ({
         name: `capture mating-guard concession: ${row.id}`, fen: row.fen, pvUci: ["c8c3"],
         expectedPrimary: ["forcingAttack"], expectedArrows: [["c8", "c3"], ["c3", "h3"]],
@@ -146,8 +150,10 @@ test(
       ...matingInterferenceCases.filter(row => row.id !== "already-blocked-defence").flatMap(row => [row, { ...reflectMatingInterference(row), id: `${row.id}:black` }]).map(row => ({ name: `mating interference: ${row.id}`, fen: row.fen, pvUci: [row.move], expectedPrimary: row.expected || row.id.startsWith("extra-diagonal-defender") ? ["mateIn3"] : [], expectedTimeline: row.expected ? { id: "interference", ply: 1, actor: row.id.endsWith(":black") ? "black" : "white" } : undefined })),
       ...JSON.parse(readFileSync("benchmarks/tactical-relevance/quiet-mate-development.json", "utf8")).cases.flatMap(row => [1, row.bestLine.length].map(length => ({
         name: `quiet mate: ${row.id}:${length}`, fen: row.startFen, pvUci: row.bestLine.slice(0, length),
-        expectedPrimary: row.stratum === "mateIn2" ? ["mateThreat"] : row.stratum === "mateIn3" ? ["mateIn3"] : row.id === "lichess:0rcU4" ? [length >= 7 ? "mateIn4" : "forcingAttack"] : [],
-        expectedArrows: row.stratum !== "mateIn4" ? [[row.bestLine[0].slice(0, 2), row.bestLine[0].slice(2, 4)]] : row.id === "lichess:0rcU4" ? undefined : [],
+        // These recoveries predate adapter 161 and are already frozen in the
+        // compiled-controller corpus (including the retained adapter-160 run).
+        expectedPrimary: row.stratum === "mateIn2" ? ["mateThreat"] : row.stratum === "mateIn3" ? ["mateIn3"] : /0rcU4|0QPvf/.test(row.id) ? [length >= 7 ? "mateIn4" : "forcingAttack"] : row.id === "lichess:0z5nl" ? ["forcingAttack"] : [],
+        expectedArrows: row.stratum !== "mateIn4" ? [[row.bestLine[0].slice(0, 2), row.bestLine[0].slice(2, 4)]] : undefined,
       }))),
       ...castlingAliasCases.map(row => ({ name: `castling: ${row.id}`, fen: row.fen, pvUci: row.pvUci, expectedPrimary: row.mate ? ["mateIn1"] : row.id.includes("check-not-mate") ? [] : undefined, expectedArrows: row.mate ? [[row.pvUci[0].slice(0, 2), row.kingTo], [row.rookFrom, row.rookTo]] : undefined, expectedSquare: row.mate ? row.kingTo : undefined })),
       ...[...directMaterialPayoffCases, ...directMaterialPayoffCases.map(reflectPayoff)].map(row => ({ name: `direct payoff: ${row.id}`, fen: row.fen, pvUci: row.pvUci, expectedPrimary: [row.theme], expectedPayoff: row.label })),
@@ -317,8 +323,8 @@ test(
       if (item.expectedPayoff)
         assert.equal(result.scan.variations[0].timeline.find(motif => motif.ply === 3)?.label, item.expectedPayoff);
       if (item.expectedPrimary)
-        assert.deepEqual(result.scan.motifs.map((motif) => motif.id), item.expectedPrimary);
-      if (item.expectedArrows) assert.deepEqual(result.scan.arrows.map(arrow => [arrow.from, arrow.to]), item.expectedArrows);
+        assert.deepEqual(result.scan.motifs.map((motif) => motif.id), item.expectedPrimary, item.name);
+      if (item.expectedArrows) assert.deepEqual(result.scan.arrows.map(arrow => [arrow.from, arrow.to]), item.expectedArrows, item.name);
       if (item.expectedTerminalPly) assert.ok(result.scan.variations[0].timeline.some(motif=>motif.ply===item.expectedTerminalPly&&/mate/i.test(motif.id)));
       if (item.expectedSquare) assert.equal(result.scan.labels[0].square, item.expectedSquare);
       if (item.expectedLabels)

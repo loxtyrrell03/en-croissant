@@ -616,7 +616,20 @@ function skewerCaptureAllowsMate(pos: Chess, move: NormalMove, budget: ProofBudg
     return mate !== null;
 }
 
-type PerpetualCheckProof = { line: string[]; cycle: string[]; replyCount: number };
+type PerpetualCheckStrategy = {
+    fen: string;
+    terminal: "mate" | "cycle";
+} | {
+    fen: string;
+    replies: { replyUci: string; checkUci: string; next: PerpetualCheckStrategy }[];
+};
+type PerpetualCheckProof = {
+    line: string[];
+    cycle: string[];
+    replyCount: number;
+    /** Opt-in audit witness; normal scans do not construct or transfer it. */
+    strategy?: PerpetualCheckStrategy;
+};
 const perpetualCheckCache = new Map<string, PerpetualCheckProof | null>();
 
 /** A repeated-looking PV is not proof. Search checking moves only, with all
@@ -627,7 +640,7 @@ const perpetualCheckCache = new Map<string, PerpetualCheckProof | null>();
 export function provePerpetualCheck(
     steps: TacticalReplayStep[],
     nodeLimit = 4096,
-    options?: { onlyMovedChecker?: boolean; budget?: ProofBudget },
+    options?: { onlyMovedChecker?: boolean; budget?: ProofBudget; captureStrategy?: boolean },
 ): PerpetualCheckProof | null {
     const root = steps[0];
     if (
@@ -646,7 +659,7 @@ export function provePerpetualCheck(
     // never a proof: legal king captures and every other evasion still count.
     hints.push(makeUci({ from: root.move.to, to: root.move.from }));
     const key = `${makeFen(root.before.toSetup())}:${root.uci}:${hints}`;
-    const cacheable = nodeLimit === 4096 && !options?.budget && !options?.onlyMovedChecker;
+    const cacheable = nodeLimit === 4096 && !options?.budget && !options?.onlyMovedChecker && !options?.captureStrategy;
     if (cacheable && perpetualCheckCache.has(key)) return perpetualCheckCache.get(key)!;
     const budget = options?.budget ?? { nodes: nodeLimit };
     const visit = (pos: Chess, move: NormalMove) => {
@@ -656,29 +669,35 @@ export function provePerpetualCheck(
         return next;
     };
     const positionKey = (pos: Chess) => makeFen(pos.toSetup()).split(" ").slice(0, 4).join(" ");
-    type Proof = { line: string[]; cycle: string[] };
+    type Proof = { line: string[]; cycle: string[]; strategy?: PerpetualCheckStrategy };
     const path = new Map<string, number>();
     const defend = (pos: Chess, remaining: number, line: string[], checker: Square): Proof | null => {
-        if (pos.isCheckmate()) return { line, cycle: [] };
+        if (pos.isCheckmate()) return { line, cycle: [], ...(options?.captureStrategy
+            ? { strategy: { fen: makeFen(pos.toSetup()), terminal: "mate" as const } } : {}) };
         if (pos.isEnd() || !pos.isCheck()) return null;
         const position = positionKey(pos),
             previous = path.get(position);
-        if (previous !== undefined) return { line, cycle: line.slice(previous) };
+        if (previous !== undefined) return { line, cycle: line.slice(previous), ...(options?.captureStrategy
+            ? { strategy: { fen: makeFen(pos.toSetup()), terminal: "cycle" as const } } : {}) };
         if (!remaining) return null;
         path.set(position, line.length);
         try {
             let example: Proof | null = null;
+            const witnesses: { replyUci: string; checkUci: string; next: PerpetualCheckStrategy }[] = [];
             for (const reply of legalMoves(pos)) {
                 const proof = attack(visit(pos, reply), remaining, [...line, makeSan(pos, reply)], checker);
                 if (!proof) return null;
+                if (proof.strategy) witnesses.push({ replyUci: makeUci(reply), checkUci: proof.checkUci,
+                    next: proof.strategy });
                 if (!example || (!example.cycle.length && proof.cycle.length)) example = proof;
             }
-            return example;
+            return example && { line: example.line, cycle: example.cycle, ...(options?.captureStrategy
+                ? { strategy: { fen: makeFen(pos.toSetup()), replies: witnesses } } : {}) };
         } finally {
             path.delete(position);
         }
     };
-    const attack = (pos: Chess, remaining: number, line: string[], checker: Square): Proof | null => {
+    const attack = (pos: Chess, remaining: number, line: string[], checker: Square): (Proof & { checkUci: string }) | null => {
         if (pos.isEnd()) return null;
         const relative = (square: Square) => (root.before.turn === "white" ? square : square ^ 56);
         const moves = legalMoves(pos).filter(move => !options?.onlyMovedChecker || move.from === checker).sort(
@@ -687,18 +706,41 @@ export function provePerpetualCheck(
                 relative(a.from) - relative(b.from) ||
                 relative(a.to) - relative(b.to),
         );
+        const checks: { move: NormalMove; next: Chess }[] = [];
         for (const move of moves) {
+            // The geometric filter only nominates checks; the reached legal
+            // board must still actually be in check. Quiet moves cannot be
+            // part of this strategy and need not consume the visit budget.
+            if (!mayGiveCheck(pos, move)) continue;
             const next = visit(pos, move);
             if (!next.isCheck() || (options?.onlyMovedChecker && !next.ctx().checkers.has(move.to))) continue;
+            // Close an already reached exact position before exploring a
+            // different check's longer subtree. This is the same path-local
+            // cycle test, not reuse of a result from another defence.
+            if (next.isCheckmate() || path.has(positionKey(next))) {
+                const proof = defend(next, remaining - 1, [...line, makeSan(pos, move)], move.to);
+                if (proof) return { ...proof, checkUci: makeUci(move) };
+            }
+            checks.push({ move, next });
+        }
+        for (const { move, next } of checks) {
             const proof = defend(next, remaining - 1, [...line, makeSan(pos, move)], move.to);
-            if (proof) return proof;
+            if (proof) return { ...proof, checkUci: makeUci(move) };
         }
         return null;
     };
     let result: PerpetualCheckProof | null = null;
     try {
-        const proof = defend(root.after, 5, [root.san], root.move.to);
-        if (proof?.cycle.length) result = { ...proof, replyCount: legalMoves(root.after).length };
+        // Resolve short cycles before spending the SAME shared allowance on
+        // deeper checking detours. Every attempt still covers every defence,
+        // and exhaustion never turns an incomplete branch into a draw.
+        for (const remaining of [2, 3, 4, 5]) {
+            const proof = defend(root.after, remaining, [root.san], root.move.to);
+            if (proof?.cycle.length) {
+                result = { ...proof, replyCount: legalMoves(root.after).length };
+                break;
+            }
+        }
     } catch {
         /* Unknown/exhausted branches cannot establish a drawing resource. */
     }

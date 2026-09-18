@@ -56,6 +56,18 @@ const markup = (value: LiveTacticalScan) =>
     </MantineProvider>,
   );
 
+test("short saving checks render as a drawing resource with only current-board arrows", () => {
+  const value = buildLiveTacticalScan({ fen: "Q7/8/8/8/3k4/8/q4R2/4K3 b - - 0 1",
+    pvUci: ["a2b1"], depth: 16, engineName: "Constructed saving checks" });
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("Perpetual Check found");
+  expect(element.textContent).toContain("not a draw already claimed or a material win");
+  expect(element.textContent).not.toContain("No tactical theme verified");
+  expect(value.arrows.map(arrow => arrow.from + arrow.to)).toEqual(["a2b1", "b1e1"]);
+  expect(value.arrows.every(arrow => arrow.ply === 1)).toBe(true);
+  expect(value.motifs.map(motif => motif.id)).toEqual(["perpetualCheck"]);
+});
+
 test("a defensible mate threat stays distinct from a forced win in the rendered result", () => {
   const fen = "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/8/PPPP1PPP/RNBQK1NR w KQkq - 2 3";
   const value = buildLiveTacticalScan({ fen, pvUci: ["d1h5"], depth: 18, engineName: "Constructed",

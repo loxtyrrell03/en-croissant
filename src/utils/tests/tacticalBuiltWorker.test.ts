@@ -829,6 +829,24 @@ test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_FORK_RAY
     }
 },60000);
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("short saving cycles and capturable-checker controls survive the compiled controller", async () => {
+    for (const reflected of [false, true]) for (const control of [false, true]) {
+        const base = control ? "Q7/8/8/8/3k4/8/q1B2R2/4K3 b - - 0 1" : "Q7/8/8/8/3k4/8/q4R2/4K3 b - - 0 1";
+        const fen = reflected ? reflectMixedForkFen(base) : base;
+        const pvUci = [reflected ? reflectMixedForkMove("a2b1") : "a2b1"];
+        const input = { fen, pvUci, variations: [{ pvUci, cp: 0, depth: 16 }], depth: 16,
+            engineName: "Constructed cycle" };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.some(m => m.id === "perpetualCheck")).toBe(!control);
+        if (!control) {
+            assert.equal(result.scan.labels[0].id, "perpetualCheck");
+            assert.equal(result.scan.arrows.length, 2);
+            assert.ok(result.scan.arrows.every(arrow => arrow.ply === 1));
+        }
+    }
+}, 30000);
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER || !process.env.TACTICAL_RECALL_REPLAY)("all owner-game positions retain the actual compiled scan and history", async()=>{
     const baseline=JSON.parse(readFileSync(process.env.TACTICAL_RECALL_REPLAY!,"utf8"));
     expect(baseline.completed).toBe(baseline.requested ?? baseline.results.length);

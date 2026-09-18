@@ -28,6 +28,46 @@ import { reflectMixedForkFen, reflectMixedForkMove } from "../../src/utils/tests
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
 
+test("saving checks remain secondary to the queen loss through generated review and reload", async () => {
+  for (const reflected of [false, true]) {
+    const root = await mkdtemp(join(tmpdir(), "en-shared-review-saving-checks-"));
+    const base = "Q7/8/8/8/3k4/8/q4R2/4K3 b - - 0 1";
+    const fen = reflected ? reflectMixedForkFen(base) : base;
+    const flip = move => reflected ? reflectMixedForkMove(move) : move;
+    const pos = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
+    assert.ok(pos.isLegal(parseUci(flip("d4e3")))); pos.play(parseUci(flip("d4e3")));
+    const after = makeFen(pos.toSetup());
+    const options = { root, documentsRoot: join(root, "documents"), engineConfigPath: join(root, "engine.json"),
+      fetchGames: async () => [], lookup: async requested => {
+        assert.ok(requested === fen || requested === after);
+        // Controlled White-relative scores exercise ownership/persistence.
+        // Independent strategy and fresh engine audits verify the chess.
+        return { depth: 18, pvs: requested === fen ? [{ cp: 0, moves: flip("a2b1") }]
+          : [{ cp: reflected ? -500 : 500, moves: flip("f2a2") }] };
+      } };
+    let service;
+    try {
+      const game = `[White "${reflected ? "Tester" : "Opponent"}"]\n[Black "${reflected ? "Opponent" : "Tester"}"]\n[Date "2026.09.18"]\n[Result "${reflected ? "0-1" : "1-0"}"]\n[SetUp "1"]\n[FEN "${fen}"]\n\n${reflected ? "1. Ke6 0-1" : "1... Ke3 1-0"}`;
+      await writeFile(join(root, "config.json"), JSON.stringify({ accounts: { chesscom: "Tester" } }));
+      await writeFile(join(root, "games.json"), JSON.stringify({ games: [{ source: "chesscom", pgn: game,
+        end: 1789600000, url: "https://example.test/saving-checks" }] }));
+      service = new SharedReviewService(options); await service.initialize(false); await service.run();
+      assert.equal(service.snapshot().error, null);
+      const card = service.snapshot().cards[0]; assert.ok(card);
+      assert.equal(card.tacticalClassification.allowedMotifs[0].id, "hangingPiece");
+      assert.equal(card.tacticalClassification.allowedMotifs[0].value, 900);
+      assert.equal(card.tacticalClassification.missedMotifs[0].id, "perpetualCheck");
+      assert.match(card.explanation, /Perpetual Check/);
+      service.close(); service = new SharedReviewService(options); await service.initialize(false);
+      assert.deepEqual(service.snapshot().cards[0].tacticalClassification, JSON.parse(JSON.stringify(card.tacticalClassification)));
+    } finally {
+      service?.close(); const target = resolve(root);
+      assert.ok(target.startsWith(resolve(tmpdir()) + sep) && target.includes("en-shared-review-saving-checks-"));
+      await rm(target, { recursive: true, force: true });
+    }
+  }
+});
+
 test("answerable mate threats remain neutral after generated review and saved reload", async () => {
   for (const reflected of [false, true]) {
     const root = await mkdtemp(join(tmpdir(), "en-shared-review-mate-observation-"));
