@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { Worker } from "node:worker_threads";
 import test from "node:test";
 import { advancedPawnIntegrationCases } from "../../src/utils/tests/fixtures/advancedPawnHistory.ts";
+import { preventiveIntermediateInputs } from "../../src/utils/tests/fixtures/preventiveIntermediate.ts";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
 import { quietPieceForkCases, quietPieceForkMove } from "../../src/utils/tests/fixtures/quietPieceFork.ts";
 import { discoveryTrapCases } from "../../src/utils/tests/fixtures/discoveryTrap.ts";
@@ -112,6 +113,10 @@ test(
     const { castlingAliasCases } = await import("../../src/utils/tests/fixtures/castlingRelevance.ts");
     const { matingInterferenceCases, reflectMatingInterference } = await import("../../src/utils/tests/fixtures/matingInterference.ts");
     const cases = [
+      ...preventiveIntermediateInputs().map(row => ({...row,name:row.id,
+        expectedIntermediate:row.positive,
+        expectedPrimary:row.positive?["intermezzo"]:undefined,
+        expectedArrows:row.positive?(row.id.endsWith("white")?[["h4","f6"],["c6","a8"]]:[["h5","f3"],["c3","a1"]]):undefined})),
       ...advancedPawnIntegrationCases().map(row => ({...row, name: row.id,
         variations: [{pvUci: row.pvUci, cp: -200, depth: 18}],
         expectedPrimary: row.positive ? ["hangingPiece"] : [],
@@ -336,6 +341,7 @@ test(
         assert.deepEqual(result.scan.motifs.map((motif) => motif.id), item.expectedPrimary, item.name);
       if (item.expectedAttraction !== undefined)
         assert.equal(result.scan.motifs.some(motif => motif.id === "attractionIdea"), item.expectedAttraction, item.name);
+      if (item.expectedIntermediate !== undefined) assert.equal(result.scan.motifs.some(motif=>motif.id==="intermezzo"),item.expectedIntermediate,item.name);
       if (item.expectedArrows) assert.deepEqual(result.scan.arrows.map(arrow => [arrow.from, arrow.to]), item.expectedArrows, item.name);
       if (item.expectedTerminalPly) assert.ok(result.scan.variations[0].timeline.some(motif=>motif.ply===item.expectedTerminalPly&&/mate/i.test(motif.id)));
       if (item.expectedSquare) assert.equal(result.scan.labels[0].square, item.expectedSquare);

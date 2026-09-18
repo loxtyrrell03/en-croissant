@@ -133,6 +133,17 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
     }
 }
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("preventive intermediate exchanges survive the actual controller without ghost forks", async () => {
+    const { preventiveIntermediateInputs } = await import("./fixtures/preventiveIntermediate");
+    for (const input of preventiveIntermediateInputs()) {
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!,input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.some(m => m.id === "intermezzo")).toBe(input.positive);
+        expect(!input.positive || result.scan.arrows.length === 2).toBe(true);
+        expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+    }
+},30000);
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("newly advanced pawn opportunities survive the actual worker with complete history", async () => {
     const { advancedPawnIntegrationCases } = await import("./fixtures/advancedPawnHistory");
     for (const row of advancedPawnIntegrationCases()) {

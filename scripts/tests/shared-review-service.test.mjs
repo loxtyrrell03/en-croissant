@@ -11,6 +11,7 @@ import { INITIAL_FEN, makeFen, parseFen } from "chessops/fen";
 import { parseUci } from "chessops/util";
 import { makeSan } from "chessops/san";
 import { advancedPawnHistoryInput } from "../../src/utils/tests/fixtures/advancedPawnHistory.ts";
+import { preventiveIntermediateFen, preventiveIntermediateLine } from "../../src/utils/tests/fixtures/preventiveIntermediate.ts";
 import { matingEntryDefence } from "../../src/utils/tests/fixtures/matingEntryDefence.ts";
 import { checkingForkCaptureFen } from "../../src/utils/tests/fixtures/checkingForkCaptureDefence.ts";
 import { shortMatingThreatCases } from "../../src/utils/tests/fixtures/shortMatingThreat.ts";
@@ -30,6 +31,46 @@ import { connectedPinCase } from "../../src/utils/tests/fixtures/connectedPin.ts
 import { reflectMixedForkFen, reflectMixedForkMove } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("missed intermediate exchanges survive generated review, deck export and reload", async () => {
+  for (const reflected of [false,true]) {
+    const root = await mkdtemp(join(tmpdir(),"en-shared-review-intermediate-"));
+    const flip = move => reflected ? reflectMixedForkMove(move) : move;
+    const fen = reflected ? reflectMixedForkFen(preventiveIntermediateFen) : preventiveIntermediateFen;
+    const position = Chess.fromSetup(parseFen(fen).unwrap()).unwrap();
+    const played = parseUci(flip("h5g6")), san = makeSan(position,played);
+    position.play(played); const after = makeFen(position.toSetup());
+    const options = {root,documentsRoot:join(root,"documents"),engineConfigPath:join(root,"engine.json"),
+      fetchGames:async()=>[],lookup:async requested => {
+        assert.ok(requested===fen || requested===after);
+        // Controlled White-relative scores verify transport, not game strength.
+        return {depth:18,pvs:requested===fen
+          ? [{cp:reflected?600:-600,moves:preventiveIntermediateLine.map(flip).join(" ")}]
+          : [{cp:reflected?-100:100,moves:flip("a1a2")}]};
+      }};
+    let service;
+    try {
+      const result = reflected ? "1-0" : "0-1";
+      const game = `[White "${reflected?"Tester":"Opponent"}"]\n[Black "${reflected?"Opponent":"Tester"}"]\n[Date "2026.09.18"]\n[Result "${result}"]\n[SetUp "1"]\n[FEN "${fen}"]\n\n${reflected?"1.":"1..."} ${san} ${result}`;
+      await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+      await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",pgn:game,end:1789600000,url:"https://example.test/intermediate"}]}));
+      service = new SharedReviewService(options); await service.initialize(false); await service.run();
+      assert.equal(service.snapshot().error,null);
+      assert.equal(service.snapshot().cards.length,1);
+      const card=service.snapshot().cards[0];
+      assert.equal(card.tacticalClassification.missedMotifs[0]?.id,"intermezzo");
+      assert.match(card.explanation,/Intermediate Check: The better move had this tactic/);
+      assert.match(card.explanation,/defensive pawn fork/);
+      assert.equal((await service.deck()).positions[0].mistakeReview.missedMotifs[0].id,"intermezzo");
+      service.close(); service=new SharedReviewService(options); await service.initialize(false);
+      assert.deepEqual(service.snapshot().cards[0].tacticalClassification,JSON.parse(JSON.stringify(card.tacticalClassification)));
+    } finally {
+      service?.close(); const target=resolve(root);
+      assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-intermediate-"));
+      await rm(target,{recursive:true,force:true});
+    }
+  }
+});
 
 test("renewed pawn opportunities retain full history through generated review and reload", async () => {
   for (const reflected of [false, true]) {

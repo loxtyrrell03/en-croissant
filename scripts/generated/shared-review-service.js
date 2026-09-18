@@ -10248,6 +10248,44 @@ function filterCompensatedRootCaptures(fen, line, motifs, previousFen, previousM
 	const exchange = root.capture > 0 && motifs.some((m) => m.id === "hangingPiece" && m.ply === 1) ? rootCaptureExchangeContext(tacticalHistory, fen, root.move, previousFen, previousMove) : null;
 	const compensated = !exchange && isCompensatedContinuationCapture(history, 1);
 	return motifs.flatMap((motif) => {
+		if (motif.id === "intermezzo" && motif.ply && history[0].capture) {
+			const prefix = replayTacticalLine(fen, line.slice(0, motif.ply));
+			const checking = prefix.at(-1);
+			const proof = checking && provePreventiveIntermediateCapture(checking);
+			if (proof && checking) {
+				const deferred = replayTacticalLine(makeFen(checking.before.toSetup()), [makeUci(proof.deferred)])[0];
+				const context = [
+					...history.slice(0, 1),
+					...prefix.slice(0, -1),
+					deferred
+				];
+				if (deferred && isCompensatedContinuationCapture(context, context.length - 1)) {
+					const earlierCapture = legalMoves(root.before).find((move) => move.to === deferred.move.to && capturedValue(root.before, move));
+					const settled = earlierCapture && rootCaptureExchangeContext(tacticalHistory, fen, earlierCapture, previousFen, previousMove);
+					let debit = settled?.debit ?? history[0].capture;
+					if (!settled && tacticalHistory) {
+						const past = replayTacticalLine(tacticalHistory.fen, tacticalHistory.moves);
+						const last = past.at(-1), first = past.at(-2);
+						if (past.length === tacticalHistory.moves.length && first && last && makeFen(last.after.toSetup()) === fen && !first.move.promotion && !last.move.promotion && first.capture >= VALUE.rook && first.capture === last.capture && first.move.to === deferred.move.to && last.move.to === deferred.move.to) debit = 0;
+					}
+					if (proof.gain - debit < MIN_TACTICAL_CAPTURE_GAIN) motif = {
+						...motif,
+						value: 0,
+						evidence: `${motif.evidence.replace("Every legal answer preserves a connected material gain.", "Every legal answer preserves the follow-up exchange.")} This completes the exchange begun by ${history[0].san}, not a fresh material win.`
+					};
+					else if (debit > 0) motif = {
+						...motif,
+						value: proof.gain - debit,
+						evidence: `${motif.evidence} The material bound includes the earlier loss to ${history[0].san}; recovering that exchange is not additional profit.`
+					};
+				}
+			}
+		}
+		if (motif.id === "hangingPiece" && motif.ply && motif.ply > 1 && history[0].capture) {
+			const steps = replayTacticalLine(fen, line);
+			const capture = steps[motif.ply - 1];
+			if (capture && isCompensatedContinuationCapture([history[0], ...steps], motif.ply) && motifs.some((prior) => prior.id === "intermezzo" && prior.ply && prior.ply < motif.ply && provePreventiveIntermediateCapture(steps[prior.ply - 1])?.deferred.to === capture.move.to)) return [];
+		}
 		if (compensated && motif.id === "hangingPiece" && motif.ply === 1) return [];
 		if (!exchange && motif.id === "hangingPiece" && motif.ply === 1 && (motif.value ?? 0) >= MIN_TACTICAL_CAPTURE_GAIN && history[0].capture && !history[0].move.promotion && root.move.to !== history[0].move.to) {
 			const recovery = tacticalCaptureProof(root).counterattack;
@@ -17680,9 +17718,9 @@ function participantCaptureGain(pos, move, pieces, budget, liabilities) {
 * the piece behind it, or a simultaneous attack by the capturing piece.
 * One checking counterattack may be answered; never follow a cooperative PV.
 * Exchange leaves also debit an off-square capture of an attacking piece. */
-function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sharedBudget, evasionLimit = 1, allPiecesAtLeaf = false, minimumGain = 90, onLeaf, verifyCounterchecks = false, onTrace, allowLiabilityRecovery = false) {
-	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !Number.isSafeInteger(minimumGain) || minimumGain < 0 || minimumGain === 0 && (!step.capture || !allPiecesAtLeaf || !verifyCounterchecks) || !Number.isSafeInteger(evasionLimit) || evasionLimit < 0) return null;
-	const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}:${evasionLimit}:${allPiecesAtLeaf}:${minimumGain}:${verifyCounterchecks}:${allowLiabilityRecovery}`;
+function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sharedBudget, evasionLimit = 1, allPiecesAtLeaf = false, minimumGain = 90, onLeaf, verifyCounterchecks = false, onTrace, allowLiabilityRecovery = false, equalExchangeLimit = 0) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !Number.isSafeInteger(minimumGain) || minimumGain < 0 || minimumGain === 0 && (!step.capture || !allPiecesAtLeaf || !verifyCounterchecks) || !Number.isSafeInteger(evasionLimit) || evasionLimit < 0 || !Number.isSafeInteger(equalExchangeLimit) || equalExchangeLimit < 0 || equalExchangeLimit > 1 || equalExchangeLimit > 0 && (!allPiecesAtLeaf || !verifyCounterchecks || !allowLiabilityRecovery)) return null;
+	const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}:${evasionLimit}:${allPiecesAtLeaf}:${minimumGain}:${verifyCounterchecks}:${allowLiabilityRecovery}:${equalExchangeLimit}`;
 	if (!onLeaf && !onTrace && !sharedBudget && nodeLimit === 4096 && defenderCombinationCache.has(key)) return defenderCombinationCache.get(key);
 	const side = step.before.turn;
 	const budget = sharedBudget ?? { nodes: nodeLimit };
@@ -17695,7 +17733,7 @@ function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sh
 		return next;
 	};
 	const moves = (pos) => allPiecesAtLeaf ? recoveryMoves(pos, side) : legalMoves(pos);
-	const answer = (pos, victims, pieces, balance, evasion, retained, path) => {
+	const answer = (pos, victims, pieces, balance, evasion, retained, path, exchange) => {
 		if (pos.isEnd()) return null;
 		const liabilityTargets = /* @__PURE__ */ new Set();
 		if (recoverLiabilities) {
@@ -17728,6 +17766,12 @@ function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sh
 			}
 		}
 		if (best >= minimumGain) return best;
+		if (exchange) for (const move of moves(pos)) {
+			const captured = capturedValue(pos, move);
+			if (!victims.includes(move.to) || captured < VALUE.knight || move.promotion || captured !== VALUE[pos.board.get(move.from).role] || tacticalExchangeGain(pos, move) < 0) continue;
+			const gain = defend(visit(pos, move), victims.filter((square) => square !== move.to), [...new Set([...pieces.map((square) => square === move.from ? move.to : square), move.to])], balance + delta(pos, move), evasion, true, [...path, makeUci(move)], exchange - 1);
+			if (gain !== null) return gain;
+		}
 		if (retained && balance >= minimumGain && !pos.isCheck()) for (const move of moves(pos)) {
 			if (capturedValue(pos, move) || move.promotion) continue;
 			const counterchecks = [];
@@ -17749,12 +17793,12 @@ function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sh
 		const evasions = moves(pos);
 		if (allPiecesAtLeaf) evasions.sort((a, b) => delta(pos, b) - delta(pos, a) || VALUE[pos.board.get(a.from).role] - VALUE[pos.board.get(b.from).role]);
 		for (const move of evasions) {
-			const gain = defend(visit(pos, move), victims.filter((to) => to !== move.to), [...new Set([...pieces.map((sq) => sq === move.from ? move.to : sq), move.to])], balance + delta(pos, move), evasion - 1, retained || capturedValue(pos, move) > 0, [...path, makeUci(move)]);
+			const gain = defend(visit(pos, move), victims.filter((to) => to !== move.to), [...new Set([...pieces.map((sq) => sq === move.from ? move.to : sq), move.to])], balance + delta(pos, move), evasion - 1, retained || capturedValue(pos, move) > 0, [...path, makeUci(move)], exchange);
 			if (gain !== null) return gain;
 		}
 		return null;
 	};
-	const defend = (pos, victims, pieces, balance, evasion, retained = false, path = []) => {
+	const defend = (pos, victims, pieces, balance, evasion, retained = false, path = [], exchange = equalExchangeLimit) => {
 		const replies = moves(pos);
 		if (!replies.length) return null;
 		let minimum = Infinity;
@@ -17766,7 +17810,7 @@ function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sh
 				movedTargets.push(reply.to);
 				movedPieces.push(...legalMoves(next).filter((move) => move.to === reply.to).map((move) => move.from));
 			}
-			const gain = answer(next, [...new Set(movedTargets)], [...new Set(movedPieces)], balance - delta(pos, reply), evasion, retained, [...path, makeUci(reply)]);
+			const gain = answer(next, [...new Set(movedTargets)], [...new Set(movedPieces)], balance - delta(pos, reply), evasion, retained, [...path, makeUci(reply)], exchange);
 			if (gain === null) {
 				onTrace?.({
 					fen: makeFen(pos.toSetup()),
@@ -17793,12 +17837,72 @@ function proveDefenderCombination(step, targets, capturers, nodeLimit = 4096, sh
 function capturedDefenderEvidence(step, source) {
 	return capturedDefenderProof(step, source)?.motif ?? null;
 }
+var preventiveIntermediateCache = /* @__PURE__ */ new Map();
+/** Exchanging with check can avoid a defensive capture or pawn fork before a rook/queen
+* capture. Prove both the real collection and the opponent's reversed-order
+* recovery against every reply. Neither two attacked pieces nor a better
+* engine score is a move-order certificate. All work shares one budget. */
+function provePreventiveIntermediateCapture(root, nodeLimit = 16384, onLeaf) {
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !root.capture || root.move.promotion || !root.after.isCheck() || root.after.isEnd()) return null;
+	const checker = root.before.board.get(root.move.from), victim = root.before.board.get(root.move.to);
+	if (!checker || !victim || checker.role === "king" || victim.role === "pawn" || Math.abs(VALUE[checker.role] - VALUE[victim.role]) > 10) return null;
+	const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+	const cacheable = nodeLimit === 16384 && !onLeaf;
+	if (cacheable && preventiveIntermediateCache.has(key)) return preventiveIntermediateCache.get(key);
+	const budget = { nodes: nodeLimit };
+	const visit = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("Preventive intermediate proof exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	let result = null;
+	try {
+		for (const deferred of recoveryMoves(root.before, root.before.turn)) {
+			if (deferred.from === root.move.from || deferred.to === root.move.to || deferred.promotion || capturedValue(root.before, deferred) < VALUE.rook) continue;
+			const reversed = visit(root.before, deferred);
+			if (reversed.isCheck() || reversed.isEnd()) continue;
+			for (const reply of recoveryMoves(reversed, reversed.turn)) {
+				const capturesChecker = reply.to === root.move.from && capturedValue(reversed, reply) > 0;
+				if (reply.promotion || !capturesChecker && (reversed.board.get(reply.from)?.role !== "pawn" || capturedValue(reversed, reply))) continue;
+				const after = visit(reversed, reply), defender = after.board.get(reply.to);
+				if (after.isCheck() || after.isEnd() || defenderCanClaimFiftyMoveDraw(after)) continue;
+				const targets = capturesChecker ? [] : [...attacks(defender, reply.to, after.board.occupied)].filter((square) => {
+					const piece = after.board.get(square);
+					return piece && piece.color === root.before.turn && piece.role !== "king" && piece.role !== "pawn";
+				});
+				if (!capturesChecker && (targets.length !== 2 || !targets.includes(root.move.from))) continue;
+				const fork = replayTacticalLine(makeFen(reversed.toSetup()), [makeUci(reply)])[0];
+				const recovery = proveDefenderCombination(fork, targets, [reply.to], nodeLimit, budget, 1, true, 90, (leaf) => onLeaf?.("counterfork", leaf), true, void 0, true, 1);
+				if (recovery === null) continue;
+				const gain = proveDefenderCombination(root, [deferred.to], [deferred.from, root.move.to], nodeLimit, budget, 1, true, 90, (leaf) => onLeaf?.("collection", leaf), true, void 0, true);
+				if (gain === null || gain >= 1e4) continue;
+				const extra = gain - (capturedValue(root.before, deferred) - recovery);
+				if (extra < 90 || result && result.extra >= extra) continue;
+				result = {
+					gain,
+					extra,
+					deferred,
+					escape: reply,
+					evidence: `${root.san} exchanges the ${checker.role} for the ${victim.role} with check before ${makeSan(root.before, deferred)}. Every legal answer preserves a connected material gain. Playing ${makeSan(root.before, deferred)} first allows ${makeSan(reversed, reply)}, ${capturesChecker ? `capturing the ${checker.role} on ${makeSquare(root.move.from)}` : `a defensive pawn fork of the ${targets.map((square) => `${after.board.get(square).role} on ${makeSquare(square)}`).join(" and ")}`}. That material recovery is checked against every reply, including counterchecks and one equal exchange. Exchanging with check first avoids that counterplay; this is a move-order lesson, not a free ${victim.role}.`
+				};
+			}
+		}
+	} catch {
+		result = null;
+	}
+	if (cacheable) {
+		preventiveIntermediateCache.set(key, result);
+		if (preventiveIntermediateCache.size > 256) preventiveIntermediateCache.delete(preventiveIntermediateCache.keys().next().value);
+	}
+	return result;
+}
 /** A checking capture is an in-between move only when ordering matters:
 * both captures are legal now, every check response preserves extra material,
 * and taking the other target first gives a concrete escape for this victim. */
 function intermediateCaptureProof(step, nodeLimit = 512) {
 	let remaining = nodeLimit;
-	if (!step.capture || !step.after.isCheck() || step.move.promotion) return null;
+	if (!Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || !step.capture || !step.after.isCheck() || step.move.promotion) return null;
 	const victim = step.before.board.get(step.move.to);
 	if (!victim || victim.role === "king") return null;
 	const rootGain = tacticalExchangeGain(step.before, step.move);
@@ -17845,7 +17949,7 @@ function intermediateCaptureProof(step, nodeLimit = 512) {
 			evidence: `${step.san} takes the ${victim.role} with check before ${makeSan(step.before, deferred)}.${revealedRays(step).filter((ray) => step.after.board.get(ray.target)?.role === "king").map((ray) => ` Moving off ${makeSquare(step.move.from)} uncovers check from the ${step.after.board.get(ray.from).role} on ${makeSquare(ray.from)}.`).join("")} Every legal answer to the check preserves extra material through the deferred capture or the piece taking the checker. Playing ${makeSan(step.before, deferred)} first allows ${makeSan(reversed, escape)}, preventing an immediate profitable capture of that ${victim.role}. The move order matters, not just the two captures.`
 		};
 	}
-	return best;
+	return best ?? (nodeLimit === 512 ? provePreventiveIntermediateCapture(step) : null);
 }
 var discoveryAttractionCache = /* @__PURE__ */ new Map();
 /** An exchange replaces a mobile victim with a receiver vulnerable to a
@@ -21455,7 +21559,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 				comparison = "prevented";
 				comparisonEvidence = `${bestSan} removes the pawn on ${makeSquare(step.move.from)} before it can promote.`;
 			}
-		} else if (!alternative) {
+		} else if (motif.id === "intermezzo" && provePreventiveIntermediateCapture(step)) {} else if (!alternative) {
 			comparison = "prevented";
 			comparisonEvidence = `${bestSan} makes the immediate reply ${step.san} illegal.`;
 		} else if (motif.id === "discoveredAttack" && step.after.isCheck() && alternative.after.isCheck() && !actual[0].capture && !better[0].capture) {
@@ -22253,7 +22357,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 163;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 164;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
