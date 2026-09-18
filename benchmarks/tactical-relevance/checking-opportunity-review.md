@@ -1,5 +1,9 @@
 # Empty checking moves: opportunity versus conditional punishment
 
+The later [saving-rook audit](saving-rook-recall-audit.md) examines Re8+'s
+checking alternatives, quiet frontier and repeated counterchecks with 43 fresh
+searches. It retains the explanation gap rather than claiming a perpetual.
+
 Adapter **160 / pipeline 167** remains unchanged and is now packaged in the
 standalone desktop executable. This development audit examines four deliberately
 selected empty principal checks from the same 27-game / 1,319-context owner
