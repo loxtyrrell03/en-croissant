@@ -1,6 +1,45 @@
 # Tactical desktop delivery — 2026-09-18
 
-## Current package: adapter 162 / live pipeline 169
+## Current package: adapter 163 / live pipeline 170
+
+Source `5f254525` is packaged from clean detached checkout
+`en-tactical-desktop-5f254525`. Complete legal history now preserves a newly
+exposed safe pawn capture without treating old piece debts as permanent
+compensation. The owner's Bxe4+ becomes Hanging Pawn; the preceding best move
+retains existing-danger wording and the played capture is not called missed.
+See `benchmarks/tactical-relevance/advanced-pawn-history-review.md` for the
+full replay, contrary controls and remaining scope.
+
+The clean worker is byte-identical to the artifact tested on all **2,518**
+controller inputs: 808 public, 1,704 owner contexts and six new history controls.
+Clean TypeScript, 133 source/React checks (six conditional skips), 38 generated
+service checks (one optional engine skip), the 44-module review build and
+8,864-module frontend build pass. Native release compilation passes in 1m17s
+with 22 existing warnings. Generated-review differences are source-region
+comments only; the route tree is identical after line-ending normalization.
+Unrelated dirty OTB/FIDE/phone/stats changes were excluded.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,088,064 bytes;
+  SHA-256 `8fcda33886a782bfb56b796e3e9c03cd7b6f0b9be35cd2b0658891525f0049f7`.
+- Worker: `liveTactics.worker-COkdGIOf.js`, 632,938 bytes; SHA-256
+  `99794d29d3d7442abc7fa7e9f7fa3f86aea27c8b1ed716707bf6229f0d6571c1`.
+  The x64 executable embeds that worker, `mistakeReviewAdapter-k4MPog2o.js`,
+  `TacticalClassifierPanel-UDp_3KNv.js` and `OpeningReviewWorkspace-COUXLm5a.js`;
+  exact normalized native dependencies identify those four clean assets.
+- Previous pipeline-169 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline170/en-croissant-fork.exe`,
+  SHA-256 `c862367f41c6ed3855b0aa856fa7c3ca51367dc3ad4aace6913dd7f9f1a46f76`.
+
+No app was running before or after compilation; none was launched/restarted.
+The Dev App shortcut still uses the primary checkout's `encroissant-native`
+workflow. Owner stores and phone services were untouched; saved reviews were
+not rescanned. The private `advanced163-desktop-receipt-20260918.json` records
+identity and recovery. This is package linkage, not native interaction or
+startup certification. All 207 cold HTTP cases passed, but earlier
+load-sensitive startup failures remain unresolved. Broader recall, primary
+judgment and longer quiet combinations remain incomplete.
+
+## Previous package: adapter 162 / live pipeline 169
 
 Source `25456fc1` is packaged from clean detached checkout
 `en-tactical-desktop-25456fc1`. The previously empty Bxa6 opportunity now shows
