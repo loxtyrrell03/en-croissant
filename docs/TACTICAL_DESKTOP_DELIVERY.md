@@ -1,6 +1,44 @@
 # Tactical desktop delivery — 2026-09-18
 
-## Current package: adapter 161 / live pipeline 168
+## Current package: adapter 162 / live pipeline 169
+
+Source `25456fc1` is packaged from clean detached checkout
+`en-tactical-desktop-25456fc1`. The previously empty Bxa6 opportunity now shows
+a conditional Attraction Idea, without claiming the entire combination or
+mistake cause is proved. Existing stronger lessons retain priority. See
+`benchmarks/tactical-relevance/attraction-observation-review.md` for actual-game
+evidence, contrary reduced-board examples and remaining limits.
+
+The clean worker is byte-identical to the artifact tested on all **2,367**
+controller inputs: 808 public, 1,551 owner contexts and eight new colour controls.
+Clean TypeScript, 111 source/React checks (one conditional skip), 37 generated
+service checks (one optional engine skip), the 44-module review build and
+8,864-module frontend build pass. Native release compilation passes in 1m15s
+with 22 existing warnings. Generated-review differences are source-region
+comments only; the route tree is identical after line-ending normalization.
+Unrelated dirty OTB/FIDE/phone/stats changes were excluded.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,088,064 bytes;
+  SHA-256 `c862367f41c6ed3855b0aa856fa7c3ca51367dc3ad4aace6913dd7f9f1a46f76`.
+- Worker: `liveTactics.worker-C2ZW4Ms6.js`, 631,388 bytes; SHA-256
+  `29d4e678f19d37002a652dc702ccdeab5740ae60255f7b955b1c00fcba4d76ab`.
+  The x64 executable embeds that worker, `mistakeReviewAdapter-DtWvM5is.js`,
+  `TacticalClassifierPanel-CFNiVwoP.js` and `OpeningReviewWorkspace-BvwMtkyy.js`;
+  exact normalized native dependencies identify those four clean assets.
+- Previous pipeline-168 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline169/en-croissant-fork.exe`,
+  SHA-256 `a7279bafd34389b28d71e2963c462468357881a65bc98a1892655c23c6287788`.
+
+No app was running before or after compilation; none was launched/restarted.
+The Dev App shortcut still uses the primary checkout's `encroissant-native`
+workflow. Owner stores and phone services were untouched; saved reviews were
+not rescanned. The private `attraction162-desktop-receipt-20260918.json` records
+identity and recovery. This is package linkage, not native interaction or
+startup reliability. This milestone's 201-case cold HTTP run passed, but earlier
+load-sensitive startup failures remain unresolved. Broader recall, primary
+judgment and the full Bxa6 forced-win/causal explanation remain incomplete.
+
+## Previous package: adapter 161 / live pipeline 168
 
 Source `9e99287a` is packaged from clean detached checkout
 `en-tactical-desktop-9e99287a`. Short saving queen checks now survive the bounded
