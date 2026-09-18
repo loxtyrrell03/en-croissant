@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync, writeFileSync } from "node:fs";
 import { Worker } from "node:worker_threads";
 import test from "node:test";
+import { advancedPawnIntegrationCases } from "../../src/utils/tests/fixtures/advancedPawnHistory.ts";
 import { mixedForkFen, mixedForkLine, mixedForkControls } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
 import { quietPieceForkCases, quietPieceForkMove } from "../../src/utils/tests/fixtures/quietPieceFork.ts";
 import { discoveryTrapCases } from "../../src/utils/tests/fixtures/discoveryTrap.ts";
@@ -111,6 +112,10 @@ test(
     const { castlingAliasCases } = await import("../../src/utils/tests/fixtures/castlingRelevance.ts");
     const { matingInterferenceCases, reflectMatingInterference } = await import("../../src/utils/tests/fixtures/matingInterference.ts");
     const cases = [
+      ...advancedPawnIntegrationCases().map(row => ({...row, name: row.id,
+        variations: [{pvUci: row.pvUci, cp: -200, depth: 18}],
+        expectedPrimary: row.positive ? ["hangingPiece"] : [],
+        expectedArrows: row.positive ? row.pvUci.map(move => [move.slice(0, 2), move.slice(2, 4)]) : []})),
       ...captureAttractionIdeaCases.map(row => ({name: `conditional attraction: ${row.id}`, fen: row.fen,
         pvUci: captureAttractionIdeaLine, variations: [{pvUci: captureAttractionIdeaLine, cp: row.cp, depth: 18}],
         expectedAttraction: row.positive, expectedPrimary: row.positive ? ["attractionIdea"] : undefined,

@@ -7,7 +7,7 @@ import { kingCastlesTo, makeSquare, makeUci, opposite, parseUci } from "chessops
 import type { TacticalMotifEvidence } from "./types";
 import { isTacticalObservation } from "./types";
 import { probeKingPawnEndgame, proveKpkZugzwang } from "./kpkBitbase";
-import { appendTacticalHistory, persistentPawnExchangeContext, rootCaptureExchangeContext, type TacticalGameHistory } from "./gameHistory";
+import { advancedPawnOpportunityContext, appendTacticalHistory, persistentPawnExchangeContext, rootCaptureExchangeContext, type TacticalGameHistory } from "./gameHistory";
 import { proveDrawingCapture, drawingCaptureEvidence, proveTablebaseZugzwang, tablebaseZugzwangEvidence, verifiedTablebasePosition, type TablebaseEvidence } from "./tablebaseEvidence";
 
 const VALUE: Record<Role, number> = {
@@ -1238,8 +1238,29 @@ export function provePersistentPawnCapture(root: TacticalReplayStep, history: Ta
     const context = persistentPawnExchangeContext(history, makeFen(root.before.toSetup()), root.move);
     if (!context) return null;
     const gain = tacticalCaptureGain(root);
-    if (gain === null || gain < MIN_TACTICAL_CAPTURE_GAIN || gain + context.balance < MIN_TACTICAL_CAPTURE_GAIN) return null;
-    return { gain, exchangeBalance: context.balance, episodePlies: context.episodePlies };
+    if (gain === null || gain < MIN_TACTICAL_CAPTURE_GAIN) return null;
+    if (gain + context.balance >= MIN_TACTICAL_CAPTURE_GAIN)
+        return { gain, exchangeBalance: context.balance, episodePlies: context.episodePlies };
+    // Old piece trades cannot indefinitely erase a newly exposed pawn. Keep
+    // all pawn compensation, and require positive evidence of a new opportunity
+    // instead of resetting the ledger merely after some number of quiet plies.
+    const pawnDebit = Math.min(0, context.pawnBalance);
+    if (gain + pawnDebit < MIN_TACTICAL_CAPTURE_GAIN) return null;
+    const renewed = advancedPawnOpportunityContext(history, makeFen(root.before.toSetup()), root.move);
+    if (!renewed) return null;
+    const before = withTurn(renewed.before, root.before.turn);
+    const budget = { nodes: 4096 };
+    try {
+        for (const capture of legalMoves(before)) {
+            if (--budget.nodes < 0) return null;
+            if (capture.to !== renewed.originalSquare) continue;
+            if (capture.promotion) return null;
+            const after = before.clone(); after.play(capture);
+            if (capturedValue(before, capture) - exchange(after, capture.to, budget) > 0) return null;
+        }
+    } catch { return null; }
+    return { gain, exchangeBalance: pawnDebit, episodePlies: renewed.episodePlies,
+        renewedAfterAdvance: renewed.advanceUci };
 }
 
 type CostlyPawnRecaptureProof = {

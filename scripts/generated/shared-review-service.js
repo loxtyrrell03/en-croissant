@@ -3212,7 +3212,42 @@ function persistentPawnExchangeContext(history, fen, move) {
 	}
 	return {
 		balance: victimCapture === null ? pawnBalance : episode.reduce((sum, frame) => sum + (frame.before.turn === side ? 1 : -1) * (frame.capture + frame.promotionGain), 0),
+		pawnBalance,
 		episodePlies: verified.frames.length - start
+	};
+}
+/** A previously capturing pawn may create a different opportunity by advancing
+* onto a new square. Nominate that exact advance only across a capture-free,
+* check-free interval with the same unmoved attacker and victim. This is not
+* permission to discard history: the caller must prove the pawn was not
+* profitably capturable before the advance, and its current safety separately.
+* Pawn-for-pawn debts remain in persistentPawnExchangeContext.pawnBalance. */
+function advancedPawnOpportunityContext(history, fen, move) {
+	const verified = verifiedTacticalHistory(history, fen);
+	if (!verified || !verified.position.isLegal(move) || verified.position.isCheck() || move.promotion) return null;
+	const victim = verified.position.board.get(move.to);
+	if (victim?.role !== "pawn" || victim.color === verified.position.turn) return null;
+	const victimId = verified.locations.indexOf(move.to);
+	const attackerId = verified.locations.indexOf(move.from);
+	if (victimId < 0 || attackerId < 0) return null;
+	let advanceIndex = -1;
+	for (let index = verified.frames.length - 1; index >= 0; index--) {
+		const frame = verified.frames[index];
+		if (frame.capture || frame.promotionGain || frame.before.isCheck() || frame.locations[attackerId] !== move.from) return null;
+		if (frame.movedId === victimId) {
+			if (frame.move.to !== move.to) return null;
+			advanceIndex = index;
+			break;
+		}
+	}
+	if (advanceIndex < 0) return null;
+	if (!verified.frames.slice(0, advanceIndex).some((frame) => frame.movedId === victimId && frame.capture)) return null;
+	const advance = verified.frames[advanceIndex];
+	return {
+		before: advance.before,
+		originalSquare: advance.move.from,
+		advanceUci: makeUci(advance.move),
+		episodePlies: verified.frames.length - advanceIndex
 	};
 }
 /** Account for every capture in the uninterrupted exchange ending at this
@@ -10948,11 +10983,35 @@ function provePersistentPawnCapture(root, history) {
 	const context = persistentPawnExchangeContext(history, makeFen(root.before.toSetup()), root.move);
 	if (!context) return null;
 	const gain = tacticalCaptureGain(root);
-	if (gain === null || gain < MIN_TACTICAL_CAPTURE_GAIN || gain + context.balance < MIN_TACTICAL_CAPTURE_GAIN) return null;
-	return {
+	if (gain === null || gain < MIN_TACTICAL_CAPTURE_GAIN) return null;
+	if (gain + context.balance >= MIN_TACTICAL_CAPTURE_GAIN) return {
 		gain,
 		exchangeBalance: context.balance,
 		episodePlies: context.episodePlies
+	};
+	const pawnDebit = Math.min(0, context.pawnBalance);
+	if (gain + pawnDebit < MIN_TACTICAL_CAPTURE_GAIN) return null;
+	const renewed = advancedPawnOpportunityContext(history, makeFen(root.before.toSetup()), root.move);
+	if (!renewed) return null;
+	const before = withTurn(renewed.before, root.before.turn);
+	const budget = { nodes: 4096 };
+	try {
+		for (const capture of legalMoves(before)) {
+			if (--budget.nodes < 0) return null;
+			if (capture.to !== renewed.originalSquare) continue;
+			if (capture.promotion) return null;
+			const after = before.clone();
+			after.play(capture);
+			if (capturedValue(before, capture) - exchange(after, capture.to, budget) > 0) return null;
+		}
+	} catch {
+		return null;
+	}
+	return {
+		gain,
+		exchangeBalance: pawnDebit,
+		episodePlies: renewed.episodePlies,
+		renewedAfterAdvance: renewed.advanceUci
 	};
 }
 var costlyPawnRecaptureCache = /* @__PURE__ */ new Map();
@@ -22194,7 +22253,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 162;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 163;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;

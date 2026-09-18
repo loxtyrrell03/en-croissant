@@ -9,6 +9,8 @@ import { SharedReviewService, engineLine, BackgroundEngine } from "../generated/
 import { Chess } from "chessops/chess";
 import { INITIAL_FEN, makeFen, parseFen } from "chessops/fen";
 import { parseUci } from "chessops/util";
+import { makeSan } from "chessops/san";
+import { advancedPawnHistoryInput } from "../../src/utils/tests/fixtures/advancedPawnHistory.ts";
 import { matingEntryDefence } from "../../src/utils/tests/fixtures/matingEntryDefence.ts";
 import { checkingForkCaptureFen } from "../../src/utils/tests/fixtures/checkingForkCaptureDefence.ts";
 import { shortMatingThreatCases } from "../../src/utils/tests/fixtures/shortMatingThreat.ts";
@@ -28,6 +30,51 @@ import { connectedPinCase } from "../../src/utils/tests/fixtures/connectedPin.ts
 import { reflectMixedForkFen, reflectMixedForkMove } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("renewed pawn opportunities retain full history through generated review and reload", async () => {
+  for (const reflected of [false, true]) {
+    const root = await mkdtemp(join(tmpdir(), "en-shared-review-advanced-pawn-"));
+    const input = advancedPawnHistoryInput(reflected);
+    const flip = move => reflected ? reflectMixedForkMove(move) : move;
+    const moves = [...input.tacticalHistory.moves, flip("h7h6"), flip("d2d3")];
+    const position = Chess.fromSetup(parseFen(input.tacticalHistory.fen).unwrap()).unwrap();
+    const lines = new Map(), tokens = [];
+    for (const [index, uci] of moves.entries()) {
+      // Controlled White-relative scores nominate one missed move. They test
+      // service transport, not chess strength or an independently scored game.
+      lines.set(makeFen(position.toSetup()), {depth:18,pvs:[{cp:(reflected?-1:1)*(index===moves.length-1?300:100),
+        moves:index===moves.length-2?input.pvUci[0]:uci}]});
+      const move = parseUci(uci); assert.ok(move && position.isLegal(move));
+      tokens.push(`${position.fullmoves}${position.turn === "white" ? "." : "..."} ${makeSan(position, move)}`);
+      position.play(move);
+    }
+    const options = {root, documentsRoot:join(root,"documents"),engineConfigPath:join(root,"engine.json"),
+      fetchGames:async()=>[], lookup:async fen=>{assert.ok(lines.has(fen));return lines.get(fen);}};
+    let service;
+    try {
+      const result = reflected ? "0-1" : "1-0";
+      const game = `[White "${reflected?"Tester":"Opponent"}"]\n[Black "${reflected?"Opponent":"Tester"}"]\n[Date "2026.09.18"]\n[SetUp "1"]\n[FEN "${input.tacticalHistory.fen}"]\n[Result "${result}"]\n\n${tokens.join(" ")} ${result}`;
+      await writeFile(join(root,"config.json"),JSON.stringify({accounts:{chesscom:"Tester"}}));
+      await writeFile(join(root,"games.json"),JSON.stringify({games:[{source:"chesscom",pgn:game,end:1789600000,url:"https://example.test/advanced-pawn"}]}));
+      service = new SharedReviewService(options); await service.initialize(false); await service.run();
+      assert.equal(service.snapshot().error,null);
+      const cards = service.snapshot().cards; assert.equal(cards.length,1);
+      const card = cards[0];
+      assert.equal(card.tacticalClassification.missedMotifs[0]?.label,"Hanging Pawn");
+      assert.equal(card.tacticalClassification.missedMotifs[0]?.value,100);
+      assert.match(card.explanation,/Hanging Pawn: The better move had this tactic/);
+      assert.deepEqual(card.tacticalHistory,input.tacticalHistory);
+      assert.deepEqual((await service.deck()).positions[0].mistakeReview.tacticalHistory,input.tacticalHistory);
+      service.close(); service = new SharedReviewService(options); await service.initialize(false);
+      assert.deepEqual(service.snapshot().cards[0].tacticalClassification,JSON.parse(JSON.stringify(card.tacticalClassification)));
+      assert.deepEqual(service.snapshot().cards[0].tacticalHistory,input.tacticalHistory);
+    } finally {
+      service?.close(); const target = resolve(root);
+      assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.includes("en-shared-review-advanced-pawn-"));
+      await rm(target,{recursive:true,force:true});
+    }
+  }
+});
 
 test("saving checks remain secondary to the queen loss through generated review and reload", async () => {
   for (const reflected of [false, true]) {

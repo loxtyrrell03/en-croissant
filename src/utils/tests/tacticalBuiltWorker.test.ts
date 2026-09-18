@@ -133,6 +133,19 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
     }
 }
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("newly advanced pawn opportunities survive the actual worker with complete history", async () => {
+    const { advancedPawnIntegrationCases } = await import("./fixtures/advancedPawnHistory");
+    for (const row of advancedPawnIntegrationCases()) {
+        const input = { ...row, depth: 18, engineName: "Constructed history",
+            variations: [{ pvUci: row.pvUci, cp: -200, depth: 18 }] };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.map(m => m.label)).toEqual(row.positive ? ["Hanging Pawn"] : []);
+        expect(result.scan.arrows.map(a => a.from + a.to)).toEqual(row.positive ? row.pvUci : []);
+        expect(result.classificationMs).toBeLessThan(TACTICAL_CLASSIFICATION_TIMEOUT_MS);
+    }
+}, 30000);
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("conditional attraction survives the actual worker without forced-win claims", async () => {
     const {captureAttractionIdeaCases, captureAttractionIdeaLine} = await import("./fixtures/captureAttractionIdea");
     for (const row of captureAttractionIdeaCases) for (const reflected of [false, true]) {

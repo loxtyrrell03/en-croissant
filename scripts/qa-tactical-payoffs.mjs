@@ -25,6 +25,7 @@ import { quietRootMateCases } from "../src/utils/tests/fixtures/quietRootMate.ts
 import { immediateAlternativeInputs } from "../src/utils/tests/fixtures/immediateTacticalAlternative.ts";
 import { defensibleMateThreatCases } from "../src/utils/tests/fixtures/defensibleMateThreat.ts";
 import { captureAttractionIdeaCases, captureAttractionIdeaLine } from "../src/utils/tests/fixtures/captureAttractionIdea.ts";
+import { advancedPawnIntegrationCases } from "../src/utils/tests/fixtures/advancedPawnHistory.ts";
 import {
   matingInterferenceCases,
   reflectMatingInterference,
@@ -50,9 +51,11 @@ const quietRootMateMode = process.argv.includes("--quiet-root-mate");
 const immediateAlternativeMode = process.argv.includes("--immediate-alternative");
 const mateObservationMode = process.argv.includes("--mate-observation");
 const attractionObservationMode = process.argv.includes("--attraction-observation");
+const advancedPawnMode = process.argv.includes("--advanced-pawn");
 const root = process.cwd(),
   output = resolve(
     root,
+    advancedPawnMode ? "tmp/tactical-advanced-pawn-pipeline170" :
     attractionObservationMode ? "tmp/tactical-attraction-observation-pipeline169" :
     mateObservationMode ? "tmp/tactical-mate-observation-pipeline167" :
     immediateAlternativeMode ? "tmp/tactical-immediate-alternative-pipeline147" :
@@ -75,6 +78,8 @@ const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
 const cases = (
+  advancedPawnMode ? advancedPawnIntegrationCases().map(row => ({...row,
+    variations: [{pvUci: row.pvUci, cp: -200, depth: 18}]})) :
   attractionObservationMode ? captureAttractionIdeaCases.map(row => ({...row, pvUci: captureAttractionIdeaLine,
     variations:[{pvUci:captureAttractionIdeaLine,cp:row.cp,depth:18}]})) :
   mateObservationMode ? defensibleMateThreatCases.slice(0, 3).map(row => ({...row,
@@ -156,7 +161,9 @@ const cases = (
     pos.play(move);
     return san;
   });
-  return { ...row, pvSan };
+  return { ...row, pvSan, ...(advancedPawnMode ? {
+    variations: row.variations.map(variation => ({...variation, pvSan})),
+  } : {}) };
 });
 const relative = (file) =>
   "/" +
@@ -222,7 +229,20 @@ try {
           index,
           scale,
         });
-        if (attractionObservationMode) {
+        if (advancedPawnMode) {
+          await page.waitForFunction(() => window.fixture.scan !== null);
+          const scan = await page.evaluate(() => window.fixture.scan);
+          assert.deepEqual(scan.motifs.map(m => m.label), row.positive ? ["Hanging Pawn"] : []);
+          if (row.positive) {
+            await page.getByText("Hanging Pawn found", {exact:true}).waitFor();
+            const button = page.getByRole("button", {name:/^Show .* on board$/});
+            await button.focus(); await page.keyboard.press("Enter");
+            const selected = await page.evaluate(() => window.fixture.last);
+            assert.deepEqual(selected.arrows.map(a => a.from + a.to), row.pvUci);
+            assert.equal(selected.motifs[0].value, 100);
+          } else await page.getByText("No tactical theme verified", {exact:true}).waitFor();
+          if (width === 360 && scale === 2) await page.screenshot({path:resolve(output,`${row.id.replaceAll(":", "-")}.png`),fullPage:true});
+        } else if (attractionObservationMode) {
           await page.waitForFunction(() => window.fixture.scan !== null);
           const scan = await page.evaluate(() => window.fixture.scan);
           assert.equal(scan.motifs.some(m => m.id === "attractionIdea"), row.positive);

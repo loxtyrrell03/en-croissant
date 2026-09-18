@@ -299,7 +299,47 @@ export function persistentPawnExchangeContext(
                     (frame.capture + frame.promotionGain),
             0,
         );
-    return { balance, episodePlies: verified.frames.length - start };
+    return { balance, pawnBalance, episodePlies: verified.frames.length - start };
+}
+
+/** A previously capturing pawn may create a different opportunity by advancing
+ * onto a new square. Nominate that exact advance only across a capture-free,
+ * check-free interval with the same unmoved attacker and victim. This is not
+ * permission to discard history: the caller must prove the pawn was not
+ * profitably capturable before the advance, and its current safety separately.
+ * Pawn-for-pawn debts remain in persistentPawnExchangeContext.pawnBalance. */
+export function advancedPawnOpportunityContext(
+    history: TacticalGameHistory | null | undefined,
+    fen: string,
+    move: NormalMove,
+) {
+    const verified = verifiedTacticalHistory(history, fen);
+    if (!verified || !verified.position.isLegal(move) || verified.position.isCheck() || move.promotion)
+        return null;
+    const victim = verified.position.board.get(move.to);
+    if (victim?.role !== "pawn" || victim.color === verified.position.turn) return null;
+    const victimId = verified.locations.indexOf(move.to);
+    const attackerId = verified.locations.indexOf(move.from);
+    if (victimId < 0 || attackerId < 0) return null;
+    let advanceIndex = -1;
+    for (let index = verified.frames.length - 1; index >= 0; index--) {
+        const frame = verified.frames[index];
+        if (frame.capture || frame.promotionGain || frame.before.isCheck() ||
+            frame.locations[attackerId] !== move.from) return null;
+        if (frame.movedId === victimId) {
+            if (frame.move.to !== move.to) return null;
+            advanceIndex = index;
+            break;
+        }
+    }
+    if (advanceIndex < 0) return null;
+    // An untouched pawn already has its independent-pawn accounting route.
+    // This fallback addresses a genuine older capture, not truncated history.
+    if (!verified.frames.slice(0, advanceIndex).some(frame => frame.movedId === victimId && frame.capture))
+        return null;
+    const advance = verified.frames[advanceIndex];
+    return { before: advance.before, originalSquare: advance.move.from,
+        advanceUci: makeUci(advance.move), episodePlies: verified.frames.length - advanceIndex };
 }
 
 /** Account for every capture in the uninterrupted exchange ending at this
