@@ -2093,6 +2093,87 @@ function defenderCanClaimFiftyMoveDraw(position: Chess) {
     );
 }
 
+type DefensibleMateThreat = {
+    threat: NormalMove;
+    threatSan: string;
+    ignored: { reply: string; mate: string };
+    defences: { uci: string; san: string }[];
+    replyCount: number;
+};
+const defensibleMateThreatCache = new Map<string, DefensibleMateThreat | null>();
+
+/** Observe a NEW mate-in-one threat, not a forced mate or material win.
+ * A real legal reply must leave the threat intact, and at least one other
+ * reply must stop ALL immediate mates. The caller supplies engine relevance;
+ * no evaluation or cooperative PV can establish the mating geometry.
+ * Capturable preparers and check evasions stay outside this modest fallback. */
+export function observeDefensibleMateThreat(
+    root: TacticalReplayStep | undefined,
+    nodeLimit = 4096,
+): DefensibleMateThreat | null {
+    if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture ||
+        root.move.promotion || root.before.isCheck() || root.after.isCheck() ||
+        root.before.isEnd() || root.after.isEnd() || defenderCanClaimFiftyMoveDraw(root.after)) return null;
+    const key = `${makeFen(root.before.toSetup())}:${root.uci}`;
+    if (nodeLimit === 4096 && defensibleMateThreatCache.has(key))
+        return defensibleMateThreatCache.get(key)!;
+    let remaining = nodeLimit;
+    const visit = (pos: Chess, move: NormalMove) => {
+        if (--remaining < 0) throw new Error("Mate threat observation budget exhausted");
+        const next = pos.clone(); next.play(move); return next;
+    };
+    const mates = (pos: Chess) => legalMoves(pos).filter(move => visit(pos, move).isCheckmate());
+    let result: DefensibleMateThreat | null = null;
+    try {
+        if (mates(root.before).length) return null;
+        const probe = withTurn(root.after, root.before.turn);
+        const threats = mates(probe);
+        if (!threats.length) return null;
+        const replies = legalMoves(root.after);
+        const defences: DefensibleMateThreat["defences"] = [];
+        let ignored: DefensibleMateThreat["ignored"] | undefined;
+        let threat: NormalMove | undefined;
+        for (const reply of replies) {
+            // An offered piece needs a stronger combination proof, not this
+            // low-claim fallback, even if an injected score says it is good.
+            if (reply.to === root.move.to && capturedValue(root.after, reply)) return null;
+            const next = visit(root.after, reply);
+            if (next.isCheckmate()) return null;
+            const answers = next.isEnd() ? [] : mates(next);
+            if (!answers.length) defences.push({ uci: makeUci(reply), san: makeSan(root.after, reply) });
+            if (!ignored) {
+                const matching = answers.find(answer => threats.some(candidate =>
+                    makeUci(candidate) === makeUci(answer)));
+                if (matching) {
+                    threat = matching;
+                    ignored = { reply: makeSan(root.after, reply), mate: makeSan(next, matching) };
+                }
+            }
+        }
+        if (threat && ignored && defences.length && replies.length > defences.length)
+            result = { threat, threatSan: makeSan(probe, threat), ignored, defences, replyCount: replies.length };
+    } catch { /* Exhaustion is unknown, never an empty successful defence search. */ }
+    if (nodeLimit === 4096) {
+        defensibleMateThreatCache.set(key, result);
+        if (defensibleMateThreatCache.size > 256)
+            defensibleMateThreatCache.delete(defensibleMateThreatCache.keys().next().value!);
+    }
+    return result;
+}
+
+function defensibleMateThreatEvidence(root: TacticalReplayStep, rootCp: number | null | undefined,
+    source: TacticalMotifEvidence["source"], shownReply?: string): TacticalMotifEvidence | null {
+    const proof = typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= -100
+        ? observeDefensibleMateThreat(root) : null;
+    if (!proof) return null;
+    const shown = proof.defences.find(defence => defence.uci === shownReply);
+    const answers = shown ? [shown] : proof.defences.slice(0, 3);
+    return { id: "matingThreat", label: "Threatens Mate", source,
+        confidence: "high", ply: 1, moveUci: root.uci, value: 0, relevance: "primary",
+        evidence: `${root.san} threatens ${proof.threatSan}. ${root.before.turn === "white" ? "Black" : "White"} can stop immediate mate with ${answers.map(d => d.san).join(", ")}${shown ? " (the displayed reply)" : proof.defences.length > 3 ? ", among other replies" : ""}. This is a concrete threat, not a claim of forced mate or material gain.`,
+    };
+}
+
 /** A null-move threat is only a candidate. Certify a quiet mating move only
  * after EVERY legal defence has a legal mate-in-one answer. A single PV, an
  * empty/stalemated reply set, or an exhausted budget is never a proof. */
@@ -9157,6 +9238,7 @@ export function tacticalBoardEvidence(
     if (
         !motif?.ply ||
         ![
+            "matingThreat",
             "perpetualCheck",
             "defensiveDeflection",
             "drawingCapture",
@@ -9186,6 +9268,13 @@ export function tacticalBoardEvidence(
         return null;
     const step = replayTacticalLine(fen, line.slice(0, motif.ply))[motif.ply - 1];
     if (!step) return null;
+    if (motif.id === "matingThreat") {
+        const threat = observeDefensibleMateThreat(step);
+        return threat ? { square: makeSquare(step.move.to), arrows: [
+            { from: makeSquare(step.move.from), to: makeSquare(step.move.to) },
+            { from: makeSquare(threat.threat.from), to: makeSquare(threat.threat.to) },
+        ] } : null;
+    }
     if (motif.id === "defensiveDeflection") {
         const proof = proveDefensiveDeflection(step);
         return proof ? { square: makeSquare(step.move.to), arrows: [
@@ -13500,7 +13589,10 @@ export function auditTacticalMotifs(
               : promotionCombination && promotionPly >= 0 && promotionPly <= 16
                 ? promotionPly + 1
                 : Math.max(exactZugzwang || promotionThreat ? 1 : 0, episodeEnd(steps, allowConditional));
-    if (!end) return [];
+    if (!end) {
+        const threat = defensibleMateThreatEvidence(steps[0], rootCp, proposals[0]?.source ?? "available", steps[1]?.uci);
+        return threat ? [threat] : [];
+    }
     const episode = steps.slice(0, end);
     const attacker = steps[0].before.turn;
     const final = episode.at(-1)!;
@@ -14856,6 +14948,14 @@ export function auditTacticalMotifs(
             evidence: `${root.san} drives the king away from defending the ${target.role} on ${makeSquare(defensive.target)}. Every legal reply allows that ${target.role} to be captured while retaining a material advantage. Without a response to the threat, it can force repeated checks (${defensive.perpetual.line.join(" ")}). The point is removing that checking resource, not winning material; this does not by itself prove the resulting ending is won.`,
         });
     }
+    // A sound, concrete threat remains useful when the opponent can parry it.
+    // Do not relabel it as forced material/mate, replace a proved root lesson,
+    // or infer its value from a speculative continuation. The score only
+    // nominates a playable engine candidate; the board proof establishes the
+    // threat and actual defences. Strongly losing candidates remain withheld.
+    const observedThreat = !filtered.some(m => m.ply === 1)
+        ? defensibleMateThreatEvidence(steps[0], rootCp, proposals[0]?.source ?? "available", steps[1]?.uci) : null;
+    if (observedThreat) filtered.unshift(observedThreat);
     return filtered.map((motif, index) => ({
         ...motif,
         ...(/^mate(?:In\d+)?$/.test(motif.id) &&
@@ -15620,6 +15720,7 @@ export function compareImmediateTacticalDefence(
     const exchange = rootCaptureExchangeContext(appendTacticalHistory(tacticalHistory, playedMove),
         makeFen(step.before.toSetup()), step.move, fen, playedMove);
     return motifs.map((motif) => {
+        if (motif.id === "matingThreat") return motif;
         if (motif.ply !== 1 || motif.moveUci !== reply) return motif;
         // The profit belongs to the complete earlier exchange, not necessarily
         // to the last choice to trade. Avoiding that recapture may leave the

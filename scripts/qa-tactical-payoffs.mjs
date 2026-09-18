@@ -23,6 +23,7 @@ import { checkingPawnFollowupCases, checkingPawnFollowupLine } from "../src/util
 import { persistentPawnCases } from "../src/utils/tests/fixtures/persistentPawnCapture.ts";
 import { quietRootMateCases } from "../src/utils/tests/fixtures/quietRootMate.ts";
 import { immediateAlternativeInputs } from "../src/utils/tests/fixtures/immediateTacticalAlternative.ts";
+import { defensibleMateThreatCases } from "../src/utils/tests/fixtures/defensibleMateThreat.ts";
 import {
   matingInterferenceCases,
   reflectMatingInterference,
@@ -46,9 +47,11 @@ const pawnFollowupMode = process.argv.includes("--pawn-followup");
 const persistentPawnMode = process.argv.includes("--persistent-pawn");
 const quietRootMateMode = process.argv.includes("--quiet-root-mate");
 const immediateAlternativeMode = process.argv.includes("--immediate-alternative");
+const mateObservationMode = process.argv.includes("--mate-observation");
 const root = process.cwd(),
   output = resolve(
     root,
+    mateObservationMode ? "tmp/tactical-mate-observation-pipeline167" :
     immediateAlternativeMode ? "tmp/tactical-immediate-alternative-pipeline147" :
     persistentPawnMode ? "tmp/tactical-persistent-pawn-adapter128" :
     pawnFollowupMode ? "tmp/tactical-pawn-followup-adapter127" :
@@ -69,6 +72,8 @@ const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
 const cases = (
+  mateObservationMode ? defensibleMateThreatCases.slice(0, 3).map(row => ({...row,
+    variations:[{pvUci:row.pvUci,cp:row.cp,depth:18}]})) :
   immediateAlternativeMode ? immediateAlternativeInputs.map((row, i) => ({...row, id:`alternative-${i}`, expectedLabel:i ? "Hanging Piece" : "Fork"})) :
   persistentPawnMode ? persistentPawnCases :
   pawnFollowupMode ? checkingPawnFollowupCases.filter(row => row.positive || row.id === "mating-counterplay")
@@ -212,7 +217,23 @@ try {
           index,
           scale,
         });
-        if (immediateAlternativeMode) {
+        if (mateObservationMode) {
+          await page.waitForFunction(() => window.fixture.scan !== null);
+          const scan = await page.evaluate(() => window.fixture.scan);
+          assert.equal(scan.motifs.some(m => m.id === "matingThreat"), row.positive);
+          if (row.positive) {
+            await page.getByText("White threatens mate", {exact:true}).waitFor();
+            const text = await page.locator("main").innerText();
+            assert(text.includes("g6 (the displayed reply)"));
+            assert(text.includes("not a claim of forced mate or material gain"));
+            const button = page.getByRole("button", {name:/^Show .* on board$/});
+            await button.focus(); await page.keyboard.press("Enter");
+            const selected = await page.evaluate(() => window.fixture.last);
+            assert.deepEqual(selected.arrows.map(a => a.from + a.to), ["d1h5", "h5f7"]);
+            assert.equal(selected.motifs[0].value, 0);
+          }
+          if (width === 360 && scale === 2) await page.screenshot({path:resolve(output,`${row.id}.png`),fullPage:true});
+        } else if (immediateAlternativeMode) {
           await page.getByText(`${row.expectedLabel} found`, {exact:true}).waitFor();
           await page.getByText("Engine's first choice", {exact:true}).waitFor();
           const scan = await page.evaluate(() => window.fixture.scan);

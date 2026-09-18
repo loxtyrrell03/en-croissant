@@ -141,7 +141,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 159;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 160;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -596,6 +596,7 @@ function toMotifEvidence(
 }
 
 const IMPORTANT_TACTICAL_THEME_IDS = new Set([
+    "matingThreat",
     "promotionThreat",
     "perpetualCheck",
     "defensiveDeflection",
@@ -726,6 +727,7 @@ function isAlternativeCapture(motif: TacticalMotifEvidence | undefined) {
 
 /** A post-move tactic is not automatically a newly caused one. */
 export function tacticalMotifPerspective(motif: TacticalMotifEvidence) {
+    if (motif.id === "matingThreat") return "Concrete threat";
     if (motif.source === "missed")
         return isAlternativeCapture(motif) ? "Capture choice" :
             isConditionalMaterial(motif) ? "Continuation idea" : "Missed opportunity";
@@ -736,6 +738,7 @@ export function tacticalMotifPerspective(motif: TacticalMotifEvidence) {
 }
 
 export function isImmediateTacticalLesson(motif: TacticalMotifEvidence | undefined) {
+    if (motif?.id === "matingThreat") return false;
     return Boolean(
         motif &&
         !isAlternativeCapture(motif) &&
@@ -798,6 +801,18 @@ function chooseMistakeReviewTacticalExplanation({
     const allowed = selectImportantTacticalMotifs(allowedMotifs, 1)[0];
     const missed = selectImportantTacticalMotifs(missedMotifs, 1)[0];
     if (!allowed && !missed) return null;
+    // A parryable threat is useful context, never by itself an established
+    // mistake cause or a missed win. Prefer an existing proved lesson.
+    if (allowed?.id === "matingThreat" || missed?.id === "matingThreat") {
+        const provedAllowed = allowedMotifs.filter(m => m.id !== "matingThreat");
+        const provedMissed = missedMotifs.filter(m => m.id !== "matingThreat");
+        const proved = chooseMistakeReviewTacticalExplanation({ allowedMotifs: provedAllowed, missedMotifs: provedMissed });
+        if (proved) return proved;
+        const threat = allowed ?? missed!;
+        return { title: threat.source === "missed" ? "Threat in the better line" : "Threat after the move",
+            text: `${threat.evidence} This observation does not establish why the played move was worse.`,
+            source: threat.source === "missed" ? "missed" : "allowed", primary: threat };
+    }
     // A proved root lesson must not lose to a motif that only appears after
     // several conditional PV replies. Preserve verified mating consequences.
     const allowedRootOverConditional = allowed?.ply === 1 &&
@@ -987,7 +1002,7 @@ function selectContinuationLessons(
     timeline: TacticalMotifEvidence[],
     rootMotifs: TacticalMotifEvidence[],
 ) {
-    if (rootMotifs.some((motif) => motif.ply === 1)) return timeline;
+    if (rootMotifs.some((motif) => motif.ply === 1 && motif.id !== "matingThreat")) return timeline;
     return timeline.filter(
         (motif) =>
             motif.id !== "hangingPiece" ||
@@ -998,7 +1013,7 @@ function selectContinuationLessons(
             (motif.label === "Winning Recapture" && (motif.value ?? 0) >= 320) ||
             timeline.some(
                 (prior) =>
-                    prior.id !== "hangingPiece" &&
+                    prior.id !== "hangingPiece" && prior.id !== "matingThreat" &&
                     prior.actor === motif.actor &&
                     prior.ply !== null &&
                     motif.ply !== null &&

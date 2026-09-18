@@ -56,6 +56,18 @@ const markup = (value: LiveTacticalScan) =>
     </MantineProvider>,
   );
 
+test("a defensible mate threat stays distinct from a forced win in the rendered result", () => {
+  const fen = "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/8/PPPP1PPP/RNBQK1NR w KQkq - 2 3";
+  const value = buildLiveTacticalScan({ fen, pvUci: ["d1h5"], depth: 18, engineName: "Constructed",
+    variations: [{ pvUci: ["d1h5"], cp: 0, depth: 18 }] });
+  const element = document.createElement("div"); element.innerHTML = markup(value);
+  expect(element.textContent).toContain("White threatens mate");
+  expect(element.textContent).toContain("Qxf7#");
+  expect(element.textContent).toContain("can stop immediate mate");
+  expect(element.textContent).toContain("not a claim of forced mate or material gain");
+  expect(element.textContent).not.toContain("Threatens Mate found");
+});
+
 test("a checked promotion preparation renders without claiming next-move queening",()=>{
   const value=buildLiveTacticalScan({fen:checkingPromotionThreatFen,pvUci:["h3h2"],depth:16,engineName:"Constructed"});
   const element=document.createElement("div");element.innerHTML=markup(value);

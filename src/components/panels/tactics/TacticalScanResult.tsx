@@ -72,6 +72,8 @@ export function TacticalScanResult({
             title={
               laterTheme
                 ? `${scan.motifs[0].label} in the continuation`
+                : scan.motifs[0].id === "matingThreat"
+                  ? `${sideLabel} threatens mate`
                 : `${scan.motifs.map((motif) => motif.label).join(" · ")} found`
             }
           >

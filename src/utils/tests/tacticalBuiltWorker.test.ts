@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs";
+import { defensibleMateThreatCases } from "./fixtures/defensibleMateThreat";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { resolve } from "node:path";
@@ -131,6 +132,23 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
         vi.unstubAllGlobals();
     }
 }
+
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("defensible mate observations survive the actual worker without forced-win claims", async () => {
+    for (const row of defensibleMateThreatCases) for (const reflected of [false, true]) {
+        const pvUci = reflected ? row.pvUci.map(reflectMixedForkMove) : row.pvUci;
+        const input = { fen: reflected ? reflectMixedForkFen(row.fen) : row.fen, pvUci, depth: 18, engineName: "Constructed",
+            variations: [{ pvUci, cp: row.cp, depth: 18 }] };
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.some(m => m.id === "matingThreat")).toBe(row.positive);
+        if (row.positive) {
+            assert.equal(result.scan.motifs[0].value, 0);
+            assert.equal(result.scan.motifs[0].ply, 1);
+            assert.ok(result.scan.motifs[0].evidence.includes("the displayed reply"));
+            assert.equal(result.scan.arrows.length, 2);
+        }
+    }
+}, 120000);
 
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("checking promotion preparations survive the actual worker",async()=>{
     for(const row of checkingPromotionThreatCases)for(const reflected of[false,true]){

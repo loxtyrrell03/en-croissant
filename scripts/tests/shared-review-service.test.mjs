@@ -1,4 +1,5 @@
 import { test } from "node:test";
+import { defensibleMateThreatFen } from "../../src/utils/tests/fixtures/defensibleMateThreat.ts";
 import assert from "node:assert/strict";
 import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -26,6 +27,42 @@ import { connectedPinCase } from "../../src/utils/tests/fixtures/connectedPin.ts
 import { reflectMixedForkFen, reflectMixedForkMove } from "../../src/utils/tests/fixtures/mixedTargetFork.ts";
 
 const pgn = '[White "Tester"]\n[Black "Opponent"]\n[Date "2026.09.04"]\n\n1. f3 e5 2. g4 Qh4# 0-1';
+
+test("answerable mate threats remain neutral after generated review and saved reload", async () => {
+  for (const reflected of [false, true]) {
+    const root = await mkdtemp(join(tmpdir(), "en-shared-review-mate-observation-"));
+    const fen = reflected ? reflectMixedForkFen(defensibleMateThreatFen) : defensibleMateThreatFen;
+    const flip = move => reflected ? reflectMixedForkMove(move) : move;
+    const pos = Chess.fromSetup(parseFen(fen).unwrap()).unwrap(); pos.play(parseUci(flip("a2a3")));
+    const after = makeFen(pos.toSetup());
+    const options = { root, documentsRoot: join(root, "documents"), engineConfigPath: join(root, "engine.json"),
+      fetchGames: async () => [], lookup: async requested => {
+        assert.ok(requested === fen || requested === after);
+        // Controlled scores exercise transport/ownership, not chess quality.
+        return { depth: 18, pvs: requested === fen
+          ? [{ cp: reflected ? -100 : 100, moves: flip("d1h5") }]
+          : [{ cp: reflected ? 200 : -200, moves: flip("g8f6") }] };
+      } };
+    let service;
+    try {
+      const game = `[White "${reflected ? "Opponent" : "Tester"}"]\n[Black "${reflected ? "Tester" : "Opponent"}"]\n[Date "2026.09.18"]\n[Result "${reflected ? "1-0" : "0-1"}"]\n[SetUp "1"]\n[FEN "${fen}"]\n\n${reflected ? "3... a6 1-0" : "3. a3 0-1"}`;
+      await writeFile(join(root, "config.json"), JSON.stringify({ accounts: { chesscom: "Tester" } }));
+      await writeFile(join(root, "games.json"), JSON.stringify({ games: [{ source: "chesscom", pgn: game, end: 1789600000, url: "https://example.test/mate-threat" }] }));
+      service = new SharedReviewService(options); await service.initialize(false); await service.run();
+      assert.equal(service.snapshot().error, null);
+      const card = service.snapshot().cards[0]; assert.ok(card);
+      const threat = card.tacticalClassification.missedMotifs.find(m => m.id === "matingThreat");
+      assert.equal(threat?.value, 0);
+      assert.match(card.explanation, /does not establish why the played move was worse/);
+      service.close(); service = new SharedReviewService(options); await service.initialize(false);
+      assert.deepEqual(service.snapshot().cards[0].tacticalClassification, JSON.parse(JSON.stringify(card.tacticalClassification)));
+    } finally {
+      service?.close(); const target = resolve(root);
+      assert.ok(target.startsWith(resolve(tmpdir()) + sep) && target.includes("en-shared-review-mate-observation-"));
+      await rm(target, { recursive: true, force: true });
+    }
+  }
+});
 
 test("missed checked promotions remain secondary to a lost rook through generated review and reload",async()=>{
   for(const reflected of[false,true]){
