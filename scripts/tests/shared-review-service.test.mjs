@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import { defensibleMateThreatFen } from "../../src/utils/tests/fixtures/defensibleMateThreat.ts";
+import { captureAttractionIdeaFen, captureAttractionIdeaLine } from "../../src/utils/tests/fixtures/captureAttractionIdea.ts";
 import assert from "node:assert/strict";
 import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -64,6 +65,42 @@ test("saving checks remain secondary to the queen loss through generated review 
       service?.close(); const target = resolve(root);
       assert.ok(target.startsWith(resolve(tmpdir()) + sep) && target.includes("en-shared-review-saving-checks-"));
       await rm(target, { recursive: true, force: true });
+    }
+  }
+});
+
+test("conditional attraction remains neutral after generated review and saved reload", async () => {
+  for (const reflected of [false, true]) {
+    const root = await mkdtemp(join(tmpdir(), "en-shared-review-attraction-observation-"));
+    const fen = reflected ? reflectMixedForkFen(captureAttractionIdeaFen) : captureAttractionIdeaFen;
+    const flip = move => reflected ? reflectMixedForkMove(move) : move;
+    const pos = Chess.fromSetup(parseFen(fen).unwrap()).unwrap(); pos.play(parseUci(flip("c1b1")));
+    const after = makeFen(pos.toSetup());
+    const options = {root, documentsRoot: join(root, "documents"), engineConfigPath: join(root, "engine.json"),
+      fetchGames: async () => [], lookup: async requested => {
+        assert.ok(requested === fen || requested === after);
+        // Controlled White-relative scores test transport and ownership only.
+        return {depth: 18, pvs: requested === fen
+          ? [{cp: reflected ? -300 : 300, moves: captureAttractionIdeaLine.map(flip).join(" ")}]
+          : [{cp: reflected ? 200 : -200, moves: flip("e7e6")}]};
+      }};
+    let service;
+    try {
+      const pgn = `[White "${reflected ? "Opponent" : "Tester"}"]\n[Black "${reflected ? "Tester" : "Opponent"}"]\n[Date "2026.09.18"]\n[Result "${reflected ? "1-0" : "0-1"}"]\n[SetUp "1"]\n[FEN "${fen}"]\n\n${reflected ? "1... Kb8 1-0" : "1. Kb1 0-1"}`;
+      await writeFile(join(root, "config.json"), JSON.stringify({accounts: {chesscom: "Tester"}}));
+      await writeFile(join(root, "games.json"), JSON.stringify({games: [{source: "chesscom", pgn, end: 1789600000, url: "https://example.test/attraction-idea"}]}));
+      service = new SharedReviewService(options); await service.initialize(false); await service.run();
+      assert.equal(service.snapshot().error, null);
+      const card = service.snapshot().cards[0]; assert.ok(card);
+      assert.equal(card.tacticalClassification.missedMotifs[0]?.id, "attractionIdea");
+      assert.equal(card.tacticalClassification.missedMotifs[0]?.value, 0);
+      assert.match(card.explanation, /does not establish why the played move was worse/);
+      service.close(); service = new SharedReviewService(options); await service.initialize(false);
+      assert.deepEqual(service.snapshot().cards[0].tacticalClassification, JSON.parse(JSON.stringify(card.tacticalClassification)));
+    } finally {
+      service?.close(); const target = resolve(root);
+      assert.ok(target.startsWith(resolve(tmpdir()) + sep) && target.includes("en-shared-review-attraction-observation-"));
+      await rm(target, {recursive: true, force: true});
     }
   }
 });

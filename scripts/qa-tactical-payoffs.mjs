@@ -24,6 +24,7 @@ import { persistentPawnCases } from "../src/utils/tests/fixtures/persistentPawnC
 import { quietRootMateCases } from "../src/utils/tests/fixtures/quietRootMate.ts";
 import { immediateAlternativeInputs } from "../src/utils/tests/fixtures/immediateTacticalAlternative.ts";
 import { defensibleMateThreatCases } from "../src/utils/tests/fixtures/defensibleMateThreat.ts";
+import { captureAttractionIdeaCases, captureAttractionIdeaLine } from "../src/utils/tests/fixtures/captureAttractionIdea.ts";
 import {
   matingInterferenceCases,
   reflectMatingInterference,
@@ -48,9 +49,11 @@ const persistentPawnMode = process.argv.includes("--persistent-pawn");
 const quietRootMateMode = process.argv.includes("--quiet-root-mate");
 const immediateAlternativeMode = process.argv.includes("--immediate-alternative");
 const mateObservationMode = process.argv.includes("--mate-observation");
+const attractionObservationMode = process.argv.includes("--attraction-observation");
 const root = process.cwd(),
   output = resolve(
     root,
+    attractionObservationMode ? "tmp/tactical-attraction-observation-pipeline169" :
     mateObservationMode ? "tmp/tactical-mate-observation-pipeline167" :
     immediateAlternativeMode ? "tmp/tactical-immediate-alternative-pipeline147" :
     persistentPawnMode ? "tmp/tactical-persistent-pawn-adapter128" :
@@ -72,6 +75,8 @@ const quiet = contexts.cases.filter((row) =>
   ["context:BNbGN5Pe:ply15", "context:zcEVXTW1:ply89"].includes(row.id),
 );
 const cases = (
+  attractionObservationMode ? captureAttractionIdeaCases.map(row => ({...row, pvUci: captureAttractionIdeaLine,
+    variations:[{pvUci:captureAttractionIdeaLine,cp:row.cp,depth:18}]})) :
   mateObservationMode ? defensibleMateThreatCases.slice(0, 3).map(row => ({...row,
     variations:[{pvUci:row.pvUci,cp:row.cp,depth:18}]})) :
   immediateAlternativeMode ? immediateAlternativeInputs.map((row, i) => ({...row, id:`alternative-${i}`, expectedLabel:i ? "Hanging Piece" : "Fork"})) :
@@ -217,7 +222,26 @@ try {
           index,
           scale,
         });
-        if (mateObservationMode) {
+        if (attractionObservationMode) {
+          await page.waitForFunction(() => window.fixture.scan !== null);
+          const scan = await page.evaluate(() => window.fixture.scan);
+          assert.equal(scan.motifs.some(m => m.id === "attractionIdea"), row.positive);
+          if (row.positive) {
+            await page.getByText("Attraction idea in the displayed line", {exact:true}).waitFor();
+            const text = await page.locator("main").innerText();
+            assert(text.includes("not proof that every defence loses"));
+            assert(!text.includes("immediate tactical option"));
+            const button = page.getByRole("button", {name:/^Show .* on board$/});
+            await button.focus(); await page.keyboard.press("Enter");
+            const selected = await page.evaluate(() => window.fixture.last);
+            assert.deepEqual(selected.arrows.map(a => a.from + a.to), ["f1a6", "b7a6"]);
+            assert.equal(selected.motifs[0].value, 0);
+          }
+          if (width === 360 && scale === 2) {
+            await page.locator(".mantine-ScrollArea-viewport").evaluate(element => {element.scrollTop=0});
+            await page.screenshot({path:resolve(output,`${row.id}.png`),fullPage:true});
+          }
+        } else if (mateObservationMode) {
           await page.waitForFunction(() => window.fixture.scan !== null);
           const scan = await page.evaluate(() => window.fixture.scan);
           assert.equal(scan.motifs.some(m => m.id === "matingThreat"), row.positive);

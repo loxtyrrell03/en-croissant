@@ -12,6 +12,8 @@ import {
     proveDefenderCombination,
     replayTacticalLine,
     tacticalCaptureGain,
+    observeCaptureAttractionIdea,
+    observeEscapeConcession,
 } from "../tacticalMotifs/causalTactics";
 import { classifyPositionTacticalMotifs } from "../tacticalMotifs/mistakeReviewAdapter";
 
@@ -153,6 +155,7 @@ test.skipIf(!process.env.TACTICAL_CAPTURE_TRAP_INPUT || !process.env.TACTICAL_CA
                         move: step.uci,
                         san: step.san,
                         traps,
+                        escapeObservations: targets.map(target => ({ target: makeSquare(target), proof: observeEscapeConcession(step, target) })).filter(row => row.proof),
                         combination,
                         preparation: proveQuietTacticalPreparation(
                             replayTacticalLine(position, suffix),
@@ -189,6 +192,7 @@ test.skipIf(!process.env.TACTICAL_CAPTURE_TRAP_INPUT || !process.env.TACTICAL_CA
                 line,
                 preparation,
                 discovery,
+                attractionIdea: observeCaptureAttractionIdea(steps),
                 failures,
                 reached,
             };

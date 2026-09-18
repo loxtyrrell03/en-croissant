@@ -72,6 +72,8 @@ export function TacticalScanResult({
             title={
               laterTheme
                 ? `${scan.motifs[0].label} in the continuation`
+                : scan.motifs[0].id === "attractionIdea"
+                  ? "Attraction idea in the displayed line"
                 : scan.motifs[0].id === "matingThreat"
                   ? `${sideLabel} threatens mate`
                 : `${scan.motifs.map((motif) => motif.label).join(" · ")} found`
@@ -79,6 +81,8 @@ export function TacticalScanResult({
           >
             {laterTheme
               ? "In the displayed continuation"
+              : scan.motifs[0].id === "attractionIdea"
+                ? `${sideLabel}'s conditional exchange idea`
               : scan.preferredMultipv
                 ? `${sideLabel}'s immediate tactical option`
                 : `${sideLabel}'s main tactical idea`}

@@ -133,6 +133,23 @@ async function runBuiltWorker(path: string, input: LiveTacticalScanInput) {
     }
 }
 
+test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("conditional attraction survives the actual worker without forced-win claims", async () => {
+    const {captureAttractionIdeaCases, captureAttractionIdeaLine} = await import("./fixtures/captureAttractionIdea");
+    for (const row of captureAttractionIdeaCases) for (const reflected of [false, true]) {
+        const pvUci = reflected ? captureAttractionIdeaLine.map(reflectMixedForkMove) : captureAttractionIdeaLine;
+        const input = {fen: reflected ? reflectMixedForkFen(row.fen) : row.fen, pvUci, depth: 18, engineName: "Constructed",
+            variations: [{pvUci, cp: row.cp, depth: 18}]};
+        const result = await runBuiltWorker(process.env.TACTICAL_BUILT_WORKER!, input);
+        expect(result.scan).toEqual(buildLiveTacticalScan(input));
+        expect(result.scan.motifs.some(m => m.id === "attractionIdea")).toBe(row.positive);
+        if (row.positive) {
+            assert.equal(result.scan.motifs[0].value, 0);
+            assert.equal(result.scan.arrows.length, 2);
+            assert.ok(result.scan.motifs[0].evidence.includes("not proof that every defence loses"));
+        }
+    }
+}, 120000);
+
 test.skipIf(!process.env.TACTICAL_BUILT_WORKER)("defensible mate observations survive the actual worker without forced-win claims", async () => {
     for (const row of defensibleMateThreatCases) for (const reflected of [false, true]) {
         const pvUci = reflected ? row.pvUci.map(reflectMixedForkMove) : row.pvUci;

@@ -9928,6 +9928,12 @@ function detectAllowedThemesDetailed(fenAfterBadMove, refutationPV, opponentSide
 	return detectThemesDetailed(syntheticMistake);
 }
 //#endregion
+//#region src/utils/tacticalMotifs/types.ts
+/** Useful geometry/threat context, not a forced outcome or mistake cause. */
+function isTacticalObservation(motif) {
+	return motif?.id === "matingThreat" || motif?.id === "attractionIdea";
+}
+//#endregion
 //#region src/utils/tacticalMotifs/causalTactics.ts
 var VALUE = {
 	pawn: 100,
@@ -11673,6 +11679,194 @@ function defenderCanClaimFiftyMoveDraw(position) {
 	return position.halfmoves >= 100 || legalMoves(position).some((move) => position.board.get(move.from)?.role !== "pawn" && capturedValue(position, move) === 0);
 }
 var defensibleMateThreatCache = /* @__PURE__ */ new Map();
+/** A new attack has no safe DIRECT retreat: each move of the attacked piece
+* permits its capture or blocks an existing guard of another attacked piece.
+* Other defences are deliberately NOT claimed to lose. This observes an
+* escape concession, not an all-defence trapped-piece/material certificate. */
+function observeEscapeConcession(root, target, nodeLimit = 8192, onFailure) {
+	if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 || root.capture || root.move.promotion || root.before.isCheck() || root.after.isCheck() || root.after.isEnd() || defenderCanClaimFiftyMoveDraw(root.after)) return null;
+	const side = root.before.turn, enemy = root.after.turn;
+	const victim = root.after.board.get(target), mover = root.before.board.get(root.move.from);
+	if (!victim || victim.color !== enemy || ["pawn", "king"].includes(victim.role) || !mover || !attacks(mover, root.move.to, root.after.board.occupied).has(target) || attacks(mover, root.move.from, root.before.board.occupied).has(target)) return null;
+	const budget = { nodes: nodeLimit };
+	const visit = (pos, move) => {
+		if (--budget.nodes < 0) throw new Error("Escape observation budget exhausted");
+		const next = pos.clone();
+		next.play(move);
+		return next;
+	};
+	const capture = (pos, square, debit) => {
+		for (const move of legalMoves(pos)) {
+			if (move.to !== square || !capturedValue(pos, move)) continue;
+			const gain = preparationCaptureGain(pos, move, budget, void 0, void 0, true);
+			if (gain !== null && gain - debit >= MIN_TACTICAL_CAPTURE_GAIN) return {
+				move,
+				gain: gain - debit
+			};
+		}
+		return null;
+	};
+	try {
+		const probe = withTurn(root.after, side);
+		if (!probe.isLegal({
+			from: root.move.to,
+			to: target
+		}) || tacticalExchangeGain(probe, {
+			from: root.move.to,
+			to: target
+		}) < MIN_TACTICAL_CAPTURE_GAIN) return null;
+		const flights = [];
+		let ignored;
+		for (const reply of legalMoves(root.after)) {
+			const next = visit(root.after, reply);
+			if (next.isEnd() || defenderCanClaimFiftyMoveDraw(next)) {
+				onFailure?.(`Terminal reply ${makeUci(reply)}`);
+				return null;
+			}
+			const debit = capturedValue(root.after, reply) + (reply.promotion ? VALUE[reply.promotion] - VALUE.pawn : 0);
+			if (reply.from !== target) {
+				if (reply.to === root.move.to && debit) {
+					onFailure?.(`Other capture ${makeUci(reply)}`);
+					return null;
+				}
+				if (!ignored && !next.isCheck()) {
+					const answer = capture(next, target, debit);
+					if (answer) ignored = {
+						reply: makeUci(reply),
+						capture: makeUci(answer.move)
+					};
+				}
+				continue;
+			}
+			const direct = capture(next, reply.to, debit);
+			if (direct) {
+				flights.push({
+					reply: makeUci(reply),
+					replySan: makeSan(root.after, reply),
+					capture: makeUci(direct.move),
+					gain: direct.gain
+				});
+				continue;
+			}
+			let concession;
+			for (const guard of root.after.board[enemy]) {
+				const piece = root.after.board.get(guard);
+				if (guard === target || ![
+					"rook",
+					"bishop",
+					"queen"
+				].includes(piece.role)) continue;
+				for (const to of root.after.board[enemy]) {
+					const other = root.after.board.get(to);
+					if (to === target || to === guard || ["pawn", "king"].includes(other.role) || !between(guard, to).has(reply.to) || !attacks(piece, guard, root.after.board.occupied).has(to) || attacks(piece, guard, next.board.occupied).has(to)) continue;
+					for (const from of next.board[side]) {
+						const attacker = next.board.get(from);
+						if (![
+							"rook",
+							"bishop",
+							"queen"
+						].includes(attacker.role) || !attacks(attacker, from, root.after.board.occupied).has(to)) continue;
+						const move = {
+							from,
+							to
+						};
+						if (!probe.isLegal(move) || !next.isLegal(move)) continue;
+						const before = tacticalExchangeGain(probe, move);
+						if (before <= -VALUE.king || before >= MIN_TACTICAL_CAPTURE_GAIN) continue;
+						if (!visit(probe, move).isLegal({
+							from: guard,
+							to
+						})) continue;
+						const gain = preparationCaptureGain(next, move, budget, void 0, void 0, true);
+						if (gain === null || gain - debit < MIN_TACTICAL_CAPTURE_GAIN) continue;
+						concession = {
+							reply: makeUci(reply),
+							replySan: makeSan(root.after, reply),
+							capture: makeUci(move),
+							gain: gain - debit,
+							concession: {
+								guard,
+								victim: to
+							}
+						};
+						break;
+					}
+					if (concession) break;
+				}
+				if (concession) break;
+			}
+			if (!concession) {
+				onFailure?.(`Unproved retreat ${makeUci(reply)}`);
+				return null;
+			}
+			flights.push(concession);
+		}
+		if (!ignored || !flights.some((flight) => flight.concession)) onFailure?.(`Missing ignored/concession ${Boolean(ignored)} / ${flights.length}`);
+		return ignored && flights.some((flight) => flight.concession) ? {
+			target,
+			flights,
+			ignored,
+			visits: nodeLimit - budget.nodes
+		} : null;
+	} catch (error) {
+		onFailure?.(String(error));
+		return null;
+	}
+}
+/** Recognize a short exchange/attraction IDEA in a legal engine line. The
+* acceptance, checking entry and king reply are conditional, not forced.
+* A separate complete retreat audit establishes the subsequent escape
+* concession. Neither this observation nor its engine score proves a win. */
+function observeCaptureAttractionIdea(steps, nodeLimit = 8192) {
+	const [root, acceptance, entry, evasion, attack] = steps;
+	if (!attack || !root.capture || root.before.isCheck() || root.move.promotion || acceptance.move.to !== root.move.to || acceptance.capture < VALUE.knight || root.capture < VALUE.knight || Math.abs(root.capture - acceptance.capture) > 100 || acceptance.move.promotion || entry.capture || !entry.after.isCheck() || evasion.before.board.get(evasion.move.from)?.role !== "king" || evasion.capture || attack.capture || attack.after.isCheck()) return null;
+	for (let i = 1; i < 5; i++) if (makeFen(steps[i - 1].after.toSetup()) !== makeFen(steps[i].before.toSetup())) return null;
+	const receiver = acceptance.before.board.get(acceptance.move.from);
+	if (receiver.role === "king" || receiver.role === "pawn" || attack.before.board.get(acceptance.move.to)?.role !== receiver.role || !root.before.isLegal(entry.move)) return null;
+	const premature = root.before.clone();
+	premature.play(entry.move);
+	const refutation = {
+		from: acceptance.move.from,
+		to: entry.move.to
+	};
+	if (!premature.isLegal(refutation) || tacticalExchangeGain(premature, refutation) < MIN_TACTICAL_CAPTURE_GAIN) return null;
+	const proof = observeEscapeConcession(attack, acceptance.move.to, nodeLimit);
+	if (!proof) return null;
+	const checker = entry.after.board.get(entry.move.to);
+	if (![
+		"rook",
+		"bishop",
+		"queen"
+	].includes(checker.role)) return null;
+	const opened = proof.flights.filter((flight) => flight.concession && flight.capture.startsWith(makeSquare(entry.move.to)) && between(entry.move.to, flight.concession.victim).has(acceptance.move.from) && attacks(checker, entry.move.to, entry.after.board.occupied).has(flight.concession.victim) && !attacks(checker, entry.move.to, root.before.board.occupied).has(flight.concession.victim));
+	if (!opened.length) return null;
+	return {
+		proof,
+		opened,
+		target: acceptance.move.to,
+		receiver: acceptance.move.from
+	};
+}
+function captureAttractionIdeaEvidence(steps, rootCp, source) {
+	const observation = typeof rootCp === "number" && Number.isFinite(rootCp) && rootCp >= -100 ? observeCaptureAttractionIdea(steps) : null;
+	if (!observation) return null;
+	const [root, acceptance, entry, evasion, attack] = steps;
+	const flight = observation.opened[0], cut = flight.concession;
+	const receiver = acceptance.before.board.get(observation.receiver);
+	const guard = attack.after.board.get(cut.guard), victim = attack.after.board.get(cut.victim);
+	const branch = replayTacticalLine(makeFen(attack.after.toSetup()), [flight.reply, flight.capture]);
+	return {
+		id: "attractionIdea",
+		label: "Attraction Idea",
+		source,
+		confidence: "medium",
+		ply: 1,
+		moveUci: root.uci,
+		value: 0,
+		relevance: "primary",
+		evidence: `${root.san} offers an exchange that draws the ${receiver.role} to ${makeSquare(observation.target)}. In the displayed line, ${acceptance.san} ${entry.san} ${evasion.san} ${attack.san} attacks it: its direct retreats allow its capture or a connected concession. ${flight.replySan} blocks the ${guard.role}'s defence of the ${victim.role}, allowing ${branch[1].san}. The exchange also removes the defender that could take a premature ${entry.san}. This is a conditional idea in the displayed line, not proof that every defence loses.`
+	};
+}
 /** Observe a NEW mate-in-one threat, not a forced mate or material win.
 * A real legal reply must leave the threat intact, and at least one other
 * reply must stop ALL immediate mates. The caller supplies engine relevance;
@@ -19691,7 +19885,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 	const exactZugzwang = tablebaseZugzwangEvidence(fen, steps[0].uci, context?.tablebaseEvidence, proposals[0]?.source ?? "available");
 	const end = checkingMate && steps.some((step) => step.after.isCheckmate()) ? steps.findIndex((step) => step.after.isCheckmate()) + 1 : clearanceEnd !== null ? clearanceEnd : promotionCombination && promotionPly >= 0 && promotionPly <= 16 ? promotionPly + 1 : Math.max(exactZugzwang || promotionThreat ? 1 : 0, episodeEnd(steps, allowConditional));
 	if (!end) {
-		const threat = defensibleMateThreatEvidence(steps[0], rootCp, proposals[0]?.source ?? "available", steps[1]?.uci);
+		const threat = defensibleMateThreatEvidence(steps[0], rootCp, proposals[0]?.source ?? "available", steps[1]?.uci) ?? captureAttractionIdeaEvidence(steps, rootCp, proposals[0]?.source ?? "available");
 		return threat ? [threat] : [];
 	}
 	const episode = steps.slice(0, end);
@@ -20558,7 +20752,7 @@ function auditTacticalMotifs(fen, line, proposals, rootCp, context) {
 			evidence: `${root.san} drives the king away from defending the ${target.role} on ${makeSquare(defensive.target)}. Every legal reply allows that ${target.role} to be captured while retaining a material advantage. Without a response to the threat, it can force repeated checks (${defensive.perpetual.line.join(" ")}). The point is removing that checking resource, not winning material; this does not by itself prove the resulting ending is won.`
 		});
 	}
-	const observedThreat = !filtered.some((m) => m.ply === 1) ? defensibleMateThreatEvidence(steps[0], rootCp, proposals[0]?.source ?? "available", steps[1]?.uci) : null;
+	const observedThreat = !filtered.some((m) => m.ply === 1) ? defensibleMateThreatEvidence(steps[0], rootCp, proposals[0]?.source ?? "available", steps[1]?.uci) ?? captureAttractionIdeaEvidence(steps, rootCp, proposals[0]?.source ?? "available") : null;
 	if (observedThreat) filtered.unshift(observedThreat);
 	return filtered.map((motif, index) => ({
 		...motif,
@@ -21137,7 +21331,7 @@ function compareImmediateTacticalDefence(fen, bestMove, playedMove, reply, motif
 	const bestSan = better[0].san;
 	const exchange = rootCaptureExchangeContext(appendTacticalHistory(tacticalHistory, playedMove), makeFen(step.before.toSetup()), step.move, fen, playedMove);
 	return motifs.map((motif) => {
-		if (motif.id === "matingThreat") return motif;
+		if (isTacticalObservation(motif)) return motif;
 		if (motif.ply !== 1 || motif.moveUci !== reply) return motif;
 		if (motif.id === "hangingPiece" && exchange && exchange.debit > 0) return {
 			...motif,
@@ -22000,7 +22194,7 @@ function qualifyComparableCaptureChoice(fen, bestMove, playedMove, motifs) {
 //#region src/utils/tacticalMotifs/mistakeReviewAdapter.ts
 var detectStepThemes = detectTacticsAtStep;
 var detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed;
-var TACTICAL_MOTIF_ADAPTER_VERSION = 161;
+var TACTICAL_MOTIF_ADAPTER_VERSION = 162;
 var MOTIF_CACHE_LIMIT = 2500;
 var motifCache = /* @__PURE__ */ new Map();
 var MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION = `site-55.adapter-${TACTICAL_MOTIF_ADAPTER_VERSION}`;
@@ -22331,6 +22525,7 @@ function toMotifEvidence(detailInput, source, sanLineInput) {
 	});
 }
 var IMPORTANT_TACTICAL_THEME_IDS = new Set([
+	"attractionIdea",
 	"matingThreat",
 	"promotionThreat",
 	"perpetualCheck",
@@ -22431,7 +22626,7 @@ function isAlternativeCapture(motif) {
 	return motif?.source === "missed" && motif.id === "hangingPiece" && motif.ply === 1 && motif.alternativeCapture === true;
 }
 function isImmediateTacticalLesson(motif) {
-	if (motif?.id === "matingThreat") return false;
+	if (isTacticalObservation(motif)) return false;
 	return Boolean(motif && !isAlternativeCapture(motif) && motif.ply === 1 && motif.confidence !== "low" && ((motif.value ?? 0) >= 100 || motif.id === "hangingPiece" && motif.label === "Material Gain" && motif.confidence === "high" && (motif.value ?? 0) >= MIN_TACTICAL_CAPTURE_GAIN || motif.id === "perpetualCheck" || motif.id === "defensiveDeflection" && motif.confidence === "high" || motif.id === "drawingCapture" && motif.confidence === "high" || motif.verifiedCombination === true && motif.confidence === "high" && (motif.value ?? 0) > 0 && ["fork", "forkPreparation"].includes(motif.id)));
 }
 function buildMistakeReviewTacticalExplanation(input) {
@@ -22452,15 +22647,15 @@ function chooseMistakeReviewTacticalExplanation({ allowedMotifs, missedMotifs })
 	const allowed = selectImportantTacticalMotifs(allowedMotifs, 1)[0];
 	const missed = selectImportantTacticalMotifs(missedMotifs, 1)[0];
 	if (!allowed && !missed) return null;
-	if (allowed?.id === "matingThreat" || missed?.id === "matingThreat") {
+	if (isTacticalObservation(allowed) || isTacticalObservation(missed)) {
 		const proved = chooseMistakeReviewTacticalExplanation({
-			allowedMotifs: allowedMotifs.filter((m) => m.id !== "matingThreat"),
-			missedMotifs: missedMotifs.filter((m) => m.id !== "matingThreat")
+			allowedMotifs: allowedMotifs.filter((m) => !isTacticalObservation(m)),
+			missedMotifs: missedMotifs.filter((m) => !isTacticalObservation(m))
 		});
 		if (proved) return proved;
 		const threat = allowed ?? missed;
 		return {
-			title: threat.source === "missed" ? "Threat in the better line" : "Threat after the move",
+			title: threat.id === "attractionIdea" ? threat.source === "missed" ? "Idea in the better line" : "Idea after the move" : threat.source === "missed" ? "Threat in the better line" : "Threat after the move",
 			text: `${threat.evidence} This observation does not establish why the played move was worse.`,
 			source: threat.source === "missed" ? "missed" : "allowed",
 			primary: threat
@@ -22585,8 +22780,8 @@ function selectRootConnectedLessons(fen, line, motifs, timeline) {
 * for that side. Independently checked forks, pins and mates remain at their
 * actual ply, as do their subsequent capture payoffs. */
 function selectContinuationLessons(timeline, rootMotifs) {
-	if (rootMotifs.some((motif) => motif.ply === 1 && motif.id !== "matingThreat")) return timeline;
-	return timeline.filter((motif) => motif.id !== "hangingPiece" || motif.label === "Winning Recapture" && (motif.value ?? 0) >= 320 || timeline.some((prior) => prior.id !== "hangingPiece" && prior.id !== "matingThreat" && prior.actor === motif.actor && prior.ply !== null && motif.ply !== null && prior.ply <= motif.ply));
+	if (rootMotifs.some((motif) => motif.ply === 1 && !isTacticalObservation(motif))) return timeline;
+	return timeline.filter((motif) => motif.id !== "hangingPiece" || motif.label === "Winning Recapture" && (motif.value ?? 0) >= 320 || timeline.some((prior) => prior.id !== "hangingPiece" && !isTacticalObservation(prior) && prior.actor === motif.actor && prior.ply !== null && motif.ply !== null && prior.ply <= motif.ply));
 }
 /** Each row is assessed in its own legal position. Root causes stay separate
 * so later repetitions and opponent counterplay cannot replace the lesson. */

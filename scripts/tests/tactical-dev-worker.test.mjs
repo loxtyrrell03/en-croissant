@@ -9,6 +9,7 @@ import { perpetualMaterialCases, perpetualMaterialLine } from "../../src/utils/t
 import { directThreatFen, directThreatLine } from "../../src/utils/tests/fixtures/directThreatRelevance.ts";
 import { compensatedCaptureInput } from "../../src/utils/tests/fixtures/compensatedCapture.ts";
 import { forkLocalValueCases } from "../../src/utils/tests/fixtures/forkLocalValue.ts";
+import { captureAttractionIdeaCases, captureAttractionIdeaLine } from "../../src/utils/tests/fixtures/captureAttractionIdea.ts";
 import { forkRepairCases } from "../../src/utils/tests/fixtures/forkRepair.ts";
 import { checkingExchangeCases } from "../../src/utils/tests/fixtures/checkingExchangeRetention.ts";
 import { checkingAlliedRetentionCases, checkingAlliedRetentionLine } from "../../src/utils/tests/fixtures/checkingAlliedRetention.ts";
@@ -110,6 +111,10 @@ test(
     const { castlingAliasCases } = await import("../../src/utils/tests/fixtures/castlingRelevance.ts");
     const { matingInterferenceCases, reflectMatingInterference } = await import("../../src/utils/tests/fixtures/matingInterference.ts");
     const cases = [
+      ...captureAttractionIdeaCases.map(row => ({name: `conditional attraction: ${row.id}`, fen: row.fen,
+        pvUci: captureAttractionIdeaLine, variations: [{pvUci: captureAttractionIdeaLine, cp: row.cp, depth: 18}],
+        expectedAttraction: row.positive, expectedPrimary: row.positive ? ["attractionIdea"] : undefined,
+        expectedArrows: row.positive ? [["f1", "a6"], ["b7", "a6"]] : undefined})),
       { name: "short saving queen checks", fen: "Q7/8/8/8/3k4/8/q4R2/4K3 b - - 0 1",
         pvUci: ["a2b1"], expectedPrimary: ["perpetualCheck"], expectedArrows: [["a2", "b1"], ["b1", "e1"]] },
       { name: "a capturable checker cannot claim a perpetual", fen: "Q7/8/8/8/3k4/8/q1B2R2/4K3 b - - 0 1",
@@ -324,6 +329,8 @@ test(
         assert.equal(result.scan.variations[0].timeline.find(motif => motif.ply === 3)?.label, item.expectedPayoff);
       if (item.expectedPrimary)
         assert.deepEqual(result.scan.motifs.map((motif) => motif.id), item.expectedPrimary, item.name);
+      if (item.expectedAttraction !== undefined)
+        assert.equal(result.scan.motifs.some(motif => motif.id === "attractionIdea"), item.expectedAttraction, item.name);
       if (item.expectedArrows) assert.deepEqual(result.scan.arrows.map(arrow => [arrow.from, arrow.to]), item.expectedArrows, item.name);
       if (item.expectedTerminalPly) assert.ok(result.scan.variations[0].timeline.some(motif=>motif.ply===item.expectedTerminalPly&&/mate/i.test(motif.id)));
       if (item.expectedSquare) assert.equal(result.scan.labels[0].square, item.expectedSquare);

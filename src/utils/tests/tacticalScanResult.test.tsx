@@ -30,12 +30,24 @@ import { captureLiabilityInput } from "./fixtures/captureLiabilityRecovery";
 import { discoveryRecaptureInput } from "./fixtures/discoveryRecapture";
 import { forkRayClearanceCases } from "./fixtures/forkRayClearance";
 import { connectedPinCase } from "./fixtures/connectedPin";
+import { captureAttractionIdeaFen, captureAttractionIdeaLine } from "./fixtures/captureAttractionIdea";
 import { replayTacticalLine } from "@/utils/tacticalMotifs/causalTactics";
 import {
   buildLiveTacticalScan,
   previewLiveTacticalVariation,
   type LiveTacticalScan,
 } from "@/utils/tacticalMotifs/liveTactics";
+
+test("conditional attraction is not presented as a proved immediate win", () => {
+  const scan = buildLiveTacticalScan({fen: captureAttractionIdeaFen, pvUci: captureAttractionIdeaLine,
+    engineName: "test", depth: 18, variations: [{pvUci: captureAttractionIdeaLine, cp: 300, depth: 18}]});
+  const html = renderToStaticMarkup(<MantineProvider env="test"><TacticalScanResult scan={scan} lastMoveSan={null} /></MantineProvider>);
+  expect(html).toContain("Attraction idea in the displayed line");
+  expect(html).toContain("conditional exchange idea");
+  expect(html).toContain("not proof that every defence loses");
+  expect(html).not.toContain("Attraction Idea found");
+  expect(html).not.toContain("immediate tactical option");
+});
 
 const scan = buildLiveTacticalScan({
   fen: "rnbqk2r/p1ppbppp/1p3n2/4N3/2B5/4P3/PPPP1PPP/RNBQK2R w KQkq - 0 5",

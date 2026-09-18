@@ -1,6 +1,11 @@
 export type TacticalMotifConfidence = "high" | "medium" | "low";
 export type TacticalMotifSource = "allowed" | "missed" | "available";
 
+/** Useful geometry/threat context, not a forced outcome or mistake cause. */
+export function isTacticalObservation(motif: { id: string } | undefined) {
+    return motif?.id === "matingThreat" || motif?.id === "attractionIdea";
+}
+
 /** Same-search alternatives, scored for the side to move on this exact board.
  * Engine scores nominate candidates; they are not tactical proof. */
 export type TacticalReplyCandidate = {

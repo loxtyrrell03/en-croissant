@@ -46,6 +46,7 @@ import {
     xRaySupportEvidence,
 } from "./causalTactics";
 import { qualifyComparableCaptureChoice } from "./captureChoice";
+import { isTacticalObservation } from "./types";
 import { appendTacticalHistory, type TacticalGameHistory } from "./gameHistory";
 import type {
     MistakeReviewMotifClassification,
@@ -141,7 +142,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 161;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 162;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -596,6 +597,7 @@ function toMotifEvidence(
 }
 
 const IMPORTANT_TACTICAL_THEME_IDS = new Set([
+    "attractionIdea",
     "matingThreat",
     "promotionThreat",
     "perpetualCheck",
@@ -727,6 +729,7 @@ function isAlternativeCapture(motif: TacticalMotifEvidence | undefined) {
 
 /** A post-move tactic is not automatically a newly caused one. */
 export function tacticalMotifPerspective(motif: TacticalMotifEvidence) {
+    if (motif.id === "attractionIdea") return "Conditional idea";
     if (motif.id === "matingThreat") return "Concrete threat";
     if (motif.source === "missed")
         return isAlternativeCapture(motif) ? "Capture choice" :
@@ -738,7 +741,7 @@ export function tacticalMotifPerspective(motif: TacticalMotifEvidence) {
 }
 
 export function isImmediateTacticalLesson(motif: TacticalMotifEvidence | undefined) {
-    if (motif?.id === "matingThreat") return false;
+    if (isTacticalObservation(motif)) return false;
     return Boolean(
         motif &&
         !isAlternativeCapture(motif) &&
@@ -803,13 +806,15 @@ function chooseMistakeReviewTacticalExplanation({
     if (!allowed && !missed) return null;
     // A parryable threat is useful context, never by itself an established
     // mistake cause or a missed win. Prefer an existing proved lesson.
-    if (allowed?.id === "matingThreat" || missed?.id === "matingThreat") {
-        const provedAllowed = allowedMotifs.filter(m => m.id !== "matingThreat");
-        const provedMissed = missedMotifs.filter(m => m.id !== "matingThreat");
+    if (isTacticalObservation(allowed) || isTacticalObservation(missed)) {
+        const provedAllowed = allowedMotifs.filter(m => !isTacticalObservation(m));
+        const provedMissed = missedMotifs.filter(m => !isTacticalObservation(m));
         const proved = chooseMistakeReviewTacticalExplanation({ allowedMotifs: provedAllowed, missedMotifs: provedMissed });
         if (proved) return proved;
         const threat = allowed ?? missed!;
-        return { title: threat.source === "missed" ? "Threat in the better line" : "Threat after the move",
+        return { title: threat.id === "attractionIdea"
+                ? threat.source === "missed" ? "Idea in the better line" : "Idea after the move"
+                : threat.source === "missed" ? "Threat in the better line" : "Threat after the move",
             text: `${threat.evidence} This observation does not establish why the played move was worse.`,
             source: threat.source === "missed" ? "missed" : "allowed", primary: threat };
     }
@@ -1002,7 +1007,7 @@ function selectContinuationLessons(
     timeline: TacticalMotifEvidence[],
     rootMotifs: TacticalMotifEvidence[],
 ) {
-    if (rootMotifs.some((motif) => motif.ply === 1 && motif.id !== "matingThreat")) return timeline;
+    if (rootMotifs.some((motif) => motif.ply === 1 && !isTacticalObservation(motif))) return timeline;
     return timeline.filter(
         (motif) =>
             motif.id !== "hangingPiece" ||
@@ -1013,7 +1018,7 @@ function selectContinuationLessons(
             (motif.label === "Winning Recapture" && (motif.value ?? 0) >= 320) ||
             timeline.some(
                 (prior) =>
-                    prior.id !== "hangingPiece" && prior.id !== "matingThreat" &&
+                    prior.id !== "hangingPiece" && !isTacticalObservation(prior) &&
                     prior.actor === motif.actor &&
                     prior.ply !== null &&
                     motif.ply !== null &&

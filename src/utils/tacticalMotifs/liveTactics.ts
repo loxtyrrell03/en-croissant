@@ -13,6 +13,7 @@ import { castlingSide } from "chessops/chess";
 import { kingCastlesTo, rookCastlesTo, makeSquare } from "chessops/util";
 
 const CORE_TACTICAL_THEME_IDS = new Set([
+    "attractionIdea",
     "matingThreat",
     "perpetualCheck",
     "defensiveDeflection",
@@ -103,6 +104,7 @@ const THEME_PRIORITY = [
 ];
 
 const THEME_DESCRIPTIONS: Record<string, string> = {
+    attractionIdea: "An exchange draws a piece into a vulnerable position in the displayed line; other defensive choices are not proved to lose.",
     matingThreat: "A concrete mate threat which the opponent can answer; not a forced win.",
     promotionThreat: "The pawn threatens promotion; the verified continuations retain material even after legal checking defences.",
     defensiveDeflection: "A checking offer drives the king away from guarding a piece that threatens perpetual check, allowing that piece to be removed.",
@@ -160,7 +162,7 @@ const FACT_RICH_THEME_IDS = new Set([
     "attackingF2F7",
 ]);
 
-export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 168;
+export const LIVE_TACTICAL_SCAN_PIPELINE_VERSION = 169;
 export const LIVE_TACTICAL_SCAN_MULTIPV = 3;
 export const LIVE_TACTICAL_EXTRA_CANDIDATES = 2;
 
