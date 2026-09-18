@@ -1,6 +1,43 @@
-# Tactical desktop delivery — 2026-09-17
+# Tactical desktop delivery — 2026-09-18
 
-## Current package: adapter 159 / live pipeline 166
+## Current package: adapter 160 / live pipeline 167
+
+Source `f70e3ac4` is packaged from clean detached checkout
+`en-tactical-desktop-f70e3ac4`. Answerable mate threats now have a separate
+**Threatens Mate** observation, without claiming forced wins, funding unrelated
+capture labels or establishing a mistake cause. Existing stronger causes retain
+priority. See `benchmarks/tactical-relevance/defensible-mate-threat-review.md`
+for the recovered owner opportunities, contrary controls and incomplete traps.
+
+The clean worker is byte-identical to the artifact tested on all 2,137 current
+controller inputs: 808 public, 1,319 owner contexts and ten new controls.
+Clean TypeScript, 164 source/React checks (one conditional skip), 35 generated
+service checks (one optional engine skip), the 43-module review build and
+8,863-module frontend build pass. Native release compilation passes in 1m33s
+with 22 existing warnings. Generated-review differences are source-region
+comments only; the route tree is identical after line-ending normalization.
+Unrelated dirty OTB/FIDE/phone/stats changes were excluded.
+
+- Executable: `src-tauri/target/release/en-croissant-fork.exe`, 48,083,968 bytes;
+  SHA-256 `4b1ad962e8624efe58eb668df35864ba4673dc8857b103a033fe4648ca6fc344`.
+- Worker: `liveTactics.worker-oyJe9CpS.js`, 623,722 bytes; SHA-256
+  `8e602573701cba4b164a9df0cdec21bf6cc0fd57eb9b5ca89cf166de2fdaf1c6`.
+  The x64 executable embeds that worker, `mistakeReviewAdapter-si5hqsxh.js`,
+  `TacticalClassifierPanel-BZTv5H9L.js` and `OpeningReviewWorkspace-D6-tT3TZ.js`;
+  exact normalized native dependencies identify those four clean assets.
+- Previous pipeline-166 backup:
+  `Documents/OnCrescent Tactical Benchmarks/desktop-before-pipeline167/en-croissant-fork.exe`,
+  SHA-256 `36bba9ae52e0580dfa2c9c19dd63adcbb30e2c5c9fc13bd20a99b5e44083d31e`.
+
+No app was running before or after compilation; none was launched/restarted.
+The Dev App shortcut retains the primary checkout's `encroissant-native`
+workflow. Owner stores and phone services were untouched; existing reviews were
+not rescanned. The private `defensible-threat160-desktop-receipt-20260918.json`
+records identity and recovery. This verifies package linkage, not native
+interaction or startup reliability under load. Broader recall, primary-theme
+judgment, long quiet combinations and causal comparisons remain incomplete.
+
+## Previous package: adapter 159 / live pipeline 166
 
 Source `9b1b2e50` is packaged from clean detached checkout
 `en-tactical-desktop-9b1b2e50`. Promotion threats can now survive up to two

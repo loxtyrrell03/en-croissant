@@ -93,8 +93,9 @@ This checks immediate threat geometry, not long-term material or game outcomes.
   median/p95/max is 40/185/984 ms, excluding engine/native UI. The worker also
   passes ten new positive/negative colour controls and all 1,319 owner contexts:
   **2,137 compiled-controller inputs** in total, retaining the production 20/3
-  second startup/computation deadlines. Clean desktop delivery is recorded
-  separately once complete.
+  second startup/computation deadlines. Clean desktop delivery of source
+  `f70e3ac4` is verified separately in `docs/TACTICAL_DESKTOP_DELIVERY.md`:
+  the native executable contains the identical tested worker and clean UI assets.
 
 Private authoritative receipts are prefixed `defensible-threat160-` and dated
 `20260918` under `Documents/OnCrescent Tactical Benchmarks/`: `owner-final`,
