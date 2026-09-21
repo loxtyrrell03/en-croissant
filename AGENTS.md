@@ -1,6 +1,7 @@
 <!-- USER-STORAGE-DISCIPLINE -->
 ## Development storage and data ownership
 
+- Incident record: `docs/STORAGE_INCIDENT_2026-09-21.md` documents the roughly 90 GiB duplication caused by 57 delivery checkouts containing tracked videos and obsolete dependencies. Read it and the storage correction in `docs/TACTICAL_DESKTOP_DELIVERY.md` before another delivery. The existing source edits were preserved while those checkouts were sparsified; never undo the exclusions casually.
 - Owner instruction, 2026-09-21: preserve active apps, updates, unfinished source work and local databases; keep one full downloaded evaluation corpus. Storage cleanup is not permission to remove source tests, credentials, sessions, personal media originals or unique data.
 - Reuse the existing immutable full evaluation store. The shared lookup path is `C:/Users/Lox/AppData/Local/ChessData/lichess/evaluations`; it aliases the retained live corpus in `app.outpost.chess.dev/lichess/evaluations`. Do not copy that corpus into new dev profiles, worktrees, backups, packs or test installations. Editable Library/opening/OTB databases remain isolated and must not be linked together.
 - Windows packaged tools can redirect AppData into the Codex package LocalCache. Before maintaining profile data, resolve the actual backing path through an unpackaged broker. Never infer duplication, freshness or owner identity from two path strings alone.
