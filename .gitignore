@@ -1,4 +1,10 @@
 # Logs
+# Generated or unrelated material must not be copied into every delivery checkout.
+node_modules.incomplete-from-laptop-archive/
+/*.webm
+/*.mp4.part
+/src-tauri/target/
+
 logs
 *.log
 npm-debug.log*

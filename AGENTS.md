@@ -1,3 +1,16 @@
+<!-- USER-STORAGE-DISCIPLINE -->
+## Development storage and data ownership
+
+- Owner instruction, 2026-09-21: preserve active apps, updates, unfinished source work and local databases; keep one full downloaded evaluation corpus. Storage cleanup is not permission to remove source tests, credentials, sessions, personal media originals or unique data.
+- Reuse the existing immutable full evaluation store. The shared lookup path is `C:/Users/Lox/AppData/Local/ChessData/lichess/evaluations`; it aliases the retained live corpus in `app.outpost.chess.dev/lichess/evaluations`. Do not copy that corpus into new dev profiles, worktrees, backups, packs or test installations. Editable Library/opening/OTB databases remain isolated and must not be linked together.
+- Windows packaged tools can redirect AppData into the Codex package LocalCache. Before maintaining profile data, resolve the actual backing path through an unpackaged broker. Never infer duplication, freshness or owner identity from two path strings alone.
+- Never track node_modules, archived dependency trees, compiler outputs, public database downloads, generated evaluation shards, temporary packs or unrelated downloaded videos. The storage commit guard rejects these and files over 50 MiB. Do not disable/bypass it to finish a task; use external asset storage for intentional large assets.
+- Reuse a task-owned build directory or at most a current and rollback delivery checkout. Before creating another, inventory the existing worktrees and preserve any dirty/untracked source. For builds from old revisions, exclude their historical root video downloads and `node_modules.incomplete-from-laptop-archive` using a sparse checkout; otherwise those tracked files will be replicated again.
+- Use tiny synthetic fixtures for routine tests. Real full-data validation must use the retained corpus read-only, or an explicitly scoped temporary output that is removed after its result and compact receipt are saved. Do not retain raw downloads, unpacked output, packaged output and restored copies simultaneously.
+- Before a download/build/test likely to create more than 5 GiB, measure free space and the expected output. Maintain a 100 GiB working reserve; reduce/reuse artifacts before proceeding if that reserve would be crossed. Keep per-task generated output below 10 GiB unless the task actually requires more, and account for/clean temporary output at the milestone.
+- Cleanup must use exact validated paths, check live processes and Git status, preserve source patches and active artifacts, and record what was removed. Do not run broad git clean/reset, automatic age-only deletion, recursive worktree-root deletion, or unattended database cleanup. Build caches can be rebuilt; owner data cannot be assumed replaceable.
+<!-- /USER-STORAGE-DISCIPLINE -->
+
 <!-- USER-UI-DESIGN-POLICY -->
 ## UI and app design: standing user requirements
 

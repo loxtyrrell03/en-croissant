@@ -1,5 +1,21 @@
 # Tactical desktop delivery — 2026-09-18
 
+## Storage correction — 2026-09-21
+
+The historical checkout names below are delivery receipts, not a requirement
+to keep creating permanent full checkouts. Their tracked root-level downloads
+and archived dependencies multiplied into approximately 90 GiB across 57
+checkouts. Those files are now excluded from the existing delivery checkouts
+with Git sparse checkout; their source changes remain intact.
+
+Follow the Development storage and data ownership section in `AGENTS.md`.
+Reuse an owned build checkout/cache and retain only the current and necessary
+rollback artifacts. Never delete another task's dirty/untracked source to meet
+that retention rule. If an older revision still tracks the historical junk,
+create the checkout with `--no-checkout`, set non-cone sparse patterns `/*`,
+`!/node_modules.incomplete-from-laptop-archive/`, `!/*.webm` and `!/*.mp4.part`
+before populating it. New source revisions must not track that material.
+
 ## Current package: adapter 164 / live pipeline 171
 
 Source `6dcdcd85` is packaged from clean detached checkout
