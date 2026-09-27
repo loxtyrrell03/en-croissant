@@ -69,7 +69,7 @@ export function restoreOpponentImport(key: string, collection: OpponentCollectio
                 ? "A saved search is available to resume."
                 : cp.phase === "save"
                   ? "Games were fetched. Resume saving to finish this import."
-                  : `${collection.game_count} games saved`,
+                  : `${collection.game_count} ${collection.game_count===1?"game":"games"} saved`,
         result: cp.phase === "ready" || cp.phase === "stopped" ? result(collection, cp) : undefined,
     });
 }
@@ -104,7 +104,7 @@ export function importOpponent(
                 busy: false,
                 phase: "ready",
                 message: result.gameCount
-                    ? `${result.gameCount} games saved`
+                    ? `${result.gameCount} ${result.gameCount===1?"game":"games"} saved`
                     : "No public games found",
                 result,
             });

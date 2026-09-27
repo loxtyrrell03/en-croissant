@@ -29,7 +29,7 @@ export function opponentReady(opponent: TournamentOpponentDatabase): boolean {
 }
 export function opponentGameLabel(opponent: TournamentOpponentDatabase): string {
   switch (opponent.status) {
-    case "ready": return opponent.gameCount > 0 ? `${opponent.gameCount.toLocaleString()} games ready` : "No public games";
+    case "ready": return opponent.gameCount > 0 ? `${opponent.gameCount.toLocaleString()} ${opponent.gameCount===1?"game":"games"} ready` : "No public games";
     case "no-games": return "No public games";
     case "searching": return "Searching sources…";
     case "queued": return "Queued";
