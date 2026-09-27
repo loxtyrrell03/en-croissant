@@ -20,9 +20,8 @@ Three native converter/export checks passed in both: two identical PGN records y
 
 Both TypeScript checks and production frontend builds pass. Scoped Rust formatting passes. Existing native dead-code/import warnings and frontend bundle/plugin warnings remain. Evidence is under tmp/desktop-otb-save in each checkout. All databases and PGNs were temporary fixtures; no owner database, app/service restart, real collection, phone deployment or customer release was performed.
 
-## Next integration milestone
+## Integration, 27 September 2026
 
-- Reserve a unique source PGN/job location before collection and a collision-safe destination; titles alone and a stale database list cannot establish file ownership.
-- Switch the desktop panel to saveOtbDatabase with the retained job ID/report/paths. Preserve pending work across navigation and expose a save-specific retry that does not repeat source collection.
-- Checkpoint database-list refresh and Prep attachment independently. A later callback failure must not append/reconvert a completed database or resurrect deliberate edits/removals.
-- Verify actual Home/Prep flows, failure/retry, partial coverage/Stop, cancellation and narrow/200% layouts. The new native command needs the normal Dev rebuild before it can be called; do not silently fall back to the old append sequence.
+The desktop OTB panel now reserves unique source/job and database paths, calls saveOtbDatabase, and persists its retained job/report/paths through navigation. Save-specific retry reuses the completed collection. Database refresh and Prep attachment can retry against the same native receipt without reconverting the database or resurrecting deliberate removals. Tournament refreshes use the separate owned, atomic append command.
+
+The source tests cover import handoff, failure/retry and identity/persistence boundaries; the standalone desktop executable is rebuilt. Native-window interaction and 200% desktop layout have not been certified. Do not silently fall back to the old append sequence. See the [delivery record](TOURNAMENT_DELIVERY_2026-09-27.md) for exact build, browser and live-phone evidence.
