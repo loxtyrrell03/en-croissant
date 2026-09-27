@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Next round">
+<title>Round timeline: Next round — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Harbour Open</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Open section · 9 rounds · Following</text>
+<a href="index.html?design=B&amp;state=discover" target="_top" tabindex="0" aria-label="Change event">
+<rect x="20" y="172" width="153" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="196.0" font-size="14" fill="#f1f3f5" font-weight="400">Change event</text>
+</a>
+<a href="index.html?design=B&amp;state=tracking" target="_top" tabindex="0" aria-label="Tracking settings">
+<rect x="183" y="172" width="157" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="196.0" font-size="14" fill="#f1f3f5" font-weight="400">Tracking settings</text>
+</a>
+<text x="20" y="243" font-size="19" fill="#f1f3f5" font-weight="650">Your tournament</text>
+<text x="20" y="268" font-size="14" fill="#a7acb4" font-weight="400">You · 3 points from 4 rounds</text>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="R1 ✓">
+<rect x="20" y="289" width="59" height="42" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="315.0" font-size="14" fill="#f1f3f5" font-weight="400">R1 ✓</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="R2 ✓">
+<rect x="85" y="289" width="59" height="42" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="97" y="315.0" font-size="14" fill="#f1f3f5" font-weight="400">R2 ✓</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="R3 ✓">
+<rect x="150" y="289" width="59" height="42" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="162" y="315.0" font-size="14" fill="#f1f3f5" font-weight="400">R3 ✓</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="R4 …">
+<rect x="215" y="289" width="59" height="42" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="227" y="315.0" font-size="14" fill="#f1f3f5" font-weight="400">R4 …</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="R5">
+<rect x="280" y="289" width="59" height="42" rx="7" fill="#1971c2"/>
+<text x="292" y="315.0" font-size="14" fill="#f1f3f5" font-weight="650">R5</text>
+</a>
+<text x="20" y="366" font-size="22" fill="#f1f3f5" font-weight="650">Round 5</text>
+<rect x="20" y="383" width="153" height="25" rx="6" fill="#183249"/>
+<text x="28" y="400" font-size="11" fill="#74c0fc" font-weight="650">Pairing estimates</text>
+<text x="20" y="442" font-size="17" fill="#f1f3f5" font-weight="650">Alex Morgan</text>
+<text x="20" y="466" font-size="12" fill="#a7acb4" font-weight="400">Event rating 2140 · 3 points</text>
+<text x="20" y="496" font-size="13" fill="#74c0fc" font-weight="400">42% pairing chance · Black expected</text>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import &amp; prep">
+<rect x="195" y="477" width="145" height="42" rx="7" fill="#1971c2"/>
+<text x="207" y="503.0" font-size="14" fill="#f1f3f5" font-weight="650">Import &amp; prep</text>
+</a>
+<path d="M20 536H340" stroke="#34383f"/>
+<a href="index.html?design=B&amp;state=players" target="_top" tabindex="0" aria-label="Compare likely opponents">
+<rect x="20" y="554" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="581.0" font-size="14" fill="#f1f3f5" font-weight="400">Compare likely opponents</text>
+</a>
+<text x="20" y="633" font-size="16" fill="#f1f3f5" font-weight="650">Round 4 is still in progress</text>
+<text x="20" y="658" font-size="13" fill="#a7acb4" font-weight="400">36 of 48 results reported</text>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Live results">
+<rect x="20" y="685" width="153" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="712.0" font-size="14" fill="#f1f3f5" font-weight="400">Live results</text>
+</a>
+<a href="index.html?design=B&amp;state=standings" target="_top" tabindex="0" aria-label="Standings">
+<rect x="183" y="685" width="157" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="712.0" font-size="14" fill="#f1f3f5" font-weight="400">Standings</text>
+</a>
+</svg>

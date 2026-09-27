@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Prep workspace: Remove local archive">
+<title>Prep workspace: Remove local archive — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=C&amp;state=prep" target="_top" tabindex="0" aria-label="Board">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Board</text>
+</a>
+<a href="index.html?design=C&amp;state=main" target="_top" tabindex="0" aria-label="Pairings">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Pairings</text>
+</a>
+<a href="index.html?design=C&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=C&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN C · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Remove local archive months?</text>
+<text x="20" y="214" font-size="19" fill="#f1f3f5" font-weight="650">Jan–Dec 2023 · 12 months</text>
+<text x="20" y="259" font-size="15" fill="#f1f3f5" font-weight="400">This removes local search data for</text>
+<text x="20" y="280" font-size="15" fill="#f1f3f5" font-weight="400">those months. Imported opponent</text>
+<text x="20" y="301" font-size="15" fill="#f1f3f5" font-weight="400">games and saved preparation stay.</text>
+<text x="20" y="375" font-size="14" fill="#a7acb4" font-weight="400">Keeping: Jan 2024–Jul 2026</text>
+<text x="20" y="423" font-size="14" fill="#ffd43b" font-weight="400">Imports for removed dates may need</text>
+<text x="20" y="443" font-size="14" fill="#ffd43b" font-weight="400">downloads again.</text>
+<a href="index.html?design=C&amp;state=downloads" target="_top" tabindex="0" aria-label="Remove these 12 months">
+<rect x="20" y="528" width="320" height="48" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="557.0" font-size="14" fill="#ffa8a8" font-weight="400">Remove these 12 months</text>
+</a>
+<a href="index.html?design=C&amp;state=downloads" target="_top" tabindex="0" aria-label="Keep current date range">
+<rect x="20" y="590" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="617.0" font-size="14" fill="#f1f3f5" font-weight="400">Keep current date range</text>
+</a>
+</svg>

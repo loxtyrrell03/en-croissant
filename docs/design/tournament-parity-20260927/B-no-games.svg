@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: No public games">
+<title>Round timeline: No public games — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Alex Morgan</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">FIDE 00000001 · Games since 2023</text>
+<text x="20" y="224" font-size="21" fill="#f1f3f5" font-weight="650">No public games found</text>
+<text x="20" y="268" font-size="15" fill="#a7acb4" font-weight="400">All selected sources finished. Try an</text>
+<text x="20" y="289" font-size="15" fill="#a7acb4" font-weight="400">earlier date or add your own PGN</text>
+<text x="20" y="310" font-size="15" fill="#a7acb4" font-weight="400">games.</text>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Change dates or sources">
+<rect x="20" y="378" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="407.0" font-size="14" fill="#f1f3f5" font-weight="650">Change dates or sources</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Add PGN games">
+<rect x="20" y="440" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="467.0" font-size="14" fill="#f1f3f5" font-weight="400">Add PGN games</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Back to predictions">
+<rect x="20" y="684" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="711.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to predictions</text>
+</a>
+</svg>

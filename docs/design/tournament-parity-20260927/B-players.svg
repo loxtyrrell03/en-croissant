@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Players and new entrants">
+<title>Round timeline: Players and new entrants — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Players</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Harbour Open · 96 entries · 3 new</text>
+<text x="20" y="185" font-size="13" fill="#a7acb4" font-weight="400">Search players or FIDE ID</text>
+<rect x="20" y="197" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="225" font-size="15" fill="#f1f3f5" font-weight="400">Search name or FIDE ID</text>
+<a href="index.html?design=B&amp;state=players" target="_top" tabindex="0" aria-label="All players">
+<rect x="20" y="258" width="153" height="40" rx="7" fill="#1971c2"/>
+<text x="32" y="283.0" font-size="14" fill="#f1f3f5" font-weight="650">All players</text>
+</a>
+<a href="index.html?design=B&amp;state=players" target="_top" tabindex="0" aria-label="New players (3)">
+<rect x="183" y="258" width="157" height="40" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="283.0" font-size="14" fill="#f1f3f5" font-weight="400">New players (3)</text>
+</a>
+<text x="20" y="337" font-size="17" fill="#f1f3f5" font-weight="650">Alex Morgan</text>
+<text x="20" y="361" font-size="12" fill="#a7acb4" font-weight="400">Event rating 2140 · FIDE 00000001</text>
+<text x="20" y="391" font-size="13" fill="#74c0fc" font-weight="400">3 points · Predicted next opponent</text>
+<a href="index.html?design=B&amp;state=player" target="_top" tabindex="0" aria-label="Details">
+<rect x="195" y="372" width="145" height="42" rx="7" fill="#1971c2"/>
+<text x="207" y="398.0" font-size="14" fill="#f1f3f5" font-weight="650">Details</text>
+</a>
+<path d="M20 431H340" stroke="#34383f"/>
+<text x="20" y="461" font-size="17" fill="#f1f3f5" font-weight="650">Jamie Reed</text>
+<text x="20" y="485" font-size="12" fill="#a7acb4" font-weight="400">Event rating 2090 · FIDE 00000002</text>
+<text x="20" y="515" font-size="13" fill="#74c0fc" font-weight="400">128 games ready</text>
+<a href="index.html?design=B&amp;state=prep" target="_top" tabindex="0" aria-label="Open Prep">
+<rect x="195" y="496" width="145" height="42" rx="7" fill="#1971c2"/>
+<text x="207" y="522.0" font-size="14" fill="#f1f3f5" font-weight="650">Open Prep</text>
+</a>
+<path d="M20 555H340" stroke="#34383f"/>
+<text x="20" y="585" font-size="17" fill="#f1f3f5" font-weight="650">Chris Lane</text>
+<text x="20" y="609" font-size="12" fill="#a7acb4" font-weight="400">Event rating unavailable · No FIDE ID</text>
+<text x="20" y="639" font-size="13" fill="#74c0fc" font-weight="400">Exact OTB import unavailable</text>
+<a href="index.html?design=B&amp;state=identity" target="_top" tabindex="0" aria-label="Details">
+<rect x="195" y="620" width="145" height="42" rx="7" fill="#1971c2"/>
+<text x="207" y="646.0" font-size="14" fill="#f1f3f5" font-weight="650">Details</text>
+</a>
+<path d="M20 679H340" stroke="#34383f"/>
+<a href="index.html?design=B&amp;state=bulk" target="_top" tabindex="0" aria-label="Import players…">
+<rect x="20" y="710" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="737.0" font-size="14" fill="#f1f3f5" font-weight="400">Import players…</text>
+</a>
+</svg>

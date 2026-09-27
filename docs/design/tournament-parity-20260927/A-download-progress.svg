@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Tournament hub: Download / local preparation">
+<title>Tournament hub: Download / local preparation — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=A&amp;state=prep" target="_top" tabindex="0" aria-label="Board">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Board</text>
+</a>
+<a href="index.html?design=A&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=A&amp;state=main" target="_top" tabindex="0" aria-label="Events">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Events</text>
+</a>
+<a href="index.html?design=A&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN A · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Updating local games</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">August 2026 · Lichess broadcasts</text>
+<text x="20" y="219" font-size="20" fill="#f1f3f5" font-weight="650">Downloading archive</text>
+<text x="20" y="251" font-size="14" fill="#74c0fc" font-weight="400">72 MB of 120 MB · 60%</text>
+<rect x="20" y="275" width="320" height="7" rx="3" fill="#25272d"/>
+<rect x="20" y="275" width="192" height="7" rx="3" fill="#1971c2"/>
+<text x="20" y="325" font-size="14" fill="#a7acb4" font-weight="400">Adding August 2026. The archive may</text>
+<text x="20" y="345" font-size="14" fill="#a7acb4" font-weight="400">also contain months already saved.</text>
+<a href="index.html?design=A&amp;state=cancellation" target="_top" tabindex="0" aria-label="Cancel download">
+<rect x="20" y="400" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="427.0" font-size="14" fill="#f1f3f5" font-weight="400">Cancel download</text>
+</a>
+<path d="M20 485H340" stroke="#34383f"/>
+<text x="20" y="525" font-size="18" fill="#f1f3f5" font-weight="650">Next: preparing local search</text>
+<text x="20" y="559" font-size="13" fill="#a7acb4" font-weight="400">When download finishes, show local</text>
+<text x="20" y="578" font-size="13" fill="#a7acb4" font-weight="400">preparation separately without a</text>
+<text x="20" y="597" font-size="13" fill="#a7acb4" font-weight="400">made-up percentage.</text>
+<a href="index.html?design=A&amp;state=downloads" target="_top" tabindex="0" aria-label="Back to local games">
+<rect x="20" y="677" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="704.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to local games</text>
+</a>
+</svg>

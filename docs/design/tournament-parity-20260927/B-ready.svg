@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Games ready">
+<title>Round timeline: Games ready — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Games ready</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Alex Morgan · FIDE 00000001</text>
+<text x="20" y="218" font-size="24" fill="#8ce99a" font-weight="650">128 games saved</text>
+<text x="20" y="251" font-size="13" fill="#a7acb4" font-weight="400">Games since 2023 · All sources finished</text>
+<text x="20" y="311" font-size="13" fill="#a7acb4" font-weight="400">Your preparation colour</text>
+<a href="index.html?design=B&amp;state=prep" target="_top" tabindex="0" aria-label="I&#x27;m Black ▾">
+<rect x="20" y="323" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="350.0" font-size="14" fill="#f1f3f5" font-weight="400">I&#x27;m Black ▾</text>
+</a>
+<a href="index.html?design=B&amp;state=prep" target="_top" tabindex="0" aria-label="Open Prep">
+<rect x="20" y="399" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="428.0" font-size="14" fill="#f1f3f5" font-weight="650">Open Prep</text>
+</a>
+<a href="index.html?design=B&amp;state=player" target="_top" tabindex="0" aria-label="Browse games">
+<rect x="20" y="461" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="488.0" font-size="14" fill="#f1f3f5" font-weight="400">Browse games</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Check for new games">
+<rect x="20" y="523" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="550.0" font-size="14" fill="#f1f3f5" font-weight="400">Check for new games</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Back to next round">
+<rect x="20" y="682" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="709.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to next round</text>
+</a>
+</svg>

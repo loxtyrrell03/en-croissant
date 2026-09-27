@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Tournament hub: No tournaments">
+<title>Tournament hub: No tournaments — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=A&amp;state=prep" target="_top" tabindex="0" aria-label="Board">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Board</text>
+</a>
+<a href="index.html?design=A&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=A&amp;state=main" target="_top" tabindex="0" aria-label="Events">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Events</text>
+</a>
+<a href="index.html?design=A&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN A · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Your tournaments</text>
+<text x="20" y="227" font-size="21" fill="#f1f3f5" font-weight="650">Follow your next event</text>
+<text x="20" y="274" font-size="16" fill="#a7acb4" font-weight="400">See results, likely opponents and</text>
+<text x="20" y="296" font-size="16" fill="#a7acb4" font-weight="400">their games together.</text>
+<a href="index.html?design=A&amp;state=discover" target="_top" tabindex="0" aria-label="Find a tournament">
+<rect x="20" y="365" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="394.0" font-size="14" fill="#f1f3f5" font-weight="650">Find a tournament</text>
+</a>
+<a href="index.html?design=A&amp;state=discover" target="_top" tabindex="0" aria-label="Add Chess-Results link">
+<rect x="20" y="429" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="456.0" font-size="14" fill="#f1f3f5" font-weight="400">Add Chess-Results link</text>
+</a>
+<a href="index.html?design=A&amp;state=import" target="_top" tabindex="0" aria-label="Import a player directly">
+<rect x="20" y="684" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="711.0" font-size="14" fill="#f1f3f5" font-weight="400">Import a player directly</text>
+</a>
+</svg>

@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Tournament hub: Published pairing">
+<title>Tournament hub: Published pairing — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=A&amp;state=prep" target="_top" tabindex="0" aria-label="Board">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Board</text>
+</a>
+<a href="index.html?design=A&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=A&amp;state=main" target="_top" tabindex="0" aria-label="Events">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Events</text>
+</a>
+<a href="index.html?design=A&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN A · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Harbour Open</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Open section · 9 rounds · Following</text>
+<a href="index.html?design=A&amp;state=discover" target="_top" tabindex="0" aria-label="Change event">
+<rect x="20" y="172" width="153" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="196.0" font-size="14" fill="#f1f3f5" font-weight="400">Change event</text>
+</a>
+<a href="index.html?design=A&amp;state=tracking" target="_top" tabindex="0" aria-label="Tracking settings">
+<rect x="183" y="172" width="157" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="196.0" font-size="14" fill="#f1f3f5" font-weight="400">Tracking settings</text>
+</a>
+<text x="20" y="246" font-size="19" fill="#f1f3f5" font-weight="650">Next round · Round 5</text>
+<text x="20" y="270" font-size="12" fill="#a7acb4" font-weight="400">Round 4: 36 of 48 results reported</text>
+<a href="index.html?design=A&amp;state=help" target="_top" tabindex="0" aria-label="?">
+<rect x="310" y="229" width="30" height="32" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="322" y="250.0" font-size="14" fill="#f1f3f5" font-weight="400">?</text>
+</a>
+<rect x="20" y="288" width="153" height="25" rx="6" fill="#183249"/>
+<text x="28" y="305" font-size="11" fill="#74c0fc" font-weight="650">Published pairing</text>
+<text x="20" y="344" font-size="17" fill="#f1f3f5" font-weight="650">Alex Morgan</text>
+<text x="20" y="368" font-size="12" fill="#a7acb4" font-weight="400">FIDE 00000001 · Event rating 2140</text>
+<text x="20" y="398" font-size="13" fill="#74c0fc" font-weight="400">You play Black</text>
+<a href="index.html?design=A&amp;state=import" target="_top" tabindex="0" aria-label="Import &amp; prep">
+<rect x="195" y="379" width="145" height="42" rx="7" fill="#1971c2"/>
+<text x="207" y="405.0" font-size="14" fill="#f1f3f5" font-weight="650">Import &amp; prep</text>
+</a>
+<path d="M20 438H340" stroke="#34383f"/>
+<text x="20" y="466" font-size="13" fill="#a7acb4" font-weight="400">Board 12 · Pairing published by organiser</text>
+<text x="20" y="500" font-size="14" fill="#f1f3f5" font-weight="400">Your previous preparation is saved.</text>
+<text x="20" y="520" font-size="14" fill="#f1f3f5" font-weight="400">Confirmed colours will be used when</text>
+<text x="20" y="540" font-size="14" fill="#f1f3f5" font-weight="400">opening Prep.</text>
+<a href="index.html?design=A&amp;state=players" target="_top" tabindex="0" aria-label="All players">
+<rect x="20" y="614" width="153" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="641.0" font-size="14" fill="#f1f3f5" font-weight="400">All players</text>
+</a>
+<a href="index.html?design=A&amp;state=standings" target="_top" tabindex="0" aria-label="Standings">
+<rect x="183" y="614" width="157" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="641.0" font-size="14" fill="#f1f3f5" font-weight="400">Standings</text>
+</a>
+<a href="index.html?design=A&amp;state=results" target="_top" tabindex="0" aria-label="Round results">
+<rect x="20" y="671" width="153" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="698.0" font-size="14" fill="#f1f3f5" font-weight="400">Round results</text>
+</a>
+<a href="index.html?design=A&amp;state=loading" target="_top" tabindex="0" aria-label="Check now">
+<rect x="183" y="671" width="157" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="698.0" font-size="14" fill="#f1f3f5" font-weight="400">Check now</text>
+</a>
+</svg>

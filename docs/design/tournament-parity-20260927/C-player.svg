@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Prep workspace: Opponent details">
+<title>Prep workspace: Opponent details — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=C&amp;state=prep" target="_top" tabindex="0" aria-label="Board">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Board</text>
+</a>
+<a href="index.html?design=C&amp;state=main" target="_top" tabindex="0" aria-label="Pairings">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Pairings</text>
+</a>
+<a href="index.html?design=C&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=C&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN C · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Alex Morgan</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Event rating 2140 · FIDE 00000001</text>
+<rect x="20" y="181" width="174" height="25" rx="6" fill="#183249"/>
+<text x="28" y="198" font-size="11" fill="#74c0fc" font-weight="650">42% pairing chance</text>
+<text x="20" y="237" font-size="19" fill="#f1f3f5" font-weight="650">3 points from 4 rounds</text>
+<text x="20" y="266" font-size="13" fill="#a7acb4" font-weight="400">Results: Win · Draw · Win · Draw</text>
+<text x="20" y="319" font-size="13" fill="#a7acb4" font-weight="400">Your preparation colour</text>
+<a href="index.html?design=C&amp;state=import" target="_top" tabindex="0" aria-label="I&#x27;m Black ▾">
+<rect x="20" y="331" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="358.0" font-size="14" fill="#f1f3f5" font-weight="400">I&#x27;m Black ▾</text>
+</a>
+<text x="20" y="407" font-size="17" fill="#f1f3f5" font-weight="650">Public games</text>
+<text x="20" y="433" font-size="14" fill="#a7acb4" font-weight="400">Not imported</text>
+<a href="index.html?design=C&amp;state=import" target="_top" tabindex="0" aria-label="Import &amp; prep">
+<rect x="20" y="466" width="320" height="44" rx="7" fill="#1971c2"/>
+<text x="32" y="493.0" font-size="14" fill="#f1f3f5" font-weight="650">Import &amp; prep</text>
+</a>
+<a href="index.html?design=C&amp;state=import" target="_top" tabindex="0" aria-label="Import games only">
+<rect x="20" y="524" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="551.0" font-size="14" fill="#f1f3f5" font-weight="400">Import games only</text>
+</a>
+<a href="index.html?design=C&amp;state=results" target="_top" tabindex="0" aria-label="Round history">
+<rect x="20" y="609" width="153" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="636.0" font-size="14" fill="#f1f3f5" font-weight="400">Round history</text>
+</a>
+<a href="index.html?design=C&amp;state=players" target="_top" tabindex="0" aria-label="Back to players">
+<rect x="183" y="609" width="157" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="636.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to players</text>
+</a>
+</svg>

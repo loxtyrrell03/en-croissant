@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Saving and recovery">
+<title>Round timeline: Saving and recovery — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Save imported games</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Alex Morgan · Search finished</text>
+<text x="20" y="214" font-size="21" fill="#f1f3f5" font-weight="650">128 games collected</text>
+<text x="20" y="247" font-size="16" fill="#ffd43b" font-weight="400">Could not finish saving</text>
+<text x="20" y="286" font-size="14" fill="#f1f3f5" font-weight="400">The collected games are retained. Retry</text>
+<text x="20" y="306" font-size="14" fill="#f1f3f5" font-weight="400">saving to finish this import.</text>
+<text x="20" y="378" font-size="14" fill="#f1f3f5" font-weight="400">Search sources                 Complete</text>
+<text x="20" y="414" font-size="14" fill="#ffd43b" font-weight="400">Save games                      Needs retry</text>
+<text x="20" y="450" font-size="14" fill="#a7acb4" font-weight="400">Open Prep                       Waiting</text>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Retry saving games">
+<rect x="20" y="525" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="554.0" font-size="14" fill="#f1f3f5" font-weight="650">Retry saving games</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Back to tournament">
+<rect x="20" y="588" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="615.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to tournament</text>
+</a>
+</svg>

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Prep workspace: Next round">
+<title>Prep workspace: Next round — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=C&amp;state=prep" target="_top" tabindex="0" aria-label="Board">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Board</text>
+</a>
+<a href="index.html?design=C&amp;state=main" target="_top" tabindex="0" aria-label="Pairings">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Pairings</text>
+</a>
+<a href="index.html?design=C&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=C&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN C · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Harbour Open</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Open section · 9 rounds · Following</text>
+<a href="index.html?design=C&amp;state=discover" target="_top" tabindex="0" aria-label="Change event">
+<rect x="20" y="172" width="153" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="196.0" font-size="14" fill="#f1f3f5" font-weight="400">Change event</text>
+</a>
+<a href="index.html?design=C&amp;state=tracking" target="_top" tabindex="0" aria-label="Tracking settings">
+<rect x="183" y="172" width="157" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="196.0" font-size="14" fill="#f1f3f5" font-weight="400">Tracking settings</text>
+</a>
+<text x="20" y="245" font-size="20" fill="#f1f3f5" font-weight="650">Your next opponent</text>
+<rect x="20" y="265" width="153" height="25" rx="6" fill="#183249"/>
+<text x="28" y="282" font-size="11" fill="#74c0fc" font-weight="650">Round 5 estimates</text>
+<text x="20" y="322" font-size="17" fill="#f1f3f5" font-weight="650">Alex Morgan</text>
+<text x="20" y="346" font-size="12" fill="#a7acb4" font-weight="400">Event rating 2140 · FIDE 00000001</text>
+<text x="20" y="376" font-size="13" fill="#74c0fc" font-weight="400">42% pairing chance · Black expected</text>
+<a href="index.html?design=C&amp;state=import" target="_top" tabindex="0" aria-label="Import &amp; prep">
+<rect x="195" y="357" width="145" height="42" rx="7" fill="#1971c2"/>
+<text x="207" y="383.0" font-size="14" fill="#f1f3f5" font-weight="650">Import &amp; prep</text>
+</a>
+<path d="M20 416H340" stroke="#34383f"/>
+<text x="20" y="442" font-size="17" fill="#f1f3f5" font-weight="650">Preparation queue</text>
+<rect x="20" y="461" width="320" height="82" rx="8" fill="#1b1e22"/>
+<text x="33" y="488" font-size="15" fill="#f1f3f5" font-weight="650">Jamie Reed</text>
+<text x="33" y="514" font-size="12" fill="#a7acb4" font-weight="400">128 games ready · 26% pairing chance</text>
+<a href="index.html?design=C&amp;state=prep" target="_top" tabindex="0" aria-label="Open saved preparation">
+<rect x="20" y="555" width="320" height="44" rx="7" fill="#1971c2"/>
+<text x="32" y="582.0" font-size="14" fill="#f1f3f5" font-weight="650">Open saved preparation</text>
+</a>
+<a href="index.html?design=C&amp;state=players" target="_top" tabindex="0" aria-label="More opponents">
+<rect x="20" y="614" width="153" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="641.0" font-size="14" fill="#f1f3f5" font-weight="400">More opponents</text>
+</a>
+<a href="index.html?design=C&amp;state=standings" target="_top" tabindex="0" aria-label="Event details">
+<rect x="183" y="614" width="157" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="641.0" font-size="14" fill="#f1f3f5" font-weight="400">Event details</text>
+</a>
+<text x="20" y="690" font-size="13" fill="#a7acb4" font-weight="400">Board and saved lines stay in place</text>
+<a href="index.html?design=C&amp;state=loading" target="_top" tabindex="0" aria-label="Check pairings now">
+<rect x="20" y="712" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="739.0" font-size="14" fill="#f1f3f5" font-weight="400">Check pairings now</text>
+</a>
+</svg>

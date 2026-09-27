@@ -1,0 +1,1599 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1544" height="6245" viewBox="0 0 1544 6245" role="img" aria-label="Round timeline complete state map">
+<title>Round timeline complete state map — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="1544" height="6245" rx="0" fill="#111315"/>
+<text x="24" y="36" font-size="26" fill="#f1f3f5" font-weight="650">B · Round timeline</text>
+<text x="24" y="63" font-size="14" fill="#a7acb4" font-weight="400">Workflow and edge states · All values and identities are invented examples</text>
+<text x="24" y="94" font-size="16" fill="#f1f3f5" font-weight="650">Next round</text>
+<g transform="translate(24,111)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Next round">
+<title>Round timeline: Next round — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Harbour Open</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Open section · 9 rounds · Following</text>
+<a href="index.html?design=B&amp;state=discover" target="_top" tabindex="0" aria-label="Change event">
+<rect x="20" y="172" width="153" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="196.0" font-size="14" fill="#f1f3f5" font-weight="400">Change event</text>
+</a>
+<a href="index.html?design=B&amp;state=tracking" target="_top" tabindex="0" aria-label="Tracking settings">
+<rect x="183" y="172" width="157" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="196.0" font-size="14" fill="#f1f3f5" font-weight="400">Tracking settings</text>
+</a>
+<text x="20" y="243" font-size="19" fill="#f1f3f5" font-weight="650">Your tournament</text>
+<text x="20" y="268" font-size="14" fill="#a7acb4" font-weight="400">You · 3 points from 4 rounds</text>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="R1 ✓">
+<rect x="20" y="289" width="59" height="42" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="315.0" font-size="14" fill="#f1f3f5" font-weight="400">R1 ✓</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="R2 ✓">
+<rect x="85" y="289" width="59" height="42" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="97" y="315.0" font-size="14" fill="#f1f3f5" font-weight="400">R2 ✓</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="R3 ✓">
+<rect x="150" y="289" width="59" height="42" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="162" y="315.0" font-size="14" fill="#f1f3f5" font-weight="400">R3 ✓</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="R4 …">
+<rect x="215" y="289" width="59" height="42" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="227" y="315.0" font-size="14" fill="#f1f3f5" font-weight="400">R4 …</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="R5">
+<rect x="280" y="289" width="59" height="42" rx="7" fill="#1971c2"/>
+<text x="292" y="315.0" font-size="14" fill="#f1f3f5" font-weight="650">R5</text>
+</a>
+<text x="20" y="366" font-size="22" fill="#f1f3f5" font-weight="650">Round 5</text>
+<rect x="20" y="383" width="153" height="25" rx="6" fill="#183249"/>
+<text x="28" y="400" font-size="11" fill="#74c0fc" font-weight="650">Pairing estimates</text>
+<text x="20" y="442" font-size="17" fill="#f1f3f5" font-weight="650">Alex Morgan</text>
+<text x="20" y="466" font-size="12" fill="#a7acb4" font-weight="400">Event rating 2140 · 3 points</text>
+<text x="20" y="496" font-size="13" fill="#74c0fc" font-weight="400">42% pairing chance · Black expected</text>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import &amp; prep">
+<rect x="195" y="477" width="145" height="42" rx="7" fill="#1971c2"/>
+<text x="207" y="503.0" font-size="14" fill="#f1f3f5" font-weight="650">Import &amp; prep</text>
+</a>
+<path d="M20 536H340" stroke="#34383f"/>
+<a href="index.html?design=B&amp;state=players" target="_top" tabindex="0" aria-label="Compare likely opponents">
+<rect x="20" y="554" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="581.0" font-size="14" fill="#f1f3f5" font-weight="400">Compare likely opponents</text>
+</a>
+<text x="20" y="633" font-size="16" fill="#f1f3f5" font-weight="650">Round 4 is still in progress</text>
+<text x="20" y="658" font-size="13" fill="#a7acb4" font-weight="400">36 of 48 results reported</text>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Live results">
+<rect x="20" y="685" width="153" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="712.0" font-size="14" fill="#f1f3f5" font-weight="400">Live results</text>
+</a>
+<a href="index.html?design=B&amp;state=standings" target="_top" tabindex="0" aria-label="Standings">
+<rect x="183" y="685" width="157" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="712.0" font-size="14" fill="#f1f3f5" font-weight="400">Standings</text>
+</a>
+</svg></g>
+<text x="408" y="94" font-size="16" fill="#f1f3f5" font-weight="650">Find a tournament</text>
+<g transform="translate(408,111)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Find a tournament">
+<title>Round timeline: Find a tournament — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Find a tournament</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Search by name, country, place or link.</text>
+<text x="20" y="187" font-size="13" fill="#a7acb4" font-weight="400">Event name or Chess-Results link</text>
+<rect x="20" y="199" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="227" font-size="15" fill="#f1f3f5" font-weight="400">Harbour Open</text>
+<text x="20" y="272" font-size="13" fill="#a7acb4" font-weight="400">When</text>
+<rect x="20" y="284" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="312" font-size="15" fill="#f1f3f5" font-weight="400">Upcoming ▾</text>
+<text x="20" y="357" font-size="13" fill="#a7acb4" font-weight="400">Country / time control</text>
+<rect x="20" y="369" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="397" font-size="15" fill="#f1f3f5" font-weight="400">United Kingdom · Classical ▾</text>
+<a href="index.html?design=B&amp;state=loading" target="_top" tabindex="0" aria-label="Search tournaments">
+<rect x="20" y="429" width="320" height="44" rx="7" fill="#1971c2"/>
+<text x="32" y="456.0" font-size="14" fill="#f1f3f5" font-weight="650">Search tournaments</text>
+</a>
+<text x="20" y="511" font-size="18" fill="#f1f3f5" font-weight="650">Harbour Chess Festival</text>
+<text x="20" y="537" font-size="13" fill="#a7acb4" font-weight="400">2–4 October · Cardiff · Classical</text>
+<text x="20" y="562" font-size="13" fill="#f1f3f5" font-weight="400">Open · Major · Minor sections</text>
+<a href="index.html?design=B&amp;state=setup" target="_top" tabindex="0" aria-label="Choose section">
+<rect x="20" y="584" width="320" height="44" rx="7" fill="#1971c2"/>
+<text x="32" y="611.0" font-size="14" fill="#f1f3f5" font-weight="650">Choose section</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Following events">
+<rect x="20" y="681" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="708.0" font-size="14" fill="#f1f3f5" font-weight="400">Following events</text>
+</a>
+</svg></g>
+<text x="792" y="94" font-size="16" fill="#f1f3f5" font-weight="650">Section and your entry</text>
+<g transform="translate(792,111)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Section and your entry">
+<title>Round timeline: Section and your entry — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Follow Harbour Open</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Confirm the event and your entry.</text>
+<text x="20" y="187" font-size="13" fill="#a7acb4" font-weight="400">Section</text>
+<a href="index.html?design=B&amp;state=players" target="_top" tabindex="0" aria-label="Open · 96 players ▾">
+<rect x="20" y="199" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="226.0" font-size="14" fill="#f1f3f5" font-weight="400">Open · 96 players ▾</text>
+</a>
+<text x="20" y="277" font-size="13" fill="#a7acb4" font-weight="400">Your entry</text>
+<a href="index.html?design=B&amp;state=players" target="_top" tabindex="0" aria-label="Sam Taylor · Event rating 2075 ▾">
+<rect x="20" y="289" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="316.0" font-size="14" fill="#f1f3f5" font-weight="400">Sam Taylor · Event rating 2075 ▾</text>
+</a>
+<text x="20" y="354" font-size="13" fill="#a7acb4" font-weight="400">FIDE 00000009 · Example identity</text>
+<text x="20" y="406" font-size="13" fill="#a7acb4" font-weight="400">Import games since</text>
+<rect x="20" y="418" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="446" font-size="15" fill="#f1f3f5" font-weight="400">2023</text>
+<text x="20" y="488" font-size="14" fill="#f1f3f5" font-weight="400">Your entry determines your next-round</text>
+<text x="20" y="508" font-size="14" fill="#f1f3f5" font-weight="400">predictions and preparation colour.</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Follow tournament">
+<rect x="20" y="574" width="320" height="44" rx="7" fill="#1971c2"/>
+<text x="32" y="601.0" font-size="14" fill="#f1f3f5" font-weight="650">Follow tournament</text>
+</a>
+<a href="index.html?design=B&amp;state=players" target="_top" tabindex="0" aria-label="Follow without choosing my entry">
+<rect x="20" y="632" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="659.0" font-size="14" fill="#f1f3f5" font-weight="400">Follow without choosing my entry</text>
+</a>
+<a href="index.html?design=B&amp;state=discover" target="_top" tabindex="0" aria-label="Back to search">
+<rect x="20" y="696" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="723.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to search</text>
+</a>
+</svg></g>
+<text x="1176" y="94" font-size="16" fill="#f1f3f5" font-weight="650">Published pairing</text>
+<g transform="translate(1176,111)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Published pairing">
+<title>Round timeline: Published pairing — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Harbour Open</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Open section · 9 rounds · Following</text>
+<a href="index.html?design=B&amp;state=discover" target="_top" tabindex="0" aria-label="Change event">
+<rect x="20" y="172" width="153" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="196.0" font-size="14" fill="#f1f3f5" font-weight="400">Change event</text>
+</a>
+<a href="index.html?design=B&amp;state=tracking" target="_top" tabindex="0" aria-label="Tracking settings">
+<rect x="183" y="172" width="157" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="196.0" font-size="14" fill="#f1f3f5" font-weight="400">Tracking settings</text>
+</a>
+<text x="20" y="243" font-size="19" fill="#f1f3f5" font-weight="650">Your tournament</text>
+<text x="20" y="268" font-size="14" fill="#a7acb4" font-weight="400">You · 3 points from 4 rounds</text>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="R1 ✓">
+<rect x="20" y="289" width="59" height="42" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="315.0" font-size="14" fill="#f1f3f5" font-weight="400">R1 ✓</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="R2 ✓">
+<rect x="85" y="289" width="59" height="42" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="97" y="315.0" font-size="14" fill="#f1f3f5" font-weight="400">R2 ✓</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="R3 ✓">
+<rect x="150" y="289" width="59" height="42" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="162" y="315.0" font-size="14" fill="#f1f3f5" font-weight="400">R3 ✓</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="R4 …">
+<rect x="215" y="289" width="59" height="42" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="227" y="315.0" font-size="14" fill="#f1f3f5" font-weight="400">R4 …</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="R5">
+<rect x="280" y="289" width="59" height="42" rx="7" fill="#1971c2"/>
+<text x="292" y="315.0" font-size="14" fill="#f1f3f5" font-weight="650">R5</text>
+</a>
+<text x="20" y="366" font-size="22" fill="#f1f3f5" font-weight="650">Round 5</text>
+<rect x="20" y="383" width="153" height="25" rx="6" fill="#183249"/>
+<text x="28" y="400" font-size="11" fill="#74c0fc" font-weight="650">Published pairing</text>
+<text x="20" y="442" font-size="17" fill="#f1f3f5" font-weight="650">Alex Morgan</text>
+<text x="20" y="466" font-size="12" fill="#a7acb4" font-weight="400">Event rating 2140 · 3 points</text>
+<text x="20" y="496" font-size="13" fill="#74c0fc" font-weight="400">Black confirmed</text>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import &amp; prep">
+<rect x="195" y="477" width="145" height="42" rx="7" fill="#1971c2"/>
+<text x="207" y="503.0" font-size="14" fill="#f1f3f5" font-weight="650">Import &amp; prep</text>
+</a>
+<path d="M20 536H340" stroke="#34383f"/>
+<a href="index.html?design=B&amp;state=players" target="_top" tabindex="0" aria-label="Compare likely opponents">
+<rect x="20" y="554" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="581.0" font-size="14" fill="#f1f3f5" font-weight="400">Compare likely opponents</text>
+</a>
+<text x="20" y="633" font-size="16" fill="#f1f3f5" font-weight="650">Round 4 is still in progress</text>
+<text x="20" y="658" font-size="13" fill="#a7acb4" font-weight="400">36 of 48 results reported</text>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Live results">
+<rect x="20" y="685" width="153" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="712.0" font-size="14" fill="#f1f3f5" font-weight="400">Live results</text>
+</a>
+<a href="index.html?design=B&amp;state=standings" target="_top" tabindex="0" aria-label="Standings">
+<rect x="183" y="685" width="157" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="712.0" font-size="14" fill="#f1f3f5" font-weight="400">Standings</text>
+</a>
+</svg></g>
+<text x="24" y="974" font-size="16" fill="#f1f3f5" font-weight="650">Players and new entrants</text>
+<g transform="translate(24,991)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Players and new entrants">
+<title>Round timeline: Players and new entrants — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Players</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Harbour Open · 96 entries · 3 new</text>
+<text x="20" y="185" font-size="13" fill="#a7acb4" font-weight="400">Search players or FIDE ID</text>
+<rect x="20" y="197" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="225" font-size="15" fill="#f1f3f5" font-weight="400">Search name or FIDE ID</text>
+<a href="index.html?design=B&amp;state=players" target="_top" tabindex="0" aria-label="All players">
+<rect x="20" y="258" width="153" height="40" rx="7" fill="#1971c2"/>
+<text x="32" y="283.0" font-size="14" fill="#f1f3f5" font-weight="650">All players</text>
+</a>
+<a href="index.html?design=B&amp;state=players" target="_top" tabindex="0" aria-label="New players (3)">
+<rect x="183" y="258" width="157" height="40" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="283.0" font-size="14" fill="#f1f3f5" font-weight="400">New players (3)</text>
+</a>
+<text x="20" y="337" font-size="17" fill="#f1f3f5" font-weight="650">Alex Morgan</text>
+<text x="20" y="361" font-size="12" fill="#a7acb4" font-weight="400">Event rating 2140 · FIDE 00000001</text>
+<text x="20" y="391" font-size="13" fill="#74c0fc" font-weight="400">3 points · Predicted next opponent</text>
+<a href="index.html?design=B&amp;state=player" target="_top" tabindex="0" aria-label="Details">
+<rect x="195" y="372" width="145" height="42" rx="7" fill="#1971c2"/>
+<text x="207" y="398.0" font-size="14" fill="#f1f3f5" font-weight="650">Details</text>
+</a>
+<path d="M20 431H340" stroke="#34383f"/>
+<text x="20" y="461" font-size="17" fill="#f1f3f5" font-weight="650">Jamie Reed</text>
+<text x="20" y="485" font-size="12" fill="#a7acb4" font-weight="400">Event rating 2090 · FIDE 00000002</text>
+<text x="20" y="515" font-size="13" fill="#74c0fc" font-weight="400">128 games ready</text>
+<a href="index.html?design=B&amp;state=prep" target="_top" tabindex="0" aria-label="Open Prep">
+<rect x="195" y="496" width="145" height="42" rx="7" fill="#1971c2"/>
+<text x="207" y="522.0" font-size="14" fill="#f1f3f5" font-weight="650">Open Prep</text>
+</a>
+<path d="M20 555H340" stroke="#34383f"/>
+<text x="20" y="585" font-size="17" fill="#f1f3f5" font-weight="650">Chris Lane</text>
+<text x="20" y="609" font-size="12" fill="#a7acb4" font-weight="400">Event rating unavailable · No FIDE ID</text>
+<text x="20" y="639" font-size="13" fill="#74c0fc" font-weight="400">Exact OTB import unavailable</text>
+<a href="index.html?design=B&amp;state=identity" target="_top" tabindex="0" aria-label="Details">
+<rect x="195" y="620" width="145" height="42" rx="7" fill="#1971c2"/>
+<text x="207" y="646.0" font-size="14" fill="#f1f3f5" font-weight="650">Details</text>
+</a>
+<path d="M20 679H340" stroke="#34383f"/>
+<a href="index.html?design=B&amp;state=bulk" target="_top" tabindex="0" aria-label="Import players…">
+<rect x="20" y="710" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="737.0" font-size="14" fill="#f1f3f5" font-weight="400">Import players…</text>
+</a>
+</svg></g>
+<text x="408" y="974" font-size="16" fill="#f1f3f5" font-weight="650">Opponent details</text>
+<g transform="translate(408,991)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Opponent details">
+<title>Round timeline: Opponent details — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Alex Morgan</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Event rating 2140 · FIDE 00000001</text>
+<rect x="20" y="181" width="174" height="25" rx="6" fill="#183249"/>
+<text x="28" y="198" font-size="11" fill="#74c0fc" font-weight="650">42% pairing chance</text>
+<text x="20" y="237" font-size="19" fill="#f1f3f5" font-weight="650">3 points from 4 rounds</text>
+<text x="20" y="266" font-size="13" fill="#a7acb4" font-weight="400">Results: Win · Draw · Win · Draw</text>
+<text x="20" y="319" font-size="13" fill="#a7acb4" font-weight="400">Your preparation colour</text>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="I&#x27;m Black ▾">
+<rect x="20" y="331" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="358.0" font-size="14" fill="#f1f3f5" font-weight="400">I&#x27;m Black ▾</text>
+</a>
+<text x="20" y="407" font-size="17" fill="#f1f3f5" font-weight="650">Public games</text>
+<text x="20" y="433" font-size="14" fill="#a7acb4" font-weight="400">Not imported</text>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import &amp; prep">
+<rect x="20" y="466" width="320" height="44" rx="7" fill="#1971c2"/>
+<text x="32" y="493.0" font-size="14" fill="#f1f3f5" font-weight="650">Import &amp; prep</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import games only">
+<rect x="20" y="524" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="551.0" font-size="14" fill="#f1f3f5" font-weight="400">Import games only</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Round history">
+<rect x="20" y="609" width="153" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="636.0" font-size="14" fill="#f1f3f5" font-weight="400">Round history</text>
+</a>
+<a href="index.html?design=B&amp;state=players" target="_top" tabindex="0" aria-label="Back to players">
+<rect x="183" y="609" width="157" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="636.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to players</text>
+</a>
+</svg></g>
+<text x="792" y="974" font-size="16" fill="#f1f3f5" font-weight="650">Standings</text>
+<g transform="translate(792,991)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Standings">
+<title>Round timeline: Standings — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Standings</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Harbour Open · Organiser&#x27;s standings</text>
+<text x="20" y="183" font-size="13" fill="#a7acb4" font-weight="400">After round</text>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Round 4 ▾">
+<rect x="20" y="195" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="222.0" font-size="14" fill="#f1f3f5" font-weight="400">Round 4 ▾</text>
+</a>
+<text x="20" y="282" font-size="12" fill="#a7acb4" font-weight="400">Rank / player</text>
+<text x="265" y="282" font-size="12" fill="#a7acb4" font-weight="400">Points</text>
+<text x="25" y="320" font-size="15" fill="#f1f3f5" font-weight="400">1   Alex Morgan</text>
+<text x="290" y="320" font-size="16" fill="#f1f3f5" font-weight="650">3</text>
+<text x="48" y="343" font-size="12" fill="#a7acb4" font-weight="400">Event rating 2140</text>
+<rect x="16" y="367" width="328" height="60" rx="6" fill="#183249"/>
+<text x="25" y="394" font-size="15" fill="#f1f3f5" font-weight="650">2   Sam Taylor (you)</text>
+<text x="290" y="394" font-size="16" fill="#f1f3f5" font-weight="650">3</text>
+<text x="48" y="417" font-size="12" fill="#a7acb4" font-weight="400">Event rating 2075</text>
+<text x="25" y="468" font-size="15" fill="#f1f3f5" font-weight="400">3   Jamie Reed</text>
+<text x="290" y="468" font-size="16" fill="#f1f3f5" font-weight="650">2½</text>
+<text x="48" y="491" font-size="12" fill="#a7acb4" font-weight="400">Event rating 2090</text>
+<text x="25" y="542" font-size="15" fill="#f1f3f5" font-weight="400">4   Chris Lane</text>
+<text x="290" y="542" font-size="16" fill="#f1f3f5" font-weight="650">2</text>
+<text x="48" y="565" font-size="12" fill="#a7acb4" font-weight="400">Event rating unavailable</text>
+<a href="index.html?design=B&amp;state=player" target="_top" tabindex="0" aria-label="Player details">
+<rect x="20" y="644" width="153" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="671.0" font-size="14" fill="#f1f3f5" font-weight="400">Player details</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Next round">
+<rect x="183" y="644" width="157" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="671.0" font-size="14" fill="#f1f3f5" font-weight="400">Next round</text>
+</a>
+</svg></g>
+<text x="1176" y="974" font-size="16" fill="#f1f3f5" font-weight="650">Results by round</text>
+<g transform="translate(1176,991)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Results by round">
+<title>Round timeline: Results by round — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Round results</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Harbour Open</text>
+<text x="20" y="182" font-size="13" fill="#a7acb4" font-weight="400">Round</text>
+<rect x="20" y="194" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="222" font-size="15" fill="#f1f3f5" font-weight="400">Round 4 · in progress ▾</text>
+<text x="20" y="287" font-size="17" fill="#f1f3f5" font-weight="650">36 of 48 results reported</text>
+<text x="20" y="336" font-size="12" fill="#a7acb4" font-weight="400">Board 1</text>
+<text x="20" y="362" font-size="14" fill="#f1f3f5" font-weight="650">Alex Morgan / Jamie Reed</text>
+<text x="20" y="388" font-size="14" fill="#74c0fc" font-weight="400">½–½</text>
+<path d="M20 405H340" stroke="#34383f"/>
+<text x="20" y="440" font-size="12" fill="#a7acb4" font-weight="400">Board 2</text>
+<text x="20" y="466" font-size="14" fill="#f1f3f5" font-weight="650">Sam Taylor / Pat Ellis</text>
+<text x="20" y="492" font-size="14" fill="#74c0fc" font-weight="400">1–0</text>
+<path d="M20 509H340" stroke="#34383f"/>
+<text x="20" y="544" font-size="12" fill="#a7acb4" font-weight="400">Board 3</text>
+<text x="20" y="570" font-size="14" fill="#f1f3f5" font-weight="650">Casey Lee / Chris Lane</text>
+<text x="20" y="596" font-size="14" fill="#74c0fc" font-weight="400">Awaiting result</text>
+<path d="M20 613H340" stroke="#34383f"/>
+<a href="index.html?design=B&amp;state=loading" target="_top" tabindex="0" aria-label="Check results">
+<rect x="20" y="685" width="153" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="712.0" font-size="14" fill="#f1f3f5" font-weight="400">Check results</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Next round">
+<rect x="183" y="685" width="157" height="44" rx="7" fill="#1971c2"/>
+<text x="195" y="712.0" font-size="14" fill="#f1f3f5" font-weight="650">Next round</text>
+</a>
+</svg></g>
+<text x="24" y="1854" font-size="16" fill="#f1f3f5" font-weight="650">Import settings</text>
+<g transform="translate(24,1871)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Import settings">
+<title>Round timeline: Import settings — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Import Alex Morgan</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">FIDE 00000001 · Identity locked</text>
+<text x="20" y="186" font-size="13" fill="#a7acb4" font-weight="400">Games since</text>
+<rect x="20" y="198" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="226" font-size="15" fill="#f1f3f5" font-weight="400">2023</text>
+<text x="20" y="274" font-size="13" fill="#a7acb4" font-weight="400">Your preparation colour</text>
+<rect x="20" y="286" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="314" font-size="15" fill="#f1f3f5" font-weight="400">I&#x27;m Black ▾</text>
+<text x="20" y="362" font-size="13" fill="#a7acb4" font-weight="400">Sources</text>
+<a href="index.html?design=B&amp;state=downloads" target="_top" tabindex="0" aria-label="All 7 source groups on ▾">
+<rect x="20" y="374" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="401.0" font-size="14" fill="#f1f3f5" font-weight="400">All 7 source groups on ▾</text>
+</a>
+<text x="20" y="450" font-size="13" fill="#a7acb4" font-weight="400">Destination</text>
+<text x="20" y="477" font-size="16" fill="#f1f3f5" font-weight="400">Harbour Open / Alex Morgan</text>
+<text x="20" y="517" font-size="13" fill="#a7acb4" font-weight="400">Ready games: none yet</text>
+<a href="index.html?design=B&amp;state=downloads" target="_top" tabindex="0" aria-label="Local games &amp; download settings">
+<rect x="20" y="555" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="582.0" font-size="14" fill="#f1f3f5" font-weight="400">Local games &amp; download settings</text>
+</a>
+<a href="index.html?design=B&amp;state=importing" target="_top" tabindex="0" aria-label="Import &amp; prep">
+<rect x="20" y="638" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="667.0" font-size="14" fill="#f1f3f5" font-weight="650">Import &amp; prep</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Back to predictions">
+<rect x="20" y="700" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="727.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to predictions</text>
+</a>
+</svg></g>
+<text x="408" y="1854" font-size="16" fill="#f1f3f5" font-weight="650">Searching and progress</text>
+<g transform="translate(408,1871)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Searching and progress">
+<title>Round timeline: Searching and progress — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Importing Alex Morgan</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Games since 2023 · FIDE 00000001</text>
+<text x="20" y="206" font-size="21" fill="#f1f3f5" font-weight="650">Searching sources</text>
+<text x="20" y="239" font-size="14" fill="#a7acb4" font-weight="400">4 of 7 source groups finished</text>
+<rect x="20" y="263" width="320" height="7" rx="3" fill="#25272d"/>
+<rect x="20" y="263" width="183" height="7" rx="3" fill="#1971c2"/>
+<text x="20" y="318" font-size="14" fill="#f1f3f5" font-weight="400">Lichess archive</text>
+<text x="214" y="318" font-size="12" fill="#a7acb4" font-weight="400">Complete</text>
+<path d="M20 337H340" stroke="#34383f"/>
+<text x="20" y="370" font-size="14" fill="#f1f3f5" font-weight="400">Targeted broadcasts</text>
+<text x="214" y="370" font-size="12" fill="#a7acb4" font-weight="400">Searching…</text>
+<path d="M20 389H340" stroke="#34383f"/>
+<text x="20" y="422" font-size="14" fill="#f1f3f5" font-weight="400">Chess-Results</text>
+<text x="214" y="422" font-size="12" fill="#a7acb4" font-weight="400">Complete</text>
+<path d="M20 441H340" stroke="#34383f"/>
+<text x="20" y="474" font-size="14" fill="#f1f3f5" font-weight="400">TWIC</text>
+<text x="214" y="474" font-size="12" fill="#a7acb4" font-weight="400">Downloading…</text>
+<path d="M20 493H340" stroke="#34383f"/>
+<text x="20" y="526" font-size="14" fill="#f1f3f5" font-weight="400">Other source groups</text>
+<text x="214" y="526" font-size="12" fill="#a7acb4" font-weight="400">2 of 3 complete</text>
+<path d="M20 545H340" stroke="#34383f"/>
+<text x="20" y="612" font-size="14" fill="#f1f3f5" font-weight="650">128 matching games found so far</text>
+<text x="20" y="638" font-size="12" fill="#a7acb4" font-weight="400">Saving and validation follow the search.</text>
+<a href="index.html?design=B&amp;state=cancellation" target="_top" tabindex="0" aria-label="Stop search">
+<rect x="20" y="671" width="153" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="698.0" font-size="14" fill="#f1f3f5" font-weight="400">Stop search</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Keep tracking">
+<rect x="183" y="671" width="157" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="698.0" font-size="14" fill="#f1f3f5" font-weight="400">Keep tracking</text>
+</a>
+<a href="index.html?design=B&amp;state=saving" target="_top" tabindex="0" aria-label="Preview next state: save">
+<rect x="20" y="732" width="320" height="40" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="757.0" font-size="14" fill="#f1f3f5" font-weight="400">Preview next state: save</text>
+</a>
+</svg></g>
+<text x="792" y="1854" font-size="16" fill="#f1f3f5" font-weight="650">Saving and recovery</text>
+<g transform="translate(792,1871)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Saving and recovery">
+<title>Round timeline: Saving and recovery — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Save imported games</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Alex Morgan · Search finished</text>
+<text x="20" y="214" font-size="21" fill="#f1f3f5" font-weight="650">128 games collected</text>
+<text x="20" y="247" font-size="16" fill="#ffd43b" font-weight="400">Could not finish saving</text>
+<text x="20" y="286" font-size="14" fill="#f1f3f5" font-weight="400">The collected games are retained. Retry</text>
+<text x="20" y="306" font-size="14" fill="#f1f3f5" font-weight="400">saving to finish this import.</text>
+<text x="20" y="378" font-size="14" fill="#f1f3f5" font-weight="400">Search sources                 Complete</text>
+<text x="20" y="414" font-size="14" fill="#ffd43b" font-weight="400">Save games                      Needs retry</text>
+<text x="20" y="450" font-size="14" fill="#a7acb4" font-weight="400">Open Prep                       Waiting</text>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Retry saving games">
+<rect x="20" y="525" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="554.0" font-size="14" fill="#f1f3f5" font-weight="650">Retry saving games</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Back to tournament">
+<rect x="20" y="588" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="615.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to tournament</text>
+</a>
+</svg></g>
+<text x="1176" y="1854" font-size="16" fill="#f1f3f5" font-weight="650">Games ready</text>
+<g transform="translate(1176,1871)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Games ready">
+<title>Round timeline: Games ready — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Games ready</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Alex Morgan · FIDE 00000001</text>
+<text x="20" y="218" font-size="24" fill="#8ce99a" font-weight="650">128 games saved</text>
+<text x="20" y="251" font-size="13" fill="#a7acb4" font-weight="400">Games since 2023 · All sources finished</text>
+<text x="20" y="311" font-size="13" fill="#a7acb4" font-weight="400">Your preparation colour</text>
+<a href="index.html?design=B&amp;state=prep" target="_top" tabindex="0" aria-label="I&#x27;m Black ▾">
+<rect x="20" y="323" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="350.0" font-size="14" fill="#f1f3f5" font-weight="400">I&#x27;m Black ▾</text>
+</a>
+<a href="index.html?design=B&amp;state=prep" target="_top" tabindex="0" aria-label="Open Prep">
+<rect x="20" y="399" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="428.0" font-size="14" fill="#f1f3f5" font-weight="650">Open Prep</text>
+</a>
+<a href="index.html?design=B&amp;state=player" target="_top" tabindex="0" aria-label="Browse games">
+<rect x="20" y="461" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="488.0" font-size="14" fill="#f1f3f5" font-weight="400">Browse games</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Check for new games">
+<rect x="20" y="523" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="550.0" font-size="14" fill="#f1f3f5" font-weight="400">Check for new games</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Back to next round">
+<rect x="20" y="682" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="709.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to next round</text>
+</a>
+</svg></g>
+<text x="24" y="2734" font-size="16" fill="#f1f3f5" font-weight="650">Prepare against opponent</text>
+<g transform="translate(24,2751)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Prepare against opponent">
+<title>Round timeline: Prepare against opponent — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Prep · Alex Morgan</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Harbour Open · Round 5 · I&#x27;m Black</text>
+<rect x="20.0" y="185.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="60.0" y="185.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="100.0" y="185.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="140.0" y="185.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="180.0" y="185.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="220.0" y="185.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="260.0" y="185.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="300.0" y="185.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="20.0" y="225.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="60.0" y="225.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="100.0" y="225.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="140.0" y="225.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="180.0" y="225.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="220.0" y="225.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="260.0" y="225.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="300.0" y="225.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="20.0" y="265.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="60.0" y="265.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="100.0" y="265.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="140.0" y="265.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="180.0" y="265.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="220.0" y="265.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="260.0" y="265.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="300.0" y="265.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="20.0" y="305.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="60.0" y="305.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="100.0" y="305.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="140.0" y="305.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="180.0" y="305.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="220.0" y="305.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="260.0" y="305.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="300.0" y="305.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="20.0" y="345.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="60.0" y="345.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="100.0" y="345.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="140.0" y="345.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="180.0" y="345.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="220.0" y="345.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="260.0" y="345.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="300.0" y="345.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="20.0" y="385.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="60.0" y="385.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="100.0" y="385.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="140.0" y="385.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="180.0" y="385.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="220.0" y="385.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="260.0" y="385.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="300.0" y="385.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="20.0" y="425.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="60.0" y="425.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="100.0" y="425.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="140.0" y="425.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="180.0" y="425.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="220.0" y="425.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="260.0" y="425.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="300.0" y="425.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="20.0" y="465.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="60.0" y="465.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="100.0" y="465.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="140.0" y="465.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="180.0" y="465.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="220.0" y="465.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="260.0" y="465.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="300.0" y="465.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<text x="25.6" y="217.0" font-size="32" fill="#161616" font-weight="400">♜</text>
+<text x="65.6" y="217.0" font-size="32" fill="#161616" font-weight="400">♞</text>
+<text x="105.6" y="217.0" font-size="32" fill="#161616" font-weight="400">♝</text>
+<text x="145.6" y="217.0" font-size="32" fill="#161616" font-weight="400">♛</text>
+<text x="185.6" y="217.0" font-size="32" fill="#161616" font-weight="400">♚</text>
+<text x="225.6" y="217.0" font-size="32" fill="#161616" font-weight="400">♝</text>
+<text x="265.6" y="217.0" font-size="32" fill="#161616" font-weight="400">♞</text>
+<text x="305.6" y="217.0" font-size="32" fill="#161616" font-weight="400">♜</text>
+<text x="25.6" y="497.0" font-size="32" fill="#161616" font-weight="400">♖</text>
+<text x="65.6" y="497.0" font-size="32" fill="#161616" font-weight="400">♘</text>
+<text x="105.6" y="497.0" font-size="32" fill="#161616" font-weight="400">♗</text>
+<text x="145.6" y="497.0" font-size="32" fill="#161616" font-weight="400">♕</text>
+<text x="185.6" y="497.0" font-size="32" fill="#161616" font-weight="400">♔</text>
+<text x="225.6" y="497.0" font-size="32" fill="#161616" font-weight="400">♗</text>
+<text x="265.6" y="497.0" font-size="32" fill="#161616" font-weight="400">♘</text>
+<text x="305.6" y="497.0" font-size="32" fill="#161616" font-weight="400">♖</text>
+<text x="25.6" y="257.0" font-size="32" fill="#161616" font-weight="400">♟</text>
+<text x="65.6" y="257.0" font-size="32" fill="#161616" font-weight="400">♟</text>
+<text x="105.6" y="257.0" font-size="32" fill="#161616" font-weight="400">♟</text>
+<text x="145.6" y="257.0" font-size="32" fill="#161616" font-weight="400">♟</text>
+<text x="185.6" y="337.0" font-size="32" fill="#161616" font-weight="400">♟</text>
+<text x="225.6" y="257.0" font-size="32" fill="#161616" font-weight="400">♟</text>
+<text x="265.6" y="257.0" font-size="32" fill="#161616" font-weight="400">♟</text>
+<text x="305.6" y="257.0" font-size="32" fill="#161616" font-weight="400">♟</text>
+<text x="25.6" y="457.0" font-size="32" fill="#161616" font-weight="400">♙</text>
+<text x="65.6" y="457.0" font-size="32" fill="#161616" font-weight="400">♙</text>
+<text x="105.6" y="457.0" font-size="32" fill="#161616" font-weight="400">♙</text>
+<text x="145.6" y="457.0" font-size="32" fill="#161616" font-weight="400">♙</text>
+<text x="185.6" y="377.0" font-size="32" fill="#161616" font-weight="400">♙</text>
+<text x="225.6" y="457.0" font-size="32" fill="#161616" font-weight="400">♙</text>
+<text x="265.6" y="457.0" font-size="32" fill="#161616" font-weight="400">♙</text>
+<text x="305.6" y="457.0" font-size="32" fill="#161616" font-weight="400">♙</text>
+<a href="index.html?design=B&amp;state=prep" target="_top" tabindex="0" aria-label="I&#x27;m White">
+<rect x="20" y="523" width="153" height="40" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="548.0" font-size="14" fill="#f1f3f5" font-weight="400">I&#x27;m White</text>
+</a>
+<a href="index.html?design=B&amp;state=prep" target="_top" tabindex="0" aria-label="I&#x27;m Black">
+<rect x="183" y="523" width="157" height="40" rx="7" fill="#1971c2"/>
+<text x="195" y="548.0" font-size="14" fill="#f1f3f5" font-weight="650">I&#x27;m Black</text>
+</a>
+<text x="20" y="599" font-size="16" fill="#f1f3f5" font-weight="650">Opponent&#x27;s White games</text>
+<text x="20" y="627" font-size="12" fill="#a7acb4" font-weight="400">1. e4       64 games       1. d4       32 games</text>
+<a href="index.html?design=B&amp;state=prep" target="_top" tabindex="0" aria-label="Build prep">
+<rect x="20" y="652" width="153" height="44" rx="7" fill="#1971c2"/>
+<text x="32" y="679.0" font-size="14" fill="#f1f3f5" font-weight="650">Build prep</text>
+</a>
+<a href="index.html?design=B&amp;state=prep" target="_top" tabindex="0" aria-label="Saved lines">
+<rect x="183" y="652" width="157" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="679.0" font-size="14" fill="#f1f3f5" font-weight="400">Saved lines</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Back to pairing predictions">
+<rect x="20" y="714" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="741.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to pairing predictions</text>
+</a>
+</svg></g>
+<text x="408" y="2734" font-size="16" fill="#f1f3f5" font-weight="650">Tracking settings</text>
+<g transform="translate(408,2751)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Tracking settings">
+<title>Round timeline: Tracking settings — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Tracking settings</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Harbour Open · Open section</text>
+<text x="20" y="184" font-size="13" fill="#a7acb4" font-weight="400">Your entry</text>
+<a href="index.html?design=B&amp;state=setup" target="_top" tabindex="0" aria-label="Sam Taylor · FIDE 00000009 ▾">
+<rect x="20" y="196" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="223.0" font-size="14" fill="#f1f3f5" font-weight="400">Sam Taylor · FIDE 00000009 ▾</text>
+</a>
+<text x="20" y="269" font-size="13" fill="#a7acb4" font-weight="400">Import games since</text>
+<rect x="20" y="281" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="309" font-size="15" fill="#f1f3f5" font-weight="400">2023</text>
+<text x="20" y="354" font-size="13" fill="#a7acb4" font-weight="400">Check for tournament updates</text>
+<rect x="20" y="366" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="394" font-size="15" fill="#f1f3f5" font-weight="400">On ▾</text>
+<text x="20" y="439" font-size="13" fill="#a7acb4" font-weight="400">Update imported opponents&#x27; games</text>
+<rect x="20" y="451" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="479" font-size="15" fill="#f1f3f5" font-weight="400">On ▾</text>
+<text x="20" y="521" font-size="13" fill="#a7acb4" font-weight="400">Last roster check: today, 14:32</text>
+<a href="index.html?design=B&amp;state=loading" target="_top" tabindex="0" aria-label="Check now">
+<rect x="20" y="547" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="574.0" font-size="14" fill="#f1f3f5" font-weight="400">Check now</text>
+</a>
+<a href="index.html?design=B&amp;state=downloads" target="_top" tabindex="0" aria-label="Local games &amp; downloads">
+<rect x="20" y="607" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="634.0" font-size="14" fill="#f1f3f5" font-weight="400">Local games &amp; downloads</text>
+</a>
+<a href="index.html?design=B&amp;state=remove" target="_top" tabindex="0" aria-label="Stop following…">
+<rect x="20" y="682" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="709.0" font-size="14" fill="#ffa8a8" font-weight="400">Stop following…</text>
+</a>
+</svg></g>
+<text x="792" y="2734" font-size="16" fill="#f1f3f5" font-weight="650">Import players</text>
+<g transform="translate(792,2751)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Import players">
+<title>Round timeline: Import players — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Import tournament players</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Harbour Open · Open section</text>
+<text x="20" y="186" font-size="13" fill="#a7acb4" font-weight="400">Which players?</text>
+<rect x="20" y="198" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="226" font-size="15" fill="#f1f3f5" font-weight="400">Likely next opponents (3) ▾</text>
+<text x="20" y="277" font-size="14" fill="#f1f3f5" font-weight="400">Alex Morgan · FIDE 00000001</text>
+<text x="20" y="313" font-size="14" fill="#f1f3f5" font-weight="400">Jamie Reed · 128 games ready</text>
+<text x="20" y="349" font-size="14" fill="#f1f3f5" font-weight="400">Pat Ellis · FIDE 00000003</text>
+<text x="20" y="415" font-size="14" fill="#f1f3f5" font-weight="400">Already saved games are reused. Each</text>
+<text x="20" y="435" font-size="14" fill="#f1f3f5" font-weight="400">opponent keeps their own progress and</text>
+<text x="20" y="455" font-size="14" fill="#f1f3f5" font-weight="400">retry action.</text>
+<text x="20" y="515" font-size="12" fill="#a7acb4" font-weight="400">Also available: all players / new entrants</text>
+<a href="index.html?design=B&amp;state=importing" target="_top" tabindex="0" aria-label="Import 2 players">
+<rect x="20" y="569" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="598.0" font-size="14" fill="#f1f3f5" font-weight="650">Import 2 players</text>
+</a>
+<a href="index.html?design=B&amp;state=players" target="_top" tabindex="0" aria-label="Back to players">
+<rect x="20" y="632" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="659.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to players</text>
+</a>
+</svg></g>
+<text x="1176" y="2734" font-size="16" fill="#f1f3f5" font-weight="650">Local games and dates</text>
+<g transform="translate(1176,2751)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Local games and dates">
+<title>Round timeline: Local games and dates — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Local games for OTB imports</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Saved on your PC · Shared by your imports</text>
+<rect x="20" y="186" width="201" height="25" rx="6" fill="#183249"/>
+<text x="28" y="203" font-size="11" fill="#74c0fc" font-weight="650">Local search enabled</text>
+<text x="20" y="245" font-size="17" fill="#f1f3f5" font-weight="650">Saved months</text>
+<text x="20" y="274" font-size="13" fill="#f1f3f5" font-weight="400">Jan 2023–Jul 2026 · 43 months</text>
+<text x="20" y="316" font-size="14" fill="#ffd43b" font-weight="400">Missing: Aug 2026 · 1 month</text>
+<text x="20" y="359" font-size="13" fill="#a7acb4" font-weight="400">Keep local games from</text>
+<a href="index.html?design=B&amp;state=archive-remove" target="_top" tabindex="0" aria-label="Last 3 years ▾">
+<rect x="20" y="371" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="398.0" font-size="14" fill="#f1f3f5" font-weight="400">Last 3 years ▾</text>
+</a>
+<text x="20" y="447" font-size="13" fill="#a7acb4" font-weight="400">Download new months automatically</text>
+<rect x="20" y="459" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="487" font-size="15" fill="#f1f3f5" font-weight="400">On ▾</text>
+<text x="20" y="531" font-size="14" fill="#f1f3f5" font-weight="400">Update download: 120 MB</text>
+<text x="20" y="555" font-size="13" fill="#a7acb4" font-weight="400">Required setup space: 480 MB</text>
+<a href="index.html?design=B&amp;state=download-progress" target="_top" tabindex="0" aria-label="Download missing month">
+<rect x="20" y="583" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="612.0" font-size="14" fill="#f1f3f5" font-weight="650">Download missing month</text>
+</a>
+<a href="index.html?design=B&amp;state=archive-remove" target="_top" tabindex="0" aria-label="Remove local downloads…">
+<rect x="20" y="645" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="672.0" font-size="14" fill="#f1f3f5" font-weight="400">Remove local downloads…</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Back to import">
+<rect x="20" y="707" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="734.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to import</text>
+</a>
+</svg></g>
+<text x="24" y="3614" font-size="16" fill="#f1f3f5" font-weight="650">Download / local preparation</text>
+<g transform="translate(24,3631)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Download / local preparation">
+<title>Round timeline: Download / local preparation — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Updating local games</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">August 2026 · Lichess broadcasts</text>
+<text x="20" y="219" font-size="20" fill="#f1f3f5" font-weight="650">Downloading archive</text>
+<text x="20" y="251" font-size="14" fill="#74c0fc" font-weight="400">72 MB of 120 MB · 60%</text>
+<rect x="20" y="275" width="320" height="7" rx="3" fill="#25272d"/>
+<rect x="20" y="275" width="192" height="7" rx="3" fill="#1971c2"/>
+<text x="20" y="325" font-size="14" fill="#a7acb4" font-weight="400">Adding August 2026. The archive may</text>
+<text x="20" y="345" font-size="14" fill="#a7acb4" font-weight="400">also contain months already saved.</text>
+<a href="index.html?design=B&amp;state=cancellation" target="_top" tabindex="0" aria-label="Cancel download">
+<rect x="20" y="400" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="427.0" font-size="14" fill="#f1f3f5" font-weight="400">Cancel download</text>
+</a>
+<path d="M20 485H340" stroke="#34383f"/>
+<text x="20" y="525" font-size="18" fill="#f1f3f5" font-weight="650">Next: preparing local search</text>
+<text x="20" y="559" font-size="13" fill="#a7acb4" font-weight="400">When download finishes, show local</text>
+<text x="20" y="578" font-size="13" fill="#a7acb4" font-weight="400">preparation separately without a</text>
+<text x="20" y="597" font-size="13" fill="#a7acb4" font-weight="400">made-up percentage.</text>
+<a href="index.html?design=B&amp;state=downloads" target="_top" tabindex="0" aria-label="Back to local games">
+<rect x="20" y="677" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="704.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to local games</text>
+</a>
+</svg></g>
+<text x="408" y="3614" font-size="16" fill="#f1f3f5" font-weight="650">Pairing help</text>
+<g transform="translate(408,3631)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Pairing help">
+<title>Round timeline: Pairing help — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Harbour Open</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Open section · 9 rounds · Following</text>
+<a href="index.html?design=B&amp;state=discover" target="_top" tabindex="0" aria-label="Change event">
+<rect x="20" y="172" width="153" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="196.0" font-size="14" fill="#f1f3f5" font-weight="400">Change event</text>
+</a>
+<a href="index.html?design=B&amp;state=tracking" target="_top" tabindex="0" aria-label="Tracking settings">
+<rect x="183" y="172" width="157" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="196.0" font-size="14" fill="#f1f3f5" font-weight="400">Tracking settings</text>
+</a>
+<text x="20" y="243" font-size="19" fill="#f1f3f5" font-weight="650">Your tournament</text>
+<text x="20" y="268" font-size="14" fill="#a7acb4" font-weight="400">You · 3 points from 4 rounds</text>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="R1 ✓">
+<rect x="20" y="289" width="59" height="42" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="315.0" font-size="14" fill="#f1f3f5" font-weight="400">R1 ✓</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="R2 ✓">
+<rect x="85" y="289" width="59" height="42" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="97" y="315.0" font-size="14" fill="#f1f3f5" font-weight="400">R2 ✓</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="R3 ✓">
+<rect x="150" y="289" width="59" height="42" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="162" y="315.0" font-size="14" fill="#f1f3f5" font-weight="400">R3 ✓</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="R4 …">
+<rect x="215" y="289" width="59" height="42" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="227" y="315.0" font-size="14" fill="#f1f3f5" font-weight="400">R4 …</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="R5">
+<rect x="280" y="289" width="59" height="42" rx="7" fill="#1971c2"/>
+<text x="292" y="315.0" font-size="14" fill="#f1f3f5" font-weight="650">R5</text>
+</a>
+<text x="20" y="366" font-size="22" fill="#f1f3f5" font-weight="650">Round 5</text>
+<rect x="20" y="383" width="153" height="25" rx="6" fill="#183249"/>
+<text x="28" y="400" font-size="11" fill="#74c0fc" font-weight="650">Pairing estimates</text>
+<text x="20" y="442" font-size="17" fill="#f1f3f5" font-weight="650">Alex Morgan</text>
+<text x="20" y="466" font-size="12" fill="#a7acb4" font-weight="400">Event rating 2140 · 3 points</text>
+<text x="20" y="496" font-size="13" fill="#74c0fc" font-weight="400">42% pairing chance · Black expected</text>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import &amp; prep">
+<rect x="195" y="477" width="145" height="42" rx="7" fill="#1971c2"/>
+<text x="207" y="503.0" font-size="14" fill="#f1f3f5" font-weight="650">Import &amp; prep</text>
+</a>
+<path d="M20 536H340" stroke="#34383f"/>
+<a href="index.html?design=B&amp;state=players" target="_top" tabindex="0" aria-label="Compare likely opponents">
+<rect x="20" y="554" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="581.0" font-size="14" fill="#f1f3f5" font-weight="400">Compare likely opponents</text>
+</a>
+<text x="20" y="633" font-size="16" fill="#f1f3f5" font-weight="650">Round 4 is still in progress</text>
+<text x="20" y="658" font-size="13" fill="#a7acb4" font-weight="400">36 of 48 results reported</text>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Live results">
+<rect x="20" y="685" width="153" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="712.0" font-size="14" fill="#f1f3f5" font-weight="400">Live results</text>
+</a>
+<a href="index.html?design=B&amp;state=standings" target="_top" tabindex="0" aria-label="Standings">
+<rect x="183" y="685" width="157" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="712.0" font-size="14" fill="#f1f3f5" font-weight="400">Standings</text>
+</a>
+<rect x="34" y="302" width="292" height="130" rx="8" fill="#25272d" stroke="#74c0fc"/>
+<text x="49" y="329" font-size="15" fill="#f1f3f5" font-weight="650">Pairing chance</text>
+<text x="49" y="355" font-size="13" fill="#f1f3f5" font-weight="400">An estimate of who you will face</text>
+<text x="49" y="374" font-size="13" fill="#f1f3f5" font-weight="400">next round, not your chance of</text>
+<text x="49" y="393" font-size="13" fill="#f1f3f5" font-weight="400">winning. Only published pairings</text>
+<text x="49" y="412" font-size="13" fill="#f1f3f5" font-weight="400">confirm an opponent.</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Close">
+<rect x="261" y="394" width="52" height="28" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="273" y="413.0" font-size="14" fill="#f1f3f5" font-weight="400">Close</text>
+</a>
+</svg></g>
+<text x="792" y="3614" font-size="16" fill="#f1f3f5" font-weight="650">Loading / calculating</text>
+<g transform="translate(792,3631)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Loading / calculating">
+<title>Round timeline: Loading / calculating — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Checking Harbour Open</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Your last saved tournament stays available.</text>
+<text x="20" y="224" font-size="20" fill="#f1f3f5" font-weight="650">Getting the latest results…</text>
+<text x="20" y="267" font-size="14" fill="#a7acb4" font-weight="400">Saved update: today, 14:32. New</text>
+<text x="20" y="287" font-size="14" fill="#a7acb4" font-weight="400">predictions appear when the result check</text>
+<text x="20" y="307" font-size="14" fill="#a7acb4" font-weight="400">finishes.</text>
+<rect x="20" y="351" width="320" height="32" rx="6" fill="#1b1e22"/>
+<rect x="20" y="404" width="320" height="32" rx="6" fill="#1b1e22"/>
+<rect x="20" y="457" width="320" height="32" rx="6" fill="#1b1e22"/>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Cancel check">
+<rect x="20" y="554" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="581.0" font-size="14" fill="#f1f3f5" font-weight="400">Cancel check</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Preview updated predictions">
+<rect x="20" y="682" width="320" height="44" rx="7" fill="#1971c2"/>
+<text x="32" y="709.0" font-size="14" fill="#f1f3f5" font-weight="650">Preview updated predictions</text>
+</a>
+</svg></g>
+<text x="1176" y="3614" font-size="16" fill="#f1f3f5" font-weight="650">No tournaments</text>
+<g transform="translate(1176,3631)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: No tournaments">
+<title>Round timeline: No tournaments — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Your tournaments</text>
+<text x="20" y="227" font-size="21" fill="#f1f3f5" font-weight="650">Follow your next event</text>
+<text x="20" y="274" font-size="16" fill="#a7acb4" font-weight="400">See results, likely opponents and</text>
+<text x="20" y="296" font-size="16" fill="#a7acb4" font-weight="400">their games together.</text>
+<a href="index.html?design=B&amp;state=discover" target="_top" tabindex="0" aria-label="Find a tournament">
+<rect x="20" y="365" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="394.0" font-size="14" fill="#f1f3f5" font-weight="650">Find a tournament</text>
+</a>
+<a href="index.html?design=B&amp;state=discover" target="_top" tabindex="0" aria-label="Add Chess-Results link">
+<rect x="20" y="429" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="456.0" font-size="14" fill="#f1f3f5" font-weight="400">Add Chess-Results link</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import a player directly">
+<rect x="20" y="684" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="711.0" font-size="14" fill="#f1f3f5" font-weight="400">Import a player directly</text>
+</a>
+</svg></g>
+<text x="24" y="4494" font-size="16" fill="#f1f3f5" font-weight="650">No public games</text>
+<g transform="translate(24,4511)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: No public games">
+<title>Round timeline: No public games — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Alex Morgan</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">FIDE 00000001 · Games since 2023</text>
+<text x="20" y="224" font-size="21" fill="#f1f3f5" font-weight="650">No public games found</text>
+<text x="20" y="268" font-size="15" fill="#a7acb4" font-weight="400">All selected sources finished. Try an</text>
+<text x="20" y="289" font-size="15" fill="#a7acb4" font-weight="400">earlier date or add your own PGN</text>
+<text x="20" y="310" font-size="15" fill="#a7acb4" font-weight="400">games.</text>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Change dates or sources">
+<rect x="20" y="378" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="407.0" font-size="14" fill="#f1f3f5" font-weight="650">Change dates or sources</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Add PGN games">
+<rect x="20" y="440" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="467.0" font-size="14" fill="#f1f3f5" font-weight="400">Add PGN games</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Back to predictions">
+<rect x="20" y="684" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="711.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to predictions</text>
+</a>
+</svg></g>
+<text x="408" y="4494" font-size="16" fill="#f1f3f5" font-weight="650">Refresh or source failure</text>
+<g transform="translate(408,4511)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Refresh or source failure">
+<title>Round timeline: Refresh or source failure — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Could not update tournament</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Saved update: today, 14:32</text>
+<text x="20" y="224" font-size="16" fill="#ffd43b" font-weight="400">The results website did not respond.</text>
+<text x="20" y="246" font-size="16" fill="#ffd43b" font-weight="400">Your saved standings and imported</text>
+<text x="20" y="268" font-size="16" fill="#ffd43b" font-weight="400">games are still available.</text>
+<a href="index.html?design=B&amp;state=loading" target="_top" tabindex="0" aria-label="Retry update">
+<rect x="20" y="359" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="388.0" font-size="14" fill="#f1f3f5" font-weight="650">Retry update</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="View saved tournament">
+<rect x="20" y="424" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="451.0" font-size="14" fill="#f1f3f5" font-weight="400">View saved tournament</text>
+</a>
+<a href="index.html?design=B&amp;state=prep" target="_top" tabindex="0" aria-label="Open saved Prep">
+<rect x="20" y="488" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="515.0" font-size="14" fill="#f1f3f5" font-weight="400">Open saved Prep</text>
+</a>
+</svg></g>
+<text x="792" y="4494" font-size="16" fill="#f1f3f5" font-weight="650">PC unavailable</text>
+<g transform="translate(792,4511)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: PC unavailable">
+<title>Round timeline: PC unavailable — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">PC is unavailable</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Last tournament update: today, 14:32</text>
+<text x="20" y="224" font-size="16" fill="#ffd43b" font-weight="400">Showing saved tournament details.</text>
+<text x="20" y="246" font-size="16" fill="#ffd43b" font-weight="400">Connect to your PC to refresh</text>
+<text x="20" y="268" font-size="16" fill="#ffd43b" font-weight="400">pairings or import games.</text>
+<a href="index.html?design=B&amp;state=loading" target="_top" tabindex="0" aria-label="Retry connection">
+<rect x="20" y="359" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="388.0" font-size="14" fill="#f1f3f5" font-weight="650">Retry connection</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="View saved tournament">
+<rect x="20" y="424" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="451.0" font-size="14" fill="#f1f3f5" font-weight="400">View saved tournament</text>
+</a>
+<text x="20" y="519" font-size="14" fill="#a7acb4" font-weight="400">Preparation can use games already</text>
+<text x="20" y="539" font-size="14" fill="#a7acb4" font-weight="400">available on this device. PC-only</text>
+<text x="20" y="559" font-size="14" fill="#a7acb4" font-weight="400">games wait for reconnection.</text>
+<a href="index.html?design=B&amp;state=prep" target="_top" tabindex="0" aria-label="Open available Prep">
+<rect x="20" y="619" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="646.0" font-size="14" fill="#f1f3f5" font-weight="400">Open available Prep</text>
+</a>
+</svg></g>
+<text x="1176" y="4494" font-size="16" fill="#f1f3f5" font-weight="650">Stopped import</text>
+<g transform="translate(1176,4511)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Stopped import">
+<title>Round timeline: Stopped import — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Search stopped</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Alex Morgan · Original search retained</text>
+<text x="20" y="226" font-size="16" fill="#f1f3f5" font-weight="400">Your previously saved games are</text>
+<text x="20" y="248" font-size="16" fill="#f1f3f5" font-weight="400">kept. This PC job stopped before a</text>
+<text x="20" y="270" font-size="16" fill="#f1f3f5" font-weight="400">complete new result was saved.</text>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Start a new search">
+<rect x="20" y="361" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="390.0" font-size="14" fill="#f1f3f5" font-weight="650">Start a new search</text>
+</a>
+<a href="index.html?design=B&amp;state=prep" target="_top" tabindex="0" aria-label="Open previously saved Prep">
+<rect x="20" y="424" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="451.0" font-size="14" fill="#f1f3f5" font-weight="400">Open previously saved Prep</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Back to tournament">
+<rect x="20" y="489" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="516.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to tournament</text>
+</a>
+<text x="20" y="593" font-size="13" fill="#a7acb4" font-weight="400">If completion wins the Stop race, show</text>
+<text x="20" y="612" font-size="13" fill="#a7acb4" font-weight="400">Games ready and use that saved result</text>
+<text x="20" y="631" font-size="13" fill="#a7acb4" font-weight="400">instead.</text>
+</svg></g>
+<text x="24" y="5374" font-size="16" fill="#f1f3f5" font-weight="650">Missing FIDE identity</text>
+<g transform="translate(24,5391)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Missing FIDE identity">
+<title>Round timeline: Missing FIDE identity — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Chris Lane</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Event rating unavailable</text>
+<text x="20" y="227" font-size="21" fill="#ffd43b" font-weight="650">No FIDE ID published</text>
+<text x="20" y="272" font-size="15" fill="#f1f3f5" font-weight="400">Exact OTB import is unavailable for</text>
+<text x="20" y="293" font-size="15" fill="#f1f3f5" font-weight="400">this entry. Choose a verified FIDE</text>
+<text x="20" y="314" font-size="15" fill="#f1f3f5" font-weight="400">profile before importing.</text>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Find FIDE profile">
+<rect x="20" y="391" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="420.0" font-size="14" fill="#f1f3f5" font-weight="650">Find FIDE profile</text>
+</a>
+<a href="index.html?design=B&amp;state=players" target="_top" tabindex="0" aria-label="Back to players">
+<rect x="20" y="455" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="482.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to players</text>
+</a>
+<text x="20" y="548" font-size="12" fill="#a7acb4" font-weight="400">Profile selection must confirm the identity.</text>
+</svg></g>
+<text x="408" y="5374" font-size="16" fill="#f1f3f5" font-weight="650">Partial source coverage</text>
+<g transform="translate(408,5391)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Partial source coverage">
+<title>Round timeline: Partial source coverage — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">128 games saved</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Alex Morgan · Games since 2023</text>
+<rect x="20" y="185" width="178" height="25" rx="6" fill="#1b1e22"/>
+<text x="28" y="202" font-size="11" fill="#ffd43b" font-weight="650">Partial source coverage</text>
+<text x="20" y="252" font-size="16" fill="#f1f3f5" font-weight="400">TWIC did not respond. Games found in</text>
+<text x="20" y="274" font-size="16" fill="#f1f3f5" font-weight="400">the other selected sources are ready.</text>
+<a href="index.html?design=B&amp;state=prep" target="_top" tabindex="0" aria-label="Open Prep with saved games">
+<rect x="20" y="365" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="394.0" font-size="14" fill="#f1f3f5" font-weight="650">Open Prep with saved games</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Retry search">
+<rect x="20" y="429" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="456.0" font-size="14" fill="#f1f3f5" font-weight="400">Retry search</text>
+</a>
+<a href="index.html?design=B&amp;state=importing" target="_top" tabindex="0" aria-label="View source details">
+<rect x="20" y="493" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="520.0" font-size="14" fill="#f1f3f5" font-weight="400">View source details</text>
+</a>
+</svg></g>
+<text x="792" y="5374" font-size="16" fill="#f1f3f5" font-weight="650">Stop following / remove</text>
+<g transform="translate(792,5391)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Stop following / remove">
+<title>Round timeline: Stop following / remove — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Stop following Harbour Open?</text>
+<text x="20" y="213" font-size="16" fill="#f1f3f5" font-weight="400">Automatic tournament checks will</text>
+<text x="20" y="235" font-size="16" fill="#f1f3f5" font-weight="400">stop. Choose whether to keep the</text>
+<text x="20" y="257" font-size="16" fill="#f1f3f5" font-weight="400">imported opponent games.</text>
+<text x="20" y="328" font-size="14" fill="#a7acb4" font-weight="400">3 opponent databases · 392 saved games</text>
+<a href="index.html?design=B&amp;state=empty" target="_top" tabindex="0" aria-label="Stop following; keep games">
+<rect x="20" y="373" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="402.0" font-size="14" fill="#f1f3f5" font-weight="650">Stop following; keep games</text>
+</a>
+<text x="20" y="465" font-size="14" fill="#ffa8a8" font-weight="400">Deleting the databases permanently</text>
+<text x="20" y="485" font-size="14" fill="#ffa8a8" font-weight="400">removes their saved games. This cannot</text>
+<text x="20" y="505" font-size="14" fill="#ffa8a8" font-weight="400">be undone.</text>
+<a href="index.html?design=B&amp;state=empty" target="_top" tabindex="0" aria-label="Stop and delete 3 databases">
+<rect x="20" y="548" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="575.0" font-size="14" fill="#ffa8a8" font-weight="400">Stop and delete 3 databases</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Keep following">
+<rect x="20" y="682" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="709.0" font-size="14" fill="#f1f3f5" font-weight="400">Keep following</text>
+</a>
+</svg></g>
+<text x="1176" y="5374" font-size="16" fill="#f1f3f5" font-weight="650">Remove local archive</text>
+<g transform="translate(1176,5391)"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Remove local archive">
+<title>Round timeline: Remove local archive — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Remove local archive months?</text>
+<text x="20" y="214" font-size="19" fill="#f1f3f5" font-weight="650">Jan–Dec 2023 · 12 months</text>
+<text x="20" y="259" font-size="15" fill="#f1f3f5" font-weight="400">This removes local search data for</text>
+<text x="20" y="280" font-size="15" fill="#f1f3f5" font-weight="400">those months. Imported opponent</text>
+<text x="20" y="301" font-size="15" fill="#f1f3f5" font-weight="400">games and saved preparation stay.</text>
+<text x="20" y="375" font-size="14" fill="#a7acb4" font-weight="400">Keeping: Jan 2024–Jul 2026</text>
+<text x="20" y="423" font-size="14" fill="#ffd43b" font-weight="400">Imports for removed dates may need</text>
+<text x="20" y="443" font-size="14" fill="#ffd43b" font-weight="400">downloads again.</text>
+<a href="index.html?design=B&amp;state=downloads" target="_top" tabindex="0" aria-label="Remove these 12 months">
+<rect x="20" y="528" width="320" height="48" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="557.0" font-size="14" fill="#ffa8a8" font-weight="400">Remove these 12 months</text>
+</a>
+<a href="index.html?design=B&amp;state=downloads" target="_top" tabindex="0" aria-label="Keep current date range">
+<rect x="20" y="590" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="617.0" font-size="14" fill="#f1f3f5" font-weight="400">Keep current date range</text>
+</a>
+</svg></g>
+</svg>

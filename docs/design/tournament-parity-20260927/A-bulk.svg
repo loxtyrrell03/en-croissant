@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Tournament hub: Import players">
+<title>Tournament hub: Import players — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=A&amp;state=prep" target="_top" tabindex="0" aria-label="Board">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Board</text>
+</a>
+<a href="index.html?design=A&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=A&amp;state=main" target="_top" tabindex="0" aria-label="Events">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Events</text>
+</a>
+<a href="index.html?design=A&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN A · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Import tournament players</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Harbour Open · Open section</text>
+<text x="20" y="186" font-size="13" fill="#a7acb4" font-weight="400">Which players?</text>
+<rect x="20" y="198" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="226" font-size="15" fill="#f1f3f5" font-weight="400">Likely next opponents (3) ▾</text>
+<text x="20" y="277" font-size="14" fill="#f1f3f5" font-weight="400">Alex Morgan · FIDE 00000001</text>
+<text x="20" y="313" font-size="14" fill="#f1f3f5" font-weight="400">Jamie Reed · 128 games ready</text>
+<text x="20" y="349" font-size="14" fill="#f1f3f5" font-weight="400">Pat Ellis · FIDE 00000003</text>
+<text x="20" y="415" font-size="14" fill="#f1f3f5" font-weight="400">Already saved games are reused. Each</text>
+<text x="20" y="435" font-size="14" fill="#f1f3f5" font-weight="400">opponent keeps their own progress and</text>
+<text x="20" y="455" font-size="14" fill="#f1f3f5" font-weight="400">retry action.</text>
+<text x="20" y="515" font-size="12" fill="#a7acb4" font-weight="400">Also available: all players / new entrants</text>
+<a href="index.html?design=A&amp;state=importing" target="_top" tabindex="0" aria-label="Import 2 players">
+<rect x="20" y="569" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="598.0" font-size="14" fill="#f1f3f5" font-weight="650">Import 2 players</text>
+</a>
+<a href="index.html?design=A&amp;state=players" target="_top" tabindex="0" aria-label="Back to players">
+<rect x="20" y="632" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="659.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to players</text>
+</a>
+</svg>

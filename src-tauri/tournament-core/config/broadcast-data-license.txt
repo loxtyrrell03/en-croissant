@@ -1,0 +1,18 @@
+Lichess broadcast opening database
+
+Attribution: Lichess and the contributors to the official Lichess broadcasts.
+Source: https://database.lichess.org/#broadcasts
+Broadcasts: https://lichess.org/broadcast
+
+This derived database is licensed under Creative Commons Attribution-ShareAlike
+4.0 International (CC BY-SA 4.0):
+https://creativecommons.org/licenses/by-sa/4.0/
+
+Novelty converted the official PGN exports into a SQLite opening index, retained
+supported standard games, aggregated position/move statistics and compressed the
+result for download. The pack manifest records source archive URLs, coverage,
+skipped games and indexing limits. These changes do not imply Lichess endorsement.
+
+You may share and adapt this database, including commercially, under that license.
+Retain attribution, indicate changes, and distribute adaptations under CC BY-SA 4.0.
+Novelty's proprietary application license does not restrict these data rights.

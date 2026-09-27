@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Import settings">
+<title>Round timeline: Import settings — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Import Alex Morgan</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">FIDE 00000001 · Identity locked</text>
+<text x="20" y="186" font-size="13" fill="#a7acb4" font-weight="400">Games since</text>
+<rect x="20" y="198" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="226" font-size="15" fill="#f1f3f5" font-weight="400">2023</text>
+<text x="20" y="274" font-size="13" fill="#a7acb4" font-weight="400">Your preparation colour</text>
+<rect x="20" y="286" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="314" font-size="15" fill="#f1f3f5" font-weight="400">I&#x27;m Black ▾</text>
+<text x="20" y="362" font-size="13" fill="#a7acb4" font-weight="400">Sources</text>
+<a href="index.html?design=B&amp;state=downloads" target="_top" tabindex="0" aria-label="All 7 source groups on ▾">
+<rect x="20" y="374" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="401.0" font-size="14" fill="#f1f3f5" font-weight="400">All 7 source groups on ▾</text>
+</a>
+<text x="20" y="450" font-size="13" fill="#a7acb4" font-weight="400">Destination</text>
+<text x="20" y="477" font-size="16" fill="#f1f3f5" font-weight="400">Harbour Open / Alex Morgan</text>
+<text x="20" y="517" font-size="13" fill="#a7acb4" font-weight="400">Ready games: none yet</text>
+<a href="index.html?design=B&amp;state=downloads" target="_top" tabindex="0" aria-label="Local games &amp; download settings">
+<rect x="20" y="555" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="582.0" font-size="14" fill="#f1f3f5" font-weight="400">Local games &amp; download settings</text>
+</a>
+<a href="index.html?design=B&amp;state=importing" target="_top" tabindex="0" aria-label="Import &amp; prep">
+<rect x="20" y="638" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="667.0" font-size="14" fill="#f1f3f5" font-weight="650">Import &amp; prep</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Back to predictions">
+<rect x="20" y="700" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="727.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to predictions</text>
+</a>
+</svg>

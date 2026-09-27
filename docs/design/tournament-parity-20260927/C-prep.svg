@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Prep workspace: Prepare against opponent">
+<title>Prep workspace: Prepare against opponent — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=C&amp;state=prep" target="_top" tabindex="0" aria-label="Board">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Board</text>
+</a>
+<a href="index.html?design=C&amp;state=main" target="_top" tabindex="0" aria-label="Pairings">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Pairings</text>
+</a>
+<a href="index.html?design=C&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=C&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN C · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Prep · Alex Morgan</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Harbour Open · Round 5 · I&#x27;m Black</text>
+<rect x="20.0" y="185.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="60.0" y="185.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="100.0" y="185.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="140.0" y="185.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="180.0" y="185.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="220.0" y="185.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="260.0" y="185.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="300.0" y="185.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="20.0" y="225.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="60.0" y="225.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="100.0" y="225.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="140.0" y="225.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="180.0" y="225.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="220.0" y="225.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="260.0" y="225.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="300.0" y="225.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="20.0" y="265.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="60.0" y="265.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="100.0" y="265.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="140.0" y="265.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="180.0" y="265.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="220.0" y="265.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="260.0" y="265.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="300.0" y="265.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="20.0" y="305.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="60.0" y="305.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="100.0" y="305.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="140.0" y="305.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="180.0" y="305.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="220.0" y="305.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="260.0" y="305.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="300.0" y="305.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="20.0" y="345.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="60.0" y="345.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="100.0" y="345.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="140.0" y="345.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="180.0" y="345.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="220.0" y="345.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="260.0" y="345.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="300.0" y="345.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="20.0" y="385.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="60.0" y="385.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="100.0" y="385.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="140.0" y="385.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="180.0" y="385.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="220.0" y="385.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="260.0" y="385.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="300.0" y="385.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="20.0" y="425.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="60.0" y="425.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="100.0" y="425.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="140.0" y="425.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="180.0" y="425.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="220.0" y="425.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="260.0" y="425.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="300.0" y="425.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="20.0" y="465.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="60.0" y="465.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="100.0" y="465.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="140.0" y="465.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="180.0" y="465.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="220.0" y="465.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<rect x="260.0" y="465.0" width="40.0" height="40.0" rx="0" fill="#769656"/>
+<rect x="300.0" y="465.0" width="40.0" height="40.0" rx="0" fill="#eeeed2"/>
+<text x="25.6" y="217.0" font-size="32" fill="#161616" font-weight="400">♜</text>
+<text x="65.6" y="217.0" font-size="32" fill="#161616" font-weight="400">♞</text>
+<text x="105.6" y="217.0" font-size="32" fill="#161616" font-weight="400">♝</text>
+<text x="145.6" y="217.0" font-size="32" fill="#161616" font-weight="400">♛</text>
+<text x="185.6" y="217.0" font-size="32" fill="#161616" font-weight="400">♚</text>
+<text x="225.6" y="217.0" font-size="32" fill="#161616" font-weight="400">♝</text>
+<text x="265.6" y="217.0" font-size="32" fill="#161616" font-weight="400">♞</text>
+<text x="305.6" y="217.0" font-size="32" fill="#161616" font-weight="400">♜</text>
+<text x="25.6" y="497.0" font-size="32" fill="#161616" font-weight="400">♖</text>
+<text x="65.6" y="497.0" font-size="32" fill="#161616" font-weight="400">♘</text>
+<text x="105.6" y="497.0" font-size="32" fill="#161616" font-weight="400">♗</text>
+<text x="145.6" y="497.0" font-size="32" fill="#161616" font-weight="400">♕</text>
+<text x="185.6" y="497.0" font-size="32" fill="#161616" font-weight="400">♔</text>
+<text x="225.6" y="497.0" font-size="32" fill="#161616" font-weight="400">♗</text>
+<text x="265.6" y="497.0" font-size="32" fill="#161616" font-weight="400">♘</text>
+<text x="305.6" y="497.0" font-size="32" fill="#161616" font-weight="400">♖</text>
+<text x="25.6" y="257.0" font-size="32" fill="#161616" font-weight="400">♟</text>
+<text x="65.6" y="257.0" font-size="32" fill="#161616" font-weight="400">♟</text>
+<text x="105.6" y="257.0" font-size="32" fill="#161616" font-weight="400">♟</text>
+<text x="145.6" y="257.0" font-size="32" fill="#161616" font-weight="400">♟</text>
+<text x="185.6" y="337.0" font-size="32" fill="#161616" font-weight="400">♟</text>
+<text x="225.6" y="257.0" font-size="32" fill="#161616" font-weight="400">♟</text>
+<text x="265.6" y="257.0" font-size="32" fill="#161616" font-weight="400">♟</text>
+<text x="305.6" y="257.0" font-size="32" fill="#161616" font-weight="400">♟</text>
+<text x="25.6" y="457.0" font-size="32" fill="#161616" font-weight="400">♙</text>
+<text x="65.6" y="457.0" font-size="32" fill="#161616" font-weight="400">♙</text>
+<text x="105.6" y="457.0" font-size="32" fill="#161616" font-weight="400">♙</text>
+<text x="145.6" y="457.0" font-size="32" fill="#161616" font-weight="400">♙</text>
+<text x="185.6" y="377.0" font-size="32" fill="#161616" font-weight="400">♙</text>
+<text x="225.6" y="457.0" font-size="32" fill="#161616" font-weight="400">♙</text>
+<text x="265.6" y="457.0" font-size="32" fill="#161616" font-weight="400">♙</text>
+<text x="305.6" y="457.0" font-size="32" fill="#161616" font-weight="400">♙</text>
+<a href="index.html?design=C&amp;state=prep" target="_top" tabindex="0" aria-label="I&#x27;m White">
+<rect x="20" y="523" width="153" height="40" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="548.0" font-size="14" fill="#f1f3f5" font-weight="400">I&#x27;m White</text>
+</a>
+<a href="index.html?design=C&amp;state=prep" target="_top" tabindex="0" aria-label="I&#x27;m Black">
+<rect x="183" y="523" width="157" height="40" rx="7" fill="#1971c2"/>
+<text x="195" y="548.0" font-size="14" fill="#f1f3f5" font-weight="650">I&#x27;m Black</text>
+</a>
+<text x="20" y="599" font-size="16" fill="#f1f3f5" font-weight="650">Opponent&#x27;s White games</text>
+<text x="20" y="627" font-size="12" fill="#a7acb4" font-weight="400">1. e4       64 games       1. d4       32 games</text>
+<a href="index.html?design=C&amp;state=prep" target="_top" tabindex="0" aria-label="Build prep">
+<rect x="20" y="652" width="153" height="44" rx="7" fill="#1971c2"/>
+<text x="32" y="679.0" font-size="14" fill="#f1f3f5" font-weight="650">Build prep</text>
+</a>
+<a href="index.html?design=C&amp;state=prep" target="_top" tabindex="0" aria-label="Saved lines">
+<rect x="183" y="652" width="157" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="679.0" font-size="14" fill="#f1f3f5" font-weight="400">Saved lines</text>
+</a>
+<a href="index.html?design=C&amp;state=main" target="_top" tabindex="0" aria-label="Back to pairing predictions">
+<rect x="20" y="714" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="741.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to pairing predictions</text>
+</a>
+</svg>

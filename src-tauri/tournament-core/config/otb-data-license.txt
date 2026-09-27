@@ -1,0 +1,10 @@
+OTB search database - Lichess broadcast archives
+Source: https://database.lichess.org/#broadcasts
+Copyright Lichess and its broadcast contributors.
+Licensed under Creative Commons Attribution-ShareAlike 4.0 International:
+https://creativecommons.org/licenses/by-sa/4.0/
+
+Novelty transforms the official monthly PGNs into a player-name and FIDE-ID
+search index with compressed game text. Archive URLs and game text are retained.
+This data is offered under CC BY-SA 4.0 independently of Novelty application code.
+Coverage describes the included archives, not all OTB games or all import sources.

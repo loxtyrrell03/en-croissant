@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Prep workspace: Tracking settings">
+<title>Prep workspace: Tracking settings — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=C&amp;state=prep" target="_top" tabindex="0" aria-label="Board">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Board</text>
+</a>
+<a href="index.html?design=C&amp;state=main" target="_top" tabindex="0" aria-label="Pairings">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Pairings</text>
+</a>
+<a href="index.html?design=C&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=C&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN C · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Tracking settings</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Harbour Open · Open section</text>
+<text x="20" y="184" font-size="13" fill="#a7acb4" font-weight="400">Your entry</text>
+<a href="index.html?design=C&amp;state=setup" target="_top" tabindex="0" aria-label="Sam Taylor · FIDE 00000009 ▾">
+<rect x="20" y="196" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="223.0" font-size="14" fill="#f1f3f5" font-weight="400">Sam Taylor · FIDE 00000009 ▾</text>
+</a>
+<text x="20" y="269" font-size="13" fill="#a7acb4" font-weight="400">Import games since</text>
+<rect x="20" y="281" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="309" font-size="15" fill="#f1f3f5" font-weight="400">2023</text>
+<text x="20" y="354" font-size="13" fill="#a7acb4" font-weight="400">Check for tournament updates</text>
+<rect x="20" y="366" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="394" font-size="15" fill="#f1f3f5" font-weight="400">On ▾</text>
+<text x="20" y="439" font-size="13" fill="#a7acb4" font-weight="400">Update imported opponents&#x27; games</text>
+<rect x="20" y="451" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="479" font-size="15" fill="#f1f3f5" font-weight="400">On ▾</text>
+<text x="20" y="521" font-size="13" fill="#a7acb4" font-weight="400">Last roster check: today, 14:32</text>
+<a href="index.html?design=C&amp;state=loading" target="_top" tabindex="0" aria-label="Check now">
+<rect x="20" y="547" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="574.0" font-size="14" fill="#f1f3f5" font-weight="400">Check now</text>
+</a>
+<a href="index.html?design=C&amp;state=downloads" target="_top" tabindex="0" aria-label="Local games &amp; downloads">
+<rect x="20" y="607" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="634.0" font-size="14" fill="#f1f3f5" font-weight="400">Local games &amp; downloads</text>
+</a>
+<a href="index.html?design=C&amp;state=remove" target="_top" tabindex="0" aria-label="Stop following…">
+<rect x="20" y="682" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="709.0" font-size="14" fill="#ffa8a8" font-weight="400">Stop following…</text>
+</a>
+</svg>

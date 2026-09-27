@@ -1,0 +1,788 @@
+{
+  "schema": 1,
+  "inspectedAt": "2026-09-27T18:56:56.563Z",
+  "scope": "Current working source only; no feature integration or deployment certification",
+  "source": {
+    "repository": "outpost-chess (Novelty)",
+    "head": "2af9f23d1bf0e3b9013d69e2e3f6c9dd5f779854",
+    "statusSha256": "4204bded5ee82bec948c225dd5d9c89f99e181869161f1d366b67038493b47e6",
+    "files": [
+      {
+        "path": "package.json",
+        "bytes": 1966,
+        "sha256": "6ae55b54ddffc90c175bf8fb6b3006d822b871b8f52eeb30f7a91b37a32a4ac4"
+      },
+      {
+        "path": "pnpm-lock.yaml",
+        "bytes": 52789,
+        "sha256": "fc9e2fba504768f7ee967b825ae8bc196aff61066f4fa02316ae35474275991a"
+      },
+      {
+        "path": "src-tauri/src/data_pack/otb_library.rs",
+        "bytes": 34042,
+        "sha256": "fdde2cdfe5d515f5559e73ade6c8eb82d760def6ece69f19cf3bfe18f298780a"
+      },
+      {
+        "path": "src-tauri/src/otb_import.rs",
+        "bytes": 195550,
+        "sha256": "78a5e9971631552f74f9b5c33123126a5cfbd2226901316a5089645cd8ed5224"
+      },
+      {
+        "path": "src-tauri/src/otb_import/index.rs",
+        "bytes": 38899,
+        "sha256": "65d648aeba1229845995ee583540afa5c8f79223f37ce61f489368c18c6686da"
+      },
+      {
+        "path": "src-tauri/src/otb_packs.rs",
+        "bytes": 21123,
+        "sha256": "19f46db77b2c2e4e9354aa2be3e1af7c323e583f6557158e966244f8cc15efda"
+      },
+      {
+        "path": "src-tauri/src/tournament.rs",
+        "bytes": 69256,
+        "sha256": "7c2869a1e4dd58eb01a74ea4824e19e53a684eba2c75b4826c4a4b7f6757f9a3"
+      },
+      {
+        "path": "src-tauri/src/tournament/discovery.rs",
+        "bytes": 17176,
+        "sha256": "21ba523136856f99dbae40230362ede44401cf33f72ee8975040cc23bd7aad66"
+      },
+      {
+        "path": "src-tauri/src/tournament/media.rs",
+        "bytes": 6630,
+        "sha256": "2d05fb518e44d86ae17b4cb3da46ef4b9ab18d21fbff4cbbf42cc98a121bc247"
+      },
+      {
+        "path": "src-tauri/src/tournament/schedule.rs",
+        "bytes": 5230,
+        "sha256": "f4653957f15fb32f2dc80b760d7fcd475981742b00ed2e94fbe7362ef9527fb9"
+      },
+      {
+        "path": "src/features/home/FidePlayerPicker.tsx",
+        "bytes": 10762,
+        "sha256": "8991e2a89225a94bfd312e9f4ae609c9e219915b9da310913e6ea74b8edb48c4"
+      },
+      {
+        "path": "src/features/home/PlayerGameImportModal.tsx",
+        "bytes": 26722,
+        "sha256": "c1f7763a9b26a803b1f0972dfa76635c4f432ec6411a2eaae5559bcd6d651088"
+      },
+      {
+        "path": "src/features/home/otbImportModel.ts",
+        "bytes": 6557,
+        "sha256": "b177e84baebf3164b0947f4f0dd56fcc2ca3e1e5cf78bc249401d03ce254ff0a"
+      },
+      {
+        "path": "src/features/home/playerImportPersistence.ts",
+        "bytes": 5542,
+        "sha256": "c4cca6bfe4f1fd77e3c87c2e0489f6ed78e6702efdf549c71809db16037d2c37"
+      },
+      {
+        "path": "src/features/settings/OtbDownloadControl.tsx",
+        "bytes": 16485,
+        "sha256": "d7ba29859654bbdd9d791f6efa94d9181af6b756f371320c4e0e292888591c33"
+      },
+      {
+        "path": "src/features/settings/otbActivity.ts",
+        "bytes": 4247,
+        "sha256": "b3e4af4b09cb1a825db37fc5ffa7feabb68787e1a239800e722946c4e7653e09"
+      },
+      {
+        "path": "src/features/settings/otbDownloadPresentation.ts",
+        "bytes": 2933,
+        "sha256": "323f2f78c2de3f575a6eca8f156fc8a5126f516964d72b7c0a79f2ca2ef21308"
+      },
+      {
+        "path": "src/features/settings/otbDownloads.ts",
+        "bytes": 11540,
+        "sha256": "d5db3e591d163aeb952b9be2f71d4e18c1f33aadd3717ed3e4979873a650a471"
+      },
+      {
+        "path": "src/features/tournaments/TournamentArtwork.tsx",
+        "bytes": 1820,
+        "sha256": "22ffa991439d8d3efefd838d9b76efdba73edfdeffbecdba8ca8002d0a27555f"
+      },
+      {
+        "path": "src/features/tournaments/TournamentDiscovery.module.css",
+        "bytes": 9447,
+        "sha256": "3f8dfc1ae417ecb93bbca978a103e036bdfeb87dd0c81968e7217fb297205594"
+      },
+      {
+        "path": "src/features/tournaments/TournamentDiscovery.tsx",
+        "bytes": 14751,
+        "sha256": "4e527beae51d96c93ac302f6c1027f69f5775b1111d36fcf078d39294a005b25"
+      },
+      {
+        "path": "src/features/tournaments/TournamentEventPreview.tsx",
+        "bytes": 5851,
+        "sha256": "d87cfc99e100f56b92b3837493e7d41667ee84b1f60f9ce3b3fb5b6a8e9d4837"
+      },
+      {
+        "path": "src/features/tournaments/TournamentPrepModal.module.css",
+        "bytes": 29995,
+        "sha256": "c7a5cf2e328edcbbcdf73c44cc3eb8a01b83e8f9221b898409a059e3c44eb1ac"
+      },
+      {
+        "path": "src/features/tournaments/TournamentPrepModal.tsx",
+        "bytes": 17554,
+        "sha256": "6d5799b3b4a567849f72a3d548f7b4cbed69d29cf47cbbb59baf3d45f48d7852"
+      },
+      {
+        "path": "src/features/tournaments/TournamentPrepStrip.module.css",
+        "bytes": 2967,
+        "sha256": "7e71301e3c10f970dc8cf205ff86763e0ed6047138706ec365aa60e869a9b8fb"
+      },
+      {
+        "path": "src/features/tournaments/TournamentPrepStrip.tsx",
+        "bytes": 7486,
+        "sha256": "285c36557ef5edece45d40d706d46fa60c9d5518fbd33c17eebf23a28a935942"
+      },
+      {
+        "path": "src/features/tournaments/TournamentStartCountdown.module.css",
+        "bytes": 400,
+        "sha256": "3ebdfc3bfb1171e584587babe3c24117e466acc388b015217b88507f18bcea93"
+      },
+      {
+        "path": "src/features/tournaments/TournamentStartCountdown.tsx",
+        "bytes": 1507,
+        "sha256": "728133c659a1adf7ebb9a9276c9ea401eb83ecdd1ee29ab84589d7e65d028769"
+      },
+      {
+        "path": "src/features/tournaments/TournamentTrackerView.module.css",
+        "bytes": 12627,
+        "sha256": "8bb028ffeedad01067254b5439a9613193948539b1972f8b282124ef9e09da69"
+      },
+      {
+        "path": "src/features/tournaments/TournamentTrackerView.tsx",
+        "bytes": 31571,
+        "sha256": "ed52a945f4c23aa245c25fabdba312b8a8c43aa93797601a5081c61e4a281da4"
+      },
+      {
+        "path": "src/features/tournaments/TournamentWebsiteLink.tsx",
+        "bytes": 97,
+        "sha256": "2997658abc1f74b5bd903d9ba593660871499c6c7b61a000f0ec9b1763f32ca4"
+      },
+      {
+        "path": "src/features/tournaments/adaptiveSwissWeights.json",
+        "bytes": 484,
+        "sha256": "7f3b18fb2b1fa37180d84ac8c4eb570a42a66a679f52ec0274c75ac1c8b409f8"
+      },
+      {
+        "path": "src/features/tournaments/exactSwissForecast.ts",
+        "bytes": 9559,
+        "sha256": "9b9055ed4e2be4e8518f55d98cc149c4455a1e3b3a76e579a5a4528ef3ae5e33"
+      },
+      {
+        "path": "src/features/tournaments/exactSwissForecast.worker.ts",
+        "bytes": 1121,
+        "sha256": "b2e24eb53d5a76635b200f2e70db92ece41b958ad571847fa2d3270fcc70dc77"
+      },
+      {
+        "path": "src/features/tournaments/exactSwissForecastClient.ts",
+        "bytes": 7780,
+        "sha256": "83a4e8b7cbb6063a0e39c1bedb65187fdc866c9ed8a55d742051bc10974b7ac1"
+      },
+      {
+        "path": "src/features/tournaments/firstRoundCalibrationWeights.json",
+        "bytes": 737,
+        "sha256": "ed656cbe3e694f19c17a837db36899a0615f196d8876b2e6e6f1cb73c2e91121"
+      },
+      {
+        "path": "src/features/tournaments/forecastPresentation.ts",
+        "bytes": 2231,
+        "sha256": "8af3d2c0d98d9c2b90ef535359163db65233b1de4229d92591838ad001f63812"
+      },
+      {
+        "path": "src/features/tournaments/largeFallbackWeights.json",
+        "bytes": 1248,
+        "sha256": "641b5a94b3adbb285bfeb5fa43963ce99155bf10a576d08ba646e1b9bdc15705"
+      },
+      {
+        "path": "src/features/tournaments/ownResultCalibrationWeights.json",
+        "bytes": 2426,
+        "sha256": "fed7a1ce0e33edce82cf51226eaca3e9078206a078db2a43ac30dd153a1b537c"
+      },
+      {
+        "path": "src/features/tournaments/pairingCalibration.ts",
+        "bytes": 2303,
+        "sha256": "d17139556eb67ff5c3bd09bf0d214ef3be55b0fdf288884fe3e1f4d24bd7efab"
+      },
+      {
+        "path": "src/features/tournaments/pairingCalibrationWeights.json",
+        "bytes": 2046,
+        "sha256": "222484bb3a2f9657a6b1fdbb3a2b9b824a5d0543a4379cc97c6b4aff85b628c8"
+      },
+      {
+        "path": "src/features/tournaments/pairingForecast.ts",
+        "bytes": 33395,
+        "sha256": "ef8f853df542b895d76cca557a1e492434ea9bfecb17368ded9c702d1a209184"
+      },
+      {
+        "path": "src/features/tournaments/pairingHistoryCalibration.ts",
+        "bytes": 2279,
+        "sha256": "c56e13337d6e858f3232da0605310ec43a6df38f307a26cad4d8a11e27ccb331"
+      },
+      {
+        "path": "src/features/tournaments/pairingHistoryReliability.ts",
+        "bytes": 3353,
+        "sha256": "9e0a0f579c58781fe7144d548beda5179393afb75b7ba6d3eaa21e5e21212cbb"
+      },
+      {
+        "path": "src/features/tournaments/pairingScoreHelp.ts",
+        "bytes": 914,
+        "sha256": "22a81ef21ebae89652ec22ca2d3ea4cd11a4fe452830bab007f6cd907656077a"
+      },
+      {
+        "path": "src/features/tournaments/publishedNoOpponentScore.ts",
+        "bytes": 1490,
+        "sha256": "c06a7ebd0699fe72ee7bbe4101b8cd0e9236424b1062601657eccc3de94b55d0"
+      },
+      {
+        "path": "src/features/tournaments/sampledSwissForecast.ts",
+        "bytes": 6828,
+        "sha256": "c2d5043144fc559c8ea2a7ee82a307dbe0f42bb7b9a4862a08a841d4e5d0bf24"
+      },
+      {
+        "path": "src/features/tournaments/swissAttendanceWeights.json",
+        "bytes": 468,
+        "sha256": "1fc7da44dbb64114f4e6a1da843ad03affc1e905d14b44d9a13a1a7f2ae98c86"
+      },
+      {
+        "path": "src/features/tournaments/swissPairingSettings.ts",
+        "bytes": 4307,
+        "sha256": "f77c6f3ffb41703fb021773e14b2c86b11dd2b4ac10e91e602fd36b58c785d36"
+      },
+      {
+        "path": "src/features/tournaments/swissParticipation.ts",
+        "bytes": 2636,
+        "sha256": "58f37f1cb0122976d8aa8c42c984c2a7a8981e3b788cc0c6fdbd60bd82e1f63d"
+      },
+      {
+        "path": "src/features/tournaments/tests/TournamentPrepModal.test.tsx",
+        "bytes": 1663,
+        "sha256": "05686344b5d05091b22c1628da67e4c351cb3e8f58f33f334731ac1bd37f08f9"
+      },
+      {
+        "path": "src/features/tournaments/tests/TournamentPrepStrip.test.tsx",
+        "bytes": 740,
+        "sha256": "c384cda0e7b2809cd96f8e9f8d841437b615593b49684c9a3056d9b11176a462"
+      },
+      {
+        "path": "src/features/tournaments/tests/TournamentTrackerView.test.tsx",
+        "bytes": 3707,
+        "sha256": "412a72c24a924e5592046a92bb369ffcad6c72dda779555171d1be38328edf42"
+      },
+      {
+        "path": "src/features/tournaments/tests/accelerationPairingGroups.test.ts",
+        "bytes": 3668,
+        "sha256": "76514e1ebea7e396ac9cc325f095b8de71afffe381a0f01ab910f4fe75dc4753"
+      },
+      {
+        "path": "src/features/tournaments/tests/exactSwissFieldWorker.test.ts",
+        "bytes": 3409,
+        "sha256": "f29eb8a24c0f9a535c34a228db037d162bcfce7dfc4fb809ed4d89c665881b59"
+      },
+      {
+        "path": "src/features/tournaments/tests/exactSwissForecastClient.test.ts",
+        "bytes": 26505,
+        "sha256": "3911ae1ca37529d2ce06402b7f24ea957ef3b9cca337151bab8519bad4cd0e46"
+      },
+      {
+        "path": "src/features/tournaments/tests/firstRoundPresentation.test.tsx",
+        "bytes": 2559,
+        "sha256": "94be6a93185e1d88aaec71886168f0edf78c2690aad53c35caae76b3525677f8"
+      },
+      {
+        "path": "src/features/tournaments/tests/fixtures/historicalSwiss.json",
+        "bytes": 1529611,
+        "sha256": "02edf6e6cba648d68207252511d6adbc6d3c0be526c476d3e7c4ff4bf78a1db2"
+      },
+      {
+        "path": "src/features/tournaments/tests/forecastPresentation.test.tsx",
+        "bytes": 2618,
+        "sha256": "1f0595a143104c5749fd7fed434cf69ba39e55b56e359b66b13fdcc26e1caad9"
+      },
+      {
+        "path": "src/features/tournaments/tests/historicalSwissReplay.ts",
+        "bytes": 8517,
+        "sha256": "e32fb616d57872196b021c05b887fe784508e1cddfa71a79ff6a8f64851b6813"
+      },
+      {
+        "path": "src/features/tournaments/tests/pairingCalibration.test.ts",
+        "bytes": 4865,
+        "sha256": "597e833387c2e557d6036926a8204d7cf31657e6a80ffcd0485663afe0fc31dc"
+      },
+      {
+        "path": "src/features/tournaments/tests/pairingEstimateHelp.test.ts",
+        "bytes": 2562,
+        "sha256": "55b47590f70ee9c9748686be4328fee24864e06e6def0c0bcea2c2d88ef322a8"
+      },
+      {
+        "path": "src/features/tournaments/tests/pairingForecast.history.test.ts",
+        "bytes": 4956,
+        "sha256": "fcfbcd8e802e0ce5a48784a0f01c7be5c4e57afbc5134cb498b4943f84c3bd68"
+      },
+      {
+        "path": "src/features/tournaments/tests/pairingForecast.test.ts",
+        "bytes": 20615,
+        "sha256": "c665c963e65a8a17b89beb5397597eca088e3791d28123e386e8e8621b445f93"
+      },
+      {
+        "path": "src/features/tournaments/tests/pairingHistoryCalibration.test.ts",
+        "bytes": 5476,
+        "sha256": "fd052acd1c266511f4580d85ca480e88116b7ec7e20fbb9126a422fac6a0b93e"
+      },
+      {
+        "path": "src/features/tournaments/tests/pairingProvenance.test.tsx",
+        "bytes": 1160,
+        "sha256": "aff0cb441979dbd8b27dc35fed8f20c555d71a23227846df262a576b65f36670"
+      },
+      {
+        "path": "src/features/tournaments/tests/publishedNoOpponentScore.test.ts",
+        "bytes": 5282,
+        "sha256": "50cc18f80462a52d745b885f26916ece3c8dff0545759ac204c82eaf87ace817"
+      },
+      {
+        "path": "src/features/tournaments/tests/sampledSwissForecast.test.ts",
+        "bytes": 5785,
+        "sha256": "6f21a8a47ea4d1f8d32ddca44a9b9eebb23f33b8a69b814014c0900310b52da5"
+      },
+      {
+        "path": "src/features/tournaments/tests/swissAcceleration.test.ts",
+        "bytes": 3692,
+        "sha256": "439d30fdccefbf4b8a796c6aa2e536ba25952b9ff331898f973d3869a199a48d"
+      },
+      {
+        "path": "src/features/tournaments/tests/swissParticipation.test.ts",
+        "bytes": 5559,
+        "sha256": "8714c35c1f2cf0423c2ed8607f6b4d6767fda5ba88fd7fd29ad6766e016b1e05"
+      },
+      {
+        "path": "src/features/tournaments/tests/tournamentAwardedScores.test.ts",
+        "bytes": 2843,
+        "sha256": "a735551040b606523676670207612a73d82167153b86e87b3f4dad7b454d31d5"
+      },
+      {
+        "path": "src/features/tournaments/tests/tournamentDiscoveryModel.test.ts",
+        "bytes": 1243,
+        "sha256": "26b5b7c621476f212e70408e4e66ee8c863643a616585db32a8044ae8702e46a"
+      },
+      {
+        "path": "src/features/tournaments/tests/tournamentFinder.test.ts",
+        "bytes": 1999,
+        "sha256": "e72a8a927ec2e99f196688800e940b5dd83509a0490b52358db702f2bb344eda"
+      },
+      {
+        "path": "src/features/tournaments/tests/tournamentIdentity.test.tsx",
+        "bytes": 4845,
+        "sha256": "a8ea5c25efc66dd91b1786e4b0173fb2d880422dbddeab4f8fdbf350b97724bd"
+      },
+      {
+        "path": "src/features/tournaments/tests/tournamentInsights.test.ts",
+        "bytes": 3012,
+        "sha256": "fe3aa66f340004e9ad3eabd8d9d5154c21c7f69250d23bbbfe3622691a071a2c"
+      },
+      {
+        "path": "src/features/tournaments/tests/tournamentPrepHandoff.test.ts",
+        "bytes": 1559,
+        "sha256": "7238df7a1654e8310984b2e2eab51d59e791f28281480f6f86c1a37cc7d60cd8"
+      },
+      {
+        "path": "src/features/tournaments/tests/tournamentPrepReadOrdering.test.ts",
+        "bytes": 3037,
+        "sha256": "84d72635ed539d3781cba0139c3983261f35c7aafc644513d89b08e8b20228f9"
+      },
+      {
+        "path": "src/features/tournaments/tests/tournamentPrepRemoval.test.ts",
+        "bytes": 11221,
+        "sha256": "6139c4a749ae6f5ef3886f9a18630f7776a7e562ab7919b527b3662adffaa76e"
+      },
+      {
+        "path": "src/features/tournaments/tests/tournamentPrepSave.test.ts",
+        "bytes": 1822,
+        "sha256": "7acb3e857151eed1e643b50573c97c326e0a77b07bc996f7a989c16fff3ace96"
+      },
+      {
+        "path": "src/features/tournaments/tests/tournamentPrepStore.test.ts",
+        "bytes": 3348,
+        "sha256": "952f5e20b983ab1fd5d4d5c652b17100270b4843a8b6d675277b4231de3c4a50"
+      },
+      {
+        "path": "src/features/tournaments/tests/tournamentRoster.test.ts",
+        "bytes": 8950,
+        "sha256": "700ed8bccf6f388b19102c4bada3b000cd3566f53535cb16691dec62cc76bff2"
+      },
+      {
+        "path": "src/features/tournaments/tests/tournamentSearch.test.ts",
+        "bytes": 3233,
+        "sha256": "7619c0c0bb6496b0fbc0dab973d1bc439d12c469c0580b46d7dfab3d50262539"
+      },
+      {
+        "path": "src/features/tournaments/tests/tournamentSearchCandidates.test.ts",
+        "bytes": 2381,
+        "sha256": "543eb3fb8acb038f3d654c300ec0a45c23666a221bb1aeb2e7660b9b9106c66a"
+      },
+      {
+        "path": "src/features/tournaments/tests/tournamentStart.test.ts",
+        "bytes": 3586,
+        "sha256": "78cfbef909199eb66a4095430662c47067ea6aee7b8bb9defc234bd945bb2357"
+      },
+      {
+        "path": "src/features/tournaments/tests/trackerFixture.ts",
+        "bytes": 1924,
+        "sha256": "d6f1b02614298b3fb5715602dcc1523ed91c092b344c6d90d97fbb96cf291a7b"
+      },
+      {
+        "path": "src/features/tournaments/tournamentCountries.json",
+        "bytes": 25493,
+        "sha256": "b887c4533a346d9892e0b8a782ca469227db2e73dd9773dc04685e97c22bc4b4"
+      },
+      {
+        "path": "src/features/tournaments/tournamentDiscoveryModel.ts",
+        "bytes": 3507,
+        "sha256": "4213c1af262726c204be31c8fd07f0f7a7a6fc322d5a61abdbfb8ca87a4031e3"
+      },
+      {
+        "path": "src/features/tournaments/tournamentFinder.ts",
+        "bytes": 1569,
+        "sha256": "1d431731e12164d16d2e26fb5e73c7b37d74d3dc476f41bbeec39993e35bb27a"
+      },
+      {
+        "path": "src/features/tournaments/tournamentInsights.ts",
+        "bytes": 8369,
+        "sha256": "17ad4648a77a650c92c1863b83448174d5cb0f958aa0624501c8218daa41c1e5"
+      },
+      {
+        "path": "src/features/tournaments/tournamentPrepHandoff.ts",
+        "bytes": 2577,
+        "sha256": "371380aede502abd0c4ec1527b80faec5332ed55ae87504e5739cdf4a2b2b7ab"
+      },
+      {
+        "path": "src/features/tournaments/tournamentPrepStore.ts",
+        "bytes": 11001,
+        "sha256": "cd526c38567b5f9b0f84f9add7dbc812b9d071cfc5e4c743c9ccb5b9591afc11"
+      },
+      {
+        "path": "src/features/tournaments/tournamentPrepSync.ts",
+        "bytes": 17416,
+        "sha256": "ad19d3aceacbfa87762bd384ce3f1c11543e2872d7b494df9650f37383abd537"
+      },
+      {
+        "path": "src/features/tournaments/tournamentRoster.ts",
+        "bytes": 6337,
+        "sha256": "4494d3f7df23cb2314e720c7beaefcc3f080fd4418e07aa94aeda691f8af373f"
+      },
+      {
+        "path": "src/features/tournaments/tournamentSearch.ts",
+        "bytes": 3304,
+        "sha256": "5b9473eaf6732f9d1bee75bcc0adea8daed8e05257b3063411f42df07a97626a"
+      },
+      {
+        "path": "src/features/tournaments/tournamentSearchCandidates.ts",
+        "bytes": 1337,
+        "sha256": "ab69382e8472b7ef06996aaa25afabd23721550c4a754fb80056fb41829a938d"
+      },
+      {
+        "path": "src/features/tournaments/tournamentStart.ts",
+        "bytes": 2924,
+        "sha256": "01e4f8b44fc57ca94ad8edf1ab623520d2099e16cbe71897e26f56826a0a4b6a"
+      },
+      {
+        "path": "src/features/tournaments/usePairingForecast.ts",
+        "bytes": 3248,
+        "sha256": "96f78a477a342f6a64482094e66bd4422d4e3ae170808c53de5bb46a0314802d"
+      },
+      {
+        "path": "src/platform/bridge.ts",
+        "bytes": 61466,
+        "sha256": "8902539621ebb7f932533bf4b41451d86abe02f5f35ab5f2077207b70c09dd40"
+      }
+    ]
+  },
+  "target": {
+    "repository": "en-croissant",
+    "head": "a6e5f5759bc743c35940b9d22ff8017de7e819b9",
+    "tournamentFrontendPresent": false,
+    "tournamentNativePresent": false,
+    "files": [
+      {
+        "path": "src/components/panels/prep/OtbGameImportPanel.tsx",
+        "exists": true,
+        "sha256": "02f961f729bba1ac3ee8e895289433d744595733f514f96449b8b35efe01b904"
+      },
+      {
+        "path": "src/utils/otbGameImport.ts",
+        "exists": true,
+        "sha256": "09aaa8f5a7d6c63fe28801c188316eb6241cde24bda1e9ec73b481d81c9961af"
+      },
+      {
+        "path": "src/web/PhoneOtbImportPanel.tsx",
+        "exists": true,
+        "sha256": "d50c33172dcfc612b1013af962d6424d7e4f6ffeb54ccdd1712d07102e52e181"
+      },
+      {
+        "path": "src/web/otbImport.ts",
+        "exists": true,
+        "sha256": "50f83953a98393e1435296a8c24c8250504194db4bcce8f8db2fe7db2870fa7c"
+      },
+      {
+        "path": "src/web/otbPrep.ts",
+        "exists": true,
+        "sha256": "0b58fde85087058610cf7197f42f2e565036e57ffd4829b888a6d345e7e148c6"
+      },
+      {
+        "path": "src/web/otbStartSession.ts",
+        "exists": true,
+        "sha256": "6c51e3f73347bc86cc91c80ba017b1cec74be2cd989b8f272d4789b08e29aabb"
+      },
+      {
+        "path": "src/web/WebApp.tsx",
+        "exists": true,
+        "sha256": "ac0d6d69f629f221df57a50974e264f681ae7ae94672c49dfbd373265e1078b7"
+      },
+      {
+        "path": "src/web/storage.ts",
+        "exists": true,
+        "sha256": "9e3a0629005038d6b07555b8131933f3b0428ba7651bfffcce580266d3b1f253"
+      },
+      {
+        "path": "scripts/home-server.mjs",
+        "exists": true,
+        "sha256": "1f74ab9d4d77a9125977ea401a392a04c0e2680df6a118bdd15aa15e3d556c10"
+      },
+      {
+        "path": "scripts/otb-import-service.mjs",
+        "exists": true,
+        "sha256": "33fbaefb60e4b31d5cf2ea2d7298192faf53498d25cd264035000411c0e030b2"
+      },
+      {
+        "path": "src-tauri/src/otb_import.rs",
+        "exists": true,
+        "sha256": "c52ad5fcd7b2d67e7d9c4c6302fcfdbe71cc1604f81e71325bb9705b50c0cfef"
+      },
+      {
+        "path": "src-tauri/src/otb_import/index.rs",
+        "exists": true,
+        "sha256": "ba7e3045bc5662c7bc6d96cbf914fb45a372e23daf449bfeef5f0080635b2dbf"
+      },
+      {
+        "path": "src-tauri/src/otb_database_save.rs",
+        "exists": true,
+        "sha256": "fd9029a3f4aca28c5d3b4a0badff4bd3f6acb323ffcf97b478d85d45adb7dbdf"
+      },
+      {
+        "path": "src-tauri/src/bin/collect_otb_games.rs",
+        "exists": true,
+        "sha256": "3dc4e42c5d9480475d17bc09a91b66864d8eb062654545e2d5d54825dc29158b"
+      }
+    ]
+  },
+  "nativeComparison": [
+    {
+      "path": "src-tauri/src/otb_import.rs",
+      "identical": false,
+      "sourceOnlyFunctions": [
+        "resolve_lichess_tour_specs",
+        "britbase_archive_host_available",
+        "take_lichess_slot",
+        "move_lines_match_through_terminal_noise",
+        "chessscope_round_is_in_corpus",
+        "lichess_live_cutoff",
+        "extract_lichess_round_paths_since",
+        "timestamp_year",
+        "dates_overlap",
+        "dedupes_complete_games_despite_source_date_disagreement",
+        "live_lichess_discovery_skips_months_already_in_the_corpus",
+        "dedupes_real_dgt_tail_after_the_recorded_game_ended",
+        "dedupes_a_differently_recorded_final_move_but_not_an_earlier_divergence",
+        "chessscope_date_handles_every_nearby_multibyte_boundary",
+        "public_benchmark_header_normalization_acceptance",
+        "quoted_league_title_reaches_the_native_library_parser",
+        "prepare_public_archive"
+      ],
+      "targetOnlyFunctions": [
+        "index_run_for_request",
+        "from_complete_months",
+        "empty",
+        "covers_date",
+        "covers_year",
+        "covers_timestamp_range",
+        "capturing",
+        "into_deterministic",
+        "pgn_date_has_numeric_year",
+        "discover_lichess_fide_rounds",
+        "scan_zst_bytes",
+        "scan_zip_bytes",
+        "scan_archive_bytes",
+        "lichess_with_fallback",
+        "lichess_complete_tour",
+        "available",
+        "failed_live_attempts",
+        "accounted",
+        "not_attempted",
+        "is_complete",
+        "incomplete_message",
+        "blocks_host",
+        "description",
+        "scan_direct_lichess_pgn_archives",
+        "merge_direct_lichess_attempts",
+        "fetch_and_scan_direct_lichess_spec",
+        "fetch_and_scan_direct_lichess_pgn",
+        "scan_lichess_rounds_pipelined",
+        "resolve_lichess_fide_card_metadata",
+        "fetch_lichess_round_metadata",
+        "fetch_lichess_round_page_metadata",
+        "extract_lichess_round_page_metadata",
+        "lichess_single_round_player_specs",
+        "lichess_tour_is_settled",
+        "lichess_round_chapter_roster_is_complete",
+        "resolve_lichess_tour_player_specs",
+        "lichess_tour_player_keys",
+        "lichess_player_name_keys",
+        "lichess_tour_id_and_dates",
+        "lichess_tour_round_ids",
+        "lichess_tour_player_specs",
+        "lichess_round_fallback_spec",
+        "lichess_study_chapter_url",
+        "lichess_study_round_url",
+        "valid_lichess_id",
+        "percent_encode_path_segment",
+        "resolve_lichess_round_specs",
+        "resolve_lichess_round_specs_for_path",
+        "lichess_player_chapter_ids",
+        "lichess_listing_is_exhausted",
+        "fetch_lichess_json_cached_within",
+        "fetch_lichess_json_fresh",
+        "fetch_lichess_cached_within_mode",
+        "four_ncl_archive_is_growing",
+        "four_ncl_season_for_date",
+        "four_ncl_season_from_url",
+        "scan_britbase_archives",
+        "merge_britbase_outcome",
+        "scan_unindexed_britbase_archive",
+        "read_britbase_cache_entry",
+        "britbase_request",
+        "fetch_britbase_archive",
+        "fetch_britbase_batch",
+        "wait_for_britbase_lane",
+        "hold_britbase_lane",
+        "validate_discovery_count",
+        "fetch_cached",
+        "fetch_cached_growing",
+        "fetch_page_live",
+        "filtered_scan_cache_path",
+        "read_filtered_scan_cache",
+        "write_filtered_scan_cache",
+        "get_lichess_with_backoff_mode",
+        "lichess_transport_error_is_retryable",
+        "wait_for_lichess_lane",
+        "prepare_candidate",
+        "add_candidate",
+        "retain_preferred_duplicate",
+        "collected_game_is_better",
+        "reconcile_source_reports",
+        "register_game_fingerprints",
+        "move_lines_are_prefixes",
+        "default",
+        "begin_game",
+        "end_headers",
+        "san",
+        "begin_variation",
+        "end_game",
+        "pgn_has_legal_standard_mainline",
+        "canonical_britbase_url",
+        "britbase_equivalent_urls",
+        "lichess_corpus_coverage",
+        "extract_lichess_rounds_since",
+        "lichess_fide_next_page_url",
+        "lichess_fide_next_page_url_at_origin",
+        "normalized_player_key",
+        "source_report_duration_matches_json_and_generated_binding",
+        "test_request",
+        "read_mock_request",
+        "write_mock_response",
+        "lichess_round_page",
+        "reset_lichess_test_state",
+        "treats_only_lichess_resource_too_old_as_the_listing_boundary",
+        "tolerant_mainline_fingerprint_keeps_moves_after_noisy_archive_words",
+        "malformed_pawn_promotion_cannot_enter_the_exact_move_index",
+        "double_check_notation_remains_a_fingerprint_ply",
+        "check_and_mate_suffixes_share_the_same_move_fingerprint",
+        "provenance_normalizes_multiple_header_separators",
+        "repeated_event_headers_split_header_only_games_without_phantoms",
+        "sanitizer_escapes_literal_quotes_inside_header_values",
+        "sanitizer_removes_a_result_stranded_after_a_header",
+        "sanitizer_round_trips_existing_header_escapes",
+        "sanitizer_leaves_movetext_untouched",
+        "exact_move_dedupe_does_not_merge_different_records",
+        "collector_deduplicates_archives_that_only_disagree_on_check_vs_mate",
+        "live_lichess_listing_filters_cards_by_cutoff_but_keeps_undated_cards",
+        "follows_the_canonical_lichess_fide_next_page_link",
+        "lichess_fide_pagination_rejects_loops_and_external_cursors",
+        "lichess_fide_discovery_follows_every_page_even_after_an_old_card",
+        "resolves_exact_lichess_study_chapters_by_fide_id",
+        "parses_public_round_bootstrap_and_uses_only_finished_singletons_directly",
+        "malformed_public_round_page_falls_back_to_the_official_api",
+        "avoids_known_missing_fide_lookup_for_legacy_tours",
+        "lichess_fide_tour_pipeline_recovers_every_round_by_encoded_name_and_dedupes_cards",
+        "ongoing_lichess_tour_refreshes_a_cached_roster_before_scanning",
+        "lichess_fide_tour_falls_back_to_every_full_fidelity_round_study",
+        "lichess_fide_tour_skips_only_when_its_complete_date_span_is_covered",
+        "complete_lichess_tour_without_the_advertised_player_fails_coverage",
+        "direct_lichess_merge_is_url_ordered_and_retains_lossless_fallback",
+        "lichess_lane_retries_one_header_transport_failure_before_opening_the_circuit",
+        "lichess_lane_retries_a_truncated_success_body_before_caching_it",
+        "two_lichess_transport_failures_open_the_bounded_host_circuit",
+        "lichess_lane_serializes_complete_bodies_and_keeps_retry_after_cooldowns",
+        "scans_growing_lichess_pgn_directly_from_the_fresh_byte_cache",
+        "repairs_the_bare_britbase_pgn_and_keeps_alias_keys_compatible",
+        "britbase_live_request_uses_its_decade_index_as_referer",
+        "reads_an_alias_named_britbase_cache_before_live_fetching",
+        "unindexed_britbase_cache_is_filtered_directly_without_building_the_corpus",
+        "britbase_404_falls_through_to_an_equivalent_moved_url",
+        "britbase_cold_batch_fetches_and_caches_every_advertised_archive",
+        "britbase_partial_coverage_counts_attempted_and_unattempted_files",
+        "all_equivalent_404s_account_for_an_absent_britbase_artifact",
+        "empty_discovery_pages_cannot_claim_complete_coverage",
+        "deterministic_collection_keeps_named_zero_move_otb_records",
+        "rejects_torn_records_without_both_player_names",
+        "newest_game_dates_require_a_numeric_year",
+        "duplicate_quality_winner_is_independent_of_source_completion_order",
+        "legal_archive_copy_beats_a_longer_but_illegal_duplicate",
+        "deterministic_rebuild_ignores_candidate_arrival_order"
+      ]
+    },
+    {
+      "path": "src-tauri/src/otb_import/index.rs",
+      "identical": false,
+      "sourceOnlyFunctions": [
+        "prepared_paths",
+        "prepared_archive_urls",
+        "indexed_urls_one",
+        "query_indexed_one",
+        "prepared_database_fills_empty_local_cache_without_hiding_new_local_games",
+        "broken_prepared_database_is_visible_so_normal_archive_fallback_can_run",
+        "prepared_real_corpus_matches_original_player_results"
+      ],
+      "targetOnlyFunctions": [
+        "new",
+        "is_cancelled",
+        "check_cancelled",
+        "with_store_barrier",
+        "wait_before_store",
+        "drop",
+        "index_workers",
+        "lock_index_workers",
+        "register_index_worker",
+        "spawn_tracked_blocking",
+        "wait_until_idle",
+        "wait_for_workers",
+        "cancelled",
+        "test_run",
+        "name_only_cache_cannot_hide_fuzzy_matches_from_fide_pinned_query",
+        "cancelled_detached_writer_is_drained_without_committing"
+      ]
+    }
+  ],
+  "requiredPairingPackage": "5.0.0"
+}

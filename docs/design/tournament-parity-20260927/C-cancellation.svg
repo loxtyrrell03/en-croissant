@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Prep workspace: Stopped import">
+<title>Prep workspace: Stopped import — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=C&amp;state=prep" target="_top" tabindex="0" aria-label="Board">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Board</text>
+</a>
+<a href="index.html?design=C&amp;state=main" target="_top" tabindex="0" aria-label="Pairings">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Pairings</text>
+</a>
+<a href="index.html?design=C&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=C&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN C · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Search stopped</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Alex Morgan · Original search retained</text>
+<text x="20" y="226" font-size="16" fill="#f1f3f5" font-weight="400">Your previously saved games are</text>
+<text x="20" y="248" font-size="16" fill="#f1f3f5" font-weight="400">kept. This PC job stopped before a</text>
+<text x="20" y="270" font-size="16" fill="#f1f3f5" font-weight="400">complete new result was saved.</text>
+<a href="index.html?design=C&amp;state=import" target="_top" tabindex="0" aria-label="Start a new search">
+<rect x="20" y="361" width="320" height="48" rx="7" fill="#1971c2"/>
+<text x="32" y="390.0" font-size="14" fill="#f1f3f5" font-weight="650">Start a new search</text>
+</a>
+<a href="index.html?design=C&amp;state=prep" target="_top" tabindex="0" aria-label="Open previously saved Prep">
+<rect x="20" y="424" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="451.0" font-size="14" fill="#f1f3f5" font-weight="400">Open previously saved Prep</text>
+</a>
+<a href="index.html?design=C&amp;state=main" target="_top" tabindex="0" aria-label="Back to tournament">
+<rect x="20" y="489" width="320" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="516.0" font-size="14" fill="#f1f3f5" font-weight="400">Back to tournament</text>
+</a>
+<text x="20" y="593" font-size="13" fill="#a7acb4" font-weight="400">If completion wins the Stop race, show</text>
+<text x="20" y="612" font-size="13" fill="#a7acb4" font-weight="400">Games ready and use that saved result</text>
+<text x="20" y="631" font-size="13" fill="#a7acb4" font-weight="400">instead.</text>
+</svg>

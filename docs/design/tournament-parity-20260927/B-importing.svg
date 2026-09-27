@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="820" viewBox="0 0 360 820" role="img" aria-label="Round timeline: Searching and progress">
+<title>Round timeline: Searching and progress — invented example data</title>
+<style>text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{cursor:pointer}a:hover rect,a:focus rect{stroke:#74c0fc;stroke-width:2}a:focus{outline:none}</style>
+<rect x="0" y="0" width="360" height="820" rx="0" fill="#111315"/>
+<text x="20" y="30" font-size="17" fill="#f1f3f5" font-weight="650">♙  En Croissant</text>
+<text x="274" y="29" font-size="12" fill="#8ce99a" font-weight="400">PC ready</text>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Today">
+<rect x="16" y="46" width="78" height="38" rx="7" fill="#1971c2"/>
+<text x="28" y="70.0" font-size="14" fill="#f1f3f5" font-weight="650">Today</text>
+</a>
+<a href="index.html?design=B&amp;state=results" target="_top" tabindex="0" aria-label="Rounds">
+<rect x="100" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="112" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Rounds</text>
+</a>
+<a href="index.html?design=B&amp;state=import" target="_top" tabindex="0" aria-label="Import">
+<rect x="184" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="196" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Import</text>
+</a>
+<a href="index.html?design=B&amp;state=ready" target="_top" tabindex="0" aria-label="Files">
+<rect x="268" y="46" width="78" height="38" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="280" y="70.0" font-size="14" fill="#f1f3f5" font-weight="400">Files</text>
+</a>
+<path d="M0 96H360" stroke="#34383f"/>
+<text x="20" y="802" font-size="10" fill="#a7acb4" font-weight="400">DESIGN B · INVENTED EXAMPLE DATA</text>
+<text x="20" y="128" font-size="21" fill="#f1f3f5" font-weight="650">Importing Alex Morgan</text>
+<text x="20" y="151" font-size="13" fill="#a7acb4" font-weight="400">Games since 2023 · FIDE 00000001</text>
+<text x="20" y="206" font-size="21" fill="#f1f3f5" font-weight="650">Searching sources</text>
+<text x="20" y="239" font-size="14" fill="#a7acb4" font-weight="400">4 of 7 source groups finished</text>
+<rect x="20" y="263" width="320" height="7" rx="3" fill="#25272d"/>
+<rect x="20" y="263" width="183" height="7" rx="3" fill="#1971c2"/>
+<text x="20" y="318" font-size="14" fill="#f1f3f5" font-weight="400">Lichess archive</text>
+<text x="214" y="318" font-size="12" fill="#a7acb4" font-weight="400">Complete</text>
+<path d="M20 337H340" stroke="#34383f"/>
+<text x="20" y="370" font-size="14" fill="#f1f3f5" font-weight="400">Targeted broadcasts</text>
+<text x="214" y="370" font-size="12" fill="#a7acb4" font-weight="400">Searching…</text>
+<path d="M20 389H340" stroke="#34383f"/>
+<text x="20" y="422" font-size="14" fill="#f1f3f5" font-weight="400">Chess-Results</text>
+<text x="214" y="422" font-size="12" fill="#a7acb4" font-weight="400">Complete</text>
+<path d="M20 441H340" stroke="#34383f"/>
+<text x="20" y="474" font-size="14" fill="#f1f3f5" font-weight="400">TWIC</text>
+<text x="214" y="474" font-size="12" fill="#a7acb4" font-weight="400">Downloading…</text>
+<path d="M20 493H340" stroke="#34383f"/>
+<text x="20" y="526" font-size="14" fill="#f1f3f5" font-weight="400">Other source groups</text>
+<text x="214" y="526" font-size="12" fill="#a7acb4" font-weight="400">2 of 3 complete</text>
+<path d="M20 545H340" stroke="#34383f"/>
+<text x="20" y="612" font-size="14" fill="#f1f3f5" font-weight="650">128 matching games found so far</text>
+<text x="20" y="638" font-size="12" fill="#a7acb4" font-weight="400">Saving and validation follow the search.</text>
+<a href="index.html?design=B&amp;state=cancellation" target="_top" tabindex="0" aria-label="Stop search">
+<rect x="20" y="671" width="153" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="698.0" font-size="14" fill="#f1f3f5" font-weight="400">Stop search</text>
+</a>
+<a href="index.html?design=B&amp;state=main" target="_top" tabindex="0" aria-label="Keep tracking">
+<rect x="183" y="671" width="157" height="44" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="195" y="698.0" font-size="14" fill="#f1f3f5" font-weight="400">Keep tracking</text>
+</a>
+<a href="index.html?design=B&amp;state=saving" target="_top" tabindex="0" aria-label="Preview next state: save">
+<rect x="20" y="732" width="320" height="40" rx="7" fill="#25272d" stroke="#34383f"/>
+<text x="32" y="757.0" font-size="14" fill="#f1f3f5" font-weight="400">Preview next state: save</text>
+</a>
+</svg>

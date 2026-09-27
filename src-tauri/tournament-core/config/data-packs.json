@@ -1,0 +1,14 @@
+[
+  {
+    "id": "otb-2026-07-v1",
+    "kind": "otb",
+    "title": "OTB search database",
+    "summary": "Lichess broadcasts \u00b7 January 2020\u2013July 2026",
+    "detail": "Keep 1,186,335 tournament games on your computer to find players faster. Newer games and other websites are still searched online.",
+    "periodStart": "2020-01",
+    "periodEnd": "2026-07",
+    "downloadBytes": 1702188616,
+    "installedBytes": 4721901568,
+    "manifestSha256": "e0f4efd71ab2ba5bd2c070c1a358505d8ba7896b5dd22baf14874f7ab8d1b531"
+  }
+]

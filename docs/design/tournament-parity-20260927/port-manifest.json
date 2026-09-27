@@ -1,0 +1,447 @@
+[
+  {
+    "source": "src/features/tournaments/adaptiveSwissWeights.json",
+    "sourceSha256": "7f3b18fb2b1fa37180d84ac8c4eb570a42a66a679f52ec0274c75ac1c8b409f8",
+    "target": "src/features/tournaments/adaptiveSwissWeights.json"
+  },
+  {
+    "source": "src/features/tournaments/exactSwissForecast.ts",
+    "sourceSha256": "9b9055ed4e2be4e8518f55d98cc149c4455a1e3b3a76e579a5a4528ef3ae5e33",
+    "target": "src/features/tournaments/exactSwissForecast.ts"
+  },
+  {
+    "source": "src/features/tournaments/exactSwissForecast.worker.ts",
+    "sourceSha256": "b2e24eb53d5a76635b200f2e70db92ece41b958ad571847fa2d3270fcc70dc77",
+    "target": "src/features/tournaments/exactSwissForecast.worker.ts"
+  },
+  {
+    "source": "src/features/tournaments/exactSwissForecastClient.ts",
+    "sourceSha256": "83a4e8b7cbb6063a0e39c1bedb65187fdc866c9ed8a55d742051bc10974b7ac1",
+    "target": "src/features/tournaments/exactSwissForecastClient.ts"
+  },
+  {
+    "source": "src/features/tournaments/firstRoundCalibrationWeights.json",
+    "sourceSha256": "ed656cbe3e694f19c17a837db36899a0615f196d8876b2e6e6f1cb73c2e91121",
+    "target": "src/features/tournaments/firstRoundCalibrationWeights.json"
+  },
+  {
+    "source": "src/features/tournaments/forecastPresentation.ts",
+    "sourceSha256": "8af3d2c0d98d9c2b90ef535359163db65233b1de4229d92591838ad001f63812",
+    "target": "src/features/tournaments/forecastPresentation.ts"
+  },
+  {
+    "source": "src/features/tournaments/largeFallbackWeights.json",
+    "sourceSha256": "641b5a94b3adbb285bfeb5fa43963ce99155bf10a576d08ba646e1b9bdc15705",
+    "target": "src/features/tournaments/largeFallbackWeights.json"
+  },
+  {
+    "source": "src/features/tournaments/ownResultCalibrationWeights.json",
+    "sourceSha256": "fed7a1ce0e33edce82cf51226eaca3e9078206a078db2a43ac30dd153a1b537c",
+    "target": "src/features/tournaments/ownResultCalibrationWeights.json"
+  },
+  {
+    "source": "src/features/tournaments/pairingCalibration.ts",
+    "sourceSha256": "d17139556eb67ff5c3bd09bf0d214ef3be55b0fdf288884fe3e1f4d24bd7efab",
+    "target": "src/features/tournaments/pairingCalibration.ts"
+  },
+  {
+    "source": "src/features/tournaments/pairingCalibrationWeights.json",
+    "sourceSha256": "222484bb3a2f9657a6b1fdbb3a2b9b824a5d0543a4379cc97c6b4aff85b628c8",
+    "target": "src/features/tournaments/pairingCalibrationWeights.json"
+  },
+  {
+    "source": "src/features/tournaments/pairingForecast.ts",
+    "sourceSha256": "ef8f853df542b895d76cca557a1e492434ea9bfecb17368ded9c702d1a209184",
+    "target": "src/features/tournaments/pairingForecast.ts"
+  },
+  {
+    "source": "src/features/tournaments/pairingHistoryCalibration.ts",
+    "sourceSha256": "c56e13337d6e858f3232da0605310ec43a6df38f307a26cad4d8a11e27ccb331",
+    "target": "src/features/tournaments/pairingHistoryCalibration.ts"
+  },
+  {
+    "source": "src/features/tournaments/pairingHistoryReliability.ts",
+    "sourceSha256": "9e0a0f579c58781fe7144d548beda5179393afb75b7ba6d3eaa21e5e21212cbb",
+    "target": "src/features/tournaments/pairingHistoryReliability.ts"
+  },
+  {
+    "source": "src/features/tournaments/pairingScoreHelp.ts",
+    "sourceSha256": "22a81ef21ebae89652ec22ca2d3ea4cd11a4fe452830bab007f6cd907656077a",
+    "target": "src/features/tournaments/pairingScoreHelp.ts"
+  },
+  {
+    "source": "src/features/tournaments/publishedNoOpponentScore.ts",
+    "sourceSha256": "c06a7ebd0699fe72ee7bbe4101b8cd0e9236424b1062601657eccc3de94b55d0",
+    "target": "src/features/tournaments/publishedNoOpponentScore.ts"
+  },
+  {
+    "source": "src/features/tournaments/sampledSwissForecast.ts",
+    "sourceSha256": "c2d5043144fc559c8ea2a7ee82a307dbe0f42bb7b9a4862a08a841d4e5d0bf24",
+    "target": "src/features/tournaments/sampledSwissForecast.ts"
+  },
+  {
+    "source": "src/features/tournaments/swissAttendanceWeights.json",
+    "sourceSha256": "1fc7da44dbb64114f4e6a1da843ad03affc1e905d14b44d9a13a1a7f2ae98c86",
+    "target": "src/features/tournaments/swissAttendanceWeights.json"
+  },
+  {
+    "source": "src/features/tournaments/swissPairingSettings.ts",
+    "sourceSha256": "f77c6f3ffb41703fb021773e14b2c86b11dd2b4ac10e91e602fd36b58c785d36",
+    "target": "src/features/tournaments/swissPairingSettings.ts"
+  },
+  {
+    "source": "src/features/tournaments/swissParticipation.ts",
+    "sourceSha256": "58f37f1cb0122976d8aa8c42c984c2a7a8981e3b788cc0c6fdbd60bd82e1f63d",
+    "target": "src/features/tournaments/swissParticipation.ts"
+  },
+  {
+    "source": "src/features/tournaments/TournamentArtwork.tsx",
+    "sourceSha256": "22ffa991439d8d3efefd838d9b76efdba73edfdeffbecdba8ca8002d0a27555f",
+    "target": "src/features/tournaments/TournamentArtwork.tsx"
+  },
+  {
+    "source": "src/features/tournaments/tournamentCountries.json",
+    "sourceSha256": "b887c4533a346d9892e0b8a782ca469227db2e73dd9773dc04685e97c22bc4b4",
+    "target": "src/features/tournaments/tournamentCountries.json"
+  },
+  {
+    "source": "src/features/tournaments/TournamentDiscovery.module.css",
+    "sourceSha256": "3f8dfc1ae417ecb93bbca978a103e036bdfeb87dd0c81968e7217fb297205594",
+    "target": "src/features/tournaments/TournamentDiscovery.module.css"
+  },
+  {
+    "source": "src/features/tournaments/TournamentDiscovery.tsx",
+    "sourceSha256": "4e527beae51d96c93ac302f6c1027f69f5775b1111d36fcf078d39294a005b25",
+    "target": "src/features/tournaments/TournamentDiscovery.tsx"
+  },
+  {
+    "source": "src/features/tournaments/tournamentDiscoveryModel.ts",
+    "sourceSha256": "4213c1af262726c204be31c8fd07f0f7a7a6fc322d5a61abdbfb8ca87a4031e3",
+    "target": "src/features/tournaments/tournamentDiscoveryModel.ts"
+  },
+  {
+    "source": "src/features/tournaments/TournamentEventPreview.tsx",
+    "sourceSha256": "d87cfc99e100f56b92b3837493e7d41667ee84b1f60f9ce3b3fb5b6a8e9d4837",
+    "target": "src/features/tournaments/TournamentEventPreview.tsx"
+  },
+  {
+    "source": "src/features/tournaments/tournamentFinder.ts",
+    "sourceSha256": "1d431731e12164d16d2e26fb5e73c7b37d74d3dc476f41bbeec39993e35bb27a",
+    "target": "src/features/tournaments/tournamentFinder.ts"
+  },
+  {
+    "source": "src/features/tournaments/tournamentInsights.ts",
+    "sourceSha256": "17ad4648a77a650c92c1863b83448174d5cb0f958aa0624501c8218daa41c1e5",
+    "target": "src/features/tournaments/tournamentInsights.ts"
+  },
+  {
+    "source": "src/features/tournaments/tournamentPrepHandoff.ts",
+    "sourceSha256": "371380aede502abd0c4ec1527b80faec5332ed55ae87504e5739cdf4a2b2b7ab",
+    "target": "src/features/tournaments/tournamentPrepHandoff.ts"
+  },
+  {
+    "source": "src/features/tournaments/TournamentPrepModal.module.css",
+    "sourceSha256": "c7a5cf2e328edcbbcdf73c44cc3eb8a01b83e8f9221b898409a059e3c44eb1ac",
+    "target": "src/features/tournaments/TournamentPrepModal.module.css"
+  },
+  {
+    "source": "src/features/tournaments/TournamentPrepModal.tsx",
+    "sourceSha256": "6d5799b3b4a567849f72a3d548f7b4cbed69d29cf47cbbb59baf3d45f48d7852",
+    "target": "src/features/tournaments/TournamentPrepModal.tsx"
+  },
+  {
+    "source": "src/features/tournaments/tournamentPrepStore.ts",
+    "sourceSha256": "cd526c38567b5f9b0f84f9add7dbc812b9d071cfc5e4c743c9ccb5b9591afc11",
+    "target": "src/features/tournaments/tournamentPrepStore.ts"
+  },
+  {
+    "source": "src/features/tournaments/TournamentPrepStrip.module.css",
+    "sourceSha256": "7e71301e3c10f970dc8cf205ff86763e0ed6047138706ec365aa60e869a9b8fb",
+    "target": "src/features/tournaments/TournamentPrepStrip.module.css"
+  },
+  {
+    "source": "src/features/tournaments/TournamentPrepStrip.tsx",
+    "sourceSha256": "285c36557ef5edece45d40d706d46fa60c9d5518fbd33c17eebf23a28a935942",
+    "target": "src/features/tournaments/TournamentPrepStrip.tsx"
+  },
+  {
+    "source": "src/features/tournaments/tournamentPrepSync.ts",
+    "sourceSha256": "ad19d3aceacbfa87762bd384ce3f1c11543e2872d7b494df9650f37383abd537",
+    "target": "src/features/tournaments/tournamentPrepSync.ts"
+  },
+  {
+    "source": "src/features/tournaments/tournamentRoster.ts",
+    "sourceSha256": "4494d3f7df23cb2314e720c7beaefcc3f080fd4418e07aa94aeda691f8af373f",
+    "target": "src/features/tournaments/tournamentRoster.ts"
+  },
+  {
+    "source": "src/features/tournaments/tournamentSearch.ts",
+    "sourceSha256": "5b9473eaf6732f9d1bee75bcc0adea8daed8e05257b3063411f42df07a97626a",
+    "target": "src/features/tournaments/tournamentSearch.ts"
+  },
+  {
+    "source": "src/features/tournaments/tournamentSearchCandidates.ts",
+    "sourceSha256": "ab69382e8472b7ef06996aaa25afabd23721550c4a754fb80056fb41829a938d",
+    "target": "src/features/tournaments/tournamentSearchCandidates.ts"
+  },
+  {
+    "source": "src/features/tournaments/tournamentStart.ts",
+    "sourceSha256": "01e4f8b44fc57ca94ad8edf1ab623520d2099e16cbe71897e26f56826a0a4b6a",
+    "target": "src/features/tournaments/tournamentStart.ts"
+  },
+  {
+    "source": "src/features/tournaments/TournamentStartCountdown.module.css",
+    "sourceSha256": "3ebdfc3bfb1171e584587babe3c24117e466acc388b015217b88507f18bcea93",
+    "target": "src/features/tournaments/TournamentStartCountdown.module.css"
+  },
+  {
+    "source": "src/features/tournaments/TournamentStartCountdown.tsx",
+    "sourceSha256": "728133c659a1adf7ebb9a9276c9ea401eb83ecdd1ee29ab84589d7e65d028769",
+    "target": "src/features/tournaments/TournamentStartCountdown.tsx"
+  },
+  {
+    "source": "src/features/tournaments/TournamentTrackerView.module.css",
+    "sourceSha256": "8bb028ffeedad01067254b5439a9613193948539b1972f8b282124ef9e09da69",
+    "target": "src/features/tournaments/TournamentTrackerView.module.css"
+  },
+  {
+    "source": "src/features/tournaments/TournamentTrackerView.tsx",
+    "sourceSha256": "ed52a945f4c23aa245c25fabdba312b8a8c43aa93797601a5081c61e4a281da4",
+    "target": "src/features/tournaments/TournamentTrackerView.tsx"
+  },
+  {
+    "source": "src/features/tournaments/TournamentWebsiteLink.tsx",
+    "sourceSha256": "2997658abc1f74b5bd903d9ba593660871499c6c7b61a000f0ec9b1763f32ca4",
+    "target": "src/features/tournaments/TournamentWebsiteLink.tsx"
+  },
+  {
+    "source": "src/features/tournaments/usePairingForecast.ts",
+    "sourceSha256": "96f78a477a342f6a64482094e66bd4422d4e3ae170808c53de5bb46a0314802d",
+    "target": "src/features/tournaments/usePairingForecast.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/accelerationPairingGroups.test.ts",
+    "sourceSha256": "76514e1ebea7e396ac9cc325f095b8de71afffe381a0f01ab910f4fe75dc4753",
+    "target": "src/features/tournaments/tests/accelerationPairingGroups.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/exactSwissFieldWorker.test.ts",
+    "sourceSha256": "f29eb8a24c0f9a535c34a228db037d162bcfce7dfc4fb809ed4d89c665881b59",
+    "target": "src/features/tournaments/tests/exactSwissFieldWorker.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/exactSwissForecastClient.test.ts",
+    "sourceSha256": "3911ae1ca37529d2ce06402b7f24ea957ef3b9cca337151bab8519bad4cd0e46",
+    "target": "src/features/tournaments/tests/exactSwissForecastClient.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/firstRoundPresentation.test.tsx",
+    "sourceSha256": "94be6a93185e1d88aaec71886168f0edf78c2690aad53c35caae76b3525677f8",
+    "target": "src/features/tournaments/tests/firstRoundPresentation.test.tsx"
+  },
+  {
+    "source": "src/features/tournaments/tests/forecastPresentation.test.tsx",
+    "sourceSha256": "1f0595a143104c5749fd7fed434cf69ba39e55b56e359b66b13fdcc26e1caad9",
+    "target": "src/features/tournaments/tests/forecastPresentation.test.tsx"
+  },
+  {
+    "source": "src/features/tournaments/tests/historicalSwissReplay.ts",
+    "sourceSha256": "e32fb616d57872196b021c05b887fe784508e1cddfa71a79ff6a8f64851b6813",
+    "target": "src/features/tournaments/tests/historicalSwissReplay.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/pairingCalibration.test.ts",
+    "sourceSha256": "597e833387c2e557d6036926a8204d7cf31657e6a80ffcd0485663afe0fc31dc",
+    "target": "src/features/tournaments/tests/pairingCalibration.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/pairingEstimateHelp.test.ts",
+    "sourceSha256": "55b47590f70ee9c9748686be4328fee24864e06e6def0c0bcea2c2d88ef322a8",
+    "target": "src/features/tournaments/tests/pairingEstimateHelp.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/pairingForecast.history.test.ts",
+    "sourceSha256": "fcfbcd8e802e0ce5a48784a0f01c7be5c4e57afbc5134cb498b4943f84c3bd68",
+    "target": "src/features/tournaments/tests/pairingForecast.history.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/pairingForecast.test.ts",
+    "sourceSha256": "c665c963e65a8a17b89beb5397597eca088e3791d28123e386e8e8621b445f93",
+    "target": "src/features/tournaments/tests/pairingForecast.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/pairingHistoryCalibration.test.ts",
+    "sourceSha256": "fd052acd1c266511f4580d85ca480e88116b7ec7e20fbb9126a422fac6a0b93e",
+    "target": "src/features/tournaments/tests/pairingHistoryCalibration.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/pairingProvenance.test.tsx",
+    "sourceSha256": "aff0cb441979dbd8b27dc35fed8f20c555d71a23227846df262a576b65f36670",
+    "target": "src/features/tournaments/tests/pairingProvenance.test.tsx"
+  },
+  {
+    "source": "src/features/tournaments/tests/publishedNoOpponentScore.test.ts",
+    "sourceSha256": "50cc18f80462a52d745b885f26916ece3c8dff0545759ac204c82eaf87ace817",
+    "target": "src/features/tournaments/tests/publishedNoOpponentScore.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/sampledSwissForecast.test.ts",
+    "sourceSha256": "6f21a8a47ea4d1f8d32ddca44a9b9eebb23f33b8a69b814014c0900310b52da5",
+    "target": "src/features/tournaments/tests/sampledSwissForecast.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/swissAcceleration.test.ts",
+    "sourceSha256": "439d30fdccefbf4b8a796c6aa2e536ba25952b9ff331898f973d3869a199a48d",
+    "target": "src/features/tournaments/tests/swissAcceleration.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/swissParticipation.test.ts",
+    "sourceSha256": "8714c35c1f2cf0423c2ed8607f6b4d6767fda5ba88fd7fd29ad6766e016b1e05",
+    "target": "src/features/tournaments/tests/swissParticipation.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/tournamentAwardedScores.test.ts",
+    "sourceSha256": "a735551040b606523676670207612a73d82167153b86e87b3f4dad7b454d31d5",
+    "target": "src/features/tournaments/tests/tournamentAwardedScores.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/tournamentDiscoveryModel.test.ts",
+    "sourceSha256": "26b5b7c621476f212e70408e4e66ee8c863643a616585db32a8044ae8702e46a",
+    "target": "src/features/tournaments/tests/tournamentDiscoveryModel.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/tournamentFinder.test.ts",
+    "sourceSha256": "e72a8a927ec2e99f196688800e940b5dd83509a0490b52358db702f2bb344eda",
+    "target": "src/features/tournaments/tests/tournamentFinder.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/tournamentIdentity.test.tsx",
+    "sourceSha256": "a8ea5c25efc66dd91b1786e4b0173fb2d880422dbddeab4f8fdbf350b97724bd",
+    "target": "src/features/tournaments/tests/tournamentIdentity.test.tsx"
+  },
+  {
+    "source": "src/features/tournaments/tests/tournamentInsights.test.ts",
+    "sourceSha256": "fe3aa66f340004e9ad3eabd8d9d5154c21c7f69250d23bbbfe3622691a071a2c",
+    "target": "src/features/tournaments/tests/tournamentInsights.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/tournamentPrepHandoff.test.ts",
+    "sourceSha256": "7238df7a1654e8310984b2e2eab51d59e791f28281480f6f86c1a37cc7d60cd8",
+    "target": "src/features/tournaments/tests/tournamentPrepHandoff.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/TournamentPrepModal.test.tsx",
+    "sourceSha256": "05686344b5d05091b22c1628da67e4c351cb3e8f58f33f334731ac1bd37f08f9",
+    "target": "src/features/tournaments/tests/TournamentPrepModal.test.tsx"
+  },
+  {
+    "source": "src/features/tournaments/tests/tournamentPrepReadOrdering.test.ts",
+    "sourceSha256": "84d72635ed539d3781cba0139c3983261f35c7aafc644513d89b08e8b20228f9",
+    "target": "src/features/tournaments/tests/tournamentPrepReadOrdering.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/tournamentPrepRemoval.test.ts",
+    "sourceSha256": "6139c4a749ae6f5ef3886f9a18630f7776a7e562ab7919b527b3662adffaa76e",
+    "target": "src/features/tournaments/tests/tournamentPrepRemoval.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/tournamentPrepSave.test.ts",
+    "sourceSha256": "7acb3e857151eed1e643b50573c97c326e0a77b07bc996f7a989c16fff3ace96",
+    "target": "src/features/tournaments/tests/tournamentPrepSave.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/tournamentPrepStore.test.ts",
+    "sourceSha256": "952f5e20b983ab1fd5d4d5c652b17100270b4843a8b6d675277b4231de3c4a50",
+    "target": "src/features/tournaments/tests/tournamentPrepStore.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/TournamentPrepStrip.test.tsx",
+    "sourceSha256": "c384cda0e7b2809cd96f8e9f8d841437b615593b49684c9a3056d9b11176a462",
+    "target": "src/features/tournaments/tests/TournamentPrepStrip.test.tsx"
+  },
+  {
+    "source": "src/features/tournaments/tests/tournamentRoster.test.ts",
+    "sourceSha256": "700ed8bccf6f388b19102c4bada3b000cd3566f53535cb16691dec62cc76bff2",
+    "target": "src/features/tournaments/tests/tournamentRoster.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/tournamentSearch.test.ts",
+    "sourceSha256": "7619c0c0bb6496b0fbc0dab973d1bc439d12c469c0580b46d7dfab3d50262539",
+    "target": "src/features/tournaments/tests/tournamentSearch.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/tournamentSearchCandidates.test.ts",
+    "sourceSha256": "543eb3fb8acb038f3d654c300ec0a45c23666a221bb1aeb2e7660b9b9106c66a",
+    "target": "src/features/tournaments/tests/tournamentSearchCandidates.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/tournamentStart.test.ts",
+    "sourceSha256": "78cfbef909199eb66a4095430662c47067ea6aee7b8bb9defc234bd945bb2357",
+    "target": "src/features/tournaments/tests/tournamentStart.test.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/TournamentTrackerView.test.tsx",
+    "sourceSha256": "412a72c24a924e5592046a92bb369ffcad6c72dda779555171d1be38328edf42",
+    "target": "src/features/tournaments/tests/TournamentTrackerView.test.tsx"
+  },
+  {
+    "source": "src/features/tournaments/tests/trackerFixture.ts",
+    "sourceSha256": "d6f1b02614298b3fb5715602dcc1523ed91c092b344c6d90d97fbb96cf291a7b",
+    "target": "src/features/tournaments/tests/trackerFixture.ts"
+  },
+  {
+    "source": "src/features/tournaments/tests/fixtures/historicalSwiss.json",
+    "sourceSha256": "02edf6e6cba648d68207252511d6adbc6d3c0be526c476d3e7c4ff4bf78a1db2",
+    "target": "src/features/tournaments/tests/fixtures/historicalSwiss.json"
+  },
+  {
+    "source": "src/features/home/otbImportModel.ts",
+    "sourceSha256": "b177e84baebf3164b0947f4f0dd56fcc2ca3e1e5cf78bc249401d03ce254ff0a",
+    "target": "src/features/tournaments/otbImportModel.ts"
+  },
+  {
+    "source": "src/features/settings/OtbDownloadControl.tsx",
+    "sourceSha256": "d7ba29859654bbdd9d791f6efa94d9181af6b756f371320c4e0e292888591c33",
+    "target": "src/features/tournaments/downloads/OtbDownloadControl.tsx"
+  },
+  {
+    "source": "src/features/settings/OtbDownloadControl.module.css",
+    "sourceSha256": "7adeea90ada07bdf46fd95ebf8df8285483de98c0fcb093df9fa35deefd846bb",
+    "target": "src/features/tournaments/downloads/OtbDownloadControl.module.css"
+  },
+  {
+    "source": "src/features/settings/otbDownloads.ts",
+    "sourceSha256": "d5db3e591d163aeb952b9be2f71d4e18c1f33aadd3717ed3e4979873a650a471",
+    "target": "src/features/tournaments/downloads/otbDownloads.ts"
+  },
+  {
+    "source": "src/features/settings/otbDownloadPresentation.ts",
+    "sourceSha256": "323f2f78c2de3f575a6eca8f156fc8a5126f516964d72b7c0a79f2ca2ef21308",
+    "target": "src/features/tournaments/downloads/otbDownloadPresentation.ts"
+  },
+  {
+    "source": "src/features/settings/otbActivity.ts",
+    "sourceSha256": "b3e4af4b09cb1a825db37fc5ffa7feabb68787e1a239800e722946c4e7653e09",
+    "target": "src/features/tournaments/downloads/otbActivity.ts"
+  },
+  {
+    "source": "src/features/settings/tests/otbActivity.test.ts",
+    "sourceSha256": "a5f52bcd975333abfe731b79410cf8fde29b4367db0e06cd9cbf894ec7db38e2",
+    "target": "src/features/tournaments/downloads/tests/otbActivity.test.ts"
+  },
+  {
+    "source": "src/features/settings/tests/otbDownloadPresentation.test.ts",
+    "sourceSha256": "fbd15dda4174ff402cac334903bd5d995a29c98f25fe9aaf4101e3c4db1a7fde",
+    "target": "src/features/tournaments/downloads/tests/otbDownloadPresentation.test.ts"
+  },
+  {
+    "source": "src/features/settings/tests/otbDownloads.test.ts",
+    "sourceSha256": "4c0c5e784482601ea9ead9b9899015d87f0b9ca251fd6e2ec95000ec03926405",
+    "target": "src/features/tournaments/downloads/tests/otbDownloads.test.ts"
+  },
+  {
+    "source": "src/components/ExternalWebsiteLink.tsx",
+    "sourceSha256": "edb9c174c857f8c98dbc864609c029d7355b6405773731c483cc3083197d4c00",
+    "target": "src/features/tournaments/ExternalWebsiteLink.tsx"
+  }
+]
