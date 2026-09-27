@@ -218,6 +218,8 @@ try {
   if (($serveAfter | ConvertTo-Json -Depth 30 -Compress) -ne ($serveBefore | ConvertTo-Json -Depth 30 -Compress)) { throw 'The shared Serve configuration changed during publication.' }
 
   $health = Invoke-RestMethod -Uri "http://127.0.0.1:$Port/api/health" -TimeoutSec 5
+  if (-not $health.tournamentServiceAvailable) { throw 'The deployed tournament helper is unavailable.' }
+  $tournamentCheck = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:$Port/api/tournaments" -ContentType 'application/json' -Body '{"method":"settingsGet","params":{"key":"encroissant.tournamentPrep"}}' -TimeoutSec 15
   $stockfishStart = Invoke-RestMethod `
     -Method Post `
     -Uri "http://127.0.0.1:$Port/api/engine/start" `

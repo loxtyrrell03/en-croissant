@@ -2522,7 +2522,7 @@ async function readJsonBody(request, maxBytes) {
 
 async function readJsonFile(path) {
   try {
-    return JSON.parse(await readFile(path, "utf8"));
+    return JSON.parse((await readFile(path, "utf8")).replace(/^\uFEFF/, ""));
   } catch {
     return null;
   }
