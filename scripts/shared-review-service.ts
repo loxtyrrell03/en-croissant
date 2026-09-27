@@ -510,15 +510,19 @@ export class BackgroundEngine {
     private child: ChildProcessWithoutNullStreams;
     private waiting: { line: (line: string) => void; reject: (e: Error) => void } | undefined;
     private ready: Promise<void>;
-    constructor(path: string) {
+    private closed = false;
+    constructor(path: string, private timeoutMs = 30_000, launch = spawn) {
         if (!path) throw new Error("The PC Stockfish path is not configured.");
-        this.child = spawn(path, [], { windowsHide: true, stdio: "pipe" });
+        this.child = launch(path, [], { windowsHide: true, stdio: "pipe" }) as ChildProcessWithoutNullStreams;
         this.child.on("spawn", () => {
             try {
                 setPriority(this.child.pid!, constants.priority.PRIORITY_BELOW_NORMAL);
             } catch {}
         });
         this.child.on("error", (e) => this.waiting?.reject(e));
+        // Pipe errors are emitted separately from ChildProcess errors. A stopped
+        // engine must fail its current request, never crash the phone server.
+        this.child.stdin.on("error", (e) => this.waiting?.reject(e));
         this.child.on("exit", () =>
             this.waiting?.reject(new Error("Background engine exited; preparation will retry.")),
         );
@@ -532,17 +536,25 @@ export class BackgroundEngine {
                 (l) => (l === "readyok" ? { result: undefined } : null),
             ),
         );
+        void this.ready.catch(() => {}); // analyze() still receives the rejection.
     }
     private exchange<T>(
         command: string,
         accept: (line: string) => { result: T } | null,
     ): Promise<T> {
         return new Promise((resolve, reject) => {
+            if (this.closed || this.child.stdin.destroyed || this.child.stdin.writableEnded) {
+                reject(new Error("Background engine is closed; preparation will retry."));
+                return;
+            }
+            let settled = false;
             const timer = setTimeout(() => {
-                this.close();
                 finish(new Error("Background engine timed out."));
-            }, 30_000);
+                this.close();
+            }, this.timeoutMs);
             const finish = (error?: Error, value?: T) => {
+                if (settled) return;
+                settled = true;
                 clearTimeout(timer);
                 this.waiting = undefined;
                 if (error) reject(error);
@@ -559,7 +571,13 @@ export class BackgroundEngine {
                     }
                 },
             };
-            this.child.stdin.write(`${command}\n`);
+            try {
+                this.child.stdin.write(`${command}\n`, (error) => {
+                    if (error) finish(error);
+                });
+            } catch (error) {
+                finish(error as Error);
+            }
         });
     }
     async analyze(fen: string, multipv = 1) {
@@ -598,7 +616,11 @@ export class BackgroundEngine {
         });
     }
     close() {
-        this.child.stdin.end("quit\n");
+        if (this.closed) return;
+        this.closed = true;
+        this.waiting?.reject(new Error("Background engine is closed; preparation will retry."));
+        // No final write: the engine may have already exited or closed its pipe.
+        this.child.stdin.destroy();
         this.child.kill();
     }
 }

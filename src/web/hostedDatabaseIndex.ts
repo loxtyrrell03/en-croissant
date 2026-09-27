@@ -1,4 +1,5 @@
 import { getHostedLibraryFileUrl } from "./hostedFiles";
+import { resolvePrivateServiceUrl } from "./serverUrl";
 import { normalizeWebFen } from "./pgn";
 
 export type WebHostedPositionMove = {
@@ -24,7 +25,7 @@ type WebHostedPositionIndexShard = {
   positions: Record<string, Record<string, WebHostedPositionMove>>;
 };
 
-const configuredPrivateServerUrl = String(
+const configuredPrivateServerUrl = resolvePrivateServiceUrl(
   import.meta.env.VITE_EN_CROISSANT_SERVER_URL ?? "https://lox-pc.tail89d19b.ts.net",
 ).trim();
 const PRIVATE_SERVER_URL = configuredPrivateServerUrl.replace(/\/+$/, "");

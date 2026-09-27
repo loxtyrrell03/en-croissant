@@ -47,9 +47,15 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Version probes must always reach the active immutable release. Caching
-  // cache-busted probes would both hide updates and grow the cache forever.
-  if (url.pathname.endsWith("/app-version.json")) {
+  // Live service state and data must never come from the offline app cache.
+  // CacheStorage ignores HTTP no-store unless we explicitly bypass it here.
+  if (
+    request.cache === "no-store" ||
+    url.pathname.startsWith(`${APP_BASE}api/`) ||
+    url.pathname === `${APP_BASE}v1` ||
+    url.pathname.startsWith(`${APP_BASE}v1/`) ||
+    url.pathname.endsWith("/app-version.json")
+  ) {
     event.respondWith(fetch(request));
     return;
   }

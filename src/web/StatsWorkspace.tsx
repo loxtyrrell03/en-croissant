@@ -1,3 +1,5 @@
+import { TruePerformancePanel } from "../shared/TruePerformancePanel";
+import { toPerformanceGames } from "./statsRating";
 import {
   ActionIcon,
   Badge,
@@ -35,14 +37,9 @@ import {
   type StatsAiReportSection,
 } from "./statsAiReport";
 import {
-  computeFormSummary,
-  computePeriodPerformance,
-  computePerformanceSeries,
   fetchCurrentRating,
   fetchStatsGames,
-  type StatsFormSummary,
   type StatsGame,
-  type StatsPerformancePoint,
   type StatsRatedFilter,
   type StatsSource,
   type StatsTimeClass,
@@ -61,7 +58,7 @@ import {
 
 const STATS_SETTINGS_STORAGE_KEY = "en-croissant-web-stats-settings";
 const STATS_MAX_GAMES = 5000;
-const STATS_BASE_HISTORY_DAYS = 90;
+const STATS_BASE_HISTORY_DAYS = 3650;
 
 // EloGuard data-semantics colors (hero/deltas/records keep the extension's
 // green/red meaning while everything else stays Mantine dark + blue).
@@ -110,14 +107,12 @@ type StatsSettings = {
 
 type StatsCacheEntry = {
   games: StatsGame[];
-  series: StatsPerformancePoint[];
   nowSec: number;
   historyDays: number;
 };
 
 type StatsWindow = { start: number; end: number; label: string };
 type StatsPoolRatings = Partial<Record<StrengthPool, number | null>>;
-type StatsChartPoint = { t: number; v: number };
 
 const STATS_PERIOD_OPTIONS: { value: StatsPeriodKey; label: string; days: number }[] = [
   { value: "week", label: "This week", days: 7 },
@@ -219,19 +214,6 @@ function formatStatsAccuracy(value: number | null) {
   return `${value.toFixed(1)}%`;
 }
 
-function formatStatsStreak(streak: StatsFormSummary["streak"]) {
-  if (!streak || streak.len <= 0) return "-";
-  const noun =
-    streak.type === "loss"
-      ? streak.len === 1
-        ? "loss"
-        : "losses"
-      : streak.len === 1
-        ? streak.type
-        : `${streak.type}s`;
-  return `${streak.len} ${noun}`;
-}
-
 function formatStatsGeneratedAt(value: number) {
   const ms = value < 1e12 ? value * 1000 : value;
   const date = new Date(ms);
@@ -277,541 +259,6 @@ function usePersistentJson<T>(
 
   return [value, setValue] as const;
 }
-
-function StatsDeltaChip({ value }: { value: number | null }) {
-  if (value == null || !Number.isFinite(value)) return null;
-  const rounded = Math.round(value);
-  return (
-    <span className={styles.delta} data-dir={deltaDir(rounded)}>
-      {formatSignedStats(rounded)}
-    </span>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// StatsLineChart: React port of EloGuard's renderStxChart (popup.js:1147-1390).
-// Same geometry: 264x96 viewBox, 6px pad, 8% y padding (flat +/-10), carry-
-// forward extendTo point, min/max downsampling above 260 points, min/max +
-// first/last date labels, and a snapping crosshair tooltip that flips/clamps
-// inside the viewBox.
-// ---------------------------------------------------------------------------
-
-const STATS_CHART_W = 264;
-const STATS_CHART_H = 96;
-const STATS_CHART_PAD = 6;
-const STATS_TOOLTIP_PAD_X = 6;
-const STATS_TOOLTIP_GAP = 8;
-const STATS_TOOLTIP_H = 30;
-const STATS_TOOLTIP_MARGIN = 1;
-
-// Long ranges can contain thousands of games. Keep the first/last point plus
-// each bucket's local high and low so the SVG stays light without flattening
-// swings.
-function reduceStatsChartPoints(points: StatsChartPoint[], maxPoints = 260) {
-  if (points.length <= maxPoints) return points;
-  const reduced = [points[0]];
-  const lastIndex = points.length - 1;
-  const bucketCount = Math.max(1, Math.floor((maxPoints - 2) / 2));
-  const bucketSize = Math.ceil((points.length - 2) / bucketCount);
-
-  for (let start = 1; start < lastIndex; start += bucketSize) {
-    const end = Math.min(lastIndex, start + bucketSize);
-    let minIndex = start;
-    let maxIndex = start;
-    for (let i = start + 1; i < end; i += 1) {
-      if (points[i].v < points[minIndex].v) minIndex = i;
-      if (points[i].v > points[maxIndex].v) maxIndex = i;
-    }
-    if (minIndex === maxIndex) reduced.push(points[minIndex]);
-    else if (minIndex < maxIndex) reduced.push(points[minIndex], points[maxIndex]);
-    else reduced.push(points[maxIndex], points[minIndex]);
-  }
-
-  reduced.push(points[lastIndex]);
-  return reduced;
-}
-
-function StatsLineChart({
-  points,
-  stroke,
-  fill = true,
-  extendTo = null,
-}: {
-  points: StatsChartPoint[];
-  stroke: string;
-  fill?: boolean;
-  extendTo?: number | null;
-}) {
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-
-  useEffect(() => {
-    setHoverIndex(null);
-  }, [points]);
-
-  const geometry = useMemo(() => {
-    if (points.length === 0) return null;
-    // When extendTo is later than the newest observation, carry the last value
-    // forward so the chart communicates the current state through today.
-    const newestPoint = points.reduce(
-      (latest, point) => (point.t > latest.t ? point : latest),
-      points[0],
-    );
-    const chartPts =
-      extendTo != null && Number.isFinite(extendTo) && extendTo > newestPoint.t
-        ? points.concat({ t: extendTo, v: newestPoint.v })
-        : points;
-    const pts = reduceStatsChartPoints(chartPts);
-
-    const x0 = STATS_CHART_PAD;
-    const x1 = STATS_CHART_W - STATS_CHART_PAD;
-    const y0 = STATS_CHART_PAD;
-    const y1 = STATS_CHART_H - STATS_CHART_PAD;
-
-    const vals = points.map((point) => point.v);
-    const vMin = Math.min(...vals);
-    const vMax = Math.max(...vals);
-    const padAmt = vMax === vMin ? 10 : (vMax - vMin) * 0.08;
-    const vLo = vMin - padAmt;
-    const vSpan = vMax + padAmt - vLo || 1;
-
-    const ts = chartPts.map((point) => point.t);
-    const tMin = Math.min(...ts);
-    const tSpan = Math.max(...ts) - tMin;
-
-    // Single point (or all same time): center on the x-axis, no divide by zero.
-    const xFor = (t: number) =>
-      tSpan === 0 ? (x0 + x1) / 2 : x0 + ((t - tMin) / tSpan) * (x1 - x0);
-    const yFor = (v: number) => y1 - ((v - vLo) / vSpan) * (y1 - y0);
-
-    const hoverPts = pts.map((point) => ({
-      x: xFor(point.t),
-      y: yFor(point.v),
-      val: String(Math.round(point.v)),
-      date: formatStatsDate(point.t),
-    }));
-    const coords = hoverPts.map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`);
-    const areaPath = `M${hoverPts[0].x.toFixed(2)},${y1.toFixed(2)} L${coords.join(" L")} L${hoverPts[hoverPts.length - 1].x.toFixed(2)},${y1.toFixed(2)} Z`;
-
-    return {
-      pts,
-      hoverPts,
-      linePoints: coords.join(" "),
-      areaPath,
-      vMin,
-      vMax,
-      flatLabelY: yFor(vMax) - 5,
-      x0,
-      x1,
-      y0,
-      y1,
-    };
-  }, [extendTo, points]);
-
-  if (!geometry) return null;
-
-  const hover =
-    hoverIndex != null && hoverIndex < geometry.hoverPts.length
-      ? geometry.hoverPts[hoverIndex]
-      : null;
-  let tooltip: { x: number; y: number; width: number } | null = null;
-  if (hover) {
-    // Over-estimate glyph width (bold digits ~0.64em, date ~0.6em) so the rect
-    // never clips its text without any DOM measurement.
-    const contentW = Math.max(hover.val.length * 11 * 0.64, hover.date.length * 9 * 0.6);
-    const width = contentW + STATS_TOOLTIP_PAD_X * 2;
-    // Anchor above the dot; flip below when the top would clip, then clamp.
-    let y = hover.y - STATS_TOOLTIP_GAP - STATS_TOOLTIP_H;
-    if (y < STATS_TOOLTIP_MARGIN) y = hover.y + STATS_TOOLTIP_GAP;
-    if (y + STATS_TOOLTIP_H > STATS_CHART_H - STATS_TOOLTIP_MARGIN) {
-      y = STATS_CHART_H - STATS_TOOLTIP_MARGIN - STATS_TOOLTIP_H;
-    }
-    if (y < STATS_TOOLTIP_MARGIN) y = STATS_TOOLTIP_MARGIN;
-    // Centered on the point; clamped inside the viewBox at the edges.
-    let x = hover.x - width / 2;
-    if (x < STATS_TOOLTIP_MARGIN) x = STATS_TOOLTIP_MARGIN;
-    if (x + width > STATS_CHART_W - STATS_TOOLTIP_MARGIN) {
-      x = STATS_CHART_W - STATS_TOOLTIP_MARGIN - width;
-    }
-    tooltip = { x, y, width };
-  }
-
-  return (
-    <svg
-      ref={svgRef}
-      className={styles.chart}
-      viewBox={`0 0 ${STATS_CHART_W} ${STATS_CHART_H}`}
-      xmlns="http://www.w3.org/2000/svg"
-      role="img"
-      onPointerMove={(event) => {
-        const svg = svgRef.current;
-        if (!svg) return;
-        const rect = svg.getBoundingClientRect();
-        if (!rect.width) return;
-        // Map the pointer into viewBox units, then snap to the nearest vertex.
-        const vbX = ((event.clientX - rect.left) / rect.width) * STATS_CHART_W;
-        let best = 0;
-        let bestDistance = Number.POSITIVE_INFINITY;
-        for (let i = 0; i < geometry.hoverPts.length; i += 1) {
-          const distance = Math.abs(geometry.hoverPts[i].x - vbX);
-          if (distance < bestDistance) {
-            bestDistance = distance;
-            best = i;
-          }
-        }
-        setHoverIndex(best);
-      }}
-      onPointerLeave={() => setHoverIndex(null)}
-    >
-      <rect
-        x={0}
-        y={0}
-        width={STATS_CHART_W}
-        height={STATS_CHART_H}
-        fill="transparent"
-        style={{ pointerEvents: "all" }}
-      />
-      {fill ? <path d={geometry.areaPath} fill={stroke} fillOpacity={0.1} stroke="none" /> : null}
-      <polyline
-        points={geometry.linePoints}
-        fill="none"
-        stroke={stroke}
-        strokeWidth={2}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-      {geometry.vMax === geometry.vMin ? (
-        <text
-          className={styles.chartLabel}
-          x={geometry.x0 + 2}
-          y={geometry.flatLabelY}
-          textAnchor="start"
-          fontSize={10}
-        >
-          {Math.round(geometry.vMax)}
-        </text>
-      ) : (
-        <>
-          <text
-            className={styles.chartLabel}
-            x={geometry.x0 + 2}
-            y={geometry.y0 + 8}
-            textAnchor="start"
-            fontSize={10}
-          >
-            {Math.round(geometry.vMax)}
-          </text>
-          <text
-            className={styles.chartLabel}
-            x={geometry.x0 + 2}
-            y={geometry.y1 - 12}
-            textAnchor="start"
-            fontSize={10}
-          >
-            {Math.round(geometry.vMin)}
-          </text>
-        </>
-      )}
-      <text
-        className={styles.chartLabel}
-        x={geometry.x0 + 2}
-        y={geometry.y1 - 1}
-        textAnchor="start"
-        fontSize={9}
-      >
-        {formatStatsDate(geometry.pts[0].t)}
-      </text>
-      {geometry.pts.length > 1 ? (
-        <text
-          className={styles.chartLabel}
-          x={geometry.x1 - 2}
-          y={geometry.y1 - 1}
-          textAnchor="end"
-          fontSize={9}
-        >
-          {formatStatsDate(geometry.pts[geometry.pts.length - 1].t)}
-        </text>
-      ) : null}
-      {hover && tooltip ? (
-        <g style={{ pointerEvents: "none" }}>
-          <line
-            x1={hover.x}
-            x2={hover.x}
-            y1={geometry.y0}
-            y2={geometry.y1}
-            stroke="rgba(255,255,255,0.18)"
-            strokeWidth={1}
-          />
-          <circle
-            cx={hover.x}
-            cy={hover.y}
-            r={3.5}
-            fill="#111315"
-            stroke={stroke}
-            strokeWidth={2}
-          />
-          <rect
-            x={tooltip.x}
-            y={tooltip.y}
-            width={tooltip.width}
-            height={STATS_TOOLTIP_H}
-            rx={6}
-            fill="#101113"
-            stroke="rgba(255,255,255,0.13)"
-            strokeWidth={1}
-          />
-          <text
-            className={styles.chartTooltipValue}
-            x={tooltip.x + tooltip.width / 2}
-            y={tooltip.y + 13}
-            textAnchor="middle"
-            fontSize={11}
-            fontWeight={700}
-          >
-            {hover.val}
-          </text>
-          <text
-            className={styles.chartTooltipDate}
-            x={tooltip.x + tooltip.width / 2}
-            y={tooltip.y + 24}
-            textAnchor="middle"
-            fontSize={9}
-          >
-            {hover.date}
-          </text>
-        </g>
-      ) : null}
-    </svg>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Overview tab: EloGuard popup Stats parity (performance / rating / record /
-// form cards).
-// ---------------------------------------------------------------------------
-
-function StatsOverviewSection({
-  games,
-  series,
-  currentRating,
-  ratedFilter,
-  nowSec,
-  windowStart,
-}: {
-  games: StatsGame[];
-  series: StatsPerformancePoint[];
-  currentRating: number | null;
-  ratedFilter: StatsRatedFilter;
-  nowSec: number;
-  windowStart: number;
-}) {
-  const performance = useMemo(
-    () =>
-      computePeriodPerformance(games, {
-        currentRating,
-        nowSec,
-        windowStart,
-        windowEnd: nowSec,
-      }),
-    [currentRating, games, nowSec, windowStart],
-  );
-  const form = useMemo(
-    () => computeFormSummary(games, { currentRating, nowSec }),
-    [currentRating, games, nowSec],
-  );
-  const ratedGames = useMemo(
-    () => games.filter((game) => game.rated && Number.isFinite(game.rating)),
-    [games],
-  );
-  const perfPoints = useMemo(
-    () => series.map((point) => ({ t: point.end, v: point.perf })),
-    [series],
-  );
-  const ratedPoints = useMemo(
-    () => ratedGames.map((game) => ({ t: game.end, v: game.rating })),
-    [ratedGames],
-  );
-
-  const perfDelta =
-    performance && series.length >= 2 ? series[series.length - 1].perf - series[0].perf : null;
-  const perfTone =
-    performance && currentRating != null
-      ? performance.perf >= currentRating + 15
-        ? "up"
-        : performance.perf <= currentRating - 15
-          ? "down"
-          : "flat"
-      : "flat";
-
-  const ratingDelta =
-    ratedGames.length >= 2 ? ratedGames[ratedGames.length - 1].rating - ratedGames[0].rating : null;
-  // Empty period with a known rating: flat carry-forward baseline, no fill, so
-  // a reference line cannot be mistaken for observed movement.
-  const flatBaseline = ratedPoints.length === 0 && currentRating != null;
-  const ratingPoints = useMemo(
-    () =>
-      flatBaseline && currentRating != null
-        ? [
-            { t: windowStart, v: currentRating },
-            { t: nowSec, v: currentRating },
-          ]
-        : ratedPoints,
-    [currentRating, flatBaseline, nowSec, ratedPoints, windowStart],
-  );
-
-  const record = useMemo(() => {
-    let wins = 0;
-    let draws = 0;
-    let losses = 0;
-    for (const game of games) {
-      if (game.result === "win") wins += 1;
-      else if (game.result === "draw") draws += 1;
-      else losses += 1;
-    }
-    return { wins, draws, losses };
-  }, [games]);
-
-  const trend = Math.round(form.slopePerWeek);
-  const trendDir = deltaDir(trend);
-
-  return (
-    <Box className={styles.cardGrid}>
-      <Box className={styles.card}>
-        <Box className={styles.cardHead}>
-          <span className={styles.cardLabel}>Performance rating</span>
-          <span className={styles.heroWrap}>
-            {performance ? (
-              <span className={styles.hero} data-tone={perfTone}>
-                {Math.round(performance.perf)}
-              </span>
-            ) : null}
-            <StatsDeltaChip value={perfDelta} />
-          </span>
-        </Box>
-        {performance ? (
-          <>
-            <StatsLineChart points={perfPoints} stroke={STATS_GREEN} extendTo={nowSec} />
-            <Text className={styles.dataLine}>
-              Likely range {performance.ci68[0]} to {performance.ci68[1]} ·{" "}
-              {pluralStats(performance.gamesWithOpp, "game")}
-            </Text>
-          </>
-        ) : (
-          <Text className={styles.emptyLine}>Not enough games.</Text>
-        )}
-      </Box>
-
-      <Box className={styles.card}>
-        <Box className={styles.cardHead}>
-          <span className={styles.cardLabel}>Rating</span>
-          <span className={styles.heroWrap}>
-            {currentRating != null ? (
-              <span className={styles.hero}>{Math.round(currentRating)}</span>
-            ) : null}
-            <StatsDeltaChip value={ratingDelta} />
-          </span>
-        </Box>
-        {ratedFilter === "casual" ? (
-          <Text className={styles.emptyLine}>Rated games only.</Text>
-        ) : ratingPoints.length > 0 ? (
-          <StatsLineChart
-            points={ratingPoints}
-            stroke="var(--mantine-color-blue-4)"
-            fill={!flatBaseline}
-            extendTo={nowSec}
-          />
-        ) : (
-          <Text className={styles.emptyLine}>Not enough games.</Text>
-        )}
-      </Box>
-
-      <Box className={styles.card}>
-        <span className={styles.cardLabel}>Record</span>
-        <div className={styles.recordGrid}>
-          <div className={styles.recordCell}>
-            <span className={styles.recordValue} data-tone="win">
-              {record.wins}
-            </span>
-            <span className={styles.recordLabel}>Wins</span>
-          </div>
-          <div className={styles.recordCell}>
-            <span className={styles.recordValue} data-tone="draw">
-              {record.draws}
-            </span>
-            <span className={styles.recordLabel}>Draws</span>
-          </div>
-          <div className={styles.recordCell}>
-            <span className={styles.recordValue} data-tone="loss">
-              {record.losses}
-            </span>
-            <span className={styles.recordLabel}>Losses</span>
-          </div>
-          <div className={styles.recordCell}>
-            <span className={styles.recordValue}>{games.length}</span>
-            <span className={styles.recordLabel}>Games</span>
-          </div>
-        </div>
-      </Box>
-
-      <Box className={styles.card}>
-        <span className={styles.cardLabel}>Form</span>
-        {games.length === 0 ? (
-          <Text className={styles.emptyLine}>No games in this period.</Text>
-        ) : (
-          <>
-            <div className={styles.formRows}>
-              <div className={styles.formRow}>
-                <Text size="sm">Trend</Text>
-                <Text size="sm" className={styles.formValue} data-dir={trendDir}>
-                  {trendDir === "up" ? "▲ " : trendDir === "down" ? "▼ " : ""}
-                  {formatSignedStats(trend)} / week
-                </Text>
-              </div>
-              <div className={styles.formRow}>
-                <Text size="sm">Current streak</Text>
-                <Text size="sm" className={styles.formValue}>
-                  {formatStatsStreak(form.streak)}
-                </Text>
-              </div>
-              <div className={styles.formRow}>
-                <Text size="sm">Sessions in period</Text>
-                <Text size="sm" className={styles.formValue}>
-                  {form.sessions}
-                </Text>
-              </div>
-              <div className={styles.formRow}>
-                <Text size="sm">Net last 10</Text>
-                <Text
-                  size="sm"
-                  className={styles.formValue}
-                  data-dir={form.net10 !== 0 ? deltaDir(form.net10) : undefined}
-                >
-                  {formatSignedStats(form.net10)}
-                </Text>
-              </div>
-            </div>
-            {form.tilt ? (
-              <Box className={styles.tiltNote}>
-                <Badge color="red" variant="light">
-                  Tilt risk
-                </Badge>
-                <Text size="xs" c="dimmed" mt={4}>
-                  Losses are stacking up in quick sessions. A short break usually earns the points
-                  back.
-                </Text>
-              </Box>
-            ) : null}
-          </>
-        )}
-      </Box>
-    </Box>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Strength tab: EloGuard strength-profile parity (pool cards, phases, recent
-// analyzed games) plus the batch-analysis controls.
-// ---------------------------------------------------------------------------
 
 function StatsStrengthSection({
   games,
@@ -1836,6 +1283,7 @@ export default function StatsWorkspace() {
 
   const [data, setData] = useState<StatsCacheEntry | null>(null);
   const [loading, setLoading] = useState(false);
+  const gamesAbortRef = useRef<AbortController | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fetchedRating, setFetchedRating] = useState<number | null>(null);
   const [poolRatings, setPoolRatings] = useState<StatsPoolRatings>({});
@@ -1852,9 +1300,10 @@ export default function StatsWorkspace() {
   }, []);
 
   const requestedDays = Math.max(STATS_BASE_HISTORY_DAYS, getStatsPeriodDays(settings.period));
-  const cacheKey = `${settings.source}|${trimmedUsername.toLowerCase()}|${settings.timeClass}|${settings.rated}`;
+  const effectiveRated = settings.rated;
+  const cacheKey = `${settings.source}|${trimmedUsername.toLowerCase()}|${settings.timeClass}|${effectiveRated}`;
 
-  // Game + rolling-series fetch. Period switches inside the cached coverage
+  // Completed-game fetch. Period switches inside the cached coverage
   // only re-filter; only a larger period (or manual refresh) refetches.
   useEffect(() => {
     if (!trimmedUsername) {
@@ -1871,6 +1320,7 @@ export default function StatsWorkspace() {
       return;
     }
     const controller = new AbortController();
+    gamesAbortRef.current = controller;
     let active = true;
     setLoading(true);
     setError(null);
@@ -1878,7 +1328,7 @@ export default function StatsWorkspace() {
       source: settings.source,
       username: trimmedUsername,
       timeClass: settings.timeClass,
-      ratedFilter: settings.rated,
+      ratedFilter: effectiveRated,
       maxGames: STATS_MAX_GAMES,
       maxDays: requestedDays,
       monthsCap: Math.ceil(requestedDays / 28) + 1,
@@ -1887,8 +1337,7 @@ export default function StatsWorkspace() {
       .then((games) => {
         if (!active) return;
         const nowSec = Math.floor(Date.now() / 1000);
-        const series = computePerformanceSeries(games, { windowSize: 20 });
-        const entry: StatsCacheEntry = { games, series, nowSec, historyDays: requestedDays };
+        const entry: StatsCacheEntry = { games, nowSec, historyDays: requestedDays };
         const existing = cacheRef.current.get(cacheKey);
         if (!existing || existing.historyDays <= entry.historyDays) {
           cacheRef.current.set(cacheKey, entry);
@@ -1911,7 +1360,7 @@ export default function StatsWorkspace() {
     cacheKey,
     refreshKey,
     requestedDays,
-    settings.rated,
+    effectiveRated,
     settings.source,
     settings.timeClass,
     trimmedUsername,
@@ -2003,16 +1452,6 @@ export default function StatsWorkspace() {
         : [],
     [data, periodWindow.end, periodWindow.start],
   );
-  const periodSeries = useMemo(
-    () =>
-      data
-        ? data.series.filter(
-            (point) => point.end >= periodWindow.start && point.end <= periodWindow.end,
-          )
-        : [],
-    [data, periodWindow.end, periodWindow.start],
-  );
-
   // Current rating: last rated game in period, then the live fetched rating,
   // then the newest rated game in the wider cache (EloGuard order).
   const currentRating = useMemo(() => {
@@ -2081,9 +1520,10 @@ export default function StatsWorkspace() {
 
       <Box className={`${classes.panel} ${styles.controlsCard}`}>
         <Group gap="xs" wrap="nowrap" className={styles.controlsRow}>
-          <SegmentedControl
+          <Select
             size="xs"
             value={settings.source}
+            allowDeselect={false}
             onChange={(value) =>
               updateSettings({ source: value === "lichess" ? "lichess" : "chesscom" })
             }
@@ -2117,16 +1557,17 @@ export default function StatsWorkspace() {
           />
           <Select
             size="xs"
-            value={settings.rated}
+            value={effectiveRated}
             onChange={(value) => value && updateSettings({ rated: value as StatsRatedFilter })}
             data={[
               { value: "rated", label: "Rated" },
-              { value: "casual", label: "Casual" },
-              { value: "both", label: "All games" },
+              { value: "casual", label: "Unrated" },
+              { value: "both", label: "Both" },
             ]}
             allowDeselect={false}
             aria-label="Rated filter"
           />
+          {settings.tab !== "overview" && (
           <Select
             size="xs"
             value={settings.period}
@@ -2138,6 +1579,7 @@ export default function StatsWorkspace() {
             allowDeselect={false}
             aria-label="Stats period"
           />
+          )}
         </div>
       </Box>
 
@@ -2158,7 +1600,8 @@ export default function StatsWorkspace() {
       {!trimmedUsername ? (
         <Box className={`${classes.panel} ${styles.emptyState}`}>
           <IconChartLine size={30} stroke={1.5} />
-          <Text fw={600}>Add your chess.com or Lichess username</Text>
+          <Text fw={600}>Add an online account for Stats</Text>
+          <Button onClick={() => document.querySelector<HTMLInputElement>('[aria-label="Username"]')?.focus()}>Add account</Button>
           <Text size="xs" c="dimmed" maw="22rem">
             Pick a source above, type the account name, and press Enter. Games load straight from
             the public APIs.
@@ -2171,6 +1614,7 @@ export default function StatsWorkspace() {
             <Text size="xs" c="dimmed">
               Loading your games...
             </Text>
+            <Button size="xs" variant="light" onClick={() => gamesAbortRef.current?.abort()}>Stop</Button>
           </Stack>
         </Center>
       ) : error ? (
@@ -2182,13 +1626,14 @@ export default function StatsWorkspace() {
         </Box>
       ) : data ? (
         settings.tab === "overview" ? (
-          <StatsOverviewSection
-            games={periodGames}
-            series={periodSeries}
-            currentRating={currentRating}
-            ratedFilter={settings.rated}
-            nowSec={effectiveNowSec}
-            windowStart={periodWindow.start}
+          <TruePerformancePanel
+            key={`${settings.source}:${trimmedUsername}:${settings.timeClass}`}
+            games={toPerformanceGames(data.games)}
+            gameType={effectiveRated === "casual" ? "unrated" : effectiveRated}
+            poolLabel={`${getStatsSourceLabel(settings.source)} · ${settings.timeClass}`}
+            asOf={data.nowSec}
+            coverage={`${data.games.length.toLocaleString()} games loaded · Up to 5,000 games / 10 years of available history`}
+            onOpenGame={(game) => { if (game.url && /^https:\/\/(?:lichess\.org|(?:www\.)?chess\.com)\//i.test(game.url)) window.open(game.url, "_blank", "noopener,noreferrer"); }}
           />
         ) : settings.tab === "strength" ? (
           <StatsStrengthSection
