@@ -51,10 +51,11 @@ if ($installer -match "-File\s+.*start-home-server\.ps1") {
 }
 
 $publisher = Get-Content -Raw -LiteralPath $publisherPath
-$migrationIndex = $publisher.IndexOf('install-home-server-launcher.ps1')
-$runtimeMutationIndex = $publisher.IndexOf('$collectorDestination')
-if ($migrationIndex -lt 0 -or $runtimeMutationIndex -lt 0 -or $migrationIndex -gt $runtimeMutationIndex) {
-  throw 'Publishing does not migrate the scheduled launcher before mutating the runtime.'
+if ($publisher -match 'install-home-server-launcher\.ps1' -or $publisher -match 'serve --bg') {
+  throw 'Ordinary publication must preserve the installed scheduled tasks and shared Serve routes.'
+}
+if ($publisher -notmatch 'controller-config\.json' -or $publisher -notmatch 'phone-services\.json') {
+  throw 'Publication must check the existing controller and owner On/Off choice.'
 }
 
 $stager = Get-Content -Raw -LiteralPath $stagerPath

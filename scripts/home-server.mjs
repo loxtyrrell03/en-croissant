@@ -221,9 +221,12 @@ const otbImportService = new OtbImportService({
   onLog: (message) => void appendLog(message),
 });
 const fidePlayerSearch = new FidePlayerSearchService();
+const tournamentDeployment = await readJsonFile(join(serverRoot, "runtime-deployment.json"));
+const tournamentBinaryName = /^encroissant-tournament-core-[a-f0-9]{12}\.exe$/.test(tournamentDeployment?.tournamentBinary ?? "")
+  ? tournamentDeployment.tournamentBinary : process.platform === "win32" ? "encroissant-tournament-core.exe" : "encroissant-tournament-core";
 const tournaments = new TournamentService({
   root: join(serverRoot, "tournaments"), cacheRoot: otbImportCacheRoot,
-  binaryPath: join(serverRoot, "runtime", process.platform === "win32" ? "encroissant-tournament-core.exe" : "encroissant-tournament-core"),
+  binaryPath: join(serverRoot, "runtime", tournamentBinaryName),
   onLog: message => void appendLog(message),
 });
 const sharedReview = new SharedReviewService({
@@ -385,6 +388,9 @@ async function handleRequest(request, response) {
       coachCommandAvailable: Boolean(await stat(coachCommandPath).catch(() => null)),
       otbImporterAvailable: await otbImportService.isAvailable(),
       otbImportJobs: otbImportService.jobs.size,
+      otbActiveImports: [...otbImportService.jobs.values()].filter(job => ["queued", "running", "cancelling", "preparing"].includes(job.status)).length,
+      tournamentServiceAvailable: Boolean(await stat(tournaments.binaryPath).catch(() => null)),
+      tournamentRequests: tournaments.pending.size,
     });
   }
 
