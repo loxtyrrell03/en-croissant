@@ -47,7 +47,7 @@ describe("FIDE player lookup", () => {
                 year: 2003,
                 standard: 1852,
             }),
-        ).toBe("HKG · b. 2003 · 1852");
+        ).toBe("HKG · b. 2003 · Standard 1852");
         expect(describeFidePlayer({ id: 1, name: "X", inactive: true })).toBe("inactive");
     });
 

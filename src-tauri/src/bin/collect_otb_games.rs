@@ -1,6 +1,10 @@
 #[path = "../otb_import.rs"]
 mod otb_import;
 
+#[cfg(test)]
+#[path = "../otb_database_save.rs"]
+mod otb_database_save;
+
 use std::{
     env,
     io::{self, Write},

@@ -384,6 +384,14 @@ async convertPgn(file: string, dbPath: string, timestamp: number | null, title: 
     else return { status: "error", error: e  as any };
 }
 },
+async saveOtbDatabase(file: string, dbPath: string, jobId: string, title: string, description: string) : Promise<Result<number, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("save_otb_database", { file, dbPath, jobId, title, description }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async replaceDatabaseFromPgn(file: string, dbPath: string, title: string, description: string | null) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("replace_database_from_pgn", { file, dbPath, title, description }) };
@@ -417,8 +425,8 @@ async collectOtbGames(request: OtbImportRequest) : Promise<Result<OtbImportRepor
 }
 },
 /**
- * Stops outstanding source requests while allowing the collector to finalize
- * and return every deduplicated game already merged into the partial PGN.
+ * Stops outstanding source requests. The collector still sorts and writes
+ * the games already merged into its shared collection before returning.
  */
 async cancelOtbGames(jobId: string) : Promise<boolean> {
     return await TAURI_INVOKE("cancel_otb_games", { jobId });
@@ -867,16 +875,16 @@ export type MistakeReviewAnalysisMode = "single" | "layered"
 export type MistakeReviewAttemptLabel = "best" | "good" | "okay" | "inaccuracy" | "mistake" | "blunder"
 export type MistakeReviewClockTiming = { reviewKey: string; gameId: number; ply: number; moveSequence: string; moveTimeSeconds: number | null; clockBeforeSeconds: number | null; clockAfterSeconds: number | null; date: string | null; time: string | null; timeControl: string | null }
 export type MistakeReviewClockTimingRequest = { reviewKey: string; fen: string; playedMoveUci: string; gameIds: number[] }
+export type MistakeReviewGameHistory = { fen: string; moves: string[] }
 export type MistakeReviewGameMetadata = { gameId: number; date: string | null; time: string | null; openingName: string | null }
 export type MistakeReviewMoveScore = { label: MistakeReviewAttemptLabel; passed: boolean; bestMoveSan: string; bestMoveUci: string; playedMoveSan: string; playedMoveUci: string; cpLoss: number; winProbabilityDrop: number; cpBefore: number; cpAfter: number; requestedDepth: number; reachedDepth: number; engineName: string }
 export type MistakeReviewMoveScoreRequest = { requestId: string | null; fen: string; playedMoveUci: string; enginePath: string; engineName: string | null; engineOptions: EngineOption[] | null; depth: number | null; multiPv: number | null; thresholds: MistakeReviewThresholds | null }
+export type MistakeReviewReplyCandidate = { fen: string; pvUci: string[]; cp: number | null; depth: number }
 export type MistakeReviewSampleLine = { moves: string[]; requestedDepth: number; reachedDepth: number; engineName: string }
 export type MistakeReviewSampleLineRequest = { requestId: string | null; fen: string; firstMoveUci: string; enginePath: string; engineName: string | null; engineOptions: EngineOption[] | null; depth: number | null; maxPlies: number | null }
 export type MistakeReviewScanProgress = { id: string; progress: number; gamesAnalyzed: number; gamesTotal: number; positionsAnalyzed: number; candidateMoves: number; mistakesFound: number; phase: string; paused: boolean; finished: boolean }
 export type MistakeReviewScanReport = { gamesScanned: number; candidateMoves: number; positionsAnalyzed: number; lastAnalyzedGameId: number | null; stopped: boolean; mistakes: MistakeReviewScanResult[] }
 export type MistakeReviewScanRequest = { requestId: string | null; playerDb: string; playerId: number; playerName: string | null; enginePath: string; engineName: string | null; engineOptions: EngineOption[] | null; analysisMode: MistakeReviewAnalysisMode | null; fastDepth: number | null; deepDepth: number | null; multiPv: number | null; thresholds: MistakeReviewThresholds | null; includeSeverities: MistakeReviewSeverityFilter | null; minWinProbabilityDrop: number | null; timeManagement: MistakeReviewTimeManagementSettings | null; timeControls: string[] | null; startDate: string | null; endDate: string | null; sinceGameId: number | null; maxGames: number | null }
-export type MistakeReviewReplyCandidate = { fen: string; pvUci: string[]; cp: number | null; depth: number }
-export type MistakeReviewGameHistory = { fen: string; moves: string[] }
 export type MistakeReviewScanResult = { reviewKey: string; fen: string; normalizedFen: string; sideToMove: string; playerColor: string; moveSequence: string; playedMoveSan: string; playedMoveUci: string; bestMoveSan: string; bestMoveUci: string; pvSan: string[]; pvUci: string[]; refutationSan: string[]; refutationUci: string[]; refutationCandidates?: MistakeReviewReplyCandidate[]; bestCandidates?: MistakeReviewReplyCandidate[]; previousFen?: string | null; previousMoveUci?: string | null; tacticalHistory?: MistakeReviewGameHistory | null; severity: MistakeReviewSeverity; cpLoss: number; winProbabilityDrop: number; cpBefore: number; cpAfter: number; requestedDepth: number; reachedDepth: number; analysisMode: MistakeReviewAnalysisMode; fastDepth: number; multiPv: number; engineName: string; gameId: number; lastGameId: number; ply: number; moveNumber: number; date: string | null; time: string | null; openingName: string | null; opponent: string; timeControl: string | null; whiteName: string; blackName: string; whiteElo: number | null; blackElo: number | null; gameResult: string | null; moveTimeSeconds: number | null; clockBeforeSeconds: number | null; clockAfterSeconds: number | null; longThinkThresholdSeconds: number | null; occurrenceCount: number; gameIds: number[] }
 export type MistakeReviewSeverity = "inaccuracy" | "mistake" | "blunder"
 export type MistakeReviewSeverityFilter = { inaccuracy: boolean; mistake: boolean; blunder: boolean }
@@ -889,10 +897,16 @@ export type OpeningHealthPlayerPosition = { fen: string; normalizedFen: string; 
 export type OpeningHealthPlayerPositionsReport = { playerGames: number; candidatePositions: number; positions: OpeningHealthPlayerPosition[] }
 export type OpeningHealthPlayerPositionsRequest = { playerDb: string; playerId: number | null; color: string; maxPlies: number; startDate: string | null; endDate: string | null; requestId: string }
 export type OtbImportNewestGame = { date: string; event: string; white: string; black: string; result: string; source: string }
-export type OtbImportProgress = { jobId: string; source: string; phase: string; current: number; total: number; gamesFound: number; message: string }
+export type OtbImportProgress = { jobId: string; source: string; phase: string; current: number; total: number; gamesFound: number; message: string; overallCurrent?: number | null; overallTotal?: number | null }
 export type OtbImportReport = { playerName: string; fideId: string | null; outputPath: string; cancelled: boolean; gamesFound: number; duplicatesRemoved: number; suspectedOnlineGamesExcluded: number; identityMismatchesExcluded: number; coverageComplete: boolean; coverageGaps: string[]; newestGame: OtbImportNewestGame | null; sources: OtbImportSourceReport[] }
-export type OtbImportRequest = { jobId: string; playerName: string; fideId: string | null; fromYear: number; includeLichessBroadcasts: boolean; includeLichessBroadcastArchives: boolean; includeLichessCommunityBroadcasts: boolean; includeChessResults: boolean; includeChessbaseNews: boolean; includeOfficialPgnIndexes: boolean; includeTwic: boolean; localPgnPaths: string[]; cacheDir: string; outputPath: string }
-export type OtbImportSourceReport = { source: string; elapsedMs: number; archivesChecked: number; cachedArchives: number; matchedGames: number; uniqueGamesAdded: number; errors: string[] }
+export type OtbImportRequest = { jobId: string; playerName: string; fideId: string | null; fromYear: number; includeLichessBroadcasts: boolean; includeLichessBroadcastArchives?: boolean; includeLichessCommunityBroadcasts?: boolean; includeChessResults: boolean; includeChessbaseNews: boolean; includeOfficialPgnIndexes: boolean; includeTwic: boolean; localPgnPaths: string[]; cacheDir: string; outputPath: string }
+export type OtbImportSourceReport = { source: string;
+/**
+ * Wall-clock time for this concurrent source lane. This is deliberately
+ * measured around the whole lane so benchmark reports expose discovery,
+ * network, index, and merge stalls rather than only download time.
+ */
+elapsedMs: number; archivesChecked: number; cachedArchives: number; matchedGames: number; uniqueGamesAdded: number; errors: string[] }
 export type OutOpening = { name: string; fen: string }
 export type Outcome = "1-0" | "0-1" | "1/2-1/2" | "*"
 export type PgnSplitReport = { created: number; targetDir: string }

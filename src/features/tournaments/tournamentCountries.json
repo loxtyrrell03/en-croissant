@@ -1,0 +1,1780 @@
+[
+  {
+    "code": "AFG",
+    "name": "Afghanistan",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "ALA",
+    "name": "Aland Islands",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "ALB",
+    "name": "Albania",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "ALG",
+    "name": "Algeria",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "ZZZ",
+    "name": "All other federations",
+    "regions": []
+  },
+  {
+    "code": "ASM",
+    "name": "American Samoa",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "AND",
+    "name": "Andorra",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "ANG",
+    "name": "Angola",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "ANT",
+    "name": "Antigua and Barbuda",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "ARG",
+    "name": "Argentina",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "ARM",
+    "name": "Armenia",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "ARU",
+    "name": "Aruba",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "ACC",
+    "name": "ASEAN Chess Confederation",
+    "regions": []
+  },
+  {
+    "code": "ACF",
+    "name": "Asian Chess Federation",
+    "regions": []
+  },
+  {
+    "code": "AUS",
+    "name": "Australia",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "AUT",
+    "name": "Austria",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "AZE",
+    "name": "Azerbaijan",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "BAH",
+    "name": "Bahamas",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "BRN",
+    "name": "Bahrain",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "BAN",
+    "name": "Bangladesh",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "BAR",
+    "name": "Barbados",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "BLR",
+    "name": "Belarus",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "BEL",
+    "name": "Belgium",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "BIZ",
+    "name": "Belize",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "BEN",
+    "name": "Benin",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "BER",
+    "name": "Bermuda",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "BHU",
+    "name": "Bhutan",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "BOL",
+    "name": "Bolivia",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "BES",
+    "name": "Bonaire; Sint Eustatius; Saba",
+    "regions": []
+  },
+  {
+    "code": "BIH",
+    "name": "Bosnia & Herzegovina",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "BOT",
+    "name": "Botswana",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "BRA",
+    "name": "Brazil",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "IOT",
+    "name": "British Indian Ocean Territory",
+    "regions": []
+  },
+  {
+    "code": "IVB",
+    "name": "British Virgin Islands",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "BRU",
+    "name": "Brunei Darussalam",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "BUL",
+    "name": "Bulgaria",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "BUR",
+    "name": "Burkina Faso",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "BDI",
+    "name": "Burundi",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "CAM",
+    "name": "Cambodia",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "CMR",
+    "name": "Cameroon",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "CAN",
+    "name": "Canada",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "CPV",
+    "name": "Cape Verde",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "CAT",
+    "name": "Catalonia",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "CAY",
+    "name": "Cayman Islands",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "CAF",
+    "name": "Central African Republic",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "CHA",
+    "name": "Chad",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "CHI",
+    "name": "Chile",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "CHN",
+    "name": "China",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "TPE",
+    "name": "Chinese Taipei",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "COL",
+    "name": "Colombia",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "COM",
+    "name": "Comoros Islands",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "CCA",
+    "name": "Confederation of Chess for Americas",
+    "regions": []
+  },
+  {
+    "code": "COK",
+    "name": "Cook Islands",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "CRC",
+    "name": "Costa Rica",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "CRO",
+    "name": "Croatia",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "CUB",
+    "name": "Cuba",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "CUR",
+    "name": "Curacao",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "CUW",
+    "name": "Curacao",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "CYP",
+    "name": "Cyprus",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "CZE",
+    "name": "Czech Republic",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "COD",
+    "name": "Democratic Republic of the Congo",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "DEN",
+    "name": "Denmark",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "DJI",
+    "name": "Djibouti",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "DMA",
+    "name": "Dominica",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "DOM",
+    "name": "Dominican Republic",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "ECU",
+    "name": "Ecuador",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "EGY",
+    "name": "Egypt",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "ESA",
+    "name": "El Salvador",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "ENG",
+    "name": "England",
+    "regions": [
+      "UK & Ireland",
+      "Europe"
+    ]
+  },
+  {
+    "code": "GEQ",
+    "name": "Equatorial Guinea",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "ERI",
+    "name": "Eritrea",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "EST",
+    "name": "Estonia",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "ETH",
+    "name": "Ethiopia",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "ECX",
+    "name": "European Chess Union",
+    "regions": []
+  },
+  {
+    "code": "EU",
+    "name": "European Union",
+    "regions": []
+  },
+  {
+    "code": "EUF",
+    "name": "European Union",
+    "regions": []
+  },
+  {
+    "code": "FLK",
+    "name": "Falkland Islands",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "FAI",
+    "name": "Faroe Islands",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "FID",
+    "name": "FIDE",
+    "regions": []
+  },
+  {
+    "code": "FIJ",
+    "name": "Fiji",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "FIN",
+    "name": "Finland",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "FRM",
+    "name": "North Macedonia (legacy)",
+    "regions": []
+  },
+  {
+    "code": "FRA",
+    "name": "France",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "GUF",
+    "name": "French Guiana",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "PYF",
+    "name": "French Polynesia",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "GAB",
+    "name": "Gabon",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "GAM",
+    "name": "Gambia",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "GEO",
+    "name": "Georgia",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "GER",
+    "name": "Germany",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "GHA",
+    "name": "Ghana",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "GIB",
+    "name": "Gibraltar",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "GBR",
+    "name": "Great Britain and Northern Ireland",
+    "regions": [
+      "UK & Ireland",
+      "Europe"
+    ]
+  },
+  {
+    "code": "GRE",
+    "name": "Greece",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "GRL",
+    "name": "Greenland",
+    "regions": []
+  },
+  {
+    "code": "GRN",
+    "name": "Grenada",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "GLP",
+    "name": "Guadeloupe",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "GUM",
+    "name": "Guam",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "GUA",
+    "name": "Guatemala",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "GCI",
+    "name": "Guernsey",
+    "regions": [
+      "UK & Ireland",
+      "Europe"
+    ]
+  },
+  {
+    "code": "GUI",
+    "name": "Guinea",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "GNB",
+    "name": "Guinea-bissau",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "GUY",
+    "name": "Guyana",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "HAI",
+    "name": "Haiti",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "VAT",
+    "name": "Holy See (VATICAN City State)",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "HON",
+    "name": "Honduras",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "HKG",
+    "name": "Hong Kong, China",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "HUN",
+    "name": "Hungary",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "ISL",
+    "name": "Iceland",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "IND",
+    "name": "India",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "INA",
+    "name": "Indonesia",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "IRI",
+    "name": "Iran",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "IRQ",
+    "name": "Iraq",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "IRL",
+    "name": "Ireland",
+    "regions": [
+      "UK & Ireland",
+      "Europe"
+    ]
+  },
+  {
+    "code": "IOM",
+    "name": "Isle of Man",
+    "regions": [
+      "UK & Ireland",
+      "Europe"
+    ]
+  },
+  {
+    "code": "IMN",
+    "name": "Isle of Man",
+    "regions": [
+      "UK & Ireland",
+      "Europe"
+    ]
+  },
+  {
+    "code": "ISR",
+    "name": "Israel",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "ITA",
+    "name": "Italy",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "CIV",
+    "name": "Ivory Coast",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "JAM",
+    "name": "Jamaica",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "JPN",
+    "name": "Japan",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "JCI",
+    "name": "Jersey",
+    "regions": [
+      "UK & Ireland",
+      "Europe"
+    ]
+  },
+  {
+    "code": "JOR",
+    "name": "Jordan",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "KAZ",
+    "name": "Kazakhstan",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "KEN",
+    "name": "Kenya",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "KIR",
+    "name": "Kiribati",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "PRK",
+    "name": "Korea Democratic Peoples Republic of",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "KOS",
+    "name": "Kosovo",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "KUW",
+    "name": "Kuwait",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "KGZ",
+    "name": "Kyrgyzstan",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "LAO",
+    "name": "Laos",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "LAT",
+    "name": "Latvia",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "LBN",
+    "name": "Lebanon",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "LES",
+    "name": "Lesotho",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "LBR",
+    "name": "Liberia",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "LBA",
+    "name": "Libya",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "LIE",
+    "name": "Liechtenstein",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "LTU",
+    "name": "Lithuania",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "LUX",
+    "name": "Luxembourg",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "MAC",
+    "name": "Macau, China",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "MAD",
+    "name": "Madagascar",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "MAW",
+    "name": "Malawi",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "MAS",
+    "name": "Malaysia",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "MDV",
+    "name": "Maldives",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "MLI",
+    "name": "Mali",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "MLT",
+    "name": "Malta",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "MHL",
+    "name": "Marshall Islands",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "MTQ",
+    "name": "Martinique",
+    "regions": []
+  },
+  {
+    "code": "MTN",
+    "name": "Mauritania",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "MRI",
+    "name": "Mauritius",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "MYT",
+    "name": "Mayotte",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "MEX",
+    "name": "Mexico",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "FSM",
+    "name": "Micronesia Federated States of",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "MDA",
+    "name": "Moldova",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "MNC",
+    "name": "Monaco",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "MGL",
+    "name": "Mongolia",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "MNE",
+    "name": "Montenegro",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "MSR",
+    "name": "Montserrat",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "MAR",
+    "name": "Morocco",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "MOZ",
+    "name": "Mozambique",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "MYA",
+    "name": "Myanmar",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "NAM",
+    "name": "Namibia",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "NRU",
+    "name": "Nauru",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "NEP",
+    "name": "Nepal",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "NED",
+    "name": "Netherlands",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "AHO",
+    "name": "Netherlands Antilles",
+    "regions": []
+  },
+  {
+    "code": "NCL",
+    "name": "New Caledonia",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "NZL",
+    "name": "New Zealand",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "NCA",
+    "name": "Nicaragua",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "NIG",
+    "name": "Niger",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "NGR",
+    "name": "Nigeria",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "NIU",
+    "name": "Niue",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "AFR",
+    "name": "Non-spec Asia Pas Location",
+    "regions": []
+  },
+  {
+    "code": "NFK",
+    "name": "Norfolk Island",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "NIR",
+    "name": "Northern Ireland",
+    "regions": [
+      "UK & Ireland",
+      "Europe"
+    ]
+  },
+  {
+    "code": "MKD",
+    "name": "North Macedonia",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "MNP",
+    "name": "Northern Mariana Islands",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "NOR",
+    "name": "Norway",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "OMA",
+    "name": "Oman",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "ONL",
+    "name": "Online-Tournaments",
+    "regions": []
+  },
+  {
+    "code": "PAK",
+    "name": "Pakistan",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "PLW",
+    "name": "Palau",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "PLE",
+    "name": "Palestine",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "PAN",
+    "name": "Panama",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "PNG",
+    "name": "Papua New Guinea",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "PAR",
+    "name": "Paraguay",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "PER",
+    "name": "Peru",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "PHI",
+    "name": "Philippines",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "POL",
+    "name": "Poland",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "POR",
+    "name": "Portugal",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "PUR",
+    "name": "Puerto Rico",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "QAT",
+    "name": "Qatar",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "REU",
+    "name": "Reunion",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "ROU",
+    "name": "Romania",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "RUS",
+    "name": "Russia",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "RWA",
+    "name": "Rwanda",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "SKN",
+    "name": "Saint Kitts and Nevis",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "LCA",
+    "name": "Saint Lucia",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "MAF",
+    "name": "Saint Martin",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "VIN",
+    "name": "Saint Vincent and The Grenadines",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "WSM",
+    "name": "Samoa",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "SMR",
+    "name": "San Marino",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "STP",
+    "name": "Sao Tome and Principe",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "KSA",
+    "name": "Saudi Arabia",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "SCO",
+    "name": "Scotland",
+    "regions": [
+      "UK & Ireland",
+      "Europe"
+    ]
+  },
+  {
+    "code": "SEN",
+    "name": "Senegal",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "SRB",
+    "name": "Serbia",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "SEY",
+    "name": "Seychelles",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "SLE",
+    "name": "Sierra Leone",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "SGP",
+    "name": "Singapore",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "SXM",
+    "name": "Sint Maarten",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "SVK",
+    "name": "Slovakia",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "SLO",
+    "name": "Slovenia",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "SOL",
+    "name": "Solomon Islands",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "SOM",
+    "name": "Somalia",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "RSA",
+    "name": "South Africa",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "KOR",
+    "name": "South Korea",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "SSD",
+    "name": "South Sudan",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "ESP",
+    "name": "Spain",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "SRI",
+    "name": "Sri Lanka",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "SPM",
+    "name": "St. Pierre and Miquelon",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "SUD",
+    "name": "Sudan",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "SUR",
+    "name": "Suriname",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "SWZ",
+    "name": "Swaziland",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "SWE",
+    "name": "Sweden",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "SUI",
+    "name": "Switzerland",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "SYR",
+    "name": "Syria",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "TJK",
+    "name": "Tajikistan",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "TAN",
+    "name": "Tanzania",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "XXX",
+    "name": "Test-Tournaments",
+    "regions": []
+  },
+  {
+    "code": "THA",
+    "name": "Thailand",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "TLS",
+    "name": "Timor-Leste",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "TOG",
+    "name": "Togo",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "TKL",
+    "name": "Tokelau",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "TON",
+    "name": "Tonga",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "TTO",
+    "name": "Trinidad & Tobago",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "TUN",
+    "name": "Tunisia",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "TUR",
+    "name": "Türkiye",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "TKM",
+    "name": "Turkmenistan",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "TCA",
+    "name": "Turks and Caicos Islands",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "TUV",
+    "name": "Tuvalu",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "UGA",
+    "name": "Uganda",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "UKR",
+    "name": "Ukraine",
+    "regions": [
+      "Europe"
+    ]
+  },
+  {
+    "code": "UAE",
+    "name": "United Arab Emirates",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "USA",
+    "name": "United States of America",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "URU",
+    "name": "Uruguay",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "ISV",
+    "name": "US Virgin Islands",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "UZB",
+    "name": "Uzbekistan",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "VAN",
+    "name": "Vanuatu",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "VUT",
+    "name": "Vanuatu",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "VEN",
+    "name": "Venezuela",
+    "regions": [
+      "Americas"
+    ]
+  },
+  {
+    "code": "VIE",
+    "name": "Vietnam",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "WLS",
+    "name": "Wales",
+    "regions": [
+      "UK & Ireland",
+      "Europe"
+    ]
+  },
+  {
+    "code": "WLF",
+    "name": "Wallis and Futuna Islands",
+    "regions": [
+      "Oceania"
+    ]
+  },
+  {
+    "code": "WFC",
+    "name": "World Federation for Chess Composition",
+    "regions": []
+  },
+  {
+    "code": "YEM",
+    "name": "Yemen",
+    "regions": [
+      "Asia"
+    ]
+  },
+  {
+    "code": "SCG",
+    "name": "Yugoslavia",
+    "regions": []
+  },
+  {
+    "code": "ZAM",
+    "name": "Zambia",
+    "regions": [
+      "Africa"
+    ]
+  },
+  {
+    "code": "ZIM",
+    "name": "Zimbabwe",
+    "regions": [
+      "Africa"
+    ]
+  }
+]

@@ -1,3 +1,4 @@
+import { DesktopTournaments } from "@/features/tournaments/DesktopTournaments";
 import {
   ActionIcon,
   Alert,
@@ -3630,6 +3631,7 @@ export default function NewTabHome() {
       />
       <Stack gap="lg" p="md">
         <HomeGameDatabaseImport />
+        <DesktopTournaments />
         <DailyGoalsPanel
           openingDecks={reviewDecks}
           mistakeDecks={mistakeDecks}

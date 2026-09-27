@@ -51,6 +51,8 @@
 
 .headerNav {
   display: flex;
+  max-width: 100%;
+  overflow-x: auto;
   padding: 2px;
   border: 1px solid rgba(255, 255, 255, 0.055);
   border-radius: 9px;
@@ -58,8 +60,9 @@
 }
 
 .headerNav button {
-  flex: 1;
-  min-width: 0;
+  flex: 1 0 auto;
+  min-width: max-content;
+  white-space: nowrap;
   min-height: 44px;
   padding: 0.35rem 0.6rem;
   border: 1px solid transparent;

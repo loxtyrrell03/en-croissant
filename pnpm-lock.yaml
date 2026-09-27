@@ -8,6 +8,12 @@ importers:
 
   .:
     dependencies:
+      '@echecs/swiss':
+        specifier: 5.0.0
+        version: 5.0.0(@echecs/tournament@3.3.0)
+      '@echecs/tournament':
+        specifier: 3.3.0
+        version: 3.3.0
       '@badrap/result':
         specifier: ^0.2.13
         version: 0.2.13
@@ -263,6 +269,17 @@ importers:
         version: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.20.1)(jsdom@28.1.0)(vite@8.0.0(@types/node@22.20.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
 
 packages:
+
+  '@echecs/swiss@5.0.0':
+    resolution: {integrity: sha512-p5H1AWgrmDAMZdMgFTBjTowNXt7EbU9Doj381++rSHxf+BeIE4vbh193VQ7G+aJNoPb0LYarBYk7dcKSHIzn3Q==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      '@echecs/tournament': ^3.3.0
+
+  '@echecs/tournament@3.3.0':
+    resolution: {integrity: sha512-WLsH1HTTyyyB1ZjFSXGwGGyaAUSOuLpE5Zlx5H2DurBcdyOGAken14hHF+dHuVmMM0/1PM6ClfWuhLj0t8Pu5A==}
+    engines: {node: '>=22'}
+
 
   '@acemir/cssom@0.9.31':
     resolution: {integrity: sha512-ZnR3GSaH+/vJ0YlHau21FjfLYjMpYVIzTD8M8vIEQvIGxeOXyXdzCI140rrCY862p/C/BbzWsjc1dgnM9mkoTA==}
@@ -3806,6 +3823,13 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
+
+  '@echecs/swiss@5.0.0(@echecs/tournament@3.3.0)':
+    dependencies:
+      '@echecs/tournament': 3.3.0
+
+  '@echecs/tournament@3.3.0': {}
+
 
   '@acemir/cssom@0.9.31': {}
 

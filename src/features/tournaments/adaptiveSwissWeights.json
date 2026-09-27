@@ -1,0 +1,11 @@
+{
+  "version": "2026-09-10-context-v1",
+  "maxPlayers": 120,
+  "firstExactProbabilities": [0.46814404432132967, 0.16620498614958448, 0.11542012927054478, 0.07571560480147738, 0.07479224376731301, 0.0221606648199446],
+  "laterByeOtherProbability": 0.8245614035087719,
+  "historyReference": 0.6016882089,
+  "historyPriorStatements": 48,
+  "historyMaxTop": 0.98,
+  "historyLookbackRounds": 3,
+  "evidence": "docs/benchmarks/pairing-2026-09-10/participation/calibration-candidate.json"
+}

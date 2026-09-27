@@ -1,0 +1,8 @@
+{
+  "version": "2026-09-10-attendance-v1",
+  "method": "Beta(1,1) smoothing of unique exposed player-round attendance after explicit prior zero-point absences; unknown future status remains an estimate",
+  "oneAbsence": 0.1450381679389313,
+  "repeatedAbsence": 0.011594202898550725,
+  "counts": { "one": { "paired": 18, "total": 129 }, "repeated": { "paired": 3, "total": 343 } },
+  "evidence": "docs/benchmarks/pairing-2026-09-10/participation/attendance-fit.json"
+}

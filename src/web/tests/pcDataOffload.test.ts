@@ -185,13 +185,21 @@ describe("phone data work offload", () => {
 
     it("starts and polls OTB imports only through the private PC service", async () => {
         const job = {
-            id: "otb-test",
+            id: "otb-00000000-0000-4000-8000-000000000001",
             status: "running",
             request: {
                 playerName: "Kodukula, Sameera",
                 fideId: "343413994",
                 fromYear: 2024,
-                sources: {},
+                sources: {
+                    lichessBroadcasts: true,
+                    broadcastArchives: false,
+                    communityBroadcasts: false,
+                    chessResults: true,
+                    chessbaseNews: true,
+                    officialPgnIndexes: true,
+                    twic: true,
+                },
             },
             progress: null,
             games: [],
@@ -207,25 +215,29 @@ describe("phone data work offload", () => {
         });
         vi.stubGlobal("fetch", fetchMock);
 
-        await startWebOtbImport({
-            playerName: "Kodukula, Sameera",
-            fideId: "343413994",
-            fromYear: 2024,
-            sources: {
-                lichessBroadcasts: true,
-                broadcastArchives: false,
-                communityBroadcasts: false,
-                chessResults: true,
-                chessbaseNews: true,
-                officialPgnIndexes: true,
-                twic: true,
+        await startWebOtbImport(
+            {
+                playerName: "Kodukula, Sameera",
+                fideId: "343413994",
+                fromYear: 2024,
+                sources: {
+                    lichessBroadcasts: true,
+                    broadcastArchives: false,
+                    communityBroadcasts: false,
+                    chessResults: true,
+                    chessbaseNews: true,
+                    officialPgnIndexes: true,
+                    twic: true,
+                },
             },
-        });
-        await loadWebOtbImportJob("otb-test");
+            job.id,
+        );
+        await loadWebOtbImportJob(job.id);
 
         expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock.mock.calls[0]?.[1]?.method).toBe("PUT");
         expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/api/otb-import/jobs");
-        expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/api/otb-import/jobs/otb-test");
+        expect(String(fetchMock.mock.calls[1]?.[0])).toContain(`/api/otb-import/jobs/${job.id}`);
         expect(
             fetchMock.mock.calls.every(([input]) => !String(input).includes("lichess.org")),
         ).toBe(true);

@@ -29,6 +29,7 @@ export class OtbImportService {
     this.jobs = new Map();
     this.processes = new Map();
     this.persistQueues = new Map();
+    this.startRequests = new Map();
     // Archive bytes and the SQLite player index are product-wide data. The
     // desktop and phone companion can safely share them while keeping mutable
     // job state and result artifacts under their own service roots.
@@ -178,13 +179,59 @@ export class OtbImportService {
     return this.getJob(id);
   }
 
-  async createJob(input) {
+  async createJob(input, requestedId) {
+    const request = normalizeOtbImportPayload(input);
+    if (
+      requestedId !== undefined &&
+      !/^otb-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(requestedId)
+    ) {
+      throw new Error("Use a valid new OTB search ID.");
+    }
+    const id = requestedId ?? `otb-${Date.now().toString(36)}-${randomUUID().slice(0, 8)}`;
+    const pending = this.startRequests.get(id);
+    const previousRequest = pending?.request ?? this.jobs.get(id)?.request;
+    if (
+      previousRequest &&
+      JSON.stringify(normalizeOtbImportPayload(previousRequest)) !== JSON.stringify(request)
+    ) {
+      throw Object.assign(new Error("This OTB search ID belongs to a different search."), {
+        code: "OTB_JOB_REQUEST_CONFLICT",
+      });
+    }
+    if (pending) return pending.promise;
+
+    // Own the ID before any asynchronous availability or disk check. Retries
+    // join the same start, including while its initial status is being saved.
+    const entry = {
+      request,
+      promise: Promise.resolve().then(() => this.createOrResumeJob(id, request)),
+    };
+    this.startRequests.set(id, entry);
+    try {
+      return await entry.promise;
+    } finally {
+      if (this.startRequests.get(id) === entry) this.startRequests.delete(id);
+    }
+  }
+
+  async createOrResumeJob(id, request) {
+    let job = this.jobs.get(id);
+    if (
+      job &&
+      (job.status !== "queued" ||
+        job.cancellationRequested ||
+        this.processes.has(id) ||
+        job.collectorProcess)
+    ) {
+      // The previous response or PID save may have failed after spawning.
+      // Recover the same status, durably, without launching another collector.
+      await this.persist(job);
+      return this.getJob(id);
+    }
     if (!(await this.isAvailable())) {
       throw new Error("The PC OTB importer is not installed yet.");
     }
-    const request = normalizeOtbImportPayload(input);
-    const id = `otb-${Date.now().toString(36)}-${randomUUID().slice(0, 8)}`;
-    const job = {
+    job ??= {
       id,
       status: "queued",
       request,
@@ -200,7 +247,8 @@ export class OtbImportService {
     };
     this.jobs.set(id, job);
     await this.persist(job);
-    await this.start(job);
+    // Stop can finish a queued job while its initial save is pending.
+    if (job.status === "queued" && !job.cancellationRequested) await this.start(job);
     return this.getJob(id);
   }
 

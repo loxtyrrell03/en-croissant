@@ -35,7 +35,7 @@ async function fetchDeployedWebBuildId(baseUrl: string) {
  * healthy active session. A suspended iOS window is reloaded only when its
  * stamped document is older than the release currently served by the PC.
  */
-export function installWebAppLifecycle(baseUrl: string) {
+export function installWebAppLifecycle(baseUrl: string, canReload: () => boolean = () => true) {
     if (!("serviceWorker" in navigator)) return () => {};
 
     const embeddedBuildId = getEmbeddedWebBuildId();
@@ -64,6 +64,8 @@ export function installWebAppLifecycle(baseUrl: string) {
                 }
 
                 const reloadAttempt = `${embeddedBuildId}->${deployedBuildId}`;
+                // Never discard a pending or failed workspace save to adopt a build.
+                if (disposed || !canReload()) return;
                 if (window.sessionStorage.getItem(RELOAD_ATTEMPT_KEY) === reloadAttempt) return;
                 window.sessionStorage.setItem(RELOAD_ATTEMPT_KEY, reloadAttempt);
                 window.location.reload();

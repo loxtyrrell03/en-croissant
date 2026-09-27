@@ -140,6 +140,8 @@ pub struct OtbImportSourceReport {
     /// Wall-clock time for this concurrent source lane. This is deliberately
     /// measured around the whole lane so benchmark reports expose discovery,
     /// network, index, and merge stalls rather than only download time.
+    // Tauri and the headless collector serialize this duration as a JSON number.
+    #[specta(type = f64)]
     pub elapsed_ms: u64,
     pub archives_checked: u32,
     pub cached_archives: u32,
@@ -721,6 +723,7 @@ pub async fn collect_otb_games_with_progress(
         .clear();
     let cancellation = CancellationRegistration::new(&request.job_id)?;
     create_dir_all(&request.cache_dir).map_err(|error| error.to_string())?;
+    let _download_use = encroissant_tournament_core::otb_packs::import_lease(&request.cache_dir, false)?;
     let index_path = archive_index_path(&request.cache_dir);
     if !index_path.exists() {
         let _ = index::initialize(&index_path).await;
@@ -3262,7 +3265,7 @@ async fn scan_lichess_broadcasts(
 ) -> OtbImportSourceReport {
     const SOURCE: &str = "Lichess broadcast database";
     let mut report = OtbImportSourceReport::new(SOURCE);
-    let list = match fetch_page_cached(
+    let mut list = match fetch_page_cached(
         client,
         LICHESS_BROADCAST_LIST,
         &request.cache_dir,
@@ -3275,14 +3278,18 @@ async fn scan_lichess_broadcasts(
             report
                 .errors
                 .push(format!("{LICHESS_BROADCAST_LIST}: not found"));
-            return report;
+            String::new()
         }
         Err(error) => {
             report.errors.push(error);
-            return report;
+            String::new()
         }
     };
 
+    match index::prepared_archive_urls(&archive_index_path(&request.cache_dir)) {
+        Ok(urls) => { list.push('\n'); list.push_str(&urls.join("\n")); }
+        Err(error) => report.errors.push(format!("Prepared OTB archive: {error}")),
+    }
     let advertised_urls = list
         .lines()
         .map(str::trim)
@@ -3300,6 +3307,7 @@ async fn scan_lichess_broadcasts(
         .map(str::to_string)
         .collect::<Vec<_>>();
     urls.sort();
+    urls.dedup();
 
     let specs = urls
         .into_iter()
@@ -6779,11 +6787,8 @@ async fn lichess_corpus_coverage(request: &OtbImportRequest) -> LichessCorpusCov
     if !request.include_lichess_broadcast_archives {
         return LichessCorpusCoverage::empty(request.from_year);
     }
-    let Ok(Some(list)) =
-        read_page_cache_stale(LICHESS_BROADCAST_LIST, &request.cache_dir, "lichess-index").await
-    else {
-        return LichessCorpusCoverage::empty(request.from_year);
-    };
+    let mut list = read_page_cache_stale(LICHESS_BROADCAST_LIST, &request.cache_dir, "lichess-index").await.ok().flatten().unwrap_or_default();
+    if let Ok(urls) = index::prepared_archive_urls(&archive_index_path(&request.cache_dir)) { list.push('\n'); list.push_str(&urls.join("\n")); }
     let advertised = list
         .lines()
         .map(str::trim)
@@ -7059,6 +7064,34 @@ fn is_transport_failure(error: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn source_report_duration_matches_json_and_generated_binding() {
+        let mut report = OtbImportSourceReport::new("fixture");
+        report.elapsed_ms = u64::from(u32::MAX) + 1;
+        let json = serde_json::to_value(&report).unwrap();
+        assert_eq!(json["elapsedMs"].as_u64(), Some(report.elapsed_ms));
+
+        // Match the desktop export policy without changing other u64 fields.
+        let exported = specta_typescript::export::<OtbImportSourceReport>(
+            &specta_typescript::Typescript::default()
+                .bigint(specta_typescript::BigIntExportBehavior::BigInt),
+        )
+        .unwrap();
+        assert!(exported.contains("elapsedMs: number"), "{exported}");
+        let bindings = include_str!("../../src/bindings/generated.ts");
+        let start = bindings
+            .find("export type OtbImportSourceReport =")
+            .unwrap();
+        let binding = bindings[start..].split("\nexport type ").next().unwrap();
+        assert_eq!(
+            exported
+                .trim_end_matches(';')
+                .split_whitespace()
+                .collect::<Vec<_>>(),
+            binding.split_whitespace().collect::<Vec<_>>()
+        );
+    }
 
     static LICHESS_TEST_LANE: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 

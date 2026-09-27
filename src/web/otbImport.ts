@@ -1,9 +1,18 @@
+import { withFideRequestDeadline } from "@/utils/fideRequestLifetime";
 import { getWebServerUrl } from "./serverUrl";
 import { parseFidePlayers, type FidePlayer } from "@/utils/fidePlayer";
 import type { WebImportResult } from "./model";
+import { withWebRequestDeadline } from "./requestDeadline";
 
 export const WEB_OTB_JOB_STORAGE_KEY = "encroissant-web-otb-job";
 export const WEB_OTB_PREP_HANDLED_JOB_STORAGE_KEY = "encroissant-web-otb-prep-handled-job";
+
+export class WebOtbJobNotFoundError extends Error {
+    constructor(readonly jobId: string) {
+        super("The PC could not find this saved search.");
+        this.name = "WebOtbJobNotFoundError";
+    }
+}
 
 export type WebOtbImportSources = {
     lichessBroadcasts: boolean;
@@ -77,7 +86,10 @@ export type WebOtbImportArtifact = {
     prepDatabase: WebImportResult | null;
 };
 
-export type WebOtbImportJob = WebOtbImportJobStatus & Omit<WebOtbImportArtifact, "jobId">;
+export type WebOtbImportJob = WebOtbImportJobStatus &
+    Omit<WebOtbImportArtifact, "jobId"> & {
+        artifactLoaded?: boolean;
+    };
 
 export const DEFAULT_WEB_OTB_IMPORT_SOURCES: WebOtbImportSources = {
     lichessBroadcasts: true,
@@ -89,23 +101,53 @@ export const DEFAULT_WEB_OTB_IMPORT_SOURCES: WebOtbImportSources = {
     twic: true,
 };
 
-export async function startWebOtbImport(request: {
+export type WebOtbImportRequest = {
     playerName: string;
-    fideId: string;
+    fideId: string | null;
     fromYear: number;
     sources: WebOtbImportSources;
-}) {
-    return requestWebOtbJobStatus("api/otb-import/jobs", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(request),
-    });
+};
+
+export async function startWebOtbImport(request: WebOtbImportRequest, jobId: string) {
+    const job = await requestWebOtbJobStatus(
+        `api/otb-import/jobs/${encodeURIComponent(jobId)}`,
+        {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(request),
+        },
+        jobId,
+    );
+    if (
+        !job.request ||
+        job.request.playerName !== request.playerName.trim().replace(/\s+/g, " ") ||
+        (job.request.fideId || null) !== (request.fideId || null) ||
+        job.request.fromYear !== request.fromYear ||
+        Object.keys(DEFAULT_WEB_OTB_IMPORT_SOURCES).some(
+            (key) =>
+                job.request.sources?.[key as keyof WebOtbImportSources] !==
+                request.sources[key as keyof WebOtbImportSources],
+        )
+    ) {
+        throw new Error(
+            "The PC returned a different search. Retry the connection to the saved request.",
+        );
+    }
+    return job;
+}
+
+export function loadWebOtbImportJobStatus(jobId: string, signal?: AbortSignal) {
+    return requestWebOtbJobStatus(
+        `api/otb-import/jobs/${encodeURIComponent(jobId)}`,
+        {
+            signal,
+        },
+        jobId,
+    );
 }
 
 export async function loadWebOtbImportJob(jobId: string, signal?: AbortSignal) {
-    const job = await requestWebOtbJobStatus(`api/otb-import/jobs/${encodeURIComponent(jobId)}`, {
-        signal,
-    });
+    const job = await loadWebOtbImportJobStatus(jobId, signal);
     if (
         job.status !== "completed" ||
         !job.artifactAvailable ||
@@ -115,13 +157,41 @@ export async function loadWebOtbImportJob(jobId: string, signal?: AbortSignal) {
         return job;
     }
     const artifact = await requestWebOtbArtifact(jobId, signal);
-    return { ...job, games: artifact.games, prepDatabase: artifact.prepDatabase };
+    return {
+        ...job,
+        gameCount: artifact.games.length,
+        games: artifact.games,
+        prepDatabase: artifact.prepDatabase,
+        artifactLoaded: true,
+    };
 }
 
 export async function cancelWebOtbImport(jobId: string) {
-    return requestWebOtbJobStatus(`api/otb-import/jobs/${encodeURIComponent(jobId)}`, {
-        method: "DELETE",
-    });
+    const job = await requestWebOtbJobStatus(
+        `api/otb-import/jobs/${encodeURIComponent(jobId)}`,
+        {
+            method: "DELETE",
+        },
+        jobId,
+    );
+    // A status GET started before Stop may still be in flight. Replace that
+    // observation before it can publish an older running state or empty result.
+    refreshWebOtbImportJob(jobId);
+    return job;
+}
+
+export function refreshWebOtbImportJob(jobId: string) {
+    const watcher = webOtbJobWatchers.get(jobId);
+    if (watcher) {
+        watcher.controller?.abort();
+        watcher.controller = null;
+        if (watcher.timer) clearTimeout(watcher.timer);
+        watcher.timer = null;
+        watcher.inFlight = false;
+        watcher.terminal = false;
+        watcher.error = null;
+        if (watcher.subscribers.size > 0) void pollWebOtbImportJob(jobId, watcher);
+    }
 }
 
 type WebOtbJobSubscriber = {
@@ -136,6 +206,7 @@ type WebOtbJobWatcher = {
     timer: ReturnType<typeof setTimeout> | null;
     inFlight: boolean;
     terminal: boolean;
+    error: unknown;
 };
 
 // The collector finishes many complete imports between one-second boundaries.
@@ -163,6 +234,7 @@ export function watchWebOtbImportJob(
             timer: null,
             inFlight: false,
             terminal: false,
+            error: null,
         };
         webOtbJobWatchers.set(jobId, watcher);
     }
@@ -170,6 +242,7 @@ export function watchWebOtbImportJob(
     const subscriber = { onJob, onError };
     watcher.subscribers.add(subscriber);
     if (watcher.job) onJob(watcher.job);
+    if (watcher.error) onError(watcher.error);
     if (!watcher.terminal && !watcher.inFlight && !watcher.timer) {
         void pollWebOtbImportJob(jobId, watcher);
     }
@@ -190,22 +263,29 @@ async function pollWebOtbImportJob(jobId: string, watcher: WebOtbJobWatcher) {
     watcher.controller = controller;
     try {
         const job = await loadWebOtbImportJob(jobId, controller.signal);
-        if (controller.signal.aborted) return;
+        if (controller.signal.aborted || watcher.controller !== controller) return;
         watcher.job = job;
+        watcher.error = null;
         watcher.terminal = job.status === "completed" || job.status === "failed";
         for (const subscriber of watcher.subscribers) subscriber.onJob(job);
     } catch (error) {
-        if (!(error instanceof DOMException && error.name === "AbortError")) {
+        if (!controller.signal.aborted && watcher.controller === controller) {
+            watcher.error = error;
+            // A confirmed missing record needs an explicit retry or reviewed
+            // recovery, not a permanent half-second polling loop.
+            watcher.terminal = error instanceof WebOtbJobNotFoundError;
             for (const subscriber of watcher.subscribers) subscriber.onError(error);
         }
     } finally {
-        if (watcher.controller === controller) watcher.controller = null;
-        watcher.inFlight = false;
-        if (!watcher.terminal && watcher.subscribers.size > 0 && !controller.signal.aborted) {
-            watcher.timer = setTimeout(
-                () => void pollWebOtbImportJob(jobId, watcher),
-                WEB_OTB_POLL_INTERVAL_MS,
-            );
+        if (watcher.controller === controller) {
+            watcher.controller = null;
+            watcher.inFlight = false;
+            if (!watcher.terminal && watcher.subscribers.size > 0 && !controller.signal.aborted) {
+                watcher.timer = setTimeout(
+                    () => void pollWebOtbImportJob(jobId, watcher),
+                    WEB_OTB_POLL_INTERVAL_MS,
+                );
+            }
         }
     }
 }
@@ -230,22 +310,40 @@ export async function searchWebFidePlayers(
     query: string,
     signal?: AbortSignal,
 ): Promise<FidePlayer[]> {
-    const response = await fetch(
-        getWebServerUrl(`api/otb-import/players?q=${encodeURIComponent(query.trim())}`),
-        {
-            headers: { accept: "application/json" },
-            cache: "no-store",
-            signal,
-        },
-    );
-    const body = (await response.json().catch(() => null)) as {
-        players?: unknown;
-        error?: string;
-    } | null;
-    if (!response.ok) {
-        throw new Error(body?.error || "The PC FIDE player search did not respond.");
-    }
-    return parseFidePlayers(body?.players);
+    return withFideRequestDeadline(async (requestSignal) => {
+        const response = await fetch(
+            getWebServerUrl(`api/otb-import/players?q=${encodeURIComponent(query.trim())}`),
+            {
+                headers: { accept: "application/json" },
+                cache: "no-store",
+                signal: requestSignal,
+            },
+        );
+        const body = (await response.json().catch(() => null)) as {
+            players?: unknown;
+            error?: string;
+        } | null;
+        if (!response.ok) {
+            throw new Error(body?.error || "The PC FIDE player search did not respond.");
+        }
+        if (
+            !body ||
+            !Array.isArray(body.players) ||
+            body.players.some((player) => parseFidePlayers(player).length !== 1)
+        ) {
+            throw new Error(
+                "The PC FIDE search returned an unreadable response. Retry the search.",
+            );
+        }
+        const players = parseFidePlayers(body.players);
+        if (
+            /^\d+$/.test(query.trim()) &&
+            players.some((player) => player.id !== Number(query.trim()))
+        ) {
+            throw new Error("The PC FIDE search returned a different player. Retry the search.");
+        }
+        return players;
+    }, signal);
 }
 
 export function findExactWebFidePlayer(players: FidePlayer[], playerName: string) {
@@ -274,63 +372,118 @@ function normalizeWebFidePlayerName(value: string) {
         .trim();
 }
 
-async function requestWebOtbJobStatus(path: string, init?: RequestInit): Promise<WebOtbImportJob> {
-    const response = await fetch(getWebServerUrl(path), {
-        ...init,
-        headers: { accept: "application/json", ...init?.headers },
-        cache: "no-store",
-    });
-    const body = (await response.json().catch(() => null)) as
-        | (Partial<WebOtbImportJobStatus> & Partial<WebOtbImportArtifact>)
-        | { error?: string }
-        | null;
-    if (!response.ok) {
-        throw new Error(
-            body && "error" in body && body.error
-                ? body.error
-                : "The PC OTB importer did not respond.",
-        );
-    }
-    const raw = body as Partial<WebOtbImportJobStatus> & Partial<WebOtbImportArtifact>;
-    return {
-        ...raw,
-        gameCount: Number.isInteger(raw.gameCount)
-            ? (raw.gameCount as number)
-            : Array.isArray(raw.games)
-              ? raw.games.length
-              : Number(raw.report?.gamesFound || 0),
-        artifactAvailable: raw.artifactAvailable === true,
-        artifactBytes: Number.isFinite(raw.artifactBytes) ? (raw.artifactBytes as number) : null,
-        games: Array.isArray(raw.games) ? raw.games : [],
-        prepDatabase: raw.prepDatabase ?? null,
-    } as WebOtbImportJob;
+async function requestWebOtbJobStatus(
+    path: string,
+    init?: RequestInit,
+    expectedId?: string,
+): Promise<WebOtbImportJob> {
+    return withWebRequestDeadline(
+        async (signal) => {
+            const response = await fetch(getWebServerUrl(path), {
+                ...init,
+                signal,
+                headers: { accept: "application/json", ...init?.headers },
+                cache: "no-store",
+            });
+            const body = (await response.json().catch(() => null)) as
+                | (Partial<WebOtbImportJobStatus> & Partial<WebOtbImportArtifact>)
+                | { error?: string }
+                | null;
+            if (!response.ok) {
+                if (
+                    response.status === 404 &&
+                    expectedId &&
+                    (!init?.method || init.method === "GET") &&
+                    body &&
+                    "error" in body &&
+                    body.error === "OTB import job not found."
+                ) {
+                    throw new WebOtbJobNotFoundError(expectedId);
+                }
+                if (response.status === 405 && init?.method === "PUT") {
+                    throw new Error(
+                        "The PC phone service needs updating before this search can start. Update it, then retry this search.",
+                    );
+                }
+                throw new Error(
+                    body && "error" in body && body.error
+                        ? body.error
+                        : "The PC OTB importer did not respond.",
+                );
+            }
+            const raw = body as Partial<WebOtbImportJobStatus> & Partial<WebOtbImportArtifact>;
+            if (
+                !raw ||
+                typeof raw.id !== "string" ||
+                !/^[A-Za-z0-9_-]+$/.test(raw.id) ||
+                (expectedId !== undefined && raw.id !== expectedId) ||
+                !["queued", "running", "completed", "failed"].includes(raw.status as string) ||
+                (raw.status === "completed" && !raw.request) ||
+                (raw.request !== undefined &&
+                    (!raw.request ||
+                        typeof raw.request.playerName !== "string" ||
+                        !raw.request.playerName.trim() ||
+                        !Number.isInteger(raw.request.fromYear) ||
+                        raw.request.fromYear < 1900))
+            ) {
+                throw new Error(
+                    "The PC returned an invalid OTB search status. Retry the connection.",
+                );
+            }
+            return {
+                ...raw,
+                gameCount: Number.isInteger(raw.gameCount)
+                    ? (raw.gameCount as number)
+                    : Array.isArray(raw.games)
+                      ? raw.games.length
+                      : Number(raw.report?.gamesFound || 0),
+                artifactAvailable: raw.artifactAvailable === true,
+                artifactBytes: Number.isFinite(raw.artifactBytes)
+                    ? (raw.artifactBytes as number)
+                    : null,
+                games: Array.isArray(raw.games) ? raw.games : [],
+                prepDatabase: raw.prepDatabase ?? null,
+                artifactLoaded: Array.isArray(raw.games),
+            } as WebOtbImportJob;
+        },
+        15_000,
+        "The PC connection took too long. Retry the same search.",
+        init?.signal ?? undefined,
+    );
 }
 
 async function requestWebOtbArtifact(
     jobId: string,
     signal?: AbortSignal,
 ): Promise<WebOtbImportArtifact> {
-    const response = await fetch(
-        getWebServerUrl(`api/otb-import/jobs/${encodeURIComponent(jobId)}/artifact`),
-        {
-            headers: { accept: "application/json" },
-            cache: "no-store",
-            signal,
+    return withWebRequestDeadline(
+        async (requestSignal) => {
+            const response = await fetch(
+                getWebServerUrl(`api/otb-import/jobs/${encodeURIComponent(jobId)}/artifact`),
+                {
+                    headers: { accept: "application/json" },
+                    cache: "no-store",
+                    signal: requestSignal,
+                },
+            );
+            const body = (await response.json().catch(() => null)) as
+                | WebOtbImportArtifact
+                | { error?: string }
+                | null;
+            if (!response.ok) {
+                throw new Error(
+                    body && "error" in body && body.error
+                        ? body.error
+                        : "The PC OTB result artifact did not respond.",
+                );
+            }
+            if (!body || !("jobId" in body) || body.jobId !== jobId || !Array.isArray(body.games)) {
+                throw new Error("The PC returned an invalid OTB result artifact.");
+            }
+            return body;
         },
+        600_000,
+        "The saved games could not finish downloading. Reconnect to your PC and retry.",
+        signal,
     );
-    const body = (await response.json().catch(() => null)) as
-        | WebOtbImportArtifact
-        | { error?: string }
-        | null;
-    if (!response.ok) {
-        throw new Error(
-            body && "error" in body && body.error
-                ? body.error
-                : "The PC OTB result artifact did not respond.",
-        );
-    }
-    if (!body || !("jobId" in body) || body.jobId !== jobId || !Array.isArray(body.games)) {
-        throw new Error("The PC returned an invalid OTB result artifact.");
-    }
-    return body;
 }

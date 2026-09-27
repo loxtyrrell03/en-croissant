@@ -46,8 +46,26 @@ export function applyWebOtbPrepCompletion(
 
     const databaseId = imported.database.id;
     const prepId = `prep-${job.id}`;
+    const completion = {
+        jobId: job.id,
+        databaseId,
+        databaseName: imported.database.name,
+        opponent,
+        gameCount: imported.games.length,
+        prepId,
+    };
+    // The receipt is part of the workspace transaction, never a separate
+    // localStorage acknowledgement. Replays must preserve edits and removals.
+    if (state.completedOtbImports?.[job.id]) return { state, completion };
+    const completedOtbImports = {
+        ...state.completedOtbImports,
+        [job.id]: { databaseId, prepId },
+    };
     const timestamp = stableOtbTimestamp(job);
     const previousPrep = state.prepWorkspaces.find((prep) => prep.id === prepId) ?? null;
+    // A pre-receipt workspace already imported this job. Migrate its marker
+    // without merging the original artifact over later game annotations.
+    if (previousPrep) return { state: { ...state, completedOtbImports }, completion };
     const prep: WebPrepWorkspace = previousPrep ?? {
         id: prepId,
         name: `Prep vs ${opponent}`,
@@ -74,6 +92,7 @@ export function applyWebOtbPrepCompletion(
     return {
         state: {
             ...merged,
+            completedOtbImports,
             prepWorkspaces,
             activePrepId: prep.id,
             board: previousPrep
@@ -84,14 +103,7 @@ export function applyWebOtbPrepCompletion(
                       sourceTitle: prep.name,
                   },
         },
-        completion: {
-            jobId: job.id,
-            databaseId,
-            databaseName: imported.database.name,
-            opponent,
-            gameCount: imported.games.length,
-            prepId,
-        },
+        completion,
     };
 }
 

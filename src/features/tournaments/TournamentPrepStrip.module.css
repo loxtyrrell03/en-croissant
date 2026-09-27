@@ -1,0 +1,34 @@
+.section { container-type: inline-size; border-block: 1px solid var(--op-border); padding-top: 12px; }
+.header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 0 8px 12px; }
+.header h2 { margin: 0; font-size: var(--op-fs-lg); font-weight: 650; }
+.headerActions { display: flex; align-items: center; gap: 8px; }
+.primaryAction, .openTracker { min-height: 32px; border: 1px solid var(--op-border-strong); border-radius: var(--op-radius-control); background: var(--op-bg-overlay); color: var(--op-text); font: inherit; font-size: var(--op-fs-sm); font-weight: 600; padding: 6px 11px; cursor: pointer; }
+.primaryAction { border-color: var(--op-accent); color: var(--op-accent); background: transparent; }
+.primaryAction:hover, .openTracker:hover { background: var(--op-bg-overlay); border-color: var(--op-accent); }
+.primaryAction:focus-visible, .openTracker:focus-visible, .openButton:focus-visible, .stopButton:focus-visible { outline: 2px solid var(--op-accent); outline-offset: 2px; }
+.list { border-top: 1px solid var(--op-border); }
+.row { display: grid; grid-template-columns: minmax(220px, 1.2fr) minmax(190px, 1fr) auto; gap: 16px; align-items: center; padding: 12px 8px; border-bottom: 1px solid var(--op-border); }
+.row:last-child { border-bottom: 0; }
+.openButton { min-width: 0; padding: 0; border: 0; background: transparent; color: var(--op-text); font: inherit; text-align: left; cursor: pointer; }
+.openButton:hover .event > strong { color: var(--op-accent); }
+.openButton:disabled, .openTracker:disabled, .stopButton:disabled { opacity: .55; cursor: default; }
+.event, .detail { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; overflow-wrap: anywhere; }
+.event > strong { font-size: var(--op-fs-sm); font-weight: 650; }
+.event > small, .detail small, .label { font-size: var(--op-fs-xs); color: var(--op-text-faint); }
+.detail strong { font-size: var(--op-fs-sm); font-weight: 600; }
+.label { font-weight: 400; }
+.rowActions { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+.stopButton { border: 0; background: transparent; color: var(--op-text-faint); font: inherit; font-size: var(--op-fs-xs); padding: 5px 0; cursor: pointer; }
+.stopButton:hover:not(:disabled) { color: var(--op-loss); }
+.syncState { font-size: var(--op-fs-xs); color: var(--op-text-dim); }
+.empty { padding: 8px; color: var(--op-text-faint); font-size: var(--op-fs-sm); }
+@container (max-width: 760px) {
+  .row { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+  .openButton { grid-column: 1 / -1; }
+}
+@container (max-width: 430px) {
+  .row { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .rowActions { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .stopButton { padding: 6px 0; }
+}
+@media (pointer: coarse) { .primaryAction, .openTracker, .stopButton { min-height: 40px; } }

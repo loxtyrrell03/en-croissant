@@ -5,6 +5,8 @@ import { expect, it, vi } from "vitest";
 import WebApp from "../WebApp";
 import { createEmptyWebState } from "../storage";
 import { parsePgnDatabase } from "../pgn";
+import { webStateSession } from "../webStateSession";
+import { DEFAULT_WEB_OTB_IMPORT_SOURCES } from "../otbImport";
 const fixture = createEmptyWebState();
 vi.mock("../storage", async (original) => ({
   ...(await original()),
@@ -40,7 +42,11 @@ it("handles a real watcher completion while the OTB import screen is mounted", a
         return Response.json({
           id: "handoff-test",
           status: complete ? "completed" : "running",
-          request: { playerName: "Test Player", sources: {} },
+          request: {
+            playerName: "Test Player",
+            fromYear: 2000,
+            sources: DEFAULT_WEB_OTB_IMPORT_SOURCES,
+          },
           report: { playerName: "Test Player", gamesFound: imported.games.length },
           prepDatabase: complete ? imported : null,
           games: [],
@@ -68,9 +74,9 @@ it("handles a real watcher completion while the OTB import screen is mounted", a
     expect(div.textContent).not.toContain("This view could not open");
     expect(div.textContent).not.toContain("The app could not display this screen");
     expect(div.querySelector('button[data-view="import"]')).not.toBeNull();
-    expect(window.localStorage.getItem("encroissant-web-otb-prep-handled-job")).toBe(
-      "handoff-test",
-    );
+    expect(
+      webStateSession.getSnapshot().savedState?.completedOtbImports?.["handoff-test"],
+    ).toMatchObject({ databaseId: imported.database.id });
   } finally {
     await act(async () => root.unmount());
     div.remove();

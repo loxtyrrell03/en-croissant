@@ -1,0 +1,33 @@
+.surface {
+  --op-bg: var(--mantine-color-body, #111315);
+  --op-bg-raised: var(--mantine-color-dark-7, #1b1e22);
+  --op-bg-overlay: var(--mantine-color-dark-6, #25272d);
+  --op-bg-hover: var(--mantine-color-dark-5, #30333a);
+  --op-text: var(--mantine-color-text, #f1f3f5);
+  --op-text-dim: var(--mantine-color-dimmed, #a7acb4);
+  --op-text-faint: var(--mantine-color-dimmed, #a7acb4);
+  --op-border: var(--mantine-color-dark-4, #34383f);
+  --op-border-strong: var(--mantine-color-dark-3, #4a4f58);
+  --op-accent: var(--mantine-color-blue-4, #74c0fc);
+  --op-accent-soft: rgba(39,112,185,.14);
+  --op-good: var(--mantine-color-green-4, #8ce99a);
+  --op-loss: var(--mantine-color-red-4, #ffa8a8);
+  --op-warn: var(--mantine-color-yellow-4, #ffd43b);
+  --op-fs-xs: .75rem; --op-fs-sm: .875rem; --op-fs-md: 1rem; --op-fs-lg: 1.125rem; --op-fs-xl: 1.4rem;
+  --op-radius-control: 7px; --op-radius-panel: 10px;
+  --op-sp-1: .25rem; --op-sp-2: .5rem; --op-sp-3: .75rem; --op-sp-4: 1rem; --op-sp-5: 1.25rem; --op-sp-6: 1.5rem; --op-sp-8: 2rem;
+  --op-bg-input: var(--op-bg-raised); --op-bg-inset: var(--op-bg);
+  --op-text-muted: var(--op-text-dim); --op-danger: var(--op-loss); --op-success: var(--op-good);
+  min-width: 0; width: 100%; color: var(--op-text); font-family: var(--mantine-font-family,system-ui);
+}
+.surface button, .surface input, .surface select {font-family:inherit;}
+.confirm {max-width:min(480px,calc(100vw - 32px));padding:24px;background:var(--op-bg-raised);border:1px solid var(--op-border);border-radius:10px;}
+.confirm::backdrop {background:rgba(0,0,0,.65);}
+.confirm h2 {font-size:1.25rem;margin:0 0 16px;}.confirm p {line-height:1.5;}
+.actions {display:flex;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:20px;}
+.actions button {min-height:44px;border:1px solid var(--op-border);border-radius:7px;padding:8px 14px;background:var(--op-bg-overlay);color:var(--op-text);cursor:pointer;}
+.actions [data-danger] {color:var(--op-loss);}
+@media(max-width:600px) {
+  .surface :is(button,select,input):not([aria-label^="Help:"]) {min-height:44px;}
+  .surface input,.surface select {font-size:16px;max-width:100%;}
+}

@@ -51,12 +51,8 @@ describe("FIDE player matching", () => {
         const currentYear = 2026;
         expect(getFideImportStartYear({ year: 2003 }, currentYear)).toBe(2003);
         expect(getFideImportStartYear({ year: 2003 }, currentYear, 2018)).toBe(2018);
-        expect(getFideImportStartYear({ year: 1899 }, currentYear)).toBe(
-            FIDE_IMPORT_FALLBACK_YEAR,
-        );
-        expect(getFideImportStartYear({ year: 2027 }, currentYear)).toBe(
-            FIDE_IMPORT_FALLBACK_YEAR,
-        );
+        expect(getFideImportStartYear({ year: 1899 }, currentYear)).toBe(FIDE_IMPORT_FALLBACK_YEAR);
+        expect(getFideImportStartYear({ year: 2027 }, currentYear)).toBe(FIDE_IMPORT_FALLBACK_YEAR);
         expect(getFideImportStartYear({ year: 2003.5 }, currentYear)).toBe(
             FIDE_IMPORT_FALLBACK_YEAR,
         );

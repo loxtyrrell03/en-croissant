@@ -1,0 +1,12 @@
+.countdown {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 8px 0 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.countdown strong { font-size: var(--op-fs-sm); color: var(--op-text); font-weight: 600; }
+.countdown time { font-size: var(--op-fs-xs); color: var(--op-text-faint); }
+.countdown[data-compact] { gap: 2px 10px; margin: 5px 0 0; }

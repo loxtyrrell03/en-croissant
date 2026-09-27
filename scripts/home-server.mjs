@@ -25,6 +25,7 @@ import {
 } from "./home-library-index.mjs";
 import { FidePlayerSearchService } from "./fide-player-search.mjs";
 import { OtbImportService } from "./otb-import-service.mjs";
+import { TournamentService } from "./tournament-service.mjs";
 import { getOpeningIdentificationBook, publicDerivedEvidence } from "./chess-coach-derived.mjs";
 import {
   buildCodexCoachInvocation,
@@ -220,6 +221,11 @@ const otbImportService = new OtbImportService({
   onLog: (message) => void appendLog(message),
 });
 const fidePlayerSearch = new FidePlayerSearchService();
+const tournaments = new TournamentService({
+  root: join(serverRoot, "tournaments"), cacheRoot: otbImportCacheRoot,
+  binaryPath: join(serverRoot, "runtime", process.platform === "win32" ? "encroissant-tournament-core.exe" : "encroissant-tournament-core"),
+  onLog: message => void appendLog(message),
+});
 const sharedReview = new SharedReviewService({
   root: join(serverRoot, "analysis"),
   documentsRoot,
@@ -258,10 +264,12 @@ server.listen(port, host, async () => {
 });
 
 process.on("SIGINT", () => {
+  tournaments.close();
   sharedReview.close();
   server.close(() => process.exit(0));
 });
 process.on("SIGTERM", () => {
+  tournaments.close();
   sharedReview.close();
   server.close(() => process.exit(0));
 });
@@ -276,6 +284,7 @@ async function handleRequest(request, response) {
     pathname.startsWith("/api/chess-books") ||
     pathname === "/api/engine/start" ||
     pathname.startsWith("/api/otb-import") ||
+    pathname === "/api/tournaments" ||
     pathname.startsWith("/api/mistake-review") ||
     pathname === "/v1" ||
     pathname.startsWith("/v1/");
@@ -379,6 +388,19 @@ async function handleRequest(request, response) {
     });
   }
 
+  if (pathname === "/api/tournaments") {
+    if (method !== "POST") return writeJson(response, 405, { error: "Method not allowed." });
+    const origin = String(request.headers.origin || "").replace(/\/$/, "");
+    if (origin && !privateCredentialOrigins.has(origin)) return writeJson(response, 403, { error: "This origin cannot access tournament data." });
+    if (!String(request.headers["content-type"] || "").startsWith("application/json")) return writeJson(response, 415, { error: "Use a JSON tournament request." });
+    try {
+      const result = await tournaments.request(await readJsonBody(request, 34 * 1024 * 1024));
+      return writeJson(response, 200, { result }, { "cache-control": "no-store" });
+    } catch (error) {
+      return writeJson(response, 400, { error: error instanceof Error ? error.message : String(error) }, { "cache-control": "no-store" });
+    }
+  }
+
   if (pathname === "/api/otb-import/jobs") {
     if (method !== "POST") return writeJson(response, 405, { error: "Method not allowed." });
     try {
@@ -399,17 +421,23 @@ async function handleRequest(request, response) {
     if (query.length < minimum) {
       return writeJson(response, 400, { error: "Enter more of the player name or FIDE ID." });
     }
+    const controller = new AbortController();
+    const onClose = () => { if (!response.writableEnded) controller.abort(); };
+    response.once("close", onClose);
     try {
       return writeJson(
         response,
         200,
-        { players: await fidePlayerSearch.search(query) },
+        { players: await fidePlayerSearch.search(query, controller.signal) },
         { "cache-control": "private, max-age=300" },
       );
     } catch (error) {
+      if (controller.signal.aborted) return;
       return writeJson(response, 502, {
         error: error instanceof Error ? error.message : "FIDE player search failed.",
-      });
+      }, { "cache-control": "no-store" });
+    } finally {
+      response.removeListener("close", onClose);
     }
   }
 
@@ -429,6 +457,18 @@ async function handleRequest(request, response) {
 
   const otbJobMatch = pathname.match(/^\/api\/otb-import\/jobs\/([A-Za-z0-9_-]+)$/);
   if (otbJobMatch) {
+    if (method === "PUT") {
+      try {
+        const payload = await readJsonBody(request, maxOtbImportRequestBytes);
+        const job = await otbImportService.createJob(payload, otbJobMatch[1]);
+        return writeJson(response, 202, job, { "cache-control": "no-store" });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        const status =
+          error?.code === "OTB_JOB_REQUEST_CONFLICT" ? 409 : /not installed/i.test(message) ? 503 : 400;
+        return writeJson(response, status, { error: message }, { "cache-control": "no-store" });
+      }
+    }
     if (method !== "GET" && method !== "DELETE") {
       return writeJson(response, 405, { error: "Method not allowed." });
     }

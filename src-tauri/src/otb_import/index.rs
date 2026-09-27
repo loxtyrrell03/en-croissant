@@ -277,7 +277,89 @@ pub(super) async fn checkpoint(index_path: &Path, truncate: bool) -> Result<(), 
     .map_err(|error| error.to_string())?
 }
 
+/// Prepared databases are immutable supplements; fresh local archives win.
+/// This small registry is atomically replaced only after a verified download.
+pub(super) fn prepared_paths(index_path: &Path) -> Result<Vec<PathBuf>, String> {
+    let file = index_path.with_file_name("otb-prepared.json");
+    if !file.exists() {
+        return Ok(Vec::new());
+    }
+    let bytes = std::fs::read(&file).map_err(|e| e.to_string())?;
+    if bytes.len() > 128 * 1024 {
+        return Err("OTB download selection is too large.".into());
+    }
+    let paths: Vec<PathBuf> =
+        serde_json::from_slice(&bytes).map_err(|e| format!("OTB download selection: {e}"))?;
+    if paths.len() > 120 || paths.iter().any(|p| !p.is_absolute() || p == index_path) {
+        return Err("Invalid OTB download selection.".into());
+    }
+    Ok(paths)
+}
+
 pub(super) async fn indexed_urls(
+    index_path: &Path,
+    urls: &[String],
+    max_age: Option<Duration>,
+    run: IndexRun,
+) -> Result<HashSet<String>, String> {
+    let mut found = indexed_urls_one(index_path, urls, max_age, run.clone()).await?;
+    for path in prepared_paths(index_path)? {
+        found.extend(indexed_urls_one(&path, urls, max_age, run.clone()).await?);
+    }
+    Ok(found)
+}
+
+pub(super) async fn query_indexed(
+    index_path: &Path,
+    urls: &[String],
+    identity: Arc<PlayerIdentity>,
+    source: &'static str,
+    from_year: u16,
+    run: IndexRun,
+) -> Result<HashMap<String, ScanOutcome>, String> {
+    let mut found = HashMap::new();
+    let mut paths = vec![index_path.to_path_buf()];
+    paths.extend(prepared_paths(index_path)?);
+    for path in paths {
+        let missing: Vec<_> = urls
+            .iter()
+            .filter(|url| !found.contains_key(*url))
+            .cloned()
+            .collect();
+        if missing.is_empty() {
+            break;
+        }
+        let present = indexed_urls_one(&path, &missing, None, run.clone()).await?;
+        let own: Vec<_> = missing
+            .into_iter()
+            .filter(|url| present.contains(url))
+            .collect();
+        found.extend(query_indexed_one(&path, &own, identity.clone(), source, from_year, run.clone()).await?);
+    }
+    Ok(found)
+}
+
+pub(super) fn prepared_archive_urls(index_path: &Path) -> Result<Vec<String>, String> {
+    let mut urls = Vec::new();
+    for path in prepared_paths(index_path)? {
+        let connection = open_query_index(&path)?;
+        let mut statement = connection
+            .prepare("SELECT archive_url FROM archive_state WHERE complete=1 ORDER BY archive_url")
+            .map_err(|e| e.to_string())?;
+        let rows = statement
+            .query_map([], |r| r.get::<_, String>(0))
+            .map_err(|e| e.to_string())?;
+        for row in rows {
+            urls.push(row.map_err(|e| e.to_string())?);
+        }
+    }
+    urls.sort();
+    urls.dedup();
+    Ok(urls)
+}
+
+
+async fn indexed_urls_one(
     index_path: &Path,
     urls: &[String],
     max_age: Option<Duration>,
@@ -359,7 +441,7 @@ pub(super) async fn index_and_scan(
     })
 }
 
-pub(super) async fn query_indexed(
+async fn query_indexed_one(
     index_path: &Path,
     archive_urls: &[String],
     identity: Arc<PlayerIdentity>,
@@ -973,6 +1055,28 @@ mod tests {
 1. d4 d5 2. c4 e6 0-1
 "#
         .to_string()
+    }
+
+    #[tokio::test]
+    async fn prepared_games_are_read_only_and_fresh_local_archives_win() {
+        let local=tempfile::tempdir().unwrap();let downloaded=tempfile::tempdir().unwrap();
+        let path=archive_index_path(local.path());let prepared=archive_index_path(downloaded.path());
+        initialize(&path).await.unwrap();initialize(&prepared).await.unwrap();
+        let identity=Arc::new(PlayerIdentity::new("Tyrrell, Lachlan",Some("6003788")).unwrap());
+        let url="https://database.lichess.org/broadcast/lichess_db_broadcast_2026-07.pgn.zst".to_string();
+        index_and_scan(&prepared,url.clone(),sample_pgn().into_bytes(),ArchiveFormat::Pgn,identity.clone(),"Fixture",1900,test_run("prepared-build")).await;
+        checkpoint(&prepared,true).await.unwrap();
+        let before=std::fs::read(&prepared).unwrap();
+        std::fs::write(local.path().join("otb-prepared.json"),serde_json::to_vec(&vec![&prepared]).unwrap()).unwrap();
+        assert_eq!(prepared_archive_urls(&path).unwrap(),vec![url.clone()]);
+        assert!(indexed_urls(&path,&[url.clone()],None,test_run("prepared-indexed")).await.unwrap().contains(&url));
+        let games=query_indexed(&path,&[url.clone()],identity.clone(),"Fixture",1900,test_run("prepared-query")).await.unwrap();
+        assert_eq!(games[&url].games.len(),1);
+        let newer=sample_pgn().replace("OTB Test","Updated local fixture");
+        index_and_scan(&path,url.clone(),newer.into_bytes(),ArchiveFormat::Pgn,identity.clone(),"Fixture",1900,test_run("local-build")).await;
+        let games=query_indexed(&path,&[url.clone()],identity,"Fixture",1900,test_run("local-query")).await.unwrap();
+        assert!(games[&url].games[0].pgn.contains("Updated local fixture"));
+        assert_eq!(std::fs::read(&prepared).unwrap(),before);
     }
 
     #[tokio::test]
