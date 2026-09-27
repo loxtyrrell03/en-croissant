@@ -155,6 +155,8 @@ try {
   $phoneState = Get-Content -Raw -LiteralPath (Join-Path $serverRoot 'phone-services.json') | ConvertFrom-Json
   if (-not $phoneState.enabled -and -not $SkipRestart) { throw 'PC services were turned off during the build.' }
   $healthBefore = Invoke-RestMethod -Uri "http://127.0.0.1:$Port/api/health" -TimeoutSec 5
+  $reviewBefore = Invoke-RestMethod -Uri "http://127.0.0.1:$Port/api/mistake-review" -TimeoutSec 5
+  if ($reviewBefore.running) { throw 'Background review is active. Publication must wait for it to finish.' }
   if ($healthBefore.libraryRefreshRunning -or $healthBefore.lichessExplorerRequests -gt 0 -or $healthBefore.otbActiveImports -gt 0 -or $healthBefore.tournamentRequests -gt 0) { throw 'The phone server has active work. Publish again after it finishes.' }
   $activeCollectors = @(Get-CimInstance Win32_Process | Where-Object { $_.ParentProcessId -eq $healthBefore.pid -and $_.Name -match 'collect_otb_games|codex' })
   if ($activeCollectors.Count) { throw 'An import or assistant operation is active; publication must wait.' }
