@@ -26,6 +26,9 @@ use tauri_specta::Event;
 #[path = "otb_import/index.rs"]
 mod index;
 
+#[path = "otb_import/game_dates.rs"]
+mod game_dates;
+
 use index::{archive_index_path, ArchiveFormat};
 
 const LICHESS_BROADCAST_LIST: &str = "https://database.lichess.org/broadcast/list.txt";
@@ -915,6 +918,15 @@ pub async fn collect_otb_games_with_progress(
         .into_inner()
         .unwrap_or_else(|poisoned| poisoned.into_inner())
         .into_deterministic();
+
+    if !cancelled {
+        emit_progress(&app, &request, "Game dates", "dating", 0, 0,
+            collection.games.len(), "Checking missing game dates".into());
+        cancelled = game_dates::recover_broadcast_dates(
+            &client, &request.cache_dir, &mut collection, &mut reports, &cancellation.signal,
+        ).await;
+        collection.games.retain(|game| !date_before_year(&game.date, request.from_year));
+    }
 
     // Provisional lane counts reflect lock-arrival order. Reconcile them from
     // the deterministic final winners so the durable report names the source
@@ -5452,7 +5464,7 @@ fn scan_pgn_reader<R: BufRead>(
                 outcome.suspected_online_games_excluded.saturating_add(1);
             continue;
         }
-        if header(&headers, "Date").is_some_and(|date| date_before_year(date, from_year)) {
+        if game_dates::preferred_date(&headers).is_some_and(|date| date_before_year(&date, from_year)) {
             continue;
         }
 
@@ -5482,6 +5494,7 @@ fn add_game(collection: &mut Collection, pgn: String, source: &str, target_side:
 /// deterministic replay reuses this prepared record instead of parsing every
 /// accepted PGN a second time after all source lanes finish.
 fn prepare_candidate(pgn: String, source: &str, target_side: &str) -> Option<CandidateGame> {
+    let pgn = game_dates::with_header_date(&pgn);
     let headers = parse_headers(&pgn);
     let white = header(&headers, "White")?.trim();
     let black = header(&headers, "Black")?.trim();

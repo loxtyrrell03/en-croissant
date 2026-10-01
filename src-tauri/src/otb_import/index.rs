@@ -1005,7 +1005,7 @@ fn filter_game(
             outcome.suspected_online_games_excluded.saturating_add(1);
         return;
     }
-    if header(&headers, "Date").is_some_and(|date| date_before_year(date, from_year)) {
+    if super::game_dates::preferred_date(&headers).is_some_and(|date| date_before_year(&date, from_year)) {
         return;
     }
     let canonical = canonicalize_target_name(game, side, &identity.canonical_name);
