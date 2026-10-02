@@ -1,3 +1,4 @@
+import { isValidTournamentTargetRound } from "./tournamentRoundMetadata";
 import { publishedGameResult } from "./publishedPairingResult";
 import { hasUnknownPriorPairingResults } from "./pairingHistoryCompleteness";
 import type { TournamentSnapshot } from "@/features/tournaments/platform";
@@ -11,6 +12,7 @@ const cache = new WeakMap<TournamentSnapshot, Map<number, PairingHistoryReliabil
  * available before its publication, then compare with its now-published pairs.
  * Current/target-round pairs never enter the reliability observations. */
 export function historicalPairingReliability(snapshot: TournamentSnapshot, target: number): PairingHistoryReliability | undefined {
+  if (!isValidTournamentTargetRound(snapshot, target)) return undefined;
   if (snapshot.format !== "swiss" || swissPairingSystemFor(snapshot) !== "dutch" || snapshot.players.length > weights.maxPlayers || target < 3 ||
       snapshot.incompletePairingRounds?.some(r => r > 0 && r < target) ||
       hasUnknownPriorPairingResults(snapshot, target) ||

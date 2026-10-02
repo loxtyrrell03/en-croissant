@@ -1,3 +1,4 @@
+import { isValidTournamentTargetRound } from "./tournamentRoundMetadata";
 import { publishedGameResult } from "./publishedPairingResult";
 import { normalizeTournamentResults } from "./normalizeTournamentResults";
 import { publishedNoOpponentScore } from "./publishedNoOpponentScore";
@@ -158,6 +159,7 @@ export function calculateExactSwissForecast(
   system: SwissPairingSystem = "dutch",
   accelerationOverride: SwissAcceleration | null | "auto" = "auto",
 ): ExactSwissForecast | null {
+  if (!isValidTournamentTargetRound(snapshot, targetRound)) return null;
   snapshot = normalizeTournamentResults(snapshot);
   if (hasUnknownPriorPairingResults(snapshot, targetRound)) return null;
   snapshot = swissParticipationScenario(snapshot, targetRound);

@@ -1,3 +1,4 @@
+import { isValidTournamentTargetRound } from "./tournamentRoundMetadata";
 import { calculateSampledSwissForecast } from "./sampledSwissForecast";
 /// <reference lib="webworker" />
 
@@ -25,9 +26,9 @@ self.addEventListener("message", (event: MessageEvent<ExactSwissWorkerRequest>) 
     id,
     // Exact rounds and sampled ensembles are cached by immutable snapshot, so
     // the remaining players reuse the same whole-field calculation.
-    forecasts: Object.fromEntries(snapshot.players.map(player => [player.startNumber,
+    forecasts: isValidTournamentTargetRound(snapshot, targetRound) ? Object.fromEntries(snapshot.players.map(player => [player.startNumber,
       calculateSampledSwissForecast(snapshot, targetRound, player.startNumber, system),
-    ])),
+    ])) : {},
   };
   self.postMessage(response);
 });

@@ -1,3 +1,4 @@
+import { isValidTournamentTargetRound } from "./tournamentRoundMetadata";
 import { publishedGameResult } from "./publishedPairingResult";
 import { normalizeTournamentResults } from "./normalizeTournamentResults";
 import { hasUnknownPriorPairingResults } from "./pairingHistoryCompleteness";
@@ -33,6 +34,7 @@ function calculateOutcomeSampledSwissForecast(
   system: SwissPairingSystem = "dutch",
   seedSalt = "production-v1",
 ): ExactSwissForecast | null {
+  if (!isValidTournamentTargetRound(snapshot, targetRound)) return null;
   snapshot = swissParticipationScenario(normalizeTournamentResults(snapshot), targetRound);
   if (hasUnknownPriorPairingResults(snapshot, targetRound)) return null;
   const baseline = calculateExactSwissForecast(snapshot, targetRound, myStartNumber, system);

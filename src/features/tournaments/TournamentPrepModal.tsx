@@ -1,3 +1,4 @@
+import { isValidTournamentTargetRound } from "./tournamentRoundMetadata";
 import { normalizeTournamentResults } from "./normalizeTournamentResults";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { pushToast } from "@/features/tournaments/ui";
@@ -237,12 +238,13 @@ export function TournamentPrepModal({
     )?.color;
     if (forecastSide) return forecastSide;
     const snapshot = normalizeTournamentResults(record.snapshot);
-    const directPairing = snapshot.pairings.find(
+    const targetRound = snapshot.nextRound;
+    const directPairing = isValidTournamentTargetRound(snapshot, targetRound) ? snapshot.pairings.find(
       (pairing) =>
-        pairing.round === snapshot.nextRound &&
+        pairing.round === targetRound &&
         ((pairing.whiteStartNumber === record.userStartNumber && pairing.blackStartNumber === startNumber) ||
           (pairing.blackStartNumber === record.userStartNumber && pairing.whiteStartNumber === startNumber)),
-    );
+    ) : undefined;
     if (directPairing?.whiteStartNumber === record.userStartNumber) return "white";
     if (directPairing?.blackStartNumber === record.userStartNumber) return "black";
     return projectedSideFromHistory(snapshot, record.userStartNumber);

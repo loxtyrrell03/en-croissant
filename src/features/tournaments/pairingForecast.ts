@@ -1,3 +1,4 @@
+import { isValidTournamentTargetRound } from "./tournamentRoundMetadata";
 import { publishedGameResult, publishedPairingScore } from "./publishedPairingResult";
 import { hasUnknownPriorPairingResults, UNKNOWN_PRIOR_RESULTS_HELP } from "./pairingHistoryCompleteness";
 import { normalizeTournamentResults } from "./normalizeTournamentResults";
@@ -460,6 +461,16 @@ export function calculatePairingForecast(
   myStartNumber: number,
   options?: PairingForecastCalculationOptions,
 ): PairingForecast {
+  // A malformed explicit target must decline before field preparation. Null
+  // retains its distinct source meaning: there is no later target to predict.
+  if (snapshot.nextRound !== null && !isValidTournamentTargetRound(snapshot, snapshot.nextRound)) {
+    return {
+      kind: "unavailable", round: null, confidence: "unavailable",
+      candidates: [], otherProbability: 0,
+      summary: "The next round could not be verified",
+      caveat: "The tournament's round information is inconsistent. Refresh after the organizer updates it.",
+    };
+  }
   snapshot = normalizeTournamentResults(snapshot);
   const model =
     snapshot.liveRound === null ? BETWEEN_ROUND_PRIMARY_MODEL : LIVE_ROUND_PRIMARY_MODEL;
