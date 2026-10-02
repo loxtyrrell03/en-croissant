@@ -1,0 +1,449 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-02",
+  "scope": "Source-only trap draw-boundary repair and fresh-relative-to-recorded-development adversarial observations; no owner store/runtime/Git actions by this agent",
+  "checkpoint": "Working tree with concurrent quiet-intermediate changes and pre-existing pending checking-ray patch. These complete-file hashes are not exclusive ownership hashes; root's exact-core receipt owns index-only verification.",
+  "pairedOriginal18": {
+    "assertionsSha256Lf": "fb5a436094a6f741699b4298defa6eb0e94c368ec31e91e4cfc83192bf4cbbed",
+    "beforeWorkingCoreSha256Lf": "4dfdb1bb190d266d20cee9bd237b814bbdc1d6309a03bc891eff32874d0db901",
+    "before": {
+      "passed": 8,
+      "failed": 10
+    },
+    "after": {
+      "passed": 18,
+      "failed": 0
+    },
+    "fixed": "Eight current/announced/automatic trap-boundary negatives plus two post-automatic-game capture negatives, both colours.",
+    "note": "The final32-test file appends14 contracts. Do not compare18-before to32-after as the same suite."
+  },
+  "expanded": {
+    "file": "src/utils/tests/trapDrawBoundary.test.ts",
+    "passed": 32,
+    "failed": 0,
+    "contracts": [
+      "Normal clock0 and optional attacker claim atroot97 retain trap170",
+      "Defender announced/current50 claims atroot98/99 reject trap",
+      "Automatic75 atroot149/150 rejects trap",
+      "Capture resets at99/149 retain trap270; capture cannot revive150",
+      "Pawn resets at99/149 retain trap230",
+      "Full supplied exchange cannot resurrect any primary/timeline at98/99/149/150",
+      "Immediate mate atresultclock150 retains mateIn1"
+    ]
+  },
+  "focused": {
+    "passed": 170,
+    "failed": 0,
+    "files": {
+      "trapDrawBoundary.test.ts": 32,
+      "quiet-trap-adversarial.test.ts": 16,
+      "trapConfinement.test.ts": 16,
+      "quietClearancePreparation.test.ts": 24,
+      "tacticalFiftyMoveProof.test.ts": 54,
+      "materialThreatDrawClaim.test.ts": 28
+    }
+  },
+  "checks": {
+    "projectTypes": "passed with --incremental false",
+    "benchmarkTypes": "passed with scoped config",
+    "scopedLint": {
+      "errors": 0,
+      "warnings": 0
+    },
+    "independentPython": {
+      "records": [
+        {
+          "kind": "quiet-trap",
+          "reflected": false,
+          "clock": 0,
+          "defender": "white",
+          "defenderCanClaim": false,
+          "defenderCurrentClaim": false,
+          "automaticAfterRoot": false,
+          "automaticBeforeRoot": false,
+          "announcedQuietReply": "a1b1",
+          "attackerClaimAfterReply": false
+        },
+        {
+          "kind": "quiet-trap",
+          "reflected": false,
+          "clock": 97,
+          "defender": "white",
+          "defenderCanClaim": false,
+          "defenderCurrentClaim": false,
+          "automaticAfterRoot": false,
+          "automaticBeforeRoot": false,
+          "announcedQuietReply": "a1b1",
+          "attackerClaimAfterReply": true
+        },
+        {
+          "kind": "quiet-trap",
+          "reflected": false,
+          "clock": 98,
+          "defender": "white",
+          "defenderCanClaim": true,
+          "defenderCurrentClaim": false,
+          "automaticAfterRoot": false,
+          "automaticBeforeRoot": false,
+          "announcedQuietReply": "a1b1",
+          "attackerClaimAfterReply": true
+        },
+        {
+          "kind": "quiet-trap",
+          "reflected": false,
+          "clock": 99,
+          "defender": "white",
+          "defenderCanClaim": true,
+          "defenderCurrentClaim": true,
+          "automaticAfterRoot": false,
+          "automaticBeforeRoot": false,
+          "announcedQuietReply": "a1b1",
+          "attackerClaimAfterReply": true
+        },
+        {
+          "kind": "quiet-trap",
+          "reflected": false,
+          "clock": 149,
+          "defender": "white",
+          "defenderCanClaim": true,
+          "defenderCurrentClaim": true,
+          "automaticAfterRoot": true,
+          "automaticBeforeRoot": false,
+          "announcedQuietReply": "a1b1",
+          "attackerClaimAfterReply": true
+        },
+        {
+          "kind": "quiet-trap",
+          "reflected": false,
+          "clock": 150,
+          "defender": "white",
+          "defenderCanClaim": true,
+          "defenderCurrentClaim": true,
+          "automaticAfterRoot": true,
+          "automaticBeforeRoot": true,
+          "announcedQuietReply": "a1b1",
+          "attackerClaimAfterReply": true
+        },
+        {
+          "kind": "capture-reset",
+          "reflected": false,
+          "clock": 99,
+          "reset": 0,
+          "legalGameContinuation": true
+        },
+        {
+          "kind": "capture-reset",
+          "reflected": false,
+          "clock": 149,
+          "reset": 0,
+          "legalGameContinuation": true
+        },
+        {
+          "kind": "capture-reset",
+          "reflected": false,
+          "clock": 150,
+          "reset": 0,
+          "legalGameContinuation": false
+        },
+        {
+          "kind": "pawn-reset",
+          "reflected": false,
+          "clock": 99,
+          "reset": 0,
+          "legalGameContinuation": true
+        },
+        {
+          "kind": "pawn-reset",
+          "reflected": false,
+          "clock": 149,
+          "reset": 0,
+          "legalGameContinuation": true
+        },
+        {
+          "kind": "pawn-reset",
+          "reflected": false,
+          "clock": 150,
+          "reset": 0,
+          "legalGameContinuation": false
+        },
+        {
+          "kind": "mate-precedence",
+          "reflected": false,
+          "clock": 150,
+          "termination": "CHECKMATE"
+        },
+        {
+          "kind": "quiet-trap",
+          "reflected": true,
+          "clock": 0,
+          "defender": "black",
+          "defenderCanClaim": false,
+          "defenderCurrentClaim": false,
+          "automaticAfterRoot": false,
+          "automaticBeforeRoot": false,
+          "announcedQuietReply": "a8b8",
+          "attackerClaimAfterReply": false
+        },
+        {
+          "kind": "quiet-trap",
+          "reflected": true,
+          "clock": 97,
+          "defender": "black",
+          "defenderCanClaim": false,
+          "defenderCurrentClaim": false,
+          "automaticAfterRoot": false,
+          "automaticBeforeRoot": false,
+          "announcedQuietReply": "a8b8",
+          "attackerClaimAfterReply": true
+        },
+        {
+          "kind": "quiet-trap",
+          "reflected": true,
+          "clock": 98,
+          "defender": "black",
+          "defenderCanClaim": true,
+          "defenderCurrentClaim": false,
+          "automaticAfterRoot": false,
+          "automaticBeforeRoot": false,
+          "announcedQuietReply": "a8b8",
+          "attackerClaimAfterReply": true
+        },
+        {
+          "kind": "quiet-trap",
+          "reflected": true,
+          "clock": 99,
+          "defender": "black",
+          "defenderCanClaim": true,
+          "defenderCurrentClaim": true,
+          "automaticAfterRoot": false,
+          "automaticBeforeRoot": false,
+          "announcedQuietReply": "a8b8",
+          "attackerClaimAfterReply": true
+        },
+        {
+          "kind": "quiet-trap",
+          "reflected": true,
+          "clock": 149,
+          "defender": "black",
+          "defenderCanClaim": true,
+          "defenderCurrentClaim": true,
+          "automaticAfterRoot": true,
+          "automaticBeforeRoot": false,
+          "announcedQuietReply": "a8b8",
+          "attackerClaimAfterReply": true
+        },
+        {
+          "kind": "quiet-trap",
+          "reflected": true,
+          "clock": 150,
+          "defender": "black",
+          "defenderCanClaim": true,
+          "defenderCurrentClaim": true,
+          "automaticAfterRoot": true,
+          "automaticBeforeRoot": true,
+          "announcedQuietReply": "a8b8",
+          "attackerClaimAfterReply": true
+        },
+        {
+          "kind": "capture-reset",
+          "reflected": true,
+          "clock": 99,
+          "reset": 0,
+          "legalGameContinuation": true
+        },
+        {
+          "kind": "capture-reset",
+          "reflected": true,
+          "clock": 149,
+          "reset": 0,
+          "legalGameContinuation": true
+        },
+        {
+          "kind": "capture-reset",
+          "reflected": true,
+          "clock": 150,
+          "reset": 0,
+          "legalGameContinuation": false
+        },
+        {
+          "kind": "pawn-reset",
+          "reflected": true,
+          "clock": 99,
+          "reset": 0,
+          "legalGameContinuation": true
+        },
+        {
+          "kind": "pawn-reset",
+          "reflected": true,
+          "clock": 149,
+          "reset": 0,
+          "legalGameContinuation": true
+        },
+        {
+          "kind": "pawn-reset",
+          "reflected": true,
+          "clock": 150,
+          "reset": 0,
+          "legalGameContinuation": false
+        },
+        {
+          "kind": "mate-precedence",
+          "reflected": true,
+          "clock": 150,
+          "termination": "CHECKMATE"
+        }
+      ],
+      "status": "passed",
+      "scope": "Independent python-chess legal draw-boundary witnesses"
+    }
+  },
+  "completeFileSha256Lf": {
+    "src/utils/tacticalMotifs/causalTactics.ts": "7b28a8f2ba552e8c9e0b69d3880e910e213ae71640cd8a106d36a7ab9ad6f9c4",
+    "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "d06aa1a4e2138289aae1f6301dec25a0091e8cf4b67b77369e7395d15ebae42b",
+    "src/utils/tacticalMotifs/quietClearancePreparation.ts": "fca8041313779c5848aca61eb67554b6001d4615af216acf479da8ccf576815a",
+    "src/utils/tests/trapDrawBoundary.test.ts": "b7c639a86e49d973bd895dda6d2dd53abf12574c3b513190c1741f3784aa7e35",
+    "benchmarks/tactical-relevance/quiet-trap-adversarial-selection.json": "839df3c00a2282f0a9dbff8439aeedbb535a0b1f71be9dfbf3852754ad4fadc9",
+    "benchmarks/tactical-relevance/quiet-trap-adversarial-hypotheses.json": "694b690a920e3b1f3e7dd26676312070cf6a367495e58911b773376b8431182f",
+    "benchmarks/tactical-relevance/quiet-trap-adversarial.test.ts": "4f5ab1bd722a24cf1d66d6e886fdedb97fea1469e1b2d8d9d5373ffa945aab6b",
+    "benchmarks/tactical-relevance/quiet-trap-adversarial.vitest.ts": "fb7db0aebd4fc1d38bfdab21bdf268188aa8a91588e3c7726bf4e23d8f6c946e",
+    "benchmarks/tactical-relevance/trap-draw-boundary-verify.py": "f2a7872bb0a329170602181367b1b4a095f6a8c8962263055160e3aafea44067"
+  },
+  "freshObservationScope": "Six fixed nominations from the small public development fixture, selected before output inspection with recorded prior ID/game exclusions. Their original clocks are unmodified here; hypotheses saved before classifier output. Only narrow mechanism/geometry contracts are adjudicated. Empty output is not positional proof.",
+  "freshObservations": [
+    {
+      "id": "lichess:gMkbY",
+      "reflected": false,
+      "root": [],
+      "full": []
+    },
+    {
+      "id": "lichess:gMkbY",
+      "reflected": true,
+      "root": [],
+      "full": []
+    },
+    {
+      "id": "lichess:q4FtX",
+      "reflected": false,
+      "root": [
+        {
+          "id": "hangingPiece",
+          "label": "Material Gain",
+          "ply": 1,
+          "value": 230
+        }
+      ],
+      "full": [
+        {
+          "id": "hangingPiece",
+          "label": "Material Gain",
+          "ply": 1,
+          "value": 230
+        }
+      ]
+    },
+    {
+      "id": "lichess:q4FtX",
+      "reflected": true,
+      "root": [
+        {
+          "id": "hangingPiece",
+          "label": "Material Gain",
+          "ply": 1,
+          "value": 230
+        }
+      ],
+      "full": [
+        {
+          "id": "hangingPiece",
+          "label": "Material Gain",
+          "ply": 1,
+          "value": 230
+        }
+      ]
+    },
+    {
+      "id": "lichess:FSJC4",
+      "reflected": false,
+      "root": [
+        {
+          "id": "trappedPiece",
+          "label": "Trapped Queen",
+          "ply": 1,
+          "value": 170
+        }
+      ],
+      "full": [
+        {
+          "id": "trappedPiece",
+          "label": "Trapped Queen",
+          "ply": 1,
+          "value": 170
+        }
+      ]
+    },
+    {
+      "id": "lichess:FSJC4",
+      "reflected": true,
+      "root": [
+        {
+          "id": "trappedPiece",
+          "label": "Trapped Queen",
+          "ply": 1,
+          "value": 170
+        }
+      ],
+      "full": [
+        {
+          "id": "trappedPiece",
+          "label": "Trapped Queen",
+          "ply": 1,
+          "value": 170
+        }
+      ]
+    },
+    {
+      "id": "lichess:2qDuS",
+      "reflected": false,
+      "root": [],
+      "full": []
+    },
+    {
+      "id": "lichess:2qDuS",
+      "reflected": true,
+      "root": [],
+      "full": []
+    },
+    {
+      "id": "lichess:3LtAI",
+      "reflected": false,
+      "root": [],
+      "full": []
+    },
+    {
+      "id": "lichess:3LtAI",
+      "reflected": true,
+      "root": [],
+      "full": []
+    },
+    {
+      "id": "lichess:9YfbQ",
+      "reflected": false,
+      "root": [],
+      "full": []
+    },
+    {
+      "id": "lichess:9YfbQ",
+      "reflected": true,
+      "root": [],
+      "full": []
+    }
+  ],
+  "limits": [
+    "No change to quietClearancePreparation, trapConfinement geometry, local material thresholds or proof budgets",
+    "No new confirmed checking-capture liability counterexample in this finite audit; longer quiet counterplay remains outside finite local proof",
+    "Four fresh source nominations remain unadjudicated/unknown; no source-label agreement or population accuracy claim",
+    "Hidden branch repetition history is not newly solved by this move-count gate",
+    "Source/test evidence is not installed desktop or phone verification"
+  ]
+}

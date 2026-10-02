@@ -10,6 +10,7 @@ import { probeKingPawnEndgame, proveKpkZugzwang } from "./kpkBitbase";
 import { advancedPawnOpportunityContext, appendTacticalHistory, persistentPawnExchangeContext, rootCaptureExchangeContext, tacticalGameHistory, type TacticalGameHistory } from "./gameHistory";
 import { proveDrawingCapture, drawingCaptureEvidence, proveTablebaseZugzwang, tablebaseZugzwangEvidence, verifiedTablebasePosition, type TablebaseEvidence } from "./tablebaseEvidence";
 import { computeQuietClearancePreparation, type QuietClearanceProof } from "./quietClearancePreparation";
+import { computeQuietIntermediateCapture, type QuietIntermediateProof } from "./quietIntermediateCapture";
 
 const VALUE: Record<Role, number> = {
     pawn: 100,
@@ -165,6 +166,11 @@ export function winningRecaptureEvidence(
         const matching = replay.length === 3 && context.every((item, i) =>
             makeFen(item.before.toSetup()) === makeFen(replay[i].before.toSetup()) &&
             makeFen(item.after.toSetup()) === makeFen(replay[i].after.toSetup()));
+        const quietOrder = matching ? proveQuietIntermediateCapture(checking) : null;
+        if (quietOrder && makeUci(quietOrder.deferred) === makeUci(step.move) &&
+            quietOrder.collectionLeaves.some(leaf => leaf.lineUci?.join(" ") === `${previous.uci} ${step.uci}`))
+            return { ...motif, label: "Intermediate Capture Payoff", value: undefined,
+                evidence: `${step.san} completes the deferred capture after ${checking.san} and ${previous.san}. This exact branch is included in the earlier move-order proof, including material returned and immediate countercaptures; it is not an additional free-piece gain.` };
         const proof = matching ? proveCheckingDeflection(checking) : null;
         const branch = proof?.branches.find(item => item.replyUci === previous.uci && item.captureUci === step.uci);
         if (proof && branch) return {
@@ -496,7 +502,7 @@ export function filterCompensatedRootCaptures(
         if (motif.id === "intermezzo" && motif.ply && history[0].capture) {
             const prefix = replayTacticalLine(fen,line.slice(0,motif.ply));
             const checking = prefix.at(-1);
-            const proof = checking && provePreventiveIntermediateCapture(checking);
+            const proof = checking && (provePreventiveIntermediateCapture(checking) ?? proveQuietIntermediateCapture(checking));
             if (proof && checking) {
                 const deferred = replayTacticalLine(makeFen(checking.before.toSetup()),[makeUci(proof.deferred)])[0];
                 const context = [...history.slice(0,1),...prefix.slice(0,-1),deferred];
@@ -504,7 +510,10 @@ export function filterCompensatedRootCaptures(
                 // because an equal checking exchange was inserted first.
                 // Preserve genuine surplus and exchanges already settled by
                 // complete history; only debit this same unmoved receiver.
-                if (deferred && isCompensatedContinuationCapture(context,context.length-1)) {
+                const sameQuietReceiver = deferred && !checking.after.isCheck() &&
+                    history[0].move.to === deferred.move.to && !history[0].move.promotion &&
+                    context.slice(1,-1).every(step => step.move.from !== deferred.move.to && step.move.to !== deferred.move.to);
+                if (deferred && (sameQuietReceiver || isCompensatedContinuationCapture(context,context.length-1))) {
                     const earlierCapture = legalMoves(root.before).find(move =>
                         move.to === deferred.move.to && capturedValue(root.before,move));
                     const settled = earlierCapture && rootCaptureExchangeContext(tacticalHistory,fen,earlierCapture,
@@ -523,7 +532,7 @@ export function filterCompensatedRootCaptures(
                             first.move.to === deferred.move.to && last.move.to === deferred.move.to) debit = 0;
                     }
                     if (proof.gain-debit < MIN_TACTICAL_CAPTURE_GAIN) motif = {...motif,value:0,
-                        evidence:`${motif.evidence.replace("Every legal answer preserves a connected material gain.","Every legal answer preserves the follow-up exchange.")} This completes the exchange begun by ${history[0].san}, not a fresh material win.`};
+                        evidence:`${motif.evidence.replace("Every legal answer preserves a connected material gain.","Every legal answer preserves the follow-up exchange.")} This completes the exchange begun by ${history[0].san}, not a fresh material win.${!checking.after.isCheck() ? ` The earlier loss is ${debit} centipawns; including it gives a local recovery bound of ${proof.gain-debit} centipawns. The move-order advantage does not erase that debt.` : ""}`};
                     else if (debit > 0) motif = {...motif,value:proof.gain-debit,
                         evidence:`${motif.evidence} The material bound includes the earlier loss to ${history[0].san}; recovering that exchange is not additional profit.`};
                 }
@@ -534,7 +543,7 @@ export function filterCompensatedRootCaptures(
             const capture=steps[motif.ply-1];
             if (capture && isCompensatedContinuationCapture([history[0],...steps],motif.ply) &&
                 motifs.some(prior => prior.id === "intermezzo" && prior.ply && prior.ply < motif.ply! &&
-                    provePreventiveIntermediateCapture(steps[prior.ply-1])?.deferred.to === capture.move.to)) return [];
+                    (provePreventiveIntermediateCapture(steps[prior.ply-1]) ?? proveQuietIntermediateCapture(steps[prior.ply-1]))?.deferred.to === capture.move.to)) return [];
         }
         if (compensated && motif.id === "hangingPiece" && motif.ply === 1) return [];
         if (!exchange && motif.id === "hangingPiece" && motif.ply === 1 &&
@@ -7395,7 +7404,9 @@ export function proveTrappedMaterial(
     if (
         !Number.isSafeInteger(nodeLimit) || nodeLimit <= 0 ||
         !Number.isSafeInteger(pinProofLimit) || pinProofLimit < 0 ||
-        step.after.isEnd() || step.after.board.get(target)?.color !== opposite(step.before.turn) ||
+        step.before.isEnd() || step.before.halfmoves >= 150 ||
+        step.after.isEnd() || defenderCanClaimFiftyMoveDraw(step.after) ||
+        step.after.board.get(target)?.color !== opposite(step.before.turn) ||
         step.after.board.get(target)?.role === "king"
     ) return null;
     const key = `${makeFen(step.before.toSetup())}:${step.uci}:${target}`;
@@ -10018,7 +10029,7 @@ export function tacticalBoardEvidence(
             };
     }
     if (motif.id === "intermezzo") {
-        const proof = intermediateCaptureProof(step);
+        const proof = intermediateMoveOrderProof(step);
         return proof
             ? {
                   square: makeSquare(step.move.to),
@@ -11079,6 +11090,7 @@ export function proveDefenderCombination(
     onTrace?: (failure: { fen: string; replyUci: string; balance: number; evasion: number }) => void,
     allowLiabilityRecovery = false,
     equalExchangeLimit = 0,
+    requireNonCheckingLeaves = false,
 ): number | null {
     if (
         !Number.isSafeInteger(nodeLimit) ||
@@ -11093,7 +11105,7 @@ export function proveDefenderCombination(
         (equalExchangeLimit > 0 && (!allPiecesAtLeaf || !verifyCounterchecks || !allowLiabilityRecovery))
     )
         return null;
-    const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}:${evasionLimit}:${allPiecesAtLeaf}:${minimumGain}:${verifyCounterchecks}:${allowLiabilityRecovery}:${equalExchangeLimit}`;
+    const key = `${makeFen(step.before.toSetup())}:${step.uci}:${targets}:${capturers}:${evasionLimit}:${allPiecesAtLeaf}:${minimumGain}:${verifyCounterchecks}:${allowLiabilityRecovery}:${equalExchangeLimit}:${requireNonCheckingLeaves}`;
     if (!onLeaf && !onTrace && !sharedBudget && nodeLimit === 4096 && defenderCombinationCache.has(key))
         return defenderCombinationCache.get(key)!;
     const side = step.before.turn;
@@ -11108,6 +11120,14 @@ export function proveDefenderCombination(
         return next;
     };
     const moves = (pos: Chess) => (allPiecesAtLeaf ? recoveryMoves(pos, side) : legalMoves(pos));
+    const settledDecisions = (decisions: { fen: string; moveUci: string }[]) => {
+        if (!requireNonCheckingLeaves) return true;
+        return decisions.every(decision => {
+            const board = Chess.fromSetup(parseFen(decision.fen).unwrap()).unwrap();
+            const move = parseUci(decision.moveUci);
+            return !!move && "from" in move && board.isLegal(move) && !visit(board, move).isCheck();
+        });
+    };
     const answer = (
         pos: Chess,
         victims: Square[],
@@ -11141,6 +11161,9 @@ export function proveDefenderCombination(
                 !capturedValue(pos, move)
             )
                 continue;
+            // Quiet move-order admission must not stop at a checking capture:
+            // a subsequent king evasion may expose an off-square liability.
+            if (requireNonCheckingLeaves && visit(pos, move).isCheck()) continue;
             const counterchecks: { fen: string; moveUci: string }[] = [];
             const gain = verifyCounterchecks ? preparationCaptureGain(pos, move, budget, undefined, counterchecks, true) : participantCaptureGain(
                 pos,
@@ -11148,6 +11171,7 @@ export function proveDefenderCombination(
                 allPiecesAtLeaf ? [...pos.board[side], move.to] : pieces,
                 budget,
             );
+            if (!settledDecisions(counterchecks)) continue;
             if (
                 gain !== null &&
                 (!allPiecesAtLeaf ||
@@ -11193,6 +11217,7 @@ export function proveDefenderCombination(
         if (retained && balance >= minimumGain && !pos.isCheck()) {
             for (const move of moves(pos)) {
                 if (capturedValue(pos, move) || move.promotion) continue;
+                if (requireNonCheckingLeaves && visit(pos, move).isCheck()) continue;
                 const counterchecks: { fen: string; moveUci: string }[] = [];
                 const gain = verifyCounterchecks ? preparationCaptureGain(pos, move, budget, undefined, counterchecks, true) : participantCaptureGain(
                     pos,
@@ -11200,6 +11225,7 @@ export function proveDefenderCombination(
                     allPiecesAtLeaf ? [...pos.board[side], move.to] : pieces,
                     budget,
                 );
+                if (!settledDecisions(counterchecks)) continue;
                 if (
                     gain !== null &&
                     balance + gain >= minimumGain &&
@@ -11321,6 +11347,41 @@ type IntermediateCaptureProof = {
     evidence: string;
 };
 const preventiveIntermediateCache = new Map<string, IntermediateCaptureProof | null>();
+const quietIntermediateCache = new Map<string, (IntermediateCaptureProof & QuietIntermediateProof) | null>();
+
+export function proveQuietIntermediateCapture(root: TacticalReplayStep, nodeLimit = 16384):
+    (IntermediateCaptureProof & QuietIntermediateProof) | null {
+    if (!root || !Number.isSafeInteger(nodeLimit) || nodeLimit < 1 || nodeLimit > 16384) return null;
+    const key = `${makeFen(root.before.toSetup())}:${makeUci(root.move)}:${makeFen(root.after.toSetup())}:${root.capture}`;
+    if (nodeLimit === 16384 && quietIntermediateCache.has(key)) return structuredClone(quietIntermediateCache.get(key)!);
+    const proof = computeQuietIntermediateCapture(root, {
+        moves: legalMoves, capture: capturedValue, exchange: tacticalExchangeGain, replay: replayTacticalLine,
+        combination: (step, targets, capturers, budget, minimum, onLeaf) => proveDefenderCombination(step,
+            targets, capturers, nodeLimit, budget, 1, true, minimum, leaf => {
+                // Internal countercheck recovery is also a frontier. Reject
+                // a returned checking answer rather than accepting a static
+                // material snapshot before its still-unplayed king evasions.
+                for (const decision of [leaf, ...(leaf.counterchecks ?? [])]) {
+                    if (--budget.nodes < 0) throw new Error("Quiet intermediate frontier budget exhausted");
+                    const checked = replayTacticalLine(decision.fen, [decision.moveUci])[0];
+                    if (!checked || checked.after.isCheck()) throw new Error("Unsettled checking frontier");
+                }
+                onLeaf(leaf);
+            }, true, undefined, true, 1, true),
+    }, nodeLimit);
+    const reversed = proof && replayTacticalLine(makeFen(root.before.toSetup()), [makeUci(proof.deferred)])[0];
+    const result = proof && reversed ? { ...proof,
+        evidence: `${root.san} makes the near-equal exchange before ${makeSan(root.before, proof.deferred)}. Every legal answer preserves a connected material gain. Playing ${makeSan(root.before, proof.deferred)} first instead permits ${makeSan(reversed.after, proof.escape)} by the piece removed on ${makeSquare(root.move.to)}. Both orders are checked against all legal replies, including counterchecks and immediate off-square captures. From this position the bounded local material retention is at least ${proof.gain} centipawns, compared with at most ${proof.reversedUpper} after that reversed-order recovery: a move-order improvement of at least ${proof.extra} centipawns. This is not a forced reply, free ${root.before.board.get(root.move.to)!.role}, or whole-position evaluation.` } : null;
+    if (nodeLimit === 16384) {
+        if (quietIntermediateCache.size >= 64) quietIntermediateCache.delete(quietIntermediateCache.keys().next().value!);
+        quietIntermediateCache.set(key, structuredClone(result));
+    }
+    return result;
+}
+
+function intermediateMoveOrderProof(step: TacticalReplayStep) {
+    return intermediateCaptureProof(step) ?? proveQuietIntermediateCapture(step);
+}
 
 /** Exchanging with check can avoid a defensive capture or pawn fork before a rook/queen
  * capture. Prove both the real collection and the opponent's reversed-order
@@ -14702,11 +14763,11 @@ export function auditTacticalMotifs(
     for (let index = 0; index < episode.length; index += 2) {
         // Later positions are classified separately by the conditional
         // timeline; they cannot rescue an unproved initiating move here.
-        const intermediate = index === 0 ? intermediateCaptureProof(episode[index]) : null;
+        const intermediate = index === 0 ? intermediateMoveOrderProof(episode[index]) : null;
         if (intermediate)
             candidates.push({
                 id: "intermezzo",
-                label: "Intermediate Check",
+                label: episode[index].after.isCheck() ? "Intermediate Check" : "Intermediate Capture",
                 source: proposals[0]?.source ?? "available",
                 confidence: "high",
                 ply: index + 1,
@@ -15601,7 +15662,7 @@ export function auditTacticalMotifs(
                 const deflection = candidates.find(
                     (other) => other.id === "deflection" && other.ply === m.ply,
                 );
-                const order = deflection ? intermediateCaptureProof(steps[m.ply - 1]) : null;
+                const order = deflection ? intermediateMoveOrderProof(steps[m.ply - 1]) : null;
                 if (
                     order &&
                     (deflection?.value ?? 0) >= order.gain &&
@@ -15615,7 +15676,7 @@ export function auditTacticalMotifs(
                 candidates.some((other) => other.id === "capturingDefender" && other.ply === m.ply)
             ) {
                 const step = steps[m.ply - 1];
-                const order = intermediateCaptureProof(step);
+                const order = intermediateMoveOrderProof(step);
                 const removal = capturedDefenderProof(step, m.source);
                 if (
                     order &&
@@ -16640,7 +16701,14 @@ export function compareImmediateTacticalDefence(
     const bestSan = better[0].san;
     const exchange = rootCaptureExchangeContext(appendTacticalHistory(tacticalHistory, playedMove),
         makeFen(step.before.toSetup()), step.move, fen, playedMove);
-    return motifs.map((motif) => {
+    // The exact reversed-order recovery already belongs to this verified
+    // move-order lesson. Do not headline its same capture a second time as
+    // an unrelated loose piece; larger or different opponent gains remain.
+    const quietOrder = proveQuietIntermediateCapture(better[0]);
+    const matchingReverse = quietOrder && makeUci(quietOrder.deferred) === makeUci(actual[0].move) &&
+        makeUci(quietOrder.escape) === makeUci(step.move);
+    return motifs.filter(motif => !(matchingReverse && motif.id === "hangingPiece" &&
+        motif.ply === 1 && motif.moveUci === reply && (motif.value ?? Infinity) <= quietOrder.recovery)).map((motif) => {
         if (isTacticalObservation(motif)) return motif;
         if (motif.ply !== 1 || motif.moveUci !== reply) return motif;
         // The profit belongs to the complete earlier exchange, not necessarily
@@ -16737,9 +16805,10 @@ export function compareImmediateTacticalDefence(
             }
             // A check only delays promotion. Illegality at that one position
             // does not establish that the better move stops the passed pawn.
-        } else if (motif.id === "intermezzo" && provePreventiveIntermediateCapture(step)) {
-            // Blocking the checking exchange does not alone save the other
-            // target: the deferred rook/queen capture can remain available.
+        } else if (motif.id === "intermezzo" &&
+            (provePreventiveIntermediateCapture(step) || proveQuietIntermediateCapture(step))) {
+            // Blocking the intermediate exchange does not alone save the
+            // other target: its deferred capture can remain available.
             // This two-branch move-order proof needs its own defensive
             // comparison before it can blame the preceding move. Keep the
             // position lesson and independently proved alternative causes.

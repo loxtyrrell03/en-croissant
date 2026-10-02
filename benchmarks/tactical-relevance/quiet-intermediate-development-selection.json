@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "seed": "quiet-intermediate-causal-2026-10-02-v1",
+  "sourceSha256": "c80356923da60cce5b48b37046a878290f36997862f921b944015a3cf69ccc88",
+  "scope": "Up to three source-game-disjoint public development quiet-capture intermezzo nominations; source tags are hypotheses, never truth. No classifier or engine runs in selection.",
+  "selection": "SHA256(seed:id) ascending after development, prior-review, source intermezzo, legal root capture and nonchecking-root filters. Take up to three distinct source games. Retain every result; no replacement after adjudication.",
+  "exclusions": [
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-selection.json",
+      "sha256": "62224616d8bda068e96b83d8c5fed6ad4668c5b263b21277fc8335dd9fc8512b"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-inputs.json",
+      "sha256": "1e9b386c37d03eb28c1a6044d8da4f4bfe2dbd926b916c91e33ebb6ed2e58d5f"
+    }
+  ],
+  "exclusionBoundary": "Frozen earlier public-review exclusions plus all v2 cases and control games; no owner/private inputs read. Same already-used small source fixture, not unseen or held out.",
+  "eligibleCount": 2,
+  "selectedCount": 2,
+  "initialHypothesis": "A nonchecking capture may need to precede another legal capture to avoid a concrete reversed-order recovery. Establish connectedness, all legal replies, material debt and opposite order independently; abstain or unknown if not closed. No expected classifier label is frozen yet.",
+  "cases": [
+    {
+      "id": "lichess:Qq0JW",
+      "sourceGroup": "game:nkPf2Bb8",
+      "sourceGameUrl": "https://lichess.org/nkPf2Bb8#29",
+      "sourceFen": "r4rk1/pp3pp1/2nb1n1p/3p4/3P2q1/2NBBQ2/PP3PPP/R3R1K1 w - - 2 15",
+      "precedingMove": "c3d5",
+      "startFen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P2q1/3BBQ2/PP3PPP/R3R1K1 b - - 0 15",
+      "bestLine": [
+        "g4f3",
+        "g2f3",
+        "f6d5"
+      ],
+      "sourceThemes": [
+        "capturingDefender",
+        "crushing",
+        "intermezzo",
+        "middlegame",
+        "short"
+      ],
+      "rootSan": "Qxf3",
+      "selectionHash": "e51fd83f7babd663fcd68962eca3a07314ffb174d1c463d08864e0d6ad02f09b"
+    },
+    {
+      "id": "lichess:EpYOT",
+      "sourceGroup": "game:ExhbBzsF",
+      "sourceGameUrl": "https://lichess.org/ExhbBzsF#37",
+      "sourceFen": "r1b2r2/pp4bk/1q1Qp2p/4ppp1/8/2P2NP1/PP2PPBP/1R1R2K1 w - - 2 19",
+      "precedingMove": "f3e5",
+      "startFen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+      "bestLine": [
+        "b6d6",
+        "d1d6",
+        "g7e5"
+      ],
+      "sourceThemes": [
+        "advantage",
+        "capturingDefender",
+        "intermezzo",
+        "master",
+        "middlegame",
+        "short"
+      ],
+      "rootSan": "Qxd6",
+      "selectionHash": "f460f3b636f181a17172b612cc00af2f7f7717573d4ce4336bd7bc8a3778c670"
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-02",
+  "scope": "Quiet intermediate-capture development proof and accounting; not population accuracy or whole-position WDL",
+  "baseline": { "adapter": 173, "commit": "9756fd271f0e293b3d2b4a2bbffadc51c85588f3" },
+  "final": { "adapter": 174, "livePipeline": 181, "source": "Frozen working source; unrelated pending checking-ray hunks preserved" },
+  "productionSha256Lf": {
+    "src/utils/tacticalMotifs/causalTactics.ts": "7b28a8f2ba552e8c9e0b69d3880e910e213ae71640cd8a106d36a7ab9ad6f9c4",
+    "src/utils/tacticalMotifs/quietIntermediateCapture.ts": "ae149158ceef38f7fe598bdf08efb8a49d30df5b4826dfed5714c24dbe8895e9"
+  },
+  "testSha256Lf": {
+    "src/utils/tests/quietIntermediateCapture.test.ts": "afc46ae1e6235c660f6c81733855369f3094cc23303127e4e461ad2ddbfd77a2",
+    "src/utils/tests/fixtures/quietIntermediate.ts": "090216a94b6e72623779b928a06d3256ff55ef0568c64ba3daa0aac8e3d6571a"
+  },
+  "admission": {
+    "label": "Intermediate Capture",
+    "id": "intermezzo",
+    "maximumSharedVisits": 16384,
+    "constraints": [
+      "Separate nonchecking-root path; existing checking intermediate gates are unchanged",
+      "Near-equal legal root exchange, not an independently free capture",
+      "Deferred capture and concrete reversed-order recovery by the captured victim",
+      "All legal root replies close within one shared bound, including check evasions",
+      "Every recorded collection/recovery frontier and internal countercheck answer is nonchecking",
+      "Actual captures, off-square liabilities and exact matching prior capture debt are charged",
+      "Only selected certified deferred payoff paths lose duplicate gain attribution",
+      "A stronger independently proved allowed loss remains eligible as primary"
+    ]
+  },
+  "publicApiComparison": {
+    "contracts": 8,
+    "dimensions": "Ltbye root-only/full line, with/without exact prior rook capture, both colours",
+    "baselinePassed": 0,
+    "finalPassed": 8,
+    "baselineRunExit": 1,
+    "baselineFailureReason": "Eight fixed behavioral expectations fail because no root Intermediate Capture is returned; all imported public APIs exist at the baseline",
+    "finalRunExit": 0,
+    "baselineReport": "quiet-intermediate-api-adapter173.json",
+    "finalReport": "quiet-intermediate-api-adapter174.json",
+    "runner": "quiet-intermediate-api.vitest.ts"
+  },
+  "focusedTests": {
+    "newSourceTestsPassed": 36,
+    "withThreeExistingIntermediateSuites": { "filesPassed": 4, "passed": 71, "skipped": 1 },
+    "proofReportContractsPassed": 12,
+    "proofReport": "quiet-intermediate-proof-adapter174.json",
+    "proofRunner": "quiet-intermediate-proof.vitest.ts",
+    "benchmarkAndOwnedSourceLint": { "files": 7, "warnings": 0, "errors": 0 },
+    "wholeProjectTypes": "passed"
+  },
+  "proofControls": {
+    "positive": ["Ltbye original", "Ltbye with unrelated Rc8 removed"],
+    "negativeOrAbstaining": ["deferred Bc1 victim removed", "root Be6 victim removed", "concrete queen liability", "root bishop capture already free"],
+    "colours": 2,
+    "uncachedProbeLimit": 16383,
+    "visits": [
+      { "kind": "original", "reflected": false, "visits": 3317 },
+      { "kind": "original", "reflected": true, "visits": 3317 },
+      { "kind": "remove-c8", "reflected": false, "visits": 3591 },
+      { "kind": "remove-c8", "reflected": true, "visits": 3595 }
+    ]
+  },
+  "independentAudit": {
+    "implementation": "python-chess 1.11.2; independent finite material verifier, no production TypeScript imports",
+    "script": "quiet-intermediate-verify.py",
+    "strategy": "quiet-intermediate-strategy.json",
+    "report": "quiet-intermediate-independent-adapter174.json",
+    "exit": 0,
+    "casesPassed": 4,
+    "perColour": [
+      { "kind": "original", "forwardReplies": 31, "recoveryReplies": 31, "forwardCounterchecks": 31, "recoveryCounterchecks": 9, "forwardLowerCp": 230, "recoveryLowerCp": 330, "reversedOrderUpperCp": 0, "orderImprovementLowerCp": 230 },
+      { "kind": "remove-c8", "forwardReplies": 30, "recoveryReplies": 31, "forwardCounterchecks": 30, "recoveryCounterchecks": 9, "forwardLowerCp": 230, "recoveryLowerCp": 330, "reversedOrderUpperCp": 0, "orderImprovementLowerCp": 230 }
+    ],
+    "allRecordedLeavesNonchecking": true,
+    "limits": "Legal root reply sets, selected paths, balances, exchanges and immediate counterchecks are reconstructed independently. Longer quiet counterplay and unsupplied repetition are not excluded. This is a finite local material certificate, not game-theoretic WDL."
+  },
+  "accountingAndPriority": {
+    "Ltbye": "Local forward230 versus reversed upper0. Matching prior rook loss500 yields combined local -270, published gain0 and a surviving ordering lesson; not a new free bishop.",
+    "Qq0JW": "Fresh development case: local320 becomes220 after exact prior pawn loss100. Deferred Nxd5 is Intermediate Capture Payoff without another320. Stronger allowed Qxg4 Material Gain890 remains primary rather than being erased by the weaker order-comparison bound.",
+    "EpYOT": "Unresolved primary question remains outside this change. Reversed Qxb6 is immediately recapturable by axb6, so nominal queen900 cannot establish the quiet-order comparison."
+  },
+  "receiptSha256Lf": {
+    "quiet-intermediate-api-adapter173.json": "91fa94961a85b8c039c97012b75bbdafa393e5fda0488482f379dddb7ae97591",
+    "quiet-intermediate-api-adapter174.json": "5adc0ef4d61d27062ad8205c0b6379144861a54e13040f7030a5fd604a39dfeb",
+    "quiet-intermediate-proof-adapter174.json": "d55024a3b2fdd6e390f3b5129a90ae76e4addc4b3004168188e9171e6a4e3e96",
+    "quiet-intermediate-independent-adapter174.json": "c9b8b50beb46f878774831efedca9e825e8701751abb41aef32962f67baa884a",
+    "quiet-intermediate-strategy.json": "b38d1707af8634bd814656d80a8fc94398c5276cbd5b6c611832ca86b5d9b759",
+    "quiet-intermediate-verify.py": "2d989ea2629753303cd48b2aaf27fabb378c78df56607b0d9fda5e5def821f23"
+  },
+  "reproduction": [
+    "node node_modules/vitest/vitest.mjs run --config benchmarks/tactical-relevance/quiet-intermediate-api.vitest.ts --maxWorkers=2 --update=none --cache=false",
+    "Set RARE_CAUSAL_COHORT_V2_REF to exact baseline SHA for old public API. Set QUIET_INTERMEDIATE_API_REPORT to a new report path; existing paths are refused.",
+    "node node_modules/vitest/vitest.mjs run --config benchmarks/tactical-relevance/quiet-intermediate-proof.vitest.ts --maxWorkers=2 --update=none --cache=false",
+    "Set QUIET_INTERMEDIATE_PROOF_REPORT to a new report path; existing paths are refused.",
+    "python benchmarks/tactical-relevance/quiet-intermediate-verify.py --report <new-path.json>"
+  ],
+  "boundaries": [
+    "Tiny public development fixtures and synthetic controls, not frozen holdout tuning or prevalence estimates",
+    "Passing old regression outputs measures stability, not independent correctness of every old label",
+    "Missing proof remains unknown, not positional",
+    "Source/test verification only; no installed runtime, hosted phone, website or owner data change"
+  ]
+}

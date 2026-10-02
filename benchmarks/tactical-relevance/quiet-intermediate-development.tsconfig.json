@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": { "incremental": false },
+  "include": [
+    "quiet-intermediate-development.test.ts",
+    "quiet-intermediate-development.vitest.ts",
+    "quiet-intermediate-contrasts.test.ts",
+    "quiet-intermediate-contrasts.vitest.ts",
+    "ltbye-intermediate-audit.test.ts"
+  ],
+  "exclude": ["../../node_modules", "../../src-tauri"]
+}

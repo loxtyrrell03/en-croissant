@@ -65,6 +65,16 @@ const cases = [
     pv: ["c4b2", "a4a1", "c7c4", "d4d5", "c4b4"], played: "h3h4", reply: "g7g6",
     motif: "clearance", label: "Clearance Preparation", value: 180,
   },
+  {
+    id: "FSJC4", fen: "6k1/2q2pp1/Q1pb3p/3b4/2PP3B/4rP2/P2N2P1/R6K b - - 0 30",
+    pv: ["e3a3", "a6a3", "d6a3"], played: "g8h8", reply: "h1g1",
+    motif: "trappedPiece", label: "Trapped Queen", value: 170,
+  },
+  {
+    id: "FSJC4-draw-clock", fen: "6k1/2q2pp1/Q1pb3p/3b4/2PP3B/4rP2/P2N2P1/R6K b - - 98 30",
+    pv: ["e3a3", "a6a3", "d6a3"], played: "g8h8", reply: "h1g1",
+    motif: null,
+  },
 ];
 
 function replay(fen, line) {
@@ -78,8 +88,15 @@ function replay(fen, line) {
 }
 
 function assertRootContract(row, card) {
-  assert.equal(card.tacticalClassification.motifClassifierVersion, "site-55.adapter-173");
+  assert.equal(card.tacticalClassification.motifClassifierVersion, "site-55.adapter-174");
   const root = card.tacticalClassification.missedMotifs[0];
+  if (row.motif === null) {
+    assert.equal(root, undefined, "A claimable draw cannot be shown as a missed winning trap");
+    assert.equal(card.bestTimeline.some(m => m.id === "trappedPiece" || m.value > 0), false,
+      "The cooperative continuation cannot restore a payoff after the draw claim");
+    assert.ok(!card.explanation.includes("Trapped Queen"));
+    return;
+  }
   assert.ok(root, `${row.id} must retain a root explanation`);
   assert.equal(root.id, row.motif);
   assert.equal(root.label, row.label);

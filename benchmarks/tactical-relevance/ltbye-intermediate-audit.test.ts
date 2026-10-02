@@ -17,6 +17,7 @@ import {
     proveDefenderCombination,
     replayTacticalLine,
 } from "../../src/utils/tacticalMotifs/causalTactics";
+import * as proofCore from "../../src/utils/tacticalMotifs/causalTactics";
 import {
     classifyPositionTacticalMotifs,
     MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
@@ -40,19 +41,23 @@ const enumeration = enumerateLtbye();
 const cases: unknown[] = [],
     controls: unknown[] = [];
 const sourceRef = process.env.RARE_CAUSAL_COHORT_V2_REF ?? "working-source";
+const readSource = (path: string) =>
+    sourceRef !== "working-source"
+        ? execFileSync("git", [
+              "-c",
+              "safe.directory=C:/Users/Lox/Desktop/repo/en-croissant",
+              "show",
+              `${sourceRef}:${path}`,
+          ])
+        : readFileSync(path);
+const watchedSources = ["causalTactics.ts", "mistakeReviewAdapter.ts"];
+if (readSource("src/utils/tacticalMotifs/causalTactics.ts").includes("./quietIntermediateCapture"))
+    watchedSources.push("quietIntermediateCapture.ts");
 const hashes = () =>
     Object.fromEntries(
-        ["causalTactics.ts", "mistakeReviewAdapter.ts"].map((file) => {
+        watchedSources.map((file) => {
             const path = `src/utils/tacticalMotifs/${file}`;
-            const bytes =
-                sourceRef !== "working-source"
-                    ? execFileSync("git", [
-                          "-c",
-                          "safe.directory=C:/Users/Lox/Desktop/repo/en-croissant",
-                          "show",
-                          `${sourceRef}:${path}`,
-                      ])
-                    : readFileSync(path);
+            const bytes = readSource(path);
             return [path, createHash("sha256").update(bytes).digest("hex")];
         }),
     );
@@ -170,6 +175,35 @@ for (const reflected of [false, true]) {
                 .flatMap((row) => row.checkingReplies)
                 .some((reply) => reply.checkmate),
         ).toBe(false);
+        const quietAdmission =
+            typeof proofCore.proveQuietIntermediateCapture === "function"
+                ? proofCore.proveQuietIntermediateCapture(root)
+                : null;
+        const classifierRootOnly = classifyPositionTacticalMotifs({
+            fen: row.fen,
+            pvUci: [m("d5e6")],
+        });
+        const classifierFull = classifyPositionTacticalMotifs({
+            fen: row.fen,
+            pvUci: ["d5e6", "f7e6", "c2c1"].map(m),
+            previousFen: row.previousFen,
+            previousMoveUci: row.previousMove,
+        });
+        expect(intermediateCaptureProof(root)).toBeNull();
+        const baseline = /adapter-(172|173)$/.test(MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION);
+        expect(
+            quietAdmission && {
+                gain: quietAdmission.gain,
+                recovery: quietAdmission.recovery,
+                extra: quietAdmission.extra,
+            },
+        ).toEqual(baseline ? null : { gain: 230, recovery: 330, extra: 230 });
+        expect(classifierRootOnly.motifs.map(({ id, value }) => ({ id, value }))).toEqual(
+            baseline ? [] : [{ id: "intermezzo", value: 230 }],
+        );
+        expect(classifierFull.motifs.map(({ id, value }) => ({ id, value }))).toEqual(
+            baseline ? [] : [{ id: "intermezzo", value: 0 }],
+        );
         cases.push({
             reflected,
             fen: row.fen,
@@ -179,16 +213,9 @@ for (const reflected of [false, true]) {
             reverse: { ...reversed, nextDefences: compactDefences(nextReverse) },
             totalKernelVisits: 16384 - budget.nodes,
             currentIntermediateAdmission: intermediateCaptureProof(root),
-            classifierRootOnly: classifyPositionTacticalMotifs({
-                fen: row.fen,
-                pvUci: [m("d5e6")],
-            }),
-            classifierFull: classifyPositionTacticalMotifs({
-                fen: row.fen,
-                pvUci: ["d5e6", "f7e6", "c2c1"].map(m),
-                previousFen: row.previousFen,
-                previousMoveUci: row.previousMove,
-            }),
+            quietAdmission,
+            classifierRootOnly,
+            classifierFull,
         });
     });
     test(`necessary participants, safe retreat and off-square liability have distinct outcomes, reflected=${reflected}`, () => {
@@ -311,8 +338,9 @@ test("retain a bounded diagnostic, not new classifier truth labels", () => {
                         forwardIncludingPriorDebt: -270,
                         reverseIncludingPriorDebtUpper: -500,
                     },
-                    boundary:
-                        "Quiet Bxe6 is rejected by existing checking-only intermediate admission. No production change; a future general admission must bind connected targets, both order proofs, all replies, counterchecks, liability/debt, terminal/draw rules and a shared budget.",
+                    boundary: /adapter-(172|173)$/.test(MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION)
+                        ? "Frozen baseline: quiet Bxe6 is rejected by checking-only intermediate admission. Shared bounded kernel contrast is evidence, not current classifier admission."
+                        : "Quiet admission now proves both orders separately under one budget. Root-only230 includes exact previous-rook debt500 as value0 in the history-aware full input; this is improved recovery, not a free-material gain. Independent finite kernel checks are not full-game proof or population accuracy.",
                 },
                 null,
                 2,

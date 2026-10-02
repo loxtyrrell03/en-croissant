@@ -1,0 +1,63 @@
+{
+  "sourceRef": "9756fd271f0e293b3d2b4a2bbffadc51c85588f3",
+  "contracts": 8,
+  "passed": 0,
+  "rows": [
+    {
+      "reflected": false,
+      "withHistory": false,
+      "length": 1,
+      "motifs": [],
+      "contract": false
+    },
+    {
+      "reflected": false,
+      "withHistory": false,
+      "length": 3,
+      "motifs": [],
+      "contract": false
+    },
+    {
+      "reflected": false,
+      "withHistory": true,
+      "length": 1,
+      "motifs": [],
+      "contract": false
+    },
+    {
+      "reflected": false,
+      "withHistory": true,
+      "length": 3,
+      "motifs": [],
+      "contract": false
+    },
+    {
+      "reflected": true,
+      "withHistory": false,
+      "length": 1,
+      "motifs": [],
+      "contract": false
+    },
+    {
+      "reflected": true,
+      "withHistory": false,
+      "length": 3,
+      "motifs": [],
+      "contract": false
+    },
+    {
+      "reflected": true,
+      "withHistory": true,
+      "length": 1,
+      "motifs": [],
+      "contract": false
+    },
+    {
+      "reflected": true,
+      "withHistory": true,
+      "length": 3,
+      "motifs": [],
+      "contract": false
+    }
+  ]
+}

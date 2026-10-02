@@ -1,0 +1,85 @@
+{
+  "scope": "Independent finite legal/material frontier audit, not game-theoretic WDL",
+  "cases": [
+    {
+      "kind": "original",
+      "reflected": false,
+      "forward": {
+        "independentLocalMinimum": 230,
+        "productionLowerBound": 230,
+        "rootReplies": 31,
+        "leaves": 31,
+        "counterchecks": 31
+      },
+      "recovery": {
+        "independentLocalMinimum": 330,
+        "productionLowerBound": 330,
+        "rootReplies": 31,
+        "leaves": 31,
+        "counterchecks": 9
+      },
+      "reversedOrderUpper": 0,
+      "orderImprovementLower": 230
+    },
+    {
+      "kind": "original",
+      "reflected": true,
+      "forward": {
+        "independentLocalMinimum": 230,
+        "productionLowerBound": 230,
+        "rootReplies": 31,
+        "leaves": 31,
+        "counterchecks": 31
+      },
+      "recovery": {
+        "independentLocalMinimum": 330,
+        "productionLowerBound": 330,
+        "rootReplies": 31,
+        "leaves": 31,
+        "counterchecks": 9
+      },
+      "reversedOrderUpper": 0,
+      "orderImprovementLower": 230
+    },
+    {
+      "kind": "remove-c8",
+      "reflected": false,
+      "forward": {
+        "independentLocalMinimum": 230,
+        "productionLowerBound": 230,
+        "rootReplies": 30,
+        "leaves": 30,
+        "counterchecks": 30
+      },
+      "recovery": {
+        "independentLocalMinimum": 330,
+        "productionLowerBound": 330,
+        "rootReplies": 31,
+        "leaves": 31,
+        "counterchecks": 9
+      },
+      "reversedOrderUpper": 0,
+      "orderImprovementLower": 230
+    },
+    {
+      "kind": "remove-c8",
+      "reflected": true,
+      "forward": {
+        "independentLocalMinimum": 230,
+        "productionLowerBound": 230,
+        "rootReplies": 30,
+        "leaves": 30,
+        "counterchecks": 30
+      },
+      "recovery": {
+        "independentLocalMinimum": 330,
+        "productionLowerBound": 330,
+        "rootReplies": 31,
+        "leaves": 31,
+        "counterchecks": 9
+      },
+      "reversedOrderUpper": 0,
+      "orderImprovementLower": 230
+    }
+  ]
+}

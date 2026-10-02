@@ -1,0 +1,4599 @@
+{
+  "schemaVersion": 1,
+  "sourceRef": "working-source",
+  "scope": "Post-baseline independently legal counterfactuals and stronger bounded proof requests; no production changes or population accuracy credit.",
+  "observations": [
+    {
+      "kind": "rear-pawn-removal",
+      "reflected": false,
+      "removed": [],
+      "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/2P3P1/PP2PPBP/1R1R2K1 b - - 0 19",
+      "gain": 320,
+      "replyCount": 40,
+      "visits": 318,
+      "exhausted": false,
+      "trace": [],
+      "selected": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on g3. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on c3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on c3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe5 answers Rxd6, preserving the gain from Qxd6. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g7e5",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "kind": "rear-pawn-removal",
+      "reflected": false,
+      "removed": [
+        "c3"
+      ],
+      "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/6P1/PP2PPBP/1R1R2K1 b - - 0 19",
+      "gain": 320,
+      "replyCount": 39,
+      "visits": 314,
+      "exhausted": false,
+      "trace": [],
+      "selected": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on g3. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on b2. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on b2. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe5 answers Rxd6, preserving the gain from Qxd6. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g7e5",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "kind": "rear-pawn-removal",
+      "reflected": false,
+      "removed": [
+        "g3"
+      ],
+      "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/2P5/PP2PPBP/1R1R2K1 b - - 0 19",
+      "gain": 320,
+      "replyCount": 39,
+      "visits": 310,
+      "exhausted": false,
+      "trace": [],
+      "selected": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on h2. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on c3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on c3. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe5 answers Rxd6, preserving the gain from Qxd6. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g7e5",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "kind": "rear-pawn-removal",
+      "reflected": false,
+      "removed": [
+        "c3",
+        "g3"
+      ],
+      "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/8/PP2PPBP/1R1R2K1 b - - 0 19",
+      "gain": 320,
+      "replyCount": 38,
+      "visits": 306,
+      "exhausted": false,
+      "trace": [],
+      "selected": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on h2. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on b2. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "value": 100,
+            "evidence": "Qxd6 skewers the knight on e5 and the pawn on b2. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "secondary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe5 answers Rxd6, preserving the gain from Qxd6. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g7e5",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "kind": "rear-pawn-removal",
+      "reflected": false,
+      "removed": [
+        "c3",
+        "g3",
+        "b2",
+        "h2"
+      ],
+      "fen": "r1b2r2/pp4bk/1q1Qp2p/4Npp1/8/8/P3PPB1/1R1R2K1 b - - 0 19",
+      "gain": null,
+      "replyCount": 41,
+      "visits": 199,
+      "exhausted": false,
+      "trace": [
+        {
+          "fen": "r1b2r2/pp4bk/3qp2p/4Npp1/8/8/P3PPB1/1R1R2K1 w - - 0 20",
+          "replyUci": "d1d6",
+          "balance": 900,
+          "evasion": 1
+        }
+      ],
+      "selected": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 220,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 2.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 220,
+            "evidence": "Qxd6 takes the queen on d6 with a counterattack on the knight on e5. Against every legal reply, connected captures or a safe retreat retain at least 2.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b6d6",
+            "relevance": "primary",
+            "actor": "black"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe5 answers Rxd6, preserving the gain from Qxd6. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g7e5",
+            "relevance": "secondary",
+            "actor": "black"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "kind": "stronger-bound",
+      "reflected": false,
+      "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P2q1/3BBQ2/PP3PPP/R3R1K1 b - - 0 15",
+      "which": "forward",
+      "minimum": 320,
+      "gain": 320,
+      "visits": 929,
+      "exhausted": false,
+      "leaves": [
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/3BBq2/PP3PPP/1R2R1K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "a1b1",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/4B3/PP3PPP/1R2R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/3BBq2/PP3PPP/2R1R1K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "a1c1",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/4B3/PP3PPP/2R1R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/3BBq2/PP3PPP/3RR1K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "a1d1",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/4B3/PP3PPP/3RR1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/3BBq2/PP3PPP/RR4K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "e1b1",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/4B3/PP3PPP/RR4K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/3BBq2/PP3PPP/R1R3K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "e1c1",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/4B3/PP3PPP/R1R3K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/3BBq2/PP3PPP/R2R2K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "e1d1",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/4B3/PP3PPP/R2R2K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/3BBq2/PP3PPP/R4RK1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "e1f1",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/4B3/PP3PPP/R4RK1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/3BBq2/PP2RPPP/R5K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "e1e2",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/4B3/PP2RPPP/R5K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/3BBq2/PP3PPP/R3RK2 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "g1f1",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/4B3/PP3PPP/R3RK2 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/3BBq2/PP3PPP/R3R2K b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "g1h1",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/4B3/PP3PPP/R3R2K b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/P2BBq2/1P3PPP/R3R1K1 b - - 0 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "a2a3",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/P3B3/1P3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/P2P4/3BBq2/1P3PPP/R3R1K1 b - - 0 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "a2a4",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/P2P4/4B3/1P3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/1P1BBq2/P4PPP/R3R1K1 b - - 0 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "b2b3",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/1P2B3/P4PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/1P1P4/3BBq2/P4PPP/R3R1K1 b - - 0 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "b2b4",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/1P1P4/4B3/P4PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/3BBP2/PP3P1P/R3R1K1 b - - 0 16",
+          "moveUci": "f6d5",
+          "balance": 0,
+          "gain": 320,
+          "quiet": false,
+          "lineUci": [
+            "g2f3",
+            "f6d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb3p/3n4/3P4/4BP2/PP3P1P/R3R1K1 b - - 1 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/3BBqP1/PP3P1P/R3R1K1 b - - 0 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "g2g3",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/4B1P1/PP3P1P/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P2P1/3BBq2/PP3P1P/R3R1K1 b - - 0 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "g2g4",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P2P1/4B3/PP3P1P/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/3BBq1P/PP3PP1/R3R1K1 b - - 0 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "h2h3",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/4B2P/PP3PP1/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P3P/3BBq2/PP3PP1/R3R1K1 b - - 0 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "h2h4",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P3P/4B3/PP3PP1/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/4Bq2/PP3PPP/RB2R1K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "d3b1",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/4B3/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/4Bq2/PP3PPP/R3RBK1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "d3f1",
+            "f3d5"
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/4Bq2/PPB2PPP/R3R1K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "d3c2",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/4B3/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/4Bq2/PP2BPPP/R3R1K1 b - - 1 16",
+          "moveUci": "f3e2",
+          "balance": 900,
+          "gain": 330,
+          "quiet": false,
+          "lineUci": [
+            "d3e2",
+            "f3e2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3pp1/2nb1N1p/8/3P4/4B3/PP2qPPP/R3R1K1 b - - 0 17",
+              "moveUci": "g7f6"
+            },
+            {
+              "fen": "r4rk1/pp3p2/2nb1p1p/8/3P4/4B3/PP2RPPP/R5K1 b - - 0 18",
+              "moveUci": "h6h5"
+            },
+            {
+              "fen": "r4rk1/pp3p2/2nb1p1B/8/3P4/8/PP2qPPP/R3R1K1 b - - 0 18",
+              "moveUci": "e2e1"
+            },
+            {
+              "fen": "r4rk1/pp2Npp1/2nb1n1p/8/3P4/4B3/PP2qPPP/R3R1K1 b - - 1 17",
+              "moveUci": "c6e7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/2BP4/4Bq2/PP3PPP/R3R1K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 650,
+          "quiet": false,
+          "lineUci": [
+            "d3c4",
+            "f3d5"
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3PB3/4Bq2/PP3PPP/R3R1K1 b - - 1 16",
+          "moveUci": "f3e4",
+          "balance": 900,
+          "gain": 1130,
+          "quiet": false,
+          "lineUci": [
+            "d3e4",
+            "f3e4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3pp1/2nb1N1p/8/3Pq3/4B3/PP3PPP/R3R1K1 b - - 0 17",
+              "moveUci": "g7f6"
+            },
+            {
+              "fen": "r4rk1/pp2Npp1/2nb1n1p/8/3Pq3/4B3/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "e4e7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/1B1N4/3P4/4Bq2/PP3PPP/R3R1K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "d3b5",
+            "f3d5"
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N1B2/3P4/4Bq2/PP3PPP/R3R1K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "d3f5",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/4B3/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/B1nb1n1p/3N4/3P4/4Bq2/PP3PPP/R3R1K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1120,
+          "quiet": false,
+          "lineUci": [
+            "d3a6",
+            "f3d5"
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1nBp/3N4/3P4/4Bq2/PP3PPP/R3R1K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "d3g6",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3Bp1/2nb1n1p/3q4/3P4/4B3/PP3PPP/R3R1K1 b - - 0 17",
+              "moveUci": "d5f7"
+            },
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/4B3/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3ppB/2nb1n1p/3N4/3P4/4Bq2/PP3PPP/R3R1K1 b - - 1 16",
+          "moveUci": "f6h7",
+          "balance": 900,
+          "gain": 330,
+          "quiet": false,
+          "lineUci": [
+            "d3h7",
+            "f6h7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppn/2nb1N1p/8/3P4/4Bq2/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f3f6"
+            },
+            {
+              "fen": "r4rk1/pp2Nppn/2nb3p/8/3P4/4Bq2/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "c6e7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/3B1q2/PP3PPP/R1B1R1K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "e3c1",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/8/PP3PPP/R1B1R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P4/3B1q2/PP1B1PPP/R3R1K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "e3d2",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q4/3P4/8/PP1B1PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P1B2/3B1q2/PP3PPP/R3R1K1 b - - 1 16",
+          "moveUci": "f3f4",
+          "balance": 900,
+          "gain": 650,
+          "quiet": false,
+          "lineUci": [
+            "e3f4",
+            "f3f4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3N4/3P1q2/8/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            },
+            {
+              "fen": "r4rk1/pp3ppn/2nb1N1p/8/3P1q2/8/PP3PPP/R3R1K1 b - - 1 18",
+              "moveUci": "f4f6"
+            },
+            {
+              "fen": "r4rk1/pp2Nppn/2nb3p/8/3P1q2/8/PP3PPP/R3R1K1 b - - 1 18",
+              "moveUci": "c6e7"
+            },
+            {
+              "fen": "r4rk1/pp3pp1/2nb1N1p/8/3P1q2/3B4/PP3PPP/R3R1K1 b - - 0 17",
+              "moveUci": "f4f6"
+            },
+            {
+              "fen": "r4rk1/pp3ppB/2nb1q1p/8/3P4/8/PP3PPP/R3R1K1 b - - 1 18",
+              "moveUci": "g8h7"
+            },
+            {
+              "fen": "r4rk1/pp2Npp1/2nb1n1p/8/3P1q2/3B4/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "c6e7"
+            },
+            {
+              "fen": "r4rk1/pp2nppB/3b1n1p/8/3P1q2/8/PP3PPP/R3R1K1 b - - 1 18",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/3N2B1/3P4/3B1q2/PP3PPP/R3R1K1 b - - 1 16",
+          "moveUci": "f3d5",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "e3g5",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/3q2B1/3P4/8/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1B/3N4/3P4/3B1q2/PP3PPP/R3R1K1 b - - 0 16",
+          "moveUci": "f3d5",
+          "balance": 800,
+          "gain": 1120,
+          "quiet": false,
+          "lineUci": [
+            "e3h6",
+            "f3d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1B/3q4/3P4/8/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/8/3P4/2NBBq2/PP3PPP/R3R1K1 b - - 1 16",
+          "moveUci": "f3f4",
+          "balance": 900,
+          "gain": 330,
+          "quiet": true,
+          "lineUci": [
+            "d5c3",
+            "f3f4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/8/3P1q2/2N1B3/PP3PPP/R3R1K1 b - - 3 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/8/1N1P4/3BBq2/PP3PPP/R3R1K1 b - - 1 16",
+          "moveUci": "c6b4",
+          "balance": 900,
+          "gain": 320,
+          "quiet": false,
+          "lineUci": [
+            "d5b4",
+            "c6b4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/3b1n1p/8/1n1P4/4Bq2/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/8/3P1N2/3BBq2/PP3PPP/R3R1K1 b - - 1 16",
+          "moveUci": "f3f4",
+          "balance": 900,
+          "gain": 650,
+          "quiet": false,
+          "lineUci": [
+            "d5f4",
+            "f3f4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1n1p/8/3P1q2/4B3/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/1Nnb1n1p/8/3P4/3BBq2/PP3PPP/R3R1K1 b - - 1 16",
+          "moveUci": "a7b6",
+          "balance": 900,
+          "gain": 320,
+          "quiet": false,
+          "lineUci": [
+            "d5b6",
+            "a7b6"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/1p3ppB/1pnb1n1p/8/3P4/4Bq2/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1N1p/8/3P4/3BBq2/PP3PPP/R3R1K1 b - - 0 16",
+          "moveUci": "f3f6",
+          "balance": 580,
+          "gain": 900,
+          "quiet": false,
+          "lineUci": [
+            "d5f6",
+            "f3f6"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppB/2nb1q1p/8/3P4/4B3/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/ppN2pp1/2nb1n1p/8/3P4/3BBq2/PP3PPP/R3R1K1 b - - 1 16",
+          "moveUci": "d6c7",
+          "balance": 900,
+          "gain": 320,
+          "quiet": false,
+          "lineUci": [
+            "d5c7",
+            "d6c7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/ppb2ppB/2n2n1p/8/3P4/4Bq2/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp2Npp1/2nb1n1p/8/3P4/3BBq2/PP3PPP/R3R1K1 b - - 1 16",
+          "moveUci": "c6e7",
+          "balance": 900,
+          "gain": 320,
+          "quiet": false,
+          "lineUci": [
+            "d5e7",
+            "c6e7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp2nppB/3b1n1p/8/3P4/4Bq2/PP3PPP/R3R1K1 b - - 1 17",
+              "moveUci": "f6h7"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "stronger-bound",
+      "reflected": false,
+      "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P2q1/3BBQ2/PP3PPP/R3R1K1 b - - 0 15",
+      "which": "reverse",
+      "minimum": 310,
+      "gain": 570,
+      "visits": 1821,
+      "exhausted": false,
+      "leaves": [
+        {
+          "fen": "1r3rk1/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "a8b8",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "1r3rk1/pp1Q1pp1/2n4p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "2r2rk1/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "a8c8",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "2r2rk1/pp1Q1pp1/2n4p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "3r1rk1/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4f5",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "a8d8",
+            "g4f5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "3r1rk1/pp3pp1/2n4p/3n1Q2/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "4rrk1/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "a8e8",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "4rrk1/pp1Q1pp1/2n4p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "rr4k1/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "f8b8",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "rr4k1/pp1Q1pp1/2n4p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r1r3k1/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "f8c8",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r1r3k1/pp1Q1pp1/2n4p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r2r2k1/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4f5",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "f8d8",
+            "g4f5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r2r2k1/pp3pp1/2n4p/3n1Q2/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "f8e8",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1Q1pp1/2n4p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4r1k/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "g8h8",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4r1k/pp1Q1pp1/2n4p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/1p3pp1/p1nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "a7a6",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/1p1Q1pp1/p1n4p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/1p3pp1/2nb3p/p2n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "a7a5",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/1p1Q1pp1/2n4p/p2n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/p4pp1/1pnb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "b7b6",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/p2Q1pp1/1pn4p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/p4pp1/2nb3p/1p1n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "b7b5",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/p2Q1pp1/2n4p/1p1n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp4p1/2nb1p1p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "f7f6",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp1Q2p1/2n2p1p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp4p1/2nb3p/3n1p2/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "g4f5",
+          "balance": 900,
+          "gain": 600,
+          "quiet": false,
+          "lineUci": [
+            "f7f5",
+            "g4f5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp4p1/2n4p/3n1Q2/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            },
+            {
+              "fen": "r4rk1/pp4p1/2n4p/5Q2/3P4/3Bn3/PP3PPK/R3R3 w - - 0 19",
+              "moveUci": "f2e3"
+            },
+            {
+              "fen": "r5k1/pp4p1/2n4p/3n1r2/3P4/3BB3/PP3PPK/R3R3 w - - 0 19",
+              "moveUci": "d3f5"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3p2/2nb2pp/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "g7g6",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp1Q1p2/2n3pp/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3p2/2nb3p/3n2p1/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "g7g5",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp1Q1p2/2n4p/3n2p1/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "rn3rk1/pp3pp1/3b3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4f5",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "c6b8",
+            "g4f5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "rn3rk1/pp3pp1/7p/3n1Q2/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r2n1rk1/pp3pp1/3b3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "c6d8",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r2n1rk1/pp1Q1pp1/7p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp2npp1/3b3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "c6e7",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp1Qnpp1/7p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/3b3p/n2n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "c6a5",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp1Q1pp1/7p/n2n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/3b3p/3nn3/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "d4e5",
+          "balance": 900,
+          "gain": 1120,
+          "quiet": false,
+          "lineUci": [
+            "c6e5",
+            "d4e5"
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/3b3p/3n4/1n1P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 570,
+          "quiet": true,
+          "lineUci": [
+            "c6b4",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp1Q1pp1/7p/3n4/1n1P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            },
+            {
+              "fen": "r4rk1/pp1Q1pp1/7p/3n4/3P4/3nB3/PP3PPK/R3R3 w - - 0 19",
+              "moveUci": "d7d5"
+            },
+            {
+              "fen": "r4rk1/pp1Q1pp1/7p/8/1n1P4/3Bn3/PP3PPK/R3R3 w - - 0 19",
+              "moveUci": "f2e3"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/3b3p/3n4/3n2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "g4d4",
+          "balance": 800,
+          "gain": 1110,
+          "quiet": false,
+          "lineUci": [
+            "c6d4",
+            "g4d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3pp1/7p/3n4/3Q4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "rb3rk1/pp3pp1/2n4p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "d6b8",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp1Q1pp1/2n4p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/ppb2pp1/2n4p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "d6c7",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp1Q1pp1/2n4p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp2bpp1/2n4p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "d6e7",
+            "g4d7"
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2n4p/2bn4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 800,
+          "quiet": true,
+          "lineUci": [
+            "d6c5",
+            "g4d7"
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2n4p/3nb3/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 800,
+          "quiet": true,
+          "lineUci": [
+            "d6e5",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp1Q1pp1/2n4p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2n4p/3n4/1b1P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 730,
+          "quiet": true,
+          "lineUci": [
+            "d6b4",
+            "g4d7"
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2n4p/3n4/3P1bQ1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "d6f4",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp1Q1pp1/2n4p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2n4p/3n4/3P2Q1/b2BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "b2a3",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "d6a3",
+            "b2a3"
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2n4p/3n4/3P2Q1/3BB1b1/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4d7",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "d6g3",
+            "g4d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp1Q1pp1/2n4p/3n4/3P4/3BB3/PP3bPP/R3R1K1 w - - 0 18",
+              "moveUci": "e3f2"
+            },
+            {
+              "fen": "r4rk1/pp1Q1pp1/2n4p/3n4/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2n4p/3n4/3P2Q1/3BB3/PP3PPb/R3R1K1 w - - 0 17",
+          "moveUci": "g1h2",
+          "balance": 800,
+          "gain": 1120,
+          "quiet": false,
+          "lineUci": [
+            "d6h2",
+            "g1h2"
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb4/3n3p/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "g4h5",
+          "balance": 900,
+          "gain": 990,
+          "quiet": false,
+          "lineUci": [
+            "h6h5",
+            "g4h5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3pp1/2n5/3n3Q/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "h5h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/ppn2pp1/2nb3p/8/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "d4d5",
+          "balance": 900,
+          "gain": 800,
+          "quiet": true,
+          "lineUci": [
+            "d5c7",
+            "d4d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/ppn2pp1/2n4p/3P4/6Q1/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp2npp1/2nb3p/8/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "d4d5",
+          "balance": 900,
+          "gain": 800,
+          "quiet": true,
+          "lineUci": [
+            "d5e7",
+            "d4d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp2npp1/2n4p/3P4/6Q1/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/1nnb3p/8/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "d4d5",
+          "balance": 900,
+          "gain": 800,
+          "quiet": true,
+          "lineUci": [
+            "d5b6",
+            "d4d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3pp1/1nn4p/3P4/6Q1/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb1n1p/8/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4f5",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "d5f6",
+            "g4f5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3pp1/2n2n1p/5Q2/3P4/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            },
+            {
+              "fen": "r4rk1/pp3pp1/2n4p/5Q2/3P2n1/3BB3/PP3PPK/R3R3 w - - 1 19",
+              "moveUci": "f5g4"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb3p/8/1n1P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "d4d5",
+          "balance": 900,
+          "gain": 570,
+          "quiet": true,
+          "lineUci": [
+            "d5b4",
+            "d4d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3pp1/2n4p/3P4/1n4Q1/3BB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            },
+            {
+              "fen": "r4rk1/pp3pp1/2n4p/3P4/6Q1/3nB3/PP3PPK/R3R3 w - - 0 19",
+              "moveUci": "d5c6"
+            },
+            {
+              "fen": "r4rk1/pp3pp1/2n4p/3n4/6Q1/3BB3/PP3PPK/R3R3 w - - 0 19",
+              "moveUci": "e3a7"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb3p/8/3P1nQ1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "g4f4",
+          "balance": 900,
+          "gain": 650,
+          "quiet": false,
+          "lineUci": [
+            "d5f4",
+            "g4f4"
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb3p/8/3P2Q1/2nBB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "d4d5",
+          "balance": 900,
+          "gain": 800,
+          "quiet": true,
+          "lineUci": [
+            "d5c3",
+            "d4d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3pp1/2n4p/3P4/6Q1/2nBB3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            },
+            {
+              "fen": "r4rk1/pp3pp1/2nb3p/3P4/6Q1/3BB3/PP2nPPP/R3R1K1 w - - 1 18",
+              "moveUci": "g4e2"
+            },
+            {
+              "fen": "r4rk1/pp3pp1/2n4p/3P4/8/3BB3/PP2QPPb/R3R1K1 w - - 0 19",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/2nb3p/8/3P2Q1/3Bn3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "f2e3",
+          "balance": 570,
+          "gain": 890,
+          "quiet": false,
+          "lineUci": [
+            "d5e3",
+            "f2e3"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3pp1/2n4p/8/3P2Q1/3BP3/PP4Pb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "stronger-bound",
+      "reflected": false,
+      "fen": "r4rk1/pp3pp1/2nb1n1p/3N4/3P2q1/3BBQ2/PP3PPP/R3R1K1 b - - 0 15",
+      "which": "reverse",
+      "minimum": 900,
+      "gain": null,
+      "visits": 9789,
+      "exhausted": false,
+      "leaves": [
+        {
+          "fen": "1r3rk1/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "a8b8",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "1r3rk1/pp3pp1/2n4p/3n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "2r2rk1/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "a8c8",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "2r2rk1/pp3pp1/2n4p/3n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "3r1rk1/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "a8d8",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "3r1rk1/pp3pp1/2n4p/3n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "4rrk1/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "a8e8",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "5rk1/pp3pp1/2nb3p/3n4/3P2Q1/3B4/PP1B1PPP/R3r1K1 w - - 0 18",
+              "moveUci": "d2e1"
+            },
+            {
+              "fen": "5rk1/pp3pp1/2n4p/3n4/3P2Q1/3B4/PP3PPb/R3B1K1 w - - 0 19",
+              "moveUci": "g1h2"
+            },
+            {
+              "fen": "4rrk1/pp3pp1/2n4p/3n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "rr4k1/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "f8b8",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "rr4k1/pp3pp1/2n4p/3n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r1r3k1/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "f8c8",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r1r3k1/pp3pp1/2n4p/3n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r2r2k1/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "f8d8",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r2r2k1/pp3pp1/2n4p/3n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "f8e8",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r5k1/pp3pp1/2nb3p/3n4/3P2Q1/3B4/PP1B1PPP/R3r1K1 w - - 0 18",
+              "moveUci": "d2e1"
+            },
+            {
+              "fen": "r5k1/pp3pp1/2n4p/3n4/3P2Q1/3B4/PP3PPb/R3B1K1 w - - 0 19",
+              "moveUci": "g1h2"
+            },
+            {
+              "fen": "r3r1k1/pp3pp1/2n4p/3n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4r1k/pp3pp1/2nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "g8h8",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4r1k/pp3pp1/2n4p/3n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/1p3pp1/p1nb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "a7a6",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/1p3pp1/p1n4p/3n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/1p3pp1/2nb3p/p2n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "a7a5",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/1p3pp1/2n4p/p2n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/p4pp1/1pnb3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "b7b6",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/p4pp1/1pn4p/3n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/p4pp1/2nb3p/1p1n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "b7b5",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/p4pp1/2n4p/1p1n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp4p1/2nb1p1p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "g4e6",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "f7f6",
+            "g4e6"
+          ]
+        },
+        {
+          "fen": "r4rk1/pp4p1/2nb3p/3n1p2/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "d3f5",
+          "balance": 900,
+          "gain": 990,
+          "quiet": false,
+          "lineUci": [
+            "f7f5",
+            "d3f5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp4p1/2n4p/3n1B2/3P2Q1/4B3/PP3PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3p2/2nb2pp/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "g7g6",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3p2/2n3pp/3n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3p2/2nb3p/3n2p1/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 0 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "g7g5",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3p2/2n4p/3n2p1/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "rn3rk1/pp3pp1/3b3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "c6b8",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "rn3rk1/pp3pp1/7p/3n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r2n1rk1/pp3pp1/3b3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "c6d8",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r2n1rk1/pp3pp1/7p/3n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp2npp1/3b3p/3n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "c6e7",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp2npp1/7p/3n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/3b3p/n2n4/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "e3d2",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "c6a5",
+            "e3d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3pp1/7p/n2n4/3P2Q1/3B4/PP1B1PPb/R3R1K1 w - - 0 18",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3pp1/3b3p/3nn3/3P2Q1/3BB3/PP3PPP/R3R1K1 w - - 1 17",
+          "moveUci": "d4e5",
+          "balance": 900,
+          "gain": 1120,
+          "quiet": false,
+          "lineUci": [
+            "c6e5",
+            "d4e5"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "rear-pawn-removal",
+      "reflected": true,
+      "removed": [],
+      "fen": "1r1r2k1/pp2ppbp/2p3p1/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 19",
+      "gain": 320,
+      "replyCount": 40,
+      "visits": 318,
+      "exhausted": false,
+      "trace": [],
+      "selected": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on c6. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on g6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on g6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe4 answers Rxd3, preserving the gain from Qxd3. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g2e4",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "kind": "rear-pawn-removal",
+      "reflected": true,
+      "removed": [
+        "c3"
+      ],
+      "fen": "1r1r2k1/pp2ppbp/6p1/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 19",
+      "gain": 320,
+      "replyCount": 39,
+      "visits": 314,
+      "exhausted": false,
+      "trace": [],
+      "selected": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on b7. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on g6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on g6. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe4 answers Rxd3, preserving the gain from Qxd3. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g2e4",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "kind": "rear-pawn-removal",
+      "reflected": true,
+      "removed": [
+        "g3"
+      ],
+      "fen": "1r1r2k1/pp2ppbp/2p5/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 19",
+      "gain": 320,
+      "replyCount": 39,
+      "visits": 310,
+      "exhausted": false,
+      "trace": [],
+      "selected": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on c6. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on h7. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on h7. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe4 answers Rxd3, preserving the gain from Qxd3. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g2e4",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "kind": "rear-pawn-removal",
+      "reflected": true,
+      "removed": [
+        "c3",
+        "g3"
+      ],
+      "fen": "1r1r2k1/pp2ppbp/8/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 19",
+      "gain": 320,
+      "replyCount": 38,
+      "visits": 306,
+      "exhausted": false,
+      "trace": [],
+      "selected": {
+        "motifs": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on b7. No legal reply saves the rear target without conceding material.",
+            "relevance": "primary"
+          },
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on h7. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "skewer",
+            "label": "Skewer",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "value": 100,
+            "evidence": "Qxd3 skewers the knight on e4 and the pawn on h7. No legal reply saves the rear target without conceding material.",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 320,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 3.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "secondary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe4 answers Rxd3, preserving the gain from Qxd3. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g2e4",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "kind": "rear-pawn-removal",
+      "reflected": true,
+      "removed": [
+        "c3",
+        "g3",
+        "b2",
+        "h2"
+      ],
+      "fen": "1r1r2k1/p3ppb1/8/8/4nPP1/1Q1qP2P/PP4BK/R1B2R2 w - - 0 19",
+      "gain": null,
+      "replyCount": 41,
+      "visits": 199,
+      "exhausted": false,
+      "trace": [
+        {
+          "fen": "1r1r2k1/p3ppb1/8/8/4nPP1/3QP2P/PP4BK/R1B2R2 b - - 0 19",
+          "replyUci": "d8d3",
+          "balance": 900,
+          "evasion": 1
+        }
+      ],
+      "selected": {
+        "motifs": [
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 220,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 2.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "primary"
+          }
+        ],
+        "timeline": [
+          {
+            "id": "hangingPiece",
+            "label": "Material Gain",
+            "value": 220,
+            "evidence": "Qxd3 takes the queen on d3 with a counterattack on the knight on e4. Against every legal reply, connected captures or a safe retreat retain at least 2.2 pawns locally. Countercaptures and losses elsewhere are included; this is not a free piece or a full-position evaluation.",
+            "source": "available",
+            "confidence": "high",
+            "ply": 1,
+            "moveUci": "b3d3",
+            "relevance": "primary",
+            "actor": "white"
+          },
+          {
+            "id": "hangingPiece",
+            "label": "Countercapture Payoff",
+            "confidence": "high",
+            "evidence": "Bxe4 answers Rxd3, preserving the gain from Qxd3. These exchanged pieces are already included in that capture's value.",
+            "source": "available",
+            "ply": 3,
+            "moveUci": "g2e4",
+            "relevance": "secondary",
+            "actor": "white"
+          }
+        ],
+        "motifClassifierVersion": "site-55.adapter-174"
+      }
+    },
+    {
+      "kind": "stronger-bound",
+      "reflected": true,
+      "fen": "r3r1k1/pp3ppp/3bbq2/3p2Q1/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 0 15",
+      "which": "forward",
+      "minimum": 320,
+      "gain": 320,
+      "visits": 929,
+      "exhausted": false,
+      "leaves": [
+        {
+          "fen": "1r2r1k1/pp3ppp/3bbQ2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "a8b8",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "1r2r1k1/pp3ppp/4b3/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "2r1r1k1/pp3ppp/3bbQ2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "a8c8",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "2r1r1k1/pp3ppp/4b3/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "3rr1k1/pp3ppp/3bbQ2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "a8d8",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "3rr1k1/pp3ppp/4b3/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "rr4k1/pp3ppp/3bbQ2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "e8b8",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "rr4k1/pp3ppp/4b3/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r1r3k1/pp3ppp/3bbQ2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "e8c8",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r1r3k1/pp3ppp/4b3/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r2r2k1/pp3ppp/3bbQ2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "e8d8",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r2r2k1/pp3ppp/4b3/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r4rk1/pp3ppp/3bbQ2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "e8f8",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r4rk1/pp3ppp/4b3/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r5k1/pp2rppp/3bbQ2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "e8e7",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r5k1/pp2rppp/4b3/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3rk2/pp3ppp/3bbQ2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "g8f8",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3rk2/pp3ppp/4b3/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r2k/pp3ppp/3bbQ2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "g8h8",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r2k/pp3ppp/4b3/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/1p3ppp/p2bbQ2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 0 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "a7a6",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/1p3ppp/p3b3/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/1p3ppp/3bbQ2/p2p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 0 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "a7a5",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/1p3ppp/4b3/p2p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/p4ppp/1p1bbQ2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 0 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "b7b6",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/p4ppp/1p2b3/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/p4ppp/3bbQ2/1p1p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 0 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "b7b5",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/p4ppp/4b3/1p1p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3p1p/3bbp2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 0 16",
+          "moveUci": "f3d4",
+          "balance": 0,
+          "gain": 320,
+          "quiet": false,
+          "lineUci": [
+            "g7f6",
+            "f3d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3p1p/4bp2/3p4/3N4/2NB3P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3p1p/3bbQp1/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 0 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "g7g6",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3p1p/4b1p1/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3p1p/3bbQ2/3p2p1/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 0 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "g7g5",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3p1p/4b3/3p2p1/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3pp1/3bbQ1p/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 0 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "h7h6",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3pp1/4b2p/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3pp1/3bbQ2/3p3p/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 0 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "h7h5",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3pp1/4b3/3p3p/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "rb2r1k1/pp3ppp/4bQ2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "d6b8",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppp/4b3/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3rbk1/pp3ppp/4bQ2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "d6f8",
+            "f6d4"
+          ]
+        },
+        {
+          "fen": "r3r1k1/ppb2ppp/4bQ2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "d6c7",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppp/4b3/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp2bppp/4bQ2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6e7",
+          "balance": 900,
+          "gain": 330,
+          "quiet": false,
+          "lineUci": [
+            "d6e7",
+            "f6e7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp2Qppp/4b3/3p4/8/2NB1n1P/PP3PP1/R4RK1 w - - 0 17",
+              "moveUci": "g2f3"
+            },
+            {
+              "fen": "r3r1k1/pp2Qppp/8/3p4/8/2NB1P1b/PP3P2/R4RK1 w - - 0 18",
+              "moveUci": "e7e8"
+            },
+            {
+              "fen": "r5k1/pp2rppp/4b3/3p4/8/2NB1P1P/PP3P2/R4RK1 w - - 0 18",
+              "moveUci": "h3h4"
+            },
+            {
+              "fen": "r3r1k1/pp2Qppp/4b3/3p4/8/2NB1N1P/PP2nPP1/R4RK1 w - - 1 17",
+              "moveUci": "c3e2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/4bQ2/2bp4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 650,
+          "quiet": false,
+          "lineUci": [
+            "d6c5",
+            "f6d4"
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/4bQ2/3pb3/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6e5",
+          "balance": 900,
+          "gain": 1130,
+          "quiet": false,
+          "lineUci": [
+            "d6e5",
+            "f6e5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppp/4b3/3pQ3/8/2NB1n1P/PP3PP1/R4RK1 w - - 0 17",
+              "moveUci": "g2f3"
+            },
+            {
+              "fen": "r3r1k1/pp3ppp/4b3/3pQ3/8/2NB1N1P/PP2nPP1/R4RK1 w - - 1 17",
+              "moveUci": "e5e2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/4bQ2/3p4/1b1n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "d6b4",
+            "f6d4"
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/4bQ2/3p4/3n1b2/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "d6f4",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppp/4b3/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/4bQ2/3p4/3n4/b1NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1120,
+          "quiet": false,
+          "lineUci": [
+            "d6a3",
+            "f6d4"
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/4bQ2/3p4/3n4/2NB1NbP/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "d6g3",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppp/4b3/3p4/3Q4/2NB1N1P/PP3bP1/R4RK1 w - - 0 17",
+              "moveUci": "d4f2"
+            },
+            {
+              "fen": "r3r1k1/pp3ppp/4b3/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/4bQ2/3p4/3n4/2NB1N1P/PP3PPb/R4RK1 w - - 1 16",
+          "moveUci": "f3h2",
+          "balance": 900,
+          "gain": 330,
+          "quiet": false,
+          "lineUci": [
+            "d6h2",
+            "f3h2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppp/4bQ2/3p4/8/2NB1n1P/PP3PPN/R4RK1 w - - 1 17",
+              "moveUci": "f6f3"
+            },
+            {
+              "fen": "r3r1k1/pp3ppp/4bQ2/3p4/8/2NB3P/PP2nPPN/R4RK1 w - - 1 17",
+              "moveUci": "c3e2"
+            }
+          ]
+        },
+        {
+          "fen": "r1b1r1k1/pp3ppp/3b1Q2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "e6c8",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r1b1r1k1/pp3ppp/8/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp1b1ppp/3b1Q2/3p4/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "e6d7",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppp/8/3p4/3Q4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3b1Q2/3p1b2/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6f5",
+          "balance": 900,
+          "gain": 650,
+          "quiet": false,
+          "lineUci": [
+            "e6f5",
+            "f6f5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppp/8/3p1Q2/3n4/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            },
+            {
+              "fen": "r3r1k1/pp3ppp/8/3p1Q2/8/2NB1n1P/PP3PPN/R4RK1 w - - 1 18",
+              "moveUci": "f5f3"
+            },
+            {
+              "fen": "r3r1k1/pp3ppp/8/3p1Q2/8/2NB3P/PP2nPPN/R4RK1 w - - 1 18",
+              "moveUci": "c3e2"
+            },
+            {
+              "fen": "r3r1k1/pp3ppp/3b4/3p1Q2/8/2NB1n1P/PP3PP1/R4RK1 w - - 0 17",
+              "moveUci": "f5f3"
+            },
+            {
+              "fen": "r3r1k1/pp3ppp/8/3p4/8/2NB1Q1P/PP3PPb/R4RK1 w - - 1 18",
+              "moveUci": "g1h2"
+            },
+            {
+              "fen": "r3r1k1/pp3ppp/3b4/3p1Q2/8/2NB1N1P/PP2nPP1/R4RK1 w - - 1 17",
+              "moveUci": "c3e2"
+            },
+            {
+              "fen": "r3r1k1/pp3ppp/8/3p1Q2/8/3B1N1P/PP2NPPb/R4RK1 w - - 1 18",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3b1Q2/3p4/3n2b1/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6d4",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "e6g4",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppp/8/3p4/3Q2b1/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3b1Q2/3p4/3n4/2NB1N1b/PP3PP1/R4RK1 w - - 0 16",
+          "moveUci": "f6d4",
+          "balance": 800,
+          "gain": 1120,
+          "quiet": false,
+          "lineUci": [
+            "e6h3",
+            "f6d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppp/8/3p4/3Q4/2NB1N1b/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/2nbbQ2/3p4/8/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6f5",
+          "balance": 900,
+          "gain": 330,
+          "quiet": true,
+          "lineUci": [
+            "d4c6",
+            "f6f5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppp/2n1b3/3p1Q2/8/2NB1N1P/PP3PPb/R4RK1 w - - 3 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bbQ2/1n1p4/8/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "c3b5",
+          "balance": 900,
+          "gain": 320,
+          "quiet": false,
+          "lineUci": [
+            "d4b5",
+            "c3b5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppp/4bQ2/1N1p4/8/3B1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bbQ2/3p1n2/8/2NB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "f6f5",
+          "balance": 900,
+          "gain": 650,
+          "quiet": false,
+          "lineUci": [
+            "d4f5",
+            "f6f5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppp/4b3/3p1Q2/8/2NB1N1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bbQ2/3p4/8/1nNB1N1P/PP3PP1/R4RK1 w - - 1 16",
+          "moveUci": "a2b3",
+          "balance": 900,
+          "gain": 320,
+          "quiet": false,
+          "lineUci": [
+            "d4b3",
+            "a2b3"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppp/4bQ2/3p4/8/1PNB1N1P/1P3PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bbQ2/3p4/8/2NB1n1P/PP3PP1/R4RK1 w - - 0 16",
+          "moveUci": "f6f3",
+          "balance": 580,
+          "gain": 900,
+          "quiet": false,
+          "lineUci": [
+            "d4f3",
+            "f6f3"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppp/4b3/3p4/8/2NB1Q1P/PP3PPb/R4RK1 w - - 1 17",
+              "moveUci": "g1h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bbQ2/3p4/8/2NB1N1P/PPn2PP1/R4RK1 w - - 1 16",
+          "moveUci": "d3c2",
+          "balance": 900,
+          "gain": 320,
+          "quiet": false,
+          "lineUci": [
+            "d4c2",
+            "d3c2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppp/4bQ2/3p4/8/2N2N1P/PPB2PPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bbQ2/3p4/8/2NB1N1P/PP2nPP1/R4RK1 w - - 1 16",
+          "moveUci": "c3e2",
+          "balance": 900,
+          "gain": 320,
+          "quiet": false,
+          "lineUci": [
+            "d4e2",
+            "c3e2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppp/4bQ2/3p4/8/3B1N1P/PP2NPPb/R4RK1 w - - 1 17",
+              "moveUci": "f3h2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "stronger-bound",
+      "reflected": true,
+      "fen": "r3r1k1/pp3ppp/3bbq2/3p2Q1/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 0 15",
+      "which": "reverse",
+      "minimum": 310,
+      "gain": 570,
+      "visits": 1821,
+      "exhausted": false,
+      "leaves": [
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/1R3RK1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "a1b1",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/2N4P/PP1q1PP1/1R3RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/2R2RK1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "a1c1",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/2N4P/PP1q1PP1/2R2RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/3R1RK1 b - - 1 16",
+          "moveUci": "g5f4",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "a1d1",
+            "g5f4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N1q2/2N4P/PP3PP1/3R1RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/4RRK1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "a1e1",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/2N4P/PP1q1PP1/4RRK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/RR4K1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "f1b1",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/2N4P/PP1q1PP1/RR4K1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/R1R3K1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "f1c1",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/2N4P/PP1q1PP1/R1R3K1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/R2R2K1 b - - 1 16",
+          "moveUci": "g5f4",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "f1d1",
+            "g5f4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N1q2/2N4P/PP3PP1/R2R2K1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/R3R1K1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "f1e1",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/2N4P/PP1q1PP1/R3R1K1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/R4R1K b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "g1h1",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/2N4P/PP1q1PP1/R4R1K b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/P1NB3P/1P3PP1/R4RK1 b - - 0 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "a2a3",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/P1N4P/1P1q1PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/P2N4/2NB3P/1P3PP1/R4RK1 b - - 0 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "a2a4",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/P2N4/2N4P/1P1q1PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/1PNB3P/P4PP1/R4RK1 b - - 0 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "b2b3",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/1PN4P/P2q1PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/1P1N4/2NB3P/P4PP1/R4RK1 b - - 0 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "b2b4",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/1P1N4/2N4P/P2q1PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB1P1P/PP4P1/R4RK1 b - - 0 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "f2f3",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/2N2P1P/PP1q2P1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N1P2/2NB3P/PP4P1/R4RK1 b - - 0 16",
+          "moveUci": "g5f4",
+          "balance": 900,
+          "gain": 600,
+          "quiet": false,
+          "lineUci": [
+            "f2f4",
+            "g5f4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N1q2/2N4P/PP4P1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            },
+            {
+              "fen": "r3r3/pp3ppk/3bb3/3p4/3N1R2/2N4P/PP4P1/R5K1 b - - 0 18",
+              "moveUci": "d6f4"
+            },
+            {
+              "fen": "r3r3/pp3ppk/3bN3/3p4/5q2/2N4P/PP4P1/R4RK1 b - - 0 18",
+              "moveUci": "f7e6"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB2PP/PP3P2/R4RK1 b - - 0 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "g2g3",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/2N3PP/PP1q1P2/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N2P1/2NB3P/PP3P2/R4RK1 b - - 0 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "g2g4",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N2P1/2N4P/PP1q1P2/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/3B3P/PP3PP1/RN3RK1 b - - 1 16",
+          "moveUci": "g5f4",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "c3b1",
+            "g5f4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N1q2/7P/PP3PP1/RN3RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/3B3P/PP3PP1/R2N1RK1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "c3d1",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/7P/PP1q1PP1/R2N1RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/3B3P/PP2NPP1/R4RK1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "c3e2",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/7P/PP1qNPP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/N2N4/3B3P/PP3PP1/R4RK1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "c3a4",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/N2N4/7P/PP1q1PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3NN3/3B3P/PP3PP1/R4RK1 b - - 1 16",
+          "moveUci": "d5e4",
+          "balance": 900,
+          "gain": 1120,
+          "quiet": false,
+          "lineUci": [
+            "c3e4",
+            "d5e4"
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/1N1p2q1/3N4/3B3P/PP3PP1/R4RK1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 570,
+          "quiet": true,
+          "lineUci": [
+            "c3b5",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/1N1p4/3N4/7P/PP1q1PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            },
+            {
+              "fen": "r3r3/pp3ppk/3bN3/1N1p4/8/7P/PP1q1PP1/R4RK1 b - - 0 18",
+              "moveUci": "f7e6"
+            },
+            {
+              "fen": "r3r3/pp3ppk/3Nb3/3p4/3N4/7P/PP1q1PP1/R4RK1 b - - 0 18",
+              "moveUci": "d2d4"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3N2q1/3N4/3B3P/PP3PP1/R4RK1 b - - 0 16",
+          "moveUci": "g5d5",
+          "balance": 800,
+          "gain": 1110,
+          "quiet": false,
+          "lineUci": [
+            "c3d5",
+            "g5d5"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3q4/3N4/7P/PP3PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2N4P/PP3PP1/RB3RK1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "d3b1",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/2N4P/PP1q1PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2N4P/PPB2PP1/R4RK1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "d3c2",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/2N4P/PP1q1PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2N4P/PP2BPP1/R4RK1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "d3e2",
+            "g5d2"
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/2BN4/2N4P/PP3PP1/R4RK1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 800,
+          "quiet": true,
+          "lineUci": [
+            "d3c4",
+            "g5d2"
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3NB3/2N4P/PP3PP1/R4RK1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 800,
+          "quiet": true,
+          "lineUci": [
+            "d3e4",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/2N4P/PP1q1PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/1B1p2q1/3N4/2N4P/PP3PP1/R4RK1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 730,
+          "quiet": true,
+          "lineUci": [
+            "d3b5",
+            "g5d2"
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p1Bq1/3N4/2N4P/PP3PP1/R4RK1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "d3f5",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/2N4P/PP1q1PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/B2bb3/3p2q1/3N4/2N4P/PP3PP1/R4RK1 b - - 1 16",
+          "moveUci": "b7a6",
+          "balance": 900,
+          "gain": 1220,
+          "quiet": false,
+          "lineUci": [
+            "d3a6",
+            "b7a6"
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb1B1/3p2q1/3N4/2N4P/PP3PP1/R4RK1 b - - 1 16",
+          "moveUci": "g5d2",
+          "balance": 900,
+          "gain": 890,
+          "quiet": true,
+          "lineUci": [
+            "d3g6",
+            "g5d2"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3Bpp/3bb3/3p4/3N4/2N4P/PP1q1PP1/R4RK1 b - - 0 17",
+              "moveUci": "e6f7"
+            },
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N4/2N4P/PP1q1PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppB/3bb3/3p2q1/3N4/2N4P/PP3PP1/R4RK1 b - - 0 16",
+          "moveUci": "g8h7",
+          "balance": 800,
+          "gain": 1120,
+          "quiet": false,
+          "lineUci": [
+            "d3h7",
+            "g8h7"
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N3P/2NB4/PP3PP1/R4RK1 b - - 0 16",
+          "moveUci": "g5h4",
+          "balance": 900,
+          "gain": 990,
+          "quiet": false,
+          "lineUci": [
+            "h3h4",
+            "g5h4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/3N3q/2N5/PP3PP1/R4RK1 b - - 0 17",
+              "moveUci": "h4h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/8/2NB3P/PPN2PP1/R4RK1 b - - 1 16",
+          "moveUci": "d5d4",
+          "balance": 900,
+          "gain": 800,
+          "quiet": true,
+          "lineUci": [
+            "d4c2",
+            "d5d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/6q1/3p4/2N4P/PPN2PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/8/2NB3P/PP2NPP1/R4RK1 b - - 1 16",
+          "moveUci": "d5d4",
+          "balance": 900,
+          "gain": 800,
+          "quiet": true,
+          "lineUci": [
+            "d4e2",
+            "d5d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/6q1/3p4/2N4P/PP2NPP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/8/1NNB3P/PP3PP1/R4RK1 b - - 1 16",
+          "moveUci": "d5d4",
+          "balance": 900,
+          "gain": 800,
+          "quiet": true,
+          "lineUci": [
+            "d4b3",
+            "d5d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/6q1/3p4/1NN4P/PP3PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/8/2NB1N1P/PP3PP1/R4RK1 b - - 1 16",
+          "moveUci": "g5f4",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "d4f3",
+            "g5f4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/3p4/5q2/2N2N1P/PP3PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            },
+            {
+              "fen": "r3r3/pp3ppk/3bb3/3p2N1/5q2/2N4P/PP3PP1/R4RK1 b - - 1 18",
+              "moveUci": "f4g5"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/1N1p2q1/8/2NB3P/PP3PP1/R4RK1 b - - 1 16",
+          "moveUci": "d5d4",
+          "balance": 900,
+          "gain": 570,
+          "quiet": true,
+          "lineUci": [
+            "d4b5",
+            "d5d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/3bb3/1N4q1/3p4/2N4P/PP3PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            },
+            {
+              "fen": "r3r3/pp3ppk/3bb3/6q1/3N4/2N4P/PP3PP1/R4RK1 b - - 0 18",
+              "moveUci": "e6a2"
+            },
+            {
+              "fen": "r3r3/pp3ppk/3Nb3/6q1/3p4/2N4P/PP3PP1/R4RK1 b - - 0 18",
+              "moveUci": "d4c3"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p1Nq1/8/2NB3P/PP3PP1/R4RK1 b - - 1 16",
+          "moveUci": "g5f5",
+          "balance": 900,
+          "gain": 650,
+          "quiet": false,
+          "lineUci": [
+            "d4f5",
+            "g5f5"
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/2Nbb3/3p2q1/8/2NB3P/PP3PP1/R4RK1 b - - 1 16",
+          "moveUci": "d5d4",
+          "balance": 900,
+          "gain": 800,
+          "quiet": true,
+          "lineUci": [
+            "d4c6",
+            "d5d4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/2Nbb3/6q1/3p4/2N4P/PP3PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            },
+            {
+              "fen": "r3r1k1/pp2Nppp/3bb3/6q1/3p4/2NB3P/PP3PP1/R4RK1 b - - 1 17",
+              "moveUci": "g5e7"
+            },
+            {
+              "fen": "r3r1k1/pp2qppB/3bb3/8/3p4/2N4P/PP3PP1/R4RK1 b - - 0 18",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bN3/3p2q1/8/2NB3P/PP3PP1/R4RK1 b - - 0 16",
+          "moveUci": "f7e6",
+          "balance": 570,
+          "gain": 890,
+          "quiet": false,
+          "lineUci": [
+            "d4e6",
+            "f7e6"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp4pB/3bp3/3p2q1/8/2N4P/PP3PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "stronger-bound",
+      "reflected": true,
+      "fen": "r3r1k1/pp3ppp/3bbq2/3p2Q1/3n4/2NB1N1P/PP3PP1/R4RK1 w - - 0 15",
+      "which": "reverse",
+      "minimum": 900,
+      "gain": null,
+      "visits": 9789,
+      "exhausted": false,
+      "leaves": [
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/1R3RK1 b - - 1 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "a1b1",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/3N4/2N4P/PP3PP1/1R3RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/2R2RK1 b - - 1 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "a1c1",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/3N4/2N4P/PP3PP1/2R2RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/3R1RK1 b - - 1 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "a1d1",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/3N4/2N4P/PP3PP1/3R1RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/4RRK1 b - - 1 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "a1e1",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3R1k1/pp1b1ppp/3b4/3p2q1/3N4/2NB3P/PP3PP1/5RK1 b - - 0 17",
+              "moveUci": "d7e8"
+            },
+            {
+              "fen": "r3b1k1/pp3ppB/3b4/3p2q1/3N4/2N4P/PP3PP1/5RK1 b - - 0 18",
+              "moveUci": "g8h7"
+            },
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/3N4/2N4P/PP3PP1/4RRK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/RR4K1 b - - 1 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "f1b1",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/3N4/2N4P/PP3PP1/RR4K1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/R1R3K1 b - - 1 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "f1c1",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/3N4/2N4P/PP3PP1/R1R3K1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/R2R2K1 b - - 1 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "f1d1",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/3N4/2N4P/PP3PP1/R2R2K1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/R3R1K1 b - - 1 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "f1e1",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3R1k1/pp1b1ppp/3b4/3p2q1/3N4/2NB3P/PP3PP1/R5K1 b - - 0 17",
+              "moveUci": "d7e8"
+            },
+            {
+              "fen": "r3b1k1/pp3ppB/3b4/3p2q1/3N4/2N4P/PP3PP1/R5K1 b - - 0 18",
+              "moveUci": "g8h7"
+            },
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/3N4/2N4P/PP3PP1/R3R1K1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB3P/PP3PP1/R4R1K b - - 1 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "g1h1",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/3N4/2N4P/PP3PP1/R4R1K b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/P1NB3P/1P3PP1/R4RK1 b - - 0 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "a2a3",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/3N4/P1N4P/1P3PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/P2N4/2NB3P/1P3PP1/R4RK1 b - - 0 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "a2a4",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/P2N4/2N4P/1P3PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/1PNB3P/P4PP1/R4RK1 b - - 0 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "b2b3",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/3N4/1PN4P/P4PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/1P1N4/2NB3P/P4PP1/R4RK1 b - - 0 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "b2b4",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/1P1N4/2N4P/P4PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB1P1P/PP4P1/R4RK1 b - - 0 16",
+          "moveUci": "g5e3",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "f2f3",
+            "g5e3"
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N1P2/2NB3P/PP4P1/R4RK1 b - - 0 16",
+          "moveUci": "d6f4",
+          "balance": 900,
+          "gain": 990,
+          "quiet": false,
+          "lineUci": [
+            "f2f4",
+            "d6f4"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp3ppB/4b3/3p2q1/3N1b2/2N4P/PP4P1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/2NB2PP/PP3P2/R4RK1 b - - 0 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "g2g3",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/3N4/2N3PP/PP3P2/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N2P1/2NB3P/PP3P2/R4RK1 b - - 0 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "g2g4",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/3N2P1/2N4P/PP3P2/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/3B3P/PP3PP1/RN3RK1 b - - 1 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "c3b1",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/3N4/7P/PP3PP1/RN3RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/3B3P/PP3PP1/R2N1RK1 b - - 1 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "c3d1",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/3N4/7P/PP3PP1/R2N1RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3N4/3B3P/PP2NPP1/R4RK1 b - - 1 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "c3e2",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/3N4/7P/PP2NPP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/N2N4/3B3P/PP3PP1/R4RK1 b - - 1 16",
+          "moveUci": "e6d7",
+          "balance": 900,
+          "gain": 900,
+          "quiet": true,
+          "lineUci": [
+            "c3a4",
+            "e6d7"
+          ],
+          "counterchecks": [
+            {
+              "fen": "r3r1k1/pp1b1ppB/3b4/3p2q1/N2N4/7P/PP3PP1/R4RK1 b - - 0 17",
+              "moveUci": "g8h7"
+            }
+          ]
+        },
+        {
+          "fen": "r3r1k1/pp3ppp/3bb3/3p2q1/3NN3/3B3P/PP3PP1/R4RK1 b - - 1 16",
+          "moveUci": "d5e4",
+          "balance": 900,
+          "gain": 1120,
+          "quiet": false,
+          "lineUci": [
+            "c3e4",
+            "d5e4"
+          ]
+        }
+      ]
+    }
+  ]
+}

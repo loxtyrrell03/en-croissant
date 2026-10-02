@@ -1,0 +1,12 @@
+{
+  "scope": "Six new, source-game-disjoint development nominations. These hypotheses were saved before this agent ran their classifier outputs. Source theme labels nominate positions, not correct answers. No population or holdout claim.",
+  "cases": [
+    { "id": "lichess:gMkbY", "hypothesis": "g6 directly attacks Qh5. The source continuation gives up material before collecting the queen; this is not a free whole queen. All replies remain unadjudicated." },
+    { "id": "lichess:q4FtX", "hypothesis": "Ra1 has no legal flights before Qxh6: Nb1 and Pa2 already block it. Qxh6 must not be credited with newly closing those flights. This does not rule out a different root tactic or the actual later Nxa1 payoff." },
+    { "id": "lichess:FSJC4", "hypothesis": "Ra3 directly attacks Qa6. Qa8+ permits Rxa8; Qxa3 permits Bxa3. All other defences and material debt require verification before a trap judgment." },
+    { "id": "lichess:2qDuS", "hypothesis": "Ng5 opens Re1-e8 but does not newly attack any enemy rook or queen. The new knight-plus-major-target clearance proof must not borrow a different mating story. Root preparation overall remains unadjudicated." },
+    { "id": "lichess:3LtAI", "hypothesis": "Castling is not the new knight-clearance mechanism. The source Qxe5 Re1 pin is an actual later branch, not itself proof of a root all-reply preparation." },
+    { "id": "lichess:9YfbQ", "hypothesis": "Rd2 is a quiet rook move, not the new knight-clearance mechanism. Black Pe2 blocks Rd2's check against Kf2. Source queen exchange and promotion-related continuations are not assumed forced." }
+  ],
+  "adversarialExtension": "For any newly accepted trap, inspect checking collection leaves for liability hidden until a quiet evasion; require an actual finite legal counterexample before calling this a false certificate."
+}
