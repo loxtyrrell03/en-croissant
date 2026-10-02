@@ -149,7 +149,10 @@ import {
   getMistakeReviewDailyBatchIndices,
   getMistakeReviewDailyProgress,
   getMistakeReviewAllowedMotifs,
+  getMistakeReviewAllowedTimeline,
   getMistakeReviewMissedMotifs,
+  getMistakeReviewMissedTimeline,
+  getStoredMistakeReviewMotifClassification,
   getMistakeReviewMotifBatchIndices,
   getMistakeReviewMotifCounts,
   getMistakeReviewMotifs,
@@ -899,6 +902,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                 const migratedMistake = migrated?.mistakeReview;
                 if (!migratedMistake || !position.mistakeReview) return position;
                 if (
+                  getStoredMistakeReviewMotifClassification(position.mistakeReview) &&
                   position.mistakeReview.motifClassifierVersion ===
                   migratedMistake.motifClassifierVersion
                 ) {
@@ -6548,12 +6552,12 @@ function MistakeReviewGameInfoPanel({
                   ? mistake.refutationSan
                   : (mistake.refutationUci ?? [])
               }
-              motifs={mistake.allowedTimeline ?? getMistakeReviewAllowedMotifs(position)}
+              motifs={getMistakeReviewAllowedTimeline(position)}
             />
             <TacticalLineExplanation
               title="Better move, move by move"
               moves={mistake.pvSan?.length ? mistake.pvSan : (mistake.pvUci ?? [])}
-              motifs={mistake.missedTimeline ?? getMistakeReviewMissedMotifs(position)}
+              motifs={getMistakeReviewMissedTimeline(position)}
             />
           </Stack>
         )}

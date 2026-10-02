@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "purpose": "Current-proof provenance for saved motif readers, timelines, summaries and practice; lifecycle contracts, not classifier accuracy.",
+  "baseCommit": "52ea8975",
+  "testedMotifVersion": "site-55.adapter-171",
+  "historicalEvidence": {
+    "commit": "a31f951318e98c3d09ffcd8260da1e4d57b335da",
+    "version": "site-55.adapter-164",
+    "method": "A read-only in-memory loader ran the historical adapter and core at their original relative-import location. Both loader uses were asserted. Synthetic inputs were legally replayed; no owner deck was read.",
+    "outputSha256": "2d4fcc7af2c6597dbe87fb523e8affd5f70b3786eddaf4853687c9b6b1f373c9",
+    "discovery": {
+      "fen": "3r2k1/p4pp1/1p5p/2pq4/4R3/1P2PQ2/P5PP/6K1 w - - 0 24",
+      "bestLine": ["e4e8", "d8e8", "f3d5"], "played": "g1f1", "reply": "h6h5",
+      "before": "Raw stale readers show What you missed: Discovered Attack, high confidence, count 1 and a practice card; the actual timeline component repeats the obsolete proof and payoff. Current nature is already unknown.",
+      "fresh": "Current classification rejects the discovered-attack claim: no primary, no theme count, no theme practice route; nature stays unknown, not positional."
+    },
+    "retainedFork": {
+      "fen": "1k1q3r/pppp4/3N3N/8/2B5/8/5PPP/6K1 w - - 0 1",
+      "bestLine": ["d6f7", "d8e7", "f7h8"], "played": "h6f7", "reply": "d8e7",
+      "before": "Old readers say What you missed: Fork.",
+      "fresh": "Both moves create this fork; the neutral mechanism remains available, not a missed cause."
+    }
+  },
+  "pairedContracts": {
+    "file": "src/utils/tests/mistakeMotifProvenance.test.ts",
+    "frozenTestSha256": "d51ab59f879bc0e683012fd68ef8d46c3c53894bdeb434517948b360f3d09d5c",
+    "before": { "passed": 4, "failed": 13, "skipped": 0, "reportSha256": "a1634d3680693724312e85cbce1d18428e38dea3d3f0f65a14219601aafb9d16" },
+    "after": { "passed": 17, "failed": 0, "skipped": 0, "reportSha256": "e5531a7868275966b62a81328487f5ffe9cf71065b7bd4c200fc82090e1dcd9b" },
+    "method": "Identical frozen tests and current adapter171 dependencies. The before run overrides only the resolved mistakeReview.ts module with its saved pre-change bytes, asserts loader use and reports their hash. No nonexistent new helper is imported by the baseline. Production files and index were not replaced.",
+    "beforeReaderSha256": "b321936c24e9f2be16f8f30c1fab94b8090d06dbbf4519840a76013adc75b332"
+  },
+  "verification": {
+    "focusedSuites": ["mistakeMotifProvenance", "mistakeMotifProvenanceConsumers", "mistakeReview", "sharedReviewScorePerspective", "consumerThemeRelevance", "mistakeNatureProvenance"],
+    "passed": 113, "failed": 0, "skipped": 0,
+    "reportSha256": "d3939a3ac94edd386e706a6c31446cfda116fdcd76e2e1a666cbf1259199618c",
+    "newContracts": 26,
+    "types": "Whole-project tsgo --noEmit --incremental false passed",
+    "lint": "Six scoped files: zero errors and zero warnings",
+    "bulkBoundary": "1,100 stale records with throwing FEN/PV accessors produce no theme counts or practice entries without reading those fields."
+  },
+  "contract": [
+    "The existing exact motifClassifierVersion identifies the complete stored classification. No new persisted version or truth stamp is invented.",
+    "Both root arrays are required because every current classifier emits them. Optional timelines may be absent, falling back only to the same valid record's roots; an explicit empty timeline remains empty.",
+    "Stale, missing, malformed and future versions abstain. Malformed current arrays reject the entire record and become eligible for existing asynchronous migration.",
+    "The existing saved-card schema validates only motif arrays and version. No FEN, PV, engine evaluation or tactical proof is read during validation. Validation is cached by immutable metadata and its version/four array identities.",
+    "Root getters, summary counts, practice filters and both Workspace timelines share the gate. Workspace applies repaired same-version records instead of skipping them solely because their version strings match.",
+    "Failure or practice-time suspension of background migration cannot resurrect old labels. Successful migration restores genuine current proofs and neutral retained context while preserving SRS, notes and raw lines.",
+    "Abstention is not a positional-negative judgment. The nature classifier and tactical core are unchanged by this reader work."
+  ],
+  "sourceHashesAfter": {
+    "src/utils/mistakeReview.ts": "0364e7b5ef84e92eed9539b8b2b9e929ce33616057c84cd464fae74cc4734e6c",
+    "src/components/review/OpeningReviewWorkspace.tsx": "3b92907dcaf6d64ffab30d4dc672c83e46e953d421d7f3532ab7607ad6f3a09c",
+    "src/utils/tests/mistakeReview.test.ts": "5851524b42629e9cdcec9e82e8252567a05cf10de9ffac92855c98b78ba3d4c6",
+    "src/utils/tests/mistakeMotifProvenance.test.ts": "d51ab59f879bc0e683012fd68ef8d46c3c53894bdeb434517948b360f3d09d5c",
+    "src/utils/tests/mistakeMotifProvenanceConsumers.test.tsx": "ddd60cce829db7bb460965f51084ec26601577ccfc7141501c7b5f70a6499fdd",
+    "src/utils/tests/fixtures/staleMotifSnapshots.ts": "e4010791ab6a6e7de5eec014e72ef1602d22790ed0aef23177473aefc8a2d8e1"
+  },
+  "boundaries": [
+    "The current shared-export score repair was not changed; these readers protect all saved-card origins.",
+    "Cache invalidation follows the existing immutable metadata/array update contract; consumers must not mutate cached motif arrays in place.",
+    "No synchronous bulk reclassification, owner-store scan/write, service/native/browser operation, deployment, corpus download or generated build was performed for this scoped reader work.",
+    "The JSX tests render the actual shared timeline component in jsdom; they do not claim a full running Workspace or installed-device interaction. Workspace wiring is a narrow inspected import/call/merge patch.",
+    "Final milestone-wide build, generated-service and exact staged-core checks are separate. Pending checking-ray source work is preserved."
+  ]
+}

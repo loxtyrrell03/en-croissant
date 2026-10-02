@@ -11,7 +11,7 @@ import type {
     MistakeReviewThresholds,
 } from "@/bindings";
 import { commands } from "@/bindings";
-import { getStats, type Position } from "@/components/files/opening";
+import { getStats, positionSchema, type Position } from "@/components/files/opening";
 import {
     engineSettingsSchema,
     engineSettingsToOptions,
@@ -22,7 +22,7 @@ import {
     MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
 } from "@/utils/tacticalMotifs/mistakeReviewAdapter";
 import { classifyProvedMistakeNature } from "@/utils/tacticalMotifs/mistakeNature";
-import type { TacticalMotifEvidence, TacticalReplyCandidate } from "@/utils/tacticalMotifs/types";
+import type { MistakeReviewMotifClassification, TacticalMotifEvidence, TacticalReplyCandidate } from "@/utils/tacticalMotifs/types";
 import { tacticalReplyCandidatesSchema, tacticalGameHistorySchema } from "@/components/files/opening";
 import type { TacticalGameHistory } from "@/utils/tacticalMotifs/gameHistory";
 import { isSharedReviewPath } from "@/web/sharedReview";
@@ -1479,12 +1479,57 @@ export function getMistakeReviewMotifCounts(
     return counts;
 }
 
+const storedMotifClassificationSchema = positionSchema.shape.mistakeReview.unwrap().pick({
+    allowedMotifs: true, missedMotifs: true, allowedTimeline: true, missedTimeline: true,
+    motifClassifierVersion: true,
+}).required({ allowedMotifs: true, missedMotifs: true, motifClassifierVersion: true });
+type StoredMotifSnapshot = Pick<NonNullable<Position["mistakeReview"]>,
+    "allowedMotifs" | "missedMotifs" | "allowedTimeline" | "missedTimeline" | "motifClassifierVersion">;
+const storedMotifClassificationCache = new WeakMap<object, {
+    snapshot: StoredMotifSnapshot;
+    classification: MistakeReviewMotifClassification | null;
+}>();
+
+/** Read one current atomic record without inspecting lines or running proofs.
+ * Deck updates replace metadata/arrays; cache validation across summary and
+ * practice renders, invalidating when the version or any array changes.
+ * Both root arrays are emitted by current classifiers; timelines are optional.
+ */
+export function getStoredMistakeReviewMotifClassification(
+    metadata: Position["mistakeReview"] | null | undefined,
+): MistakeReviewMotifClassification | null {
+    if (!metadata || metadata.motifClassifierVersion !== MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION) return null;
+    const snapshot: StoredMotifSnapshot = {
+        allowedMotifs: metadata.allowedMotifs, missedMotifs: metadata.missedMotifs,
+        allowedTimeline: metadata.allowedTimeline, missedTimeline: metadata.missedTimeline,
+        motifClassifierVersion: metadata.motifClassifierVersion,
+    };
+    const cached = storedMotifClassificationCache.get(metadata);
+    if (cached && Object.keys(snapshot).every(key =>
+        snapshot[key as keyof StoredMotifSnapshot] === cached.snapshot[key as keyof StoredMotifSnapshot]))
+        return cached.classification;
+    const parsed = storedMotifClassificationSchema.safeParse(snapshot);
+    const classification = parsed.success ? parsed.data : null;
+    storedMotifClassificationCache.set(metadata, { snapshot, classification });
+    return classification;
+}
+
 export function getMistakeReviewAllowedMotifs(position: Position): TacticalMotifEvidence[] {
-    return position.mistakeReview?.allowedMotifs ?? [];
+    return getStoredMistakeReviewMotifClassification(position.mistakeReview)?.allowedMotifs ?? [];
 }
 
 export function getMistakeReviewMissedMotifs(position: Position): TacticalMotifEvidence[] {
-    return position.mistakeReview?.missedMotifs ?? [];
+    return getStoredMistakeReviewMotifClassification(position.mistakeReview)?.missedMotifs ?? [];
+}
+
+export function getMistakeReviewAllowedTimeline(position: Position): TacticalMotifEvidence[] {
+    const current = getStoredMistakeReviewMotifClassification(position.mistakeReview);
+    return current?.allowedTimeline ?? current?.allowedMotifs ?? [];
+}
+
+export function getMistakeReviewMissedTimeline(position: Position): TacticalMotifEvidence[] {
+    const current = getStoredMistakeReviewMotifClassification(position.mistakeReview);
+    return current?.missedTimeline ?? current?.missedMotifs ?? [];
 }
 
 export function getMistakeReviewMotifs(position: Position): TacticalMotifEvidence[] {
@@ -1576,9 +1621,7 @@ function shouldMigrateMistakeReviewNatureClassification(position: Position) {
 
 function shouldMigrateMistakeReviewMotifClassification(position: Position) {
     const metadata = position.mistakeReview;
-    return Boolean(
-        metadata && metadata.motifClassifierVersion !== MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
-    );
+    return Boolean(metadata && !getStoredMistakeReviewMotifClassification(metadata));
 }
 
 function getMistakeReviewMotifInput(position: Position) {

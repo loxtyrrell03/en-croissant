@@ -965,15 +965,16 @@ describe("mistake review helpers", () => {
                 ...position().mistakeReview!,
                 allowedMotifs: [evidence("deflection", "allowed")],
                 missedMotifs: [evidence("interference", "missed")],
-                motifClassifierVersion: "fixture",
+                motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
             },
         });
         const fresh = position({
             reviewKey: "motif-fresh",
             mistakeReview: {
                 ...position().mistakeReview!,
+                allowedMotifs: [],
                 missedMotifs: [evidence("deflection", "missed")],
-                motifClassifierVersion: "fixture",
+                motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
             },
         });
         const unclassified = position({ reviewKey: "motif-unclassified" });

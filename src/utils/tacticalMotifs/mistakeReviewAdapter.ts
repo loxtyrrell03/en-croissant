@@ -49,6 +49,7 @@ import {
 import { qualifyComparableCaptureChoice } from "./captureChoice";
 import { isTacticalObservation } from "./types";
 import { appendTacticalHistory, type TacticalGameHistory } from "./gameHistory";
+import { tacticalRepetitionBoundary } from "./repetitionHistory";
 import type {
     MistakeReviewMotifClassification,
     PositionTacticalMotifClassification,
@@ -143,7 +144,7 @@ const detectAllowedThemesDetailedWithOptions = detectAllowedThemesDetailed as un
     options: SiteAllowedThemeOptions,
 ) => SiteThemeDetail;
 
-const TACTICAL_MOTIF_ADAPTER_VERSION = 170;
+const TACTICAL_MOTIF_ADAPTER_VERSION = 171;
 const MOTIF_CACHE_LIMIT = 2500;
 const motifCache = new Map<string, MistakeReviewMotifClassification>();
 
@@ -968,12 +969,39 @@ function chooseMistakeReviewTacticalExplanation({
     };
 }
 
+/** A positive opponent claim refutes a forced WIN, not an independently
+ * proved draw or a non-forcing observation. A game already ended by fivefold
+ * has no subsequent lesson. Alternative roots require their own history test;
+ * a repeating supplied PV never refutes a different certified route. */
+export function filterRepetitionBoundaries(
+    fen: string, line: string[], history: TacticalGameHistory | null | undefined,
+    motifs: TacticalMotifEvidence[],
+): TacticalMotifEvidence[] {
+    if (!history || !motifs.length) return motifs;
+    const principal = tacticalRepetitionBoundary(fen, line[0], history);
+    return motifs.filter(motif => {
+        const alternate = motif.alternativeLine?.uci[0];
+        const sameRoot = motif.alternativeLine?.fen.trim().split(/\s+/).join(" ") === fen.trim().split(/\s+/).join(" ");
+        const boundary = sameRoot && alternate && alternate !== line[0]
+            ? tacticalRepetitionBoundary(fen, alternate, history) : principal;
+        if (!boundary) return true;
+        if (boundary.kind === "game-over") return false;
+        // Defensive Deflection also has value 0, but claims to REMOVE the
+        // opponent's drawing resource. An existing draw claim defeats it.
+        return isTacticalObservation(motif) || motif.id === "perpetualCheck" ||
+            motif.id === "drawingCapture" ||
+            (motif.id === "zugzwang" && motif.label === "Drawing Zugzwang");
+    });
+}
+
 export function classifyPositionTacticalMotifs(
     input: PositionTacticalMotifInput,
 ): PositionTacticalMotifClassification {
     const fen = String(input.fen ?? "").trim();
     const bestLine = cleanUciLine(input.pvUci);
     const bestMoveUci = bestLine[0] ?? null;
+    if (tacticalRepetitionBoundary(fen, bestMoveUci, input.tacticalHistory)?.kind === "game-over")
+        return { motifs: [], motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION };
     let detail: SiteThemeDetail | null = null;
 
     if (fen && bestMoveUci && hasTacticalStart(fen, bestLine)) {
@@ -992,7 +1020,7 @@ export function classifyPositionTacticalMotifs(
         }
     }
 
-    const motifs = filterCompensatedRootCaptures(
+    const auditedMotifs = filterCompensatedRootCaptures(
         fen,
         bestLine,
         auditTacticalMotifs(
@@ -1006,10 +1034,11 @@ export function classifyPositionTacticalMotifs(
         cleanUci(input.previousMoveUci),
         input.tacticalHistory,
     );
+    const motifs = filterRepetitionBoundaries(fen, bestLine, input.tacticalHistory, auditedMotifs);
     // A missing root certificate must not erase independently checked later
     // events. The timeline retains its quiet/terminal relevance boundaries;
     // none of its rows are promoted into a root lesson here.
-    const timeline = selectContinuationLessons(
+    const continuation = selectContinuationLessons(
         filterCompensatedRootCaptures(
             fen,
             bestLine,
@@ -1020,6 +1049,7 @@ export function classifyPositionTacticalMotifs(
         ),
         motifs,
     );
+    const timeline = filterRepetitionBoundaries(fen, bestLine, input.tacticalHistory, continuation);
     return {
         motifs: selectRootConnectedLessons(fen, bestLine, motifs, timeline),
         ...(motifs.length || timeline.length ? { timeline } : {}),
@@ -1507,6 +1537,8 @@ export function classifyMistakeReviewMotifs(
     const playedMoveUci = cleanUci(input.playedMoveUci);
     const bestLine = normalizeLine(bestMoveUci, input.pvUci);
     const refutationLine = cleanUciLine(input.refutationUci);
+    if (tacticalRepetitionBoundary(fen, bestMoveUci, input.tacticalHistory)?.kind === "game-over")
+        return { allowedMotifs: [], missedMotifs: [], motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION };
     const fenAfterPlayedMove = deriveFenAfterMove(fen, playedMoveUci);
     const playedTheBestMove = Boolean(
         fenAfterPlayedMove && fenAfterPlayedMove === deriveFenAfterMove(fen, bestMoveUci),
@@ -1595,6 +1627,9 @@ export function classifyMistakeReviewMotifs(
                 .map((m) => ({ ...m, source: "missed" as const })),
         motifClassifierVersion: MISTAKE_REVIEW_MOTIF_CLASSIFIER_VERSION,
     } satisfies MistakeReviewMotifClassification;
+    classification.missedMotifs = filterRepetitionBoundaries(fen, bestLine, input.tacticalHistory, classification.missedMotifs);
+    classification.allowedMotifs = filterRepetitionBoundaries(fenAfterPlayedMove ?? "", refutationLine,
+        appendTacticalHistory(input.tacticalHistory, playedMoveUci), classification.allowedMotifs);
 
     // A different sound defence is not a missed sacrifice. Require the actual
     // reply to demonstrate the same rook/queen's all-defence checking resource.
@@ -1805,7 +1840,8 @@ export function classifyMistakeReviewMotifs(
     const bothMovesMate = bestMoveUci && playedMoveUci &&
         replayTacticalLine(fen, [bestMoveUci])[0]?.after.isCheckmate() &&
         replayTacticalLine(fen, [playedMoveUci])[0]?.after.isCheckmate();
-    if (bothMovesMate || (playedMoveUci && compared.missedMotifs.some(m => m.ply === 1 &&
+    if (bothMovesMate || (playedMoveUci && !tacticalRepetitionBoundary(fen, playedMoveUci, input.tacticalHistory) &&
+        compared.missedMotifs.some(m => m.ply === 1 &&
         (/^mateIn\d+$/.test(m.id) || m.id === "mateThreat")) &&
         preservesVerifiedMate(replayTacticalLine(fen, [playedMoveUci, ...refutationLine])))) {
         // Winning by a different forced mate is not missing the win, even
@@ -1819,6 +1855,13 @@ export function classifyMistakeReviewMotifs(
         compared.allowedMotifs = [];
         compared.allowedTimeline = compared.allowedTimeline?.map(m => ({ ...m, relevance: "secondary" }));
     }
+    // Timeline and nominated alternative routes are produced after the first
+    // audit. Apply the same exact-root boundary to every public return path.
+    compared.missedMotifs = filterRepetitionBoundaries(fen, bestLine, input.tacticalHistory, compared.missedMotifs);
+    if (compared.missedTimeline) compared.missedTimeline = filterRepetitionBoundaries(fen, bestLine, input.tacticalHistory, compared.missedTimeline);
+    const allowedHistory = appendTacticalHistory(input.tacticalHistory, playedMoveUci);
+    compared.allowedMotifs = filterRepetitionBoundaries(fenAfterPlayedMove ?? "", refutationLine, allowedHistory, compared.allowedMotifs);
+    if (compared.allowedTimeline) compared.allowedTimeline = filterRepetitionBoundaries(fenAfterPlayedMove ?? "", refutationLine, allowedHistory, compared.allowedTimeline);
     if (!input.tablebaseEvidence) motifCache.set(key, compared);
     if (motifCache.size > MOTIF_CACHE_LIMIT) {
         const oldestKey = motifCache.keys().next().value;

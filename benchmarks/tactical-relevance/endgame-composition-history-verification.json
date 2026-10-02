@@ -1,0 +1,357 @@
+{
+  "schemaVersion": 1,
+  "scope": "Benchmark-only repetition-history proof boundary; no production integration or runtime accuracy credit",
+  "sourceHead": "52ea8975d6594d2d5e24a3df6a797571d1e7305c",
+  "verifiedOn": "2026-10-02",
+  "verification": {
+    "tests": 25,
+    "passed": 25,
+    "failed": 0,
+    "originalCompositionContracts": {
+      "passed": 52,
+      "total": 52
+    },
+    "focusedTypecheck": "passed",
+    "focusedLint": {
+      "warnings": 0,
+      "errors": 0
+    }
+  },
+  "limits": {
+    "plies": 512,
+    "operations": 8192
+  },
+  "provenance": {
+    "publicPuzzle": "https://lichess.org/training/DVs4F",
+    "publicGame": "https://lichess.org/fu4ZkxrA#99",
+    "originalRecordFile": "dvs4f-zugzwang-evidence.json",
+    "originalRecordSha256": "132b20dcf580ea04190acd6100b2b608c74c80187524b355c031a0f7b9c23842",
+    "exactRecords": 13,
+    "newProviderCalls": 0,
+    "historyNature": "Synthetic legal histories around public boards, not the original game's claimed history",
+    "kpk": "Synthetic three-piece contrasts using the pre-existing local KPK solver only",
+    "rules": "https://handbook.fide.com/chapter/E012023"
+  },
+  "supportedSubset": [
+    "Exact independently supplied legal history reaches every root FEN field",
+    "Absence requires a complete reversible suffix anchored at clock0 or established by a replayed pawn move/capture",
+    "Every actual-tree defender node checked for current or announced threefold before a leaf reset; automatic fivefold checked for either side",
+    "Winning KPK/tablebase leaf accepted only at fresh verified pawn/capture reset; terminal geometry still independently checked"
+  ],
+  "remainingUnknown": [
+    "Missing earlier reversible history cannot prove claim absence",
+    "Inherited-history exact winning leaf requires additional all-reply history-aware strategy, not FEN-only WDL",
+    "Budget exhaustion is unknown",
+    "Position-only DVs4F eight-piece root remains unsupported in runtime"
+  ],
+  "trust": "Caller-owned reached history and semantically validated registry are separately bound; SHA256 is substitution detection, not provenance authentication",
+  "rows": [
+    {
+      "case": "fresh",
+      "reflected": false,
+      "rootFen": "8/8/k2p4/pp1P4/P2K4/1P6/8/8 b - - 1 50",
+      "moveUci": "a6b6",
+      "history": {
+        "fen": "8/8/k2p4/pp1P4/P7/1PK5/8/8 w - - 0 50",
+        "moves": [
+          "c3d4"
+        ]
+      },
+      "positionOnlyAccepted": true,
+      "historyAware": {
+        "status": "verified",
+        "operations": 2277
+      }
+    },
+    {
+      "case": "fresh",
+      "reflected": true,
+      "rootFen": "8/8/1p6/p2k4/PP1p4/K2P4/8/8 w - - 1 51",
+      "moveUci": "a3b3",
+      "history": {
+        "fen": "8/8/1pk5/p7/PP1p4/K2P4/8/8 b - - 0 50",
+        "moves": [
+          "c6d5"
+        ]
+      },
+      "positionOnlyAccepted": true,
+      "historyAware": {
+        "status": "verified",
+        "operations": 2277
+      }
+    },
+    {
+      "case": "current",
+      "reflected": false,
+      "rootFen": "8/8/k2p4/pp1P4/P2K4/1P6/8/8 b - - 8 54",
+      "moveUci": "a6b6",
+      "history": {
+        "fen": "8/8/k2p4/pp1P4/P2K4/1P6/8/8 b - - 0 50",
+        "moves": [
+          "a6b6",
+          "d4c3",
+          "b6a6",
+          "c3d4",
+          "a6b6",
+          "d4c3",
+          "b6a6",
+          "c3d4"
+        ]
+      },
+      "positionOnlyAccepted": true,
+      "historyAware": {
+        "status": "refuted",
+        "reason": "Defender current threefold claim",
+        "operations": 2193
+      }
+    },
+    {
+      "case": "current",
+      "reflected": true,
+      "rootFen": "8/8/1p6/p2k4/PP1p4/K2P4/8/8 w - - 8 54",
+      "moveUci": "a3b3",
+      "history": {
+        "fen": "8/8/1p6/p2k4/PP1p4/K2P4/8/8 w - - 0 50",
+        "moves": [
+          "a3b3",
+          "d5c6",
+          "b3a3",
+          "c6d5",
+          "a3b3",
+          "d5c6",
+          "b3a3",
+          "c6d5"
+        ]
+      },
+      "positionOnlyAccepted": true,
+      "historyAware": {
+        "status": "refuted",
+        "reason": "Defender current threefold claim",
+        "operations": 2193
+      }
+    },
+    {
+      "case": "announced",
+      "reflected": false,
+      "rootFen": "8/8/k2p4/pp1P4/P2K4/1P6/8/8 b - - 6 53",
+      "moveUci": "a6b6",
+      "history": {
+        "fen": "8/8/1k1p4/pp1P4/P7/1PK5/8/8 b - - 0 50",
+        "moves": [
+          "b6a6",
+          "c3d4",
+          "a6b6",
+          "d4c3",
+          "b6a6",
+          "c3d4"
+        ]
+      },
+      "positionOnlyAccepted": true,
+      "historyAware": {
+        "status": "refuted",
+        "reason": "Defender announced threefold claim: d4c3",
+        "operations": 2191
+      }
+    },
+    {
+      "case": "announced",
+      "reflected": true,
+      "rootFen": "8/8/1p6/p2k4/PP1p4/K2P4/8/8 w - - 6 53",
+      "moveUci": "a3b3",
+      "history": {
+        "fen": "8/8/1pk5/p7/PP1p4/1K1P4/8/8 w - - 0 50",
+        "moves": [
+          "b3a3",
+          "c6d5",
+          "a3b3",
+          "d5c6",
+          "b3a3",
+          "c6d5"
+        ]
+      },
+      "positionOnlyAccepted": true,
+      "historyAware": {
+        "status": "refuted",
+        "reason": "Defender announced threefold claim: d5c6",
+        "operations": 2191
+      }
+    },
+    {
+      "case": "optional",
+      "reflected": false,
+      "rootFen": "8/8/k2p4/pp1P4/P2K4/1P6/8/8 b - - 8 54",
+      "moveUci": "a6b6",
+      "history": {
+        "fen": "8/8/k2p4/pp1P4/P2K4/1P6/8/8 b - - 0 50",
+        "moves": [
+          "a6a7",
+          "d4e4",
+          "a7a6",
+          "e4d4",
+          "a6a7",
+          "d4e4",
+          "a7a6",
+          "e4d4"
+        ]
+      },
+      "positionOnlyAccepted": true,
+      "historyAware": {
+        "status": "verified",
+        "operations": 2284
+      }
+    },
+    {
+      "case": "optional",
+      "reflected": true,
+      "rootFen": "8/8/1p6/p2k4/PP1p4/K2P4/8/8 w - - 8 54",
+      "moveUci": "a3b3",
+      "history": {
+        "fen": "8/8/1p6/p2k4/PP1p4/K2P4/8/8 w - - 0 50",
+        "moves": [
+          "a3a2",
+          "d5e5",
+          "a2a3",
+          "e5d5",
+          "a3a2",
+          "d5e5",
+          "a2a3",
+          "e5d5"
+        ]
+      },
+      "positionOnlyAccepted": true,
+      "historyAware": {
+        "status": "verified",
+        "operations": 2284
+      }
+    },
+    {
+      "case": "automatic",
+      "reflected": false,
+      "rootFen": "8/8/k2p4/pp1P4/P2K4/1P6/8/8 b - - 16 58",
+      "moveUci": "a6b6",
+      "history": {
+        "fen": "8/8/k2p4/pp1P4/P2K4/1P6/8/8 b - - 0 50",
+        "moves": [
+          "a6a7",
+          "d4e4",
+          "a7a6",
+          "e4d4",
+          "a6a7",
+          "d4e4",
+          "a7a6",
+          "e4d4",
+          "a6a7",
+          "d4e4",
+          "a7a6",
+          "e4d4",
+          "a6a7",
+          "d4e4",
+          "a7a6",
+          "e4d4"
+        ]
+      },
+      "positionOnlyAccepted": true,
+      "historyAware": {
+        "status": "refuted",
+        "reason": "Game already ended before root move",
+        "operations": 2194
+      }
+    },
+    {
+      "case": "automatic",
+      "reflected": true,
+      "rootFen": "8/8/1p6/p2k4/PP1p4/K2P4/8/8 w - - 16 58",
+      "moveUci": "a3b3",
+      "history": {
+        "fen": "8/8/1p6/p2k4/PP1p4/K2P4/8/8 w - - 0 50",
+        "moves": [
+          "a3a2",
+          "d5e5",
+          "a2a3",
+          "e5d5",
+          "a3a2",
+          "d5e5",
+          "a2a3",
+          "e5d5",
+          "a3a2",
+          "d5e5",
+          "a2a3",
+          "e5d5",
+          "a3a2",
+          "d5e5",
+          "a2a3",
+          "e5d5"
+        ]
+      },
+      "positionOnlyAccepted": true,
+      "historyAware": {
+        "status": "refuted",
+        "reason": "Game already ended before root move",
+        "operations": 2194
+      }
+    },
+    {
+      "case": "descendant-kpk-claim",
+      "rootFen": "8/8/8/5k2/8/4K3/5P2/8 w - - 5 72",
+      "moveUci": "e3f3",
+      "history": {
+        "fen": "8/8/8/4k3/8/4K3/5P2/8 b - - 0 69",
+        "moves": [
+          "e5d5",
+          "e3d3",
+          "d5e5",
+          "d3e3",
+          "e5f5"
+        ]
+      },
+      "positionOnlyAccepted": true,
+      "rootHasClaim": false,
+      "historyAware": {
+        "status": "refuted",
+        "reason": "Defender current threefold claim",
+        "operations": 77
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "benchmarks/tactical-relevance/endgame-composition-history.ts",
+      "sha256": "9db0329b6fab546c89c89f95c723ade8daaf0742edc2cd3129221a361fe7ead7"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/endgame-composition-history.test.ts",
+      "sha256": "0ae0a89bc50bc5a5cc97040ddbcad0ba43c3a2a019ee013a338a767756a6b479"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/endgame-composition-history.vitest.ts",
+      "sha256": "6b23c8712daba8a87603d817a0c70e5fc83bddaa6956253ecf1dae64b6ef248f"
+    }
+  ],
+  "passingContracts": [
+    "fresh supported capture-leaf proof remains verified, reflected=false",
+    "current defender threefold refutes the history-blind certificate before capture reset, reflected=false",
+    "announced defender threefold is counted before the legal move, reflected=false",
+    "attacker may decline their optional current claim, reflected=false",
+    "fivefold is automatic even when the attacker wants to continue, reflected=false",
+    "partial history can witness a claim but cannot prove its absence, reflected=false",
+    "an inherited-history KPK win stays unknown even with no immediate claim, reflected=false",
+    "a resetting pawn move cannot revive a game already ended by fivefold, reflected=false",
+    "fresh supported capture-leaf proof remains verified, reflected=true",
+    "current defender threefold refutes the history-blind certificate before capture reset, reflected=true",
+    "announced defender threefold is counted before the legal move, reflected=true",
+    "attacker may decline their optional current claim, reflected=true",
+    "fivefold is automatic even when the attacker wants to continue, reflected=true",
+    "partial history can witness a claim but cannot prove its absence, reflected=true",
+    "an inherited-history KPK win stays unknown even with no immediate claim, reflected=true",
+    "a resetting pawn move cannot revive a game already ended by fivefold, reflected=true",
+    "a claim deeper in an otherwise valid exact winning tree is checked before its leaf",
+    "equal root FENs reached through different legal histories cannot exchange bindings",
+    "a replayed pawn move establishes a fresh suffix even from an incomplete origin",
+    "illegal continuation beyond automatic game end cannot be hidden in the history",
+    "a zero-clock origin need not fabricate missing history but a nonzero one remains incomplete",
+    "checkmate retains priority over a move-count draw",
+    "repetition keys include castling rights and legally available en passant only",
+    "missing, malformed, mismatched and overlong histories do not receive proof credit",
+    "binding tampering, changed registries and exhausted budgets fail closed"
+  ]
+}
