@@ -83,7 +83,7 @@ for (const reflected of [false, true]) for (const row of cases) test(
       assert.equal(card.fen, fen);
       assert.deepEqual(card.tacticalHistory, { fen: start, moves });
       const verify = metadata => {
-        assert.equal(metadata.motifClassifierVersion, "site-55.adapter-175");
+        assert.equal(metadata.motifClassifierVersion, "site-55.adapter-176");
         const mates = metadata.missedMotifs.filter(m => /^mateIn\d+$/.test(m.id));
         if (row.expectedMate) assert.equal(mates[0]?.id, row.expectedMate);
         else {

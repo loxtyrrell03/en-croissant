@@ -1,0 +1,1903 @@
+{
+  "schemaVersion": 1,
+  "sourceSha256": "c80356923da60cce5b48b37046a878290f36997862f921b944015a3cf69ccc88",
+  "seed": "rare-mechanism-precision-2026-10-02-v1",
+  "themes": [
+    "interference",
+    "deflection",
+    "attraction"
+  ],
+  "perTheme": 2,
+  "sourceFixture": "chessmistaketrainer/benchmarks/tactical-classifier/lichess-2026-08-02-fixture-v1.jsonl",
+  "baselineCommit": "9fad2cd685d88d10e962bd80384eb9aaf117072e",
+  "selection": "First SHA256(seed:id)-ordered eligible development rows per ordered stratum; two each with distinct source games. No classifier, engine, chess-quality or result filter. No replacements after observations.",
+  "scope": "New relative to recorded public review; already-used development source fixture, not an unseen holdout or population accuracy sample. Source labels nominate hypotheses, not adjudicated truth.",
+  "exclusionFiles": [
+    {
+      "path": "benchmarks/tactical-relevance/README.md",
+      "sha256": "1706bda2498cb6a630f27b0aa17a0a22a99a205e58757c69495472e65e1f76e6"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/accuracy-boundaries-review.md",
+      "sha256": "a76dabba06031400dfbf65a25f7c4733353837fa4f31861eb2c341cedc00ce84"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/accuracy-boundaries-verification.json",
+      "sha256": "74d3f53af7132817c5cbb24669137ebfb056e67577407bd7b580aa226481147e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/advanced-pawn-history-review.md",
+      "sha256": "9c20dd97e66b85d66a810b36bb70fe1a3934c25e1e180ed77e93a2691f183c67"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/advanced-pawn-recall-audit.md",
+      "sha256": "dd825eafe98991d891ee488bdea8228155a4a986f2509c9a43ca6535b3ef4c16"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/allied-retention-review.md",
+      "sha256": "77c4e8fe975b1f82412d6a2b1236ac4c8ec11cdfc0eeb3aaa0bcaec24df313b7"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/alternative-capture-review.md",
+      "sha256": "8d70995d344b0ded8035c183d9aed7aee0e6bef5cdfb9cb1df5ce1f894502600"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/attraction-observation-review.md",
+      "sha256": "755422a3530ffec15e931e965fdc79ef317b2b16d2648010cdbb30d3a8f88dc5"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/black-context-development.json",
+      "sha256": "6dd361dbca712330d55e32d803641221237f7c35f2ab540c23b02f18c4d23a9f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/black-context-initial-judgement.json",
+      "sha256": "9763f05b6bf6757c7780ba2827f8c877b5cc300c9824831555c3fff48f5eac1f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/black-context-relevance-review.md",
+      "sha256": "d8931e6051e70485d47f3ef98409ce949e970c2c080334e807524cc95e6019d8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/black-context-stockfish-18.json",
+      "sha256": "18eb161e98d1aab7605d8066b47d0adf659f1ef5d9a4527f99d5ab04378a6880"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/branch-quiet-mate-alternatives-stockfish-18.json",
+      "sha256": "2364edb5875d16738c039d35a26d9105d5da15023bb044e949d7eeb912808ceb"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/branch-quiet-mate-recall-review.md",
+      "sha256": "c42d74350d4dc40bb6de0c91372e2f066314f7bd487f67fc07b0ecd4110558fb"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/branch-quiet-mate-stockfish-18.json",
+      "sha256": "b454decf4278cb197e4c94fdf327c84417eefdd3fddef9f2d266c0f9a8d02aaa"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/broader-game-context.json",
+      "sha256": "52271abd3b34e4152d14533560c885d59e254c8a8a008b443555d4d0dbc9a261"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/broader-game-initial-judgement.json",
+      "sha256": "f4eeaa20aa2f112fe422fd3d7a4417b5610ccb2e76d2367e035f0975f9b4dde7"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/broader-game-relevance-review.md",
+      "sha256": "0594f59f2366ecaeecb5feda04d8cb2c9b3fdd1db4c4524b175791016718f357"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/broader-game-stockfish-18.json",
+      "sha256": "09986c23f8511ded2f9568b4fe00359d6500c7c7de3707fde00f2b51560de61a"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capture-acceptance-stockfish-18.json",
+      "sha256": "2594c0f53564ad0dc92deda72e859380d64279b7bbc1cbb5e9f6ecb4f75693e8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capture-attraction-recall-audit.md",
+      "sha256": "e055ad3277d79d3573a18540e7cd78444c450ab5801414456d97941d81e87937"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capture-choice-relevance-review.md",
+      "sha256": "6211aa53c97db51d2475fbc84f232e4c3937f5a29a06dc88664415665b0ae35a"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capture-choice-stockfish-18.json",
+      "sha256": "9f5f81056581ef0bbb7b763a80c941826e2c592835b5ad39e723f7f83974a14b"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capture-exchange-retention-review.md",
+      "sha256": "badb013682ab03531eef210f0228451d5c221c47c65c60f9f36f3389e0f5460e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capture-exchange-stockfish-18.json",
+      "sha256": "a0b836a698aeaa4b41431b229330a36bbe523de6c68c3637199f533565cc1102"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capture-history-judgement-review.md",
+      "sha256": "a305e16eb503e8fbf4c5b4111994fc63e9d971f240b9775509a3bec2e23ebe67"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capture-liability-review.md",
+      "sha256": "0c8113831d8b7bc1e45612c5b4bf03d4d4a5da16cfb9a8a34ef6c0b97c6ed190"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capture-liability-stockfish-18.json",
+      "sha256": "253659887389da1a105bdef904954c703ef4b15d09f8230ca012d6065b0801a5"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capture-mate-recall-review.md",
+      "sha256": "e5ee48b6bbff0704241511c8b8ab4f3567b519fe3086e7d5daa10eda8975340c"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capture-mating-guard-review.md",
+      "sha256": "4df2b5e387995c163bddf6ec7c68e722d487130b798f652ac65d437a964234eb"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capture-mating-guard-stockfish-18.json",
+      "sha256": "e4366dc40dd5d0e8812b4416f7b5b32af69660139cc32eaf9879b9ed682aad7f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capturing-guard-recall-review.md",
+      "sha256": "0a754068f4b4e4ee119e7f8ccb9c2127b143ebcb3191228cd82837c982efeb5d"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capturing-guard-stockfish-18.json",
+      "sha256": "08388c9e7cafee487d6d076f47b3c6c4487053797cec84537c9bd7fb96077ead"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capturing-mating-attack-review.md",
+      "sha256": "9bf8ccb3e57a37462be7333844220d6e09880fa660e456154870a65161fcdc9d"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capturing-mixed-fork-review.md",
+      "sha256": "fc2c94ae63cc8d08af2f5592a6d48de0e5c397e8a4edc7cc9612811e0c3abc29"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/capturing-mixed-fork-stockfish-18.json",
+      "sha256": "8e3f8423f1d4ff99a09fce45ec0d11179df97f47585242a6aa8c1d7266535b59"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/castling-context-development.json",
+      "sha256": "1fc9d7e62da9458fc56ba786ab6ad9775c3b673f5e731d1fe633d236ed422a06"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/castling-initial-judgement.md",
+      "sha256": "85a53e01d542c0a9148c0ea8d0a41bff06504e483932e294f9151e89caa9f00c"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/castling-relevance-review.md",
+      "sha256": "1d353d631aba8841c52736354a6f32b161f333698be0bb261255fa606c3a92f8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/castling-stockfish-18.json",
+      "sha256": "85ea021d37ba1c7f5b81ba88de72930ef24b18475b7d8a66d783bde3c9b37702"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/causal-outcome-review.md",
+      "sha256": "8a765bec61ecabe50113b05331988c5aec5ea08a4f6c4b2ee435a5f758a1679e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/causal-outcome-verification.json",
+      "sha256": "d5289aa9c7871ac701664da27053cc8f82e22a84b24a481b99d7ca0d14488965"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/causal-stockfish-18.json",
+      "sha256": "d4f3c0f845cfc22574e9d5e462910328e0bd53660399f90f7ac8f93c8f249490"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-allied-retention-stockfish-18.json",
+      "sha256": "9b625f1e96074286e5f9f6bdea017f1ab4fb9bfe6a352286a6b9295efdbfb995"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-attacker-escape-stockfish-18.json",
+      "sha256": "7dc2c30f1dfe8f930fc1fab6bb6d8c3c681ec5b563ef4a5c8262d81c3cdb483f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-combination-recall-review.md",
+      "sha256": "7db64821fe83780ee3a8038985a7f66f4d71a2545669a3634af017c401d4e975"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-combination-stockfish-18.json",
+      "sha256": "f53b2a850406c8f8acdb9f417197942941a66e8e6ef3764283600a91ee2e4e3a"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-entry-preparation-adjudication.json",
+      "sha256": "959a04182959507be6544a6d5fbe71cd5f3fcf923c6e6e5c762074a02b10b3b8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-exchange-review.md",
+      "sha256": "1843d48d5299f5b6c57c5658368d29ea81d61cece66702af6329a0d96459246a"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-exchange-stockfish-18.json",
+      "sha256": "5a5452e06d68fa2d59a6d0b0f0ae9d392300e81966e3383987e146db62d49120"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-fork-defence-review.md",
+      "sha256": "58289be807496c54cf2f804afab2a4add63948826264fb682c373c0fc19c17b7"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-history-recall-review.md",
+      "sha256": "f5fd2d4299e270f1f00a5d77ee4a9f240d3d0bace503ae4390c699ec4ac65565"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-mate-development.json",
+      "sha256": "b3d9293192fb71f7540200463d4a01369f515699285bafba3cf7d06af9976db0"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-mate-stockfish-18.json",
+      "sha256": "5af270a18eb7b4f2fcc90224bc3cfdd7dceabdba6253de8e285210128f5fa890"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-opportunity-review.md",
+      "sha256": "6160da70638d0e70742ab10316f390746ec52b006f31e644602c0e89f9f8e6bb"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-pawn-development.json",
+      "sha256": "9acc1da94aa9e0d07132a7361f5735f14aca2764f11e42014bb7cb3ac117f10b"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-pawn-initial-judgement.json",
+      "sha256": "bcaa9294d40a68f40a5d7365a18d909c74370997b921a6e93bd1225e62cba3ea"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-pawn-king-flight-stockfish-18.json",
+      "sha256": "b93c057410de4f4c88a5aa9f3734bac906dd0454c165de89bf9981fc2cc4cb22"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-pawn-preparation-review.md",
+      "sha256": "eea446a25bc944c45c89f31fb4c0c693801531d6edfc824fd5da7a2bc79cd3b1"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-pawn-preparation-stockfish-18.json",
+      "sha256": "a34b5e0f6e03ac1010ce697a0cf98b9f77d2b7a3d8eb9f398231331b78d00fc3"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-pawn-recall-review.md",
+      "sha256": "55a9fcfdd813cf9427dae67bb3aae6291dc1f15bb70b5890218b1ff7b977e1cc"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-pawn-stockfish-18.json",
+      "sha256": "da642c6839d331f232719bdefe4f8a5c0ff9c55f2cef832b4241fca466f751c1"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-promotion-recall-audit.md",
+      "sha256": "6160f600c3038f73f53f8b3dbc0b2088c08033611e5fedd53b0c275f6fe66b79"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/checking-promotion-review.md",
+      "sha256": "ae5ab61ed8a35f654dc821fd3490b5beb1820ac8ede0409d9de6883d9897a280"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/clearance-cause-stockfish-18.json",
+      "sha256": "08b8bf245854edc659cde062c5af7b228a7ed4c06e65ae7e8fbaa74a5cd9b684"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/compensated-capture-review.md",
+      "sha256": "c47631a6362388945fc2162301eb3d2cb7f90bdc01987751ec85a62fcd5fe41e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/compound-special-adapter168.json",
+      "sha256": "ee8c43bc96a8b87fd7c3a8dc7929fa143338cbada671e03ab382c646ed08d851"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/connected-capture-review.md",
+      "sha256": "85b15dac49ca6304784dc60325f175a3afa3c800c9e72d76ceb2266d52991ec5"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/connected-interference-discovery-receipt.json",
+      "sha256": "3f800bb5c7a673df037487aa18e48230703570aec844b3f429760f774a0547a0"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/connected-interference-discovery-review.md",
+      "sha256": "7f10e4ad80a537c13ad9227b29498b8b0886b5fcecaa815409f8b03b25ef56b0"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/connected-pin-review.md",
+      "sha256": "6dd19882dca20177a6d1124f3b8ac346a17a87d844d4f38ee16b89c73a37b147"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/connected-pin-stockfish-18.json",
+      "sha256": "1fe26ae999f4aab6d59cdb6f3d219616346e7cbbf81db16b69299f470f00737c"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/continuation-history-adapter172.json",
+      "sha256": "078fe9762a8ad8d441460f08a883b1f5d8bb75f9c3128a10f537803a10038fdd"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/continuation-history-adapter173.json",
+      "sha256": "f1092485da2cd8bbc7327908214330d8a35c7521506bfcff3ab2ee8d5350e842"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/continuation-history-adjudication.json",
+      "sha256": "6edaf9e8c0c51029705a8ddbe592281e36ac4611de600db5226a75a465c61901"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/continuation-history.tsconfig.json",
+      "sha256": "8738961afc0d51a31f40fac39ec59813050ee377d5c880d95e1fd81d0e476bb8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/continuation-relevance-review.md",
+      "sha256": "42214f6dea066aec0ffa22ae327d8f6529b3511197e89eff847e72b9a28fdc39"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/continuation-relevance-verification.json",
+      "sha256": "c23bc2148fb01a8a2195834d44d1ad613b143332f7315b4367ca6aaae8544bb4"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/costly-pawn-recall-review.md",
+      "sha256": "9648f3e6eca18cfc73670bba2e25548b16569d42ee13a0acafdcb06d47355672"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/costly-pawn-stockfish-18.json",
+      "sha256": "8678a9b4c597c1bc3a8b16a7aba795a754cd24cb8fe468ad2dfd3c26939d8974"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/countercheck-capture-review.md",
+      "sha256": "00246c7ad5dede08134d9a62f4889bf0a6a4cd4528ee097be8e2734760dbfe2a"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/countercheck-capture-stockfish-18.json",
+      "sha256": "021ee79eae8363dc590c2aee43ce2c5eb21415b0d1c39dd6c8c7e55cd2ca1a68"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/counterplay-relevance-review.md",
+      "sha256": "47a5bbd5db5d901232759d747a780fc1e8b8c02b45679b97c4d59e1b788df0a6"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/cross-phase-adapter95-review.json",
+      "sha256": "d00b84466092fe6aa55339e28aa3cde7541652623b3f3030edd34cd5a552b074"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/cross-phase-adapter96-review.json",
+      "sha256": "9f5416b024ac364deb6e99051a3c3cb86558f2e90d7ac20630468afe3744bd3f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/cross-phase-development.json",
+      "sha256": "3cde13de16a60dfa86bc71e3d88f6aad81a8cc5b9c52c9922709d3f5bf250011"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/cross-phase-game-context.json",
+      "sha256": "b5c0573785763c8c334cec11f45423d0cf81c97cdfa00bab0c7263af63024d49"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/cross-phase-initial-judgement.json",
+      "sha256": "ddf1c3b24d32cc856378b12630b26c254db778c085fc5171126bc298d62ce715"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/cross-phase-relevance-review.md",
+      "sha256": "88eecb1a3727228a9ab56915c165de7c6e9c973ede64e6878bf6eed0aeb8944e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/cross-phase-stockfish-18.json",
+      "sha256": "852116c01f389e0af5d704ba24637bdc8c61bcefa9e35f8902655e7757879a05"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/cross-phase-tablebase-verified.json",
+      "sha256": "385a4e85c0b2ac1c475b895790ed77357b5596c66047d1d1f29bb846901ec8d9"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/defender-stockfish-18.json",
+      "sha256": "e09c81e711c42cfc2a8008363d33aca8129320ab47e46d844cfcb99f1036a091"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/defensible-mate-threat-review.md",
+      "sha256": "627c61083a3f71f487d3e005f8cc0f6176cbae30417e6476c315a74f4bbf1b2a"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/defensive-deflection-review.md",
+      "sha256": "307ef18a5a1d5a27073840b70c4cb21903be41094fccfaffc50111a34e24833a"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/defensive-deflection-stockfish-18.json",
+      "sha256": "08c27488c3280d7f99ad8280d2ac53ce370a48386e94fd04206b4e8adccf0c6b"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/defensive-interposition-adapter169.json",
+      "sha256": "e2370800d9996ad61267d3a8d34c4711a138b8c64b55104874e5a468bd0a96fc"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/deflection-outcome-paired.json",
+      "sha256": "2a9c5c3fc88437530bc6e8acbd469014b458c0c8019f6eb49bf129a5e75d2492"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/dev-worker-latency.json",
+      "sha256": "82ed9779a9f1e97d61e1bbee32305fa5846a30011fba1c7c44bff0337c813c12"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/direct-payoff-stockfish-18.json",
+      "sha256": "cb9ed15b73836b489c0c783e20c478d5defe85b7ea1b6466d4330f686dd5285b"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/direct-threat-adapter98-baseline.json",
+      "sha256": "883744b0c21e2059a46a5331255fe2eb4f73640bd4467130b9e40c7b920400b3"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/direct-threat-adapter99-results.json",
+      "sha256": "98e0877cfd72cb3de4ba7bf5823f1fc4f0e2a29dbb06e515385aacaf155aaaf1"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/direct-threat-control-stockfish-18.json",
+      "sha256": "f4e5b09b84a9a3f19267dad4facc46a70c606fe04af610246f1804ddc4123101"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/direct-threat-relevance-review.md",
+      "sha256": "12189e41f24e274aca346479da5aa422035f2e098705011a0482f5e4e04a24e3"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/discovered-capture-development.json",
+      "sha256": "8a1c6ea815309792b40f02feecad50d7a8b1f90b75ea4cb7d4f44b625a5cc30d"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/discovered-capture-review.md",
+      "sha256": "9b8a6c838fb305f5d6b002231b61b640d90f9ba43009853dfa6bf57e9ddf1ce2"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/discovered-capture-stockfish-18.json",
+      "sha256": "788ca41a4feb89d3ac07e4f24f1e3a73129d473e8068f1a5bfd9b75b03ce7ee8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/discovered-pin-priority-review.md",
+      "sha256": "07b2ace691ef65a6654b04dba2ae596883110fa747913e02220b7809f104666b"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/discovered-stockfish-18.json",
+      "sha256": "f13b149b646e33a5bb7736389b1849e086820e210193f56b3e3f1c7d5cd2bad9"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/discovery-defence-stockfish-18.json",
+      "sha256": "279dcf2a3e1781cc84e7895b4539273c5fb7b2047ac300681651882d4a254075"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/discovery-priority-stockfish-18.json",
+      "sha256": "9567fb2d3c996d59e07f7d2357fe6cc89b172222c172f5d1ad4fd18f3a6f9a03"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/discovery-recall-review.md",
+      "sha256": "1f3a458414d573bebe7458b86bacf78667d0e544ea455c8355ba5b830f62b7c8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/discovery-recapture-review.md",
+      "sha256": "ddcc8579412296ff290e550191343a16f54bb4fd152dc017bb15ae0df774e2c8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/discovery-severity-stockfish-18.json",
+      "sha256": "41226ca459d1b4a8c4bcb12ad634766a00e3541dd03cc687a139fbc26c8d1d06"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/double-threat-defence-stockfish-18.json",
+      "sha256": "2bd7785b069594ceaf2344ff420b98224944595e17ee380cb23c940fc9a0a731"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/drawing-capture-review.md",
+      "sha256": "e19713476e788c5c68c4127dcbd701111d65670f33af3338535be7c97c23448c"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/drawing-capture-tablebase-verified.json",
+      "sha256": "10b3ba35abfefa21a6a01f641121d4255117f2e1e674344ce32a2c58a1788733"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/drawing-zugzwang-review.md",
+      "sha256": "602c328165a1490a0fdb23ca190f774cfc2263d77496fc6d3a0755acaaacb56a"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/drawing-zugzwang-tablebase-development.json",
+      "sha256": "aac9e5ffac728e1bfc7e6b578b28808b7e0a3234633559496c9e3c99329b7da9"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/drawing-zugzwang-tablebase-verified.json",
+      "sha256": "5d52e21929b876f6c0cf14ef2544b8b5697d7d1e4f2e6cf262fef69540781108"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/dvs4f-zugzwang-evidence.json",
+      "sha256": "132b20dcf580ea04190acd6100b2b608c74c80187524b355c031a0f7b9c23842"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/dvs4f-zugzwang-review.md",
+      "sha256": "30c61df5053e00374646288975620f8e64f835615602140038e710f4f35978cf"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/dvs4f-zugzwang-verification.json",
+      "sha256": "d9599c72fb1ddec6953bb6f62009c1209c9919398cb9506d4805e81e77122c17"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/endgame-composition-history-review.md",
+      "sha256": "7be395c172f8def5440afcaf18e4e00277aa2d0566c87b3456b09d6e9b6cad94"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/endgame-composition-history-verification.json",
+      "sha256": "8c1f1dcda4be704905fbb633f0c25c385db44b2bfb6f07bc38dfae7837d0dedf"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/endgame-composition-review.md",
+      "sha256": "3c94d8a4e16a5aa5b3d381ba050cff43d09f3ab334e121f620a7d61292c073ea"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/endgame-composition-verification.json",
+      "sha256": "22a427d2bab9cb1fbb5c950f7a50a4dace53e6a766909b7adaad75c553239867"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/epyot-api-adapter174.json",
+      "sha256": "f72d75f16325b557e549147221e57abe859b730a2dbda14bb7492986863d2673"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/epyot-api-adapter175.json",
+      "sha256": "37c3cfa6179bb62241dbf3bba30fc02bc6689340522e9e4996c3d786d34aba1a"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/epyot-causal-adapter174-complete.json",
+      "sha256": "5efe7841b960339bfb3269b8711afd2873b7f0087236cb857828da25c4768d89"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/epyot-causal-adapter175.json",
+      "sha256": "9720a17626819d5fd43cf29fd88693a1061edec274dd8c0b4dbf8a8a6befd1db"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/epyot-causal-audit.tsconfig.json",
+      "sha256": "10572d73998d78a8f1180f456b6105a0eab622eae643ddc21793ca0068ed1a9e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/epyot-causal-hypotheses.json",
+      "sha256": "968d8135e31a41c16ce5a7b4aedabd26eef6653a938c7b434682018538a88a9e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/epyot-causal-review.md",
+      "sha256": "ed80d2a0917051928b73baf32e18a1003ec7175009831e55165a1dd408ee2fbe"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/epyot-causal-verification.json",
+      "sha256": "96309f2ed8aa0e4ff8c0bb0b4ba561999fde688a217b8ee4819112c6b09f7c7f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/epyot-independent-verification.json",
+      "sha256": "0b63f266f59ccbfd187562ce7d0830faa75d2d608371c98e6c39fb465ca4c1ec"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/epyot-skewer-preservation-adapter174.json",
+      "sha256": "6bba2ca3ec2d8286f96af0ea9896d452ccd5eb76f4a9e8424581a8d4059396ac"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/epyot-skewer-preservation-adapter175.json",
+      "sha256": "17eb7a59fb32423fe481af96f85819e12cde5e1b66642ff1216e212f398da999"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/exchange-defence-stockfish-18.json",
+      "sha256": "4523a781b86328c548a07afea5544ace9b869a2abe16a520522cfe776c0c5199"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/exchange-discovery-stockfish-18.json",
+      "sha256": "0e11de439dfd20c5cee9e932b4b7e59d1ebe84847465e382a5ef05d0de902385"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/expanded-development.json",
+      "sha256": "7243077239921da9f48984f1a7452bfce211d481d8829a369153b86e0e4614fd"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/expanded-judgement.json",
+      "sha256": "718ce6fdb083c38b38f1f03bf64d306a0d1fe6795bd9b0752a51dda649a529cf"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/expanded-review.md",
+      "sha256": "b2a870b3897991a7e8552a36d98640b1d96fcd21f17938dee105fdcd4d61ce56"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/expanded-stockfish-18.json",
+      "sha256": "21d87bb6a198ca37a001d49e0a9fc832f2a9dfed579b79ab224d2dfbe0c7ab95"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/fork-countercapture-review.md",
+      "sha256": "85f49ddd1709c5140b9750aac3b8f0e03d74c847d410d5f2c9e4bd8498aa24f9"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/fork-local-value-review.md",
+      "sha256": "03b3ecd8d1e06ea8861e906fc92d9120bb477721a094100d1988f773226948b4"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/fork-preparation-stockfish-18.json",
+      "sha256": "9d52514ac2f4a3992ce22ffeca61621d91abe8353f96acda6bd3d2b338b01292"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/fork-ray-clearance-review.md",
+      "sha256": "e9cb6dc380d08dca298ed0de0eb0f3aaccb983e65c1bfadfabd452cd87a80715"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/fork-ray-stockfish-18.json",
+      "sha256": "0ce99b629db4fa8468f753fd500bba902c60949cb808e241ac6d714a183b5b38"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/fork-repair-recall-stockfish-18.json",
+      "sha256": "28d1e2b7be4ddc55284db20af642ac17839687d9af678d7b146e3e407750d9f7"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/fork-repair-review.md",
+      "sha256": "9854862263a124cc611399d2637e6f8a764544e971a61acc4f4f4acb6ecabd15"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/fork-repair-stockfish-18.json",
+      "sha256": "22aa43965541b0fd1b55b381f154f7aeb9ce02a9b9a81433077e95bab8e7f6d1"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/fork-retention-review.md",
+      "sha256": "087fa26e881cbb0ca694dd8195574499d437b81b504500981a887e5a0fa768ae"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/fork-severity-stockfish-18.json",
+      "sha256": "13f6c9ef30e15cb353bc9c2addaa222ce396ccec4eab8542b32855e133bd97c1"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/frontier-composition-adjudication.md",
+      "sha256": "0aabafef6568b1a86758e2222a4611dc99ea0a7f2084eb3fa020e7d45cb38672"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/frontier-composition-review.md",
+      "sha256": "4dac7cb948342a3b6f63db53b9fc034513db9b0d5f9363a88a23065316edcb40"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/frontier-composition-verification.json",
+      "sha256": "b52c7188cda8c143575141553d946ee0ac42992748ff50af32327c53757ae62e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/history-aware-mate-adapter172.json",
+      "sha256": "b361b9c89e06e4519352c050c8b766c1ec15c8f87babe39d91f1ce535abcb77e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/history-provenance-review.md",
+      "sha256": "9c2b5d7454574a0d340a4d7bc9fb07e56544d586167265d4bfc514d07984afa0"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/history-provenance-verification.json",
+      "sha256": "5e07a6806cfd2fe0ef45181e6418fe32438a4d94ddfdec2b9f7551373e600e16"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/immediate-alternative-review.md",
+      "sha256": "d07c6acb163740ffe5cc60d4d40fcbaacb76006b0010130dc3f773a0aab21cce"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/immediate-promotion-review.md",
+      "sha256": "a7e15dc4666ba0ba303a68b9b30e471ad636fe8f6de63f72ca8577dcc7c544c1"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/independent-pawn-history-review.md",
+      "sha256": "e08e8b40e1b8e9a688babee3eb5e60aaddd0642d59bafebe97ee36215f08e680"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/independent-pawn-stockfish-18.json",
+      "sha256": "a3c96b8a14fd60f065dad58b40d3948f797657d5b462ade658b5baa7fe546d70"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/interference-relevance-review.md",
+      "sha256": "687420081d28cd0b1a7db263aaaf2d2e8878d6aca0dc5ba7e175e88b428b2e2b"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/interference-relevance-stockfish-18.json",
+      "sha256": "fd0cb7858c695ae5aadeafb0c42500751f9f94d63cbbce8d6413ee894f1169f5"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/interference-stockfish-18.json",
+      "sha256": "2128b6222e1e8551cacc1d21e9c4cf78265ecda5df5e0650c9ae28477a358b6e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/king-defender-removal-review.md",
+      "sha256": "be6a480a57ac83ab658eeb292a78abe22fce8154288f5fd10c84a6e4b0c54d8a"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/king-interference-stockfish-18.json",
+      "sha256": "4e0451361cb23d5f9cb5a6e03cedaca2865948121612b067a81a7e355e1ad8b8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/kpk-zugzwang-development.json",
+      "sha256": "976f7e9ef92559e527b561db6f939bb475600ea1c8cdb441503f30635a650032"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/kpk-zugzwang-review.md",
+      "sha256": "2baf925e8466f9a98d9f071bc5644640fcf7f0af5de177d2ea657d5b58d06a2b"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/kpk-zugzwang-stockfish-18.json",
+      "sha256": "708bcb188832755903f379d548bd34b882a78c78e6f3e45d46e6858176855828"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/lesson-priority-review.json",
+      "sha256": "8963a98ef0a79e8ad2b72e66fb079382bdf973124f0e523d6736a24db5f81c0e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/liability-capture-recall-review.md",
+      "sha256": "12f55f518ae6ee8ba8f9fd06668adbc4dfe87ac10675da36fc88fd067eb39041"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/live-engine-latency.json",
+      "sha256": "8af01af840198dfba354138118fb35b46fbbbad4501a416fbe08554791e53de8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/ltbye-intermediate-adapter172.json",
+      "sha256": "f3ac2c36db1d4a825770fbb4634365269aca7e37605089313e7a011ef47a545d"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/ltbye-intermediate-adapter174.json",
+      "sha256": "1154b8e78f8e71e8038b9c87f8a111064ecf84919fea0dc27c02075f39889fe7"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/ltbye-intermediate-audit.tsconfig.json",
+      "sha256": "c360171e4fb7091916f7b083ef5a9165b3206abf2f0ff9ba8ab0762e50cb0761"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/ltbye-intermediate-current.json",
+      "sha256": "b0717b96ca71812fdce9dd368e53472ba446aba7c3c9db730cf429315e721a31"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/ltbye-intermediate-review.md",
+      "sha256": "3a5cf4faa5ff8e1506cf27c3bd1fbb83f1a0f4df8038be1235253abb6528e5c7"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/ltbye-intermediate-verification.json",
+      "sha256": "4195e9b3391bb1c601d4fb40c1ac843f85fe0c24511218fd8725813f7fb7f224"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/material-stockfish-18.json",
+      "sha256": "8ba3c7d4b4e0c66202896646e2d16daa55adc306b535e030ae8db058123ad077"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/material-threat-draw-claim-after.json",
+      "sha256": "c301f44659ee372f2885caf7b4af4a3f1375b7661e222e1244eb5c442b533689"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/material-threat-draw-claim-before.json",
+      "sha256": "502217ee4b8951b6a099a478c5574f7415ea779e87d9d6bee0af6cf70b80b61f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/material-threat-draw-claim-review.md",
+      "sha256": "bfc1cdc073d4b8556b6100af37cb8b90228f925e07d9fd9e67964de97315c88a"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/mating-check-evasion-review.md",
+      "sha256": "3907eb7c2a16f79cbe8cc7f45e71ca9999bb9e619d8a39420b60e9a8604b1a60"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/mating-check-evasion-stockfish-18.json",
+      "sha256": "928c4107a31f2cd454185549927eb5e70a02d27b1e7fecda5d6defd320ebef4f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/mating-check-evasion-supplement-stockfish-18.json",
+      "sha256": "a65dede7d826acf0ffadd3324d113ea75fed56ce725fd2dcd91269a857b656c9"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/mating-clearance-review.md",
+      "sha256": "da7099b408f240a890587629f29a6e2a82fdc3f8b9bbad874e097f111656d174"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/mating-clearance-stockfish-18.json",
+      "sha256": "ba456a0ea26b8e6e8c40870a4ad0755439fb94d4b1feadc20e86b7fe01fc988e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/mating-entry-defence-review.md",
+      "sha256": "fe9a0c9802ff8cd80dff3bf4b7fdeba162f6c5e4bc959e22fc7ed2b9a1af21a2"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/mating-entry-defence-stockfish-18.json",
+      "sha256": "23ee7e835a815858fcb352a939fbc23f92a80b0d627bd57020e3d6a9b1b3c171"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/mating-interference-review.md",
+      "sha256": "3bb5e9e17ca678e134a696b63b7a199bb0dfd78c04f599bbd04e52d1c06ab4b2"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/mating-interference-stockfish-18.json",
+      "sha256": "389c46cd1f809924431d8a7b218bc935cfdae73058f25fbca3be75bb834b811e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/mating-mechanism-relevance-review.md",
+      "sha256": "813b8fc4376a6dfb211c537948a006f44299cd12c216b934400dc082f8fec1a7"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/mating-mechanism-stockfish-18.json",
+      "sha256": "5cbc08ac74ce184f2540a50bd1ba81d46d14dd7419bb26e5877513094502e495"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/missed-alternative-review.md",
+      "sha256": "daff22162efd3962009156601284f2222caa14388d799b40187e625e9ade7747"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/mistake-nature-review.md",
+      "sha256": "d929256ab20f3434894f0304fdb07251ab34d9a65ad93dd469dec0c516ebc641"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/mistake-nature-v4-review.json",
+      "sha256": "2aa52d09226b6b6189e3d674a30d31fa3fecc5662984ba82c836f057a8cc8b20"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/mixed-fork-cause-review.md",
+      "sha256": "384940639aa8180414c7e1e749fe614e7459b4b11ad56c5ccc58f71852d7d21d"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/mixed-fork-cause-stockfish-18.json",
+      "sha256": "1b88a11f5b081783f53860bd0c1d3548a71b3ea2f702237b3e32a5284cd48a36"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/motif-reader-provenance-receipt.json",
+      "sha256": "a37e8af69643a051708279d3e643d630c8e9145f7f2da24926d2693910eac203"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/motif-reader-provenance-review.md",
+      "sha256": "ea2a6a33caf8d6dbfa12df4f033ae6019a2ffcb4a6e0998def5ecf8b611a2cb5"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/nature-context-development.json",
+      "sha256": "b105ca50ba4f4cba450d7e82e9fb26d9f32036558ce76850cb80ef76fb920fd7"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/nature-context-initial-judgement.md",
+      "sha256": "a91f5f2dd302f83ed92d0f3ea0cd0648edbe5d6cf82c9c4072f4d31aba694adf"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/nature-context-stockfish-18.json",
+      "sha256": "b1e068cb7c83b97c932e0787116a947114cc384fc2499ffe5d010f30a7eee499"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/nature-countercheck-controls.json",
+      "sha256": "40652073ae6c9cfc0abea3265b0b329e6f11b2302806ac4c2c8640a60b0f3246"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/nature-countercheck-stockfish-18.json",
+      "sha256": "2b11a666748e64520f5f8f9a994a38087d7c380a802818be9730f05d545c3fcb"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/nature-provenance-consumer-receipt.json",
+      "sha256": "a51f0e8c4922c6a8f7658722c06cda88bd667280d3364bf525345d604cbeb7a6"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/opening-discovery-relevance-review.md",
+      "sha256": "860b54d0c419727eb90705e0a9e7af84411dee2645c98a6727003f1f95932187"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/opening-discovery-stockfish-18.json",
+      "sha256": "2302a993f14b14e3db1368f35e3d48f5df5618c4123a0ddc7f4d204a5b2164d9"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/ordinary-precision-v1-adapter174.json",
+      "sha256": "2aefd5fb5b6215b7e4c8dcccef7c21c8e6dfb6a577ec4d8f613667ff03ab8a90"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/ordinary-precision-v1-adjacent-selection.json",
+      "sha256": "9c8725e90fbcd1c6e9023c1770df0cfddbb831ef00aeb5644cd847519bcce0e7"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/ordinary-precision-v1-hypotheses.json",
+      "sha256": "7c387a6575e72f3031f5a672199557ff15c432f75381302f9c9f57f351d828f3"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/ordinary-precision-v1-independent.json",
+      "sha256": "fb34da658c8c0e434a7f1d1d0cdd3c2cfd82ae9409e1525d401084423bbdad54"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/ordinary-precision-v1-review.md",
+      "sha256": "1a657e0c53259c826da24396faac402c91206d8d2748f766f6b3c363a9f1cd11"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/ordinary-precision-v1-selection.json",
+      "sha256": "4ef8b2d1c656c0b9c149107cc8135c7aa1deaba308972e29523bdbc954f82082"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/ordinary-precision-v1-verification.json",
+      "sha256": "669c3b503cf4424067dc9e0bf8bbfb1e51b94b2ca6e801633b6d82c1a58dc8e4"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/pawn-exposure-review.md",
+      "sha256": "2b92d52914e8ef8d41834ab6e059ea0246407665e00ad1df80ad4cba4a7c15ae"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/pawn-followup-recall-review.md",
+      "sha256": "81e52373e70012dc047a6fc4c722e5dd597c00436696417ce23f3da5cd129afc"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/pawn-followup-stockfish-18.json",
+      "sha256": "81758c7396f4a3864e2356507e3c72f501fe7ca57a67e46491b0ad691d785436"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/perpetual-priority-review.md",
+      "sha256": "c947825405d82788e36296836509055de5cacce5315cda7e24bd830ff43c5760"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/perpetual-recall-review.md",
+      "sha256": "15a5fef1c0ad3fad7e0589647b1f3f322c5b8e4859018ff221d4b7ef40e5f619"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/persistent-capture-inventory-review.md",
+      "sha256": "48294d26e2b5474b30a7ca2a19123486d77b5c5c0ba5f1523c298f79f28697e1"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/persistent-pawn-recall-review.md",
+      "sha256": "ffdd92ac68499d07c4275d3ea14abc9e629228adbd4c9b8f895801a44beb278d"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/pin-preparation-stockfish-18.json",
+      "sha256": "2eebaae22775eefb3b19d009351ce62f64bfb3666d8e367f55095d301d8fca5d"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/preparation-safety-development.json",
+      "sha256": "d8ae3770cb02e7ed64984bf34a86392c8e9f7a81be08a9e597f39742633a9af5"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/preparation-safety-review.md",
+      "sha256": "2c3292bce58ef065fe1732b9b7883e9d257ceaa573c1cdf8d76204ad099c6fdc"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/preparation-safety-stockfish-18.json",
+      "sha256": "e80ee20ce087cd6cc58582bd799de73b0fff5e650622740c9e1abcb71097c41b"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/preventive-intermediate-review.md",
+      "sha256": "0a243067bca43788e84d7e7bcaffb0635dfa7a29a2610194389cd94e0710db4e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/promotion-check-retention-review.md",
+      "sha256": "dc2b2b0e44b80703258b0f1967b2e62205874ab5107f237e56663bec8b3f8d8b"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/promotion-counterplay-engine.json",
+      "sha256": "fb6f34c3914c3b7441ea09661b6e52f4821edd7d9ca071f64a23baabf881c25f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/promotion-counterplay-review.md",
+      "sha256": "2e1c4861369e7068915c0e29a3104f03000cf1c36dc3de1642e95fc8d2e296b8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/promotion-threat-review.md",
+      "sha256": "914f6594b75038255a3d4a295058171315bcaf118b8ad34be4b6ab9a1c24b3f9"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/promotion-threat-stockfish-18.json",
+      "sha256": "16a5f598aa31c6144b348f8d5fccd15389595f1dd43d027eb96c2fd4a8cd6893"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/proof-attribution-adapter165-before.json",
+      "sha256": "7d930c04e0e4660f11091fa39677f18214c480eb2f01c1c5fe96e3e361161c53"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/proof-attribution-adapter166-after.json",
+      "sha256": "e40c0c87a10f8e329c27cdd57c6f8b9dd270633523bb058f08d223e0e8909d70"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/proof-attribution-review.md",
+      "sha256": "a42f97bcc2c183a33bde98996a64fc8a29e625757d33d5f34f551840ecf2b273"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/proof-attribution-verification.json",
+      "sha256": "12e0d5cb9d727eac3b361f86414c2453fd22c019ef647da072ba085777e8ce3c"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/proof-boundaries-adapter167.json",
+      "sha256": "7aaeb9f3a7bf9ef9b7210c1f7b89437b30e420266bfee59b6acc76d2856801a0"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/proof-boundaries-review.md",
+      "sha256": "72ad0cc687b7326c0fe5c6e55bee31ee8beeb923e42998f2c8973989870d033f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/proof-boundaries-verification.json",
+      "sha256": "de7c5c3d38b866af8add2da148f0bb1b1ba36b9fb049b78e2bbda734b0ee641c"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/public-frontier-development.json",
+      "sha256": "464c0796d793159cf02e38306c46d517d4bdcdce77d5b68f73c8bcf027dbcdcb"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/public-frontier-review.md",
+      "sha256": "8831841bf647672a9f27eab3125a50d43eed03cabc288b8c555300f96ecf9621"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-capture-draw-review.md",
+      "sha256": "67fc127107a0dd24c7cebe51a31f0120649f659fa41b5b8246c2a9e084862080"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-capture-draw-verification.json",
+      "sha256": "a654d1b6f9a8c9b6e67c947fda3651daab98ac5c091525eb210c789db849b775"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-clearance-adapter173.json",
+      "sha256": "e27d872c36b017d1f3bbb26a2b05b72f0c417ccd27d0c6a14be5fda2b10e24ca"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-clearance-strategy.json",
+      "sha256": "abf71d853a834584f6251d30de212abe9d22ea5dd49bb0ec10171835f685fc57"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-game-context-development.json",
+      "sha256": "703f17ec2153f9459ca1b453755b3ff21572a13058683c738a00e2e1add3d059"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-game-context-initial-judgement.md",
+      "sha256": "0ac7bc2cd04dc9cc5424bb8c5f9f3f543667f322c942cad9f49de0592c30cbed"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-game-context-stockfish-18.json",
+      "sha256": "c63b6513f8203a7760f19f28c3a2ca32587f537e89e8b2ad5dc7b2daad009ccc"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-intermediate-adapter174.json",
+      "sha256": "bb0b14e0224bebf2cf2dd454b622525709bb0f762bca18b46d363de6beb569de"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-intermediate-api-adapter173.json",
+      "sha256": "91fa94961a85b8c039c97012b75bbdafa393e5fda0488482f379dddb7ae97591"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-intermediate-api-adapter174.json",
+      "sha256": "5adc0ef4d61d27062ad8205c0b6379144861a54e13040f7030a5fd604a39dfeb"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-intermediate-contrasts-adapter173-expanded.json",
+      "sha256": "617940593edcb1106f6bd49ff9c2c842c00d3782479d601d0198b3560908e141"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-intermediate-contrasts-adapter174.json",
+      "sha256": "2b4871cbb8891ea4a7eb5115a89be2c706b9b57ad60a65deaab50f1aa99481d8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-intermediate-development-adapter173.json",
+      "sha256": "3b51c4df916ccf0504dfac33d135a7dd13387d36ecd91e60df3f43881b0f4b59"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-intermediate-development-adapter174.json",
+      "sha256": "0182187386a66a9643341c4f2972f075d37e87fa78204e0eb1c3f7c4ef9eb00c"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-intermediate-development-hypotheses.json",
+      "sha256": "cd0063f7bca738763420ac39aa7c65fafa66595863e008063af72e7a1e257f10"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-intermediate-development-review.md",
+      "sha256": "992a7f57d3a24a2a64fa986507166cea454a25cd96f60d67d5d703868a64620d"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-intermediate-development-selection.json",
+      "sha256": "343af0f54471f2c679d11ea22c9017380443f31ecd8c4fc171482b84c6ea15cd"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-intermediate-development-verification.json",
+      "sha256": "f54261df7b26b3e59e8347e0487f60a65d0b2ad3fecc20ea185ae3385a56cd1f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-intermediate-development.tsconfig.json",
+      "sha256": "0c6fde1863a90a641d3754a2b13864192cff1798ae8a6f6c9411763de2233964"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-intermediate-independent-adapter174.json",
+      "sha256": "cd464841dfe2e5fa564b6443a5aba116e3ecc6ba404750998dd3e13ac75cd791"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-intermediate-initial174-accounting.json",
+      "sha256": "22462b565567fbb1266e35b4599ea0abd34ab0efa6f0e73d37b5a2b232e51bec"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-intermediate-proof-adapter174.json",
+      "sha256": "d55024a3b2fdd6e390f3b5129a90ae76e4addc4b3004168188e9171e6a4e3e96"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-intermediate-strategy.json",
+      "sha256": "b38d1707af8634bd814656d80a8fc94398c5276cbd5b6c611832ca86b5d9b759"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-mate-adapter103-baseline.json",
+      "sha256": "2df5bb5eefbe8f54a3be58811fefaa93945852ea0cb0f2dea17413b028f4119d"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-mate-controls-stockfish-18.json",
+      "sha256": "b2e507fabbc230fbb9223af9544d3111af57187812921c54305644111a6e935d"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-mate-development.json",
+      "sha256": "1971b47afe4b19b6c819188814d7bdce8896fb69a0242444594ab255b09b0c12"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-mate-initial-judgement.md",
+      "sha256": "132da8614bcb7841e2069a2515920f5d455963f085cd256925f481e9b13a9f9b"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-mate-relevance-review.md",
+      "sha256": "e5c4f72bb43ab3644bbfaab6f821dbd399671b3cee3baa66df38d0bd501726f5"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-mate-stockfish-18.json",
+      "sha256": "e20ad05aa2627be9c95d66c2377a110efdd24b12d36a5e3be3488866a5b7274e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-mating-attack-review.md",
+      "sha256": "6baa78bfa4d025633c2d4cbf5d8cf80fc25fb7fa0192b8f70ff99498a3f5f3b1"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-mating-attack-stockfish-18.json",
+      "sha256": "1dc684b73401e9ffe434f63231a1780591a1d93b3ee5e332bd63c6e5eb6df262"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-mating-finish-review.md",
+      "sha256": "33f51ae8fd4654f9ccb6c550fdfe9acb830daa2d2d8017489f7fcd66f386dfee"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-pin-recall-audit.md",
+      "sha256": "1488a3b6a7eb61993b6f8675ef9b6daf3d6516797ff0cb24602e1dbdb62521ef"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-root-mate-recall-review.md",
+      "sha256": "30128cc7fb01bfeb2748f2eb9dede88acbac77d45f69d391c38fc924e88a55bd"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-root-mate-stockfish-18.json",
+      "sha256": "be736e129ad8abf0f1edf1bd8b11d2726f87066b1f01336b2817365c9341e473"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-stockfish-18.json",
+      "sha256": "e4ec04a076d88b755a3af428f59eefd8d6e77ab39f6c7c96960d45aa621dc3d5"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-trap-adversarial-hypotheses.json",
+      "sha256": "694b690a920e3b1f3e7dd26676312070cf6a367495e58911b773376b8431182f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-trap-adversarial-review.md",
+      "sha256": "6279ede088a56a1e1427038f06395a1bac7bc0e7ce2ac5082dc6dfbbdb858472"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-trap-adversarial-selection.json",
+      "sha256": "839df3c00a2282f0a9dbff8439aeedbb535a0b1f71be9dfbf3852754ad4fadc9"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-trap-adversarial-verification.json",
+      "sha256": "44602b8835befcd8a5719b09063ada1fa31cd1abbf0c84ea4383743a02efb4ce"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-trap-followup-hypotheses.json",
+      "sha256": "6bfe594ecdda01c81e588f39372e06d86041ae522d0af1ba6b72a1d342d60029"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-adapter169.json",
+      "sha256": "85ad27dde9910d6d0c7da7c91eb9daed64d4d288c6b6712989e3e75428d0f37a"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-audit-v1.json",
+      "sha256": "a120756f8eb962ae6b48f188ff5ba4480c70dfc92b804872e42b25176d78e383"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-adapter171.json",
+      "sha256": "c692e21f90535767f7784550e420a933d9ec2204d70f3bcab1ed217e75508a61"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-adapter172-final.json",
+      "sha256": "bf05c26815cbdc8693bedb4d5e35f8f72cabeebba5341d7ef93879d69718bcc2"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-adapter172.json",
+      "sha256": "748d55c3c3b8797cc26b1e08adbdc592e21fbeab9b7314d620e962a4d478ecd8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-adapter173.json",
+      "sha256": "335b052ba12d565b9de7507ee82fbee6956426d5dd17b6207b9a117d3ebd5c86"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-adapter174.json",
+      "sha256": "f55464c0144fca0899f1f40de667f093dbe9be08e91cf7f01c9914bac5b34ae2"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-adapter175.json",
+      "sha256": "2aa21fa2100cfecb3ea64fa9e79cfd4cef9574eb3679456e6dfe856fb341f0c1"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-hypotheses.json",
+      "sha256": "bfaff5a0db65e6cbb1a33a4bdbf320455d97ad07a698a4981403fd948d9b8131"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-inputs.json",
+      "sha256": "1e9b386c37d03eb28c1a6044d8da4f4bfe2dbd926b916c91e33ebb6ed2e58d5f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-review.md",
+      "sha256": "01bb80b6af58bfc370926671ada4e6c84e699efbe0b805873590d9147e5b5e91"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-selection.json",
+      "sha256": "62224616d8bda068e96b83d8c5fed6ad4668c5b263b21277fc8335dd9fc8512b"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-stockfish16.json",
+      "sha256": "42e351c69dc01ee399a476bba4f8afad55234f38a3d23167659759993f821938"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2-verification.json",
+      "sha256": "25a1a4ca2242fe23c77a5e27b173da9693ea18d5d0e6e5e02033038baeea2e05"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-causal-cohort-v2.tsconfig.json",
+      "sha256": "424282a6ce509bb414d24d3e9b2739a937d4d3d6cf86735522b3367626a93cc8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-game-context-adapter169.json",
+      "sha256": "218b8090a061fa29f2f35903897f1b2fabc170d9937393313b1e5bc070d5ed62"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-game-context-hypotheses.json",
+      "sha256": "00e3dcc6a82824f8357597e2aa48418da316f0db35fdff46c68a6c7f11426f3e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-game-context-review.md",
+      "sha256": "07a338cf2b8adec5cfb62953020c9ee83375df8f0890924904d4380703bcdde0"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-game-context-v1.json",
+      "sha256": "06dedb69141267175fe8459bc56e3441cd29a7f5c0c9547af70481adfcbe0f7f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-preparation-review.md",
+      "sha256": "625126ad433d3fabbeee43ea8cf9fc364e0d1cd8d92a91387bb97aea2197ce88"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-preparation-verification.json",
+      "sha256": "404e326bdd405581175a1f075253b6256768796afd27b3ef64cc483e9ff8a8c8"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-theme-development.json",
+      "sha256": "9d9cd39a7efdb91645ce3a2930e232e32a94d5d1d54a56d3f84f41d0ec841166"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-theme-review.md",
+      "sha256": "bf6f8f6a98a77e6d066a91f6a7f908261455b460c0a0e811fa71375240efc9d5"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/rare-theme-stockfish-18.json",
+      "sha256": "2164b9e90801c03303c7032b6dba430eba62ed1c0c4247b851fb02de223cbb7c"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/ray-liability-relevance-review.md",
+      "sha256": "0cc83e2739066577108932da47fe3b6a209409aa8984dcf3a38984081a273d7a"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/real-puzzle-development.json",
+      "sha256": "8b536c5c45a82a871af3452de0f5cd7bd88e1daec27233d1b4654e0e92ccead2"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/real-puzzle-judgement.json",
+      "sha256": "56f184afca71c6f2798e49a382cfc71f8253902e69bee70fc6ea658af23918cf"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/real-puzzle-stockfish-18.json",
+      "sha256": "83bf5926330a1f907d07f45b590a9863fc7b0d999e8116b8aa948342f330d74d"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/relative-pin-recall-review.md",
+      "sha256": "4c9c09820422fed28d1e6af65e3532379626fca69fbba7848d86a081bc658312"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/relative-pin-stockfish-18.json",
+      "sha256": "478b12b4bb16c2dc211cf788893d39c0a29cf9a4a216c693664cb1e640b2822d"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/repetition-boundaries-adapter171.json",
+      "sha256": "1379d16bd3a8a1d60725aecbad514281aced5a018b9d862ede64ea180f8f85e4"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/retained-checking-adapter168.json",
+      "sha256": "5670954b576e4a7215e960694bf973ebe16f41f765139eec0f21e00bf4197cb3"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/retained-choice-adapter167.json",
+      "sha256": "4b5706358b9af714ccf3d2bda611d18542dca2415163fc718068ac7d7a775aea"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/root-pawn-recall-audit.md",
+      "sha256": "f2fae6176e51887853f169caf7df9557fd4e420415c2c24c180ed404331c2df4"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/saving-rook-recall-audit.md",
+      "sha256": "9214939a781c27430dab6acd690b63b7743836b53efa24126d645ca7c8c56519"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/secondary-theme-adapter92-review.json",
+      "sha256": "73485ab9091dd355f20d95a867cce2fa7fbad8f38566f4a0931fa7fcd6a1d0e1"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/secondary-theme-adapter93-review.json",
+      "sha256": "37227f427181e84420c7d5427bef1359f1121ae52d868e96bc9aeb3a636581f3"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/secondary-theme-adapter94-review.json",
+      "sha256": "6fddaddc715d7147aab9c7a8d684cef67ed7870ac853de567558ffc13ce2e0dc"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/secondary-theme-development.json",
+      "sha256": "7ba929b3f3c633a89bcfb91c5c818c3eb9c628b3846eed37c4c0a7bf34f4493b"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/secondary-theme-initial-judgement.json",
+      "sha256": "ef55a2fca1340140844554beec57e2a617399546859ce43693b0a315f1e05aec"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/secondary-theme-relevance-review.md",
+      "sha256": "1e8ec3bdaed3c180379bb9080a2e6b9891effaa223689efb2a1a84d1774b936e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/secondary-theme-stockfish-18.json",
+      "sha256": "08a00d8436dd71f4e767c674bb38b4477d3ef7813945d6ba6f85268fb040e304"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/settled-pawn-history-review.md",
+      "sha256": "e4c2e80c125c5e3edb703db45b461010890a94e428391cc36efba056f54bac0f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/settled-root-exchange-review.md",
+      "sha256": "7a51137274ddf24be2c689586503d682545041899925e2788a222abbf6207c64"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/settled-root-exchange-stockfish-18.json",
+      "sha256": "5a90b872464cf18ffd35ca0a5fb031b3b44ef91623fab2c498f8b81bce069e7d"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/shared-review-score-perspective-receipt.json",
+      "sha256": "374078fe652e59a04eddff771df7fda07ee6519b5bd84354e7465ad2722000fb"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/shared-review-score-perspective-review.md",
+      "sha256": "884fa621196e5d8e812999cc219a26203ee419f62a66c25d389a7028c38fd2dc"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/short-mating-threat-recall-stockfish-18.json",
+      "sha256": "e8bade737001e90f92cfd9af9ec39d6af7cc16d55723a87f0305a79408d40100"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/short-mating-threat-review.md",
+      "sha256": "3f61edb84c041e86bacc9489f4f621690c60a1910152070cf985a4934f6b606e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/short-mating-threat-stockfish-18.json",
+      "sha256": "e73434885d27402c1d87380c86c901201fa9b31269aff855f86e7855fa686c5d"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/skewer-causality-review.md",
+      "sha256": "b0a48bba6148c76cf712ddf892dc19fc443835f3454240ce98a4eba2072ef729"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/skewer-causality-verification.json",
+      "sha256": "ace5ba9ff479cd8872f5849c8fa8d0df65153e50876e190e0dde34b607fdba73"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/stockfish-18.json",
+      "sha256": "70edaac03a91a26ed93817eed356ca2a706f1217696c8fc04354f54f72b543d7"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/tablebase-relevance-development.json",
+      "sha256": "d4592882ff0ddb1e85b5a083aaccbf3efeee0ce57f0660dd4ce1c79f7d16ebc2"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/tablebase-relevance-reciprocal.json",
+      "sha256": "560dacf52bade407b777201888e3abcf62e5ee7aeef331b40138fb2ad45dc33e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/tablebase-relevance-review.md",
+      "sha256": "7b1ddb12a6f6f0c5519e0a7245c85786329ca185355e150e45d50a6da51a9577"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/tablebase-relevance-supplementary.json",
+      "sha256": "5eb117318ed7d7025896c0a613ac2a3f1cb77110624715b372fb02305c4d4ab7"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/tablebase-relevance-verified.json",
+      "sha256": "8cb255390214f0ef91b81b3090ce75be47edd05c743b90b413456db14554352e"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/targeted-candidate-live-review.md",
+      "sha256": "83ae9c9959f6b27131f470d5f8b4bf1c695e2ed3a880987456266405e427d1ba"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/targeted-candidate-review.md",
+      "sha256": "5ce356deaa931246f1063ce57894b32473ce05f55c2ef795d67848b8410f0f77"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/targeted-candidate-stockfish-18.json",
+      "sha256": "d9379c1d1e0aaf78341e6466d4a6c15630e29fccbc98b3ece6bb0b423b8b6c2f"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/trap-confinement-independent.json",
+      "sha256": "8d6c123395b6b1a1592740132d43a8d12996bcb7f93a74ac0d1d0cf922758777"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/trap-confinement-review.md",
+      "sha256": "7ef8c1f6815bb2b0b46e445f49ef305d4efcc8d25c43148f5d19bad7dd3596d2"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/trap-confinement-verification.json",
+      "sha256": "ec6499be36c8914be4286fdd8d39844449e4f20e91bfd7a188a8d40100932bc4"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/trap-relevance-review.md",
+      "sha256": "de6ba7aede1fd03f2c4a3265da4e537e08f084f52ebcc73451fb87d699ff3e04"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/trap-relevance-stockfish-18.json",
+      "sha256": "3cb8981211d15d31ef84ddfd9b4235543052803bedc90e65af4ff4af85a550df"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/trapped-stockfish-18.json",
+      "sha256": "39f4ccf2b3996ccc339e70b4e830e1fef6beb232b5f13464fae3c2757dee34ff"
+    },
+    {
+      "path": "benchmarks/tactical-relevance/worker-latency.json",
+      "sha256": "a2f12412f4826b79ee8d64919debb15e3d209ad24634246f1e9dbc634b651e45"
+    }
+  ],
+  "excludedIds": [
+    "lichess:007c6",
+    "lichess:06PHz",
+    "lichess:09Cf3",
+    "lichess:0IJ6I",
+    "lichess:0QPvf",
+    "lichess:0RleZ",
+    "lichess:0XwFD",
+    "lichess:0hHGN",
+    "lichess:0iAUN",
+    "lichess:0rcU4",
+    "lichess:0z5nl",
+    "lichess:1DoTa",
+    "lichess:1GRFo",
+    "lichess:2Gc77",
+    "lichess:2QybO",
+    "lichess:2SvDe",
+    "lichess:2qDuS",
+    "lichess:30PgS",
+    "lichess:3LtAI",
+    "lichess:3kPn3",
+    "lichess:3mWuW",
+    "lichess:41frD",
+    "lichess:48ION",
+    "lichess:49h84",
+    "lichess:4Ds65",
+    "lichess:4GiqO",
+    "lichess:4Osgg",
+    "lichess:4RNK5",
+    "lichess:5hjz7",
+    "lichess:6fO6p",
+    "lichess:6mAvx",
+    "lichess:7Aje1",
+    "lichess:7tbEy",
+    "lichess:8DHuj",
+    "lichess:8FLlO",
+    "lichess:8mguL",
+    "lichess:9THyd",
+    "lichess:9YfbQ",
+    "lichess:9cqKR",
+    "lichess:AtnrF",
+    "lichess:BvWlf",
+    "lichess:CSQS3",
+    "lichess:CSh8J",
+    "lichess:CY182",
+    "lichess:DBBd9",
+    "lichess:DVSJh",
+    "lichess:DVs4F",
+    "lichess:EKWHC",
+    "lichess:EpYOT",
+    "lichess:FSJC4",
+    "lichess:G8wdr",
+    "lichess:GDK87",
+    "lichess:GFfWQ",
+    "lichess:GIB50",
+    "lichess:GrHPv",
+    "lichess:Gtvlx",
+    "lichess:HuMdz",
+    "lichess:I5Waq",
+    "lichess:IKbcw",
+    "lichess:IyijS",
+    "lichess:J3vOR",
+    "lichess:JaKHo",
+    "lichess:Jn9KP",
+    "lichess:K56tk",
+    "lichess:KRLot",
+    "lichess:KmpJY",
+    "lichess:Kn14A",
+    "lichess:Kvpvi",
+    "lichess:LDIy1",
+    "lichess:LDnWZ",
+    "lichess:Ltbye",
+    "lichess:MJZcU",
+    "lichess:NGZzo",
+    "lichess:NKnZo",
+    "lichess:NOVGX",
+    "lichess:NOaM1",
+    "lichess:NrHkx",
+    "lichess:NtXK7",
+    "lichess:O3OKR",
+    "lichess:OezHt",
+    "lichess:PDoyY",
+    "lichess:QSKdo",
+    "lichess:Qq0JW",
+    "lichess:R13Ct",
+    "lichess:REAdh",
+    "lichess:S9vEb",
+    "lichess:SD5oo",
+    "lichess:SIVEv",
+    "lichess:UCiYo",
+    "lichess:UiHeK",
+    "lichess:UohLn",
+    "lichess:Vk1Ud",
+    "lichess:W2tIf",
+    "lichess:Xg7Rd",
+    "lichess:YvGsE",
+    "lichess:Z5arb",
+    "lichess:ZVq1J",
+    "lichess:ZrgCo",
+    "lichess:bBtM1",
+    "lichess:brn5j",
+    "lichess:c6L21",
+    "lichess:dLG91",
+    "lichess:dkEzJ",
+    "lichess:e9KxD",
+    "lichess:eOCp9",
+    "lichess:eQa3B",
+    "lichess:eimKB",
+    "lichess:erSYy",
+    "lichess:fJrhT",
+    "lichess:fVRuW",
+    "lichess:g2XPR",
+    "lichess:gJxgk",
+    "lichess:gMkbY",
+    "lichess:gnlcF",
+    "lichess:hGEvH",
+    "lichess:hajE5",
+    "lichess:hz3ed",
+    "lichess:i2SLh",
+    "lichess:iUj3e",
+    "lichess:ilrgH",
+    "lichess:j8Up4",
+    "lichess:kCdp5",
+    "lichess:kO37k",
+    "lichess:n48BE",
+    "lichess:nBrWE",
+    "lichess:nUdHj",
+    "lichess:nkeLA",
+    "lichess:o8K8i",
+    "lichess:oSj8l",
+    "lichess:om0GQ",
+    "lichess:opGD7",
+    "lichess:ouIHI",
+    "lichess:pV2Bd",
+    "lichess:pXSKy",
+    "lichess:q4FtX",
+    "lichess:qQG5v",
+    "lichess:qUCRQ",
+    "lichess:qY3NM",
+    "lichess:qn2Fy",
+    "lichess:r7fZD",
+    "lichess:rqXvZ",
+    "lichess:rqcm3",
+    "lichess:sGGZN",
+    "lichess:sKDBG",
+    "lichess:snAK4",
+    "lichess:tA2XR",
+    "lichess:vMQ3b",
+    "lichess:vztmO",
+    "lichess:w1lKu",
+    "lichess:w8wvY",
+    "lichess:wN37d",
+    "lichess:wVsJa",
+    "lichess:wXMJJ",
+    "lichess:wh6Ac",
+    "lichess:xxDaj",
+    "lichess:xyVJC",
+    "lichess:yLDJO",
+    "lichess:ySzc4",
+    "lichess:zYjb5"
+  ],
+  "excludedGames": [
+    "game:1plwqVL4",
+    "game:2h2a8ToL",
+    "game:31B9VRnS",
+    "game:3Rsa9ycS",
+    "game:4BUsJguL",
+    "game:4LQ9aTGO",
+    "game:4tqsjUtF",
+    "game:5IgAYhar",
+    "game:5K53OS6P",
+    "game:5NPtEpQL",
+    "game:5TC0C2PP",
+    "game:5u4tGdlw",
+    "game:6rpanRRK",
+    "game:79lqSOjV",
+    "game:7Wimia5I",
+    "game:7lzGil6H",
+    "game:8OYE3aem",
+    "game:8guHczpY",
+    "game:A0A2dlDF",
+    "game:AjM3oAEe",
+    "game:BCPzsmYD",
+    "game:BNbGN5Pe",
+    "game:BPhtQ9HN",
+    "game:BQIrG1B3",
+    "game:BkwHTU3l",
+    "game:C9q6jvtW",
+    "game:DB4UjIGq",
+    "game:E29eVNxr",
+    "game:E6tWWnTV",
+    "game:EGwnSMl7",
+    "game:EeAn5MBT",
+    "game:Ejf8ow6J",
+    "game:El4gBLqB",
+    "game:EtPuafTc",
+    "game:ExhbBzsF",
+    "game:FBpuOG15",
+    "game:FODxhu6Q",
+    "game:G3Mo3zZE",
+    "game:GBrL8A23",
+    "game:GSJDd7Yn",
+    "game:GeURB1tB",
+    "game:Gectvn7R",
+    "game:Gpw0K2KW",
+    "game:I1scDAqN",
+    "game:Iji4vDQ0",
+    "game:IuJas3xq",
+    "game:IyblvP2P",
+    "game:JAFCpDph",
+    "game:JRH8EioB",
+    "game:KWmz9y1B",
+    "game:KufbTWxS",
+    "game:LKIYSXe4",
+    "game:LML04q0q",
+    "game:Li8zzqp9",
+    "game:MHuRInPi",
+    "game:MPbj9NYQ",
+    "game:MtgbMsI4",
+    "game:NJ3Eb11y",
+    "game:NhsymRXl",
+    "game:NkEy0NrH",
+    "game:Nv8lUjlo",
+    "game:Og0h3Ig3",
+    "game:PEouuNXC",
+    "game:Q0o5hKT2",
+    "game:QHKYXMwZ",
+    "game:QKXN6oPz",
+    "game:QPNg8ZHh",
+    "game:QZDg7vtX",
+    "game:QwS7iWSm",
+    "game:RQB8EABI",
+    "game:Sstuiwms",
+    "game:T675oRjx",
+    "game:TCE52bRu",
+    "game:THTuuIz2",
+    "game:TRKE6TxS",
+    "game:UAAXpF7B",
+    "game:Unhq2NQb",
+    "game:VzM2axmW",
+    "game:WWrFvxBQ",
+    "game:YVKijnFF",
+    "game:Z1Tw5YR3",
+    "game:ZFgq8VzD",
+    "game:ZQ6hOt0H",
+    "game:a4MxY0Mo",
+    "game:aV2A8QXf",
+    "game:be0rLECF",
+    "game:cS8sT93s",
+    "game:cc7qidXs",
+    "game:cdobP834",
+    "game:dSAOWmhe",
+    "game:dzJG2gxf",
+    "game:e3jcEqi6",
+    "game:eIS3TrpJ",
+    "game:eTscGjLx",
+    "game:eh5TbQXm",
+    "game:etolcQHz",
+    "game:fu4ZkxrA",
+    "game:fvNmdR3U",
+    "game:fva0lLZe",
+    "game:goU45R1y",
+    "game:h5yHhpzr",
+    "game:hGOMBDY0",
+    "game:hITPUf3v",
+    "game:heingGcp",
+    "game:icQaIE9m",
+    "game:izfXsnC0",
+    "game:jg9XWsDu",
+    "game:l8sSle4i",
+    "game:lMO0jlIT",
+    "game:lcCUp4PI",
+    "game:loCtb5SI",
+    "game:lqiMtKKO",
+    "game:lwOOWkJP",
+    "game:m6XYFzNi",
+    "game:m7aM6Y40",
+    "game:mD14jttw",
+    "game:mOEDgNl8",
+    "game:mQUbKUdO",
+    "game:mdDpa9Xi",
+    "game:my1AArl0",
+    "game:nFq8R2sJ",
+    "game:ndfhTRQ9",
+    "game:nkPf2Bb8",
+    "game:o9UQkODe",
+    "game:oD1ADLSC",
+    "game:oHeYQKb9",
+    "game:oUQxGPRf",
+    "game:pEUmwLlr",
+    "game:pcWVHDCp",
+    "game:pcnTzKC6",
+    "game:pdbeBjyx",
+    "game:puYvqadF",
+    "game:pxdMS4ar",
+    "game:qJ0aresT",
+    "game:rFPKBB1L",
+    "game:rW8JOc3d",
+    "game:sWtiFRMg",
+    "game:sZuxhzM1",
+    "game:seP4J8Tb",
+    "game:tjadbVcy",
+    "game:training",
+    "game:txDShP4U",
+    "game:uPnSBtWu",
+    "game:ugpVWplb",
+    "game:vISccVxI",
+    "game:vqwzqZHC",
+    "game:wFNlpQnz",
+    "game:wOOnQcXR",
+    "game:x1B4MZEX",
+    "game:x2Oo1BCm",
+    "game:xYoaQcxz",
+    "game:xuFT6vq3",
+    "game:xwAZeVkB",
+    "game:yI9Y2Aep",
+    "game:yLTMw0nH",
+    "game:yOwOb8mH",
+    "game:ynsDtr2Y",
+    "game:yxtV6nOi",
+    "game:zJqoVvf1",
+    "game:zcEVXTW1",
+    "game:zdiMuOOP",
+    "game:ztEkx5X0"
+  ],
+  "cases": [
+    {
+      "stratum": "interference",
+      "id": "lichess:eAHH6",
+      "sourceGameUrl": "https://lichess.org/7Exud9aZ/black#146",
+      "sourceGroup": "game:7Exud9aZ",
+      "sourceThemes": [
+        "crushing",
+        "endgame",
+        "interference",
+        "short"
+      ],
+      "sourceFen": "4r3/6RP/6n1/8/4k1K1/8/8/8 b - - 2 73",
+      "precedingMove": "g6h8",
+      "startFen": "4r2n/6RP/8/8/4k1K1/8/8/8 w - - 3 74",
+      "bestLine": [
+        "g7g8",
+        "e8e7",
+        "g8h8"
+      ],
+      "selectionHash": "4fe212c760e8670db6d2f045699e3f918dd01ab1157a26b1f794a128b56ffd83"
+    },
+    {
+      "stratum": "interference",
+      "id": "lichess:fVyR4",
+      "sourceGameUrl": "https://lichess.org/3fTR4xUh#51",
+      "sourceGroup": "game:3fTR4xUh",
+      "sourceThemes": [
+        "crushing",
+        "endgame",
+        "interference",
+        "long",
+        "rookEndgame",
+        "skewer"
+      ],
+      "sourceFen": "3r2k1/p1p3pp/2p4r/2P5/4RP2/PP2K3/7P/R7 w - - 3 26",
+      "precedingMove": "a1a2",
+      "startFen": "3r2k1/p1p3pp/2p4r/2P5/4RP2/PP2K3/R6P/8 b - - 4 26",
+      "bestLine": [
+        "h6h3",
+        "e3f2",
+        "h3h2",
+        "f2g3",
+        "h2a2"
+      ],
+      "selectionHash": "93726c0a80632aafc761a8c2d1176737589bb2ba215b14f6200142cabbd1298c"
+    },
+    {
+      "stratum": "deflection",
+      "id": "lichess:WhAca",
+      "sourceGameUrl": "https://lichess.org/Gdqxs5Jp#49",
+      "sourceGroup": "game:Gdqxs5Jp",
+      "sourceThemes": [
+        "crushing",
+        "deflection",
+        "endgame",
+        "exposedKing",
+        "veryLong"
+      ],
+      "sourceFen": "5r1k/pp5p/2np2p1/4p2Q/4P3/1NK3P1/PPP2r2/R7 w - - 0 25",
+      "precedingMove": "h5h6",
+      "startFen": "5r1k/pp5p/2np2pQ/4p3/4P3/1NK3P1/PPP2r2/R7 b - - 1 25",
+      "bestLine": [
+        "f8f3",
+        "c3c4",
+        "f2c2",
+        "c4b5",
+        "f3b3",
+        "b5a4",
+        "b3f3"
+      ],
+      "selectionHash": "0826245634b69bba246c9f8e45d86eef8ab026312086e57641af20f95d292dc8"
+    },
+    {
+      "stratum": "deflection",
+      "id": "lichess:o4FrE",
+      "sourceGameUrl": "https://lichess.org/jc6NESWN/black#100",
+      "sourceGroup": "game:jc6NESWN",
+      "sourceThemes": [
+        "advancedPawn",
+        "crushing",
+        "deflection",
+        "endgame",
+        "short"
+      ],
+      "sourceFen": "6k1/6Bp/pp1pnPP1/4p3/3pP3/Pq1P4/5Q1K/8 b - - 0 50",
+      "precedingMove": "e6g7",
+      "startFen": "6k1/6np/pp1p1PP1/4p3/3pP3/Pq1P4/5Q1K/8 w - - 0 51",
+      "bestLine": [
+        "f6f7",
+        "g8f8",
+        "g6h7"
+      ],
+      "selectionHash": "2708d3c0e8528080038b8566c822d37f6fc25e7efcfe2c1b9990b2c59f2382ad"
+    },
+    {
+      "stratum": "attraction",
+      "id": "lichess:UpwI4",
+      "sourceGameUrl": "https://lichess.org/gyTf1BSB#33",
+      "sourceGroup": "game:gyTf1BSB",
+      "sourceThemes": [
+        "anastasiaMate",
+        "attraction",
+        "long",
+        "mate",
+        "mateIn3",
+        "middlegame",
+        "sacrifice"
+      ],
+      "sourceFen": "2kr3r/pp4p1/2n2p2/2B5/2P2n2/5B2/PP3PPP/R4RK1 w - - 1 17",
+      "precedingMove": "f3c6",
+      "startFen": "2kr3r/pp4p1/2B2p2/2B5/2P2n2/8/PP3PPP/R4RK1 b - - 0 17",
+      "bestLine": [
+        "f4e2",
+        "g1h1",
+        "h8h2",
+        "h1h2",
+        "d8h8"
+      ],
+      "selectionHash": "051e8a7231c3673ad5a0fef10e85b8ab199f38f42699eca688031657bab91f09"
+    },
+    {
+      "stratum": "attraction",
+      "id": "lichess:SzulO",
+      "sourceGameUrl": "https://lichess.org/tZtyRLus#61",
+      "sourceGroup": "game:tZtyRLus",
+      "sourceThemes": [
+        "advancedPawn",
+        "attraction",
+        "crushing",
+        "exposedKing",
+        "fork",
+        "middlegame",
+        "promotion",
+        "sacrifice",
+        "underPromotion",
+        "veryLong"
+      ],
+      "sourceFen": "4rrk1/2p5/1p5p/pPqP4/P1P1B3/2Q1RPpb/8/R6K w - - 0 31",
+      "precedingMove": "a1e1",
+      "startFen": "4rrk1/2p5/1p5p/pPqP4/P1P1B3/2Q1RPpb/8/4R2K b - - 1 31",
+      "bestLine": [
+        "e8e4",
+        "f3e4",
+        "f8f1",
+        "e1f1",
+        "g3g2",
+        "h1h2",
+        "g2f1n"
+      ],
+      "selectionHash": "05facc3b3801708d553de58295ae80c6426a61e0777d9f630cd80cf9cf800e4a"
+    }
+  ]
+}

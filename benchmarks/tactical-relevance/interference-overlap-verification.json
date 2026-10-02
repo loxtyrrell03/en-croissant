@@ -1,0 +1,320 @@
+{
+  "schemaVersion": 1,
+  "baseCommit": "9fad2cd685d88d10e962bd80384eb9aaf117072e",
+  "classifierVersion": "site-55.adapter-176",
+  "pipelineVersion": 183,
+  "scope": "One proof-equivalent root-label noise fix plus bounded public research. No whole-population accuracy, holdout or installed delivery claim.",
+  "broad": {
+    "started": "2026-10-02T22:40:21.189Z",
+    "finished": "2026-10-02T22:44:03.689Z",
+    "selectedFiles": 251,
+    "activeFiles": 230,
+    "genuinePassed": 3726,
+    "knownExpectedFailures": 1,
+    "knownExpectedFailure": "known coverage gap: retain promotion through a queen-ending checking race",
+    "skipped": 364,
+    "unexpectedFailures": 0,
+    "sourceUnchangedDuringRun": true,
+    "reportSha256": "875293aad8bd6c10f2596eb87d3cb67b0a8624c45876c8b1b1d134f404a01c3c"
+  },
+  "newSourceContracts": {
+    "total": 39,
+    "rareMechanism": 14,
+    "overlapConsumers": 8,
+    "promotionOutcome": 17,
+    "scope": "Dependent paired and constructed checks, not39 independent puzzles."
+  },
+  "primary": {
+    "cases": 32,
+    "byteIdenticalToAdapter175": true,
+    "reportSha256": "c4f5be6c3ca7efc60bff0376bb4239368562df9c5a2c9170ae1f4e6dc0f17199"
+  },
+  "exactCore": {
+    "files": 45,
+    "passed": 940,
+    "skipped": 5,
+    "failed": 0,
+    "blob": "7a478438749f67694e781f535607ce08d7543ab3",
+    "sha256LF": "2b4e13ad924d133042d5edf7c44052ad4f91b6e19f186b49862cd77ddc1dd3fd",
+    "sourceUnchangedDuringRun": true,
+    "pendingCheckingRayExcluded": true,
+    "reportSha256": "e44f2116ce88d920bd2dd26723bb70fe7097e67057181d5245c687f0c1838df1"
+  },
+  "compiledTrainer": {
+    "files": 6,
+    "passed": 121,
+    "skipped": 1,
+    "failed": 0,
+    "newRoundtrips": 8,
+    "skip": "Opt-in real background-engine test",
+    "generatedSha256": "0acd707ddd602164ff97cf10c14513aa27bcb38dfa7fd4dd9e48239e5a3b4a8d",
+    "sourceUnchangedDuringRun": true,
+    "ownerDataUsed": false,
+    "receiptSha256": "3a26fb801f6f8ba8aa1e30f2fb42d2fd42c4e2386f5d02d091a406b581b87343"
+  },
+  "freshPublicAudit": {
+    "sourceGames": 6,
+    "variants": 24,
+    "changed": 4,
+    "unchanged": 20,
+    "changes": [
+      {
+        "id": "lichess:eAHH6",
+        "kind": "root",
+        "reflected": false
+      },
+      {
+        "id": "lichess:eAHH6",
+        "kind": "full",
+        "reflected": false
+      },
+      {
+        "id": "lichess:eAHH6",
+        "kind": "root",
+        "reflected": true
+      },
+      {
+        "id": "lichess:eAHH6",
+        "kind": "full",
+        "reflected": true
+      }
+    ],
+    "baselineTestsPassed": 23,
+    "baselineDemonstratedDuplicateFailures": 4,
+    "candidateTestsPassed": 27,
+    "receipt": "rare-mechanism-precision-v1-verification.json",
+    "scope": "Fresh game-disjoint development nominations; source labels are not truth, and colour/root/full variants are dependent. Unknowns remain unknown."
+  },
+  "retainedPublicCohort": {
+    "canonicalBefore": "rare-causal-cohort-v2-adapter175.json",
+    "inputResultsMatch": true,
+    "normalizedSha256": "f294c9f4d2fb82350671f2802145c4e11e6a96bb4341c1bc4dd77abbdce620cd",
+    "loadedModuleCount": 12,
+    "allModulesUnchanged": true,
+    "canonical175Sha256": "2aa21fa2100cfecb3ea64fa9e79cfd4cef9574eb3679456e6dfe856fb341f0c1",
+    "tests": {
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0
+    },
+    "observations": 56,
+    "changed": 0,
+    "exclusionsFromEquality": [
+      "result.motifClassifierVersion",
+      "elapsedMs"
+    ],
+    "runner": "Read-only index module loader plus in-memory adaptation of existing harness hash lookups. No shared production or existing harness edits."
+  },
+  "quietResearch": {
+    "previouslySelectedPuzzles": 4,
+    "quietClearanceTestsPassed": 8,
+    "trapFollowupTestsPassed": 5,
+    "independentClearanceWitnesses": 8,
+    "independentTrapRootReplies": 138,
+    "productionAdmissions": 0,
+    "scope": "Different finite and per-branch diagnostics; not13 solved puzzles or complete all-reply runtime certificates."
+  },
+  "promotionOutcomeAudit": {
+    "publicPuzzles": 1,
+    "pairedStages": 8,
+    "offlineChecksPassed": 17,
+    "provider": "lichess-syzygy",
+    "scope": "Exact legal move-set and certificate-consistency checks, not independent validation of the tablebase or a local material proof. No automatic application network request."
+  },
+  "researchReceipts": {
+    "rare-mechanism-precision-v1-verification.json": "fdcbcf7dce0462132399025f4ebb04006ffe5ed3b258be2657aedc5f05a1b31a",
+    "quiet-trap-followup-verification.json": "4f3efcf4d7e82a56cbe0118a3150665fde161389ba802b5f8ae0170acd9ad3d8",
+    "quiet-clearance-legal-adapter175.json": "19880f4e406aeee82438948d549091b417a9f2d4eb09de057dea761cd3d5ef86"
+  },
+  "checks": {
+    "wholeProjectTypes": "Passed --noEmit --incremental false after all source tests frozen",
+    "scopedLint": "Ten distinct root-selected files; zero warnings/errors. Other benchmark checks in their receipts.",
+    "frontendAndReviewBuild": "Passed8971 frontend /49 shared review /21 OTB helper modules; existing large-chunk, third-party bigint and plugin-time warnings",
+    "diffCheck": "Passed"
+  },
+  "workingSourceHashesLF": {
+    "src/utils/tacticalMotifs/causalTactics.ts": "5796508b00c088b0bc55a8cd97ac94f4ada4f8a86597ff80192920607eb860d9",
+    "src/utils/tacticalMotifs/mistakeReviewAdapter.ts": "9583b1db7ee1f140ca20437e02c815bd8d0ad3807766fcf6e401cf5b83a06302",
+    "src/utils/tacticalMotifs/liveTactics.ts": "1127b52d7dee861cba0e843a17d669844f48ebd09c6585e9bc8aa5dd68e1f1a1",
+    "src/utils/tests/interferenceDoubleThreatOverlap.test.ts": "c37ebd41e0ccf462ce876af6b75e86105c68c25c73a9b5de03208d45d3a5d05e",
+    "src/utils/tests/promotionRaceOutcome.test.ts": "99af5553f602db2afc74aa14e2627ef1d032b48ceec6e2ca7847a7f7a1551f33",
+    "src/utils/tests/rareMechanismPrecision.test.ts": "a7e82f02343706ae6e52bd6b665a77e1f6f648045f70442a50900e9c44397ac2",
+    "scripts/tests/repetition-history-review-service.test.mjs": "6bdb4cc30d93e095350c311042bbfe7f507880bd5931f762849aff0d973a03be",
+    "scripts/tests/frontier-motif-review-service.test.mjs": "9b2bd7738cfddd16813952390358280967cee2a231204b0b3ca78483d0d64742",
+    "scripts/tests/quiet-intermediate-review-service.test.mjs": "22f75394c9b253897921686aeec164ebb9df808c658bca50d3220145769664e6"
+  },
+  "artifactManifest": {
+    "interference-overlap-review.md": {
+      "bytes": 5533,
+      "sha256": "1a93409212dccd75e68713fa2d39931de37b4587c668de21f46ee5210196aa5f"
+    },
+    "promotion-race-outcome-query.mjs": {
+      "bytes": 4078,
+      "sha256": "74d080545f66528b3eca8ca97c4c6946b5d4ffd8a2415bfe8cfa9e1a013481e8"
+    },
+    "promotion-race-outcome-review.md": {
+      "bytes": 3116,
+      "sha256": "4e4b5c6da95f01142687e12cbb2ff0e389d67e52af68720ca1cf48d291d3f669"
+    },
+    "promotion-race-outcome-tablebase.json": {
+      "bytes": 44072,
+      "sha256": "42f1d15a13f10fe69a4802ae88de4f8a2d9de79ff8ddcd10b164990b546aa4d1"
+    },
+    "quiet-clearance-adapter173.json": {
+      "bytes": 12198,
+      "sha256": "e27d872c36b017d1f3bbb26a2b05b72f0c417ccd27d0c6a14be5fda2b10e24ca"
+    },
+    "quiet-clearance-api.test.ts": {
+      "bytes": 2038,
+      "sha256": "44c15639085b82799ee7701acc4d2ba01d08bf74d742f5857d9ad6e22f926eec"
+    },
+    "quiet-clearance-api.vitest.ts": {
+      "bytes": 179,
+      "sha256": "8b7adc904ae58d30d3da9140bcf3567cf28fdbb7c92d200dee7ed0b52b96c4c7"
+    },
+    "quiet-clearance-boundary-adapter175.json": {
+      "bytes": 21133,
+      "sha256": "91edb3925dcfeff8fc59a85559a12396a0ac89665f70750cb64d10a0c3dfebc5"
+    },
+    "quiet-clearance-boundary-review.md": {
+      "bytes": 4287,
+      "sha256": "f92a071ef501eb2f219e53e565ff05b659a3c01c6cf2aea2f34066fc2d518ab5"
+    },
+    "quiet-clearance-boundary.test.ts": {
+      "bytes": 4900,
+      "sha256": "ac2afedbe29a0af1af21a9c18ad9319f3c84fecaa97e5b324c059f9f5d2a3e94"
+    },
+    "quiet-clearance-boundary.vitest.ts": {
+      "bytes": 347,
+      "sha256": "936a949566c3c9e52fe5a0810a8468043405c4c437cc1746ca35b04e6b05054d"
+    },
+    "quiet-clearance-engine175.json": {
+      "bytes": 8898,
+      "sha256": "7146e69d0883d34e31cd3f72384b480186a7baf05700b5bb1a30931bbed7ee59"
+    },
+    "quiet-clearance-legal-adapter175.json": {
+      "bytes": 9268,
+      "sha256": "19880f4e406aeee82438948d549091b417a9f2d4eb09de057dea761cd3d5ef86"
+    },
+    "quiet-clearance-legal-audit.py": {
+      "bytes": 2937,
+      "sha256": "1e9a38ee594a56e8dd3bbb8ded7f4eccea2f4873f37d9d174d623279e06ef7f9"
+    },
+    "quiet-clearance-strategy.json": {
+      "bytes": 5698,
+      "sha256": "abf71d853a834584f6251d30de212abe9d22ea5dd49bb0ec10171835f685fc57"
+    },
+    "quiet-clearance-verify.py": {
+      "bytes": 7141,
+      "sha256": "c86cab88e07f4706f35c6a14f13e069eae60b5fea7661a1f2e621cd743779009"
+    },
+    "quiet-trap-followup-adapter175.json": {
+      "bytes": 365778,
+      "sha256": "96768ad6133c4b9327c2199e1f2a2528c16becc0ee64100e86e96fd34a49b501"
+    },
+    "quiet-trap-followup-engine.json": {
+      "bytes": 25641,
+      "sha256": "e2d11da2d51dfd7a962c3ac8a24df23a7ba0a9c8b41365db214d6a9c4a86f7d0"
+    },
+    "quiet-trap-followup-engine.mjs": {
+      "bytes": 1952,
+      "sha256": "44d240af9728f4a47373764c8a16a59a57863fd1b3acf968d152d6d2c2e77bfc"
+    },
+    "quiet-trap-followup-hypotheses.json": {
+      "bytes": 2244,
+      "sha256": "6bfe594ecdda01c81e588f39372e06d86041ae522d0af1ba6b72a1d342d60029"
+    },
+    "quiet-trap-followup-independent-final.json": {
+      "bytes": 25553,
+      "sha256": "c0bf75a7f71699f4f65034c824c11b6928371adf65094fccc1d73ccd0940c88b"
+    },
+    "quiet-trap-followup-review.md": {
+      "bytes": 7005,
+      "sha256": "55c99df9e47662c778ec6613d968961dbb0361bbf1913ee1f26e3abe51d27c04"
+    },
+    "quiet-trap-followup-verification.json": {
+      "bytes": 7225,
+      "sha256": "4f3efcf4d7e82a56cbe0118a3150665fde161389ba802b5f8ae0170acd9ad3d8"
+    },
+    "quiet-trap-followup-verify.py": {
+      "bytes": 6811,
+      "sha256": "27e6bdabf54e279f924d2cec3660fd3780fa8acef24b38a237f5c16b2da63270"
+    },
+    "quiet-trap-followup.test.ts": {
+      "bytes": 11626,
+      "sha256": "c91907ef179ec4dafad196a3f4fd747c7ef1f3379d707f97595191aed1d69dc1"
+    },
+    "quiet-trap-followup.tsconfig.json": {
+      "bytes": 221,
+      "sha256": "0f7cee7769dbef2f26224e15cfc118861874678a5ab0fb3b15a0551ae360c619"
+    },
+    "quiet-trap-followup.vitest.ts": {
+      "bytes": 184,
+      "sha256": "2a89295d7cfd67034f480b046ec59e97ef4b7bfccbc8425fdb96415e3c3440d5"
+    },
+    "rare-mechanism-precision-v1-adapter175.json": {
+      "bytes": 46840,
+      "sha256": "6dc89c5ded4fa87df946e039dc8b0f554494ea736d86fa7a47986d48cece6fe5"
+    },
+    "rare-mechanism-precision-v1-adapter176.json": {
+      "bytes": 41373,
+      "sha256": "b6a815751de5874dd83e991f9bcb5f9a14767fd2f066668454b0ef396b04ad8d"
+    },
+    "rare-mechanism-precision-v1-hypotheses.json": {
+      "bytes": 3446,
+      "sha256": "291d69fcfc397503a076b15c466826b0ccecca41fc677f0fa799ff2ff50df338"
+    },
+    "rare-mechanism-precision-v1-independent.json": {
+      "bytes": 10267,
+      "sha256": "50ff566f226de0f80af1ddc38ddf9ed435650c8afc4aae4b4fc6f2a1456bb084"
+    },
+    "rare-mechanism-precision-v1-review.md": {
+      "bytes": 5662,
+      "sha256": "30a520fb88f55534a38d025d4f7747db1fc4e4be2bee173741f99cdf8909f953"
+    },
+    "rare-mechanism-precision-v1-select.mjs": {
+      "bytes": 3490,
+      "sha256": "9e81636bbfb51f5d45c50b2a398884f8048cbb77fae7c6e8c339547adba55205"
+    },
+    "rare-mechanism-precision-v1-selection.json": {
+      "bytes": 74158,
+      "sha256": "b7246b1b58fa75e8685831ad14b9ec0fb5c96e1e1777dc92a08de24a044f1f93"
+    },
+    "rare-mechanism-precision-v1-verification.json": {
+      "bytes": 8926,
+      "sha256": "fdcbcf7dce0462132399025f4ebb04006ffe5ed3b258be2657aedc5f05a1b31a"
+    },
+    "rare-mechanism-precision-v1-verify.py": {
+      "bytes": 7490,
+      "sha256": "1796361c6d5b31fd1eb63d47a57038f994e4a6ba38ad8e12c5bf9a01534ab82e"
+    },
+    "rare-mechanism-precision-v1.test.ts": {
+      "bytes": 3949,
+      "sha256": "445c06be1219ac8055c0c49fa95cfe426ecd8fa575597370145eaa0bc80ddd08"
+    },
+    "rare-mechanism-precision-v1.vitest.ts": {
+      "bytes": 1776,
+      "sha256": "bee4792256d2a528edb97c5500195c190cd16e5d0f54a4eccc321184bd3a857d"
+    }
+  },
+  "preservedPendingCore": {
+    "insertions": 46,
+    "deletions": 4
+  },
+  "delivery": {
+    "installedDesktop": false,
+    "phoneRuntime": false,
+    "website": false,
+    "ownerStoreRescan": false,
+    "nativeOrBrowserInteraction": false,
+    "generatedArtifactsCommitted": false
+  },
+  "limitations": [
+    "Independent staged-code review found no actionable defect. The greater-gain exclusion was inspected in code but has no dedicated new constructed contrast.",
+    "The duplicate heading was redundant, not a false material claim.",
+    "Finite material certificates are not unlimited whole-game guarantees.",
+    "The known queen-ending promotion expected failure and broader primary/precision/recall gaps remain open.",
+    "Working-tree builds include preserved unrelated changes; the exact staged-core suite excludes the pending checking-ray patch.",
+    "No holdout was consumed or full corpus copied."
+  ]
+}

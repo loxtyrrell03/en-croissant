@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "9fad2cd685d88d10e962bd80384eb9aaf117072e",
+  "selectionFrozenBeforeClassifier": true,
+  "scope": "Mechanism hypotheses, not assumed source-label truth. All six selections retained; unknown is not positional. No score input is fabricated.",
+  "variants": [
+    "Root-only and complete source line",
+    "Original and rank-reflected opposite colour",
+    "Every legal source ply retained at its actual ply; no later motif promoted to the root without an independent root certificate"
+  ],
+  "contracts": [
+    "Claims must have legally connected targets and account for initiating sacrifices and recaptures.",
+    "A later conditional gain must not outrank an independently proved root cause merely because of its material number.",
+    "Named mate and promotion require legal terminal geometry or explicit forced proof; silver labels alone do not establish them.",
+    "Counterfactual controls are explanatory probes, not independent public examples."
+  ],
+  "cases": [
+    {
+      "id": "lichess:eAHH6",
+      "hypothesis": "Rg8 interposes on Re8-to-Nh8 and threatens the knight and promotion route. Check whether rook/knight escapes invalidate a forced material claim; do not infer interference from geometry alone.",
+      "contrary": "Remove the h7 promotion pawn or change the knight's legal escape support; distinguish direct loose capture from a coupled promotion threat."
+    },
+    {
+      "id": "lichess:fVyR4",
+      "hypothesis": "Rh3+ may induce the king to block its own second-rank rook defence, allowing Rh2+ and Rxa2. Enumerate every king evasion; do not infer a forced skewer from only Kf2.",
+      "contrary": "Keep an alternative evasion or remove the rear rook. A later king-front skewer belongs to its actual ply unless independently forced from Rh3."
+    },
+    {
+      "id": "lichess:WhAca",
+      "hypothesis": "Rf3+ and Rxc2+ appear to drive the white king away from Nb3, followed by Rxb3. Verify every evasion and account for both black rooks and counterchecks.",
+      "contrary": "Remove Nb3 or its original king guard and check whether supposed deflection depends on that exact target rather than unrelated pawn collection."
+    },
+    {
+      "id": "lichess:o4FrE",
+      "hypothesis": "f7+ and gxh7 threaten promotion while attacking the knight's defensive arrangement. A short source line does not independently prove promotion or deflection; check all check evasions including queen intervention.",
+      "contrary": "Remove the second pawn or supply a legal promotion blocker; abstain if the longer ending is not certified."
+    },
+    {
+      "id": "lichess:UpwI4",
+      "hypothesis": "Ne2+ Kh1 Rxh2+ Kxh2 Rh8# suggests forced Anastasia mate and attraction of the king. Verify every legal check evasion; material fork/discovery noise must not displace forced mate.",
+      "contrary": "Remove the mating knight or provide a legal king escape; distinguish mating support from incidental bishop/rook attacks."
+    },
+    {
+      "id": "lichess:SzulO",
+      "hypothesis": "Rxe4 fxe4 Rf1+ Rxf1 g2+ Kh2 gxf1=N+ suggests an underpromotion fork after two sacrifices. Test alternatives to accepting either rook, exact material debt, and the final knight's actual targets.",
+      "contrary": "Remove a fork victim or promotion support. A later underpromotion branch must not be mistaken for a proved root mechanism solely because the source line contains it."
+    }
+  ]
+}

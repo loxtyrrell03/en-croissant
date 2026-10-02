@@ -63,7 +63,7 @@ for (const row of cases) for (const reflected of [false, true]) for (const withH
       },
     };
     const verify = metadata => {
-      assert.equal(metadata.motifClassifierVersion, "site-55.adapter-175");
+      assert.equal(metadata.motifClassifierVersion, "site-55.adapter-176");
       const motif = metadata.missedMotifs.find(m => m.id === (row.motif ?? "intermezzo") && m.ply === 1);
       assert.ok(motif, "The necessary first capture must retain its causal lesson");
       assert.equal(motif.label, row.label ?? "Intermediate Capture");

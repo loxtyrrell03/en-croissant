@@ -1,0 +1,266 @@
+{
+  "schemaVersion": 1,
+  "scope": "Benchmark-only bounded research. Neither empty classification is treated as positional truth; no runtime accuracy or source-label agreement credit.",
+  "baseline": "9fad2cd685d88d10e962bd80384eb9aaf117072e",
+  "version": "site-55.adapter-175",
+  "coreSha256": "2ad68ccb6b8d381d0ec26bfa1fdb391e61bf9e7d7011b16741bfff52bf9bae50",
+  "queenConfinement": [
+    {
+      "reflected": false,
+      "requestedMinimum": 90,
+      "closed": 30,
+      "total": 30,
+      "minimumReturned": 100,
+      "totalVisits": 20670,
+      "unproved": []
+    },
+    {
+      "reflected": false,
+      "requestedMinimum": 400,
+      "closed": 29,
+      "total": 30,
+      "minimumReturned": 400,
+      "totalVisits": 26536,
+      "unproved": [
+        {
+          "reply": "e5e6",
+          "visits": 617,
+          "exhausted": false
+        }
+      ]
+    },
+    {
+      "reflected": true,
+      "requestedMinimum": 90,
+      "closed": 30,
+      "total": 30,
+      "minimumReturned": 100,
+      "totalVisits": 21965,
+      "unproved": []
+    },
+    {
+      "reflected": true,
+      "requestedMinimum": 400,
+      "closed": 29,
+      "total": 30,
+      "minimumReturned": 400,
+      "totalVisits": 31376,
+      "unproved": [
+        {
+          "reply": "e4e3",
+          "visits": 617,
+          "exhausted": false
+        }
+      ]
+    }
+  ],
+  "promotionInterference": [
+    {
+      "reflected": false,
+      "legalReplies": 39,
+      "immediatePromotionMates": 28,
+      "notMateProof": [
+        {
+          "uci": "f4f7",
+          "san": "Qxf7+",
+          "check": true
+        },
+        {
+          "uci": "f4d2",
+          "san": "Qxd2",
+          "check": false
+        },
+        {
+          "uci": "f2g3",
+          "san": "Kg3",
+          "check": false
+        },
+        {
+          "uci": "f2f3",
+          "san": "Kf3",
+          "check": false
+        },
+        {
+          "uci": "f2e3",
+          "san": "Ke3",
+          "check": false
+        },
+        {
+          "uci": "f2g2",
+          "san": "Kg2",
+          "check": false
+        },
+        {
+          "uci": "h1f1",
+          "san": "Rf1",
+          "check": false
+        },
+        {
+          "uci": "h1e1",
+          "san": "Re1",
+          "check": false
+        },
+        {
+          "uci": "h1d1",
+          "san": "Rhxd1",
+          "check": false
+        },
+        {
+          "uci": "c1d1",
+          "san": "Rcxd1",
+          "check": false
+        },
+        {
+          "uci": "h6h7",
+          "san": "h7+",
+          "check": true
+        }
+      ]
+    },
+    {
+      "reflected": true,
+      "legalReplies": 39,
+      "immediatePromotionMates": 28,
+      "notMateProof": [
+        {
+          "uci": "h8f8",
+          "san": "Rf8",
+          "check": false
+        },
+        {
+          "uci": "h8e8",
+          "san": "Re8",
+          "check": false
+        },
+        {
+          "uci": "h8d8",
+          "san": "Rhxd8",
+          "check": false
+        },
+        {
+          "uci": "c8d8",
+          "san": "Rcxd8",
+          "check": false
+        },
+        {
+          "uci": "f7g7",
+          "san": "Kg7",
+          "check": false
+        },
+        {
+          "uci": "f7g6",
+          "san": "Kg6",
+          "check": false
+        },
+        {
+          "uci": "f7f6",
+          "san": "Kf6",
+          "check": false
+        },
+        {
+          "uci": "f7e6",
+          "san": "Ke6",
+          "check": false
+        },
+        {
+          "uci": "f5d7",
+          "san": "Qxd7",
+          "check": false
+        },
+        {
+          "uci": "f5f2",
+          "san": "Qxf2+",
+          "check": true
+        },
+        {
+          "uci": "h3h2",
+          "san": "h2+",
+          "check": true
+        }
+      ]
+    }
+  ],
+  "limits": {
+    "perDefenceNodeCap": 16384,
+    "thresholdQueriesPerColour": 60,
+    "sharedSingleRootProbe": "Initial16384-node composition exhausted before covering all30 defences",
+    "productionBudgetUnchanged": true,
+    "engineQueries": 10,
+    "engineDepth": 16,
+    "engineThreads": 1,
+    "engineHashMiB": 64,
+    "engineTimeoutMs": 30000,
+    "engineIsProof": false,
+    "independentCheckerIsMinimaxProof": false
+  },
+  "verification": {
+    "vitest": 5,
+    "vitestFailures": 0,
+    "independentPositions": 4,
+    "independentlyEnumeratedRootReplies": 138,
+    "types": "targeted tsgo passed",
+    "lint": "3 files, zero warnings/errors",
+    "format": "4 task-owned files formatted",
+    "frozenSource": "Exact committed175 tactical modules through retained Git loader; working production untouched",
+    "followup": "No further engines or budget expansion in this milestone"
+  },
+  "correctedContrast": "ImmediateQxc1 Rxc1 was cooperative. CorrectQf4xc1 is legal beforeRd2 but blocked afterwards; Qxc1Qxc1Rd1Rxd1exd1QQxd1 leavesBlack down500 locally. Verified both colours.",
+  "unknowns": [
+    "gMkbY e6+ remains unknown at400 threshold; min100 does not prove inevitable queen capture.",
+    "gMkbY separate per-defence diagnostics exceed one existing root budget; no runtime cost claim.",
+    "9YfbQ other11 root defences and complete primary remain unproved.",
+    "Counterfactuals establish finite geometry dependencies, not global no-tactic judgments."
+  ],
+  "files": [
+    {
+      "path": "benchmarks/tactical-relevance/quiet-trap-followup-hypotheses.json",
+      "sha256": "6bfe594ecdda01c81e588f39372e06d86041ae522d0af1ba6b72a1d342d60029",
+      "bytes": 2244
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-trap-followup.test.ts",
+      "sha256": "c91907ef179ec4dafad196a3f4fd747c7ef1f3379d707f97595191aed1d69dc1",
+      "bytes": 11626
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-trap-followup.vitest.ts",
+      "sha256": "2a89295d7cfd67034f480b046ec59e97ef4b7bfccbc8425fdb96415e3c3440d5",
+      "bytes": 184
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-trap-followup.tsconfig.json",
+      "sha256": "0f7cee7769dbef2f26224e15cfc118861874678a5ab0fb3b15a0551ae360c619",
+      "bytes": 221
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-trap-followup-engine.mjs",
+      "sha256": "44d240af9728f4a47373764c8a16a59a57863fd1b3acf968d152d6d2c2e77bfc",
+      "bytes": 1952
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-trap-followup-verify.py",
+      "sha256": "27e6bdabf54e279f924d2cec3660fd3780fa8acef24b38a237f5c16b2da63270",
+      "bytes": 6811
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-trap-followup-adapter175.json",
+      "sha256": "96768ad6133c4b9327c2199e1f2a2528c16becc0ee64100e86e96fd34a49b501",
+      "bytes": 365778
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-trap-followup-engine.json",
+      "sha256": "e2d11da2d51dfd7a962c3ac8a24df23a7ba0a9c8b41365db214d6a9c4a86f7d0",
+      "bytes": 25641
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-trap-followup-independent-final.json",
+      "sha256": "c0bf75a7f71699f4f65034c824c11b6928371adf65094fccc1d73ccd0940c88b",
+      "bytes": 25553
+    },
+    {
+      "path": "benchmarks/tactical-relevance/quiet-trap-followup-review.md",
+      "sha256": "55c99df9e47662c778ec6613d968961dbb0361bbf1913ee1f26e3abe51d27c04",
+      "bytes": 7005
+    }
+  ]
+}

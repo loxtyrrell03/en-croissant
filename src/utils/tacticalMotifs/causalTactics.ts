@@ -15593,6 +15593,27 @@ export function auditTacticalMotifs(
                         fork.targets.every(to => to === cut.defender || to === cut.target)) return false;
                 }
             }
+            // A checking capture of the severed guard can be the second arm
+            // of this same interference. Do not badge that exact material
+            // choice again as a generic double threat. The complete original
+            // target set matters: another fork victim is a separate lesson.
+            if (m.id === "doubleThreat" && m.ply) {
+                const interference = candidates.find(other => other.id === "interference" &&
+                    other.ply === m.ply && other.moveUci === m.moveUci &&
+                    other.confidence === "high" && (other.value ?? 0) < 10000 &&
+                    (other.value ?? 0) >= (m.value ?? Infinity));
+                if (interference) {
+                    const step = steps[m.ply - 1];
+                    const threat = proveQuietDoubleThreat(step);
+                    const cut = interferenceProof(step, interference.source);
+                    if (threat && cut?.attacksDefender &&
+                        (cut.motif.value ?? 0) < 10000 && (cut.motif.value ?? 0) >= threat.gain &&
+                        cut.capturer === step.move.to && threat.threat.from === cut.capturer &&
+                        threat.threat.to === cut.defender && capturedValue(withTurn(step.after, step.before.turn), threat.threat) > 0 &&
+                        new Set(threat.targets).size === 2 &&
+                        threat.targets.includes(cut.defender) && threat.targets.includes(cut.target)) return false;
+                }
+            }
             // The revealed line and the mover's attack form one discovery.
             // Do not count its same-ply material-target subset again as a
             // generic threat. Unrelated targets, a larger direct gain, or

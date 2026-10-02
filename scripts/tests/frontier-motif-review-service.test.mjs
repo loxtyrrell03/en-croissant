@@ -75,6 +75,12 @@ const cases = [
     pv: ["e3a3", "a6a3", "d6a3"], played: "g8h8", reply: "h1g1",
     motif: null,
   },
+  ...[false, true].flatMap(extraTarget => [false, true].map(short => ({
+    id: `eAHH6-${extraTarget ? "extra-target" : "same-targets"}-${short ? "root" : "full"}`,
+    fen: `${extraTarget ? "1n2r2n" : "4r2n"}/6RP/8/8/4k1K1/8/8/8 w - - 3 74`,
+    pv: short ? ["g7g8"] : ["g7g8", "e8e7", "g8h8"], played: "g4h5", reply: "e4d5",
+    motif: "interference", label: "Interference", value: 320, expectDoubleThreat: extraTarget,
+  }))),
 ];
 
 function replay(fen, line) {
@@ -88,7 +94,7 @@ function replay(fen, line) {
 }
 
 function assertRootContract(row, card) {
-  assert.equal(card.tacticalClassification.motifClassifierVersion, "site-55.adapter-175");
+  assert.equal(card.tacticalClassification.motifClassifierVersion, "site-55.adapter-176");
   const root = card.tacticalClassification.missedMotifs[0];
   if (row.motif === null) {
     assert.equal(root, undefined, "A claimable draw cannot be shown as a missed winning trap");
@@ -163,6 +169,11 @@ function assertRootContract(row, card) {
     assert.match(root.evidence, /clears/);
     assert.equal(card.tacticalClassification.missedMotifs.some(m => m.id === "fork" && m.ply === 1), false);
     assert.ok(card.bestTimeline.some(m => m.id === "fork" && m.ply === 3));
+  }
+  if (row.id.startsWith("eAHH6-")) {
+    for (const motifs of [card.tacticalClassification.missedMotifs, card.bestTimeline])
+      assert.equal(motifs.some(m => m.id === "doubleThreat" && m.ply === 1), row.expectDoubleThreat,
+        "Only the additional independently threatened target warrants a second root label");
   }
 }
 
